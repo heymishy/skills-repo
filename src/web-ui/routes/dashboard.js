@@ -8,7 +8,6 @@
 
 const { getPendingActions: defaultGetPendingActions } = require('../adapters/action-queue');
 const { renderShell, escHtml }                        = require('../utils/html-shell');
-const { renderActions }                               = require('../views/actions-view');
 
 // Audit logger — replaced via setLogger() in tests and production bootstrap
 let _logger = {
@@ -105,59 +104,9 @@ function handleDashboard(req, res) {
   res.end(html);
 }
 
-/**
- * GET /actions — render the HTML action queue view for authenticated users.
- * Returns the pending action queue as a complete HTML page via renderShell.
- * GET /api/actions (JSON) remains unchanged — this handler is separate (ADR-009).
- *
- * @param {object} req
- * @param {object} res
- */
-async function handleGetActionsHtml(req, res) {
-  // Auth check — redirect to /auth/github for HTML consumers (AC5)
-  if (!req.session || !req.session.accessToken) {
-    res.writeHead(302, { Location: '/auth/github' });
-    res.end();
-    return;
-  }
-
-  const userId = req.session.userId;
-  const login  = req.session.login || '';
-
-  // Audit log (AC NFR audit)
-  _logger.info('actions_view_accessed', {
-    userId,
-    route:     '/actions',
-    timestamp: new Date().toISOString()
-  });
-
-  const userIdentity = { id: userId, login };
-  const token        = req.session.accessToken;
-
-  let result;
-  try {
-    result = await _getPendingActions(userIdentity, token);
-  } catch (err) {
-    _logger.warn('action_queue_error', { userId, reason: err.message });
-    res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(renderShell({ title: 'Actions', bodyContent: '<p>Error loading actions.</p>', user: { login }, active: 'actions' }));
-    return;
-  }
-
-  // Support both { items, bannerMessage } shape and flat array
-  const items = Array.isArray(result) ? result : (result.items || []);
-
-  const bodyContent = renderActions({ items });
-
-  const html = renderShell({ title: 'Actions', bodyContent, user: { login }, active: 'actions' });
-  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-  res.end(html);
-}
-
 module.exports = {
   handleGetActions,
   handleDashboard,
-  handleGetActionsHtml,
   setLogger,
   setGetPendingActions
 };

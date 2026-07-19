@@ -12,7 +12,6 @@ const fs   = require('fs');
 const path = require('path');
 
 const {
-  listFeatures,
   setAuditLogger: setFeatureListLogger
 } = require('../adapters/feature-list');
 
@@ -23,8 +22,6 @@ const {
 const { renderShell, escHtml } = require('../utils/html-shell');
 const shellEscHtml = escHtml; // internal alias used by artefact-index handlers
 const { getLabel } = require('../utils/artefact-labels');
-const { renderFeaturesList } = require('../views/features-view');
-const { renderKanban } = require('../views/kanban-view');
 
 const IDEAS_PATH = path.join(__dirname, '..', '..', '..', 'workspace', 'ideas.json');
 
@@ -93,90 +90,6 @@ function renderArtefactItem(artefact) {
     `<span class="artefact-list__type">${escHtml(type)}</span>` +
     `<a class="artefact-list__link" href="${escHtml(viewUrl)}">${escHtml(name)}</a>` +
     `</li>`;
-}
-
-/**
- * GET /features — return feature list for configured repositories.
- * Content-type negotiation: Accept: text/html → HTML shell; otherwise → JSON.
- * Requires authentication — unauthenticated requests redirect to /auth/github.
- */
-async function handleGetFeatures(req, res) {
-  const token  = req.session && req.session.accessToken;
-  const userId = req.session && req.session.userId;
-  const login  = req.session && req.session.login;
-
-  const accept  = (req.headers && req.headers['accept']) || '';
-  const wantsHtml = accept.includes('text/html');
-
-  if (!token) {
-    if (wantsHtml) {
-      res.writeHead(302, { Location: '/auth/github' });
-      res.end();
-    } else {
-      res.writeHead(401, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
-    }
-    return;
-  }
-
-  const features = await listFeatures(token);
-
-  // Audit log: userId, route, featureCount, timestamp — no token (NFR1)
-  _logger.info('feature_list_accessed', {
-    userId,
-    route:        '/features',
-    featureCount: features.length,
-    timestamp:    new Date().toISOString()
-  });
-
-  if (accept.includes('text/html')) {
-    const viewFeatures = features.map(function(f) {
-      return {
-        slug:          f.slug,
-        title:         f.title || f.slug,
-        stage:         f.stage || '',
-        updated:       f.lastUpdated || '',
-        health:        f.health || '',
-        owner:         f.owner || '',
-        artefactCount: f.artefactCount || 0
-      };
-    });
-
-    const view = (req.query && req.query.view) || '';
-    let bodyContent;
-    if (view === 'board') {
-      const counts = await Promise.all(
-        features.map(function(f) {
-          return _listArtefacts(f.slug, token)
-            .then(function(r) { return r && !r.noArtefacts ? r.artefacts.length : 0; })
-            .catch(function() { return 0; });
-        })
-      );
-      const boardFeatures = features.map(function(f, i) {
-        return {
-          slug:          f.slug,
-          title:         f.title || f.name || f.slug,
-          stage:         f.stage || '',
-          updated:       f.lastUpdated || f.updatedAt || '',
-          health:        f.health || '',
-          owner:         f.owner || '',
-          artefactCount: counts[i]
-        };
-      });
-      const { ideas } = _readIdeas();
-      bodyContent = renderKanban({ features: boardFeatures, ideas });
-    } else {
-      bodyContent = renderFeaturesList({ features: viewFeatures, repoCount: 0 });
-    }
-    const html = renderShell({ title: 'Features', bodyContent, user: { login }, active: 'features' });
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(html);
-    return;
-  }
-
-  // JSON path: backward-compatible, shape unchanged
-  res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify(features));
 }
 
 /**
@@ -333,7 +246,6 @@ function handleDeleteIdea(req, res, ideaId) {
 }
 
 module.exports = {
-  handleGetFeatures,
   handleGetFeatureArtefacts,
   handleGetIdeas,
   handlePostIdea,
