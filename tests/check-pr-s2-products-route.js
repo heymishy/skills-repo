@@ -419,6 +419,48 @@ test('products.js exports handlePostProductSync', function() {
     }
   })();
 
+  // Regression -- `pg` auto-parses JSONB columns into native objects on SELECT; it never
+  // returns them as JSON strings. The mocks above all use string literals (e.g.
+  // health_counts: '{"green":0,...}'), which never exercised the real production shape and
+  // let a naive JSON.parse(rollupRow.health_counts) ship undetected -- it crashed with
+  // `SyntaxError: "[object Object]" is not valid JSON` the first time a real Postgres row
+  // came back. This test uses object-shaped values (the real shape) end-to-end.
+  await (async function() {
+    try {
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/routes/products.js'))];
+      var productsRouteFresh = require(path.resolve(__dirname, '../src/web-ui/routes/products.js'));
+      var syncedAt = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      var mockPoolObjectShaped = {
+        query: async function(sql) {
+          if (/SELECT name, tenant_id.*FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) {
+            // Real pg JSONB auto-parse shape: plain objects, not JSON strings.
+            return { rows: [{
+              dod_status_counts: { complete: 1 },
+              health_counts: { green: 1, amber: 0, red: 0, unknown: 0 },
+              test_coverage: { noData: false, blendedPercentage: 85, perFeature: [{ slug: 'f1', percentage: 85 }] },
+              ac_coverage: { noData: false, blendedPercentage: 70 },
+              taxonomy: { groups: [], ungrouped: [{ slug: 'f1' }] },
+              synced_at: syncedAt
+            }] };
+          }
+          return { rows: [] };
+        }
+      };
+      var htmlObj = null;
+      var reqObj = { params: { id: 'p1' }, session: { tenantId: 't1', login: 'x' } };
+      var resObj = { writeHead: function() {}, end: function(body) { htmlObj = body; } };
+      await productsRouteFresh.handleGetProductView(reqObj, resObj, null, mockPoolObjectShaped);
+
+      assert.ok(htmlObj, 'expected a rendered HTML response, got none (handler likely threw)');
+      assert.ok(/Overall:/.test(htmlObj), 'expected health summary to render from object-shaped health_counts');
+      assert.ok(/85%/.test(htmlObj), 'expected test coverage to render from object-shaped test_coverage');
+      passed++; console.log('  [PASS] _renderProductView: renders correctly when rollup fields arrive as real pg-parsed objects, not JSON strings');
+    } catch (err) {
+      failed++; console.log('  [FAIL] object-shaped JSONB rollup rendering --', err.message);
+    }
+  })();
+
   console.log('\n[pr-s2-pr-s3-pr-s4-pr-s5-pr-s6-pr-s7-products-route] Results: ' + passed + ' passed, ' + failed + ' failed');
   process.exit(failed > 0 ? 1 : 0);
 })();
