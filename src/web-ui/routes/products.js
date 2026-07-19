@@ -22,6 +22,46 @@ function _parseJsonbField(value, fallback) {
   return (typeof value === 'string') ? JSON.parse(value) : value;
 }
 
+// Renders a test/AC-coverage breakdown grouped by parent epic (mirroring the
+// Epics/Other-features layout used for taxonomy below it), instead of one
+// flat list of every story code -- found unreadable at 100+ stories during
+// live staging verification (F4). Falls back to the flat perFeature list for
+// any pre-existing cached rollup row synced before groups/ungrouped existed.
+function _renderGroupedCoverageBreakdown(coverage) {
+  if (!Array.isArray(coverage.groups) || !Array.isArray(coverage.ungrouped)) {
+    return '<ul style="margin:6px 0 0;padding-left:18px">' +
+      coverage.perFeature.map(function(f) {
+        return '<li style="font-size:12px;color:var(--muted)">' + _escapeHtml(f.slug) + ': ' + _escapeHtml(String(f.percentage)) + '%</li>';
+      }).join('') +
+    '</ul>';
+  }
+
+  var epicsSectionHtml = coverage.groups.length > 0
+    ? '<h4 style="font-size:13px;margin:12px 0 4px">Epics</h4>' +
+      coverage.groups.map(function(g) {
+        return '<div style="margin-bottom:8px">' +
+          '<div style="font-size:12px;font-weight:600;color:var(--muted)">' + _escapeHtml(g.epicName || g.epicSlug) + '</div>' +
+          '<ul style="margin:2px 0 0;padding-left:18px">' +
+            g.items.map(function(item) {
+              return '<li style="font-size:12px;color:var(--muted)">' + _escapeHtml(item.slug) + ': ' + _escapeHtml(String(item.percentage)) + '%</li>';
+            }).join('') +
+          '</ul>' +
+        '</div>';
+      }).join('')
+    : '';
+
+  var ungroupedSectionHtml = coverage.ungrouped.length > 0
+    ? '<h4 style="font-size:13px;margin:12px 0 4px">Other features</h4>' +
+      '<ul style="margin:2px 0 0;padding-left:18px">' +
+        coverage.ungrouped.map(function(f) {
+          return '<li style="font-size:12px;color:var(--muted)">' + _escapeHtml(f.slug) + ': ' + _escapeHtml(String(f.percentage)) + '%</li>';
+        }).join('') +
+      '</ul>'
+    : '';
+
+  return epicsSectionHtml + ungroupedSectionHtml;
+}
+
 function _renderProductDashboard(products, login) {
   var cardsHtml = products.length === 0
     ? '<div style="padding:48px 0;text-align:center;color:var(--muted)">' +
@@ -142,13 +182,10 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
   if (!testCoverage || testCoverage.noData || !Array.isArray(testCoverage.perFeature)) {
     coverageHtml = '<div style="margin-top:12px;font-size:13px;color:var(--muted)">Test coverage: No test data yet</div>';
   } else {
-    var perFeatureHtml = testCoverage.perFeature.map(function(f) {
-      return '<li style="font-size:12px;color:var(--muted)">' + _escapeHtml(f.slug) + ': ' + _escapeHtml(String(f.percentage)) + '%</li>';
-    }).join('');
     coverageHtml =
       '<div style="margin-top:12px;font-size:13px">' +
         '<div>Test coverage: <strong>' + _escapeHtml(String(testCoverage.blendedPercentage)) + '%</strong></div>' +
-        '<ul style="margin:6px 0 0;padding-left:18px">' + perFeatureHtml + '</ul>' +
+        _renderGroupedCoverageBreakdown(testCoverage) +
       '</div>';
   }
   var acCoverage = (rollupRow && rollupRow.ac_coverage) ? _parseJsonbField(rollupRow.ac_coverage, null) : null;

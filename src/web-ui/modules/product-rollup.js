@@ -98,44 +98,59 @@ function computeOverallHealthSignal(counts) {
  * any testPlan data, blendedPercentage is null and noData is true --
  * never 0 or NaN (AC4).
  *
+ * Per-story detail is additionally grouped by parent epic (groups/ungrouped),
+ * mirroring computeTaxonomyRollup's shape, so the product view can render a
+ * readable per-epic breakdown instead of one flat list of 100+ story codes
+ * (F4 -- found unreadable at scale during live staging verification of the
+ * product-rollup epic's own self-registered product, which has 141 stories).
+ *
  * @param {object} pipelineState - parsed pipeline-state.json content
- * @returns {{blendedPercentage: number|null, noData: boolean, totalPassing: number, totalTests: number, perFeature: Array<{slug: string, passing: number, totalTests: number, percentage: number}>}}
+ * @returns {{blendedPercentage: number|null, noData: boolean, totalPassing: number, totalTests: number, perFeature: Array<{slug: string, passing: number, totalTests: number, percentage: number}>, groups: Array<{epicSlug: string, epicName: string, items: Array<{slug: string, passing: number, totalTests: number, percentage: number}>}>, ungrouped: Array<{slug: string, passing: number, totalTests: number, percentage: number}>}}
  */
 function computeTestCoverageRollup(pipelineState) {
   var features = (pipelineState && pipelineState.features) || [];
   var totalPassing = 0;
   var totalTests = 0;
   var perFeature = [];
+  var groups = [];
+  var ungrouped = [];
+
+  function toEntry(story) {
+    if (!story.testPlan || typeof story.testPlan.totalTests !== 'number' || story.testPlan.totalTests <= 0) {
+      return null;
+    }
+    var passing = story.testPlan.passing || 0;
+    var total = story.testPlan.totalTests;
+    totalPassing += passing;
+    totalTests += total;
+    var entry = {
+      slug: story.slug || story.id,
+      passing: passing,
+      totalTests: total,
+      percentage: Math.round((passing / total) * 1000) / 10
+    };
+    perFeature.push(entry);
+    return entry;
+  }
 
   features.forEach(function(feature) {
-    var stories = [];
     if (Array.isArray(feature.epics) && feature.epics.length > 0) {
       feature.epics.forEach(function(epic) {
-        (epic.stories || []).forEach(function(story) { stories.push(story); });
+        var items = (epic.stories || []).map(toEntry).filter(Boolean);
+        if (items.length > 0) {
+          groups.push({ epicSlug: epic.slug, epicName: epic.name, items: items });
+        }
       });
     } else {
-      stories = feature.stories || [];
-    }
-
-    stories.forEach(function(story) {
-      if (!story.testPlan || typeof story.testPlan.totalTests !== 'number' || story.testPlan.totalTests <= 0) {
-        return;
-      }
-      var passing = story.testPlan.passing || 0;
-      var total = story.testPlan.totalTests;
-      totalPassing += passing;
-      totalTests += total;
-      perFeature.push({
-        slug: story.slug || story.id,
-        passing: passing,
-        totalTests: total,
-        percentage: Math.round((passing / total) * 1000) / 10
+      (feature.stories || []).forEach(function(story) {
+        var entry = toEntry(story);
+        if (entry) { ungrouped.push(entry); }
       });
-    });
+    }
   });
 
   if (totalTests === 0) {
-    return { blendedPercentage: null, noData: true, totalPassing: 0, totalTests: 0, perFeature: [] };
+    return { blendedPercentage: null, noData: true, totalPassing: 0, totalTests: 0, perFeature: [], groups: [], ungrouped: [] };
   }
 
   return {
@@ -143,7 +158,9 @@ function computeTestCoverageRollup(pipelineState) {
     noData: false,
     totalPassing: totalPassing,
     totalTests: totalTests,
-    perFeature: perFeature
+    perFeature: perFeature,
+    groups: groups,
+    ungrouped: ungrouped
   };
 }
 
@@ -157,44 +174,57 @@ function computeTestCoverageRollup(pipelineState) {
  * denominator (AC2). If no story anywhere has any AC data,
  * blendedPercentage is null and noData is true (AC4).
  *
+ * Per-story detail is additionally grouped by parent epic (groups/ungrouped),
+ * mirroring computeTaxonomyRollup's shape -- same F4 rationale as
+ * computeTestCoverageRollup above.
+ *
  * @param {object} pipelineState - parsed pipeline-state.json content
- * @returns {{blendedPercentage: number|null, noData: boolean, totalVerified: number, totalAc: number, perFeature: Array<{slug: string, verified: number, total: number, percentage: number}>}}
+ * @returns {{blendedPercentage: number|null, noData: boolean, totalVerified: number, totalAc: number, perFeature: Array<{slug: string, verified: number, total: number, percentage: number}>, groups: Array<{epicSlug: string, epicName: string, items: Array<{slug: string, verified: number, total: number, percentage: number}>}>, ungrouped: Array<{slug: string, verified: number, total: number, percentage: number}>}}
  */
 function computeAcCoverageRollup(pipelineState) {
   var features = (pipelineState && pipelineState.features) || [];
   var totalVerified = 0;
   var totalAc = 0;
   var perFeature = [];
+  var groups = [];
+  var ungrouped = [];
+
+  function toEntry(story) {
+    if (typeof story.acTotal !== 'number' || story.acTotal <= 0) {
+      return null;
+    }
+    var verified = story.acVerified || 0;
+    var total = story.acTotal;
+    totalVerified += verified;
+    totalAc += total;
+    var entry = {
+      slug: story.slug || story.id,
+      verified: verified,
+      total: total,
+      percentage: Math.round((verified / total) * 1000) / 10
+    };
+    perFeature.push(entry);
+    return entry;
+  }
 
   features.forEach(function(feature) {
-    var stories = [];
     if (Array.isArray(feature.epics) && feature.epics.length > 0) {
       feature.epics.forEach(function(epic) {
-        (epic.stories || []).forEach(function(story) { stories.push(story); });
+        var items = (epic.stories || []).map(toEntry).filter(Boolean);
+        if (items.length > 0) {
+          groups.push({ epicSlug: epic.slug, epicName: epic.name, items: items });
+        }
       });
     } else {
-      stories = feature.stories || [];
-    }
-
-    stories.forEach(function(story) {
-      if (typeof story.acTotal !== 'number' || story.acTotal <= 0) {
-        return;
-      }
-      var verified = story.acVerified || 0;
-      var total = story.acTotal;
-      totalVerified += verified;
-      totalAc += total;
-      perFeature.push({
-        slug: story.slug || story.id,
-        verified: verified,
-        total: total,
-        percentage: Math.round((verified / total) * 1000) / 10
+      (feature.stories || []).forEach(function(story) {
+        var entry = toEntry(story);
+        if (entry) { ungrouped.push(entry); }
       });
-    });
+    }
   });
 
   if (totalAc === 0) {
-    return { blendedPercentage: null, noData: true, totalVerified: 0, totalAc: 0, perFeature: [] };
+    return { blendedPercentage: null, noData: true, totalVerified: 0, totalAc: 0, perFeature: [], groups: [], ungrouped: [] };
   }
 
   return {
@@ -202,7 +232,9 @@ function computeAcCoverageRollup(pipelineState) {
     noData: false,
     totalVerified: totalVerified,
     totalAc: totalAc,
-    perFeature: perFeature
+    perFeature: perFeature,
+    groups: groups,
+    ungrouped: ungrouped
   };
 }
 

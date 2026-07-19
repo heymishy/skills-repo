@@ -378,6 +378,32 @@ async function main() {
     });
   });
 
+  // Regression -- F4: per-story test-coverage breakdown is also grouped by parent
+  // epic (mirroring computeTaxonomyRollup's groups/ungrouped shape), so the product
+  // view can render a readable per-epic breakdown instead of one flat 100+-entry
+  // list. Found unreadable at scale during live staging verification.
+  queue.push(function() {
+    console.log('\n[pr-s2] Regression -- computeTestCoverageRollup groups perFeature entries by parent epic (F4)');
+    return test('computeTestCoverageRollup: epic-nested stories appear under groups, flat-feature stories appear under ungrouped', function() {
+      var mod = freshRequire();
+      var pipelineState = {
+        features: [
+          { slug: 'fa', epics: [{ slug: 'epic-a', name: 'Epic A', stories: [{ slug: 'a1', testPlan: { totalTests: 10, passing: 5 } }] }] },
+          { slug: 'fb', stories: [{ slug: 'b1', testPlan: { totalTests: 4, passing: 4 } }] }
+        ]
+      };
+      var result = mod.computeTestCoverageRollup(pipelineState);
+      assert.strictEqual(result.groups.length, 1, 'Expected one epic group');
+      assert.strictEqual(result.groups[0].epicName, 'Epic A', 'Expected the group to carry the epic name');
+      assert.strictEqual(result.groups[0].items[0].slug, 'a1', 'Expected the epic-nested story in the group');
+      assert.strictEqual(result.groups[0].items[0].percentage, 50, 'Expected a1\'s own percentage in the group entry');
+      assert.strictEqual(result.ungrouped.length, 1, 'Expected one ungrouped (flat-feature) entry');
+      assert.strictEqual(result.ungrouped[0].slug, 'b1', 'Expected the flat-feature story in ungrouped');
+      var sumFromView = result.groups.reduce(function(acc, g) { return acc + g.items.length; }, 0) + result.ungrouped.length;
+      assert.strictEqual(sumFromView, result.perFeature.length, 'groups+ungrouped total should equal perFeature.length');
+    });
+  });
+
   // T18: zero stories with testPlan data returns an explicit no-data marker, not 0% or NaN (AC4)
   queue.push(function() {
     console.log('\n[pr-s5] T18 -- zero stories with testPlan data returns an explicit no-data marker, not 0% or NaN (AC4)');
@@ -393,6 +419,8 @@ async function main() {
       assert.strictEqual(result.blendedPercentage, null, 'Expected null (not 0 or NaN) when no story has testPlan data');
       assert.strictEqual(result.noData, true, 'Expected an explicit noData: true marker');
       assert.deepStrictEqual(result.perFeature, [], 'Expected an empty perFeature array, not undefined or an array of zeros');
+      assert.deepStrictEqual(result.groups, [], 'Expected an empty groups array in the no-data case');
+      assert.deepStrictEqual(result.ungrouped, [], 'Expected an empty ungrouped array in the no-data case');
     });
   });
 
@@ -487,6 +515,26 @@ async function main() {
       var result = mod.computeAcCoverageRollup(pipelineState);
       assert.strictEqual(result.blendedPercentage, null, 'Expected null (not 0 or NaN) when no story has AC data');
       assert.strictEqual(result.noData, true, 'Expected an explicit noData: true marker');
+    });
+  });
+
+  // Regression -- F4: same epic-grouping shape as computeTestCoverageRollup, applied to
+  // computeAcCoverageRollup's perFeature breakdown.
+  queue.push(function() {
+    console.log('\n[pr-s2] Regression -- computeAcCoverageRollup groups perFeature entries by parent epic (F4)');
+    return test('computeAcCoverageRollup: epic-nested stories appear under groups, flat-feature stories appear under ungrouped', function() {
+      var mod = freshRequire();
+      var pipelineState = {
+        features: [
+          { slug: 'fa', epics: [{ slug: 'epic-a', name: 'Epic A', stories: [{ slug: 'a1', acTotal: 10, acVerified: 5 }] }] },
+          { slug: 'fb', stories: [{ slug: 'b1', acTotal: 4, acVerified: 4 }] }
+        ]
+      };
+      var result = mod.computeAcCoverageRollup(pipelineState);
+      assert.strictEqual(result.groups.length, 1, 'Expected one epic group');
+      assert.strictEqual(result.groups[0].items[0].slug, 'a1', 'Expected the epic-nested story in the group');
+      assert.strictEqual(result.ungrouped.length, 1, 'Expected one ungrouped (flat-feature) entry');
+      assert.strictEqual(result.ungrouped[0].slug, 'b1', 'Expected the flat-feature story in ungrouped');
     });
   });
 
