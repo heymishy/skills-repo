@@ -100,6 +100,17 @@ function createFakeTestDb() {
     // bri-s3.4: added alongside the tenant-ownership fix in routes/products.js
     // (handleGetProductView) — narrow branches, mirroring the file's existing
     // extension pattern, not a general SQL engine.
+    // rpc-s1: handleGetProductView's query now also selects repo_owner/
+    // repo_name (Connect-repo UI affordance) — matched here first, before the
+    // older/narrower NAME, TENANT_ID-only branch below, since exact-prefix
+    // matching means the longer column list must be checked first.
+    if (s.indexOf('SELECT NAME, TENANT_ID, REPO_OWNER, REPO_NAME FROM PRODUCTS WHERE PRODUCT_ID') === 0) {
+      var pidRepo = p[0];
+      var matchRepo = products.filter(function(r) { return r.product_id === pidRepo; }).map(function(r) {
+        return { name: r.name, tenant_id: r.tenant_id, repo_owner: r.repo_owner || null, repo_name: r.repo_name || null };
+      });
+      return Promise.resolve({ rows: matchRepo });
+    }
     if (s.indexOf('SELECT NAME, TENANT_ID FROM PRODUCTS WHERE PRODUCT_ID') === 0) {
       var pid2 = p[0];
       var match2 = products.filter(function(r) { return r.product_id === pid2; }).map(function(r) { return { name: r.name, tenant_id: r.tenant_id }; });
@@ -111,6 +122,23 @@ function createFakeTestDb() {
       var pid3 = p[0];
       var match3 = products.filter(function(r) { return r.product_id === pid3; }).map(function(r) { return { tenant_id: r.tenant_id }; });
       return Promise.resolve({ rows: match3 });
+    }
+    // rpc-s1: handlePostProductRepoCreate / handlePutProductEdit's shared
+    // repo-association UPDATE — persists repo_provider/repo_owner/repo_name
+    // onto the in-memory row so a subsequent GET (via the branch above)
+    // reflects the connected repo, matching real Postgres's UPDATE semantics.
+    if (s.indexOf('UPDATE PRODUCTS SET REPO_PROVIDER') === 0) {
+      var updProvider = p[0];
+      var updOwner = p[1];
+      var updRepoName = p[2];
+      var updProductId = p[3];
+      var updTarget = products.find(function(r) { return r.product_id === updProductId; });
+      if (updTarget) {
+        updTarget.repo_provider = updProvider;
+        updTarget.repo_owner = updOwner;
+        updTarget.repo_name = updRepoName;
+      }
+      return Promise.resolve({ rows: [], rowCount: updTarget ? 1 : 0 });
     }
 
     // ── journeys (product_id-scoped lookups — bri-s3.2 keeps journeys on the
