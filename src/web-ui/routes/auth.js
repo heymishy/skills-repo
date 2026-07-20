@@ -361,6 +361,14 @@ async function handleLogout(req, res) {
  * Auth guard middleware — protects routes requiring an authenticated session.
  * Reads req.session.accessToken (canonical field — CLAUDE.md).
  * NEVER reads req.session.token — sessions using the legacy field are rejected (ARCH-003).
+ *
+ * next() may be sync or async across ~55 call sites in server.js. Previously
+ * this called next() unawaited and uncaught, so any rejection inside an async
+ * handler (e.g. a DB error) became a process-level unhandled rejection with no
+ * HTTP response ever sent -- the browser hung forever with no error shown.
+ * Both the sync-throw and async-reject paths now send a 500 instead, unless
+ * the handler already sent its own response.
+ *
  * @param {object} req
  * @param {object} res
  * @param {Function} next
@@ -372,7 +380,21 @@ function authGuard(req, res, next) {
     res.end();
     return;
   }
-  next();
+  function handleGuardedError(err) {
+    console.error('[authGuard] unhandled error in protected route handler:', err && err.stack ? err.stack : err);
+    if (!res.headersSent) {
+      res.writeHead(500, { 'Content-Type': 'text/plain' });
+      res.end('Internal Server Error');
+    }
+  }
+  try {
+    const result = next();
+    if (result && typeof result.then === 'function') {
+      result.catch(handleGuardedError);
+    }
+  } catch (err) {
+    handleGuardedError(err);
+  }
 }
 
 module.exports = {

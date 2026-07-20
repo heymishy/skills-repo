@@ -57,11 +57,13 @@ function mockRes() {
     statusCode: null,
     headers: {},
     body: '',
+    headersSent: false,
     writeHead(code, hdrs) {
       this.statusCode = code;
       if (hdrs) Object.assign(this.headers, hdrs);
+      this.headersSent = true; // matches real http.ServerResponse behaviour
     },
-    end(body) { this.body = (body != null ? body : ''); this._ended = true; }
+    end(body) { this.body = (body != null ? body : ''); this._ended = true; this.headersSent = true; }
   };
 }
 
@@ -192,6 +194,49 @@ test('T5.2 authGuard middleware does not include session data in redirect respon
   assert(res.statusCode === 302, 'T5.2: redirects when token is null');
   const responseStr = (res.headers.Location || '') + (res.body || '');
   assert(!responseStr.includes('gho_'), 'T5.2: redirect does not expose any token value');
+});
+
+// Regression -- authGuard previously called an async next() unawaited and
+// uncaught, so a rejection inside a protected route handler (e.g. a real DB
+// error) became a process-level unhandled rejection with no HTTP response
+// ever sent -- the client hung forever. Found live on wuce-staging via a
+// Neon password-authentication failure inside handleGetDashboard.
+test('T5.3 authGuard sends a 500 response when an async next() rejects, instead of hanging forever', async () => {
+  const req = mockReq({ session: { accessToken: 'gho_test' } });
+  const res = mockRes();
+  const next = async () => { throw new Error('simulated DB failure'); };
+
+  authGuard(req, res, next);
+  await new Promise((resolve) => setImmediate(resolve)); // let the rejection's .catch() run
+
+  assert(res.statusCode === 500, 'T5.3: responds 500 instead of leaving the client with no response');
+  assert(res._ended === true, 'T5.3: the response is actually ended, not left hanging');
+});
+
+test('T5.4 authGuard sends a 500 response when a sync next() throws', () => {
+  const req = mockReq({ session: { accessToken: 'gho_test' } });
+  const res = mockRes();
+  const next = () => { throw new Error('simulated sync failure'); };
+
+  authGuard(req, res, next);
+
+  assert(res.statusCode === 500, 'T5.4: responds 500 for a synchronous throw inside next()');
+});
+
+test('T5.5 authGuard does not attempt a second response if the handler already sent one before rejecting', async () => {
+  const req = mockReq({ session: { accessToken: 'gho_test' } });
+  const res = mockRes();
+  const next = async () => {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('partial response already sent');
+    throw new Error('simulated failure after response was already sent');
+  };
+
+  authGuard(req, res, next);
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert(res.statusCode === 200, 'T5.5: does not overwrite a response the handler already sent');
+  assert(res.body === 'partial response already sent', 'T5.5: original response body is preserved');
 });
 
 // ═══════════════════════════════════════════════════════════════════════════
