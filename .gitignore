@@ -13,6 +13,7 @@ test-results/
 
 # Local dev secrets
 .env
+.neon
 
 # Local-only test files (may reference env credentials; never commit)
 playwright.local.config.js

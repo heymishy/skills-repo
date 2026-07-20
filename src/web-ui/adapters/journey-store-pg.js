@@ -8,7 +8,8 @@ function _getPool() {
   if (!_pool && process.env.DATABASE_URL) {
     _pool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }
+      ssl: { rejectUnauthorized: false },
+      connectionTimeoutMillis: 10000
     });
   }
   return _pool;
