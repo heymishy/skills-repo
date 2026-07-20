@@ -242,7 +242,7 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   // lab-s3.4 — Wire webhook DB adapter to same Postgres pool (stripe_events idempotency table)
   if (process.env.DATABASE_URL) {
     const { Pool } = require('pg');
-    const _creditsPool = new Pool({ connectionString: process.env.DATABASE_URL });
+    const _creditsPool = new Pool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 10000 });
     _pshPool = _creditsPool; // psh-s3: wire pool for product creation routes
     setCreditsAdapter(_creditsPool);
     console.log('Credits DB adapter wired');
@@ -293,7 +293,7 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     `).then(function() { console.log('credit_audit_log table ready'); })
       .catch(function(err) { console.error('credit_audit_log table migration failed:', err.message); });
     // arl-s1 — Wire user_roles DB adapter (D37 mandatory separate wiring task)
-    const _userRolesPool = new Pool({ connectionString: process.env.DATABASE_URL });
+    const _userRolesPool = new Pool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 10000 });
     setGetUserRole(async function(tenantId) {
       const result = await _userRolesPool.query(
         'SELECT role FROM user_roles WHERE tenant_id = $1',
@@ -587,7 +587,7 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   // lab-s2.2 — Wire users DB adapter (D37 mandatory separate wiring task)
   if (process.env.DATABASE_URL) {
     const { Pool: _UsersPool } = require('pg');
-    const _usersPool = new _UsersPool({ connectionString: process.env.DATABASE_URL });
+    const _usersPool = new _UsersPool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 10000 });
     setUserDb(_usersPool);
     console.log('[auth-email] users DB adapter wired');
     // lab-s2.2/s2.3 — Auto-migrate users table on startup (CREATE TABLE IF NOT EXISTS is idempotent).
@@ -617,7 +617,7 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   // Falls back to a no-op adapter (everyone treated as returning user) when DATABASE_URL is absent.
   if (process.env.DATABASE_URL) {
     const { Pool: _FlagsPool } = require('pg');
-    const _flagsPool = new _FlagsPool({ connectionString: process.env.DATABASE_URL });
+    const _flagsPool = new _FlagsPool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 10000 });
     _flagsPool.query(`
       CREATE TABLE IF NOT EXISTS github_first_login (
         github_user_id VARCHAR PRIMARY KEY,
