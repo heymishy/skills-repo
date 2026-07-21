@@ -12097,12 +12097,12 @@
               "name": "Surface discovery-only and ideation-only work in a Roadmap tab",
               "stage": "implementation-plan",
               "health": "green",
-              "updatedAt": "2026-07-21T03:36:58.944Z",
+              "updatedAt": "2026-07-21T03:39:24.023Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 7,
+                "totalTests": 14,
                 "passing": 14
               },
               "acTotal": 4,
