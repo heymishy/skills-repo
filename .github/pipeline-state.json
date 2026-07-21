@@ -12029,9 +12029,9 @@
             {
               "slug": "a2",
               "name": "Reassign an epic to a different module",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T05:48:26.311Z",
+              "updatedAt": "2026-07-21T05:50:09.957Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12097,7 +12097,9 @@
                   "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a2-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/526"
             },
             {
               "slug": "a3",
