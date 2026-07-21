@@ -378,6 +378,25 @@ function makeProductsOwnerPool(products) {
     assert.ok(/journeys ADD COLUMN IF NOT EXISTS module_id/.test(src), 'expected server.js to add journeys.module_id');
   });
 
+  await test('server.js runs the journeys.module_id migration AFTER product_modules is created, not as a separate unchained query (fix: fresh-deploy race caused "relation product_modules does not exist")', function() {
+    var fs = require('fs');
+    var src = fs.readFileSync(SERVER_PATH, 'utf8');
+    var createIdx = src.indexOf('CREATE TABLE IF NOT EXISTS product_modules');
+    var alterIdx = src.indexOf('ALTER TABLE journeys ADD COLUMN IF NOT EXISTS module_id');
+    assert.ok(createIdx !== -1 && alterIdx !== -1, 'expected both migrations to be present');
+    assert.ok(alterIdx > createIdx, 'expected the module_id ALTER TABLE to appear after the product_modules CREATE TABLE');
+    // The two migrations must share ONE promise chain (module_id's query
+    // fired from inside product_modules' own .then()), not two independent,
+    // unchained _creditsPool.query() calls -- unchained calls each race for
+    // their own pool connection and can execute out of order on a fresh
+    // database, exactly the bug this test guards against. If product_modules
+    // had its own independent .catch() (closing its chain) before the ALTER
+    // TABLE call even begins, the two are unchained -- the fixed version's
+    // single shared .catch() only appears after BOTH migrations.
+    var between = src.slice(createIdx, alterIdx);
+    assert.ok(!/\.catch\(/.test(between), 'expected no .catch() between the two migrations -- product_modules must not close its own independent chain before journeys.module_id runs; they must share one .then()/.catch() chain');
+  });
+
   await test('server.js registers the 4 module route handlers', function() {
     var fs = require('fs');
     var src = fs.readFileSync(SERVER_PATH, 'utf8');

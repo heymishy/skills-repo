@@ -571,6 +571,17 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // a1: product_modules table -- curated, per-product Modules taxonomy
     // layered above epics. Fully operator-curated, zero defaults (see
     // decisions.md, discovery /clarify) -- every product starts with zero rows.
+    //
+    // journeys.module_id (below) has a REFERENCES product_modules(id) FK, so
+    // it MUST run only after this CREATE TABLE has actually completed -- it
+    // is chained inside this .then() rather than fired as a second,
+    // independent _creditsPool.query() call. pg.Pool checks out a separate
+    // client per query, so two unchained queries race for their own
+    // connection; on a genuinely fresh database (first boot, no pre-existing
+    // product_modules row/table from a prior deploy) the ALTER TABLE could
+    // reach Postgres before the CREATE TABLE's DDL committed, failing with
+    // "relation \"product_modules\" does not exist" -- confirmed live on a
+    // fresh wuce-staging deploy, fixed here (decisions.md, SEC/fix-forward entry).
     _creditsPool.query(`CREATE TABLE IF NOT EXISTS product_modules (
       id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       product_id UUID NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
@@ -579,20 +590,18 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )`).then(function() {
       console.log('[a1] product_modules table ready');
-    }).catch(function(err) {
-      console.error('[a1] product_modules migration failed:', err.message);
-    });
 
-    // a1: journeys.module_id -- the storage layer A2 (reassign epics between
-    // modules) writes to. NULL = "Unassigned". ON DELETE SET NULL is a
-    // DB-level safety net; modules-adapter.js's deleteModule also issues an
-    // explicit UPDATE first, so the AC3 reassignment is directly assertable
-    // rather than solely reliant on cascade behaviour (see decisions.md ARCH
-    // entry for why journeys, not a new epics table, is the assignment target).
-    _creditsPool.query(`ALTER TABLE journeys ADD COLUMN IF NOT EXISTS module_id UUID REFERENCES product_modules(id) ON DELETE SET NULL`).then(function() {
+      // a1: journeys.module_id -- the storage layer A2 (reassign epics between
+      // modules) writes to. NULL = "Unassigned". ON DELETE SET NULL is a
+      // DB-level safety net; modules-adapter.js's deleteModule also issues an
+      // explicit UPDATE first, so the AC3 reassignment is directly assertable
+      // rather than solely reliant on cascade behaviour (see decisions.md ARCH
+      // entry for why journeys, not a new epics table, is the assignment target).
+      return _creditsPool.query(`ALTER TABLE journeys ADD COLUMN IF NOT EXISTS module_id UUID REFERENCES product_modules(id) ON DELETE SET NULL`);
+    }).then(function() {
       console.log('[a1] journeys.module_id column ready');
     }).catch(function(err) {
-      console.error('[a1] journeys.module_id migration failed:', err.message);
+      console.error('[a1] product_modules/journeys.module_id migration failed:', err.message);
     });
 
     // a1 D37 wiring: wire the real Postgres modules adapter, reusing the same
