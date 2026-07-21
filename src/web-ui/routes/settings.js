@@ -322,7 +322,10 @@ function renderSettingsPage(opts) {
     bodyContent: body,
     user: user,
     active: 'settings',
-    crumbs: ['Settings']
+    crumbs: ['Settings'],
+    isAdmin: isAdmin // b2: forward the isAdmin this function already computes so the
+                     // sidebar's Admin credits entry (gated the same way as the
+                     // Credits tab above) shows consistently on this page too.
   });
 }
 

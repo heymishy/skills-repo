@@ -12239,24 +12239,26 @@
             {
               "slug": "b2",
               "name": "Restructure account-level nav items and add a dangling-link regression test",
-              "stage": "definition-of-ready",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-07-20T20:47:56.104Z",
+              "updatedAt": "2026-07-21T06:16:00.339Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "written",
-                "totalTests": 5,
-                "passing": 0
+                "status": "all-passing",
+                "totalTests": 8,
+                "passing": 8
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/b2-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/b2-dor-contract.md",
-              "dorSignedOffAt": "2026-07-20T20:47:56.104Z"
+              "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
+              "verifyStatus": "passed",
+              "tasks": []
             }
           ]
         },
