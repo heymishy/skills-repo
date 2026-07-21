@@ -12095,15 +12095,15 @@
             {
               "slug": "a5",
               "name": "Surface discovery-only and ideation-only work in a Roadmap tab",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
-              "updatedAt": "2026-07-20T20:47:56.104Z",
+              "updatedAt": "2026-07-21T03:31:32.368Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
-                "passing": 0
+                "passing": 8
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -12112,7 +12112,33 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a5-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a5-dor-contract.md",
-              "dorSignedOffAt": "2026-07-20T20:47:56.104Z"
+              "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "scanRoadmapArtefacts detects discovery-only, excludes tracked, handles empty (AC1, AC3, AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a5-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Wire scan into Roadmap tab route + rendering (AC1, AC2, AC4)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a5-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Register GET /products/:id/roadmap route + NFR performance test",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a5-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Full suite run and final test-file assembly",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a5-plan.md"
+                }
+              ]
             }
           ]
         },
