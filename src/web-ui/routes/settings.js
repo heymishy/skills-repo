@@ -19,6 +19,10 @@
 
 var _htmlShell = require('../utils/html-shell');
 var _identityLinks = require('../modules/identity-links');
+// c3 — reuses getAllTenantBalances/CSRF helpers exactly as admin-credits.js already
+// does; no new adapter, no changes to either module (Architecture Constraints, story c3).
+var _credits = require('../modules/credits');
+var _csrf = require('../middleware/csrf');
 
 // Sign-in providers surfaced on the Profile tab, in display order.
 var PROVIDERS = [
@@ -91,6 +95,83 @@ function renderProfileTab(user, linkedSet) {
 }
 
 /**
+ * c3 — Render the Credits tab's panel content: the same tenant balance data
+ * adminCreditsGet already returns, restyled into the shared design system
+ * (AC1) instead of the bare `<table>` admin-credits.js renders standalone.
+ * Reuses adminCreditsGet's exact data shape (tenant_id, balance) and
+ * admin-credits.js's exact form contract (POST /api/admin/credits/adjust,
+ * tenantId hidden field, amount number field, _csrf hidden field) -- AC3:
+ * the restyle does not change the request contract. adminCreditsPost itself
+ * is never modified by this story -- its 400 JSON rejection / 302 redirect
+ * responses are unchanged (see check-arl-s3-admin-credits.js /
+ * check-sec-perf-s3-admin-credits-csrf.js, both still passing unmodified).
+ * The inline script below intercepts the restyled form's submit purely to
+ * present that same 400 JSON body as a clear on-page message instead of a
+ * raw-JSON navigation (AC4) -- it never touches innerHTML with server data
+ * (uses textContent only), so no new XSS surface is introduced.
+ * @param {Array<{tenant_id: string, balance: number}>} rows
+ * @param {string} csrfToken
+ * @param {{errorMessage?: string}} [opts]
+ * @returns {string} HTML fragment (no <html>/<body> wrapper)
+ */
+function renderCreditsTab(rows, csrfToken, opts) {
+  opts = opts || {};
+  var errorBanner = opts.errorMessage
+    ? '<div id="credits-error" class="sw-credits-error" role="alert">' + _escapeHtml(opts.errorMessage) + '</div>'
+    : '<div id="credits-error" class="sw-credits-error" role="alert" hidden></div>';
+
+  var tableRows = (rows || []).map(function(r) {
+    return (
+      '<tr>' +
+        '<td>' + _escapeHtml(r.tenant_id) + '</td>' +
+        '<td>' + _escapeHtml(String(r.balance)) + '</td>' +
+        '<td>' +
+          '<form method="POST" action="/api/admin/credits/adjust" class="sw-credits-form">' +
+            _csrf.csrfField(csrfToken) +
+            '<input type="hidden" name="tenantId" value="' + _escapeHtml(r.tenant_id) + '">' +
+            '<input type="number" name="amount" min="1" required class="sw-input sw-credits-amount">' +
+            '<button type="submit" class="sw-btn sw-btn--accent">Add</button>' +
+          '</form>' +
+        '</td>' +
+      '</tr>'
+    );
+  }).join('');
+
+  var creditsJs =
+    '<script>(function(){' +
+      'document.querySelectorAll(".sw-credits-form").forEach(function(f){' +
+        'f.addEventListener("submit",function(ev){' +
+          'ev.preventDefault();' +
+          'var errEl=document.getElementById("credits-error");' +
+          'var fd=new URLSearchParams(new FormData(f));' +
+          'fetch(f.action,{method:"POST",body:fd,headers:{"Content-Type":"application/x-www-form-urlencoded"}})' +
+            '.then(function(r){' +
+              'if(r.status===400){return r.json().then(function(j){' +
+                'if(errEl){errEl.textContent=(j&&j.error)||"Request rejected";errEl.hidden=false;}' +
+              '});}' +
+              'window.location.reload();' +
+            '})' +
+            '.catch(function(){if(errEl){errEl.textContent="Request failed";errEl.hidden=false;}});' +
+        '});' +
+      '});' +
+    '})()</script>';
+
+  return (
+    '<div id="tab-panel-credits" class="sw-tab-panel" role="tabpanel" aria-labelledby="tab-credits">' +
+      '<div class="sw-card sw-card--lg">' +
+        '<div class="sw-section-title">Tenant credit balances</div>' +
+        errorBanner +
+        '<table class="sw-table">' +
+          '<thead><tr><th>Tenant ID</th><th>Balance</th><th>Top-up</th></tr></thead>' +
+          '<tbody>' + tableRows + '</tbody>' +
+        '</table>' +
+      '</div>' +
+      creditsJs +
+    '</div>'
+  );
+}
+
+/**
  * Render the tab nav buttons. Profile and Billing are always present (C2
  * adds Billing's real content later); Credits is admin-only (matches the
  * existing live requireAdmin gating convention -- b2/epic-c precedent -- and
@@ -125,6 +206,14 @@ var _TAB_CSS =
     '.sw-settings-tab--active{color:var(--ink);border-bottom-color:var(--ink)}' +
     '.sw-tab-panel{display:none}' +
     '.sw-tab-panel--active{display:block}' +
+    // c3 — Credits tab: restyled table + inline top-up form + error banner.
+    '.sw-table{width:100%;border-collapse:collapse;font-size:13.5px}' +
+    '.sw-table th,.sw-table td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line)}' +
+    '.sw-table th{color:var(--muted);font-weight:500}' +
+    '.sw-credits-form{display:flex;align-items:center;gap:8px}' +
+    '.sw-credits-amount{width:90px}' +
+    '.sw-credits-error{background:var(--red-soft);color:var(--red);border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:13.5px}' +
+    '.sw-credits-error[hidden]{display:none}' +
   '</style>';
 
 var _TAB_JS =
@@ -140,9 +229,9 @@ var _TAB_JS =
 
 /**
  * Render the full Settings page (AC1: wrapped in the shared shell, not a
- * bare fragment). Only the Profile panel has real content in this story --
- * Billing/Credits panels are empty containers ready for C2/C3.
- * @param {{user: object, linkedSet: Set<string>, isAdmin: boolean}} opts
+ * bare fragment). Profile and Credits (c3) panels have real content;
+ * Billing remains an empty container ready for C2.
+ * @param {{user: object, linkedSet: Set<string>, isAdmin: boolean, creditsRows?: Array, csrfToken?: string, creditsError?: string}} opts
  * @returns {string} full HTML document
  */
 function renderSettingsPage(opts) {
@@ -160,7 +249,11 @@ function renderSettingsPage(opts) {
       renderProfileTab(user, linkedSet) +
     '</div>' +
     '<div id="tab-panel-billing" class="sw-tab-panel" role="tabpanel" aria-labelledby="tab-billing"></div>' +
-    (isAdmin ? '<div id="tab-panel-credits" class="sw-tab-panel" role="tabpanel" aria-labelledby="tab-credits"></div>' : '') +
+    // c3 (AC1/AC2): real, server-gated Credits content -- only ever built when
+    // isAdmin is true. A non-admin request never even has creditsRows/csrfToken
+    // populated (see handleGetSettings below), so there is nothing to hide
+    // client-side -- the tab and its data are absent from the response entirely.
+    (isAdmin ? renderCreditsTab(opts.creditsRows || [], opts.csrfToken, { errorMessage: opts.creditsError }) : '') +
     _TAB_JS;
 
   return _htmlShell.renderShell({
@@ -201,7 +294,30 @@ function createSettingsHandlers(pool) {
     };
     var isAdmin = !!(req.session && req.session.role === 'admin');
 
-    var html = renderSettingsPage({ user: user, linkedSet: linkedSet, isAdmin: isAdmin });
+    // c3 (AC1/AC2): fetch real tenant balances + generate the CSRF token
+    // ONLY when isAdmin is true -- reuses getAllTenantBalances/generateCsrfToken
+    // exactly as admin-credits.js already does (Architecture Constraints).
+    // A non-admin request never calls these, so there is no balance data or
+    // CSRF token to leak even if the render layer had a bug -- the server-side
+    // gate is enforced at the data-fetch step, not just in the markup.
+    var creditsRows = [];
+    var csrfToken = null;
+    if (isAdmin) {
+      creditsRows = await _credits.getAllTenantBalances();
+      csrfToken = _csrf.generateCsrfToken(req);
+    }
+
+    // c3 (AC4): the initial page load never has a prior rejection to show --
+    // the restyled form's client-side fetch handler (see renderCreditsTab)
+    // surfaces a rejection inline without a page navigation, so there is no
+    // server-side error state to thread through here on first render.
+    var html = renderSettingsPage({
+      user: user,
+      linkedSet: linkedSet,
+      isAdmin: isAdmin,
+      creditsRows: creditsRows,
+      csrfToken: csrfToken
+    });
 
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -213,6 +329,7 @@ function createSettingsHandlers(pool) {
 module.exports = {
   PROVIDERS: PROVIDERS,
   renderProfileTab: renderProfileTab,
+  renderCreditsTab: renderCreditsTab,
   renderSettingsPage: renderSettingsPage,
   createSettingsHandlers: createSettingsHandlers
 };
