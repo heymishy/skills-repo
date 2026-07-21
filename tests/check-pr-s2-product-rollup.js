@@ -215,6 +215,9 @@ async function main() {
   });
 
   // T7: computeHealthCounts counts features across all four health statuses (AC1)
+  // Updated at a3 to assert the aggregate keys individually rather than a whole-object
+  // deepStrictEqual, since the return shape now legitimately also carries a perFeature
+  // breakdown (a3 AC1) -- an intentional, documented extension, not a regression.
   queue.push(function() {
     console.log('\n[pr-s4] T7 -- computeHealthCounts counts features across all four health statuses (AC1)');
     return test('computeHealthCounts: counts 3 green, 2 amber, 1 red, 1 unknown correctly', function() {
@@ -228,7 +231,11 @@ async function main() {
         ]
       };
       var counts = mod.computeHealthCounts(pipelineState);
-      assert.deepStrictEqual(counts, { green: 3, amber: 2, red: 1, unknown: 1 });
+      assert.strictEqual(counts.green, 3);
+      assert.strictEqual(counts.amber, 2);
+      assert.strictEqual(counts.red, 1);
+      assert.strictEqual(counts.unknown, 1);
+      assert.strictEqual(counts.perFeature.length, 7, 'Expected one perFeature entry per input feature');
     });
   });
 
@@ -239,6 +246,103 @@ async function main() {
       var mod = freshRequire();
       var counts = mod.computeHealthCounts({ features: [{ slug: 'f1' }] });
       assert.strictEqual(counts.unknown, 1);
+      assert.strictEqual(counts.perFeature[0].health, 'unknown', 'Expected the missing-health feature to normalize to unknown in perFeature too');
+    });
+  });
+
+  // T29 (a3, AC1): computeHealthCounts returns a perFeature breakdown alongside the aggregate
+  queue.push(function() {
+    console.log('\n[a3] T29 -- computeHealthCounts returns a perFeature breakdown alongside the aggregate (AC1)');
+    return test('computeHealthCounts: perFeature array has one entry per feature with slug + normalized health', function() {
+      var mod = freshRequire();
+      var pipelineState = {
+        features: [
+          { slug: 'f1', name: 'Feature One', health: 'green' },
+          { slug: 'f2', name: 'Feature Two', health: 'amber' }
+        ]
+      };
+      var counts = mod.computeHealthCounts(pipelineState);
+      assert.strictEqual(counts.green, 1);
+      assert.strictEqual(counts.amber, 1);
+      assert.ok(Array.isArray(counts.perFeature), 'Expected a perFeature array in the result');
+      assert.strictEqual(counts.perFeature.length, 2);
+      var f1 = counts.perFeature.find(function(f) { return f.slug === 'f1'; });
+      assert.strictEqual(f1.health, 'green');
+      assert.strictEqual(f1.name, 'Feature One');
+    });
+  });
+
+  // T30 (a3, AC2/AC2a): a docs-only feature's per-feature health is not silently
+  // equal to a coverage-derived value, and matches the confirmed real signal rule.
+  queue.push(function() {
+    console.log('\n[a3] T30 -- a docs-only feature\'s per-feature health is not silently equal to a coverage-derived value, and matches the confirmed real signal (AC2, AC2a)');
+    return test('computeHealthCounts: docs-only feature (zero testPlan data) still gets a real, independently-sourced health value', function() {
+      var mod = freshRequire();
+      // Docs-only feature: no story anywhere has testPlan data, but the feature
+      // carries its own explicit health field -- this is the real shape found in
+      // this repo's own pipeline-state.json (e.g. 2026-04-14-skills-platform-phase3).
+      var pipelineState = {
+        features: [
+          { slug: 'docs-only', name: 'Docs Only Feature', health: 'green',
+            stories: [ { slug: 's1' }, { slug: 's2' } ] } // no testPlan anywhere
+        ]
+      };
+      var healthResult = mod.computeHealthCounts(pipelineState);
+      var coverageResult = mod.computeTestCoverageRollup(pipelineState);
+
+      // AC2: coverage has no data for this product at all (null/noData) -- the
+      // per-feature health value is a real 'green', not silently mirroring that
+      // no-data/null state.
+      assert.strictEqual(coverageResult.blendedPercentage, null, 'Expected coverage to be null (no testPlan data anywhere)');
+      assert.strictEqual(coverageResult.noData, true);
+      var docsOnlyHealth = healthResult.perFeature.find(function(f) { return f.slug === 'docs-only'; });
+      assert.strictEqual(docsOnlyHealth.health, 'green', 'Expected a real green health value, not a value derived from the (nonexistent) coverage percentage');
+      assert.notStrictEqual(docsOnlyHealth.health, coverageResult.blendedPercentage, 'perFeatureHealth must not equal deriveFromCoverage(feature) -- the two must be genuinely different signals');
+
+      // AC2a (concretized once the investigation resolved -- see a3-plan.md Task 0):
+      // health matches the confirmed real rule exactly -- it equals feature.health,
+      // normalized, and changing story-level testPlan data must NOT change it (proves
+      // the code path is genuinely independent, not just coincidentally different output).
+      var pipelineStateVariant = {
+        features: [
+          { slug: 'docs-only', name: 'Docs Only Feature', health: 'green',
+            stories: [ { slug: 's1', testPlan: { totalTests: 100, passing: 0 } } ] } // now 0% coverage
+        ]
+      };
+      var healthResultVariant = mod.computeHealthCounts(pipelineStateVariant);
+      var docsOnlyHealthVariant = healthResultVariant.perFeature.find(function(f) { return f.slug === 'docs-only'; });
+      assert.strictEqual(docsOnlyHealthVariant.health, 'green', 'Expected health to stay green (sourced from feature.health) even though coverage for the same feature dropped to 0% -- proves independence, not coincidental inequality');
+    });
+  });
+
+  // T31 (a3, AC4): syncProductRollup persists the perFeature health breakdown
+  // alongside the aggregate, not recomputed on every request.
+  queue.push(function() {
+    console.log('\n[a3] T31 -- syncProductRollup persists the perFeature health breakdown alongside the aggregate (AC4)');
+    return test('syncProductRollup: the health_counts write includes perFeature entries', function() {
+      var mod = freshRequire();
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'))];
+      var freshAdapterMod = require(path.resolve(__dirname, '../src/web-ui/adapters/pipeline-state-fetch-adapter.js'));
+      var fixture = { features: [{ slug: 'f1', name: 'Feature One', health: 'amber', stories: [{ dodStatus: 'complete' }] }] };
+      freshAdapterMod.setPipelineStateFetchAdapter(async function() {
+        return { content: Buffer.from(JSON.stringify(fixture)).toString('base64'), encoding: 'base64' };
+      });
+
+      var capturedParams = null;
+      var mockPool = {
+        query: async function(sql, params) {
+          if (/INSERT INTO product_rollups/i.test(sql)) { capturedParams = params; }
+          return { rows: [] };
+        }
+      };
+
+      return mod.syncProductRollup(mockPool, freshAdapterMod, { productId: 'p1', repoOwner: 'acme', repoName: 'widgets', accessToken: 'x' }).then(function() {
+        var healthJson = capturedParams.find(function(p) { return typeof p === 'string' && p.indexOf('perFeature') !== -1; });
+        assert.ok(healthJson, 'Expected the persisted health_counts JSON to include the perFeature breakdown');
+        var parsed = JSON.parse(healthJson);
+        assert.strictEqual(parsed.perFeature[0].slug, 'f1');
+        assert.strictEqual(parsed.perFeature[0].health, 'amber');
+      });
     });
   });
 
