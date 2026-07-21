@@ -12487,29 +12487,31 @@
         {
           "slug": "epic-d-admin-user-impersonation",
           "name": "An admin can reproduce exactly what a specific user sees, safely and with full accountability",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "d1",
               "name": "Start an impersonation session (search, reason-gated, session swap)",
-              "stage": "definition-of-ready",
-              "health": "amber",
-              "updatedAt": "2026-07-21T08:28:21.838Z",
+              "stage": "branch-complete",
+              "health": "green",
+              "updatedAt": "2026-07-21T09:09:07.120Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
-                "passing": 0
+                "passing": 8
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d1-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d1-dor-contract.md",
-              "dorSignedOffAt": "2026-07-21T08:28:21.838Z"
+              "dorSignedOffAt": "2026-07-21T08:28:21.838Z",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/534"
             },
             {
               "slug": "d2",

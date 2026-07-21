@@ -61,6 +61,8 @@ const { setPostHogFlagsAdapter }                                     = require('
 const { initPostHogFlagsClient }                                     = require('./modules/posthog-config');         // bri-s1.2
 const { createTeamManagementHandlers }                               = require('./routes/team-management');       // tir-s3
 const { createGithubOrgBulkAddHandlers }                             = require('./routes/github-org-bulk-add');   // tir-s5
+const { setImpersonationAuditAdapter }                               = require('./adapters/impersonation-audit-adapter'); // d1
+const { createImpersonationHandlers }                                = require('./routes/impersonation');         // d1
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -87,6 +89,11 @@ let _handleGetSettings = null;
 // fallback either, matching tir-s1/tir-s2's own wiring precedent).
 let _teamManagementHandlers = null;
 let _githubOrgBulkAddHandlers = null;
+
+// d1: module-level handler reference for /admin/impersonate + the reason-gated
+// start endpoint (assigned inside the DATABASE_URL block, same pattern as
+// _teamManagementHandlers above — real-Postgres-only, no NODE_ENV=test fallback).
+let _impersonationHandlers = null;
 
 // Wire up console logger for auth events (login, logout, state_mismatch)
 const _ts = () => new Date().toISOString();
@@ -419,6 +426,16 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     _teamManagementHandlers = createTeamManagementHandlers(_userRolesPool);
     console.log('[tir-s3] team-management handlers wired');
 
+    // d1 — Wire the /admin/impersonate search + start handlers to the same
+    // Postgres pool as team_memberships/person_identities (tir-s1/tir-s2),
+    // since listImpersonationCandidates reads from those tables. No new D37
+    // adapter for the handlers themselves (H-ADAPTER): createImpersonationHandlers
+    // is a plain factory, not a throw-on-unwired setter/getter pair -- the
+    // D37 adapter here is setImpersonationAuditAdapter (wired below, against
+    // _creditsPool, matching credit_audit_log's own precedent).
+    _impersonationHandlers = createImpersonationHandlers(_userRolesPool);
+    console.log('[d1] impersonation handlers wired');
+
     // tir-s5 — Wire the /api/team/bulk-add-github-org handler to the same
     // Postgres pool, reusing tir-s3's addOrUpdateTeammate as the write path.
     // tir-s8: the read path is now getOrgMembers (D37: setFetchOrgMembers),
@@ -584,6 +601,34 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // adapter repurposed for a new query shape.
     setModulesAdapter(_creditsPool);
     console.log('[a1] modules adapter wired');
+
+    // d1: impersonation_audit_log table -- one immutable row per impersonation
+    // session start (AC3/AC4/AC6). No FK to team_memberships/people -- admin
+    // and target identities are captured as plain strings/ids at write time
+    // so the audit trail survives a person/tenant being later renamed or
+    // removed, matching credit_audit_log's own precedent above.
+    _creditsPool.query(`CREATE TABLE IF NOT EXISTS impersonation_audit_log (
+      id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      admin_id          VARCHAR,
+      admin_login       VARCHAR,
+      admin_tenant_id   VARCHAR NOT NULL,
+      target_id         VARCHAR,
+      target_login      VARCHAR NOT NULL,
+      target_tenant_id  VARCHAR NOT NULL,
+      reason            TEXT NOT NULL,
+      created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`).then(function() {
+      console.log('[d1] impersonation_audit_log table ready');
+    }).catch(function(err) {
+      console.error('[d1] impersonation_audit_log migration failed:', err.message);
+    });
+
+    // d1 D37 wiring: wire the real Postgres impersonation audit adapter,
+    // reusing the same _creditsPool already wired for products/credits/modules
+    // above -- a genuinely new data-access layer for a genuinely new table,
+    // not an existing adapter repurposed for a new query shape.
+    setImpersonationAuditAdapter(_creditsPool);
+    console.log('[d1] impersonation audit adapter wired');
 
     // psh-s5 D37 wiring: wire real Postgres product context adapter
     {
@@ -1950,6 +1995,30 @@ async function router(req, res) {
       await requireAdmin(req, res, () => { _raOk = true; });
       if (!_raOk) return;
       await _githubOrgBulkAddHandlers.handleBulkAddFromGithubOrg(req, res);
+    }
+
+  } else if (pathname === '/admin/impersonate' && req.method === 'GET') {
+    // d1 — admin impersonation search page (requireAdmin gate)
+    if (!_impersonationHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Impersonation unavailable');
+    } else {
+      let _raOk = false;
+      await requireAdmin(req, res, () => { _raOk = true; });
+      if (!_raOk) return;
+      await _impersonationHandlers.handleGetImpersonatePage(req, res);
+    }
+
+  } else if (pathname === '/api/admin/impersonate/start' && req.method === 'POST') {
+    // d1 — reason-gated impersonation session start (requireAdmin gate + CSRF)
+    if (!_impersonationHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Impersonation unavailable');
+    } else {
+      let _raOk = false;
+      await requireAdmin(req, res, () => { _raOk = true; });
+      if (!_raOk) return;
+      await _impersonationHandlers.handlePostImpersonateStart(req, res);
     }
 
   } else if (pathname === '/products/new' && req.method === 'GET') {
