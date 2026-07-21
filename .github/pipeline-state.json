@@ -12029,24 +12029,77 @@
             {
               "slug": "a2",
               "name": "Reassign an epic to a different module",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-20T20:47:56.104Z",
+              "updatedAt": "2026-07-21T05:50:09.957Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 7,
-                "passing": 0
+                "totalTests": 11,
+                "passing": 11
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a2-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a2-dor-contract.md",
-              "dorSignedOffAt": "2026-07-20T20:47:56.104Z"
+              "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "reassignEpic moves module reference X to Y (AC1)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a2-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "reassignEpic handles Unassigned starting state (AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a2-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "reassignEpic to current module is a no-op (AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a2-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "reassignEpic rejects cross-product module (AC4 unit)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a2-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "PUT route handler reassigns epic (AC1/AC2/AC3 integration)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a2-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "PUT route rejects cross-product and cross-tenant reassignment (AC4 integration + Security NFR)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a2-plan.md"
+                },
+                {
+                  "id": "task-7",
+                  "name": "Wire PUT route in server.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a2-plan.md"
+                },
+                {
+                  "id": "task-8",
+                  "name": "Performance NFR test + decisions.md entries + final full-suite verification",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a2-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/526"
             },
             {
               "slug": "a3",
@@ -12261,24 +12314,58 @@
             {
               "slug": "c3",
               "name": "Credits tab — restyle admin credit management into the shared design system",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-20T20:47:56.104Z",
+              "updatedAt": "2026-07-21T05:50:11.158Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 0
+                "passing": 6
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/c3-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/c3-dor-contract.md",
-              "dorSignedOffAt": "2026-07-20T20:47:56.104Z"
+              "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/525",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Render real tenant balance data in the Credits tab (AC1)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/c3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Wire real Credits content into handleGetSettings + confirm non-admin sees nothing (AC1, AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/c3-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Preserve the exact CSRF/payload request contract on submit (AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/c3-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Surface a clear rejection message for invalid amounts, not raw JSON (AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/c3-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Defense-in-depth regression check for the API-layer admin gate (AC2 NFR)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/c3-plan.md"
+                }
+              ]
             }
           ]
         },
