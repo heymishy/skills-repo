@@ -55,3 +55,30 @@ Per CLAUDE.md's decisions.md mandate for features with architectural choices. Cr
 **Rationale:** Per this repo's own established D37 rule, a hedge like "if this story introduces an adapter" is not acceptable at DoR — the question must be resolved definitively, with a real wiring AC added if the answer is yes. This is a direct fix, not a risk-accept, since the fix was cheap and the underlying gap (an adapter with no wiring AC) is exactly the kind of thing D37 was written to prevent.
 **Made by:** Claude (agent), during /definition-of-ready's H-ADAPTER check, 2026-07-21
 **Revisit trigger:** None — resolved directly, no further action needed unless the actual implementation reveals `setModulesAdapter` isn't the right shape once real code is written.
+
+---
+
+**2026-07-21 | RISK-ACCEPT | /branch-setup (a1)**
+**Decision:** Accept the 37 pre-existing baseline test failures found by `node scripts/run-all-tests.js` on `feature/a1-modules-taxonomy-crud` before any a1 code was written, and proceed with implementation rather than fixing them first.
+**Context:** Full-suite baseline run: 345 file(s) run, 37 failed, before any a1 implementation work (confirmed both before and after `npm install`, ruling out a missing-dependency cause). None of the 37 failing files reference `product_modules`, `modules-adapter`, or any a1 route handler — they span unrelated areas (i3.x attribution, ougl journey-state, sec3/sec5 session handling, wuce/wusl chat streaming, etc.) that predate this story.
+**Rationale:** Per `/branch-setup`'s own option 2 ("Acknowledge as pre-existing and proceed"), and CLAUDE.md's own verification-scoping learning ("check the specific delta against baseline, not the whole suite, when confirming regression vs pre-existing"), this story's own verification will compare the failing-file list before/after a1's changes rather than requiring a clean 0-failure baseline, which is out of scope for this story to fix.
+**Made by:** Claude (agent), during /branch-setup, 2026-07-21
+**Revisit trigger:** If any of a1's changes touch a file already on the 37-failure list, or a1's own test run changes the failure count on a file it did not intentionally modify, treat that as a real regression requiring investigation before /branch-complete.
+
+---
+
+**2026-07-21 | ARCH | /implementation-plan (a1)**
+**Decision:** Store epic/feature-to-module assignment as a nullable `module_id` column on the existing `journeys` table (`ON DELETE SET NULL`), not a new dedicated table, and treat "epic assigned to a module" as "journey/feature row assigned to a module" for storage purposes.
+**Context:** The DoR contract names only `product_modules (id, product_id, tenant_id, name, created_at)` as the new table, but also references "a new `modules` foreign key column on the existing epic-taxonomy representation," and AC3/the test plan require an UPDATE that reassigns "epics" to Unassigned on module delete. There is no persisted `epics` table in this codebase — epic groupings are computed at sync time from `pipeline-state.json` into the `product_rollups.taxonomy` JSONB cache (see `product-rollup.js`'s `computeTaxonomyRollup`). The only persisted, product-scoped per-feature row is `journeys`.
+**Rationale:** `journeys` is the closest existing persisted representation of an individual feature/story, and is already product_id/tenant_id-scoped, consistent with ADR-025. This gives A2 (reassign epics between modules) a concrete, real column to write to without inventing a second new table beyond the DoR contract's stated scope.
+**Made by:** Claude (agent), during /implementation-plan, 2026-07-21
+**Revisit trigger:** If A2's design reveals that epic-level (not per-journey/story) module assignment is actually required — i.e. one module assignment shared across every story under the same epic slug — this column-per-journey approach will need to be revisited, likely in favour of an epic-slug-keyed mapping table.
+
+---
+
+**2026-07-21 | SCOPE | /implementation-plan (a1)**
+**Decision:** Add a `GET /products/:id/modules` route handler, even though the DoR contract's "What will be built" section names only the POST/PUT/DELETE routes.
+**Context:** AC1 requires the created module to "appear in the product's module list on next page load," and the test plan's own AC1 integration test explicitly drives "POST a create request, then GET the module list again" — neither is satisfiable without a GET endpoint.
+**Rationale:** Per CLAUDE.md's B1/D1 rule: "when the [DoR] contract and test plan conflict, the contract is the authoring defect — update the contract to match the ACs and test plan, not the other way around."
+**Made by:** Claude (agent), during /implementation-plan, 2026-07-21
+**Revisit trigger:** None — this is additive, non-scope-creep (it exists only to make an already-written AC/test pass), and requires no further action.
