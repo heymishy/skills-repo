@@ -623,6 +623,18 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.error('[d1] impersonation_audit_log migration failed:', err.message);
     });
 
+    // d3: impersonation_audit_log has no end-timestamp column in D1's merged
+    // schema -- AC1/AC2 need one to distinguish completed vs in-progress
+    // sessions. Additive, idempotent, nullable -- D3 never writes to it (only
+    // reads); D2's exit flow is expected to write it on session exit (see
+    // decisions.md ARCH entry, "d3 implementation, Task 0 investigation").
+    _creditsPool.query(`ALTER TABLE impersonation_audit_log
+      ADD COLUMN IF NOT EXISTS ended_at TIMESTAMPTZ`).then(function() {
+      console.log('[d3] impersonation_audit_log.ended_at column ready');
+    }).catch(function(err) {
+      console.error('[d3] impersonation_audit_log.ended_at migration failed:', err.message);
+    });
+
     // d1 D37 wiring: wire the real Postgres impersonation audit adapter,
     // reusing the same _creditsPool already wired for products/credits/modules
     // above -- a genuinely new data-access layer for a genuinely new table,
@@ -2019,6 +2031,19 @@ async function router(req, res) {
       await requireAdmin(req, res, () => { _raOk = true; });
       if (!_raOk) return;
       await _impersonationHandlers.handlePostImpersonateStart(req, res);
+    }
+
+  } else if (pathname === '/api/admin/impersonate/audit' && req.method === 'GET') {
+    // d3 — read-only impersonation audit list (requireAdmin gate; AC3: rejected
+    // at the API layer directly, not just hidden by the Settings UI tab)
+    if (!_impersonationHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Impersonation unavailable');
+    } else {
+      let _raOk = false;
+      await requireAdmin(req, res, () => { _raOk = true; });
+      if (!_raOk) return;
+      await _impersonationHandlers.handleGetImpersonationAuditList(req, res);
     }
 
   } else if (pathname === '/products/new' && req.method === 'GET') {

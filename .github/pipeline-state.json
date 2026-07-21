@@ -12540,9 +12540,9 @@
             {
               "slug": "d3",
               "name": "Impersonation audit log",
-              "stage": "definition-of-ready",
-              "health": "amber",
-              "updatedAt": "2026-07-21T08:28:21.838Z",
+              "stage": "implementation-plan",
+              "health": "green",
+              "updatedAt": "2026-07-21T10:02:08.913Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12557,7 +12557,39 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d3-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d3-dor-contract.md",
-              "dorSignedOffAt": "2026-07-21T08:28:21.838Z"
+              "dorSignedOffAt": "2026-07-21T08:28:21.838Z",
+              "tasks": [
+                {
+                  "id": "task-0",
+                  "name": "Add ended_at column to impersonation_audit_log (schema prerequisite)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/d3-plan.md"
+                },
+                {
+                  "id": "task-1",
+                  "name": "Read-only audit-list API endpoint (AC1, AC2, AC3, AC4)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/d3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Wire the audit-list route behind requireAdmin (AC3)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/d3-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Render the audit list in a new Settings Impersonate tab (AC1, AC2, AC4)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/d3-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "NFR tests: Performance/Security",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/d3-plan.md"
+                }
+              ]
             },
             {
               "slug": "d4",

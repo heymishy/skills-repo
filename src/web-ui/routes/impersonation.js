@@ -6,6 +6,7 @@
 // Mirrors team-management.js's createTeamManagementHandlers(pool) factory convention.
 
 var { filterUsers, listImpersonationCandidates, getImpersonationCandidateById, startImpersonationSession } = require('../modules/impersonation');
+var { listImpersonationAuditRows } = require('../adapters/impersonation-audit-adapter'); // d3
 var csrf = require('../middleware/csrf');
 
 function _escapeHtml(s) {
@@ -150,9 +151,25 @@ function createImpersonationHandlers(pool) {
     }
   }
 
+  /**
+   * GET /api/admin/impersonate/audit — read-only audit list (d3, AC1/AC2/AC4).
+   * Never writes to impersonation_audit_log. Reuses D1's adapter directly --
+   * no new D37 adapter (DoR H-ADAPTER). Rows are already most-recent-first
+   * (listImpersonationAuditRows: ORDER BY created_at DESC) -- not re-sorted
+   * here. A row's ended_at is null for any session that has not been exited
+   * yet (AC2) -- this handler passes that through as-is, it never fabricates
+   * an end time.
+   */
+  async function handleGetImpersonationAuditList(req, res) {
+    var rows = await listImpersonationAuditRows();
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ rows: rows }));
+  }
+
   return {
     handleGetImpersonatePage: handleGetImpersonatePage,
-    handlePostImpersonateStart: handlePostImpersonateStart
+    handlePostImpersonateStart: handlePostImpersonateStart,
+    handleGetImpersonationAuditList: handleGetImpersonationAuditList
   };
 }
 
