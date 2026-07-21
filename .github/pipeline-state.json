@@ -12172,24 +12172,69 @@
             {
               "slug": "a4",
               "name": "Render the product view grouped by module with dual health/coverage indicators and a scale gauge",
-              "stage": "definition-of-ready",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-07-20T20:47:56.104Z",
+              "updatedAt": "2026-07-21T06:59:54.539Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 9,
-                "passing": 0
+                "passing": 9
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a4-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a4-dor-contract.md",
-              "dorSignedOffAt": "2026-07-20T20:47:56.104Z"
+              "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
+              "tasks": [
+                {
+                  "id": "task-0",
+                  "name": "Investigate: module grouping targets the flat features/journeys list, not the taxonomy epics section",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a4-plan.md"
+                },
+                {
+                  "id": "task-1",
+                  "name": "Query journeys.module_id and fetch the product's modules list (AC1 setup)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a4-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Full module grouping with an Unassigned bucket (AC1) and zero-module fallback (AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a4-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Dual health + coverage indicators, never combined (AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a4-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Scale gauge with proportional distribution strip (AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a4-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Escaping regression test for module/epic names (Security NFR)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a4-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "Playwright E2E -- smooth expand/collapse transition (AC5)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a4-plan.md"
+                }
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "a5",
