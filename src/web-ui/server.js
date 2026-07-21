@@ -50,7 +50,8 @@ const { migrateIdentityLinksSchema } = require('./modules/identity-links'); // t
 const { handleGetLinkSettings, handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers } = require('./routes/account-linking'); // tir-s2
 const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
 const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
-const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1
+const { setModulesAdapter } = require('./adapters/modules-adapter'); // a1
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
@@ -534,6 +535,40 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     }).catch(function(err) {
       console.error('[psh-s1] journeys product_id migration failed:', err.message);
     });
+
+    // a1: product_modules table -- curated, per-product Modules taxonomy
+    // layered above epics. Fully operator-curated, zero defaults (see
+    // decisions.md, discovery /clarify) -- every product starts with zero rows.
+    _creditsPool.query(`CREATE TABLE IF NOT EXISTS product_modules (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      product_id UUID NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
+      tenant_id VARCHAR NOT NULL,
+      name VARCHAR NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`).then(function() {
+      console.log('[a1] product_modules table ready');
+    }).catch(function(err) {
+      console.error('[a1] product_modules migration failed:', err.message);
+    });
+
+    // a1: journeys.module_id -- the storage layer A2 (reassign epics between
+    // modules) writes to. NULL = "Unassigned". ON DELETE SET NULL is a
+    // DB-level safety net; modules-adapter.js's deleteModule also issues an
+    // explicit UPDATE first, so the AC3 reassignment is directly assertable
+    // rather than solely reliant on cascade behaviour (see decisions.md ARCH
+    // entry for why journeys, not a new epics table, is the assignment target).
+    _creditsPool.query(`ALTER TABLE journeys ADD COLUMN IF NOT EXISTS module_id UUID REFERENCES product_modules(id) ON DELETE SET NULL`).then(function() {
+      console.log('[a1] journeys.module_id column ready');
+    }).catch(function(err) {
+      console.error('[a1] journeys.module_id migration failed:', err.message);
+    });
+
+    // a1 D37 wiring: wire the real Postgres modules adapter, reusing the same
+    // _creditsPool already wired for products/credits above -- a genuinely
+    // new data-access layer for a genuinely new table, not an existing
+    // adapter repurposed for a new query shape.
+    setModulesAdapter(_creditsPool);
+    console.log('[a1] modules adapter wired');
 
     // psh-s5 D37 wiring: wire real Postgres product context adapter
     {
@@ -1940,6 +1975,26 @@ async function router(req, res) {
     // psh-s6 — per-product kanban board with 8 stage columns and health indicators
     req.params = { id: pathname.split('/')[2] };
     authGuard(req, res, async () => { await handleGetProductKanban(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/modules$/) && req.method === 'GET') {
+    // a1 (AC1) — list modules curated for a product
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handleGetProductModules(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/modules$/) && req.method === 'POST') {
+    // a1 (AC1, AC4) — create a new module for a product
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handlePostProductModule(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/modules\/[^/]+$/) && req.method === 'PUT') {
+    // a1 (AC2) — rename a module, preserving its id and existing references
+    req.params = { id: pathname.split('/')[2], moduleId: pathname.split('/')[4] };
+    authGuard(req, res, async () => { await handlePutProductModule(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/modules\/[^/]+$/) && req.method === 'DELETE') {
+    // a1 (AC3) — delete a module, reassigning its journeys/epics to Unassigned
+    req.params = { id: pathname.split('/')[2], moduleId: pathname.split('/')[4] };
+    authGuard(req, res, async () => { await handleDeleteProductModule(req, res, null, _pshPool, null); });
 
   } else if (pathname === '/org/kanban' && req.method === 'GET') {
     // psh-s7 — org-level kanban: all products and their features grouped by product
