@@ -109,6 +109,14 @@ test('scanRoadmapArtefacts scans 100 feature folders in under 1 second', functio
   assert.ok(elapsedMs < 1000, 'Expected scan to complete in under 1000ms, took ' + elapsedMs + 'ms');
 });
 
+console.log('\n[a5] product view links to the Roadmap tab');
+test('_renderProductView links to /products/:id/roadmap (verification script: "click the Roadmap tab")', function() {
+  var productsRoute = require(path.resolve(__dirname, '../src/web-ui/routes/products'));
+  var html = productsRoute._renderProductView('Acme', 'p1', [], 'x', null, false, null, null);
+  assert.ok(/\/products\/p1\/roadmap/.test(html), 'Expected a link to /products/p1/roadmap on the product view page');
+  assert.ok(/Roadmap/.test(html), 'Expected the link text "Roadmap" to appear');
+});
+
 console.log('\n[a5] products.js exports handleGetProductRoadmap');
 test('products.js exports handleGetProductRoadmap', function() {
   var productsRoute = require(path.resolve(__dirname, '../src/web-ui/routes/products'));
@@ -154,7 +162,7 @@ test('server.js references handleGetProductRoadmap and the /roadmap route patter
       var productsRoute = require(path.resolve(__dirname, '../src/web-ui/routes/products'));
       var repoRootAdapter = require(path.resolve(__dirname, '../src/web-ui/adapters/repo-root'));
       var dir = makeFixtureDir();
-      var featureDir = path.join(dir, '2026-05-04-real-thing');
+      var featureDir = path.join(dir, 'artefacts', '2026-05-04-real-thing');
       fs.mkdirSync(featureDir, { recursive: true });
       fs.writeFileSync(path.join(featureDir, 'discovery.md'), '# Discovery: Real Thing\n**Created:** 2026-05-04\n');
       var mockPool = { query: async function(sql) {
@@ -182,10 +190,9 @@ test('server.js references handleGetProductRoadmap and the /roadmap route patter
       var productsRoute = require(path.resolve(__dirname, '../src/web-ui/routes/products'));
       var repoRootAdapter = require(path.resolve(__dirname, '../src/web-ui/adapters/repo-root'));
       var dir = makeFixtureDir();
-      var featureDir = path.join(dir, '2026-05-06-tracked-integration');
+      var featureDir = path.join(dir, 'artefacts', '2026-05-06-tracked-integration');
       fs.mkdirSync(featureDir, { recursive: true });
       fs.writeFileSync(path.join(featureDir, 'discovery.md'), '# Discovery: Tracked Integration\n**Created:** 2026-05-06\n');
-      fs.mkdirSync(path.join(dir, '..', '.github-a5-unused'), { recursive: true }); // no-op, keeps structure explicit
       var githubDir = path.join(dir, '.github');
       fs.mkdirSync(githubDir, { recursive: true });
       fs.writeFileSync(path.join(githubDir, 'pipeline-state.json'), JSON.stringify({ features: [{ slug: '2026-05-06-tracked-integration' }] }));

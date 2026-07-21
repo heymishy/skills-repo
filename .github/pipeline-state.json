@@ -12097,13 +12097,13 @@
               "name": "Surface discovery-only and ideation-only work in a Roadmap tab",
               "stage": "implementation-plan",
               "health": "green",
-              "updatedAt": "2026-07-21T03:31:32.368Z",
+              "updatedAt": "2026-07-21T03:36:58.944Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
-                "passing": 8
+                "passing": 14
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -12123,13 +12123,13 @@
                 {
                   "id": "task-2",
                   "name": "Wire scan into Roadmap tab route + rendering (AC1, AC2, AC4)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a5-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "Register GET /products/:id/roadmap route + NFR performance test",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a5-plan.md"
                 },
                 {
