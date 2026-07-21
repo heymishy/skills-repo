@@ -12009,7 +12009,7 @@
               "name": "Curate a Modules taxonomy for a product",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T06:41:07.534Z",
+              "updatedAt": "2026-07-21T08:23:23.052Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12034,7 +12034,7 @@
               "name": "Reassign an epic to a different module",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T06:41:07.678Z",
+              "updatedAt": "2026-07-21T08:23:23.721Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12110,7 +12110,7 @@
               "name": "Compute health per-feature, distinct from test coverage",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T06:41:07.802Z",
+              "updatedAt": "2026-07-21T08:23:24.235Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12174,7 +12174,7 @@
               "name": "Render the product view grouped by module with dual health/coverage indicators and a scale gauge",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T07:01:55.432Z",
+              "updatedAt": "2026-07-21T08:23:23.191Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12235,7 +12235,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/531",
               "prNumber": 531
             },
@@ -12244,7 +12244,7 @@
               "name": "Surface discovery-only and ideation-only work in a Roadmap tab",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T06:41:07.945Z",
+              "updatedAt": "2026-07-21T08:23:23.320Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12276,7 +12276,7 @@
               "name": "Remove dead nav links and add the missing Org board and Home List/Board toggle",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T06:41:08.084Z",
+              "updatedAt": "2026-07-21T08:23:23.457Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12301,7 +12301,7 @@
               "name": "Restructure account-level nav items and add a dangling-link regression test",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T06:41:08.213Z",
+              "updatedAt": "2026-07-21T08:23:23.846Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12378,7 +12378,7 @@
               "name": "Settings page shell with Profile tab",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T06:41:08.343Z",
+              "updatedAt": "2026-07-21T08:23:23.594Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12403,7 +12403,7 @@
               "name": "Billing tab — plan status and Stripe portal access",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T06:41:08.484Z",
+              "updatedAt": "2026-07-21T08:23:23.979Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12429,7 +12429,7 @@
               "name": "Credits tab — restyle admin credit management into the shared design system",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T06:41:08.613Z",
+              "updatedAt": "2026-07-21T08:23:24.108Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
