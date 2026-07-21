@@ -12029,18 +12029,18 @@
             {
               "slug": "a2",
               "name": "Reassign an epic to a different module",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-07-21T05:35:03.332Z",
+              "updatedAt": "2026-07-21T05:48:26.311Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 7,
-                "passing": 0
+                "totalTests": 11,
+                "passing": 11
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -12051,52 +12051,53 @@
                 {
                   "id": "task-1",
                   "name": "reassignEpic moves module reference X to Y (AC1)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a2-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "reassignEpic handles Unassigned starting state (AC2)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a2-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "reassignEpic to current module is a no-op (AC3)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a2-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "reassignEpic rejects cross-product module (AC4 unit)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a2-plan.md"
                 },
                 {
                   "id": "task-5",
                   "name": "PUT route handler reassigns epic (AC1/AC2/AC3 integration)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a2-plan.md"
                 },
                 {
                   "id": "task-6",
                   "name": "PUT route rejects cross-product and cross-tenant reassignment (AC4 integration + Security NFR)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a2-plan.md"
                 },
                 {
                   "id": "task-7",
                   "name": "Wire PUT route in server.js",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a2-plan.md"
                 },
                 {
                   "id": "task-8",
                   "name": "Performance NFR test + decisions.md entries + final full-suite verification",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a2-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "a3",
