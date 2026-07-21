@@ -1343,6 +1343,55 @@ async function handleDeleteProductModule(req, res, _next, pool, posthog) {
   else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ deleted: true, module_id: moduleId })); }
 }
 
+/**
+ * a2 (AC1-AC4) -- PUT /products/:id/epics/:epicId/module: reassign an epic
+ * (a `journeys` row) to a different module within the same product.
+ * Tenant-scoped (404 for a missing/mismatched tenant, matching the
+ * FORBIDDEN-vs-NOT_FOUND policy used elsewhere in this file). Rejects an
+ * unknown epic or a module belonging to a different product (AC4) with 404
+ * and zero rows changed. Reuses A1's modules-adapter.js -- no new adapter
+ * (see DoR H-ADAPTER check, decisions.md).
+ */
+async function handlePutEpicModule(req, res, _next, pool, posthog) {
+  req.body = await _readBody(req);
+  var _pool = pool;
+  var _ph = posthog || _posthog;
+  var productId = req.params && req.params.id;
+  var epicId = req.params && req.params.epicId;
+  var tenantId = req.session && req.session.tenantId;
+  var moduleId = (req.body && req.body.moduleId) || '';
+  if (typeof moduleId === 'string') { moduleId = moduleId.trim(); }
+
+  var prodRow = (await _pool.query('SELECT tenant_id FROM products WHERE product_id = $1', [productId])).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+  if (!moduleId) {
+    if (res.status) { res.status(400).json({ error: 'moduleId is required.' }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'moduleId is required.' })); }
+    return;
+  }
+
+  var result;
+  try {
+    result = await _modulesAdapter.reassignEpic(productId, tenantId, epicId, moduleId);
+  } catch (err) {
+    if (err && (err.code === 'EPIC_NOT_FOUND' || err.code === 'MODULE_NOT_FOUND')) {
+      if (res.status) { res.status(404).json({ error: 'not found' }); }
+      else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+      return;
+    }
+    throw err;
+  }
+
+  _ph.capture(tenantId, 'epic_reassigned', { productId: productId, tenantId: tenantId, epicId: epicId, moduleId: moduleId, changed: result.changed });
+
+  if (res.status) { res.status(200).json({ reassigned: true, journey_id: result.journey_id, module_id: result.module_id, changed: result.changed }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ reassigned: true, journey_id: result.journey_id, module_id: result.module_id, changed: result.changed })); }
+}
+
 module.exports = {
   _renderProductView,
   handlePostProductNew,
@@ -1363,6 +1412,8 @@ module.exports = {
   handlePostProductModule,
   handlePutProductModule,
   handleDeleteProductModule,
+  // a2: reassign an epic (journey) to a different module
+  handlePutEpicModule,
   // kbc-s1: shared column-building functions, exported for direct unit testing (U1-U5)
   buildProductKanbanColumns,
   buildOrgKanbanColumns,

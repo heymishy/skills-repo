@@ -88,3 +88,21 @@ Per CLAUDE.md's decisions.md mandate for features with architectural choices. Cr
 **Rationale:** Exposing the already-independent `feature.health` field per-feature satisfies AC1/AC2/AC2a without fabricating a new "health" computation or a new data model/migration — the simplest change consistent with "this story adds a per-feature breakdown of the same underlying concept, not a new concept" (story Out of Scope). Per-feature (not per-epic) is the correct granularity because epics carry no independent health field in the real schema; adding one would be new-concept scope, explicitly out of scope for this story.
 **Made by:** Claude (agent), during a3 implementation Task 0, 2026-07-21
 **Revisit trigger:** If a future story (e.g. A4, or a later epic-level health request) needs epic-granularity health, a new `epic.health` field and its own write path would need to be designed — this decision does not preclude that, it only scopes a3 to the granularity the real schema already supports today.
+
+---
+
+**2026-07-21 | ARCH | /implementation-plan (a2)**
+**Decision:** A2's `:epicId` route parameter (`PUT /products/:id/epics/:epicId/module`) is a `journeys.journey_id` value. `reassignEpic(productId, tenantId, journeyId, moduleId)` was added to A1's existing `modules-adapter.js` (no new adapter — confirmed at DoR's H-ADAPTER check) and writes to the already-existing `journeys.module_id` column A1 added. No new table or column migration was needed for this story.
+**Context:** Per A1's own ARCH decision above, there is no persisted `epics` table in this codebase — `journeys` is the only persisted, product-scoped per-feature row, and A1 already added `journeys.module_id` explicitly anticipating this story would write to it.
+**Rationale:** Confirms and executes on the storage design A1 already committed to, without inventing a second representation of "epic."
+**Made by:** Claude (agent), during a2 implementation, 2026-07-21
+**Revisit trigger:** None — this is the concrete realisation of a decision already made and recorded at A1.
+
+---
+
+**2026-07-21 | ARCH | /implementation-plan (a2)**
+**Decision:** A2's "reflects on next load" integration test (test plan's second integration test, "Components involved: route handler + `_renderProductView` (or its module-grouped successor from A4)") verifies the real persisted `journeys.module_id` value directly after a PUT reassignment, rather than asserting against `_renderProductView`'s rendered HTML. No "Move to ▾" UI control is shipped in this story.
+**Context:** Reading `_renderProductView` (`src/web-ui/routes/products.js`) directly shows the current "Epics" section is rendered from `rollupRow.taxonomy` — a JSONB cache computed by `product-rollup.js`'s `computeTaxonomyRollup` directly from `pipeline-state.json` epic slugs at sync time. It has zero dependency on the `journeys` table or `journeys.module_id` at all. Grouping that visible section by module, and rendering a control that writes to `journeys.module_id`, is A4's explicit scope (confirmed still at `definition-of-ready` in `pipeline-state.json` as of this story) — not yet built.
+**Rationale:** Testing against `_renderProductView`'s HTML output would either be dishonest (asserting behaviour the current rendering cannot actually exhibit) or force A2 to build A4's rendering work as unplanned scope. Verifying the real persisted store directly is the honest, non-aspirational test of "reassignment reflects on next load" — it is exactly the data A4 will read from once it ships. Per the Coding Agent Instructions ("Do not add scope beyond the ACs/tests"), no UI control is added in this story since there is currently no module-grouped epic row in the rendered page to attach one to. Flagged as a PR comment for operator awareness, not silently deferred.
+**Made by:** Claude (agent), during a2 implementation, 2026-07-21
+**Revisit trigger:** When A4 ships module-grouped rendering backed by `journeys.module_id`, add the "Move to ▾" UI control and an E2E/manual verification step at that point — the backend capability this story ships (`reassignEpic` + the PUT route) is exactly what A4's control will call.
