@@ -12051,9 +12051,9 @@
             {
               "slug": "a3",
               "name": "Compute health per-feature, distinct from test coverage",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T03:48:08.132Z",
+              "updatedAt": "2026-07-21T03:49:42.951Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12069,7 +12069,8 @@
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a3-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a3-dor-contract.md",
               "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
-              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/519",
               "tasks": [
                 {
                   "id": "task-0",
