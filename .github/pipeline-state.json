@@ -11993,7 +11993,7 @@
       "track": "standard",
       "stage": "branch-complete",
       "health": "green",
-      "updatedAt": "2026-07-21T08:28:21.838Z",
+      "updatedAt": "2026-07-21T09:47:21.033Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -12494,11 +12494,11 @@
               "name": "Start an impersonation session (search, reason-gated, session swap)",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T09:09:07.120Z",
+              "updatedAt": "2026-07-21T09:47:12.866Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 8,
                 "passing": 8
               },
@@ -12510,8 +12510,10 @@
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d1-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d1-dor-contract.md",
               "dorSignedOffAt": "2026-07-21T08:28:21.838Z",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/534"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/534",
+              "prNumber": 534,
+              "verifyStatus": "passed"
             },
             {
               "slug": "d2",
