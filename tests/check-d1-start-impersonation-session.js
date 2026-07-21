@@ -137,11 +137,18 @@ function makeFailingAuditPool() {
   };
 }
 
-// Fake pool for team_memberships/person_identities (listImpersonationCandidates).
+// Fake pool for team_memberships/person_identities (listImpersonationCandidates,
+// getImpersonationCandidateById). Respects the WHERE person_id = $1 filter the
+// by-id query uses -- a mock that ignored params would let T15b/T15c pass
+// without actually proving the by-id lookup works correctly.
 function makeCandidatesPool(rows) {
   return {
-    query: async function(sql) {
+    query: async function(sql, params) {
       if (sql.includes('FROM team_memberships')) {
+        if (sql.includes('WHERE tm.person_id')) {
+          var match = rows.filter(function(r) { return String(r.person_id) === String(params[0]); });
+          return { rows: match };
+        }
         return { rows: rows };
       }
       return { rows: [] };
@@ -440,7 +447,8 @@ async function main() {
       auditAdapter.setImpersonationAuditAdapter(pool);
       var impersonationMod = freshRequireImpersonationModule(auditAdapter);
       var routes = freshRequireImpersonationRoutes(impersonationMod);
-      var handlers = routes.createImpersonationHandlers({});
+      var candidatesPool = makeCandidatesPool([{ tenant_id: 'tenant-bob', person_id: 2, role: 'user', login: 'bob' }]);
+      var handlers = routes.createImpersonationHandlers(candidatesPool);
 
       var session = { userId: 1, login: 'alice', tenantId: 'tenant-alice', role: 'admin' };
       var req = makeReqFromBody('targetId=2&targetLogin=bob&targetTenantId=tenant-bob&targetRole=user&reason=', session);
@@ -461,7 +469,8 @@ async function main() {
       auditAdapter.setImpersonationAuditAdapter(pool);
       var impersonationMod = freshRequireImpersonationModule(auditAdapter);
       var routes = freshRequireImpersonationRoutes(impersonationMod);
-      var handlers = routes.createImpersonationHandlers({});
+      var candidatesPool = makeCandidatesPool([{ tenant_id: 'tenant-bob', person_id: 2, role: 'user', login: 'bob' }]);
+      var handlers = routes.createImpersonationHandlers(candidatesPool);
 
       var session = { userId: 1, login: 'alice', tenantId: 'tenant-alice', role: 'admin' };
       var req = makeReqFromBody('targetId=2&targetLogin=bob&targetTenantId=tenant-bob&targetRole=user&reason=support+ticket', session);
@@ -476,6 +485,57 @@ async function main() {
   });
 
   queue.push(function() {
+    console.log('\n[d1] T15b -- POST start IGNORES tampered targetLogin/targetTenantId/targetRole, uses DB-derived values instead (security fix)');
+    return test('handlePostImpersonateStart: tampered hidden-form fields are discarded; real DB values used for the swap and audit row', async function() {
+      var auditAdapter = freshRequireAuditAdapter();
+      var pool = makeStatefulAuditPool();
+      auditAdapter.setImpersonationAuditAdapter(pool);
+      var impersonationMod = freshRequireImpersonationModule(auditAdapter);
+      var routes = freshRequireImpersonationRoutes(impersonationMod);
+      // The real DB row for person_id=2 is a 'user' in 'tenant-bob' -- the
+      // request body below claims (falsely) that targetId=2 is an 'admin'
+      // in 'tenant-evil'. The fix must ignore the body's claims entirely.
+      var candidatesPool = makeCandidatesPool([{ tenant_id: 'tenant-bob', person_id: 2, role: 'user', login: 'bob' }]);
+      var handlers = routes.createImpersonationHandlers(candidatesPool);
+
+      var session = { userId: 1, login: 'alice', tenantId: 'tenant-alice', role: 'admin' };
+      var req = makeReqFromBody('targetId=2&targetLogin=fake-admin&targetTenantId=tenant-evil&targetRole=admin&reason=support+ticket', session);
+      var res = makeRes();
+      await handlers.handlePostImpersonateStart(req, res);
+
+      assert.strictEqual(res._status, 200);
+      assert.strictEqual(session.login, 'bob', 'expected the real DB login, not the tampered targetLogin');
+      assert.strictEqual(session.tenantId, 'tenant-bob', 'expected the real DB tenantId, not the tampered targetTenantId');
+      assert.strictEqual(session.role, 'user', 'expected the real DB role, not the tampered targetRole=admin');
+      assert.strictEqual(pool._rows.length, 1);
+      assert.strictEqual(pool._rows[0].target_login, 'bob', 'audit row must record the real login, not the tampered one');
+      assert.strictEqual(pool._rows[0].target_tenant_id, 'tenant-bob', 'audit row must record the real tenantId, not the tampered one');
+    });
+  });
+
+  queue.push(function() {
+    console.log('\n[d1] T15c -- POST start with an unknown targetId is rejected outright (security fix)');
+    return test('handlePostImpersonateStart: targetId with no matching DB row -> 404, no session mutation, no audit row', async function() {
+      var auditAdapter = freshRequireAuditAdapter();
+      var pool = makeStatefulAuditPool();
+      auditAdapter.setImpersonationAuditAdapter(pool);
+      var impersonationMod = freshRequireImpersonationModule(auditAdapter);
+      var routes = freshRequireImpersonationRoutes(impersonationMod);
+      var candidatesPool = makeCandidatesPool([{ tenant_id: 'tenant-bob', person_id: 2, role: 'user', login: 'bob' }]);
+      var handlers = routes.createImpersonationHandlers(candidatesPool);
+
+      var session = { userId: 1, login: 'alice', tenantId: 'tenant-alice', role: 'admin' };
+      var req = makeReqFromBody('targetId=999999&targetLogin=ghost&targetTenantId=tenant-ghost&targetRole=admin&reason=support+ticket', session);
+      var res = makeRes();
+      await handlers.handlePostImpersonateStart(req, res);
+
+      assert.strictEqual(res._status, 404);
+      assert.strictEqual(session.tenantId, 'tenant-alice', 'session must be unchanged for a nonexistent targetId');
+      assert.strictEqual(pool._rows.length, 0, 'no audit row for a target that does not exist');
+    });
+  });
+
+  queue.push(function() {
     console.log('\n[d1] T16 -- POST start while already impersonating returns 409 (AC5)');
     return test('handlePostImpersonateStart: second attempt while impersonating -> 409, still reflects first target', async function() {
       var auditAdapter = freshRequireAuditAdapter();
@@ -483,7 +543,11 @@ async function main() {
       auditAdapter.setImpersonationAuditAdapter(pool);
       var impersonationMod = freshRequireImpersonationModule(auditAdapter);
       var routes = freshRequireImpersonationRoutes(impersonationMod);
-      var handlers = routes.createImpersonationHandlers({});
+      var candidatesPool = makeCandidatesPool([
+        { tenant_id: 'tenant-x', person_id: 10, role: 'user', login: 'userX' },
+        { tenant_id: 'tenant-y', person_id: 20, role: 'user', login: 'userY' }
+      ]);
+      var handlers = routes.createImpersonationHandlers(candidatesPool);
 
       var session = { userId: 1, login: 'alice', tenantId: 'tenant-alice', role: 'admin' };
       var req1 = makeReqFromBody('targetId=10&targetLogin=userX&targetTenantId=tenant-x&targetRole=user&reason=first', session);

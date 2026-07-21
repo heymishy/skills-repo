@@ -5,7 +5,7 @@
 // POST /api/admin/impersonate/start — reason-gated session swap (requireAdmin + CSRF)
 // Mirrors team-management.js's createTeamManagementHandlers(pool) factory convention.
 
-var { filterUsers, listImpersonationCandidates, startImpersonationSession } = require('../modules/impersonation');
+var { filterUsers, listImpersonationCandidates, getImpersonationCandidateById, startImpersonationSession } = require('../modules/impersonation');
 var csrf = require('../middleware/csrf');
 
 function _escapeHtml(s) {
@@ -60,10 +60,10 @@ function createImpersonationHandlers(pool) {
         '<tr><td>' + _escapeHtml(u.login) + '</td><td>' + _escapeHtml(u.tenantId) + '</td><td>' + _escapeHtml(u.role) + '</td>' +
         '<td><form method="POST" action="/api/admin/impersonate/start">' +
         csrf.csrfField(csrfToken) +
+        // Only targetId is submitted -- login/tenantId/role are re-derived
+        // server-side from targetId (see handlePostImpersonateStart), never
+        // trusted from the client, so no hidden field for them is needed.
         '<input type="hidden" name="targetId" value="' + idAttr + '">' +
-        '<input type="hidden" name="targetLogin" value="' + _escapeHtml(u.login) + '">' +
-        '<input type="hidden" name="targetTenantId" value="' + _escapeHtml(u.tenantId) + '">' +
-        '<input type="hidden" name="targetRole" value="' + _escapeHtml(u.role) + '">' +
         '<label for="reason-' + idAttr + '">Reason (required)</label>' +
         '<input id="reason-' + idAttr + '" name="reason" type="text" required>' +
         '<button type="submit">Act as &rarr;</button>' +
@@ -92,25 +92,43 @@ function createImpersonationHandlers(pool) {
    * ADR-025 / D37: the actual swap mechanics live in modules/impersonation.js
    * (startImpersonationSession) — this handler only parses/validates the
    * request and maps error codes to HTTP statuses.
+   *
+   * Security fix (post-review, before merge): only `targetId` from the
+   * request body is trusted. targetLogin/targetTenantId/targetRole are
+   * IGNORED even if present in the body -- they exist only so the search
+   * page's hidden form fields are self-describing to a human reading the
+   * HTML; the actual login/tenantId/role used for the session swap and the
+   * audit write are re-derived server-side from `targetId` via
+   * getImpersonationCandidateById(), the same DB join listImpersonationCandidates
+   * uses. A request with a targetId that doesn't correspond to a real
+   * team_memberships row is rejected outright -- this also closes the gap
+   * where a tampered hidden-form submission could otherwise write an
+   * audit-log entry for a target/role combination that never existed.
    */
   async function handlePostImpersonateStart(req, res) {
     var csrfOk = await csrf.csrfGuard(req, res);
     if (!csrfOk) return;
 
     var body = await _readBody(req);
-    var target = {
-      id: body && body.targetId,
-      login: body && body.targetLogin ? String(body.targetLogin) : '',
-      tenantId: body && body.targetTenantId ? String(body.targetTenantId) : '',
-      role: body && body.targetRole ? String(body.targetRole) : ''
-    };
+    var targetId = body && body.targetId;
     var reason = body && body.reason ? String(body.reason) : '';
 
-    if (!target.login || !target.tenantId) {
+    if (!targetId) {
       res.writeHead(400, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'targetLogin and targetTenantId are required' }));
+      res.end(JSON.stringify({ error: 'targetId is required' }));
       return;
     }
+
+    var candidate = await getImpersonationCandidateById(pool, targetId);
+    if (!candidate) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'No such user found for the given targetId' }));
+      return;
+    }
+    // startImpersonationSession expects `target.id`; getImpersonationCandidateById
+    // returns `personId` (matching listImpersonationCandidates' own shape) --
+    // map it here rather than changing either function's return shape.
+    var target = { id: candidate.personId, login: candidate.login, tenantId: candidate.tenantId, role: candidate.role };
 
     try {
       var result = await startImpersonationSession(req.session, target, reason);

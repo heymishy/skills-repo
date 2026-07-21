@@ -64,6 +64,40 @@ async function listImpersonationCandidates(pool) {
 }
 
 /**
+ * Re-derive one candidate's login/tenantId/role directly from the DB by
+ * person_id, the same join `listImpersonationCandidates` uses (AC1's data
+ * source). This is the authoritative source for `startImpersonationSession` —
+ * a client-submitted targetLogin/targetTenantId/targetRole is never trusted
+ * for the actual swap or the audit write, only `targetId` is (fixed
+ * post-review: the original implementation wrote client-submitted target
+ * fields straight into both the session and the audit log with no
+ * server-side re-verification against targetId, so a tampered hidden-form
+ * submission could write a fabricated audit row and/or set session.role to
+ * a value that didn't match the real target's DB role).
+ * @param {object} pool
+ * @param {*} personId
+ * @returns {Promise<{tenantId:string, personId:number, role:string, login:string}|null>}
+ */
+async function getImpersonationCandidateById(pool, personId) {
+  var r = await pool.query(
+    `SELECT tm.tenant_id, tm.person_id, tm.role,
+            COALESCE(
+              (SELECT pi.identity_key FROM person_identities pi
+                WHERE pi.person_id = tm.person_id
+                ORDER BY pi.created_at ASC LIMIT 1),
+              tm.tenant_id
+            ) AS login
+       FROM team_memberships tm
+       WHERE tm.person_id = $1
+       LIMIT 1`,
+    [personId]
+  );
+  if (!r.rows.length) return null;
+  var row = r.rows[0];
+  return { tenantId: row.tenant_id, personId: row.person_id, role: row.role, login: row.login };
+}
+
+/**
  * Start an impersonation session (AC2-AC5). Mutates `session` in place —
  * ONLY after the audit write succeeds (AC4), and only via one synchronous
  * block with no `await` in between (see decisions.md's atomicity note: this
@@ -129,4 +163,4 @@ async function startImpersonationSession(session, target, reason) {
   return { auditId: auditRow.id };
 }
 
-module.exports = { filterUsers, listImpersonationCandidates, startImpersonationSession };
+module.exports = { filterUsers, listImpersonationCandidates, getImpersonationCandidateById, startImpersonationSession };
