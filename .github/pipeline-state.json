@@ -12258,7 +12258,50 @@
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/b2-dor-contract.md",
               "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
               "verifyStatus": "passed",
-              "tasks": []
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "RED: failing tests for AC1/AC2 (non-admin/admin sidebar rendering)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b2-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "GREEN: NAV_ITEMS account entries + isAdmin-gated rendering",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b2-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "AC2 integration test: live role re-check, not stale cache",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b2-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "AC3/AC4: dangling-link regression test + validity check",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b2-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "NFR: nav visibility is not the security boundary",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b2-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "Wire isAdmin into dashboard.js and settings.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b2-plan.md"
+                },
+                {
+                  "id": "task-7",
+                  "name": "Full suite + verification",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b2-plan.md"
+                }
+              ]
             }
           ]
         },
