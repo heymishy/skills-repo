@@ -12007,24 +12007,86 @@
             {
               "slug": "a1",
               "name": "Curate a Modules taxonomy for a product",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
-              "updatedAt": "2026-07-20T20:47:56.104Z",
+              "updatedAt": "2026-07-21T03:45:25.282Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 10,
-                "passing": 0
+                "totalTests": 18,
+                "passing": 18
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a1-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a1-dor-contract.md",
-              "dorSignedOffAt": "2026-07-20T20:47:56.104Z"
+              "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "modules-adapter.js: create + duplicate rejection (AC1, AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "modules-adapter.js: renameModule preserves id (AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "modules-adapter.js: deleteModule reassigns to Unassigned (AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "products.js: GET/POST /products/:id/modules (AC1 integration)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a1-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "products.js: PUT rename handler (AC2 integration)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a1-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "products.js: DELETE with reassignment handler (AC3 integration)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a1-plan.md"
+                },
+                {
+                  "id": "task-7",
+                  "name": "per-product scoping regression test (AC5)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a1-plan.md"
+                },
+                {
+                  "id": "task-8",
+                  "name": "server.js: migrations, D37 adapter wiring, route registration",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a1-plan.md"
+                },
+                {
+                  "id": "task-9",
+                  "name": "D37 wiring correctness test (AC6), cross-tenant NFR, perf NFR",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a1-plan.md"
+                },
+                {
+                  "id": "task-10",
+                  "name": "decisions.md entries + final full-suite verification",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a1-plan.md"
+                }
+              ]
             },
             {
               "slug": "a2",
