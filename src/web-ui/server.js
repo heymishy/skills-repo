@@ -632,6 +632,15 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.error('[d1] impersonation_audit_log migration failed:', err.message);
     });
 
+    // d2: ended_at column -- exit (AC4) sets this on the SAME row d1 inserted
+    // at session start (never a new row), satisfying the story's Audit NFR.
+    // Idempotent, matching the journeys.module_id ALTER TABLE precedent (a1).
+    _creditsPool.query(`ALTER TABLE impersonation_audit_log ADD COLUMN IF NOT EXISTS ended_at TIMESTAMPTZ`).then(function() {
+      console.log('[d2] impersonation_audit_log.ended_at column ready');
+    }).catch(function(err) {
+      console.error('[d2] impersonation_audit_log.ended_at migration failed:', err.message);
+    });
+
     // d1 D37 wiring: wire the real Postgres impersonation audit adapter,
     // reusing the same _creditsPool already wired for products/credits/modules
     // above -- a genuinely new data-access layer for a genuinely new table,
@@ -2028,6 +2037,21 @@ async function router(req, res) {
       await requireAdmin(req, res, () => { _raOk = true; });
       if (!_raOk) return;
       await _impersonationHandlers.handlePostImpersonateStart(req, res);
+    }
+
+  } else if (pathname === '/api/admin/impersonate/exit' && req.method === 'POST') {
+    // d2 (AC4) — end an active impersonation session and restore the real
+    // admin's identity. Deliberately NOT gated by requireAdmin: requireAdmin
+    // checks the CURRENT EFFECTIVE role, which while impersonating a
+    // non-admin target is 'user' -- gating exit behind it would make it
+    // impossible for the real admin to exit out of a non-admin target's
+    // session. The real authorization check (req.session.impersonation.active)
+    // lives inside handlePostImpersonateExit itself.
+    if (!_impersonationHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Impersonation unavailable');
+    } else {
+      await _impersonationHandlers.handlePostImpersonateExit(req, res);
     }
 
   } else if (pathname === '/products/new' && req.method === 'GET') {

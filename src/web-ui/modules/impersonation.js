@@ -14,7 +14,22 @@
 // req.session.accessToken/userId and the interaction with requireAdmin's
 // live per-request role re-check.
 
-var { writeImpersonationAudit } = require('../adapters/impersonation-audit-adapter');
+var { writeImpersonationAudit, endImpersonationAudit } = require('../adapters/impersonation-audit-adapter');
+
+// d2 — injectable logger for the exit-audit-failure fail-open path (NOT a D37
+// throw-on-unwired adapter -- a logging failure must never block the actual
+// session exit; mirrors the existing precedent in require-admin.js's _logger).
+let _logger = {
+  warn: function(/* event, data */) {}
+};
+
+/**
+ * Replace the audit-failure logger (used in tests and production bootstrap).
+ * @param {{ warn: Function }} logger
+ */
+function setLogger(logger) {
+  _logger = logger;
+}
 
 /**
  * Filter a list of {login, tenantId} candidates by a case-insensitive
@@ -163,4 +178,106 @@ async function startImpersonationSession(session, target, reason) {
   return { auditId: auditRow.id };
 }
 
-module.exports = { filterUsers, listImpersonationCandidates, getImpersonationCandidateById, startImpersonationSession };
+/**
+ * d2 — Compute the EFFECTIVE role for a session: the impersonation target's
+ * role while an impersonation session is active, else the session's own role.
+ * This is the single, named, testable form of the story's core security
+ * property (AC2/AC3): visibility of admin-only surfaces must key off the
+ * effective role, never the real admin's underlying role.
+ *
+ * Redundant-by-design with D1's own swap (session.role is already overwritten
+ * to the target's role during an active impersonation -- see
+ * startImpersonationSession above) -- this function explicitly prefers
+ * session.impersonation.target.role over session.role whenever impersonation
+ * is active, rather than relying solely on that swap having happened. This
+ * makes the security property self-evidently correct from this one function
+ * alone, and robust to any future change in how the swap itself is
+ * implemented -- exactly the explicit, auditable form D4's dedicated
+ * NFR-security review (this story's primary subject) expects.
+ * @param {object} session
+ * @returns {string|undefined}
+ */
+function getEffectiveRole(session) {
+  if (session && session.impersonation && session.impersonation.active && session.impersonation.target) {
+    return session.impersonation.target.role;
+  }
+  return session && session.role;
+}
+
+/**
+ * d2 — AC2/AC3: true only when the EFFECTIVE role is 'admin'. Never reads
+ * session.impersonation.admin.role (the real admin's underlying role) for
+ * this check -- doing so would leak admin-only surfaces while impersonating
+ * a non-admin target, exactly the privilege-leakage property this epic's own
+ * benefit metric measures.
+ * @param {object} session
+ * @returns {boolean}
+ */
+function isEffectivelyAdmin(session) {
+  return getEffectiveRole(session) === 'admin';
+}
+
+/**
+ * d2 — AC4: end an active impersonation session, restoring the real admin's
+ * identity exactly from the snapshot D1 captured at start (session.impersonation.admin),
+ * and removing session.impersonation entirely so no target-user session state
+ * persists after exit (cookies/server-side session store both hold only
+ * `session` itself -- deleting this key is sufficient for both).
+ *
+ * Never accepts or reads any identity field from a caller/request body --
+ * the only input is the session itself, matching the D1 SEC fix's discipline
+ * (re-derive identity from trustworthy server-side state, never trust
+ * client-submitted values) applied to this new endpoint's own trust boundary.
+ *
+ * The audit end-timestamp write (Audit NFR) is best-effort: if it throws, the
+ * error is logged but the session revert still proceeds (fail OPEN) -- see
+ * decisions.md's SEC entry. Blocking the actual identity restoration on an
+ * audit-log hiccup would trap the real admin inside the target's identity,
+ * a worse security/availability outcome than a missed end-timestamp.
+ * @param {object} session - req.session (mutated in place on success)
+ * @returns {Promise<{exited:true}>}
+ */
+async function exitImpersonationSession(session) {
+  if (!session || !session.impersonation || !session.impersonation.active) {
+    var err = new Error('Not currently impersonating -- nothing to exit.');
+    err.code = 'NOT_IMPERSONATING';
+    throw err;
+  }
+
+  var admin = session.impersonation.admin || {};
+  var auditId = session.impersonation.auditId;
+
+  try {
+    await endImpersonationAudit(auditId);
+  } catch (auditErr) {
+    _logger.warn('impersonation_exit_audit_failed', {
+      auditId: auditId,
+      reason: auditErr && auditErr.message,
+      timestamp: new Date().toISOString()
+    });
+    // Fall through -- the session revert below must still happen.
+  }
+
+  // Restore exactly, single synchronous block (mirrors startImpersonationSession's
+  // own atomicity discipline) -- then remove the sub-object entirely so no
+  // target-user data of any kind (login, tenantId, role, auditId, reason,
+  // startedAt) remains anywhere in the session after exit (AC4).
+  session.tenantId = admin.tenantId;
+  session.login = admin.login;
+  session.role = admin.role;
+  session.userId = admin.userId;
+  delete session.impersonation;
+
+  return { exited: true };
+}
+
+module.exports = {
+  filterUsers,
+  listImpersonationCandidates,
+  getImpersonationCandidateById,
+  startImpersonationSession,
+  getEffectiveRole,
+  isEffectivelyAdmin,
+  exitImpersonationSession,
+  setLogger
+};

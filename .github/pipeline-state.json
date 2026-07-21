@@ -12518,9 +12518,9 @@
             {
               "slug": "d2",
               "name": "Persistent viewing-as banner, exit flow, and permission-scoped visibility",
-              "stage": "definition-of-ready",
-              "health": "amber",
-              "updatedAt": "2026-07-21T08:28:21.838Z",
+              "stage": "implementation-plan",
+              "health": "green",
+              "updatedAt": "2026-07-21T09:57:31.115Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {

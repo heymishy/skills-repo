@@ -24,6 +24,7 @@ var _tenantPlan = require('../modules/tenant-plan'); // c2
 // does; no new adapter, no changes to either module (Architecture Constraints, story c3).
 var _credits = require('../modules/credits');
 var _csrf = require('../middleware/csrf'); // c2 / c3
+var _impersonation = require('../modules/impersonation'); // d2
 
 // Sign-in providers surfaced on the Profile tab, in display order.
 var PROVIDERS = [
@@ -229,9 +230,14 @@ function renderCreditsTab(rows, csrfToken, opts) {
 
 /**
  * Render the tab nav buttons. Profile and Billing are always present (C2
- * adds Billing's real content later); Credits is admin-only (matches the
- * existing live requireAdmin gating convention -- b2/epic-c precedent -- and
- * C3 adds its real content later).
+ * adds Billing's real content later); Credits and Impersonate are admin-only
+ * (matches the existing live requireAdmin gating convention -- b2/epic-c
+ * precedent -- and C3 adds Credits' real content later). d2: `isAdmin` here
+ * is computed by the caller via isEffectivelyAdmin(req.session) -- during an
+ * active impersonation session it reflects the impersonated TARGET's role,
+ * never the real admin's own role (AC2/AC3), so both tabs are correctly
+ * hidden while impersonating a non-admin and correctly shown while
+ * impersonating an admin.
  * @param {boolean} isAdmin
  * @returns {string}
  */
@@ -239,12 +245,18 @@ function _renderTabNav(isAdmin) {
   var creditsTab = isAdmin
     ? '<button type="button" class="sw-settings-tab" id="tab-credits" role="tab" aria-selected="false" onclick="swShowSettingsTab(\'credits\')">Credits</button>'
     : '';
+  // d2 -- links out to D1's existing /admin/impersonate page (a full separate
+  // page, not a tab-panel toggled by swShowSettingsTab like Credits/Billing).
+  var impersonateTab = isAdmin
+    ? '<a href="/admin/impersonate" class="sw-settings-tab" id="tab-impersonate" role="tab">Impersonate</a>'
+    : '';
 
   return (
     '<div class="sw-settings-tabs" role="tablist" aria-label="Settings sections">' +
       '<button type="button" class="sw-settings-tab sw-settings-tab--active" id="tab-profile" role="tab" aria-selected="true" onclick="swShowSettingsTab(\'profile\')">Profile</button>' +
       '<button type="button" class="sw-settings-tab" id="tab-billing" role="tab" aria-selected="false" onclick="swShowSettingsTab(\'billing\')">Billing</button>' +
       creditsTab +
+      impersonateTab +
     '</div>'
   );
 }
@@ -287,7 +299,7 @@ var _TAB_JS =
  * Render the full Settings page (AC1: wrapped in the shared shell, not a
  * bare fragment). Profile and Credits (c3) panels have real content;
  * Billing remains an empty container ready for C2.
- * @param {{user: object, linkedSet: Set<string>, isAdmin: boolean, creditsRows?: Array, csrfToken?: string, creditsError?: string}} opts
+ * @param {{user: object, linkedSet: Set<string>, isAdmin: boolean, creditsRows?: Array, csrfToken?: string, creditsError?: string, impersonation?: object}} opts
  * @returns {string} full HTML document
  */
 function renderSettingsPage(opts) {
@@ -323,9 +335,10 @@ function renderSettingsPage(opts) {
     user: user,
     active: 'settings',
     crumbs: ['Settings'],
-    isAdmin: isAdmin // b2: forward the isAdmin this function already computes so the
-                     // sidebar's Admin credits entry (gated the same way as the
-                     // Credits tab above) shows consistently on this page too.
+    isAdmin: isAdmin, // b2: forward the isAdmin this function already computes so the
+                      // sidebar's Admin credits entry (gated the same way as the
+                      // Credits tab above) shows consistently on this page too.
+    impersonation: opts.impersonation // d2 (AC1): forward so the shell can render the banner
   });
 }
 
@@ -356,7 +369,18 @@ function createSettingsHandlers(pool) {
       login: req.session && req.session.login,
       authProvider: currentProvider
     };
-    var isAdmin = !!(req.session && req.session.role === 'admin');
+    // d2: replaces the inline req.session.role check with isEffectivelyAdmin()
+    // (modules/impersonation.js), which keys off the EFFECTIVE role (the
+    // impersonation target's role while impersonating, never the real
+    // admin's own role) -- AC2/AC3. Unchanged boolean value for a
+    // non-impersonating session.
+    var isAdmin = _impersonation.isEffectivelyAdmin(req.session);
+    // d2 (AC1): forward the active impersonation state (if any) so the shell
+    // can render the persistent banner.
+    var imp = req.session && req.session.impersonation;
+    var impersonationOpts = (imp && imp.active && imp.target)
+      ? { active: true, targetLogin: imp.target.login, targetTenantId: imp.target.tenantId, csrfToken: _csrf.generateCsrfToken(req) }
+      : null;
 
     // c2: read the exact same source /billing/plan-state reads (tenantPlan.getPlanState)
     // -- no separate/duplicated plan-status computation.
@@ -388,7 +412,8 @@ function createSettingsHandlers(pool) {
       isAdmin: isAdmin,
       planState: planState,
       csrfToken: csrfToken,
-      creditsRows: creditsRows
+      creditsRows: creditsRows,
+      impersonation: impersonationOpts
     });
 
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });

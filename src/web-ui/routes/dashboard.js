@@ -8,6 +8,8 @@
 
 const { getPendingActions: defaultGetPendingActions } = require('../adapters/action-queue');
 const { renderShell, escHtml }                        = require('../utils/html-shell');
+const { isEffectivelyAdmin }                          = require('../modules/impersonation'); // d2
+const csrf                                            = require('../middleware/csrf'); // d2 -- impersonation exit banner CSRF token
 
 // Audit logger — replaced via setLogger() in tests and production bootstrap
 let _logger = {
@@ -84,10 +86,22 @@ function handleDashboard(req, res) {
 
   const userId = req.session.userId;
   const login  = req.session.login || '';
-  // b2: gates the Admin credits nav entry -- consumes req.session.role as-is,
-  // which requireAdmin's own live role-check (sec-perf-s2) already keeps
-  // self-healed on any request that has passed through it elsewhere in the app.
-  const isAdmin = !!(req.session && req.session.role === 'admin');
+  // b2/d2: gates the Admin credits nav entry -- d2 replaces the inline
+  // req.session.role check with the named, testable isEffectivelyAdmin()
+  // helper (modules/impersonation.js), which keys off the EFFECTIVE role
+  // (the impersonation target's role while impersonating, never the real
+  // admin's own role) -- the exact security property AC2/AC3 name. The
+  // underlying boolean value is unchanged for a non-impersonating session
+  // (still req.session.role === 'admin', kept self-healed by requireAdmin's
+  // own live role-check, sec-perf-s2).
+  const isAdmin = isEffectivelyAdmin(req.session);
+  // d2 (AC1): forward the active impersonation state (if any) so renderShell
+  // can surface the persistent banner -- the shell decides whether to render
+  // it; this route only supplies the data.
+  const imp = req.session.impersonation;
+  const impersonation = (imp && imp.active && imp.target)
+    ? { active: true, targetLogin: imp.target.login, targetTenantId: imp.target.tenantId, csrfToken: csrf.generateCsrfToken(req) }
+    : null;
 
   // Audit log (per Coding Agent Instructions requirement)
   _logger.info('dashboard_accessed', {
@@ -102,7 +116,8 @@ function handleDashboard(req, res) {
     bodyContent,
     user:        { login },
     active:      'dashboard',
-    isAdmin
+    isAdmin,
+    impersonation
   });
 
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
