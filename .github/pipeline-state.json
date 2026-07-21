@@ -12518,9 +12518,9 @@
             {
               "slug": "d2",
               "name": "Persistent viewing-as banner, exit flow, and permission-scoped visibility",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T17:56:23.430Z",
+              "updatedAt": "2026-07-21T17:58:22.239Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12536,7 +12536,10 @@
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d2-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d2-dor-contract.md",
               "dorSignedOffAt": "2026-07-21T08:28:21.838Z",
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/538",
+              "prNumber": 538
             },
             {
               "slug": "d3",
