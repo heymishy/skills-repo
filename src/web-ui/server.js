@@ -607,6 +607,15 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // and target identities are captured as plain strings/ids at write time
     // so the audit trail survives a person/tenant being later renamed or
     // removed, matching credit_audit_log's own precedent above.
+    //
+    // d3's ended_at column (below) is chained inside this .then() rather than
+    // fired as a second, independent _creditsPool.query() call -- an earlier
+    // instance of exactly this unchained pattern (a1's product_modules /
+    // journeys.module_id migrations) caused a real, confirmed live failure on
+    // a fresh wuce-staging deploy ("relation ... does not exist", since
+    // pg.Pool checks out a separate client per query and unchained queries
+    // race for their own connection). Fixed here proactively before it could
+    // repeat (see decisions.md, a1 FIX-FORWARD entry for the original incident).
     _creditsPool.query(`CREATE TABLE IF NOT EXISTS impersonation_audit_log (
       id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
       admin_id          VARCHAR,
@@ -619,20 +628,18 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
     )`).then(function() {
       console.log('[d1] impersonation_audit_log table ready');
-    }).catch(function(err) {
-      console.error('[d1] impersonation_audit_log migration failed:', err.message);
-    });
 
-    // d3: impersonation_audit_log has no end-timestamp column in D1's merged
-    // schema -- AC1/AC2 need one to distinguish completed vs in-progress
-    // sessions. Additive, idempotent, nullable -- D3 never writes to it (only
-    // reads); D2's exit flow is expected to write it on session exit (see
-    // decisions.md ARCH entry, "d3 implementation, Task 0 investigation").
-    _creditsPool.query(`ALTER TABLE impersonation_audit_log
-      ADD COLUMN IF NOT EXISTS ended_at TIMESTAMPTZ`).then(function() {
+      // d3: impersonation_audit_log has no end-timestamp column in D1's
+      // original schema -- AC1/AC2 need one to distinguish completed vs
+      // in-progress sessions. Additive, idempotent, nullable -- D3 never
+      // writes to it (only reads); D2's exit flow is expected to write it on
+      // session exit (see decisions.md ARCH entry, "d3 implementation, Task
+      // 0 investigation").
+      return _creditsPool.query(`ALTER TABLE impersonation_audit_log ADD COLUMN IF NOT EXISTS ended_at TIMESTAMPTZ`);
+    }).then(function() {
       console.log('[d3] impersonation_audit_log.ended_at column ready');
     }).catch(function(err) {
-      console.error('[d3] impersonation_audit_log.ended_at migration failed:', err.message);
+      console.error('[d1/d3] impersonation_audit_log migration failed:', err.message);
     });
 
     // d1 D37 wiring: wire the real Postgres impersonation audit adapter,
