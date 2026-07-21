@@ -10,6 +10,7 @@ var _productRollup = require('../modules/product-rollup'); // pr-s3
 var _pipelineStateFetchAdapter = require('../adapters/pipeline-state-fetch-adapter'); // pr-s3
 var _syncFreshness = require('../modules/sync-freshness'); // pr-s3
 var _kanbanView = require('../views/kanban-view'); // kbc-s1 -- shared renderer for product/org/tenant boards
+var _modulesAdapter = require('../adapters/modules-adapter'); // a1 -- curated per-product Modules taxonomy CRUD
 
 function _escapeHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -1107,6 +1108,160 @@ async function handlePutProductEdit(req, res, _next, pool, posthog) {
   }
 }
 
+/**
+ * a1 (AC5) -- GET /products/:id/modules: list every module curated for this
+ * product, scoped by tenant (404 for a missing/mismatched tenant, matching
+ * the FORBIDDEN-vs-NOT_FOUND policy used elsewhere in this file). Added
+ * because AC1 ("appears in the product's module list on next page load")
+ * and the test plan's own AC1 integration test both require a GET endpoint,
+ * even though the DoR contract's "What will be built" section named only
+ * POST/PUT/DELETE (see decisions.md, /implementation-plan SCOPE entry).
+ */
+async function handleGetProductModules(req, res, _next, pool) {
+  var _pool = pool;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+
+  var prodRow = (await _pool.query('SELECT tenant_id FROM products WHERE product_id = $1', [productId])).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+
+  var modules = await _modulesAdapter.listModules(productId, tenantId);
+  if (res.status) { res.status(200).json({ modules: modules }); }
+  else if (res.json) { res.json({ modules: modules }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ modules: modules })); }
+}
+
+/**
+ * a1 (AC1, AC4) -- POST /products/:id/modules: create a new module for a
+ * product. Tenant-scoped (404 for a missing/mismatched tenant). Rejects an
+ * empty name (400) and a duplicate name within the same product (409, with
+ * a clear message) -- no duplicate module record is ever created.
+ */
+async function handlePostProductModule(req, res, _next, pool, posthog) {
+  req.body = await _readBody(req);
+  var _pool = pool;
+  var _ph = posthog || _posthog;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+  var name = ((req.body && req.body.name) || '').trim();
+
+  var prodRow = (await _pool.query('SELECT tenant_id FROM products WHERE product_id = $1', [productId])).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+  if (!name) {
+    if (res.status) { res.status(400).json({ error: 'Module name is required.' }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'Module name is required.' })); }
+    return;
+  }
+
+  var moduleRow;
+  try {
+    moduleRow = await _modulesAdapter.createModule(productId, tenantId, name);
+  } catch (err) {
+    if (err && err.code === 'DUPLICATE_MODULE') {
+      if (res.status) { res.status(409).json({ error: err.message }); }
+      else { res.writeHead(409, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: err.message })); }
+      return;
+    }
+    throw err;
+  }
+
+  _ph.capture(tenantId, 'module_created', { productId: productId, tenantId: tenantId, moduleId: moduleRow.id });
+
+  if (res.status) { res.status(201).json({ module: moduleRow }); }
+  else { res.writeHead(201, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ module: moduleRow })); }
+}
+
+/**
+ * a1 (AC2) -- PUT /products/:id/modules/:moduleId: rename an existing
+ * module. The module's id never changes, so every existing reference to it
+ * (e.g. a journey/epic assigned to it) survives the rename. Tenant-scoped;
+ * 404 for an unknown/foreign module id, 409 for a rename that collides with
+ * a different existing module's name.
+ */
+async function handlePutProductModule(req, res, _next, pool, posthog) {
+  req.body = await _readBody(req);
+  var _pool = pool;
+  var productId = req.params && req.params.id;
+  var moduleId = req.params && req.params.moduleId;
+  var tenantId = req.session && req.session.tenantId;
+  var name = ((req.body && req.body.name) || '').trim();
+
+  var prodRow = (await _pool.query('SELECT tenant_id FROM products WHERE product_id = $1', [productId])).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+  if (!name) {
+    if (res.status) { res.status(400).json({ error: 'Module name is required.' }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'Module name is required.' })); }
+    return;
+  }
+
+  var moduleRow;
+  try {
+    moduleRow = await _modulesAdapter.renameModule(productId, tenantId, moduleId, name);
+  } catch (err) {
+    if (err && err.code === 'NOT_FOUND') {
+      if (res.status) { res.status(404).json({ error: 'not found' }); }
+      else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+      return;
+    }
+    if (err && err.code === 'DUPLICATE_MODULE') {
+      if (res.status) { res.status(409).json({ error: err.message }); }
+      else { res.writeHead(409, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: err.message })); }
+      return;
+    }
+    throw err;
+  }
+
+  if (res.status) { res.status(200).json({ module: moduleRow }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ module: moduleRow })); }
+}
+
+/**
+ * a1 (AC3) -- DELETE /products/:id/modules/:moduleId: delete a module.
+ * Every journey/epic previously assigned to it is reassigned to Unassigned
+ * (module_id = NULL) by modules-adapter.js's deleteModule -- no epic
+ * silently disappears from the product view. Tenant-scoped; 404 for an
+ * unknown/foreign module id, with zero rows affected.
+ */
+async function handleDeleteProductModule(req, res, _next, pool, posthog) {
+  var _pool = pool;
+  var productId = req.params && req.params.id;
+  var moduleId = req.params && req.params.moduleId;
+  var tenantId = req.session && req.session.tenantId;
+
+  var prodRow = (await _pool.query('SELECT tenant_id FROM products WHERE product_id = $1', [productId])).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+
+  try {
+    await _modulesAdapter.deleteModule(productId, tenantId, moduleId);
+  } catch (err) {
+    if (err && err.code === 'NOT_FOUND') {
+      if (res.status) { res.status(404).json({ error: 'not found' }); }
+      else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+      return;
+    }
+    throw err;
+  }
+
+  if (res.status) { res.status(200).json({ deleted: true, module_id: moduleId }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ deleted: true, module_id: moduleId })); }
+}
+
 module.exports = {
   _renderProductView,
   handlePostProductNew,
@@ -1121,6 +1276,11 @@ module.exports = {
   handleDeleteProduct,
   handlePostProductRepoCreate,
   handlePutProductEdit,
+  // a1: curated per-product Modules taxonomy CRUD
+  handleGetProductModules,
+  handlePostProductModule,
+  handlePutProductModule,
+  handleDeleteProductModule,
   // kbc-s1: shared column-building functions, exported for direct unit testing (U1-U5)
   buildProductKanbanColumns,
   buildOrgKanbanColumns,
