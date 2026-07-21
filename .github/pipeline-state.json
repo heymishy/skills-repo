@@ -12164,9 +12164,9 @@
             {
               "slug": "b1",
               "name": "Remove dead nav links and add the missing Org board and Home List/Board toggle",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T04:08:04.643Z",
+              "updatedAt": "2026-07-21T04:10:32.281Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12214,7 +12214,9 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b1-plan.md"
                 }
-              ]
+              ],
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/523"
             },
             {
               "slug": "b2",
