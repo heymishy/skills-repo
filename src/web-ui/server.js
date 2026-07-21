@@ -51,7 +51,7 @@ const { handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers
 const { createSettingsHandlers } = require('./routes/settings'); // c1
 const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
 const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
-const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a5
 const { setModulesAdapter } = require('./adapters/modules-adapter'); // a1
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
@@ -2006,6 +2006,11 @@ async function router(req, res) {
     // psh-s6 — per-product kanban board with 8 stage columns and health indicators
     req.params = { id: pathname.split('/')[2] };
     authGuard(req, res, async () => { await handleGetProductKanban(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/roadmap$/) && req.method === 'GET') {
+    // a5 -- Roadmap tab: discovery-only/ideate-only work with no pipeline-state.json entry
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handleGetProductRoadmap(req, res, null, _pshPool); });
 
   } else if (pathname.match(/^\/products\/[^/]+\/modules$/) && req.method === 'GET') {
     // a1 (AC1) — list modules curated for a product

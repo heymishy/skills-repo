@@ -10,6 +10,8 @@ var _productRollup = require('../modules/product-rollup'); // pr-s3
 var _pipelineStateFetchAdapter = require('../adapters/pipeline-state-fetch-adapter'); // pr-s3
 var _syncFreshness = require('../modules/sync-freshness'); // pr-s3
 var _kanbanView = require('../views/kanban-view'); // kbc-s1 -- shared renderer for product/org/tenant boards
+var _roadmapScan = require('../modules/roadmap-scan'); // a5 -- read-only artefacts/ scan for discovery-only/ideate-only work
+var _repoRootAdapter = require('../adapters/repo-root'); // a5 -- reuses the existing local-disk repo-root pattern (already used by handlePostProductFeature)
 var _modulesAdapter = require('../adapters/modules-adapter'); // a1 -- curated per-product Modules taxonomy CRUD
 
 function _escapeHtml(str) {
@@ -277,6 +279,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
       '<div style="display:flex;gap:10px">' +
         '<button type="button" onclick="pshConfirmDeleteProduct(\'' + _escapeHtml(productId) + '\')" style="padding:8px 14px;border:1px solid #ef4444;border-radius:6px;background:none;color:#ef4444;font-size:13px;cursor:pointer">Delete product</button>' +
         '<a href="/products/' + _escapeHtml(productId) + '/kanban" style="padding:8px 14px;border:1px solid var(--line);border-radius:6px;text-decoration:none;font-size:13px;color:var(--ink)">Kanban</a>' +
+        '<a href="/products/' + _escapeHtml(productId) + '/roadmap" style="padding:8px 14px;border:1px solid var(--line);border-radius:6px;text-decoration:none;font-size:13px;color:var(--ink)">Roadmap</a>' +
         '<form method="POST" action="/products/' + _escapeHtml(productId) + '/features" style="margin:0">' +
           '<button type="submit" style="padding:8px 16px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">New feature</button>' +
         '</form>' +
@@ -316,6 +319,84 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     '<\/script>' +
   '</div>';
   return _htmlShell.renderShell({ title: productName, bodyContent: body, user: { login: login }, active: 'dashboard' });
+}
+
+/**
+ * a5 -- renders the Roadmap tab: discovery-only and ideate-only feature
+ * folders with no pipeline-state.json entry yet. Stage pills always carry a
+ * text label alongside their colour class (NFR-Accessibility -- never
+ * colour-only), reusing the existing sw-pill classes from html-shell.js.
+ */
+function _renderRoadmapTab(productName, productId, login, roadmapEntries) {
+  var listHtml = roadmapEntries.length === 0
+    ? '<p style="color:var(--muted);font-size:14px">Nothing in early-stage discovery right now</p>'
+    : '<ul class="sw-list">' +
+        roadmapEntries.map(function(e) {
+          var pillClass = e.stage === 'Ideate only' ? 'sw-pill sw-pill--neutral' : 'sw-pill sw-pill--accent';
+          return '<li>' +
+            '<div style="flex:1">' +
+              '<div style="font-size:14px;font-weight:500">' + _escapeHtml(e.title) + '</div>' +
+              (e.date ? '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + _escapeHtml(e.date) + '</div>' : '') +
+            '</div>' +
+            '<span class="' + pillClass + '">' + _escapeHtml(e.stage) + '</span>' +
+          '</li>';
+        }).join('') +
+      '</ul>';
+  var body = '<div style="max-width:720px">' +
+    '<div style="margin-bottom:24px">' +
+      '<div style="font-size:12px;color:var(--muted);margin-bottom:4px"><a href="/products/' + _escapeHtml(productId) + '" style="color:var(--muted);text-decoration:none">' + _escapeHtml(productName) + '</a> &rsaquo;</div>' +
+      '<h1 style="margin:0;font-size:24px">Roadmap</h1>' +
+    '</div>' +
+    listHtml +
+  '</div>';
+  return _htmlShell.renderShell({ title: 'Roadmap', bodyContent: body, user: { login: login }, active: 'dashboard', crumbs: [productName, 'Roadmap'] });
+}
+
+/**
+ * a5 -- GET /products/:id/roadmap: read-only scan of artefacts/ for
+ * discovery-only and ideate-only work with no pipeline-state.json entry
+ * yet. Reads the connected repo's local disk directly at render time (same
+ * local-disk pattern as handlePostProductFeature's repoRoot usage) -- this
+ * does NOT build the sync/cache pipeline (a new product_rollups column via
+ * an extended /product-sync), which is explicitly deferred per discovery's
+ * Out of Scope and this story's Architecture Constraints. Never writes to
+ * any artefact file.
+ */
+async function handleGetProductRoadmap(req, res, _next, pool) {
+  var _pool = pool;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+  var login = req.session && req.session.login;
+
+  var prodRow = (await _pool.query(
+    'SELECT name, tenant_id FROM products WHERE product_id = $1',
+    [productId]
+  )).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+
+  var repoRoot = _repoRootAdapter.getRepoRoot(req);
+  var artefactsDir = require('path').join(repoRoot, 'artefacts');
+  var pipelineStatePath = require('path').join(repoRoot, '.github', 'pipeline-state.json');
+  var pipelineState;
+  try {
+    pipelineState = JSON.parse(require('fs').readFileSync(pipelineStatePath, 'utf8'));
+  } catch (_) {
+    pipelineState = { features: [] };
+  }
+
+  var roadmapEntries = _roadmapScan.scanRoadmapArtefacts(artefactsDir, pipelineState);
+
+  if (res.json) {
+    res.json({ roadmap: roadmapEntries });
+  } else {
+    var html = _renderRoadmapTab(prodRow.name, productId, login, roadmapEntries);
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+  }
 }
 
 function _isTeamPlan(session) {
@@ -1269,6 +1350,7 @@ module.exports = {
   handleGetDashboard,
   handleGetProductNew,
   handleGetProductView,
+  handleGetProductRoadmap,
   handlePostProductSync,
   handlePostProductFeature,
   handleGetProductKanban,
