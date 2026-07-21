@@ -8,6 +8,8 @@
 var { filterUsers, listImpersonationCandidates, getImpersonationCandidateById, startImpersonationSession, exitImpersonationSession } = require('../modules/impersonation');
 var { listImpersonationAuditRows } = require('../adapters/impersonation-audit-adapter'); // d3
 var csrf = require('../middleware/csrf');
+var _postHogFlags = require('../modules/posthog-flags'); // d4 (AC5 hardening) — ADMIN_IMPERSONATION kill switch
+var _flagKeys = require('../modules/flag-keys'); // d4
 
 function _escapeHtml(s) {
   return String(s == null ? '' : s)
@@ -15,6 +17,26 @@ function _escapeHtml(s) {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+/**
+ * d4 (AC5 hardening): shared not-found/disabled response for the two
+ * START-a-new-session surfaces (search page, start endpoint) when the
+ * ADMIN_IMPERSONATION flag is off. Deliberately NOT applied to exit (an
+ * admin already mid-impersonation must always be able to get back to their
+ * own identity, regardless of the flag) or to the audit list (indefinite
+ * retention/reviewability of past sessions is a property of the audit log
+ * itself, not of whether new sessions can currently be started) -- matches
+ * products.js's own _respondFlagDisabled shape/status code exactly.
+ * @param {object} res
+ */
+function _respondImpersonationFlagDisabled(res) {
+  if (res.status) {
+    res.status(404).json({ error: 'not_found' });
+  } else {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'not_found' }));
+  }
 }
 
 /**
@@ -50,6 +72,16 @@ function createImpersonationHandlers(pool) {
    * fully keyboard-operable — native labelled controls, no custom widgets).
    */
   async function handleGetImpersonatePage(req, res) {
+    // d4 (AC5) — gate before any DB call, same as products.js's kanban
+    // handlers (bri-s1.5 precedent). Keyed by tenantId so PostHog's
+    // tenant-group targeting applies identically to every other flag.
+    var _tenantId = req.session && req.session.tenantId;
+    var _impersonationOn = await _postHogFlags.isEnabled(_flagKeys.ADMIN_IMPERSONATION, { tenantId: _tenantId });
+    if (!_impersonationOn) {
+      _respondImpersonationFlagDisabled(res);
+      return;
+    }
+
     var q = (req.query && req.query.q) || '';
     var candidates = await listImpersonationCandidates(pool);
     var results = filterUsers(candidates, q);
@@ -107,6 +139,16 @@ function createImpersonationHandlers(pool) {
    * audit-log entry for a target/role combination that never existed.
    */
   async function handlePostImpersonateStart(req, res) {
+    // d4 (AC5) — gate before CSRF/DB, same reasoning and shape as the GET
+    // search page above: a disabled feature behaves as if the route does
+    // not exist at all.
+    var _tenantId = req.session && req.session.tenantId;
+    var _impersonationOn = await _postHogFlags.isEnabled(_flagKeys.ADMIN_IMPERSONATION, { tenantId: _tenantId });
+    if (!_impersonationOn) {
+      _respondImpersonationFlagDisabled(res);
+      return;
+    }
+
     var csrfOk = await csrf.csrfGuard(req, res);
     if (!csrfOk) return;
 

@@ -43,7 +43,11 @@ var ROOT = path.resolve(__dirname, '..');
 var SERVER_PATH = path.resolve(ROOT, 'src/web-ui/server.js');
 var CREDITS_GUARD_PATH = path.resolve(ROOT, 'src/web-ui/middleware/credits-guard.js');
 var IMPERSONATION_MODULE_PATH = path.resolve(ROOT, 'src/web-ui/modules/impersonation.js');
+var IMPERSONATION_ROUTE_PATH = path.resolve(ROOT, 'src/web-ui/routes/impersonation.js');
+var SETTINGS_PATH = path.resolve(ROOT, 'src/web-ui/routes/settings.js');
 var AUDIT_ADAPTER_PATH = path.resolve(ROOT, 'src/web-ui/adapters/impersonation-audit-adapter.js');
+var POSTHOG_FLAGS_PATH = path.resolve(ROOT, 'src/web-ui/modules/posthog-flags.js');
+var FLAG_KEYS_PATH = path.resolve(ROOT, 'src/web-ui/modules/flag-keys.js');
 
 function freshRequire(p) {
   delete require.cache[require.resolve(p)];
@@ -62,6 +66,57 @@ function freshRequireImpersonationModule(auditAdapterMod) {
   }
   delete require.cache[require.resolve(IMPERSONATION_MODULE_PATH)];
   return require(IMPERSONATION_MODULE_PATH);
+}
+
+function freshRequireImpersonationRoutes(impersonationMod) {
+  if (impersonationMod) {
+    delete require.cache[require.resolve(IMPERSONATION_MODULE_PATH)];
+    require.cache[require.resolve(IMPERSONATION_MODULE_PATH)] = {
+      id: require.resolve(IMPERSONATION_MODULE_PATH),
+      filename: require.resolve(IMPERSONATION_MODULE_PATH),
+      loaded: true,
+      exports: impersonationMod
+    };
+  }
+  delete require.cache[require.resolve(IMPERSONATION_ROUTE_PATH)];
+  return require(IMPERSONATION_ROUTE_PATH);
+}
+
+function makeRes() {
+  var r = { _status: null, _headers: {}, _body: '' };
+  r.writeHead = function(s, h) { r._status = s; Object.assign(r._headers, h || {}); };
+  r.end = function(b) { r._body += (b || ''); };
+  return r;
+}
+
+function makeReqFromBody(bodyStr, session, csrfToken) {
+  session.csrfToken = csrfToken;
+  var bodyWithCsrf = bodyStr + '&_csrf=' + csrfToken;
+  return {
+    session: session,
+    query: {},
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    on: function(event, cb) {
+      if (event === 'data') cb(bodyWithCsrf);
+      if (event === 'end') cb();
+    }
+  };
+}
+
+// Fake pool for team_memberships/person_identities, matching this feature's
+// own established makeCandidatesPool convention (check-d1's test file).
+function makeCandidatesPool(rows) {
+  return {
+    query: async function(sql, params) {
+      if (sql.includes('FROM team_memberships')) {
+        if (sql.includes('WHERE tm.person_id')) {
+          return { rows: rows.filter(function(r) { return String(r.person_id) === String(params[0]); }) };
+        }
+        return { rows: rows };
+      }
+      return { rows: [] };
+    }
+  };
 }
 
 // Same shape/convention as check-d1-start-impersonation-session.js's makeStatefulAuditPool.
@@ -85,6 +140,12 @@ function makeStatefulAuditPool() {
         var found = rows.filter(function(r) { return r.id === params[0]; });
         found.forEach(function(r) { r.ended_at = new Date().toISOString(); });
         return { rows: found };
+      }
+      if (sql.includes('SELECT * FROM impersonation_audit_log WHERE id')) {
+        return { rows: rows.filter(function(r) { return r.id === params[0]; }) };
+      }
+      if (sql.includes('SELECT * FROM impersonation_audit_log ORDER BY')) {
+        return { rows: rows.slice().reverse() };
       }
       return { rows: [] };
     }
@@ -447,6 +508,177 @@ async function main() {
         if (/(notify|sendEmail)[\s\S]{0,60}impersonat/i.test(src)) offenders.push(f);
       });
       assert.strictEqual(offenders.length, 0, 'expected zero notify/email code tied to impersonation, found: ' + offenders.join(', '));
+    });
+  });
+
+  // ===========================================================================
+  // AC5 (hardening, operator-requested) — ADMIN_IMPERSONATION feature flag
+  //
+  // This epic's own routes/tabs were found to have no kill switch at all --
+  // once merged, Modules/Roadmap/Settings tabs/Impersonation would all be
+  // live immediately with no way to disable any one of them short of
+  // reverting the actual PR. Scoped to Epic D only (Admin Impersonation) per
+  // the operator's explicit direction, since that is the epic with real
+  // session-security semantics. Design: the flag gates STARTING a new
+  // impersonation session only -- exit must always work (an admin already
+  // mid-impersonation must never be trapped by a flag flip), and the audit
+  // log's own indefinite-retention/reviewability property (the /clarify
+  // decision this story's own AC4 already confirmed) is independent of
+  // whether new sessions can currently be started.
+  // ===========================================================================
+
+  queue.push(function() {
+    console.log('\n[d4] AC5 (flag) -- ADMIN_IMPERSONATION key exists in the shared flag-keys registry');
+    return test('flag-keys.js exports ADMIN_IMPERSONATION', function() {
+      var keys = freshRequire(FLAG_KEYS_PATH);
+      assert.strictEqual(typeof keys.ADMIN_IMPERSONATION, 'string');
+      assert.strictEqual(keys.ADMIN_IMPERSONATION, 'admin-impersonation');
+    });
+  });
+
+  queue.push(function() {
+    console.log('\n[d4] AC5 (flag) -- GET /admin/impersonate returns 404 when the flag is off, never reaching the DB');
+    return test('handleGetImpersonatePage: flag off -> 404, listImpersonationCandidates never called', async function() {
+      var flags = freshRequire(POSTHOG_FLAGS_PATH);
+      flags.setPostHogFlagsAdapter({ evaluateFlag: async function() { return false; } });
+
+      var candidatesCalled = false;
+      var pool = {
+        query: async function(sql) {
+          if (sql.includes('FROM team_memberships')) { candidatesCalled = true; }
+          return { rows: [] };
+        }
+      };
+      var impersonationMod = freshRequireImpersonationModule();
+      var routes = freshRequireImpersonationRoutes(impersonationMod);
+      var handlers = routes.createImpersonationHandlers(pool);
+
+      var req = { session: { tenantId: 'tenant-alice' }, query: {} };
+      var res = makeRes();
+      await handlers.handleGetImpersonatePage(req, res);
+
+      assert.strictEqual(res._status, 404);
+      assert.strictEqual(candidatesCalled, false, 'expected the DB to never be queried when the flag is off');
+    });
+  });
+
+  queue.push(function() {
+    console.log('\n[d4] AC5 (flag) -- GET /admin/impersonate renders normally when the flag is on');
+    return test('handleGetImpersonatePage: flag on -> 200, real search results rendered', async function() {
+      var flags = freshRequire(POSTHOG_FLAGS_PATH);
+      flags.setPostHogFlagsAdapter({ evaluateFlag: async function() { return true; } });
+
+      var pool = makeCandidatesPool([{ tenant_id: 'tenant-bob', person_id: 2, role: 'user', login: 'bob' }]);
+      var impersonationMod = freshRequireImpersonationModule();
+      var routes = freshRequireImpersonationRoutes(impersonationMod);
+      var handlers = routes.createImpersonationHandlers(pool);
+
+      var req = { session: { tenantId: 'tenant-alice' }, query: {} };
+      var res = makeRes();
+      await handlers.handleGetImpersonatePage(req, res);
+
+      assert.strictEqual(res._status, 200);
+      assert.ok(res._body.includes('bob'), 'expected the real search page to render when the flag is on');
+    });
+  });
+
+  queue.push(function() {
+    console.log('\n[d4] AC5 (flag) -- POST /api/admin/impersonate/start returns 404 when the flag is off, no session mutation, no audit row');
+    return test('handlePostImpersonateStart: flag off -> 404, session unchanged, zero audit rows', async function() {
+      var flags = freshRequire(POSTHOG_FLAGS_PATH);
+      flags.setPostHogFlagsAdapter({ evaluateFlag: async function() { return false; } });
+
+      var auditAdapter = freshRequire(AUDIT_ADAPTER_PATH);
+      var auditPool = makeStatefulAuditPool();
+      auditAdapter.setImpersonationAuditAdapter(auditPool);
+      var impersonationMod = freshRequireImpersonationModule(auditAdapter);
+      var candidatesPool = makeCandidatesPool([{ tenant_id: 'tenant-bob', person_id: 2, role: 'user', login: 'bob' }]);
+      var routes = freshRequireImpersonationRoutes(impersonationMod);
+      var handlers = routes.createImpersonationHandlers(candidatesPool);
+
+      var session = { userId: 1, login: 'alice', tenantId: 'tenant-alice', role: 'admin' };
+      var req = makeReqFromBody('targetId=2&reason=ticket', session, 'tok');
+      var res = makeRes();
+      await handlers.handlePostImpersonateStart(req, res);
+
+      assert.strictEqual(res._status, 404);
+      assert.strictEqual(session.tenantId, 'tenant-alice', 'session must be unchanged when the flag is off');
+      assert.strictEqual(auditPool._rows.length, 0, 'no audit row written when the flag blocks the start');
+    });
+  });
+
+  queue.push(function() {
+    console.log('\n[d4] AC5 (flag) -- exit is NEVER gated by the flag: an admin already impersonating can always exit, even with the flag off');
+    return test('handlePostImpersonateExit: flag off -> exit still succeeds, real admin identity restored', async function() {
+      // Start while the flag is ON (a session already in progress from before
+      // an operator flipped the flag off), then flip it OFF before exiting.
+      var flagsOn = freshRequire(POSTHOG_FLAGS_PATH);
+      flagsOn.setPostHogFlagsAdapter({ evaluateFlag: async function() { return true; } });
+
+      var auditAdapter = freshRequire(AUDIT_ADAPTER_PATH);
+      var auditPool = makeStatefulAuditPool();
+      auditAdapter.setImpersonationAuditAdapter(auditPool);
+      var impersonationMod = freshRequireImpersonationModule(auditAdapter);
+      var candidatesPool = makeCandidatesPool([{ tenant_id: 'tenant-bob', person_id: 2, role: 'user', login: 'bob' }]);
+      var routes = freshRequireImpersonationRoutes(impersonationMod);
+      var handlers = routes.createImpersonationHandlers(candidatesPool);
+
+      var session = { userId: 1, login: 'alice', tenantId: 'tenant-alice', role: 'admin' };
+      var startReq = makeReqFromBody('targetId=2&reason=ticket', session, 'tok');
+      await handlers.handlePostImpersonateStart(startReq, makeRes());
+      assert.strictEqual(session.login, 'bob', 'sanity: impersonation actually started');
+
+      // Now flip the flag off (simulates an operator disabling the feature
+      // mid-session) and confirm exit is completely unaffected.
+      var flagsOff = freshRequire(POSTHOG_FLAGS_PATH);
+      flagsOff.setPostHogFlagsAdapter({ evaluateFlag: async function() { return false; } });
+
+      var exitReq = makeReqFromBody('', session, 'tok');
+      var exitRes = makeRes();
+      await handlers.handlePostImpersonateExit(exitReq, exitRes);
+
+      assert.strictEqual(exitRes._status, 200, 'exit must succeed regardless of the flag state');
+      assert.strictEqual(session.login, 'alice', 'real admin identity must be restored even with the flag off');
+      assert.strictEqual(session.impersonation, undefined);
+    });
+  });
+
+  queue.push(function() {
+    console.log('\n[d4] AC5 (flag) -- audit list viewing is NEVER gated by the flag: past sessions remain reviewable even when starting new ones is disabled');
+    return test('handleGetImpersonationAuditList: flag off -> still 200, real rows returned', async function() {
+      var flags = freshRequire(POSTHOG_FLAGS_PATH);
+      flags.setPostHogFlagsAdapter({ evaluateFlag: async function() { return false; } });
+
+      var auditAdapter = freshRequire(AUDIT_ADAPTER_PATH);
+      var auditPool = makeStatefulAuditPool();
+      auditPool._rows.push({ id: 'audit-1', admin_login: 'alice', target_login: 'bob', target_tenant_id: 'tenant-bob', reason: 'ticket', created_at: new Date().toISOString(), ended_at: null });
+      auditAdapter.setImpersonationAuditAdapter(auditPool);
+      var impersonationMod = freshRequireImpersonationModule(auditAdapter);
+      var routes = freshRequireImpersonationRoutes(impersonationMod);
+      var handlers = routes.createImpersonationHandlers({});
+
+      var res = makeRes();
+      await handlers.handleGetImpersonationAuditList({ session: {} }, res);
+
+      assert.strictEqual(res._status, 200, 'audit history must remain viewable even when the flag blocks starting new sessions');
+      var parsed = JSON.parse(res._body);
+      assert.strictEqual(parsed.rows.length, 1);
+      assert.strictEqual(parsed.rows[0].target_login, 'bob');
+    });
+  });
+
+  queue.push(function() {
+    console.log('\n[d4] AC5 (flag) -- Settings\' Impersonate tab hides the "Start a new session" link when the flag is off, but keeps audit history visible');
+    return test('renderImpersonationAuditTab: startSessionEnabled=false hides the start link; rows still render', function() {
+      var settings = freshRequire(SETTINGS_PATH);
+      var rows = [{ admin_login: 'alice', target_login: 'bob', target_tenant_id: 'tenant-bob', reason: 'ticket', created_at: new Date().toISOString(), ended_at: null }];
+
+      var htmlOff = settings.renderImpersonationAuditTab(rows, false);
+      assert.ok(!/Start a new impersonation session/.test(htmlOff), 'expected the start-session link to be hidden when the flag is off');
+      assert.ok(/bob/.test(htmlOff), 'expected audit history rows to still render when the flag is off');
+
+      var htmlOn = settings.renderImpersonationAuditTab(rows, true);
+      assert.ok(/Start a new impersonation session/.test(htmlOn), 'expected the start-session link to render when the flag is on');
     });
   });
 
