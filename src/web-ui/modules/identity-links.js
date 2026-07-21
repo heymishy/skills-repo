@@ -140,9 +140,31 @@ async function linkIdentity(pool, currentIdentityKey, newIdentityKey, provider, 
   return { linked: true, personId: currentPersonId };
 }
 
+/**
+ * List providers explicitly linked to the person who owns identityKey, via
+ * person_identities (this module's own explicit-link table). Does NOT
+ * include the provider of the person's original signup identity itself --
+ * team_memberships has no provider column, so that original identity is
+ * never present in person_identities (see linkIdentity: only the NEWLY
+ * linked identity is inserted there). c1's settings.js combines this list
+ * with the current session's own req.session.authProvider to get the full
+ * linked-provider set for display.
+ * @param {object} pool
+ * @param {string} identityKey
+ * @returns {Promise<string[]>}
+ */
+async function getLinkedProviders(pool, identityKey) {
+  var personId = await resolvePersonForIdentity(pool, identityKey);
+  if (personId == null) return [];
+
+  var result = await pool.query('SELECT provider FROM person_identities WHERE person_id = $1', [personId]);
+  return result.rows.map(function(r) { return r.provider; });
+}
+
 module.exports = {
   migrateIdentityLinksSchema,
   resolvePersonForIdentity,
   linkIdentity,
+  getLinkedProviders,
   IdentityAlreadyLinkedError
 };

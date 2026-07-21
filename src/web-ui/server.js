@@ -47,7 +47,8 @@ const { setPasswordAdapter }                                         = require('
 const { setUserFlagsAdapter }                                        = require('./modules/user-flags');       // lab-s2.3
 const { setGetUserRole, setGetRoleForTenant, getRoleForTenant, migrateTeamSchema, resolveRoleForPerson } = require('./modules/user-roles'); // arl-s1 / tir-s1 / tir-s7 / sec-perf-s2
 const { migrateIdentityLinksSchema } = require('./modules/identity-links'); // tir-s2
-const { handleGetLinkSettings, handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers } = require('./routes/account-linking'); // tir-s2
+const { handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers } = require('./routes/account-linking'); // tir-s2
+const { createSettingsHandlers } = require('./routes/settings'); // c1
 const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
 const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
 const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1
@@ -73,6 +74,12 @@ let _pshPool = null;
 // wiring, which has no NODE_ENV=test fallback either).
 let _handleGoogleLinkCallback = null;
 let _handleGithubLinkCallback = null;
+
+// c1: module-level handler reference for /settings (assigned inside the
+// DATABASE_URL block, same pattern as _handleGoogleLinkCallback above --
+// real-Postgres-only, no NODE_ENV=test fallback, matching tir-s2's own
+// wiring precedent).
+let _handleGetSettings = null;
 
 // tir-s3: module-level handler reference for /team/members + /api/team/members
 // (assigned inside the DATABASE_URL block, same pattern as
@@ -396,6 +403,14 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     _handleGoogleLinkCallback = _linkCallbackHandlers.handleGoogleLinkCallback;
     _handleGithubLinkCallback = _linkCallbackHandlers.handleGithubLinkCallback;
     console.log('[tir-s2] account-linking callback handlers wired');
+
+    // c1 — Wire the /settings page handler to the same Postgres pool (same
+    // reuse pattern as tir-s2/tir-s3 above). No new D37 adapter (H-ADAPTER):
+    // createSettingsHandlers is a plain factory, not a throw-on-unwired
+    // setter/getter pair.
+    const _settingsHandlers = createSettingsHandlers(_userRolesPool);
+    _handleGetSettings = _settingsHandlers.handleGetSettings;
+    console.log('[c1] settings page handler wired');
 
     // tir-s3 — Wire the /team/members add-teammate handlers to the same
     // Postgres pool (same reuse pattern as tir-s1/tir-s2 above). No new D37
@@ -1821,9 +1836,25 @@ async function router(req, res) {
     // bri-s3.5 — tenant plan-state read (paid/trial, active/past_due/canceled)
     authGuard(req, res, () => handleGetBillingPlanState(req, res));
 
+  } else if (pathname === '/settings' && req.method === 'GET') {
+    // c1 — Settings page shell + Profile tab (identity + linked sign-in methods)
+    if (_handleGetSettings) {
+      authGuard(req, res, () => _handleGetSettings(req, res));
+    } else {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Settings unavailable');
+    }
+
   } else if (pathname === '/settings/link-account' && req.method === 'GET') {
-    // tir-s2 — account-linking settings page (AC2: unauthenticated -> redirect via authGuard)
-    authGuard(req, res, () => handleGetLinkSettings(req, res));
+    // c1 — the old bare link-settings page now redirects into the unified
+    // Settings shell (AC1), preserving any query string (e.g. ?linked=1
+    // after a successful OAuth round-trip -- AC3). The account-linking.js
+    // callback handlers below are unmodified and still redirect here.
+    authGuard(req, res, () => {
+      const qs = req.url.indexOf('?') !== -1 ? req.url.slice(req.url.indexOf('?')) : '';
+      res.writeHead(302, { Location: '/settings' + qs });
+      res.end();
+    });
 
   } else if (pathname === '/settings/link-account/google/start' && req.method === 'GET') {
     authGuard(req, res, () => handleStartGoogleLink(req, res));
