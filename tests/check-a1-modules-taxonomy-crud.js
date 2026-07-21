@@ -389,3 +389,4 @@ function makeProductsOwnerPool(products) {
   console.log('\n[a1] Results: ' + passed + ' passed, ' + failed + ' failed');
   if (failed > 0) process.exit(1);
 })();
+
