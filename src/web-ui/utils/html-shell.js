@@ -24,24 +24,36 @@ function escHtml(str) {
 }
 
 const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Home',        href: '/dashboard', icon: '⌂' },
-  { id: 'journey',   label: 'Journeys',    href: '/journey',   icon: '◎' },
-  { id: 'skills',    label: 'Run a Skill', href: '/skills',    icon: '✦' },
-  { id: 'features',  label: 'Features',   href: '/features',  icon: '◫' },
-  { id: 'actions',   label: 'Actions',    href: '/actions',   icon: '✓' },
-  { id: 'status',    label: 'Status',     href: '/status',    icon: '◐' }
+  { id: 'dashboard',  label: 'Home',        href: '/dashboard',  icon: '⌂' },
+  { id: 'journey',    label: 'Journeys',    href: '/journey',    icon: '◎' },
+  { id: 'skills',     label: 'Run a Skill', href: '/skills',     icon: '✦' },
+  { id: 'org-kanban', label: 'Org board',   href: '/org/kanban', icon: '▦' }
 ];
+
+// b1: small List/Board switcher rendered directly under the Home nav item —
+// /dashboard?view=board is a query-param variant of /dashboard, not a separate
+// route, so it is not a second top-level NAV_ITEMS entry (Architecture
+// Constraints, story b1-remove-dead-links-add-missing-nav.md).
+function renderHomeViewToggle() {
+  return [
+    '<div class="sw-nav-subrow" role="group" aria-label="Home view">',
+      '<a href="/dashboard" class="sw-nav-subitem">List</a>',
+      '<a href="/dashboard?view=board" class="sw-nav-subitem">Board</a>',
+    '</div>'
+  ].join('');
+}
 
 function renderSidebar(active, login) {
   const items = NAV_ITEMS.map(function(item) {
     const isActive = item.id === active;
-    return [
+    const link = [
       '<a href="' + escHtml(item.href) + '"',
       ' class="sw-nav-item' + (isActive ? ' sw-nav-item--active' : '') + '">',
       '<span class="sw-nav-icon">' + item.icon + '</span>',
       '<span>' + escHtml(item.label) + '</span>',
       '</a>'
     ].join('');
+    return item.id === 'dashboard' ? link + renderHomeViewToggle() : link;
   }).join('');
   const initial = (login || '?').charAt(0).toUpperCase();
   return [
@@ -252,6 +264,13 @@ a { color: inherit; }
   font-weight: 500;
 }
 .sw-nav-icon { width: 16px; color: var(--muted-2); font-size: 13px; }
+.sw-nav-subrow { display: flex; gap: 4px; padding: 0 10px 4px 34px; }
+.sw-nav-subitem {
+  font-size: 12px; color: var(--muted); text-decoration: none;
+  padding: 2px 6px; border-radius: 4px;
+}
+.sw-nav-subitem:hover { background: var(--line-2); color: var(--ink-2); }
+.sw-nav-subitem:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
 .sw-user {
   margin-top: auto; display: flex; align-items: center; gap: 8px;
   padding: 0 8px; font-size: 13px; color: var(--muted);
@@ -302,6 +321,7 @@ a { color: inherit; }
 .sw-sidebar--collapsed .sw-nav-icon { width:auto; color:var(--muted); }
 .sw-sidebar--collapsed .sw-user { justify-content:center; padding:0; }
 .sw-sidebar--collapsed .sw-nav-collapse-btn { border-color:transparent; }
+.sw-sidebar--collapsed .sw-nav-subrow { display:none; }
 
 /* ── Hamburger (mobile only — hidden by default) ────────────────────────────── */
 .sw-hamburger {
@@ -596,4 +616,4 @@ function renderLoginPage() {
     '</body>\n</html>';
 }
 
-module.exports = { renderShell, renderLoginPage, escHtml };
+module.exports = { renderShell, renderLoginPage, escHtml, NAV_ITEMS };
