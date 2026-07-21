@@ -11993,7 +11993,7 @@
       "track": "standard",
       "stage": "branch-complete",
       "health": "green",
-      "updatedAt": "2026-07-21T09:47:21.033Z",
+      "updatedAt": "2026-07-21T18:01:44.670Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -12542,11 +12542,11 @@
               "name": "Impersonation audit log",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T10:17:28.006Z",
+              "updatedAt": "2026-07-21T18:01:33.629Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 6,
                 "passing": 6
               },
@@ -12590,9 +12590,10 @@
                   "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/d3-plan.md"
                 }
               ],
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/537",
-              "prNumber": 537
+              "prNumber": 537,
+              "verifyStatus": "passed"
             },
             {
               "slug": "d4",
