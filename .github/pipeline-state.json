@@ -12175,24 +12175,51 @@
             {
               "slug": "c1",
               "name": "Settings page shell with Profile tab",
-              "stage": "definition-of-ready",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-07-20T20:47:56.104Z",
+              "updatedAt": "2026-07-21T00:00:00.000Z",
               "reviewStatus": "passed",
               "highFindings": 0,
+              "verifyStatus": "passed",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
-                "passing": 0
+                "passing": 4
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/c1-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/c1-dor-contract.md",
-              "dorSignedOffAt": "2026-07-20T20:47:56.104Z"
+              "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Add getLinkedProviders to identity-links.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/c1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Set session.authProvider at login (github/google)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/c1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Add settings.js -- Settings shell + Profile tab",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/c1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Wire /settings route in server.js, redirect legacy /settings/link-account",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/c1-plan.md"
+                }
+              ]
             },
             {
               "slug": "c2",
