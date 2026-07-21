@@ -49,11 +49,23 @@ function computeDodStatusRollup(pipelineState) {
  * code (that file lives in the legacy/unused dashboard's support module,
  * not something this application code imports from) (AC1).
  *
+ * Also returns a perFeature breakdown -- one entry per feature carrying its
+ * own normalized health value, read directly from feature.health (a3 AC1).
+ * This is the ONLY input this function reads from pipeline-state.json --
+ * traced at a3 story time (see artefacts/2026-07-21-web-ui-experience-redesign/
+ * plans/a3-plan.md Task 0 and this feature's decisions.md): feature.health is
+ * set independently of test-coverage data (computeTestCoverageRollup reads
+ * story.testPlan instead, a structurally separate field), so the perFeature
+ * health returned here is a genuinely separate signal from coverage, not a
+ * repaint of it (a3 AC2, AC2a). Epics carry no independent health field of
+ * their own in this repo's real schema, so per-feature (not per-epic) is the
+ * correct granularity for this breakdown.
+ *
  * @param {object} pipelineState - parsed pipeline-state.json content
- * @returns {{green: number, amber: number, red: number, unknown: number}}
+ * @returns {{green: number, amber: number, red: number, unknown: number, perFeature: Array<{slug: string, name: string|undefined, health: 'green'|'amber'|'red'|'unknown'}>}}
  */
 function computeHealthCounts(pipelineState) {
-  var counts = { green: 0, amber: 0, red: 0, unknown: 0 };
+  var counts = { green: 0, amber: 0, red: 0, unknown: 0, perFeature: [] };
   var features = (pipelineState && pipelineState.features) || [];
 
   features.forEach(function(feature) {
@@ -62,6 +74,7 @@ function computeHealthCounts(pipelineState) {
       health = 'unknown';
     }
     counts[health]++;
+    counts.perFeature.push({ slug: feature.slug, name: feature.name, health: health });
   });
 
   return counts;

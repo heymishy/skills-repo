@@ -12159,64 +12159,29 @@
         {
           "slug": "epic-b-navigation-fix",
           "name": "Every nav item goes somewhere real, and every real destination has a nav item",
-          "status": "in-progress",
+          "status": "not-started",
           "stories": [
             {
               "slug": "b1",
               "name": "Remove dead nav links and add the missing Org board and Home List/Board toggle",
-              "stage": "branch-complete",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-21T04:10:32.281Z",
+              "updatedAt": "2026-07-20T20:47:56.104Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 5
+                "passing": 0
               },
               "acTotal": 4,
-              "acVerified": 4,
+              "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/b1-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/b1-dor-contract.md",
-              "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
-              "verifyStatus": "passed",
-              "tasks": [
-                {
-                  "id": "task-1",
-                  "name": "Remove the 3 dead nav entries (AC1)",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b1-plan.md"
-                },
-                {
-                  "id": "task-2",
-                  "name": "Add the Org board nav entry (AC3)",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b1-plan.md"
-                },
-                {
-                  "id": "task-3",
-                  "name": "Home List/Board toggle (AC2)",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b1-plan.md"
-                },
-                {
-                  "id": "task-4",
-                  "name": "Every remaining nav item resolves to a real route (AC4)",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b1-plan.md"
-                },
-                {
-                  "id": "task-5",
-                  "name": "Fix collateral tests broken by AC1 (dead-link assertions)",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b1-plan.md"
-                }
-              ],
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/523"
+              "dorSignedOffAt": "2026-07-20T20:47:56.104Z"
             },
             {
               "slug": "b2",
