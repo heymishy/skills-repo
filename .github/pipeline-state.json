@@ -11991,9 +11991,9 @@
       "slug": "2026-07-21-web-ui-experience-redesign",
       "name": "Web UI Experience Redesign — Product View, Navigation, Settings, and Admin Impersonation",
       "track": "standard",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
-      "updatedAt": "2026-07-20T23:36:18.856Z",
+      "updatedAt": "2026-07-21T06:41:17.318Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -12007,35 +12007,38 @@
             {
               "slug": "a1",
               "name": "Curate a Modules taxonomy for a product",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-20T20:47:56.104Z",
+              "updatedAt": "2026-07-21T06:41:07.534Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 10,
-                "passing": 0
+                "passing": 10
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a1-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a1-dor-contract.md",
-              "dorSignedOffAt": "2026-07-20T20:47:56.104Z"
+              "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
+              "prStatus": "merged",
+              "prNumber": 520,
+              "verifyStatus": "passed"
             },
             {
               "slug": "a2",
               "name": "Reassign an epic to a different module",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T05:50:09.957Z",
+              "updatedAt": "2026-07-21T06:41:07.678Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 11,
                 "passing": 11
               },
@@ -12098,19 +12101,20 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/526"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/526",
+              "prNumber": 526
             },
             {
               "slug": "a3",
               "name": "Compute health per-feature, distinct from test coverage",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T03:49:42.951Z",
+              "updatedAt": "2026-07-21T06:41:07.802Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 65,
                 "passing": 65
               },
@@ -12122,7 +12126,7 @@
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a3-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a3-dor-contract.md",
               "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/519",
               "tasks": [
                 {
@@ -12161,7 +12165,9 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a3-plan.md"
                 }
-              ]
+              ],
+              "prNumber": 519,
+              "verifyStatus": "passed"
             },
             {
               "slug": "a4",
@@ -12188,24 +12194,27 @@
             {
               "slug": "a5",
               "name": "Surface discovery-only and ideation-only work in a Roadmap tab",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-20T20:47:56.104Z",
+              "updatedAt": "2026-07-21T06:41:07.945Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 7,
-                "passing": 0
+                "passing": 7
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a5-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a5-dor-contract.md",
-              "dorSignedOffAt": "2026-07-20T20:47:56.104Z"
+              "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
+              "prStatus": "merged",
+              "prNumber": 522,
+              "verifyStatus": "passed"
             }
           ]
         },
@@ -12217,31 +12226,34 @@
             {
               "slug": "b1",
               "name": "Remove dead nav links and add the missing Org board and Home List/Board toggle",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-20T20:47:56.104Z",
+              "updatedAt": "2026-07-21T06:41:08.084Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 5,
-                "passing": 0
+                "passing": 5
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/b1-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/b1-dor-contract.md",
-              "dorSignedOffAt": "2026-07-20T20:47:56.104Z"
+              "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
+              "prStatus": "merged",
+              "prNumber": 523,
+              "verifyStatus": "passed"
             },
             {
               "slug": "b2",
               "name": "Restructure account-level nav items and add a dangling-link regression test",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T06:25:46.940Z",
+              "updatedAt": "2026-07-21T06:41:08.213Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12257,7 +12269,7 @@
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/b2-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/b2-dor-contract.md",
               "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/528",
               "verifyStatus": "passed",
               "tasks": [
@@ -12303,7 +12315,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b2-plan.md"
                 }
-              ]
+              ],
+              "prNumber": 528
             }
           ]
         },
@@ -12315,35 +12328,38 @@
             {
               "slug": "c1",
               "name": "Settings page shell with Profile tab",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-20T20:47:56.104Z",
+              "updatedAt": "2026-07-21T06:41:08.343Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 4,
-                "passing": 0
+                "passing": 4
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/c1-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/c1-dor-contract.md",
-              "dorSignedOffAt": "2026-07-20T20:47:56.104Z"
+              "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
+              "prStatus": "merged",
+              "prNumber": 521,
+              "verifyStatus": "passed"
             },
             {
               "slug": "c2",
               "name": "Billing tab — plan status and Stripe portal access",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T05:55:12.676Z",
+              "updatedAt": "2026-07-21T06:41:08.484Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 7,
                 "passing": 7
               },
@@ -12355,19 +12371,21 @@
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/c2-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/c2-dor-contract.md",
               "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/527"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/527",
+              "prNumber": 527,
+              "verifyStatus": "passed"
             },
             {
               "slug": "c3",
               "name": "Credits tab — restyle admin credit management into the shared design system",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T05:50:11.158Z",
+              "updatedAt": "2026-07-21T06:41:08.613Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 6,
                 "passing": 6
               },
@@ -12379,7 +12397,7 @@
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/c3-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/c3-dor-contract.md",
               "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/525",
               "tasks": [
                 {
@@ -12412,7 +12430,9 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/c3-plan.md"
                 }
-              ]
+              ],
+              "prNumber": 525,
+              "verifyStatus": "passed"
             }
           ]
         },
