@@ -12212,7 +12212,7 @@
         {
           "slug": "epic-b-navigation-fix",
           "name": "Every nav item goes somewhere real, and every real destination has a nav item",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "b1",
@@ -12239,9 +12239,9 @@
             {
               "slug": "b2",
               "name": "Restructure account-level nav items and add a dangling-link regression test",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T06:16:00.339Z",
+              "updatedAt": "2026-07-21T06:25:46.940Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12257,6 +12257,8 @@
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/b2-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/b2-dor-contract.md",
               "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/528",
               "verifyStatus": "passed",
               "tasks": [
                 {
