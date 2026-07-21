@@ -152,22 +152,89 @@ function _renderProductNew(login, error) {
   return _htmlShell.renderShell({ title: 'New product', bodyContent: body, user: { login: login }, active: 'dashboard', crumbs: ['Products', 'New'] });
 }
 
-function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName) {
-  var featuresHtml = features.length === 0
-    ? '<p style="color:var(--muted);font-size:14px">No features yet.</p>'
-    : '<ul style="list-style:none;padding:0;margin:0">' +
-        features.map(function(f) {
-          return '<li style="padding:14px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center">' +
-            '<div>' +
-              '<div style="font-size:14px;font-weight:500">' + _escapeHtml(f.featureSlug || f.journey_id) + '</div>' +
-              '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + _escapeHtml(f.stage || '') + '</div>' +
-            '</div>' +
-            '<span style="font-size:12px;color:' + (f.health === 'red' ? '#ef4444' : f.health === 'amber' ? '#f59e0b' : '#22c55e') + '">' +
-              (f.health === 'red' ? '⚠ Blocked' : f.health === 'amber' ? '⚠ Warning' : '✓ Healthy') +
-            '</span>' +
-          '</li>';
-        }).join('') +
-      '</ul>';
+// a4 -- renders one epic (journey) row with two visually distinct
+// indicators: a health pill and a separate test-coverage label. Never
+// combined into one value/color (AC2). Accessibility: every colour-coded
+// health value carries its own text label (HEALTH_LABELS), never colour
+// alone.
+function _renderEpicRow(f) {
+  var color = f.health === 'red' ? '#ef4444' : f.health === 'amber' ? '#f59e0b' : f.health === 'unknown' ? 'var(--muted)' : '#22c55e';
+  var label = f.health === 'red' ? '✕ Blocked' : f.health === 'amber' ? '⚠ Warning' : f.health === 'unknown' ? '? Unknown' : '✓ Healthy';
+  return '<li style="padding:14px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center">' +
+    '<div>' +
+      '<div style="font-size:14px;font-weight:500">' + _escapeHtml(f.featureSlug || f.journey_id) + '</div>' +
+      '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + _escapeHtml(f.stage || '') + '</div>' +
+    '</div>' +
+    '<div style="display:flex;align-items:center;gap:12px">' +
+      '<span data-a4-health style="font-size:12px;color:' + color + '">' + label + '</span>' +
+      '<span data-a4-coverage style="font-size:12px;color:var(--muted)">' + _escapeHtml(f.coverageLabel || 'No test data yet') + '</span>' +
+    '</div>' +
+  '</li>';
+}
+
+// a4 -- one collapsible module section (or the "Unassigned" bucket). Uses a
+// real CSS grid-template-rows 0fr<->1fr transition (AC5) toggled by a class,
+// not an instant show/hide -- see the .a4-module-body rules emitted once
+// alongside the sections below.
+function _renderModuleSection(name, id, groupFeatures) {
+  var sectionId = 'a4-mod-' + _escapeHtml(String(id));
+  return '<div class="a4-module-section" style="margin-bottom:10px;border:1px solid var(--line);border-radius:8px">' +
+    '<button type="button" class="a4-module-header" aria-expanded="true" aria-controls="' + sectionId + '" ' +
+      'onclick="a4ToggleModule(this)" ' +
+      'style="width:100%;text-align:left;padding:12px 16px;background:none;border:none;cursor:pointer;font-size:14px;font-weight:600;color:var(--ink);display:flex;justify-content:space-between;align-items:center">' +
+      '<span>' + _escapeHtml(name) + ' <span style="color:var(--muted);font-weight:400">(' + groupFeatures.length + ')</span></span>' +
+      '<span aria-hidden="true">▾</span>' +
+    '</button>' +
+    '<div id="' + sectionId + '" class="a4-module-body a4-module-body--expanded">' +
+      '<div class="a4-module-body-inner">' +
+        '<ul style="list-style:none;padding:0 16px 12px;margin:0">' +
+          groupFeatures.map(_renderEpicRow).join('') +
+        '</ul>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+// a4 (AC3) -- scale gauge: total epic/story counts plus a distribution
+// strip proportional to how many epics (journeys) fall under each module.
+// Epic count = features.length (the same real, module-assignable entities
+// AC1 groups); story count = taxonomy.totalCount, the one authoritative
+// "how many stories does this synced product have" figure already computed
+// by computeTaxonomyRollup (see decisions.md a4 Task 0 finding 5). Never
+// divides by zero when there are no epics yet (AC3/AC4 overlap).
+function _renderScaleGauge(features, modules, taxonomy) {
+  var epicCount = features.length;
+  var storyCount = (taxonomy && typeof taxonomy.totalCount === 'number') ? taxonomy.totalCount : 0;
+  var summaryHtml = '<div style="font-size:13px;color:var(--ink)"><strong>' + epicCount + '</strong> epic' + (epicCount === 1 ? '' : 's') + ' &middot; <strong>' + storyCount + '</strong> stor' + (storyCount === 1 ? 'y' : 'ies') + '</div>';
+  // No epics yet, or no modules curated at all -- nothing meaningful to
+  // distribute across, so show the plain count summary only (no
+  // "Unassigned" segment implying a module concept that doesn't apply yet).
+  if (epicCount === 0 || modules.length === 0) {
+    return '<div style="margin-top:16px">' + summaryHtml + '</div>';
+  }
+  var counts = {};
+  var unassignedCount = 0;
+  features.forEach(function(f) {
+    if (f.moduleId) { counts[f.moduleId] = (counts[f.moduleId] || 0) + 1; }
+    else { unassignedCount++; }
+  });
+  var segments = modules
+    .filter(function(m) { return counts[m.id] > 0; })
+    .map(function(m) { return { name: m.name, count: counts[m.id] }; });
+  if (unassignedCount > 0) { segments.push({ name: 'Unassigned', count: unassignedCount }); }
+  var stripHtml = segments.map(function(s) {
+    var widthPct = (s.count / epicCount) * 100;
+    return '<div data-a4-dist-segment title="' + _escapeHtml(s.name) + ': ' + s.count + '" ' +
+      'style="width:' + widthPct + '%;background:var(--accent);opacity:' + (0.5 + (0.5 * widthPct / 100)) + ';height:100%"></div>';
+  }).join('');
+  return '<div style="margin-top:16px">' +
+    summaryHtml +
+    '<div style="margin-top:6px;height:10px;border-radius:5px;overflow:hidden;display:flex;background:var(--line)">' + stripHtml + '</div>' +
+  '</div>';
+}
+
+function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules) {
+  modules = modules || [];
   var HEALTH_LABELS = { green: '✓ Healthy', amber: '⚠ Warning', red: '✕ Blocked', unknown: '? Unknown' };
   var HEALTH_COLORS = { green: '#22c55e', amber: '#f59e0b', red: '#ef4444', unknown: 'var(--muted)' };
   var healthCounts = (rollupRow && rollupRow.health_counts) ? _parseJsonbField(rollupRow.health_counts, null) : null;
@@ -229,6 +296,66 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
       : '';
     taxonomyHtml = '<div style="margin-top:16px">' + epicsSectionHtml + ungroupedSectionHtml + '</div>';
   }
+
+  // a4 (AC2) -- match each epic (journey) to a real per-feature health value
+  // (A3's healthCounts.perFeature, keyed by feature.slug) and a real
+  // per-story test-coverage percentage (testCoverage.perFeature, keyed by
+  // story slug -- see decisions.md a4 Task 0 finding 4 for why no
+  // per-top-level-feature coverage aggregate exists yet). No match falls
+  // back to 'unknown' health / an honest "No test data yet" label -- never
+  // a fabricated value.
+  var healthBySlug = {};
+  if (healthCounts && Array.isArray(healthCounts.perFeature)) {
+    healthCounts.perFeature.forEach(function(hf) { healthBySlug[hf.slug] = hf.health; });
+  }
+  var coverageBySlug = {};
+  if (testCoverage && Array.isArray(testCoverage.perFeature)) {
+    testCoverage.perFeature.forEach(function(cf) { coverageBySlug[cf.slug] = cf.percentage; });
+  }
+  var enrichedFeatures = features.map(function(f) {
+    var realHealth = healthBySlug.hasOwnProperty(f.featureSlug) ? healthBySlug[f.featureSlug] : 'unknown';
+    var pct = coverageBySlug.hasOwnProperty(f.featureSlug) ? coverageBySlug[f.featureSlug] : null;
+    return Object.assign({}, f, {
+      health: realHealth,
+      coverageLabel: (pct === null || pct === undefined) ? 'No test data yet' : (pct + '%')
+    });
+  });
+
+  // a4 (AC1, AC4) -- group epics under their assigned module, with an
+  // Unassigned bucket for anything with no module_id. Zero modules at all
+  // keeps the pre-existing flat rendering exactly as it was before this
+  // story (AC4's clean fallback state) rather than a 1-bucket grouping.
+  var featuresHtml;
+  if (modules.length === 0) {
+    featuresHtml = enrichedFeatures.length === 0
+      ? '<p style="color:var(--muted);font-size:14px">No features yet.</p>'
+      : '<ul style="list-style:none;padding:0;margin:0">' + enrichedFeatures.map(_renderEpicRow).join('') + '</ul>';
+  } else {
+    var byModule = {};
+    modules.forEach(function(m) { byModule[m.id] = []; });
+    var unassigned = [];
+    enrichedFeatures.forEach(function(f) {
+      if (f.moduleId && byModule[f.moduleId]) { byModule[f.moduleId].push(f); }
+      else { unassigned.push(f); }
+    });
+    featuresHtml =
+      '<style>' +
+        '.a4-module-body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.25s ease; overflow: hidden; }' +
+        '.a4-module-body--collapsed { grid-template-rows: 0fr; }' +
+        '.a4-module-body-inner { min-height: 0; overflow: hidden; }' +
+      '</style>' +
+      modules.map(function(m) { return _renderModuleSection(m.name, m.id, byModule[m.id]); }).join('') +
+      (unassigned.length > 0 ? _renderModuleSection('Unassigned', 'unassigned', unassigned) : '') +
+      '<script>' +
+        'function a4ToggleModule(btn){' +
+          'var body=document.getElementById(btn.getAttribute("aria-controls"));' +
+          'var collapsed=body.classList.toggle("a4-module-body--collapsed");' +
+          'btn.setAttribute("aria-expanded", collapsed ? "false" : "true");' +
+        '}' +
+      '<\/script>';
+  }
+  var scaleGaugeHtml = _renderScaleGauge(features, modules, taxonomy);
+
   var syncedAtLabel = rollupRow ? _syncFreshness.formatSyncedAt(rollupRow.synced_at) : _syncFreshness.formatSyncedAt(null);
   var dodCountsHtml = rollupRow
     ? Object.entries(_parseJsonbField(rollupRow.dod_status_counts, {})).map(function(entry) {
@@ -291,6 +418,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     coverageHtml +
     acCoverageHtml +
     taxonomyHtml +
+    scaleGaugeHtml +
     featuresHtml +
     '<script>' +
     'function pshConfirmDeleteProduct(id){' +
@@ -594,7 +722,7 @@ async function handleGetProductView(req, res, _next, pool) {
   )).rows[0] || null;
   var isSyncing = _productRollup.isSyncInProgress(productId);
   var rows = (await _pool.query(
-    "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage FROM journeys WHERE product_id = $1",
+    "SELECT journey_id, feature_slug, module_id, data->>'activeSkill' AS stage FROM journeys WHERE product_id = $1",
     [productId]
   )).rows;
   var features = rows.map(function(j) {
@@ -602,13 +730,26 @@ async function handleGetProductView(req, res, _next, pool) {
       journey_id: j.journey_id,
       stage: j.stage || 'discovery',
       health: 'green',
-      featureSlug: j.feature_slug
+      featureSlug: j.feature_slug,
+      moduleId: j.module_id || null
     };
   });
+  // a4 -- fetch the product's curated modules (A1) for module-grouped
+  // rendering (AC1). The adapter's stub default throws (D37) when unwired;
+  // production server.js always wires it unconditionally (a1), so this only
+  // ever falls back to [] in test doubles that don't exercise modules at
+  // all -- matching AC4's own "zero modules" flat-fallback spirit rather
+  // than masking a real production misconfiguration.
+  var modules = [];
+  try {
+    modules = await _modulesAdapter.listModules(productId, tenantId);
+  } catch (_) {
+    modules = [];
+  }
   if (res.json) {
     res.json({ features: features });
   } else {
-    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name);
+    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
