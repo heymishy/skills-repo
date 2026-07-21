@@ -11,8 +11,15 @@
 //   hamburger button added to the topbar. Overlay closes it on tap.
 //
 // Public API:
-//   renderShell({ title, bodyContent, user, active, crumbs, headerActions, isAdmin })
+//   renderShell({ title, bodyContent, user, active, crumbs, headerActions, isAdmin, impersonation })
 //   escHtml(str)
+//
+// d2: renderShell gained `impersonation` ({ active, targetLogin, targetTenantId,
+// csrfToken }) -- when active, renders a persistent, undismissable banner as the
+// FIRST element inside <body> (above the sidebar/main content), with an Exit
+// impersonation control that POSTs to /api/admin/impersonate/exit. Rendered
+// only here (never per-route) so a route handler that forwards this opt gets
+// the banner "for free" -- see renderImpersonationBanner below.
 //
 // b2: renderShell/renderSidebar gained `isAdmin` (boolean, default false) to gate
 // the account-level nav section's `adminOnly` entries (Admin credits). The account
@@ -114,6 +121,38 @@ function renderSidebar(active, login, isAdmin) {
   ].join('');
 }
 
+/**
+ * d2 (AC1) — Persistent, undismissable "viewing as" banner. Rendered ONLY by
+ * renderShell itself (never duplicated per-route) so a route handler that
+ * forgets to check impersonation state cannot accidentally render a page
+ * without it -- the ONLY thing a route handler must remember is to forward
+ * `impersonation` through to renderShell; the banner markup/behaviour itself
+ * lives in exactly one place.
+ *
+ * Accessibility NFR: never colour-only -- always paired with the ⚠ icon and
+ * explicit "Viewing as ..." text. The only interactive control inside the
+ * banner is the Exit form -- there is no dismiss/close affordance, matching
+ * AC1's "cannot be dismissed or hidden by any user action other than exiting
+ * impersonation."
+ * @param {{targetLogin:string, targetTenantId:string, csrfToken:string}} impersonation
+ * @returns {string}
+ */
+function renderImpersonationBanner(impersonation) {
+  var targetLogin = escHtml(impersonation.targetLogin || '');
+  var targetTenantId = escHtml(impersonation.targetTenantId || '');
+  var csrfToken = escHtml(impersonation.csrfToken || '');
+  return (
+    '<div class="sw-imp-banner" role="alert" aria-live="polite">' +
+      '<span class="sw-imp-banner-icon" aria-hidden="true">⚠</span>' +
+      '<span class="sw-imp-banner-text">Viewing as <strong>' + targetLogin + '</strong> (tenant: ' + targetTenantId + ')</span>' +
+      '<form method="POST" action="/api/admin/impersonate/exit" class="sw-imp-banner-form" onsubmit="return swExitImpersonation(event)">' +
+        '<input type="hidden" name="_csrf" value="' + csrfToken + '">' +
+        '<button type="submit" class="sw-imp-banner-exit">Exit impersonation</button>' +
+      '</form>' +
+    '</div>'
+  );
+}
+
 function renderCrumbs(crumbs) {
   if (!crumbs || !crumbs.length) { return '<div class="sw-crumbs"></div>'; }
   const parts = crumbs.map(function(c, i) {
@@ -182,6 +221,21 @@ const SHELL_JS =
         'if(btn)btn.textContent=\'▸\';' +
       '}' +
     '})();' +
+    // d2 (AC4): Exit impersonation -- intercepts the banner form's submit so a
+    // successful exit can force a full page reload (reflecting the restored
+    // real-admin permissions/nav everywhere, not just this one page).
+    'window.swExitImpersonation=function(ev){' +
+      'ev.preventDefault();' +
+      'var form=ev.target;' +
+      'var fd=new URLSearchParams(new FormData(form));' +
+      'fetch(form.action,{method:"POST",body:fd,headers:{"Content-Type":"application/x-www-form-urlencoded"}})' +
+        '.then(function(r){' +
+          'if(r.ok){window.location.href="/dashboard";}' +
+          'else{alert("Failed to exit impersonation");}' +
+        '})' +
+        '.catch(function(){alert("Failed to exit impersonation");});' +
+      'return false;' +
+    '};' +
     // OS preference change listener (only when no manual override in localStorage)
     'if(window.matchMedia){' +
       'window.matchMedia(\'(prefers-color-scheme: dark)\').addEventListener(\'change\',function(e){' +
@@ -201,6 +255,10 @@ function renderShell(opts) {
   const headerActions= opts.headerActions || '';
   const bodyContent  = opts.bodyContent || '';
   const isAdmin      = !!opts.isAdmin;
+  // d2 (AC1): banner rendered only when a caller-supplied impersonation opt
+  // is actually active -- absent/false renders no banner at all.
+  const impersonation = (opts.impersonation && opts.impersonation.active) ? opts.impersonation : null;
+  const bannerHtml   = impersonation ? renderImpersonationBanner(impersonation) : '';
 
   const themeToggle =
     '<button class="sw-theme-toggle" onclick="swToggleTheme()" aria-label="Toggle dark mode" title="Toggle dark/light mode">◑</button>';
@@ -217,6 +275,7 @@ function renderShell(opts) {
     '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">\n' +
     '<style>' + DESIGN_SYSTEM_CSS + '</style>\n' +
     '</head>\n<body>\n' +
+    bannerHtml +
     '<div class="sw-app">' +
       '<div class="sw-overlay" id="sw-overlay" onclick="swCloseSidebar()"></div>' +
       renderSidebar(active, login, isAdmin) +
@@ -331,6 +390,30 @@ a { color: inherit; }
 }
 .sw-signout { margin-left: auto; color: var(--muted-2); text-decoration: none; }
 .sw-signout:hover { color: var(--ink-2); }
+
+/* ── d2: impersonation banner ───────────────────────────────────────────────
+   Persistent, sticky, at the very top of the viewport -- above the sidebar's
+   own mobile drawer (z-index 200) and overlay (199). Striped background +
+   icon + explicit text (never colour alone, per the Accessibility NFR). The
+   only control inside it is the Exit form -- no dismiss/close affordance. */
+.sw-imp-banner {
+  position: sticky; top: 0; z-index: 500;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px;
+  background: var(--amber-soft);
+  background-image: repeating-linear-gradient(135deg, transparent, transparent 12px, var(--amber-soft) 12px, var(--amber-soft) 12px);
+  border-bottom: 2px solid var(--amber);
+  color: var(--ink); font-size: 13.5px; font-weight: 600;
+}
+.sw-imp-banner-icon { font-size: 15px; flex-shrink: 0; }
+.sw-imp-banner-text { flex: 1; min-width: 0; }
+.sw-imp-banner-form { margin: 0; flex-shrink: 0; }
+.sw-imp-banner-exit {
+  padding: 5px 12px; border-radius: 6px; border: 1px solid var(--ink);
+  background: var(--ink); color: var(--bg);
+  font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;
+}
+.sw-imp-banner-exit:hover { opacity: 0.85; }
 
 /* ── Overlay (mobile sidebar backdrop) ─────────────────────────────────────── */
 .sw-overlay {

@@ -53,6 +53,30 @@ async function writeImpersonationAudit(record) {
 }
 
 /**
+ * d2 — Set `ended_at` on the SAME row `writeImpersonationAudit` created for this
+ * session's start (never a new row). Backs the exit flow's Audit NFR ("exit is
+ * logged with an end-timestamp on the same audit entry D1 created for the
+ * session start, not a new, separate entry"). Callers (modules/impersonation.js's
+ * exitImpersonationSession) treat a rejected/erroring call here as non-fatal —
+ * see decisions.md's SEC entry on why exit must fail OPEN on an audit-log
+ * hiccup (blocking exit would trap the real admin inside the target's identity,
+ * a worse outcome than a missed end-timestamp).
+ * @param {*} auditId
+ * @returns {Promise<object|null>} the updated row, or null if no row matched
+ */
+async function endImpersonationAudit(auditId) {
+  var db = _requireAdapter();
+  var r = await db.query(
+    `UPDATE impersonation_audit_log
+       SET ended_at = NOW()
+     WHERE id = $1
+     RETURNING id, admin_id, admin_login, admin_tenant_id, target_id, target_login, target_tenant_id, reason, created_at, ended_at`,
+    [auditId]
+  );
+  return r.rows.length ? r.rows[0] : null;
+}
+
+/**
  * Retrieve a single audit row by id (AC6 verification / D3's future viewing UI).
  * @param {*} auditId
  * @returns {Promise<object|null>}
@@ -76,6 +100,7 @@ async function listImpersonationAuditRows() {
 module.exports = {
   setImpersonationAuditAdapter,
   writeImpersonationAudit,
+  endImpersonationAudit,
   getImpersonationAuditRow,
   listImpersonationAuditRows
 };

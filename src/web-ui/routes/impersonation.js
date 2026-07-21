@@ -5,7 +5,7 @@
 // POST /api/admin/impersonate/start — reason-gated session swap (requireAdmin + CSRF)
 // Mirrors team-management.js's createTeamManagementHandlers(pool) factory convention.
 
-var { filterUsers, listImpersonationCandidates, getImpersonationCandidateById, startImpersonationSession } = require('../modules/impersonation');
+var { filterUsers, listImpersonationCandidates, getImpersonationCandidateById, startImpersonationSession, exitImpersonationSession } = require('../modules/impersonation');
 var { listImpersonationAuditRows } = require('../adapters/impersonation-audit-adapter'); // d3
 var csrf = require('../middleware/csrf');
 
@@ -152,6 +152,45 @@ function createImpersonationHandlers(pool) {
   }
 
   /**
+   * POST /api/admin/impersonate/exit — d2 (AC4). Ends the active impersonation
+   * session and restores the real admin's identity exactly.
+   *
+   * Deliberately NOT gated by requireAdmin at mount time (see server.js) --
+   * requireAdmin checks the CURRENT EFFECTIVE role, which during an active
+   * impersonation of a non-admin target is 'user', not 'admin'. Gating exit
+   * behind requireAdmin would make it impossible for the real admin to exit
+   * out of a non-admin target's session -- the opposite of this AC's intent.
+   * The real authorization check is `req.session.impersonation.active`, a
+   * flag only ever written server-side by startImpersonationSession -- never
+   * client-supplied, matching the D1 SEC fix's discipline of re-deriving
+   * identity/authorization from trustworthy server-side state only.
+   */
+  async function handlePostImpersonateExit(req, res) {
+    var csrfOk = await csrf.csrfGuard(req, res);
+    if (!csrfOk) return;
+
+    if (!req.session || !req.session.impersonation || !req.session.impersonation.active) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Not currently impersonating.' }));
+      return;
+    }
+
+    try {
+      await exitImpersonationSession(req.session);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ exited: true }));
+    } catch (err) {
+      if (err && err.code === 'NOT_IMPERSONATING') {
+        res.writeHead(400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Not currently impersonating.' }));
+        return;
+      }
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Failed to exit impersonation session.' }));
+    }
+  }
+
+  /**
    * GET /api/admin/impersonate/audit — read-only audit list (d3, AC1/AC2/AC4).
    * Never writes to impersonation_audit_log. Reuses D1's adapter directly --
    * no new D37 adapter (DoR H-ADAPTER). Rows are already most-recent-first
@@ -169,6 +208,7 @@ function createImpersonationHandlers(pool) {
   return {
     handleGetImpersonatePage: handleGetImpersonatePage,
     handlePostImpersonateStart: handlePostImpersonateStart,
+    handlePostImpersonateExit: handlePostImpersonateExit,
     handleGetImpersonationAuditList: handleGetImpersonationAuditList
   };
 }

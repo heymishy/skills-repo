@@ -5,6 +5,8 @@ var os = require('os');
 var fs = require('fs');
 var { renderShell, escHtml } = require('../utils/html-shell');
 var { requireJourneyAccess, asHttpResponse, POLICY } = require('../middleware/journey-access');
+var { isEffectivelyAdmin } = require('../modules/impersonation'); // d2
+var _csrf = require('../middleware/csrf'); // d2 -- impersonation exit banner CSRF token
 var { updateJourneyReferenceFiles } = require('../modules/journey-state-persistence');
 var _flagBootstrap = require('../modules/flag-bootstrap'); // bri-s1.3
 
@@ -312,7 +314,17 @@ function handleGetJourney(req, res) {
   journeys.sort(function(a, b) { return (b.createdAt ? new Date(b.createdAt).toISOString() : '').localeCompare(a.createdAt ? new Date(a.createdAt).toISOString() : ''); });
   var showNewForm = !!(req.query && req.query.new === '1');
   var body = _renderJourneyHome({ profiles: profiles, activeProfile: activeProfile, journeys: journeys, showNewForm: showNewForm });
-  var html = renderShell({ title: 'Journeys', active: 'journey', bodyContent: body, user: { login: login } });
+  // d2: this page previously never computed/passed isAdmin at all (defaulted
+  // to false even for a genuine, non-impersonating admin) -- wired here using
+  // the same isEffectivelyAdmin() helper as dashboard.js/settings.js so the
+  // Admin credits nav entry and the impersonation banner (AC1/AC2/AC3) are
+  // consistent across this page too, not just the two pages b2 originally wired.
+  var isAdmin = isEffectivelyAdmin(req.session);
+  var imp = req.session.impersonation;
+  var impersonation = (imp && imp.active && imp.target)
+    ? { active: true, targetLogin: imp.target.login, targetTenantId: imp.target.tenantId, csrfToken: _csrf.generateCsrfToken(req) }
+    : null;
+  var html = renderShell({ title: 'Journeys', active: 'journey', bodyContent: body, user: { login: login }, isAdmin: isAdmin, impersonation: impersonation });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }

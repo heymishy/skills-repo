@@ -24,6 +24,7 @@ var _tenantPlan = require('../modules/tenant-plan'); // c2
 // does; no new adapter, no changes to either module (Architecture Constraints, story c3).
 var _credits = require('../modules/credits');
 var _csrf = require('../middleware/csrf'); // c2 / c3
+var _impersonation = require('../modules/impersonation'); // d2
 // d3 — reuses D1's read-only impersonation-audit-adapter.js exactly as c3
 // reuses modules/credits.js; no new adapter (DoR H-ADAPTER).
 var _impersonationAudit = require('../adapters/impersonation-audit-adapter');
@@ -280,6 +281,12 @@ function renderImpersonationAuditTab(rows) {
     '<div id="tab-panel-impersonate" class="sw-tab-panel" role="tabpanel" aria-labelledby="tab-impersonate">' +
       '<div class="sw-card sw-card--lg">' +
         '<div class="sw-section-title">Recent impersonation sessions</div>' +
+        // d2/d3 merge reconciliation: D1's own search/start-impersonation page
+        // (/admin/impersonate) predates this tab and is a separate flow (start
+        // a NEW session) from this tab's own read-only audit history (past
+        // sessions) -- surfaced here as a link so neither capability is lost
+        // now that both stories independently named their content "Impersonate".
+        '<p><a href="/admin/impersonate">Start a new impersonation session &rarr;</a></p>' +
         content +
       '</div>' +
     '</div>'
@@ -288,9 +295,14 @@ function renderImpersonationAuditTab(rows) {
 
 /**
  * Render the tab nav buttons. Profile and Billing are always present (C2
- * adds Billing's real content later); Credits is admin-only (matches the
- * existing live requireAdmin gating convention -- b2/epic-c precedent -- and
- * C3 adds its real content later).
+ * adds Billing's real content later); Credits and Impersonate are admin-only
+ * (matches the existing live requireAdmin gating convention -- b2/epic-c
+ * precedent -- and C3 adds Credits' real content later). d2: `isAdmin` here
+ * is computed by the caller via isEffectivelyAdmin(req.session) -- during an
+ * active impersonation session it reflects the impersonated TARGET's role,
+ * never the real admin's own role (AC2/AC3), so both tabs are correctly
+ * hidden while impersonating a non-admin and correctly shown while
+ * impersonating an admin.
  * @param {boolean} isAdmin
  * @returns {string}
  */
@@ -298,7 +310,14 @@ function _renderTabNav(isAdmin) {
   var creditsTab = isAdmin
     ? '<button type="button" class="sw-settings-tab" id="tab-credits" role="tab" aria-selected="false" onclick="swShowSettingsTab(\'credits\')">Credits</button>'
     : '';
-  // d3 — Impersonate tab (admin-only, same gating convention as Credits above).
+  // d2/d3 merge reconciliation: both stories independently built an
+  // "Impersonate" tab -- d2 as a link out to D1's existing /admin/impersonate
+  // search/start page, d3 as an in-shell tab-panel showing the read-only
+  // audit history (matching the Credits/Billing tab-panel convention). Kept
+  // d3's tab-panel mechanic (consistent with the rest of this shell) and
+  // surfaced d1's start-a-session link INSIDE that tab's own content
+  // (renderImpersonationAuditTab, above) rather than as a second nav item,
+  // so neither capability is lost. Flagged in decisions.md for operator review.
   var impersonateTab = isAdmin
     ? '<button type="button" class="sw-settings-tab" id="tab-impersonate" role="tab" aria-selected="false" onclick="swShowSettingsTab(\'impersonate\')">Impersonate</button>'
     : '';
@@ -353,7 +372,7 @@ var _TAB_JS =
  * Render the full Settings page (AC1: wrapped in the shared shell, not a
  * bare fragment). Profile and Credits (c3) panels have real content;
  * Billing remains an empty container ready for C2.
- * @param {{user: object, linkedSet: Set<string>, isAdmin: boolean, creditsRows?: Array, csrfToken?: string, creditsError?: string}} opts
+ * @param {{user: object, linkedSet: Set<string>, isAdmin: boolean, creditsRows?: Array, csrfToken?: string, creditsError?: string, impersonation?: object}} opts
  * @returns {string} full HTML document
  */
 function renderSettingsPage(opts) {
@@ -395,9 +414,10 @@ function renderSettingsPage(opts) {
     user: user,
     active: 'settings',
     crumbs: ['Settings'],
-    isAdmin: isAdmin // b2: forward the isAdmin this function already computes so the
-                     // sidebar's Admin credits entry (gated the same way as the
-                     // Credits tab above) shows consistently on this page too.
+    isAdmin: isAdmin, // b2: forward the isAdmin this function already computes so the
+                      // sidebar's Admin credits entry (gated the same way as the
+                      // Credits tab above) shows consistently on this page too.
+    impersonation: opts.impersonation // d2 (AC1): forward so the shell can render the banner
   });
 }
 
@@ -428,7 +448,18 @@ function createSettingsHandlers(pool) {
       login: req.session && req.session.login,
       authProvider: currentProvider
     };
-    var isAdmin = !!(req.session && req.session.role === 'admin');
+    // d2: replaces the inline req.session.role check with isEffectivelyAdmin()
+    // (modules/impersonation.js), which keys off the EFFECTIVE role (the
+    // impersonation target's role while impersonating, never the real
+    // admin's own role) -- AC2/AC3. Unchanged boolean value for a
+    // non-impersonating session.
+    var isAdmin = _impersonation.isEffectivelyAdmin(req.session);
+    // d2 (AC1): forward the active impersonation state (if any) so the shell
+    // can render the persistent banner.
+    var imp = req.session && req.session.impersonation;
+    var impersonationOpts = (imp && imp.active && imp.target)
+      ? { active: true, targetLogin: imp.target.login, targetTenantId: imp.target.tenantId, csrfToken: _csrf.generateCsrfToken(req) }
+      : null;
 
     // c2: read the exact same source /billing/plan-state reads (tenantPlan.getPlanState)
     // -- no separate/duplicated plan-status computation.
@@ -472,6 +503,7 @@ function createSettingsHandlers(pool) {
       planState: planState,
       csrfToken: csrfToken,
       creditsRows: creditsRows,
+      impersonation: impersonationOpts,
       impersonationAuditRows: impersonationAuditRows
     });
 
