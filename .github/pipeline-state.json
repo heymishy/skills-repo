@@ -12608,9 +12608,9 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "passing",
-                "totalTests": 16,
-                "passing": 16
+                "status": "all-passing",
+                "totalTests": 23,
+                "passing": 23
               },
               "acTotal": 5,
               "acVerified": 5,
