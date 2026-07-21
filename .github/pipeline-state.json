@@ -11993,7 +11993,7 @@
       "track": "standard",
       "stage": "branch-complete",
       "health": "green",
-      "updatedAt": "2026-07-21T08:23:35.076Z",
+      "updatedAt": "2026-07-21T08:28:21.838Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -12494,7 +12494,7 @@
               "name": "Start an impersonation session (search, reason-gated, session swap)",
               "stage": "definition-of-ready",
               "health": "amber",
-              "updatedAt": "2026-07-20T20:47:56.104Z",
+              "updatedAt": "2026-07-21T08:28:21.838Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12506,17 +12506,17 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "blocked",
+              "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d1-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d1-dor-contract.md",
-              "blocker": "All hard blocks (H1-H9, H-E2E, H-NFR, H-GOV, H-ADAPTER) passed. High-oversight named human sign-off (Hamish King, Founder/Operator) is required before this story can be assigned to a coding agent, per its epic's oversight level -- not yet obtained."
+              "dorSignedOffAt": "2026-07-21T08:28:21.838Z"
             },
             {
               "slug": "d2",
               "name": "Persistent viewing-as banner, exit flow, and permission-scoped visibility",
               "stage": "definition-of-ready",
               "health": "amber",
-              "updatedAt": "2026-07-20T20:47:56.104Z",
+              "updatedAt": "2026-07-21T08:28:21.838Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12528,17 +12528,17 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
-              "dorStatus": "blocked",
+              "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d2-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d2-dor-contract.md",
-              "blocker": "All hard blocks (H1-H9, H-E2E, H-NFR, H-GOV, H-ADAPTER) passed. High-oversight named human sign-off (Hamish King, Founder/Operator) is required before this story can be assigned to a coding agent, per its epic's oversight level -- not yet obtained."
+              "dorSignedOffAt": "2026-07-21T08:28:21.838Z"
             },
             {
               "slug": "d3",
               "name": "Impersonation audit log",
               "stage": "definition-of-ready",
               "health": "amber",
-              "updatedAt": "2026-07-20T20:47:56.104Z",
+              "updatedAt": "2026-07-21T08:28:21.838Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12550,17 +12550,17 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "blocked",
+              "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d3-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d3-dor-contract.md",
-              "blocker": "All hard blocks (H1-H9, H-E2E, H-NFR, H-GOV, H-ADAPTER) passed. High-oversight named human sign-off (Hamish King, Founder/Operator) is required before this story can be assigned to a coding agent, per its epic's oversight level -- not yet obtained."
+              "dorSignedOffAt": "2026-07-21T08:28:21.838Z"
             },
             {
               "slug": "d4",
               "name": "NFR-security review and hardening pass for Admin User Impersonation",
               "stage": "definition-of-ready",
               "health": "amber",
-              "updatedAt": "2026-07-20T20:47:56.104Z",
+              "updatedAt": "2026-07-21T08:28:21.838Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12572,10 +12572,10 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "blocked",
+              "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d4-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d4-dor-contract.md",
-              "blocker": "All hard blocks (H1-H9, H-E2E, H-NFR, H-GOV, H-ADAPTER) passed. High-oversight named human sign-off (Hamish King, Founder/Operator) is required before this story can be assigned to a coding agent, per its epic's oversight level -- not yet obtained."
+              "dorSignedOffAt": "2026-07-21T08:28:21.838Z"
             }
           ]
         }

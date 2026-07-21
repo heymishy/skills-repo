@@ -82,4 +82,4 @@ Oversight level: High
 
 **Oversight level:** High
 **Sign-off required:** Yes — named human sign-off required.
-**Signed off by:** _[Pending — Hamish King, Founder/Operator, to confirm explicitly before this story is assigned]_
+**Signed off by:** Hamish King — Founder/Operator — 2026-07-21
