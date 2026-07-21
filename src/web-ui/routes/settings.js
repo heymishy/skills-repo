@@ -19,10 +19,11 @@
 
 var _htmlShell = require('../utils/html-shell');
 var _identityLinks = require('../modules/identity-links');
+var _tenantPlan = require('../modules/tenant-plan'); // c2
 // c3 — reuses getAllTenantBalances/CSRF helpers exactly as admin-credits.js already
 // does; no new adapter, no changes to either module (Architecture Constraints, story c3).
 var _credits = require('../modules/credits');
-var _csrf = require('../middleware/csrf');
+var _csrf = require('../middleware/csrf'); // c2 / c3
 
 // Sign-in providers surfaced on the Profile tab, in display order.
 var PROVIDERS = [
@@ -91,6 +92,61 @@ function renderProfileTab(user, linkedSet) {
       '<div class="sw-section-title">Sign-in methods</div>' +
       '<ul class="sw-list">' + rows + '</ul>' +
     '</div>'
+  );
+}
+
+// c2: real production shape from tenantPlan.getPlanState() (and the
+// /billing/plan-state endpoint that reads it) is exactly
+// { plan: 'trial'|'paid', status: 'active'|'past_due'|'canceled' } -- no
+// trialEndsInDays field exists anywhere in the real store. Verified against
+// src/web-ui/modules/tenant-plan.js before writing this -- see decisions.md
+// mock-shape verification entry.
+function _billingStatusPill(planState) {
+  var status = (planState && planState.status) || 'active';
+  var plan = (planState && planState.plan) || 'trial';
+
+  if (status === 'past_due') return { cls: 'amber', label: 'Past due' };
+  if (status === 'canceled') return { cls: 'red', label: 'Canceled' };
+  if (plan === 'trial') return { cls: 'accent', label: 'Trial' };
+  return { cls: 'green', label: 'Active' };
+}
+
+/**
+ * Render the Billing tab's panel content (story c2, AC1-AC5): a status pill
+ * (colour + text label per the accessibility NFR -- never colour alone), the
+ * plan label, a "Manage billing" link to the existing portal-redirect route
+ * (AC4, /settings/billing, unmodified), and -- only while on a trial plan --
+ * an "Upgrade to Pro" form posting to the existing /billing/checkout route
+ * (AC5), reusing handlePostCheckout's existing CSRF + planId contract exactly
+ * as lab-s3.2/sec-perf-s3's own /welcome plan-selection form does.
+ * @param {{plan: string, status: string}} planState
+ * @param {string} csrfToken
+ * @returns {string} HTML fragment
+ */
+function renderBillingTab(planState, csrfToken) {
+  planState = planState || { plan: 'trial', status: 'active' };
+  var pill = _billingStatusPill(planState);
+  var planLabel = planState.plan === 'paid' ? 'Paid plan' : 'Trial plan';
+
+  var upgradeForm = planState.plan === 'trial'
+    ? (
+      '<form action="/billing/checkout" method="POST" style="display:inline-block;margin-left:10px">' +
+        _csrf.csrfField(csrfToken) +
+        '<input type="hidden" name="planId" value="pro">' +
+        '<button type="submit" class="sw-btn sw-btn--accent">Upgrade to Pro</button>' +
+      '</form>'
+    )
+    : '';
+
+  return (
+    '<div class="sw-card sw-card--lg" style="margin-bottom:20px">' +
+      '<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">' +
+        '<span class="sw-pill sw-pill--' + pill.cls + '">' + _escapeHtml(pill.label) + '</span>' +
+        '<span style="color:var(--muted);font-size:13px">' + _escapeHtml(planLabel) + '</span>' +
+      '</div>' +
+    '</div>' +
+    '<a class="sw-btn sw-btn--subtle" href="/settings/billing">Manage billing</a>' +
+    upgradeForm
   );
 }
 
@@ -239,6 +295,9 @@ function renderSettingsPage(opts) {
   var user = opts.user || {};
   var linkedSet = opts.linkedSet || new Set();
   var isAdmin = !!opts.isAdmin;
+  // c2: safe defaults preserve C1's existing call sites, which never pass these.
+  var planState = opts.planState || { plan: 'trial', status: 'active' };
+  var csrfToken = opts.csrfToken || '';
 
   var body =
     '<h1 class="sw-page-h1">Settings</h1>' +
@@ -248,12 +307,14 @@ function renderSettingsPage(opts) {
     '<div class="sw-tab-panel sw-tab-panel--active" id="tab-panel-profile-wrap">' +
       renderProfileTab(user, linkedSet) +
     '</div>' +
-    '<div id="tab-panel-billing" class="sw-tab-panel" role="tabpanel" aria-labelledby="tab-billing"></div>' +
+    '<div id="tab-panel-billing" class="sw-tab-panel" role="tabpanel" aria-labelledby="tab-billing">' +
+      renderBillingTab(planState, csrfToken) +
+    '</div>' +
     // c3 (AC1/AC2): real, server-gated Credits content -- only ever built when
     // isAdmin is true. A non-admin request never even has creditsRows/csrfToken
     // populated (see handleGetSettings below), so there is nothing to hide
     // client-side -- the tab and its data are absent from the response entirely.
-    (isAdmin ? renderCreditsTab(opts.creditsRows || [], opts.csrfToken, { errorMessage: opts.creditsError }) : '') +
+    (isAdmin ? renderCreditsTab(opts.creditsRows || [], csrfToken, { errorMessage: opts.creditsError }) : '') +
     _TAB_JS;
 
   return _htmlShell.renderShell({
@@ -294,17 +355,24 @@ function createSettingsHandlers(pool) {
     };
     var isAdmin = !!(req.session && req.session.role === 'admin');
 
-    // c3 (AC1/AC2): fetch real tenant balances + generate the CSRF token
-    // ONLY when isAdmin is true -- reuses getAllTenantBalances/generateCsrfToken
-    // exactly as admin-credits.js already does (Architecture Constraints).
-    // A non-admin request never calls these, so there is no balance data or
-    // CSRF token to leak even if the render layer had a bug -- the server-side
-    // gate is enforced at the data-fetch step, not just in the markup.
+    // c2: read the exact same source /billing/plan-state reads (tenantPlan.getPlanState)
+    // -- no separate/duplicated plan-status computation.
+    var tenantId = req.session && req.session.tenantId;
+    var planState = await _tenantPlan.getPlanState(tenantId);
+    // Shared across the Billing (c2) and Credits (c3) tabs -- both forms post
+    // back to server-gated routes and need a valid token; one token per page
+    // load is sufficient and avoids generating it twice per request.
+    var csrfToken = _csrf.generateCsrfToken(req);
+
+    // c3 (AC1/AC2): fetch real tenant balances ONLY when isAdmin is true --
+    // reuses getAllTenantBalances exactly as admin-credits.js already does
+    // (Architecture Constraints). A non-admin request never calls this, so
+    // there is no balance data to leak even if the render layer had a bug --
+    // the server-side gate is enforced at the data-fetch step, not just in
+    // the markup.
     var creditsRows = [];
-    var csrfToken = null;
     if (isAdmin) {
       creditsRows = await _credits.getAllTenantBalances();
-      csrfToken = _csrf.generateCsrfToken(req);
     }
 
     // c3 (AC4): the initial page load never has a prior rejection to show --
@@ -315,8 +383,9 @@ function createSettingsHandlers(pool) {
       user: user,
       linkedSet: linkedSet,
       isAdmin: isAdmin,
-      creditsRows: creditsRows,
-      csrfToken: csrfToken
+      planState: planState,
+      csrfToken: csrfToken,
+      creditsRows: creditsRows
     });
 
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
@@ -329,6 +398,7 @@ function createSettingsHandlers(pool) {
 module.exports = {
   PROVIDERS: PROVIDERS,
   renderProfileTab: renderProfileTab,
+  renderBillingTab: renderBillingTab,
   renderCreditsTab: renderCreditsTab,
   renderSettingsPage: renderSettingsPage,
   createSettingsHandlers: createSettingsHandlers

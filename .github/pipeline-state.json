@@ -12263,7 +12263,7 @@
         {
           "slug": "epic-c-account-settings-page",
           "name": "A signed-in user has one real place to manage their account, billing, and (if admin) platform credits",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "c1",
@@ -12290,24 +12290,26 @@
             {
               "slug": "c2",
               "name": "Billing tab — plan status and Stripe portal access",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-20T20:47:56.104Z",
+              "updatedAt": "2026-07-21T05:55:12.676Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
-                "passing": 0
+                "passing": 7
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/c2-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/c2-dor-contract.md",
-              "dorSignedOffAt": "2026-07-20T20:47:56.104Z"
+              "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/527"
             },
             {
               "slug": "c3",
