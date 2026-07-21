@@ -12602,9 +12602,9 @@
             {
               "slug": "d4",
               "name": "NFR-security review and hardening pass for Admin User Impersonation",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T19:45:52.877Z",
+              "updatedAt": "2026-07-21T19:47:14.653Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12620,8 +12620,8 @@
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d4-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d4-dor-contract.md",
               "dorSignedOffAt": "2026-07-21T08:28:21.838Z",
-              "verifyStatus": "passed",
-              "tasks": []
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/541"
             }
           ]
         }
