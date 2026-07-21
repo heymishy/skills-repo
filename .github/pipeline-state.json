@@ -12002,14 +12002,14 @@
         {
           "slug": "epic-a-product-view-redesign",
           "name": "Operators can read a large product’s health, scale, and organisation at a glance",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "a1",
               "name": "Curate a Modules taxonomy for a product",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T03:51:04.269Z",
+              "updatedAt": "2026-07-21T03:52:42.709Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12087,7 +12087,9 @@
                   "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a1-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/520"
             },
             {
               "slug": "a2",
