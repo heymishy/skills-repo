@@ -12002,7 +12002,7 @@
         {
           "slug": "epic-a-product-view-redesign",
           "name": "Operators can read a large product’s health, scale, and organisation at a glance",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "a1",
@@ -12051,24 +12051,64 @@
             {
               "slug": "a3",
               "name": "Compute health per-feature, distinct from test coverage",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-20T20:47:56.104Z",
+              "updatedAt": "2026-07-21T03:49:42.951Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 6,
-                "passing": 0
+                "totalTests": 65,
+                "passing": 65
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a3-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a3-dor-contract.md",
-              "dorSignedOffAt": "2026-07-20T20:47:56.104Z"
+              "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/519",
+              "tasks": [
+                {
+                  "id": "task-0",
+                  "name": "Investigation: trace computeHealthCounts real inputs from pipeline-state.json",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a3-plan.md"
+                },
+                {
+                  "id": "task-1",
+                  "name": "Extend computeHealthCounts to return a per-feature breakdown (AC1)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Prove per-feature health independence from coverage, matching confirmed rule (AC2, AC2a)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a3-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Confirm existing aggregate consumers unaffected (AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a3-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Confirm persistence via product-sync (AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a3-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Close out AC2a placeholder and test-plan gap (docs only)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a3-plan.md"
+                }
+              ]
             },
             {
               "slug": "a4",
