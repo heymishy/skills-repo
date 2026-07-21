@@ -1,108 +1,97 @@
 {
-  "currentPhase": "live-staging-verification",
-  "lastUpdated": "2026-07-20T11:15:00Z",
-  "activeFeature": "live-staging-verification-of-2026-07-16-product-rollup-and-3-follow-on-short-tracks",
-  "previousFeature": "2026-07-16-ci-flake-grep-fix",
+  "currentPhase": "inner-loop-execution",
+  "lastUpdated": "2026-07-21T06:45:00Z",
+  "activeFeature": "2026-07-21-web-ui-experience-redesign",
+  "previousFeature": "live-staging-verification-of-2026-07-16-product-rollup-and-3-follow-on-short-tracks",
   "cycle": {
     "discovery": {
-      "status": "not-applicable (short-track / hotfix work this session — discovery skipped by design per CLAUDE.md's short-track routing)",
-      "artefact": "N/A — no discovery artefact produced this session",
-      "completedAt": null
+      "status": "approved",
+      "artefact": "artefacts/2026-07-21-web-ui-experience-redesign/discovery.md",
+      "completedAt": "2026-07-21T00:00:00Z"
     },
-    "note": "This checkpoint does not map to a single story's pipeline stage. It covers a live, post-merge staging verification pass across one epic (product-rollup, 7 stories, all merged/DoD-eligible) plus 3 follow-on short-track stories (jrf-s1, rpc-s1, kbc-s1, all merged) plus 3 hotfixes shipped directly without full short-track story artefacts (see 'processGap' below). See 'liveVerification' block for the actual state.",
-    "product-rollup-epic": {
-      "slug": "2026-07-16-product-rollup",
-      "stories": ["pr-s1", "pr-s2", "pr-s3", "pr-s4", "pr-s5", "pr-s6", "pr-s7"],
-      "status": "all 7 merged; stage=branch-complete in pipeline-state.json as of last check",
-      "note": "DoD status for this epic was not re-verified in this session — check .github/pipeline-state.json on master directly rather than trusting this field."
+    "benefit-metric": {
+      "status": "active",
+      "artefact": "artefacts/2026-07-21-web-ui-experience-redesign/benefit-metric.md",
+      "completedAt": "2026-07-21T00:00:00Z"
     },
-    "follow-on-short-tracks": {
-      "jrf-s1": { "slug": "2026-07-19-new-feature-redirect-fix", "pr": 507, "status": "merged", "fix": "handlePostProductFeature now creates a skill session and redirects to /skills/discovery/sessions/<id>/chat instead of the nonexistent /journeys/<id>/discovery" },
-      "rpc-s1": { "slug": "2026-07-19-product-repo-connect-ux", "pr": 508, "status": "merged", "fix": "added Connect-repo UI affordance (create-new / connect-existing) to _renderProductView" },
-      "kbc-s1": { "slug": "2026-07-19-kanban-consolidation", "pr": 506, "status": "merged", "fix": "consolidated product/org/tenant kanban into one shared renderer (kanban-view.js); removed /features, /actions, /status routes outright" },
-      "bookkeeping-pr-509": { "status": "merged", "note": "post-merge pipeline-state.json bookkeeping for jrf-s1/rpc-s1/kbc-s1's real final stage/prStatus/testPlan/acVerified values" }
+    "definition": {
+      "status": "complete",
+      "artefact": "artefacts/2026-07-21-web-ui-experience-redesign/epics/",
+      "completedAt": "2026-07-21T00:00:00Z",
+      "note": "4 epics, 14 stories, vertical-slice slicing strategy"
     },
-    "hotfixes-shipped-without-full-story-artefacts": {
-      "pr-510": { "title": "hotfix(rpc-s1): fix syntax error breaking every repo-connect button", "status": "merged", "rootCause": "missing closing brace in rpcSubmitCreate/rpcSubmitConnect's try block broke the ENTIRE inline <script> tag, silently making every button handler undefined", "regressionTest": "IT4 in tests/check-rpc-s1-connect-repo.js — vm.Script-compiles the extracted inline script body" },
-      "pr-511": { "title": "hotfix: fix JSONB rollup fields crashing product view on real sync", "status": "merged", "rootCause": "_renderProductView called JSON.parse() unconditionally on 5 JSONB columns (health_counts, test_coverage, ac_coverage, taxonomy, dod_status_counts); pg auto-parses JSONB to objects, so this crashed with SyntaxError: \"[object Object]\" is not valid JSON the first time any product completed a real sync round-trip on staging", "fix": "added _parseJsonbField() helper in products.js, only parses if value is actually a string", "regressionTest": "new test in tests/check-pr-s2-products-route.js using object-shaped (real pg) mock values end-to-end through handleGetProductView" },
-      "pr-513": { "title": "hotfix(pr-s5..pr-s7): fall back to story.id when story.slug is absent in rollup breakdowns", "status": "OPEN, CI initially failed on an unrelated pre-existing check-workspace-state.js schema break introduced by this same session's earlier state.json rewrite (fixed in a follow-up commit on this branch, see below) — re-check CI before merging", "rootCause": "computeTestCoverageRollup/computeAcCoverageRollup/computeTaxonomyRollup in product-rollup.js pushed slug: story.slug with no fallback; 17 real stories in this repo's pipeline-state.json have id but no slug", "fix": "all 3 call sites now use story.slug || story.id", "regressionTest": "3 new tests in tests/check-pr-s2-product-rollup.js, one per function; also confirmed 0 blank entries against a real read of this repo's own pipeline-state.json (was 17)" },
-      "processGap": "All 3 hotfixes were shipped directly (user chose 'Fast direct hotfix (Recommended)' each time) without discovery/story/test-plan/DoR artefacts, per CLAUDE.md's own 'Artefact-first rule' this technically needs a retrospective-story.md (per the same rule's own stated remedy: 'For work that has already landed without a chain, use .github/templates/retrospective-story.md to create a retroactive story.'). NOT YET DONE for PR #510, #511, or #513 — flagged as a pending action below."
+    "review": {
+      "status": "passed",
+      "artefact": "artefacts/2026-07-21-web-ui-experience-redesign/review/",
+      "completedAt": "2026-07-21T00:00:00Z",
+      "note": "16 review runs (14 stories + 2 re-reviews after fixes to a3 and c2). 0 unresolved HIGH findings."
+    },
+    "test-plan": {
+      "status": "complete",
+      "artefact": "artefacts/2026-07-21-web-ui-experience-redesign/test-plans/",
+      "completedAt": "2026-07-21T00:00:00Z"
+    },
+    "definition-of-ready": {
+      "status": "signed-off (10 of 14 stories) / blocked-pending-human-sign-off (4 of 14 -- d1-d4)",
+      "artefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/",
+      "completedAt": "2026-07-21T00:00:00Z",
+      "note": "PR #518 merged this whole outer-loop artefact chain. D1-D4 (Admin Impersonation, High oversight) require Hamish King's own named sign-off before assignment -- not yet given, not something the agent can self-approve."
+    },
+    "inner-loop": {
+      "status": "in-progress",
+      "note": "See innerLoopExecution block below for full per-story detail. 9 of 14 stories merged, 1 in-flight (a4), 4 held (d1-d4)."
     }
   },
-  "liveVerification": {
-    "context": "User is manually clicking through wuce-staging (live Fly.io deployment) testing the product-rollup epic + 3 follow-on stories, reporting issues as found. This is an active, in-progress investigation — not complete.",
-    "confirmedWorkingSinceLastFix": [
-      "Repo-connect buttons now trigger real network activity (PR #510 fix confirmed live)",
-      "Refresh on skills-framework self-registered product no longer crashes (PR #511 fix confirmed live, deployed, and merged)",
-      "Connecting an existing GitHub repo (heymishy/skills-framework-test-staging-sync) succeeded with no 'access' error this time — earlier session's 'you do not have access' report appears resolved by re-login + the button-syntax hotfix; not independently re-tested since"
-    ],
-    "openFindings": [
-      {
-        "id": "F1-blank-slug-labels",
-        "summary": "Test-coverage and AC-coverage per-feature lists show blank ': 100%' entries with no story name",
-        "rootCause": "CONFIRMED — computeTestCoverageRollup() and computeAcCoverageRollup() in src/web-ui/modules/product-rollup.js pushed `slug: story.slug` with no fallback. 17 real stories in this repo's own .github/pipeline-state.json (e.g. ougl.1 through ougl.9) have an `id` field but no `slug` field.",
-        "fix": "APPLIED, MERGED (PR #513), AND DEPLOYED to wuce-staging.",
-        "status": "CLOSED — user confirmed live: all previously-blank entries (ougl.1-7, sri.1-3, etc.) now render their real story id as the label."
-      },
-      {
-        "id": "F2-admin-credits-forbidden",
-        "summary": "/admin/credits returns {\"error\":\"Forbidden\"} for the account owner (heymishy) on wuce-staging",
-        "rootCause": "CONFIRMED — admin role is seeded via ADMIN_GITHUB_LOGINS env var; this var was never set on wuce-staging.",
-        "fix": "APPLIED AND DEPLOYED — `flyctl secrets set ADMIN_GITHUB_LOGINS=heymishy --app wuce-staging`, confirmed via boot log `[arl-s4] admin role seeded for 1 login(s)`.",
-        "status": "CLOSED — user confirmed live: /admin/credits is now accessible."
-      },
-      {
-        "id": "F3-mojibake-epic-names",
-        "summary": "Some epic names render garbled, e.g. 'Governance extractability ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â enforcement selection'",
-        "rootCause": "CONFIRMED NOT a rendering/code bug — the mangled string is baked into the SOURCE DATA itself in .github/pipeline-state.json (double-encoded UTF-8).",
-        "fix": "Not a code fix — would require a data cleanup pass on the stored feature.name strings in pipeline-state.json. Cosmetic, low priority.",
-        "status": "OPEN — still needs a user decision (do it / leave it), not actioned"
-      },
-      {
-        "id": "F4-unreadable-flat-coverage-list",
-        "summary": "The per-feature test-coverage/AC-coverage list is a single unsorted flat list of 115+ story codes with no grouping — very hard to read, unlike the properly-grouped 'Epics' section rendered further down the same page",
-        "rootCause": "Not a bug — a design/UX gap. The Epics section already groups by epic via computeTaxonomyRollup(); the per-feature coverage breakdown does not reuse that grouping.",
-        "fix": "Needs a design decision, not a hotfix — e.g. group the per-feature breakdown by epic the same way, or collapse to just the blended % with an expandable details view for the full per-story list.",
-        "status": "OPEN — flagged as design debt, still needs a user priority/scope decision"
-      },
-      {
-        "id": "F5-new-feature-model-error",
-        "summary": "Clicking 'New feature' routes correctly to a skill-session chat, but the skill invocation fails with a generic 'Error — please try again' in the chat UI",
-        "rootCause": "CONFIRMED — got the real sse_error log line: `\"Copilot API HTTP 403: unauthorized: not licensed to use Copilot\"`. wuce-staging had SKILL_EXECUTOR_PROVIDER set to a non-default value (src/modules/skill-turn-executor.js routes to either 'anthropic' [default] or 'copilot' based on this env var), causing every skill turn to attempt the GitHub Copilot Chat Completions API path instead of the Anthropic Messages API — and the GitHub token/account in use has no Copilot license.",
-        "fix": "APPLIED AND DEPLOYED — user chose the 'just fix the staging config' option (not removing Copilot support from the codebase, which would be a separate story). Ran `flyctl secrets unset SKILL_EXECUTOR_PROVIDER --app wuce-staging`, confirmed removed from `flyctl secrets list`, confirmed ANTHROPIC_API_KEY still present. This makes the code fall back to its 'anthropic' default (skill-turn-executor.js line 616/659/681: `(process.env.SKILL_EXECUTOR_PROVIDER || 'anthropic')`).",
-        "status": "FIX DEPLOYED, NOT YET RE-TESTED — user has not yet retried 'New feature' since the unset; this is the next thing to confirm"
-      }
-    ]
+  "innerLoopExecution": {
+    "context": "Wave-dispatched the inner coding loop (branch-setup through branch-complete) for the 10 DoR-signed-off, unblocked stories via parallel background subagents, in 2 waves respecting epic-internal dependency chains (A2 needs A1; A4 needs A1+A2+A3; B2 needs B1; C2/C3 need C1). Every subagent's completion report was independently re-verified against real `git log`/`gh pr view` state before being trusted, per CLAUDE.md's own mandated discipline -- this caught nothing false this session, but is why every entry below cites a real PR number and independently-observed test count rather than just the agent's own claim.",
+    "wave1": {
+      "dispatched": ["a1", "a3", "a5", "b1", "c1"],
+      "note": "First dispatch attempt (all 5) was killed mid-run by an API session-limit error before any of the 5 subagents did real work (confirmed via worktree inspection -- no commits, no meaningful diffs). Re-dispatched fresh after an account swap; all 5 completed for real on the second attempt."
+    },
+    "wave2": {
+      "dispatched": ["a2", "b2", "c2", "c3"],
+      "note": "Dispatched only after all 5 of wave 1 were confirmed merged into master, since a2/b2/c2/c3 each have a hard dependency on a wave-1 story's merged code (a1, b1, c1 respectively)."
+    },
+    "a4": {
+      "status": "in-progress, dispatched, not yet complete as of this checkpoint",
+      "dependsOn": ["a1", "a2", "a3"],
+      "allDependenciesMerged": true,
+      "worktreePath": "C:\\Users\\Hamis\\code\\skills repo\\.claude\\worktrees\\agent-a0bc2952bf2be7b85",
+      "branch": "feature/a4-module-grouped-rendering-scale-gauge",
+      "lastObservedState": "No commits yet as of the last check (still at master's HEAD b678d322, no working-tree changes) -- this is the final, most complex story in Epic A (module-grouped rendering + a scale gauge/distribution strip), likely still deep in its own implementation-plan/TDD cycle, not stuck or failed. Was NOT re-dispatched or interrupted before this checkpoint was written -- it may still be running in the background, or may have been killed by the same session-limit condition that triggered this checkpoint. Check its worktree state directly (git log, git status) before assuming either outcome.",
+      "storyArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/stories/a4-module-grouped-rendering-and-scale-gauge.md"
+    },
+    "mergedStories": {
+      "a1": { "pr": 520, "title": "Curate a Modules taxonomy for a product", "testsObserved": "18/18 passing (independently re-run)", "mergedInto": "master" },
+      "a3": { "pr": 519, "title": "Compute health per-feature, distinct from test coverage", "testsObserved": "65/65 passing (combined across its 2 test files, per agent report; PR independently confirmed merged)", "mergedInto": "master" },
+      "a5": { "pr": 522, "title": "Surface discovery-only and ideation-only work in a Roadmap tab", "testsObserved": "14/14 passing (independently re-run after resolving a real code conflict with a1 in server.js/products.js)", "mergedInto": "master" },
+      "b1": { "pr": 523, "title": "Remove dead nav links, add Org board + Home List/Board toggle", "testsObserved": "8/8 passing (independently re-run after resolving pipeline-state.json conflict)", "mergedInto": "master" },
+      "c1": { "pr": 521, "title": "Settings page shell with Profile tab", "testsObserved": "10/10 passing (independently re-run)", "mergedInto": "master" },
+      "a2": { "pr": 526, "title": "Reassign an epic to a different module", "testsObserved": "11/11 passing (per agent report, PR independently confirmed merged and mergeable)", "mergedInto": "master" },
+      "b2": { "pr": 528, "title": "Restructure account-level nav items and add a dangling-link regression test", "testsObserved": "8/8 passing (per agent report; agent proactively rebased itself onto latest master before finishing)", "mergedInto": "master" },
+      "c2": { "pr": 527, "title": "Billing tab - plan status and Stripe portal access", "testsObserved": "11/11 passing (independently re-run after resolving a real code conflict with c3 in settings.js -- both tabs' tests re-verified together: c2 11/11, c1 10/10, c3 8/8)", "mergedInto": "master" },
+      "c3": { "pr": 525, "title": "Restyle the admin Credits tab into the Settings shared design system", "testsObserved": "8/8 passing (per agent report; re-verified again during c2's conflict resolution)", "mergedInto": "master" }
+    },
+    "heldStories": {
+      "d1": { "title": "Start impersonation session", "reason": "High oversight (epic-d-admin-user-impersonation) -- requires Hamish King's own named sign-off before assignment, per this epic's own DoR sign-off section. dorStatus: blocked (hard blocks all passed; only the human sign-off is outstanding)." },
+      "d2": { "title": "Banner, exit, and permission-scoped visibility", "reason": "same as d1 -- High oversight, same epic" },
+      "d3": { "title": "Impersonation audit log", "reason": "same as d1 -- High oversight, same epic" },
+      "d4": { "title": "NFR security review and hardening pass", "reason": "same as d1 -- High oversight, same epic. Also has a hard sequencing dependency: cannot start until d1-d3 are implemented and reviewable, per its own DoR Coding Agent Instructions." }
+    },
+    "conflictResolutionPattern": "Every parallel-dispatched pair sharing a file (a1+a5 on server.js/products.js; c2+c3 on settings.js) produced a real merge conflict when the second story rebased after the first merged, on top of the pipeline-state.json bookkeeping conflict that fired on every pair regardless of code overlap. Resolved each time by: (1) taking master's (already-merged) side wholesale for pipeline-state.json and any third-party add/add artefact conflicts, (2) merging the real code conflicts additively (kept both sides' distinct route/tab additions, collapsed duplicated shared logic like CSRF token generation into one call reused by both), (3) re-running BOTH affected stories' own test files before pushing. Full detail in workspace/learnings.md's '2026-07-21' entries.",
+    "postMergeBookkeepingGapFound": "Discovered near end of session: every one of the 9 merged stories' branch-side pipeline-state.json update (stage=branch-complete, prStatus=merged) was LOST during conflict resolution, because 'take master's side' during each merge meant taking master's still-definition-of-ready state, not the story's own completion state -- exactly the known Epic-Nested Story State Bookkeeping gap (CLAUDE.md cdg.6/B2). Fixed via PR #529 (merged): re-applied stage/prStatus/prNumber/health/verifyStatus/testPlan.passing/acVerified directly on master via `node bin/skills advance`, confirmed 0 new integrity failures. Feature-level stage advanced to branch-complete."
   },
   "checkpoint": {
-    "writtenAt": "2026-07-20",
-    "contextAtWrite": "Continuation of the live-staging-verification thread. PR #513 (F1 fix) merged clean after the check-workspace-state.js schema issue was fixed; staging redeployed via `flyctl deploy` and confirmed serving. User confirmed BOTH F1 (blank slugs) and F2 (/admin/credits) are fixed live. User then retried 'New feature' and hit the model error again, but this time pasted the actual fly log excerpt containing the real `sse_error` line: `\"Copilot API HTTP 403: unauthorized: not licensed to use Copilot\"`. Root cause: src/modules/skill-turn-executor.js routes every skill turn to either the Anthropic Messages API or the GitHub Copilot Chat Completions API based on the SKILL_EXECUTOR_PROVIDER env var (default 'anthropic' if unset) — wuce-staging had this var explicitly set (confirmed present in `flyctl secrets list` from earlier in the session, though the value itself is never visible via flyctl), forcing every turn through the Copilot path with a GitHub token that has no Copilot license. User was asked whether to (a) just fix the staging config, or (b) remove Copilot support from the codebase entirely as a proper short-track story; chose (a). Fixed via `flyctl secrets unset SKILL_EXECUTOR_PROVIDER --app wuce-staging` — confirmed removed from the secrets list, confirmed ANTHROPIC_API_KEY still present, confirmed the app redeployed cleanly and is serving 200s. NOT YET RE-TESTED by the user since this unset.",
-    "resumeInstruction": "Read this entire state.json first, then workspace/learnings.md's relevant entries for full narrative context — do not rely on any prior conversation history, assume none carries over. Next concrete steps, in priority order: (1) Ask the user to retry 'New feature' on wuce-staging now that SKILL_EXECUTOR_PROVIDER has been unset — this is the single most important thing to confirm, since F5's fix is deployed but not yet verified working. (2) If it still fails, get a fresh sse_error log line — the failure mode will be different now (should be a real Anthropic API error if anything, not the Copilot 403) and needs fresh diagnosis, not a repeat of the same root cause. (3) F3 (mojibake data in pipeline-state.json) and F4 (flat coverage-list design) both still need a user decision on priority/scope — do not unilaterally act on either. (4) Separately, PR #510, #511, and #513 were all shipped as fast hotfixes without full short-track story artefacts — technically needs a retrospective-story.md per CLAUDE.md's Artefact-first rule remedy; raise at a natural pause, non-blocking. Also worth a brief retrospective-note on the SKILL_EXECUTOR_PROVIDER config-only fix (no code changed, so likely does not need a full artefact chain, but flag it). (5) Consider whether a startup-time env var sanity check (warn if SKILL_EXECUTOR_PROVIDER=copilot but no Copilot-scoped token is configured, or similar) is worth proposing given this is now the 4th silently-misconfigured-env-var incident this session (PLATFORM_TENANT_ID, ADMIN_GITHUB_LOGINS, POSTHOG_KEY_STAGING/PROD, and now SKILL_EXECUTOR_PROVIDER) — see workspace/learnings.md's 'Silently-optional env vars' entry, which should be extended to mention this 4th instance is actually the inverse case (an explicitly-set-but-wrong value, not a missing one) so the proposed startup check needs to cover both directions.",
+    "writtenAt": "2026-07-21",
+    "contextAtWrite": "Session hit its usage limit mid-inner-loop-execution. 9 of 14 stories in the 2026-07-21-web-ui-experience-redesign feature are merged into master (a1, a2, a3, a5, b1, b2, c1, c2, c3), each independently re-verified via real git/gh state, not just trusted from the dispatching subagent's own report. The 10th ready story, a4 (the final story in Epic A, module-grouped rendering + scale gauge), was dispatched and its dependencies (a1+a2+a3) are all merged, but its own completion status is unknown as of this write -- check its worktree (path in innerLoopExecution.a4 above) first thing on resume. The remaining 4 stories (d1-d4, Admin Impersonation epic) are deliberately held, not forgotten -- they need Hamish King's own named human sign-off (High oversight gate) before they can be dispatched at all; this has been flagged to the user twice already and not yet been given. A genuine post-merge pipeline-state.json bookkeeping gap was found and fixed (PR #529) in the last few minutes of this session -- this checkpoint's own pipeline-state.json values reflect the corrected, accurate state.",
+    "resumeInstruction": "Read this entire state.json first, then workspace/learnings.md's 2026-07-21 entries (GitHub Actions check-suite gap; parallel-dispatch conflict pattern) for full narrative context -- do not rely on any prior conversation history, assume none carries over into the new account/session. Concrete next steps, in priority order: (1) Check agent worktree at .claude/worktrees/agent-a0bc2952bf2be7b85 (branch feature/a4-module-grouped-rendering-scale-gauge) via `git log`/`git status` to determine if a4 made real progress, is still genuinely running, or was also killed by the session limit -- do NOT trust any stale conversation summary of its status, verify fresh. If it has real uncommitted or committed work, resume/finish it in place rather than restarting from scratch; if it has nothing, re-dispatch it fresh per the same pattern used for the other 9 stories (read all of a4's own artefacts under artefacts/2026-07-21-web-ui-experience-redesign/ first -- story, DoR, test-plan, verification-script, decisions.md -- plus the REAL merged code from a1/a2/a3 in src/web-ui/adapters/modules-adapter.js, src/web-ui/routes/products.js, src/web-ui/modules/product-rollup.js, since those stories' shipped code may differ from the story file's original design assumptions). (2) Once a4 is merged, ALL of Epic A, B, and C (10 stories) will be complete -- confirm this and consider whether a consolidated DoD (Definition of Done) pass across all 10 is warranted before moving on, per CLAUDE.md's short-track DoD reminder (though these are standard-track, not short-track, stories -- DoD still applies at step 8 of the pipeline, not yet done for any of them). (3) D1-D4 remain explicitly blocked on the user's own named sign-off -- do not dispatch them without first getting that sign-off directly (re-ask if it still hasn't been addressed; do not assume silence means approval). (4) If any future PR opened in this repo shows zero CI checks (statusCheckRollup empty, and GET /repos/:owner/:repo/commits/:sha/check-suites confirms no GitHub Actions check suite was even created), do not spend much time on it -- see workspace/learnings.md's dedicated entry on this; try marking the PR ready-for-review + a fresh merge-commit push first, escalate to GitHub Support if that doesn't clear it within a couple of pushes. (5) Retrospective-story.md artefacts for the earlier hotfix PRs (#510, #511, #513, #516, #517) shipped without full short-track chains remain an open, non-blocking item carried forward from before this feature's outer loop began -- still not actioned, still not declined by the user.",
     "pendingActions": [
-      "Retry 'New feature' flow on wuce-staging now that SKILL_EXECUTOR_PROVIDER is unset — Owner: Hamish King, this is the most important next step",
-      "If it still fails, get a fresh sse_error log line for re-diagnosis (expect a different failure mode than the Copilot 403 now) — Owner: Hamish King",
-      "Decide priority/scope for F3 (mojibake data cleanup in pipeline-state.json) and F4 (flat test-coverage list design debt) — Owner: Hamish King",
-      "Write retrospective-story.md artefacts for PR #510, #511, and #513 per CLAUDE.md's Artefact-first rule exception-handling remedy — Owner: resuming session, non-blocking",
-      "Consider proposing a startup-time env var sanity check covering both missing AND wrongly-set values, given this is the 4th such incident this session — Owner: resuming session, non-blocking, discuss with user first",
-      "Previous session's carried-forward items (Node 20 vs 22 test divergence hypothesis; definition-of-ready H-GOV short-track exception clause) — status not re-verified this session, still likely outstanding — Owner: Hamish King"
+      "Verify a4's real state in its worktree (.claude/worktrees/agent-a0bc2952bf2be7b85) before deciding whether to resume or re-dispatch it -- Owner: resuming session, do this first",
+      "Once a4 merges, all 10 non-Admin-Impersonation stories (A1-A5, B1-B2, C1-C3) will be complete -- consider a DoD pass across them per CLAUDE.md step 8 -- Owner: resuming session, raise with Hamish King first",
+      "Get Hamish King's own named human sign-off for the 4 High-oversight Admin Impersonation stories (d1-d4) before dispatching them -- Owner: Hamish King, not yet given, flagged twice already",
+      "If GitHub Actions CI silently stops firing on a new PR again, don't re-litigate the full diagnostic pass -- see workspace/learnings.md's dedicated entry for the known dead-ends and the one thing that correlated with recovery (undraft + fresh merge-commit push) -- Owner: resuming session",
+      "Write retrospective-story.md artefacts for PR #510, #511, #513, #516, #517 (shipped as fast hotfixes without full short-track story chains) per CLAUDE.md's Artefact-first rule remedy -- Owner: resuming session, non-blocking, carried forward from before this session's feature work began",
+      "Previous session's carried-forward items (Node 20 vs 22 test divergence hypothesis; definition-of-ready H-GOV short-track exception clause) -- status not re-verified this session, still likely outstanding -- Owner: Hamish King"
     ]
-  },
-  "estimate": {
-    "e2": {
-      "date": "2026-07-09",
-      "storyCount": 17,
-      "byStory": {
-        "count": 17,
-        "complexity": { "1": 2, "2": 12, "3": 3 },
-        "p75FocusHPerStory": 0.037
-      },
-      "expectedCalendarDays": 1,
-      "engagementFraction": 0.25,
-      "outerLoopFocusH": 0.5,
-      "innerLoopHuman": null,
-      "confidence": "medium",
-      "notes": "no E1 to compare -- E1 prompt was skipped at discovery time this session; this is the first forecast for 2026-07-09-beta-readiness-infra",
-      "premiumRequestsForecast": null
-    }
   }
 }
