@@ -12212,7 +12212,7 @@
         {
           "slug": "epic-b-navigation-fix",
           "name": "Every nav item goes somewhere real, and every real destination has a nav item",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "b1",
@@ -12239,24 +12239,71 @@
             {
               "slug": "b2",
               "name": "Restructure account-level nav items and add a dangling-link regression test",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-20T20:47:56.104Z",
+              "updatedAt": "2026-07-21T06:25:46.940Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "written",
-                "totalTests": 5,
-                "passing": 0
+                "status": "all-passing",
+                "totalTests": 8,
+                "passing": 8
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/b2-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/b2-dor-contract.md",
-              "dorSignedOffAt": "2026-07-20T20:47:56.104Z"
+              "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/528",
+              "verifyStatus": "passed",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "RED: failing tests for AC1/AC2 (non-admin/admin sidebar rendering)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b2-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "GREEN: NAV_ITEMS account entries + isAdmin-gated rendering",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b2-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "AC2 integration test: live role re-check, not stale cache",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b2-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "AC3/AC4: dangling-link regression test + validity check",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b2-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "NFR: nav visibility is not the security boundary",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b2-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "Wire isAdmin into dashboard.js and settings.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b2-plan.md"
+                },
+                {
+                  "id": "task-7",
+                  "name": "Full suite + verification",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b2-plan.md"
+                }
+              ]
             }
           ]
         },

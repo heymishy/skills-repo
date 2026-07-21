@@ -84,6 +84,10 @@ function handleDashboard(req, res) {
 
   const userId = req.session.userId;
   const login  = req.session.login || '';
+  // b2: gates the Admin credits nav entry -- consumes req.session.role as-is,
+  // which requireAdmin's own live role-check (sec-perf-s2) already keeps
+  // self-healed on any request that has passed through it elsewhere in the app.
+  const isAdmin = !!(req.session && req.session.role === 'admin');
 
   // Audit log (per Coding Agent Instructions requirement)
   _logger.info('dashboard_accessed', {
@@ -97,7 +101,8 @@ function handleDashboard(req, res) {
     title:       'Dashboard',
     bodyContent,
     user:        { login },
-    active:      'dashboard'
+    active:      'dashboard',
+    isAdmin
   });
 
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });

@@ -10,9 +10,17 @@
 // Responsive: sidebar collapses to a fixed drawer at ≤768px, revealed by a
 //   hamburger button added to the topbar. Overlay closes it on tap.
 //
-// Public API unchanged:
-//   renderShell({ title, bodyContent, user, active, crumbs, headerActions })
+// Public API:
+//   renderShell({ title, bodyContent, user, active, crumbs, headerActions, isAdmin })
 //   escHtml(str)
+//
+// b2: renderShell/renderSidebar gained `isAdmin` (boolean, default false) to gate
+// the account-level nav section's `adminOnly` entries (Admin credits). The account
+// section (Settings, always; Admin credits, admin-only) relies on `.sw-nav-account`
+// having `margin-top: auto` to sit pinned at the sidebar bottom next to the identity
+// block -- this assumes at least one account-level NAV_ITEMS entry (Settings) is
+// always present and unfiltered; if a future change ever makes the account section
+// empty, `.sw-user`'s own bottom-pinning would need restoring alongside it.
 
 function escHtml(str) {
   return String(str)
@@ -27,7 +35,16 @@ const NAV_ITEMS = [
   { id: 'dashboard',  label: 'Home',        href: '/dashboard',  icon: '⌂' },
   { id: 'journey',    label: 'Journeys',    href: '/journey',    icon: '◎' },
   { id: 'skills',     label: 'Run a Skill', href: '/skills',     icon: '✦' },
-  { id: 'org-kanban', label: 'Org board',   href: '/org/kanban', icon: '▦' }
+  { id: 'org-kanban', label: 'Org board',   href: '/org/kanban', icon: '▦' },
+  // b2: account-level items, rendered in a visually distinct bottom section by
+  // renderSidebar (not the main product <nav> loop above) -- kept in this SAME
+  // array, tagged `section: 'account'`, rather than a second untested array, so
+  // AC3's dangling-link regression test automatically covers these hrefs too.
+  // `adminOnly` items are additionally filtered by the caller-supplied `isAdmin`
+  // flag at render time (see renderSidebar) -- gated the same way the /admin/credits
+  // route itself is gated (requireAdmin's live role check), not a visual-only toggle.
+  { id: 'settings',      label: 'Settings',      href: '/settings',      icon: '⚙', section: 'account' },
+  { id: 'admin-credits', label: 'Admin credits', href: '/admin/credits', icon: '◈', section: 'account', adminOnly: true }
 ];
 
 // b1: small List/Board switcher rendered directly under the Home nav item —
@@ -43,18 +60,41 @@ function renderHomeViewToggle() {
   ].join('');
 }
 
-function renderSidebar(active, login) {
-  const items = NAV_ITEMS.map(function(item) {
-    const isActive = item.id === active;
-    const link = [
-      '<a href="' + escHtml(item.href) + '"',
-      ' class="sw-nav-item' + (isActive ? ' sw-nav-item--active' : '') + '">',
-      '<span class="sw-nav-icon">' + item.icon + '</span>',
-      '<span>' + escHtml(item.label) + '</span>',
-      '</a>'
-    ].join('');
-    return item.id === 'dashboard' ? link + renderHomeViewToggle() : link;
-  }).join('');
+function _renderNavLink(item, active) {
+  const isActive = item.id === active;
+  const link = [
+    '<a href="' + escHtml(item.href) + '"',
+    ' class="sw-nav-item' + (isActive ? ' sw-nav-item--active' : '') + '">',
+    '<span class="sw-nav-icon">' + item.icon + '</span>',
+    '<span>' + escHtml(item.label) + '</span>',
+    '</a>'
+  ].join('');
+  return item.id === 'dashboard' ? link + renderHomeViewToggle() : link;
+}
+
+/**
+ * @param {string} active - id of the currently active NAV_ITEMS entry
+ * @param {string} login - signed-in user's login, shown in the identity block
+ * @param {boolean} [isAdmin] - b2: gates the `adminOnly` account-level nav entries
+ *   (currently just Admin credits). Must reflect the SAME live role check
+ *   requireAdmin already performs on the route itself (not a stale cached role) --
+ *   see html-shell.js's callers (dashboard.js, settings.js) for how this is computed.
+ *   This flag is a UX convenience only; requireAdmin on the real route is the
+ *   actual security boundary regardless of what this renders.
+ */
+function renderSidebar(active, login, isAdmin) {
+  const productItems = NAV_ITEMS.filter(function(item) { return item.section !== 'account'; });
+  const accountItems  = NAV_ITEMS.filter(function(item) {
+    return item.section === 'account' && (!item.adminOnly || isAdmin);
+  });
+
+  const items = productItems.map(function(item) { return _renderNavLink(item, active); }).join('');
+  const accountNav = accountItems.length
+    ? '<nav class="sw-nav-account" aria-label="Account navigation">' +
+        accountItems.map(function(item) { return _renderNavLink(item, active); }).join('') +
+      '</nav>'
+    : '';
+
   const initial = (login || '?').charAt(0).toUpperCase();
   return [
     '<aside class="sw-sidebar" id="sw-sidebar">',
@@ -64,6 +104,7 @@ function renderSidebar(active, login) {
       '</div>',
       '<nav aria-label="Main navigation">' + items + '</nav>',
       '<button class="sw-nav-collapse-btn" id="sw-nav-collapse-btn" onclick="swCollapseNav()" title="Collapse navigation">◂</button>',
+      accountNav,
       '<div class="sw-user">',
         '<div class="sw-avatar">' + escHtml(initial) + '</div>',
         '<span>' + escHtml(login || 'signed in') + '</span>',
@@ -159,6 +200,7 @@ function renderShell(opts) {
   const crumbs       = opts.crumbs || [];
   const headerActions= opts.headerActions || '';
   const bodyContent  = opts.bodyContent || '';
+  const isAdmin      = !!opts.isAdmin;
 
   const themeToggle =
     '<button class="sw-theme-toggle" onclick="swToggleTheme()" aria-label="Toggle dark mode" title="Toggle dark/light mode">◑</button>';
@@ -177,7 +219,7 @@ function renderShell(opts) {
     '</head>\n<body>\n' +
     '<div class="sw-app">' +
       '<div class="sw-overlay" id="sw-overlay" onclick="swCloseSidebar()"></div>' +
-      renderSidebar(active, login) +
+      renderSidebar(active, login, isAdmin) +
       '<div class="sw-main">' +
         '<header>' +
           hamburger +
@@ -271,8 +313,15 @@ a { color: inherit; }
 }
 .sw-nav-subitem:hover { background: var(--line-2); color: var(--ink-2); }
 .sw-nav-subitem:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+/* b2: account-level nav section (Settings + the admin-only entry) -- visually
+   distinct from the product nav above via a top divider, pushed to the sidebar
+   bottom (margin-top: auto) directly above the identity block. */
+.sw-nav-account {
+  margin-top: auto; display: flex; flex-direction: column; gap: 2px;
+  padding-top: 12px; border-top: 1px solid var(--line);
+}
 .sw-user {
-  margin-top: auto; display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 8px;
   padding: 0 8px; font-size: 13px; color: var(--muted);
 }
 .sw-avatar {
@@ -322,6 +371,7 @@ a { color: inherit; }
 .sw-sidebar--collapsed .sw-user { justify-content:center; padding:0; }
 .sw-sidebar--collapsed .sw-nav-collapse-btn { border-color:transparent; }
 .sw-sidebar--collapsed .sw-nav-subrow { display:none; }
+.sw-sidebar--collapsed .sw-nav-account { border-top-color:transparent; padding-top:8px; }
 
 /* ── Hamburger (mobile only — hidden by default) ────────────────────────────── */
 .sw-hamburger {
