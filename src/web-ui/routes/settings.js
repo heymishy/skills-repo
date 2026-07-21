@@ -24,6 +24,9 @@ var _tenantPlan = require('../modules/tenant-plan'); // c2
 // does; no new adapter, no changes to either module (Architecture Constraints, story c3).
 var _credits = require('../modules/credits');
 var _csrf = require('../middleware/csrf'); // c2 / c3
+// d3 — reuses D1's read-only impersonation-audit-adapter.js exactly as c3
+// reuses modules/credits.js; no new adapter (DoR H-ADAPTER).
+var _impersonationAudit = require('../adapters/impersonation-audit-adapter');
 
 // Sign-in providers surfaced on the Profile tab, in display order.
 var PROVIDERS = [
@@ -227,6 +230,62 @@ function renderCreditsTab(rows, csrfToken, opts) {
   );
 }
 
+function _formatAuditTimestamp(ts) {
+  if (!ts) return '';
+  try { return new Date(ts).toISOString(); } catch (e) { return String(ts); }
+}
+
+/**
+ * d3 — Render the Impersonate tab's panel content: a read-only, reverse-
+ * chronological audit list (AC1, AC2, AC4). Rows are D1's real audit-table
+ * rows (admin_login, target_login, target_tenant_id, reason, created_at,
+ * ended_at) via impersonation-audit-adapter.js's listImpersonationAuditRows()
+ * -- no new adapter (DoR H-ADAPTER). ended_at is null for any session that
+ * has not been exited yet (D2's exit flow, not yet merged) -- rendered as a
+ * clear "In progress" indicator, never as a blank cell or a fabricated time
+ * (AC2). Never writes to the audit table -- read-only per this story's own
+ * Coding Agent Instructions.
+ * @param {Array<{admin_login:string, target_login:string, target_tenant_id:string, reason:string, created_at:*, ended_at:*}>} rows
+ * @returns {string} HTML fragment (no <html>/<body> wrapper)
+ */
+function renderImpersonationAuditTab(rows) {
+  rows = rows || [];
+
+  var tableRows = rows.map(function(r) {
+    var endCell = r.ended_at
+      ? _escapeHtml(_formatAuditTimestamp(r.ended_at))
+      : '<span class="sw-pill sw-pill--accent">In progress</span>';
+    return (
+      '<tr>' +
+        '<td>' + _escapeHtml(r.admin_login) + '</td>' +
+        '<td>' + _escapeHtml(r.target_login) + '</td>' +
+        '<td>' + _escapeHtml(r.target_tenant_id) + '</td>' +
+        '<td>' + _escapeHtml(r.reason) + '</td>' +
+        '<td>' + _escapeHtml(_formatAuditTimestamp(r.created_at)) + '</td>' +
+        '<td>' + endCell + '</td>' +
+      '</tr>'
+    );
+  }).join('');
+
+  var content = rows.length
+    ? (
+      '<table class="sw-table">' +
+        '<thead><tr><th>Admin</th><th>Target</th><th>Tenant</th><th>Reason</th><th>Started</th><th>Ended</th></tr></thead>' +
+        '<tbody>' + tableRows + '</tbody>' +
+      '</table>'
+    )
+    : '<p class="sw-muted-note">No impersonation sessions yet</p>';
+
+  return (
+    '<div id="tab-panel-impersonate" class="sw-tab-panel" role="tabpanel" aria-labelledby="tab-impersonate">' +
+      '<div class="sw-card sw-card--lg">' +
+        '<div class="sw-section-title">Recent impersonation sessions</div>' +
+        content +
+      '</div>' +
+    '</div>'
+  );
+}
+
 /**
  * Render the tab nav buttons. Profile and Billing are always present (C2
  * adds Billing's real content later); Credits is admin-only (matches the
@@ -239,12 +298,17 @@ function _renderTabNav(isAdmin) {
   var creditsTab = isAdmin
     ? '<button type="button" class="sw-settings-tab" id="tab-credits" role="tab" aria-selected="false" onclick="swShowSettingsTab(\'credits\')">Credits</button>'
     : '';
+  // d3 — Impersonate tab (admin-only, same gating convention as Credits above).
+  var impersonateTab = isAdmin
+    ? '<button type="button" class="sw-settings-tab" id="tab-impersonate" role="tab" aria-selected="false" onclick="swShowSettingsTab(\'impersonate\')">Impersonate</button>'
+    : '';
 
   return (
     '<div class="sw-settings-tabs" role="tablist" aria-label="Settings sections">' +
       '<button type="button" class="sw-settings-tab sw-settings-tab--active" id="tab-profile" role="tab" aria-selected="true" onclick="swShowSettingsTab(\'profile\')">Profile</button>' +
       '<button type="button" class="sw-settings-tab" id="tab-billing" role="tab" aria-selected="false" onclick="swShowSettingsTab(\'billing\')">Billing</button>' +
       creditsTab +
+      impersonateTab +
     '</div>'
   );
 }
@@ -270,6 +334,8 @@ var _TAB_CSS =
     '.sw-credits-amount{width:90px}' +
     '.sw-credits-error{background:var(--red-soft);color:var(--red);border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:13.5px}' +
     '.sw-credits-error[hidden]{display:none}' +
+    // d3 — Impersonate tab empty-state text.
+    '.sw-muted-note{color:var(--muted);font-size:13.5px}' +
   '</style>';
 
 var _TAB_JS =
@@ -315,6 +381,12 @@ function renderSettingsPage(opts) {
     // populated (see handleGetSettings below), so there is nothing to hide
     // client-side -- the tab and its data are absent from the response entirely.
     (isAdmin ? renderCreditsTab(opts.creditsRows || [], csrfToken, { errorMessage: opts.creditsError }) : '') +
+    // d3 (AC1/AC2/AC4): real, server-gated Impersonate audit content -- only
+    // ever built when isAdmin is true, same data-fetch-layer gating as
+    // Credits above (c3 precedent) -- a non-admin request never has
+    // impersonationAuditRows populated, so there is nothing to hide
+    // client-side.
+    (isAdmin ? renderImpersonationAuditTab(opts.impersonationAuditRows || []) : '') +
     _TAB_JS;
 
   return _htmlShell.renderShell({
@@ -378,6 +450,17 @@ function createSettingsHandlers(pool) {
       creditsRows = await _credits.getAllTenantBalances();
     }
 
+    // d3 (AC1/AC2/AC4): fetch real audit rows ONLY when isAdmin is true --
+    // reuses D1's listImpersonationAuditRows() directly, same data-fetch-layer
+    // gating as creditsRows above (c3 precedent). A non-admin request never
+    // calls this, so there is no audit data to leak even if the render layer
+    // had a bug -- the server-side gate is enforced at the data-fetch step,
+    // not just in the markup.
+    var impersonationAuditRows = [];
+    if (isAdmin) {
+      impersonationAuditRows = await _impersonationAudit.listImpersonationAuditRows();
+    }
+
     // c3 (AC4): the initial page load never has a prior rejection to show --
     // the restyled form's client-side fetch handler (see renderCreditsTab)
     // surfaces a rejection inline without a page navigation, so there is no
@@ -388,7 +471,8 @@ function createSettingsHandlers(pool) {
       isAdmin: isAdmin,
       planState: planState,
       csrfToken: csrfToken,
-      creditsRows: creditsRows
+      creditsRows: creditsRows,
+      impersonationAuditRows: impersonationAuditRows
     });
 
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
@@ -403,6 +487,7 @@ module.exports = {
   renderProfileTab: renderProfileTab,
   renderBillingTab: renderBillingTab,
   renderCreditsTab: renderCreditsTab,
+  renderImpersonationAuditTab: renderImpersonationAuditTab,
   renderSettingsPage: renderSettingsPage,
   createSettingsHandlers: createSettingsHandlers
 };
