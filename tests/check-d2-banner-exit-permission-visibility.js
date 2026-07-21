@@ -138,6 +138,16 @@ function makeFailingExitAuditPool(baseRows) {
 }
 
 async function main() {
+  // d4 (AC5 hardening): handleGetSettings now evaluates the ADMIN_IMPERSONATION
+  // flag (for the Impersonate tab's "Start a new session" link visibility).
+  // Wire a fake flags adapter defaulting every flag to true, matching this
+  // repo's own NODE_ENV=test server.js precedent (bri-s1.5), so this file's
+  // tests continue to exercise this story's own behaviour unmodified. The
+  // flag's own on/off gating behaviour has dedicated tests in d4's test file.
+  require('../src/web-ui/modules/posthog-flags').setPostHogFlagsAdapter({
+    evaluateFlag: async function() { return true; }
+  });
+
   var queue = [];
 
   // ===========================================================================

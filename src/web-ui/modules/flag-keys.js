@@ -16,5 +16,6 @@
 module.exports = {
   WIZARD_UI: 'wizard-ui',
   PRODUCT_KANBAN_VIEW: 'product-kanban-view',
-  ORG_KANBAN_VIEW: 'org-kanban-view'
+  ORG_KANBAN_VIEW: 'org-kanban-view',
+  ADMIN_IMPERSONATION: 'admin-impersonation'
 };

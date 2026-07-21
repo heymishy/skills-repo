@@ -157,6 +157,17 @@ function makeCandidatesPool(rows) {
 }
 
 async function main() {
+  // d4 (AC5 hardening): handleGetImpersonatePage/handlePostImpersonateStart
+  // are now gated by the ADMIN_IMPERSONATION flag. Wire a fake flags adapter
+  // defaulting every flag to true (matching this repo's own NODE_ENV=test
+  // server.js precedent, bri-s1.5) so this file's tests -- all written to
+  // exercise the START flow's real behaviour, not the flag gate itself --
+  // continue to reach that behaviour unmodified. The flag's actual on/off
+  // gating behaviour has its own dedicated tests in d4's own test file.
+  require('../src/web-ui/modules/posthog-flags').setPostHogFlagsAdapter({
+    evaluateFlag: async function() { return true; }
+  });
+
   var queue = [];
 
   // ===========================================================================

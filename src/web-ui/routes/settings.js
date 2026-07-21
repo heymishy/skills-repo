@@ -28,6 +28,8 @@ var _impersonation = require('../modules/impersonation'); // d2
 // d3 — reuses D1's read-only impersonation-audit-adapter.js exactly as c3
 // reuses modules/credits.js; no new adapter (DoR H-ADAPTER).
 var _impersonationAudit = require('../adapters/impersonation-audit-adapter');
+var _postHogFlags = require('../modules/posthog-flags'); // d4 (AC5 hardening)
+var _flagKeys = require('../modules/flag-keys'); // d4
 
 // Sign-in providers surfaced on the Profile tab, in display order.
 var PROVIDERS = [
@@ -249,7 +251,16 @@ function _formatAuditTimestamp(ts) {
  * @param {Array<{admin_login:string, target_login:string, target_tenant_id:string, reason:string, created_at:*, ended_at:*}>} rows
  * @returns {string} HTML fragment (no <html>/<body> wrapper)
  */
-function renderImpersonationAuditTab(rows) {
+/**
+ * @param {Array} rows
+ * @param {boolean} [startSessionEnabled] - d4 (AC5 hardening): whether the
+ *   ADMIN_IMPERSONATION flag is currently on. When false, the "Start a new
+ *   impersonation session" link is hidden -- matches B1's own established
+ *   precedent of never leaving a dead/disabled link visible in the UI.
+ *   Audit history itself is unaffected either way (indefinite retention is
+ *   a property of the log, not of whether new sessions can be started).
+ */
+function renderImpersonationAuditTab(rows, startSessionEnabled) {
   rows = rows || [];
 
   var tableRows = rows.map(function(r) {
@@ -286,7 +297,9 @@ function renderImpersonationAuditTab(rows) {
         // a NEW session) from this tab's own read-only audit history (past
         // sessions) -- surfaced here as a link so neither capability is lost
         // now that both stories independently named their content "Impersonate".
-        '<p><a href="/admin/impersonate">Start a new impersonation session &rarr;</a></p>' +
+        // d4 (AC5): hidden entirely when ADMIN_IMPERSONATION is off, rather
+        // than showing a link that would just 404.
+        (startSessionEnabled ? '<p><a href="/admin/impersonate">Start a new impersonation session &rarr;</a></p>' : '') +
         content +
       '</div>' +
     '</div>'
@@ -405,7 +418,7 @@ function renderSettingsPage(opts) {
     // Credits above (c3 precedent) -- a non-admin request never has
     // impersonationAuditRows populated, so there is nothing to hide
     // client-side.
-    (isAdmin ? renderImpersonationAuditTab(opts.impersonationAuditRows || []) : '') +
+    (isAdmin ? renderImpersonationAuditTab(opts.impersonationAuditRows || [], !!opts.impersonationStartEnabled) : '') +
     _TAB_JS;
 
   return _htmlShell.renderShell({
@@ -488,8 +501,13 @@ function createSettingsHandlers(pool) {
     // had a bug -- the server-side gate is enforced at the data-fetch step,
     // not just in the markup.
     var impersonationAuditRows = [];
+    var impersonationStartEnabled = false;
     if (isAdmin) {
       impersonationAuditRows = await _impersonationAudit.listImpersonationAuditRows();
+      // d4 (AC5): whether the "Start a new impersonation session" link is
+      // shown -- independent of whether audit history itself is fetched
+      // above (indefinite retention/reviewability is unaffected by this flag).
+      impersonationStartEnabled = await _postHogFlags.isEnabled(_flagKeys.ADMIN_IMPERSONATION, { tenantId: req.session && req.session.tenantId });
     }
 
     // c3 (AC4): the initial page load never has a prior rejection to show --
@@ -504,7 +522,8 @@ function createSettingsHandlers(pool) {
       csrfToken: csrfToken,
       creditsRows: creditsRows,
       impersonation: impersonationOpts,
-      impersonationAuditRows: impersonationAuditRows
+      impersonationAuditRows: impersonationAuditRows,
+      impersonationStartEnabled: impersonationStartEnabled
     });
 
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
