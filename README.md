@@ -530,3 +530,4 @@ The `artefacts/`, `.github/skills/`, `.github/templates/`, and `.github/governan
 Built with the skills platform's own pipeline — 70+ stories across 4 phases, ~15 calendar days.
 
 [Onboarding](docs/ONBOARDING.md) · [Handoff](docs/HANDOFF.md) · [Model risk](docs/MODEL-RISK.md) · [Validation playbook](docs/validation-playbook.md) · [Pipeline instructions](docs/skill-pipeline-instructions.md) · [Feature additions](docs/feature-additions.md) · [Framework concepts](docs/concepts/README.md) · [Web UI as-built](docs/web-ui-skill-session-as-built.md) · [Architecture decisions](.github/architecture-guardrails.md) · [Phase 5/6 roadmap](artefacts/phase5-6-roadmap.md) · [Product roadmap](product/roadmap.md)
+
