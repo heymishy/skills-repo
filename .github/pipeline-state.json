@@ -12175,12 +12175,14 @@
             {
               "slug": "c1",
               "name": "Settings page shell with Profile tab",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T00:00:00.000Z",
+              "updatedAt": "2026-07-21T00:05:00.000Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/521",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
