@@ -651,14 +651,15 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.error('[d1/d3] impersonation_audit_log migration failed:', err.message);
     });
 
-    // d2: ended_at column -- exit (AC4) sets this on the SAME row d1 inserted
-    // at session start (never a new row), satisfying the story's Audit NFR.
-    // Idempotent, matching the journeys.module_id ALTER TABLE precedent (a1).
-    _creditsPool.query(`ALTER TABLE impersonation_audit_log ADD COLUMN IF NOT EXISTS ended_at TIMESTAMPTZ`).then(function() {
-      console.log('[d2] impersonation_audit_log.ended_at column ready');
-    }).catch(function(err) {
-      console.error('[d2] impersonation_audit_log.ended_at migration failed:', err.message);
-    });
+    // d2: exit (AC4) sets ended_at on the SAME row d1 inserted at session
+    // start (never a new row), satisfying the story's Audit NFR. The column
+    // itself is added by d3's chained migration above (d2 originally added
+    // its own second, independent ALTER TABLE here, unchained from d1's
+    // CREATE TABLE -- found and removed during d4's NFR-security review: on a
+    // genuinely fresh database this independent query races the CREATE TABLE
+    // for its own pg.Pool connection, the exact anti-pattern already fixed
+    // twice in this feature (a1's product_modules/journeys.module_id; d3's
+    // own chaining fix). See decisions.md, d4 AC5 finding.)
 
     // d1 D37 wiring: wire the real Postgres impersonation audit adapter,
     // reusing the same _creditsPool already wired for products/credits/modules
