@@ -149,10 +149,58 @@ async function deleteModule(productId, tenantId, moduleId) {
   return { id: moduleId };
 }
 
+/**
+ * a2 (AC1-AC4) -- Reassign an epic (a `journeys` row -- see decisions.md ARCH
+ * entry, no persisted `epics` table exists in this codebase) from its current
+ * module to a different module, within the same product. Rejects a target
+ * module that belongs to a different product (AC4). Reassigning to the
+ * epic's current module is a no-op (AC3) -- returns immediately with
+ * changed:false, no UPDATE issued.
+ * @param {string} productId
+ * @param {string} tenantId
+ * @param {string} journeyId -- the epic being reassigned
+ * @param {string} moduleId -- the target module
+ * @returns {Promise<{journey_id:string, module_id:string, changed:boolean}>}
+ */
+async function reassignEpic(productId, tenantId, journeyId, moduleId) {
+  var db = _requireAdapter();
+
+  var journeyRows = await db.query(
+    'SELECT journey_id, module_id FROM journeys WHERE journey_id = $1 AND product_id = $2',
+    [journeyId, productId]
+  );
+  if (!journeyRows.rows.length) {
+    var nf = new Error('Epic not found for this product');
+    nf.code = 'EPIC_NOT_FOUND';
+    throw nf;
+  }
+
+  var moduleRows = await db.query(
+    'SELECT id FROM product_modules WHERE id = $1 AND product_id = $2 AND tenant_id = $3',
+    [moduleId, productId, tenantId]
+  );
+  if (!moduleRows.rows.length) {
+    var badMod = new Error('Target module does not belong to this product');
+    badMod.code = 'MODULE_NOT_FOUND';
+    throw badMod;
+  }
+
+  if (journeyRows.rows[0].module_id === moduleId) {
+    return { journey_id: journeyId, module_id: moduleId, changed: false };
+  }
+
+  var r = await db.query(
+    'UPDATE journeys SET module_id = $1 WHERE journey_id = $2 RETURNING journey_id, module_id',
+    [moduleId, journeyId]
+  );
+  return Object.assign({ changed: true }, r.rows[0]);
+}
+
 module.exports = {
   setModulesAdapter,
   listModules,
   createModule,
   renameModule,
-  deleteModule
+  deleteModule,
+  reassignEpic
 };
