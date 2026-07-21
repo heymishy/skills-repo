@@ -12518,24 +12518,25 @@
             {
               "slug": "d2",
               "name": "Persistent viewing-as banner, exit flow, and permission-scoped visibility",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-07-21T09:57:31.115Z",
+              "updatedAt": "2026-07-21T17:56:23.430Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "written",
-                "totalTests": 7,
-                "passing": 0
+                "status": "all-passing",
+                "totalTests": 24,
+                "passing": 24
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d2-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d2-dor-contract.md",
-              "dorSignedOffAt": "2026-07-21T08:28:21.838Z"
+              "dorSignedOffAt": "2026-07-21T08:28:21.838Z",
+              "verifyStatus": "passed"
             },
             {
               "slug": "d3",
