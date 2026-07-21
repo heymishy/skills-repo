@@ -1,5 +1,8 @@
 name: Watermark Gate
 
+# Diagnostic nudge: harmless comment added to test whether editing a workflow
+# file itself (re-parsed/re-registered by GitHub on push) can retrigger CI
+# after the GitHub Actions app's check-suite auto-trigger stopped firing.
 on:
   pull_request:
     branches: [main, master]
