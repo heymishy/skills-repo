@@ -12007,89 +12007,24 @@
             {
               "slug": "a1",
               "name": "Curate a Modules taxonomy for a product",
-              "stage": "branch-complete",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-21T03:52:42.709Z",
+              "updatedAt": "2026-07-20T20:47:56.104Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 18,
-                "passing": 18
+                "totalTests": 10,
+                "passing": 0
               },
               "acTotal": 6,
-              "acVerified": 6,
+              "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a1-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a1-dor-contract.md",
-              "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
-              "tasks": [
-                {
-                  "id": "task-1",
-                  "name": "modules-adapter.js: create + duplicate rejection (AC1, AC4)",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a1-plan.md"
-                },
-                {
-                  "id": "task-2",
-                  "name": "modules-adapter.js: renameModule preserves id (AC2)",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a1-plan.md"
-                },
-                {
-                  "id": "task-3",
-                  "name": "modules-adapter.js: deleteModule reassigns to Unassigned (AC3)",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a1-plan.md"
-                },
-                {
-                  "id": "task-4",
-                  "name": "products.js: GET/POST /products/:id/modules (AC1 integration)",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a1-plan.md"
-                },
-                {
-                  "id": "task-5",
-                  "name": "products.js: PUT rename handler (AC2 integration)",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a1-plan.md"
-                },
-                {
-                  "id": "task-6",
-                  "name": "products.js: DELETE with reassignment handler (AC3 integration)",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a1-plan.md"
-                },
-                {
-                  "id": "task-7",
-                  "name": "per-product scoping regression test (AC5)",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a1-plan.md"
-                },
-                {
-                  "id": "task-8",
-                  "name": "server.js: migrations, D37 adapter wiring, route registration",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a1-plan.md"
-                },
-                {
-                  "id": "task-9",
-                  "name": "D37 wiring correctness test (AC6), cross-tenant NFR, perf NFR",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a1-plan.md"
-                },
-                {
-                  "id": "task-10",
-                  "name": "decisions.md entries + final full-suite verification",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a1-plan.md"
-                }
-              ],
-              "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/520"
+              "dorSignedOffAt": "2026-07-20T20:47:56.104Z"
             },
             {
               "slug": "a2",
@@ -12116,24 +12051,64 @@
             {
               "slug": "a3",
               "name": "Compute health per-feature, distinct from test coverage",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-20T20:47:56.104Z",
+              "updatedAt": "2026-07-21T03:49:42.951Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 6,
-                "passing": 0
+                "totalTests": 65,
+                "passing": 65
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a3-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/a3-dor-contract.md",
-              "dorSignedOffAt": "2026-07-20T20:47:56.104Z"
+              "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/519",
+              "tasks": [
+                {
+                  "id": "task-0",
+                  "name": "Investigation: trace computeHealthCounts real inputs from pipeline-state.json",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a3-plan.md"
+                },
+                {
+                  "id": "task-1",
+                  "name": "Extend computeHealthCounts to return a per-feature breakdown (AC1)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Prove per-feature health independence from coverage, matching confirmed rule (AC2, AC2a)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a3-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Confirm existing aggregate consumers unaffected (AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a3-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Confirm persistence via product-sync (AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a3-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Close out AC2a placeholder and test-plan gap (docs only)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a3-plan.md"
+                }
+              ]
             },
             {
               "slug": "a4",
