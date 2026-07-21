@@ -253,6 +253,58 @@ test('products.js exports handlePostProductSync', function() {
     }
   })();
 
+  console.log('\n[a3] AC3 -- the Feature health gauge renders unchanged when health_counts includes the new perFeature field');
+
+  await (async function() {
+    try {
+      delete require.cache[require.resolve(path.resolve(__dirname, '../src/web-ui/routes/products.js'))];
+      var productsRouteFresh = require(path.resolve(__dirname, '../src/web-ui/routes/products.js'));
+
+      var syncedAt = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+      // Extended shape (a3): health_counts now also carries a perFeature array
+      // alongside the existing aggregate -- this is the shape a real sync will
+      // persist once computeHealthCounts is extended (AC1). The gauge must
+      // render identically to the pre-a3 aggregate-only shape (AC3).
+      var extendedHealthCountsJson = JSON.stringify({
+        green: 3, amber: 2, red: 1, unknown: 1,
+        perFeature: [
+          { slug: 'f1', name: 'Feature One', health: 'green' },
+          { slug: 'f2', name: 'Feature Two', health: 'red' }
+        ]
+      });
+      var mockPool = {
+        query: async function(sql) {
+          if (/SELECT name, tenant_id.*FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+          if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(sql)) {
+            return { rows: [{ dod_status_counts: '{"complete":1}', health_counts: extendedHealthCountsJson, test_coverage: '{}', ac_coverage: '{}', taxonomy: '{}', synced_at: syncedAt }] };
+          }
+          return { rows: [] };
+        }
+      };
+      var html = null;
+      var req = { params: { id: 'p1' }, session: { tenantId: 't1', login: 'x' } };
+      var res = { writeHead: function() {}, end: function(body) { html = body; } };
+      await productsRouteFresh.handleGetProductView(req, res, null, mockPool);
+
+      if (!/✓ Healthy/.test(html) || !/⚠ Warning/.test(html) || !/✕ Blocked/.test(html) || !/\? Unknown/.test(html)) {
+        throw new Error('Expected all four health labels to still render exactly as before, with the extended (perFeature-bearing) health_counts shape (AC3)');
+      }
+      passed++; console.log('  [PASS] _renderProductView: renders the same four health-status labels unchanged with the extended health_counts shape (AC3)');
+
+      if (!/\b3\b/.test(html) || !/\b2\b/.test(html) || !/\b1\b/.test(html)) {
+        throw new Error('Expected the same numeric aggregate counts (3, 2, 1) to still appear, unaffected by the added perFeature field (AC3)');
+      }
+      passed++; console.log('  [PASS] _renderProductView: renders the same numeric aggregate counts unaffected by the added perFeature field (AC3)');
+
+      if (!/overall/i.test(html)) {
+        throw new Error('Expected the overall product-health signal section to still render (AC3)');
+      }
+      passed++; console.log('  [PASS] _renderProductView: overall product-health signal section still renders unchanged (AC3)');
+    } catch (err) {
+      failed++; console.log('  [FAIL] a3 AC3 extended health_counts shape regression --', err.message);
+    }
+  })();
+
   console.log('\n[pr-s5] AC1/AC3/AC4 -- blended test coverage and per-story breakdown render on the product view');
 
   await (async function() {

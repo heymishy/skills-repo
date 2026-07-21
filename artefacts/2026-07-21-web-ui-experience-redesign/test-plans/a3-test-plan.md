@@ -13,15 +13,17 @@
 |----|-------------|------|-------------|-----|--------|----------|------|
 | AC1 | Per-feature health value included alongside aggregate | 1 | — | — | — | — | 🟢 |
 | AC2 | Per-feature health not silently equal to coverage-derived value | 1 | — | — | — | — | 🟡 |
-| AC2a | Health matches confirmed real signal rule | — | — | — | — | External-dependency | 🔴 |
+| AC2a | Health matches confirmed real signal rule | 1 | — | — | — | Closed — see T30 | 🟢 |
 | AC3 | Existing aggregate consumers unaffected | 1 | 1 | — | — | — | 🟢 |
 | AC4 | Per-feature health persisted, not recomputed per-request | — | 1 | — | — | — | 🟢 |
 
 ## Coverage gaps
 
+**Closed (implementation-time update):** The investigation named in the story's Architecture Constraints has resolved — `computeHealthCounts` reads only `feature.health`, which is confirmed independent of test-coverage data (`story.testPlan`). AC2a is now concretely tested by T30 in `tests/check-pr-s2-product-rollup.js` (asserting the per-feature health value equals `feature.health`, normalized, and is unaffected by changes to `story.testPlan`). See `artefacts/2026-07-21-web-ui-experience-redesign/plans/a3-plan.md` (Task 0) and `decisions.md` for the full trace. The gap row below is retained for history.
+
 | Gap | AC | Gap type | Reason untestable in Jest | Handling |
 |-----|----|----------|--------------------------|---------|
-| Concrete health-computation rule not yet known | AC2a | External-dependency | The real source signal for per-feature health has not been confirmed at the code level as of this test plan's writing — it is this story's own first implementation task (per its Architecture Constraints) | Cannot write a concrete test until the investigation resolves. Tracked as a blocking gap — AC2a's test must be written and added to this plan (Run 2) before this story can be considered DoR-complete, per the review's own [2-M1] finding. |
+| ~~Concrete health-computation rule not yet known~~ (CLOSED) | AC2a | ~~External-dependency~~ Closed — see T30 | The real source signal for per-feature health has not been confirmed at the code level as of this test plan's writing — it is this story's own first implementation task (per its Architecture Constraints) | Resolved during implementation: the real signal is `feature.health`. Concrete test added (T30). |
 
 ## Test Data Strategy
 
@@ -108,4 +110,4 @@ AC2a's test data cannot be defined until the investigation named in the story's 
 
 | Gap | Reason | Mitigation |
 |-----|--------|------------|
-| AC2a has no test yet | The real per-feature health signal source is undetermined as of story-writing time | This story's Architecture Constraints require the investigation as its first implementation task; AC2a's test must be added to this plan (as Run 2) once that investigation resolves, before /definition-of-ready can sign off this story as complete |
+| ~~AC2a has no test yet~~ (CLOSED, implementation-time) | The real per-feature health signal source was undetermined as of story-writing time | Resolved: the investigation (this story's own first implementation task) confirmed `feature.health` as the real signal, independent of `story.testPlan`. AC2a is now covered by T30 in `tests/check-pr-s2-product-rollup.js`. |

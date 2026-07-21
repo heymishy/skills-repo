@@ -175,6 +175,11 @@ async function handleAuthCallback(req, res) {
     const user = await _oauthAdapter.providerGetUserIdentity(token);
     req.session.userId = user.id;
     req.session.login  = user.login;
+    // c1: bookkeeping only (not new auth logic) -- records which provider this
+    // session originally signed in via, so the Settings/Profile tab can show
+    // it as "Linked" even though the original signup never appears in
+    // identity-links.js's person_identities table (see getLinkedProviders).
+    req.session.authProvider = 'github';
 
     // Tenant resolution (AC2–AC6) — only when TENANT_ORG_ALLOWLIST is configured
     const _allowlist = process.env.TENANT_ORG_ALLOWLIST || '';
@@ -304,6 +309,9 @@ async function handleAuthGoogleCallback(req, res) {
     req.session.userId      = userInfo.sub;
     req.session.tenantId    = userInfo.sub;
     req.session.login       = userInfo.email;
+    // c1: bookkeeping only (not new auth logic) -- see the matching comment in
+    // handleAuthCallback above.
+    req.session.authProvider = 'google';
 
     // tir-s1: load role via the person/team-scoped lookup (AC3). Falls back to
     // 'user' on error.
