@@ -12602,9 +12602,9 @@
             {
               "slug": "d4",
               "name": "NFR-security review and hardening pass for Admin User Impersonation",
-              "stage": "definition-of-ready",
-              "health": "amber",
-              "updatedAt": "2026-07-21T08:28:21.838Z",
+              "stage": "implementation-plan",
+              "health": "green",
+              "updatedAt": "2026-07-21T19:28:27.657Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12619,7 +12619,51 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d4-dor.md",
               "dorContractArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/d4-dor-contract.md",
-              "dorSignedOffAt": "2026-07-21T08:28:21.838Z"
+              "dorSignedOffAt": "2026-07-21T08:28:21.838Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "AC1: Exhaustive admin-gated surface enumeration",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/d4-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "AC2: Line-by-line session-swap and exit review",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/d4-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "AC2/AC3: double-impersonation + concurrency tests",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/d4-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "AC5 fix: credits-guard.js uses isEffectivelyAdmin()",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/d4-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "AC5 fix: remove duplicate unchained ended_at migration",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/d4-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "AC4: audit-log-vs-decision checklist",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/d4-plan.md"
+                },
+                {
+                  "id": "task-7",
+                  "name": "Full-suite verification + decisions.md + PR",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/d4-plan.md"
+                }
+              ]
             }
           ]
         }
