@@ -12172,9 +12172,9 @@
             {
               "slug": "a4",
               "name": "Render the product view grouped by module with dual health/coverage indicators and a scale gauge",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-21T06:59:54.539Z",
+              "updatedAt": "2026-07-21T07:01:55.432Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12234,7 +12234,10 @@
                   "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/a4-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/531",
+              "prNumber": 531
             },
             {
               "slug": "a5",
