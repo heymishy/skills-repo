@@ -94,4 +94,4 @@ Oversight level: High
 
 **Oversight level:** High
 **Sign-off required:** Yes — named human sign-off required before assigning to a coding agent, per discovery's own flagged highest risk.
-**Signed off by:** _[Pending — Hamish King, Founder/Operator, to confirm explicitly before this story is assigned]_
+**Signed off by:** Hamish King — Founder/Operator — 2026-07-21
