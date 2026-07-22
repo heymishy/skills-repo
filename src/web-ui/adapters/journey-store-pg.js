@@ -38,13 +38,19 @@ async function saveJourney(journey) {
   const pool = _getPool();
   if (!pool) return;
   const data = _sanitise(journey);
+  // jrf-s2: product_id written to its own real column (not just the JSONB
+  // data blob) since routes/products.js's handleGetProductView filters
+  // journeys directly by that column. Defaults to null for any existing
+  // caller (e.g. handlePostJourney) that never sets journey.productId --
+  // matches today's behaviour exactly, the column is already nullable.
   await pool.query(
-    `INSERT INTO journeys (journey_id, tenant_id, owner_id, feature_slug, data)
-     VALUES ($1, $2, $3, $4, $5)
+    `INSERT INTO journeys (journey_id, tenant_id, owner_id, feature_slug, product_id, data)
+     VALUES ($1, $2, $3, $4, $5, $6)
      ON CONFLICT (journey_id)
      DO UPDATE SET data = EXCLUDED.data, tenant_id = EXCLUDED.tenant_id,
-                   owner_id = EXCLUDED.owner_id, feature_slug = EXCLUDED.feature_slug`,
-    [journey.journeyId, journey.tenantId || null, journey.ownerId || null, journey.featureSlug, JSON.stringify(data)]
+                   owner_id = EXCLUDED.owner_id, feature_slug = EXCLUDED.feature_slug,
+                   product_id = EXCLUDED.product_id`,
+    [journey.journeyId, journey.tenantId || null, journey.ownerId || null, journey.featureSlug, journey.productId || null, JSON.stringify(data)]
   );
 }
 

@@ -1349,15 +1349,29 @@ async function handleGetOrgKanban(req, res, _next, pool, posthog) {
 }
 
 async function handlePostProductFeature(req, res, _next, pool, posthog) {
-  var _pool = pool;
   var _ph = posthog || _posthog;
   var tenantId = req.session && req.session.tenantId;
   var productId = req.params && req.params.id;
-  var journeyId = require('crypto').randomUUID();
-  await _pool.query(
-    `INSERT INTO journeys (journey_id, feature_slug, tenant_id, product_id, data) VALUES ($1, $2, $3, $4, '{}'::jsonb) ON CONFLICT DO NOTHING`,
-    [journeyId, 'new-feature-' + journeyId.slice(0, 8), tenantId, productId]
-  );
+
+  // jrf-s2: FIX — register the journey through the shared journey-store
+  // (createJourney + setJourneyFields), the SAME path handlePostJourney
+  // (routes/journey.js) already uses correctly. The previous raw, direct
+  // `INSERT INTO journeys` here bypassed the in-memory _journeys Map
+  // entirely -- every journey created via this handler was invisible to
+  // getJourney/setActiveSession/completeStage, so it silently no-op'd past
+  // discovery and 404'd at gate-confirm ("Journey not found"). See
+  // decisions.md FIX entry -- confirmed live via direct DB inspection.
+  var _journeyStore = require('../modules/journey-store');
+  var created = _journeyStore.createJourney('pending', 'default');
+  var journeyId = created.journeyId;
+  var featureSlug = 'new-feature-' + journeyId.slice(0, 8);
+  _journeyStore.setJourneyFields(journeyId, {
+    featureSlug: featureSlug,
+    ownerId:     (req.session && req.session.login) || null,
+    tenantId:    tenantId,
+    productId:   productId
+  });
+
   _ph.capture(tenantId, 'journey_created', {
     journeyId: journeyId,
     productId: productId,
@@ -1370,7 +1384,6 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
   var path = require('path');
   var _skillsRoute = require('./skills');
   var _journeyDisk = require('../../modules/journey-disk');
-  var _journeyStore = require('../modules/journey-store');
   var _repoRootAdapter = require('../adapters/repo-root');
 
   try {
@@ -1378,7 +1391,6 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
 
     // Create skill session (following handlePostJourney pattern at line 408-420)
     var sid = crypto.randomUUID();
-    var featureSlug = 'new-feature-' + journeyId.slice(0, 8);
     var sessionPath = path.join(repoRoot, 'artefacts', featureSlug, 'sessions', sid);
 
     // Register the session

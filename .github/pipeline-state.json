@@ -13380,6 +13380,56 @@
         }
       ],
       "metrics": []
+    },
+    {
+      "slug": "2026-07-22-journey-registration-fix",
+      "name": "Register product-feature journeys in the shared in-memory journey store",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "updatedAt": "2026-07-22T10:44:41.032Z",
+      "guardrails": [],
+      "epics": [],
+      "stories": [
+        {
+          "id": "jrf-s2",
+          "slug": "jrf-s2",
+          "name": "Register product-feature journeys in the shared in-memory store",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 6,
+            "passing": 6,
+            "artefact": "artefacts/2026-07-22-journey-registration-fix/test-plans/jrf-s2-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-22-journey-registration-fix/dor/jrf-s2-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-22-journey-registration-fix/dor/jrf-s2-dor-contract.md",
+          "dorSignedOffAt": "2026-07-22T10:44:41.033Z",
+          "prStatus": "not-started",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "journey-store-pg.js: saveJourney writes product_id column",
+              "tddState": "committed"
+            },
+            {
+              "id": "task-2",
+              "name": "products.js: handlePostProductFeature registers via createJourney/setJourneyFields",
+              "tddState": "committed"
+            }
+          ],
+          "updatedAt": "2026-07-22T10:44:41.033Z"
+        }
+      ],
+      "metrics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
