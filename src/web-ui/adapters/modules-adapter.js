@@ -235,11 +235,18 @@ async function bulkAssignFeaturesToModule(productId, tenantId, featureSlugs, mod
     throw new Error('featureSlugs must be a non-empty array');
   }
   var db = _requireAdapter();
+  // fix-forward (pvc-s1 rollout, 2026-07-22): real Postgres rejected this
+  // query with "inconsistent types deduced for parameter $2" -- the mock
+  // pool used by every unit/integration test in this repo doesn't
+  // type-check SQL, so this was never caught until the first real bulk
+  // classification run in production. Explicit casts on every scalar
+  // parameter (both in the SELECT list and the WHERE clause) resolve the
+  // ambiguity. See decisions.md FIX-FORWARD entry.
   var r = await db.query(
     `INSERT INTO feature_module_assignments (product_id, tenant_id, feature_slug, module_id, assigned_at)
-     SELECT $1, $2, slug, $3, NOW()
+     SELECT $1::uuid, $2::varchar, slug, $3::uuid, NOW()
      FROM UNNEST($4::varchar[]) AS slug
-     WHERE EXISTS (SELECT 1 FROM product_modules WHERE id = $3 AND product_id = $1 AND tenant_id = $2)
+     WHERE EXISTS (SELECT 1 FROM product_modules WHERE id = $3::uuid AND product_id = $1::uuid AND tenant_id = $2::varchar)
      ON CONFLICT (product_id, feature_slug) DO UPDATE SET module_id = EXCLUDED.module_id, assigned_at = EXCLUDED.assigned_at
      RETURNING feature_slug`,
     [productId, tenantId, moduleId, featureSlugs]

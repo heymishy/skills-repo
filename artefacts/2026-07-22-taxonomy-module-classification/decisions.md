@@ -40,6 +40,22 @@
 
 ---
 
+## FIX-FORWARD — `bulkAssignFeaturesToModule` real-Postgres type-inference bug (2026-07-22)
+
+**Context:** The first real production use of `bulkAssignFeaturesToModule` (classifying `skills-framework`'s own ~172 real features into its 9 modules, at the operator's request) failed immediately with `Error: inconsistent types deduced for parameter $2`. This is exactly the risk tmc-s1's own DoD flagged as a known, accepted gap: *"no live-Postgres integration test exercises the actual backfill migration SQL... verified by code review only"* — the same reasoning applies to this query, which was never exercised against real Postgres by any test in this repo (every unit/integration test uses a hand-rolled mock pool that accepts any SQL string without type-checking it).
+
+**Root cause:** The original query used bare, uncast parameters (`$1`, `$2`, `$3`) in both a `SELECT` projection list and a `WHERE ... = $n` clause. Postgres's planner deduced conflicting implicit types for `$2` (tenant_id, a `varchar`) across those two usages, since neither usage alone was enough to pin the type unambiguously the way a direct column-to-column comparison would.
+
+**Fix:** Explicit `::uuid`/`::varchar` casts added to every scalar parameter in both the `SELECT` list and the `WHERE` clause.
+
+**Verification:** Deployed to `wuce-staging`, then ran the real classification job against the actual `skills-framework` product — 160/160 features assigned successfully in one call, confirmed via a follow-up `getFeatureModuleAssignments` count. This is the live-Postgres verification tmc-s1's DoD had deferred to a "post-merge smoke test" — it has now happened, for real, and the bug it would have caught did in fact exist.
+
+**Process note:** No automated regression test added for this specific class of bug — the existing mock-pool test suite cannot catch Postgres type-inference errors by construction (it never executes real SQL). This is a real, standing gap for any story whose adapter tests use this repo's mock-pool convention rather than a real (or realistic) Postgres instance. Worth a `/improve` candidate: consider a lightweight CI job that runs the adapter test suite against a real ephemeral Postgres container for exactly the class of query (multi-row UPSERT via `UNNEST`, mixed `SELECT`/`WHERE` parameter reuse) most likely to hit this.
+
+**Source:** Operator instruction, this session, 2026-07-22: "Can you classify them" (the 209 unclassified features) — surfaced this bug on first real use.
+
+---
+
 ## REVISION — Unify journeys.module_id and feature_module_assignments into a single mechanism (2026-07-22)
 
 **Context:** Post-implementation design review (operator asked "is this the optimal design from scratch?") surfaced three real gaps in the shipped tmc-s1 design:
