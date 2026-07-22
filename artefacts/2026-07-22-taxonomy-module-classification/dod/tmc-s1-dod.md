@@ -51,6 +51,8 @@ No behaviour outside the story's Out of Scope section was implemented (dropping 
 **Gaps (tests not implemented):**
 - No live-Postgres integration test exercises the actual backfill migration SQL (`INSERT ... SELECT ... FROM journeys ... ON CONFLICT DO NOTHING`) against a real database — verified by code review and by the migration's structural similarity to this repo's own already-proven chained-migration pattern (a1's `product_modules`/`journeys.module_id`), but not by a dedicated automated test. **Risk:** low — the query is a straightforward idempotent INSERT-SELECT with no novel SQL construct, and `server.js`'s existing `.catch()` logs (rather than crashes) on migration failure, matching every other migration in the file. **Accepted as a known gap, not escalated to RISK-ACCEPT** since a staging smoke test (below) covers the live-database path this story's own unit/integration tests cannot.
 
+> **UPDATE (2026-07-22, post-merge amendment):** This gap has now been genuinely closed by real use, not just a smoke test. The backfill migration itself ran cleanly on every staging boot (confirmed via logs, `[tmc-s1] journeys.module_id backfilled into feature_module_assignments`). More significantly, `bulkAssignFeaturesToModule` — the OTHER piece of SQL this same gap-category covers — was exercised for real (classifying `skills-framework`'s actual 160 features into its 9 modules) and **failed immediately** with a genuine Postgres type-inference error (`inconsistent types deduced for parameter $2`) that the mock-pool test suite could never have caught. Fixed via explicit `::uuid`/`::varchar` casts, re-verified live (160/160 assigned successfully after the fix) — see `decisions.md`'s FIX-FORWARD entry and PR #546 (merged). This is direct, first-hand confirmation that the exact class of risk this gap named was real, not hypothetical — the fix is now live and proven, not just theorized.
+
 ---
 
 ## NFR Status
@@ -81,11 +83,12 @@ No metrics apply — this is a short-track story (per CLAUDE.md, short-track ski
 
 **COMPLETE WITH DEVIATIONS**
 
-Marked "with deviations" not because any AC failed, but to keep two genuine, low-risk gaps visible for /trace: (1) the backfill migration has no live-Postgres integration test, verified by review only; (2) the bulk-assign UI's accessibility was not independently re-verified this session. Both are judged low-risk and non-blocking, not reasons to withhold completion.
+Marked "with deviations" not because any AC failed, but to keep the remaining genuine, low-risk gap visible for /trace: the bulk-assign UI's accessibility was not independently re-verified (no browser session available). The original companion gap — no live-Postgres verification of this story's SQL — has since been **fully closed** by real production use: classifying `skills-framework`'s actual features surfaced a genuine type-inference bug in `bulkAssignFeaturesToModule`, which was fixed and re-verified live (see the amendment above). Both gaps were judged low-risk and non-blocking at merge time; one has now been proven and resolved, one remains open.
 
 **Follow-up actions:**
-1. Post-merge staging smoke test: confirm the backfill migration ran cleanly on `wuce-staging` boot (check server logs for `[tmc-s1] journeys.module_id backfilled into feature_module_assignments`), and manually verify the bulk-assign UI is keyboard-operable. Owner: Hamish King (Founder/Operator).
-2. Retroactively classify `skills-framework`'s real ~115 features into the 9 seeded modules using the now-shipped bulk-assign mechanism (explicitly out of this story's code scope, but the natural next operator action). Owner: Hamish King.
+1. ~~Post-merge staging smoke test: confirm the backfill migration ran cleanly on `wuce-staging` boot~~ — **Done (2026-07-22).** Confirmed via logs on every subsequent deploy.
+2. ~~Retroactively classify `skills-framework`'s real ~115 features into the 9 seeded modules~~ — **Done (2026-07-22).** 160 of 172 real features classified (the remaining 12, an unrelated `wfp.*` feature set, have no honest fit among the 9 modules and were left Unclassified rather than forced; 35 further items are blocked by a pre-existing, unrelated data-quality gap — missing `slug`/`id` in the source `pipeline-state.json`). Surfaced a real production bug in the process (see the gap-closure note above), fixed and merged (#546).
+3. Manually verify the bulk-assign UI is keyboard-operable — still open, no browser session available this session. Owner: Hamish King (Founder/Operator).
 3. Consider a future, separate story to drop the now-inert `journeys.module_id` column once the unified mechanism has run in production without issue for a reasonable period (explicitly deferred in this story's Out of Scope).
 
 ---

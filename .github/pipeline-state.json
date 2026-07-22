@@ -13328,7 +13328,7 @@
       "track": "short",
       "stage": "branch-complete",
       "health": "green",
-      "updatedAt": "2026-07-22T10:04:07.232Z",
+      "updatedAt": "2026-07-22T10:11:21.980Z",
       "guardrails": [],
       "epics": [],
       "stories": [
@@ -13336,7 +13336,7 @@
           "id": "srf-s1",
           "slug": "srf-s1",
           "name": "Session middleware Redis fallback on cache miss",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -13354,7 +13354,7 @@
           "dorArtefact": "artefacts/2026-07-22-session-redis-fallback/dor/srf-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-22-session-redis-fallback/dor/srf-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-22T10:04:07.233Z",
-          "prStatus": "not-started",
+          "prStatus": "merged",
           "tasks": [
             {
               "id": "task-1",
@@ -13372,7 +13372,11 @@
               "tddState": "committed"
             }
           ],
-          "updatedAt": "2026-07-22T10:04:07.233Z"
+          "updatedAt": "2026-07-22T10:11:21.980Z",
+          "prNumber": 547,
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-22-session-redis-fallback/dod/srf-s1-dod.md"
         }
       ],
       "metrics": []
