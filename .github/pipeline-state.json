@@ -13168,18 +13168,55 @@
       "name": "Persist a feature-to-module join so any product's real synced features can be classified and rendered by module",
       "track": "short",
       "stage": "branch-complete",
-      "health": "green",
-      "updatedAt": "2026-07-22T07:17:44.406Z",
+      "health": "amber",
+      "updatedAt": "2026-07-22T07:29:00.722Z",
       "nfrProfileArtefact": "artefacts/2026-07-22-taxonomy-module-classification/nfr-profile.md",
-      "guardrails": [],
+      "guardrails": [
+        {
+          "id": "NFR-performance-single-query-scale",
+          "category": "nfr",
+          "label": "Single-query fetch/bulk-assign at 100s-of-features scale",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-22T07:29:00.722Z",
+          "evidence": "Tested at 300 (fetch) and 250 (bulk-assign) synthetic slugs, exactly 1 query each"
+        },
+        {
+          "id": "NFR-multi-tenancy-isolation",
+          "category": "nfr",
+          "label": "Zero cross-tenant read/write leakage",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-22T07:29:00.722Z",
+          "evidence": "Dedicated isolation tests, read and write paths, mirrors bri-s3.4 pattern"
+        },
+        {
+          "id": "NFR-security-csrf",
+          "category": "nfr",
+          "label": "CSRF guard on bulk-assign mutating route",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-22T07:29:00.722Z",
+          "evidence": "Missing/mismatched-token rejection tests + valid-token control case"
+        },
+        {
+          "id": "NFR-accessibility-bulk-assign-ui",
+          "category": "nfr",
+          "label": "Bulk-assign UI keyboard/screen-reader operable",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-22T07:29:00.722Z",
+          "evidence": "Not independently re-verified this session (no browser session available); relies on a1 pattern reuse. Follow-up: manual staging spot-check."
+        }
+      ],
       "epics": [],
       "stories": [
         {
           "id": "tmc-s1",
           "slug": "tmc-s1",
           "name": "Persist feature-to-module classification for taxonomy-sourced features",
-          "stage": "branch-complete",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -13196,7 +13233,7 @@
           "dorArtefact": "artefacts/2026-07-22-taxonomy-module-classification/dor/tmc-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-22-taxonomy-module-classification/dor/tmc-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-22T06:32:15.491Z",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "tasks": [
             {
               "id": "task-1",
@@ -13224,8 +13261,12 @@
               "tddState": "committed"
             }
           ],
-          "updatedAt": "2026-07-22T07:17:44.407Z",
-          "prNumber": 544
+          "updatedAt": "2026-07-22T07:29:00.722Z",
+          "prNumber": 544,
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "blocker": "DoD gaps (non-AC-blocking): backfill migration has no live-Postgres integration test (code-review verified only); bulk-assign UI accessibility not independently re-verified this session. See dod/tmc-s1-dod.md follow-up actions.",
+          "dodArtefact": "artefacts/2026-07-22-taxonomy-module-classification/dod/tmc-s1-dod.md"
         }
       ],
       "metrics": []
