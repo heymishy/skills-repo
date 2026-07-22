@@ -13,6 +13,11 @@
 var assert = require('assert');
 var path = require('path');
 
+// fix-forward (post-a1/a2): handlePutEpicModule now requires a valid CSRF
+// token (see products.js fix-forward entry, decisions.md) -- every test
+// invoking it needs a matching session.csrfToken/body._csrf pair.
+var TEST_CSRF = 'test-csrf-token';
+
 var passed = 0;
 var failed = 0;
 
@@ -164,7 +169,7 @@ function makeProductsOwnerPool(products) {
     fakePool._journeys.push({ journey_id: 'e1', product_id: 'p1', module_id: modX.id });
     var ownerPool = makeProductsOwnerPool([{ product_id: 'p1', tenant_id: 't1' }]);
 
-    var req = { params: { id: 'p1', epicId: 'e1' }, session: { tenantId: 't1' }, body: { moduleId: modY.id } };
+    var req = { params: { id: 'p1', epicId: 'e1' }, session: { tenantId: 't1', csrfToken: TEST_CSRF }, body: { moduleId: modY.id, _csrf: TEST_CSRF } };
     var status = null, body = null;
     var res = { status: function(c) { status = c; return { json: function(b) { body = b; } }; } };
     await productsRoute.handlePutEpicModule(req, res, null, ownerPool);
@@ -185,7 +190,7 @@ function makeProductsOwnerPool(products) {
     fakePool._journeys.push({ journey_id: 'e1', product_id: 'p1', module_id: modX.id });
     var ownerPool = makeProductsOwnerPool([{ product_id: 'p1', tenant_id: 't1' }]);
 
-    var req = { params: { id: 'p1', epicId: 'e1' }, session: { tenantId: 't1' }, body: { moduleId: modX.id } };
+    var req = { params: { id: 'p1', epicId: 'e1' }, session: { tenantId: 't1', csrfToken: TEST_CSRF }, body: { moduleId: modX.id, _csrf: TEST_CSRF } };
     var status = null, body = null;
     var res = { status: function(c) { status = c; return { json: function(b) { body = b; } }; } };
     await productsRoute.handlePutEpicModule(req, res, null, ownerPool);
@@ -208,7 +213,7 @@ function makeProductsOwnerPool(products) {
       { product_id: 'p2', tenant_id: 't1' }
     ]);
 
-    var req = { params: { id: 'p1', epicId: 'e1' }, session: { tenantId: 't1' }, body: { moduleId: modBOther.id } };
+    var req = { params: { id: 'p1', epicId: 'e1' }, session: { tenantId: 't1', csrfToken: TEST_CSRF }, body: { moduleId: modBOther.id, _csrf: TEST_CSRF } };
     var status = null, body = null;
     var res = { status: function(c) { status = c; return { json: function(b) { body = b; } }; } };
     await productsRoute.handlePutEpicModule(req, res, null, ownerPool);
@@ -227,7 +232,7 @@ function makeProductsOwnerPool(products) {
     fakePool._journeys.push({ journey_id: 'e1', product_id: 'p1', module_id: null });
     var ownerPool = makeProductsOwnerPool([{ product_id: 'p1', tenant_id: 'tenant-owner' }]);
 
-    var req = { params: { id: 'p1', epicId: 'e1' }, session: { tenantId: 'tenant-attacker' }, body: { moduleId: modX.id } };
+    var req = { params: { id: 'p1', epicId: 'e1' }, session: { tenantId: 'tenant-attacker', csrfToken: TEST_CSRF }, body: { moduleId: modX.id, _csrf: TEST_CSRF } };
     var status = null;
     var res = { status: function(c) { status = c; return { json: function() {} }; } };
     await productsRoute.handlePutEpicModule(req, res, null, ownerPool);
@@ -245,7 +250,7 @@ function makeProductsOwnerPool(products) {
     fakePool._journeys.push({ journey_id: 'e1', product_id: 'p1', module_id: null });
     var ownerPool = makeProductsOwnerPool([{ product_id: 'p1', tenant_id: 't1' }]);
 
-    var req = { params: { id: 'p1', epicId: 'e1' }, session: { tenantId: 't1' }, body: { moduleId: '   ' } };
+    var req = { params: { id: 'p1', epicId: 'e1' }, session: { tenantId: 't1', csrfToken: TEST_CSRF }, body: { moduleId: '   ', _csrf: TEST_CSRF } };
     var status = null;
     var res = { status: function(c) { status = c; return { json: function() {} }; } };
     await productsRoute.handlePutEpicModule(req, res, null, ownerPool);

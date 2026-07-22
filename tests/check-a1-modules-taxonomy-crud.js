@@ -12,6 +12,12 @@
 var assert = require('assert');
 var path = require('path');
 
+// fix-forward (post-a1): handlePostProductModule/handlePutProductModule/
+// handleDeleteProductModule now require a valid CSRF token (see products.js
+// fix-forward entry, decisions.md) -- every test invoking these handlers
+// needs a matching session.csrfToken/body._csrf pair.
+var TEST_CSRF = 'test-csrf-token';
+
 var passed = 0;
 var failed = 0;
 
@@ -183,7 +189,7 @@ function makeProductsOwnerPool(products) {
     modulesAdapter.setModulesAdapter(fakePool);
     var ownerPool = makeProductsOwnerPool([{ product_id: 'p1', tenant_id: 't1' }]);
 
-    var req1 = { params: { id: 'p1' }, session: { tenantId: 't1' }, body: { name: 'Governance & Gate Enforcement' } };
+    var req1 = { params: { id: 'p1' }, session: { tenantId: 't1', csrfToken: TEST_CSRF }, body: { name: 'Governance & Gate Enforcement', _csrf: TEST_CSRF } };
     var status1 = null, body1 = null;
     var res1 = { status: function(c) { status1 = c; return { json: function(b) { body1 = b; } }; } };
     await productsRoute.handlePostProductModule(req1, res1, null, ownerPool);
@@ -201,7 +207,7 @@ function makeProductsOwnerPool(products) {
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
     modulesAdapter.setModulesAdapter(makeFakeModulesPool());
     var ownerPool = makeProductsOwnerPool([{ product_id: 'p1', tenant_id: 't1' }]);
-    var req = { params: { id: 'p1' }, session: { tenantId: 't1' }, body: { name: '   ' } };
+    var req = { params: { id: 'p1' }, session: { tenantId: 't1', csrfToken: TEST_CSRF }, body: { name: '   ', _csrf: TEST_CSRF } };
     var status = null;
     var res = { status: function(c) { status = c; return { json: function() {} }; } };
     await productsRoute.handlePostProductModule(req, res, null, ownerPool);
@@ -215,7 +221,7 @@ function makeProductsOwnerPool(products) {
     var ownerPool = makeProductsOwnerPool([{ product_id: 'p1', tenant_id: 't1' }]);
     await modulesAdapter.createModule('p1', 't1', 'Billing');
 
-    var req = { params: { id: 'p1' }, session: { tenantId: 't1' }, body: { name: 'Billing' } };
+    var req = { params: { id: 'p1' }, session: { tenantId: 't1', csrfToken: TEST_CSRF }, body: { name: 'Billing', _csrf: TEST_CSRF } };
     var status = null, body = null;
     var res = { status: function(c) { status = c; return { json: function(b) { body = b; } }; } };
     await productsRoute.handlePostProductModule(req, res, null, ownerPool);
@@ -234,7 +240,7 @@ function makeProductsOwnerPool(products) {
     var ownerPool = makeProductsOwnerPool([{ product_id: 'p1', tenant_id: 't1' }]);
     var created = await modulesAdapter.createModule('p1', 't1', 'Old Name');
 
-    var req = { params: { id: 'p1', moduleId: created.id }, session: { tenantId: 't1' }, body: { name: 'New Name' } };
+    var req = { params: { id: 'p1', moduleId: created.id }, session: { tenantId: 't1', csrfToken: TEST_CSRF }, body: { name: 'New Name', _csrf: TEST_CSRF } };
     var status = null, body = null;
     var res = { status: function(c) { status = c; return { json: function(b) { body = b; } }; } };
     await productsRoute.handlePutProductModule(req, res, null, ownerPool);
@@ -255,7 +261,7 @@ function makeProductsOwnerPool(products) {
     var created = await modulesAdapter.createModule('p1', 't1', 'Temp');
     fakePool._journeys[0].module_id = created.id;
 
-    var req = { params: { id: 'p1', moduleId: created.id }, session: { tenantId: 't1' } };
+    var req = { params: { id: 'p1', moduleId: created.id }, session: { tenantId: 't1', csrfToken: TEST_CSRF }, body: { _csrf: TEST_CSRF } };
     var status = null, body = null;
     var res = { status: function(c) { status = c; return { json: function(b) { body = b; } }; } };
     await productsRoute.handleDeleteProductModule(req, res, null, ownerPool);
@@ -294,7 +300,7 @@ function makeProductsOwnerPool(products) {
     modulesAdapter.setModulesAdapter(fakePool);
     var ownerPool = makeProductsOwnerPool([{ product_id: 'p1', tenant_id: 'tenant-owner' }]);
 
-    var req = { params: { id: 'p1' }, session: { tenantId: 'tenant-attacker' }, body: { name: 'Injected' } };
+    var req = { params: { id: 'p1' }, session: { tenantId: 'tenant-attacker', csrfToken: TEST_CSRF }, body: { name: 'Injected', _csrf: TEST_CSRF } };
     var status = null;
     var res = { status: function(c) { status = c; return { json: function() {} }; } };
     await productsRoute.handlePostProductModule(req, res, null, ownerPool);
@@ -309,7 +315,7 @@ function makeProductsOwnerPool(products) {
     var created = await modulesAdapter.createModule('p1', 'tenant-owner', 'Real Module');
     var ownerPool = makeProductsOwnerPool([{ product_id: 'p1', tenant_id: 'tenant-owner' }]);
 
-    var req = { params: { id: 'p1', moduleId: created.id }, session: { tenantId: 'tenant-attacker' } };
+    var req = { params: { id: 'p1', moduleId: created.id }, session: { tenantId: 'tenant-attacker', csrfToken: TEST_CSRF }, body: { _csrf: TEST_CSRF } };
     var status = null;
     var res = { status: function(c) { status = c; return { json: function() {} }; } };
     await productsRoute.handleDeleteProductModule(req, res, null, ownerPool);
@@ -403,6 +409,115 @@ function makeProductsOwnerPool(products) {
     ['handleGetProductModules', 'handlePostProductModule', 'handlePutProductModule', 'handleDeleteProductModule'].forEach(function(name) {
       assert.ok(new RegExp(name).test(src), 'expected server.js to reference ' + name);
     });
+  });
+
+  // ===========================================================================
+  // Fix-forward (post-a1) — CSRF protection on the mutating module routes
+  // ===========================================================================
+
+  await test('POST /products/:id/modules rejects a request with a missing/wrong CSRF token before any DB write (fix-forward, Security NFR)', async function() {
+    var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
+    var fakePool = makeFakeModulesPool();
+    modulesAdapter.setModulesAdapter(fakePool);
+    var ownerPool = makeProductsOwnerPool([{ product_id: 'p1', tenant_id: 't1' }]);
+
+    var req = { params: { id: 'p1' }, session: { tenantId: 't1', csrfToken: TEST_CSRF }, body: { name: 'Should Not Be Created', _csrf: 'wrong-token' } };
+    var status = null;
+    var res = {
+      writeHead: function(s) { status = s; },
+      end: function() {}
+    };
+    await productsRoute.handlePostProductModule(req, res, null, ownerPool);
+    assert.strictEqual(status, 403, 'expected a 403 for a mismatched CSRF token');
+    assert.strictEqual(fakePool._rows.length, 0, 'no module row must be created when the CSRF check fails');
+  });
+
+  await test('DELETE /products/:id/modules/:moduleId rejects a request with no CSRF token at all, module untouched (fix-forward, Security NFR)', async function() {
+    var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
+    var fakePool = makeFakeModulesPool();
+    modulesAdapter.setModulesAdapter(fakePool);
+    var created = await modulesAdapter.createModule('p1', 't1', 'Protected Module');
+    var ownerPool = makeProductsOwnerPool([{ product_id: 'p1', tenant_id: 't1' }]);
+
+    var req = { params: { id: 'p1', moduleId: created.id }, session: { tenantId: 't1', csrfToken: TEST_CSRF }, body: {} };
+    var status = null;
+    var res = {
+      writeHead: function(s) { status = s; },
+      end: function() {}
+    };
+    await productsRoute.handleDeleteProductModule(req, res, null, ownerPool);
+    assert.strictEqual(status, 403, 'expected a 403 for a missing CSRF token');
+    assert.strictEqual(fakePool._rows.length, 1, 'the module must still exist -- delete must not proceed without a valid CSRF token');
+  });
+
+  // ===========================================================================
+  // Fix-forward (post-a1) — the actual "Add module" UI, previously missing
+  // entirely (A1 shipped only the API; nothing in the browser could ever
+  // create the first module, making A4's module-grouped rendering
+  // unreachable through the app -- see decisions.md fix-forward entry)
+  // ===========================================================================
+
+  await test('_renderProductView: renders an "Add module" form with a CSRF field matching the session token (fix-forward)', function() {
+    var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
+    var html = productsRoute._renderProductView('Acme', 'p1', [], 'x', null, false, null, null, [], TEST_CSRF);
+    assert.ok(/id="a1-create-form"/.test(html), 'expected the create-module form to be present');
+    assert.ok(html.indexOf('name="_csrf" value="' + TEST_CSRF + '"') !== -1, 'expected the create form\'s CSRF field to carry the real session token');
+    assert.ok(/Add module/.test(html), 'expected an Add module submit control');
+  });
+
+  await test('_renderProductView: renders a rename form and a delete control for each existing module, both wired to the real CSRF token (fix-forward)', function() {
+    var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
+    var modules = [{ id: 'mod-1', name: 'Billing' }, { id: 'mod-2', name: 'Governance' }];
+    var html = productsRoute._renderProductView('Acme', 'p1', [], 'x', null, false, null, null, modules, TEST_CSRF);
+    assert.ok(/data-module-id="mod-1"/.test(html) && /data-module-id="mod-2"/.test(html), 'expected both modules to have their own rename/delete controls');
+    assert.ok(/class="a1-rename-form"/.test(html), 'expected a rename form per module');
+    assert.ok(/class="a1-delete-btn"/.test(html), 'expected a delete control per module');
+    var csrfFieldCount = (html.match(new RegExp('name="_csrf" value="' + TEST_CSRF + '"', 'g')) || []).length;
+    assert.ok(csrfFieldCount >= 3, 'expected the CSRF token in the create form plus each module\'s own rename form (got ' + csrfFieldCount + ')');
+  });
+
+  await test('_renderProductView: a module name containing HTML/script content is escaped in the management UI, never rendered raw (fix-forward, Security NFR)', function() {
+    var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
+    var modules = [{ id: 'mod-1', name: '<script>alert(1)</script>' }];
+    var html = productsRoute._renderProductView('Acme', 'p1', [], 'x', null, false, null, null, modules, TEST_CSRF);
+    assert.ok(html.indexOf('<script>alert(1)</script>') === -1, 'expected the raw script tag to never appear unescaped');
+    assert.ok(html.indexOf('&lt;script&gt;') !== -1, 'expected the module name to be HTML-escaped');
+  });
+
+  await test('_renderProductView: zero modules renders the create form but no rename/delete controls (fix-forward, matches AC4\'s clean fallback)', function() {
+    var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
+    var html = productsRoute._renderProductView('Acme', 'p1', [], 'x', null, false, null, null, [], TEST_CSRF);
+    assert.ok(/id="a1-create-form"/.test(html), 'expected the create form to still be present with zero modules');
+    assert.ok(!/class="a1-rename-form"/.test(html), 'expected zero rename forms when there are zero modules');
+    assert.ok(!/class="a1-delete-btn"/.test(html), 'expected zero delete controls when there are zero modules');
+  });
+
+  await test('handleGetProductView: the real HTML response includes a CSRF token generated from the live session (fix-forward, integration)', async function() {
+    var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
+    modulesAdapter.setModulesAdapter(makeFakeModulesPool());
+    var ownerPool = makeProductsOwnerPool([{ product_id: 'p1', tenant_id: 't1' }]);
+    // no rollup row, no journeys -- exercises the plain product-view path
+    var fullPool = {
+      query: async function(sql, params) {
+        if (/SELECT name, tenant_id, repo_owner, repo_name FROM products/.test(sql)) {
+          return { rows: [{ name: 'Acme', tenant_id: 't1', repo_owner: null, repo_name: null }] };
+        }
+        if (/FROM product_rollups/.test(sql)) { return { rows: [] }; }
+        if (/FROM journeys/.test(sql)) { return { rows: [] }; }
+        return ownerPool.query(sql, params);
+      }
+    };
+    var req = { params: { id: 'p1' }, session: { tenantId: 't1' } };
+    var html = null;
+    var res = {
+      writeHead: function() {},
+      end: function(b) { html = b; }
+    };
+    await productsRoute.handleGetProductView(req, res, null, fullPool);
+    assert.ok(html, 'expected a real HTML response');
+    assert.ok(/id="a1-create-form"/.test(html), 'expected the create-module form in the real handler\'s output');
+    assert.ok(req.session.csrfToken, 'expected generateCsrfToken to have populated req.session.csrfToken as a side effect');
+    assert.ok(html.indexOf('name="_csrf" value="' + req.session.csrfToken + '"') !== -1, 'expected the rendered form\'s CSRF field to match the real session token, not a stale/placeholder value');
   });
 
   console.log('\n[a1] Results: ' + passed + ' passed, ' + failed + ' failed');
