@@ -13321,6 +13321,61 @@
         }
       ],
       "metrics": []
+    },
+    {
+      "slug": "2026-07-22-session-redis-fallback",
+      "name": "Session middleware falls back to Redis on an in-memory cache miss",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "updatedAt": "2026-07-22T10:04:07.232Z",
+      "guardrails": [],
+      "epics": [],
+      "stories": [
+        {
+          "id": "srf-s1",
+          "slug": "srf-s1",
+          "name": "Session middleware Redis fallback on cache miss",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 7,
+            "passing": 7,
+            "artefact": "artefacts/2026-07-22-session-redis-fallback/test-plans/srf-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-22-session-redis-fallback/dor/srf-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-22-session-redis-fallback/dor/srf-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-07-22T10:04:07.233Z",
+          "prStatus": "not-started",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "session-redis.js: readSession()",
+              "tddState": "committed"
+            },
+            {
+              "id": "task-2",
+              "name": "session.js: async sessionMiddleware with Redis fallback",
+              "tddState": "committed"
+            },
+            {
+              "id": "task-3",
+              "name": "server.js: await the single call site",
+              "tddState": "committed"
+            }
+          ],
+          "updatedAt": "2026-07-22T10:04:07.233Z"
+        }
+      ],
+      "metrics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

@@ -36,6 +36,23 @@ async function deleteSession(id) {
   await client.del(KEY_PREFIX + id);
 }
 
+/**
+ * srf-s1 -- Read a single session's data by id, for sessionMiddleware's
+ * per-request fallback when the in-memory Map has lost it (e.g. a redeploy
+ * replaced the process between a login redirect and its callback). Returns
+ * null if Redis is not configured or the key doesn't exist -- never throws,
+ * matching this adapter's existing best-effort convention.
+ * @param {string} id
+ * @returns {Promise<object|null>}
+ */
+async function readSession(id) {
+  const client = _getClient();
+  if (!client) return null;
+  const raw = await client.get(KEY_PREFIX + id);
+  if (!raw) return null;
+  return typeof raw === 'string' ? JSON.parse(raw) : raw;
+}
+
 async function loadAllSessions() {
   const client = _getClient();
   if (!client) return [];
@@ -57,4 +74,4 @@ async function loadAllSessions() {
   return results;
 }
 
-module.exports = { writeSession, deleteSession, loadAllSessions, SESSION_TTL_SECONDS, KEY_PREFIX };
+module.exports = { writeSession, deleteSession, loadAllSessions, readSession, SESSION_TTL_SECONDS, KEY_PREFIX };

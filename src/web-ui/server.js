@@ -1521,7 +1521,7 @@ async function router(req, res) {
   }
 
   // Attach session before routing
-  sessionMiddleware(req, res);
+  await sessionMiddleware(req, res);
 
   // bri-s3.2 AC1: test-only onboarding-gate bypass (NODE_ENV=test only).
   // The real plan-selection step at /welcome requires a live Stripe Checkout
