@@ -13387,7 +13387,7 @@
       "track": "short",
       "stage": "branch-complete",
       "health": "green",
-      "updatedAt": "2026-07-22T10:44:41.032Z",
+      "updatedAt": "2026-07-22T18:10:13.582Z",
       "guardrails": [],
       "epics": [],
       "stories": [
@@ -13395,7 +13395,7 @@
           "id": "jrf-s2",
           "slug": "jrf-s2",
           "name": "Register product-feature journeys in the shared in-memory store",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -13413,7 +13413,7 @@
           "dorArtefact": "artefacts/2026-07-22-journey-registration-fix/dor/jrf-s2-dor.md",
           "dorContractArtefact": "artefacts/2026-07-22-journey-registration-fix/dor/jrf-s2-dor-contract.md",
           "dorSignedOffAt": "2026-07-22T10:44:41.033Z",
-          "prStatus": "not-started",
+          "prStatus": "merged",
           "tasks": [
             {
               "id": "task-1",
@@ -13426,7 +13426,11 @@
               "tddState": "committed"
             }
           ],
-          "updatedAt": "2026-07-22T10:44:41.033Z"
+          "updatedAt": "2026-07-22T18:10:13.582Z",
+          "prNumber": 548,
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-22-journey-registration-fix/dod/jrf-s2-dod.md"
         }
       ],
       "metrics": []
@@ -13436,8 +13440,8 @@
       "name": "Consistent Redis fallback across skill-session request handlers",
       "track": "short",
       "stage": "branch-complete",
-      "health": "green",
-      "updatedAt": "2026-07-22T11:56:47.559Z",
+      "health": "amber",
+      "updatedAt": "2026-07-22T18:10:13.582Z",
       "guardrails": [],
       "epics": [],
       "stories": [
@@ -13445,8 +13449,8 @@
           "id": "wusl-s1",
           "slug": "wusl-s1",
           "name": "Consistent skill-session Redis fallback",
-          "stage": "branch-complete",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -13461,7 +13465,7 @@
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-22-skill-session-redis-fallback/dor/wusl-s1-dor.md",
-          "prStatus": "not-started",
+          "prStatus": "merged",
           "tasks": [
             {
               "id": "task-1",
@@ -13474,7 +13478,12 @@
               "tddState": "committed"
             }
           ],
-          "updatedAt": "2026-07-22T11:56:47.560Z"
+          "updatedAt": "2026-07-22T18:10:13.582Z",
+          "prNumber": 549,
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "blocker": "DoD gap (non-AC-blocking): 5 of 9 handler call sites verified via code review (shared-helper delegation) rather than individual automated tests. See dod/wusl-s1-dod.md follow-up actions.",
+          "dodArtefact": "artefacts/2026-07-22-skill-session-redis-fallback/dod/wusl-s1-dod.md"
         }
       ],
       "metrics": []
