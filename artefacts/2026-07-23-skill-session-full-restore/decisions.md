@@ -1,0 +1,18 @@
+# Decisions: Full Skill-Session State Restore
+
+## ARCH — Restore mechanism changes from an allowlist to a denylist (2026-07-23)
+
+**Context:** Raised by the operator directly, before starting the Client/org-hierarchy discovery: verify SSE/session persistence works correctly for an operator resuming an in-flight feature, "especially relevant for sse markers that enable a visualisation like story map in definition and canvas in ideate." Investigation of `mergeRedisSessionData` (`routes/skills.js`) confirmed the concern was valid: the restore path copied only 8 hardcoded fields from the Redis-persisted record, silently dropping every other stateful session field — including `canvasBlocks` (the ideate canvas), `conditionItems` (the conditions sidebar), and `dynamicQuestions`/`sectionDrafts`/`pendingConfirmation`/`pendingSectionDraft`/`currentSectionIndex` (the definition story-map/section-confirmation flow) — exactly the visualization-relevant state the operator named. `modelResponses` and `auditLog` were also found missing, via direct enumeration of every `session.X =` assignment in the file.
+
+**Decision:** Replace the 8-field allowlist with a denylist of 4 fields that must never be restored (`accessToken`, `systemPrompt`, `contextFiles`, `precomputedStep1`) — copy everything else present in the Redis record onto the session.
+
+**Rationale:**
+- The **write** side (`skill-session-redis.js`) already persists the entire session object correctly — its own `_sanitise()` strips only `accessToken` and 3 large, deliberately-never-round-tripped fields (system prompt and context, rebuilt fresh via `registerHtmlSession` on every restore rather than persisted, since they can be 250KB+). The gap was purely on the restore side.
+- An allowlist requires every future story that adds new session state to remember to also update `mergeRedisSessionData` — this drift had *already happened* at least 8 times by the time it was found. A denylist of "the few things that must never come back" is structurally self-maintaining: any future `session.newField = ...` a story adds is restored automatically, with zero action required in this function.
+- The denylist itself is provably safe: `systemPrompt`/`contextFiles`/`precomputedStep1` are never actually present in real Redis data (already stripped before write), so excluding them here is belt-and-suspenders, not load-bearing — confirmed by a deliberately adversarial test (AC3) that plants sentinel values for these keys in the input and proves they're still never restored.
+
+**Scope boundary:** This does not address true live SSE-connection continuation (not meaningful across a client disconnect/reconnect) — only that session *state* is fully restored so the *next new turn* uses complete context, which is what the operator's own description asked for ("the sse stream would be loaded and then first new turn... would use that context").
+
+**Verification:** New test file `tests/check-wusl-s2-full-session-state-restore.js` — 4/4 passing, covering AC1-AC4, including AC4's deliberately-invented field name proving the fix is structural (closes the category of bug), not just today's known instances of it. Existing suites re-verified: `check-wusl-s1-session-redis-fallback.js` (7/7), `check-p3.2-redis-session-adapter.js` (17/17), `check-wusl1-chat-streaming.js` (pre-existing baseline failure, unrelated, unchanged), `check-wusl2-progressive-live-draft.js` (8/8), `check-iwu5-lens-complete.js` (17/17). Full 364-file suite: 37 failed, identical to the documented baseline.
+
+**Source:** Operator instruction, this session, 2026-07-23 (raised before Client/org-hierarchy discovery, as a pre-condition check on session persistence).
