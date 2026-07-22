@@ -13303,7 +13303,7 @@
           "dorArtefact": "artefacts/2026-07-22-product-view-consolidation/dor/pvc-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-22-product-view-consolidation/dor/pvc-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-22T08:25:26.196Z",
-          "prStatus": "not-started",
+          "prStatus": "draft",
           "tasks": [
             {
               "id": "task-1",
@@ -13316,7 +13316,8 @@
               "tddState": "committed"
             }
           ],
-          "updatedAt": "2026-07-22T08:39:36.156Z"
+          "updatedAt": "2026-07-22T08:41:20.190Z",
+          "prNumber": 545
         }
       ],
       "metrics": []
