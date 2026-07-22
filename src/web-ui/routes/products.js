@@ -13,6 +13,7 @@ var _kanbanView = require('../views/kanban-view'); // kbc-s1 -- shared renderer 
 var _roadmapScan = require('../modules/roadmap-scan'); // a5 -- read-only artefacts/ scan for discovery-only/ideate-only work
 var _repoRootAdapter = require('../adapters/repo-root'); // a5 -- reuses the existing local-disk repo-root pattern (already used by handlePostProductFeature)
 var _modulesAdapter = require('../adapters/modules-adapter'); // a1 -- curated per-product Modules taxonomy CRUD
+var _csrf = require('../middleware/csrf'); // fix-forward (post-a1) -- module CRUD forms need CSRF like every other mutating form in this app
 
 function _escapeHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -233,8 +234,102 @@ function _renderScaleGauge(features, modules, taxonomy) {
   '</div>';
 }
 
-function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules) {
+/**
+ * fix-forward (post-a1): a real "Add module" form plus rename/delete
+ * controls for existing modules -- A1's own API (POST/PUT/DELETE
+ * /products/:id/modules[/:moduleId]) shipped with no client-facing UI at
+ * all to reach it, meaning the module-grouped rendering above (A4) was
+ * unreachable through the browser (every product starts with zero modules,
+ * per discovery's own /clarify decision, and nothing could ever create the
+ * first one). Fetch-based submit, matching this app's established pattern
+ * (settings.js's renderCreditsTab) -- reload on success, inline error on
+ * failure. CSRF-protected, matching every other mutating form in this app.
+ * @param {string} productId
+ * @param {Array<{id:string, name:string}>} modules
+ * @param {string} csrfToken
+ * @returns {string}
+ */
+function _renderModulesManagement(productId, modules, csrfToken) {
+  var pid = _escapeHtml(productId);
+  var csrf = _escapeHtml(csrfToken);
+
+  var rowsHtml = modules.map(function(m) {
+    var mid = _escapeHtml(m.id);
+    return (
+      '<li class="a1-module-row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)">' +
+        '<form class="a1-rename-form" data-module-id="' + mid + '" style="display:flex;gap:8px;flex:1;margin:0">' +
+          '<input type="hidden" name="_csrf" value="' + csrf + '">' +
+          '<input type="text" name="name" value="' + _escapeHtml(m.name) + '" required ' +
+            'style="flex:1;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:13px">' +
+          '<button type="submit" style="padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:none;font-size:12px;cursor:pointer">Rename</button>' +
+        '</form>' +
+        '<button type="button" class="a1-delete-btn" data-module-id="' + mid + '" data-module-name="' + _escapeHtml(m.name) + '" ' +
+          'style="padding:6px 12px;border:1px solid #ef4444;border-radius:6px;background:none;color:#ef4444;font-size:12px;cursor:pointer">Delete</button>' +
+      '</li>'
+    );
+  }).join('');
+
+  return (
+    '<div style="margin-top:20px;border:1px solid var(--line);border-radius:8px;padding:16px">' +
+      '<div style="font-size:14px;font-weight:600;margin-bottom:10px">Modules</div>' +
+      '<div id="a1-modules-error" role="alert" style="display:none;color:#ef4444;font-size:13px;margin-bottom:8px"></div>' +
+      '<ul style="list-style:none;padding:0;margin:0 0 12px">' + rowsHtml + '</ul>' +
+      '<form id="a1-create-form" style="display:flex;gap:8px;margin:0">' +
+        '<input type="hidden" name="_csrf" value="' + csrf + '">' +
+        '<input type="text" name="name" placeholder="New module name" required ' +
+          'style="flex:1;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:13px">' +
+        '<button type="submit" style="padding:6px 14px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Add module</button>' +
+      '</form>' +
+    '</div>' +
+    '<script>(function(){' +
+      'var pid=' + JSON.stringify(productId) + ';' +
+      'var csrfToken=' + JSON.stringify(csrfToken) + ';' +
+      'var errEl=document.getElementById("a1-modules-error");' +
+      'function showErr(msg){if(errEl){errEl.textContent=msg;errEl.style.display="block";}}' +
+      'function submitJson(url,method,payload){' +
+        'return fetch(url,{method:method,headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})' +
+          '.then(function(r){' +
+            'if(!r.ok){return r.json().then(function(j){throw new Error((j&&j.error)||("Request failed ("+r.status+")"));});}' +
+            'return r.json();' +
+          '});' +
+      '}' +
+      'var createForm=document.getElementById("a1-create-form");' +
+      'if(createForm){' +
+        'createForm.addEventListener("submit",function(ev){' +
+          'ev.preventDefault();' +
+          'var fd=new FormData(createForm);' +
+          'submitJson("/products/"+pid+"/modules","POST",{name:fd.get("name"),_csrf:fd.get("_csrf")})' +
+            '.then(function(){window.location.reload();})' +
+            '.catch(function(e){showErr(e.message);});' +
+        '});' +
+      '}' +
+      'document.querySelectorAll(".a1-rename-form").forEach(function(f){' +
+        'f.addEventListener("submit",function(ev){' +
+          'ev.preventDefault();' +
+          'var fd=new FormData(f);' +
+          'var moduleId=f.getAttribute("data-module-id");' +
+          'submitJson("/products/"+pid+"/modules/"+moduleId,"PUT",{name:fd.get("name"),_csrf:fd.get("_csrf")})' +
+            '.then(function(){window.location.reload();})' +
+            '.catch(function(e){showErr(e.message);});' +
+        '});' +
+      '});' +
+      'document.querySelectorAll(".a1-delete-btn").forEach(function(btn){' +
+        'btn.addEventListener("click",function(){' +
+          'var moduleId=btn.getAttribute("data-module-id");' +
+          'var name=btn.getAttribute("data-module-name");' +
+          'if(!confirm("Delete module \\"" + name + "\\"? Its epics will be moved out of this module, not deleted."))return;' +
+          'submitJson("/products/"+pid+"/modules/"+moduleId,"DELETE",{_csrf:csrfToken})' +
+            '.then(function(){window.location.reload();})' +
+            '.catch(function(e){showErr(e.message);});' +
+        '});' +
+      '});' +
+    '})()<\/script>'
+  );
+}
+
+function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken) {
   modules = modules || [];
+  csrfToken = csrfToken || '';
   var HEALTH_LABELS = { green: '✓ Healthy', amber: '⚠ Warning', red: '✕ Blocked', unknown: '? Unknown' };
   var HEALTH_COLORS = { green: '#22c55e', amber: '#f59e0b', red: '#ef4444', unknown: 'var(--muted)' };
   var healthCounts = (rollupRow && rollupRow.health_counts) ? _parseJsonbField(rollupRow.health_counts, null) : null;
@@ -419,6 +514,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     acCoverageHtml +
     taxonomyHtml +
     scaleGaugeHtml +
+    _renderModulesManagement(productId, modules, csrfToken) +
     featuresHtml +
     '<script>' +
     'function pshConfirmDeleteProduct(id){' +
@@ -749,7 +845,11 @@ async function handleGetProductView(req, res, _next, pool) {
   if (res.json) {
     res.json({ features: features });
   } else {
-    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules);
+    // fix-forward (post-a1): the module-management form needs a CSRF token
+    // to submit create/rename/delete, matching every other mutating form in
+    // this app (settings.js's Credits/Billing tabs, etc.).
+    var csrfToken = _csrf.generateCsrfToken(req);
+    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
@@ -1364,6 +1464,12 @@ async function handleGetProductModules(req, res, _next, pool) {
  * a clear message) -- no duplicate module record is ever created.
  */
 async function handlePostProductModule(req, res, _next, pool, posthog) {
+  // fix-forward (post-a1) -- this mutating form-submitted route had no CSRF
+  // check at all until the operator-facing UI was added; csrfGuard reads and
+  // caches the body itself, so the _readBody call below (unchanged) picks it
+  // up via its own req.body !== undefined short-circuit.
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
   req.body = await _readBody(req);
   var _pool = pool;
   var _ph = posthog || _posthog;
@@ -1409,6 +1515,8 @@ async function handlePostProductModule(req, res, _next, pool, posthog) {
  * a different existing module's name.
  */
 async function handlePutProductModule(req, res, _next, pool, posthog) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
   req.body = await _readBody(req);
   var _pool = pool;
   var productId = req.params && req.params.id;
@@ -1457,6 +1565,8 @@ async function handlePutProductModule(req, res, _next, pool, posthog) {
  * unknown/foreign module id, with zero rows affected.
  */
 async function handleDeleteProductModule(req, res, _next, pool, posthog) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
   var _pool = pool;
   var productId = req.params && req.params.id;
   var moduleId = req.params && req.params.moduleId;
@@ -1494,6 +1604,8 @@ async function handleDeleteProductModule(req, res, _next, pool, posthog) {
  * (see DoR H-ADAPTER check, decisions.md).
  */
 async function handlePutEpicModule(req, res, _next, pool, posthog) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
   req.body = await _readBody(req);
   var _pool = pool;
   var _ph = posthog || _posthog;
