@@ -296,19 +296,50 @@ function computeTaxonomyRollup(pipelineState) {
 }
 
 /**
+ * pvc-s1 -- Generalized module bucketing over any flat item list (each item
+ * only needs a `.slug`), extracted from tmc-s1's groupTaxonomyByModule so the
+ * same bucketing logic can run over a merged (taxonomy + journeys) item list,
+ * not just raw taxonomy groups/ungrouped. Every created module gets a bucket
+ * -- even an empty one -- matching a4's own established epics-section
+ * convention. An empty (or all-null) assignmentMap places every item in
+ * unclassified.
+ *
+ * @param {Array<{slug: string}>} items - flat item list
+ * @param {Object<string, string|null>} assignmentMap - feature_slug -> module_id
+ * @param {Array<{id: string, name: string}>} modules
+ * @returns {{byModule: Array<{moduleId: string, moduleName: string, items: Array}>, unclassified: Array, totalCount: number}}
+ */
+function groupItemsByModule(items, assignmentMap, modules) {
+  var byModuleMap = {};
+  var unclassified = [];
+  var moduleNameById = {};
+  (modules || []).forEach(function(m) {
+    moduleNameById[m.id] = m.name;
+    byModuleMap[m.id] = { moduleId: m.id, moduleName: m.name, items: [] };
+  });
+
+  (items || []).forEach(function(item) {
+    var moduleId = assignmentMap ? assignmentMap[item.slug] : null;
+    if (moduleId && moduleNameById[moduleId]) {
+      byModuleMap[moduleId].items.push(item);
+    } else {
+      unclassified.push(item);
+    }
+  });
+
+  var byModule = Object.keys(byModuleMap).map(function(id) { return byModuleMap[id]; });
+  var totalCount = byModule.reduce(function(sum, m) { return sum + m.items.length; }, 0) + unclassified.length;
+
+  return { byModule: byModule, unclassified: unclassified, totalCount: totalCount };
+}
+
+/**
  * tmc-s1 (AC5) -- Joins computeTaxonomyRollup's groups/ungrouped output
- * against a feature_slug -> module_id assignment map (from
- * modules-adapter.js's getFeatureModuleAssignments), producing per-module
- * buckets plus a single "unclassified" bucket for any item with no
- * assignment row, an assignment pointing at a module that no longer exists
- * in the modules list, or a null module_id (explicitly reassigned away from
- * a deleted module). Every original taxonomy item is carried through
- * unchanged, plus its parent epic's slug/name if it came from a group --
- * grouped-by-epic origin is preserved as context even though the primary
- * grouping is now by module. An empty (or all-null) assignmentMap places
- * every item in unclassified -- this is the safe-degrade path the render
- * layer uses to decide whether to show this view at all (AC5's
- * zero-assignment fallback lives in the render layer, not here).
+ * against a feature_slug -> module_id assignment map, producing per-module
+ * buckets plus a single "unclassified" bucket. Kept as a thin wrapper over
+ * groupItemsByModule (pvc-s1 generalization) — flattens the taxonomy's
+ * groups/ungrouped shape into a flat item list (carrying each item's parent
+ * epic slug/name onto it) first, so existing callers/tests are unaffected.
  *
  * @param {{groups: Array<{epicSlug: string, epicName: string, items: Array<{slug: string}>}>, ungrouped: Array<{slug: string}>}} taxonomy
  * @param {Object<string, string|null>} assignmentMap - feature_slug -> module_id
@@ -316,44 +347,109 @@ function computeTaxonomyRollup(pipelineState) {
  * @returns {{byModule: Array<{moduleId: string, moduleName: string, items: Array}>, unclassified: Array, totalCount: number}}
  */
 function groupTaxonomyByModule(taxonomy, assignmentMap, modules) {
-  var byModuleMap = {};
-  var unclassified = [];
-  var moduleNameById = {};
-  // tmc-s1 (AC5, unification revision): every created module gets a bucket
-  // -- even an empty one -- matching a4's own existing epics-section
-  // convention exactly (modules.forEach(m => byModule[m.id] = [])) so both
-  // sections on the page render consistently once modules exist, rather
-  // than only showing modules that already have at least one assignment.
-  (modules || []).forEach(function(m) {
-    moduleNameById[m.id] = m.name;
-    byModuleMap[m.id] = { moduleId: m.id, moduleName: m.name, items: [] };
-  });
+  var flat = _flattenTaxonomy(taxonomy);
+  return groupItemsByModule(flat, assignmentMap, modules);
+}
 
-  function place(item) {
-    var moduleId = assignmentMap ? assignmentMap[item.slug] : null;
-    if (moduleId && moduleNameById[moduleId]) {
-      byModuleMap[moduleId].items.push(item);
-    } else {
-      unclassified.push(item);
-    }
-  }
-
-  var groups = (taxonomy && taxonomy.groups) || [];
-  var ungrouped = (taxonomy && taxonomy.ungrouped) || [];
-
-  groups.forEach(function(group) {
+/**
+ * pvc-s1 -- Flattens computeTaxonomyRollup's groups/ungrouped shape into a
+ * flat item list, carrying each grouped item's parent epic slug/name onto
+ * it. Shared by groupTaxonomyByModule and mergeFeatureSources.
+ * @param {{groups: Array, ungrouped: Array}} taxonomy
+ * @returns {Array<{slug: string}>}
+ */
+function _flattenTaxonomy(taxonomy) {
+  var flat = [];
+  ((taxonomy && taxonomy.groups) || []).forEach(function(group) {
     (group.items || []).forEach(function(item) {
-      place(Object.assign({}, item, { epicSlug: group.epicSlug, epicName: group.epicName }));
+      flat.push(Object.assign({}, item, { epicSlug: group.epicSlug, epicName: group.epicName }));
     });
   });
-  ungrouped.forEach(function(item) {
-    place(Object.assign({}, item));
+  ((taxonomy && taxonomy.ungrouped) || []).forEach(function(item) {
+    flat.push(Object.assign({}, item));
+  });
+  return flat;
+}
+
+/**
+ * pvc-s1 (AC2, AC3) -- Merges a product's synced taxonomy items with its
+ * journeys-sourced features into one flat item list, deduplicated by
+ * feature_slug. When a slug exists in both sources, the taxonomy item's
+ * metadata (name, epicName, discoveryArtefact) wins -- it's the richer,
+ * GitHub-synced record -- but the journey's own stage/journey_id is still
+ * carried onto the merged item (AC2). A slug that exists only in journeys
+ * (an in-flight feature not yet synced back to the taxonomy) still appears
+ * in the merged list, tagged source:'journey' (AC3).
+ *
+ * @param {{groups: Array, ungrouped: Array}} taxonomy
+ * @param {Array<{featureSlug: string, journey_id: string, stage: string}>} journeyFeatures
+ * @returns {Array<{slug: string, name: string|undefined, epicName: string|undefined, discoveryArtefact: string|undefined, journeyId: string|undefined, stage: string|undefined, source: 'taxonomy'|'journey'}>}
+ */
+function mergeFeatureSources(taxonomy, journeyFeatures) {
+  var bySlug = {};
+  var order = [];
+
+  _flattenTaxonomy(taxonomy).forEach(function(item) {
+    bySlug[item.slug] = {
+      slug: item.slug,
+      name: item.name,
+      epicName: item.epicName,
+      discoveryArtefact: item.discoveryArtefact,
+      source: 'taxonomy'
+    };
+    order.push(item.slug);
   });
 
-  var byModule = Object.keys(byModuleMap).map(function(id) { return byModuleMap[id]; });
-  var totalCount = byModule.reduce(function(sum, m) { return sum + m.items.length; }, 0) + unclassified.length;
+  (journeyFeatures || []).forEach(function(f) {
+    var slug = f.featureSlug;
+    if (!slug) { return; }
+    if (bySlug[slug]) {
+      // Overlap: taxonomy metadata wins, journey stage/journeyId carried through (AC2).
+      bySlug[slug].journeyId = f.journey_id;
+      bySlug[slug].stage = f.stage;
+    } else {
+      bySlug[slug] = {
+        slug: slug,
+        journeyId: f.journey_id,
+        stage: f.stage,
+        source: 'journey'
+      };
+      order.push(slug);
+    }
+  });
 
-  return { byModule: byModule, unclassified: unclassified, totalCount: totalCount };
+  return order.map(function(slug) { return bySlug[slug]; });
+}
+
+/**
+ * pvc-s1 (AC5) -- Groups a flat (merged) item list by epicName, mirroring
+ * the pre-tmc-s1 taxonomy Epics/Other-features shape, but over the merged
+ * (taxonomy + journeys) item set rather than taxonomy alone. Items with no
+ * epicName land in a single "Other features" bucket (epicName: null).
+ * @param {Array<{slug: string, epicName?: string}>} items
+ * @returns {{byPhase: Array<{epicName: string, items: Array}>, other: Array, totalCount: number}}
+ */
+function groupItemsByPhase(items) {
+  var byPhaseMap = {};
+  var order = [];
+  var other = [];
+
+  (items || []).forEach(function(item) {
+    if (item.epicName) {
+      if (!byPhaseMap[item.epicName]) {
+        byPhaseMap[item.epicName] = { epicName: item.epicName, items: [] };
+        order.push(item.epicName);
+      }
+      byPhaseMap[item.epicName].items.push(item);
+    } else {
+      other.push(item);
+    }
+  });
+
+  var byPhase = order.map(function(name) { return byPhaseMap[name]; });
+  var totalCount = byPhase.reduce(function(sum, p) { return sum + p.items.length; }, 0) + other.length;
+
+  return { byPhase: byPhase, other: other, totalCount: totalCount };
 }
 
 /**
@@ -497,6 +593,9 @@ module.exports = {
   computeAcCoverageRollup,
   computeTaxonomyRollup,
   groupTaxonomyByModule,
+  groupItemsByModule,
+  mergeFeatureSources,
+  groupItemsByPhase,
   pruneOrphanedFeatureModuleAssignments,
   syncProductRollup,
   triggerProductSync,

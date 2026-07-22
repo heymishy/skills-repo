@@ -13270,6 +13270,56 @@
         }
       ],
       "metrics": []
+    },
+    {
+      "slug": "2026-07-22-product-view-consolidation",
+      "name": "Consolidate the product view features section into one, with By Module/By Phase/All tabs and filtering",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "updatedAt": "2026-07-22T08:39:36.155Z",
+      "guardrails": [],
+      "epics": [],
+      "stories": [
+        {
+          "id": "pvc-s1",
+          "slug": "pvc-s1",
+          "name": "Consolidate and tab the features view",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 14,
+            "passing": 14,
+            "artefact": "artefacts/2026-07-22-product-view-consolidation/test-plans/pvc-s1-test-plan.md"
+          },
+          "acTotal": 9,
+          "acVerified": 9,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-22-product-view-consolidation/dor/pvc-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-22-product-view-consolidation/dor/pvc-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-07-22T08:25:26.196Z",
+          "prStatus": "not-started",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "product-rollup.js: mergeFeatureSources, groupItemsByModule generalization, groupItemsByPhase",
+              "tddState": "committed"
+            },
+            {
+              "id": "task-2",
+              "name": "products.js: consolidated tabbed/filtered features section, replacing dual rendering",
+              "tddState": "committed"
+            }
+          ],
+          "updatedAt": "2026-07-22T08:39:36.156Z"
+        }
+      ],
+      "metrics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
