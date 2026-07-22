@@ -43,6 +43,7 @@ const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, se
 const { setStripeAdapter }                                           = require('./modules/stripe-client');  // lab-s3.2
 const { creditsGuard }                                               = require('./middleware/credits-guard'); // lab-s3.3
 const { handleEmailSignup, handleEmailLogin, setUserDb }             = require('./routes/auth-email');       // lab-s2.2
+const { handleAuthStubGithub, handleAuthStubAudit }                  = require('./routes/auth-stub');         // a1-staging-safe-auth-stub
 const { setPasswordAdapter }                                         = require('./modules/password');         // lab-s2.2
 const { setUserFlagsAdapter }                                        = require('./modules/user-flags');       // lab-s2.3
 const { setGetUserRole, setGetRoleForTenant, getRoleForTenant, migrateTeamSchema, resolveRoleForPerson } = require('./modules/user-roles'); // arl-s1 / tir-s1 / tir-s7 / sec-perf-s2
@@ -1609,6 +1610,15 @@ async function router(req, res) {
 
   } else if (pathname === '/auth/logout' && req.method === 'GET') {
     await handleLogout(req, res);
+
+  } else if (pathname === '/auth/e2e-stub/github' && req.method === 'POST') {
+    // a1-staging-safe-auth-stub: staging-only, gated by E2E_STAGING_AUTH_STUB_SECRET
+    // (never set on production). See routes/auth-stub.js for the full gate.
+    await handleAuthStubGithub(req, res);
+
+  } else if (pathname === '/auth/e2e-stub/audit' && req.method === 'GET') {
+    // a1-staging-safe-auth-stub: NFR-Audit read endpoint, same gate as above.
+    await handleAuthStubAudit(req, res);
 
   } else if (pathname === '/sign-off' && req.method === 'POST') {
     authGuard(req, res, () => handleSignOff(req, res));

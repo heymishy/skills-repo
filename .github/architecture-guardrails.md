@@ -1251,6 +1251,19 @@ A browser E2E framework is needed. The decision is: which one, and what structur
 - CI must run `npm run test:e2e` separately from `npm test`; E2E failures may be non-fatal in v1 (gated by `audit.e2e_tests: true` in `context.yml`) but must be visible in the PR status panel
 - Contributors installing a new browser E2E framework alongside Playwright must first raise an ADR — adding a second framework requires a decision record and approval
 
+#### Addendum — 2026-07-23 (a1-staging-safe-auth-stub)
+
+**Context:** The original ADR-018 decision (above) scoped the auth bypass to a **test-fixture-layer** mechanism gated by `NODE_ENV=test` (`tests/e2e/fixtures/auth.js`), because it was written for the existing local-mocked harness, where the E2E web server itself is started with `NODE_ENV=test` (see `playwright.config.js`'s `webServer.env`). `wuce-staging` (the real deployed Fly app used for staging E2E coverage under the `2026-07-23-e2e-core-journey-coverage` feature) runs in production mode — no `NODE_ENV=test` guard exists there, and adding one would weaken production-mode auth for **all** traffic to that app, not just E2E traffic. A second, staging-only mechanism was needed.
+
+**Decision:** A staging-only auth-stub mechanism (`src/web-ui/routes/auth-stub.js`, story a1-staging-safe-auth-stub) is added alongside the original `NODE_ENV=test` fixture-layer bypass, as a distinct and independently-gated mechanism:
+
+- Two new routes, `POST /auth/e2e-stub/github` and `GET /auth/e2e-stub/audit`, exist in every environment's code but are a complete no-op (404) unless `process.env.E2E_STAGING_AUTH_STUB_SECRET` is set on the running server.
+- Even when set, the routes require the request to also present a matching `x-e2e-stub-secret` header (compared with `crypto.timingSafeEqual`) — a double gate, so a single mistaken env var leak does not by itself allow the bypass to fire.
+- `E2E_STAGING_AUTH_STUB_SECRET` is set **only** as a Fly secret on the `wuce-staging` app (`flyctl secrets set E2E_STAGING_AUTH_STUB_SECRET=<value> --app wuce-staging`) — it is never written to `fly.toml`, `fly.staging.toml`, or any other committed file, and never set on the production (`wuce.fly.dev`) Fly app. `tests/check-a1-fly-config-isolation.js` enforces its absence from `fly.toml` as an automated repo-level guardrail, run on every `npm test`.
+- The stub only replaces the external GitHub OAuth round-trip (the part that would otherwise require a real third-party GitHub test account, explicitly out of scope per this story) — it does not bypass or shortcut session/tenant creation. A successful stub call populates the same session field shape (`userId`, `login`, `tenantId`, `authProvider`, `role`, session-ID rotation) that the real `GET /auth/github/callback` handler (`routes/auth.js`) populates, for a freshly generated, uniquely `e2e-test-`-tagged synthetic identity per call.
+
+**Why this does not weaken production auth:** the mechanism is inert everywhere `E2E_STAGING_AUTH_STUB_SECRET` is unset — which is every environment except `wuce-staging` once an operator deliberately sets that one Fly secret. Production (`wuce.fly.dev`, `fly.toml`) has no code path, configuration file, or CI secret that could ever set this variable, so the 404 branch is the only reachable branch there. This is a staging-only addition, additive to the original ADR-018 decision — the original `NODE_ENV=test` fixture-layer bypass is unchanged and continues to gate the existing local-harness specs exactly as before.
+
 ---
 
 ### ADR-025: Multi-tenancy enforced at the application layer — tenant_id scoping, not schema/DB-per-tenant
