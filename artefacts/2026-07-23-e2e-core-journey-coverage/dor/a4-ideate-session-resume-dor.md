@@ -1,0 +1,87 @@
+## Definition of Ready: Assert full session close/resume mid-SSE-stream for the ideate canvas
+
+**Story reference:** artefacts/2026-07-23-e2e-core-journey-coverage/stories/a4-ideate-session-resume.md
+**Test plan reference:** artefacts/2026-07-23-e2e-core-journey-coverage/test-plans/a4-ideate-session-resume-test-plan.md
+**Contract reference:** artefacts/2026-07-23-e2e-core-journey-coverage/dor/a4-ideate-session-resume-dor-contract.md
+**Assessed by:** Claude (agent), operator-directed
+**Date:** 2026-07-23
+
+---
+
+## Contract Review
+
+✅ **Contract review passed** — the proposed implementation aligns with all 4 ACs. No mismatches found.
+
+---
+
+## Hard Blocks
+
+| # | Check | Status | Notes |
+|---|-------|--------|-------|
+| H1 | User story As/Want/So with named persona | ✅ | Hamish King (Founder/Operator) |
+| H2 | ≥3 ACs, Given/When/Then | ✅ | 4 ACs |
+| H3 | Every AC has ≥1 test | ✅ | 4 ACs, 5 tests (incl. 1 NFR) |
+| H4 | Out-of-scope populated | ✅ | 3 items |
+| H5 | Benefit linkage references named metric | ✅ | m1 |
+| H6 | Complexity rated | ✅ | 2 |
+| H7 | No unresolved HIGH findings | ✅ | Run 2: 0 HIGH, 0 MEDIUM, 1 LOW |
+| H8 | No uncovered ACs | ✅ | No gaps |
+| H8-ext | Cross-story schema dependency | ✅ | Dependencies: A3 → `schemaDepends: ["dorStatus"]` declared |
+| H9 | Architecture Constraints populated; no Cat E HIGH | ✅ | Cites ADR-023; 1 LOW (terminology nit, non-blocking) |
+| H-E2E | CSS-layout-dependent gap check | ✅ | Not triggered |
+| H-NFR | NFR profile exists | ✅ | Present |
+| H-NFR2 | Compliance NFR sign-off | ✅ | Not applicable |
+| H-NFR3 | Data classification not blank | ✅ | Internal |
+| H-NFR-profile | NFR profile presence | ✅ | Present |
+| H-GOV | Approved By populated | ✅ | Hamish King — Founder/Operator — 2026-07-23 (M1 signal recorded) |
+| H-ADAPTER | Injectable adapter check | ✅ | Not triggered |
+| H-INF | Infra-plan gate | ✅ | Not triggered |
+| H-MIG | Migration-review gate | ✅ | Not triggered |
+
+**All hard blocks passed — 19/19.**
+
+---
+
+## Warnings
+
+| # | Check | Status | Risk if proceeding | Acknowledged by |
+|---|-------|--------|--------------------|-----------------|
+| W1 | NFRs identified | ✅ | — | — |
+| W2 | Scope stability declared | ✅ | — | — |
+| W3 | MEDIUM findings acknowledged | ✅ | — (0 MEDIUM after Run 2) | — |
+| W4 | Verification script reviewed by domain expert | ⚠️ | Unreviewed script may miss edge cases | RISK-ACCEPT logged in decisions.md, 2026-07-23 (feature-wide) |
+| W5 | No UNCERTAIN gap items | ✅ | — | — |
+
+---
+
+## Coding Agent Instructions
+
+```
+## Coding Agent Instructions
+
+Proceed: Yes
+Story: Assert full session close/resume mid-SSE-stream for the ideate canvas — artefacts/2026-07-23-e2e-core-journey-coverage/stories/a4-ideate-session-resume.md
+Test plan: artefacts/2026-07-23-e2e-core-journey-coverage/test-plans/a4-ideate-session-resume-test-plan.md
+
+Goal:
+Make every test in the test plan pass. Do not add scope, behaviour, or
+structure beyond what the tests and ACs specify.
+
+Constraints:
+- Node.js, CommonJS, Playwright Test under `tests/e2e/`, never in the unit test chain, per ADR-018
+- Do not modify `mergeRedisSessionData` — this story only adds tests against the already-shipped mechanism
+- AC4's assertion must check `canvasBlocks` specifically (not a field already in the original 8-field allowlist) — this is the whole point of the test's design
+- Architecture standards: read `.github/architecture-guardrails.md` before implementing
+- Open a draft PR when tests pass — do not mark ready for review
+- If you encounter an ambiguity not covered by the ACs or tests: add a PR comment and do not mark ready for review
+
+Oversight level: High
+```
+
+---
+
+## Sign-off
+
+**Oversight level:** High
+**Sign-off required:** Yes
+**Signed off by:** Hamish King — Founder/Operator — 2026-07-23

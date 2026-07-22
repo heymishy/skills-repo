@@ -1,97 +1,83 @@
 {
   "currentPhase": "inner-loop-execution",
-  "lastUpdated": "2026-07-21T06:45:00Z",
-  "activeFeature": "2026-07-21-web-ui-experience-redesign",
-  "previousFeature": "live-staging-verification-of-2026-07-16-product-rollup-and-3-follow-on-short-tracks",
+  "lastUpdated": "2026-07-23T00:00:00Z",
+  "activeFeature": "2026-07-23-e2e-core-journey-coverage",
+  "previousFeature": "2026-07-21-web-ui-experience-redesign",
   "cycle": {
     "discovery": {
       "status": "approved",
-      "artefact": "artefacts/2026-07-21-web-ui-experience-redesign/discovery.md",
-      "completedAt": "2026-07-21T00:00:00Z"
+      "artefact": "artefacts/2026-07-23-e2e-core-journey-coverage/discovery.md",
+      "completedAt": "2026-07-23T00:00:00Z"
     },
     "benefit-metric": {
       "status": "active",
-      "artefact": "artefacts/2026-07-21-web-ui-experience-redesign/benefit-metric.md",
-      "completedAt": "2026-07-21T00:00:00Z"
+      "artefact": "artefacts/2026-07-23-e2e-core-journey-coverage/benefit-metric.md",
+      "completedAt": "2026-07-23T00:00:00Z"
     },
     "definition": {
       "status": "complete",
-      "artefact": "artefacts/2026-07-21-web-ui-experience-redesign/epics/",
-      "completedAt": "2026-07-21T00:00:00Z",
-      "note": "4 epics, 14 stories, vertical-slice slicing strategy"
+      "artefact": "artefacts/2026-07-23-e2e-core-journey-coverage/epics/",
+      "completedAt": "2026-07-23T00:00:00Z",
+      "note": "2 epics (A: 5 stories, B: 3 stories), User-journey slicing, scope accumulator clean, NFR profile saved."
     },
     "review": {
       "status": "passed",
-      "artefact": "artefacts/2026-07-21-web-ui-experience-redesign/review/",
-      "completedAt": "2026-07-21T00:00:00Z",
-      "note": "16 review runs (14 stories + 2 re-reviews after fixes to a3 and c2). 0 unresolved HIGH findings."
+      "artefact": "artefacts/2026-07-23-e2e-core-journey-coverage/review/",
+      "completedAt": "2026-07-23T00:00:00Z",
+      "note": "8 stories, Run 1 + Run 2 (5 MEDIUM findings fixed and re-reviewed). 0 HIGH, 0 MEDIUM remaining across all 8 -- 2 LOW notes carried forward, non-blocking."
     },
     "test-plan": {
       "status": "complete",
-      "artefact": "artefacts/2026-07-21-web-ui-experience-redesign/test-plans/",
-      "completedAt": "2026-07-21T00:00:00Z"
+      "artefact": "artefacts/2026-07-23-e2e-core-journey-coverage/test-plans/",
+      "completedAt": "2026-07-23T00:00:00Z",
+      "note": "8 test plans + 8 AC verification scripts. 2 acknowledged gaps: A3 (model-marker emission, Untestable-by-nature) and A5/B2 (branch-protection blocking, External-dependency) -- both have manual fallback scenarios."
     },
     "definition-of-ready": {
-      "status": "signed-off (10 of 14 stories) / blocked-pending-human-sign-off (4 of 14 -- d1-d4)",
-      "artefact": "artefacts/2026-07-21-web-ui-experience-redesign/dor/",
-      "completedAt": "2026-07-21T00:00:00Z",
-      "note": "PR #518 merged this whole outer-loop artefact chain. D1-D4 (Admin Impersonation, High oversight) require Hamish King's own named sign-off before assignment -- not yet given, not something the agent can self-approve."
+      "status": "signed-off (8 of 8 stories)",
+      "artefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/",
+      "completedAt": "2026-07-23T00:00:00Z",
+      "note": "All 8 stories (A1-A5, B1-B3) DoR-signed-off by Hamish King, Founder/Operator, 2026-07-23. All hard blocks passed (18/18 for A1, 19/19 for the rest). W4 RISK-ACCEPTed once in decisions.md (feature-wide -- verification scripts not pre-walked by a domain expert before DoR, solo-operator posture)."
     },
     "inner-loop": {
-      "status": "in-progress",
-      "note": "See innerLoopExecution block below for full per-story detail. 9 of 14 stories merged, 1 in-flight (a4), 4 held (d1-d4)."
+      "status": "starting",
+      "note": "Dispatching per-story inner coding loop (branch-setup through branch-complete). Sequencing constraint: A1 (staging-safe auth stub) has no upstream dependency and blocks everything else in both epics (A2-A5 depend on it directly or transitively; B1 depends on it; B3 depends on A1+A3). Dispatch order: A1 first (solo, nothing else can start until it merges), then A2 and B1 can start in parallel once A1 is merged (B1 was deliberately made independent of A3 at /review to avoid spec run-order coupling), then A3 after A2, then A4 after A3, then A5 after A1-A4 all merged, then B2 after A5+B1 merged, then B3 after A1+A3 merged (can run parallel to A4/A5 once A3 is in)."
     }
   },
   "innerLoopExecution": {
-    "context": "Wave-dispatched the inner coding loop (branch-setup through branch-complete) for the 10 DoR-signed-off, unblocked stories via parallel background subagents, in 2 waves respecting epic-internal dependency chains (A2 needs A1; A4 needs A1+A2+A3; B2 needs B1; C2/C3 need C1). Every subagent's completion report was independently re-verified against real `git log`/`gh pr view` state before being trusted, per CLAUDE.md's own mandated discipline -- this caught nothing false this session, but is why every entry below cites a real PR number and independently-observed test count rather than just the agent's own claim.",
-    "wave1": {
-      "dispatched": ["a1", "a3", "a5", "b1", "c1"],
-      "note": "First dispatch attempt (all 5) was killed mid-run by an API session-limit error before any of the 5 subagents did real work (confirmed via worktree inspection -- no commits, no meaningful diffs). Re-dispatched fresh after an account swap; all 5 completed for real on the second attempt."
+    "context": "2026-07-23-e2e-core-journey-coverage: 8 stories, all DoR-signed-off same day. Dispatch not yet started as of this checkpoint -- written proactively because session context usage reached ~86% before dispatch began, per CLAUDE.md's checkpoint discipline (invoke before reaching compaction threshold, not at it).",
+    "dependencyChain": {
+      "a1-staging-safe-auth-stub": { "dependsOn": [], "note": "No upstream -- dispatch first, alone. Everything else in this feature blocks on this story merging." },
+      "a2-stripe-test-mode-plan-selection": { "dependsOn": ["a1-staging-safe-auth-stub"] },
+      "a3-product-feature-ideate-canvas": { "dependsOn": ["a2-stripe-test-mode-plan-selection"] },
+      "a4-ideate-session-resume": { "dependsOn": ["a3-product-feature-ideate-canvas"] },
+      "a5-ci-gate-scenario-a-blocking": { "dependsOn": ["a1-staging-safe-auth-stub", "a2-stripe-test-mode-plan-selection", "a3-product-feature-ideate-canvas", "a4-ideate-session-resume"] },
+      "b1-formed-idea-outer-loop-story-map": { "dependsOn": ["a1-staging-safe-auth-stub"], "note": "Deliberately independent of a3's spec file (fixed at /review [1-M1] to avoid Playwright run-order coupling) -- can dispatch in parallel with a2 once a1 merges." },
+      "b2-ci-gate-scenario-b-coverage-mapping": { "dependsOn": ["a5-ci-gate-scenario-a-blocking", "b1-formed-idea-outer-loop-story-map"] },
+      "b3-staging-test-data-cleanup": { "dependsOn": ["a1-staging-safe-auth-stub", "a3-product-feature-ideate-canvas"] }
     },
-    "wave2": {
-      "dispatched": ["a2", "b2", "c2", "c3"],
-      "note": "Dispatched only after all 5 of wave 1 were confirmed merged into master, since a2/b2/c2/c3 each have a hard dependency on a wave-1 story's merged code (a1, b1, c1 respectively)."
-    },
-    "a4": {
-      "status": "in-progress, dispatched, not yet complete as of this checkpoint",
-      "dependsOn": ["a1", "a2", "a3"],
-      "allDependenciesMerged": true,
-      "worktreePath": "C:\\Users\\Hamis\\code\\skills repo\\.claude\\worktrees\\agent-a0bc2952bf2be7b85",
-      "branch": "feature/a4-module-grouped-rendering-scale-gauge",
-      "lastObservedState": "No commits yet as of the last check (still at master's HEAD b678d322, no working-tree changes) -- this is the final, most complex story in Epic A (module-grouped rendering + a scale gauge/distribution strip), likely still deep in its own implementation-plan/TDD cycle, not stuck or failed. Was NOT re-dispatched or interrupted before this checkpoint was written -- it may still be running in the background, or may have been killed by the same session-limit condition that triggered this checkpoint. Check its worktree state directly (git log, git status) before assuming either outcome.",
-      "storyArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/stories/a4-module-grouped-rendering-and-scale-gauge.md"
-    },
-    "mergedStories": {
-      "a1": { "pr": 520, "title": "Curate a Modules taxonomy for a product", "testsObserved": "18/18 passing (independently re-run)", "mergedInto": "master" },
-      "a3": { "pr": 519, "title": "Compute health per-feature, distinct from test coverage", "testsObserved": "65/65 passing (combined across its 2 test files, per agent report; PR independently confirmed merged)", "mergedInto": "master" },
-      "a5": { "pr": 522, "title": "Surface discovery-only and ideation-only work in a Roadmap tab", "testsObserved": "14/14 passing (independently re-run after resolving a real code conflict with a1 in server.js/products.js)", "mergedInto": "master" },
-      "b1": { "pr": 523, "title": "Remove dead nav links, add Org board + Home List/Board toggle", "testsObserved": "8/8 passing (independently re-run after resolving pipeline-state.json conflict)", "mergedInto": "master" },
-      "c1": { "pr": 521, "title": "Settings page shell with Profile tab", "testsObserved": "10/10 passing (independently re-run)", "mergedInto": "master" },
-      "a2": { "pr": 526, "title": "Reassign an epic to a different module", "testsObserved": "11/11 passing (per agent report, PR independently confirmed merged and mergeable)", "mergedInto": "master" },
-      "b2": { "pr": 528, "title": "Restructure account-level nav items and add a dangling-link regression test", "testsObserved": "8/8 passing (per agent report; agent proactively rebased itself onto latest master before finishing)", "mergedInto": "master" },
-      "c2": { "pr": 527, "title": "Billing tab - plan status and Stripe portal access", "testsObserved": "11/11 passing (independently re-run after resolving a real code conflict with c3 in settings.js -- both tabs' tests re-verified together: c2 11/11, c1 10/10, c3 8/8)", "mergedInto": "master" },
-      "c3": { "pr": 525, "title": "Restyle the admin Credits tab into the Settings shared design system", "testsObserved": "8/8 passing (per agent report; re-verified again during c2's conflict resolution)", "mergedInto": "master" }
-    },
-    "heldStories": {
-      "d1": { "title": "Start impersonation session", "reason": "High oversight (epic-d-admin-user-impersonation) -- requires Hamish King's own named sign-off before assignment, per this epic's own DoR sign-off section. dorStatus: blocked (hard blocks all passed; only the human sign-off is outstanding)." },
-      "d2": { "title": "Banner, exit, and permission-scoped visibility", "reason": "same as d1 -- High oversight, same epic" },
-      "d3": { "title": "Impersonation audit log", "reason": "same as d1 -- High oversight, same epic" },
-      "d4": { "title": "NFR security review and hardening pass", "reason": "same as d1 -- High oversight, same epic. Also has a hard sequencing dependency: cannot start until d1-d3 are implemented and reviewable, per its own DoR Coding Agent Instructions." }
-    },
-    "conflictResolutionPattern": "Every parallel-dispatched pair sharing a file (a1+a5 on server.js/products.js; c2+c3 on settings.js) produced a real merge conflict when the second story rebased after the first merged, on top of the pipeline-state.json bookkeeping conflict that fired on every pair regardless of code overlap. Resolved each time by: (1) taking master's (already-merged) side wholesale for pipeline-state.json and any third-party add/add artefact conflicts, (2) merging the real code conflicts additively (kept both sides' distinct route/tab additions, collapsed duplicated shared logic like CSRF token generation into one call reused by both), (3) re-running BOTH affected stories' own test files before pushing. Full detail in workspace/learnings.md's '2026-07-21' entries.",
-    "postMergeBookkeepingGapFound": "Discovered near end of session: every one of the 9 merged stories' branch-side pipeline-state.json update (stage=branch-complete, prStatus=merged) was LOST during conflict resolution, because 'take master's side' during each merge meant taking master's still-definition-of-ready state, not the story's own completion state -- exactly the known Epic-Nested Story State Bookkeeping gap (CLAUDE.md cdg.6/B2). Fixed via PR #529 (merged): re-applied stage/prStatus/prNumber/health/verifyStatus/testPlan.passing/acVerified directly on master via `node bin/skills advance`, confirmed 0 new integrity failures. Feature-level stage advanced to branch-complete."
+    "nextAction": "Dispatch a1-staging-safe-auth-stub's inner loop (branch-setup -> implementation-plan -> subagent-execution -> verify-completion -> branch-complete) as a background agent. Read artefacts/2026-07-23-e2e-core-journey-coverage/dor/a1-staging-safe-auth-stub-dor.md and its -dor-contract.md in full before dispatching -- do not rely on this checkpoint summary alone for the actual implementation contract. Once a1 merges, independently verify via git log/gh pr view (per CLAUDE.md's mandatory dispatch-verification rule) before dispatching a2 and b1 in parallel."
+  },
+  "carriedForwardFromPreviousFeature": {
+    "feature": "2026-07-21-web-ui-experience-redesign",
+    "status": "Not re-verified this session -- carried forward from the last checkpoint on this feature (2026-07-21). Status below is AS OF 2026-07-21, not confirmed current.",
+    "openItems": [
+      "a4 (module-grouped rendering + scale gauge, final story in Epic A) -- dispatch status was unknown as of 2026-07-21 (worktree at .claude/worktrees/agent-a0bc2952bf2be7b85, branch feature/a4-module-grouped-rendering-scale-gauge). Check git log/git status fresh before assuming any outcome.",
+      "d1-d4 (Admin Impersonation epic, High oversight) remain blocked pending Hamish King's own named sign-off -- flagged multiple times, not yet given as of last check.",
+      "Retrospective-story.md artefacts for early hotfix PRs (#510, #511, #513, #516, #517) still not written -- non-blocking, carried forward.",
+      "FLY_API_TOKEN CI secret still expired as of last check (unchanged since 2026-06-29) -- commands to fix already given to the operator multiple times, not yet run."
+    ]
   },
   "checkpoint": {
-    "writtenAt": "2026-07-21",
-    "contextAtWrite": "Session hit its usage limit mid-inner-loop-execution. 9 of 14 stories in the 2026-07-21-web-ui-experience-redesign feature are merged into master (a1, a2, a3, a5, b1, b2, c1, c2, c3), each independently re-verified via real git/gh state, not just trusted from the dispatching subagent's own report. The 10th ready story, a4 (the final story in Epic A, module-grouped rendering + scale gauge), was dispatched and its dependencies (a1+a2+a3) are all merged, but its own completion status is unknown as of this write -- check its worktree (path in innerLoopExecution.a4 above) first thing on resume. The remaining 4 stories (d1-d4, Admin Impersonation epic) are deliberately held, not forgotten -- they need Hamish King's own named human sign-off (High oversight gate) before they can be dispatched at all; this has been flagged to the user twice already and not yet been given. A genuine post-merge pipeline-state.json bookkeeping gap was found and fixed (PR #529) in the last few minutes of this session -- this checkpoint's own pipeline-state.json values reflect the corrected, accurate state.",
-    "resumeInstruction": "Read this entire state.json first, then workspace/learnings.md's 2026-07-21 entries (GitHub Actions check-suite gap; parallel-dispatch conflict pattern) for full narrative context -- do not rely on any prior conversation history, assume none carries over into the new account/session. Concrete next steps, in priority order: (1) Check agent worktree at .claude/worktrees/agent-a0bc2952bf2be7b85 (branch feature/a4-module-grouped-rendering-scale-gauge) via `git log`/`git status` to determine if a4 made real progress, is still genuinely running, or was also killed by the session limit -- do NOT trust any stale conversation summary of its status, verify fresh. If it has real uncommitted or committed work, resume/finish it in place rather than restarting from scratch; if it has nothing, re-dispatch it fresh per the same pattern used for the other 9 stories (read all of a4's own artefacts under artefacts/2026-07-21-web-ui-experience-redesign/ first -- story, DoR, test-plan, verification-script, decisions.md -- plus the REAL merged code from a1/a2/a3 in src/web-ui/adapters/modules-adapter.js, src/web-ui/routes/products.js, src/web-ui/modules/product-rollup.js, since those stories' shipped code may differ from the story file's original design assumptions). (2) Once a4 is merged, ALL of Epic A, B, and C (10 stories) will be complete -- confirm this and consider whether a consolidated DoD (Definition of Done) pass across all 10 is warranted before moving on, per CLAUDE.md's short-track DoD reminder (though these are standard-track, not short-track, stories -- DoD still applies at step 8 of the pipeline, not yet done for any of them). (3) D1-D4 remain explicitly blocked on the user's own named sign-off -- do not dispatch them without first getting that sign-off directly (re-ask if it still hasn't been addressed; do not assume silence means approval). (4) If any future PR opened in this repo shows zero CI checks (statusCheckRollup empty, and GET /repos/:owner/:repo/commits/:sha/check-suites confirms no GitHub Actions check suite was even created), do not spend much time on it -- see workspace/learnings.md's dedicated entry on this; try marking the PR ready-for-review + a fresh merge-commit push first, escalate to GitHub Support if that doesn't clear it within a couple of pushes. (5) Retrospective-story.md artefacts for the earlier hotfix PRs (#510, #511, #513, #516, #517) shipped without full short-track chains remain an open, non-blocking item carried forward from before this feature's outer loop began -- still not actioned, still not declined by the user.",
+    "writtenAt": "2026-07-23",
+    "contextAtWrite": "Session reached ~86% context usage immediately after all 8 stories in the 2026-07-23-e2e-core-journey-coverage feature were DoR-signed-off. The operator asked to proceed straight to the inner loop but flagged the usage level, so this checkpoint is being written before any inner-loop dispatch work begins, per CLAUDE.md's checkpoint discipline (invoke before reaching compaction threshold, not at it). No inner-loop work has actually started yet -- the next action is dispatching a1's branch-setup/implementation-plan/subagent-execution.",
+    "resumeInstruction": "Read this entire state.json first. The active feature is 2026-07-23-e2e-core-journey-coverage -- all 8 stories (A1-A5, B1-B3) are DoR-signed-off (artefacts/2026-07-23-e2e-core-journey-coverage/dor/). Nothing has been dispatched to the inner loop yet. Start with a1-staging-safe-auth-stub (no upstream dependency, blocks everything else) -- read its DoR artefact and DoR contract in full, then run /branch-setup -> /implementation-plan -> /subagent-execution (dispatch as a background agent recommended, matching this session's established pattern of parallel background subagents with independent git/gh verification of completion) -> /verify-completion -> /branch-complete. Do NOT trust a dispatched agent's own completion report -- verify via git log/git status in its worktree and gh pr view, per CLAUDE.md's mandatory rule (repeatedly evidenced this session and prior sessions as a real failure mode). Once a1 merges, a2 and b1 can dispatch in parallel (b1 was deliberately decoupled from a3 at /review to allow this). Follow the dependencyChain block above for the rest of the sequencing. Separately, and not blocking this feature: the previous feature (2026-07-21-web-ui-experience-redesign) has open items carried forward in carriedForwardFromPreviousFeature above -- re-verify their status fresh (do not assume the 2026-07-21 snapshot is still accurate) when there's a natural gap in this feature's dispatch waves, or if the operator asks about it directly.",
     "pendingActions": [
-      "Verify a4's real state in its worktree (.claude/worktrees/agent-a0bc2952bf2be7b85) before deciding whether to resume or re-dispatch it -- Owner: resuming session, do this first",
-      "Once a4 merges, all 10 non-Admin-Impersonation stories (A1-A5, B1-B2, C1-C3) will be complete -- consider a DoD pass across them per CLAUDE.md step 8 -- Owner: resuming session, raise with Hamish King first",
-      "Get Hamish King's own named human sign-off for the 4 High-oversight Admin Impersonation stories (d1-d4) before dispatching them -- Owner: Hamish King, not yet given, flagged twice already",
-      "If GitHub Actions CI silently stops firing on a new PR again, don't re-litigate the full diagnostic pass -- see workspace/learnings.md's dedicated entry for the known dead-ends and the one thing that correlated with recovery (undraft + fresh merge-commit push) -- Owner: resuming session",
-      "Write retrospective-story.md artefacts for PR #510, #511, #513, #516, #517 (shipped as fast hotfixes without full short-track story chains) per CLAUDE.md's Artefact-first rule remedy -- Owner: resuming session, non-blocking, carried forward from before this session's feature work began",
-      "Previous session's carried-forward items (Node 20 vs 22 test divergence hypothesis; definition-of-ready H-GOV short-track exception clause) -- status not re-verified this session, still likely outstanding -- Owner: Hamish King"
+      "Dispatch a1-staging-safe-auth-stub's inner loop first (no dependencies, blocks the rest of the feature) -- Owner: resuming session, immediate next step",
+      "Independently verify a1's completion via git log/gh pr view before trusting any dispatched agent's self-report, before dispatching a2/b1 -- Owner: resuming session",
+      "Once a1 merges: dispatch a2 and b1 in parallel (both only depend on a1) -- Owner: resuming session",
+      "Re-verify 2026-07-21-web-ui-experience-redesign's a4/d1-d4 status fresh when convenient -- not confirmed since 2026-07-21 -- Owner: resuming session, non-blocking to the current feature",
+      "Get Hamish King's named sign-off for d1-d4 (Admin Impersonation, High oversight) before dispatching them -- Owner: Hamish King, flagged multiple times already",
+      "FLY_API_TOKEN CI secret refresh -- Owner: Hamish King, commands already provided multiple times"
     ]
   }
 }

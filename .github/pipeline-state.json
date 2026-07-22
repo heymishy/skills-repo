@@ -13530,6 +13530,730 @@
         }
       ],
       "metrics": []
+    },
+    {
+      "slug": "2026-07-23-e2e-core-journey-coverage",
+      "name": "E2E Core Journey Coverage on Staging",
+      "track": "standard",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "updatedAt": "2026-07-22T21:05:05.061Z",
+      "discoveryArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/discovery.md",
+      "discoveryStatus": "approved",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "guardrails": [
+        {
+          "id": "MC-SEC-01",
+          "category": "mandatory-constraint",
+          "label": "No user-supplied content in innerHTML without sanitisation",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "MC-SEC-02",
+          "category": "mandatory-constraint",
+          "label": "No credentials, tokens, or personal data in committed files",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "MC-SEC-03",
+          "category": "mandatory-constraint",
+          "label": "Viz reads local JSON only — no external fetch calls",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "MC-CORRECT-01",
+          "category": "mandatory-constraint",
+          "label": "Gate logic reads evidence fields from pipeline-state.json (not stage alone)",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "MC-CORRECT-02",
+          "category": "mandatory-constraint",
+          "label": "Fields written to pipeline-state.json must exist in schema",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "MC-CORRECT-03",
+          "category": "mandatory-constraint",
+          "label": "Fields read by viz from pipeline-state.json must exist in schema",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "MC-SELF-01",
+          "category": "mandatory-constraint",
+          "label": "dashboards/pipeline-viz.html renders without build step, server, or network",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "MC-SELF-02",
+          "category": "mandatory-constraint",
+          "label": "No npm devDependencies in dashboards/pipeline-viz.html runtime",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "MC-CONSIST-01",
+          "category": "mandatory-constraint",
+          "label": "Stage enum in schema updated when skill adds/removes stage",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "MC-CONSIST-02",
+          "category": "mandatory-constraint",
+          "label": "Gate add/remove synced with SKILL.md criteria",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "MC-A11Y-01",
+          "category": "mandatory-constraint",
+          "label": "Interactive elements keyboard-accessible",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "MC-A11Y-02",
+          "category": "mandatory-constraint",
+          "label": "Colour not sole indicator of gate status (icons/labels present)",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "ADR-001",
+          "category": "adr",
+          "label": "Single-file viz, no build step",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "ADR-002",
+          "category": "adr",
+          "label": "Gates must use evidence fields, not stage-proxy",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "ADR-003",
+          "category": "adr",
+          "label": "Schema-first: fields defined before use",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "ADR-004",
+          "category": "adr",
+          "label": "context.yml is the single config source of truth",
+          "status": "met",
+          "evidence": "No violations found -- correctly cited in Architecture Constraints (A1/A5/B2 for ADR-004/ADR-018; A1/A4/B1 for ADR-025; A3/B1 for ADR-022/023/024).",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-22T21:04:57.064Z"
+        },
+        {
+          "id": "ADR-005",
+          "category": "adr",
+          "label": "Agent instructions format driven by vcs.type (surface adapter concern)",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "ADR-006",
+          "category": "adr",
+          "label": "Approval-channel adapter pattern for DoR sign-off",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "ADR-007",
+          "category": "adr",
+          "label": "EA registry surface-type mapping table (technology.hosting → platform surface type)",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "ADR-008",
+          "category": "adr",
+          "label": "DoR touch-point contract is binding at pre-merge",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "PAT-01",
+          "category": "pattern",
+          "label": "Single-file HTML viz architecture",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "PAT-02",
+          "category": "pattern",
+          "label": "State access via parsed pipelineState global",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "PAT-03",
+          "category": "pattern",
+          "label": "Gate pass/fail by evidence fields",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "PAT-04",
+          "category": "pattern",
+          "label": "Schema evolution: add fields simultaneously",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "PAT-05",
+          "category": "pattern",
+          "label": "Config reading via context.yml",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "PAT-06",
+          "category": "pattern",
+          "label": "Execution pre-condition gate on runtime artefact existence (DoR PROCEED-BLOCKED)",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "PAT-07",
+          "category": "pattern",
+          "label": "Group instruction-text-only changes at the same SKILL.md exit point into one story",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "AP-01",
+          "category": "anti-pattern",
+          "label": "Gate logic checking feature.stage only",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "AP-02",
+          "category": "anti-pattern",
+          "label": "Hardcoded org/tool names in skill files",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "AP-03",
+          "category": "anti-pattern",
+          "label": "External CDN dependencies in viz at runtime",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "AP-04",
+          "category": "anti-pattern",
+          "label": "Fields used by viz/skills but not in schema",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "AP-05",
+          "category": "anti-pattern",
+          "label": "Committing viz changes without passing check-viz-syntax.js",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "AP-06",
+          "category": "anti-pattern",
+          "label": "Directly mutating pipeline-state.json outside skills",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "AP-07",
+          "category": "anti-pattern",
+          "label": "Bundling changes from story B into story A's PR (multi-story contamination)",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "AP-08",
+          "category": "anti-pattern",
+          "label": "Committing runtime artefact churn (traces, validation reports) in story branches",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "ADR-009",
+          "category": "adr",
+          "label": "Evaluation and write-back workflows must be separate triggers with separate permission scopes",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "ADR-010",
+          "category": "adr",
+          "label": "CI audit records must be persisted to main post-merge, not to feature branches",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "PAT-08",
+          "category": "pattern",
+          "label": "Two-workflow CI audit pattern: evaluate on pull_request (contents:read) + persist post-merge to main (contents:write)",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "PAT-09",
+          "category": "pattern",
+          "label": "git commit --allow-empty to force synchronize event when required check has not re-run",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "AP-09",
+          "category": "anti-pattern",
+          "label": "Required-check workflow committing back to the branch it evaluates (synchronize loop)",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "AP-10",
+          "category": "anti-pattern",
+          "label": "[ci skip] on a branch with required checks (suppresses status reporting)",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "AP-11",
+          "category": "anti-pattern",
+          "label": "Committing a new SKILL.md, src/ module, governance check script, dashboard behavioural change, copilot-instructions behavioural change, or structural pipeline-state change without a story artefact (artefact-first violation)",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "ADR-011",
+          "category": "adr",
+          "label": "Artefact-first: new SKILL.md files, src/ modules, governance check scripts, dashboard behavioural changes, copilot-instructions behavioural changes, and structural pipeline-state.json changes require a story artefact before or alongside the commit",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "ADR-012",
+          "category": "adr",
+          "label": "Platform-agnostic architecture: prefer portable multi-VCS implementations over vendor-specific optimisations; adapters enable platform adaptation without fragmentation",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "ADR-013",
+          "category": "adr",
+          "label": "Phase 4 enforcement architecture: shared 3-operation governance package is the contract all surface adapters call — no surface adapter reimplements governance logic independently",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "ADR-phase4-enforcement",
+          "category": "adr",
+          "label": "Mechanism selection: which enforcement mechanism (MCP, CLI, or deferred) applies to each Phase 4 surface class",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "ADR-015",
+          "category": "adr",
+          "label": "Two-tier artefact scope model: system corpus vs feature delivery — /modernisation-decompose is the canonical bridge; ad-hoc cross-scope sharing not permitted",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "ADR-016",
+          "category": "adr",
+          "label": "Two-file state authority model: pipeline-state.json is delivery evidence (viz source of truth); workspace/state.json is operator session state — skills must not conflate the two",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "ADR-017",
+          "category": "adr",
+          "label": "Story nesting dual-structure: all new features use flat features[].stories[]; Phase 1/2 epics-nested shape is legacy and not migrated",
+          "status": "na",
+          "evidence": "Not applicable to this feature scope (real-staging E2E test coverage of the wuce web app) -- this guardrail governs dashboards/pipeline-viz.html, pipeline-state.json schema evolution, or other skills-platform-meta concerns not touched by this feature.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-22T20:36:32.002Z"
+        },
+        {
+          "id": "ADR-018",
+          "category": "adr",
+          "label": "Playwright is the E2E testing framework; specs in tests/e2e/; devDependency only; unit test chain (npm test) must not invoke Playwright; auth bypass is test-fixture-layer only (NODE_ENV=test guard)",
+          "status": "met",
+          "evidence": "No violations found -- correctly cited in Architecture Constraints (A1/A5/B2 for ADR-004/ADR-018; A1/A4/B1 for ADR-025; A3/B1 for ADR-022/023/024).",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-22T21:04:57.064Z"
+        },
+        {
+          "id": "ADR-025",
+          "category": "adr",
+          "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
+          "status": "met",
+          "evidence": "No violations found -- correctly cited in Architecture Constraints (A1/A5/B2 for ADR-004/ADR-018; A1/A4/B1 for ADR-025; A3/B1 for ADR-022/023/024).",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-22T21:04:57.064Z"
+        }
+      ],
+      "epics": [
+        {
+          "slug": "epic-a-new-user-journey-e2e-staging-auth-foundation",
+          "name": "New-User Journey E2E + Staging Auth Foundation",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "a1-staging-safe-auth-stub",
+              "name": "Stand up a staging-safe GitHub OAuth/email auth stub for real-staging E2E",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-22T21:00:24.998Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorApprover": "Hamish King",
+              "dorSignedOffAt": "2026-07-22T21:00:24.998Z",
+              "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a1-staging-safe-auth-stub-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a1-staging-safe-auth-stub-dor-contract.md"
+            },
+            {
+              "slug": "a2-stripe-test-mode-plan-selection",
+              "name": "Drive Stripe test-mode plan selection on real staging",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-22T21:01:03.850Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 3,
+                "passing": 0
+              },
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorApprover": "Hamish King",
+              "dorSignedOffAt": "2026-07-22T21:01:03.850Z",
+              "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a2-stripe-test-mode-plan-selection-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a2-stripe-test-mode-plan-selection-dor-contract.md"
+            },
+            {
+              "slug": "a3-product-feature-ideate-canvas",
+              "name": "Drive product + first-feature creation via rough-idea/ideate, assert canvas and artefact persistence",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-22T21:01:44.432Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorApprover": "Hamish King",
+              "dorSignedOffAt": "2026-07-22T21:01:44.432Z",
+              "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a3-product-feature-ideate-canvas-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a3-product-feature-ideate-canvas-dor-contract.md"
+            },
+            {
+              "slug": "a4-ideate-session-resume",
+              "name": "Assert full session close/resume mid-SSE-stream for the ideate canvas",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-22T21:02:20.780Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorApprover": "Hamish King",
+              "dorSignedOffAt": "2026-07-22T21:02:20.780Z",
+              "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a4-ideate-session-resume-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a4-ideate-session-resume-dor-contract.md"
+            },
+            {
+              "slug": "a5-ci-gate-scenario-a-blocking",
+              "name": "Wire Scenario A as a CI-blocking gate",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-22T21:03:00.118Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 3,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorApprover": "Hamish King",
+              "dorSignedOffAt": "2026-07-22T21:03:00.118Z",
+              "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a5-ci-gate-scenario-a-blocking-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a5-ci-gate-scenario-a-blocking-dor-contract.md"
+            }
+          ]
+        },
+        {
+          "slug": "epic-b-formed-idea-journey-e2e-full-gate-data-hygiene",
+          "name": "Formed-Idea Journey E2E + Full Gate + Data Hygiene",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "b1-formed-idea-outer-loop-story-map",
+              "name": "Drive the formed-idea outer loop to DoR and assert the /definition story-map canvas, close/resume mid-SSE",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-22T21:03:38.752Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorApprover": "Hamish King",
+              "dorSignedOffAt": "2026-07-22T21:03:38.752Z",
+              "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/b1-formed-idea-outer-loop-story-map-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/b1-formed-idea-outer-loop-story-map-dor-contract.md"
+            },
+            {
+              "slug": "b2-ci-gate-scenario-b-coverage-mapping",
+              "name": "Add Scenario B to the CI-blocking gate and publish the spec-to-journey-step coverage mapping",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-22T21:04:18.087Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 3,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorApprover": "Hamish King",
+              "dorSignedOffAt": "2026-07-22T21:04:18.087Z",
+              "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/b2-ci-gate-scenario-b-coverage-mapping-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/b2-ci-gate-scenario-b-coverage-mapping-dor-contract.md"
+            },
+            {
+              "slug": "b3-staging-test-data-cleanup",
+              "name": "Design and implement a staging test-data cleanup strategy for E2E-generated accounts and records",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-07-22T21:04:57.064Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "passing": 0
+              },
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorApprover": "Hamish King",
+              "dorSignedOffAt": "2026-07-22T21:04:57.064Z",
+              "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/b3-staging-test-data-cleanup-dor.md",
+              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/b3-staging-test-data-cleanup-dor-contract.md"
+            }
+          ]
+        }
+      ],
+      "stories": [],
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "E2E CI gate on core signup/billing/creation journeys",
+          "target": "Both Scenario A and Scenario B pass in CI on every PR against real wuce-staging, failure blocks merge",
+          "baseline": "0/2 journeys covered; E2E non-blocking even when run manually",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "estimate": {
+        "e1": {
+          "date": "2026-07-23",
+          "expectedCalendarDays": 3,
+          "engagementFraction": 0.5,
+          "outerLoopFocusH": 3,
+          "innerLoopHuman": null,
+          "expectedStoryCount": 6,
+          "confidence": "low",
+          "assumptions": "GitHub OAuth mocked/stubbed only (no real test account); Stripe test-mode keys already exist and will be supplied at implementation; new CI-blocking gate applies only to these 2 new staging journeys, 29 existing local-mocked specs stay non-blocking; proceeding despite FLY_API_TOKEN still being broken (manual deploy acceptable).",
+          "gaugeAtStart": null,
+          "premiumRequestsForecast": null
+        },
+        "e2": {
+          "date": "2026-07-23",
+          "storyCount": 8,
+          "byStory": {
+            "count": 8,
+            "complexity": {
+              "1": 2,
+              "2": 5,
+              "3": 1
+            },
+            "p75FocusHPerStory": 0.625
+          },
+          "expectedCalendarDays": 4,
+          "engagementFraction": 0.5,
+          "outerLoopFocusH": 4,
+          "innerLoopHuman": null,
+          "confidence": "medium",
+          "notes": "Revised up from E1 (3 days / ~6 stories) to 4 days at 8 stories; B1 rated complexity-3 (6-stage outer-loop + story-map canvas assertion, genuinely more unknowns than the rest of the set).",
+          "premiumRequestsForecast": null
+        }
+      },
+      "benefitMetricArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/benefit-metric.md",
+      "slicingStrategy": "user-journey"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
