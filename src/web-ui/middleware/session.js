@@ -135,22 +135,50 @@ function _parseSessionId(cookieHeader) {
 /**
  * Session middleware — attaches req.session and req.sessionId.
  * Sets Set-Cookie header for new sessions.
+ *
+ * srf-s1: on an in-memory cache miss (e.g. a redeploy replaced the process
+ * since this session's cookie was issued), falls back to a Redis read
+ * before giving up and creating a brand-new session. This recovers fields
+ * like oauthState (the pre-login CSRF value) that were already persisted
+ * via persistSession() but never reloaded per-request -- previously only
+ * loadSessionsFromRedis() at server startup did that. accessToken is
+ * deliberately never restored this way (see _sanitise/_sanitiseForRedis) --
+ * an operator-confirmed scope boundary, not an oversight (see decisions.md).
+ *
  * @param {object} req
  * @param {object} res
+ * @returns {Promise<void>}
  */
-function sessionMiddleware(req, res) {
+async function sessionMiddleware(req, res) {
   const sessionId = _parseSessionId(req.headers && req.headers.cookie);
 
   if (sessionId && _sessions.has(sessionId)) {
     req.sessionId = sessionId;
     req.session   = _sessions.get(sessionId);
-  } else {
-    const { id, session } = createSession();
-    req.sessionId = id;
-    req.session   = session;
-    if (res.setHeader) {
-      res.setHeader('Set-Cookie', _buildCookieHeader(id));
+    return;
+  }
+
+  if (sessionId) {
+    const adapter = _activeRedis();
+    if (adapter) {
+      let rehydrated = null;
+      try { rehydrated = await adapter.readSession(sessionId); } catch (err) {
+        console.error('[session] Redis readSession error:', err.message);
+      }
+      if (rehydrated) {
+        _sessions.set(sessionId, rehydrated);
+        req.sessionId = sessionId;
+        req.session   = rehydrated;
+        return;
+      }
     }
+  }
+
+  const { id, session } = createSession();
+  req.sessionId = id;
+  req.session   = session;
+  if (res.setHeader) {
+    res.setHeader('Set-Cookie', _buildCookieHeader(id));
   }
 }
 
