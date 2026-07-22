@@ -13537,7 +13537,7 @@
       "track": "standard",
       "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-07-22T21:05:05.061Z",
+      "updatedAt": "2026-07-22T23:33:08.155Z",
       "discoveryArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/discovery.md",
       "discoveryStatus": "approved",
       "regulated": false,
@@ -14016,13 +14016,13 @@
               "name": "Stand up a staging-safe GitHub OAuth/email auth stub for real-staging E2E",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-22T23:07:12.194Z",
+              "updatedAt": "2026-07-22T23:33:08.155Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 5
+                "passing": 6
               },
               "acTotal": 4,
               "acVerified": 4,
@@ -14033,11 +14033,11 @@
               "dorSignedOffAt": "2026-07-22T21:00:24.998Z",
               "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a1-staging-safe-auth-stub-dor.md",
               "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a1-staging-safe-auth-stub-dor-contract.md",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/551",
               "prNumber": 551,
               "verifyStatus": "passed",
-              "notes": "Draft PR #551. testPlan.passing=5/6: AC1/AC2/NFR-Audit E2E + AC3/AC4 integration tests verified locally against a production-mode server (AC2 used the existing NODE_ENV=test fake-DB scaffold, no real Postgres in this sandbox). NFR-Security manual log-scan (6th test) remains the documented manual-only gap. Real wuce-staging execution needs a post-merge flyctl deploy plus flyctl secrets set E2E_STAGING_AUTH_STUB_SECRET."
+              "notes": "PR #551 merged. Post-merge: flyctl deploy --remote-only --config fly.staging.toml --app wuce-staging + flyctl secrets set E2E_STAGING_AUTH_STUB_SECRET run 2026-07-23 -- confirmed live against real wuce-staging via curl: wrong secret -> 403, correct secret -> 200 with real session identity created. All 4 ACs + NFR-Audit now verified against real staging, not just the local NODE_ENV=test scaffold."
             },
             {
               "slug": "a2-stripe-test-mode-plan-selection",
