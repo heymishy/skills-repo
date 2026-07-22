@@ -145,6 +145,7 @@ async function deleteModule(productId, tenantId, moduleId) {
     throw nf;
   }
   await db.query('UPDATE journeys SET module_id = NULL WHERE module_id = $1', [moduleId]);
+  await db.query('UPDATE feature_module_assignments SET module_id = NULL WHERE module_id = $1', [moduleId]);
   await db.query('DELETE FROM product_modules WHERE id = $1', [moduleId]);
   return { id: moduleId };
 }
@@ -196,11 +197,102 @@ async function reassignEpic(productId, tenantId, journeyId, moduleId) {
   return Object.assign({ changed: true }, r.rows[0]);
 }
 
+/**
+ * tmc-s1 (AC2) -- Fetch every feature-to-module assignment for a product in a
+ * single query, regardless of how many features exist (tested at 300
+ * synthetic slugs) -- the render layer joins this map against
+ * computeTaxonomyRollup's output rather than issuing one lookup per feature.
+ * @param {string} productId
+ * @param {string} tenantId
+ * @returns {Promise<Object<string,string|null>>} map of feature_slug -> module_id
+ */
+async function getFeatureModuleAssignments(productId, tenantId) {
+  var db = _requireAdapter();
+  var r = await db.query(
+    'SELECT feature_slug, module_id FROM feature_module_assignments WHERE product_id = $1 AND tenant_id = $2',
+    [productId, tenantId]
+  );
+  var map = {};
+  r.rows.forEach(function(row) { map[row.feature_slug] = row.module_id; });
+  return map;
+}
+
+/**
+ * tmc-s1 (AC3) -- Assign a batch of taxonomy feature slugs to one module in a
+ * single round-trip (a multi-row upsert), never one query per slug -- tested
+ * at 2 and at 250 slugs, both asserting exactly one query issued. Module
+ * ownership (must belong to the same product_id/tenant_id) is validated
+ * inside the same statement via a WHERE EXISTS guard, rather than a separate
+ * pre-check query, so the "exactly one query" property holds even including
+ * validation (AC4 -- cross-tenant/cross-product target rejected).
+ * @param {string} productId
+ * @param {string} tenantId
+ * @param {Array<string>} featureSlugs
+ * @param {string} moduleId
+ * @returns {Promise<{assigned: number}>}
+ */
+async function bulkAssignFeaturesToModule(productId, tenantId, featureSlugs, moduleId) {
+  if (!Array.isArray(featureSlugs) || featureSlugs.length === 0) {
+    throw new Error('featureSlugs must be a non-empty array');
+  }
+  var db = _requireAdapter();
+  var r = await db.query(
+    `INSERT INTO feature_module_assignments (product_id, tenant_id, feature_slug, module_id, assigned_at)
+     SELECT $1, $2, slug, $3, NOW()
+     FROM UNNEST($4::varchar[]) AS slug
+     WHERE EXISTS (SELECT 1 FROM product_modules WHERE id = $3 AND product_id = $1 AND tenant_id = $2)
+     ON CONFLICT (product_id, feature_slug) DO UPDATE SET module_id = EXCLUDED.module_id, assigned_at = EXCLUDED.assigned_at
+     RETURNING feature_slug`,
+    [productId, tenantId, moduleId, featureSlugs]
+  );
+  if (r.rows.length === 0) {
+    var badMod = new Error('Target module does not belong to this product');
+    badMod.code = 'MODULE_NOT_FOUND';
+    throw badMod;
+  }
+  return { assigned: r.rows.length };
+}
+
+/**
+ * tmc-s1 -- Assign a single feature to a module. A thin wrapper over
+ * bulkAssignFeaturesToModule (one-item batch) so both paths share the same
+ * validation and single-query upsert behaviour.
+ * @param {string} productId
+ * @param {string} tenantId
+ * @param {string} featureSlug
+ * @param {string} moduleId
+ * @returns {Promise<{assigned: number}>}
+ */
+async function assignFeatureToModule(productId, tenantId, featureSlug, moduleId) {
+  return bulkAssignFeaturesToModule(productId, tenantId, [featureSlug], moduleId);
+}
+
+/**
+ * tmc-s1 -- Remove a feature's module assignment entirely (reverts to
+ * Unclassified -- no row, not a NULL-module row).
+ * @param {string} productId
+ * @param {string} tenantId
+ * @param {string} featureSlug
+ * @returns {Promise<{unassigned: boolean}>}
+ */
+async function unassignFeature(productId, tenantId, featureSlug) {
+  var db = _requireAdapter();
+  var r = await db.query(
+    'DELETE FROM feature_module_assignments WHERE product_id = $1 AND tenant_id = $2 AND feature_slug = $3',
+    [productId, tenantId, featureSlug]
+  );
+  return { unassigned: r.rowCount > 0 };
+}
+
 module.exports = {
   setModulesAdapter,
   listModules,
   createModule,
   renameModule,
   deleteModule,
-  reassignEpic
+  reassignEpic,
+  getFeatureModuleAssignments,
+  bulkAssignFeaturesToModule,
+  assignFeatureToModule,
+  unassignFeature
 };

@@ -13162,6 +13162,67 @@
           "assessedAt": "2026-07-20T20:19:28.812Z"
         }
       ]
+    },
+    {
+      "slug": "2026-07-22-taxonomy-module-classification",
+      "name": "Persist a feature-to-module join so any product's real synced features can be classified and rendered by module",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "updatedAt": "2026-07-22T06:56:08.994Z",
+      "nfrProfileArtefact": "artefacts/2026-07-22-taxonomy-module-classification/nfr-profile.md",
+      "guardrails": [],
+      "epics": [],
+      "stories": [
+        {
+          "id": "tmc-s1",
+          "slug": "tmc-s1",
+          "name": "Persist feature-to-module classification for taxonomy-sourced features",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 19,
+            "passing": 19,
+            "artefact": "artefacts/2026-07-22-taxonomy-module-classification/test-plans/tmc-s1-test-plan.md"
+          },
+          "acTotal": 7,
+          "acVerified": 7,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-22-taxonomy-module-classification/dor/tmc-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-22-taxonomy-module-classification/dor/tmc-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-07-22T06:32:15.491Z",
+          "prStatus": "draft",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "feature_module_assignments table + chained migration",
+              "tddState": "committed"
+            },
+            {
+              "id": "task-2",
+              "name": "modules-adapter.js: getFeatureModuleAssignments/bulkAssignFeaturesToModule/assignFeatureToModule/unassignFeature + deleteModule extension",
+              "tddState": "committed"
+            },
+            {
+              "id": "task-3",
+              "name": "product-rollup.js: groupTaxonomyByModule join helper",
+              "tddState": "committed"
+            },
+            {
+              "id": "task-4",
+              "name": "products.js: render-path change + bulk-assign route + CSRF guard",
+              "tddState": "committed"
+            }
+          ],
+          "updatedAt": "2026-07-22T06:56:08.996Z"
+        }
+      ],
+      "metrics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

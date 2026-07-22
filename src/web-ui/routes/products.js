@@ -327,9 +327,10 @@ function _renderModulesManagement(productId, modules, csrfToken) {
   );
 }
 
-function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken) {
+function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments) {
   modules = modules || [];
   csrfToken = csrfToken || '';
+  featureModuleAssignments = featureModuleAssignments || {};
   var HEALTH_LABELS = { green: '✓ Healthy', amber: '⚠ Warning', red: '✕ Blocked', unknown: '? Unknown' };
   var HEALTH_COLORS = { green: '#22c55e', amber: '#f59e0b', red: '#ef4444', unknown: 'var(--muted)' };
   var healthCounts = (rollupRow && rollupRow.health_counts) ? _parseJsonbField(rollupRow.health_counts, null) : null;
@@ -362,7 +363,39 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
   }
   var taxonomy = (rollupRow && rollupRow.taxonomy) ? _parseJsonbField(rollupRow.taxonomy, null) : null;
   var taxonomyHtml = '';
-  if (taxonomy) {
+  // tmc-s1 (AC5) -- a product with zero feature_module_assignments rows
+  // renders EXACTLY the pre-existing epic-phase grouping below, byte-
+  // identical to before this story, so every product that hasn't adopted
+  // module classification yet sees no change at all. Module-grouped
+  // rendering only activates once at least one assignment row exists.
+  var hasAnyFeatureModuleAssignments = Object.keys(featureModuleAssignments).length > 0;
+  if (taxonomy && hasAnyFeatureModuleAssignments) {
+    var grouped = _productRollup.groupTaxonomyByModule(taxonomy, featureModuleAssignments, modules);
+    function _renderTaxonomyItem(item) {
+      var link = item.discoveryArtefact
+        ? ' — <a href="/artefact/' + _escapeHtml(item.slug) + '/discovery" tabindex="0">' + _escapeHtml(item.discoveryArtefact) + '</a>'
+        : '';
+      var epicLabel = item.epicName ? ' <span style="color:var(--muted)">(' + _escapeHtml(item.epicName) + ')</span>' : '';
+      return '<li tabindex="0">' + _escapeHtml(item.name || item.slug) + epicLabel + link + '</li>';
+    }
+    var byModuleHtml = grouped.byModule.map(function(bucket) {
+      return '<div style="margin-bottom:10px">' +
+        '<h4 style="font-size:13px;margin:0 0 4px">' + _escapeHtml(bucket.moduleName) + '</h4>' +
+        '<ul style="margin:0;padding-left:18px;font-size:12px;color:var(--muted)">' +
+          bucket.items.map(_renderTaxonomyItem).join('') +
+        '</ul>' +
+      '</div>';
+    }).join('');
+    var unclassifiedHtml = grouped.unclassified.length > 0
+      ? '<div style="margin-bottom:10px">' +
+          '<h4 style="font-size:13px;margin:0 0 4px">Unclassified</h4>' +
+          '<ul style="margin:0;padding-left:18px;font-size:12px;color:var(--muted)">' +
+            grouped.unclassified.map(_renderTaxonomyItem).join('') +
+          '</ul>' +
+        '</div>'
+      : '';
+    taxonomyHtml = '<div style="margin-top:16px"><h3 style="font-size:14px;margin:16px 0 8px">Features by module</h3>' + byModuleHtml + unclassifiedHtml + '</div>';
+  } else if (taxonomy) {
     var epicsSectionHtml = '';
     if (taxonomy.groups && taxonomy.groups.length > 0) {
       epicsSectionHtml =
@@ -842,6 +875,16 @@ async function handleGetProductView(req, res, _next, pool) {
   } catch (_) {
     modules = [];
   }
+  // tmc-s1 (AC2) -- single query, regardless of taxonomy feature count, to
+  // fetch every feature-slug -> module_id assignment for this product. This
+  // is the join that lets a product's real GitHub-synced taxonomy (not just
+  // placeholder journeys) be classified and rendered by module.
+  var featureModuleAssignments = {};
+  try {
+    featureModuleAssignments = await _modulesAdapter.getFeatureModuleAssignments(productId, tenantId);
+  } catch (_) {
+    featureModuleAssignments = {};
+  }
   if (res.json) {
     res.json({ features: features });
   } else {
@@ -849,7 +892,7 @@ async function handleGetProductView(req, res, _next, pool) {
     // to submit create/rename/delete, matching every other mutating form in
     // this app (settings.js's Credits/Billing tabs, etc.).
     var csrfToken = _csrf.generateCsrfToken(req);
-    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken);
+    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
@@ -1645,6 +1688,57 @@ async function handlePutEpicModule(req, res, _next, pool, posthog) {
   else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ reassigned: true, journey_id: result.journey_id, module_id: result.module_id, changed: result.changed })); }
 }
 
+/**
+ * tmc-s1 (AC3, AC4, AC7) -- POST /products/:id/modules/bulk-assign: assign a
+ * batch of taxonomy feature slugs (identified by feature_slug, not
+ * journey_id -- see decisions.md ARCH entry) to one target module in a
+ * single round-trip, so classifying a product's real 100s-of-features
+ * history doesn't require one request per feature. CSRF-guarded like every
+ * other module-mutating route. Tenant-scoped; rejects a target module
+ * belonging to a different product with 404 and zero rows written.
+ */
+async function handlePostBulkAssignFeatureModules(req, res, _next, pool, posthog) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+  req.body = await _readBody(req);
+  var _pool = pool;
+  var _ph = posthog || _posthog;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+  var featureSlugs = (req.body && req.body.featureSlugs) || [];
+  var moduleId = (req.body && req.body.moduleId) || '';
+  if (typeof moduleId === 'string') { moduleId = moduleId.trim(); }
+
+  var prodRow = (await _pool.query('SELECT tenant_id FROM products WHERE product_id = $1', [productId])).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+  if (!moduleId || !Array.isArray(featureSlugs) || featureSlugs.length === 0) {
+    if (res.status) { res.status(400).json({ error: 'moduleId and a non-empty featureSlugs array are required.' }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'moduleId and a non-empty featureSlugs array are required.' })); }
+    return;
+  }
+
+  var result;
+  try {
+    result = await _modulesAdapter.bulkAssignFeaturesToModule(productId, tenantId, featureSlugs, moduleId);
+  } catch (err) {
+    if (err && err.code === 'MODULE_NOT_FOUND') {
+      if (res.status) { res.status(404).json({ error: 'not found' }); }
+      else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+      return;
+    }
+    throw err;
+  }
+
+  _ph.capture(tenantId, 'features_bulk_assigned', { productId: productId, tenantId: tenantId, moduleId: moduleId, count: result.assigned });
+
+  if (res.status) { res.status(200).json({ assigned: result.assigned, module_id: moduleId }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ assigned: result.assigned, module_id: moduleId })); }
+}
+
 module.exports = {
   _renderProductView,
   handlePostProductNew,
@@ -1667,6 +1761,8 @@ module.exports = {
   handleDeleteProductModule,
   // a2: reassign an epic (journey) to a different module
   handlePutEpicModule,
+  // tmc-s1: bulk-assign taxonomy feature slugs to a module
+  handlePostBulkAssignFeatureModules,
   // kbc-s1: shared column-building functions, exported for direct unit testing (U1-U5)
   buildProductKanbanColumns,
   buildOrgKanbanColumns,

@@ -296,6 +296,62 @@ function computeTaxonomyRollup(pipelineState) {
 }
 
 /**
+ * tmc-s1 (AC5) -- Joins computeTaxonomyRollup's groups/ungrouped output
+ * against a feature_slug -> module_id assignment map (from
+ * modules-adapter.js's getFeatureModuleAssignments), producing per-module
+ * buckets plus a single "unclassified" bucket for any item with no
+ * assignment row, an assignment pointing at a module that no longer exists
+ * in the modules list, or a null module_id (explicitly reassigned away from
+ * a deleted module). Every original taxonomy item is carried through
+ * unchanged, plus its parent epic's slug/name if it came from a group --
+ * grouped-by-epic origin is preserved as context even though the primary
+ * grouping is now by module. An empty (or all-null) assignmentMap places
+ * every item in unclassified -- this is the safe-degrade path the render
+ * layer uses to decide whether to show this view at all (AC5's
+ * zero-assignment fallback lives in the render layer, not here).
+ *
+ * @param {{groups: Array<{epicSlug: string, epicName: string, items: Array<{slug: string}>}>, ungrouped: Array<{slug: string}>}} taxonomy
+ * @param {Object<string, string|null>} assignmentMap - feature_slug -> module_id
+ * @param {Array<{id: string, name: string}>} modules
+ * @returns {{byModule: Array<{moduleId: string, moduleName: string, items: Array}>, unclassified: Array, totalCount: number}}
+ */
+function groupTaxonomyByModule(taxonomy, assignmentMap, modules) {
+  var byModuleMap = {};
+  var unclassified = [];
+  var moduleNameById = {};
+  (modules || []).forEach(function(m) { moduleNameById[m.id] = m.name; });
+
+  function place(item) {
+    var moduleId = assignmentMap ? assignmentMap[item.slug] : null;
+    if (moduleId && moduleNameById[moduleId]) {
+      if (!byModuleMap[moduleId]) {
+        byModuleMap[moduleId] = { moduleId: moduleId, moduleName: moduleNameById[moduleId], items: [] };
+      }
+      byModuleMap[moduleId].items.push(item);
+    } else {
+      unclassified.push(item);
+    }
+  }
+
+  var groups = (taxonomy && taxonomy.groups) || [];
+  var ungrouped = (taxonomy && taxonomy.ungrouped) || [];
+
+  groups.forEach(function(group) {
+    (group.items || []).forEach(function(item) {
+      place(Object.assign({}, item, { epicSlug: group.epicSlug, epicName: group.epicName }));
+    });
+  });
+  ungrouped.forEach(function(item) {
+    place(Object.assign({}, item));
+  });
+
+  var byModule = Object.keys(byModuleMap).map(function(id) { return byModuleMap[id]; });
+  var totalCount = byModule.reduce(function(sum, m) { return sum + m.items.length; }, 0) + unclassified.length;
+
+  return { byModule: byModule, unclassified: unclassified, totalCount: totalCount };
+}
+
+/**
  * Fetches a product's connected repo's pipeline-state.json via the wired
  * adapter, computes the DoD-status rollup, and writes it to the
  * product_rollups cache table scoped by product_id. Throws (does not write)
@@ -372,6 +428,7 @@ module.exports = {
   computeTestCoverageRollup,
   computeAcCoverageRollup,
   computeTaxonomyRollup,
+  groupTaxonomyByModule,
   syncProductRollup,
   triggerProductSync,
   isSyncInProgress

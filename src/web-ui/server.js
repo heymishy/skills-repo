@@ -51,7 +51,7 @@ const { handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers
 const { createSettingsHandlers } = require('./routes/settings'); // c1
 const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
 const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
-const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1
 const { setModulesAdapter } = require('./adapters/modules-adapter'); // a1
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
@@ -600,8 +600,29 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       return _creditsPool.query(`ALTER TABLE journeys ADD COLUMN IF NOT EXISTS module_id UUID REFERENCES product_modules(id) ON DELETE SET NULL`);
     }).then(function() {
       console.log('[a1] journeys.module_id column ready');
+
+      // tmc-s1: feature_module_assignments -- persists module classification
+      // for taxonomy-sourced features (identified by feature_slug, not
+      // journey_id -- taxonomy items are never rows in journeys, only
+      // ephemeral JSONB recomputed from pipeline-state.json on every
+      // /product-sync run; see decisions.md ARCH entry). Has a FK to
+      // product_modules(id), so it is chained here -- after product_modules
+      // is confirmed created -- rather than fired as an independent
+      // _creditsPool.query() call, per this epic's own already-documented
+      // migration-race incident (a1's product_modules/journeys.module_id
+      // migration, repeated at d2/d3's impersonation_audit_log.ended_at).
+      return _creditsPool.query(`CREATE TABLE IF NOT EXISTS feature_module_assignments (
+        product_id UUID NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
+        tenant_id VARCHAR NOT NULL,
+        feature_slug VARCHAR NOT NULL,
+        module_id UUID REFERENCES product_modules(id) ON DELETE SET NULL,
+        assigned_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        PRIMARY KEY (product_id, feature_slug)
+      )`);
+    }).then(function() {
+      console.log('[tmc-s1] feature_module_assignments table ready');
     }).catch(function(err) {
-      console.error('[a1] product_modules/journeys.module_id migration failed:', err.message);
+      console.error('[a1/tmc-s1] product_modules/journeys.module_id/feature_module_assignments migration failed:', err.message);
     });
 
     // a1 D37 wiring: wire the real Postgres modules adapter, reusing the same
@@ -2171,6 +2192,11 @@ async function router(req, res) {
     // a2 -- reassign an epic (journey) to a different module within the same product
     req.params = { id: pathname.split('/')[2], epicId: pathname.split('/')[4] };
     authGuard(req, res, async () => { await handlePutEpicModule(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/modules\/bulk-assign$/) && req.method === 'POST') {
+    // tmc-s1 (AC3, AC4, AC7) -- bulk-assign taxonomy feature slugs to a module
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handlePostBulkAssignFeatureModules(req, res, null, _pshPool, null); });
 
   } else if (pathname === '/org/kanban' && req.method === 'GET') {
     // psh-s7 — org-level kanban: all products and their features grouped by product
