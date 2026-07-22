@@ -88,26 +88,33 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   } catch(e) { fail('GET /products/:id lists features with pipeline stage and health indicator', e); }
 
   // T3 — new feature creates journey with product_id, PostHog fires
+  //
+  // jrf-s2 (2026-07-22): this handler no longer INSERTs directly against the
+  // pool argument -- that raw SQL bypassed the shared in-memory journey-store
+  // entirely, leaving every journey it created invisible to getJourney/
+  // setActiveSession/completeStage (confirmed live: "Journey not found" at
+  // gate-confirm). It now registers through journey-store.js's own
+  // createJourney/setJourneyFields, matching handlePostJourney's already-
+  // correct pattern. Verifying via the real journey-store module instead of
+  // inspecting the pool's raw SQL calls.
   try {
     const ph = { _captured: [], capture: function(id,ev,props) { this._captured.push({ev,props}); } };
-    const pool = {
-      _inserts: [],
-      query: async function(sql, params) {
-        this._inserts.push({ sql, params });
-        if (/INSERT INTO journeys/i.test(sql)) return { rows: [{ journey_id: 'new-j' }] };
-        return { rows: [] };
-      }
-    };
+    const pool = { query: async function() { return { rows: [] }; } };
+    const journeyStore = require('../src/web-ui/modules/journey-store');
+    journeyStore._clearForTesting();
+
     const req = { session: { tenantId: 'tz' }, params: { id: 'prod-xyz' } };
     const res = { status: function(c) { this._s=c; return this; }, json: function(b) { this._b=b; }, redirect: function(u) { this._redirect=u; }, _s:200, _b:null };
     await handlePostProductFeature(req, res, null, pool, ph);
-    const ins = pool._inserts.find(i => /INSERT INTO journeys/i.test(i.sql));
-    assert(ins, 'No INSERT into journeys');
-    const productIdParam = ins.params.find(p => p === 'prod-xyz');
-    assert(productIdParam, 'product_id not set in INSERT');
+
     const ev = ph._captured.find(e => e.ev === 'journey_created');
     assert(ev, 'journey_created not emitted');
     assert(ev.props.productId === 'prod-xyz', 'productId not in event');
+
+    const journey = journeyStore.getJourney(ev.props.journeyId);
+    assert(journey, 'journey not registered in the shared in-memory store (this is the exact bug being fixed)');
+    assert(journey.productId === 'prod-xyz', 'product_id not set on the registered journey');
+    assert(journey.tenantId === 'tz', 'tenant_id not set on the registered journey');
     pass('POST /products/:id/features creates journey with product_id and emits journey_created event');
   } catch(e) { fail('POST /products/:id/features creates journey with product_id and emits journey_created event', e); }
 
