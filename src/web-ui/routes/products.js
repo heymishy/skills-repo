@@ -363,13 +363,14 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
   }
   var taxonomy = (rollupRow && rollupRow.taxonomy) ? _parseJsonbField(rollupRow.taxonomy, null) : null;
   var taxonomyHtml = '';
-  // tmc-s1 (AC5) -- a product with zero feature_module_assignments rows
-  // renders EXACTLY the pre-existing epic-phase grouping below, byte-
-  // identical to before this story, so every product that hasn't adopted
-  // module classification yet sees no change at all. Module-grouped
-  // rendering only activates once at least one assignment row exists.
-  var hasAnyFeatureModuleAssignments = Object.keys(featureModuleAssignments).length > 0;
-  if (taxonomy && hasAnyFeatureModuleAssignments) {
+  // tmc-s1 (AC5, unification revision) -- gate on modules.length > 0, the
+  // SAME condition a4's own epics/journeys section already uses just below
+  // (see featuresHtml), not a separately-invented "has an assignment been
+  // made yet" condition. A product with zero modules created renders EXACTLY
+  // the pre-existing epic-phase grouping, byte-identical to before this
+  // story; as soon as one module exists, both sections on the page switch to
+  // module-grouped rendering together, consistently.
+  if (taxonomy && modules.length > 0) {
     var grouped = _productRollup.groupTaxonomyByModule(taxonomy, featureModuleAssignments, modules);
     function _renderTaxonomyItem(item) {
       var link = item.discoveryArtefact
@@ -850,19 +851,15 @@ async function handleGetProductView(req, res, _next, pool) {
     [productId]
   )).rows[0] || null;
   var isSyncing = _productRollup.isSyncInProgress(productId);
+  // tmc-s1 (AC8, unification revision): module assignment for journeys is no
+  // longer read from journeys.module_id directly -- that column is inert
+  // (see decisions.md REVISION entry). featureModuleAssignments (fetched
+  // below, keyed by feature_slug) is consulted instead, the same map the
+  // taxonomy section uses -- one read path for both sections.
   var rows = (await _pool.query(
-    "SELECT journey_id, feature_slug, module_id, data->>'activeSkill' AS stage FROM journeys WHERE product_id = $1",
+    "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage FROM journeys WHERE product_id = $1",
     [productId]
   )).rows;
-  var features = rows.map(function(j) {
-    return {
-      journey_id: j.journey_id,
-      stage: j.stage || 'discovery',
-      health: 'green',
-      featureSlug: j.feature_slug,
-      moduleId: j.module_id || null
-    };
-  });
   // a4 -- fetch the product's curated modules (A1) for module-grouped
   // rendering (AC1). The adapter's stub default throws (D37) when unwired;
   // production server.js always wires it unconditionally (a1), so this only
@@ -878,13 +875,23 @@ async function handleGetProductView(req, res, _next, pool) {
   // tmc-s1 (AC2) -- single query, regardless of taxonomy feature count, to
   // fetch every feature-slug -> module_id assignment for this product. This
   // is the join that lets a product's real GitHub-synced taxonomy (not just
-  // placeholder journeys) be classified and rendered by module.
+  // placeholder journeys) be classified and rendered by module, and (AC8)
+  // the same map journeys-sourced epics now use instead of journeys.module_id.
   var featureModuleAssignments = {};
   try {
     featureModuleAssignments = await _modulesAdapter.getFeatureModuleAssignments(productId, tenantId);
   } catch (_) {
     featureModuleAssignments = {};
   }
+  var features = rows.map(function(j) {
+    return {
+      journey_id: j.journey_id,
+      stage: j.stage || 'discovery',
+      health: 'green',
+      featureSlug: j.feature_slug,
+      moduleId: featureModuleAssignments.hasOwnProperty(j.feature_slug) ? featureModuleAssignments[j.feature_slug] : null
+    };
+  });
   if (res.json) {
     res.json({ features: features });
   } else {

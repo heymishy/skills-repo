@@ -38,3 +38,39 @@
 
 **Deviation from test plan:** The test plan's IT1 originally proposed asserting `syncProductRollup` behavior via a mock pool; the actual test built a combined pool (assignment-adapter pool + a `product_rollups` INSERT interceptor) so a single `syncProductRollup` call could be exercised twice with two different mock `pipeline-state.json` payloads in one test, rather than two separate tests — functionally equivalent coverage of AC1, consolidated for clarity.
 
+---
+
+## REVISION — Unify journeys.module_id and feature_module_assignments into a single mechanism (2026-07-22)
+
+**Context:** Post-implementation design review (operator asked "is this the optimal design from scratch?") surfaced three real gaps in the shipped tmc-s1 design:
+
+1. Two parallel module-assignment mechanisms now exist doing the same conceptual job: `journeys.module_id` (a1/a2, keyed by `journey_id`) and `feature_module_assignments` (tmc-s1, keyed by `feature_slug`). `deleteModule` has to null out both tables; `reassignEpic` (a2) and `bulkAssignFeaturesToModule` (tmc-s1) are two separate write paths for one concept.
+2. `journeys` already carries a `feature_slug` column (`NOT NULL`, populated by `journey-store-pg.js` on every write) — the exact identity `feature_module_assignments` is keyed by. There was no structural reason for two tables; this was missed during tmc-s1's own implementation because the story was scoped narrowly to the taxonomy gap without re-examining `journeys`' existing schema.
+3. The product-view taxonomy section's render gate (`hasAnyFeatureModuleAssignments`) was a *new*, inconsistent convention — a4's own existing epics/journeys section already solved the identical "when to switch from flat to module-grouped" problem using `modules.length === 0` as the gate (module-grouped view appears as soon as any module exists, with an Unassigned/Unclassified bucket for anything not yet assigned — no separate "has anything been assigned yet" condition). tmc-s1's taxonomy section used a different, stricter gate, producing an abrupt one-assignment-flips-the-whole-section jump that a4's own established pattern avoids.
+4. No cleanup path for orphaned assignments: since taxonomy is a recomputed JSONB blob (not real rows), an assignment could reference a `feature_slug` no longer present after a resync (feature renamed/removed upstream) and would sit in `feature_module_assignments` indefinitely with nothing to prune it.
+
+**Decision:** Refactor to a single mechanism before merging PR #544 (still draft, unmerged — safe to redesign in place rather than shipping the flawed version and patching later):
+
+- `feature_module_assignments` (keyed by `product_id, feature_slug`) becomes the *only* place module assignment is persisted, for both taxonomy-sourced and journey-sourced features.
+- A one-time, idempotent backfill migration copies any existing `journeys.module_id` data into `feature_module_assignments` using `journeys.feature_slug` as the join key (chained after both tables are confirmed created).
+- `reassignEpic` (a2) is rewritten to look up the epic's `feature_slug` from `journeys`, then delegate to the same underlying single-row upsert `assignFeatureToModule` uses — one write path, not two.
+- `deleteModule` drops its now-redundant `UPDATE journeys SET module_id = NULL` write (the column becomes inert going forward; left in place in the DB for rollback safety, not dropped this story — dropping a column is a heavier, separate migration decision).
+- The product-view render gate for the taxonomy section changes from `hasAnyFeatureModuleAssignments` to `modules.length > 0`, mirroring a4's own existing epics-section convention exactly, so both sections in the same page use one consistent "show module view once modules exist at all" rule.
+- The journeys/epics render block (a4) is changed to read module assignment via the same `feature_module_assignments` map (keyed by `feature_slug`) instead of `journeys.module_id` directly — one read path for both sections.
+- `syncProductRollup` gains an orphan-prune step: after computing the fresh taxonomy, delete any `feature_module_assignments` row for the product whose `feature_slug` is present in neither the new taxonomy nor the product's current `journeys` rows.
+
+**Rationale:** This is the design that should have shipped originally — one join table, one write path, one render-gate convention, and no unbounded accumulation of dead rows. Doing it now (pre-merge) avoids a second migration later once real assignment data exists in production for both mechanisms.
+
+**Scope note:** This revision changes behavior already merged and live in production via a1/a2/a4 (specifically: `reassignEpic`'s internal write path and the epics-section's module-read path) — not just the unmerged tmc-s1 draft. Per this repo's Artefact-first rule, this is recorded here as an explicit, reviewed design decision rather than a silent fix-forward, and ships in the same PR (#544) since it directly supersedes tmc-s1's own initial (flawed) implementation before that PR has merged.
+
+**Source:** Operator instruction, this session, 2026-07-22: "Let's refactor it based on the best robust design."
+
+**Implementation result:** All 4 changes shipped in the same PR (#544, still draft):
+- Backfill migration (`server.js`, chained after `feature_module_assignments` table creation) — idempotent `INSERT ... ON CONFLICT DO NOTHING` from `journeys.module_id` into `feature_module_assignments`.
+- `reassignEpic` rewritten to look up the journey's `feature_slug`, check the current assignment via `feature_module_assignments`, and delegate the actual write to `bulkAssignFeaturesToModule` — one write path.
+- `deleteModule` drops its now-redundant `journeys` UPDATE; only nulls `feature_module_assignments`.
+- Taxonomy render gate changed from `hasAnyFeatureModuleAssignments` to `modules.length > 0`; `groupTaxonomyByModule` now pre-seeds a bucket for every module (even empty), matching a4's `featuresHtml` convention exactly — both sections switch together and neither invents a separate "has anything been assigned" condition.
+- `pruneOrphanedFeatureModuleAssignments()` added to `product-rollup.js`, called at the end of `syncProductRollup` (best-effort, wrapped in try/catch so a prune failure never blocks the sync write itself); checks both the fresh taxonomy and the product's current `journeys` rows before deleting anything, so a journey-sourced assignment is never mistaken for orphaned just because it's absent from the taxonomy JSONB.
+
+**Test result:** tmc-s1's own test file grew from 19 to 29 tests (added AC8 unification tests and AC9 orphan-cleanup tests). a1 (26/26), a2 (11/11, fake pool and all assertions rewritten to model the unified table instead of `journeys.module_id`), a4 (11/11, one integration test's fake pool updated to model `feature_module_assignments` instead of a `module_id` column on the journeys row) all re-verified passing after the refactor. Full 359-file suite re-run: 37 failed, identical to the established baseline — zero regressions.
+

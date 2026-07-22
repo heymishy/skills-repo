@@ -319,14 +319,19 @@ function groupTaxonomyByModule(taxonomy, assignmentMap, modules) {
   var byModuleMap = {};
   var unclassified = [];
   var moduleNameById = {};
-  (modules || []).forEach(function(m) { moduleNameById[m.id] = m.name; });
+  // tmc-s1 (AC5, unification revision): every created module gets a bucket
+  // -- even an empty one -- matching a4's own existing epics-section
+  // convention exactly (modules.forEach(m => byModule[m.id] = [])) so both
+  // sections on the page render consistently once modules exist, rather
+  // than only showing modules that already have at least one assignment.
+  (modules || []).forEach(function(m) {
+    moduleNameById[m.id] = m.name;
+    byModuleMap[m.id] = { moduleId: m.id, moduleName: m.name, items: [] };
+  });
 
   function place(item) {
     var moduleId = assignmentMap ? assignmentMap[item.slug] : null;
     if (moduleId && moduleNameById[moduleId]) {
-      if (!byModuleMap[moduleId]) {
-        byModuleMap[moduleId] = { moduleId: moduleId, moduleName: moduleNameById[moduleId], items: [] };
-      }
       byModuleMap[moduleId].items.push(item);
     } else {
       unclassified.push(item);
@@ -349,6 +354,59 @@ function groupTaxonomyByModule(taxonomy, assignmentMap, modules) {
   var totalCount = byModule.reduce(function(sum, m) { return sum + m.items.length; }, 0) + unclassified.length;
 
   return { byModule: byModule, unclassified: unclassified, totalCount: totalCount };
+}
+
+/**
+ * Flattens computeTaxonomyRollup's groups/ungrouped shape into a flat Set of
+ * every feature_slug present in the taxonomy right now (tmc-s1 AC9 helper).
+ * @param {{groups: Array<{items: Array<{slug: string}>}>, ungrouped: Array<{slug: string}>}} taxonomy
+ * @returns {Set<string>}
+ */
+function _collectTaxonomySlugs(taxonomy) {
+  var slugs = new Set();
+  ((taxonomy && taxonomy.groups) || []).forEach(function(g) {
+    (g.items || []).forEach(function(item) { if (item.slug) { slugs.add(item.slug); } });
+  });
+  ((taxonomy && taxonomy.ungrouped) || []).forEach(function(item) { if (item.slug) { slugs.add(item.slug); } });
+  return slugs;
+}
+
+/**
+ * tmc-s1 (AC9) -- Deletes any feature_module_assignments row for this
+ * product whose feature_slug no longer appears in the freshly computed
+ * taxonomy OR in the product's current journeys rows -- i.e. a feature that
+ * has been renamed or removed upstream since it was last assigned. Since
+ * taxonomy is a recomputed JSONB blob (not real rows), an assignment can
+ * otherwise reference a feature_slug that no longer exists anywhere and
+ * would sit in the table indefinitely with nothing to prune it.
+ * @param {object} pool
+ * @param {string} productId
+ * @param {{groups: Array, ungrouped: Array}} taxonomy - the freshly computed taxonomy
+ */
+async function pruneOrphanedFeatureModuleAssignments(pool, productId, taxonomy) {
+  var assignedRows = (await pool.query(
+    'SELECT feature_slug FROM feature_module_assignments WHERE product_id = $1',
+    [productId]
+  )).rows;
+  if (assignedRows.length === 0) { return; }
+
+  var validSlugs = _collectTaxonomySlugs(taxonomy);
+  var journeySlugs = (await pool.query(
+    'SELECT feature_slug FROM journeys WHERE product_id = $1',
+    [productId]
+  )).rows;
+  journeySlugs.forEach(function(row) { if (row.feature_slug) { validSlugs.add(row.feature_slug); } });
+
+  var orphaned = assignedRows
+    .map(function(r) { return r.feature_slug; })
+    .filter(function(slug) { return !validSlugs.has(slug); });
+
+  if (orphaned.length > 0) {
+    await pool.query(
+      'DELETE FROM feature_module_assignments WHERE product_id = $1 AND feature_slug = ANY($2::varchar[])',
+      [productId, orphaned]
+    );
+  }
 }
 
 /**
@@ -378,6 +436,16 @@ async function syncProductRollup(pool, adapterModule, opts) {
      ON CONFLICT (product_id) DO UPDATE SET dod_status_counts = $2, health_counts = $3, test_coverage = $4, ac_coverage = $5, taxonomy = $6, synced_at = NOW()`,
     [opts.productId, JSON.stringify(rollup), JSON.stringify(healthCounts), JSON.stringify(testCoverage), JSON.stringify(acCoverage), JSON.stringify(taxonomy)]
   );
+
+  // tmc-s1 (AC9): prune stale assignments AFTER the fresh taxonomy is
+  // written, using that same fresh taxonomy as the validity check -- a
+  // failure here does not roll back the rollup write itself (best-effort
+  // cleanup, not load-bearing for sync correctness).
+  try {
+    await pruneOrphanedFeatureModuleAssignments(pool, opts.productId, taxonomy);
+  } catch (pruneErr) {
+    console.error('[tmc-s1] orphaned feature_module_assignments prune failed:', pruneErr.message);
+  }
 
   return rollup;
 }
@@ -429,6 +497,7 @@ module.exports = {
   computeAcCoverageRollup,
   computeTaxonomyRollup,
   groupTaxonomyByModule,
+  pruneOrphanedFeatureModuleAssignments,
   syncProductRollup,
   triggerProductSync,
   isSyncInProgress

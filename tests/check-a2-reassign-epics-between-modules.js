@@ -6,6 +6,14 @@
 // module). Covers AC1-AC4 from
 // artefacts/2026-07-21-web-ui-experience-redesign/test-plans/a2-test-plan.md.
 //
+// tmc-s1 (unification revision, 2026-07-22): reassignEpic no longer writes
+// journeys.module_id directly -- it writes through the same
+// feature_module_assignments table (keyed by the journey's feature_slug)
+// that tmc-s1's bulkAssignFeaturesToModule uses, so there is one persisted
+// module-assignment mechanism for the whole product view, not two (see
+// artefacts/2026-07-22-taxonomy-module-classification/decisions.md REVISION
+// entry). This file's fake pool models that unified table.
+//
 // Follows this repo's own hand-rolled test()/assert style (see
 // tests/check-a1-modules-taxonomy-crud.js, tests/check-bri-s3.4-cross-tenant-isolation.js)
 // -- no Jest/Mocha.
@@ -37,17 +45,19 @@ function freshRequire(p) {
   return require(p);
 }
 
-// ── In-memory fake pool — narrow, explicit branches only (mirrors this
-// repo's own check-a1-modules-taxonomy-crud.js convention). Implements
-// exactly the query shapes modules-adapter.js issues against
-// product_modules and journeys for reassignEpic. ─────────────────────────
+// ── In-memory fake pool -- narrow, explicit branches only. Models
+// product_modules, journeys (keyed by feature_slug, no module_id column
+// consulted anymore), and feature_module_assignments -- the unified table
+// reassignEpic now writes through (tmc-s1 AC8). ──────────────────────────
 function makeFakePool() {
   var moduleRows = [];
   var journeyRows = [];
+  var assignmentRows = [];
   var seq = 1;
   var pool = {
     _rows: moduleRows,
     _journeys: journeyRows,
+    _assignmentRows: assignmentRows,
     query: async function(sql, params) {
       var s = String(sql).replace(/\s+/g, ' ').trim().toUpperCase();
       var p = params || [];
@@ -61,19 +71,48 @@ function makeFakePool() {
         var owner = moduleRows.filter(function(r) { return r.id === p[0] && r.product_id === p[1] && r.tenant_id === p[2]; });
         return { rows: owner };
       }
-      if (s.indexOf('SELECT JOURNEY_ID, MODULE_ID FROM JOURNEYS WHERE JOURNEY_ID = $1 AND PRODUCT_ID = $2') === 0) {
+      if (s.indexOf('SELECT JOURNEY_ID, FEATURE_SLUG FROM JOURNEYS WHERE JOURNEY_ID = $1 AND PRODUCT_ID = $2') === 0) {
         var j = journeyRows.filter(function(r) { return r.journey_id === p[0] && r.product_id === p[1]; });
-        return { rows: j };
+        return { rows: j.map(function(r) { return { journey_id: r.journey_id, feature_slug: r.feature_slug }; }) };
       }
-      if (s.indexOf('UPDATE JOURNEYS SET MODULE_ID = $1 WHERE JOURNEY_ID = $2') === 0) {
-        var target = journeyRows.find(function(r) { return r.journey_id === p[1]; });
-        if (target) { target.module_id = p[0]; }
-        return { rows: target ? [{ journey_id: target.journey_id, module_id: target.module_id }] : [] };
+      if (s.indexOf('SELECT MODULE_ID FROM FEATURE_MODULE_ASSIGNMENTS WHERE PRODUCT_ID = $1 AND FEATURE_SLUG = $2') === 0) {
+        var current = assignmentRows.find(function(r) { return r.product_id === p[0] && r.feature_slug === p[1]; });
+        return { rows: current ? [{ module_id: current.module_id }] : [] };
+      }
+      if (s.indexOf('INSERT INTO FEATURE_MODULE_ASSIGNMENTS') === 0) {
+        var productId = p[0], tenantId = p[1], moduleId = p[2], slugs = p[3];
+        var moduleExists = moduleRows.some(function(m) { return m.id === moduleId && m.product_id === productId && m.tenant_id === tenantId; });
+        if (!moduleExists) { return { rows: [] }; }
+        var returned = [];
+        slugs.forEach(function(slug) {
+          var existing = assignmentRows.find(function(r) { return r.product_id === productId && r.feature_slug === slug; });
+          if (existing) { existing.module_id = moduleId; }
+          else { assignmentRows.push({ product_id: productId, tenant_id: tenantId, feature_slug: slug, module_id: moduleId }); }
+          returned.push({ feature_slug: slug });
+        });
+        return { rows: returned };
+      }
+      if (s.indexOf('UPDATE FEATURE_MODULE_ASSIGNMENTS SET MODULE_ID = NULL WHERE MODULE_ID = $1') === 0) {
+        assignmentRows.forEach(function(r) { if (r.module_id === p[0]) { r.module_id = null; } });
+        return { rows: [] };
+      }
+      if (s.indexOf('DELETE FROM PRODUCT_MODULES WHERE ID = $1') === 0) {
+        var idx = moduleRows.findIndex(function(r) { return r.id === p[0]; });
+        if (idx !== -1) { moduleRows.splice(idx, 1); }
+        return { rows: [] };
       }
       return { rows: [] };
     }
   };
   return pool;
+}
+
+// Reads back a journey's current module assignment from the unified
+// feature_module_assignments table via its feature_slug -- replaces the old
+// "read pool._journeys[i].module_id" assertion pattern.
+function assignedModuleFor(pool, featureSlug) {
+  var row = pool._assignmentRows.find(function(r) { return r.feature_slug === featureSlug; });
+  return row ? row.module_id : null;
 }
 
 function makeProductsOwnerPool(products) {
@@ -100,12 +139,13 @@ function makeProductsOwnerPool(products) {
     modulesAdapter.setModulesAdapter(pool);
     var modX = await modulesAdapter.createModule('p1', 't1', 'Module X');
     var modY = await modulesAdapter.createModule('p1', 't1', 'Module Y');
-    pool._journeys.push({ journey_id: 'e1', product_id: 'p1', module_id: modX.id });
+    pool._journeys.push({ journey_id: 'e1', product_id: 'p1', feature_slug: 'epic-e1' });
+    pool._assignmentRows.push({ product_id: 'p1', tenant_id: 't1', feature_slug: 'epic-e1', module_id: modX.id });
 
     var result = await modulesAdapter.reassignEpic('p1', 't1', 'e1', modY.id);
     assert.strictEqual(result.module_id, modY.id, 'expected the epic\'s module reference to be Y');
     assert.notStrictEqual(result.module_id, modX.id);
-    assert.strictEqual(pool._journeys[0].module_id, modY.id, 'underlying journeys row must reflect the new module');
+    assert.strictEqual(assignedModuleFor(pool, 'epic-e1'), modY.id, 'unified assignment row must reflect the new module');
   });
 
   // ===========================================================================
@@ -115,11 +155,11 @@ function makeProductsOwnerPool(products) {
     var pool = makeFakePool();
     modulesAdapter.setModulesAdapter(pool);
     var modX = await modulesAdapter.createModule('p1', 't1', 'Module X');
-    pool._journeys.push({ journey_id: 'e2', product_id: 'p1', module_id: null });
+    pool._journeys.push({ journey_id: 'e2', product_id: 'p1', feature_slug: 'epic-e2' });
 
     var result = await modulesAdapter.reassignEpic('p1', 't1', 'e2', modX.id);
     assert.strictEqual(result.module_id, modX.id, 'expected e2 to now reference Module X');
-    assert.strictEqual(pool._journeys[0].module_id, modX.id);
+    assert.strictEqual(assignedModuleFor(pool, 'epic-e2'), modX.id);
   });
 
   // ===========================================================================
@@ -129,12 +169,14 @@ function makeProductsOwnerPool(products) {
     var pool = makeFakePool();
     modulesAdapter.setModulesAdapter(pool);
     var modX = await modulesAdapter.createModule('p1', 't1', 'Module X');
-    pool._journeys.push({ journey_id: 'e1', product_id: 'p1', module_id: modX.id });
+    pool._journeys.push({ journey_id: 'e1', product_id: 'p1', feature_slug: 'epic-e1' });
+    pool._assignmentRows.push({ product_id: 'p1', tenant_id: 't1', feature_slug: 'epic-e1', module_id: modX.id });
 
     var result = await modulesAdapter.reassignEpic('p1', 't1', 'e1', modX.id);
     assert.strictEqual(result.changed, false, 'expected a no-op result');
     assert.strictEqual(result.module_id, modX.id);
-    assert.strictEqual(pool._journeys[0].module_id, modX.id, 'module reference must be unchanged');
+    assert.strictEqual(assignedModuleFor(pool, 'epic-e1'), modX.id, 'module reference must be unchanged');
+    assert.strictEqual(pool._assignmentRows.length, 1, 'no duplicate row should be written');
   });
 
   // ===========================================================================
@@ -144,7 +186,7 @@ function makeProductsOwnerPool(products) {
     var pool = makeFakePool();
     modulesAdapter.setModulesAdapter(pool);
     var modBOther = await modulesAdapter.createModule('p2', 't1', 'Module in product B');
-    pool._journeys.push({ journey_id: 'e1', product_id: 'p1', module_id: null });
+    pool._journeys.push({ journey_id: 'e1', product_id: 'p1', feature_slug: 'epic-e1' });
 
     var threw = false;
     try {
@@ -154,7 +196,7 @@ function makeProductsOwnerPool(products) {
       assert.strictEqual(e.code, 'MODULE_NOT_FOUND');
     }
     assert.ok(threw, 'expected a rejection for a cross-product module');
-    assert.strictEqual(pool._journeys[0].module_id, null, 'epic\'s module reference must be unchanged after a rejected reassignment');
+    assert.strictEqual(assignedModuleFor(pool, 'epic-e1'), null, 'epic\'s module reference must be unchanged after a rejected reassignment');
   });
 
   // ===========================================================================
@@ -166,7 +208,8 @@ function makeProductsOwnerPool(products) {
     modulesAdapter.setModulesAdapter(fakePool);
     var modX = await modulesAdapter.createModule('p1', 't1', 'Module X');
     var modY = await modulesAdapter.createModule('p1', 't1', 'Module Y');
-    fakePool._journeys.push({ journey_id: 'e1', product_id: 'p1', module_id: modX.id });
+    fakePool._journeys.push({ journey_id: 'e1', product_id: 'p1', feature_slug: 'epic-e1' });
+    fakePool._assignmentRows.push({ product_id: 'p1', tenant_id: 't1', feature_slug: 'epic-e1', module_id: modX.id });
     var ownerPool = makeProductsOwnerPool([{ product_id: 'p1', tenant_id: 't1' }]);
 
     var req = { params: { id: 'p1', epicId: 'e1' }, session: { tenantId: 't1', csrfToken: TEST_CSRF }, body: { moduleId: modY.id, _csrf: TEST_CSRF } };
@@ -176,7 +219,7 @@ function makeProductsOwnerPool(products) {
     assert.strictEqual(status, 200);
     assert.strictEqual(body.module_id, modY.id);
     assert.strictEqual(body.changed, true);
-    assert.strictEqual(fakePool._journeys[0].module_id, modY.id, 'underlying journeys row must reflect the reassignment');
+    assert.strictEqual(assignedModuleFor(fakePool, 'epic-e1'), modY.id, 'unified assignment row must reflect the reassignment');
   });
 
   // ===========================================================================
@@ -187,7 +230,8 @@ function makeProductsOwnerPool(products) {
     var fakePool = makeFakePool();
     modulesAdapter.setModulesAdapter(fakePool);
     var modX = await modulesAdapter.createModule('p1', 't1', 'Module X');
-    fakePool._journeys.push({ journey_id: 'e1', product_id: 'p1', module_id: modX.id });
+    fakePool._journeys.push({ journey_id: 'e1', product_id: 'p1', feature_slug: 'epic-e1' });
+    fakePool._assignmentRows.push({ product_id: 'p1', tenant_id: 't1', feature_slug: 'epic-e1', module_id: modX.id });
     var ownerPool = makeProductsOwnerPool([{ product_id: 'p1', tenant_id: 't1' }]);
 
     var req = { params: { id: 'p1', epicId: 'e1' }, session: { tenantId: 't1', csrfToken: TEST_CSRF }, body: { moduleId: modX.id, _csrf: TEST_CSRF } };
@@ -196,7 +240,7 @@ function makeProductsOwnerPool(products) {
     await productsRoute.handlePutEpicModule(req, res, null, ownerPool);
     assert.strictEqual(status, 200);
     assert.strictEqual(body.changed, false, 'expected a no-op result via the route');
-    assert.strictEqual(fakePool._journeys[0].module_id, modX.id, 'module reference must be unchanged');
+    assert.strictEqual(assignedModuleFor(fakePool, 'epic-e1'), modX.id, 'module reference must be unchanged');
   });
 
   // ===========================================================================
@@ -207,7 +251,7 @@ function makeProductsOwnerPool(products) {
     var fakePool = makeFakePool();
     modulesAdapter.setModulesAdapter(fakePool);
     var modBOther = await modulesAdapter.createModule('p2', 't1', 'Module in product B');
-    fakePool._journeys.push({ journey_id: 'e1', product_id: 'p1', module_id: null });
+    fakePool._journeys.push({ journey_id: 'e1', product_id: 'p1', feature_slug: 'epic-e1' });
     var ownerPool = makeProductsOwnerPool([
       { product_id: 'p1', tenant_id: 't1' },
       { product_id: 'p2', tenant_id: 't1' }
@@ -218,7 +262,7 @@ function makeProductsOwnerPool(products) {
     var res = { status: function(c) { status = c; return { json: function(b) { body = b; } }; } };
     await productsRoute.handlePutEpicModule(req, res, null, ownerPool);
     assert.strictEqual(status, 404, 'expected the cross-product reassignment to be rejected');
-    assert.strictEqual(fakePool._journeys[0].module_id, null, 'epic\'s module reference must be unchanged');
+    assert.strictEqual(assignedModuleFor(fakePool, 'epic-e1'), null, 'epic\'s module reference must be unchanged');
   });
 
   // ===========================================================================
@@ -229,7 +273,7 @@ function makeProductsOwnerPool(products) {
     var fakePool = makeFakePool();
     modulesAdapter.setModulesAdapter(fakePool);
     var modX = await modulesAdapter.createModule('p1', 'tenant-owner', 'Module X');
-    fakePool._journeys.push({ journey_id: 'e1', product_id: 'p1', module_id: null });
+    fakePool._journeys.push({ journey_id: 'e1', product_id: 'p1', feature_slug: 'epic-e1' });
     var ownerPool = makeProductsOwnerPool([{ product_id: 'p1', tenant_id: 'tenant-owner' }]);
 
     var req = { params: { id: 'p1', epicId: 'e1' }, session: { tenantId: 'tenant-attacker', csrfToken: TEST_CSRF }, body: { moduleId: modX.id, _csrf: TEST_CSRF } };
@@ -237,7 +281,7 @@ function makeProductsOwnerPool(products) {
     var res = { status: function(c) { status = c; return { json: function() {} }; } };
     await productsRoute.handlePutEpicModule(req, res, null, ownerPool);
     assert.strictEqual(status, 404, 'cross-tenant reassignment must be rejected (404, matching this repo\'s FORBIDDEN-vs-NOT_FOUND policy)');
-    assert.strictEqual(fakePool._journeys[0].module_id, null, 'zero rows changed for a rejected cross-tenant request');
+    assert.strictEqual(assignedModuleFor(fakePool, 'epic-e1'), null, 'zero rows changed for a rejected cross-tenant request');
   });
 
   // ===========================================================================
@@ -247,7 +291,7 @@ function makeProductsOwnerPool(products) {
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
     var fakePool = makeFakePool();
     modulesAdapter.setModulesAdapter(fakePool);
-    fakePool._journeys.push({ journey_id: 'e1', product_id: 'p1', module_id: null });
+    fakePool._journeys.push({ journey_id: 'e1', product_id: 'p1', feature_slug: 'epic-e1' });
     var ownerPool = makeProductsOwnerPool([{ product_id: 'p1', tenant_id: 't1' }]);
 
     var req = { params: { id: 'p1', epicId: 'e1' }, session: { tenantId: 't1', csrfToken: TEST_CSRF }, body: { moduleId: '   ', _csrf: TEST_CSRF } };
@@ -265,7 +309,8 @@ function makeProductsOwnerPool(products) {
     modulesAdapter.setModulesAdapter(pool);
     var modX = await modulesAdapter.createModule('perf-p', 't1', 'Module X');
     var modY = await modulesAdapter.createModule('perf-p', 't1', 'Module Y');
-    pool._journeys.push({ journey_id: 'perf-e1', product_id: 'perf-p', module_id: modX.id });
+    pool._journeys.push({ journey_id: 'perf-e1', product_id: 'perf-p', feature_slug: 'epic-perf-e1' });
+    pool._assignmentRows.push({ product_id: 'perf-p', tenant_id: 't1', feature_slug: 'epic-perf-e1', module_id: modX.id });
 
     var start = Date.now();
     await modulesAdapter.reassignEpic('perf-p', 't1', 'perf-e1', modY.id);

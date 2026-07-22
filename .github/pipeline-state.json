@@ -13169,7 +13169,7 @@
       "track": "short",
       "stage": "branch-complete",
       "health": "green",
-      "updatedAt": "2026-07-22T06:56:08.994Z",
+      "updatedAt": "2026-07-22T07:17:44.406Z",
       "nfrProfileArtefact": "artefacts/2026-07-22-taxonomy-module-classification/nfr-profile.md",
       "guardrails": [],
       "epics": [],
@@ -13184,12 +13184,12 @@
           "highFindings": 0,
           "testPlan": {
             "status": "all-passing",
-            "totalTests": 19,
-            "passing": 19,
+            "totalTests": 29,
+            "passing": 29,
             "artefact": "artefacts/2026-07-22-taxonomy-module-classification/test-plans/tmc-s1-test-plan.md"
           },
-          "acTotal": 7,
-          "acVerified": 7,
+          "acTotal": 9,
+          "acVerified": 9,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
@@ -13217,9 +13217,14 @@
               "id": "task-4",
               "name": "products.js: render-path change + bulk-assign route + CSRF guard",
               "tddState": "committed"
+            },
+            {
+              "id": "task-5",
+              "name": "Unify journeys.module_id and feature_module_assignments into a single mechanism (design revision)",
+              "tddState": "committed"
             }
           ],
-          "updatedAt": "2026-07-22T06:57:39.081Z",
+          "updatedAt": "2026-07-22T07:17:44.407Z",
           "prNumber": 544
         }
       ],

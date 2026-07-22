@@ -591,12 +591,13 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     )`).then(function() {
       console.log('[a1] product_modules table ready');
 
-      // a1: journeys.module_id -- the storage layer A2 (reassign epics between
-      // modules) writes to. NULL = "Unassigned". ON DELETE SET NULL is a
-      // DB-level safety net; modules-adapter.js's deleteModule also issues an
-      // explicit UPDATE first, so the AC3 reassignment is directly assertable
-      // rather than solely reliant on cascade behaviour (see decisions.md ARCH
-      // entry for why journeys, not a new epics table, is the assignment target).
+      // a1: journeys.module_id -- originally the storage layer A2 (reassign
+      // epics between modules) wrote to directly. Superseded by tmc-s1's
+      // unification revision: reassignEpic now writes through
+      // feature_module_assignments (keyed by journeys.feature_slug) instead,
+      // and this column is backfilled once below then left inert -- kept in
+      // the DB for rollback safety, not dropped this story (see decisions.md
+      // REVISION entry). The ALTER stays IF NOT EXISTS/idempotent regardless.
       return _creditsPool.query(`ALTER TABLE journeys ADD COLUMN IF NOT EXISTS module_id UUID REFERENCES product_modules(id) ON DELETE SET NULL`);
     }).then(function() {
       console.log('[a1] journeys.module_id column ready');
@@ -621,6 +622,25 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       )`);
     }).then(function() {
       console.log('[tmc-s1] feature_module_assignments table ready');
+
+      // tmc-s1 (AC8, unification revision): journeys.module_id and
+      // feature_module_assignments are now ONE mechanism -- journeys already
+      // carries a NOT NULL feature_slug (journey-store-pg.js), so any
+      // pre-existing journeys.module_id assignment is backfilled here, keyed
+      // by that same feature_slug, before reassignEpic/deleteModule stop
+      // writing to journeys.module_id directly. Idempotent (ON CONFLICT DO
+      // NOTHING -- never overwrites a feature_module_assignments row that
+      // already has its own value, e.g. from a re-run of this same startup
+      // migration on every deploy).
+      return _creditsPool.query(`
+        INSERT INTO feature_module_assignments (product_id, tenant_id, feature_slug, module_id, assigned_at)
+        SELECT product_id, tenant_id, feature_slug, module_id, NOW()
+        FROM journeys
+        WHERE module_id IS NOT NULL AND product_id IS NOT NULL
+        ON CONFLICT (product_id, feature_slug) DO NOTHING
+      `);
+    }).then(function() {
+      console.log('[tmc-s1] journeys.module_id backfilled into feature_module_assignments');
     }).catch(function(err) {
       console.error('[a1/tmc-s1] product_modules/journeys.module_id/feature_module_assignments migration failed:', err.message);
     });

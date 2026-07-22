@@ -65,3 +65,9 @@ None.
 
 0 HIGH, 0 MEDIUM, 1 LOW (accepted, tracked in Out of Scope).
 **Outcome:** PASS — ready for /test-plan.
+
+---
+
+## Addendum (2026-07-22): Post-implementation design revision
+
+A post-implementation design-quality pass (operator asked "is this the optimal design from scratch?") surfaced 3 real gaps not caught in this review: (1) two parallel module-assignment mechanisms (`journeys.module_id` and the new `feature_module_assignments`) doing the same job, missed because `journeys` already carries the same `feature_slug` identity this story's table is keyed by; (2) an inconsistent render-gate convention vs. a4's own already-established `modules.length === 0` pattern; (3) no cleanup path for assignments orphaned by a taxonomy resync. All three were fixed before merge — see `decisions.md`'s REVISION entry for the full design rationale and implementation summary. The story now has 9 ACs (AC8, AC9 added); AC quality/completeness scores above are unaffected since the additions follow the same Given/When/Then/testable bar as AC1-AC7.

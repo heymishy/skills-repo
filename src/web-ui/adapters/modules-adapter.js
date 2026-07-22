@@ -121,13 +121,15 @@ async function renameModule(productId, tenantId, moduleId, newName) {
 }
 
 /**
- * Delete a module. Every journey (feature/epic) previously assigned to it is
- * reassigned to the "Unassigned" bucket (module_id = NULL) via an explicit
- * UPDATE issued BEFORE the module record itself is deleted (AC3) — matching
- * this repo's own "explicit UPDATE/DELETE, not cascade-reliance-alone"
- * convention (see handleDeleteProduct in routes/products.js), so the
- * reassignment is directly assertable rather than solely dependent on the
- * journeys.module_id ON DELETE SET NULL foreign key.
+ * Delete a module. Every feature (journey- or taxonomy-sourced) previously
+ * assigned to it is reassigned to the "Unclassified"/"Unassigned" bucket
+ * (module_id = NULL) via an explicit UPDATE issued BEFORE the module record
+ * itself is deleted (AC3, AC6) — matching this repo's own "explicit
+ * UPDATE/DELETE, not cascade-reliance-alone" convention (see
+ * handleDeleteProduct in routes/products.js). Since tmc-s1's unification
+ * revision, feature_module_assignments is the ONLY persisted assignment
+ * table (journeys.module_id is inert going forward — see decisions.md
+ * REVISION entry) so only that one table needs reassigning here.
  * @param {string} productId
  * @param {string} tenantId
  * @param {string} moduleId
@@ -144,19 +146,23 @@ async function deleteModule(productId, tenantId, moduleId) {
     nf.code = 'NOT_FOUND';
     throw nf;
   }
-  await db.query('UPDATE journeys SET module_id = NULL WHERE module_id = $1', [moduleId]);
   await db.query('UPDATE feature_module_assignments SET module_id = NULL WHERE module_id = $1', [moduleId]);
   await db.query('DELETE FROM product_modules WHERE id = $1', [moduleId]);
   return { id: moduleId };
 }
 
 /**
- * a2 (AC1-AC4) -- Reassign an epic (a `journeys` row -- see decisions.md ARCH
- * entry, no persisted `epics` table exists in this codebase) from its current
- * module to a different module, within the same product. Rejects a target
- * module that belongs to a different product (AC4). Reassigning to the
+ * a2 (AC1-AC4) / tmc-s1 (AC8, unification revision) -- Reassign an epic (a
+ * `journeys` row -- see decisions.md ARCH entry, no persisted `epics` table
+ * exists in this codebase) from its current module to a different module,
+ * within the same product. The write goes through feature_module_assignments
+ * (keyed by the journey's own feature_slug, which journeys already carries
+ * NOT NULL) via the same single-row upsert bulkAssignFeaturesToModule uses --
+ * one write path for both journey- and taxonomy-sourced features, not two.
+ * Rejects a target module that belongs to a different product (AC4, enforced
+ * by bulkAssignFeaturesToModule's own ownership check). Reassigning to the
  * epic's current module is a no-op (AC3) -- returns immediately with
- * changed:false, no UPDATE issued.
+ * changed:false, no write issued.
  * @param {string} productId
  * @param {string} tenantId
  * @param {string} journeyId -- the epic being reassigned
@@ -167,7 +173,7 @@ async function reassignEpic(productId, tenantId, journeyId, moduleId) {
   var db = _requireAdapter();
 
   var journeyRows = await db.query(
-    'SELECT journey_id, module_id FROM journeys WHERE journey_id = $1 AND product_id = $2',
+    'SELECT journey_id, feature_slug FROM journeys WHERE journey_id = $1 AND product_id = $2',
     [journeyId, productId]
   );
   if (!journeyRows.rows.length) {
@@ -175,26 +181,19 @@ async function reassignEpic(productId, tenantId, journeyId, moduleId) {
     nf.code = 'EPIC_NOT_FOUND';
     throw nf;
   }
+  var featureSlug = journeyRows.rows[0].feature_slug;
 
-  var moduleRows = await db.query(
-    'SELECT id FROM product_modules WHERE id = $1 AND product_id = $2 AND tenant_id = $3',
-    [moduleId, productId, tenantId]
+  var currentRows = await db.query(
+    'SELECT module_id FROM feature_module_assignments WHERE product_id = $1 AND feature_slug = $2',
+    [productId, featureSlug]
   );
-  if (!moduleRows.rows.length) {
-    var badMod = new Error('Target module does not belong to this product');
-    badMod.code = 'MODULE_NOT_FOUND';
-    throw badMod;
-  }
-
-  if (journeyRows.rows[0].module_id === moduleId) {
+  var currentModuleId = currentRows.rows.length ? currentRows.rows[0].module_id : null;
+  if (currentModuleId === moduleId) {
     return { journey_id: journeyId, module_id: moduleId, changed: false };
   }
 
-  var r = await db.query(
-    'UPDATE journeys SET module_id = $1 WHERE journey_id = $2 RETURNING journey_id, module_id',
-    [moduleId, journeyId]
-  );
-  return Object.assign({ changed: true }, r.rows[0]);
+  await bulkAssignFeaturesToModule(productId, tenantId, [featureSlug], moduleId);
+  return { journey_id: journeyId, module_id: moduleId, changed: true };
 }
 
 /**

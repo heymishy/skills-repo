@@ -16,8 +16,8 @@
 | # | Check | Status | Notes |
 |---|-------|--------|-------|
 | H1 | User story is As/Want/So with a named persona | ✅ | "an operator (or admin) managing a product with a connected repo — potentially one of many products across many tenants, each with hundreds of real synced features" |
-| H2 | At least 3 ACs in Given/When/Then | ✅ | 7 ACs |
-| H3 | Every AC has at least one test | ✅ | AC1–AC7 all covered per test plan (U1-U7, IT1-IT4) |
+| H2 | At least 3 ACs in Given/When/Then | ✅ | 9 ACs (AC8, AC9 added post-implementation per the design-revision addendum in review-1.md) |
+| H3 | Every AC has at least one test | ✅ | AC1–AC9 all covered — AC1-AC7 per the original test plan (U1-U7, IT1-IT4); AC8/AC9 covered by the 10 additional tests added during the revision (unified reassignEpic path, orphan-prune) |
 | H4 | Out-of-scope populated | ✅ | 4 items |
 | H5 | Benefit linkage references a named metric | ✅ | "Usability of the Modules primitive shipped in Epic A" |
 | H6 | Complexity rated | ✅ | Rating 2 |

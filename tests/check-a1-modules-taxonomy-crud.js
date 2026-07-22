@@ -44,10 +44,12 @@ function freshRequire(p) {
 // reassignment UPDATE is directly observable in tests. ──────────────────
 function makeFakeModulesPool() {
   var rows = [];
+  var assignmentRows = [];
   var seq = 1;
   var pool = {
     _rows: rows,
     _journeys: [],
+    _assignmentRows: assignmentRows,
     query: async function(sql, params) {
       var s = String(sql).replace(/\s+/g, ' ').trim().toUpperCase();
       var p = params || [];
@@ -80,6 +82,13 @@ function makeFakeModulesPool() {
       }
       if (s.indexOf('UPDATE JOURNEYS SET MODULE_ID = NULL WHERE MODULE_ID = $1') === 0) {
         pool._journeys.forEach(function(j) { if (j.module_id === p[0]) { j.module_id = null; } });
+        return { rows: [] };
+      }
+      // tmc-s1 (unification revision): deleteModule now reassigns
+      // feature_module_assignments -- the unified table -- rather than
+      // journeys.module_id directly (see decisions.md REVISION entry).
+      if (s.indexOf('UPDATE FEATURE_MODULE_ASSIGNMENTS SET MODULE_ID = NULL WHERE MODULE_ID = $1') === 0) {
+        assignmentRows.forEach(function(r) { if (r.module_id === p[0]) { r.module_id = null; } });
         return { rows: [] };
       }
       if (s.indexOf('DELETE FROM PRODUCT_MODULES WHERE ID = $1') === 0) {
@@ -151,19 +160,18 @@ function makeProductsOwnerPool(products) {
   // ===========================================================================
   // AC3 — modules-adapter.js deleteModule reassigns to Unassigned
   // ===========================================================================
-  await test('deleteModule reassigns referencing journeys to Unassigned and removes the module (AC3)', async function() {
+  await test('deleteModule reassigns referencing features to Unassigned and removes the module (AC3, unified table per tmc-s1)', async function() {
     var pool = makeFakeModulesPool();
-    pool._journeys = [
-      { journey_id: 'j1', product_id: 'p1', module_id: null },
-      { journey_id: 'j2', product_id: 'p1', module_id: null }
-    ];
     modulesAdapter.setModulesAdapter(pool);
     var created = await modulesAdapter.createModule('p1', 't1', 'Temp Module');
-    pool._journeys.forEach(function(j) { j.module_id = created.id; });
+    pool._assignmentRows.push(
+      { product_id: 'p1', tenant_id: 't1', feature_slug: 'j1', module_id: created.id },
+      { product_id: 'p1', tenant_id: 't1', feature_slug: 'j2', module_id: created.id }
+    );
     await modulesAdapter.deleteModule('p1', 't1', created.id);
     assert.strictEqual(pool._rows.length, 0, 'module record must be removed');
-    pool._journeys.forEach(function(j) {
-      assert.strictEqual(j.module_id, null, 'every journey previously assigned must be reassigned to Unassigned (null)');
+    pool._assignmentRows.forEach(function(r) {
+      assert.strictEqual(r.module_id, null, 'every feature previously assigned must be reassigned to Unassigned (null)');
     });
   });
 
@@ -252,14 +260,13 @@ function makeProductsOwnerPool(products) {
   // ===========================================================================
   // AC3 (integration) — DELETE reassigns journeys/epics to Unassigned
   // ===========================================================================
-  await test('DELETE /products/:id/modules/:moduleId reassigns its journeys/epics to Unassigned (AC3 integration)', async function() {
+  await test('DELETE /products/:id/modules/:moduleId reassigns its features to Unassigned (AC3 integration, unified table per tmc-s1)', async function() {
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
     var fakePool = makeFakeModulesPool();
-    fakePool._journeys = [{ journey_id: 'j1', product_id: 'p1', module_id: null }];
     modulesAdapter.setModulesAdapter(fakePool);
     var ownerPool = makeProductsOwnerPool([{ product_id: 'p1', tenant_id: 't1' }]);
     var created = await modulesAdapter.createModule('p1', 't1', 'Temp');
-    fakePool._journeys[0].module_id = created.id;
+    fakePool._assignmentRows.push({ product_id: 'p1', tenant_id: 't1', feature_slug: 'j1', module_id: created.id });
 
     var req = { params: { id: 'p1', moduleId: created.id }, session: { tenantId: 't1', csrfToken: TEST_CSRF }, body: { _csrf: TEST_CSRF } };
     var status = null, body = null;
@@ -267,7 +274,7 @@ function makeProductsOwnerPool(products) {
     await productsRoute.handleDeleteProductModule(req, res, null, ownerPool);
     assert.strictEqual(status, 200);
     assert.strictEqual(body.deleted, true);
-    assert.strictEqual(fakePool._journeys[0].module_id, null, 'journey/epic must be reassigned to Unassigned, not dropped');
+    assert.strictEqual(fakePool._assignmentRows[0].module_id, null, 'feature must be reassigned to Unassigned, not dropped');
   });
 
   // ===========================================================================

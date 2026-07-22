@@ -38,7 +38,12 @@ function freshRequire(p) {
 (async function() {
   console.log('\n[a4] AC1 -- handleGetProductView reads journeys.module_id and the product\'s modules list end-to-end');
 
-  await test('handleGetProductView queries journeys.module_id and renders the product\'s modules via modulesAdapter (AC1 integration)', async function() {
+  // tmc-s1 (unification revision, 2026-07-22): a journey's module assignment
+  // is no longer read from journeys.module_id directly -- it comes from the
+  // same feature_module_assignments table (keyed by feature_slug) the
+  // taxonomy section reads, fetched via modulesAdapter.getFeatureModuleAssignments
+  // (see decisions.md REVISION entry). This fakePool models that table.
+  await test('handleGetProductView reads module assignment via feature_module_assignments and renders the product\'s modules via modulesAdapter (AC1 integration)', async function() {
     var modulesAdapter = freshRequire(MODULES_ADAPTER_PATH);
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
     var moduleRows = [{ id: 'mod-1', name: 'Web UI', created_at: new Date().toISOString() }];
@@ -47,8 +52,9 @@ function freshRequire(p) {
         var s = String(sql);
         if (/SELECT name, tenant_id, repo_owner, repo_name FROM products/i.test(s)) return { rows: [{ name: 'Acme', tenant_id: 't1', repo_owner: null, repo_name: null }] };
         if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(s)) return { rows: [] };
-        if (/SELECT journey_id, feature_slug, module_id/i.test(s)) return { rows: [{ journey_id: 'j1', feature_slug: 'f1', module_id: 'mod-1', stage: 'discovery' }] };
+        if (/SELECT journey_id, feature_slug, data->>'activeSkill' AS stage FROM journeys/i.test(s)) return { rows: [{ journey_id: 'j1', feature_slug: 'f1', stage: 'discovery' }] };
         if (/SELECT id, name, created_at FROM product_modules/i.test(s)) return { rows: moduleRows };
+        if (/SELECT feature_slug, module_id FROM feature_module_assignments/i.test(s)) return { rows: [{ feature_slug: 'f1', module_id: 'mod-1' }] };
         return { rows: [] };
       }
     };
