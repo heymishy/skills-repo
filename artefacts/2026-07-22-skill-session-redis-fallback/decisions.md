@@ -1,0 +1,13 @@
+# Decisions: Skill Session Redis Fallback
+
+## FIX — Consistent Redis fallback across skill-session request handlers (2026-07-22)
+
+**Context:** Following the operator's requested audit of the in-memory-Map/write-behind-Postgres-or-Redis pattern (already found and fixed twice this session — `srf-s1` for login sessions, `jrf-s2` for journeys), a third instance was found in `routes/skills.js`'s `_sessionStore` (skill conversation turns/artefact-in-progress content). This one was already **partially** mitigated: `handleGetChatHtml` had a correct, working inline Redis-restore sequence, but it was never extracted into a shared helper, so none of the other 9 request handlers that read the same store got the same resilience.
+
+**Decision:** Extract `handleGetChatHtml`'s own existing logic into a shared `_getSessionOrRestore(sessionId)` async helper, and apply it consistently at all 9 other async-handler call sites (`handlePostAnswer`, `handleGetSessionState`, `handleCommitArtefact`, `handlePostCanvasEditHtml`, `handlePostTurnHtml`, `handlePostTurnStreamHtml`, `handlePostAssumptionConfirm`, `htmlSubmitTurn`, `htmlRecordAnswer`).
+
+**Explicit scope boundary:** 5 synchronous accessor functions (`_getHtmlSession`, `htmlGetNextQuestion`, `htmlGetCompletePage`, `htmlGetPreview`, `linkSessionToJourney`) are deliberately NOT converted — each has a different, broader set of callers (some in `server.js`, some sync, some in `journey.js`/`products.js`), and each serves a narrower or rarer code path than the primary write/action handlers. Converting these to async has a real ripple-mapping cost this pass didn't attempt to fully absorb. A future story if this gap proves to matter in practice.
+
+**Test result:** New test file `tests/check-wusl-s1-session-redis-fallback.js` — 7/7 passing, covering AC1-AC4, including confirming each of the 3 remaining sync functions' own distinct missing-session return contract is unchanged (not silently altered). Existing suites re-verified clean: `check-wusl1-chat-streaming.js` (pre-existing baseline failure, one unrelated client-JS assertion, confirmed unchanged), `check-wusl2-progressive-live-draft.js` (8/8), `check-iwu5-lens-complete.js` (17/17). Full 362-file suite: 37 failed, identical to the documented baseline.
+
+**Deployment note:** This branch is based on `master` at a point before `jrf-s2` (the journey-registration fix, PR #548) was merged. It has NOT been deployed to staging standalone, since doing so would revert `jrf-s2`'s fix, which is currently live there from a direct branch deploy. Deploy only after `jrf-s2` merges (or rebase this branch on top of it first).

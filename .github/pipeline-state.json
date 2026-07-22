@@ -13430,6 +13430,54 @@
         }
       ],
       "metrics": []
+    },
+    {
+      "slug": "2026-07-22-skill-session-redis-fallback",
+      "name": "Consistent Redis fallback across skill-session request handlers",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "updatedAt": "2026-07-22T11:56:47.559Z",
+      "guardrails": [],
+      "epics": [],
+      "stories": [
+        {
+          "id": "wusl-s1",
+          "slug": "wusl-s1",
+          "name": "Consistent skill-session Redis fallback",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 7,
+            "passing": 7,
+            "artefact": "artefacts/2026-07-22-skill-session-redis-fallback/test-plans/wusl-s1-test-plan.md"
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-22-skill-session-redis-fallback/dor/wusl-s1-dor.md",
+          "prStatus": "not-started",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Extract _getSessionOrRestore helper from handleGetChatHtml",
+              "tddState": "committed"
+            },
+            {
+              "id": "task-2",
+              "name": "Apply helper at 9 other async handler call sites",
+              "tddState": "committed"
+            }
+          ],
+          "updatedAt": "2026-07-22T11:56:47.560Z"
+        }
+      ],
+      "metrics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
