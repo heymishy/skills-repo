@@ -82,10 +82,34 @@ async function readSessionFromRedis(sessionId) {
   return data;
 }
 
+// wusl-s2: fields deliberately excluded from the Redis restore merge below.
+// systemPrompt/contextFiles/precomputedStep1 are never actually present in
+// redisData in real usage (skill-session-redis.js's own _sanitise() strips
+// them before every write -- they're large and cheaply rebuilt fresh by
+// registerHtmlSession instead of round-tripped), so excluding them here is
+// belt-and-suspenders, not load-bearing. accessToken is excluded
+// defensively -- it should never be present on a skill session at all.
+var _REDIS_RESTORE_DENYLIST = ['accessToken', 'systemPrompt', 'contextFiles', 'precomputedStep1'];
+
 /**
- * Merge turns + runtime state from Redis compact data onto an already-registered session.
- * Call after registerHtmlSession so the session has a fresh systemPrompt, then call this
- * to restore the conversation history and any mid-artefact state.
+ * Merge ALL runtime state from Redis compact data onto an already-registered
+ * session. Call after registerHtmlSession so the session has a fresh
+ * systemPrompt, then call this to restore the conversation history and
+ * every other piece of accumulated state (canvas markers, condition items,
+ * story-map/section-confirmation progress, etc.).
+ *
+ * wusl-s2: previously copied only a hardcoded 8-field allowlist
+ * (artefactContent/artefactPath/done/usage/_artefactBuffer/
+ * _artefactInProgress/_slugBuffer/assumptionCards), silently dropping every
+ * other stateful session field on restore -- canvasBlocks (ideate canvas),
+ * conditionItems (conditions sidebar), dynamicQuestions/sectionDrafts/
+ * pendingConfirmation/pendingSectionDraft/currentSectionIndex (definition
+ * story-map flow), modelResponses, auditLog were all silently lost on a
+ * restore even though the write side (skill-session-redis.js) already
+ * persisted them correctly. This denylist-based approach restores
+ * everything Redis actually has, so any future story's new session field
+ * is restored automatically -- no allowlist to remember to update.
+ *
  * @param {string} sessionId
  * @param {object} redisData
  * @returns {boolean} true if merge succeeded
@@ -93,10 +117,8 @@ async function readSessionFromRedis(sessionId) {
 function mergeRedisSessionData(sessionId, redisData) {
   var session = _sessionStore.get(sessionId);
   if (!session || !redisData) return false;
-  if (Array.isArray(redisData.turns)) session.turns = redisData.turns;
-  var stateFields = ['artefactContent', 'artefactPath', 'done', 'usage',
-    '_artefactBuffer', '_artefactInProgress', '_slugBuffer', 'assumptionCards'];
-  stateFields.forEach(function(k) {
+  Object.keys(redisData).forEach(function(k) {
+    if (_REDIS_RESTORE_DENYLIST.indexOf(k) !== -1) return;
     if (redisData[k] !== undefined) session[k] = redisData[k];
   });
   return true;

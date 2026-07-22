@@ -13487,6 +13487,49 @@
         }
       ],
       "metrics": []
+    },
+    {
+      "slug": "2026-07-23-skill-session-full-restore",
+      "name": "Full skill-session state restore from Redis (allowlist to denylist)",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "updatedAt": "2026-07-22T18:22:15.653Z",
+      "guardrails": [],
+      "epics": [],
+      "stories": [
+        {
+          "id": "wusl-s2",
+          "slug": "wusl-s2",
+          "name": "Full session-state restore from Redis",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 4,
+            "passing": 4,
+            "artefact": "artefacts/2026-07-23-skill-session-full-restore/dor/wusl-s2-dor.md"
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-23-skill-session-full-restore/dor/wusl-s2-dor.md",
+          "prStatus": "not-started",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Replace mergeRedisSessionData allowlist with denylist-based restore",
+              "tddState": "committed"
+            }
+          ],
+          "updatedAt": "2026-07-22T18:22:15.655Z"
+        }
+      ],
+      "metrics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
