@@ -443,7 +443,12 @@ function makeProductsOwnerPool(products) {
     assert.ok(html.indexOf('Unclassified') !== -1, 'expected feat-1 to land in Unclassified since nothing has been assigned yet');
   });
 
-  await test('handleGetProductView renders the pre-existing Epics taxonomy exactly when zero modules exist (AC5 regression safety)', async function() {
+  // pvc-s1 (superseding note): this test originally asserted the OLD taxonomy
+  // "Epics"-heading fallback for zero modules. pvc-s1 deliberately replaces
+  // that with the SAME simple flat-list fallback a4 established (no tabs, no
+  // "Epics"/"Other features" grouping at all) -- see pvc-s1's own AC9 and
+  // decisions.md. Updated here to match the new, intentional behaviour.
+  await test('handleGetProductView renders the simple flat-list fallback when zero modules exist (AC5/pvc-s1 AC9 regression safety)', async function() {
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
     modulesAdapter.setModulesAdapter(makeFakeModulesPool());
 
@@ -460,7 +465,7 @@ function makeProductsOwnerPool(products) {
         if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(s)) {
           return { rows: [{ dod_status_counts: {}, health_counts: {}, test_coverage: {}, ac_coverage: {}, taxonomy: taxonomy, synced_at: new Date().toISOString() }] };
         }
-        if (/SELECT journey_id, feature_slug, module_id, data->>'activeSkill' AS stage FROM journeys/i.test(s)) {
+        if (/SELECT journey_id, feature_slug, data->>'activeSkill' AS stage FROM journeys/i.test(s)) {
           return { rows: [] };
         }
         return { rows: [] };
@@ -472,8 +477,9 @@ function makeProductsOwnerPool(products) {
     var res = { writeHead: function() {}, end: function(b) { html = b; } };
     await productsRoute.handleGetProductView(req, res, null, mainPool);
 
-    assert.ok(html.indexOf('>Epics<') !== -1, 'expected the pre-existing Epics heading, unchanged, when zero assignments exist');
-    assert.ok(html.indexOf('Features by module') === -1, 'must NOT show the module-grouped heading when there are zero assignments');
+    assert.ok(html.indexOf('>Epics<') === -1, 'zero-modules fallback must NOT show the old grouped-by-phase Epics heading (pvc-s1 supersedes this)');
+    assert.ok(html.indexOf('pvc-tabs') === -1, 'zero-modules fallback must NOT show tabs');
+    assert.ok(html.indexOf('feat-1') !== -1 && html.indexOf('Feature Two') !== -1, 'both merged items must still appear in the flat fallback list');
   });
 
   // ===========================================================================

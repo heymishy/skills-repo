@@ -177,7 +177,13 @@ function _renderEpicRow(f) {
 // real CSS grid-template-rows 0fr<->1fr transition (AC5) toggled by a class,
 // not an instant show/hide -- see the .a4-module-body rules emitted once
 // alongside the sections below.
-function _renderModuleSection(name, id, groupFeatures) {
+//
+// pvc-s1: accepts an optional renderRowFn (defaults to _renderEpicRow) so the
+// consolidated features section (which renders merged taxonomy+journeys
+// items, not raw journeys) can reuse this exact markup/collapse mechanism
+// rather than duplicating it.
+function _renderModuleSection(name, id, groupFeatures, renderRowFn) {
+  renderRowFn = renderRowFn || _renderEpicRow;
   var sectionId = 'a4-mod-' + _escapeHtml(String(id));
   return '<div class="a4-module-section" style="margin-bottom:10px;border:1px solid var(--line);border-radius:8px">' +
     '<button type="button" class="a4-module-header" aria-expanded="true" aria-controls="' + sectionId + '" ' +
@@ -189,11 +195,153 @@ function _renderModuleSection(name, id, groupFeatures) {
     '<div id="' + sectionId + '" class="a4-module-body a4-module-body--expanded">' +
       '<div class="a4-module-body-inner">' +
         '<ul style="list-style:none;padding:0 16px 12px;margin:0">' +
-          groupFeatures.map(_renderEpicRow).join('') +
+          groupFeatures.map(renderRowFn).join('') +
         '</ul>' +
       '</div>' +
     '</div>' +
   '</div>';
+}
+
+// pvc-s1 -- renders one row for a merged (taxonomy + journeys) item, in the
+// same visual shape as a4's _renderEpicRow (health pill + coverage label,
+// AC2's dual-indicator convention preserved), plus data-health/data-search
+// attributes the client-side filter script reads (AC7, AC8).
+function _renderPvcItemRow(item) {
+  var color = item.health === 'red' ? '#ef4444' : item.health === 'amber' ? '#f59e0b' : item.health === 'unknown' ? 'var(--muted)' : '#22c55e';
+  var label = item.health === 'red' ? '✕ Blocked' : item.health === 'amber' ? '⚠ Warning' : item.health === 'unknown' ? '? Unknown' : '✓ Healthy';
+  var healthAttr = item.health === 'red' ? 'red' : item.health === 'amber' ? 'amber' : item.health === 'unknown' ? 'unknown' : 'green';
+  var searchText = ((item.name || '') + ' ' + item.slug).toLowerCase();
+  var displayName = item.name || item.slug;
+  var subLabel = item.stage || item.epicName || '';
+  var link = item.discoveryArtefact
+    ? ' — <a href="/artefact/' + _escapeHtml(item.slug) + '/discovery" tabindex="0">' + _escapeHtml(item.discoveryArtefact) + '</a>'
+    : '';
+  return '<li class="pvc-item" data-health="' + healthAttr + '" data-search="' + _escapeHtml(searchText) + '" ' +
+    'style="padding:14px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center">' +
+    '<div>' +
+      '<div style="font-size:14px;font-weight:500">' + _escapeHtml(displayName) + link + '</div>' +
+      (subLabel ? '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + _escapeHtml(subLabel) + '</div>' : '') +
+    '</div>' +
+    '<div style="display:flex;align-items:center;gap:12px">' +
+      '<span data-a4-health style="font-size:12px;color:' + color + '">' + label + '</span>' +
+      '<span data-a4-coverage style="font-size:12px;color:var(--muted)">' + _escapeHtml(item.coverageLabel || 'No test data yet') + '</span>' +
+    '</div>' +
+  '</li>';
+}
+
+// pvc-s1 (AC1, AC4-AC9) -- the single consolidated features section,
+// replacing both the old a4 journeys-module section and the tmc-s1
+// taxonomy-module section. Zero modules (AC9) renders the pre-existing
+// simple flat fallback, byte-shape-identical to what a4 established --
+// no tabs, no filter bar introduced. With modules present, renders 3 tabs
+// (By Module / By Phase / All) plus health-filter chips and a search input,
+// all operating client-side over the same rendered item rows (data-health/
+// data-search attributes read by one small vanilla-JS filter function).
+function _renderConsolidatedFeaturesSection(items, modules, taxonomy) {
+  if (modules.length === 0) {
+    return items.length === 0
+      ? '<p style="color:var(--muted);font-size:14px">No features yet.</p>'
+      : '<ul style="list-style:none;padding:0;margin:0">' + items.map(_renderPvcItemRow).join('') + '</ul>';
+  }
+
+  var byModule = _productRollup.groupItemsByModule(items, _pvcAssignmentMapFromItems(items), modules);
+  var byPhase = _productRollup.groupItemsByPhase(items);
+
+  var byModuleHtml =
+    '<div id="pvc-tab-panel-module" class="pvc-tab-panel pvc-tab-panel--active" role="tabpanel" aria-labelledby="pvc-tab-module">' +
+      byModule.byModule.map(function(bucket) { return _renderModuleSection(bucket.moduleName, bucket.moduleId, bucket.items, _renderPvcItemRow); }).join('') +
+      (byModule.unclassified.length > 0 ? _renderModuleSection('Unclassified', 'unclassified', byModule.unclassified, _renderPvcItemRow) : '') +
+    '</div>';
+
+  var byPhaseHtml =
+    '<div id="pvc-tab-panel-phase" class="pvc-tab-panel" role="tabpanel" aria-labelledby="pvc-tab-phase">' +
+      byPhase.byPhase.map(function(p) { return _renderModuleSection(p.epicName, 'phase-' + _escapeHtml(p.epicName), p.items, _renderPvcItemRow); }).join('') +
+      (byPhase.other.length > 0 ? _renderModuleSection('Other features', 'phase-other', byPhase.other, _renderPvcItemRow) : '') +
+    '</div>';
+
+  var allHtml =
+    '<div id="pvc-tab-panel-all" class="pvc-tab-panel" role="tabpanel" aria-labelledby="pvc-tab-all">' +
+      '<ul style="list-style:none;padding:0;margin:0">' + items.map(_renderPvcItemRow).join('') + '</ul>' +
+    '</div>';
+
+  var healthChips = ['all', 'green', 'amber', 'red', 'unknown'].map(function(h) {
+    var label = h === 'all' ? 'All' : h === 'green' ? 'Healthy' : h === 'amber' ? 'Warning' : h === 'red' ? 'Blocked' : 'Unknown';
+    return '<button type="button" class="pvc-health-chip' + (h === 'all' ? ' pvc-health-chip--active' : '') + '" data-health-filter="' + h + '" onclick="pvcFilterByHealth(this)">' + _escapeHtml(label) + '</button>';
+  }).join('');
+
+  return (
+    '<style>' +
+      '.a4-module-body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.25s ease; overflow: hidden; }' +
+      '.a4-module-body--collapsed { grid-template-rows: 0fr; }' +
+      '.a4-module-body-inner { min-height: 0; overflow: hidden; }' +
+      '.pvc-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px}' +
+      '.pvc-tab{padding:8px 14px;font-family:inherit;font-size:13.5px;font-weight:500;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer}' +
+      '.pvc-tab:hover{color:var(--ink)}' +
+      '.pvc-tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}' +
+      '.pvc-tab--active{color:var(--ink);border-bottom-color:var(--ink)}' +
+      '.pvc-tab-panel{display:none}' +
+      '.pvc-tab-panel--active{display:block}' +
+      '.pvc-filter-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px}' +
+      '.pvc-health-chip{padding:5px 12px;font-family:inherit;font-size:12.5px;background:none;border:1px solid var(--line);border-radius:999px;color:var(--muted);cursor:pointer}' +
+      '.pvc-health-chip--active{color:var(--ink);border-color:var(--ink)}' +
+      '.pvc-search{flex:1;min-width:160px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-size:13px;background:var(--surface);color:var(--ink)}' +
+      '.pvc-item[hidden]{display:none}' +
+    '</style>' +
+    '<div class="pvc-tabs" role="tablist" aria-label="Features view">' +
+      '<button type="button" class="pvc-tab pvc-tab--active" id="pvc-tab-module" role="tab" aria-selected="true" onclick="pvcShowTab(\'module\')">By Module</button>' +
+      '<button type="button" class="pvc-tab" id="pvc-tab-phase" role="tab" aria-selected="false" onclick="pvcShowTab(\'phase\')">By Phase</button>' +
+      '<button type="button" class="pvc-tab" id="pvc-tab-all" role="tab" aria-selected="false" onclick="pvcShowTab(\'all\')">All</button>' +
+    '</div>' +
+    '<div class="pvc-filter-bar">' +
+      healthChips +
+      '<input type="text" class="pvc-search" placeholder="Search features…" oninput="pvcFilterBySearch(this.value)">' +
+    '</div>' +
+    byModuleHtml + byPhaseHtml + allHtml +
+    '<script>' +
+      'function a4ToggleModule(btn){' +
+        'var body=document.getElementById(btn.getAttribute("aria-controls"));' +
+        'var collapsed=body.classList.toggle("a4-module-body--collapsed");' +
+        'btn.setAttribute("aria-expanded", collapsed ? "false" : "true");' +
+      '}' +
+      'function pvcShowTab(name){' +
+        'document.querySelectorAll(".pvc-tab-panel").forEach(function(el){el.classList.remove("pvc-tab-panel--active");});' +
+        'document.querySelectorAll(".pvc-tab").forEach(function(el){el.classList.remove("pvc-tab--active");el.setAttribute("aria-selected","false");});' +
+        'var panel=document.getElementById("pvc-tab-panel-"+name);' +
+        'if(panel)panel.classList.add("pvc-tab-panel--active");' +
+        'var tab=document.getElementById("pvc-tab-"+name);' +
+        'if(tab){tab.classList.add("pvc-tab--active");tab.setAttribute("aria-selected","true");}' +
+      '}' +
+      'var pvcCurrentHealth="all";' +
+      'var pvcCurrentSearch="";' +
+      'function pvcApplyFilters(){' +
+        'document.querySelectorAll(".pvc-item").forEach(function(el){' +
+          'var healthOk = pvcCurrentHealth==="all" || el.getAttribute("data-health")===pvcCurrentHealth;' +
+          'var searchOk = pvcCurrentSearch==="" || el.getAttribute("data-search").indexOf(pvcCurrentSearch)!==-1;' +
+          'if(healthOk && searchOk){el.removeAttribute("hidden");}else{el.setAttribute("hidden","");}' +
+        '});' +
+      '}' +
+      'function pvcFilterByHealth(btn){' +
+        'pvcCurrentHealth=btn.getAttribute("data-health-filter");' +
+        'document.querySelectorAll(".pvc-health-chip").forEach(function(el){el.classList.remove("pvc-health-chip--active");});' +
+        'btn.classList.add("pvc-health-chip--active");' +
+        'pvcApplyFilters();' +
+      '}' +
+      'function pvcFilterBySearch(value){' +
+        'pvcCurrentSearch=value.toLowerCase();' +
+        'pvcApplyFilters();' +
+      '}' +
+    '<\/script>'
+  );
+}
+
+// pvc-s1 -- builds a slug -> module_id map from the already-enriched merged
+// items (each item carries its own moduleId), matching groupItemsByModule's
+// expected assignmentMap shape without a second lookup of the raw assignment
+// map.
+function _pvcAssignmentMapFromItems(items) {
+  var map = {};
+  items.forEach(function(item) { if (item.moduleId) { map[item.slug] = item.moduleId; } });
+  return map;
 }
 
 // a4 (AC3) -- scale gauge: total epic/story counts plus a distribution
@@ -362,77 +510,12 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     acCoverageHtml = '<div style="margin-top:8px;font-size:13px">AC coverage: <strong>' + _escapeHtml(String(acCoverage.blendedPercentage)) + '%</strong></div>';
   }
   var taxonomy = (rollupRow && rollupRow.taxonomy) ? _parseJsonbField(rollupRow.taxonomy, null) : null;
-  var taxonomyHtml = '';
-  // tmc-s1 (AC5, unification revision) -- gate on modules.length > 0, the
-  // SAME condition a4's own epics/journeys section already uses just below
-  // (see featuresHtml), not a separately-invented "has an assignment been
-  // made yet" condition. A product with zero modules created renders EXACTLY
-  // the pre-existing epic-phase grouping, byte-identical to before this
-  // story; as soon as one module exists, both sections on the page switch to
-  // module-grouped rendering together, consistently.
-  if (taxonomy && modules.length > 0) {
-    var grouped = _productRollup.groupTaxonomyByModule(taxonomy, featureModuleAssignments, modules);
-    function _renderTaxonomyItem(item) {
-      var link = item.discoveryArtefact
-        ? ' — <a href="/artefact/' + _escapeHtml(item.slug) + '/discovery" tabindex="0">' + _escapeHtml(item.discoveryArtefact) + '</a>'
-        : '';
-      var epicLabel = item.epicName ? ' <span style="color:var(--muted)">(' + _escapeHtml(item.epicName) + ')</span>' : '';
-      return '<li tabindex="0">' + _escapeHtml(item.name || item.slug) + epicLabel + link + '</li>';
-    }
-    var byModuleHtml = grouped.byModule.map(function(bucket) {
-      return '<div style="margin-bottom:10px">' +
-        '<h4 style="font-size:13px;margin:0 0 4px">' + _escapeHtml(bucket.moduleName) + '</h4>' +
-        '<ul style="margin:0;padding-left:18px;font-size:12px;color:var(--muted)">' +
-          bucket.items.map(_renderTaxonomyItem).join('') +
-        '</ul>' +
-      '</div>';
-    }).join('');
-    var unclassifiedHtml = grouped.unclassified.length > 0
-      ? '<div style="margin-bottom:10px">' +
-          '<h4 style="font-size:13px;margin:0 0 4px">Unclassified</h4>' +
-          '<ul style="margin:0;padding-left:18px;font-size:12px;color:var(--muted)">' +
-            grouped.unclassified.map(_renderTaxonomyItem).join('') +
-          '</ul>' +
-        '</div>'
-      : '';
-    taxonomyHtml = '<div style="margin-top:16px"><h3 style="font-size:14px;margin:16px 0 8px">Features by module</h3>' + byModuleHtml + unclassifiedHtml + '</div>';
-  } else if (taxonomy) {
-    var epicsSectionHtml = '';
-    if (taxonomy.groups && taxonomy.groups.length > 0) {
-      epicsSectionHtml =
-        '<h3 style="font-size:14px;margin:16px 0 8px">Epics</h3>' +
-        taxonomy.groups.map(function(g) {
-          return '<div style="margin-bottom:10px">' +
-            '<h4 style="font-size:13px;margin:0 0 4px">' + _escapeHtml(g.epicName || g.epicSlug) + '</h4>' +
-            '<ul style="margin:0;padding-left:18px;font-size:12px;color:var(--muted)">' +
-              g.items.map(function(item) {
-                return '<li tabindex="0">' + _escapeHtml(item.slug) + '</li>';
-              }).join('') +
-            '</ul>' +
-          '</div>';
-        }).join('');
-    }
-    var ungroupedSectionHtml = (taxonomy.ungrouped && taxonomy.ungrouped.length > 0)
-      ? '<h3 style="font-size:14px;margin:16px 0 8px">Other features</h3>' +
-        '<ul style="margin:0;padding-left:18px;font-size:12px">' +
-          taxonomy.ungrouped.map(function(f) {
-            var link = f.discoveryArtefact
-              ? ' — <a href="/artefact/' + _escapeHtml(f.slug) + '/discovery" tabindex="0">' + _escapeHtml(f.discoveryArtefact) + '</a>'
-              : '';
-            return '<li tabindex="0">' + _escapeHtml(f.name || f.slug) + link + '</li>';
-          }).join('') +
-        '</ul>'
-      : '';
-    taxonomyHtml = '<div style="margin-top:16px">' + epicsSectionHtml + ungroupedSectionHtml + '</div>';
-  }
 
-  // a4 (AC2) -- match each epic (journey) to a real per-feature health value
-  // (A3's healthCounts.perFeature, keyed by feature.slug) and a real
-  // per-story test-coverage percentage (testCoverage.perFeature, keyed by
-  // story slug -- see decisions.md a4 Task 0 finding 4 for why no
-  // per-top-level-feature coverage aggregate exists yet). No match falls
-  // back to 'unknown' health / an honest "No test data yet" label -- never
-  // a fabricated value.
+  // a4 (AC2) -- match each item to a real per-feature health value (A3's
+  // healthCounts.perFeature, keyed by feature.slug) and a real per-story
+  // test-coverage percentage (testCoverage.perFeature, keyed by story slug).
+  // No match falls back to 'unknown' health / an honest "No test data yet"
+  // label -- never a fabricated value.
   var healthBySlug = {};
   if (healthCounts && Array.isArray(healthCounts.perFeature)) {
     healthCounts.perFeature.forEach(function(hf) { healthBySlug[hf.slug] = hf.health; });
@@ -441,48 +524,23 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
   if (testCoverage && Array.isArray(testCoverage.perFeature)) {
     testCoverage.perFeature.forEach(function(cf) { coverageBySlug[cf.slug] = cf.percentage; });
   }
-  var enrichedFeatures = features.map(function(f) {
-    var realHealth = healthBySlug.hasOwnProperty(f.featureSlug) ? healthBySlug[f.featureSlug] : 'unknown';
-    var pct = coverageBySlug.hasOwnProperty(f.featureSlug) ? coverageBySlug[f.featureSlug] : null;
-    return Object.assign({}, f, {
+
+  // pvc-s1 (AC1-AC3) -- merge taxonomy (real, GitHub-synced features) and
+  // journeys (in-flight features, possibly not yet synced) into ONE item
+  // list, deduplicated by feature_slug, then enrich every item with real
+  // health/coverage/module-assignment -- replacing the two separate
+  // "grouped by module" sections tmc-s1 and a4 each rendered independently.
+  var mergedItems = _productRollup.mergeFeatureSources(taxonomy, features).map(function(item) {
+    var realHealth = healthBySlug.hasOwnProperty(item.slug) ? healthBySlug[item.slug] : 'unknown';
+    var pct = coverageBySlug.hasOwnProperty(item.slug) ? coverageBySlug[item.slug] : null;
+    return Object.assign({}, item, {
       health: realHealth,
-      coverageLabel: (pct === null || pct === undefined) ? 'No test data yet' : (pct + '%')
+      coverageLabel: (pct === null || pct === undefined) ? 'No test data yet' : (pct + '%'),
+      moduleId: featureModuleAssignments.hasOwnProperty(item.slug) ? featureModuleAssignments[item.slug] : null
     });
   });
 
-  // a4 (AC1, AC4) -- group epics under their assigned module, with an
-  // Unassigned bucket for anything with no module_id. Zero modules at all
-  // keeps the pre-existing flat rendering exactly as it was before this
-  // story (AC4's clean fallback state) rather than a 1-bucket grouping.
-  var featuresHtml;
-  if (modules.length === 0) {
-    featuresHtml = enrichedFeatures.length === 0
-      ? '<p style="color:var(--muted);font-size:14px">No features yet.</p>'
-      : '<ul style="list-style:none;padding:0;margin:0">' + enrichedFeatures.map(_renderEpicRow).join('') + '</ul>';
-  } else {
-    var byModule = {};
-    modules.forEach(function(m) { byModule[m.id] = []; });
-    var unassigned = [];
-    enrichedFeatures.forEach(function(f) {
-      if (f.moduleId && byModule[f.moduleId]) { byModule[f.moduleId].push(f); }
-      else { unassigned.push(f); }
-    });
-    featuresHtml =
-      '<style>' +
-        '.a4-module-body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.25s ease; overflow: hidden; }' +
-        '.a4-module-body--collapsed { grid-template-rows: 0fr; }' +
-        '.a4-module-body-inner { min-height: 0; overflow: hidden; }' +
-      '</style>' +
-      modules.map(function(m) { return _renderModuleSection(m.name, m.id, byModule[m.id]); }).join('') +
-      (unassigned.length > 0 ? _renderModuleSection('Unassigned', 'unassigned', unassigned) : '') +
-      '<script>' +
-        'function a4ToggleModule(btn){' +
-          'var body=document.getElementById(btn.getAttribute("aria-controls"));' +
-          'var collapsed=body.classList.toggle("a4-module-body--collapsed");' +
-          'btn.setAttribute("aria-expanded", collapsed ? "false" : "true");' +
-        '}' +
-      '<\/script>';
-  }
+  var featuresSectionHtml = _renderConsolidatedFeaturesSection(mergedItems, modules, taxonomy);
   var scaleGaugeHtml = _renderScaleGauge(features, modules, taxonomy);
 
   var syncedAtLabel = rollupRow ? _syncFreshness.formatSyncedAt(rollupRow.synced_at) : _syncFreshness.formatSyncedAt(null);
@@ -546,10 +604,9 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     healthHtml +
     coverageHtml +
     acCoverageHtml +
-    taxonomyHtml +
     scaleGaugeHtml +
     _renderModulesManagement(productId, modules, csrfToken) +
-    featuresHtml +
+    featuresSectionHtml +
     '<script>' +
     'function pshConfirmDeleteProduct(id){' +
       'var ok=confirm("Delete this product? This permanently removes it from wuce, including its journeys and standards cache. Your GitHub repository will NOT be deleted — this only removes the product from wuce, the repo and its history are untouched.");' +
