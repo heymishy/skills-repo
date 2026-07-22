@@ -14014,25 +14014,30 @@
             {
               "slug": "a1-staging-safe-auth-stub",
               "name": "Stand up a staging-safe GitHub OAuth/email auth stub for real-staging E2E",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-22T21:00:24.998Z",
+              "updatedAt": "2026-07-22T23:07:12.194Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 0
+                "passing": 5
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorApprover": "Hamish King",
               "dorSignedOffAt": "2026-07-22T21:00:24.998Z",
               "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a1-staging-safe-auth-stub-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a1-staging-safe-auth-stub-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a1-staging-safe-auth-stub-dor-contract.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/551",
+              "prNumber": 551,
+              "verifyStatus": "passed",
+              "notes": "Draft PR #551. testPlan.passing=5/6: AC1/AC2/NFR-Audit E2E + AC3/AC4 integration tests verified locally against a production-mode server (AC2 used the existing NODE_ENV=test fake-DB scaffold, no real Postgres in this sandbox). NFR-Security manual log-scan (6th test) remains the documented manual-only gap. Real wuce-staging execution needs a post-merge flyctl deploy plus flyctl secrets set E2E_STAGING_AUTH_STUB_SECRET."
             },
             {
               "slug": "a2-stripe-test-mode-plan-selection",
