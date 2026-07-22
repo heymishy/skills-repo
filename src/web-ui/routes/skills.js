@@ -103,6 +103,29 @@ function mergeRedisSessionData(sessionId, redisData) {
 }
 
 /**
+ * wusl-s1 -- Look up a skill session, falling back to Redis on an in-memory
+ * cache miss (e.g. a redeploy replaced the process since this session was
+ * last written). Extracted from handleGetChatHtml's own inline logic (the
+ * one place this restore sequence was already correctly built) so every
+ * other handler that reads a skill session gets the same resilience,
+ * instead of only the initial chat-page load.
+ * @param {string} sessionId
+ * @returns {Promise<object|null>}
+ */
+async function _getSessionOrRestore(sessionId) {
+  var session = _sessionStore.get(sessionId);
+  if (session) return session;
+  var _redisData = await readSessionFromRedis(sessionId);
+  if (!_redisData) return null;
+  registerHtmlSession(sessionId, _redisData.sessionPath, _redisData.skillName, { featureSlug: _redisData.featureSlug });
+  mergeRedisSessionData(sessionId, _redisData);
+  // journeyId is not in mergeRedisSessionData's stateFields -- restore explicitly
+  var _restored = _sessionStore.get(sessionId);
+  if (_restored && _redisData.journeyId) _restored.journeyId = _redisData.journeyId;
+  return _restored;
+}
+
+/**
  * Prune skill sessions from _sessionStore that have not been updated within SESSION_MAX_AGE_DAYS.
  * Call once at server startup (sets a recurring hourly interval).
  * Safe to call in tests — no-ops if _sessionStore is empty.
@@ -335,7 +358,7 @@ async function handlePostAnswer(req, res) {
     // Sanitise BEFORE any use — raw content is never forwarded or logged.
     var clean = sanitiseAnswer(raw);
 
-    var state = _sessionStore.get(sessionId);
+    var state = await _getSessionOrRestore(sessionId);
     if (!state) {
       _json(res, 404, { error: 'SESSION_NOT_FOUND' });
       return;
@@ -366,7 +389,7 @@ async function handleGetSessionState(req, res) {
   if (!_checkAuth(req, res)) { return; }
   try {
     var id      = req.params && req.params.id;
-    var session = _sessionStore.get(id);
+    var session = await _getSessionOrRestore(id);
     if (!session) {
       _json(res, 404, { error: 'SESSION_NOT_FOUND' });
       return;
@@ -403,7 +426,7 @@ async function handleCommitArtefact(req, res) {
   if (!_checkAuth(req, res)) { return; }
   try {
     var id      = req.params && req.params.id;
-    var session = _sessionStore.get(id);
+    var session = await _getSessionOrRestore(id);
     if (!session) {
       _json(res, 404, { error: 'SESSION_NOT_FOUND' });
       return;
@@ -1932,7 +1955,7 @@ function _listHtmlSessions() {
  * @returns {Promise<{done:boolean, response:string, artefactContent?:string}|null>}
  */
 async function htmlSubmitTurn(skillName, sessionId, rawAnswer, token, tenantId) {
-  var session = _sessionStore.get(sessionId);
+  var session = await _getSessionOrRestore(sessionId);
   if (!session) { return null; }
 
   var userContent = sanitiseAnswer(rawAnswer);
@@ -2160,7 +2183,7 @@ async function handlePostCanvasEditHtml(req, res) {
   }
   const skillName = (req.params && req.params.name) || '';
   const sessionId = (req.params && req.params.id) || '';
-  const session = _sessionStore.get(sessionId);
+  const session = await _getSessionOrRestore(sessionId);
   if (!session) {
     _json(res, 404, { error: 'Session not found' });
     return;
@@ -3617,19 +3640,7 @@ async function handleGetChatHtml(req, res) {
   }
   var skillName = (req.params && req.params.name) || '';
   var sessionId = (req.params && req.params.id) || '';
-  var session = _sessionStore.get(sessionId);
-
-  if (!session) {
-    var _redisData = await readSessionFromRedis(sessionId);
-    if (_redisData) {
-      registerHtmlSession(sessionId, _redisData.sessionPath, _redisData.skillName, { featureSlug: _redisData.featureSlug });
-      mergeRedisSessionData(sessionId, _redisData);
-      // journeyId is not in mergeRedisSessionData stateFields — restore explicitly
-      var _restored = _sessionStore.get(sessionId);
-      if (_restored && _redisData.journeyId) _restored.journeyId = _redisData.journeyId;
-      session = _restored;
-    }
-  }
+  var session = await _getSessionOrRestore(sessionId);
 
   if (!session) {
     var notFoundHtml = renderShell({ title: 'Not Found', bodyContent: '<p>Session not found.</p>', user: { login: '' } });
@@ -3680,7 +3691,7 @@ async function handlePostTurnHtml(req, res) {
   }
   var skillName = (req.params && req.params.name) || '';
   var sessionId = (req.params && req.params.id) || '';
-  var session = _sessionStore.get(sessionId);
+  var session = await _getSessionOrRestore(sessionId);
 
   // wsm.2: journey ownership + concurrent turn protection
   var _linkedJourney = null;
@@ -3782,7 +3793,7 @@ async function handlePostTurnStreamHtml(req, res) {
   var body = await _readBody(req);
   var rawAnswer = (body && typeof body.answer === 'string') ? body.answer : '';
 
-  var session = _sessionStore.get(sessionId);
+  var session = await _getSessionOrRestore(sessionId);
   if (!session) {
     res.writeHead(404, { 'Content-Type': 'text/plain' });
     res.end('Session not found');
@@ -4354,7 +4365,7 @@ function htmlGetNextQuestion(skillName, sessionId) {
  * @returns {Promise<{nextUrl:string}|null>}  null when session not found
  */
 async function htmlRecordAnswer(skillName, sessionId, rawAnswer, token) {
-  var session = _sessionStore.get(sessionId);
+  var session = await _getSessionOrRestore(sessionId);
   if (!session) { return null; }
 
   // dsq.2: if a section draft is pending confirmation, handle the confirm/edit before normal processing
@@ -4591,7 +4602,7 @@ async function handlePostAssumptionConfirm(req, res) {
     return;
   }
 
-  var session = _sessionStore.get(sessionId);
+  var session = await _getSessionOrRestore(sessionId);
   if (!session) {
     _json(res, 404, { error: 'SESSION_NOT_FOUND' });
     return;
