@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "updated": "2026-07-05T08:38:13.964Z",
+  "updated": "2026-07-23T10:07:19.627Z",
   "programmes": [],
   "phase4": {
     "spikes": {
@@ -14509,12 +14509,46 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-23-ideate-canvas-resume-hydration-fix/dor/icrh-s1-dor.md",
           "dorSignedOffAt": "2026-07-23T10:00:14.661Z",
-          "prStatus": "open",
+          "prStatus": "merged",
           "updatedAt": "2026-07-23T10:00:14.661Z",
-          "notes": "Root cause: tests/e2e/a4-ideate-session-resume.spec.js AC2/AC3 failed against real wuce-staging (CI run 29996127983, job 89170114731, PR #568) -- resumed session showed zero .canvas-block elements despite turn 1 rendering blocks pre-close. Data layer proven correct (tests/check-a4-session-store-state.js, 5/5 passing, unmodified). Actual gap: _renderChatPage never read session.canvasBlocks to seed initial HTML/hydration payload -- .canvas-block elements were only ever created reactively via live SSE canvasBlock events. Fix: new canvasBlocksInitScript (window.__SW_INITIAL_CANVAS_BLOCKS__) mirroring the existing __SW_INITIAL_ARTEFACT__ pattern, plus a client-side hydration call reusing the existing appendCanvasBlock function unmodified. AC1-AC5 verified locally (15/15 new unit tests passing, RED confirmed pre-fix, GREEN post-fix; full npm test shows zero new regressions vs tests/known-baseline-failures.json). AC6 (real staging re-run of a4 spec) pending this session's deploy step -- see decisions.md for full root-cause writeup."
+          "notes": "Root cause: tests/e2e/a4-ideate-session-resume.spec.js AC2/AC3 failed against real wuce-staging (CI run 29996127983, job 89170114731, PR #568) -- resumed session showed zero .canvas-block elements despite turn 1 rendering blocks pre-close. Data layer proven correct (tests/check-a4-session-store-state.js, 5/5 passing, unmodified). Actual gap: _renderChatPage never read session.canvasBlocks to seed initial HTML/hydration payload -- .canvas-block elements were only ever created reactively via live SSE canvasBlock events. Fix: new canvasBlocksInitScript (window.__SW_INITIAL_CANVAS_BLOCKS__) mirroring the existing __SW_INITIAL_ARTEFACT__ pattern, plus a client-side hydration call reusing the existing appendCanvasBlock function unmodified. AC1-AC5 verified locally (15/15 new unit tests passing, RED confirmed pre-fix, GREEN post-fix; full npm test shows zero new regressions vs tests/known-baseline-failures.json). Merged via PR #569."
         }
       ],
       "updatedAt": "2026-07-23T10:00:14.661Z"
+    },
+    {
+      "slug": "2026-07-23-ideate-canvas-turn2-render-fix",
+      "name": "Stop /ideate chat client from auto-firing an unbounded continue chain that duplicates canvas blocks and freezes turn 2",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "icv-s1",
+          "slug": "icv-s1",
+          "name": "Stop /ideate chat client from auto-firing an unbounded continue chain that duplicates canvas blocks and freezes turn 2",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "skipped-short-track",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 4,
+            "artefact": "artefacts/2026-07-23-ideate-canvas-turn2-render-fix/test-plans/icv-s1-test-plan.md"
+          },
+          "acTotal": 6,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": true,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-23-ideate-canvas-turn2-render-fix/dor/icv-s1-dor.md",
+          "prStatus": "open",
+          "updatedAt": "2026-07-23T10:07:19.627Z",
+          "notes": "Root cause: tests/e2e/a3-product-feature-ideate-canvas.spec.js's AC3 failed against real wuce-staging (CI run 29996127983, job 89170114731, PR #568) -- canvas count frozen after turn 1, never growing after a genuine second turn. Actual cause: _renderChatPage's inline client script auto-fires a hidden 'continue' turn whenever a response has no literal '?' and no ARTEFACT marker (a10b32a3's nudge, correct for artefact-generating skills, wrong for /ideate which is conversational and never emits artefact markers) -- this fired an unbounded chain of hidden turns against the static mock fixture. Fixed with a single conditional gate (!IS_IDEATE &&) on the existing IS_IDEATE flag. 3/3 new unit tests passing (jsdom-driven, RED confirmed pre-fix, GREEN post-fix, plus a contrast case proving the original a10b32a3 nudge is untouched for non-ideate skills). Full npm test: zero new regressions. Rebased onto master (post-#569 merge) to resolve the shared skills.js edit; both fixes coexist cleanly."
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -14566,5 +14600,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-07-23T10:00:14.661Z"
+  "updatedAt": "2026-07-23T10:07:19.627Z"
 }
