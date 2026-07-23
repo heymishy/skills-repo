@@ -1,0 +1,10 @@
+{
+  "stage": "ideate",
+  "scenarioName": "success",
+  "model": "claude-sonnet-4.6",
+  "response": "Let's map out the opportunity space for your idea.\n\n**Lens A -- Opportunity map**\n\nHere's an initial breakdown of where the biggest opportunities look to be, based on what you've shared.\n\n---CANVAS-JSON: {\"type\":\"cluster-tree\",\"title\":\"Opportunity map\",\"content\":{\"clusters\":[\"Capture problem: context lost after conversations\",\"Handoff problem: no structured artefact for downstream steps\",\"Discovery problem: no fast path from raw idea to definition\"]}}---\n\nLet me know if any of these resonate, or if there's a different angle you would like to explore next.",
+  "usage": {
+    "input_tokens": 380,
+    "output_tokens": 150
+  }
+}
