@@ -1,8 +1,19 @@
 'use strict';
 
 // session.js — session middleware configuration (ADR-009)
-// Session tokens use HttpOnly Secure SameSite=Strict cookies.
+// Session tokens use HttpOnly Secure SameSite=Lax cookies.
 // Tokens stored server-side — never in browser-accessible storage.
+//
+// scsf-s1 (2026-07-23, fix-forward): SameSite=Strict caused the browser to
+// withhold the session cookie on cross-site top-level GET redirects back into
+// this app -- Stripe's hosted-Checkout redirect and both GitHub/Google OAuth
+// callbacks are exactly this shape. Lax still blocks the cookie on cross-site
+// subrequests/AJAX/iframes/POSTs (the actual CSRF surface); it only
+// additionally allows attachment on cross-site top-level GET navigation. This
+// identical defect was found and fixed once before for the OAuth callback
+// (commit ab99f366) but that fix never reached master; see decisions.md at
+// artefacts/2026-07-23-session-cookie-samesite-fix/decisions.md for the full
+// history and rationale.
 
 const crypto = require('crypto');
 
@@ -52,12 +63,15 @@ function _clearForTesting() {
 /**
  * Session cookie security configuration.
  * Exported for inspection in tests (NFR1).
- * SameSite=Strict: cookies are not sent in cross-site contexts.
+ * SameSite=Lax: cookies are not sent on cross-site subrequests/AJAX/iframes/
+ * POSTs (the CSRF-relevant surface), but ARE sent on cross-site top-level GET
+ * navigations -- required for Stripe Checkout's and OAuth providers' redirect
+ * back into this app to keep the session (scsf-s1, 2026-07-23).
  */
 const SESSION_COOKIE_CONFIG = {
   httpOnly: true,
   secure:   true,
-  sameSite: 'strict',
+  sameSite: 'lax',
   path:     '/'
 };
 
@@ -66,7 +80,7 @@ function _buildCookieHeader(sessionId) {
   const parts = [
     `session_id=${sessionId}`,
     'HttpOnly',
-    'SameSite=Strict',
+    'SameSite=Lax',
     'Path=/'
   ];
   // Enforce Secure flag in production; allow HTTP in development for local testing
