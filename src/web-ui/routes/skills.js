@@ -3953,6 +3953,16 @@ async function handlePostTurnStreamHtml(req, res) {
     // matching the non-streaming path (htmlSubmitTurn, above).
     _turnOptions.tenantId = (req.session && req.session.tenantId) || null;
     _turnOptions.sessionId = sessionId;
+    // srmw-s1: wire {stage, scenarioName} into the executor options exactly as
+    // htmlSubmitTurn's _turnMeta already does (see _turnMeta above), so
+    // MOCK_LLM_GATEWAY=true genuinely takes effect for the real chat UI's
+    // streaming turn endpoint — previously the ONLY endpoint the actual browser
+    // chat UI calls never wired these fields, so every real turn fell through
+    // to the real model regardless of the flag. Omitting these when the mock
+    // gateway is disabled is a no-op — skillTurnExecutorStream() only routes to
+    // the mock gateway when options.stage is truthy AND isMockGatewayEnabled().
+    _turnOptions.stage = session.skillName;
+    _turnOptions.scenarioName = session.mockScenarioName || 'success';
 
     var _llmResult = await _skillTurnExecutorStream(
       session.systemPrompt,
