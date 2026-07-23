@@ -14587,6 +14587,42 @@
       ],
       "metrics": [],
       "updatedAt": "2026-07-23T09:37:07.217Z"
+    },
+    {
+      "slug": "2026-07-24-chat-message-text-truncation-fix",
+      "name": "Fix sanitiseAnswer() silently eating hyphenated user-message text before a colon",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "cmtt-s1",
+          "slug": "cmtt-s1",
+          "name": "Fix sanitiseAnswer() silently eating hyphenated user-message text before a colon",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "skipped-short-track",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 9,
+            "artefact": "artefacts/2026-07-24-chat-message-text-truncation-fix/test-plans/cmtt-s1-test-plan.md"
+          },
+          "acTotal": 6,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": true,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-24-chat-message-text-truncation-fix/dor/cmtt-s1-dor.md",
+          "dorSignedOffAt": "2026-07-23T18:09:19.306Z",
+          "prStatus": "draft-open",
+          "updatedAt": "2026-07-23T18:09:19.306Z",
+          "notes": "Root cause: tests/e2e/a4-ideate-session-resume.spec.js AC2/AC3 failed against real wuce-staging -- resumed chat thread showed user message truncated (\"call it Project: an internal tool...\" instead of the full \"Project-Codename-Falcon-detail-...: an internal tool...\"). Isolated and ruled out both lightMd (skills.js) and lightMarkdown (chat-view.js) directly with the exact failing input -- neither reproduces it. Actual root cause: sanitiseAnswer() (src/answer-sanitiser.js) CLI_FLAG regex /--?[a-z][w-]*/gi has no boundary check on what precedes the leading hyphen, so it matches and deletes an entire hyphenated compound-word span mid-sentence, at write time, before the turn is ever pushed to session.turns -- a real, permanent corruption of any user own stored chat history matching this shape, not a render-time or session-restore bug. Fix: added a negative lookbehind (?<![w-]) so a flag is only recognised at a genuine token boundary. Verified: 8/8 new unit tests passing (RED confirmed pre-fix including through the real htmlSubmitTurn() write path, GREEN post-fix); all pre-existing sanitiser tests (T4.3/T4.5/NFR3/T4.4 in tests/skill-launcher.test.js) still pass unmodified; full npm test run shows zero new regressions vs tests/known-baseline-failures.json (the one delta, check-s6.1-cache-scope-session-threading.js, independently reproduced as failing identically on origin/master before this fix -- a pre-existing baseline-file drift, not a regression introduced by this change)."
+        }
+      ],
+      "updatedAt": "2026-07-23T18:09:19.306Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -14638,5 +14674,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-07-23T10:07:19.627Z"
+  "updatedAt": "2026-07-23T18:09:19.306Z"
 }
