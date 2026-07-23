@@ -14474,8 +14474,8 @@
           "dorArtefact": "artefacts/2026-07-23-a2-stripe-ci-checkout-flake/dor/a2ccf-s1-dor.md",
           "dorSignedOffAt": "2026-07-23T05:30:00.000Z",
           "prStatus": "draft-open",
-          "updatedAt": "2026-07-23T05:30:00.000Z",
-          "notes": "AC1, AC2, AC5, AC6 verified (workflow file content, playwright.config.js unchanged, zero new regressions, always() fix present). AC3 verified locally (a2's 3 tests pass cleanly under --workers=1 against real wuce-staging). AC4 (real CI run of the fixed workflow) pending -- reported honestly once observed, not assumed. Branch built on top of still-open PR #563 (a5-ci-gate-scenario-a-blocking) since the job being fixed does not exist on master yet; see decisions.md follow-up note on reconciling the two PRs."
+          "updatedAt": "2026-07-23T06:56:14.349Z",
+          "notes": "AC1, AC2, AC5, AC6 verified (workflow file content, playwright.config.js unchanged, zero new regressions, always() fix present). AC2/AC3's hCaptcha finding confirmed via real network trace and reclassified as manual-verification-only in CI per operator decision (test.skip() added, artefacts updated). AC4 (real CI run of the fixed workflow) INCOMPLETE: 4 real CI runs on this branch (29982995610, 29984917608, 29986106359, 29986188689) all show AC1 itself failing with the identical stuck-on-Stripe-Checkout-page signature attributed to hCaptcha for AC2/AC3 -- the AC1-passes-reliably premise this fix was built on does not hold. See decisions.md FINDING entry (2026-07-23) for full evidence. Unresolved, needs operator decision on next step (extend reclassification to AC1, or a different fix)."
         }
       ]
     }
