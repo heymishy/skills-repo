@@ -14663,35 +14663,36 @@
       "slug": "2026-07-23-e2e-admin-topup-rate-limit-bypass",
       "name": "Wire the existing staging rate-limit bypass header into admin-credits-topup.js login/signup calls",
       "track": "short",
-      "stage": "definition-of-ready",
-      "health": "yellow",
+      "stage": "branch-complete",
+      "health": "amber",
       "epics": [],
       "stories": [
         {
           "id": "eatrl-s1",
           "slug": "eatrl-s1",
           "name": "Wire the existing staging rate-limit bypass header into admin-credits-topup.js login/signup calls",
-          "stage": "definition-of-ready",
-          "health": "yellow",
+          "stage": "branch-complete",
+          "health": "amber",
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 4,
-            "passing": 0,
+            "passing": 3,
             "artefact": "artefacts/2026-07-23-e2e-admin-topup-rate-limit-bypass/test-plans/eatrl-s1-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 3,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": true,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-23-e2e-admin-topup-rate-limit-bypass/dor/eatrl-s1-dor.md",
-          "prStatus": "not-started",
-          "updatedAt": "2026-07-23T20:53:08.268Z",
-          "notes": "Root cause: admin-credits-topup.js never sends the existing serlb-s1 staging rate-limit bypass header (x-e2e-rate-limit-bypass) on its admin login/signup calls, unlike staging-auth.js signUpEmail(), which does. The shared e2e-test-admin identity logs in repeatedly across a3/a4/b1 within the same CI job, and those un-bypassed attempts can trip the real 10-attempts/5-min per-IP limiter, causing intermittent, non-deterministic test.skip()s. Live-verified this session: a3 AC3 and a4 AC2&AC3 skipped in a real full-suite CI run (PR #572) but passed immediately when re-run standalone against the same live staging. Fix: add the bypass header to admin-credits-topup.js login/signup calls (exporting the existing constants from staging-auth.js or re-deriving locally). DoR signed off; awaiting coding-agent dispatch."
+          "prStatus": "draft",
+          "updatedAt": "2026-07-23T21:16:34.467Z",
+          "notes": "Fix implemented: exported RATE_LIMIT_BYPASS_HEADER and STUB_SECRET from staging-auth.js and wired them into admin-credits-topup.js's _adminLogin()/_adminSignupOnce(), mirroring signUpEmail()'s pattern. Branch fix-forward-e2e-admin-topup-rate-limit-bypass, draft PR https://github.com/heymishy/skills-repo/pull/573. AC1 verified by code inspection. AC3 verified locally (36 failing files, all subset of the 68-entry known-baseline-failures.json, zero new regressions) and via CI (one CI-runner-only flake, tests/check-p4-enf-second-line.js, unrelated to this change -- untouched by the diff, passes standalone, reproduced twice in full-suite CI matching this repo's documented resource-contention flake pattern). AC2/AC4 verified via real CI (E2E_STAGING_AUTH_STUB_SECRET is a GitHub Actions secret unavailable locally, per this story's own documented test-plan contingency): scenario-b-staging-e2e 4/4 passed 0 skipped 0 failed (b1 AC1-3 no longer skip); scenario-a-staging-e2e 7 passed/3 skipped(a2 intentional manual-only)/1 failed -- a3 AC3 (the specific test that skipped on PR 572) now passes, and a4's combined AC2-AC3 test failed on a genuine, separate, out-of-scope session-resume turn-history assertion mismatch (not a rate-limit skip -- credits top-up and login succeeded). Fix confirmed working as designed: zero rate-limit-caused skips observed across both real CI jobs. Two unrelated findings recorded in decisions.md for follow-up (a4 session-resume defect; check-p4-enf-second-line.js baseline gap). health=amber reflects these two open, honestly-reported, out-of-scope findings -- not a defect in this story's own fix."
         }
-      ]
+      ],
+      "updatedAt": "2026-07-23T21:16:40.152Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
