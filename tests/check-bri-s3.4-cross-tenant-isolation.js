@@ -282,8 +282,11 @@ function fail(name, err) { console.error('  [FAIL] ' + name + ': ' + (err && err
         if (/SELECT balance FROM credits/i.test(s)) {
           return { rows: [{ balance: balances[params[0]] }] };
         }
-        if (/UPDATE credits SET balance/i.test(s)) {
-          balances[params[1]] += params[0];
+        // cuf-s1: adjustBalance now issues an atomic upsert (INSERT INTO credits ...
+        // ON CONFLICT ... DO UPDATE SET balance = credits.balance + EXCLUDED.balance)
+        // rather than a plain UPDATE. Params remain [delta, tenantId] (unchanged order).
+        if (/INSERT INTO credits/i.test(s) && /ON CONFLICT/i.test(s)) {
+          balances[params[1]] = (balances[params[1]] || 0) + params[0];
           return { rows: [] };
         }
         return { rows: [] };

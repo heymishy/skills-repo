@@ -187,7 +187,9 @@ function freshBilling(stripeAdapterOpts) {
     var mods5 = freshModules();
     mods5.credits.setCreditsAdapter({
       query: async function(sql, params) {
-        if (sql.includes('UPDATE credits')) adjCalls.push({ delta: params[0], tenantId: params[1] });
+        // cuf-s1: adjustBalance now issues an atomic upsert (INSERT INTO credits ...
+        // ON CONFLICT ... DO UPDATE ...) rather than a plain UPDATE.
+        if (sql.includes('INSERT INTO credits') && sql.includes('ON CONFLICT')) adjCalls.push({ delta: params[0], tenantId: params[1] });
         return { rows: [] };
       }
     });

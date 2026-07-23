@@ -87,13 +87,17 @@ function mockWebhookDb(alreadyExists, sqlCalls) {
 
 /**
  * Mock credits DB adapter — captures adjustBalance calls.
- * adjustBalance in credits.js calls db.query('UPDATE credits SET balance = balance + $1 ... WHERE tenant_id = $2')
+ * cuf-s1: adjustBalance in credits.js now calls
+ * db.query('INSERT INTO credits (tenant_id, balance) VALUES ($2, $1) ON CONFLICT (tenant_id)
+ * DO UPDATE SET balance = credits.balance + EXCLUDED.balance ...') — an atomic upsert rather
+ * than a plain UPDATE, so a brand-new tenant with no existing row gets one created. Params
+ * remain [delta, tenantId] (unchanged order).
  * @param {Array|null} adjustCalls - if provided, each { delta, tenantId } is pushed here
  */
 function mockCreditsAdapter(adjustCalls) {
   return {
     query: async function(sql, params) {
-      if (adjustCalls !== null && adjustCalls !== undefined && sql.includes('UPDATE credits')) {
+      if (adjustCalls !== null && adjustCalls !== undefined && sql.includes('INSERT INTO credits') && sql.includes('ON CONFLICT')) {
         adjustCalls.push({ delta: params[0], tenantId: params[1] });
       }
       return { rows: [] };

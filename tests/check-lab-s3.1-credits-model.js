@@ -118,9 +118,14 @@ async function runCreditsTests() {
     // ignore
   }
   const adjustCall = dbCalls[0] || { sql: '', params: [] };
+  // cuf-s1: adjustBalance now uses an atomic INSERT ... ON CONFLICT DO UPDATE upsert
+  // (rather than a plain UPDATE) so a brand-new tenant with no existing row gets one
+  // created — see src/web-ui/modules/credits.js and artefacts/2026-07-23-credits-upsert-fix.
   check(
-    'adjustBalance uses atomic UPDATE pattern',
-    adjustCall.sql.includes('balance = balance +') && adjustCall.sql.includes('UPDATE credits')
+    'adjustBalance uses atomic upsert pattern (INSERT ... ON CONFLICT DO UPDATE)',
+    adjustCall.sql.includes('INSERT INTO credits') &&
+    adjustCall.sql.includes('ON CONFLICT') &&
+    adjustCall.sql.includes('balance = credits.balance + EXCLUDED.balance')
   );
 
   // T4.3 — adjustBalance passes delta as param
