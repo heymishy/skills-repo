@@ -34,66 +34,98 @@
 // mocked flow — no run-order coupling to any other spec file. Can be run
 // standalone: `npx playwright test b1-formed-idea-outer-loop-story-map`.
 //
-// *** REAL, LIVE-VERIFIED BLOCKER (found 2026-07-23 while building this spec) ***
+// *** REAL, LIVE-VERIFIED BLOCKER (found 2026-07-23; re-investigated and updated
+//     2026-07-23 per the ARCH decision in decisions.md — the credits gate is
+//     solved with an E2E-only admin-provisioned top-up, not a product change) ***
+//
 // Every real skill turn on wuce-staging is blocked with HTTP 402
-// ("Insufficient credits") by src/web-ui/middleware/credits-guard.js unless
-// the authenticated tenant has a positive credit balance. A brand-new
-// email/password signup's tenant has a balance of 0 — confirmed live against
-// wuce-staging while building this spec (POST /api/skills/discovery/sessions/
-// :id/turn returned 402 {"error":"Insufficient credits","topUpUrl":"/settings/
-// billing"} immediately after a fresh signup + product creation). No free-tier
-// credit grant exists in this codebase (src/web-ui/modules/credits.js's
-// getBalance() returns 0 for any tenant with no credits-table row, and no
-// signup path inserts one).
+// ("Insufficient credits") by src/web-ui/middleware/credits-guard.js unless the
+// authenticated tenant has a positive credit balance. A brand-new email/password
+// signup's tenant has a balance of 0 (no free-tier credit grant exists in this
+// codebase). This spec now attempts a real top-up in setup via
+// topUpTestTenantCredits() (tests/e2e/fixtures/admin-credits-topup.js), calling
+// the real POST /api/admin/credits/adjust endpoint authenticated as a fixed,
+// staging-only e2e-test-admin identity — not the real model, not a product
+// change, and not a weakening of admin auth.
 //
-// The only two ways to obtain a positive balance are:
-//   (a) a completed real Stripe Checkout round-trip (POST /billing/checkout
-//       does return a real, live checkout.stripe.com test-mode session URL —
-//       confirmed live) followed by a real Stripe webhook delivery to
-//       /webhook/stripe. tests/e2e/bri-s3.2-signup-onboarding-journey.spec.js's
-//       own comments already document driving a real Stripe Checkout round-trip
-//       as "unsafe to exercise for real in CI" — this spec follows that same
-//       established precedent rather than reversing it unilaterally.
-//   (b) an admin-role account calling POST /api/admin/credits/adjust
-//       (src/web-ui/routes/admin-credits.js), gated by ADMIN_GITHUB_LOGINS —
-//       credentials this spec does not have and should not invent.
+// That investigation found the mechanism is sound in principle (ADMIN_GITHUB_LOGINS
+// is a plain tenantId allowlist, not GitHub-specific — an email/password tenantId
+// works the same way a real admin's GitHub login does), but surfaced two separate,
+// still-open blockers, in order:
 //
-// Every AC1-AC3 test below performs its own real first-turn attempt and calls
-// test.skip() with CREDITS_BLOCKED_REASON when blocked — mirroring the
-// skip-not-fail precedent already established by hasStubSecret() in
-// tests/e2e/fixtures/staging-auth.js — rather than fabricating a pass. The
-// NFR-Security test does not need a completed turn and runs unconditionally.
+//   1. Provisioning the fixed e2e-test-admin@example.test identity into
+//      wuce-staging's ADMIN_GITHUB_LOGINS Fly secret requires a live
+//      `flyctl secrets set` call against real production admin authorization.
+//      Claude Code's own auto-mode classifier correctly refused to let this
+//      agent perform that autonomously — a legitimate guard, not a bug. A human
+//      operator must run (append, never replace the existing value):
+//        flyctl secrets set ADMIN_GITHUB_LOGINS="<existing-value>,e2e-test-admin@example.test" --app wuce-staging
+//
+//   2. EVEN once that identity exists, the `credits` table
+//      (src/web-ui/modules/credits.js) has NO insert/upsert code path anywhere
+//      in this codebase for ANY tenant, test or real — adjustBalance/
+//      adjustBalanceWithAudit are UPDATE-only, and POST /api/admin/credits/adjust's
+//      own getValidTenantIds() allowlist check rejects any tenantId (400 "unknown
+//      tenantId") that has no existing credits row, which a brand-new tenant never
+//      does. This is NOT test-infrastructure-specific: the real Stripe webhook
+//      handler (routes/billing.js checkout.session.completed) calls this exact
+//      same UPDATE-only function, so a real, brand-new paying customer's first
+//      checkout would silently fail to receive credits too — a genuine,
+//      pre-existing production defect, independent of this story's scope. See
+//      tests/e2e/fixtures/admin-credits-topup.js's own header comment and this
+//      story's coding-agent report for the full writeup and the recommended fix
+//      (INSERT ... ON CONFLICT (tenant_id) DO UPDATE semantics).
+//
+// Every AC1-AC3 test below still performs its own real first-turn attempt (after
+// the top-up attempt) and calls test.skip() with an accurate, specific reason
+// when blocked — mirroring the skip-not-fail precedent already established by
+// hasStubSecret() in tests/e2e/fixtures/staging-auth.js — rather than fabricating
+// a pass. Once a human operator resolves #1 and a follow-up story resolves #2,
+// this spec is expected to pass with no further code changes. The NFR-Security
+// test does not need a completed turn and runs unconditionally.
 
 'use strict';
 
 const { test, expect } = require('@playwright/test');
 const { STAGING_BASE_URL, signUpEmail } = require('./fixtures/staging-auth');
+const { topUpTestTenantCredits } = require('./fixtures/admin-credits-topup');
 
 test.use({ baseURL: STAGING_BASE_URL });
 
-const CREDITS_BLOCKED_REASON =
-  'wuce-staging blocks every real skill turn with HTTP 402 (Insufficient credits) for a tenant ' +
-  'with a zero credit balance -- true for every brand-new e2e-test- signup, since no free-tier ' +
-  'credit grant exists (src/web-ui/modules/credits.js). Obtaining credits requires either a ' +
-  'completed real Stripe Checkout round-trip (documented elsewhere in this repo, ' +
-  'bri-s3.2-signup-onboarding-journey.spec.js, as unsafe to exercise for real in CI) or an ' +
-  'admin-role top-up (POST /api/admin/credits/adjust) this spec has no credentials for. ' +
-  'Skipping rather than fabricating a pass -- see this story\'s coding-agent report for the ' +
-  'full, live-verified blocker writeup.';
+function creditsBlockedReason(topUpOutcome) {
+  const topUpPart = topUpOutcome && topUpOutcome.reason
+    ? 'Top-up attempt result: ' + topUpOutcome.reason
+    : 'Top-up attempt reported toppedUp=true but the turn was still credit-blocked -- unexpected, investigate.';
+  return (
+    'wuce-staging blocks every real skill turn with HTTP 402 (Insufficient credits) for a tenant ' +
+    'with a zero credit balance. This spec attempts a real admin-authenticated top-up in setup ' +
+    '(tests/e2e/fixtures/admin-credits-topup.js) before driving any turn -- it did not succeed this run. ' +
+    topUpPart + ' Skipping rather than fabricating a pass -- see this story\'s coding-agent report for the ' +
+    'full, live-verified blocker writeup.'
+  );
+}
 
 function uniqueFeatureName(label) {
   return 'B1 E2E ' + label + ' ' + Date.now() + '-' + Math.floor(Math.random() * 1e6);
 }
 
 /**
- * Sign up a brand-new tenant and create this spec's own minimal product
- * context — independent of any other story's spec file (per the review fix).
+ * Sign up a brand-new tenant, attempt a real admin-authenticated credits
+ * top-up for it (tests/e2e/fixtures/admin-credits-topup.js), and create this
+ * spec's own minimal product context — independent of any other story's spec
+ * file (per the review fix).
  * @param {import('@playwright/test').APIRequestContext} request
  * @param {string} label
- * @returns {Promise<{email: string, productId: string}>}
+ * @returns {Promise<{email: string, productId: string, topUpOutcome: {toppedUp: boolean, reason?: string}}>}
  */
 async function createOwnProductContext(request, label) {
   const { email } = await signUpEmail(request, label);
+
+  // Attempt the real, admin-authenticated top-up BEFORE the first skill turn —
+  // per the 2026-07-23 ARCH decision, not a real-model call and not a product
+  // change. See this file's header and admin-credits-topup.js for the two
+  // still-open blockers this can hit.
+  const topUpOutcome = await topUpTestTenantCredits(email, 1000);
 
   const draftRes = await request.post('/products/new', {
     data: { name: 'B1 Product ' + label, description: 'Product created independently by the b1-formed-idea-outer-loop-story-map E2E spec.' },
@@ -109,7 +141,7 @@ async function createOwnProductContext(request, label) {
   const location = confirmRes.headers()['location'];
   expect(location, 'product confirm should redirect under /products/').toMatch(/^\/products\//);
 
-  return { email, productId: location.split('/products/')[1] };
+  return { email, productId: location.split('/products/')[1], topUpOutcome };
 }
 
 /** Extract the session ID from a `/skills/:name/sessions/:id/chat` path. */
@@ -227,11 +259,11 @@ test.describe('b1-formed-idea-outer-loop-story-map @real-staging', () => {
 
   test('AC1: a formed-idea feature reaches an Approved discovery on real staging', async ({ request }) => {
     test.setTimeout(180000);
-    await createOwnProductContext(request, 'b1-ac1');
+    const { topUpOutcome } = await createOwnProductContext(request, 'b1-ac1');
     const { sessionId } = await createFormedIdeaJourney(request, uniqueFeatureName('AC1'));
 
     const discoveryResult = await driveSkillToCompletion(request, 'discovery', sessionId, FORMED_IDEA_ANSWERS);
-    test.skip(discoveryResult.blocked === true, CREDITS_BLOCKED_REASON);
+    test.skip(discoveryResult.blocked === true, creditsBlockedReason(topUpOutcome));
 
     // AC1: discovery artefact saved and readable, reflecting Approved status.
     expect(discoveryResult.result.done, 'discovery stage should complete with a real model turn').toBe(true);
@@ -241,11 +273,11 @@ test.describe('b1-formed-idea-outer-loop-story-map @real-staging', () => {
 
   test('AC2: definition writes epics/stories and the story-map canvas DOM renders them', async ({ page }) => {
     test.setTimeout(240000);
-    await createOwnProductContext(page.request, 'b1-ac2');
+    const { topUpOutcome } = await createOwnProductContext(page.request, 'b1-ac2');
     const journey = await createFormedIdeaJourney(page.request, uniqueFeatureName('AC2'));
 
     const discoveryResult = await driveSkillToCompletion(page.request, 'discovery', journey.sessionId, FORMED_IDEA_ANSWERS);
-    test.skip(discoveryResult.blocked === true, CREDITS_BLOCKED_REASON);
+    test.skip(discoveryResult.blocked === true, creditsBlockedReason(topUpOutcome));
     expect(discoveryResult.result.done).toBe(true);
 
     let advance = await gateConfirmAndAdvance(page.request, journey.journeyId);
@@ -275,11 +307,11 @@ test.describe('b1-formed-idea-outer-loop-story-map @real-staging', () => {
 
   test('AC3: review -> test-plan -> definition-of-ready reaches a visible DoR sign-off status', async ({ request }) => {
     test.setTimeout(300000);
-    await createOwnProductContext(request, 'b1-ac3');
+    const { topUpOutcome } = await createOwnProductContext(request, 'b1-ac3');
     const journey = await createFormedIdeaJourney(request, uniqueFeatureName('AC3'));
 
     const discoveryResult = await driveSkillToCompletion(request, 'discovery', journey.sessionId, FORMED_IDEA_ANSWERS);
-    test.skip(discoveryResult.blocked === true, CREDITS_BLOCKED_REASON);
+    test.skip(discoveryResult.blocked === true, creditsBlockedReason(topUpOutcome));
     expect(discoveryResult.result.done).toBe(true);
 
     let advance = await gateConfirmAndAdvance(request, journey.journeyId);
