@@ -14658,6 +14658,40 @@
         }
       ],
       "updatedAt": "2026-07-23T20:18:17.928Z"
+    },
+    {
+      "slug": "2026-07-23-e2e-admin-topup-rate-limit-bypass",
+      "name": "Wire the existing staging rate-limit bypass header into admin-credits-topup.js login/signup calls",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "yellow",
+      "epics": [],
+      "stories": [
+        {
+          "id": "eatrl-s1",
+          "slug": "eatrl-s1",
+          "name": "Wire the existing staging rate-limit bypass header into admin-credits-topup.js login/signup calls",
+          "stage": "definition-of-ready",
+          "health": "yellow",
+          "reviewStatus": "skipped-short-track",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 0,
+            "artefact": "artefacts/2026-07-23-e2e-admin-topup-rate-limit-bypass/test-plans/eatrl-s1-test-plan.md"
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": true,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-23-e2e-admin-topup-rate-limit-bypass/dor/eatrl-s1-dor.md",
+          "prStatus": "not-started",
+          "updatedAt": "2026-07-23T20:53:08.268Z",
+          "notes": "Root cause: admin-credits-topup.js never sends the existing serlb-s1 staging rate-limit bypass header (x-e2e-rate-limit-bypass) on its admin login/signup calls, unlike staging-auth.js signUpEmail(), which does. The shared e2e-test-admin identity logs in repeatedly across a3/a4/b1 within the same CI job, and those un-bypassed attempts can trip the real 10-attempts/5-min per-IP limiter, causing intermittent, non-deterministic test.skip()s. Live-verified this session: a3 AC3 and a4 AC2&AC3 skipped in a real full-suite CI run (PR #572) but passed immediately when re-run standalone against the same live staging. Fix: add the bypass header to admin-credits-topup.js login/signup calls (exporting the existing constants from staging-auth.js or re-deriving locally). DoR signed off; awaiting coding-agent dispatch."
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
