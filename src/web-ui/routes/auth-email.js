@@ -52,27 +52,91 @@ const _rateLimits = new Map();
 const RATE_MAX    = process.env.E2E_RATE_LIMIT_BYPASS === 'true' ? 100000 : 10;
 const RATE_WIN_MS = 5 * 60 * 1000; // 5 minutes
 
+// ── serlb-s1: narrow, staging-only, triple-gated rate-limit bypass ───────────
+// Fix-forward for PR #563 (story a5-ci-gate-scenario-a-blocking): the newly-wired
+// "Scenario A E2E (staging)" CI job signs up a fresh e2e-test--tagged tenant in
+// nearly every spec (a1-a4), tripping this real 10-attempt/5-minute per-IP limiter
+// on real wuce-staging (which has no NODE_ENV=test guard, unlike the local harness's
+// E2E_RATE_LIMIT_BYPASS=true above).
+//
+// The naive fix -- raising RATE_MAX globally when a staging flag is set -- would
+// remove signup/login rate-limiting for ALL traffic to staging, a real abuse-surface
+// regression. Instead this reuses a1-staging-safe-auth-stub's own double-gate
+// philosophy (src/web-ui/routes/auth-stub.js) and adds a third, narrower gate:
+//   1. process.env.E2E_STAGING_AUTH_STUB_SECRET is configured on this server --
+//      the SAME staging-only secret a1 already established (never set on the
+//      production wuce.fly.dev app; production isolation is covered by the
+//      existing tests/check-a1-fly-config-isolation.js guardrail with zero new
+//      config-isolation test needed, since no new env var name is introduced).
+//   2. The request carries a matching `x-e2e-rate-limit-bypass` header (constant-
+//      time compared) -- a bare env var leak alone is not enough, mirroring
+//      auth-stub.js's own header-gate reasoning.
+//   3. The SPECIFIC signup/login attempt's own email is itself `e2e-test-`-tagged
+//      (tests/e2e/fixtures/staging-auth.js's uniqueEmail() convention) -- this is
+//      the gate a1's simpler two-gate scheme does not need (its stub creates its
+//      own synthetic identity from scratch rather than accepting caller-supplied
+//      email input), and is what keeps a REAL user's signup fully rate-limited
+//      even if gates 1+2 both happen to be true (defense in depth).
+// All three gates are only even evaluated once the normal RATE_MAX threshold is
+// already exceeded -- a normal, in-limit request never reads the request body
+// early and behaves exactly as before this story.
+const BYPASS_SECRET_ENV_VAR = 'E2E_STAGING_AUTH_STUB_SECRET';
+const BYPASS_HEADER_NAME    = 'x-e2e-rate-limit-bypass';
+const E2E_TEST_EMAIL_PREFIX = 'e2e-test-';
+
+function _stagingBypassSecretConfigured() {
+  return !!process.env[BYPASS_SECRET_ENV_VAR];
+}
+
+/** Constant-time comparison of the request-supplied header against the configured secret. */
+function _stagingBypassHeaderMatches(req) {
+  const expected = process.env[BYPASS_SECRET_ENV_VAR] || '';
+  const supplied = (req.headers && req.headers[BYPASS_HEADER_NAME]) || '';
+  const suppliedBuf = Buffer.from(String(supplied));
+  const expectedBuf = Buffer.from(expected);
+  if (suppliedBuf.length !== expectedBuf.length) return false;
+  return crypto.timingSafeEqual(suppliedBuf, expectedBuf);
+}
+
+function _isE2eTaggedEmail(email) {
+  return typeof email === 'string' && email.toLowerCase().indexOf(E2E_TEST_EMAIL_PREFIX) === 0;
+}
+
 function _getIP(req) {
   return req.ip || (req.connection && req.connection.remoteAddress) || 'unknown';
 }
 
 /**
- * Enforce per-IP rate limit (sliding window).
+ * Enforce per-IP rate limit (sliding window), honouring the narrow serlb-s1
+ * staging-only bypass carve-out documented above.
  * Returns true if the request is allowed, false (and writes 429) if blocked.
+ * When the bypass is granted, req.body is populated with the already-read parsed
+ * body so the caller's subsequent _readBody(req)/csrfGuard(req) calls reuse it
+ * instead of re-reading the already-consumed request stream.
  */
-function _checkRateLimit(req, res) {
+async function _checkRateLimit(req, res) {
   const ip     = _getIP(req);
   const now    = Date.now();
   const cutoff = now - RATE_WIN_MS;
   const timestamps = (_rateLimits.get(ip) || []).filter(function(t) { return t > cutoff; });
   timestamps.push(now);
   _rateLimits.set(ip, timestamps);
-  if (timestamps.length > RATE_MAX) {
-    res.writeHead(429, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Too many attempts' }));
-    return false;
+
+  if (timestamps.length <= RATE_MAX) return true;
+
+  // Over the normal limit -- only now check the narrow staging E2E bypass.
+  if (_stagingBypassSecretConfigured() && _stagingBypassHeaderMatches(req)) {
+    const body  = await _readBody(req);
+    req.body    = body;
+    const email = (body && body.email ? String(body.email).toLowerCase().trim() : '');
+    if (_isE2eTaggedEmail(email)) {
+      return true;
+    }
   }
-  return true;
+
+  res.writeHead(429, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ error: 'Too many attempts' }));
+  return false;
 }
 
 /**
@@ -114,7 +178,7 @@ function _readBody(req) {
  * 409 — email already registered (duplicate constraint from DB)
  */
 async function handleEmailSignup(req, res) {
-  if (!_checkRateLimit(req, res)) return;
+  if (!(await _checkRateLimit(req, res))) return;
 
   // sec-perf-s3 AC4: reject a POST that does not carry a valid session-scoped CSRF token.
   const csrfOk = await csrf.csrfGuard(req, res);
@@ -190,7 +254,7 @@ async function handleEmailSignup(req, res) {
  *   (same message; no distinction to prevent user enumeration).
  */
 async function handleEmailLogin(req, res) {
-  if (!_checkRateLimit(req, res)) return;
+  if (!(await _checkRateLimit(req, res))) return;
 
   // sec-perf-s3 AC4: reject a POST that does not carry a valid session-scoped CSRF token.
   const csrfOk = await csrf.csrfGuard(req, res);

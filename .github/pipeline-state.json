@@ -14407,6 +14407,42 @@
           "updatedAt": "2026-07-23T03:37:44.560Z"
         }
       ]
+    },
+    {
+      "slug": "2026-07-23-staging-e2e-rate-limit-bypass",
+      "name": "Narrow, staging-only rate-limit bypass so Scenario A E2E CI gate can pass without weakening staging signup abuse-prevention",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "amber",
+      "epics": [],
+      "stories": [
+        {
+          "id": "serlb-s1",
+          "slug": "serlb-s1",
+          "name": "Narrow, staging-only rate-limit bypass for auth-email.js signup/login (triple-gated: staging secret + header + e2e-test- email prefix)",
+          "stage": "branch-complete",
+          "health": "amber",
+          "reviewStatus": "skipped-short-track",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 7,
+            "passing": 7,
+            "artefact": "artefacts/2026-07-23-staging-e2e-rate-limit-bypass/test-plans/serlb-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 4,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": true,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-23-staging-e2e-rate-limit-bypass/dor/serlb-s1-dor.md",
+          "dorSignedOffAt": "2026-07-23T05:05:01.711Z",
+          "prStatus": "draft-open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/564",
+          "updatedAt": "2026-07-23T05:05:01.711Z",
+          "notes": "AC1-AC4 fully verified (unit tests + zero regressions). AC5 partial: fix deployed to real wuce-staging and underlying defect re-confirmed live, but full CI-green activation blocked pending operator action -- E2E_STAGING_AUTH_STUB_SECRET was never configured as a GitHub Actions secret (only as a Fly secret); rotating/setting it was correctly blocked by the auto-mode classifier. See decisions.md RISK-ACCEPT entry."
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -14458,5 +14494,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-07-23T03:07:06.950Z"
+  "updatedAt": "2026-07-23T05:05:01.711Z"
 }
