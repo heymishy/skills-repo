@@ -14698,7 +14698,7 @@
       "slug": "2026-07-24-interactive-kanban-boards",
       "name": "Interactive, Trello-style kanban boards (product/org/tenant) with drag-and-drop stage advance, prioritisation, WIP limits, and item detail",
       "track": "standard",
-      "stage": "definition",
+      "stage": "review",
       "health": "green",
       "regulated": false,
       "complianceProfile": "standard",
@@ -14713,14 +14713,20 @@
             {
               "slug": "s1.1-board-advance-action",
               "name": "Add a board action that advances a ready journey via the real gate-confirm route",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-07-23T22:16:17.246Z"
             },
             {
               "slug": "s1.2-not-ready-explanation",
               "name": "Show a clear, plain-language reason when a card is not ready to advance",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-07-23T22:16:41.170Z"
             }
           ]
         },
@@ -14732,14 +14738,21 @@
             {
               "slug": "s2.1-shared-token-redesign",
               "name": "Redesign the product/org/tenant kanban board CSS to use the shared design-system tokens",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "hasLayoutDependentGaps": true,
+              "updatedAt": "2026-07-23T22:16:58.875Z"
             },
             {
               "slug": "s2.2-title-truncation-artefact-badge",
               "name": "Port title truncation and artefact-count badge to the live kanban boards",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-07-23T22:17:38.663Z"
             }
           ]
         },
@@ -14751,26 +14764,38 @@
             {
               "slug": "s3.1-drag-to-advance",
               "name": "Drag a ready card to its next column to advance its stage",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-07-23T22:18:16.941Z"
             },
             {
               "slug": "s3.2-within-column-reorder",
               "name": "Reorder cards within a column for local prioritisation",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-07-23T22:19:03.410Z"
             },
             {
               "slug": "s3.3-advisory-wip-limits",
               "name": "Show an advisory (soft) WIP-limit warning per column",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-07-23T22:19:18.926Z"
             },
             {
               "slug": "s3.4-item-detail-view",
               "name": "Open an item detail view directly from any kanban card",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-07-23T22:19:34.598Z"
             }
           ]
         }
@@ -14808,7 +14833,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-07-23T22:13:02.498Z",
+      "updatedAt": "2026-07-23T22:19:34.599Z",
       "discoveryStatus": "approved",
       "slicingStrategy": "risk-first",
       "guardrails": []
