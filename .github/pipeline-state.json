@@ -14736,24 +14736,25 @@
             {
               "slug": "s1.2-not-ready-explanation",
               "name": "Show a clear, plain-language reason when a card is not ready to advance",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-23T22:35:19.824Z",
+              "updatedAt": "2026-07-23T23:28:04.933Z",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 5,
-                "passing": 0
+                "passing": 5
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s1.2-not-ready-explanation-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s1.2-not-ready-explanation-dor-contract.md",
               "dorStatus": "signed-off",
-              "prStatus": "none"
+              "prStatus": "draft",
+              "notes": "Implemented: not-ready/validation-failed presentation states in _renderKanbanColumns (kanban-view.js) -- text-label-plus-icon indicators (never colour-only), hover/focus detail via title attribute, mutually exclusive styling/text for the routine not-ready case vs a real gate-confirm validation failure (AC4). Verified: 4/4 unit+integration tests pass (tests/check-s1.2-not-ready-explanation.js), 1/1 real Playwright E2E test passes (tests/e2e/s1.2-not-ready-explanation.spec.js). Full npm test: zero new regressions (same baseline as s1.1). Built on the s1.1 branch (PR #575) -- shares the readiness data s1.1 computes."
             }
           ]
         },
@@ -14937,7 +14938,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-07-23T23:15:33.513Z",
+      "updatedAt": "2026-07-23T23:28:04.933Z",
       "discoveryStatus": "approved",
       "slicingStrategy": "risk-first",
       "guardrails": []
