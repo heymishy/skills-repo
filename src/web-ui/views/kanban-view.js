@@ -231,6 +231,21 @@ function _cardHealthLabel(health) {
   return 'Unknown';
 }
 
+// s1.2 (AC1) -- short, always-visible, plain-language label for the routine
+// "session still in progress" case. Text-based, never colour-only.
+function _notReadyLabel() {
+  return 'Not ready to advance';
+}
+
+// s1.2 (AC1, AC2) -- longer, stage-named explanation, available via the
+// element's title attribute (hover/focus detail, per this story's own
+// "server-rendered title attribute ... per implementation choice" test-plan
+// wording). Expands the stage name in plain language (CLAUDE.md convention).
+function _notReadyDetail(stage) {
+  var stageName = stage || 'current';
+  return 'This feature’s ' + stageName + ' turn is still in progress — it has not produced a finished artefact yet.';
+}
+
 function _renderKanbanColumns(data) {
   var columns = data.columns || [];
 
@@ -248,20 +263,45 @@ function _renderKanbanColumns(data) {
       var healthLabel = card.healthLabel || _cardHealthLabel(health);
 
       // s1.1 (AC1, AC2) -- only cards whose caller explicitly computed
-      // readiness (typeof card.ready === 'boolean') get the Advance action.
-      // Callers that never supply readiness data (legacy {columns} fixtures,
-      // other consumers of this shared renderer) render exactly as before
-      // this story -- zero behaviour change for them.
+      // readiness (typeof card.ready === 'boolean') get the Advance action or
+      // any not-ready state at all. Callers that never supply readiness data
+      // (legacy {columns} fixtures, other consumers of this shared renderer)
+      // render exactly as before this story -- zero behaviour change for them.
       var hasReadiness = typeof card.ready === 'boolean';
+      // s1.2 (AC4) -- a real gate-confirm validation failure is a DIFFERENT
+      // failure mode from the routine "session still in progress" not-ready
+      // case, and must never share its class or text (mutually exclusive:
+      // validationFailed takes precedence over the plain ready/not-ready state).
+      var isValidationFailed = hasReadiness && !!card.validationFailed;
+      var stateClass = !hasReadiness ? '' :
+        isValidationFailed ? ' kb-card--validation-failed' :
+        card.ready ? ' kb-card--ready' : ' kb-card--not-ready';
+
       var actionHtml = '';
-      if (hasReadiness && card.ready) {
+      if (hasReadiness && isValidationFailed) {
+        // s1.2 (AC4) -- distinct, honestly-labelled treatment for a real
+        // validation failure -- never the routine not-ready label/styling.
+        var failReason = card.validationFailedReason || 'Advance failed validation.';
+        actionHtml = '<div class="kb-validation-failed" tabindex="0" title="' + escHtml(failReason) + '">' +
+          '<span class="kb-validation-failed-icon" aria-hidden="true">&#10007;</span> ' +
+          '<span class="kb-validation-failed-text">Advance failed</span>' +
+        '</div>';
+      } else if (hasReadiness && card.ready) {
         actionHtml = '<div class="kb-card-actions">' +
           '<button type="button" class="kb-advance-btn" data-journey-id="' + escHtml(card.id) + '" onclick="kbAdvanceCard(this)">Advance &rarr;</button>' +
+        '</div>';
+      } else if (hasReadiness) {
+        // s1.2 (AC1, AC2) -- routine not-ready case: a short, always-visible,
+        // non-colour-only text label, plus a longer plain-language detail
+        // available on hover/keyboard-focus via the title attribute.
+        actionHtml = '<div class="kb-not-ready" tabindex="0" title="' + escHtml(_notReadyDetail(col.stage)) + '">' +
+          '<span class="kb-not-ready-icon" aria-hidden="true">&#9203;</span> ' +
+          '<span class="kb-not-ready-text">' + escHtml(_notReadyLabel()) + '</span>' +
         '</div>';
       }
 
       return [
-        '<div class="kb-card ' + healthClass + '" data-journey-id="' + escHtml(card.id) + '">',
+        '<div class="kb-card ' + healthClass + stateClass + '" data-journey-id="' + escHtml(card.id) + '">',
           '<div class="kb-card-title">' + escHtml(card.title || card.name || '(untitled)') + '</div>',
           '<div class="kb-card-meta">',
             '<span class="kb-card-id">' + escHtml(card.id) + '</span>',
@@ -303,6 +343,20 @@ function _renderKanbanColumns(data) {
       '.kb-advance-btn:hover { background: var(--accent, #1a6ef5); color: #fff; }',
       '.kb-advance-btn:focus-visible { outline: 2px solid var(--accent, #1a6ef5); outline-offset: 2px; }',
       '.kb-advance-btn:disabled { opacity: 0.6; cursor: default; }',
+      // s1.2 (AC1, AC3) -- kb-card--not-ready gets its own distinct left-border
+      // treatment, layered ON TOP of (not replacing) the health-colour border,
+      // so a not-ready card is visually distinguishable from a ready card at a
+      // glance -- but colour is never the ONLY signal (a text label always
+      // accompanies it, per NFR-Accessibility above).
+      '.kb-card--not-ready { opacity: 0.85; }',
+      '.kb-not-ready { margin-top: 8px; display: inline-flex; align-items: center; gap: 5px; font-size: 12px; color: var(--muted); border: 1px dashed var(--line); border-radius: 5px; padding: 3px 8px; cursor: default; }',
+      '.kb-not-ready:focus-visible { outline: 2px solid var(--accent, #1a6ef5); outline-offset: 2px; }',
+      // s1.2 (AC4) -- a real validation failure is a DIFFERENT failure mode
+      // from the routine not-ready case -- distinct colour AND distinct text,
+      // never the same class or wording as .kb-not-ready above.
+      '.kb-card--validation-failed { border-left-color: #ef4444 !important; }',
+      '.kb-validation-failed { margin-top: 8px; display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; color: #dc2626; border: 1px solid #fca5a5; background: #fef2f2; border-radius: 5px; padding: 3px 8px; cursor: default; }',
+      '.kb-validation-failed:focus-visible { outline: 2px solid #dc2626; outline-offset: 2px; }',
     '</style>',
     '<div class="kb-board">',
       columnHtml,
