@@ -14958,7 +14958,7 @@
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
           "testPlan": {
-            "status": "passing",
+            "status": "all-passing",
             "totalTests": 4,
             "passing": 4,
             "artefact": "artefacts/2026-07-24-admin-credits-page-styling/test-plans/acps-s1-test-plan.md"
