@@ -36,6 +36,14 @@ function createFakeTestDb() {
   var nextPersonId = 1;
   var teamMemberships = [];    // { person_id, tenant_id, role, created_at } — tir-s1/bri-s3.3
   var personIdentities = [];   // { identity_key, person_id, provider, created_at } — tir-s2/bri-s3.3
+  // s1.1: real journeys backing, so board-driven "Advance" E2E specs can seed
+  // a journey that is actually visible to the kanban board's own product/org-
+  // scoped queries AND to the new tenant-ownership check the board-advance
+  // endpoint issues. Kept in sync with the real in-memory journey-store via a
+  // saveJourney-shaped adapter wired only in NODE_ENV=test (server.js), so a
+  // real gate-confirm advance updates the SAME row this fake queries against
+  // -- not a second, independently-drifting copy of journey state.
+  var journeys = [];     // { journey_id, tenant_id, product_id, feature_slug, stage, active_session_id }
 
   function query(sql, params) {
     var s = _normalise(sql);
@@ -141,10 +149,36 @@ function createFakeTestDb() {
       return Promise.resolve({ rows: [], rowCount: updTarget ? 1 : 0 });
     }
 
-    // ── journeys (product_id-scoped lookups — bri-s3.2 keeps journeys on the
-    // existing disk adapter, so this fake always reports zero linked journeys) ─
+    // ── journeys ─────────────────────────────────────────────────────────
+    // s1.1: real, narrow support for the exact query shapes the kanban board
+    // (products.js) and the board-advance endpoint's tenant-ownership check
+    // issue. Rows are populated via _upsertJourney (called by the
+    // saveJourney-shaped adapter server.js wires journey-store.js to, in
+    // NODE_ENV=test only) -- so a real gate-confirm advance is reflected here
+    // too, not just at journey-creation time.
+    if (s.indexOf('SELECT TENANT_ID FROM JOURNEYS WHERE JOURNEY_ID') === 0) {
+      var lookupJourneyId = p[0];
+      var jOwnerMatch = journeys.filter(function(r) { return r.journey_id === lookupJourneyId; }).map(function(r) { return { tenant_id: r.tenant_id }; });
+      return Promise.resolve({ rows: jOwnerMatch });
+    }
     if (s.indexOf('FROM JOURNEYS WHERE PRODUCT_ID') !== -1) {
-      return Promise.resolve({ rows: [] });
+      var jProductId = p[0];
+      // Org-scope's variant also filters by tenant_id ($2) -- detected via the
+      // literal "AND TENANT_ID" clause rather than a second exact-prefix branch,
+      // since both product- and org-scope share this same substring match.
+      var jTenantFilter = (s.indexOf('AND TENANT_ID') !== -1 && p.length > 1) ? p[1] : null;
+      var jRows = journeys
+        .filter(function(r) { return r.product_id === jProductId; })
+        .filter(function(r) { return jTenantFilter === null || r.tenant_id === jTenantFilter; })
+        .map(function(r) {
+          return {
+            journey_id: r.journey_id,
+            feature_slug: r.feature_slug,
+            stage: r.stage,
+            active_session_id: r.active_session_id
+          };
+        });
+      return Promise.resolve({ rows: jRows });
     }
 
     // ── standards (bri-s3.4) ─────────────────────────────────────────────
@@ -278,8 +312,23 @@ function createFakeTestDb() {
     return Promise.resolve({ rows: [] });
   }
 
+  /**
+   * s1.1 -- upsert a journey row (by journey_id), used by the saveJourney-shaped
+   * adapter server.js wires journey-store.js to in NODE_ENV=test. Not a SQL
+   * statement -- a direct method call, mirroring the same "narrow, explicit
+   * support" philosophy as the SQL branches above, without needing to emulate
+   * journey-store-pg.js's real INSERT/JSONB shape here.
+   * @param {{journey_id:string, tenant_id:?string, product_id:?string, feature_slug:?string, stage:?string, active_session_id:?string}} row
+   */
+  function _upsertJourney(row) {
+    var existing = journeys.find(function(j) { return j.journey_id === row.journey_id; });
+    if (existing) { Object.assign(existing, row); } else { journeys.push(Object.assign({}, row)); }
+    return Promise.resolve();
+  }
+
   return {
     query: query,
+    _upsertJourney: _upsertJourney,
     _reset: function() {
       users = []; nextUserId = 1;
       products = []; nextProductSeq = 1;
@@ -287,6 +336,7 @@ function createFakeTestDb() {
       people = []; nextPersonId = 1;
       teamMemberships = [];
       personIdentities = [];
+      journeys = [];
     }
   };
 }

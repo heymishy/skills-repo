@@ -15,6 +15,19 @@ var _repoRootAdapter = require('../adapters/repo-root'); // a5 -- reuses the exi
 var _modulesAdapter = require('../adapters/modules-adapter'); // a1 -- curated per-product Modules taxonomy CRUD
 var _csrf = require('../middleware/csrf'); // fix-forward (post-a1) -- module CRUD forms need CSRF like every other mutating form in this app
 
+// s1.1 -- injectable bulk session-store reader. Defaults to a lazy require of
+// skills.js's real _getHtmlSessionsBulk (mirrors the same lazy-getter shape
+// routes/journey.js already uses for this exact dependency -- getGetHtmlSession()
+// etc.) so a normal server boot needs no explicit wiring; tests override via
+// setGetHtmlSessionsBulk to spy on call count (AC3) without loading the full
+// skills.js module chain.
+var _getHtmlSessionsBulkFn = null;
+function _getHtmlSessionsBulk(sessionIds) {
+  var fn = _getHtmlSessionsBulkFn || require('./skills')._getHtmlSessionsBulk;
+  return fn(sessionIds);
+}
+function setGetHtmlSessionsBulk(fn) { _getHtmlSessionsBulkFn = fn; }
+
 function _escapeHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
@@ -1162,24 +1175,38 @@ function _sendKanbanHtml(res, html) {
  * product) and prefix each card's title with its product name so cards from
  * different products remain distinguishable on one shared board.
  * @param {Array} productJourneyGroups
- * @returns {Array} STAGE_COLUMNS-shaped columns: [{ stage, cards: [{id, title, health, healthLabel}] }]
+ * @returns {Array} STAGE_COLUMNS-shaped columns: [{ stage, cards: [{id, title, health, healthLabel, ready}] }]
  */
 function _aggregateJourneysByStage(productJourneyGroups) {
   var allCards = [];
+  var sessionIdsToCheck = [];
   (productJourneyGroups || []).forEach(function(group) {
     (group.journeys || []).forEach(function(j) {
       var health = j.health || 'green';
       var title = group.productName
         ? (group.productName + ': ' + (j.feature_slug || j.journey_id))
         : (j.feature_slug || j.journey_id);
+      var activeSessionId = j.active_session_id || null;
+      if (activeSessionId) sessionIdsToCheck.push(activeSessionId);
       allCards.push({
         id: j.journey_id,
         title: title,
         stage: j.stage || 'discovery',
         health: health,
-        healthLabel: _healthLabel(health)
+        healthLabel: _healthLabel(health),
+        activeSessionId: activeSessionId
       });
     });
+  });
+
+  // s1.1 (AC2, AC3): resolve every card's advance-readiness via ONE batched
+  // session-store read for the whole board render, keyed by activeSessionId
+  // -- never one _getHtmlSession() call per card. A card with no active
+  // session (e.g. already complete, or none registered yet) is never ready.
+  var sessionsById = _getHtmlSessionsBulk(sessionIdsToCheck);
+  allCards.forEach(function(c) {
+    var session = c.activeSessionId ? sessionsById[c.activeSessionId] : null;
+    c.ready = !!(session && session.done === true);
   });
 
   return STAGE_COLUMNS.map(function(stage) {
@@ -1187,7 +1214,7 @@ function _aggregateJourneysByStage(productJourneyGroups) {
       stage: stage,
       cards: allCards
         .filter(function(c) { return c.stage === stage; })
-        .map(function(c) { return { id: c.id, title: c.title, health: c.health, healthLabel: c.healthLabel }; })
+        .map(function(c) { return { id: c.id, title: c.title, health: c.health, healthLabel: c.healthLabel, ready: c.ready }; })
     };
   });
 }
@@ -1237,7 +1264,7 @@ async function buildTenantKanbanColumns(pool, tenantId) {
 
   var productJourneyGroups = await Promise.all(products.map(async function(p) {
     var jRows = (await pool.query(
-      "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage FROM journeys WHERE product_id = $1",
+      "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage, data->>'activeSessionId' AS active_session_id FROM journeys WHERE product_id = $1",
       [p.product_id]
     )).rows;
     return { productId: p.product_id, productName: p.name, journeys: jRows };
@@ -1275,7 +1302,7 @@ async function handleGetProductKanban(req, res, _next, pool, posthog) {
   }
 
   var rows = (await _pool.query(
-    "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage FROM journeys WHERE product_id = $1",
+    "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage, data->>'activeSessionId' AS active_session_id FROM journeys WHERE product_id = $1",
     [productId]
   )).rows;
 
@@ -1326,7 +1353,7 @@ async function handleGetOrgKanban(req, res, _next, pool, posthog) {
   for (var i = 0; i < filteredProds.length; i++) {
     var p = filteredProds[i];
     var jRows = (await _pool.query(
-      "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage FROM journeys WHERE product_id = $1 AND tenant_id = $2",
+      "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage, data->>'activeSessionId' AS active_session_id FROM journeys WHERE product_id = $1 AND tenant_id = $2",
       [p.product_id, tenantId]
     )).rows;
     allJourneyCount += jRows.length;
@@ -1346,6 +1373,116 @@ async function handleGetOrgKanban(req, res, _next, pool, posthog) {
 
   var html = _kanbanView.renderKanban({ columns: columns });
   _sendKanbanHtml(res, html);
+}
+
+/**
+ * s1.1 -- POST /api/board/journey/:journeyId/advance: the new board-driven
+ * "Advance" action. This is a NEW CALLER of the existing, already-proven
+ * gate-confirm route (handlePostGateConfirm, routes/journey.js) -- it does
+ * NOT reimplement artefact validation, persistence, or stage-advance logic.
+ *
+ * Flow:
+ *   1. Tenant-ownership check (AC4) -- same 404-not-403 policy already used
+ *      by handleGetProductKanban (bri-s3.4), applied directly against the
+ *      journeys table's own tenant_id column (a journey belongs to exactly
+ *      one tenant; no product-table indirection needed for this check).
+ *   2. Readiness precondition (AC1/AC2 architecture constraint) -- re-checked
+ *      here via the SAME batched bulk-session-read function the board render
+ *      uses (AC3), not a second lookup mechanism. A crafted request against a
+ *      not-ready journey is rejected even if a client bypassed the board's
+ *      own disabled-action UI.
+ *   3. Delegates the actual advance to handlePostGateConfirm by invoking it
+ *      directly with the real req (same session/journeyId) and a captured
+ *      mock res -- this reuses the exact validation/persistence/state-write
+ *      code path the chat-session UI's own gate-confirm button already runs,
+ *      byte-for-byte (per the story's "no parallel mechanism" constraint).
+ *   4. Translates handlePostGateConfirm's raw-HTTP-style outcome (redirect on
+ *      success, 422 on validation failure, etc.) into a small JSON response
+ *      the board's fetch-based "Advance" button can act on (AC5: the real
+ *      failure reason is surfaced, not a generic message).
+ *
+ * @param {object} req -- must have req.session.tenantId, req.params.journeyId
+ * @param {object} res
+ * @param {*} _next -- unused, kept for handler-signature parity with sibling handlers
+ * @param {object} pool -- pg Pool
+ * @param {object} [posthog]
+ */
+async function handlePostBoardAdvance(req, res, _next, pool, posthog) {
+  var _pool = pool;
+  var journeyId = req.params && req.params.journeyId;
+  var tenantId = req.session && req.session.tenantId;
+
+  function respond(status, body) {
+    if (res.status) { res.status(status).json(body); }
+    else { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(body)); }
+  }
+
+  // AC4: tenant-ownership check -- 404 (not 403) on a missing/mismatched
+  // journey, matching the FORBIDDEN-vs-NOT_FOUND policy already used by
+  // handleGetProductKanban/handleGetProductView (bri-s3.4).
+  var _journeyOwnerRow = (await _pool.query(
+    'SELECT tenant_id FROM journeys WHERE journey_id = $1',
+    [journeyId]
+  )).rows[0];
+  if (!_journeyOwnerRow || _journeyOwnerRow.tenant_id !== tenantId) {
+    respond(404, { error: 'not found' });
+    return;
+  }
+
+  // Readiness precondition, re-checked server-side (architecture constraint:
+  // "the board action's endpoint must check this same precondition before
+  // even attempting gate-confirm").
+  var _journeyStoreMod = require('../modules/journey-store');
+  var journey = _journeyStoreMod.getJourney(journeyId);
+  if (!journey) {
+    respond(404, { error: 'not found' });
+    return;
+  }
+  var activeSessionId = journey.activeSessionId || null;
+  var sessionsById = _getHtmlSessionsBulk(activeSessionId ? [activeSessionId] : []);
+  var activeSession = activeSessionId ? sessionsById[activeSessionId] : null;
+  if (!activeSession || activeSession.done !== true) {
+    respond(400, { error: 'not-ready', reason: 'Session not complete yet.' });
+    return;
+  }
+
+  // Delegate to the REAL gate-confirm route. handlePostGateConfirm is
+  // raw-HTTP-style (writeHead/end, including 303 redirects on success) --
+  // capture its output rather than reimplementing any part of its logic.
+  var _journeyRoutes = require('./journey');
+  var captured = { statusCode: null, headers: {}, body: '' };
+  var mockRes = {
+    writeHead: function(code, headers) { captured.statusCode = code; Object.assign(captured.headers, headers || {}); },
+    setHeader: function(k, v) { captured.headers[k] = v; },
+    end: function(body) { captured.body += (body || ''); }
+  };
+  await _journeyRoutes.handlePostGateConfirm(req, mockRes);
+
+  if (captured.statusCode === 422) {
+    // AC5: surface the real validation-failure reason, not a generic message.
+    var errBody;
+    try { errBody = JSON.parse(captured.body); } catch (_e) { errBody = { error: 'validation-failed' }; }
+    respond(422, errBody);
+    return;
+  }
+  if (captured.statusCode === 400) {
+    respond(400, { error: 'not-ready', reason: 'Session not complete yet.' });
+    return;
+  }
+  if (captured.statusCode === 404) {
+    respond(404, { error: 'not found' });
+    return;
+  }
+  if (captured.statusCode && captured.statusCode >= 500) {
+    respond(captured.statusCode, { error: 'advance-failed', detail: captured.body || null });
+    return;
+  }
+
+  // Success (gate-confirm redirected, typically 303, to the next
+  // session/stories/complete route). Re-read the journey's now-updated
+  // stage so the board can reflect the move without a full page reload.
+  var updatedJourney = _journeyStoreMod.getJourney(journeyId);
+  respond(200, { advanced: true, stage: (updatedJourney && updatedJourney.activeSkill) || null });
 }
 
 async function handlePostProductFeature(req, res, _next, pool, posthog) {
@@ -1827,6 +1964,9 @@ module.exports = {
   handlePostProductFeature,
   handleGetProductKanban,
   handleGetOrgKanban,
+  // s1.1: board-driven "Advance" action (new caller of the real gate-confirm route)
+  handlePostBoardAdvance,
+  setGetHtmlSessionsBulk,
   handleDeleteProduct,
   handlePostProductRepoCreate,
   handlePutProductEdit,

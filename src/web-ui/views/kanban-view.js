@@ -246,13 +246,28 @@ function _renderKanbanColumns(data) {
       // accompanies the coloured border (deriveBlockerIndicator/_healthLabel
       // pattern already used by products.js/status-board.js).
       var healthLabel = card.healthLabel || _cardHealthLabel(health);
+
+      // s1.1 (AC1, AC2) -- only cards whose caller explicitly computed
+      // readiness (typeof card.ready === 'boolean') get the Advance action.
+      // Callers that never supply readiness data (legacy {columns} fixtures,
+      // other consumers of this shared renderer) render exactly as before
+      // this story -- zero behaviour change for them.
+      var hasReadiness = typeof card.ready === 'boolean';
+      var actionHtml = '';
+      if (hasReadiness && card.ready) {
+        actionHtml = '<div class="kb-card-actions">' +
+          '<button type="button" class="kb-advance-btn" data-journey-id="' + escHtml(card.id) + '" onclick="kbAdvanceCard(this)">Advance &rarr;</button>' +
+        '</div>';
+      }
+
       return [
-        '<div class="kb-card ' + healthClass + '">',
+        '<div class="kb-card ' + healthClass + '" data-journey-id="' + escHtml(card.id) + '">',
           '<div class="kb-card-title">' + escHtml(card.title || card.name || '(untitled)') + '</div>',
           '<div class="kb-card-meta">',
             '<span class="kb-card-id">' + escHtml(card.id) + '</span>',
             ' · <span class="kb-health-label">' + escHtml(healthLabel) + '</span>',
           '</div>',
+          actionHtml,
         '</div>'
       ].join('');
     }).join('');
@@ -283,10 +298,50 @@ function _renderKanbanColumns(data) {
       '.kb-card-id { font-family: var(--mono); }',
       '.kb-health-label { color: var(--muted); }',
       '.kb-empty { text-align: center; color: var(--muted); font-size: 12px; padding: 16px 0; }',
+      '.kb-card-actions { margin-top: 8px; }',
+      '.kb-advance-btn { font: inherit; font-size: 12px; padding: 4px 10px; border-radius: 5px; border: 1px solid var(--accent, #1a6ef5); background: none; color: var(--accent, #1a6ef5); cursor: pointer; }',
+      '.kb-advance-btn:hover { background: var(--accent, #1a6ef5); color: #fff; }',
+      '.kb-advance-btn:focus-visible { outline: 2px solid var(--accent, #1a6ef5); outline-offset: 2px; }',
+      '.kb-advance-btn:disabled { opacity: 0.6; cursor: default; }',
     '</style>',
     '<div class="kb-board">',
       columnHtml,
-    '</div>'
+    '</div>',
+    '<script>',
+      // s1.1 (AC1) -- click the board's own "Advance" action instead of
+      // leaving the board to confirm the gate from the chat-session UI.
+      // On success: reload so the card re-renders in its new stage's column
+      // (matches this file's other fetch-then-reload actions, e.g.
+      // products.js's pshTriggerSync). On failure: surface the REAL reason
+      // from the response body (AC5) via an alert -- never a generic message.
+      'function kbAdvanceCard(btn) {',
+      '  var journeyId = btn.getAttribute("data-journey-id");',
+      '  if (!journeyId) return;',
+      '  btn.disabled = true;',
+      '  var origText = btn.textContent;',
+      '  btn.textContent = "Advancing…";',
+      '  fetch("/api/board/journey/" + encodeURIComponent(journeyId) + "/advance", { method: "POST" })',
+      '    .then(function(r) {',
+      '      return r.json().catch(function() { return {}; }).then(function(body) { return { ok: r.ok, body: body }; });',
+      '    })',
+      '    .then(function(result) {',
+      '      if (result.ok) { window.location.reload(); return; }',
+      '      btn.disabled = false; btn.textContent = origText;',
+      '      alert(_kbAdvanceErrorMessage(result.body));',
+      '    })',
+      '    .catch(function(e) {',
+      '      btn.disabled = false; btn.textContent = origText;',
+      '      alert("Advance failed: " + e.message);',
+      '    });',
+      '}',
+      'function _kbAdvanceErrorMessage(body) {',
+      '  if (body && body.error === "validation-failed") {',
+      '    return "Advance failed: " + (body.detail || "artefact validation failed") + (body.exitCode != null ? " (exit code " + body.exitCode + ")" : "");',
+      '  }',
+      '  if (body && body.reason) { return body.reason; }',
+      '  return "Advance failed.";',
+      '}',
+    '<\/script>'
   ].join('');
 }
 
