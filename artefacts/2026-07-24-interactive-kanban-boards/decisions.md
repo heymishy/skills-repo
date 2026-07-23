@@ -16,3 +16,28 @@ The kanban boards in scope for this feature (`/products/:id/kanban`, `/org/kanba
 - No change needed to the discovery's MVP scope or benefit metrics — this correction is about implementation mechanism accuracy, not scope.
 
 **Verification performed:** Direct code read of `src/web-ui/routes/journey.js` (`handlePostGateConfirm`, lines 1712–1786) and `src/web-ui/routes/products.js` (`handleGetProductKanban`, confirming `journey_id`/`activeSkill` come from the real `journeys` Postgres table, not `.github/pipeline-state.json`). Confirmed `setPipelineStateWriter`'s wiring in `server.js` (`pipelineStateWriterFactory(repoRootForAdapter)`) targets a per-deployment target repo root, not this repo specifically.
+
+## RISK-ACCEPT — S2.1 AC2 rendered visual match, no automated tooling (2026-07-24)
+
+**Context:** Review finding s2.1-1-M1 flagged that AC2's "visually match the product-view redesign mockup" assertion cannot be automated — this repo has no visual-regression/screenshot-diff tooling.
+
+**Decision:** Per CLAUDE.md's B2 rule ("CSS-layout-dependent ACs must be classified at DoR time"), accepted as **manual verification + smoke test**, not automated visual regression. AC2 is marked 🔴 in `verification-scripts/s2.1-shared-token-redesign-verification.md`, with a negative check included.
+**Rationale:** Building visual-regression tooling for a single-operator, personal-scale repo is disproportionate to this story's risk — a manual side-by-side comparison at DoD, repeated as a post-deployment smoke test, is proportionate.
+**Action item:** Add a post-deployment smoke-test reminder to `workspace/state.json`'s `pendingActions` when this story reaches branch-complete.
+**Accepted by:** Proposed 2026-07-24 — pending operator confirmation at DoR sign-off.
+
+## RISK-ACCEPT — S2.2 artefact-count data availability is an implementation-time investigation (2026-07-24)
+
+**Context:** Review finding s2.2-1-M1 flagged that AC4/AC5 are conditional on an investigation outcome (whether `getArtefactsForJourney()` can be wired into the board query without unbounded query cost) not yet resolved at /definition time.
+
+**Decision:** Accepted — AC5's fallback (title truncation ships regardless of AC4's outcome) ensures real value ships either way. The coding agent's investigation and choice must be documented in this file before the story reaches branch-complete.
+**Rationale:** Forcing the investigation to complete before DoR would gate a low-risk, additive story on open-ended discovery work; the fallback path makes this an acceptable, bounded risk.
+**Accepted by:** Proposed 2026-07-24 — pending operator confirmation at DoR sign-off.
+
+## RISK-ACCEPT — S3.4 destination route/identifier mapping is an implementation-time investigation (2026-07-24)
+
+**Context:** Review finding s3.4-1-M1 flagged the same class of issue as S2.2 — AC1/AC2 depend on confirming whether `/features/:slug` or a journey-specific route is the correct navigation target, not yet resolved at /definition time.
+
+**Decision:** Accepted — the coding agent must complete this investigation as its first implementation step and document the confirmed route/identifier mapping here before writing AC1/AC2's final tests.
+**Rationale:** Same as S2.2 — low-risk, additive navigation feature; the investigation is a natural first implementation task, not a DoR blocker.
+**Accepted by:** Proposed 2026-07-24 — pending operator confirmation at DoR sign-off.
