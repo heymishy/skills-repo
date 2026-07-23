@@ -25,3 +25,7 @@
 Files: `tests/e2e/a4-ideate-session-resume.spec.js`, `tests/check-a4-session-store-state.js`
 Services: `wuce-staging`
 APIs: session-state read API (existing, reused from `wusl-s1`/`wusl-s2`)
+
+---
+
+**ADR-008 amendment (2026-07-23, during implementation):** `src/web-ui/routes/skills.js` is added as a touch point. Implementing the Security NFR test found that `handleGetChatHtml` (the GET route a browser reloads/reopens to resume any skill session) had no tenant/ownership check at all — any authenticated user could view any other tenant's session content. This was not a "no code change needed" case like AC1-AC4's `mergeRedisSessionData` restore mechanism; the NFR test requires this fix to be genuinely testable. See `decisions.md`'s "a4: `handleGetChatHtml` ... had no tenant/ownership check at all" entry for the full rationale, implementation, and verification. `mergeRedisSessionData` itself remains untouched, per this contract's original "What will NOT be built" list.
