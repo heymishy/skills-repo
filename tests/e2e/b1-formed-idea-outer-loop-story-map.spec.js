@@ -7,14 +7,23 @@
 // never be invoked from the unit test chain (npm test); it only ever runs via
 // `npm run test:e2e` (or a scoped Playwright invocation).
 //
-// Per ADR-022/ADR-023, each of the six skill stages this story drives
-// (discovery -> benefit-metric -> definition -> review -> test-plan ->
-// definition-of-ready) runs in its OWN skill session with artefact-content
-// handoff between them — this spec never assumes a single persistent session
-// spans all six stages. It follows whatever /api/journey/:id/gate-confirm's
-// redirect Location names as the next stage, the same generic approach
+// Per ADR-022/ADR-023, each skill stage this story drives — the real
+// journey-store.js STAGE_SEQUENCE is discovery -> benefit-metric -> design ->
+// definition -> review -> test-plan -> definition-of-ready (seven stages) —
+// runs in its OWN skill session with artefact-content handoff between them —
+// this spec never assumes a single persistent session spans all of them, and
+// never hardcodes the stage count or names. It follows whatever
+// /api/journey/:id/gate-confirm's (or the one-time /journey/:id/stories
+// follow-up's) redirect Location names as the next stage, extracting the real
+// skill name from the redirect itself (see _extractSkillNameFromRedirect)
+// rather than a literal guessed at the call site — the same generic approach
 // tests/e2e/bri-s3.2-signup-onboarding-journey.spec.js already uses for the
-// local mocked harness.
+// local mocked harness. This self-corrects if STAGE_SEQUENCE changes again in
+// the future (bssm-s1, 2026-07-23 — a prior version of this file hardcoded a
+// literal skill name at each call site, which silently drifted one stage out
+// of sync with the real sequence from benefit-metric onward and eventually
+// 404'd at the review -> test-plan transition; see this feature's decisions.md
+// for the live-verified root cause).
 //
 // AC1: a formed-idea feature reaches an Approved discovery, readable via the API.
 // AC2: benefit-metric -> definition writes epics/stories; the /definition
@@ -150,6 +159,20 @@ function sessionIdFromChatPath(pathname) {
   return m ? m[1] : null;
 }
 
+/**
+ * Extract the real skill name from a `/skills/:name/sessions/:id/chat`
+ * redirect Location — same regex shape as sessionIdFromChatPath. Used at
+ * every driveSkillToCompletion call site instead of a hardcoded literal, so
+ * the spec always drives whatever stage the server actually names (bssm-s1
+ * AC1), self-correcting if journey-store.js's STAGE_SEQUENCE changes again.
+ * @param {string} location
+ */
+function _extractSkillNameFromRedirect(location) {
+  if (!location) return null;
+  const m = location.match(/\/skills\/([^/]+)\/sessions\//);
+  return m ? m[1] : null;
+}
+
 /** Extract the journeyId embedded in the chat page's inline gate-confirm URL. */
 function journeyIdFromChatHtml(html) {
   const m = html.match(/\/api\/journey\/([0-9a-f-]+)\/gate-confirm/);
@@ -177,7 +200,14 @@ async function createFormedIdeaJourney(request, featureName) {
   const journeyId = journeyIdFromChatHtml(await firstChatRes.text());
   expect(journeyId, 'journeyId should be resolvable from the chat page').toBeTruthy();
 
-  return { journeyId: journeyId, skillName: 'discovery', sessionId: sessionId, chatPath: initialLocation };
+  // Read the real skill name from the redirect itself (bssm-s1 AC1) rather
+  // than hardcoding 'discovery' — POST /api/journey was asked to start at
+  // 'discovery' via startSkill, but the redirect Location is the actual
+  // source of truth for what the server registered.
+  const skillName = _extractSkillNameFromRedirect(initialLocation);
+  expect(skillName, 'initial redirect should name a real skill').toBeTruthy();
+
+  return { journeyId: journeyId, skillName: skillName, sessionId: sessionId, chatPath: initialLocation };
 }
 
 /**
@@ -231,18 +261,39 @@ async function driveSkillToCompletion(request, skillName, sessionId, answerPool)
 }
 
 /**
- * Confirm the gate for the current stage and resolve the next stage's
+ * Confirm the gate for the current stage and resolve the next stage's real
  * skillName/sessionId from the redirect Location — generic to whatever the
  * real STAGE_SEQUENCE is (this spec does not hardcode the exact stage list;
  * it follows the real app's own routing, exactly as a real browser would).
+ *
+ * Transparently follows the one-time `/journey/:id/stories` per-story-list
+ * redirect wherever it actually occurs in the sequence (the real transition
+ * into `review`) rather than special-casing it at one hardcoded call site
+ * (bssm-s1 AC2) — a `/stories` redirect has no session ID of its own, so this
+ * performs the required `POST /api/journey/:id/stories` follow-up itself and
+ * resolves the real next-stage redirect that returns.
  * @param {import('@playwright/test').APIRequestContext} request
  * @param {string} journeyId
  */
 async function gateConfirmAndAdvance(request, journeyId) {
   const gateRes = await request.post(`/api/journey/${journeyId}/gate-confirm`, { maxRedirects: 0 });
   expect(gateRes.status(), 'gate-confirm').toBe(303);
-  const nextLocation = gateRes.headers()['location'];
-  return { nextLocation: nextLocation, sessionId: sessionIdFromChatPath(nextLocation) };
+  let nextLocation = gateRes.headers()['location'];
+
+  if (nextLocation && nextLocation.indexOf('/stories') !== -1 && !sessionIdFromChatPath(nextLocation)) {
+    const storiesRes = await request.post(`/api/journey/${journeyId}/stories`, {
+      form: { stories: 'b1-e2e-story.1' },
+      maxRedirects: 0
+    });
+    expect(storiesRes.status(), 'story list submission').toBe(303);
+    nextLocation = storiesRes.headers()['location'];
+  }
+
+  return {
+    nextLocation: nextLocation,
+    sessionId: sessionIdFromChatPath(nextLocation),
+    skillName: _extractSkillNameFromRedirect(nextLocation)
+  };
 }
 
 const FORMED_IDEA_ANSWERS = [
@@ -260,9 +311,9 @@ test.describe('b1-formed-idea-outer-loop-story-map @real-staging', () => {
   test('AC1: a formed-idea feature reaches an Approved discovery on real staging', async ({ request }) => {
     test.setTimeout(180000);
     const { topUpOutcome } = await createOwnProductContext(request, 'b1-ac1');
-    const { sessionId } = await createFormedIdeaJourney(request, uniqueFeatureName('AC1'));
+    const journey = await createFormedIdeaJourney(request, uniqueFeatureName('AC1'));
 
-    const discoveryResult = await driveSkillToCompletion(request, 'discovery', sessionId, FORMED_IDEA_ANSWERS);
+    const discoveryResult = await driveSkillToCompletion(request, journey.skillName, journey.sessionId, FORMED_IDEA_ANSWERS);
     test.skip(discoveryResult.blocked === true, creditsBlockedReason(topUpOutcome));
 
     // AC1: discovery artefact saved and readable, reflecting Approved status.
@@ -276,20 +327,32 @@ test.describe('b1-formed-idea-outer-loop-story-map @real-staging', () => {
     const { topUpOutcome } = await createOwnProductContext(page.request, 'b1-ac2');
     const journey = await createFormedIdeaJourney(page.request, uniqueFeatureName('AC2'));
 
-    const discoveryResult = await driveSkillToCompletion(page.request, 'discovery', journey.sessionId, FORMED_IDEA_ANSWERS);
+    const discoveryResult = await driveSkillToCompletion(page.request, journey.skillName, journey.sessionId, FORMED_IDEA_ANSWERS);
     test.skip(discoveryResult.blocked === true, creditsBlockedReason(topUpOutcome));
     expect(discoveryResult.result.done).toBe(true);
 
     let advance = await gateConfirmAndAdvance(page.request, journey.journeyId);
-    // benefit-metric stage
-    const benefitMetricResult = await driveSkillToCompletion(page.request, 'benefit-metric', advance.sessionId, FORMED_IDEA_ANSWERS);
+    // benefit-metric stage — skill name read from the gate-confirm redirect,
+    // not a hardcoded literal (bssm-s1 AC1).
+    const benefitMetricResult = await driveSkillToCompletion(page.request, advance.skillName, advance.sessionId, FORMED_IDEA_ANSWERS);
     expect(benefitMetricResult.blocked, 'benefit-metric should not be credit-blocked once discovery already passed').toBe(false);
     expect(benefitMetricResult.result.done).toBe(true);
 
     advance = await gateConfirmAndAdvance(page.request, journey.journeyId);
+    // The real STAGE_SEQUENCE inserts `design` between benefit-metric and
+    // definition (journey-store.js) — driven generically via the
+    // redirect-derived skill name rather than a hardcoded 'definition' literal
+    // (bssm-s1). Whatever this stage actually is, it must complete before the
+    // real definition stage is reachable.
+    const intermediateResult = await driveSkillToCompletion(page.request, advance.skillName, advance.sessionId, FORMED_IDEA_ANSWERS);
+    expect(intermediateResult.blocked, `${advance.skillName} should not be credit-blocked once benefit-metric already passed`).toBe(false);
+    expect(intermediateResult.result.done).toBe(true);
+
+    advance = await gateConfirmAndAdvance(page.request, journey.journeyId);
     // definition stage — drive to completion, then load the chat page and assert the canvas DOM.
     const definitionSessionId = advance.sessionId;
-    const definitionResult = await driveSkillToCompletion(page.request, 'definition', definitionSessionId, FORMED_IDEA_ANSWERS);
+    const definitionSkillName = advance.skillName;
+    const definitionResult = await driveSkillToCompletion(page.request, definitionSkillName, definitionSessionId, FORMED_IDEA_ANSWERS);
     expect(definitionResult.blocked).toBe(false);
     expect(definitionResult.result.done, 'definition stage should complete and write epics/stories').toBe(true);
 
@@ -297,7 +360,7 @@ test.describe('b1-formed-idea-outer-loop-story-map @real-staging', () => {
     // corresponding to the epics/stories just created — not an empty or
     // placeholder canvas. Uses the same selectors as tests/e2e/dic-canvas.spec.js
     // (dic.1-5), which is this repo's established way of asserting this canvas.
-    await page.goto(`/skills/definition/sessions/${definitionSessionId}/chat`);
+    await page.goto(`/skills/${definitionSkillName}/sessions/${definitionSessionId}/chat`);
     await expect(page.locator('.dm-canvas')).toBeAttached({ timeout: 10000 });
     const epicHeaderCount = await page.locator('.dm-epic-th').count();
     expect(epicHeaderCount, 'the canvas must render at least one epic column, not an empty canvas').toBeGreaterThan(0);
@@ -310,41 +373,41 @@ test.describe('b1-formed-idea-outer-loop-story-map @real-staging', () => {
     const { topUpOutcome } = await createOwnProductContext(request, 'b1-ac3');
     const journey = await createFormedIdeaJourney(request, uniqueFeatureName('AC3'));
 
-    const discoveryResult = await driveSkillToCompletion(request, 'discovery', journey.sessionId, FORMED_IDEA_ANSWERS);
+    const discoveryResult = await driveSkillToCompletion(request, journey.skillName, journey.sessionId, FORMED_IDEA_ANSWERS);
     test.skip(discoveryResult.blocked === true, creditsBlockedReason(topUpOutcome));
     expect(discoveryResult.result.done).toBe(true);
 
     let advance = await gateConfirmAndAdvance(request, journey.journeyId);
-    const benefitMetricResult = await driveSkillToCompletion(request, 'benefit-metric', advance.sessionId, FORMED_IDEA_ANSWERS);
+    const benefitMetricResult = await driveSkillToCompletion(request, advance.skillName, advance.sessionId, FORMED_IDEA_ANSWERS);
     expect(benefitMetricResult.result.done).toBe(true);
 
     advance = await gateConfirmAndAdvance(request, journey.journeyId);
-    const definitionResult = await driveSkillToCompletion(request, 'definition', advance.sessionId, FORMED_IDEA_ANSWERS);
-    expect(definitionResult.result.done).toBe(true);
+    // The real STAGE_SEQUENCE inserts `design` between benefit-metric and
+    // definition (journey-store.js) — driven generically via the
+    // redirect-derived skill name rather than a hardcoded literal (bssm-s1).
+    const designResult = await driveSkillToCompletion(request, advance.skillName, advance.sessionId, FORMED_IDEA_ANSWERS);
+    expect(designResult.result.done).toBe(true);
 
     advance = await gateConfirmAndAdvance(request, journey.journeyId);
-    // definition's gate-confirm may route to a per-story list (bri-s3.2 pattern)
-    // or directly to review, depending on the real STAGE_SEQUENCE — handle both.
-    let perStorySessionId = advance.sessionId;
-    if (!perStorySessionId && advance.nextLocation && advance.nextLocation.indexOf('/stories') !== -1) {
-      const storiesRes = await request.post(`/api/journey/${journey.journeyId}/stories`, {
-        form: { stories: 'b1-e2e-story.1' },
-        maxRedirects: 0
-      });
-      expect(storiesRes.status(), 'story list submission').toBe(303);
-      perStorySessionId = sessionIdFromChatPath(storiesRes.headers()['location']);
-    }
-    expect(perStorySessionId, 'a review-stage session should be reachable after definition').toBeTruthy();
+    const definitionResult = await driveSkillToCompletion(request, advance.skillName, advance.sessionId, FORMED_IDEA_ANSWERS);
+    expect(definitionResult.result.done).toBe(true);
 
-    const reviewResult = await driveSkillToCompletion(request, 'review', perStorySessionId, FORMED_IDEA_ANSWERS);
+    // gateConfirmAndAdvance transparently follows the one-time
+    // `/journey/:id/stories` per-story-list redirect wherever it actually
+    // occurs in the sequence (the real transition into `review`) — no
+    // test-site special-casing required here (bssm-s1 AC2).
+    advance = await gateConfirmAndAdvance(request, journey.journeyId);
+    expect(advance.sessionId, 'a review-stage session should be reachable after definition').toBeTruthy();
+
+    const reviewResult = await driveSkillToCompletion(request, advance.skillName, advance.sessionId, FORMED_IDEA_ANSWERS);
     expect(reviewResult.result.done).toBe(true);
 
     advance = await gateConfirmAndAdvance(request, journey.journeyId);
-    const testPlanResult = await driveSkillToCompletion(request, 'test-plan', advance.sessionId, FORMED_IDEA_ANSWERS);
+    const testPlanResult = await driveSkillToCompletion(request, advance.skillName, advance.sessionId, FORMED_IDEA_ANSWERS);
     expect(testPlanResult.result.done).toBe(true);
 
     advance = await gateConfirmAndAdvance(request, journey.journeyId);
-    const dorResult = await driveSkillToCompletion(request, 'definition-of-ready', advance.sessionId, FORMED_IDEA_ANSWERS);
+    const dorResult = await driveSkillToCompletion(request, advance.skillName, advance.sessionId, FORMED_IDEA_ANSWERS);
     expect(dorResult.result.done, 'definition-of-ready should complete and reach a sign-off state').toBe(true);
 
     const gateConfirmRes = await request.post(`/api/journey/${journey.journeyId}/gate-confirm`, { maxRedirects: 0 });
@@ -363,6 +426,15 @@ test.describe('b1-formed-idea-outer-loop-story-map @real-staging', () => {
     expect('ownerId' in journeyState, 'ADR-024: ownerId must be present').toBe(true);
     expect('activeSkill' in journeyState, 'ADR-024: activeSkill must be present').toBe(true);
     expect(journeyState.complete, 'the journey should be marked complete after a passing DoR gate-confirm').toBe(true);
+
+    // bssm-s1 AC3: design and definition must be recorded as two distinct
+    // completed stages, in order — not one silently mislabeling the other
+    // (the root cause this story fixes; see decisions.md for the
+    // live-verified evidence of the prior mislabeling).
+    const completedStageNames = journeyState.completedStages.map(function(s) { return typeof s === 'string' ? s : s.skillName; });
+    expect(completedStageNames, 'completedStages must include design as its own distinct entry').toContain('design');
+    expect(completedStageNames, 'completedStages must include definition as its own distinct entry').toContain('definition');
+    expect(completedStageNames.indexOf('design'), 'design must be recorded before definition').toBeLessThan(completedStageNames.indexOf('definition'));
 
     const completeRes = await request.get(`/journey/${journey.journeyId}/complete`);
     expect(completeRes.status()).toBe(200);
