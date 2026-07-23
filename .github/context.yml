@@ -68,6 +68,7 @@ audit:
   ci_attachment: true           # opt-in: collect and upload governed artefact bundles on each PR
   ci_platform: github-actions   # adapter to use for upload + comment
   artifact_retention_days: 7    # days to retain CI artefact bundles
+  staging_e2e_scenario_a: true  # opt-in, BLOCKING: story a5-ci-gate-scenario-a-blocking's Scenario A (A1-A4) real-staging E2E job (.github/workflows/e2e.yml `scenario-a-staging-e2e` job) -- a distinct flag from the pre-existing non-blocking `e2e_tests` semantics, not a reuse of that key
 
 improvement_agent:
   min_dream_interval_hours: 23  # minimum hours between scheduled dreaming runs
