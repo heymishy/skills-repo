@@ -43,6 +43,13 @@ COPY --chown=node:node --from=builder /app/src ./src/
 COPY --chown=node:node skills/ ./skills/
 COPY --chown=node:node product/ ./product/
 
+# Copy the mock-LLM-gateway fixture set only (not the whole tests/ tree —
+# see .dockerignore and artefacts/2026-07-23-mock-gateway-fixtures-deploy-fix/
+# decisions.md). mock-llm-gateway.js's FIXTURE_DIR resolves to this exact
+# path at runtime; the gateway itself only activates when
+# MOCK_LLM_GATEWAY=true or NODE_ENV=test, and never in NODE_ENV=production.
+COPY --chown=node:node tests/e2e/fixtures/llm-gateway/ ./tests/e2e/fixtures/llm-gateway/
+
 # Expose application port
 EXPOSE 3000
 

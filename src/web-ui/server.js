@@ -1058,6 +1058,30 @@ if (process.env.NODE_ENV !== 'test') {
   }
 }
 
+// mgfd-s1: bri-s3.1 built the mock LLM gateway as its own D37 adapter
+// (mock-llm-gateway.js's _mockGatewayClient), and isMockGatewayEnabled()'s own
+// documented contract is NODE_ENV=test OR MOCK_LLM_GATEWAY=true (hard-blocked
+// whenever NODE_ENV=production) — but the ONLY place that ever called
+// wireDefaultMockGatewayClient() was nested inside a NODE_ENV==='test'-only
+// block below, so a MOCK_LLM_GATEWAY=true staging process (NODE_ENV='staging',
+// per fly.staging.toml) never actually wired the adapter: isMockGatewayEnabled()
+// correctly returned true, but getMockResponse() still threw "Adapter not
+// wired: mockGatewayClient" for every turn, silently swallowed by
+// htmlSubmitTurn's try/catch into an empty {"done":false,"response":""}
+// response. This is the second, distinct root cause found while live-verifying
+// the Dockerfile/tests-directory fix in the same story — moving the wiring
+// call here (gated only on isMockGatewayEnabled(), not on NODE_ENV==='test'
+// specifically) makes it run whenever the adapter is actually meant to be
+// active, matching the module's own documented activation rule instead of a
+// narrower one. See artefacts/2026-07-23-mock-gateway-fixtures-deploy-fix/
+// decisions.md.
+{
+  const _mockLlmGateway = require('./modules/mock-llm-gateway');
+  if (_mockLlmGateway.isMockGatewayEnabled()) {
+    _mockLlmGateway.wireDefaultMockGatewayClient();
+  }
+}
+
 // ── Test-mode infrastructure (NODE_ENV=test only) ─────────────────────────
 // Pre-seed a well-known test session and override the artefact fetcher with
 // fixture files so E2E tests can authenticate and render artefacts without
@@ -1290,19 +1314,6 @@ if (process.env.NODE_ENV === 'test') {
     const { setSkillTurnExecutorAdapter: _setRealTurnExecutor } = require('./routes/skills');
     const { skillTurnExecutor: _realTurnExecutorForTest } = require('../modules/skill-turn-executor');
     _setRealTurnExecutor(_realTurnExecutorForTest);
-  }
-  // bri-s3.2: bri-s3.1 built the mock LLM gateway as its own D37 adapter
-  // (mock-llm-gateway.js's _mockGatewayClient) but nothing in server.js ever
-  // called wireDefaultMockGatewayClient() — so isMockGatewayEnabled() being
-  // true was not sufficient on its own; getMockResponse() still threw
-  // "Adapter not wired: mockGatewayClient" for every chat turn. Wiring the
-  // built-in fixture-file-backed client here (test mode only) is what
-  // actually makes the @mocked gateway usable end-to-end.
-  {
-    const _mockLlmGatewayForTest = require('./modules/mock-llm-gateway');
-    if (_mockLlmGatewayForTest.isMockGatewayEnabled()) {
-      _mockLlmGatewayForTest.wireDefaultMockGatewayClient();
-    }
   }
   // bri-s3.2: wire the real generateProductDraft adapter too — it already
   // no-ops (returns a blank draft, zero network calls) when ANTHROPIC_API_KEY

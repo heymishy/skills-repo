@@ -8,8 +8,21 @@ node_modules/
 .env.*
 !.env.example
 
-# Test files — not required at runtime (AC6: production-only final image)
-tests/
+# Test files — not required at runtime (AC6: production-only final image),
+# except the mock-LLM-gateway fixture set, which mock-llm-gateway.js reads
+# at runtime in the deployed container when MOCK_LLM_GATEWAY=true (never
+# active when NODE_ENV=production). See
+# artefacts/2026-07-23-mock-gateway-fixtures-deploy-fix/decisions.md.
+# Step-wise re-inclusion is required here: a `!` negation cannot resurrect
+# a path whose ancestor directory is itself excluded, so each intermediate
+# level below tests/ must be explicitly un-excluded in turn before the
+# final fixture directory is re-included.
+tests/*
+!tests/e2e/
+tests/e2e/*
+!tests/e2e/fixtures/
+tests/e2e/fixtures/*
+!tests/e2e/fixtures/llm-gateway/
 
 # Git history — not required at runtime
 .git/
