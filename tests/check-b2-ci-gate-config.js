@@ -1,37 +1,30 @@
 #!/usr/bin/env node
 /**
- * check-a5-ci-gate-config.js — governance tests for a5-ci-gate-scenario-a-blocking
- * (artefacts/2026-07-23-e2e-core-journey-coverage/stories/a5-ci-gate-scenario-a-blocking.md)
+ * check-b2-ci-gate-config.js — governance tests for b2-ci-gate-scenario-b-coverage-mapping
+ * (artefacts/2026-07-23-e2e-core-journey-coverage/stories/b2-ci-gate-scenario-b-coverage-mapping.md)
  *
- * Covers the AC1-AC4 structural preconditions per the story's test plan and
- * DoR Coding Agent Instructions: "Do not attempt to encode 'the merge is
- * actually blocked' as an automated Jest/Node test ... assert the structural
- * precondition (no continue-on-error, check registered as required) only."
+ * Mirrors check-a5-ci-gate-config.js exactly, applied to the new Scenario B
+ * job — per this story's DoR Coding Agent Instructions: "Reuse A5's gate
+ * mechanism pattern ... do not invent a second, different mechanism."
  *
- * AC1/AC2 — structural precondition: the new Scenario A job has no
+ * AC1/AC2 — structural precondition: the new Scenario B job has no
  *           continue-on-error anywhere in its own step block, so a real
  *           failure genuinely fails the job (necessary, not sufficient, for
  *           branch-protection blocking — the sufficient half is proven by
  *           the one-time manual red/green PR rehearsal, per the test plan's
  *           acknowledged External-dependency gap).
- * AC3       — the pre-existing 29-spec `e2e` job's config is byte-for-byte
- *             unchanged from its pre-story shape (this is additive only).
+ * AC (regression) — the pre-existing `e2e` job and the a5 `scenario-a-staging-e2e`
+ *           job are both untouched (this story is additive only).
  * AC4       — the new job's enablement reads a `.github/context.yml` field
  *             (ADR-004), not a hardcoded literal in the workflow YAML.
  *
  * No external dependencies — Node.js built-ins only, matching ADR-001's
- * no-external-deps convention for governance check scripts. YAML content is
- * parsed with regex/text assertions, consistent with check-dviz2-pages-workflow.js.
+ * no-external-deps convention for governance check scripts.
  *
- * The live GitHub API check (is "Scenario A E2E (staging)" actually present
+ * The live GitHub API check (is "Scenario B E2E (staging)" actually present
  * in the master ruleset's required_status_checks list) is attempted via the
  * `gh` CLI but is treated as SKIP (not FAIL) when `gh` is unavailable,
- * unauthenticated, or unreachable — this mirrors the hasStubSecret() /
- * known-baseline-failures.json pattern already used throughout this feature
- * for checks that depend on an external, non-committed credential. A fresh
- * CI runner's default GITHUB_TOKEN cannot read repository rulesets, so a
- * hard failure here would produce false negatives unrelated to this story's
- * own change.
+ * unauthenticated, or unreachable — same rationale as check-a5-ci-gate-config.js.
  */
 
 'use strict';
@@ -63,7 +56,7 @@ function skip(id, msg) {
   skipped++;
 }
 
-console.log('\n[check-a5-ci-gate-config] Scenario A CI-blocking gate — structural config checks\n');
+console.log('\n[check-b2-ci-gate-config] Scenario B CI-blocking gate — structural config checks\n');
 
 const workflowExists = fs.existsSync(WORKFLOW_PATH);
 if (workflowExists) {
@@ -104,53 +97,59 @@ function extractJobBlock(text, jobId) {
 }
 
 // ── AC1/AC2 — new job exists, has no continue-on-error ───────────────────────
-console.log('\n[a5] AC1/AC2 — Scenario A job: present, no continue-on-error');
+console.log('\n[b2] AC1/AC2 — Scenario B job: present, no continue-on-error');
 
-const newJobBlock = workflowExists ? extractJobBlock(workflowText, 'scenario-a-staging-e2e') : null;
+const newJobBlock = workflowExists ? extractJobBlock(workflowText, 'scenario-b-staging-e2e') : null;
 
 if (newJobBlock) {
-  pass('T1', 'scenario-a-staging-e2e job is present in e2e.yml');
+  pass('T1', 'scenario-b-staging-e2e job is present in e2e.yml');
 } else {
-  fail('T1', 'scenario-a-staging-e2e job not found in e2e.yml');
+  fail('T1', 'scenario-b-staging-e2e job not found in e2e.yml');
 }
 
 if (newJobBlock) {
   const hasContinueOnError = /continue-on-error\s*:\s*true/.test(newJobBlock);
   if (!hasContinueOnError) {
-    pass('T2', 'scenario-a-staging-e2e job has no continue-on-error: true anywhere in its block');
+    pass('T2', 'scenario-b-staging-e2e job has no continue-on-error: true anywhere in its block');
   } else {
-    fail('T2', 'scenario-a-staging-e2e job unexpectedly sets continue-on-error: true — this would prevent it from blocking merge on failure (AC1)');
+    fail('T2', 'scenario-b-staging-e2e job unexpectedly sets continue-on-error: true — this would prevent it from blocking merge on failure (AC1)');
   }
 
   const nameMatch = /^\s*name:\s*(.+)$/m.exec(newJobBlock);
   if (nameMatch && nameMatch[1].trim().length > 0) {
-    pass('T3', 'scenario-a-staging-e2e job has an explicit name: ' + nameMatch[1].trim());
+    pass('T3', 'scenario-b-staging-e2e job has an explicit name: ' + nameMatch[1].trim());
   } else {
-    fail('T3', 'scenario-a-staging-e2e job has no explicit name — required to register as a status check');
+    fail('T3', 'scenario-b-staging-e2e job has no explicit name — required to register as a status check');
+  }
+
+  const runsB1Spec = /tests\/e2e\/b1-formed-idea-outer-loop-story-map\.spec\.js/.test(newJobBlock);
+  if (runsB1Spec) {
+    pass('T3b', 'scenario-b-staging-e2e job runs tests/e2e/b1-formed-idea-outer-loop-story-map.spec.js');
+  } else {
+    fail('T3b', 'scenario-b-staging-e2e job does not reference tests/e2e/b1-formed-idea-outer-loop-story-map.spec.js');
   }
 } else {
   fail('T2', 'cannot check continue-on-error — job block not found');
   fail('T3', 'cannot check job name — job block not found');
+  fail('T3b', 'cannot check spec file reference — job block not found');
 }
 
 // ── AC4 — config-driven enablement, not hardcoded ────────────────────────────
-console.log('\n[a5] AC4 — gate enablement is config-driven via context.yml (ADR-004)');
+console.log('\n[b2] AC4 — gate enablement is config-driven via context.yml (ADR-004)');
 
 if (newJobBlock) {
-  const readsContextYml = /audit\.staging_e2e_scenario_a/.test(newJobBlock);
+  const readsContextYml = /audit\.staging_e2e_scenario_b/.test(newJobBlock);
   if (readsContextYml) {
-    pass('T4', 'scenario-a-staging-e2e job reads audit.staging_e2e_scenario_a from context.yml');
+    pass('T4', 'scenario-b-staging-e2e job reads audit.staging_e2e_scenario_b from context.yml');
   } else {
-    fail('T4', 'scenario-a-staging-e2e job does not reference audit.staging_e2e_scenario_a — enablement may be hardcoded');
+    fail('T4', 'scenario-b-staging-e2e job does not reference audit.staging_e2e_scenario_b — enablement may be hardcoded');
   }
 
-  // The gate variable must be assigned from a parsed context.yml value (yq or
-  // grep-of-file), not a bare hardcoded literal with no file read at all.
   const readsFromFile = /\.github\/context\.yml/.test(newJobBlock);
   if (readsFromFile) {
-    pass('T5', 'scenario-a-staging-e2e job reads .github/context.yml as its config source');
+    pass('T5', 'scenario-b-staging-e2e job reads .github/context.yml as its config source');
   } else {
-    fail('T5', 'scenario-a-staging-e2e job does not read .github/context.yml at all');
+    fail('T5', 'scenario-b-staging-e2e job does not read .github/context.yml at all');
   }
 } else {
   fail('T4', 'cannot check context.yml reference — job block not found');
@@ -158,31 +157,37 @@ if (newJobBlock) {
 }
 
 if (contextExists) {
-  const hasFlag = /staging_e2e_scenario_a\s*:\s*true/.test(contextText);
+  const hasFlag = /staging_e2e_scenario_b\s*:\s*true/.test(contextText);
   if (hasFlag) {
-    pass('T6', 'context.yml declares audit.staging_e2e_scenario_a: true');
+    pass('T6', 'context.yml declares audit.staging_e2e_scenario_b: true');
   } else {
-    fail('T6', 'context.yml does not declare staging_e2e_scenario_a: true under audit:');
+    fail('T6', 'context.yml does not declare staging_e2e_scenario_b: true under audit:');
   }
 
-  // Distinct from the existing non-blocking audit.e2e_tests key (AC4's
-  // "distinct from the existing non-blocking audit.e2e_tests semantics").
-  const isDistinctKey = /staging_e2e_scenario_a/.test(contextText) &&
-    !/e2e_tests\s*:\s*true[^\n]*staging_e2e_scenario_a/.test(contextText);
+  // Distinct from both the pre-existing non-blocking e2e_tests key and A5's
+  // own staging_e2e_scenario_a key. Only the YAML key portion (before any
+  // trailing "#" comment) is checked -- the comment text is expected to
+  // reference the sibling keys by name for documentation purposes, so
+  // scanning the whole line (including the comment) would produce a false
+  // positive here.
+  const scenarioBLine = (contextText.match(/^.*staging_e2e_scenario_b.*$/m) || [''])[0];
+  const scenarioBKeyPortion = scenarioBLine.split('#')[0];
+  const isDistinctKey = /^\s*staging_e2e_scenario_b\s*:\s*true\s*$/.test(scenarioBKeyPortion);
   if (isDistinctKey) {
-    pass('T7', 'staging_e2e_scenario_a is a distinct config key from e2e_tests');
+    pass('T7', 'staging_e2e_scenario_b is its own distinct YAML key (not a reuse of e2e_tests or staging_e2e_scenario_a): ' + JSON.stringify(scenarioBKeyPortion.trim()));
   } else {
-    fail('T7', 'staging_e2e_scenario_a does not appear to be a distinct key');
+    fail('T7', 'staging_e2e_scenario_b\'s key portion does not appear to be a clean, distinct key: ' + JSON.stringify(scenarioBKeyPortion));
   }
 } else {
   fail('T6', 'cannot check context.yml flag — file not found');
   fail('T7', 'cannot check distinct key — file not found');
 }
 
-// ── AC3 — pre-existing 29-spec job is unchanged (additive only) ─────────────
-console.log('\n[a5] AC3 — pre-existing `e2e` job (29 local-mocked specs) is unchanged');
+// ── Regression — pre-existing jobs unchanged (additive only) ────────────────
+console.log('\n[b2] Regression — pre-existing `e2e` and `scenario-a-staging-e2e` jobs are unchanged');
 
 const preExistingJobBlock = workflowExists ? extractJobBlock(workflowText, 'e2e') : null;
+const scenarioAJobBlock = workflowExists ? extractJobBlock(workflowText, 'scenario-a-staging-e2e') : null;
 
 if (preExistingJobBlock) {
   pass('T8', 'pre-existing e2e job block still present');
@@ -190,59 +195,30 @@ if (preExistingJobBlock) {
   fail('T8', 'pre-existing e2e job block not found — has it been removed or renamed?');
 }
 
-if (preExistingJobBlock) {
-  // Snapshot of the pre-existing job's defining properties, as they existed
-  // before this story (captured from e2e.yml prior to the a5 implementation
-  // commit) — this is the "before" side of the AC3 diff.
-  const expectedSubstrings = [
-    'name: Playwright E2E smoke tests',
-    "id: e2e-config",
-    "audit.e2e_tests",
-    'continue-on-error: true',
-    'id: e2e-run',
-    'run: npm run test:e2e',
-    'name: playwright-traces-${{ github.run_id }}',
-    "E2E tests skipped — set audit.e2e_tests: true in .github/context.yml to enable"
-  ];
-
-  let allPresent = true;
-  const missing = [];
-  expectedSubstrings.forEach(function (s) {
-    if (preExistingJobBlock.indexOf(s) === -1) {
-      allPresent = false;
-      missing.push(s);
-    }
-  });
-
-  if (allPresent) {
-    pass('T9', 'pre-existing e2e job retains all defining properties unchanged (name, flag key, continue-on-error: true, run command, artifact name, skip message)');
+if (scenarioAJobBlock) {
+  pass('T8b', 'scenario-a-staging-e2e job block still present (A5, unmodified by this story)');
+  const hasContinueOnErrorA = /continue-on-error\s*:\s*true/.test(scenarioAJobBlock);
+  if (!hasContinueOnErrorA) {
+    pass('T8c', 'scenario-a-staging-e2e job still has no continue-on-error: true (unchanged blocking posture)');
   } else {
-    fail('T9', 'pre-existing e2e job is missing expected unchanged properties: ' + JSON.stringify(missing));
+    fail('T8c', 'scenario-a-staging-e2e job unexpectedly now has continue-on-error: true — this story must not weaken A5\'s gate');
   }
+} else {
+  fail('T8b', 'scenario-a-staging-e2e job not found — this story must not remove or rename A5\'s job');
+}
 
-  // The pre-existing job must still be non-blocking — continue-on-error:
-  // true must be present exactly once, on its "Run E2E tests" step, and this
-  // story must not have flipped it to blocking as a side effect.
+if (preExistingJobBlock) {
   const continueOnErrorCount = (preExistingJobBlock.match(/continue-on-error\s*:\s*true/g) || []).length;
   if (continueOnErrorCount === 1) {
     pass('T10', 'pre-existing e2e job has exactly one continue-on-error: true (unchanged non-blocking posture)');
   } else {
     fail('T10', 'pre-existing e2e job has ' + continueOnErrorCount + ' continue-on-error: true occurrences (expected exactly 1) — non-blocking posture may have changed');
   }
-} else {
-  fail('T9', 'cannot verify unchanged properties — job block not found');
-  fail('T10', 'cannot verify continue-on-error count — job block not found');
 }
 
-// Both of this story's own jobs (e2e, unchanged; scenario-a-staging-e2e, new)
-// must still be present. This check no longer asserts an exact total job
-// count of 2 -- story b2-ci-gate-scenario-b-coverage-mapping legitimately
-// added a third job (scenario-b-staging-e2e) to this same file, following
-// this exact story's own established pattern, so a strict "exactly 2" count
-// would produce a false regression for every subsequent scenario added this
-// way. What still matters for THIS story's own AC3 (additive-only, nothing
-// removed) is that neither of ITS jobs was removed or renamed by a later
-// change -- checked below.
+// Exactly three jobs total: e2e (non-blocking), scenario-a-staging-e2e (A5),
+// scenario-b-staging-e2e (this story). No job removed, no fourth job
+// silently introduced beyond this story's scope.
 if (workflowExists) {
   const jobsSectionIdx = workflowText.search(/^jobs:\s*$/m);
   const jobsSectionText = jobsSectionIdx === -1 ? '' : workflowText.slice(jobsSectionIdx);
@@ -250,20 +226,21 @@ if (workflowExists) {
     return l.trim().replace(/:$/, '');
   });
   const uniqueJobKeys = jobKeys.filter(function (k, i) { return jobKeys.indexOf(k) === i; });
-  const hasBothOwnJobs = uniqueJobKeys.indexOf('e2e') !== -1 && uniqueJobKeys.indexOf('scenario-a-staging-e2e') !== -1;
-  if (hasBothOwnJobs) {
-    pass('T11', 'e2e.yml still contains this story\'s 2 jobs (e2e, scenario-a-staging-e2e) among ' + uniqueJobKeys.length + ' total job(s) — ' + JSON.stringify(uniqueJobKeys));
+  const expected = ['e2e', 'scenario-a-staging-e2e', 'scenario-b-staging-e2e'];
+  const matches = uniqueJobKeys.length === expected.length && expected.every(function (k) { return uniqueJobKeys.indexOf(k) !== -1; });
+  if (matches) {
+    pass('T11', 'e2e.yml contains exactly 3 jobs: e2e, scenario-a-staging-e2e, scenario-b-staging-e2e — ' + JSON.stringify(uniqueJobKeys));
   } else {
-    fail('T11', 'e2e.yml no longer contains both of this story\'s own jobs [e2e, scenario-a-staging-e2e] — got: ' + JSON.stringify(uniqueJobKeys));
+    fail('T11', 'e2e.yml job list is not exactly ' + JSON.stringify(expected) + ' — got: ' + JSON.stringify(uniqueJobKeys));
   }
 } else {
   fail('T11', 'cannot check job count — workflow file not found');
 }
 
 // ── AC1/AC2 (best-effort, live) — is the check registered as required? ──────
-console.log('\n[a5] AC1/AC2 (live, best-effort) — is "Scenario A E2E (staging)" a required status check on master?');
+console.log('\n[b2] AC1/AC2 (live, best-effort) — is "Scenario B E2E (staging)" a required status check on master?');
 {
-  const REQUIRED_CHECK_NAME = 'Scenario A E2E (staging)';
+  const REQUIRED_CHECK_NAME = 'Scenario B E2E (staging)';
   let ghResult = null;
   try {
     ghResult = spawnSync('gh', [
@@ -306,5 +283,5 @@ console.log('\n[a5] AC1/AC2 (live, best-effort) — is "Scenario A E2E (staging)
 }
 
 // ── Summary ───────────────────────────────────────────────────────────────
-console.log('\n[check-a5-ci-gate-config] Results: ' + passed + ' passed, ' + failed + ' failed, ' + skipped + ' skipped\n');
+console.log('\n[check-b2-ci-gate-config] Results: ' + passed + ' passed, ' + failed + ' failed, ' + skipped + ' skipped\n');
 if (failed > 0) process.exit(1);
