@@ -4,6 +4,14 @@ name: E2E Tests (Playwright)
 # Non-fatal: E2E pass/fail is visible in PR status but does not block merge.
 # ADR-009: permissions limited to contents: read — no write access.
 # ADR-018: Playwright is the E2E framework for the wuce feature.
+#
+# Story a5-ci-gate-scenario-a-blocking (2026-07-23-e2e-core-journey-coverage):
+# adds a SECOND, separate job (scenario-a-staging-e2e) below. That job is
+# gated by its own distinct flag — audit.staging_e2e_scenario_a: true in
+# .github/context.yml — and has NO continue-on-error, so it genuinely blocks
+# merge via the master ruleset's required_status_checks list once registered.
+# This is additive only: the existing `e2e` job above/below is untouched —
+# it remains non-blocking exactly as before this story.
 
 on:
   pull_request:
@@ -83,3 +91,138 @@ jobs:
       - name: E2E skipped (opt-in flag not set)
         if: steps.e2e-config.outputs.e2e_enabled != 'true'
         run: 'echo "E2E tests skipped — set audit.e2e_tests: true in .github/context.yml to enable"'
+
+  # ── Scenario A CI-blocking gate (story a5-ci-gate-scenario-a-blocking) ──────
+  # Runs A1-A4's combined spec files against real wuce-staging, but the
+  # automated CI-blocking signal from this job is A1 + A3 + A4 only. A2's
+  # spec file (a2-stripe-test-mode-plan-selection.spec.js) also runs here, but
+  # ALL THREE of its tests (AC1, AC2, AC3) are test.skip()-ed in CI --
+  # confirmed via real trace evidence that Stripe's own hCaptcha bot-detection
+  # blocks the checkout-submission step itself for automated/headless
+  # traffic, not just the post-checkout redirect (see
+  # artefacts/2026-07-23-a2-stripe-ci-checkout-flake/decisions.md, a2ccf-s1
+  # corrected finding, 2026-07-23). A2 is verified manually only; it
+  # contributes zero automated signal to this job's pass/fail outcome.
+  # Distinct opt-in flag from the job above (audit.staging_e2e_scenario_a, not
+  # audit.e2e_tests). NO continue-on-error anywhere in this job -- a failure
+  # here (in A1/A3/A4's tests) is a real job failure, which is what allows
+  # this check name to actually block merge once it is registered in the
+  # master ruleset's required_status_checks list.
+  scenario-a-staging-e2e:
+    name: Scenario A E2E (staging)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 1
+
+      - name: Check opt-in flag (audit.staging_e2e_scenario_a in context.yml)
+        id: scenario-a-config
+        run: |
+          # ADR-004: context.yml is the single config source of truth — this
+          # flag is read from config, never hardcoded true/false here.
+          SCENARIO_A_ENABLED="false"
+          if [ -f ".github/context.yml" ]; then
+            if command -v yq >/dev/null 2>&1; then
+              SCENARIO_A_ENABLED=$(yq e '.audit.staging_e2e_scenario_a // false' .github/context.yml)
+            else
+              # Fallback: grep for the flag without yq — same pattern as the
+              # e2e-config step above (audit.e2e_tests).
+              if grep -q 'staging_e2e_scenario_a: true' .github/context.yml; then
+                SCENARIO_A_ENABLED="true"
+              fi
+            fi
+          fi
+          echo "scenario_a_enabled=${SCENARIO_A_ENABLED}" >> "$GITHUB_OUTPUT"
+          echo "Scenario A staging E2E gate flag: ${SCENARIO_A_ENABLED}"
+
+      - name: Set up Node.js
+        if: steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        if: steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
+        run: npm ci
+
+      - name: Install Playwright browsers (Chromium only)
+        if: steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Scenario A E2E (A1-A4 spec files; A1/A3/A4 CI-blocking, A2 manual-only) against real wuce-staging
+        if: steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
+        id: scenario-a-run
+        # a2ccf-s1: --workers=1 is a deliberate, narrowly-scoped-to-this-job fix,
+        # not a global playwright.config.js change. Root cause (see
+        # artefacts/2026-07-23-a2-stripe-ci-checkout-flake/decisions.md): with the
+        # default 2-worker concurrency this job previously ran with, a1 (request-only,
+        # no browser) frees its worker almost immediately, so a3/a4 (both heavy
+        # page-fixture specs) end up running truly concurrently with a2's real Stripe
+        # Checkout interaction on the small 2-vCPU GitHub Actions runner. That CPU
+        # contention delays Stripe Checkout's own client-side validation JS just
+        # enough that our fill()+click() lands before the submit button is actually
+        # wired/enabled, so the click silently no-ops: no redirect, no decline
+        # message, no webhook, and every one of a2's 3 ACs fails downstream of that
+        # single missed interaction. Confirmed locally: identical command with
+        # --workers=1 passes a2 cleanly and repeatably; only the default (2-worker)
+        # invocation reproduces the failure. Serializing this job's 4 real-staging
+        # specs removes the contention; it does not touch playwright.config.js, so
+        # the other 29 local-mocked specs' parallelism is unaffected.
+        # a2ccf-s1 follow-up (2026-07-23): the `--trace on` diagnostic flag added here
+        # to investigate a still-failing a2 (AC2/AC3) under --workers=1 has been
+        # reverted. It served its purpose -- the trace it captured (PR #565, run
+        # 29984917608, artifact scenario-a-e2e-traces-29984917608) conclusively showed
+        # Stripe's hosted Checkout page loading an invisible hCaptcha bot-detection
+        # challenge that stalls automated/headless traffic (see
+        # artefacts/2026-07-23-a2-stripe-ci-checkout-flake/decisions.md). AC2/AC3 were
+        # test.skip()-ed in CI first; a follow-up correction extended the same
+        # test.skip() to AC1 too, once real trace evidence showed AC1 hits the
+        # identical checkout-submission-level CAPTCHA stall (AC1 failed in all 4 real
+        # CI runs observed, not "passes reliably" as first assumed) -- see decisions.md's
+        # final corrective entry. All 3 of a2's tests
+        # (tests/e2e/a2-stripe-test-mode-plan-selection.spec.js) are now test.skip()-ed
+        # in CI, so there is no longer an open diagnostic question needing trace capture on
+        # every run -- keeping it permanently on would add artifact-upload overhead to
+        # every CI run for no further diagnostic value. If a NEW real-staging failure
+        # needs diagnosis in the future, re-add `--trace on` at that time rather than
+        # leaving it on speculatively.
+        run: npx playwright test tests/e2e/a1-staging-auth-stub.spec.js tests/e2e/a2-stripe-test-mode-plan-selection.spec.js tests/e2e/a3-product-feature-ideate-canvas.spec.js tests/e2e/a4-ideate-session-resume.spec.js --workers=1
+        env:
+          CI: 'true'
+          # Test-only staging credentials — CI secrets only, never workflow
+          # YAML literals (NFR-Security). Falls back to the fixture's own
+          # public staging URL default when the secret is unset.
+          E2E_STAGING_BASE_URL: ${{ secrets.E2E_STAGING_BASE_URL }}
+          E2E_STAGING_AUTH_STUB_SECRET: ${{ secrets.E2E_STAGING_AUTH_STUB_SECRET }}
+          E2E_STAGING_ADMIN_PASSWORD: ${{ secrets.E2E_STAGING_ADMIN_PASSWORD }}
+
+      - name: Upload Playwright traces and screenshots on failure
+        # a2ccf-s1: this job (unlike the `e2e` job above) has no continue-on-error
+        # on its run step, so a genuine failure there leaves the job's implicit
+        # success() false — and any `if:` expression that doesn't itself reference
+        # success()/failure()/always()/cancelled() is ANDed with success() by GitHub
+        # Actions. Without always() here, this upload step was silently skipped on
+        # every real failure (confirmed: run 29981769208 failed with 3 real test
+        # failures but produced zero artifacts — `gh api .../actions/runs/.../artifacts`
+        # returned an empty list). always() restores the intended "upload only on
+        # failure" behavior instead of "never uploads because the job already failed".
+        if: always() && steps.scenario-a-config.outputs.scenario_a_enabled == 'true' && steps.scenario-a-run.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-a-e2e-traces-${{ github.run_id }}
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Scenario A E2E skipped (opt-in flag not set)
+        if: steps.scenario-a-config.outputs.scenario_a_enabled != 'true'
+        run: 'echo "Scenario A staging E2E skipped — set audit.staging_e2e_scenario_a: true in .github/context.yml to enable"'
