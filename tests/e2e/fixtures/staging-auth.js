@@ -130,11 +130,50 @@ async function signUpEmail(request, label) {
   return { email: email, password: password, elapsedMs: elapsedMs };
 }
 
+/**
+ * a2-stripe-test-mode-plan-selection: log in with an existing email/password
+ * identity (previously created by signUpEmail) and return a freshly
+ * authenticated session on the given request context.
+ *
+ * Added by A2 rather than duplicated, per CLAUDE.md's "reuse A1's fixture"
+ * instruction — this is the same authentication mechanism as signUpEmail
+ * (real email/password login against real staging), just the login half
+ * rather than the signup half, needed because A2 discovered that the
+ * browser session created by signUpEmail does not survive a Stripe-hosted
+ * Checkout round trip (see decisions.md, "A2 SameSite=Strict session-cookie
+ * finding") — re-authenticating with the same credentials is the correct way
+ * to obtain a valid session for the same tenant afterward, independent of
+ * whatever happened to the original browser session.
+ *
+ * @param {import('@playwright/test').APIRequestContext} request
+ * @param {string} email
+ * @param {string} password
+ * @returns {Promise<void>}
+ */
+async function loginEmail(request, email, password) {
+  const landingRes = await request.get('/');
+  const landingHtml = await landingRes.text();
+  const csrfMatch = landingHtml.match(/name="_csrf" value="([^"]*)"/);
+  const csrfToken = csrfMatch ? csrfMatch[1] : null;
+  if (!csrfToken) {
+    throw new Error('loginEmail(): landing page did not embed a _csrf token in the sign-in form');
+  }
+
+  const loginRes = await request.post('/auth/email/login', {
+    form: { email: email, password: password, _csrf: csrfToken },
+    maxRedirects: 0
+  });
+  if (loginRes.status() !== 302) {
+    throw new Error('loginEmail() failed: HTTP ' + loginRes.status() + ' ' + (await loginRes.text()));
+  }
+}
+
 module.exports = {
   STAGING_BASE_URL,
   hasStubSecret,
   uniqueEmail,
   stubGithubLogin,
   stubAuditLookup,
-  signUpEmail
+  signUpEmail,
+  loginEmail
 };

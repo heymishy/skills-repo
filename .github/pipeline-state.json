@@ -14042,25 +14042,29 @@
             {
               "slug": "a2-stripe-test-mode-plan-selection",
               "name": "Drive Stripe test-mode plan selection on real staging",
-              "stage": "definition-of-ready",
-              "health": "green",
-              "updatedAt": "2026-07-22T21:01:03.850Z",
+              "stage": "dor-signed-off",
+              "health": "amber",
+              "updatedAt": "2026-07-22T23:58:57.580Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 3,
-                "passing": 0
+                "passing": 2
               },
               "acTotal": 3,
-              "acVerified": 0,
+              "acVerified": 2,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorApprover": "Hamish King",
               "dorSignedOffAt": "2026-07-22T21:01:03.850Z",
               "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a2-stripe-test-mode-plan-selection-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a2-stripe-test-mode-plan-selection-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a2-stripe-test-mode-plan-selection-dor-contract.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/552",
+              "prNumber": 552,
+              "verifyStatus": "running"
             },
             {
               "slug": "a3-product-feature-ideate-canvas",

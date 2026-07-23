@@ -43,3 +43,22 @@
 **Rationale:** Minimises new surface area (no new DB schema, no new adapter wiring, no committed secret) while satisfying all 4 ACs, matching this story's Complexity Rating of 2 and its "additive to staging only" scope boundary.
 
 **Source:** a1-staging-safe-auth-stub implementation, 2026-07-23.
+
+---
+
+## FINDING — A2 SameSite=Strict session-cookie finding: Stripe checkout redirect drops the session (2026-07-23)
+
+**Context:** Story A2 (a2-stripe-test-mode-plan-selection) requires driving a real Stripe test-mode checkout on real `wuce-staging` and asserting AC2 — "the redirect lands on the expected post-checkout page ... and the session remains authenticated." Building the Playwright spec required first exploring the real, deployed checkout flow by hand (not simulated) to find working selectors on Stripe's hosted Checkout page, and that exploration surfaced a genuine, reproducible defect rather than a test-authoring problem.
+
+**Finding:** The session cookie is set with `SameSite=Strict` (`src/web-ui/middleware/session.js`, `_buildCookieHeader`). Stripe's hosted Checkout page (`checkout.stripe.com`) returns control to the app via a cross-site-initiated top-level GET redirect to `GET /billing/success?session_id=...`. A `SameSite=Strict` cookie is never attached to a cross-site-initiated top-level navigation — that is the defining difference between `Strict` and `Lax` (which does allow top-level, safe-method cross-site navigations). As a result, `GET /billing/success` always arrives with no session cookie, `handlePostCheckout`'s sibling handler `handleGetBillingSuccess` (`src/web-ui/routes/billing.js`) treats the request as unauthenticated, and 302s to `/` (the public landing page) instead of `/dashboard`. This reproduced on every real run performed against real `wuce-staging` while building the A2 spec — not a flake, not an environment issue.
+
+**Isolated verification (both confirmed against real staging, real Stripe test mode):**
+1. **AC1 (plan activation) is unaffected and passes.** The `checkout.session.completed` webhook is a server-to-server call from Stripe, independent of the user's browser cookie. Verified by completing checkout with Stripe's documented success card (`4242 4242 4242 4242`), then performing a *fresh* re-login (same tenant identity — email is `tenantId` for email/password accounts) and confirming `GET /billing/plan-state` returns `{ plan: 'paid', status: 'active' }`.
+2. **AC3 (decline path) is unaffected and passes.** A declined card (`4000 0000 0000 0002`) never triggers a redirect back to the app at all — Stripe's Checkout page shows the decline inline and the browser never leaves `checkout.stripe.com` — so there is no cross-site round trip to lose the cookie over, and the original session/context remains valid for the same-site plan-state check.
+3. **AC2 alone fails**, and fails specifically because of the `SameSite=Strict` policy, not the checkout mechanics.
+
+**Decision:** Do not work around this inside A2. Fixing it requires relaxing `SameSite` (e.g. to `Lax`) for the billing-redirect-facing cookie path, or an alternative token-handoff mechanism (e.g. a short-lived signed token appended to `success_url` that the handler exchanges for the real session) — either is a session-middleware change affecting all cookie-scoped traffic across the app, not a billing-only change, and is explicitly out of A2's scope ("this story only observes [billing] code," "do not modify billing code itself"). The A2 Playwright spec (`tests/e2e/a2-stripe-test-mode-plan-selection.spec.js`) asserts AC2's literal, intended behaviour and is expected to continue failing until a follow-up story fixes the underlying cookie policy — recorded here rather than silently weakened or skipped.
+
+**Recommended follow-up:** A new short-track story to evaluate `SameSite=Lax` (or an equivalent token-handoff) scoped specifically to the `/billing/success` and `/billing/checkout` redirect paths, verified against a real Stripe test-mode round trip exactly as A2 does here, before widening to any other redirect-heavy flow (e.g. GitHub/Google OAuth callbacks, which may have the same latent exposure and are worth auditing in the same pass).
+
+**Source:** a2-stripe-test-mode-plan-selection implementation, 2026-07-23; verified against real `wuce-staging` and real Stripe test mode, not simulated.
