@@ -93,11 +93,21 @@ jobs:
         run: 'echo "E2E tests skipped — set audit.e2e_tests: true in .github/context.yml to enable"'
 
   # ── Scenario A CI-blocking gate (story a5-ci-gate-scenario-a-blocking) ──────
-  # Runs A1-A4's combined spec against real wuce-staging. Distinct opt-in flag
-  # from the job above (audit.staging_e2e_scenario_a, not audit.e2e_tests).
-  # NO continue-on-error anywhere in this job — a failure here is a real job
-  # failure, which is what allows this check name to actually block merge once
-  # it is registered in the master ruleset's required_status_checks list.
+  # Runs A1-A4's combined spec files against real wuce-staging, but the
+  # automated CI-blocking signal from this job is A1 + A3 + A4 only. A2's
+  # spec file (a2-stripe-test-mode-plan-selection.spec.js) also runs here, but
+  # ALL THREE of its tests (AC1, AC2, AC3) are test.skip()-ed in CI --
+  # confirmed via real trace evidence that Stripe's own hCaptcha bot-detection
+  # blocks the checkout-submission step itself for automated/headless
+  # traffic, not just the post-checkout redirect (see
+  # artefacts/2026-07-23-a2-stripe-ci-checkout-flake/decisions.md, a2ccf-s1
+  # corrected finding, 2026-07-23). A2 is verified manually only; it
+  # contributes zero automated signal to this job's pass/fail outcome.
+  # Distinct opt-in flag from the job above (audit.staging_e2e_scenario_a, not
+  # audit.e2e_tests). NO continue-on-error anywhere in this job -- a failure
+  # here (in A1/A3/A4's tests) is a real job failure, which is what allows
+  # this check name to actually block merge once it is registered in the
+  # master ruleset's required_status_checks list.
   scenario-a-staging-e2e:
     name: Scenario A E2E (staging)
     runs-on: ubuntu-latest
@@ -146,7 +156,7 @@ jobs:
         if: steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
         run: npx playwright install --with-deps chromium
 
-      - name: Run Scenario A E2E (A1-A4) against real wuce-staging
+      - name: Run Scenario A E2E (A1-A4 spec files; A1/A3/A4 CI-blocking, A2 manual-only) against real wuce-staging
         if: steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
         id: scenario-a-run
         # a2ccf-s1: --workers=1 is a deliberate, narrowly-scoped-to-this-job fix,
@@ -171,9 +181,14 @@ jobs:
         # 29984917608, artifact scenario-a-e2e-traces-29984917608) conclusively showed
         # Stripe's hosted Checkout page loading an invisible hCaptcha bot-detection
         # challenge that stalls automated/headless traffic (see
-        # artefacts/2026-07-23-a2-stripe-ci-checkout-flake/decisions.md). AC2/AC3 are
-        # now test.skip()-ed in CI (tests/e2e/a2-stripe-test-mode-plan-selection.spec.js),
-        # so there is no longer an open diagnostic question needing trace capture on
+        # artefacts/2026-07-23-a2-stripe-ci-checkout-flake/decisions.md). AC2/AC3 were
+        # test.skip()-ed in CI first; a follow-up correction extended the same
+        # test.skip() to AC1 too, once real trace evidence showed AC1 hits the
+        # identical checkout-submission-level CAPTCHA stall (AC1 failed in all 4 real
+        # CI runs observed, not "passes reliably" as first assumed) -- see decisions.md's
+        # final corrective entry. All 3 of a2's tests
+        # (tests/e2e/a2-stripe-test-mode-plan-selection.spec.js) are now test.skip()-ed
+        # in CI, so there is no longer an open diagnostic question needing trace capture on
         # every run -- keeping it permanently on would add artifact-upload overhead to
         # every CI run for no further diagnostic value. If a NEW real-staging failure
         # needs diagnosis in the future, re-add `--trace on` at that time rather than
