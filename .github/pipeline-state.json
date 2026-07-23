@@ -14717,7 +14717,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-23T22:32:27.548Z",
+              "updatedAt": "2026-07-23T22:35:19.824Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
@@ -14729,7 +14729,7 @@
               "e2eToolingRequired": true,
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s1.1-board-advance-action-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s1.1-board-advance-action-dor-contract.md",
-              "dorStatus": "in-progress",
+              "dorStatus": "signed-off",
               "prStatus": "not-started"
             },
             {
@@ -14739,7 +14739,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-23T22:32:27.548Z",
+              "updatedAt": "2026-07-23T22:35:19.824Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -14751,7 +14751,7 @@
               "e2eToolingRequired": true,
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s1.2-not-ready-explanation-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s1.2-not-ready-explanation-dor-contract.md",
-              "dorStatus": "in-progress",
+              "dorStatus": "signed-off",
               "prStatus": "not-started"
             }
           ]
@@ -14769,7 +14769,7 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "hasLayoutDependentGaps": true,
-              "updatedAt": "2026-07-23T22:32:27.548Z",
+              "updatedAt": "2026-07-23T22:35:19.824Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 3,
@@ -14780,7 +14780,7 @@
               "e2eToolingRequired": false,
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s2.1-shared-token-redesign-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s2.1-shared-token-redesign-dor-contract.md",
-              "dorStatus": "in-progress",
+              "dorStatus": "signed-off",
               "prStatus": "not-started"
             },
             {
@@ -14790,7 +14790,7 @@
               "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-23T22:32:27.548Z",
+              "updatedAt": "2026-07-23T22:35:19.824Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -14802,7 +14802,7 @@
               "e2eToolingRequired": false,
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s2.2-title-truncation-artefact-badge-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s2.2-title-truncation-artefact-badge-dor-contract.md",
-              "dorStatus": "in-progress",
+              "dorStatus": "signed-off",
               "prStatus": "not-started"
             }
           ]
@@ -14819,7 +14819,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-23T22:32:27.548Z",
+              "updatedAt": "2026-07-23T22:35:19.824Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -14831,7 +14831,7 @@
               "e2eToolingRequired": true,
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.1-drag-to-advance-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.1-drag-to-advance-dor-contract.md",
-              "dorStatus": "in-progress",
+              "dorStatus": "signed-off",
               "prStatus": "not-started"
             },
             {
@@ -14841,7 +14841,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-23T22:32:27.548Z",
+              "updatedAt": "2026-07-23T22:35:19.824Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -14853,7 +14853,7 @@
               "e2eToolingRequired": true,
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.2-within-column-reorder-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.2-within-column-reorder-dor-contract.md",
-              "dorStatus": "in-progress",
+              "dorStatus": "signed-off",
               "prStatus": "not-started"
             },
             {
@@ -14863,7 +14863,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-23T22:32:27.548Z",
+              "updatedAt": "2026-07-23T22:35:19.824Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -14875,7 +14875,7 @@
               "e2eToolingRequired": false,
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.3-advisory-wip-limits-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.3-advisory-wip-limits-dor-contract.md",
-              "dorStatus": "in-progress",
+              "dorStatus": "signed-off",
               "prStatus": "not-started"
             },
             {
@@ -14885,7 +14885,7 @@
               "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-23T22:32:27.548Z",
+              "updatedAt": "2026-07-23T22:35:19.824Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -14897,7 +14897,7 @@
               "e2eToolingRequired": false,
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.4-item-detail-view-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.4-item-detail-view-dor-contract.md",
-              "dorStatus": "in-progress",
+              "dorStatus": "signed-off",
               "prStatus": "not-started"
             }
           ]
@@ -14936,7 +14936,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-07-23T22:32:27.548Z",
+      "updatedAt": "2026-07-23T22:35:19.824Z",
       "discoveryStatus": "approved",
       "slicingStrategy": "risk-first",
       "guardrails": []
