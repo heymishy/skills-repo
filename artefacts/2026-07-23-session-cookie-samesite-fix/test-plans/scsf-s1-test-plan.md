@@ -108,6 +108,7 @@ The final AC Coverage row (PR #552's real E2E AC2 against real staging) depends 
 - **Action:** `npx playwright test tests/e2e/a2-stripe-test-mode-plan-selection.spec.js` (fetched from PR #552's branch) against real staging
 - **Expected result:** AC2 ("the Stripe checkout redirect lands on the expected authenticated page with the session still valid") passes — `page.url()` contains `/dashboard`, `GET /api/me` reports `authenticated: true`
 - **Contingency:** If a real deploy cannot be completed in this session, this test is reported as **not run** — not claimed as passing. A manual deploy + re-run is the pending follow-up action.
+- **RESULT (2026-07-23):** Completed. `flyctl deploy --config fly.staging.toml --app wuce-staging` succeeded (app was suspended/auto-stopped; machine reached `started`, `https://wuce-staging.fly.dev/` returns HTTP 200). Ran the full spec (not just AC2) against real staging: `3 passed (33.5s)` — AC1, AC2, AC3 all pass. AC2 specifically, previously documented as failing in PR #552, now passes: `page.url()` contains `/dashboard`, `GET /api/me` reports `authenticated: true`. See PR #554's comment thread for the full run output.
 
 ---
 

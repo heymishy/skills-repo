@@ -14295,11 +14295,11 @@
           "dorContractArtefact": "artefacts/2026-07-23-session-cookie-samesite-fix/dor/scsf-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-23T00:16:03.534Z",
           "prStatus": "draft-open",
-          "updatedAt": "2026-07-23T00:16:03.534Z"
+          "updatedAt": "2026-07-23T00:26:09.261Z"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-23T00:16:03.534Z"
+      "updatedAt": "2026-07-23T00:26:09.261Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
