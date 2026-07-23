@@ -3670,6 +3670,26 @@ async function handleGetChatHtml(req, res) {
     res.end(notFoundHtml);
     return;
   }
+  // a4 (NFR-Security): ownership guard so a resumed session is only reachable
+  // by the same authenticated user who created it (ADR-025 tenant/ownership
+  // scoping). Mirrors the exact check already established on the POST turn
+  // endpoint (handlePostTurnHtml, above) -- server-side session login only,
+  // never trusting client-supplied ownerId. Previously this GET route (the
+  // one a user's browser reloads/reopens to resume a session) had no
+  // ownership check at all: any authenticated user could view any other
+  // tenant's /ideate (or any skill's) session content just by knowing/
+  // guessing the session ID in the URL. When no linked journey is found
+  // (e.g. a session created outside the journey flow), this check is a
+  // no-op, matching handlePostTurnHtml's existing permissive fallback.
+  if (session.journeyId) {
+    var _linkedJourneyForChat = _journeyStore.getJourney(session.journeyId);
+    if (_linkedJourneyForChat && _linkedJourneyForChat.ownerId && _linkedJourneyForChat.ownerId !== (req.session && req.session.login)) {
+      var forbiddenHtml = renderShell({ title: 'Not Found', bodyContent: '<p>Session not found.</p>', user: { login: req.session.login || '' } });
+      res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(forbiddenHtml);
+      return;
+    }
+  }
   // Initial turn is fired client-side via SSE to avoid blocking page render on LLM call
   var html = _renderChatPage(skillName, sessionId, session);
   // Initialize PostHog on chat pages so $pageview fires and users are identified here too.
