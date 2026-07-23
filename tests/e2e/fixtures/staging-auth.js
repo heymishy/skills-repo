@@ -96,9 +96,26 @@ async function stubAuditLookup(request, login) {
 }
 
 /**
+ * serlb-s1: the header carrying the staging-only rate-limit bypass secret (reuses
+ * E2E_STAGING_AUTH_STUB_SECRET, the same secret a1's GitHub-stub path already uses --
+ * see src/web-ui/routes/auth-email.js's serlb-s1 comment block for the full triple-gate
+ * rationale). Only ever meaningful on real wuce-staging: the secret is never set on
+ * production, and routes/auth-email.js additionally requires the signed-up email itself
+ * to carry the `e2e-test-` tag (which uniqueEmail() below always applies), so this
+ * header alone grants nothing for a non-E2E email.
+ */
+const RATE_LIMIT_BYPASS_HEADER = 'x-e2e-rate-limit-bypass';
+
+/**
  * AC2: sign up via real email/password against real staging — independent of the
  * GitHub stub path. Mirrors the CSRF-token-from-landing-page pattern established by
  * bri-s3.2's local-harness spec, but against the real deployed server.
+ *
+ * serlb-s1: when the staging stub secret is available (real CI runs against
+ * wuce-staging; absent in a normal contributor run), also sends the narrow
+ * rate-limit-bypass header so repeated signups across a1-a4's specs in the same CI
+ * run don't trip the real 10-attempt/5-minute per-IP limiter. Harmless to omit --
+ * without it, this call behaves exactly as it always has.
  *
  * @param {import('@playwright/test').APIRequestContext} request
  * @param {string} [label] - optional distinguishing label for the generated email
@@ -118,8 +135,12 @@ async function signUpEmail(request, label) {
     throw new Error('signUpEmail(): landing page did not embed a _csrf token in the signup form');
   }
 
+  const headers = {};
+  if (hasStubSecret()) headers[RATE_LIMIT_BYPASS_HEADER] = STUB_SECRET;
+
   const signupRes = await request.post('/auth/email/signup', {
     form: { email: email, password: password, _csrf: csrfToken },
+    headers: headers,
     maxRedirects: 0
   });
   const elapsedMs = Date.now() - start;
@@ -159,8 +180,15 @@ async function loginEmail(request, email, password) {
     throw new Error('loginEmail(): landing page did not embed a _csrf token in the sign-in form');
   }
 
+  // serlb-s1: handleEmailLogin shares the same per-IP counter as handleEmailSignup
+  // (src/web-ui/routes/auth-email.js), so the same narrow bypass header is sent here
+  // too -- harmless to omit, and only ever effective for an e2e-test--tagged email.
+  const headers = {};
+  if (hasStubSecret()) headers[RATE_LIMIT_BYPASS_HEADER] = STUB_SECRET;
+
   const loginRes = await request.post('/auth/email/login', {
     form: { email: email, password: password, _csrf: csrfToken },
+    headers: headers,
     maxRedirects: 0
   });
   if (loginRes.status() !== 302) {
