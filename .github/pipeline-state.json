@@ -14617,12 +14617,47 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-24-chat-message-text-truncation-fix/dor/cmtt-s1-dor.md",
           "dorSignedOffAt": "2026-07-23T18:09:19.306Z",
-          "prStatus": "draft-open",
+          "prStatus": "merged",
           "updatedAt": "2026-07-23T18:09:19.306Z",
-          "notes": "Root cause: tests/e2e/a4-ideate-session-resume.spec.js AC2/AC3 failed against real wuce-staging -- resumed chat thread showed user message truncated (\"call it Project: an internal tool...\" instead of the full \"Project-Codename-Falcon-detail-...: an internal tool...\"). Isolated and ruled out both lightMd (skills.js) and lightMarkdown (chat-view.js) directly with the exact failing input -- neither reproduces it. Actual root cause: sanitiseAnswer() (src/answer-sanitiser.js) CLI_FLAG regex /--?[a-z][w-]*/gi has no boundary check on what precedes the leading hyphen, so it matches and deletes an entire hyphenated compound-word span mid-sentence, at write time, before the turn is ever pushed to session.turns -- a real, permanent corruption of any user own stored chat history matching this shape, not a render-time or session-restore bug. Fix: added a negative lookbehind (?<![w-]) so a flag is only recognised at a genuine token boundary. Verified: 8/8 new unit tests passing (RED confirmed pre-fix including through the real htmlSubmitTurn() write path, GREEN post-fix); all pre-existing sanitiser tests (T4.3/T4.5/NFR3/T4.4 in tests/skill-launcher.test.js) still pass unmodified; full npm test run shows zero new regressions vs tests/known-baseline-failures.json (the one delta, check-s6.1-cache-scope-session-threading.js, independently reproduced as failing identically on origin/master before this fix -- a pre-existing baseline-file drift, not a regression introduced by this change)."
+          "notes": "Root cause: tests/e2e/a4-ideate-session-resume.spec.js AC2/AC3 failed against real wuce-staging -- resumed chat thread showed user message truncated (\"call it Project: an internal tool...\" instead of the full \"Project-Codename-Falcon-detail-...: an internal tool...\"). Isolated and ruled out both lightMd (skills.js) and lightMarkdown (chat-view.js) directly with the exact failing input -- neither reproduces it. Actual root cause: sanitiseAnswer() (src/answer-sanitiser.js) CLI_FLAG regex /--?[a-z][w-]*/gi has no boundary check on what precedes the leading hyphen, so it matches and deletes an entire hyphenated compound-word span mid-sentence, at write time, before the turn is ever pushed to session.turns -- a real, permanent corruption of any user own stored chat history matching this shape, not a render-time or session-restore bug. Fix: added a negative lookbehind (?<![w-]) so a flag is only recognised at a genuine token boundary. Verified: 8/8 new unit tests passing (RED confirmed pre-fix including through the real htmlSubmitTurn() write path, GREEN post-fix); all pre-existing sanitiser tests (T4.3/T4.5/NFR3/T4.4 in tests/skill-launcher.test.js) still pass unmodified; full npm test run shows zero new regressions vs tests/known-baseline-failures.json (the one delta, check-s6.1-cache-scope-session-threading.js, independently reproduced as failing identically on origin/master before this fix -- a pre-existing baseline-file drift, not a regression introduced by this change). Merged via PR #571."
         }
       ],
-      "updatedAt": "2026-07-23T18:09:19.306Z"
+      "updatedAt": "2026-07-23T19:55:49.000Z"
+    },
+    {
+      "slug": "2026-07-23-b1-story-map-stage-sequence-fix",
+      "name": "Fix b1 real-staging spec hardcoding a stale stage sequence that silently skips the real design stage",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "yellow",
+      "epics": [],
+      "stories": [
+        {
+          "id": "bssm-s1",
+          "slug": "bssm-s1",
+          "name": "Fix b1 real-staging spec hardcoding a stale stage sequence that silently skips the real design stage",
+          "stage": "definition-of-ready",
+          "health": "yellow",
+          "reviewStatus": "skipped-short-track",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0,
+            "artefact": "artefacts/2026-07-23-b1-story-map-stage-sequence-fix/test-plans/bssm-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": true,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-23-b1-story-map-stage-sequence-fix/dor/bssm-s1-dor.md",
+          "prStatus": "not-started",
+          "updatedAt": "2026-07-23T19:59:33.765Z",
+          "notes": "Root cause: tests/e2e/b1-formed-idea-outer-loop-story-map.spec.js hardcodes a stale 6-stage sequence (discovery, benefit-metric, definition, review, test-plan, definition-of-ready), omitting the real STAGE_SEQUENCE design stage between benefit-metric and definition (journey-store.js). Turn submission does not validate URL skill-name against the session real skillName, so every driveSkillToCompletion call from benefit-metric onward is silently one stage ahead of what the test believes -- surfaces as a 404 on the review-to-test-plan transition and a silent completedStages mislabeling on AC2. Live-verified against real wuce-staging this session via debug instrumentation (added then reverted). Fix: read the real skill name from each gate-confirm redirect Location instead of a hardcoded literal, and generalize the /stories redirect handling to apply at any transition, not just after definition. DoR signed off; awaiting coding-agent dispatch."
+        }
+      ],
+      "updatedAt": "2026-07-23T19:59:33.765Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
