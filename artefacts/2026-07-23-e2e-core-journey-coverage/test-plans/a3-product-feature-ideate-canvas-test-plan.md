@@ -13,16 +13,14 @@
 |----|-------------|------|-------------|-----|--------|----------|------|
 | AC1 | Product creation persists across a page reload | — | — | 1 test | — | — | 🟢 |
 | AC2 | Rough-idea feature creation routes into a reachable `/ideate` session | — | — | 1 test | — | — | 🟢 |
-| AC3 | Canvas renders/updates if the model emits markers within bounded retries | — | — | 1 test | 1 scenario (fallback) | Untestable-by-nature (model-emission reliability only) | 🟡 |
+| AC3 | Canvas renders/updates from a deterministic mock-LLM fixture | — | — | 1 test | — | — | 🟢 |
 | AC4 | Disk artefact content matches rendered canvas content | — | 1 test | — | — | — | 🟢 |
 
 ---
 
 ## Coverage gaps
 
-| Gap | AC | Gap type | Reason untestable in Jest | Handling |
-|-----|----|----------|---------------------------|---------|
-| Whether the `/ideate` model reliably emits a canvas marker on a given invocation cannot be guaranteed by any test — only whether the rendering pipeline correctly displays a marker *if* one is emitted | AC3 | Untestable-by-nature | Model output is non-deterministic per-invocation; a test can assert code behaviour given a marker, not that the model always produces one | E2E test asserts the "if emitted, renders/updates" behaviour with a bounded retry (3 attempts); if no marker is emitted after retries, the manual verification scenario covers this case instead of failing the CI-blocking gate for reasons unrelated to a real regression |
+None — revised 2026-07-23 per the ARCH decision in decisions.md: this story now runs with `MOCK_LLM_GATEWAY=true` against a deterministic mock fixture (configured to always include a canvas marker), removing the model-emission-reliability gap that applied when this story called the real model.
 
 ---
 
@@ -39,7 +37,7 @@
 |----|-------------|--------|-----------------|-------|
 | AC1 | A product name/details tagged `e2e-test-` | Synthetic, generated in test setup | None | Supports B3's cleanup mechanism |
 | AC2 | A feature name tagged `e2e-test-`, "rough idea" path selection | Synthetic | None | |
-| AC3 | Ideation turns (2 model turns) | Synthetic — real model calls against staging's real skill-execution pipeline, not mocked (this story specifically tests the real pipeline, unlike the local-mocked-LLM convention used by the existing 29 specs) | None | See Test Gaps and Risks — real model calls introduce the AC3 gap above |
+| AC3 | Ideation turns (2 model turns) | Synthetic — `MOCK_LLM_GATEWAY=true` against a fixture configured to always emit a canvas marker (per the 2026-07-23 ARCH decision; matches discovery's original constraint to never call real Anthropic APIs from E2E) | None | Deterministic — no model-emission gap |
 | AC4 | The saved `/ideate` artefact file on staging's disk/Postgres | Read directly from the real persistence layer, not mocked | None | |
 
 ### PCI / sensitivity constraints
@@ -88,13 +86,13 @@ None — this story is inherently cross-system (real staging + real product/feat
 - **Expected result:** The flow routes to `/ideate`, and the resulting session has its own reachable URL (a subsequent direct navigation to that URL loads the same session)
 - **Edge case:** No
 
-### Ideation canvas renders and updates when the model emits markers (bounded retry)
+### Ideation canvas renders and updates from a deterministic mock fixture
 
 - **Verifies:** AC3
-- **Precondition:** An active `/ideate` session from AC2
-- **Action:** Playwright spec drives 2 turns of ideation conversation, retrying up to 3 attempts per turn if no canvas marker is detected
-- **Expected result:** If a marker is emitted within the retry budget, the canvas DOM contains rendered elements corresponding to it, and new elements appear between turn 1 and turn 2. If no marker is emitted after 3 attempts on either turn, the test is marked as a known gap (see Coverage gaps) rather than a hard CI failure, and the manual verification scenario covers it instead.
-- **Edge case:** Yes — the no-marker-emitted path is the story's own acknowledged edge case
+- **Precondition:** An active `/ideate` session from AC2, server running with `MOCK_LLM_GATEWAY=true`
+- **Action:** Playwright spec drives 2 turns of ideation conversation against a mock fixture configured to always include a canvas marker
+- **Expected result:** The canvas DOM contains rendered elements corresponding to the fixture's marker, and new elements appear between turn 1 and turn 2 — deterministic, no retry needed
+- **Edge case:** No
 
 ---
 
@@ -122,6 +120,4 @@ Security (naming-convention tagging for cleanup) is enforced by the `e2e-test-` 
 
 ## Test Gaps and Risks
 
-| Gap | Reason | Mitigation |
-|-----|--------|------------|
-| Model may not emit a canvas marker within the retry budget on a given CI run | Model output is non-deterministic per-invocation — this repo has hit this exact class of gap before (inc5, 2026-06-16) | Bounded retry (3 attempts) reduces but does not eliminate the risk; the manual verification scenario is the fallback for genuine non-emission, not treated as a hard CI failure |
+None — revised 2026-07-23. Using `MOCK_LLM_GATEWAY=true` removes the model-emission-reliability gap; this story no longer calls the real model at all.

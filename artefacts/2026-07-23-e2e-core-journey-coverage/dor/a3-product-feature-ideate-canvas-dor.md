@@ -10,7 +10,7 @@
 
 ## Contract Review
 
-✅ **Contract review passed** — the proposed implementation aligns with all 4 ACs, including the bounded-retry handling for AC3's acknowledged model-emission gap. No mismatches found.
+✅ **Contract review passed** — the proposed implementation aligns with all 4 ACs. **Revised 2026-07-23** (see decisions.md ARCH entry): AC3 now runs against `MOCK_LLM_GATEWAY=true` with a deterministic fixture, removing the model-emission gap entirely — no mismatches found.
 
 ---
 
@@ -25,10 +25,10 @@
 | H5 | Benefit linkage references named metric | ✅ | m1 |
 | H6 | Complexity rated | ✅ | 2 |
 | H7 | No unresolved HIGH findings | ✅ | Run 2: 0 HIGH, 0 MEDIUM, 0 LOW |
-| H8 | No uncovered ACs (gap explicitly acknowledged) | ✅ | AC3's model-emission gap is acknowledged (Untestable-by-nature), not silent |
+| H8 | No uncovered ACs (gap explicitly acknowledged) | ✅ | No gaps — AC3 is fully deterministic via `MOCK_LLM_GATEWAY=true` (revised 2026-07-23) |
 | H8-ext | Cross-story schema dependency | ✅ | Dependencies: A2 → `schemaDepends: ["dorStatus"]` declared, field present in schema |
 | H9 | Architecture Constraints populated; no Cat E HIGH | ✅ | Cites ADR-024, ADR-022; 0 findings |
-| H-E2E | CSS-layout-dependent gap check | ✅ | Not triggered — AC3's gap type is Untestable-by-nature, not CSS-layout-dependent |
+| H-E2E | CSS-layout-dependent gap check | ✅ | Not triggered |
 | H-NFR | NFR profile exists | ✅ | Present |
 | H-NFR2 | Compliance NFR sign-off | ✅ | Not applicable |
 | H-NFR3 | Data classification not blank | ✅ | Internal |
@@ -50,7 +50,7 @@
 | W2 | Scope stability declared | ✅ | — | — |
 | W3 | MEDIUM findings acknowledged | ✅ | — (0 MEDIUM after Run 2) | — |
 | W4 | Verification script reviewed by domain expert | ⚠️ | Unreviewed script may miss edge cases | RISK-ACCEPT logged in decisions.md, 2026-07-23 (feature-wide) |
-| W5 | No UNCERTAIN gap items | ✅ | AC3's gap is explicitly typed (Untestable-by-nature), not UNCERTAIN | — |
+| W5 | No UNCERTAIN gap items | ✅ | No gaps remain (revised 2026-07-23) | — |
 
 ---
 
@@ -70,7 +70,8 @@ structure beyond what the tests and ACs specify.
 Constraints:
 - Node.js, CommonJS, Playwright Test under `tests/e2e/`, never in the unit test chain, per ADR-018
 - Reuse A1/A2's auth+plan fixtures — do not duplicate signup/billing setup
-- AC3's canvas-marker assertion uses a bounded retry (3 attempts per turn) — do not remove the retry or convert this into a hard, non-retrying assertion; if markers are never emitted after retries, the test must not fail the CI-blocking gate for this reason (log it, don't fail it) per the acknowledged Untestable-by-nature gap
+- Set `MOCK_LLM_GATEWAY=true` for this story's server process/session — do NOT call the real model (revised 2026-07-23, matches discovery's original constraint). Configure the mock fixture to always include a canvas marker so AC3 is deterministic.
+- Top up the `e2e-test-` tagged test tenant's credits via `POST /api/admin/credits/adjust` in test setup — "no free tier" (SCOPE-002) is intentional product policy; do not implement a credit grant in application code
 - AC4's artefact comparison must read from disk/Postgres via the same API path the app itself uses (per this repo's disk-canonicity convention, write-then-read-from-disk before handoff) — do not compare against in-memory session state directly
 - Architecture standards: read `.github/architecture-guardrails.md` before implementing
 - Open a draft PR when tests pass — do not mark ready for review

@@ -18,8 +18,8 @@
 | AC4 | Integration: read disk artefact, compare to rendered canvas content | Integration |
 
 **Assumptions:**
-- The `/ideate` skill session on staging calls the real model (not the local mock-LLM-gateway convention used by the existing 29 specs) — this is a deliberate, discovery-scoped choice for this story, not an oversight.
-- A bounded retry (3 attempts) is a reasonable balance between reducing CI flakiness and not silently masking a genuine canvas-rendering regression.
+- The `/ideate` skill session on staging runs with `MOCK_LLM_GATEWAY=true` (revised 2026-07-23 — see decisions.md ARCH entry; this corrects an earlier draft of this story that incorrectly called the real model, contradicting discovery's own constraint to never call real Anthropic APIs from E2E). A mock fixture is configured to always include a canvas marker, making AC3 fully deterministic.
+- The test tenant's credits are topped up via the existing `POST /api/admin/credits/adjust` admin endpoint in test setup (staging-only, `e2e-test-` tagged tenant) — "no free tier" (SCOPE-002) is a deliberate product decision this story does not attempt to reverse.
 
 **Estimated touch points:**
 Files: `tests/e2e/a3-product-feature-ideate-canvas.spec.js`, `tests/check-a3-ideate-artefact-disk-match.js`
