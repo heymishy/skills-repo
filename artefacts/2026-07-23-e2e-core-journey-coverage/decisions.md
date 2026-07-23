@@ -6,7 +6,9 @@
 
 **Decision (resolved at /review, 2026-07-23):** Option (b) chosen — a strict naming/tagging convention (`e2e-test-*` prefix on emails/product/feature names, established by story A3) plus a manually-triggered purge script (`scripts/cleanup-e2e-staging-data.js` or equivalent, story B3), rather than a scheduled nightly job. Rationale: simplest for a solo-operator repo — no scheduled-job infrastructure (cron/CI schedule) to build or maintain, and staging's data volume from CI runs is low enough that periodic manual purges are sufficient. Story B3's AC1 was reworded from a conditional "whichever option is selected" to this concrete mechanism.
 
-**Source:** /clarify pass, this session; resolved during /review walkthrough of MEDIUM finding B3 [1-M1].
+**Implementation status (closed 2026-07-23, story B3 — b3-staging-test-data-cleanup):** Implemented and running. `scripts/cleanup-e2e-staging-data.js` is a manually-triggered Node script (D37-injectable Postgres + Stripe adapters) that removes `e2e-test-` tagged users, products (cascading to their journeys/standards/standard_product_optouts rows), and Stripe test-mode customers older than a 7-day retention window (configurable via `--retention-days`); it defaults to dry-run (`--execute` to actually delete) and logs one audit line per deleted record (record type, id, creation timestamp). Eligibility is a strict, anchored, case-sensitive positive-allowlist match on the exact `e2e-test-` prefix (`isTaggedForE2E` in the script) — never a fuzzy/heuristic match, verified by `tests/check-b3-cleanup-script.js` (AC1/AC2/NFR-Security/NFR-Audit, all passing against a seeded mock dataset). No scheduled job was introduced — invocation remains a deliberate, manual `node scripts/cleanup-e2e-staging-data.js` run, per the mechanism chosen above. This RISK entry is now CLOSED.
+
+**Source:** /clarify pass, this session; resolved during /review walkthrough of MEDIUM finding B3 [1-M1]; implementation confirmed during b3-staging-test-data-cleanup's own inner-loop dispatch, 2026-07-23.
 
 ---
 
