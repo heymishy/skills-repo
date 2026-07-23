@@ -83,10 +83,6 @@
 // job in .github/workflows/e2e.yml) -- not skipped for local/interactive runs,
 // since a human (or a future environment Stripe's bot-detection doesn't
 // target) may still want to run these tests directly.
-const SKIP_AC2_AC3_IN_CI_REASON =
-  'AC2/AC3 require a real browser to complete Stripe hosted Checkout, which ' +
-  'invisibly CAPTCHAs automated/headless traffic (confirmed via real CI trace ' +
-  'evidence, see decisions.md) -- verified manually only, not CI-automatable.';
 
 'use strict';
 
@@ -101,6 +97,10 @@ test.use({ baseURL: STAGING_BASE_URL });
 
 const SUCCESS_CARD = '4242424242424242';
 const DECLINE_CARD = '4000000000000002';
+const SKIP_AC2_AC3_IN_CI_REASON =
+  'AC2/AC3 require a real browser to complete Stripe hosted Checkout, which ' +
+  'invisibly CAPTCHAs automated/headless traffic (confirmed via real CI trace ' +
+  'evidence, see decisions.md) -- verified manually only, not CI-automatable.';
 
 /**
  * Drive a freshly-authenticated first-login user from /welcome through to
