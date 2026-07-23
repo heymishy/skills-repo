@@ -14372,6 +14372,41 @@
           "updatedAt": "2026-07-23T03:07:06.950Z"
         }
       ]
+    },
+    {
+      "slug": "2026-07-23-streaming-route-mock-gateway-wiring",
+      "name": "Wire {stage, scenarioName} into handlePostTurnStreamHtml so MOCK_LLM_GATEWAY actually activates for the real chat UI streaming turn endpoint",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "srmw-s1",
+          "slug": "srmw-s1",
+          "name": "Wire {stage, scenarioName} into handlePostTurnStreamHtml so MOCK_LLM_GATEWAY actually activates for the real chat UI streaming turn endpoint",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "skipped-short-track",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 5,
+            "artefact": "artefacts/2026-07-23-streaming-route-mock-gateway-wiring/test-plans/srmw-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": true,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-23-streaming-route-mock-gateway-wiring/dor/srmw-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-23-streaming-route-mock-gateway-wiring/dor/srmw-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-07-23T03:31:19.368Z",
+          "prStatus": "draft-open",
+          "updatedAt": "2026-07-23T03:37:44.560Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
