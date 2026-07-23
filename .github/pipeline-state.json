@@ -14263,6 +14263,43 @@
       },
       "benefitMetricArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/benefit-metric.md",
       "slicingStrategy": "user-journey"
+    },
+    {
+      "slug": "2026-07-23-session-cookie-samesite-fix",
+      "name": "Fix session cookie SameSite=Strict dropping the session on Stripe post-checkout redirect",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "scsf-s1",
+          "slug": "scsf-s1",
+          "name": "Fix session cookie SameSite=Strict dropping the session on Stripe post-checkout redirect",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "skipped-short-track",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 19,
+            "passing": 19,
+            "artefact": "artefacts/2026-07-23-session-cookie-samesite-fix/test-plans/scsf-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": true,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-23-session-cookie-samesite-fix/dor/scsf-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-23-session-cookie-samesite-fix/dor/scsf-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-07-23T00:16:03.534Z",
+          "prStatus": "draft-open",
+          "updatedAt": "2026-07-23T00:16:03.534Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-23T00:16:03.534Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

@@ -302,10 +302,17 @@ test('IT4 GET /dashboard without session redirects to /', () => {
 // NFR tests
 // ═══════════════════════════════════════════════════════════════════════════
 
-test('NFR1 session cookie config is HttpOnly Secure SameSite=Strict', () => {
+test('NFR1 session cookie config is HttpOnly Secure SameSite=Lax', () => {
+  // scsf-s1 (2026-07-23, fix-forward): sameSite is 'lax', not 'strict'. Strict
+  // caused the browser to withhold the session cookie on cross-site top-level
+  // GET redirects back into the app (Stripe Checkout's post-payment redirect,
+  // and both GitHub/Google OAuth callbacks) -- Lax still blocks the cookie on
+  // cross-site subrequests/AJAX/iframes/POSTs (the CSRF-relevant surface) but
+  // allows it on cross-site top-level GET navigation, which is what these
+  // redirects are. See artefacts/2026-07-23-session-cookie-samesite-fix/decisions.md.
   assert(SESSION_COOKIE_CONFIG.httpOnly === true, 'NFR1: httpOnly is true');
   assert(SESSION_COOKIE_CONFIG.secure === true, 'NFR1: secure is true');
-  assert(SESSION_COOKIE_CONFIG.sameSite === 'strict', 'NFR1: sameSite is strict');
+  assert(SESSION_COOKIE_CONFIG.sameSite === 'lax', 'NFR1: sameSite is lax');
 });
 
 test('NFR2 audit log contains login event with GitHub user ID and timestamp but no access token', async () => {
