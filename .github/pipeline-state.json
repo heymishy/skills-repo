@@ -14940,6 +14940,41 @@
       "discoveryStatus": "approved",
       "slicingStrategy": "risk-first",
       "guardrails": []
+    },
+    {
+      "slug": "2026-07-24-admin-credits-page-styling",
+      "name": "Style the admin credits page with the shared design system shell",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "acps-s1",
+          "slug": "acps-s1",
+          "name": "Style the admin credits page with the shared design system shell",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "skipped-short-track",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 0,
+            "artefact": "artefacts/2026-07-24-admin-credits-page-styling/test-plans/acps-s1-test-plan.md"
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-24-admin-credits-page-styling/dor/acps-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-24-admin-credits-page-styling/dor/acps-s1-dor-contract.md",
+          "prStatus": "not-started",
+          "updatedAt": "2026-07-23T22:38:41.443Z",
+          "notes": "Operator observation (2026-07-24, raised alongside kanban board styling): /admin/credits is bare, unstyled HTML with no shared nav/shell (confirmed via direct code read -- hand-rolled <!DOCTYPE html>, no renderShell call, unlike kfd1 detail pages). Fix: wrap adminCreditsGet in renderShell(), same pattern kfd1 already used. No change to adminCreditsPost/CSRF/audit logic. Short-track (test-plan -> DoR -> coding agent), DoR signed off, Low oversight, awaiting dispatch."
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
