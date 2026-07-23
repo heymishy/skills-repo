@@ -47,3 +47,5 @@
 
 **Proceed:** Yes
 **Rationale:** Tests written and RED/GREEN cycle already completed (TDD discipline satisfied before this DoR is even written, per the story's own short-track path). Fix is additive, narrowly scoped, reuses an already-deployed secret, and has a clear, testable production-isolation guarantee inherited from `a1-staging-safe-auth-stub`'s existing config-isolation check.
+
+**Post-implementation finding (see decisions.md):** the code fix (AC1-AC4) is complete, unit-tested, and deployed to real `wuce-staging`. AC5 (real-CI activation) is **partial** — the underlying defect was re-confirmed live post-redeploy, but `E2E_STAGING_AUTH_STUB_SECRET` was discovered to never have been configured as a GitHub Actions secret (only as a Fly secret), so the bypass header can never be sent by the real CI job until an operator rotates/sets that secret in both places. Attempting to rotate/set it directly was correctly blocked by the auto-mode classifier (credential rotation is a human-judgment action) — see decisions.md's RISK-ACCEPT entry for the exact two commands an operator needs to run.
