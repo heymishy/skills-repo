@@ -78,13 +78,39 @@ async function getAllTenantBalances() {
 }
 
 /**
- * Return all known tenant IDs from the credits table (allowlist for admin adjustments).
+ * Return all known tenant/account identifiers (allowlist for admin adjustments).
+ * catc-s1: Previously queried `credits` alone -- circular with the exact bug
+ * cuf-s1 fixed, since it excluded every tenant who does not yet have a
+ * `credits` row by definition (the population a first-time top-up most needs
+ * to reach). Now returns the de-duplicated union of `users.email` (every
+ * email/password tenant -- tenantId === email for that login type, see
+ * auth-email.js), `team_memberships.tenant_id` (any tenant ever assigned a
+ * role, including GitHub/Google-OAuth tenants added via admin bulk-add or a
+ * legacy user_roles backfill), and `credits.tenant_id` (kept for backward
+ * compatibility with any tenant whose only record today is a credits row).
+ * This is a strict superset of the old allowlist -- nothing it used to accept
+ * stops being accepted. All three tables live in the same DATABASE_URL
+ * Postgres instance and are migrated unconditionally at server startup, so
+ * querying them via the same adapter wired by setCreditsAdapter is safe. See
+ * decisions.md ("credits admin top-up tenant check fix") and story catc-s1
+ * for the residual gap this does not close: a GitHub/Google-OAuth-only
+ * tenant with no team_memberships row and no credits row has no persisted
+ * record anywhere in this codebase, so remains rejected (unchanged from
+ * before this fix -- not a regression for that population).
  * @returns {Promise<string[]>}
  */
 async function getValidTenantIds() {
   const db = requireAdapter();
-  const result = await db.query('SELECT tenant_id FROM credits');
-  return result.rows.map(function(r) { return r.tenant_id; });
+  const [usersResult, membershipsResult, creditsResult] = await Promise.all([
+    db.query('SELECT email FROM users'),
+    db.query('SELECT tenant_id FROM team_memberships'),
+    db.query('SELECT tenant_id FROM credits')
+  ]);
+  const ids = new Set();
+  usersResult.rows.forEach(function(r) { if (r.email) ids.add(r.email); });
+  membershipsResult.rows.forEach(function(r) { if (r.tenant_id) ids.add(r.tenant_id); });
+  creditsResult.rows.forEach(function(r) { if (r.tenant_id) ids.add(r.tenant_id); });
+  return Array.from(ids);
 }
 
 /**

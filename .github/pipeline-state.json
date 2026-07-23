@@ -14544,11 +14544,49 @@
           "e2eToolingRequired": true,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-23-ideate-canvas-turn2-render-fix/dor/icv-s1-dor.md",
-          "prStatus": "open",
-          "updatedAt": "2026-07-23T10:07:19.627Z",
-          "notes": "Root cause: tests/e2e/a3-product-feature-ideate-canvas.spec.js's AC3 failed against real wuce-staging (CI run 29996127983, job 89170114731, PR #568) -- canvas count frozen after turn 1, never growing after a genuine second turn. Actual cause: _renderChatPage's inline client script auto-fires a hidden 'continue' turn whenever a response has no literal '?' and no ARTEFACT marker (a10b32a3's nudge, correct for artefact-generating skills, wrong for /ideate which is conversational and never emits artefact markers) -- this fired an unbounded chain of hidden turns against the static mock fixture. Fixed with a single conditional gate (!IS_IDEATE &&) on the existing IS_IDEATE flag. 3/3 new unit tests passing (jsdom-driven, RED confirmed pre-fix, GREEN post-fix, plus a contrast case proving the original a10b32a3 nudge is untouched for non-ideate skills). Full npm test: zero new regressions. Rebased onto master (post-#569 merge) to resolve the shared skills.js edit; both fixes coexist cleanly."
+          "prStatus": "merged",
+          "updatedAt": "2026-07-23T10:43:14.000Z",
+          "notes": "Root cause: tests/e2e/a3-product-feature-ideate-canvas.spec.js's AC3 failed against real wuce-staging (CI run 29996127983, job 89170114731, PR #568) -- canvas count frozen after turn 1, never growing after a genuine second turn. Actual cause: _renderChatPage's inline client script auto-fires a hidden 'continue' turn whenever a response has no literal '?' and no ARTEFACT marker (a10b32a3's nudge, correct for artefact-generating skills, wrong for /ideate which is conversational and never emits artefact markers) -- this fired an unbounded chain of hidden turns against the static mock fixture. Fixed with a single conditional gate (!IS_IDEATE &&) on the existing IS_IDEATE flag. 3/3 new unit tests passing (jsdom-driven, RED confirmed pre-fix, GREEN post-fix, plus a contrast case proving the original a10b32a3 nudge is untouched for non-ideate skills). Full npm test: zero new regressions. Rebased onto master (post-#569 merge) to resolve the shared skills.js edit; both fixes coexist cleanly. Merged via PR #570."
         }
       ]
+    },
+    {
+      "slug": "2026-07-23-credits-admin-topup-tenant-check-fix",
+      "name": "Admin credit top-up checks real tenant existence (users/team_memberships/credits), not just an existing credits row",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "catc-s1",
+          "slug": "catc-s1",
+          "name": "Admin credit top-up checks real tenant existence, not just an existing credits row",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "skipped-short-track",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 5,
+            "artefact": "artefacts/2026-07-23-credits-admin-topup-tenant-check-fix/test-plans/catc-s1-test-plan.md"
+          },
+          "acTotal": 6,
+          "acVerified": 6,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": true,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-23-credits-admin-topup-tenant-check-fix/dor/catc-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-23-credits-admin-topup-tenant-check-fix/dor/catc-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-07-23T09:37:07.217Z",
+          "prStatus": "open",
+          "notes": "getValidTenantIds() now unions users.email + team_memberships.tenant_id + credits.tenant_id (strict superset of old credits-only check). Deployed and verified against real wuce-staging: b1 AC1 (formed-idea discovery) now genuinely passes, previously skipped on this exact credits-admin-topup gap. a3 AC3 and a4 AC2/AC3 now run (no longer skip) but originally failed for separate, unrelated reasons (canvas rendering/resume) -- fixed as icrh-s1 (PR #569, merged) and icv-s1 (PR #570, merged). Rebased onto master post-#569/#570 to combine all three fixes.",
+          "updatedAt": "2026-07-23T09:37:07.217Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-23T09:37:07.217Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
