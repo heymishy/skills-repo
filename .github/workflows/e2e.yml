@@ -226,3 +226,111 @@ jobs:
       - name: Scenario A E2E skipped (opt-in flag not set)
         if: steps.scenario-a-config.outputs.scenario_a_enabled != 'true'
         run: 'echo "Scenario A staging E2E skipped — set audit.staging_e2e_scenario_a: true in .github/context.yml to enable"'
+
+  # ── Scenario B CI-blocking gate (story b2-ci-gate-scenario-b-coverage-mapping) ──
+  # Runs B1's spec file (tests/e2e/b1-formed-idea-outer-loop-story-map.spec.js)
+  # against real wuce-staging, following A5's exact gate mechanism (distinct
+  # opt-in flag, no continue-on-error, required-status-check registration).
+  #
+  # HONEST CURRENT STATUS (2026-07-23, see coverage/spec-to-journey-step-mapping.md
+  # and decisions.md for the full writeup): a ground-truth run of this spec
+  # against real staging returned 1 passed (NFR-Security), 3 skipped (AC1, AC2,
+  # AC3). The skip is genuine, not a flake -- the real Stripe-webhook credits
+  # path was fixed (cuf-s1: adjustBalance/adjustBalanceWithAudit now use
+  # INSERT ... ON CONFLICT atomic upserts), but the admin-UI top-up path this
+  # spec relies on (POST /api/admin/credits/adjust) still gates on
+  # getValidTenantIds() -- a plain allowlist SELECT that rejects a brand-new
+  # E2E tenant before the upsert is ever reached. AC1-AC3 therefore currently
+  # contribute ZERO automated CI-blocking signal, analogous to A2's situation
+  # for Scenario A (see that job's own comment above) though for a different,
+  # not-permanently-unfixable reason. NFR-Security is the sole automated
+  # signal this job currently provides. Do not re-investigate or attempt to
+  # fix this from inside this story -- it is a separate, already-recommended
+  # follow-up bug-fix story (make getValidTenantIds() upsert-aware, not
+  # allowlist-only). Once that lands, AC1-AC3 will begin contributing real
+  # signal with no further wiring changes needed here.
+  scenario-b-staging-e2e:
+    name: Scenario B E2E (staging)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 1
+
+      - name: Check opt-in flag (audit.staging_e2e_scenario_b in context.yml)
+        id: scenario-b-config
+        run: |
+          # ADR-004: context.yml is the single config source of truth -- this
+          # flag is read from config, never hardcoded true/false here.
+          SCENARIO_B_ENABLED="false"
+          if [ -f ".github/context.yml" ]; then
+            if command -v yq >/dev/null 2>&1; then
+              SCENARIO_B_ENABLED=$(yq e '.audit.staging_e2e_scenario_b // false' .github/context.yml)
+            else
+              # Fallback: grep for the flag without yq -- same pattern as the
+              # scenario-a-config step above.
+              if grep -q 'staging_e2e_scenario_b: true' .github/context.yml; then
+                SCENARIO_B_ENABLED="true"
+              fi
+            fi
+          fi
+          echo "scenario_b_enabled=${SCENARIO_B_ENABLED}" >> "$GITHUB_OUTPUT"
+          echo "Scenario B staging E2E gate flag: ${SCENARIO_B_ENABLED}"
+
+      - name: Set up Node.js
+        if: steps.scenario-b-config.outputs.scenario_b_enabled == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        if: steps.scenario-b-config.outputs.scenario_b_enabled == 'true'
+        run: npm ci
+
+      - name: Install Playwright browsers (Chromium only)
+        if: steps.scenario-b-config.outputs.scenario_b_enabled == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Scenario B E2E (B1's spec file; NFR-Security is the only automated-signal test today, AC1-AC3 skip pending the admin-credits-top-up sub-blocker) against real wuce-staging
+        if: steps.scenario-b-config.outputs.scenario_b_enabled == 'true'
+        id: scenario-b-run
+        # --workers=1: consistent with a5's own --workers=1 rationale for its
+        # multi-spec job (CPU-contention flake avoidance on the small 2-vCPU
+        # GitHub Actions runner). This job currently runs a single spec file,
+        # so contention is not the active risk today, but this keeps the same
+        # deterministic, serialized posture as Scenario A's job and avoids
+        # reintroducing that class of flake if a second real-staging spec is
+        # ever added to this job in the future.
+        run: npx playwright test tests/e2e/b1-formed-idea-outer-loop-story-map.spec.js --workers=1
+        env:
+          CI: 'true'
+          # Test-only staging credentials -- CI secrets only, never workflow
+          # YAML literals (NFR-Security). Falls back to the fixture's own
+          # public staging URL default when the secret is unset.
+          E2E_STAGING_BASE_URL: ${{ secrets.E2E_STAGING_BASE_URL }}
+          E2E_STAGING_AUTH_STUB_SECRET: ${{ secrets.E2E_STAGING_AUTH_STUB_SECRET }}
+          E2E_STAGING_ADMIN_PASSWORD: ${{ secrets.E2E_STAGING_ADMIN_PASSWORD }}
+
+      - name: Upload Playwright traces and screenshots on failure
+        # always(): see a5's own identical comment above -- without it, this
+        # step is silently skipped on every real job failure because the `if:`
+        # expression would otherwise be ANDed with the job's own success().
+        if: always() && steps.scenario-b-config.outputs.scenario_b_enabled == 'true' && steps.scenario-b-run.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: scenario-b-e2e-traces-${{ github.run_id }}
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: Scenario B E2E skipped (opt-in flag not set)
+        if: steps.scenario-b-config.outputs.scenario_b_enabled != 'true'
+        run: 'echo "Scenario B staging E2E skipped — set audit.staging_e2e_scenario_b: true in .github/context.yml to enable"'
