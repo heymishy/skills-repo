@@ -14693,6 +14693,22 @@
         }
       ],
       "updatedAt": "2026-07-23T21:16:40.152Z"
+    },
+    {
+      "slug": "2026-07-24-interactive-kanban-boards",
+      "name": "Interactive, Trello-style kanban boards (product/org/tenant) with drag-and-drop stage advance, prioritisation, WIP limits, and item detail",
+      "track": "standard",
+      "stage": "discovery",
+      "health": "green",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": [],
+      "stories": [],
+      "metrics": [],
+      "updatedAt": "2026-07-23T22:00:30.179Z",
+      "discoveryStatus": "approved"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
