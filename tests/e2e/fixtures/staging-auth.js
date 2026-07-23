@@ -203,5 +203,7 @@ module.exports = {
   stubGithubLogin,
   stubAuditLookup,
   signUpEmail,
-  loginEmail
+  loginEmail,
+  RATE_LIMIT_BYPASS_HEADER,
+  STUB_SECRET
 };
