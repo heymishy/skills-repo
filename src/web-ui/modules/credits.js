@@ -41,7 +41,17 @@ async function getBalance(tenantId) {
 /**
  * Atomically adjust the credit balance for a tenant by delta.
  * Use a negative delta to decrement (e.g. -1 per turn).
- * Uses UPDATE ... SET balance = balance + $1 to avoid read-modify-write race conditions.
+ * cuf-s1: Uses INSERT ... ON CONFLICT (tenant_id) DO UPDATE (atomic upsert) rather than a
+ * plain UPDATE, so a tenant with no existing `credits` row gets one created with
+ * balance = delta instead of the adjustment silently no-op'ing (zero rows affected).
+ * ON CONFLICT DO UPDATE SET balance = credits.balance + EXCLUDED.balance still adds to
+ * an existing balance rather than overwriting it — same race-free, single-round-trip
+ * atomicity as the UPDATE it replaces. Params stay [delta, tenantId] (unchanged order)
+ * so existing callers/mocks relying on that order are unaffected. See decisions.md
+ * ("credits upsert fix") and story cuf-s1 for the production defect this fixes: the
+ * real Stripe checkout.session.completed webhook (routes/billing.js) calls this exact
+ * function with no prior row-existence check, so a brand-new paying customer's first
+ * checkout previously provisioned zero credits.
  * @param {string} tenantId
  * @param {number} delta  — positive to add credits, negative to deduct
  * @returns {Promise<void>}
@@ -49,7 +59,8 @@ async function getBalance(tenantId) {
 async function adjustBalance(tenantId, delta) {
   const db = requireAdapter();
   await db.query(
-    'UPDATE credits SET balance = balance + $1, updated_at = now() WHERE tenant_id = $2',
+    'INSERT INTO credits (tenant_id, balance) VALUES ($2, $1) ' +
+    'ON CONFLICT (tenant_id) DO UPDATE SET balance = credits.balance + EXCLUDED.balance, updated_at = now()',
     [delta, tenantId]
   );
 }
@@ -79,10 +90,14 @@ async function getValidTenantIds() {
 /**
  * arl-s5 — Atomically adjust a tenant's credit balance AND write an immutable audit row
  * recording who made the change, the delta applied, and the before/after balance.
- * Uses UPDATE ... RETURNING balance on the same statement that adjusts the balance so
- * balance_before/balance_after are captured atomically (no separate read-then-write race).
- * No new D37 adapter — reuses the existing _db wired by setCreditsAdapter (same precedent
- * as getAllTenantBalances/getValidTenantIds).
+ * cuf-s1: Uses INSERT ... ON CONFLICT (tenant_id) DO UPDATE ... RETURNING balance (atomic
+ * upsert) rather than a plain UPDATE, so a tenant with no existing `credits` row gets one
+ * created with balance = delta instead of RETURNING yielding zero rows (which previously
+ * produced balanceBefore/balanceAfter = null and a nonsensical audit row while the credits
+ * table itself never gained a row). balanceBefore/balanceAfter are still captured atomically
+ * on the same round trip (no separate read-then-write race). No new D37 adapter — reuses
+ * the existing _db wired by setCreditsAdapter (same precedent as
+ * getAllTenantBalances/getValidTenantIds).
  * @param {string} tenantId
  * @param {number} delta — positive to add credits (top-up)
  * @param {string} adminId — the admin's identity (req.session.login, never req.session.accessToken)
@@ -91,7 +106,9 @@ async function getValidTenantIds() {
 async function adjustBalanceWithAudit(tenantId, delta, adminId) {
   const db = requireAdapter();
   const result = await db.query(
-    'UPDATE credits SET balance = balance + $1, updated_at = now() WHERE tenant_id = $2 RETURNING balance',
+    'INSERT INTO credits (tenant_id, balance) VALUES ($2, $1) ' +
+    'ON CONFLICT (tenant_id) DO UPDATE SET balance = credits.balance + EXCLUDED.balance, updated_at = now() ' +
+    'RETURNING balance',
     [delta, tenantId]
   );
   const balanceAfter = result.rows.length ? result.rows[0].balance : null;

@@ -14300,6 +14300,43 @@
       ],
       "metrics": [],
       "updatedAt": "2026-07-23T00:26:09.261Z"
+    },
+    {
+      "slug": "2026-07-23-credits-upsert-fix",
+      "name": "Fix credits.js UPDATE-only balance adjustment silently dropping a brand-new tenant's first credit provisioning",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "cuf-s1",
+          "slug": "cuf-s1",
+          "name": "Fix credits.js UPDATE-only balance adjustment silently dropping a brand-new tenant's first credit provisioning",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "skipped-short-track",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 12,
+            "passing": 12,
+            "artefact": "artefacts/2026-07-23-credits-upsert-fix/test-plans/cuf-s1-test-plan.md"
+          },
+          "acTotal": 6,
+          "acVerified": 6,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": true,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-23-credits-upsert-fix/dor/cuf-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-23-credits-upsert-fix/dor/cuf-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-07-23T00:00:00.000Z",
+          "prStatus": "draft-open",
+          "updatedAt": "2026-07-23T00:00:00.000Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-23T00:00:00.000Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
