@@ -10,6 +10,11 @@
 const { getAllTenantBalances, getValidTenantIds, adjustBalanceWithAudit } = require('../modules/credits');
 // sec-perf-s3: session-scoped CSRF (Cross-Site Request Forgery) protection.
 const { generateCsrfToken, csrfField, csrfGuard } = require('../middleware/csrf');
+// acps-s1: reuse the shared design-system page shell (renderShell) instead of
+// hand-rolling a bare <!DOCTYPE html> document -- same pattern kfd1's detail
+// pages and settings.js's Credits tab already use. adminCreditsPost, the CSRF
+// logic, and the underlying credits module are untouched by this story.
+const { renderShell } = require('../utils/html-shell');
 
 /**
  * Escape HTML special characters to prevent XSS.
@@ -68,21 +73,24 @@ async function adminCreditsGet(req, res) {
     );
   }).join('\n');
 
-  const html = [
-    '<!DOCTYPE html>',
-    '<html lang="en">',
-    '<head><meta charset="utf-8"><title>Admin — Credits</title></head>',
-    '<body>',
-    '<h1>Admin: Credits</h1>',
+  const bodyContent = [
+    '<h1 class="sw-page-h1">Admin: Credits</h1>',
     '<table>',
     '<thead><tr><th>Tenant ID</th><th>Balance</th><th>Top-up</th></tr></thead>',
     '<tbody>',
     tableRows,
     '</tbody>',
     '</table>',
-    '</body>',
-    '</html>',
   ].join('\n');
+
+  const html = renderShell({
+    title: 'Admin — Credits',
+    bodyContent,
+    user: req.session,
+    active: 'admin-credits',
+    crumbs: ['Admin credits'],
+    isAdmin: true
+  });
 
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
