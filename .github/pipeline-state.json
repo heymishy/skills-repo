@@ -14337,6 +14337,41 @@
       ],
       "metrics": [],
       "updatedAt": "2026-07-23T00:00:00.000Z"
+    },
+    {
+      "slug": "2026-07-23-mock-gateway-fixtures-deploy-fix",
+      "name": "Fix production Dockerfile silently shipping a structurally-active but fixture-less mock-LLM-gateway to wuce-staging",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "mgfd-s1",
+          "slug": "mgfd-s1",
+          "name": "Fix production Dockerfile silently shipping a structurally-active but fixture-less mock-LLM-gateway to wuce-staging",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "skipped-short-track",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 12,
+            "passing": 12,
+            "artefact": "artefacts/2026-07-23-mock-gateway-fixtures-deploy-fix/test-plans/mgfd-s1-test-plan.md"
+          },
+          "acTotal": 6,
+          "acVerified": 6,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": true,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-23-mock-gateway-fixtures-deploy-fix/dor/mgfd-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-23-mock-gateway-fixtures-deploy-fix/dor/mgfd-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-07-23T03:07:06.950Z",
+          "prStatus": "draft-open",
+          "updatedAt": "2026-07-23T03:07:06.950Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -14388,5 +14423,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-06-29T00:00:00Z"
+  "updatedAt": "2026-07-23T03:07:06.950Z"
 }
