@@ -69,7 +69,7 @@
  */
 
 const { request: pwRequest } = require('@playwright/test');
-const { STAGING_BASE_URL } = require('./staging-auth');
+const { STAGING_BASE_URL, hasStubSecret, RATE_LIMIT_BYPASS_HEADER, STUB_SECRET } = require('./staging-auth');
 
 /** Fixed, staging-only, clearly `e2e-test-`-tagged admin identity (never a real person's account). */
 const ADMIN_EMAIL = 'e2e-test-admin@example.test';
@@ -90,8 +90,17 @@ async function _getLandingCsrf(ctx) {
 async function _adminLogin(ctx) {
   const csrfToken = await _getLandingCsrf(ctx);
   if (!csrfToken) return false;
+  const headers = {};
+  // eatrl-s1: the admin identity's login attempts (a3/a4/b1, run back-to-back
+  // in the same CI job) never carried the existing staging rate-limit bypass
+  // header, even though ADMIN_EMAIL already satisfies the e2e-test- prefix
+  // gate -- causing intermittent, non-deterministic skips when the real
+  // per-IP limiter tripped on accumulated unbypassed attempts. Mirrors
+  // signUpEmail()'s/loginEmail()'s existing pattern exactly.
+  if (hasStubSecret()) headers[RATE_LIMIT_BYPASS_HEADER] = STUB_SECRET;
   const res = await ctx.post('/auth/email/login', {
     form: { email: ADMIN_EMAIL, password: ADMIN_PASSWORD, _csrf: csrfToken },
+    headers: headers,
     maxRedirects: 0
   });
   return res.status() === 302;
@@ -101,8 +110,12 @@ async function _adminLogin(ctx) {
 async function _adminSignupOnce(ctx) {
   const csrfToken = await _getLandingCsrf(ctx);
   if (!csrfToken) return false;
+  const headers = {};
+  // eatrl-s1: same rate-limit bypass header as _adminLogin() above.
+  if (hasStubSecret()) headers[RATE_LIMIT_BYPASS_HEADER] = STUB_SECRET;
   const res = await ctx.post('/auth/email/signup', {
     form: { email: ADMIN_EMAIL, password: ADMIN_PASSWORD, _csrf: csrfToken },
+    headers: headers,
     maxRedirects: 0
   });
   return res.status() === 302;
