@@ -77,6 +77,27 @@ This session's own sandbox has 8 logical CPUs (`node -e "console.log(require('os
 
 ---
 
+## FINDING — AC1 also fails in every real CI run observed so far; the "AC1 passes reliably" premise does not hold
+
+**Date:** 2026-07-23
+
+**Context:** After implementing the AC2/AC3 CI-skip and pushing it, the real CI run of PR #565 (run 29986106359, then again after a `'use strict'` ordering fix on run 29986188689) still failed the `scenario-a-staging-e2e` job — but the failing test in BOTH runs was **AC1**, not AC2/AC3 (which correctly skipped, confirmed by "4 skipped" in each run's summary). This was unexpected and is reported honestly rather than assumed away.
+
+**Evidence:**
+- Run 29986106359 (`Scenario A E2E (staging)`, 2026-07-23T06:46:32Z): `AC1: successful test-mode checkout activates the tenant plan` — `Expected: "paid"`, `Received: "trial"`. 1 failed, 4 skipped, 6 passed.
+- Run 29986188689 (same job, 2026-07-23T06:48:05Z, on the `'use strict'`-fixed commit): identical failure — same AC1 test, same `"paid"`/`"trial"` mismatch, same 1 failed/4 skipped/6 passed breakdown.
+- The uploaded diagnostic artifact (`scenario-a-e2e-traces-29986188689`, `error-context.md`) for the second run's AC1 failure shows the page snapshot **still on Stripe's hosted Checkout page** ("Subscribe to Starter", $10.00/month, card fields, Pay button) at the moment the assertion failed — i.e. the same "the browser never actually completed the Checkout submission" signature previously attributed to AC2/AC3's hCaptcha stall, not a webhook-delivery-delay symptom (which would show the browser having moved on from the Checkout page already).
+- **Re-examining run 29984917608 itself** (the run this session's task briefing cited as evidence that "AC1 already passes reliably in CI, only AC2/AC3 fail"): its own failure log (re-checked directly, not from memory) shows **all three tests — AC1, AC2, AND AC3 — failed**, not just AC2/AC3 (`3 failed` / `2 skipped` / `6 passed`, listing all three AC1/AC2/AC3 test names under "failed"). The trace evidence gathered from this run conclusively identified hCaptcha as AC2/AC3's blocker, but the run itself does not actually demonstrate AC1 passing — that premise appears to have been an incorrect summary carried into this session's task framing, not something borne out by the run's own data.
+- **Checking the one other real test-executing run on this branch** (29982995610, 2026-07-23T05:44:59Z, before `--trace on` was added): same pattern — all three (AC1, AC2, AC3) failed, AC1 with the identical `"trial"` received value.
+
+**This means: across all 4 real CI runs on this branch that reached actual test execution (29982995610, 29984917608, 29986106359, 29986188689), AC1 has failed every single time**, with a 0/4 real-CI pass rate, not the "passes reliably" premise this task's implementation plan was built on. The most likely explanation, given the identical failure signature (browser still on Stripe's Checkout page, payment never actually submitted) to AC2/AC3's confirmed hCaptcha finding, is that Stripe's bot-detection is not selectively targeting AC2/AC3's specific assertions — it is stalling the underlying Checkout-page submit interaction itself, which AC1 also depends on (AC1 differs from AC2/AC3 only in how it verifies the *outcome* — a fresh re-login against the webhook-driven plan-state, rather than tracking the browser's redirect — but it still requires the same real browser click-to-pay submission to actually succeed on Stripe's side first).
+
+**Not independently confirmed via network trace** (this branch's `--trace on` diagnostic flag was deliberately reverted as part of this session's own work, once the AC2/AC3 diagnosis was believed complete — see the revert note in `.github/workflows/e2e.yml`'s run-step comment). The `error-context.md` page-snapshot evidence (page stuck on Checkout) is consistent with the hCaptcha hypothesis but is not itself a definitive network-level confirmation for AC1 specifically, unlike the network-trace evidence gathered for AC2/AC3.
+
+**Status: unresolved, requires an operator decision.** This session's assigned task was scoped specifically to reclassifying AC2/AC3 as manual-verification-only while treating AC1 as the retained CI-blocking signal — a premise this new evidence does not support. Extending the same reclassification to AC1, or pursuing a different fix (e.g. re-enabling `--trace on` for one more diagnostic run to get network-level confirmation for AC1, or replacing AC1's real-browser-driven Checkout interaction with a Stripe test-mode API-level trigger that does not depend on hosted Checkout's UI at all) is a scope decision beyond what this session was authorized to implement unilaterally, since it touches AC1 (out of this session's explicit mandate) and/or the story's fundamental automation approach. Not acted on further in this session — reported here for the operator's decision rather than guessed at.
+
+---
+
 ## FOLLOW-UP (post-merge, not applied on this branch)
 
 This fix branch (`fix-forward-a2-stripe-ci-checkout-flake`) is built directly on top of `a5-ci-gate-scenario-a-blocking` (PR #563, still open/draft) because the `scenario-a-staging-e2e` job it fixes does not exist on `master` yet. After both PRs are reconciled (this fix rebased onto master post-#563-merge, or merged into #563's own branch first), per cdg.6/B2 (flat `feature.stories[]` entry, so this is precautionary, not strictly required for an epic-nested story):
