@@ -1,0 +1,18 @@
+# Decisions: Interactive Kanban Boards
+
+## CORRECTION — the real stage-advance mechanism is `handlePostGateConfirm`, not the `skills` CLI (2026-07-24)
+
+**Context:** Discovery's `/clarify` pass resolved an assumption about whether "the existing `skills gate-advance`/`advance` machinery" could be safely called from a web handler, concluding yes based on `cli-advance.js`/`cli-gate-advance.js` being pure, `require()`-able functions.
+
+**The correction:** That check answered the wrong question. `node bin/skills advance`/`gate-advance` (`src/enforcement/cli-advance.js`, `cli-gate-advance.js`) is **this repository's own meta-governance tool** — it reads/writes `.github/pipeline-state.json` to track how the skills-platform repo delivers features to itself (the exact mechanism used earlier this session for `bssm-s1`, `eatrl-s1`, and now this very kanban feature's own bookkeeping).
+
+The kanban boards in scope for this feature (`/products/:id/kanban`, `/org/kanban`, `/dashboard?view=board`) show a completely different thing: **real customer/product journeys**, stored in the deployed web-app's own Postgres `journeys` table (`src/web-ui/adapters/journey-store-pg.js`), each with a `data->>'activeSkill'` stage field. Advancing one of these journeys to its next stage already has a real, existing, web-callable mechanism: `POST /api/journey/:journeyId/gate-confirm` (`handlePostGateConfirm`, `src/web-ui/routes/journey.js:1712`) — the same route the skill-chat UI's own "gate confirm" button already calls today. It validates the artefact (`_validate()`), persists it to disk and Postgres, calls `completeStage()`, and (via the injected `pipelineStateWriterFactory` adapter) writes the equivalent governance fields to the **customer's own** target repo's `pipeline-state.json` — not this repo's.
+
+**Real, load-bearing precondition found:** `handlePostGateConfirm` requires `session.done === true` on the journey's current active session — if the operator's current skill turn hasn't completed (mid-conversation, no artefact produced yet), the route returns HTTP 400 "Session not complete yet." This means a kanban card cannot simply be dragged to any arbitrary next column at any time — only once its current stage's session has genuinely finished. This is a real, must-encode constraint for the drag/click "move to next stage" stories, not an edge case to gloss over.
+
+**Consequences:**
+- All references to "the real governed stage-advance machinery ... skills gate-advance/advance" in `discovery.md` and `benefit-metric.md` refer, in implementation reality, to `POST /api/journey/:journeyId/gate-confirm`, not the CLI tool.
+- `/definition`'s stories for drag/click stage-advance must explicitly handle the `session.done !== true` case: either disable the drag/action for a card whose journey isn't ready, or handle the 400 response with a clear, plain-language explanation (per CLAUDE.md's abbreviation/plain-language writing convention) — "revert and explain why," not "gate-advance failed."
+- No change needed to the discovery's MVP scope or benefit metrics — this correction is about implementation mechanism accuracy, not scope.
+
+**Verification performed:** Direct code read of `src/web-ui/routes/journey.js` (`handlePostGateConfirm`, lines 1712–1786) and `src/web-ui/routes/products.js` (`handleGetProductKanban`, confirming `journey_id`/`activeSkill` come from the real `journeys` Postgres table, not `.github/pipeline-state.json`). Confirmed `setPipelineStateWriter`'s wiring in `server.js` (`pipelineStateWriterFactory(repoRootForAdapter)`) targets a per-deployment target repo root, not this repo specifically.

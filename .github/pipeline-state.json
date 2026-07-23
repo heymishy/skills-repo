@@ -14698,17 +14698,120 @@
       "slug": "2026-07-24-interactive-kanban-boards",
       "name": "Interactive, Trello-style kanban boards (product/org/tenant) with drag-and-drop stage advance, prioritisation, WIP limits, and item detail",
       "track": "standard",
-      "stage": "discovery",
+      "stage": "definition",
       "health": "green",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "epics": [],
+      "epics": [
+        {
+          "slug": "epic-1-board-stage-advance-core",
+          "name": "An operator can move a real journey to its next pipeline stage directly from the board",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "s1.1-board-advance-action",
+              "name": "Add a board action that advances a ready journey via the real gate-confirm route",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "s1.2-not-ready-explanation",
+              "name": "Show a clear, plain-language reason when a card is not ready to advance",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
+        },
+        {
+          "slug": "epic-2-board-visual-redesign",
+          "name": "All three kanban boards visually match the platform current design system",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "s2.1-shared-token-redesign",
+              "name": "Redesign the product/org/tenant kanban board CSS to use the shared design-system tokens",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "s2.2-title-truncation-artefact-badge",
+              "name": "Port title truncation and artefact-count badge to the live kanban boards",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
+        },
+        {
+          "slug": "epic-3-board-productivity-features",
+          "name": "An operator can prioritise, see WIP pressure, and inspect detail from the board",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "s3.1-drag-to-advance",
+              "name": "Drag a ready card to its next column to advance its stage",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "s3.2-within-column-reorder",
+              "name": "Reorder cards within a column for local prioritisation",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "s3.3-advisory-wip-limits",
+              "name": "Show an advisory (soft) WIP-limit warning per column",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "s3.4-item-detail-view",
+              "name": "Open an item detail view directly from any kanban card",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
+        }
+      ],
       "stories": [],
-      "metrics": [],
-      "updatedAt": "2026-07-23T22:00:30.179Z",
-      "discoveryStatus": "approved"
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Board-to-CLI parity for real stage transitions",
+          "target": ">= 50% of real transitions completed from the board in a 2-week window",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Visual consistency with the current design system (3 board scopes)",
+          "target": "3 of 3 board routes conform to design-system tokens",
+          "baseline": "0 of 3",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "WIP visibility retained (kfd1 M1 no regression)",
+          "target": "M1 still passes after this feature ships",
+          "baseline": "M1 currently passes",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "updatedAt": "2026-07-23T22:13:02.498Z",
+      "discoveryStatus": "approved",
+      "slicingStrategy": "risk-first",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
