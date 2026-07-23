@@ -14396,7 +14396,7 @@
             "artefact": "artefacts/2026-07-23-streaming-route-mock-gateway-wiring/test-plans/srmw-s1-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 4,
+          "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": true,
           "dorStatus": "signed-off",
@@ -14404,7 +14404,7 @@
           "dorContractArtefact": "artefacts/2026-07-23-streaming-route-mock-gateway-wiring/dor/srmw-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-23T03:31:19.368Z",
           "prStatus": "draft-open",
-          "updatedAt": "2026-07-23T03:31:19.368Z"
+          "updatedAt": "2026-07-23T03:37:44.560Z"
         }
       ]
     }
