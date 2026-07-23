@@ -170,7 +170,7 @@ jobs:
         # playwright.config.js has no trace/screenshot config globally, so the
         # previous failing runs produced only a generic error-context.md, no visual
         # evidence of the page state at the moment of failure. Revert once diagnosed.
-        run: npx playwright test tests/e2e/a1-staging-auth-stub.spec.js tests/e2e/a2-stripe-test-mode-plan-selection.spec.js tests/e2e/a3-product-feature-ideate-canvas.spec.js tests/e2e/a4-ideate-session-resume.spec.js --workers=1 --trace on --screenshot on
+        run: npx playwright test tests/e2e/a1-staging-auth-stub.spec.js tests/e2e/a2-stripe-test-mode-plan-selection.spec.js tests/e2e/a3-product-feature-ideate-canvas.spec.js tests/e2e/a4-ideate-session-resume.spec.js --workers=1 --trace on
         env:
           CI: 'true'
           # Test-only staging credentials — CI secrets only, never workflow
