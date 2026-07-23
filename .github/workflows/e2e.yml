@@ -149,7 +149,23 @@ jobs:
       - name: Run Scenario A E2E (A1-A4) against real wuce-staging
         if: steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
         id: scenario-a-run
-        run: npx playwright test tests/e2e/a1-staging-auth-stub.spec.js tests/e2e/a2-stripe-test-mode-plan-selection.spec.js tests/e2e/a3-product-feature-ideate-canvas.spec.js tests/e2e/a4-ideate-session-resume.spec.js
+        # a2ccf-s1: --workers=1 is a deliberate, narrowly-scoped-to-this-job fix,
+        # not a global playwright.config.js change. Root cause (see
+        # artefacts/2026-07-23-a2-stripe-ci-checkout-flake/decisions.md): with the
+        # default 2-worker concurrency this job previously ran with, a1 (request-only,
+        # no browser) frees its worker almost immediately, so a3/a4 (both heavy
+        # page-fixture specs) end up running truly concurrently with a2's real Stripe
+        # Checkout interaction on the small 2-vCPU GitHub Actions runner. That CPU
+        # contention delays Stripe Checkout's own client-side validation JS just
+        # enough that our fill()+click() lands before the submit button is actually
+        # wired/enabled, so the click silently no-ops: no redirect, no decline
+        # message, no webhook, and every one of a2's 3 ACs fails downstream of that
+        # single missed interaction. Confirmed locally: identical command with
+        # --workers=1 passes a2 cleanly and repeatably; only the default (2-worker)
+        # invocation reproduces the failure. Serializing this job's 4 real-staging
+        # specs removes the contention; it does not touch playwright.config.js, so
+        # the other 29 local-mocked specs' parallelism is unaffected.
+        run: npx playwright test tests/e2e/a1-staging-auth-stub.spec.js tests/e2e/a2-stripe-test-mode-plan-selection.spec.js tests/e2e/a3-product-feature-ideate-canvas.spec.js tests/e2e/a4-ideate-session-resume.spec.js --workers=1
         env:
           CI: 'true'
           # Test-only staging credentials — CI secrets only, never workflow
@@ -160,7 +176,16 @@ jobs:
           E2E_STAGING_ADMIN_PASSWORD: ${{ secrets.E2E_STAGING_ADMIN_PASSWORD }}
 
       - name: Upload Playwright traces and screenshots on failure
-        if: steps.scenario-a-config.outputs.scenario_a_enabled == 'true' && steps.scenario-a-run.outcome == 'failure'
+        # a2ccf-s1: this job (unlike the `e2e` job above) has no continue-on-error
+        # on its run step, so a genuine failure there leaves the job's implicit
+        # success() false — and any `if:` expression that doesn't itself reference
+        # success()/failure()/always()/cancelled() is ANDed with success() by GitHub
+        # Actions. Without always() here, this upload step was silently skipped on
+        # every real failure (confirmed: run 29981769208 failed with 3 real test
+        # failures but produced zero artifacts — `gh api .../actions/runs/.../artifacts`
+        # returned an empty list). always() restores the intended "upload only on
+        # failure" behavior instead of "never uploads because the job already failed".
+        if: always() && steps.scenario-a-config.outputs.scenario_a_enabled == 'true' && steps.scenario-a-run.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: scenario-a-e2e-traces-${{ github.run_id }}
