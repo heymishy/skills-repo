@@ -101,7 +101,7 @@ function _renderProductNew(login, error) {
     errorHtml +
     '<form id="psh-product-form" style="display:flex;flex-direction:column;gap:16px">' +
       '<label style="display:flex;flex-direction:column;gap:6px;font-size:14px">Product name <span style="color:var(--muted)">(required)</span>' +
-        '<input id="psh-name" name="name" type="text" required autocomplete="off" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-size:15px;background:var(--surface);color:var(--ink)">' +
+        '<input id="psh-name-REHEARSAL-BREAK" name="name" type="text" required autocomplete="off" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-size:15px;background:var(--surface);color:var(--ink)">' +
       '</label>' +
       '<label style="display:flex;flex-direction:column;gap:6px;font-size:14px">Short description <span style="color:var(--muted)">(optional — helps the AI generate better context files)</span>' +
         '<textarea id="psh-description" name="description" rows="3" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-size:14px;background:var(--surface);color:var(--ink);resize:vertical"></textarea>' +
