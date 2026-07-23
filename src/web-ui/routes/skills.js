@@ -2341,6 +2341,23 @@ function _renderChatPage(skillName, sessionId, session) {
     artefactInitScript = '<script>window.__SW_INITIAL_ARTEFACT__=' + safeArtefact + ';</script>';
   }
 
+  // a4 (ideate canvas resume hydration fix): the ideate canvas's .canvas-block
+  // elements (rendered by the inline script's renderCanvasBlock/appendCanvasBlock
+  // functions) are otherwise only ever created reactively, in response to live
+  // SSE `canvasBlock` events during an in-progress turn (see handlePostTurnStreamHtml
+  // below). A page reload/session-resume is not a live SSE stream, so without this
+  // init script the canvas silently renders empty on resume even though
+  // mergeRedisSessionData() has already correctly restored session.canvasBlocks
+  // from Redis (proven by tests/check-a4-session-store-state.js) -- the restored
+  // data was simply never being read here to seed the initial HTML. Mirrors the
+  // existing __SW_INITIAL_ARTEFACT__ pattern above.
+  var canvasBlocksInitScript = '';
+  if (isIdeate && Array.isArray(session.canvasBlocks) && session.canvasBlocks.length) {
+    var safeCanvasBlocks = JSON.stringify(session.canvasBlocks)
+      .replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+    canvasBlocksInitScript = '<script>window.__SW_INITIAL_CANVAS_BLOCKS__=' + safeCanvasBlocks + ';</script>';
+  }
+
   // dic.2: Phase model init script for definition sessions
   var phaseModelInitScript = '';
   if (skillName === 'definition') {
@@ -3364,6 +3381,13 @@ function _renderChatPage(skillName, sessionId, session) {
     '  if(!IS_IDEATE && typeof __SW_INITIAL_ARTEFACT__ !== "undefined" && __SW_INITIAL_ARTEFACT__) {',
     '    updateDraftPanel(__SW_INITIAL_ARTEFACT__);',
     '  }',
+    '  // a4 (ideate canvas resume hydration fix): rehydrate the ideate canvas from',
+    '  // restored session.canvasBlocks on page load/session-resume, since these',
+    '  // .canvas-block elements are otherwise only ever created reactively via live',
+    '  // SSE canvasBlock events and would render empty on a cold reload.',
+    '  if(IS_IDEATE && typeof __SW_INITIAL_CANVAS_BLOCKS__ !== "undefined" && __SW_INITIAL_CANVAS_BLOCKS__ && __SW_INITIAL_CANVAS_BLOCKS__.length) {',
+    '    __SW_INITIAL_CANVAS_BLOCKS__.forEach(function(block) { appendCanvasBlock(block); });',
+    '  }',
     '  // dic.5: Apply-changes dispatch ─────────────────────────────────────────',
     '  function applyChanges() {',
     '    var btn = document.getElementById("dm-apply-btn");',
@@ -3508,7 +3532,7 @@ function _renderChatPage(skillName, sessionId, session) {
     }
   }
 
-  var bodyContent = navigatorHtml + artefactInitScript + phaseModelInitScript + _renderChatView({
+  var bodyContent = navigatorHtml + artefactInitScript + phaseModelInitScript + canvasBlocksInitScript + _renderChatView({
     skillName:         skillName,
     skillLabel:        skillName,
     isIdeate:          isIdeate,

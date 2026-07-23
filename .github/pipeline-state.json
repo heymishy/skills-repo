@@ -14479,6 +14479,42 @@
         }
       ],
       "updatedAt": "2026-07-23T07:26:55.921Z"
+    },
+    {
+      "slug": "2026-07-23-ideate-canvas-resume-hydration-fix",
+      "name": "Hydrate the ideate canvas from restored session.canvasBlocks on page load/session-resume",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "icrh-s1",
+          "slug": "icrh-s1",
+          "name": "Hydrate the ideate canvas from restored session.canvasBlocks on page load/session-resume",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "skipped-short-track",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 15,
+            "passing": 15,
+            "artefact": "artefacts/2026-07-23-ideate-canvas-resume-hydration-fix/test-plans/icrh-s1-test-plan.md"
+          },
+          "acTotal": 6,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": true,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-23-ideate-canvas-resume-hydration-fix/dor/icrh-s1-dor.md",
+          "dorSignedOffAt": "2026-07-23T10:00:14.661Z",
+          "prStatus": "open",
+          "updatedAt": "2026-07-23T10:00:14.661Z",
+          "notes": "Root cause: tests/e2e/a4-ideate-session-resume.spec.js AC2/AC3 failed against real wuce-staging (CI run 29996127983, job 89170114731, PR #568) -- resumed session showed zero .canvas-block elements despite turn 1 rendering blocks pre-close. Data layer proven correct (tests/check-a4-session-store-state.js, 5/5 passing, unmodified). Actual gap: _renderChatPage never read session.canvasBlocks to seed initial HTML/hydration payload -- .canvas-block elements were only ever created reactively via live SSE canvasBlock events. Fix: new canvasBlocksInitScript (window.__SW_INITIAL_CANVAS_BLOCKS__) mirroring the existing __SW_INITIAL_ARTEFACT__ pattern, plus a client-side hydration call reusing the existing appendCanvasBlock function unmodified. AC1-AC5 verified locally (15/15 new unit tests passing, RED confirmed pre-fix, GREEN post-fix; full npm test shows zero new regressions vs tests/known-baseline-failures.json). AC6 (real staging re-run of a4 spec) pending this session's deploy step -- see decisions.md for full root-cause writeup."
+        }
+      ],
+      "updatedAt": "2026-07-23T10:00:14.661Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -14530,5 +14566,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-07-23T05:05:01.711Z"
+  "updatedAt": "2026-07-23T10:00:14.661Z"
 }
