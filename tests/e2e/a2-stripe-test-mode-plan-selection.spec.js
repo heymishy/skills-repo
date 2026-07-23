@@ -54,6 +54,39 @@
 //   keeps the user on the Stripe Checkout page showing an inline error; there
 //   is no cross-site redirect back to verify), so the original session/context
 //   is still valid for a same-site follow-up request.
+//
+// *** AC2/AC3: CI-only skip, manual-verification-only in CI (a2ccf-s1 follow-up) ***
+// Real CI trace evidence (PR #565, run 29984917608, artifact
+// scenario-a-e2e-traces-29984917608 -- see
+// artefacts/2026-07-23-a2-stripe-ci-checkout-flake/decisions.md) shows Stripe's
+// hosted Checkout page (checkout.stripe.com) loads an invisible hCaptcha
+// challenge (hcaptcha-invisible, requests to
+// api.hcaptcha.com/getcaptcha/24ed0064-...) as part of Stripe's own
+// bot/fraud-detection layer. The network trace shows every request succeeding
+// (200) up to that point, then total network silence for ~20s until the 30s
+// test timeout fires -- the checkout page is stuck waiting on a CAPTCHA token
+// an automated/headless browser cannot legitimately obtain. This is a genuine
+// third-party (Stripe/hCaptcha) constraint, not a defect in this repo's code,
+// and is not fixable by adjusting workers, timeouts, or rate limits (both
+// already tried and ruled out -- see decisions.md's investigation log).
+// AC2 and AC3 both drive the browser through this same hosted-Checkout
+// interaction, so both are affected; AC1 does not (it verifies plan-state via
+// a fresh re-login/server-side webhook check, never re-driving the browser
+// through Checkout), so AC1 remains the CI-blocking signal for this story.
+// The operator's decision: reclassify AC2/AC3 as manual-verification-only in
+// CI, per this repo's established "External-dependency" gap-type convention
+// (see the test plan and a5-ci-gate-scenario-a-blocking's own precedent for
+// this same pattern). AC2/AC3 remain real, valid requirements -- a human
+// running the verification script by hand can still complete a real checkout
+// and confirm them; only the CI-automated path is skipped. Scoped to CI only
+// (process.env.CI === 'true', set explicitly by the scenario-a-staging-e2e
+// job in .github/workflows/e2e.yml) -- not skipped for local/interactive runs,
+// since a human (or a future environment Stripe's bot-detection doesn't
+// target) may still want to run these tests directly.
+const SKIP_AC2_AC3_IN_CI_REASON =
+  'AC2/AC3 require a real browser to complete Stripe hosted Checkout, which ' +
+  'invisibly CAPTCHAs automated/headless traffic (confirmed via real CI trace ' +
+  'evidence, see decisions.md) -- verified manually only, not CI-automatable.';
 
 'use strict';
 
@@ -132,6 +165,8 @@ test.describe('a2-stripe-test-mode-plan-selection', () => {
   });
 
   test('AC2: the Stripe checkout redirect lands on the expected authenticated page with the session still valid', async ({ page }) => {
+    test.skip(process.env.CI === 'true', SKIP_AC2_AC3_IN_CI_REASON);
+
     await signUpEmail(page.context().request, 'a2-ac2');
 
     await goToCheckoutAndFillCard(page, SUCCESS_CARD);
@@ -151,6 +186,8 @@ test.describe('a2-stripe-test-mode-plan-selection', () => {
   });
 
   test('AC3: a declined test-mode card leaves plan state unchanged and shows a decline message', async ({ page }) => {
+    test.skip(process.env.CI === 'true', SKIP_AC2_AC3_IN_CI_REASON);
+
     await signUpEmail(page.context().request, 'a2-ac3');
 
     await goToCheckoutAndFillCard(page, DECLINE_CARD);

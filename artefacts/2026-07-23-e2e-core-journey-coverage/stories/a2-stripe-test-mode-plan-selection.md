@@ -33,6 +33,16 @@ So that **a regression in billing/plan-selection wiring — the exact class of b
 
 **AC3:** Given a Stripe test-mode card that is deliberately declined (Stripe's documented decline test card number), When checkout is attempted, Then the UI surfaces a clear decline message and the tenant's plan state remains unchanged (not silently marked active).
 
+## Coding Agent Instructions — AC2/AC3 CI classification (a2ccf-s1 follow-up, 2026-07-23)
+
+AC2 and AC3 are reclassified as **manual-verification-only in CI**. They remain real, valid, in-scope requirements — this reclassification changes only which verification path counts as the automated CI-blocking signal, not the ACs themselves.
+
+**Reason:** Both AC2 and AC3 drive a real browser through Stripe's hosted Checkout page (`checkout.stripe.com`). Real network trace evidence, downloaded from a real CI run (PR #565, run 29984917608, artifact `scenario-a-e2e-traces-29984917608`), conclusively shows Stripe's hosted Checkout page loads an invisible hCaptcha challenge (`hcaptcha-invisible`, requests to `api.hcaptcha.com/getcaptcha/24ed0064-...`) as part of Stripe's own bot/fraud-detection layer. The trace shows every request succeeding (HTTP 200) up to that point, then complete network silence for approximately 20 seconds until the test's 30-second timeout fires — the checkout page is stuck waiting on a CAPTCHA token that an automated/headless browser cannot legitimately obtain. This is a genuine third-party (Stripe/hCaptcha) constraint, not a defect in this repo's code, and it is not fixable by adjusting worker counts, timeouts, or rate limits (both already tried and ruled out with real evidence — see `artefacts/2026-07-23-a2-stripe-ci-checkout-flake/decisions.md` for the full investigation history).
+
+AC1 does not exercise this same interaction (it verifies plan state via a fresh re-login against `GET /billing/plan-state` — a real server-to-server Stripe webhook check, no browser re-driven through Checkout), so AC1 remains the CI-automated, CI-blocking signal for this story.
+
+**What changes:** In CI only (the `scenario-a-staging-e2e` job in `.github/workflows/e2e.yml`, where `process.env.CI === 'true'`), `tests/e2e/a2-stripe-test-mode-plan-selection.spec.js`'s AC2 and AC3 tests are skipped via `test.skip()`. They are NOT skipped for local/interactive runs — a human (or a future environment Stripe's bot-detection doesn't target) can and should still run them directly, and a human running the verification script by hand can still complete a real Stripe test-mode checkout and confirm AC2/AC3 manually. See `artefacts/2026-07-23-e2e-core-journey-coverage/test-plans/a2-stripe-test-mode-plan-selection-test-plan.md` (AC2/AC3 now classified as gap type External-dependency) and `artefacts/2026-07-23-e2e-core-journey-coverage/verification-scripts/a2-stripe-test-mode-plan-selection-verification.md` (Scenarios 2 and 3 are now the only way AC2/AC3 are verified — there is no CI-automated equivalent).
+
 ## Out of Scope
 
 - Testing every Stripe test-card scenario (3D Secure challenge flows, currency variations) — only the standard success path (AC1/AC2) and one decline path (AC3)

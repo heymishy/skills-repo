@@ -85,3 +85,9 @@ Oversight level: High
 **Oversight level:** High
 **Sign-off required:** Yes
 **Signed off by:** Hamish King — Founder/Operator — 2026-07-23
+
+---
+
+## Post-sign-off clarification (a2ccf-s1 follow-up, 2026-07-23)
+
+A2 (`a2-stripe-test-mode-plan-selection`)'s AC2 and AC3 are now skipped via `test.skip()` specifically in this story's `scenario-a-staging-e2e` job (CI only — `process.env.CI === 'true'`), reclassified as manual-verification-only after real CI trace evidence confirmed Stripe's own hCaptcha bot-detection on hosted Checkout blocks automated CI traffic (see `artefacts/2026-07-23-a2-stripe-ci-checkout-flake/decisions.md`). This does not reopen this DoR sign-off: AC1/AC2/AC3 of this story (the gate's own job-level pass/fail behaviour) are unaffected — "the job passes/fails" continues to mean "every test the job actually runs passes/fails," and A2's AC1 (its real server-to-server Stripe webhook check) remains the CI-automated signal contributing to that outcome for A2. No re-review required.

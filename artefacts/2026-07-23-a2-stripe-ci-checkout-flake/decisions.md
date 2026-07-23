@@ -48,6 +48,35 @@ This session's own sandbox has 8 logical CPUs (`node -e "console.log(require('os
 
 ---
 
+## FINDING — real CI trace evidence identifies Stripe's own hCaptcha bot-detection as the true, final root cause
+
+**Date:** 2026-07-23
+
+**Context:** After the `--workers=1` fix (above) was pushed, the real CI run of PR #565 still failed on AC2 and AC3 of `a2-stripe-test-mode-plan-selection.spec.js` (AC1 passed cleanly). The `--trace on` diagnostic flag added to the `scenario-a-staging-e2e` job (see the run step's own comment history in `.github/workflows/e2e.yml`) was used specifically to capture visual/network evidence of the page state at the moment of failure, since the concurrency fix had ruled out CPU contention as AC2/AC3's remaining cause.
+
+**Evidence gathered:** `gh api repos/heymishy/skills-repo/actions/runs/29984917608/artifacts` returned artifact `scenario-a-e2e-traces-29984917608`, downloaded and inspected directly (real trace, not simulated). The network trace for AC2 and AC3 both show:
+- Every request to `checkout.stripe.com` and its supporting assets succeeding with HTTP 200, through page load and card-field population, exactly as the local (non-CI) run does.
+- A request to `api.hcaptcha.com/getcaptcha/24ed0064-...` — Stripe's hosted Checkout page embeds hCaptcha's invisible challenge widget (`hcaptcha-invisible`) as part of Stripe's own bot/fraud-detection layer on the Checkout submit action.
+- After that request, complete network silence for approximately 20 seconds — no further requests of any kind — until the test's own timeout fires (AC2's 30s `page.waitForURL` timeout; AC3's 15s `getByText(/declined/i)` timeout). The Checkout page is stuck waiting on a CAPTCHA token that an automated/headless Playwright browser cannot legitimately obtain; the submit click never completes on Stripe's side.
+
+**This conclusively identifies the final root cause of AC2/AC3's continued CI failure**, distinct from (and downstream of) the CPU-contention issue the `--workers=1` fix genuinely resolved: even with the concurrency issue removed, hCaptcha independently blocks the automated interaction. This is a real, third-party (Stripe/hCaptcha) bot-detection constraint — not a defect in this repo's application code, not a defect in the test's assertions or timeouts, and not something a worker-count or timeout adjustment can address, because the page never receives a legitimate CAPTCHA token for headless/automated traffic to proceed past, regardless of how much time is given.
+
+**Hypothesis from the earlier investigation log, resolved:** step 6 of the investigation log above listed "Stripe test-mode rate limiting or bot detection of GitHub Actions IP ranges" as "not fully ruled out in isolation" pending trace evidence. This finding confirms that hypothesis (in the more general form of hCaptcha-based bot detection, not specifically IP-range-based) as the correct, final explanation.
+
+**Operator's decision:** Drop AC2 and AC3 from the CI-blocking gate. AC1 (the real-to-Stripe server-to-server webhook check via `GET /billing/plan-state` — no browser, no CAPTCHA interaction, already passes reliably in CI) remains the CI-blocking signal for this story. AC2/AC3 are reclassified as manual-verification-only, following this repo's own established "External-dependency" gap-type convention (see `templates/test-plan.md` and `a5-ci-gate-scenario-a-blocking`'s own test plan, which already handles its own External-dependency gap for real branch-protection-blocking behaviour — same pattern, different underlying cause here). AC2/AC3 are NOT weakened, deleted, or worked around — they remain real, valid requirements, verifiable by a human running the verification script by hand (a human completing a real Stripe test-mode checkout is not subject to the same invisible-CAPTCHA gate that headless/automated traffic is).
+
+**Explicitly rejected as an approach:** attempting to bypass, defeat, or spoof past Stripe's CAPTCHA (e.g. seeking a CAPTCHA-solving service, or misrepresenting automated traffic as non-automated) was considered and rejected. Stripe's bot-detection is a legitimate anti-fraud control; the correct response to a real anti-bot measure is to stop automating that specific interaction, not to defeat it.
+
+**Implementation carried out on this decision:**
+- `tests/e2e/a2-stripe-test-mode-plan-selection.spec.js`: added `test.skip(process.env.CI === 'true', <reason>)` to the AC2 and AC3 test bodies only (not AC1). Not skipped for local/interactive runs.
+- `artefacts/2026-07-23-e2e-core-journey-coverage/stories/a2-stripe-test-mode-plan-selection.md`: added a "Coding Agent Instructions — AC2/AC3 CI classification" note recording the reclassification and reason, without touching the ACs themselves.
+- `artefacts/2026-07-23-e2e-core-journey-coverage/test-plans/a2-stripe-test-mode-plan-selection-test-plan.md`: AC2/AC3 gap type changed to External-dependency in the AC Coverage table; a new Coverage gaps row and Test Gaps and Risks row added with the reason and handling.
+- `artefacts/2026-07-23-e2e-core-journey-coverage/verification-scripts/a2-stripe-test-mode-plan-selection-verification.md`: added a note that Scenarios 2/3 are now the only verification path for AC2/AC3 (no CI-automated equivalent).
+- `artefacts/2026-07-23-e2e-core-journey-coverage/stories/a5-ci-gate-scenario-a-blocking.md` and its DoR (`artefacts/2026-07-23-e2e-core-journey-coverage/dor/a5-ci-gate-scenario-a-blocking-dor.md`): added clarifying notes that the gate's own job-level pass/fail semantics are unaffected — "the job passes/fails" already meant "every test the job actually runs passes/fails," and A2's AC1 remains the CI-automated signal contributing to that outcome for A2. No re-review of a5's DoR sign-off was triggered.
+- `.github/workflows/e2e.yml`: reverted the temporary `--trace on` diagnostic flag on the `scenario-a-staging-e2e` job's run step, now that the diagnostic question it existed to answer has been conclusively resolved. Judgement: removed rather than left permanently on, since AC2/AC3 no longer run in this job at all (skipped) and leaving trace capture on indefinitely would add artifact-upload overhead to every CI run with no further diagnostic value for this job; a future genuinely new failure can have `--trace on` re-added at that time.
+
+---
+
 ## FOLLOW-UP (post-merge, not applied on this branch)
 
 This fix branch (`fix-forward-a2-stripe-ci-checkout-flake`) is built directly on top of `a5-ci-gate-scenario-a-blocking` (PR #563, still open/draft) because the `scenario-a-staging-e2e` job it fixes does not exist on `master` yet. After both PRs are reconciled (this fix rebased onto master post-#563-merge, or merged into #563's own branch first), per cdg.6/B2 (flat `feature.stories[]` entry, so this is precautionary, not strictly required for an epic-nested story):

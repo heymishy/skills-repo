@@ -7,6 +7,10 @@
 
 ---
 
+**Updated 2026-07-23 (a2ccf-s1 follow-up):** Scenarios 2 (AC2) and 3 (AC3) below are now the ONLY way AC2 and AC3 are verified. Their automated E2E tests in `tests/e2e/a2-stripe-test-mode-plan-selection.spec.js` are skipped specifically in the `scenario-a-staging-e2e` CI job — Stripe's hosted Checkout page loads an invisible hCaptcha bot-detection challenge that blocks automated/headless browser traffic, confirmed via real CI trace evidence (see `artefacts/2026-07-23-a2-stripe-ci-checkout-flake/decisions.md`). There is no CI-automated equivalent for AC2/AC3 — a human must run Scenarios 2 and 3 by hand to confirm them. Scenario 1 (AC1) has both an automated CI-passing E2E test and this manual scenario; AC1's automated test is the CI-blocking signal for this story.
+
+---
+
 ## Setup
 
 **Before you start:**
