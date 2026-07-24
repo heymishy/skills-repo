@@ -15186,6 +15186,40 @@
         }
       ],
       "track": "short"
+    },
+    {
+      "slug": "2026-07-24-test-data-cleanup",
+      "name": "Cleanup scripts for local disk and staging-DB test-generated data",
+      "stage": "branch-complete",
+      "health": "green",
+      "reviewStatus": "not-required",
+      "highFindings": 0,
+      "updatedAt": "2026-07-24T09:52:22.734Z",
+      "stories": [
+        {
+          "slug": "tdc-s1-cleanup-scripts",
+          "name": "Cleanup scripts for local disk and staging-DB test-generated data",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "not-required",
+          "highFindings": 0,
+          "updatedAt": "2026-07-24T09:52:22.736Z",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 7,
+            "passing": 7
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-07-24-test-data-cleanup/dor/tdc-s1-cleanup-scripts-dor.md",
+          "dorStatus": "signed-off",
+          "prStatus": "merged",
+          "id": "tdc-s1-cleanup-scripts"
+        }
+      ],
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
