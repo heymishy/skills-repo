@@ -14978,6 +14978,146 @@
         }
       ],
       "updatedAt": "2026-07-24T00:25:06.592Z"
+    },
+    {
+      "slug": "2026-07-24-admin-mock-gateway-toggle",
+      "name": "Let an admin toggle the mock LLM gateway on/off from an in-app admin page",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "amgt-s1",
+          "slug": "amgt-s1",
+          "name": "Let an admin toggle the mock LLM gateway on/off from an in-app admin page",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "skipped-short-track",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0,
+            "artefact": "artefacts/2026-07-24-admin-mock-gateway-toggle/test-plans/amgt-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": true,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-24-admin-mock-gateway-toggle/dor/amgt-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-24-admin-mock-gateway-toggle/dor/amgt-s1-dor-contract.md",
+          "prStatus": "none",
+          "updatedAt": "2026-07-24T00:38:58.228Z",
+          "notes": "Operator-reported gap (2026-07-24): MOCK_LLM_GATEWAY is env-var-only, requiring a redeploy to switch mock/real model behaviour. Fix adds a runtime, in-memory override consulted by isMockGatewayEnabled() AFTER its existing NODE_ENV=production hard-override (which must remain untouched -- AC4 is the binding proof). Admin-gated via the existing requireAdmin/renderShell/CSRF pattern established by admin-credits.js. DoR signed off, Medium oversight (security-adjacent hard-override + real-cost implications), awaiting dispatch."
+        }
+      ]
+    },
+    {
+      "slug": "2026-07-24-product-new-feature-idea-choice",
+      "name": "Offer the formed-idea/rough-idea choice when creating a new feature from a product's page",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "pnfc-s1",
+          "slug": "pnfc-s1",
+          "name": "Offer the formed-idea/rough-idea choice when creating a new feature from a product's page",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "skipped-short-track",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0,
+            "artefact": "artefacts/2026-07-24-product-new-feature-idea-choice/test-plans/pnfc-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": true,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-24-product-new-feature-idea-choice/dor/pnfc-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-24-product-new-feature-idea-choice/dor/pnfc-s1-dor-contract.md",
+          "prStatus": "none",
+          "updatedAt": "2026-07-24T00:38:58.228Z",
+          "notes": "Operator-reported gap (2026-07-24): handlePostProductFeature (products.js:1488) hardcodes discovery with zero branching, bypassing the rough-idea/formed-idea choice that already exists and works correctly on the separate /journey page (handlePostJourney, startSkill branching). Fix reuses that proven mechanism rather than rebuilding it. DoR signed off, Low oversight, awaiting dispatch."
+        }
+      ]
+    },
+    {
+      "slug": "2026-07-24-definition-stories-default-all",
+      "name": "Default to all stories from /definition when starting the per-story review sequence",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "dsda-s1",
+          "slug": "dsda-s1",
+          "name": "Default to all stories from /definition when starting the per-story review sequence",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "skipped-short-track",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0,
+            "artefact": "artefacts/2026-07-24-definition-stories-default-all/test-plans/dsda-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": true,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-24-definition-stories-default-all/dor/dsda-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-24-definition-stories-default-all/dor/dsda-s1-dor-contract.md",
+          "prStatus": "none",
+          "updatedAt": "2026-07-24T00:38:58.228Z",
+          "notes": "Operator-reported gap (2026-07-24): after /definition, handleGetStories presents a manual textarea asking the operator to retype story slugs, even though /definition already wrote them into the real artefact. The exact same data is already parsed client-side only (parseDefinitionArtefact, an embedded <script> in journey.js) for the story-map canvas -- never server-side. Fix adds a new, narrow server-side extractor mirroring the same story-ID regex patterns, auto-populating the story list while keeping the manual-entry path as an explicit fallback for parse failures and a retained edit affordance for genuine adjustments. DoR signed off, Low oversight, awaiting dispatch."
+        }
+      ]
+    },
+    {
+      "slug": "2026-07-24-feature-row-session-resume-link",
+      "name": "Make feature rows in a product's view clickable, linking through to persisted conversation/artefacts",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "id": "frsr-s1",
+          "slug": "frsr-s1",
+          "name": "Make feature rows in a product's view clickable, linking through to persisted conversation/artefacts",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "skipped-short-track",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0,
+            "artefact": "artefacts/2026-07-24-feature-row-session-resume-link/test-plans/frsr-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": true,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-07-24-feature-row-session-resume-link/dor/frsr-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-07-24-feature-row-session-resume-link/dor/frsr-s1-dor-contract.md",
+          "prStatus": "none",
+          "updatedAt": "2026-07-24T00:38:58.228Z",
+          "notes": "Operator-reported gap (2026-07-24): feature rows in a product's view (_renderPvcItemRow, products.js) are plain non-interactive text; the operator expects clicking through to resume/view the persisted SSE conversation as if resuming a live session, the same pattern icrh-s1 already built for /ideate. Investigation confirmed all the real pieces already exist (mergeFeatureSources already carries journeyId; handleGetChatHtml already resumes any session by ID via Redis fallback; /features/:slug already renders a kfd1-styled artefact index) except one real gap: completeStage() does not record which sessionId produced each completed stage. Fix closes that gap and wires the existing pieces together rather than inventing new mechanisms. Most complex of the four findings (Complexity 3) -- DoR signed off, Medium oversight (security guard + schema-shape change), awaiting dispatch."
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
