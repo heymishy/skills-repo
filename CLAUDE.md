@@ -74,6 +74,7 @@ Step  Skill                  Entry condition                     Exit condition
 ──────────────────────────────────────────────────────────────────────────────
 1     /discovery             Raw idea or problem exists           Artefact approved
 2     /benefit-metric        Discovery approved                   Metrics defined + active
+2.5   /design (optional)     Benefit-metric active                Design artefact produced (or skipped)
 3     /definition            Benefit-metric active                Epics + stories written
 4     /review                Stories exist                        No HIGH findings
 5     /test-plan             Review passed (per story)            Tests written (failing)
