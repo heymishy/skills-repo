@@ -14970,7 +14970,8 @@
       "discoveryStatus": "approved",
       "slicingStrategy": "risk-first",
       "guardrails": [],
-      "stories": []
+      "stories": [],
+      "lastImprove": "2026-07-24"
     },
     {
       "slug": "2026-07-24-admin-credits-page-styling",
@@ -15182,7 +15183,8 @@
           "releaseReady": true
         }
       ],
-      "track": "short"
+      "track": "short",
+      "lastImprove": "2026-07-24"
     },
     {
       "slug": "2026-07-24-design-skill-pipeline-wiring",
@@ -15218,7 +15220,8 @@
           "releaseReady": true
         }
       ],
-      "track": "short"
+      "track": "short",
+      "lastImprove": "2026-07-24"
     },
     {
       "slug": "2026-07-24-test-data-cleanup",
@@ -15254,7 +15257,8 @@
           "releaseReady": true
         }
       ],
-      "track": "short"
+      "track": "short",
+      "lastImprove": "2026-07-24"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -15302,6 +15306,18 @@
         "type": "guardrails",
         "file": ".github/architecture-guardrails.md",
         "summary": "/improve (product-rollup): ADR-026 (reuse existing entity over new primitive), ADR-027 (live SaaS mechanisms are app code, not skills)"
+      },
+      {
+        "date": "2026-07-24",
+        "type": "guardrails",
+        "file": ".github/architecture-guardrails.md",
+        "summary": "kanban-epic /improve: bulk-lookup-seam pattern, shared-mechanism-proof testing pattern, E2E drag-drop center-drop ambiguity, duplicated-stage-order anti-pattern, heredoc-backtick anti-pattern, branch-stacking anti-pattern"
+      },
+      {
+        "date": "2026-07-24",
+        "type": "standards",
+        "file": ".github/standards/security/security-standards.md",
+        "summary": "kanban-epic /improve: known gap -- GET /features/:slug has no tenant-ownership check"
       }
     ],
     "lastUpdated": "2026-07-17"
