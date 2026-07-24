@@ -14788,7 +14788,7 @@
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s2.1-shared-token-redesign-dor-contract.md",
               "dorStatus": "signed-off",
               "prStatus": "merged",
-              "dodStatus": "complete-with-deviations",
+              "dodStatus": "complete",
               "releaseReady": false,
               "layoutGapsAtMerge": true,
               "layoutGapsRiskAccepted": true
@@ -14845,7 +14845,7 @@
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.1-drag-to-advance-dor-contract.md",
               "dorStatus": "signed-off",
               "prStatus": "merged",
-              "dodStatus": "complete-with-deviations",
+              "dodStatus": "complete",
               "releaseReady": false
             },
             {
