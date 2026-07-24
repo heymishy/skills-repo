@@ -1,0 +1,12 @@
+# Decisions: Definition-to-Review Autostart
+
+## RESOLVED — completing /definition now auto-starts /review when the story list is parseable (2026-07-24)
+
+**Context:** Operator finding (2026-07-24): "Moving from definition would expect to move to /review with all stories defined from definition step, performing the review as per usual" — the existing behaviour (post dsda-s1's auto-populate fix) still required a manual visit to `/journey/:id/stories` and a manual "Start per-story stages" submit before review began, even when every story could already be auto-extracted.
+
+**Decision:** `handlePostGateConfirm`'s `nextStage === 'review'` branch (`src/web-ui/routes/journey.js`) now calls the existing `extractStoryIdsFromDefinitionArtefact` (dsda-s1) against the just-completed definition stage's artefact. If it returns 1+ story IDs, `journeyStore.setStoryList` is called with the full list and a review session is started immediately (extracted into a shared `_startReviewSessionForJourney` helper, now used by 3 call sites that previously each duplicated the same 6-8 lines: the `definition-of-ready` "more stories" branch, this new auto-start branch, and `handlePostStories`'s manual-submit path). If extraction yields zero IDs, the existing manual `/journey/:id/stories` fallback is unchanged — this remains the only safety net for a definition-artefact format the extractor doesn't recognise.
+
+**Rationale:** The manual confirm step provided real value only when the operator needed to edit the list before review (add/remove/reorder) or when auto-extraction failed. On the common, unambiguous case (definition artefact parses cleanly), it was pure friction with no decision being made. The manual page itself is untouched and still reachable directly for the edit-before-review case.
+
+**Verified by:** `tests/check-dtra-s1-auto-start-review-after-definition.js` (4/4 passing, covering AC1-AC4). Re-ran `check-dsda-s1-default-all-stories.js` (9/9), `check-ougl6-perstory-stage-routing.js` and `check-ougl5-gate-confirm-feature-stages.js` (each has 2 pre-existing failures, confirmed via `git stash` to be identical before and after this change — unrelated test-isolation flakiness, not a regression), `check-ougl7-dor-and-journey-complete.js` (8/8), `check-owle6-pipeline-state-auto-write.js` (20/20), `check-cdg4-gate-confirm-validation.js` (10/10), `check-cdg5-trace-emission.js` (10/10), `check-s3.4-item-detail-view.js` (8/8).
+**Accepted by:** Hamish King, Founder/Operator, 2026-07-24.

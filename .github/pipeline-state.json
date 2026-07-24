@@ -15120,6 +15120,40 @@
       ]
     },
     {
+      "slug": "2026-07-24-definition-to-review-autostart",
+      "name": "Completing /definition moves straight into /review",
+      "stage": "branch-complete",
+      "health": "green",
+      "reviewStatus": "not-required",
+      "highFindings": 0,
+      "updatedAt": "2026-07-24T09:35:30.400Z",
+      "stories": [
+        {
+          "slug": "dtra-s1-auto-start-review-after-definition",
+          "name": "Completing /definition moves straight into /review, no manual story-list confirm step",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "not-required",
+          "highFindings": 0,
+          "updatedAt": "2026-07-24T09:35:30.401Z",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 4,
+            "passing": 4
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-07-24-definition-to-review-autostart/dor/dtra-s1-auto-start-review-after-definition-dor.md",
+          "dorStatus": "signed-off",
+          "prStatus": "merged",
+          "id": "dtra-s1-auto-start-review-after-definition"
+        }
+      ],
+      "track": "short"
+    },
+    {
       "slug": "2026-07-24-design-skill-pipeline-wiring",
       "name": "Document /design skill in the pipeline overview",
       "stage": "branch-complete",
