@@ -45,3 +45,21 @@ The kanban boards in scope for this feature (`/products/:id/kanban`, `/org/kanba
 **Decision:** Accepted — the coding agent must complete this investigation as its first implementation step and document the confirmed route/identifier mapping here before writing AC1/AC2's final tests.
 **Rationale:** Same as S2.2 — low-risk, additive navigation feature; the investigation is a natural first implementation task, not a DoR blocker.
 **Accepted by:** Hamish King, Founder/Operator, 2026-07-24.
+
+## RESOLVED — S3.3 default WIP-limit-per-stage convention (2026-07-24)
+
+**Context:** S3.3's Architecture Constraints require a genuinely new configuration decision — the legacy `lane()` renderer's WIP limits were hardcoded (`{ delivery: 5, review: 4 }`) for a different, dead lane taxonomy. The live `_renderKanbanColumns` renderer needed its own sensible default per `STAGE_COLUMNS` stage, without over-building a settings UI for this MVP.
+
+**Decision:** `DEFAULT_WIP_LIMITS = { review: 4, 'test-plan': 4, implementation: 5 }` (`src/web-ui/views/kanban-view.js`). `review` and `test-plan` mirror the legacy `review` lane's limit of 4 (the legacy taxonomy folded both stages together); `implementation` mirrors the legacy `delivery` lane's limit of 5. Stages not named in this map (e.g. `discovery`, `benefit-metric`, `definition-of-ready`) have no limit and never show a warning badge — these are not the bottleneck stages discovery's operator flagged. The same map applies identically across all three board scopes (product/org/tenant), satisfying AC4's cross-scope consistency requirement, since none of the three callers pass a scope-specific override.
+**Rationale:** A hardcoded, stage-keyed default that mirrors the legacy renderer's own proven values (rather than inventing new numbers) is the simplest honest option for this MVP, with a clear extension point (`data.wipLimits` override parameter, already wired) if a future story needs per-scope or operator-configurable limits.
+**Verified by:** `tests/check-s3.3-advisory-wip-limits.js` — unit tests for over-limit/at-limit rendering and cross-scope consistency, integration tests confirming an over-limit column never blocks a real advance (S1.1's endpoint) or drag-drop (S3.1's mechanism).
+**Accepted by:** Hamish King, Founder/Operator, 2026-07-24.
+
+## FIX — `check-psh-s7-org-kanban.js`'s fragile cross-tenant substring assertion, second independent occurrence (2026-07-24)
+
+**Context:** The exact same pre-existing test fragility already documented on S3.1's branch (`!res._raw.includes('fy')` false-positiving on unrelated static text) independently triggered again here, on S3.3's own branch, during merge-conflict CI re-verification.
+
+**Finding:** This time the coincidental match was `justify-content` (from `.kb-column-head`'s new flex-layout CSS S3.3 added for the WIP badge), not `JSON.stringify` (S3.1's trigger). Confirmed via direct reproduction: `res._raw.includes('j-y')` is `false` — no real cross-tenant leak, same as S3.1's occurrence. This confirms the assertion's fragility is general, not tied to any one story's specific addition — any future static text containing "fy" as a substring will trigger it again.
+**Decision:** Applied the identical fix already used on S3.1's branch — tightened the assertion to the precise, bounded pattern `>fy<` (the slug appearing as the card's own rendered title content) — to this branch's own independent copy of the test file, since S3.1's fix (on its own branch) had not yet reached master at the time S3.3 was being verified.
+**Verified by:** Direct reproduction confirming no real leak either way; re-ran the fixed assertion, confirmed passing.
+**Accepted by:** Hamish King, Founder/Operator, 2026-07-24.
