@@ -104,7 +104,7 @@ async function main() {
   // ===========================================================================
 
   queue.push(function() {
-    return test('destinationShowsUsefulState: GET /journey/:id shows the current stage and a link to artefact files', async function() {
+    return test('destinationShowsUsefulState: GET /journey/:id redirects into the journey\'s real current activity (kcrs-s1 supersedes the static summary page)', async function() {
       const { journey, store } = freshJourney();
       const j = store.createJourney('s3-4-ac2-feature', 'default');
       store.setJourneyFields(j.journeyId, { activeSkill: 'review' });
@@ -114,9 +114,12 @@ async function main() {
       const res = makeMockRes();
       await journey.handleGetJourneyById(req, res);
 
-      assert.strictEqual(res._statusCode, 200, 'expected 200, got ' + res._statusCode);
-      assert.ok(res._body.includes('review'), 'expected the current stage (review) to be shown');
-      assert.ok(res._body.includes('/features/s3-4-ac2-feature'), 'expected a link to the artefact files (/features/:slug)');
+      // kcrs-s1: a non-complete journey with a featureSlug redirects into the
+      // resume flow (which itself resolves the real current session/stage),
+      // rather than rendering an inline summary -- this IS "useful state",
+      // just reached via the journey's actual activity, not a static page.
+      assert.strictEqual(res._statusCode, 303, 'expected a 303 redirect into the resume flow, got ' + res._statusCode);
+      assert.ok(res._headers.Location.startsWith('/journey/s3-4-ac2-feature/resume'), 'expected redirect to the resume route for this journey\'s featureSlug, got: ' + res._headers.Location);
     });
   });
 
@@ -125,7 +128,7 @@ async function main() {
   // ===========================================================================
 
   queue.push(function() {
-    return test('clearWayBackToBoard: the destination page includes a back-to-board link', async function() {
+    return test('clearWayBackToBoard: a safe from= value is propagated into the resume redirect (kcrs-s1 carries it through to the eventual chat page)', async function() {
       const { journey, store } = freshJourney();
       const j = store.createJourney('s3-4-ac3-feature', 'default');
       journey.setJourneyStoreModule(store);
@@ -134,9 +137,8 @@ async function main() {
       const res = makeMockRes();
       await journey.handleGetJourneyById(req, res);
 
-      assert.strictEqual(res._statusCode, 200, 'expected 200, got ' + res._statusCode);
-      assert.ok(res._body.includes('Back to board'), 'expected a "Back to board" link');
-      assert.ok(res._body.includes('/products/prod-1/kanban'), 'expected the back-link to point at the real originating board (a safe, allowlisted from= value)');
+      assert.strictEqual(res._statusCode, 303, 'expected 303, got ' + res._statusCode);
+      assert.ok(res._headers.Location.includes('from=' + encodeURIComponent('/products/prod-1/kanban')), 'expected the safe from= value propagated into the resume redirect, got: ' + res._headers.Location);
     });
   });
 
@@ -150,9 +152,9 @@ async function main() {
       const res = makeMockRes();
       await journey.handleGetJourneyById(req, res);
 
-      assert.strictEqual(res._statusCode, 200, 'expected 200, got ' + res._statusCode);
-      assert.ok(!res._body.includes('evil.example.com'), 'expected the unsafe from= value to be rejected, not reflected into the page');
-      assert.ok(res._body.includes('/dashboard?view=board'), 'expected the safe fallback destination');
+      assert.strictEqual(res._statusCode, 303, 'expected 303, got ' + res._statusCode);
+      assert.ok(!res._headers.Location.includes('evil.example.com'), 'expected the unsafe from= value to be rejected, not propagated into the redirect');
+      assert.ok(res._headers.Location.includes('from=' + encodeURIComponent('/dashboard?view=board')), 'expected the safe fallback destination propagated instead, got: ' + res._headers.Location);
     });
   });
 
@@ -187,7 +189,10 @@ async function main() {
       const res = makeMockRes();
       await journey.handleGetJourneyById(req, res);
 
-      assert.strictEqual(res._statusCode, 200, 'expected the owning user\'s own request to still succeed, got ' + res._statusCode);
+      // kcrs-s1: "succeeds" now means a 303 redirect into the resume flow,
+      // not a 200 with inline content -- the guard itself (requireJourneyAccess)
+      // is unchanged and still runs before this redirect decision.
+      assert.strictEqual(res._statusCode, 303, 'expected the owning user\'s own request to still succeed (redirect), got ' + res._statusCode);
     });
   });
 
