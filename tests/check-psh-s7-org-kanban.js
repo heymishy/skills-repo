@@ -160,7 +160,15 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     const res = makeMockRes();
     await handleGetOrgKanban(req, res, null, pool, ph);
     assert(!res._raw.includes('j-y'), 'Cross-tenant journey_id leaked into org kanban board');
-    assert(!res._raw.includes('fy'), 'Cross-tenant feature leaked into org kanban board');
+    // s3.3: a bare substring check on the raw feature_slug ("fy") is fragile
+    // -- it can false-positive on any legitimate static text that happens to
+    // contain that 2-character sequence (e.g. "justify-content", "verify",
+    // "notify"), none of which have anything to do with cross-tenant data.
+    // The real leak to guard against is the slug appearing as the card's
+    // own rendered title content (kanban-view.js's _renderKanbanColumns:
+    // title = j.feature_slug || j.journey_id), so check for that exact,
+    // bounded pattern instead of an unbounded substring anywhere on the page.
+    assert(!res._raw.includes('>fy<'), 'Cross-tenant feature leaked into org kanban board');
     pass('cross-tenant isolation — org kanban board never renders other tenants features');
   } catch(e) { fail('cross-tenant isolation — org kanban board never renders other tenants features', e); }
 

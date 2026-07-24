@@ -218,11 +218,27 @@ function renderKanban(data) {
   ].join('');
 }
 
+// s3.3 (Architecture Constraints) -- sensible hardcoded default limit per
+// STAGE_COLUMNS stage (products.js), mirroring the legacy lane() defaults'
+// spirit ({ delivery: 5, review: 4 }): flag limits only on stages known to be
+// common bottlenecks. 'review' and 'test-plan' mirror the legacy 'review'
+// lane (which folded both stages together); 'implementation' mirrors the
+// legacy 'delivery' lane. Documented in decisions.md. All three board scopes
+// (product/org/tenant) call renderKanban({ columns }) with no per-scope
+// override, so this single default applies identically everywhere (AC4).
+var DEFAULT_WIP_LIMITS = {
+  'review': 4,
+  'test-plan': 4,
+  'implementation': 5
+};
+
 /**
  * Simplified kanban renderer for generic columns/cards (product/org/tenant scope)
  * @param {object} data
  * @param {Array}  data.columns - array of {stage, cards: []}
  * @param {Array}  [data.ideas] - optional ideas array
+ * @param {object} [data.wipLimits] - s3.3: { review: 4, ... } optional override of
+ *   DEFAULT_WIP_LIMITS; advisory only -- never blocks a drop/advance (AC3).
  */
 function _cardHealthLabel(health) {
   if (health === 'red' || health === 'blocked')   return 'Blocked';
@@ -248,12 +264,27 @@ function _notReadyDetail(stage) {
 
 function _renderKanbanColumns(data) {
   var columns = data.columns || [];
+  // s3.3 (AC4) -- same wipLimits convention applied consistently across all
+  // board scopes; callers may override via data.wipLimits, same optional-
+  // override shape the legacy {features} signature already supports.
+  var wipLimits = data.wipLimits || DEFAULT_WIP_LIMITS;
 
   if (!columns || columns.length === 0) {
     return '<div class="kb-empty">No stages available</div>';
   }
 
   var columnHtml = columns.map(function(col) {
+    var count = (col.cards || []).length;
+    var wipLimit = wipLimits[col.stage] || null;
+    // s3.3 (AC1, AC2, AC3) -- reuses the exact kb-wip/kb-wip--over badge
+    // pattern already proven in lane() above -- advisory only. This is pure
+    // display logic with no effect on card actions/advance-eligibility below,
+    // so an over-limit column never blocks a drop (S3.1) or advance (S1.1).
+    var overWip = wipLimit && count > wipLimit;
+    var wipBadge = overWip
+      ? '<span class="kb-wip kb-wip--over" title="WIP limit exceeded">' + count + '/' + wipLimit + '</span>'
+      : '<span class="kb-wip">' + count + '</span>';
+
     var cardHtml = (col.cards || []).map(function(card) {
       var health = card.health || 'neutral';
       var healthClass = 'kb-health-' + escHtml(health);
@@ -323,7 +354,7 @@ function _renderKanbanColumns(data) {
 
     return [
       '<div class="kb-column" data-stage="' + escHtml(col.stage) + '">',
-        '<div class="kb-column-head">' + escHtml(col.stage) + '</div>',
+        '<div class="kb-column-head"><span class="kb-column-head-label">' + escHtml(col.stage) + '</span>' + wipBadge + '</div>',
         '<div class="kb-cards">',
           cardHtml || '<div class="kb-empty">—</div>',
         '</div>',
@@ -335,7 +366,14 @@ function _renderKanbanColumns(data) {
     '<style>',
       '.kb-board { display: flex; gap: 12px; overflow-x: auto; padding: 16px; min-height: 400px; }',
       '.kb-column { flex: 0 0 240px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; }',
-      '.kb-column-head { font-weight: 600; font-size: 14px; padding-bottom: 12px; border-bottom: 2px solid var(--line); margin-bottom: 12px; color: var(--ink); }',
+      '.kb-column-head { font-weight: 600; font-size: 14px; padding-bottom: 12px; border-bottom: 2px solid var(--line); margin-bottom: 12px; color: var(--ink); display: flex; align-items: center; justify-content: space-between; gap: 8px; }',
+      '.kb-column-head-label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }',
+      // s3.3 (AC1, AC2) -- advisory WIP-limit badge, ported from lane()'s
+      // proven kb-wip/kb-wip--over pattern. Styled with this repo's shared
+      // design-token custom properties (html-shell.js), not raw hex --
+      // per this story's explicit styling requirement.
+      '.kb-wip { font-size: 11px; font-weight: 600; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 1px 7px; color: var(--muted); flex-shrink: 0; }',
+      '.kb-wip--over { background: var(--red-soft); border-color: var(--red); color: var(--red); }',
       '.kb-cards { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; }',
       // s3.4 (AC1) -- .kb-card is now an <a> (see cardHtml above); these
       // properties keep it visually identical to the previous plain <div>.
