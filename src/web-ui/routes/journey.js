@@ -2358,9 +2358,35 @@ function _getActiveViewerCount(journeyId, inactivityMs) {
 }
 
 /**
- * GET /journey/:journeyId — shareable journey URL.
+ * s3.4 -- allowlist check for the "back to board" link's ?from= value.
+ * Must be a bare relative path (never a full URL, protocol, or protocol-
+ * relative "//host" form) pointing at one of the three known board scopes --
+ * this prevents a crafted ?from= query value from turning the new detail-page
+ * navigation entry point into an open-redirect vector.
+ * @param {string} url
+ * @returns {boolean}
+ */
+function _isSafeBoardBackLink(url) {
+  if (typeof url !== 'string' || !url) return false;
+  if (url.charAt(0) !== '/' || url.charAt(1) === '/') return false;
+  if (/^\/products\/[^/]+\/kanban(\?.*)?$/.test(url)) return true;
+  if (/^\/org\/kanban(\?.*)?$/.test(url)) return true;
+  if (/^\/dashboard(\?.*)?$/.test(url)) return true;
+  return false;
+}
+
+/**
+ * GET /journey/:journeyId — shareable journey URL; s3.4's confirmed detail-
+ * view destination for a kanban card (see decisions.md "S3.4 route/identifier
+ * investigation" -- card.id already IS journeyId, and this route already
+ * implements the same tenant-ownership 404 pattern AC4 requires, unlike
+ * /features/:slug which has no tenant check at all).
  * Unauthenticated → 302 /auth/github (AC2).
  * Authenticated → renders journey overview HTML or 404 if not found.
+ * s3.4 (AC2): adds a link to the existing artefact-index page (/features/:slug).
+ * s3.4 (AC3): adds a back-to-board link, sourced from the referring card's
+ * own ?from= query value (set per board scope by _renderKanbanColumns),
+ * falling back to the tenant dashboard board if absent/unsafe.
  */
 function handleGetJourneyById(req, res) {
   if (!req.session || !req.session.accessToken) {
@@ -2379,11 +2405,20 @@ function handleGetJourneyById(req, res) {
   var login = req.session.login || '';
   _registerViewer(journeyId, login);
   var activeUsers = _getActiveViewerCount(journeyId);
+
+  var rawFrom = (req.query && req.query.from) || '';
+  var backUrl = _isSafeBoardBackLink(rawFrom) ? rawFrom : '/dashboard?view=board';
+  var artefactsLink = journey.featureSlug
+    ? ('<p><a class="kb-detail-artefacts-link" href="/features/' + encodeURIComponent(journey.featureSlug) + '">View artefact files &amp; story state</a></p>')
+    : '';
+
   var body = [
     '<div class="sw-page-content">',
+    '<p class="kb-detail-back"><a href="' + escHtml(backUrl) + '">&larr; Back to board</a></p>',
     '<h1>Journey: ' + escHtml(journey.featureSlug || journeyId) + '</h1>',
     '<p>Stage: <strong>' + escHtml(journey.activeSkill || 'not started') + '</strong></p>',
     '<p>Active viewers: ' + activeUsers + '</p>',
+    artefactsLink,
     '</div>'
   ].join('');
   var html = renderShell({ title: 'Journey', bodyContent: body, user: { login: login } });
