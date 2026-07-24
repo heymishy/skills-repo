@@ -3,7 +3,7 @@
 **Story reference:** artefacts/2026-07-24-definition-stories-default-all/stories/dsda-s1.md
 **Technical test plan:** artefacts/2026-07-24-definition-stories-default-all/test-plans/dsda-s1-test-plan.md
 **Script version:** 1
-**Verified by:** [name] | **Date:** [date] | **Context:** [ ] Pre-code  [ ] Post-merge  [ ] Demo
+**Verified by:** Claude (agent), operator-directed | **Date:** 2026-07-24 | **Context:** [x] Post-merge (automated, see notes)
 
 ---
 
@@ -28,7 +28,7 @@
 
 **Expected outcome:** The story-list page already shows every story `/definition` wrote — you don't see a blank box asking you to type them.
 
-**Pass / Fail:** ___
+**Pass / Fail:** PASS — verified via `tests/check-dsda-s1-default-all-stories.js` ("AC1 -- GET /journey/:id/stories auto-populates from the definition artefact"): a real journey with a completed definition stage pointing at a definition artefact in either currently-supported format (H1 epic/story headers, flat-story fallback) renders a `<textarea>` pre-filled with every extracted story ID, still editable (no readonly/disabled).
 
 ---
 
@@ -42,7 +42,7 @@
 
 **Expected outcome:** Each story proceeds through review, then test-plan, then definition-of-ready, one at a time — same as it always has, just without you having typed the list yourself.
 
-**Pass / Fail:** ___
+**Pass / Fail:** PASS — verified via `tests/check-dsda-s1-default-all-stories.js` ("AC2 -- unedited auto-populated list proceeds through the per-story sequence exactly as today"): the exact pre-filled textarea value from Scenario 1, submitted unmodified, sets the journey's `storyList` correctly and redirects into the first per-story stage (review), identical to the pre-existing manually-typed flow's own behaviour (`PER_STORY_SEQ` progression itself is untouched by this story).
 
 ---
 
@@ -55,7 +55,7 @@
 
 **Expected outcome:** You can edit it, and only your edited list gets used — you're not locked into the auto-filled version.
 
-**Pass / Fail:** ___
+**Pass / Fail:** PASS — verified two ways: (1) `tests/check-dsda-s1-default-all-stories.js` ("AC3 -- an edited value overrides the auto-populated default") submits a list that removes one auto-populated story and adds a new one, confirming the edited list (not the original) is what's stored. (2) `tests/e2e/dsda-s1-default-all-stories.spec.js` drives a real mocked-LLM journey to `/journey/:id/stories` in an actual browser and confirms via Playwright that `textarea[name="stories"]` is visible and genuinely editable (`toBeEditable()`), types a new list into it, and confirms the submission proceeds using the typed value.
 
 ---
 
@@ -69,10 +69,10 @@
 
 **Expected outcome:** You see the old, familiar blank text box to type story slugs yourself — not an error page.
 
-**Pass / Fail:** ___
+**Pass / Fail:** PASS — verified via `tests/check-dsda-s1-default-all-stories.js`, two cases: (1) "AC4 -- unrecognised definition artefact falls back to the manual-entry textarea, not an error" — a definition artefact in neither supported format renders 200 with an empty textarea. (2) "AC4 -- no definition stage recorded at all falls back the same way" — a journey with no completed definition stage yet renders the same empty, editable textarea, never an error. Also incidentally exercised for real in `tests/e2e/dsda-s1-default-all-stories.spec.js`, since the shared `definition.success.json` mock fixture's own artefact format is not one of the two currently-recognised formats.
 
 ---
 
 ## Summary
 
-Total scenarios: 4 | Manual gap scenarios: 0
+Total scenarios: 4 | Manual gap scenarios: 0 | All 4 verified via automated test coverage (9 unit/integration tests in `tests/check-dsda-s1-default-all-stories.js` + 1 Playwright E2E test in `tests/e2e/dsda-s1-default-all-stories.spec.js`), cross-checked against the real client-side `parseDefinitionArtefact` parser for zero drift (AC5).
