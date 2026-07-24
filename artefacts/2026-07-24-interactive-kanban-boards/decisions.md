@@ -41,3 +41,12 @@ The kanban boards in scope for this feature (`/products/:id/kanban`, `/org/kanba
 **Decision:** Accepted — the coding agent must complete this investigation as its first implementation step and document the confirmed route/identifier mapping here before writing AC1/AC2's final tests.
 **Rationale:** Same as S2.2 — low-risk, additive navigation feature; the investigation is a natural first implementation task, not a DoR blocker.
 **Accepted by:** Hamish King, Founder/Operator, 2026-07-24.
+
+## RESOLVED — S3.3 default WIP-limit-per-stage convention (2026-07-24)
+
+**Context:** S3.3's Architecture Constraints require a genuinely new configuration decision — the legacy `lane()` renderer's WIP limits were hardcoded (`{ delivery: 5, review: 4 }`) for a different, dead lane taxonomy. The live `_renderKanbanColumns` renderer needed its own sensible default per `STAGE_COLUMNS` stage, without over-building a settings UI for this MVP.
+
+**Decision:** `DEFAULT_WIP_LIMITS = { review: 4, 'test-plan': 4, implementation: 5 }` (`src/web-ui/views/kanban-view.js`). `review` and `test-plan` mirror the legacy `review` lane's limit of 4 (the legacy taxonomy folded both stages together); `implementation` mirrors the legacy `delivery` lane's limit of 5. Stages not named in this map (e.g. `discovery`, `benefit-metric`, `definition-of-ready`) have no limit and never show a warning badge — these are not the bottleneck stages discovery's operator flagged. The same map applies identically across all three board scopes (product/org/tenant), satisfying AC4's cross-scope consistency requirement, since none of the three callers pass a scope-specific override.
+**Rationale:** A hardcoded, stage-keyed default that mirrors the legacy renderer's own proven values (rather than inventing new numbers) is the simplest honest option for this MVP, with a clear extension point (`data.wipLimits` override parameter, already wired) if a future story needs per-scope or operator-configurable limits.
+**Verified by:** `tests/check-s3.3-advisory-wip-limits.js` — unit tests for over-limit/at-limit rendering and cross-scope consistency, integration tests confirming an over-limit column never blocks a real advance (S1.1's endpoint) or drag-drop (S3.1's mechanism).
+**Accepted by:** Hamish King, Founder/Operator, 2026-07-24.

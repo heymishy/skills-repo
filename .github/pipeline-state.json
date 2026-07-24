@@ -14905,7 +14905,20 @@
           ]
         }
       ],
-      "stories": [],
+      "stories": [
+        {
+          "id": "s3.3",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 5,
+            "passing": 5
+          },
+          "acVerified": 4,
+          "health": "green",
+          "prStatus": "draft",
+          "updatedAt": "2026-07-24T07:16:18.397Z"
+        }
+      ],
       "metrics": [
         {
           "id": "m1",
