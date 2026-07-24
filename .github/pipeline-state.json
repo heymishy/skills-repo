@@ -14713,11 +14713,11 @@
             {
               "slug": "s1.1-board-advance-action",
               "name": "Add a board action that advances a ready journey via the real gate-confirm route",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-24T00:25:06.592Z",
+              "updatedAt": "2026-07-24T19:20:45.024Z",
               "testPlan": {
                 "status": "all-passing",
                 "totalTests": 8,
@@ -14731,16 +14731,18 @@
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s1.1-board-advance-action-dor-contract.md",
               "dorStatus": "signed-off",
               "prStatus": "merged",
-              "notes": "Implemented: new POST /api/board/journey/:journeyId/advance endpoint (products.js handlePostBoardAdvance) delegating to the real handlePostGateConfirm (routes/journey.js) via a captured-response call -- no reimplementation of validation/persistence logic. Added a single-pass batched bulk session-store read (_getHtmlSessionsBulk, skills.js) so board-render readiness lookup never scales per-card (AC3). Tenant-ownership check matches the existing 404-not-403 pattern (bri-s3.4). Verified: 6/6 unit+integration tests pass (tests/check-s1.1-board-advance-action.js), 2/2 real Playwright E2E tests pass (tests/e2e/s1.1-board-advance-action.spec.js, run directly with NODE_ENV=test after the dispatched agent hit its session usage limit mid-verification -- picked up and completed independently). Full npm test: 385 files, 36 failed, all 36 confirmed pre-existing baseline gaps via scripts/ci-test-regression-check.js -- zero new regressions."
+              "notes": "Implemented: new POST /api/board/journey/:journeyId/advance endpoint (products.js handlePostBoardAdvance) delegating to the real handlePostGateConfirm (routes/journey.js) via a captured-response call -- no reimplementation of validation/persistence logic. Added a single-pass batched bulk session-store read (_getHtmlSessionsBulk, skills.js) so board-render readiness lookup never scales per-card (AC3). Tenant-ownership check matches the existing 404-not-403 pattern (bri-s3.4). Verified: 6/6 unit+integration tests pass (tests/check-s1.1-board-advance-action.js), 2/2 real Playwright E2E tests pass (tests/e2e/s1.1-board-advance-action.spec.js, run directly with NODE_ENV=test after the dispatched agent hit its session usage limit mid-verification -- picked up and completed independently). Full npm test: 385 files, 36 failed, all 36 confirmed pre-existing baseline gaps via scripts/ci-test-regression-check.js -- zero new regressions.",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "s1.2-not-ready-explanation",
               "name": "Show a clear, plain-language reason when a card is not ready to advance",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-24T00:25:06.592Z",
+              "updatedAt": "2026-07-24T19:21:29.672Z",
               "testPlan": {
                 "status": "all-passing",
                 "totalTests": 5,
@@ -14754,24 +14756,26 @@
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s1.2-not-ready-explanation-dor-contract.md",
               "dorStatus": "signed-off",
               "prStatus": "merged",
-              "notes": "Implemented: not-ready/validation-failed presentation states in _renderKanbanColumns (kanban-view.js) -- text-label-plus-icon indicators (never colour-only), hover/focus detail via title attribute, mutually exclusive styling/text for the routine not-ready case vs a real gate-confirm validation failure (AC4). Verified: 4/4 unit+integration tests pass (tests/check-s1.2-not-ready-explanation.js), 1/1 real Playwright E2E test passes (tests/e2e/s1.2-not-ready-explanation.spec.js). Full npm test: zero new regressions (same baseline as s1.1). Built on the s1.1 branch (PR #575) -- shares the readiness data s1.1 computes."
+              "notes": "Implemented: not-ready/validation-failed presentation states in _renderKanbanColumns (kanban-view.js) -- text-label-plus-icon indicators (never colour-only), hover/focus detail via title attribute, mutually exclusive styling/text for the routine not-ready case vs a real gate-confirm validation failure (AC4). Verified: 4/4 unit+integration tests pass (tests/check-s1.2-not-ready-explanation.js), 1/1 real Playwright E2E test passes (tests/e2e/s1.2-not-ready-explanation.spec.js). Full npm test: zero new regressions (same baseline as s1.1). Built on the s1.1 branch (PR #575) -- shares the readiness data s1.1 computes.",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         },
         {
           "slug": "epic-2-board-visual-redesign",
           "name": "All three kanban boards visually match the platform current design system",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "s2.1-shared-token-redesign",
               "name": "Redesign the product/org/tenant kanban board CSS to use the shared design-system tokens",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
               "hasLayoutDependentGaps": true,
-              "updatedAt": "2026-07-24T08:20:11.314Z",
+              "updatedAt": "2026-07-24T19:23:34.442Z",
               "testPlan": {
                 "status": "all-passing",
                 "totalTests": 9,
@@ -14783,16 +14787,20 @@
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s2.1-shared-token-redesign-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s2.1-shared-token-redesign-dor-contract.md",
               "dorStatus": "signed-off",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete-with-deviations",
+              "releaseReady": false,
+              "layoutGapsAtMerge": true,
+              "layoutGapsRiskAccepted": true
             },
             {
               "slug": "s2.2-title-truncation-artefact-badge",
               "name": "Port title truncation and artefact-count badge to the live kanban boards",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-24T09:10:19.750Z",
+              "updatedAt": "2026-07-24T19:24:37.056Z",
               "testPlan": {
                 "status": "all-passing",
                 "totalTests": 7,
@@ -14805,23 +14813,25 @@
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s2.2-title-truncation-artefact-badge-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s2.2-title-truncation-artefact-badge-dor-contract.md",
               "dorStatus": "signed-off",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         },
         {
           "slug": "epic-3-board-productivity-features",
           "name": "An operator can prioritise, see WIP pressure, and inspect detail from the board",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "s3.1-drag-to-advance",
               "name": "Drag a ready card to its next column to advance its stage",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-24T09:16:38.873Z",
+              "updatedAt": "2026-07-24T19:25:40.913Z",
               "testPlan": {
                 "status": "all-passing",
                 "totalTests": 10,
@@ -14834,16 +14844,18 @@
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.1-drag-to-advance-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.1-drag-to-advance-dor-contract.md",
               "dorStatus": "signed-off",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete-with-deviations",
+              "releaseReady": false
             },
             {
               "slug": "s3.2-within-column-reorder",
               "name": "Reorder cards within a column for local prioritisation",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-24T18:48:40.754Z",
+              "updatedAt": "2026-07-24T19:26:28.402Z",
               "testPlan": {
                 "status": "all-passing",
                 "totalTests": 12,
@@ -14856,16 +14868,18 @@
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.2-within-column-reorder-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.2-within-column-reorder-dor-contract.md",
               "dorStatus": "signed-off",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "s3.3-advisory-wip-limits",
               "name": "Show an advisory (soft) WIP-limit warning per column",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-24T08:49:51.171Z",
+              "updatedAt": "2026-07-24T19:27:18.586Z",
               "testPlan": {
                 "status": "all-passing",
                 "totalTests": 5,
@@ -14878,16 +14892,18 @@
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.3-advisory-wip-limits-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.3-advisory-wip-limits-dor-contract.md",
               "dorStatus": "signed-off",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "s3.4-item-detail-view",
               "name": "Open an item detail view directly from any kanban card",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-24T09:00:56.941Z",
+              "updatedAt": "2026-07-24T19:28:11.655Z",
               "testPlan": {
                 "status": "all-passing",
                 "totalTests": 8,
@@ -14900,7 +14916,9 @@
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.4-item-detail-view-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.4-item-detail-view-dor-contract.md",
               "dorStatus": "signed-off",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         }
@@ -14913,28 +14931,39 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "All contributing mechanisms shipped 2026-07-24; no real operator board-usage window has elapsed yet.",
+          "contributingStories": [
+            "s1.1-board-advance-action",
+            "s1.2-not-ready-explanation",
+            "s3.1-drag-to-advance",
+            "s3.2-within-column-reorder",
+            "s3.3-advisory-wip-limits",
+            "s3.4-item-detail-view"
+          ]
         },
         {
           "id": "m2",
           "name": "Visual consistency with the current design system (3 board scopes)",
           "target": "3 of 3 board routes conform to design-system tokens",
           "baseline": "0 of 3",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "signal": "on-track",
+          "lastMeasured": "2026-07-24",
+          "evidence": "All 3 board scopes share the _renderKanbanColumns renderer; token substitution applies to all 3 simultaneously (s2.1 DoD, 2026-07-24).",
+          "contributingStories": [
+            "s2.1-shared-token-redesign"
+          ]
         },
         {
           "id": "m3",
           "name": "WIP visibility retained (kfd1 M1 no regression)",
           "target": "M1 still passes after this feature ships",
           "baseline": "M1 currently passes",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "signal": "on-track",
+          "lastMeasured": "2026-07-24",
+          "evidence": "Title truncation + artefact-count badge both reached the live _renderKanbanColumns renderer, verified by 7/7 passing tests (s2.2 DoD, 2026-07-24).",
+          "contributingStories": [
+            "s2.2-title-truncation-artefact-badge"
+          ]
         }
       ],
       "updatedAt": "2026-07-23T23:28:04.933Z",
@@ -15122,7 +15151,7 @@
     {
       "slug": "2026-07-24-definition-to-review-autostart",
       "name": "Completing /definition moves straight into /review",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "reviewStatus": "not-required",
       "highFindings": 0,
@@ -15131,11 +15160,11 @@
         {
           "slug": "dtra-s1-auto-start-review-after-definition",
           "name": "Completing /definition moves straight into /review, no manual story-list confirm step",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-07-24T09:35:30.401Z",
+          "updatedAt": "2026-07-24T19:30:06.619Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 4,
@@ -15148,7 +15177,9 @@
           "dorArtefact": "artefacts/2026-07-24-definition-to-review-autostart/dor/dtra-s1-auto-start-review-after-definition-dor.md",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "id": "dtra-s1-auto-start-review-after-definition"
+          "id": "dtra-s1-auto-start-review-after-definition",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "track": "short"
@@ -15156,7 +15187,7 @@
     {
       "slug": "2026-07-24-design-skill-pipeline-wiring",
       "name": "Document /design skill in the pipeline overview",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "reviewStatus": "not-required",
       "highFindings": 0,
@@ -15165,11 +15196,11 @@
         {
           "slug": "dspw-s1-document-design-skill-in-pipeline",
           "name": "Document /design place in the pipeline overview",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-07-24T13:21:48.373Z",
+          "updatedAt": "2026-07-24T19:31:01.737Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 0,
@@ -15182,7 +15213,9 @@
           "dorArtefact": "artefacts/2026-07-24-design-skill-pipeline-wiring/dor/dspw-s1-document-design-skill-in-pipeline-dor.md",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "id": "dspw-s1-document-design-skill-in-pipeline"
+          "id": "dspw-s1-document-design-skill-in-pipeline",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "track": "short"
@@ -15190,7 +15223,7 @@
     {
       "slug": "2026-07-24-test-data-cleanup",
       "name": "Cleanup scripts for local disk and staging-DB test-generated data",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "reviewStatus": "not-required",
       "highFindings": 0,
@@ -15199,11 +15232,11 @@
         {
           "slug": "tdc-s1-cleanup-scripts",
           "name": "Cleanup scripts for local disk and staging-DB test-generated data",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-07-24T18:48:32.457Z",
+          "updatedAt": "2026-07-24T19:31:49.970Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 7,
@@ -15216,7 +15249,9 @@
           "dorArtefact": "artefacts/2026-07-24-test-data-cleanup/dor/tdc-s1-cleanup-scripts-dor.md",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "id": "tdc-s1-cleanup-scripts"
+          "id": "tdc-s1-cleanup-scripts",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "track": "short"
