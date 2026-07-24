@@ -15147,9 +15147,11 @@
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-07-24-definition-to-review-autostart/dor/dtra-s1-auto-start-review-after-definition-dor.md",
           "dorStatus": "signed-off",
-          "prStatus": "merged"
+          "prStatus": "merged",
+          "id": "dtra-s1-auto-start-review-after-definition"
         }
-      ]
+      ],
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
