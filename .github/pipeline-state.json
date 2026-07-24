@@ -15043,8 +15043,8 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-24-product-new-feature-idea-choice/dor/pnfc-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-24-product-new-feature-idea-choice/dor/pnfc-s1-dor-contract.md",
-          "prStatus": "draft",
-          "updatedAt": "2026-07-24T00:00:00.000Z",
+          "prStatus": "merged",
+          "updatedAt": "2026-07-24T03:07:09.893Z",
           "notes": "Operator-reported gap (2026-07-24): handlePostProductFeature (products.js:1488) hardcoded discovery with zero branching, bypassing the rough-idea/formed-idea choice that already exists and works correctly on the separate /journey page (handlePostJourney, startSkill branching). Fix reuses that proven mechanism: /products/:id's \"New feature\" panel now offers the same startSkill=ideate/discovery radio choice, threaded through registerHtmlSession/setActiveSession/updateStage/redirect. decisions.md documents the deliberate choice to duplicate (not extend) handlePostJourney's branch, per the jrf-s1/jrf-s2 precedent, to keep /journey completely unregressed (AC5). 5 unit + 4 E2E tests all pass; check-jrf-s2 and check-psh-s4 (the 2 pre-existing tests this touched) re-run clean, zero regression. Draft PR opened."
         }
       ]
