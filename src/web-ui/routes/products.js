@@ -28,6 +28,62 @@ function _getHtmlSessionsBulk(sessionIds) {
 }
 function setGetHtmlSessionsBulk(fn) { _getHtmlSessionsBulkFn = fn; }
 
+// s2.2 -- injectable bulk artefact-count reader, mirroring s1.1's
+// _getHtmlSessionsBulk seam immediately above. Defaults to a lazy require of
+// journey-store-pg.js's real getArtefactCountsForJourneys -- ONE batched
+// GROUP BY query for the whole board render, never one call per card. This is
+// the outcome of this story's own Architecture Constraints investigation
+// (documented in decisions.md): a batched query extending the existing
+// journeys query is feasible without unbounded per-card cost, so AC4 is
+// implemented via this path rather than N parallel getArtefactsForJourney()
+// calls. Tests override via setGetArtefactCountsBulk to spy on call count
+// without needing a real DATABASE_URL/pg pool wired.
+var _getArtefactCountsBulkFn = null;
+async function _getArtefactCountsBulk(journeyIds) {
+  var fn = _getArtefactCountsBulkFn || require('../adapters/journey-store-pg').getArtefactCountsForJourneys;
+  return fn(journeyIds);
+}
+function setGetArtefactCountsBulk(fn) { _getArtefactCountsBulkFn = fn; }
+
+/**
+ * s2.2 (AC4, AC5) -- enrich already-built STAGE_COLUMNS-shaped columns with
+ * each card's artefact count, via exactly ONE bulk read for the whole board
+ * render (never per-card). Mutates and returns `columns` so callers can
+ * `await` it as a post-processing step after the existing synchronous
+ * column-builders (buildProductKanbanColumns/buildOrgKanbanColumns), which
+ * stay unchanged and still return plain arrays synchronously for their
+ * existing callers/tests.
+ *
+ * AC5: if the bulk read throws (adapter not wired, DB error, etc.) the whole
+ * board render must NOT fail -- title truncation (AC1-AC3) still ships. On
+ * failure, cards are simply left without an artefactCount, so
+ * kanban-view.js's _renderKanbanColumns renders no badge at all (identical
+ * to how a caller that never supplies artefactCount behaves today).
+ * @param {Array} columns
+ * @returns {Promise<Array>}
+ */
+async function _enrichColumnsWithArtefactCounts(columns) {
+  var journeyIds = [];
+  (columns || []).forEach(function(col) {
+    (col.cards || []).forEach(function(c) { journeyIds.push(c.id); });
+  });
+  if (journeyIds.length === 0) return columns;
+
+  var counts;
+  try {
+    counts = await _getArtefactCountsBulk(journeyIds);
+  } catch (e) {
+    return columns; // AC5 -- degrade gracefully, never break the board render
+  }
+
+  (columns || []).forEach(function(col) {
+    (col.cards || []).forEach(function(c) {
+      c.artefactCount = (counts && Object.prototype.hasOwnProperty.call(counts, c.id)) ? counts[c.id] : 0;
+    });
+  });
+  return columns;
+}
+
 function _escapeHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
@@ -1303,7 +1359,10 @@ async function buildTenantKanbanColumns(pool, tenantId) {
     return { productId: p.product_id, productName: p.name, journeys: jRows };
   }));
 
-  return _aggregateJourneysByStage(productJourneyGroups);
+  var tenantColumns = _aggregateJourneysByStage(productJourneyGroups);
+  // s2.2 (AC4) -- enrich with artefact counts via one batched read, not per-card.
+  await _enrichColumnsWithArtefactCounts(tenantColumns);
+  return tenantColumns;
 }
 
 async function handleGetProductKanban(req, res, _next, pool, posthog) {
@@ -1344,6 +1403,8 @@ async function handleGetProductKanban(req, res, _next, pool, posthog) {
   // health labels) is unchanged from before this story -- only the "return
   // raw JSON, no rendering" behaviour is replaced, per the DoR contract.
   var columns = buildProductKanbanColumns(rows);
+  // s2.2 (AC4) -- enrich with artefact counts via one batched read, not per-card.
+  await _enrichColumnsWithArtefactCounts(columns);
 
   _ph.capture(tenantId || (req.session && req.session.login), 'kanban_viewed', {
     view: 'product',
@@ -1396,6 +1457,8 @@ async function handleGetOrgKanban(req, res, _next, pool, posthog) {
   // kbc-s1 (AC1, AC3): same shared column-builder + shared renderer used by
   // product scope -- not a second, independently-styled implementation.
   var columns = buildOrgKanbanColumns(productJourneyGroups);
+  // s2.2 (AC4) -- enrich with artefact counts via one batched read, not per-card.
+  await _enrichColumnsWithArtefactCounts(columns);
 
   _ph.capture(tenantId || (req.session && req.session.login), 'kanban_viewed', {
     view: 'org',
@@ -2012,6 +2075,8 @@ module.exports = {
   // s1.1: board-driven "Advance" action (new caller of the real gate-confirm route)
   handlePostBoardAdvance,
   setGetHtmlSessionsBulk,
+  // s2.2: injectable bulk artefact-count reader, exported for test spying (AC4 NFR)
+  setGetArtefactCountsBulk,
   handleDeleteProduct,
   handlePostProductRepoCreate,
   handlePutProductEdit,

@@ -104,6 +104,22 @@ async function getArtefactsForJourney(journeyId) {
   return result.rows;
 }
 
+// s2.2 -- AC4 investigation outcome (documented in decisions.md): a SINGLE
+// GROUP BY query across every journey ID on the board, not one
+// getArtefactsForJourney() call per card. Bounded to exactly one round-trip
+// per board render regardless of how many cards are on it (Performance NFR).
+async function getArtefactCountsForJourneys(journeyIds) {
+  const pool = _getPool();
+  if (!pool || !journeyIds || journeyIds.length === 0) return {};
+  const result = await pool.query(
+    'SELECT journey_id, COUNT(*)::int AS count FROM artefacts WHERE journey_id = ANY($1) GROUP BY journey_id',
+    [journeyIds]
+  );
+  const map = {};
+  result.rows.forEach(function(row) { map[row.journey_id] = row.count; });
+  return map;
+}
+
 async function listJourneys() {
   const pool = _getPool();
   if (!pool) return [];
@@ -122,4 +138,4 @@ async function listJourneys() {
   });
 }
 
-module.exports = { saveJourney, listJourneys, migrateSchema, saveArtefact, getArtefactsForJourney };
+module.exports = { saveJourney, listJourneys, migrateSchema, saveArtefact, getArtefactsForJourney, getArtefactCountsForJourneys };

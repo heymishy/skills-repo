@@ -80,7 +80,9 @@ async function main() {
       const html = _renderKanbanColumns({
         columns: [{ stage: 'review', cards: [{ id: 'journey-abc-123', title: 'Test Feature', health: 'green' }] }]
       });
-      assert.ok(/<a class="kb-card kb-card-link[^"]*" data-journey-id="journey-abc-123" href="\/journey\/journey-abc-123">/.test(html),
+      // s2.2 adds a title="" attribute (full untruncated title, AC3) between href and
+      // the tag close, so match on the required attributes and tolerate any others.
+      assert.ok(/<a class="kb-card kb-card-link[^"]*" data-journey-id="journey-abc-123" href="\/journey\/journey-abc-123"[^>]*>/.test(html),
         'expected a real <a> element linking to /journey/journey-abc-123, got: ' + html.slice(0, 300));
       assert.ok(!/<div class="kb-card /.test(html), 'expected the card wrapper NOT to be a plain <div> anymore');
     });
