@@ -232,23 +232,33 @@ jobs:
   # against real wuce-staging, following A5's exact gate mechanism (distinct
   # opt-in flag, no continue-on-error, required-status-check registration).
   #
-  # HONEST CURRENT STATUS (2026-07-23, see coverage/spec-to-journey-step-mapping.md
-  # and decisions.md for the full writeup): a ground-truth run of this spec
+  # STATUS (2026-07-25, updated from the 2026-07-23 writeup below): the
+  # admin-credits-top-up sub-blocker described below is now fixed (catc-s1,
+  # PR #568, merged 2026-07-24) -- getValidTenantIds() is no longer a plain
+  # allowlist SELECT against `credits` alone, it's the union of
+  # users.email/team_memberships.tenant_id/credits.tenant_id, so a brand-new
+  # E2E tenant is no longer rejected before the atomic upsert (cuf-s1) is
+  # reached. Confirmed against a real run, not just the fix landing: run
+  # 30128835551 (2026-07-24T21:47:29Z, PR #592) shows this spec's own log as
+  # "Running 4 tests using 1 worker" / "4 passed (41.8s)" -- AC1-AC3 and
+  # NFR-Security all genuinely passing against real staging now, not skipping.
+  # This job needed no wiring changes to pick that up, exactly as anticipated
+  # below. coverage/spec-to-journey-step-mapping.md and decisions.md still
+  # carry the original 2026-07-23 "1 passed, 3 skipped" writeup as history;
+  # this comment is the current, accurate status.
+  #
+  # Original 2026-07-23 writeup (see coverage/spec-to-journey-step-mapping.md
+  # and decisions.md for the full history): a ground-truth run of this spec
   # against real staging returned 1 passed (NFR-Security), 3 skipped (AC1, AC2,
-  # AC3). The skip is genuine, not a flake -- the real Stripe-webhook credits
+  # AC3). The skip was genuine, not a flake -- the real Stripe-webhook credits
   # path was fixed (cuf-s1: adjustBalance/adjustBalanceWithAudit now use
   # INSERT ... ON CONFLICT atomic upserts), but the admin-UI top-up path this
-  # spec relies on (POST /api/admin/credits/adjust) still gates on
-  # getValidTenantIds() -- a plain allowlist SELECT that rejects a brand-new
-  # E2E tenant before the upsert is ever reached. AC1-AC3 therefore currently
-  # contribute ZERO automated CI-blocking signal, analogous to A2's situation
-  # for Scenario A (see that job's own comment above) though for a different,
-  # not-permanently-unfixable reason. NFR-Security is the sole automated
-  # signal this job currently provides. Do not re-investigate or attempt to
-  # fix this from inside this story -- it is a separate, already-recommended
-  # follow-up bug-fix story (make getValidTenantIds() upsert-aware, not
-  # allowlist-only). Once that lands, AC1-AC3 will begin contributing real
-  # signal with no further wiring changes needed here.
+  # spec relies on (POST /api/admin/credits/adjust) still gated on
+  # getValidTenantIds() -- a plain allowlist SELECT that rejected a brand-new
+  # E2E tenant before the upsert was ever reached. AC1-AC3 therefore
+  # contributed ZERO automated CI-blocking signal at the time, analogous to
+  # A2's situation for Scenario A (see that job's own comment above) though
+  # for a different, not-permanently-unfixable reason.
   scenario-b-staging-e2e:
     name: Scenario B E2E (staging)
     runs-on: ubuntu-latest
@@ -297,7 +307,7 @@ jobs:
         if: steps.scenario-b-config.outputs.scenario_b_enabled == 'true'
         run: npx playwright install --with-deps chromium
 
-      - name: Run Scenario B E2E (B1's spec file; NFR-Security is the only automated-signal test today, AC1-AC3 skip pending the admin-credits-top-up sub-blocker) against real wuce-staging
+      - name: Run Scenario B E2E (B1's spec file; AC1-AC3 + NFR-Security all CI-blocking since catc-s1 fixed the admin-credits-top-up sub-blocker) against real wuce-staging
         if: steps.scenario-b-config.outputs.scenario_b_enabled == 'true'
         id: scenario-b-run
         # --workers=1: consistent with a5's own --workers=1 rationale for its
