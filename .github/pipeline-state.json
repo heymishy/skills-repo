@@ -14946,7 +14946,7 @@
       "slug": "2026-07-24-admin-credits-page-styling",
       "name": "Style the admin credits page with the shared design system shell",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "epics": [],
       "stories": [
@@ -14954,28 +14954,29 @@
           "id": "acps-s1",
           "slug": "acps-s1",
           "name": "Style the admin credits page with the shared design system shell",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "totalTests": 4,
-            "passing": 0,
+            "passing": 4,
             "artefact": "artefacts/2026-07-24-admin-credits-page-styling/test-plans/acps-s1-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-24-admin-credits-page-styling/dor/acps-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-24-admin-credits-page-styling/dor/acps-s1-dor-contract.md",
-          "prStatus": "not-started",
-          "updatedAt": "2026-07-23T22:38:41.443Z",
-          "notes": "Operator observation (2026-07-24, raised alongside kanban board styling): /admin/credits is bare, unstyled HTML with no shared nav/shell (confirmed via direct code read -- hand-rolled <!DOCTYPE html>, no renderShell call, unlike kfd1 detail pages). Fix: wrap adminCreditsGet in renderShell(), same pattern kfd1 already used. No change to adminCreditsPost/CSRF/audit logic. Short-track (test-plan -> DoR -> coding agent), DoR signed off, Low oversight, awaiting dispatch."
+          "prStatus": "draft",
+          "updatedAt": "2026-07-23T22:57:57.272Z",
+          "notes": "Implemented: adminCreditsGet in src/web-ui/routes/admin-credits.js now builds bodyContent and wraps it in renderShell (title, bodyContent, user, active=admin-credits, crumbs=[Admin credits], isAdmin=true) instead of hand-rolled <!DOCTYPE html>. adminCreditsPost/CSRF/audit logic untouched. New test tests/check-acps-s1-admin-credits-shell.js (3 unit tests, AC1/AC2/AC4) written RED-first then GREEN. Existing tests/check-arl-s3-admin-credits.js (12), tests/check-sec-perf-s3-admin-credits-csrf.js (3), tests/check-arl-s5-credit-audit-log.js (12) all pass unmodified, confirming AC3. Full npm test run: 384 files, 37 failed -- all 37 already in tests/known-baseline-failures.json, zero new regressions (confirmed via scripts/ci-test-regression-check.js). Draft PR opened against master."
         }
-      ]
+      ],
+      "updatedAt": "2026-07-23T22:57:57.271Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
