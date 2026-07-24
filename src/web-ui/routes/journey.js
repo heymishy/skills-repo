@@ -1768,7 +1768,7 @@ async function handlePostGateConfirm(req, res) {
       _costUsd = _computeCost(session.usage || null);
     } catch (_ce) {}
     var _usageSummary = session.usage ? Object.assign({ costUsd: _costUsd }, session.usage) : null;
-    _journeyStore.completeStage(journeyId, session.skillName, artefactRelPath, _usageSummary);
+    _journeyStore.completeStage(journeyId, session.skillName, artefactRelPath, _usageSummary, activeSessionId);
     _posthog.capture(req.session.login || journey.ownerId || journeyId, 'stage_completed', {
       skillName:    session.skillName,
       featureSlug:  journey.featureSlug,

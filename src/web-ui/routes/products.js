@@ -219,6 +219,13 @@ function _renderModuleSection(name, id, groupFeatures, renderRowFn) {
 // same visual shape as a4's _renderEpicRow (health pill + coverage label,
 // AC2's dual-indicator convention preserved), plus data-health/data-search
 // attributes the client-side filter script reads (AC7, AC8).
+// frsr-s1 (AC1) -- the card itself is now a real, keyboard-activatable
+// <a href="/features/:slug"> (not a plain, non-interactive <div>), taking
+// the operator to that feature's artefact-index page (stage-by-stage
+// artefacts, each linked through to its real persisted conversation --
+// see features.js's renderArtefactIndexHtml). The discoveryArtefact
+// suffix link stays a separate, sibling <a> (nested anchors are invalid
+// HTML), pointing at its own more specific raw-markdown viewer.
 function _renderPvcItemRow(item) {
   var color = item.health === 'red' ? '#ef4444' : item.health === 'amber' ? '#f59e0b' : item.health === 'unknown' ? 'var(--muted)' : '#22c55e';
   var label = item.health === 'red' ? '✕ Blocked' : item.health === 'amber' ? '⚠ Warning' : item.health === 'unknown' ? '? Unknown' : '✓ Healthy';
@@ -226,19 +233,24 @@ function _renderPvcItemRow(item) {
   var searchText = ((item.name || '') + ' ' + item.slug).toLowerCase();
   var displayName = item.name || item.slug;
   var subLabel = item.stage || item.epicName || '';
-  var link = item.discoveryArtefact
+  var discoveryLink = item.discoveryArtefact
     ? ' — <a href="/artefact/' + _escapeHtml(item.slug) + '/discovery" tabindex="0">' + _escapeHtml(item.discoveryArtefact) + '</a>'
     : '';
   return '<li class="pvc-item" data-health="' + healthAttr + '" data-search="' + _escapeHtml(searchText) + '" ' +
-    'style="padding:14px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center">' +
-    '<div>' +
-      '<div style="font-size:14px;font-weight:500">' + _escapeHtml(displayName) + link + '</div>' +
-      (subLabel ? '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + _escapeHtml(subLabel) + '</div>' : '') +
-    '</div>' +
-    '<div style="display:flex;align-items:center;gap:12px">' +
-      '<span data-a4-health style="font-size:12px;color:' + color + '">' + label + '</span>' +
-      '<span data-a4-coverage style="font-size:12px;color:var(--muted)">' + _escapeHtml(item.coverageLabel || 'No test data yet') + '</span>' +
-    '</div>' +
+    'style="padding:14px 0;border-bottom:1px solid var(--line)">' +
+    '<a class="pvc-item-link" href="/features/' + _escapeHtml(item.slug) + '" ' +
+      'aria-label="' + _escapeHtml(displayName) + ' — view artefacts and conversation history" ' +
+      'style="display:flex;justify-content:space-between;align-items:center;text-decoration:none;color:inherit">' +
+      '<div>' +
+        '<div style="font-size:14px;font-weight:500">' + _escapeHtml(displayName) + '</div>' +
+        (subLabel ? '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + _escapeHtml(subLabel) + '</div>' : '') +
+      '</div>' +
+      '<div style="display:flex;align-items:center;gap:12px">' +
+        '<span data-a4-health style="font-size:12px;color:' + color + '">' + label + '</span>' +
+        '<span data-a4-coverage style="font-size:12px;color:var(--muted)">' + _escapeHtml(item.coverageLabel || 'No test data yet') + '</span>' +
+      '</div>' +
+    '</a>' +
+    (discoveryLink ? '<div style="font-size:12px;margin-top:2px">' + discoveryLink + '</div>' : '') +
   '</li>';
 }
 
@@ -2016,5 +2028,7 @@ module.exports = {
   buildProductKanbanColumns,
   buildOrgKanbanColumns,
   buildTenantKanbanColumns,
-  STAGE_COLUMNS
+  STAGE_COLUMNS,
+  // frsr-s1: exported for direct unit testing (AC1), same convention as kbc-s1's column builders
+  _renderPvcItemRow
 };
