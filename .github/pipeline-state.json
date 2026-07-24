@@ -14708,7 +14708,7 @@
         {
           "slug": "epic-1-board-stage-advance-core",
           "name": "An operator can move a real journey to its next pipeline stage directly from the board",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "s1.1-board-advance-action",
@@ -14717,7 +14717,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-23T23:15:33.513Z",
+              "updatedAt": "2026-07-24T00:25:06.592Z",
               "testPlan": {
                 "status": "all-passing",
                 "totalTests": 8,
@@ -14730,7 +14730,7 @@
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s1.1-board-advance-action-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s1.1-board-advance-action-dor-contract.md",
               "dorStatus": "signed-off",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "notes": "Implemented: new POST /api/board/journey/:journeyId/advance endpoint (products.js handlePostBoardAdvance) delegating to the real handlePostGateConfirm (routes/journey.js) via a captured-response call -- no reimplementation of validation/persistence logic. Added a single-pass batched bulk session-store read (_getHtmlSessionsBulk, skills.js) so board-render readiness lookup never scales per-card (AC3). Tenant-ownership check matches the existing 404-not-403 pattern (bri-s3.4). Verified: 6/6 unit+integration tests pass (tests/check-s1.1-board-advance-action.js), 2/2 real Playwright E2E tests pass (tests/e2e/s1.1-board-advance-action.spec.js, run directly with NODE_ENV=test after the dispatched agent hit its session usage limit mid-verification -- picked up and completed independently). Full npm test: 385 files, 36 failed, all 36 confirmed pre-existing baseline gaps via scripts/ci-test-regression-check.js -- zero new regressions."
             },
             {
@@ -14740,7 +14740,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-23T23:28:04.933Z",
+              "updatedAt": "2026-07-24T00:25:06.592Z",
               "testPlan": {
                 "status": "all-passing",
                 "totalTests": 5,
@@ -14753,7 +14753,7 @@
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s1.2-not-ready-explanation-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s1.2-not-ready-explanation-dor-contract.md",
               "dorStatus": "signed-off",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "notes": "Implemented: not-ready/validation-failed presentation states in _renderKanbanColumns (kanban-view.js) -- text-label-plus-icon indicators (never colour-only), hover/focus detail via title attribute, mutually exclusive styling/text for the routine not-ready case vs a real gate-confirm validation failure (AC4). Verified: 4/4 unit+integration tests pass (tests/check-s1.2-not-ready-explanation.js), 1/1 real Playwright E2E test passes (tests/e2e/s1.2-not-ready-explanation.spec.js). Full npm test: zero new regressions (same baseline as s1.1). Built on the s1.1 branch (PR #575) -- shares the readiness data s1.1 computes."
             }
           ]
@@ -14972,12 +14972,12 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-24-admin-credits-page-styling/dor/acps-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-24-admin-credits-page-styling/dor/acps-s1-dor-contract.md",
-          "prStatus": "draft",
-          "updatedAt": "2026-07-23T22:57:57.272Z",
+          "prStatus": "merged",
+          "updatedAt": "2026-07-24T00:25:06.592Z",
           "notes": "Implemented: adminCreditsGet in src/web-ui/routes/admin-credits.js now builds bodyContent and wraps it in renderShell (title, bodyContent, user, active=admin-credits, crumbs=[Admin credits], isAdmin=true) instead of hand-rolled <!DOCTYPE html>. adminCreditsPost/CSRF/audit logic untouched. New test tests/check-acps-s1-admin-credits-shell.js (3 unit tests, AC1/AC2/AC4) written RED-first then GREEN. Existing tests/check-arl-s3-admin-credits.js (12), tests/check-sec-perf-s3-admin-credits-csrf.js (3), tests/check-arl-s5-credit-audit-log.js (12) all pass unmodified, confirming AC3. Full npm test run: 384 files, 37 failed -- all 37 already in tests/known-baseline-failures.json, zero new regressions (confirmed via scripts/ci-test-regression-check.js). Draft PR opened against master."
         }
       ],
-      "updatedAt": "2026-07-23T22:57:57.271Z"
+      "updatedAt": "2026-07-24T00:25:06.592Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
