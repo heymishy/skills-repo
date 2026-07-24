@@ -29,7 +29,7 @@ const skillsAdapter                                                  = require('
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
-const { handleGetJourney, handlePostJourney, handleGetJourneyResume, handleGetStageReview, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handleGetWizardBootstrapped, handlePostWizardSelection, handleJourneys, setListJourneys } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2 / bri-s1.5
+const { handleGetJourney, handlePostJourney, handleGetJourneyResume, handleGetJourneyById, handleGetStageReview, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handleGetWizardBootstrapped, handlePostWizardSelection, handleJourneys, setListJourneys } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2 / bri-s1.5 / s3.4
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
 const { setCreditsAdapter }                                          = require('./modules/credits');       // lab-s3.1
@@ -1914,6 +1914,21 @@ async function router(req, res) {
     {
       handleGetJourney(req, res);
     }
+
+  } else if (pathname.match(/^\/journey\/[^/]+$/) && req.method === 'GET') {
+    // s3.4 — shareable/detail journey URL; newly wired as the confirmed
+    // destination for kanban card navigation (handleGetJourneyById existed
+    // but had no live route registration before this story — see
+    // decisions.md). Must be registered after the /journey and /journey/wizard
+    // exact-match branches above (both are single-segment paths that would
+    // otherwise also satisfy this regex) and before any /journey/:id/xxx
+    // sub-route below (those require 2+ segments so order doesn't affect them,
+    // but this keeps the single-segment routes grouped together).
+    // No authGuard wrapper -- handleGetJourneyById does its own session check
+    // and 302-redirects to /auth/github itself (same convention as the other
+    // /journey/:id/* handlers below, none of which are authGuard-wrapped).
+    req.params = { journeyId: pathname.split('/')[2] };
+    handleGetJourneyById(req, res);
 
   } else if (pathname.match(/^\/journey\/[^/]+\/resume$/) && req.method === 'GET') {
     // step4 — resume journey: create new session for current stage

@@ -61,7 +61,8 @@ queue.push(function() {
     const html = _renderKanbanColumns({
       columns: [{ stage: 'review', cards: [{ id: 'j-notready', title: 'Not Ready', health: 'amber', ready: false }] }]
     });
-    const cardMatch = html.match(/<div class="kb-card[^>]*data-journey-id="j-notready"[^>]*>/);
+    // s3.4 (already merged) converted the card wrapper from <div> to <a>.
+    const cardMatch = html.match(/<a class="kb-card[^>]*data-journey-id="j-notready"[^>]*>/);
     assert.ok(cardMatch, 'expected to find the not-ready card element');
     assert.ok(!/draggable/.test(cardMatch[0]), 'expected the not-ready card to have no draggable attribute, got: ' + cardMatch[0]);
   });
@@ -72,7 +73,7 @@ queue.push(function() {
     const html = _renderKanbanColumns({
       columns: [{ stage: 'definition-of-ready', cards: [{ id: 'j-failed', title: 'Failed', health: 'red', ready: true, validationFailed: true, validationFailedReason: 'bad artefact' }] }]
     });
-    const cardMatch = html.match(/<div class="kb-card[^>]*data-journey-id="j-failed"[^>]*>/);
+    const cardMatch = html.match(/<a class="kb-card[^>]*data-journey-id="j-failed"[^>]*>/);
     assert.ok(cardMatch, 'expected to find the validation-failed card element');
     assert.ok(!/draggable/.test(cardMatch[0]), 'expected a validation-failed card to have no draggable attribute, got: ' + cardMatch[0]);
   });
@@ -83,7 +84,7 @@ queue.push(function() {
     const html = _renderKanbanColumns({
       columns: [{ stage: 'review', cards: [{ id: 'j-legacy', title: 'Legacy', health: 'green' }] }]
     });
-    const cardMatch = html.match(/<div class="kb-card[^>]*data-journey-id="j-legacy"[^>]*>/);
+    const cardMatch = html.match(/<a class="kb-card[^>]*data-journey-id="j-legacy"[^>]*>/);
     assert.ok(cardMatch, 'expected to find the legacy card element');
     assert.ok(!/draggable/.test(cardMatch[0]), 'expected a card with no readiness data to have no draggable attribute');
   });
@@ -135,7 +136,10 @@ queue.push(function() {
       columns: [{ stage: 'review', cards: [{ id: 'j-both', title: 'Both', health: 'green', ready: true }] }]
     });
     assert.ok(/draggable="true"/.test(html), 'expected the draggable attribute to still be present');
-    assert.ok(/class="kb-advance-btn" data-journey-id="j-both" onclick="kbAdvanceCard\(this\)"/.test(html),
+    // s3.4 (already merged) updated kbAdvanceCard's onclick to accept and
+    // stop-propagate the click event, since the button now sits inside a
+    // wrapping <a> -- kbAdvanceCard(this, event), not kbAdvanceCard(this).
+    assert.ok(/class="kb-advance-btn" data-journey-id="j-both" onclick="kbAdvanceCard\(this, event\)"/.test(html),
       'expected the existing click Advance button to remain fully present and wired, unchanged by this story');
   });
 });
