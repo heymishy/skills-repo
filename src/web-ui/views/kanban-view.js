@@ -351,6 +351,11 @@ function _renderKanbanColumns(data) {
         '</div>';
       }
 
+      // s3.1 (AC3) -- only a ready card is draggable at all; a not-ready
+      // card's drag never initiates (satisfies AC3's "either the drag
+      // doesn't initiate, or..." branch -- the simpler, safer choice, since
+      // there is no need to allow a drag that can only ever be rejected).
+      var isDraggable = hasReadiness && card.ready && !isValidationFailed;
       // s3.4 (AC1) -- the card is now a real, keyboard-activatable link to
       // its detail view (confirmed destination: /journey/:id -- see
       // decisions.md "S3.4 route/identifier investigation" -- card.id
@@ -359,7 +364,8 @@ function _renderKanbanColumns(data) {
       // below), not server-rendered here, since this shared renderer has no
       // reliable knowledge of which of the 3 board-scope pages is calling it.
       return [
-        '<a class="kb-card kb-card-link ' + healthClass + stateClass + '" data-journey-id="' + escHtml(card.id) + '" href="/journey/' + escHtml(card.id) + '" title="' + escHtml(fullTitle) + '">',
+        '<a class="kb-card kb-card-link ' + healthClass + stateClass + '" data-journey-id="' + escHtml(card.id) + '" href="/journey/' + escHtml(card.id) + '" title="' + escHtml(fullTitle) + '"' +
+          (isDraggable ? ' draggable="true" ondragstart="kbDragStart(event)"' : '') + '>',
           '<div class="kb-card-title">' + escHtml(displayTitle) + '</div>',
           artefactBadge,
           '<div class="kb-card-meta">',
@@ -371,8 +377,14 @@ function _renderKanbanColumns(data) {
       ].join('');
     }).join('');
 
+    // s3.1 (AC1, AC2) -- ondragover/ondrop wire the column as a valid drop
+    // target. The actual between-column-vs-within-column and valid-vs-
+    // invalid-next-stage decisions are made client-side in kbColumnDrop,
+    // using the real DOM column order (built once at page load) -- not
+    // hardcoded here, since this renderer has no fixed knowledge of stage
+    // sequence beyond the order columns happen to be passed in.
     return [
-      '<div class="kb-column" data-stage="' + escHtml(col.stage) + '">',
+      '<div class="kb-column" data-stage="' + escHtml(col.stage) + '" ondragover="kbColumnDragOver(event)" ondrop="kbColumnDrop(event)">',
         '<div class="kb-column-head"><span class="kb-column-head-label">' + escHtml(col.stage) + '</span>' + wipBadge + '</div>',
         '<div class="kb-cards">',
           cardHtml || '<div class="kb-empty">—</div>',
@@ -399,6 +411,10 @@ function _renderKanbanColumns(data) {
       // s2.1 (AC1) -- health-border colours use the shared design-system
       // tokens (var(--green)/(--amber)/(--red)), not raw hex.
       '.kb-card { display: block; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px; text-decoration: none; color: inherit; }',
+      // s3.1 -- draggable cards get a grab cursor (visual affordance that
+      // this card can be dragged); [draggable] only applies to ready cards
+      // (see isDraggable above), so this never appears on a not-ready card.
+      '.kb-card[draggable="true"] { cursor: grab; }',
       '.kb-health-on-track, .kb-health-green { border-left: 4px solid var(--green); }',
       '.kb-health-at-risk, .kb-health-amber { border-left: 4px solid var(--amber); }',
       '.kb-health-blocked, .kb-health-red { border-left: 4px solid var(--red); }',
@@ -450,18 +466,23 @@ function _renderKanbanColumns(data) {
       '  btn.disabled = true;',
       '  var origText = btn.textContent;',
       '  btn.textContent = "Advancing…";',
-      '  fetch("/api/board/journey/" + encodeURIComponent(journeyId) + "/advance", { method: "POST" })',
+      '  _kbTriggerAdvance(journeyId).then(function(result) {',
+      '    if (result.ok) { window.location.reload(); return; }',
+      '    btn.disabled = false; btn.textContent = origText;',
+      '    alert(_kbAdvanceErrorMessage(result.body));',
+      '  }, function(e) {',
+      '    btn.disabled = false; btn.textContent = origText;',
+      '    alert("Advance failed: " + e.message);',
+      '  });',
+      '}',
+      // s3.1 -- the real advance call, shared between the click button
+      // (kbAdvanceCard above) and drag-and-drop (kbColumnDrop below). Both
+      // call the exact same endpoint S1.1 built -- no separate drag-specific
+      // backend mechanism, per this story's own Architecture Constraints.
+      'function _kbTriggerAdvance(journeyId) {',
+      '  return fetch("/api/board/journey/" + encodeURIComponent(journeyId) + "/advance", { method: "POST" })',
       '    .then(function(r) {',
       '      return r.json().catch(function() { return {}; }).then(function(body) { return { ok: r.ok, body: body }; });',
-      '    })',
-      '    .then(function(result) {',
-      '      if (result.ok) { window.location.reload(); return; }',
-      '      btn.disabled = false; btn.textContent = origText;',
-      '      alert(_kbAdvanceErrorMessage(result.body));',
-      '    })',
-      '    .catch(function(e) {',
-      '      btn.disabled = false; btn.textContent = origText;',
-      '      alert("Advance failed: " + e.message);',
       '    });',
       '}',
       'function _kbAdvanceErrorMessage(body) {',
@@ -470,6 +491,72 @@ function _renderKanbanColumns(data) {
       '  }',
       '  if (body && body.reason) { return body.reason; }',
       '  return "Advance failed.";',
+      '}',
+      // s3.1 (AC1, AC2) -- drag-and-drop between columns. The card\'s valid
+      // next stage is computed from the real DOM column order (built once,
+      // not hardcoded), so this stays correct across all 3 board scopes
+      // without any server-side stage-sequence data being threaded through.
+      'var _kbColumnOrder = null;',
+      'function _kbGetColumnOrder() {',
+      '  if (_kbColumnOrder) return _kbColumnOrder;',
+      '  _kbColumnOrder = Array.prototype.map.call(document.querySelectorAll(".kb-column"), function(col) {',
+      '    return col.getAttribute("data-stage");',
+      '  });',
+      '  return _kbColumnOrder;',
+      '}',
+      'function kbDragStart(event) {',
+      '  var card = event.target.closest(".kb-card");',
+      '  if (!card) return;',
+      '  var sourceColumn = card.closest(".kb-column");',
+      '  var journeyId = card.getAttribute("data-journey-id");',
+      '  var sourceStage = sourceColumn ? sourceColumn.getAttribute("data-stage") : "";',
+      '  event.dataTransfer.setData("text/plain", JSON.stringify({ journeyId: journeyId, sourceStage: sourceStage }));',
+      '  event.dataTransfer.effectAllowed = "move";',
+      '}',
+      'function kbColumnDragOver(event) {',
+      // Must call preventDefault unconditionally to allow a drop event to
+      // fire at all -- the actual valid/invalid decision happens at drop
+      // time (kbColumnDrop), not here, since dataTransfer\'s real payload
+      // is not readable during dragover in most browsers.
+      '  event.preventDefault();',
+      '}',
+      'function kbColumnDrop(event) {',
+      '  event.preventDefault();',
+      '  var raw = event.dataTransfer.getData("text/plain");',
+      '  if (!raw) return;',
+      '  var data; try { data = JSON.parse(raw); } catch (e) { return; }',
+      '  var targetColumn = event.currentTarget;',
+      '  var targetStage = targetColumn.getAttribute("data-stage");',
+      // s3.2 (within-column reorder) extension point: a drop where
+      // targetStage === data.sourceStage is a WITHIN-column reorder, not a
+      // between-column advance -- s3.1 does not handle that case (out of
+      // scope, see s3.2-within-column-reorder.md); it is intentionally a
+      // silent no-op here, not an error, since a future story extends this
+      // exact handler to add that behaviour rather than building a second,
+      // independent drag-and-drop implementation.
+      '  if (targetStage === data.sourceStage) return;',
+      '  var order = _kbGetColumnOrder();',
+      '  var sourceIdx = order.indexOf(data.sourceStage);',
+      '  var validNextStage = (sourceIdx !== -1 && sourceIdx + 1 < order.length) ? order[sourceIdx + 1] : null;',
+      '  if (targetStage !== validNextStage) {',
+      // AC2 -- rejected client-side, no server call attempted at all. The
+      // card was never optimistically moved in the DOM, so it already
+      // visually "reverts" to its original column with zero extra code --
+      // the browser\'s own native drag ghost simply disappears on an
+      // uncommitted drop.
+      '    alert("Can\'t move here — the next stage for this card is " + (validNextStage || "not available") + ".");',
+      '    return;',
+      '  }',
+      '  _kbTriggerAdvance(data.journeyId).then(function(result) {',
+      '    if (result.ok) { window.location.reload(); return; }',
+      // AC4 -- a real (non-readiness) gate-confirm failure: the server call
+      // WAS attempted (unlike AC2\'s client-side rejection above), and the
+      // real reason is surfaced, matching S1.1\'s AC5 error surfacing exactly
+      // -- never a generic "drop failed" message.
+      '    alert(_kbAdvanceErrorMessage(result.body));',
+      '  }, function(e) {',
+      '    alert("Advance failed: " + e.message);',
+      '  });',
       '}',
       // s3.4 (AC3) -- append the current board page's own URL as each card
       // link's ?from= value, so the detail view (handleGetJourneyById,
