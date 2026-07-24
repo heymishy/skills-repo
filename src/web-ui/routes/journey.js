@@ -1992,6 +1992,41 @@ async function handlePostGateConfirm(req, res) {
 }
 
 /**
+ * dsda-s1 — server-side twin of the client-side parseDefinitionArtefact's
+ * story-ID extraction (see the inline <script> in handleGetStageReview,
+ * "function parseDefinitionArtefact(md){" — the H1 and flat-story regex
+ * patterns below MUST mirror that function's story-ID regexes exactly;
+ * if one is updated for a new definition-artefact format, update the other.
+ * Returns an array of lowercase story IDs, or an empty array on parse
+ * failure/unrecognised format (never throws) — the caller falls back to
+ * an empty manual-entry textarea in that case (AC4).
+ */
+function extractStoryIdsFromDefinitionArtefact(md) {
+  var ids = [];
+  if (!md) return ids;
+  var hasH1Epics = /^# Epic \d+/m.test(md);
+  var hasH1Stories = /^# Story [a-z][a-z0-9.-]*\.\d+/im.test(md);
+  if (hasH1Epics || hasH1Stories) {
+    md.split(/^(?=# Story [a-z][a-z0-9.-]*\.\d+)/im).slice(1).forEach(function(sb) {
+      var sfl = sb.split('\n')[0];
+      var sM = sfl.match(/^# Story ([a-z][a-z0-9.-]*\.\d+)\s*[—-]\s*(.+)$/i);
+      if (sM) ids.push(sM[1].toLowerCase());
+    });
+    return ids;
+  }
+  var hasFlatStories = /\n## [a-z][a-z0-9.-]*\.\d+\s*[—-]/i.test(md);
+  if (hasFlatStories) {
+    md.split(/\n## /).slice(1).forEach(function(sblk) {
+      var sfl = sblk.split('\n')[0].trim();
+      var sM = sfl.match(/^([a-z][a-z0-9.-]*\.\d+)\s*[—-]\s*(.+)$/i);
+      if (sM) ids.push(sM[1].toLowerCase());
+    });
+    return ids;
+  }
+  return ids;
+}
+
+/**
  * GET /journey/:journeyId/stories — render story list entry form.
  */
 async function handleGetStories(req, res) {
@@ -2008,12 +2043,29 @@ async function handleGetStories(req, res) {
     return;
   }
   var safeId = escHtml(journeyId);
+  // dsda-s1 (AC1/AC4): auto-populate from the definition artefact instead of
+  // asking the operator to retype story slugs it already wrote. Falls back
+  // to an empty textarea (today's behaviour) when there's no definition
+  // stage recorded yet or the artefact can't be parsed.
+  var autoIds = [];
+  var definitionStage = (journey.completedStages || []).filter(function(s) { return s.skillName === 'definition'; }).pop();
+  if (definitionStage) {
+    try {
+      var repoRoot = getRepoRoot(req);
+      var artefactAbsPath = path.resolve(path.join(repoRoot, definitionStage.artefactPath));
+      var artefactContent = fs.readFileSync(artefactAbsPath, 'utf8');
+      autoIds = extractStoryIdsFromDefinitionArtefact(artefactContent);
+    } catch (_) { autoIds = []; }
+  }
+  var textareaValue = escHtml(autoIds.join('\n'));
   var body = [
     '<div class="sw-page-content">',
     '<h1>Story list for journey</h1>',
-    '<p>Enter one story slug per line. These will be processed through review, test-plan, and definition-of-ready.</p>',
+    autoIds.length
+      ? '<p>Every story found in the definition artefact is pre-filled below. Edit the list if you want to add, remove, or reorder before starting review.</p>'
+      : '<p>Enter one story slug per line. These will be processed through review, test-plan, and definition-of-ready.</p>',
     '<form method="POST" action="/api/journey/' + safeId + '/stories">',
-    '<textarea name="stories" rows="10" cols="50" placeholder="e.g. wgol.1&#10;wgol.2&#10;wgol.3"></textarea>',
+    '<textarea name="stories" rows="10" cols="50" placeholder="e.g. wgol.1&#10;wgol.2&#10;wgol.3">' + textareaValue + '</textarea>',
     '<br><button type="submit" class="sw-btn sw-btn--primary">Start per-story stages</button>',
     '</form>',
     '</div>'
@@ -3579,6 +3631,7 @@ module.exports = {
   handlePostGateConfirm,
   handleGetStories,
   handlePostStories,
+  extractStoryIdsFromDefinitionArtefact,
   handleGetJourneyComplete,
   handleGetStageControls,
   handlePostEstimate,
