@@ -5,6 +5,7 @@
 | 2026-04-12 | 2026-04-09-skills-platform-phase1 | 8 | 28% | — | 11h7m | — | 1h | 2 |
 | 2026-04-12 | 2026-04-11-skills-platform-phase2 | 13 | 25% | 30h | 1h | -29h | 1h | 2 |
 | 2026-04-20 | 2026-04-19-skills-platform-phase4 | 24 | 25% | 0.75h (E2) | ~6h | +5.25h | 1h | 2 |
+| 2026-07-24 | 2026-07-24-interactive-kanban-boards (+3 triage fixes) | 11 | ~15% | — | ~1 session-day | — | ~0.5h | 1 |
 
 ```yaml estimation-norms
 - date: "2026-04-12"
@@ -127,5 +128,29 @@ sessionId: "568d554a"
 premiumRequestsForecast: null
 premiumRequestsActual: null
 outerLoopCharacter: "agent-heavy-wave-delivery"
-note: "null-path � no E1/E2 recorded; seeds normalisation table only. 25% engagement fraction reflects highly agent-heavy delivery: 4 dispatch waves, full TDD inner loop per story, operator focus concentrated in Wave 1 (OAuth design) and DoD writing. 0.33h focus/story is a floor calibration point for agent-wave features. For comparison: Phase 4 (p4) was 0.89h focus/story for complexity-heavy genuinely-novel stories. WUCE was simpler ACs, well-understood surface patterns, agent did full TDD � hence 0.33 is plausible. Calibration rule proposed: agent-wave delivery with pre-existing surface patterns ? 0.3-0.4h/story outer loop. Novel surface with operator design decisions ? 0.7-1.0h/story."
+note: "null-path -- no E1/E2 recorded; seeds normalisation table only. 25% engagement fraction reflects highly agent-heavy delivery: 4 dispatch waves, full TDD inner loop per story, operator focus concentrated in Wave 1 (OAuth design) and DoD writing. 0.33h focus/story is a floor calibration point for agent-wave features. For comparison: Phase 4 (p4) was 0.89h focus/story for complexity-heavy genuinely-novel stories. WUCE was simpler ACs, well-understood surface patterns, agent did full TDD -- hence 0.33 is plausible. Calibration rule proposed: agent-wave delivery with pre-existing surface patterns -> 0.3-0.4h/story outer loop. Novel surface with operator design decisions -> 0.7-1.0h/story."
+- date: "2026-07-24"
+  feature: "2026-07-24-interactive-kanban-boards (+3 post-merge triage fixes: dtra-s1, dspw-s1, tdc-s1)"
+  storyCount: 11
+  engagementFraction: 0.15
+  totalSessionSpanH: null
+  outerLoopEstimateH: null
+  outerLoopActualH: null
+  outerLoopDeltaH: null
+  innerLoopHumanH: 0.5
+  agentAutonomousH: null
+  calendarDays: 1
+  outerLoopSessions: 1
+  focusHPerStory: null
+  source: "none"
+  derivedBy: "manual estimate, no parse-session-timing.js run -- no precise wall-clock instrumentation available for this session"
+  thresholdSensitivity: "not measured"
+  premiumRequestsForecast: null
+  premiumRequestsActual: null
+  outerLoopCharacter: "agent-direct-implementation (no coding-agent dispatch used for the 3 triage fixes; 5 of 8 kanban stories salvaged/completed directly after dispatched-agent failures -- see decisions.md across the feature)"
+  acCount: 47
+  acsAutomated: 44
+  acsManualVerification: 3
+  testMethod: "Node unit/integration tests (per-story check-*.js files) + Playwright E2E (real browser drag-and-drop simulation for S3.1/S3.2) + 1 documentation-only story (dspw-s1, manual review, no automated tests)"
+  note: "Null-path -- no E1/E2 recorded for either the kanban feature or the 3 short-track triage fixes; seeds normalisation table only. Engagement fraction (~15%) is a rough estimate, not measured: this session's real operator touchpoints were staging-deploy confirmations, PR-merge confirmations, and AskUserQuestion pauses at 2 genuine decision points (triage sequencing, DoD-batch sequencing) -- otherwise heavily agent-autonomous, including salvaging/completing 5 of 8 dispatched-then-died coding-agent attempts directly rather than re-dispatching. Distinguishing feature vs. prior agent-wave entries (wuce, p4): this session mixed formal outer-loop-built stories (the 8 kanban stories, full discovery->DoR chain already existed) with short-track fixes discovered and built ad hoc mid-session (dtra-s1/dspw-s1/tdc-s1, triggered by direct operator bug reports rather than planned scope) -- a delivery pattern not yet represented in this table. Calibration candidate: short-track reactive fixes triggered by live operator findings mid-session may have a meaningfully different focus-time profile than planned, DoR-signed-off stories -- worth tracking separately once wall-clock data exists."
 ```
