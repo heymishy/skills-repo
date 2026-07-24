@@ -52,6 +52,7 @@ const { handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers
 const { createSettingsHandlers } = require('./routes/settings'); // c1
 const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
 const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
+const { adminMockGatewayGet, adminMockGatewayPost }                  = require('./routes/admin-mock-gateway'); // amgt-s1
 const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1
 const { setModulesAdapter } = require('./adapters/modules-adapter'); // a1
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
@@ -2138,6 +2139,20 @@ async function router(req, res) {
     await requireAdmin(req, res, () => { _raOk = true; });
     if (!_raOk) return;
     await adminCreditsPost(req, res);
+
+  } else if (pathname === '/admin/mock-gateway' && req.method === 'GET') {
+    // amgt-s1 — admin mock LLM gateway toggle view (requireAdmin gate)
+    let _raOk = false;
+    await requireAdmin(req, res, () => { _raOk = true; });
+    if (!_raOk) return;
+    await adminMockGatewayGet(req, res);
+
+  } else if (pathname === '/api/admin/mock-gateway/toggle' && req.method === 'POST') {
+    // amgt-s1 — admin mock LLM gateway toggle flip (requireAdmin gate)
+    let _raOk = false;
+    await requireAdmin(req, res, () => { _raOk = true; });
+    if (!_raOk) return;
+    await adminMockGatewayPost(req, res);
 
   } else if (pathname === '/team/members' && req.method === 'GET') {
     // tir-s3 — team management page (requireAdmin gate)

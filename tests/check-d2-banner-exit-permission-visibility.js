@@ -594,15 +594,19 @@ async function main() {
 
   queue.push(function() {
     console.log('\n[d2] T24 -- Security NFR: every existing requireAdmin-gated route already reflects the effective role (enumeration checklist)');
-    return test('server.js: exactly 8 requireAdmin( gate call sites, all tenantId-keyed via D1\'s session swap (7 pre-existing + d3\'s new /api/admin/impersonate/audit route, merged after this count was first written)', function() {
+    return test('server.js: exactly 10 requireAdmin( gate call sites, all tenantId-keyed via D1\'s session swap (8 pre-existing + amgt-s1\'s new GET /admin/mock-gateway + POST /api/admin/mock-gateway/toggle routes, merged after this count was last written)', function() {
       var src = fs.readFileSync(SERVER_PATH, 'utf8');
       var matches = src.match(/await requireAdmin\(/g) || [];
-      assert.strictEqual(matches.length, 8, 'expected exactly 8 requireAdmin( gate call sites in server.js -- if this changes again, D4\'s security review checklist must be re-run against the new route. Went from 7 to 8 when d3\'s GET /api/admin/impersonate/audit route merged (verified to call requireAdmin the same standard way as every other gated route -- no route-specific bypass, so it automatically inherits D1\'s tenantId-keyed effective-role behaviour).');
-      // Confirm the new route specifically is one of the 8, and calls requireAdmin
+      assert.strictEqual(matches.length, 10, 'expected exactly 10 requireAdmin( gate call sites in server.js -- if this changes again, D4\'s security review checklist must be re-run against the new route. Went from 8 to 10 when amgt-s1\'s GET /admin/mock-gateway and POST /api/admin/mock-gateway/toggle routes merged (verified to call requireAdmin the same standard way as every other gated route -- no route-specific bypass, so they automatically inherit D1\'s tenantId-keyed effective-role behaviour).');
+      // Confirm the new routes specifically are among the 10, and call requireAdmin
       // the identical way every other gated route does (no special-cased logic
       // that could bypass the effective-role behaviour D1 already established).
       var auditRouteBlock = src.slice(src.indexOf("pathname === '/api/admin/impersonate/audit'"), src.indexOf("pathname === '/api/admin/impersonate/audit'") + 600);
       assert.ok(/await requireAdmin\(req, res, \(\) => \{ _raOk = true; \}\)/.test(auditRouteBlock), 'expected d3\'s audit route to call requireAdmin the same standard way as every other gated route');
+      var mockGatewayGetBlock = src.slice(src.indexOf("pathname === '/admin/mock-gateway'"), src.indexOf("pathname === '/admin/mock-gateway'") + 400);
+      assert.ok(/await requireAdmin\(req, res, \(\) => \{ _raOk = true; \}\)/.test(mockGatewayGetBlock), 'expected amgt-s1\'s GET /admin/mock-gateway route to call requireAdmin the same standard way as every other gated route');
+      var mockGatewayPostBlock = src.slice(src.indexOf("pathname === '/api/admin/mock-gateway/toggle'"), src.indexOf("pathname === '/api/admin/mock-gateway/toggle'") + 400);
+      assert.ok(/await requireAdmin\(req, res, \(\) => \{ _raOk = true; \}\)/.test(mockGatewayPostBlock), 'expected amgt-s1\'s POST /api/admin/mock-gateway/toggle route to call requireAdmin the same standard way as every other gated route');
     });
   });
 
