@@ -607,9 +607,17 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
         '<button type="button" onclick="pshConfirmDeleteProduct(\'' + _escapeHtml(productId) + '\')" style="padding:8px 14px;border:1px solid #ef4444;border-radius:6px;background:none;color:#ef4444;font-size:13px;cursor:pointer">Delete product</button>' +
         '<a href="/products/' + _escapeHtml(productId) + '/kanban" style="padding:8px 14px;border:1px solid var(--line);border-radius:6px;text-decoration:none;font-size:13px;color:var(--ink)">Kanban</a>' +
         '<a href="/products/' + _escapeHtml(productId) + '/roadmap" style="padding:8px 14px;border:1px solid var(--line);border-radius:6px;text-decoration:none;font-size:13px;color:var(--ink)">Roadmap</a>' +
-        '<form method="POST" action="/products/' + _escapeHtml(productId) + '/features" style="margin:0">' +
-          '<button type="submit" style="padding:8px 16px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">New feature</button>' +
-        '</form>' +
+        '<div style="position:relative">' +
+          '<button type="button" id="psh-new-feature-btn" onclick="pshToggleNewFeaturePanel()" style="padding:8px 16px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">New feature</button>' +
+          '<div id="psh-new-feature-panel" style="display:none;position:absolute;right:0;top:calc(100% + 6px);z-index:20;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;min-width:290px;box-shadow:0 4px 14px rgba(0,0,0,.12)">' +
+            '<form method="POST" action="/products/' + _escapeHtml(productId) + '/features" style="margin:0">' +
+              '<div style="font-size:13px;font-weight:600;margin-bottom:10px">Where are you starting from?</div>' +
+              '<label style="display:flex;align-items:baseline;gap:8px;font-size:13px;margin-bottom:8px;cursor:pointer;line-height:1.5"><input type="radio" name="startSkill" value="ideate"> Rough idea — explore the opportunity space first</label>' +
+              '<label style="display:flex;align-items:baseline;gap:8px;font-size:13px;margin-bottom:14px;cursor:pointer;line-height:1.5"><input type="radio" name="startSkill" value="discovery" checked> Formed idea — jump straight to discovery</label>' +
+              '<button type="submit" style="width:100%;padding:8px 12px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Start &#8594;</button>' +
+            '</form>' +
+          '</div>' +
+        '</div>' +
       '</div>' +
     '</div>' +
     freshnessHtml +
@@ -640,6 +648,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
       '}catch(e){alert(\'Sync failed: \'+e.message);}' +
       'finally{btn.disabled=false;btn.textContent=\'Refresh\';}' +
     '}' +
+    'function pshToggleNewFeaturePanel(){var p=document.getElementById("psh-new-feature-panel");p.style.display=(p.style.display==="none"||!p.style.display)?"block":"none";}' +
     'function rpcShowCreateForm(){document.getElementById("rpc-create-panel").style.display="block";document.getElementById("rpc-connect-panel").style.display="none";}' +
     'function rpcShowConnectForm(){document.getElementById("rpc-connect-panel").style.display="block";document.getElementById("rpc-create-panel").style.display="none";}' +
     'async function rpcSubmitCreate(productId){var name=document.getElementById("rpc-create-name").value.trim();if(!name){alert("Repo name required");return;}try{var r=await fetch("/products/"+productId+"/repo/create",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:name})});if(r.ok){window.location.reload();}else{var j=await r.json();alert("Error: "+(j.error||"Failed"));}}catch(e){alert("Error: "+e.message);}}' +
@@ -747,6 +756,18 @@ function _isTeamPlan(session) {
  */
 function _readBody(req) {
   if (req.body !== undefined) return Promise.resolve(req.body);
+  // pnfc-s1: pre-existing test req objects (constructed as plain
+  // `{ params, session }` literals, no EventEmitter stream) have neither
+  // `body` set nor a real `.on`. Previously no handler needing a body was
+  // ever called with such an object, so this case never triggered — but
+  // handlePostProductFeature is now extended to read a `startSkill` field via
+  // this same helper while several existing test files
+  // (check-jrf-s2-register-product-feature-journeys.js,
+  // check-psh-s4-navigation.js) call it with exactly that plain-object shape.
+  // Returning {} here (rather than throwing on the missing req.on) keeps
+  // those pre-existing tests passing unmodified and matches _readFormBody's
+  // own safe-default behaviour on parse failure.
+  if (typeof req.on !== 'function') return Promise.resolve({});
   return new Promise(function(resolve) {
     var raw = '';
     req.on('data', function(c) { raw += c; });
@@ -1490,6 +1511,17 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
   var tenantId = req.session && req.session.tenantId;
   var productId = req.params && req.params.id;
 
+  // pnfc-s1: branch on the submitted startSkill exactly as handlePostJourney
+  // (routes/journey.js, POST /api/journey) already does -- 'ideate' for the
+  // rough-idea path, 'discovery' (the pre-existing default) for everything
+  // else, including omission. This is a deliberate duplication of
+  // handlePostJourney's one-line ternary rather than a call into that
+  // function -- see decisions.md for why extending handlePostJourney to also
+  // accept productId was rejected in favour of this smaller, lower-risk
+  // change confined to this file.
+  req.body = await _readBody(req);
+  var startSkill = (req.body && req.body.startSkill === 'ideate') ? 'ideate' : 'discovery';
+
   // jrf-s2: FIX — register the journey through the shared journey-store
   // (createJourney + setJourneyFields), the SAME path handlePostJourney
   // (routes/journey.js) already uses correctly. The previous raw, direct
@@ -1512,7 +1544,8 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
   _ph.capture(tenantId, 'journey_created', {
     journeyId: journeyId,
     productId: productId,
-    tenantId: tenantId
+    tenantId: tenantId,
+    startSkill: startSkill
   });
 
   // jrf-s1: FIX — Create a skill session and redirect to discovery chat (not broken /journeys/ route)
@@ -1530,8 +1563,8 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
     var sid = crypto.randomUUID();
     var sessionPath = path.join(repoRoot, 'artefacts', featureSlug, 'sessions', sid);
 
-    // Register the session
-    _skillsRoute.registerHtmlSession(sid, sessionPath, 'discovery', {
+    // Register the session under the chosen skill (pnfc-s1: was hardcoded 'discovery')
+    _skillsRoute.registerHtmlSession(sid, sessionPath, startSkill, {
       productProfile: 'default',
       featureSlug: featureSlug
     });
@@ -1541,18 +1574,18 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
 
     // Mark active session on journey (if store supports it)
     if (_journeyStore.setActiveSession) {
-      _journeyStore.setActiveSession(journeyId, sid, 'discovery');
+      _journeyStore.setActiveSession(journeyId, sid, startSkill);
     }
 
     // Mark stage as active on disk
     try {
-      _journeyDisk.updateStage(featureSlug, 'discovery', { status: 'active', sessionId: sid }, repoRoot);
+      _journeyDisk.updateStage(featureSlug, startSkill, { status: 'active', sessionId: sid }, repoRoot);
     } catch (_) {
       // Disk update is best-effort; don't fail if it doesn't work
     }
 
     // Redirect to the skill chat (FIXED: /skills/ not /journeys/)
-    var _target = '/skills/discovery/sessions/' + encodeURIComponent(sid) + '/chat';
+    var _target = '/skills/' + encodeURIComponent(startSkill) + '/sessions/' + encodeURIComponent(sid) + '/chat';
     if (res.redirect) {
       res.redirect(_target); // test mock path
     } else {
@@ -1562,7 +1595,7 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
   } catch (err) {
     // Fallback: if session creation fails, still redirect but log the error
     console.error('[handlePostProductFeature] Failed to create skill session:', err);
-    var _fallbackTarget = '/skills/discovery/sessions/fallback/chat';
+    var _fallbackTarget = '/skills/' + encodeURIComponent(startSkill) + '/sessions/fallback/chat';
     if (res.redirect) {
       res.redirect(_fallbackTarget); // test mock path
     } else {
