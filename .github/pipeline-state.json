@@ -15147,9 +15147,11 @@
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-07-24-design-skill-pipeline-wiring/dor/dspw-s1-document-design-skill-in-pipeline-dor.md",
           "dorStatus": "signed-off",
-          "prStatus": "merged"
+          "prStatus": "merged",
+          "id": "dspw-s1-document-design-skill-in-pipeline"
         }
-      ]
+      ],
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
