@@ -1965,6 +1965,26 @@ function _listHtmlSessions() {
 }
 
 /**
+ * s1.1 -- bulk session-store read: given a list of session IDs, returns a
+ * map of sessionId -> session object using a SINGLE pass over the session
+ * store, regardless of how many IDs are requested. Exists so kanban board
+ * rendering (which needs advance-readiness for every card on the board at
+ * once) never performs one _getHtmlSession() call per card -- the N+1 risk
+ * explicitly called out in s1.1's DoR contract (AC3).
+ * @param {string[]} sessionIds
+ * @returns {object} map of sessionId -> session (only ids that were found)
+ */
+function _getHtmlSessionsBulk(sessionIds) {
+  var idSet = new Set(sessionIds || []);
+  var result = {};
+  if (idSet.size === 0) return result;
+  _sessionStore.forEach(function(session, id) {
+    if (idSet.has(id)) result[id] = session;
+  });
+  return result;
+}
+
+/**
  * Process one user turn in the model-first chat flow.
  * Appends user turn, calls _skillTurnExecutor once, parses artefact signal, appends assistant turn.
  *
@@ -4763,7 +4783,7 @@ module.exports = {
   handleGetChatHtml, handlePostTurnHtml,
   htmlSubmitTurn, buildSystemPrompt,
   // wuce.26 — test helpers + skill-turn executor adapter setter
-  _getHtmlSession, _setHtmlSession, _listHtmlSessions, setSkillTurnExecutorAdapter,
+  _getHtmlSession, _setHtmlSession, _listHtmlSessions, _getHtmlSessionsBulk, setSkillTurnExecutorAdapter,
   // wsm.1 — disk session writer injectable
   setSessionStore,
   // wsm.2 — Redis skill session injectable, compact read/merge, eviction

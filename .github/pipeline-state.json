@@ -14713,24 +14713,25 @@
             {
               "slug": "s1.1-board-advance-action",
               "name": "Add a board action that advances a ready journey via the real gate-confirm route",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-23T22:35:19.824Z",
+              "updatedAt": "2026-07-23T23:15:33.513Z",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 8,
-                "passing": 0
+                "passing": 8
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s1.1-board-advance-action-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s1.1-board-advance-action-dor-contract.md",
               "dorStatus": "signed-off",
-              "prStatus": "none"
+              "prStatus": "draft",
+              "notes": "Implemented: new POST /api/board/journey/:journeyId/advance endpoint (products.js handlePostBoardAdvance) delegating to the real handlePostGateConfirm (routes/journey.js) via a captured-response call -- no reimplementation of validation/persistence logic. Added a single-pass batched bulk session-store read (_getHtmlSessionsBulk, skills.js) so board-render readiness lookup never scales per-card (AC3). Tenant-ownership check matches the existing 404-not-403 pattern (bri-s3.4). Verified: 6/6 unit+integration tests pass (tests/check-s1.1-board-advance-action.js), 2/2 real Playwright E2E tests pass (tests/e2e/s1.1-board-advance-action.spec.js, run directly with NODE_ENV=test after the dispatched agent hit its session usage limit mid-verification -- picked up and completed independently). Full npm test: 385 files, 36 failed, all 36 confirmed pre-existing baseline gaps via scripts/ci-test-regression-check.js -- zero new regressions."
             },
             {
               "slug": "s1.2-not-ready-explanation",
@@ -14936,7 +14937,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-07-23T22:35:19.824Z",
+      "updatedAt": "2026-07-23T23:15:33.513Z",
       "discoveryStatus": "approved",
       "slicingStrategy": "risk-first",
       "guardrails": []

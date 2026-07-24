@@ -52,7 +52,7 @@ const { handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers
 const { createSettingsHandlers } = require('./routes/settings'); // c1
 const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
 const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
-const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1
 const { setModulesAdapter } = require('./adapters/modules-adapter'); // a1
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
@@ -1342,6 +1342,36 @@ if (process.env.NODE_ENV === 'test') {
     setUserDb(_fakeTestDb);
     _pshPool = _fakeTestDb;
     console.log('[bri-s3.2] fake in-memory users/products DB wired (NODE_ENV=test, no DATABASE_URL)');
+
+    // s1.1: bridge the in-memory journey-store's async write-through to this
+    // SAME fake db instance, test-mode only. Without this, real journeys
+    // (created via the real disk-backed journey-store) are invisible to the
+    // kanban board's own _pshPool-backed queries and to the new board-advance
+    // endpoint's tenant-ownership check -- the two stores would silently
+    // diverge in local E2E runs (a real advance would mutate the in-memory
+    // journey but never be reflected on the next board render). Wiring
+    // journey-store's existing setPgAdapter() extension point (the SAME one
+    // production uses for the real Postgres adapter above) at this fake db
+    // makes a real create -> real advance -> real board re-render loop
+    // testable end-to-end locally, without a live Postgres instance.
+    // NOTE: re-requires './modules/journey-store' rather than reusing the
+    // `_journeyStore` const from the WIRE_SKILL_ADAPTERS-guarded block above
+    // -- that const is block-scoped to an `if` this code path does not run
+    // under in the standard E2E webServer config (no WIRE_SKILL_ADAPTERS=true),
+    // so it would be out of scope here. require() returns the same cached
+    // singleton module either way.
+    require('./modules/journey-store').setPgAdapter({
+      saveJourney: function(journey) {
+        return _fakeTestDb._upsertJourney({
+          journey_id: journey.journeyId,
+          tenant_id: journey.tenantId || null,
+          product_id: journey.productId || null,
+          feature_slug: journey.featureSlug,
+          stage: journey.activeSkill || null,
+          active_session_id: journey.activeSessionId || null
+        });
+      }
+    });
   }
 
   // bri-s3.2 AC5: real-LLM-call counter. Wraps https.request so an @mocked E2E
@@ -1547,6 +1577,55 @@ async function router(req, res) {
     if (req.session) { req.session.firstLogin = false; }
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true }));
+    return;
+  }
+
+  // s1.1: seed a real, board-visible journey with a controllable session
+  // `done` state, for the board-advance E2E specs. Bypasses the slow real
+  // chat-turn flow (mirrors /test/seed-definition-session's precedent above)
+  // -- creates a REAL in-memory journey via journey-store.js (the same store
+  // handlePostGateConfirm/handlePostBoardAdvance operate on), links a REAL
+  // HTML session to it, and (via the setPgAdapter bridge wired above) the
+  // journey becomes visible to the kanban board's own product-scoped queries
+  // and to the board-advance endpoint's tenant-ownership check.
+  // Body: { featureSlug, productId, tenantId, stage, done }. tenantId/productId
+  // default to the caller's own session tenant / a fixed test product id so a
+  // spec can omit them for the common case.
+  if (pathname === '/test/seed-board-journey' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    let raw = '';
+    for await (const chunk of req) { raw += chunk; }
+    let body = {};
+    try { body = raw ? JSON.parse(raw) : {}; } catch (_) { body = {}; }
+
+    const _journeyStoreForSeed = require('./modules/journey-store');
+    const _skillsForSeed = require('./routes/skills');
+
+    const featureSlug = body.featureSlug || ('s1-1-e2e-feature-' + Date.now());
+    const tenantId = body.tenantId || (req.session && req.session.tenantId) || 'e2e-tester';
+    const productId = body.productId || 'e2e-board-product';
+    const stage = body.stage || 'discovery';
+    const done = body.done !== false; // default ready (done: true) unless explicitly false
+
+    const journeyObj = _journeyStoreForSeed.createJourney(featureSlug, 'default');
+    const journeyId = journeyObj.journeyId;
+    _journeyStoreForSeed.setStoryList(journeyId, [featureSlug + '-story']);
+    _journeyStoreForSeed.setJourneyFields(journeyId, { tenantId: tenantId, productId: productId, ownerId: 'e2e-tester' });
+
+    const sessionId = 'seed-sid-' + journeyId;
+    _skillsForSeed._setHtmlSession(sessionId, {
+      skillName: stage,
+      sessionPath: null,
+      systemPrompt: 'test',
+      turns: [],
+      artefactContent: '# seeded artefact for ' + featureSlug,
+      artefactPath: null,
+      done: done,
+      journeyId: journeyId
+    });
+    _journeyStoreForSeed.setActiveSession(journeyId, sessionId, stage);
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ journeyId: journeyId, sessionId: sessionId, productId: productId, tenantId: tenantId, stage: stage }));
     return;
   }
 
@@ -2203,6 +2282,12 @@ async function router(req, res) {
     // psh-s6 — per-product kanban board with 8 stage columns and health indicators
     req.params = { id: pathname.split('/')[2] };
     authGuard(req, res, async () => { await handleGetProductKanban(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/api\/board\/journey\/[^/]+\/advance$/) && req.method === 'POST') {
+    // s1.1 — board-driven "Advance" action: a new caller of the existing,
+    // already-proven POST /api/journey/:journeyId/gate-confirm route.
+    req.params = { journeyId: pathname.split('/')[4] };
+    authGuard(req, res, async () => { await handlePostBoardAdvance(req, res, null, _pshPool, null); });
 
   } else if (pathname.match(/^\/products\/[^/]+\/roadmap$/) && req.method === 'GET') {
     // a5 -- Roadmap tab: discovery-only/ideate-only work with no pipeline-state.json entry
