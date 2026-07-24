@@ -14839,11 +14839,11 @@
             {
               "slug": "s3.2-within-column-reorder",
               "name": "Reorder cards within a column for local prioritisation",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-24T10:25:09.704Z",
+              "updatedAt": "2026-07-24T18:48:40.754Z",
               "testPlan": {
                 "status": "all-passing",
                 "totalTests": 12,
@@ -14856,7 +14856,7 @@
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.2-within-column-reorder-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.2-within-column-reorder-dor-contract.md",
               "dorStatus": "signed-off",
-              "prStatus": "draft"
+              "prStatus": "merged"
             },
             {
               "slug": "s3.3-advisory-wip-limits",
@@ -15203,7 +15203,7 @@
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-07-24T09:52:22.736Z",
+          "updatedAt": "2026-07-24T18:48:32.457Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 7,
