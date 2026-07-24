@@ -14771,19 +14771,19 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "hasLayoutDependentGaps": true,
-              "updatedAt": "2026-07-23T22:35:19.824Z",
+              "updatedAt": "2026-07-24T04:30:59.272Z",
               "testPlan": {
-                "status": "written",
-                "totalTests": 3,
-                "passing": 0
+                "status": "all-passing",
+                "totalTests": 9,
+                "passing": 9
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "e2eToolingRequired": false,
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s2.1-shared-token-redesign-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s2.1-shared-token-redesign-dor-contract.md",
               "dorStatus": "signed-off",
-              "prStatus": "none"
+              "prStatus": "draft"
             },
             {
               "slug": "s2.2-title-truncation-artefact-badge",
