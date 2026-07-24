@@ -15078,8 +15078,8 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-24-definition-stories-default-all/dor/dsda-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-24-definition-stories-default-all/dor/dsda-s1-dor-contract.md",
-          "prStatus": "draft",
-          "updatedAt": "2026-07-24T00:00:00.000Z",
+          "prStatus": "merged",
+          "updatedAt": "2026-07-24T03:49:03.438Z",
           "notes": "Operator-reported gap (2026-07-24): after /definition, handleGetStories presented a manual textarea asking the operator to retype story slugs, even though /definition already wrote them into the real artefact. Fix adds extractStoryIdsFromDefinitionArtefact (journey.js), a new server-side extractor mirroring the client-side parseDefinitionArtefact's own story-ID regexes for its two documented formats (H1 epic/story headers, flat-story fallback) -- cross-checked directly against the real client-side parser for zero drift (AC5). handleGetStories now pre-fills the textarea from the definition artefact, falling back to the existing empty manual-entry textarea when extraction finds nothing (AC4) or when there's no definition stage yet. The textarea remains a normal editable field, so the existing manual-entry mechanism doubles as the edit affordance (AC3) with no separate UI needed. 9 unit/integration tests + 1 Playwright E2E test (drives a real mocked-LLM journey to /journey/:id/stories) all pass. Two dispatched coding-agent attempts for this story died during research before writing any code (monthly spend limit); implemented directly. Draft PR opened."
         }
       ]
