@@ -181,10 +181,10 @@ async function main() {
 
   queue.push(function() {
     console.log('\n[d4] AC1 -- exhaustive requireAdmin(req...) call-site enumeration (server.js)');
-    return test('server.js: exactly the 8 known requireAdmin(req...) call sites exist, all still present', function() {
+    return test('server.js: exactly the 10 known requireAdmin(req...) call sites exist, all still present (8 pre-existing + amgt-s1\'s new GET /admin/mock-gateway + POST /api/admin/mock-gateway/toggle routes)', function() {
       var src = fs.readFileSync(SERVER_PATH, 'utf8');
       var matches = src.match(/requireAdmin\(req/g) || [];
-      assert.strictEqual(matches.length, 8, 'expected exactly 8 requireAdmin(req...) call sites (exhaustive per this story\'s AC1 audit) -- a changed count means a new admin-gated route was added without going through this same enumeration');
+      assert.strictEqual(matches.length, 10, 'expected exactly 10 requireAdmin(req...) call sites (exhaustive per this story\'s AC1 audit) -- a changed count means a new admin-gated route was added without going through this same enumeration. Went from 8 to 10 when amgt-s1\'s mock-gateway toggle routes merged (verified to call requireAdmin the same standard way as every other gated route).');
 
       var expectedRoutes = [
         "'/admin/credits'",
@@ -194,7 +194,9 @@ async function main() {
         "'/api/team/bulk-add-github-org'",
         "'/admin/impersonate'",
         "'/api/admin/impersonate/start'",
-        "'/api/admin/impersonate/audit'"
+        "'/api/admin/impersonate/audit'",
+        "'/admin/mock-gateway'",
+        "'/api/admin/mock-gateway/toggle'"
       ];
       expectedRoutes.forEach(function(routeLiteral) {
         assert.ok(src.includes(routeLiteral), 'expected server.js to still register route ' + routeLiteral);

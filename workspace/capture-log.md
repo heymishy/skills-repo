@@ -596,6 +596,12 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   source: agent-auto
 
 - date: 2026-07-24
+  session-phase: inner-loop / amgt-s1 (admin mock gateway toggle) -- implementation complete
+  signal-type: learning
+  signal-text: "amgt-s1's fix (admin-gated in-memory runtime override for isMockGatewayEnabled(), consulted after the existing NODE_ENV=production hard-override) is fully implemented and verified: mock-llm-gateway.js's 3 new override functions, a new routes/admin-mock-gateway.js reusing admin-credits.js's requireAdmin/renderShell/CSRF pattern verbatim, and 2 new server.js routes. All 9 of its own tests pass; the production hard-override (AC4) confirmed to run first via direct code read. Adding 2 new requireAdmin-gated routes pushed server.js's total requireAdmin(req...) call-site count from 8 to 10, which failed 2 pre-existing security-checklist enumeration tests (check-d2 T24, check-d4 AC1) that hardcode this exact count by design, to force manual re-review whenever a new admin route is added. Both tests updated (count bumped to 10, new verification blocks added confirming both new routes call requireAdmin the same standard way as every other gated route, no bypass) and now pass. This is the second time this exact checklist has been bumped (first 7 to 8 for d3's audit route) -- confirms the by-design intent is working as intended, not a regression."
+  source: agent-auto
+
+- date: 2026-07-24
   session-phase: inner-loop / pnfc-s1 (product new-feature idea choice) -- implementation complete
   signal-type: learning
   signal-text: "pnfc-s1's fix (offering the same formed-idea/rough-idea startSkill choice on /products/:id's 'New feature' panel that /journey already has) is fully implemented and verified: products.js's handlePostProductFeature now reads startSkill via a new _readBody call, defaults to 'discovery' for anything but the literal 'ideate', and threads it through registerHtmlSession/setActiveSession/updateStage/redirect. decisions.md documents the deliberate choice to duplicate (not extend) handlePostJourney's branch logic, following the jrf-s1/jrf-s2 precedent, specifically to satisfy AC5's 'must not regress /journey' requirement by leaving journey.js completely untouched. All 5 unit tests plus 4 Playwright E2E tests pass; the 2 pre-existing tests this risked breaking (check-jrf-s2, check-psh-s4) re-run clean with zero regression."
