@@ -287,8 +287,10 @@ function _renderKanbanColumns(data) {
           '<span class="kb-validation-failed-text">Advance failed</span>' +
         '</div>';
       } else if (hasReadiness && card.ready) {
+        // s3.4 -- pass event so kbAdvanceCard can stop it reaching the card's
+        // own wrapping <a> (AC1); the button's action must not also navigate.
         actionHtml = '<div class="kb-card-actions">' +
-          '<button type="button" class="kb-advance-btn" data-journey-id="' + escHtml(card.id) + '" onclick="kbAdvanceCard(this)">Advance &rarr;</button>' +
+          '<button type="button" class="kb-advance-btn" data-journey-id="' + escHtml(card.id) + '" onclick="kbAdvanceCard(this, event)">Advance &rarr;</button>' +
         '</div>';
       } else if (hasReadiness) {
         // s1.2 (AC1, AC2) -- routine not-ready case: a short, always-visible,
@@ -300,15 +302,22 @@ function _renderKanbanColumns(data) {
         '</div>';
       }
 
+      // s3.4 (AC1) -- the card is now a real, keyboard-activatable link to
+      // its detail view (confirmed destination: /journey/:id -- see
+      // decisions.md "S3.4 route/identifier investigation" -- card.id
+      // already IS the journeyId, no separate identifier mapping needed).
+      // The "?from=" query value is appended client-side (kbAppendBoardBackLinks
+      // below), not server-rendered here, since this shared renderer has no
+      // reliable knowledge of which of the 3 board-scope pages is calling it.
       return [
-        '<div class="kb-card ' + healthClass + stateClass + '" data-journey-id="' + escHtml(card.id) + '">',
+        '<a class="kb-card kb-card-link ' + healthClass + stateClass + '" data-journey-id="' + escHtml(card.id) + '" href="/journey/' + escHtml(card.id) + '">',
           '<div class="kb-card-title">' + escHtml(card.title || card.name || '(untitled)') + '</div>',
           '<div class="kb-card-meta">',
             '<span class="kb-card-id">' + escHtml(card.id) + '</span>',
             ' · <span class="kb-health-label">' + escHtml(healthLabel) + '</span>',
           '</div>',
           actionHtml,
-        '</div>'
+        '</a>'
       ].join('');
     }).join('');
 
@@ -328,7 +337,9 @@ function _renderKanbanColumns(data) {
       '.kb-column { flex: 0 0 240px; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 12px; display: flex; flex-direction: column; }',
       '.kb-column-head { font-weight: 600; font-size: 14px; padding-bottom: 12px; border-bottom: 2px solid var(--line); margin-bottom: 12px; color: var(--ink); }',
       '.kb-cards { display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto; }',
-      '.kb-card { background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px; }',
+      // s3.4 (AC1) -- .kb-card is now an <a> (see cardHtml above); these
+      // properties keep it visually identical to the previous plain <div>.
+      '.kb-card { display: block; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px; text-decoration: none; color: inherit; }',
       '.kb-health-on-track, .kb-health-green { border-left: 4px solid #22c55e; }',
       '.kb-health-at-risk, .kb-health-amber { border-left: 4px solid #f59e0b; }',
       '.kb-health-blocked, .kb-health-red { border-left: 4px solid #ef4444; }',
@@ -368,7 +379,10 @@ function _renderKanbanColumns(data) {
       // (matches this file's other fetch-then-reload actions, e.g.
       // products.js's pshTriggerSync). On failure: surface the REAL reason
       // from the response body (AC5) via an alert -- never a generic message.
-      'function kbAdvanceCard(btn) {',
+      'function kbAdvanceCard(btn, event) {',
+      // s3.4 -- the button now sits inside the card's own wrapping <a> (AC1);
+      // stop the click from also triggering the card's navigation.
+      '  if (event) { event.preventDefault(); event.stopPropagation(); }',
       '  var journeyId = btn.getAttribute("data-journey-id");',
       '  if (!journeyId) return;',
       '  btn.disabled = true;',
@@ -395,6 +409,15 @@ function _renderKanbanColumns(data) {
       '  if (body && body.reason) { return body.reason; }',
       '  return "Advance failed.";',
       '}',
+      // s3.4 (AC3) -- append the current board page's own URL as each card
+      // link's ?from= value, so the detail view (handleGetJourneyById,
+      // journey.js) can render a "Back to board" link that returns to
+      // wherever the operator actually came from (product/org/tenant board).
+      // Done client-side since this shared renderer has no reliable
+      // knowledge of which of the 3 board-scope pages is calling it.
+      'document.querySelectorAll(".kb-card-link").forEach(function(a) {',
+      '  a.href = a.getAttribute("href") + "?from=" + encodeURIComponent(window.location.pathname + window.location.search);',
+      '});',
     '<\/script>'
   ].join('');
 }
