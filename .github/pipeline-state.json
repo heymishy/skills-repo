@@ -14766,24 +14766,24 @@
             {
               "slug": "s2.1-shared-token-redesign",
               "name": "Redesign the product/org/tenant kanban board CSS to use the shared design-system tokens",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
               "hasLayoutDependentGaps": true,
-              "updatedAt": "2026-07-23T22:35:19.824Z",
+              "updatedAt": "2026-07-24T08:20:11.314Z",
               "testPlan": {
-                "status": "written",
-                "totalTests": 3,
-                "passing": 0
+                "status": "all-passing",
+                "totalTests": 9,
+                "passing": 9
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "e2eToolingRequired": false,
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s2.1-shared-token-redesign-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s2.1-shared-token-redesign-dor-contract.md",
               "dorStatus": "signed-off",
-              "prStatus": "none"
+              "prStatus": "merged"
             },
             {
               "slug": "s2.2-title-truncation-artefact-badge",
@@ -14884,39 +14884,25 @@
               "slug": "s3.4-item-detail-view",
               "name": "Open an item detail view directly from any kanban card",
               "stage": "definition-of-ready",
-              "health": "amber",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "updatedAt": "2026-07-23T22:35:19.824Z",
               "testPlan": {
-                "status": "written",
-                "totalTests": 4,
-                "passing": 0
+                "status": "all-passing",
+                "totalTests": 8,
+                "passing": 8
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.4-item-detail-view-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.4-item-detail-view-dor-contract.md",
               "dorStatus": "signed-off",
-              "prStatus": "none"
+              "prStatus": "draft"
             }
           ]
-        }
-      ],
-      "stories": [
-        {
-          "id": "s3.4",
-          "testPlan": {
-            "status": "all-passing",
-            "totalTests": 8,
-            "passing": 8
-          },
-          "acVerified": 4,
-          "health": "green",
-          "prStatus": "draft",
-          "updatedAt": "2026-07-24T07:29:32.756Z"
         }
       ],
       "metrics": [
@@ -14954,7 +14940,8 @@
       "updatedAt": "2026-07-23T23:28:04.933Z",
       "discoveryStatus": "approved",
       "slicingStrategy": "risk-first",
-      "guardrails": []
+      "guardrails": [],
+      "stories": []
     },
     {
       "slug": "2026-07-24-admin-credits-page-styling",
