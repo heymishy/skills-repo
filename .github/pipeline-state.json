@@ -15118,6 +15118,38 @@
           "notes": "Operator-reported gap (2026-07-24): feature rows in a product's view (_renderPvcItemRow, products.js) were plain non-interactive text. Fix confirmed all the real pieces already existed (mergeFeatureSources already carries journeyId; item.slug already matches the real artefacts/[slug]/ directory -- confirmed directly, no journeyId-based resolution needed; handleGetChatHtml already resumes any session by ID via Redis fallback; /features/:slug already renders a kfd1-styled artefact index) except one real gap: completeStage() did not record which sessionId produced each completed stage. completeStage() now takes an optional 5th sessionId param (both real call sites in journey.js and skills.js updated); a new getJourneyByFeatureSlug (journey-store.js) plus _resolveResumeLinksForFeature (features.js, keyed by artefactPath -- the same path both sides already derive from the same real file, not by fragile skillName/type inference) wires a 'Resume conversation' link alongside the existing 'View' link when resolvable; _renderPvcItemRow now wraps each card in a real, keyboard-activatable <a href=/features/:slug>, with the discoveryArtefact suffix kept as a separate sibling link (no nested anchors). NFR-Performance (one lookup per render) and NFR-Security (identical tenant/ownership guard, reused not weakened) both verified directly. 10 unit/integration tests + 2 Playwright E2E tests all pass. Most complex of the four findings (Complexity 3) -- two prior coding-agent dispatches died during research before writing any code (monthly spend limit); implemented directly. Draft PR opened."
         }
       ]
+    },
+    {
+      "slug": "2026-07-24-test-data-cleanup",
+      "name": "Cleanup scripts for local disk and staging-DB test-generated data",
+      "stage": "branch-complete",
+      "health": "green",
+      "reviewStatus": "not-required",
+      "highFindings": 0,
+      "updatedAt": "2026-07-24T09:52:22.734Z",
+      "stories": [
+        {
+          "slug": "tdc-s1-cleanup-scripts",
+          "name": "Cleanup scripts for local disk and staging-DB test-generated data",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "not-required",
+          "highFindings": 0,
+          "updatedAt": "2026-07-24T09:52:22.736Z",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 7,
+            "passing": 7
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-07-24-test-data-cleanup/dor/tdc-s1-cleanup-scripts-dor.md",
+          "dorStatus": "signed-off",
+          "prStatus": "merged"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
