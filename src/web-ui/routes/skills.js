@@ -2316,10 +2316,17 @@ async function handlePostCanvasEditHtml(req, res) {
  * @param {object} session
  * @returns {string}
  */
-function _renderChatPage(skillName, sessionId, session) {
+function _renderChatPage(skillName, sessionId, session, backUrl) {
   var encodedSkill = encodeURIComponent(skillName);
   var encodedId    = encodeURIComponent(sessionId);
   var turnUrl      = '/api/skills/' + encodedSkill + '/sessions/' + encodedId + '/turn';
+  // kcrs-s1 (AC4) -- only rendered when a safe ?from= board-return value was
+  // passed through (kanban-card-originated resume); absent for every other
+  // way this page is reached (direct nav, "Continue" from the journey list
+  // with no board context, etc.), matching S3.4's own opt-in back-link.
+  var backLinkHtml = backUrl
+    ? '<p class="sw-chat-back"><a href="' + escHtml(backUrl) + '">&larr; Back to board</a></p>'
+    : '';
 
   // Build priorQA pairs from the turns array (mfc.1 structure).
   // Each pair: one assistant turn followed by one user turn.
@@ -3562,7 +3569,7 @@ function _renderChatPage(skillName, sessionId, session) {
     }
   }
 
-  var bodyContent = navigatorHtml + artefactInitScript + phaseModelInitScript + canvasBlocksInitScript + _renderChatView({
+  var bodyContent = backLinkHtml + navigatorHtml + artefactInitScript + phaseModelInitScript + canvasBlocksInitScript + _renderChatView({
     skillName:         skillName,
     skillLabel:        skillName,
     isIdeate:          isIdeate,
@@ -3744,8 +3751,17 @@ async function handleGetChatHtml(req, res) {
       return;
     }
   }
+  // kcrs-s1 (AC4) -- when a kanban-card-originated resume passes a safe
+  // ?from= board-return value through, render a "Back to board" link here.
+  // Lazy require (matches journey.js's own existing pattern for requiring
+  // skills.js) avoids a circular top-level dependency between these two
+  // route modules.
+  var _rawFrom = (req.query && req.query.from) || '';
+  var _isSafeBoardBackLink = require('./journey')._isSafeBoardBackLink;
+  var backUrl = _isSafeBoardBackLink(_rawFrom) ? _rawFrom : '';
+
   // Initial turn is fired client-side via SSE to avoid blocking page render on LLM call
-  var html = _renderChatPage(skillName, sessionId, session);
+  var html = _renderChatPage(skillName, sessionId, session, backUrl);
   // Initialize PostHog on chat pages so $pageview fires and users are identified here too.
   // Without this, the entire active session is invisible to PostHog.
   var _phKey = process.env.POSTHOG_KEY || '';

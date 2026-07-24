@@ -15255,6 +15255,40 @@
         }
       ],
       "track": "short"
+    },
+    {
+      "slug": "2026-07-24-kanban-card-resume-session",
+      "name": "Clicking a kanban card resumes the live session, not a static summary",
+      "stage": "branch-complete",
+      "health": "green",
+      "reviewStatus": "not-required",
+      "highFindings": 0,
+      "updatedAt": "2026-07-24T20:16:32.500Z",
+      "track": "short",
+      "stories": [
+        {
+          "slug": "kcrs-s1-kanban-card-resumes-live-session",
+          "id": "kcrs-s1-kanban-card-resumes-live-session",
+          "name": "Clicking a kanban card resumes the journey live session, not a static summary page",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "not-required",
+          "highFindings": 0,
+          "updatedAt": "2026-07-24T20:16:32.501Z",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 15,
+            "passing": 15
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-07-24-kanban-card-resume-session/dor/kcrs-s1-kanban-card-resumes-live-session-dor.md",
+          "dorStatus": "signed-off",
+          "prStatus": "draft"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

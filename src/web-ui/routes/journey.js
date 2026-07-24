@@ -1200,13 +1200,30 @@ async function handleGetJourneyResume(req, res) {
   var currentStage = diskJourney.currentStage || 'discovery';
   var productProfile = diskJourney.productProfile || 'default';
 
+  // kcrs-s1 (AC4) -- propagate a safe ?from= board-return value through every
+  // redirect exit point in this function, so a kanban-card-originated resume
+  // (which passes ?from=<board-url>) preserves a "Back to board" link on the
+  // eventual chat page. Reuses the same allowlist check as S3.4's own
+  // detail-page back-link, not a new/looser validator.
+  var _resumeFrom = (req.query && req.query.from) || '';
+  var _resumeFromSuffix = _isSafeBoardBackLink(_resumeFrom) ? ('?from=' + encodeURIComponent(_resumeFrom)) : '';
+
   // Fast path: active session already in memory — redirect without any Postgres/disk I/O.
   // sec-perf AC4: artefact reads are deferred to only when actually needed.
+  // s0.2/sec4 (established, deliberate, twice-independently-tested contract):
+  // a `done` session is NOT resumed here -- this function always starts a
+  // fresh session for a done predecessor. kcrs-s1 needed a "resume to the
+  // exact done session with its draft artefact" behaviour for the kanban-card
+  // click case specifically, which would have conflicted with this existing
+  // contract if added here -- handled instead as its own early check in
+  // handleGetJourneyById, before this function is ever reached. Do not
+  // reintroduce a done-session fast path here without re-checking
+  // check-s0.2-resume-existing-session.js and check-sec4-early-return.js.
   var _existingActiveId = memJourney && memJourney.activeSessionId;
   if (_existingActiveId) {
     var _memSession = getGetHtmlSession()(_existingActiveId);
     if (_memSession && !_memSession.done) {
-      res.writeHead(303, { Location: '/skills/' + encodeURIComponent(_memSession.skillName || currentStage) + '/sessions/' + _existingActiveId + '/chat' });
+      res.writeHead(303, { Location: '/skills/' + encodeURIComponent(_memSession.skillName || currentStage) + '/sessions/' + _existingActiveId + '/chat' + _resumeFromSuffix });
       res.end();
       return;
     }
@@ -1249,7 +1266,7 @@ async function handleGetJourneyResume(req, res) {
       getMergeRedisSessionData()(_existingActiveId, _redisData);
       var _restoredSession = getGetHtmlSession()(_existingActiveId);
       if (_restoredSession && !_restoredSession.done) {
-        res.writeHead(303, { Location: '/skills/' + encodeURIComponent(_restoredSession.skillName || currentStage) + '/sessions/' + _existingActiveId + '/chat' });
+        res.writeHead(303, { Location: '/skills/' + encodeURIComponent(_restoredSession.skillName || currentStage) + '/sessions/' + _existingActiveId + '/chat' + _resumeFromSuffix });
         res.end();
         return;
       }
@@ -1279,7 +1296,7 @@ async function handleGetJourneyResume(req, res) {
   // Mark stage active on disk with new sessionId
   try { _journeyDisk.updateStage(featureSlug, currentStage, { status: 'active', sessionId: sid }, repoRoot); } catch (_) {}
 
-  res.writeHead(303, { Location: '/skills/' + encodeURIComponent(currentStage) + '/sessions/' + sid + '/chat' });
+  res.writeHead(303, { Location: '/skills/' + encodeURIComponent(currentStage) + '/sessions/' + sid + '/chat' + _resumeFromSuffix });
   res.end();
 }
 
@@ -2397,17 +2414,18 @@ function _isSafeBoardBackLink(url) {
 }
 
 /**
- * GET /journey/:journeyId — shareable journey URL; s3.4's confirmed detail-
- * view destination for a kanban card (see decisions.md "S3.4 route/identifier
- * investigation" -- card.id already IS journeyId, and this route already
- * implements the same tenant-ownership 404 pattern AC4 requires, unlike
- * /features/:slug which has no tenant check at all).
- * Unauthenticated → 302 /auth/github (AC2).
- * Authenticated → renders journey overview HTML or 404 if not found.
- * s3.4 (AC2): adds a link to the existing artefact-index page (/features/:slug).
- * s3.4 (AC3): adds a back-to-board link, sourced from the referring card's
- * own ?from= query value (set per board scope by _renderKanbanColumns),
- * falling back to the tenant dashboard board if absent/unsafe.
+ * GET /journey/:journeyId — kanban card's detail-view destination (S3.4's
+ * route/identifier investigation confirmed card.id already IS journeyId,
+ * and this route already implements the same tenant-ownership 404 pattern
+ * AC4 requires, unlike /features/:slug which has no tenant check at all).
+ * Unauthenticated → 302 /auth/github.
+ * Authenticated → redirects into the journey's actual current activity
+ * (kcrs-s1): the live session if one is resolvable (reusing
+ * handleGetJourneyResume's existing resolution, via featureSlug), or the
+ * artefact index if the journey is fully complete (AC3) or has no
+ * featureSlug at all (defensive fallback -- not expected in practice).
+ * Registers the viewer/active-user count (S3.4/wsm.2) before redirecting,
+ * so "who's looking at this" tracking survives the destination change.
  */
 function handleGetJourneyById(req, res) {
   if (!req.session || !req.session.accessToken) {
@@ -2425,21 +2443,53 @@ function handleGetJourneyById(req, res) {
   }
   var login = req.session.login || '';
   _registerViewer(journeyId, login);
-  var activeUsers = _getActiveViewerCount(journeyId);
 
   var rawFrom = (req.query && req.query.from) || '';
   var backUrl = _isSafeBoardBackLink(rawFrom) ? rawFrom : '/dashboard?view=board';
-  var artefactsLink = journey.featureSlug
-    ? ('<p><a class="kb-detail-artefacts-link" href="/features/' + encodeURIComponent(journey.featureSlug) + '">View artefact files &amp; story state</a></p>')
-    : '';
 
+  // kcrs-s1 (AC3): a fully-complete journey has no further session to
+  // resume -- land on the artefact index instead of a dead-end.
+  if (journey.complete && journey.featureSlug) {
+    res.writeHead(303, { Location: '/features/' + encodeURIComponent(journey.featureSlug) });
+    res.end();
+    return;
+  }
+  // kcrs-s1 (AC2) -- a `done` session (a turn produced a draft artefact, not
+  // yet gate-confirmed) is resumed to that EXACT session here, deliberately
+  // NOT by delegating to handleGetJourneyResume: that function has its own
+  // separate, established, twice-independently-tested contract (s0.2, sec4)
+  // that a `done` predecessor always starts a fresh session, never resumes
+  // the old one -- reusing it for this kanban-card case would have silently
+  // broken that existing contract system-wide. This check only ever applies
+  // to a session still in memory; if it's not (e.g. post-deploy), falls
+  // through to the resume flow below, matching that flow's own existing
+  // Redis-restore/disk fallback behaviour for a not-yet-confirmed stage.
+  if (journey.activeSessionId) {
+    var _kcrsSession = getGetHtmlSession()(journey.activeSessionId);
+    if (_kcrsSession && _kcrsSession.done) {
+      res.writeHead(303, { Location: '/skills/' + encodeURIComponent(_kcrsSession.skillName || journey.activeSkill || 'discovery') + '/sessions/' + journey.activeSessionId + '/chat?from=' + encodeURIComponent(backUrl) });
+      res.end();
+      return;
+    }
+  }
+  // kcrs-s1 (AC1): reuse the existing, proven resume mechanism rather than
+  // duplicating its resolution logic -- passes the same safe ?from= value
+  // through so the eventual chat page can render "Back to board" (AC4).
+  if (journey.featureSlug) {
+    res.writeHead(303, { Location: '/journey/' + encodeURIComponent(journey.featureSlug) + '/resume?from=' + encodeURIComponent(backUrl) });
+    res.end();
+    return;
+  }
+
+  // Defensive fallback -- not expected in practice (every journey created via
+  // this app's own flows has a featureSlug); keeps the old static summary
+  // page reachable rather than a hard error if one somehow doesn't.
   var body = [
     '<div class="sw-page-content">',
     '<p class="kb-detail-back"><a href="' + escHtml(backUrl) + '">&larr; Back to board</a></p>',
     '<h1>Journey: ' + escHtml(journey.featureSlug || journeyId) + '</h1>',
     '<p>Stage: <strong>' + escHtml(journey.activeSkill || 'not started') + '</strong></p>',
-    '<p>Active viewers: ' + activeUsers + '</p>',
-    artefactsLink,
+    '<p>Active viewers: ' + _getActiveViewerCount(journeyId) + '</p>',
     '</div>'
   ].join('');
   var html = renderShell({ title: 'Journey', bodyContent: body, user: { login: login } });
@@ -3699,6 +3749,7 @@ module.exports = {
   handleDeleteSideTrip,
   // wsm.2 — collaborative journey sharing
   handleGetJourneyById,
+  _isSafeBoardBackLink,
   handleGetJourneyState,
   handleGetJourneyViewers,
   checkJourneyIdle,
