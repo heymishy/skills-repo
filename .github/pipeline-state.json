@@ -14788,24 +14788,24 @@
             {
               "slug": "s2.2-title-truncation-artefact-badge",
               "name": "Port title truncation and artefact-count badge to the live kanban boards",
-              "stage": "definition-of-ready",
-              "health": "amber",
+              "stage": "branch-complete",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-23T22:35:19.824Z",
+              "updatedAt": "2026-07-24T09:10:19.750Z",
               "testPlan": {
-                "status": "written",
-                "totalTests": 6,
-                "passing": 0
+                "status": "all-passing",
+                "totalTests": 7,
+                "passing": 7
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s2.2-title-truncation-artefact-badge-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s2.2-title-truncation-artefact-badge-dor-contract.md",
               "dorStatus": "signed-off",
-              "prStatus": "none"
+              "prStatus": "merged"
             }
           ]
         },

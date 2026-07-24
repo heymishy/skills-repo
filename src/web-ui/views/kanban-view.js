@@ -298,6 +298,24 @@ function _renderKanbanColumns(data) {
       // any not-ready state at all. Callers that never supply readiness data
       // (legacy {columns} fixtures, other consumers of this shared renderer)
       // render exactly as before this story -- zero behaviour change for them.
+      // s2.2 (AC1, AC2, AC3) -- reuse kfd1's existing truncateTitle() (48-char bound,
+      // ellipsis), same as featureCard() above -- not a new truncation implementation.
+      // Full, untruncated title stays available via the card's title attribute (AC3)
+      // so hover/keyboard-focus never loses information, only visually defers it.
+      var fullTitle = card.title || card.name || '(untitled)';
+      var displayTitle = truncateTitle(fullTitle, 48);
+
+      // s2.2 (AC4, AC5) -- artefact-count badge, same markup/logic as featureCard()'s
+      // existing badge. Only rendered when the caller (products.js's
+      // _enrichColumnsWithArtefactCounts) actually computed a count -- callers that
+      // never supply card.artefactCount (or that couldn't obtain it, per AC5's
+      // fallback) render with no badge at all, zero behaviour change for them.
+      var artefactCount = typeof card.artefactCount === 'number' ? card.artefactCount : null;
+      var artefactBadge = artefactCount === null ? '' :
+        artefactCount === 0
+          ? '<span class="kb-artefact-badge kb-artefact-badge--empty">no artefacts yet</span>'
+          : '<span class="kb-artefact-badge">' + artefactCount + ' artefact' + (artefactCount === 1 ? '' : 's') + '</span>';
+
       var hasReadiness = typeof card.ready === 'boolean';
       // s1.2 (AC4) -- a real gate-confirm validation failure is a DIFFERENT
       // failure mode from the routine "session still in progress" not-ready
@@ -346,9 +364,10 @@ function _renderKanbanColumns(data) {
       // below), not server-rendered here, since this shared renderer has no
       // reliable knowledge of which of the 3 board-scope pages is calling it.
       return [
-        '<a class="kb-card kb-card-link ' + healthClass + stateClass + '" data-journey-id="' + escHtml(card.id) + '" href="/journey/' + escHtml(card.id) + '"' +
+        '<a class="kb-card kb-card-link ' + healthClass + stateClass + '" data-journey-id="' + escHtml(card.id) + '" href="/journey/' + escHtml(card.id) + '" title="' + escHtml(fullTitle) + '"' +
           (isDraggable ? ' draggable="true" ondragstart="kbDragStart(event)"' : '') + '>',
-          '<div class="kb-card-title">' + escHtml(card.title || card.name || '(untitled)') + '</div>',
+          '<div class="kb-card-title">' + escHtml(displayTitle) + '</div>',
+          artefactBadge,
           '<div class="kb-card-meta">',
             '<span class="kb-card-id">' + escHtml(card.id) + '</span>',
             ' · <span class="kb-health-label">' + escHtml(healthLabel) + '</span>',
@@ -401,6 +420,9 @@ function _renderKanbanColumns(data) {
       '.kb-health-blocked, .kb-health-red { border-left: 4px solid var(--red); }',
       '.kb-health-neutral { border-left: 4px solid var(--muted-2); }',
       '.kb-card-title { font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--ink); }',
+      // s2.2 (AC4) -- matches kfd1's original featureCard() badge styling.
+      '.kb-artefact-badge { display: inline-block; margin-bottom: 6px; font-size: 11px; padding: 2px 7px; border-radius: 10px; background: var(--accent-soft); color: var(--accent-ink); font-weight: 500; }',
+      '.kb-artefact-badge--empty { background: var(--line-2); color: var(--muted); }',
       '.kb-card-meta { font-size: 11px; color: var(--muted); }',
       '.kb-card-id { font-family: var(--mono); }',
       '.kb-health-label { color: var(--muted); }',
@@ -549,4 +571,4 @@ function _renderKanbanColumns(data) {
   ].join('');
 }
 
-module.exports = { renderKanban, LANES, _renderKanbanColumns };
+module.exports = { renderKanban, LANES, _renderKanbanColumns, truncateTitle };
