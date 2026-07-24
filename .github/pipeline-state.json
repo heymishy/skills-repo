@@ -14861,11 +14861,11 @@
             {
               "slug": "s3.3-advisory-wip-limits",
               "name": "Show an advisory (soft) WIP-limit warning per column",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-24T07:16:18.397Z",
+              "updatedAt": "2026-07-24T08:49:51.171Z",
               "testPlan": {
                 "status": "all-passing",
                 "totalTests": 5,
@@ -14878,7 +14878,7 @@
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.3-advisory-wip-limits-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.3-advisory-wip-limits-dor-contract.md",
               "dorStatus": "signed-off",
-              "prStatus": "draft"
+              "prStatus": "merged"
             },
             {
               "slug": "s3.4-item-detail-view",
