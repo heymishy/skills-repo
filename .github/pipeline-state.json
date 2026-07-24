@@ -15147,9 +15147,11 @@
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-07-24-test-data-cleanup/dor/tdc-s1-cleanup-scripts-dor.md",
           "dorStatus": "signed-off",
-          "prStatus": "merged"
+          "prStatus": "merged",
+          "id": "tdc-s1-cleanup-scripts"
         }
-      ]
+      ],
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
