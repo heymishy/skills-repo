@@ -1926,15 +1926,7 @@ async function handlePostGateConfirm(req, res) {
     var nextStory = _journeyStore.advanceToNextStory(journeyId);
     if (nextStory) {
       // More stories: create review session for next story (review → test-plan → DoR per story)
-      newSid = crypto.randomUUID();
-      newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-review.md');
-      getRegisterHtmlSession()(newSid, newSessionPath, 'review', { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug, mockScenarioName: _mockScenarioForStage(journey, 'review') });
-      getLinkSessionToJourney()(newSid, journeyId);
-      if (_journeyStore.setActiveSession) {
-        _journeyStore.setActiveSession(journeyId, newSid, 'review');
-      }
-      res.writeHead(303, { Location: '/skills/review/sessions/' + newSid + '/chat' });
-      res.end();
+      _startReviewSessionForJourney(res, journeyId, journey, priorArtefacts);
     } else {
       // No more stories (or feature-mode): complete journey
       _journeyStore.markJourneyComplete(journeyId);
@@ -1975,8 +1967,27 @@ async function handlePostGateConfirm(req, res) {
   } else if (nextStage === 'review') {
     // Feature-level: switch to per-story routing (ougl.6)
     // review is the first per-story stage (review → test-plan → definition-of-ready per story)
-    res.writeHead(303, { Location: '/journey/' + journeyId + '/stories' });
-    res.end();
+    // dtra-s1 (AC1, AC2) -- when the definition artefact's story list can be
+    // auto-extracted, skip the manual /journey/:id/stories confirm page
+    // entirely and start review directly, per the operator's own stated
+    // expectation. AC3: an artefact this extractor can't parse still falls
+    // back to the manual page, unchanged -- the only real safety net for a
+    // format extractStoryIdsFromDefinitionArtefact doesn't recognise.
+    var definitionStage = (updatedJourney.completedStages || []).filter(function(s) { return s.skillName === 'definition'; }).pop();
+    var autoStoryIds = [];
+    if (definitionStage) {
+      try {
+        var defAbsPath = path.resolve(path.join(repoRoot, definitionStage.artefactPath));
+        autoStoryIds = extractStoryIdsFromDefinitionArtefact(fs.readFileSync(defAbsPath, 'utf8'));
+      } catch (_) { autoStoryIds = []; }
+    }
+    if (autoStoryIds.length > 0) {
+      _journeyStore.setStoryList(journeyId, autoStoryIds);
+      _startReviewSessionForJourney(res, journeyId, journey, priorArtefacts);
+    } else {
+      res.writeHead(303, { Location: '/journey/' + journeyId + '/stories' });
+      res.end();
+    }
   } else {
     // Feature-level: create session for next stage
     newSid = crypto.randomUUID();
@@ -1989,6 +2000,24 @@ async function handlePostGateConfirm(req, res) {
     res.writeHead(303, { Location: '/skills/' + nextStage + '/sessions/' + newSid + '/chat' });
     res.end();
   }
+}
+
+/**
+ * dtra-s1 — shared review-session-start step, used by every path that begins
+ * per-story review (definition-of-ready's "more stories" branch, the
+ * auto-start-after-definition branch, and the manual /stories submit path)
+ * so there is exactly one place that creates/links/activates a review session.
+ */
+function _startReviewSessionForJourney(res, journeyId, journey, priorArtefacts) {
+  var newSid = crypto.randomUUID();
+  var newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-review.md');
+  getRegisterHtmlSession()(newSid, newSessionPath, 'review', { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug, mockScenarioName: _mockScenarioForStage(journey, 'review') });
+  getLinkSessionToJourney()(newSid, journeyId);
+  if (_journeyStore.setActiveSession) {
+    _journeyStore.setActiveSession(journeyId, newSid, 'review');
+  }
+  res.writeHead(303, { Location: '/skills/review/sessions/' + newSid + '/chat' });
+  res.end();
 }
 
 /**
@@ -2123,15 +2152,7 @@ async function handlePostStories(req, res) {
     return { path: stage.artefactPath, content: content };
   });
   // Create review session for first story (review → test-plan → DoR per story)
-  var newSid = crypto.randomUUID();
-  var newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-review.md');
-  getRegisterHtmlSession()(newSid, newSessionPath, 'review', { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug, mockScenarioName: _mockScenarioForStage(updatedJourney, 'review') });
-  getLinkSessionToJourney()(newSid, journeyId);
-  if (_journeyStore.setActiveSession) {
-    _journeyStore.setActiveSession(journeyId, newSid, 'review');
-  }
-  res.writeHead(303, { Location: '/skills/review/sessions/' + newSid + '/chat' });
-  res.end();
+  _startReviewSessionForJourney(res, journeyId, updatedJourney, priorArtefacts);
 }
 
 /**
