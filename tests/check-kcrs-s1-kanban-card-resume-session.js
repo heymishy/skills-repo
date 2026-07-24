@@ -100,24 +100,21 @@ queue.push(function() {
 });
 
 queue.push(function() {
-  return test('AC2: a done session with a draft artefact resumes to that SAME session (via handleGetJourneyResume), not a freshly created one', function() {
+  return test('AC2: a done session with a draft artefact redirects DIRECTLY to that SAME session\'s chat page from handleGetJourneyById itself -- not via handleGetJourneyResume, which has its own separate, established "done always starts fresh" contract (s0.2, sec4) that this story must not disturb', function() {
     var setup = setUp('kcrs-ac2-feature', { done: true, artefactContent: '# Draft artefact' });
     var reqDetail = authReq({ params: { journeyId: setup.journeyId } });
     var resDetail = makeRes();
     setup.journey.handleGetJourneyById(reqDetail, resDetail);
-    assert.strictEqual(resDetail._status, 303, 'expected redirect from the detail route');
 
-    // Follow the redirect into handleGetJourneyResume directly (same as a
-    // real browser would), confirming it resumes the SAME session, not a new one.
-    var reqResume = authReq({ params: { featureSlug: 'kcrs-ac2-feature' }, query: {} });
-    var resResume = makeRes();
-    return Promise.resolve(setup.journey.handleGetJourneyResume(reqResume, resResume)).then(function() {
-      assert.strictEqual(resResume._status, 303, 'expected a 303 from the resume route');
-      assert.ok(
-        resResume._headers.Location.indexOf(setup.sessionId) !== -1,
-        'expected the SAME existing done session to be resumed (id ' + setup.sessionId + '), got: ' + resResume._headers.Location
-      );
-    });
+    assert.strictEqual(resDetail._status, 303, 'expected a 303 redirect');
+    assert.ok(
+      resDetail._headers.Location.indexOf(setup.sessionId) !== -1,
+      'expected handleGetJourneyById to redirect directly to the SAME existing done session (id ' + setup.sessionId + '), got: ' + resDetail._headers.Location
+    );
+    assert.ok(
+      resDetail._headers.Location.indexOf('/resume') === -1,
+      'expected a direct chat-page redirect, NOT a hop through the /resume route (which would discard this done session per its own established contract)'
+    );
   });
 });
 

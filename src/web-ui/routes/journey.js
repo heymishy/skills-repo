@@ -1210,19 +1210,19 @@ async function handleGetJourneyResume(req, res) {
 
   // Fast path: active session already in memory — redirect without any Postgres/disk I/O.
   // sec-perf AC4: artefact reads are deferred to only when actually needed.
+  // s0.2/sec4 (established, deliberate, twice-independently-tested contract):
+  // a `done` session is NOT resumed here -- this function always starts a
+  // fresh session for a done predecessor. kcrs-s1 needed a "resume to the
+  // exact done session with its draft artefact" behaviour for the kanban-card
+  // click case specifically, which would have conflicted with this existing
+  // contract if added here -- handled instead as its own early check in
+  // handleGetJourneyById, before this function is ever reached. Do not
+  // reintroduce a done-session fast path here without re-checking
+  // check-s0.2-resume-existing-session.js and check-sec4-early-return.js.
   var _existingActiveId = memJourney && memJourney.activeSessionId;
   if (_existingActiveId) {
     var _memSession = getGetHtmlSession()(_existingActiveId);
-    // kcrs-s1 (AC2) -- a `done` session (a turn produced an artefact but
-    // gate-confirm hasn't run yet) must resume to that SAME session, not fall
-    // through to the "create a new session for this stage" path below --
-    // confirmed via direct reproduction that doing so silently discarded the
-    // produced draft artefact and turn history, replacing it with an empty
-    // new session for the identical stage. `activeSessionId` only still
-    // points at a `done` session while it remains unconfirmed; once
-    // gate-confirmed, setActiveSession moves it to the next stage's new
-    // (not-done) session, so this never resumes stale, already-confirmed state.
-    if (_memSession) {
+    if (_memSession && !_memSession.done) {
       res.writeHead(303, { Location: '/skills/' + encodeURIComponent(_memSession.skillName || currentStage) + '/sessions/' + _existingActiveId + '/chat' + _resumeFromSuffix });
       res.end();
       return;
@@ -1265,10 +1265,7 @@ async function handleGetJourneyResume(req, res) {
       getRegisterHtmlSession()(_existingActiveId, _restorePath, currentStage, { productProfile: productProfile, priorArtefacts: priorArtefacts, featureSlug: featureSlug });
       getMergeRedisSessionData()(_existingActiveId, _redisData);
       var _restoredSession = getGetHtmlSession()(_existingActiveId);
-      // kcrs-s1 (AC2) -- same fix as the in-memory fast path above: a
-      // Redis-restored `done` session must resume to itself, not fall through
-      // to creating a new session for the same stage.
-      if (_restoredSession) {
+      if (_restoredSession && !_restoredSession.done) {
         res.writeHead(303, { Location: '/skills/' + encodeURIComponent(_restoredSession.skillName || currentStage) + '/sessions/' + _existingActiveId + '/chat' + _resumeFromSuffix });
         res.end();
         return;
@@ -2457,9 +2454,27 @@ function handleGetJourneyById(req, res) {
     res.end();
     return;
   }
-  // kcrs-s1 (AC1, AC2): reuse the existing, proven resume mechanism rather
-  // than duplicating its resolution logic -- passes the same safe ?from=
-  // value through so the eventual chat page can render "Back to board" (AC4).
+  // kcrs-s1 (AC2) -- a `done` session (a turn produced a draft artefact, not
+  // yet gate-confirmed) is resumed to that EXACT session here, deliberately
+  // NOT by delegating to handleGetJourneyResume: that function has its own
+  // separate, established, twice-independently-tested contract (s0.2, sec4)
+  // that a `done` predecessor always starts a fresh session, never resumes
+  // the old one -- reusing it for this kanban-card case would have silently
+  // broken that existing contract system-wide. This check only ever applies
+  // to a session still in memory; if it's not (e.g. post-deploy), falls
+  // through to the resume flow below, matching that flow's own existing
+  // Redis-restore/disk fallback behaviour for a not-yet-confirmed stage.
+  if (journey.activeSessionId) {
+    var _kcrsSession = getGetHtmlSession()(journey.activeSessionId);
+    if (_kcrsSession && _kcrsSession.done) {
+      res.writeHead(303, { Location: '/skills/' + encodeURIComponent(_kcrsSession.skillName || journey.activeSkill || 'discovery') + '/sessions/' + journey.activeSessionId + '/chat?from=' + encodeURIComponent(backUrl) });
+      res.end();
+      return;
+    }
+  }
+  // kcrs-s1 (AC1): reuse the existing, proven resume mechanism rather than
+  // duplicating its resolution logic -- passes the same safe ?from= value
+  // through so the eventual chat page can render "Back to board" (AC4).
   if (journey.featureSlug) {
     res.writeHead(303, { Location: '/journey/' + encodeURIComponent(journey.featureSlug) + '/resume?from=' + encodeURIComponent(backUrl) });
     res.end();
