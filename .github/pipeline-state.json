@@ -14883,11 +14883,11 @@
             {
               "slug": "s3.4-item-detail-view",
               "name": "Open an item detail view directly from any kanban card",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-23T22:35:19.824Z",
+              "updatedAt": "2026-07-24T09:00:56.941Z",
               "testPlan": {
                 "status": "all-passing",
                 "totalTests": 8,
@@ -14900,7 +14900,7 @@
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.4-item-detail-view-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.4-item-detail-view-dor-contract.md",
               "dorStatus": "signed-off",
-              "prStatus": "draft"
+              "prStatus": "merged"
             }
           ]
         }
