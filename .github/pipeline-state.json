@@ -14817,11 +14817,11 @@
             {
               "slug": "s3.1-drag-to-advance",
               "name": "Drag a ready card to its next column to advance its stage",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-24T07:53:33.139Z",
+              "updatedAt": "2026-07-24T09:16:38.873Z",
               "testPlan": {
                 "status": "all-passing",
                 "totalTests": 10,
@@ -14834,7 +14834,7 @@
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.1-drag-to-advance-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.1-drag-to-advance-dor-contract.md",
               "dorStatus": "signed-off",
-              "prStatus": "draft"
+              "prStatus": "merged"
             },
             {
               "slug": "s3.2-within-column-reorder",
