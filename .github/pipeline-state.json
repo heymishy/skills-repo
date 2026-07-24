@@ -14843,20 +14843,20 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-23T22:35:19.824Z",
+              "updatedAt": "2026-07-24T10:25:09.704Z",
               "testPlan": {
-                "status": "written",
-                "totalTests": 4,
-                "passing": 0
+                "status": "all-passing",
+                "totalTests": 12,
+                "passing": 12
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
               "dorArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.2-within-column-reorder-dor.md",
               "dorContractArtefact": "artefacts/2026-07-24-interactive-kanban-boards/dor/s3.2-within-column-reorder-dor-contract.md",
               "dorStatus": "signed-off",
-              "prStatus": "none"
+              "prStatus": "draft"
             },
             {
               "slug": "s3.3-advisory-wip-limits",

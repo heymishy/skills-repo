@@ -285,7 +285,7 @@ function _renderKanbanColumns(data) {
       ? '<span class="kb-wip kb-wip--over" title="WIP limit exceeded">' + count + '/' + wipLimit + '</span>'
       : '<span class="kb-wip">' + count + '</span>';
 
-    var cardHtml = (col.cards || []).map(function(card) {
+    var cardHtml = (col.cards || []).map(function(card, cardIdx, cardArr) {
       var health = card.health || 'neutral';
       var healthClass = 'kb-health-' + escHtml(health);
       // NFR-Accessibility: health is never colour-only -- a text label always
@@ -363,6 +363,21 @@ function _renderKanbanColumns(data) {
       // The "?from=" query value is appended client-side (kbAppendBoardBackLinks
       // below), not server-rendered here, since this shared renderer has no
       // reliable knowledge of which of the 3 board-scope pages is calling it.
+      //
+      // s3.2 (AC4) -- keyboard-activatable up/down reorder controls, the
+      // non-drag alternative to drag reordering. Always available regardless
+      // of readiness (reordering is not gated by readiness at all, unlike
+      // Advance), and produces the exact same outcome as a drag reorder --
+      // both paths end by calling the shared _kbPersistColumnOrder helper.
+      // Omitted entirely for a column with only one card (nothing to
+      // reorder against); disabled at whichever end the card already sits.
+      var reorderHtml = '';
+      if (cardArr.length > 1) {
+        reorderHtml = '<div class="kb-reorder-controls">' +
+          '<button type="button" class="kb-reorder-btn" data-journey-id="' + escHtml(card.id) + '" data-direction="up" onclick="kbMoveCard(this, event)"' + (cardIdx === 0 ? ' disabled' : '') + ' aria-label="Move up">&uarr;</button>' +
+          '<button type="button" class="kb-reorder-btn" data-journey-id="' + escHtml(card.id) + '" data-direction="down" onclick="kbMoveCard(this, event)"' + (cardIdx === cardArr.length - 1 ? ' disabled' : '') + ' aria-label="Move down">&darr;</button>' +
+        '</div>';
+      }
       return [
         '<a class="kb-card kb-card-link ' + healthClass + stateClass + '" data-journey-id="' + escHtml(card.id) + '" href="/journey/' + escHtml(card.id) + '" title="' + escHtml(fullTitle) + '"' +
           (isDraggable ? ' draggable="true" ondragstart="kbDragStart(event)"' : '') + '>',
@@ -373,6 +388,7 @@ function _renderKanbanColumns(data) {
             ' · <span class="kb-health-label">' + escHtml(healthLabel) + '</span>',
           '</div>',
           actionHtml,
+          reorderHtml,
         '</a>'
       ].join('');
     }).join('');
@@ -432,6 +448,13 @@ function _renderKanbanColumns(data) {
       '.kb-advance-btn:hover { background: var(--accent); color: var(--bg); }',
       '.kb-advance-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }',
       '.kb-advance-btn:disabled { opacity: 0.6; cursor: default; }',
+      // s3.2 (AC4) -- reorder controls sit alongside kb-card-actions, always
+      // present on any card in a multi-card column regardless of readiness.
+      '.kb-reorder-controls { margin-top: 6px; display: flex; gap: 4px; }',
+      '.kb-reorder-btn { font: inherit; font-size: 12px; line-height: 1; padding: 3px 7px; border-radius: 5px; border: 1px solid var(--line); background: var(--surface); color: var(--muted); cursor: pointer; }',
+      '.kb-reorder-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }',
+      '.kb-reorder-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }',
+      '.kb-reorder-btn:disabled { opacity: 0.4; cursor: default; }',
       // s1.2 (AC1, AC3) -- kb-card--not-ready gets its own distinct left-border
       // treatment, layered ON TOP of (not replacing) the health-colour border,
       // so a not-ready card is visually distinguishable from a ready card at a
@@ -504,6 +527,83 @@ function _renderKanbanColumns(data) {
       '  });',
       '  return _kbColumnOrder;',
       '}',
+      // s3.2 -- within-column card order is a client-only, per-browser
+      // preference (Architecture Constraints: no existing priority/order
+      // field anywhere in the schema; a client-only approach is an accepted,
+      // documented first-pass choice for this repo's single-operator,
+      // single-device usage today, per decisions.md). Keyed by the current
+      // page\'s own path + the column\'s stage, so each of the 3 board scopes
+      // (product/org/tenant) keeps an independent order (Out of Scope: no
+      // cross-scope reorder), and never confused with a different page\'s
+      // saved order.
+      'function _kbColumnOrderKey(stage) {',
+      '  return "kb-order:" + window.location.pathname + ":" + stage;',
+      '}',
+      'function _kbPersistColumnOrder(columnEl) {',
+      '  var stage = columnEl.getAttribute("data-stage");',
+      '  var ids = Array.prototype.map.call(columnEl.querySelectorAll(".kb-cards > .kb-card"), function(c) {',
+      '    return c.getAttribute("data-journey-id");',
+      '  });',
+      '  try { window.localStorage.setItem(_kbColumnOrderKey(stage), JSON.stringify(ids)); } catch (e) {}',
+      '}',
+      // AC2 -- applied once per column on page load, before any drag/click
+      // interaction: reorders the server-rendered DOM to match whatever was
+      // last saved for this exact page path + stage. A card the saved order
+      // does not mention (new since the last save) keeps its server-rendered
+      // relative position, appended after every recognised card.
+      'function _kbApplyPersistedOrder() {',
+      '  Array.prototype.forEach.call(document.querySelectorAll(".kb-column"), function(columnEl) {',
+      '    var stage = columnEl.getAttribute("data-stage");',
+      '    var raw; try { raw = window.localStorage.getItem(_kbColumnOrderKey(stage)); } catch (e) { raw = null; }',
+      '    if (!raw) return;',
+      '    var savedIds; try { savedIds = JSON.parse(raw); } catch (e) { return; }',
+      '    var cardsEl = columnEl.querySelector(".kb-cards");',
+      '    if (!cardsEl) return;',
+      '    var cards = Array.prototype.slice.call(cardsEl.querySelectorAll(".kb-card"));',
+      '    var byId = {};',
+      '    cards.forEach(function(c) { byId[c.getAttribute("data-journey-id")] = c; });',
+      '    savedIds.forEach(function(id) { var c = byId[id]; if (c) cardsEl.appendChild(c); });',
+      '  });',
+      '}',
+      // s3.2 (AC4) -- the non-drag reorder alternative: swaps the card with
+      // its immediate previous/next sibling within the same column, producing
+      // the exact same DOM result (and calling the exact same persistence
+      // helper) a drag reorder would.
+      'function kbMoveCard(btn, event) {',
+      '  if (event) { event.preventDefault(); event.stopPropagation(); }',
+      '  var card = btn.closest(".kb-card");',
+      '  if (!card) return;',
+      '  var direction = btn.getAttribute("data-direction");',
+      '  var columnEl = card.closest(".kb-column");',
+      '  if (!columnEl) return;',
+      '  var sibling = direction === "up" ? card.previousElementSibling : card.nextElementSibling;',
+      '  if (!sibling || !sibling.classList.contains("kb-card")) return;',
+      '  if (direction === "up") { card.parentNode.insertBefore(card, sibling); }',
+      '  else { card.parentNode.insertBefore(sibling, card); }',
+      '  _kbPersistColumnOrder(columnEl);',
+      '  window.location.reload();',
+      '}',
+      // s3.2 (AC1) -- the drag-based within-column reorder: inserts the
+      // dragged card before/after whichever card the drop actually landed on
+      // (by cursor Y vs. that card\'s vertical midpoint), or appends to the
+      // end when dropped on empty column space rather than on another card.
+      'function _kbReorderWithinColumn(event, columnEl, journeyId) {',
+      '  var cardsEl = columnEl.querySelector(".kb-cards");',
+      '  if (!cardsEl) return;',
+      '  var sourceCard = cardsEl.querySelector(\'[data-journey-id="\' + CSS.escape(journeyId) + \'"]\');',
+      '  if (!sourceCard) return;',
+      '  var targetCard = event.target.closest(".kb-card");',
+      '  if (targetCard && targetCard !== sourceCard) {',
+      '    var rect = targetCard.getBoundingClientRect();',
+      '    var before = event.clientY < (rect.top + rect.height / 2);',
+      '    if (before) { cardsEl.insertBefore(sourceCard, targetCard); }',
+      '    else { cardsEl.insertBefore(sourceCard, targetCard.nextSibling); }',
+      '  } else if (!targetCard) {',
+      '    cardsEl.appendChild(sourceCard);',
+      '  }',
+      '  _kbPersistColumnOrder(columnEl);',
+      '  window.location.reload();',
+      '}',
       'function kbDragStart(event) {',
       '  var card = event.target.closest(".kb-card");',
       '  if (!card) return;',
@@ -527,14 +627,12 @@ function _renderKanbanColumns(data) {
       '  var data; try { data = JSON.parse(raw); } catch (e) { return; }',
       '  var targetColumn = event.currentTarget;',
       '  var targetStage = targetColumn.getAttribute("data-stage");',
-      // s3.2 (within-column reorder) extension point: a drop where
-      // targetStage === data.sourceStage is a WITHIN-column reorder, not a
-      // between-column advance -- s3.1 does not handle that case (out of
-      // scope, see s3.2-within-column-reorder.md); it is intentionally a
-      // silent no-op here, not an error, since a future story extends this
-      // exact handler to add that behaviour rather than building a second,
-      // independent drag-and-drop implementation.
-      '  if (targetStage === data.sourceStage) return;',
+      // s3.2 (AC1, AC3) -- a drop where targetStage === data.sourceStage is a
+      // WITHIN-column reorder, not a between-column advance: handled entirely
+      // client-side (no server call, matching AC1's "no stage-advance call is
+      // made"), and mutually exclusive with the between-column logic below --
+      // a within-column drop never reaches the advance/validNextStage checks.
+      '  if (targetStage === data.sourceStage) { _kbReorderWithinColumn(event, targetColumn, data.journeyId); return; }',
       '  var order = _kbGetColumnOrder();',
       '  var sourceIdx = order.indexOf(data.sourceStage);',
       '  var validNextStage = (sourceIdx !== -1 && sourceIdx + 1 < order.length) ? order[sourceIdx + 1] : null;',
@@ -558,6 +656,10 @@ function _renderKanbanColumns(data) {
       '    alert("Advance failed: " + e.message);',
       '  });',
       '}',
+      // s3.2 (AC2) -- apply any previously-saved within-column order before
+      // anything else runs, so the board reflects the operator's own last
+      // reorder on every load, not just immediately after the reorder itself.
+      '_kbApplyPersistedOrder();',
       // s3.4 (AC3) -- append the current board page's own URL as each card
       // link's ?from= value, so the detail view (handleGetJourneyById,
       // journey.js) can render a "Back to board" link that returns to
