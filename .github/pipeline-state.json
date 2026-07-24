@@ -15008,8 +15008,8 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-24-admin-mock-gateway-toggle/dor/amgt-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-24-admin-mock-gateway-toggle/dor/amgt-s1-dor-contract.md",
-          "prStatus": "draft",
-          "updatedAt": "2026-07-24T00:00:00.000Z",
+          "prStatus": "merged",
+          "updatedAt": "2026-07-24T02:46:51.650Z",
           "notes": "Operator-reported gap (2026-07-24): MOCK_LLM_GATEWAY is env-var-only, requiring a redeploy to switch mock/real model behaviour. Fix adds a runtime, in-memory override consulted by isMockGatewayEnabled() AFTER its existing NODE_ENV=production hard-override (which remains untouched -- AC4 verified). Admin-gated via the existing requireAdmin/renderShell/CSRF pattern established by admin-credits.js. Implemented: mock-llm-gateway.js runtime override, new routes/admin-mock-gateway.js, 2 new requireAdmin-gated server.js routes (GET /admin/mock-gateway, POST /api/admin/mock-gateway/toggle). All 9 of its own tests pass. Bumped check-d2/check-d4's hardcoded requireAdmin-call-site checklist count from 8 to 10 (by-design friction, both routes verified to call requireAdmin the standard way, no bypass). Draft PR opened."
         }
       ]
