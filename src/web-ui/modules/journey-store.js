@@ -106,16 +106,38 @@ function getJourneyBySession(sessionId) {
 }
 
 /**
+ * frsr-s1 — find a journey by its featureSlug, for resolving which session
+ * produced a given completed stage's conversation (see completeStage's
+ * sessionId field). If more than one journey shares a featureSlug (e.g. a
+ * re-run), the most recently created one wins (later Map insertions are
+ * visited last).
+ * @param {string} featureSlug
+ * @returns {object|null}
+ */
+function getJourneyByFeatureSlug(featureSlug) {
+  var match = null;
+  for (var journey of _journeys.values()) {
+    if (journey.featureSlug === featureSlug) match = journey;
+  }
+  return match;
+}
+
+/**
  * Record a completed stage on the journey.
  * @param {string} journeyId
  * @param {string} skillName
  * @param {string} artefactPath
  * @param {{ costUsd?: number, model?: string, input_tokens?: number, output_tokens?: number }} [usageSummary]
+ * @param {string} [sessionId] — frsr-s1: the session that produced this stage's
+ *   conversation, so a later "resume conversation" link can resolve which
+ *   /skills/:skillName/sessions/:sessionId/chat to point at. Optional so
+ *   existing callers that don't have a sessionId in scope are unaffected.
  */
-function completeStage(journeyId, skillName, artefactPath, usageSummary) {
+function completeStage(journeyId, skillName, artefactPath, usageSummary, sessionId) {
   var journey = _journeys.get(journeyId);
   if (!journey) return;
   var entry = { skillName: skillName, artefactPath: artefactPath, completedAt: new Date().toISOString() };
+  if (sessionId) entry.sessionId = sessionId;
   if (usageSummary && usageSummary.costUsd != null) {
     entry.costUsd  = usageSummary.costUsd;
     entry.model    = usageSummary.model    || null;
@@ -332,6 +354,7 @@ module.exports = {
   getJourney,
   setActiveSession,
   getJourneyBySession,
+  getJourneyByFeatureSlug,
   completeStage,
   getNextStage,
   getJourneyStories,

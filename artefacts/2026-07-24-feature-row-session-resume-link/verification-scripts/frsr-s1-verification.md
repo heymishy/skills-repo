@@ -3,7 +3,7 @@
 **Story reference:** artefacts/2026-07-24-feature-row-session-resume-link/stories/frsr-s1.md
 **Technical test plan:** artefacts/2026-07-24-feature-row-session-resume-link/test-plans/frsr-s1-test-plan.md
 **Script version:** 1
-**Verified by:** [name] | **Date:** [date] | **Context:** [ ] Pre-code  [ ] Post-merge  [ ] Demo
+**Verified by:** Claude (agent), operator-directed | **Date:** 2026-07-24 | **Context:** [x] Post-merge (automated, see notes)
 
 ---
 
@@ -28,7 +28,7 @@
 
 **Expected outcome:** You're taken to a real page about that feature — not just staring at unclickable text.
 
-**Pass / Fail:** ___
+**Pass / Fail:** PASS — verified via `tests/check-frsr-s1-feature-row-session-resume.js` (AC1 unit tests: the card renders as a real `<a href="/features/:slug">`, no nested anchors with the discovery-artefact suffix link) and `tests/e2e/frsr-s1-feature-row-session-resume.spec.js` (real browser: a real feature row is clicked and keyboard-activated, both navigate to `/features/:slug`).
 
 ---
 
@@ -43,7 +43,7 @@
 
 **Expected outcome:** You see the real back-and-forth conversation that happened at that stage — not just the final written artefact.
 
-**Pass / Fail:** ___
+**Pass / Fail:** PASS — verified via `tests/check-frsr-s1-feature-row-session-resume.js`: AC2 (`completeStage()` now records the `sessionId` active at completion time, existing fields unaffected, backward-compatible when omitted), AC3 (`/features/:slug` shows a "Resume conversation" link alongside the existing "View" link exactly when a stage's session is resolvable, and only then), AC4 (following the link reaches `handleGetChatHtml`'s real, unmodified turn-history rendering — asserted via unique marker content, not just a status code). Also verified the NFR-Performance requirement: the featureSlug→journeyId lookup runs exactly once per page render regardless of artefact-row count, and the NFR-Security requirement: the resume link is rejected for a non-owning tenant identically to the existing direct-route guard, while the owning user's own link still succeeds.
 
 ---
 
@@ -57,10 +57,10 @@
 
 **Expected outcome:** You get a clear "not available" message — not a blank page or a confusing error.
 
-**Pass / Fail:** ___
+**Pass / Fail:** PASS — verified via `tests/check-frsr-s1-feature-row-session-resume.js` (AC5): a `completedStages` entry whose `sessionId` resolves in neither the in-memory session store nor Redis (simulating post-eviction) returns the exact same 404 "Session not found" message `handleGetChatHtml` already produces for any other unresolvable session — no new, different, or silent failure mode.
 
 ---
 
 ## Summary
 
-Total scenarios: 3 | Manual gap scenarios: 0
+Total scenarios: 3 | Manual gap scenarios: 0 | All 3 verified via automated test coverage (10 unit/integration tests in `tests/check-frsr-s1-feature-row-session-resume.js` + 2 Playwright E2E tests in `tests/e2e/frsr-s1-feature-row-session-resume.spec.js`).

@@ -23,6 +23,14 @@ const { renderShell, escHtml } = require('../utils/html-shell');
 const shellEscHtml = escHtml; // internal alias used by artefact-index handlers
 const { getLabel } = require('../utils/artefact-labels');
 
+// frsr-s1 — journey store, for resolving which session (if any) produced
+// each completed stage's artefact, so the artefact-index page can offer a
+// "Resume conversation" link alongside the existing "View" link. Real
+// require by default (same pattern as routes/journey.js's _journeyStore);
+// overridable in tests via setJourneyStoreModule().
+let _journeyStore = require('../modules/journey-store');
+function setJourneyStoreModule(mod) { _journeyStore = mod; }
+
 const IDEAS_PATH = path.join(__dirname, '..', '..', '..', 'workspace', 'ideas.json');
 
 function _readIdeas() {
@@ -93,17 +101,43 @@ function renderArtefactItem(artefact) {
 }
 
 /**
+ * frsr-s1 (AC2/AC3) — resolve which session (if any) produced each of a
+ * feature's completed stages, keyed by the stage's artefactPath (the same
+ * repo-relative path _listArtefacts returns as a.path, since both trace
+ * back to the same real artefact file on disk). Called once per
+ * /features/:slug render, not once per artefact row (NFR-Performance).
+ * @param {string} featureSlug
+ * @returns {Object<string, {skillName: string, sessionId: string}>}
+ */
+function _resolveResumeLinksForFeature(featureSlug) {
+  const lookup = {};
+  const journey = _journeyStore.getJourneyByFeatureSlug(featureSlug);
+  if (!journey) return lookup;
+  (journey.completedStages || []).forEach((stage) => {
+    if (stage.sessionId && stage.artefactPath) {
+      lookup[stage.artefactPath] = { skillName: stage.skillName, sessionId: stage.sessionId };
+    }
+  });
+  return lookup;
+}
+
+/**
  * Build HTML for a list of artefacts for the artefact index page (wuce.20).
  * Calls renderArtefactItem() for each item and inserts the creation date.
  * Returns empty-state message if artefacts array is empty.
  * @param {Array} artefacts  e.g. [{ type, createdAt, path }, ...]
  * @param {string} featureSlug
+ * @param {Object<string, {skillName: string, sessionId: string}>} [resumeLookup]
+ *   frsr-s1 (AC3) — from _resolveResumeLinksForFeature; when an artefact's
+ *   path has a resolvable session, a second "Resume conversation" link is
+ *   added alongside the existing "View" link.
  * @returns {string} HTML string
  */
-function renderArtefactIndexHtml(artefacts, featureSlug) {
+function renderArtefactIndexHtml(artefacts, featureSlug, resumeLookup) {
   if (!artefacts || artefacts.length === 0) {
     return '<p class="artefact-list__empty">No artefacts found for this feature</p>';
   }
+  resumeLookup = resumeLookup || {};
 
   // Group artefacts by plain-language label
   const groups = {};
@@ -120,7 +154,11 @@ function renderArtefactIndexHtml(artefacts, featureSlug) {
       const viewUrl  = `/artefact/${featureSlug}/${fileSlug}`;
       const base     = renderArtefactItem({ type: label, name: a.path || '', viewUrl });
       const date     = shellEscHtml(a.createdAt || '');
-      return base.slice(0, -5) + `<time class="artefact-list__date">${date}</time></li>`;
+      const resumable = resumeLookup[a.path || ''];
+      const resumeLink = resumable
+        ? ` <a class="artefact-list__resume-link" href="/skills/${encodeURIComponent(resumable.skillName)}/sessions/${encodeURIComponent(resumable.sessionId)}/chat">Resume conversation</a>`
+        : '';
+      return base.slice(0, -5) + `<time class="artefact-list__date">${date}</time>${resumeLink}</li>`;
     }).join('');
     return `<div class="sw-card"><h2 class="sw-section-title">${shellEscHtml(label)}</h2><ul class="artefact-list">${items}</ul></div>`;
   }).join('');
@@ -164,9 +202,11 @@ async function handleGetFeatureArtefacts(req, res, featureSlug) {
   });
 
   if (acceptsHtml) {
+    // frsr-s1 (NFR-Performance): one lookup per page render, not per artefact row.
+    const resumeLookup = noArtefacts ? {} : _resolveResumeLinksForFeature(featureSlug);
     const listHtml = noArtefacts
       ? '<p class="artefact-list__empty">No artefacts found for this feature</p>'
-      : renderArtefactIndexHtml(artefacts, featureSlug);
+      : renderArtefactIndexHtml(artefacts, featureSlug, resumeLookup);
     const bodyContent = `<h1>${shellEscHtml(featureSlug)}</h1>\n${listHtml}`;
     const html = renderShell({
       title:       `Artefacts — ${shellEscHtml(featureSlug)}`,
@@ -252,6 +292,7 @@ module.exports = {
   handleDeleteIdea,
   setAuditLogger,
   setListArtefacts,
+  setJourneyStoreModule,
   renderFeatureList,
   renderArtefactItem,
   renderArtefactIndexHtml,

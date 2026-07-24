@@ -4336,7 +4336,7 @@ async function handlePostTurnStreamHtml(req, res) {
     // Mark stage complete in journey so resume can load it as a prior artefact
     if (session.journeyId && !session._stageDone) {
       session._stageDone = true;
-      try { _journeyStore.completeStage(session.journeyId, session.skillName, session.artefactPath); } catch (_) {}
+      try { _journeyStore.completeStage(session.journeyId, session.skillName, session.artefactPath, null, sessionId); } catch (_) {}
       // Persist artefact content to Postgres so cross-device / post-deploy resume works.
       // (completeStage only writes the artefact path; content must be saved separately.)
       if (process.env.DATABASE_URL && session.artefactContent) {
