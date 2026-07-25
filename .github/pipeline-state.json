@@ -15800,23 +15800,24 @@
             {
               "slug": "csd-s3-design-produces-architecture-and-program-diagrams",
               "name": "/design//definition produce System Architecture + Program Design diagrams",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "written",
-                "totalTests": 6,
-                "passing": 0,
+                "status": "all-passing",
+                "totalTests": 36,
+                "passing": 36,
                 "artefact": "artefacts/2026-07-25-code-shape-diagrams/test-plans/csd-s3-test-plan.md"
               },
               "acTotal": 3,
-              "acVerified": 0,
+              "acVerified": 3,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorArtefact": "artefacts/2026-07-25-code-shape-diagrams/dor/csd-s3-dor.md",
               "dorStatus": "signed-off",
-              "prStatus": "none"
+              "prStatus": "open",
+              "updatedAt": "2026-07-25T21:28:52.352Z"
             },
             {
               "slug": "csd-s4-design-produces-data-model-diagrams",
