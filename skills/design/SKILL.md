@@ -88,6 +88,100 @@ If a constraint rules out an option, say so explicitly.
 
 ---
 
+## Data Model diagram markers (csd-s4)
+
+When point 2 ("Data and state") surfaces new tables, columns, or
+relationships — or reuses existing ones — emit a `data-model` diagram
+content-block so the canvas panel renders an as-designed Data Model diagram
+the operator can compare against the as-built diagram later
+(csd-s5/csd-s6 — the drift-check downstream of this story).
+
+Use the same `---CANVAS-JSON: {...}---` marker convention `/ideate` already
+established (see `skills/ideate/SKILL.md`, "Canvas markers (inc5)") and that
+the canvas rendering already consumes (`type: "data-model"`,
+`content: { mermaid: "<erDiagram syntax>" }`) — per ADR-026, do not invent a
+new marker shape when an existing one already covers this:
+
+```
+---CANVAS-JSON: {"type":"data-model","title":"<string>","content":{"mermaid":"<erDiagram syntax>"}}---
+```
+
+Fields:
+- `type`: always `data-model` for this content-block
+- `title`: short human-readable title (e.g. "Data model")
+- `content.mermaid`: a Mermaid `erDiagram` string describing entities, columns, and relationships
+
+### What the diagram must include (AC1, AC2)
+
+- **New entities/columns proposed by this feature** — every new table,
+  column, or relationship discussed under point 2.
+- **Existing entities the feature touches, even with no schema change** — if
+  the feature reuses an existing table (e.g. `credits`) without altering its
+  shape, that table must still appear in the diagram. Do not draw an empty or
+  new-only diagram just because nothing changed on a touched table — the
+  diagram exists so drift can be checked against the full picture of what
+  this feature relies on, not just the delta of what changed.
+- **Do not include unrelated existing tables** — only entities genuinely
+  relevant to this feature's data flow. A diagram padded with every table in
+  the schema is as unhelpful as one that omits touched-but-unchanged tables.
+
+### Naming convention (AC3)
+
+Entity and column names in the diagram MUST exactly match the real naming
+used in this repo's migration files (`scripts/migrate-schema-*.js`) — never a
+generic placeholder name (e.g. `Table1`) and never a paraphrase (e.g.
+`Balance` instead of the real `balance` column). Check the actual migration
+file before naming an entity or column in the diagram. This is what makes
+the as-designed diagram directly comparable to the as-built diagram csd-s5
+later generates from the same migration files.
+
+### Reuse-check prompt before finalising a new entity (AC4, ADR-026)
+
+Before finalising the diagram, for every genuinely NEW entity being
+proposed (not for entities that already exist in the schema), surface an
+explicit prompt:
+
+> Does an existing entity's shape already cover this concept? [new entity
+> name] looks like it could extend or reference [closest existing entity],
+> per ADR-026 (reuse an existing entity/primitive when its shape already
+> covers a new concept, rather than introducing a new one). Reply: yes,
+> extend/reference [existing entity] — or no, this is a genuinely new
+> entity, proceed as designed.
+
+This prompt does not block diagram creation. If the operator confirms no
+existing entity covers the concept, the new entity proceeds and the diagram
+is finalised with it included — the prompt surfaces the check, it does not
+gate progress (matching ADR-026's own convention: reuse where it makes
+sense, but a new entity remains a legitimate outcome). The prompt exists to
+catch non-optimal design at the earliest possible point — before
+implementation even starts.
+
+Do not surface this prompt when the session only reuses existing entities
+and proposes no new one at all — it fires only when a genuinely new entity
+is actually on the table, not on every diagram generation.
+
+### Security (NFR)
+
+The diagram must show schema structure only — table names, column names,
+and relationship cardinality. Never row-level data, tenant IDs, or other
+real/sample data values — schema structure only, never row-level or
+tenant-specific data.
+
+### Worked example
+
+A feature that adds a new `feature_flags` table and reuses the existing
+`credits` table without any schema change:
+
+```
+---CANVAS-JSON: {"type":"data-model","title":"Data model","content":{"mermaid":"erDiagram\n    CREDITS {\n        text tenant_id PK\n        integer balance\n        timestamptz updated_at\n    }\n    FEATURE_FLAGS {\n        uuid id PK\n        text tenant_id FK\n        text flag_key\n        boolean enabled\n    }\n    FEATURE_FLAGS }o--|| CREDITS : \"scoped by tenant_id\""}}---
+```
+
+`CREDITS`'s columns (`tenant_id`, `balance`, `updated_at`) match
+`scripts/migrate-schema-credits.js` exactly — the naming-convention
+requirement (AC3) applied directly, not just described.
+
+---
+
 ## Step 3 — UX / interaction design
 
 Ask one question at a time.
