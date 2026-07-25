@@ -6,6 +6,8 @@
 // lab-s1.3: uses provider registry (providerExchangeCode / providerGetUserIdentity) so
 // future providers (Google, etc.) can be swapped in via setProviderAdapter() in server.js.
 
+const crypto = require('crypto');
+
 // Use module reference (not destructuring) so tests can monkeypatch individual exports.
 const _oauthAdapter = require('../auth/oauth-adapter');
 const { persistSession, rotateSessionId, getSession } = require('../middleware/session');
@@ -169,6 +171,47 @@ async function handleAuthGithub(req, res) {
   res.end();
 }
 
+// nis-s1: staging-safe named-identity stub. Lets bri-s3.3 (multi-user,
+// shared-tenant RBAC) and bri-s3.6 (first-login vs returning-login) drive
+// the real /auth/github/callback route against real wuce-staging, the same
+// way they already do locally under NODE_ENV=test -- see decisions.md for
+// the full threat-model writeup. Gated by the same E2E_STAGING_AUTH_STUB_SECRET
+// as a1/dss-s1/serlb-s1, with its own distinct header (never set on
+// production). Swaps ONLY the OAuth-provider-exchange step below; every
+// downstream line (credit grant, role lookup, first-login, session
+// rotation, redirect) is the exact same, unmodified code a real login runs.
+const NAMED_IDENTITY_STUB_HEADER = 'x-e2e-named-identity-stub';
+
+/** True only when the staging-only gate secret is configured on this server. */
+function _namedIdentityStubEnabled() {
+  return !!process.env.E2E_STAGING_AUTH_STUB_SECRET;
+}
+
+/** Constant-time comparison of the request-supplied header value against the configured secret. */
+function _namedIdentityStubHeaderMatches(req) {
+  const expected = process.env.E2E_STAGING_AUTH_STUB_SECRET || '';
+  const candidate = (req.headers && req.headers[NAMED_IDENTITY_STUB_HEADER]) || '';
+  const candidateBuf = Buffer.from(String(candidate));
+  const expectedBuf  = Buffer.from(expected);
+  if (candidateBuf.length !== expectedBuf.length) return false;
+  return crypto.timingSafeEqual(candidateBuf, expectedBuf);
+}
+
+/**
+ * Deterministic synthetic GitHub-style numeric id from a login string --
+ * identical formula to server.js's own NODE_ENV=test provider stub
+ * (bri-s3.6), reused here rather than re-invented, so both paths produce
+ * self-consistent ids for the same login.
+ * @param {string} login
+ * @returns {number}
+ */
+function _deterministicIdFromLogin(login) {
+  let id = 0;
+  const str = String(login);
+  for (let i = 0; i < str.length; i++) { id = (id * 31 + str.charCodeAt(i)) % 900000; }
+  return 900000000 + id;
+}
+
 /**
  * GET /auth/github/callback — receive OAuth code + state from GitHub.
  * Validates CSRF state, exchanges code for token via provider registry, stores token in session.
@@ -189,13 +232,36 @@ async function handleAuthCallback(req, res) {
     return;
   }
 
-  try {
-    // lab-s1.3: call through provider registry (not the direct standalone functions) so
-    // the adapter can be swapped in tests and for future non-GitHub providers.
-    const token = await _oauthAdapter.providerExchangeCode(code);
-    _oauthAdapter.storeTokenInSession(req, token);
+  // nis-s1: named-identity staging stub -- only ever activates when the
+  // secret is configured (never on production), the header matches, AND the
+  // code itself is unmistakably synthetic (e2e- prefix). Any one of those
+  // failing falls through to the real provider-adapter path unchanged.
+  const _namedStubActive = _namedIdentityStubEnabled() &&
+    _namedIdentityStubHeaderMatches(req) &&
+    typeof code === 'string' && /^e2e-/i.test(code);
 
-    const user = await _oauthAdapter.providerGetUserIdentity(token);
+  if (_namedStubActive && query.stubTenant != null && !/^e2e-/i.test(String(query.stubTenant))) {
+    // AC4: a stubTenant that isn't unmistakably synthetic is rejected outright
+    // -- this is the guard that prevents a leaked secret from being used to
+    // point a session at a real customer's real tenant.
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'stubTenant must start with "e2e-"' }));
+    return;
+  }
+
+  try {
+    let token, user;
+    if (_namedStubActive) {
+      token = 'e2e-named-stub-token-' + code;
+      user  = { id: _deterministicIdFromLogin(code), login: code };
+      _oauthAdapter.storeTokenInSession(req, token);
+    } else {
+      // lab-s1.3: call through provider registry (not the direct standalone functions) so
+      // the adapter can be swapped in tests and for future non-GitHub providers.
+      token = await _oauthAdapter.providerExchangeCode(code);
+      _oauthAdapter.storeTokenInSession(req, token);
+      user = await _oauthAdapter.providerGetUserIdentity(token);
+    }
     req.session.userId = user.id;
     req.session.login  = user.login;
     // c1: bookkeeping only (not new auth logic) -- records which provider this
@@ -204,22 +270,30 @@ async function handleAuthCallback(req, res) {
     // identity-links.js's person_identities table (see getLinkedProviders).
     req.session.authProvider = 'github';
 
-    // Tenant resolution (AC2–AC6) — only when TENANT_ORG_ALLOWLIST is configured
-    const _allowlist = process.env.TENANT_ORG_ALLOWLIST || '';
-    if (_allowlist.trim()) {
-      const tenantId = await resolveTenant(token, _allowlist);
-      if (!tenantId) {
-        // Zero-match rejection (AC4): message must NOT expose TENANT_ORG_ALLOWLIST contents (NFR-sec-allowlist-disclosure)
-        _logger.warn('tenant_mismatch', { userId: user.id, timestamp: new Date().toISOString() });
-        res.writeHead(403, { 'Content-Type': 'text/plain' });
-        res.end('You are not a member of an authorised organisation.');
-        return;
-      }
-      req.session.tenantId = tenantId;
+    if (_namedStubActive) {
+      // nis-s1 (AC3/AC5): stubTenant, when supplied, IS the tenant directly --
+      // no TENANT_ORG_ALLOWLIST org-membership lookup runs for this path, since
+      // its whole purpose is letting 2+ synthetic identities share a tenant
+      // without staging needing org-allowlist mode configured at all.
+      req.session.tenantId = (query.stubTenant != null) ? String(query.stubTenant) : user.login;
     } else {
-      // No TENANT_ORG_ALLOWLIST: each GitHub user is their own isolated tenant.
-      // Org-based tenantId (when TENANT_ORG_ALLOWLIST is set) is unaffected by this branch.
-      req.session.tenantId = user.login;
+      // Tenant resolution (AC2–AC6) — only when TENANT_ORG_ALLOWLIST is configured
+      const _allowlist = process.env.TENANT_ORG_ALLOWLIST || '';
+      if (_allowlist.trim()) {
+        const tenantId = await resolveTenant(token, _allowlist);
+        if (!tenantId) {
+          // Zero-match rejection (AC4): message must NOT expose TENANT_ORG_ALLOWLIST contents (NFR-sec-allowlist-disclosure)
+          _logger.warn('tenant_mismatch', { userId: user.id, timestamp: new Date().toISOString() });
+          res.writeHead(403, { 'Content-Type': 'text/plain' });
+          res.end('You are not a member of an authorised organisation.');
+          return;
+        }
+        req.session.tenantId = tenantId;
+      } else {
+        // No TENANT_ORG_ALLOWLIST: each GitHub user is their own isolated tenant.
+        // Org-based tenantId (when TENANT_ORG_ALLOWLIST is set) is unaffected by this branch.
+        req.session.tenantId = user.login;
+      }
     }
 
     // ftcg-s1: no-op for a returning tenant (ON CONFLICT DO NOTHING) — safe to
@@ -449,5 +523,9 @@ module.exports = {
   getFetchOrgs,
   setFetchOrgMembers,
   getOrgMembers,
-  resolveTenant
+  resolveTenant,
+  NAMED_IDENTITY_STUB_HEADER,
+  _namedIdentityStubEnabled,
+  _namedIdentityStubHeaderMatches,
+  _deterministicIdFromLogin
 };

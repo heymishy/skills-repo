@@ -15621,6 +15621,40 @@
           "prStatus": "open"
         }
       ]
+    },
+    {
+      "slug": "2026-07-25-named-identity-stub",
+      "name": "Staging-safe named-identity stub for bri-s3.3/bri-s3.6",
+      "stage": "branch-complete",
+      "health": "green",
+      "reviewStatus": "not-required",
+      "highFindings": 0,
+      "updatedAt": "2026-07-25T06:50:12.088Z",
+      "track": "short",
+      "stories": [
+        {
+          "slug": "nis-s1-named-identity-staging-stub",
+          "id": "nis-s1-named-identity-staging-stub",
+          "name": "auth/github/callback supports a staging-safe named-identity stub so bri-s3.3/bri-s3.6 can run against real staging",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "not-required",
+          "highFindings": 0,
+          "updatedAt": "2026-07-25T06:50:12.088Z",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 16,
+            "passing": 16
+          },
+          "acTotal": 8,
+          "acVerified": 8,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": true,
+          "dorArtefact": "artefacts/2026-07-25-named-identity-stub/dor/nis-s1-dor.md",
+          "dorStatus": "signed-off",
+          "prStatus": "open"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

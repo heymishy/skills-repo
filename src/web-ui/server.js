@@ -1702,21 +1702,35 @@ async function router(req, res) {
       req.on('end', async function() {
         try {
           var seedData = JSON.parse(body || '{}');
-          var sharedOrg = seedData.sharedOrg || 'shared-org';
+          var sharedOrg = seedData.sharedOrg || 'e2e-shared-org';
+
+          // nis-s1: sharedOrg becomes a real team_memberships.tenant_id value below
+          // (a write, gated only by the same staging-only secret as every other
+          // /test/* route here). Without this guard, a caller holding that secret
+          // could target ANY tenant_id string, including a real customer's real
+          // GitHub org name, and write a team_memberships row for it. Requiring
+          // the e2e- prefix means this endpoint can only ever write to an
+          // unmistakably-synthetic tenant, matching the same guard nis-s1 adds to
+          // handleAuthCallback's named-identity stub (routes/auth.js).
+          if (!/^e2e-/i.test(sharedOrg)) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'sharedOrg must start with "e2e-"' }));
+            return;
+          }
 
           // Use _pshPool if available (both real and fake-test-db implement the same query interface)
           // _pshPool is set by both the real Pool and by fake-test-db wiring
           if (_pshPool) {
-            // alice: admin role in shared org
-            await _pshPool.query('INSERT INTO person_identities (identity_key, person_id, provider) VALUES ($1, $2, $3)', ['alice', 101, 'github']).catch(function() {});
+            // e2e-alice: admin role in shared org
+            await _pshPool.query('INSERT INTO person_identities (identity_key, person_id, provider) VALUES ($1, $2, $3)', ['e2e-alice', 101, 'github']).catch(function() {});
             await _pshPool.query('INSERT INTO team_memberships (person_id, tenant_id, role) VALUES ($1, $2, $3)', [101, sharedOrg, 'admin']).catch(function() {});
 
-            // bob: engineer role in shared org
-            await _pshPool.query('INSERT INTO person_identities (identity_key, person_id, provider) VALUES ($1, $2, $3)', ['bob', 102, 'github']).catch(function() {});
+            // e2e-bob: engineer role in shared org
+            await _pshPool.query('INSERT INTO person_identities (identity_key, person_id, provider) VALUES ($1, $2, $3)', ['e2e-bob', 102, 'github']).catch(function() {});
             await _pshPool.query('INSERT INTO team_memberships (person_id, tenant_id, role) VALUES ($1, $2, $3)', [102, sharedOrg, 'engineer']).catch(function() {});
 
-            // viewer: viewer role in shared org
-            await _pshPool.query('INSERT INTO person_identities (identity_key, person_id, provider) VALUES ($1, $2, $3)', ['viewer', 103, 'github']).catch(function() {});
+            // e2e-viewer: viewer role in shared org
+            await _pshPool.query('INSERT INTO person_identities (identity_key, person_id, provider) VALUES ($1, $2, $3)', ['e2e-viewer', 103, 'github']).catch(function() {});
             await _pshPool.query('INSERT INTO team_memberships (person_id, tenant_id, role) VALUES ($1, $2, $3)', [103, sharedOrg, 'viewer']).catch(function() {});
           }
 

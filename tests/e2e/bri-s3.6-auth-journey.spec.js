@@ -25,6 +25,9 @@
 
 const { test, expect } = require('@playwright/test');
 const { withAuth }      = require('./fixtures/auth');
+// nis-s1: only meaningful against real wuce-staging -- empty {} locally, so
+// this changes nothing about how this spec runs against the local harness.
+const { namedIdentityStubHeaders } = require('./fixtures/staging-auth');
 
 const REAL_PROVIDER_DOMAINS = [
   '**://github.com/**',
@@ -91,6 +94,7 @@ test.describe('bri-s3.6 auth journey @mocked', () => {
   test('AC1: first-time GitHub OAuth login redirects to /welcome, not /dashboard', async ({ page, context }) => {
     const getRealHitCount = await installRealProviderGuard(context);
     const state = await startGithubLogin(context);
+    await context.setExtraHTTPHeaders(namedIdentityStubHeaders());
 
     await page.goto(`/auth/github/callback?code=${SYNTHETIC_LOGIN}&state=${state}`);
     await expect(page).toHaveURL(/\/welcome(\?.*)?$/);
@@ -103,6 +107,7 @@ test.describe('bri-s3.6 auth journey @mocked', () => {
   test('AC2: returning GitHub OAuth login (same identity) redirects straight to /dashboard', async ({ page, context }) => {
     const getRealHitCount = await installRealProviderGuard(context);
     const state = await startGithubLogin(context);
+    await context.setExtraHTTPHeaders(namedIdentityStubHeaders());
 
     // Same SYNTHETIC_LOGIN as AC1 — the server's in-memory first-login tracking
     // (cleared during AC1's login) now reports this identity as a returning user.
