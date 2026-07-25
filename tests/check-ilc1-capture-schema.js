@@ -165,8 +165,12 @@ console.log('\n[ilc1-capture-schema] NFR — no new dependencies');
   // pg (bri-s2.2 Neon/Postgres staging), posthog-node (bri-s1.2 ARCH decision,
   // artefacts/2026-07-09-beta-readiness-infra/decisions.md), stripe (landing
   // auth/billing) -- each a real, already-decided dependency from its own
-  // story, not scope creep introduced by ilc.1.
-  const ALLOWED_PROD_DEPS = ['pino', '@upstash/redis', 'bcrypt', 'pg', 'posthog-node', 'stripe'];
+  // story, not scope creep introduced by ilc.1. csd-s1 (2026-07-25): added
+  // mermaid (client-side diagram rendering for the /ideate canvas's new
+  // `data-model` block type) -- an explicit ARCH decision deliberately
+  // relaxing this repo's usual zero-new-npm-dependency Web UI rule for this
+  // one feature only, see artefacts/2026-07-25-code-shape-diagrams/decisions.md.
+  const ALLOWED_PROD_DEPS = ['pino', '@upstash/redis', 'bcrypt', 'pg', 'posthog-node', 'stripe', 'mermaid'];
   const unexpected = deps.filter(d => !ALLOWED_PROD_DEPS.includes(d));
   assert(
     unexpected.length === 0,
