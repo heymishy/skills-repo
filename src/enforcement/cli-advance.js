@@ -167,6 +167,7 @@ function advance(featureSlug, storyId, rawFields, repoRoot) {
   // A pure feature-level milestone call (no story-scoped fields) must not
   // create a phantom story entry just because a storyId was passed.
   var story = null;
+  var storyWasCreated = false;
   if (storyKeys.length > 0) {
     if (!Array.isArray(feature.stories)) feature.stories = [];
     story = feature.stories.find(function(s) {
@@ -183,10 +184,13 @@ function advance(featureSlug, storyId, rawFields, repoRoot) {
         if (found) { story = found; break; }
       }
     }
-    // Still not found — create a new flat entry
+    // Still not found — create a new flat entry. Creation itself stays
+    // permitted (CLAUDE.md cdg.6 sanctions it for initial story creation) —
+    // only the observability of that path changes below (acv-s1).
     if (!story) {
       story = { id: storyId };
       feature.stories.push(story);
+      storyWasCreated = true;
     }
 
     // ── Apply story-scoped fields (with integer coercion and single-level dot-notation) ─
@@ -228,6 +232,19 @@ function advance(featureSlug, storyId, rawFields, repoRoot) {
   }
 
   var fieldsStr = Object.keys(stateUpdate).map(function(k) { return k + '=' + stateUpdate[k]; }).join(' ');
+
+  // acv-s1: a no-match storyId silently creating a new flat record read
+  // identically to a real update ("Advanced: ..."), masking typos and
+  // stale references. Creation stays allowed \u2014 only made loudly visible.
+  if (storyWasCreated) {
+    return {
+      exitCode: 0,
+      stdout: 'Created NEW story record: ' + featureSlug + '/' + storyId + ' \u2014 ' + fieldsStr,
+      stderr: 'WARNING: no existing story matched id/slug "' + storyId + '" in feature "' +
+        featureSlug + '" (checked flat and epic-nested stories) \u2014 a new story record was created instead of updating an existing one. If this was a typo, fix the story id/slug and re-run.',
+    };
+  }
+
   return {
     exitCode: 0,
     stdout: 'Advanced: ' + featureSlug + '/' + storyId + ' \u2014 ' + fieldsStr,
