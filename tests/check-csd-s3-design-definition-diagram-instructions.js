@@ -82,12 +82,19 @@ function isRealExample(marker, type) {
 // ---------------------------------------------------------------------------
 (function () {
   var solutionArchIdx = designSkillMd.indexOf('## Step 2 — Solution architecture');
+  var step3Idx = designSkillMd.indexOf('## Step 3');
   var sysArchMarkerIdx = designSkillMd.indexOf('"type":"system-architecture"');
   assert('U1: design/SKILL.md documents "Step 2 — Solution architecture"', solutionArchIdx !== -1);
   assert('U1: design/SKILL.md documents a system-architecture CANVAS-JSON marker', sysArchMarkerIdx !== -1);
+  // Checked structurally (marker falls within the Step 2 section, before Step 3
+  // begins) rather than by raw character distance -- a fixed-count threshold
+  // breaks whenever a sibling section (e.g. csd-s4's Data Model marker docs)
+  // also lives inside Step 2, pushing this marker further from the heading
+  // while it remains correctly placed inside Step 2, just later in it.
   assert(
-    'U1: system-architecture marker instruction is tied to (within 2000 chars of) the Solution architecture step',
-    solutionArchIdx !== -1 && sysArchMarkerIdx !== -1 && Math.abs(sysArchMarkerIdx - solutionArchIdx) < 2000
+    'U1: system-architecture marker instruction is documented within the Step 2 section',
+    solutionArchIdx !== -1 && step3Idx !== -1 && sysArchMarkerIdx !== -1 &&
+      sysArchMarkerIdx > solutionArchIdx && sysArchMarkerIdx < step3Idx
   );
 
   var saExample = extractMarkers(designSkillMd).find(function (m) { return isRealExample(m, 'system-architecture'); });

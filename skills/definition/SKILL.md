@@ -204,6 +204,56 @@ If migration story template confirmed: write the story using
 
 Save each story to `artefacts/[feature]/stories/[story-slug].md`
 
+**Data Model diagram markers (csd-s4):**
+
+When a story's ACs touch persisted data shape — new tables, new columns, new
+relationships, or reuse of an existing table/column without a schema
+change — emit a `data-model` diagram content-block as part of that story's
+write-up, so the canvas panel renders an as-designed Data Model diagram the
+operator can compare against the as-built diagram later (csd-s5/csd-s6 — the
+drift-check this feeds).
+
+Use the same `---CANVAS-JSON: {...}---` marker convention `/ideate` already
+established (see `skills/ideate/SKILL.md`, "Canvas markers (inc5)") and that
+the canvas rendering already consumes (`type: "data-model"`,
+`content: { mermaid: "<erDiagram syntax>" }`) — per ADR-026, do not invent a
+new marker shape when an existing one already covers this:
+
+```
+---CANVAS-JSON: {"type":"data-model","title":"<string>","content":{"mermaid":"<erDiagram syntax>"}}---
+```
+
+- **Include existing entities the story touches, even with no schema
+  change** (AC2) — e.g. a story that reuses the existing `credits` table
+  without altering it must still show `credits` in the diagram, not just
+  new tables. Do not include unrelated existing tables that this story does
+  not touch.
+- **Entity/column names must exactly match this repo's real migration
+  files** (`scripts/migrate-schema-*.js`) (AC3) — never a generic
+  placeholder name and never a paraphrase of the real column name.
+- **Reuse-check prompt before finalising a new entity** (AC4, ADR-026) —
+  before finalising the diagram for a story that proposes a genuinely NEW
+  entity, surface an explicit prompt: "Does an existing entity's shape
+  already cover this concept? [new entity] looks like it could
+  extend/reference [closest existing entity], per ADR-026. Reply: yes,
+  extend/reference — or no, this is genuinely new, proceed as designed."
+  This does not block story-writing — if the operator confirms no existing
+  entity covers the concept, the new entity proceeds and the diagram is
+  finalised with it included. Do not surface this prompt for a story that
+  only reuses existing entities with no new entity proposed.
+- **Structure only, never row-level or tenant-specific data** in the
+  diagram content — table/column/relationship names only.
+
+Worked example — a story adding a new `feature_flags` table and reusing the
+existing `credits` table with no schema change:
+
+```
+---CANVAS-JSON: {"type":"data-model","title":"Data model","content":{"mermaid":"erDiagram\n    CREDITS {\n        text tenant_id PK\n        integer balance\n        timestamptz updated_at\n    }\n    FEATURE_FLAGS {\n        uuid id PK\n        text tenant_id FK\n        text flag_key\n        boolean enabled\n    }\n    FEATURE_FLAGS }o--|| CREDITS : \"scoped by tenant_id\""}}---
+```
+
+`CREDITS`'s columns (`tenant_id`, `balance`, `updated_at`) match
+`scripts/migrate-schema-credits.js` exactly.
+
 **Dependency chain validation (D1 — run after saving each story):**
 
 After writing and saving a story's Dependencies block, check whether each named upstream story slug resolves to an existing artefact path (`artefacts/[feature]/stories/[slug].md`). If any slug does not resolve, surface a prompt before proceeding to the next story:
