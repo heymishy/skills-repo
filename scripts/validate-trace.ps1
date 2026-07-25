@@ -249,8 +249,19 @@ function Check-TestPlanCoverage {
             }
             if (-not (Test-Path $testPlanPath)) {
                 $rel = $testPlanPath.Replace($RepoRoot + [System.IO.Path]::DirectorySeparatorChar, '').Replace([System.IO.Path]::DirectorySeparatorChar, '/')
-                Write-Host "MISSING: $rel"
-                $missing.Add($rel)
+                # Completed features get moved to artefacts/archived/<slug>/ over time
+                # (see the 2026-05-14 archive commit); pipeline-state.json keeps the
+                # pre-archive path, so check there before declaring the plan missing.
+                $archivedFound = $false
+                if ($rel.StartsWith('artefacts/')) {
+                    $archivedRel = 'artefacts/archived/' + $rel.Substring('artefacts/'.Length)
+                    $archivedPath = Join-Path $RepoRoot $archivedRel.Replace('/', [System.IO.Path]::DirectorySeparatorChar)
+                    $archivedFound = Test-Path $archivedPath
+                }
+                if (-not $archivedFound) {
+                    Write-Host "MISSING: $rel"
+                    $missing.Add($rel)
+                }
             }
         }
     }
