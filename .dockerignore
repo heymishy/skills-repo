@@ -31,6 +31,12 @@ tests/e2e/fixtures/*
 # Worktrees — local development artefacts
 .worktrees/
 
+# Claude Code session/job data — local development tooling only, never
+# read by the running app. Found to be 3.2GB / 429k files, dominating the
+# build context upload on every deploy (Fly build-context size warning,
+# 2026-07-25).
+.claude/
+
 # Pipeline artefacts — not required at runtime
 artefacts/
 
