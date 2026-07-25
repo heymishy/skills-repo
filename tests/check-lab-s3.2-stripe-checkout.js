@@ -201,6 +201,61 @@ setImmediate(function() {
       stripeCalls.length === 0
     );
 
+    // ── spv-s1 — a Product ID (or any other non-"price_"-shaped value) → 500,
+    // with a specific server-side log naming the env var (AC1, AC2, AC4) ──────
+    console.log('\n── spv-s1: non-price-shaped price ID → 500 + specific log (AC1/AC2) ──');
+
+    // spv-s1 AC1 — the actual real-incident shape: a Stripe Product ID
+    stripeCalls.length = 0;
+    process.env.STRIPE_PRICE_ID_STARTER = 'prod_UucwFl0LpPlOod';
+    var req3c = mockReq({ body: { planId: 'starter' } });
+    var res3c = mockRes();
+    await billing.handlePostCheckout(req3c, res3c);
+    check(
+      'checkout-product-id-instead-of-price-id-returns-500-no-stripe-call',
+      res3c._statusCode === 500 &&
+      (res3c._body || '').includes('Billing not configured') &&
+      stripeCalls.length === 0
+    );
+
+    // spv-s1 AC1 — any other non-conforming value (not a placeholder, not price_-prefixed)
+    stripeCalls.length = 0;
+    process.env.STRIPE_PRICE_ID_STARTER = 'some-typo-value';
+    var req3d = mockReq({ body: { planId: 'starter' } });
+    var res3d = mockRes();
+    await billing.handlePostCheckout(req3d, res3d);
+    check(
+      'checkout-arbitrary-non-price-shaped-value-returns-500-no-stripe-call',
+      res3d._statusCode === 500 &&
+      (res3d._body || '').includes('Billing not configured') &&
+      stripeCalls.length === 0
+    );
+
+    // spv-s1 AC2 — the specific, actionable log line (not just a generic 500)
+    var origConsoleError = console.error;
+    var loggedMessages = [];
+    console.error = function() { loggedMessages.push(Array.prototype.slice.call(arguments).join(' ')); };
+    process.env.STRIPE_PRICE_ID_STARTER = 'prod_UucwFl0LpPlOod';
+    var req3e = mockReq({ body: { planId: 'starter' } });
+    var res3e = mockRes();
+    await billing.handlePostCheckout(req3e, res3e);
+    console.error = origConsoleError;
+    check(
+      'checkout-misconfigured-price-id-logs-specific-env-var-name',
+      loggedMessages.some(function(m) { return m.indexOf('STRIPE_PRICE_ID_STARTER') !== -1; })
+    );
+
+    // spv-s1 AC3 — a valid price_... value still takes the unchanged happy path
+    stripeCalls.length = 0;
+    process.env.STRIPE_PRICE_ID_STARTER = 'price_env_configured_value';
+    var req3f = mockReq({ body: { planId: 'starter' } });
+    var res3f = mockRes();
+    await billing.handlePostCheckout(req3f, res3f);
+    check(
+      'checkout-valid-price-id-unchanged-happy-path',
+      res3f._statusCode === 302 && stripeCalls.length === 1
+    );
+
     // ── T4 — success_url contains {CHECKOUT_SESSION_ID} template literal (AC4) ─
     console.log('\n── T4: success_url template literal (AC4) ──');
 
