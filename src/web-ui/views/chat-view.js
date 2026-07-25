@@ -246,13 +246,20 @@ function renderChat(data) {
       '.cv-table th { background:var(--line-2);font-weight:600;color:var(--ink); }',
       '.cv-table td { color:var(--ink-2); }',
       '.cv-text p { font-size:13px;color:var(--ink);line-height:1.6;margin:4px 0; }',
-      /* csd-s1 -- data-model diagram (mermaid) */
+      /* csd-s1 -- data-model diagram (mermaid); csd-s2 -- system-architecture,
+         program-design (same mechanism), type label, and error state */
       '.cv-diagram-wrap { padding:2px; }',
+      '.cv-diagram-type-label { font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin:2px 0 6px; }',
       '.cv-diagram-wrap .mermaid { display:flex;justify-content:center;overflow-x:auto; }',
       '.cv-diagram-wrap .mermaid svg { max-width:100%;height:auto; }',
       '.cv-diagram-alt { margin-top:8px; }',
       '.cv-diagram-alt summary { font-size:11px;color:var(--muted);cursor:pointer;user-select:none; }',
       '.cv-diagram-src { margin-top:6px;padding:8px 10px;background:var(--line-2);border-radius:6px;font-family:var(--mono);font-size:11px;line-height:1.5;white-space:pre-wrap;color:var(--ink-2,var(--ink));overflow-x:auto; }',
+      /* csd-s2 (AC2) -- labelled error state, visually distinct from a
+         successfully-rendered diagram: red-toned border/background/text,
+         never a blank space and never mermaid's own raw error output. */
+      '.cv-diagram-wrap .mermaid.cv-diagram-error { display:block;justify-content:initial; }',
+      '.cv-diagram-error-box { display:flex;align-items:center;gap:8px;padding:10px 14px;border:1.5px solid var(--red,#DC2626);border-radius:6px;background:var(--red-soft,#FEE2E2);color:var(--red,#991B1B);font-size:12px;font-weight:600; }',
       /* definition story map */
       '.dm-canvas{padding:12px 16px}',
       '.dm-hdr{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}',

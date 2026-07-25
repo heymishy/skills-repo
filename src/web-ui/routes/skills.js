@@ -737,10 +737,12 @@ function parseCanvasBlock(text) {
   var MARKER_RE = /---CANVAS-JSON:\s*(\{[\s\S]*?\})\s*---/;
   var match = String(text).match(MARKER_RE);
   if (!match) { return null; }
-  // csd-s1: 'data-model' is the first of the `diagram` content-block family
-  // (system-architecture, program-design follow in later stories per the
-  // epic — not wired up yet, out of scope for this story).
-  var TYPE_ALLOW = ['cluster-tree', 'table', 'text', 'data-model'];
+  // csd-s1 introduced 'data-model' as the first of the `diagram`
+  // content-block family. csd-s2 completes the family by wiring up the
+  // remaining two diagram types through the SAME dispatch mechanism
+  // (ADR-026) -- see renderCanvasBlock's buildDiagramBodyHtml() helper below,
+  // shared by all three rather than a per-type parallel path.
+  var TYPE_ALLOW = ['cluster-tree', 'table', 'text', 'data-model', 'system-architecture', 'program-design'];
   try {
     var parsed = JSON.parse(match[1]);
     if (TYPE_ALLOW.indexOf(String(parsed.type || '')) === -1) { return null; }
@@ -3278,6 +3280,50 @@ function _renderChatPage(skillName, sessionId, session, backUrl) {
     '    container.appendChild(cardEl);',
     '  }',
     '  // inc4 — canvas block renderer + append (inside IIFE so escHtmlClient is in scope)',
+    // csd-s2: ONE shared body-builder for the whole `diagram` content-block
+    // family (data-model, system-architecture, program-design) -- ADR-026
+    // forbids a parallel rendering path per diagram type, so all three call
+    // this single helper rather than each duplicating the mermaid-wrap markup.
+    // Mermaid syntax is placed as the .mermaid element's own text content --
+    // this is mermaid's documented convention for what mermaid.run() looks
+    // for and replaces with rendered SVG once the client bundle has loaded
+    // (see appendCanvasBlock below). A collapsed <details> text alternative
+    // keeps the raw source available to screen readers (NFR: accessibility /
+    // MC-SEC-01's sibling accessibility requirement) even before/without JS.
+    // A visible ".cv-diagram-type-label" (AC1) names the diagram type in
+    // human-readable form ("Data Model" / "System Architecture" /
+    // "Program Design") so the three types are distinguishable at a glance,
+    // not just via the generic uppercase canvas-type-tag.
+    '  function buildDiagramBodyHtml(diagramLabel, content) {',
+    '    var mermaidSrc = String(content.mermaid || content.source || "");',
+    '    var diagId = "cv-diagram-" + Math.random().toString(36).slice(2, 10);',
+    // Deliberately NOT interpolating mermaidSrc into an attribute (e.g.
+    // aria-label) here -- escHtmlClient only escapes &/</> for safe TEXT-NODE
+    // interpolation, not the double-quote character an attribute value is
+    // delimited by. Mermaid ER-diagram/flowchart syntax routinely contains
+    // quoted attribute-comment text (e.g. `string name PK "primary key"`), so
+    // an unescaped `"` inside an attribute would break out of it -- exactly
+    // the injection MC-SEC-01 forbids. diagramLabel is one of 3 fixed,
+    // internally-supplied strings (never user/model content), so it is safe
+    // to place directly in an attribute. The accessible text alternative
+    // below places the raw mermaid source only as element TEXT CONTENT
+    // (<pre>), which escHtmlClient safely escapes for that context.
+    '    return \'<div class="cv-diagram-wrap">\' +',
+    '      \'<div class="cv-diagram-type-label">\' + escHtmlClient(diagramLabel) + "</div>" +',
+    '      \'<div class="mermaid" id="\' + diagId + \'" data-diagram-label="\' + diagramLabel + \'" role="img" aria-label="\' + diagramLabel + \' diagram">\' + escHtmlClient(mermaidSrc) + \'</div>\' +',
+    '      \'<details class="cv-diagram-alt"><summary>View diagram source (text alternative)</summary><pre class="cv-diagram-src">\' + escHtmlClient(mermaidSrc) + \'</pre></details>\' +',
+    '    "</div>";',
+    '  }',
+    // csd-s2 (AC2): on a mermaid render failure (malformed/invalid syntax),
+    // replace the .mermaid node's content with a labelled, non-blank error
+    // box -- never mermaid's own default error output (which can include
+    // parser stack-trace-shaped text) and never the raw JS error message.
+    '  function markDiagramRenderError(node) {',
+    '    var label = node.getAttribute("data-diagram-label") || "Diagram";',
+    '    node.classList.add("cv-diagram-error");',
+    '    node.setAttribute("aria-label", label + " diagram failed to render");',
+    '    node.innerHTML = \'<div class="cv-diagram-error-box" role="alert">\' + escHtmlClient(label) + " diagram failed to render</div>";',
+    '  }',
     '  function renderCanvasBlock(block) {',
     '    var type = block.type || "";',
     '    var title = escHtmlClient(block.title || "");',
@@ -3310,29 +3356,15 @@ function _renderChatPage(skillName, sessionId, session, backUrl) {
     '      var paras = (content.paragraphs || [String(content.text || "")]).map(function(p) { return "<p>" + escHtmlClient(String(p)) + "</p>"; }).join("");',
     '      bodyHtml = \'<div class="cv-text">\' + paras + "</div>";',
     '    } else if (type === "data-model") {',
-    // csd-s1: first of the `diagram` content-block family (system-architecture,
-    // program-design follow in later stories, same dispatch shape). Mermaid
-    // syntax is placed as the .mermaid element's own text content -- this is
-    // mermaid's documented convention for what mermaid.run() looks for and
-    // replaces with rendered SVG once the client bundle has loaded (see
-    // appendCanvasBlock below). A collapsed <details> text alternative keeps
-    // the raw source available to screen readers (NFR: accessibility /
-    // MC-SEC-01's sibling accessibility requirement) even before/without JS.
-    '      var mermaidSrc = String(content.mermaid || content.source || "");',
-    '      var diagId = "cv-diagram-" + Math.random().toString(36).slice(2, 10);',
-    // Deliberately NOT interpolating mermaidSrc into an attribute (e.g.
-    // aria-label) here -- escHtmlClient only escapes &/</> for safe TEXT-NODE
-    // interpolation, not the double-quote character an attribute value is
-    // delimited by. Mermaid ER-diagram syntax routinely contains quoted
-    // attribute-comment text (e.g. `string name PK "primary key"`), so an
-    // unescaped `"` inside an attribute would break out of it -- exactly the
-    // injection MC-SEC-01 forbids. The accessible text alternative below
-    // places the raw source only as element TEXT CONTENT (<pre>), which
-    // escHtmlClient safely escapes for that context; aria-label stays static.
-    '      bodyHtml = \'<div class="cv-diagram-wrap">\' +',
-    '        \'<div class="mermaid" id="\' + diagId + \'" role="img" aria-label="Data model diagram">\' + escHtmlClient(mermaidSrc) + \'</div>\' +',
-    '        \'<details class="cv-diagram-alt"><summary>View diagram source (text alternative)</summary><pre class="cv-diagram-src">\' + escHtmlClient(mermaidSrc) + \'</pre></details>\' +',
-    '      "</div>";',
+    '      bodyHtml = buildDiagramBodyHtml("Data Model", content);',
+    '    } else if (type === "system-architecture") {',
+    // csd-s2: the second of the `diagram` content-block family, wired
+    // through the SAME buildDiagramBodyHtml() helper as data-model above --
+    // no parallel rendering function (ADR-026).
+    '      bodyHtml = buildDiagramBodyHtml("System Architecture", content);',
+    '    } else if (type === "program-design") {',
+    // csd-s2: the third and last of the `diagram` content-block family.
+    '      bodyHtml = buildDiagramBodyHtml("Program Design", content);',
     '    }',
     '    var typeTag = \'<span class="canvas-type-tag">\' + escHtmlClient(type) + "</span>";',
     '    return \'<div class="canvas-block" data-block-type="\' + escHtmlClient(type) + \'"><div class="canvas-block-head">\' + typeTag + \' <span class="canvas-block-title">\' + title + \'</span></div><div class="canvas-block-body">\' + bodyHtml + "</div></div>";',
@@ -3345,14 +3377,27 @@ function _renderChatPage(skillName, sessionId, session, backUrl) {
     '    wrapper.innerHTML = renderCanvasBlock(block);',
     '    var appendedEl = wrapper.firstChild || wrapper;',
     '    container.appendChild(appendedEl);',
-    // csd-s1 (MC-SEC-01): render mermaid diagram content client-side only
-    // through mermaid's own securityLevel:"strict" configuration (set once,
-    // below) -- never via raw innerHTML of unsanitised diagram text.
-    '    if (block && block.type === "data-model" && window.mermaid && typeof window.mermaid.run === "function" && appendedEl.querySelectorAll) {',
+    // csd-s1/csd-s2 (MC-SEC-01): render mermaid diagram content client-side
+    // only through mermaid's own securityLevel:"strict" configuration (set
+    // once, below) -- never via raw innerHTML of unsanitised diagram text.
+    // csd-s2 extends this guard to all three diagram types and runs
+    // mermaid.run() per-node (rather than batched across every .mermaid node
+    // in the block) so that one malformed diagram's render failure is caught
+    // and shown as its own labelled error box (AC2) without ever blocking or
+    // masking a sibling diagram's successful render.
+    '    var isDiagramBlock = block && (block.type === "data-model" || block.type === "system-architecture" || block.type === "program-design");',
+    '    if (isDiagramBlock && window.mermaid && typeof window.mermaid.run === "function" && appendedEl.querySelectorAll) {',
     '      var mermaidNodes = appendedEl.querySelectorAll(".mermaid");',
-    '      if (mermaidNodes.length) {',
-    '        try { window.mermaid.run({ nodes: Array.prototype.slice.call(mermaidNodes) }); } catch (e) {}',
-    '      }',
+    '      Array.prototype.forEach.call(mermaidNodes, function(node) {',
+    '        try {',
+    '          var runResult = window.mermaid.run({ nodes: [node] });',
+    '          if (runResult && typeof runResult.catch === "function") {',
+    '            runResult.catch(function() { markDiagramRenderError(node); });',
+    '          }',
+    '        } catch (e) {',
+    '          markDiagramRenderError(node);',
+    '        }',
+    '      });',
     '    }',
     '    var pip = document.querySelector(".cv-pip[data-lens=\\"" + (block._lens || "") + "\\"]");',
     '    if (pip) pip.classList.add("active");',
