@@ -15821,23 +15821,24 @@
             {
               "slug": "csd-s4-design-produces-data-model-diagrams",
               "name": "/design//definition produce Data Model diagrams",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "written",
-                "totalTests": 9,
-                "passing": 0,
+                "status": "all-passing",
+                "totalTests": 10,
+                "passing": 10,
                 "artefact": "artefacts/2026-07-25-code-shape-diagrams/test-plans/csd-s4-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorArtefact": "artefacts/2026-07-25-code-shape-diagrams/dor/csd-s4-dor.md",
               "dorStatus": "signed-off",
-              "prStatus": "none"
+              "prStatus": "open",
+              "updatedAt": "2026-07-25T21:26:05.593Z"
             },
             {
               "slug": "csd-s5-as-built-diagram-generation",
