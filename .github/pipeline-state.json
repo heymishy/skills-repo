@@ -16234,8 +16234,8 @@
     {
       "slug": "2026-07-26-trace-validation-archived-path-fix",
       "name": "Resolve archived-feature paths in the test_plan_coverage trace-validation check",
-      "track": "retrospective",
-      "stage": "test-plan",
+      "track": "short",
+      "stage": "review",
       "health": "amber",
       "epics": [],
       "stories": [
@@ -16243,7 +16243,7 @@
           "id": "r-trace-validation-archived-paths",
           "slug": "r-trace-validation-archived-paths",
           "name": "Resolve archived-feature paths in test_plan_coverage (bash + PowerShell)",
-          "stage": "test-plan",
+          "stage": "review",
           "health": "amber",
           "acTotal": 3,
           "acVerified": 2,
