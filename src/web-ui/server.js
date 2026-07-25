@@ -1466,11 +1466,18 @@ async function router(req, res) {
 
   req.query = parseQuery(parsed.searchParams);
 
-  // ── Test-mode session-seed endpoint (NODE_ENV=test only) ─────────────────
+  // ── Test-mode session-seed endpoint ───────────────────────────────────────
   // Must be handled BEFORE sessionMiddleware to avoid a double Set-Cookie.
   // Playwright's withAuth fixture calls this to re-seed the test session
   // (handles cases where a prior test consumed/mutated it, e.g. via logout).
-  if (pathname === '/test/session' && req.method === 'GET' && process.env.NODE_ENV === 'test') {
+  // bjs-s1: widened from NODE_ENV=test-only to _isTestEndpointAllowed(req) --
+  // dss-s1's existing staging-safe gate -- since bri-s3.5 depends on this
+  // route and was otherwise unreachable on real wuce-staging. Unlike the 4
+  // routes dss-s1 already covers, this one MINTS a fully-authenticated
+  // session for a caller-chosen tenantId, so a stricter guard applies below:
+  // any explicitly-supplied tenantId must be unmistakably synthetic (e2e-
+  // prefixed), so a leaked secret can never mint a session for a real tenant.
+  if (pathname === '/test/session' && req.method === 'GET' && _isTestEndpointAllowed(req)) {
     const { seedTestSession } = require('./middleware/session');
     // bri-s3.5: optional ?sessionId=&tenantId= overrides let a spec seed an isolated
     // session (its own cookie, its own tenant) instead of the shared default — used
@@ -1479,6 +1486,11 @@ async function router(req, res) {
     // Callers that omit both query params get the original, unchanged default session.
     const sessionId = (req.query && req.query.sessionId) || ('e2e' + '0'.repeat(60) + '1');
     const tenantId  = (req.query && req.query.tenantId) || 'e2e-tester';
+    if (!/^e2e-/i.test(tenantId)) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'tenantId must start with "e2e-"' }));
+      return;
+    }
     seedTestSession(sessionId, {
       accessToken: 'e2e-test-access-token',
       userId:      9999,

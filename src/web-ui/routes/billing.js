@@ -4,6 +4,7 @@
 // Uses D37-injectable stripe-client and credits adapter.
 // POST /webhook/stripe: raw body required — registered in server.js BEFORE any JSON body parser.
 
+var crypto        = require('crypto');
 var stripeClient  = require('../modules/stripe-client');
 var creditsModule = require('../modules/credits');
 var tenantPlan    = require('../modules/tenant-plan'); // bri-s3.5
@@ -11,6 +12,52 @@ var csrf          = require('../middleware/csrf'); // sec-perf-s3
 
 // Placeholder sentinel used in .env.example — treat as unconfigured.
 var PLACEHOLDER = 'STRIPE_PLAN_PRICE_ID_PLACEHOLDER';
+
+// bjs-s1: staging-safe webhook-signature stub. Real Stripe signature
+// verification (stripeClient.verifyWebhookSignature) only gets faked out
+// locally, inside server.js's NODE_ENV=test block -- real wuce-staging has a
+// real STRIPE_SECRET_KEY wired, so bri-s3.5's synthetic webhook POSTs would
+// otherwise always fail with a real signature-mismatch 400 there. Gated by
+// the same E2E_STAGING_AUTH_STUB_SECRET every other staging-only mechanism
+// in this codebase uses, with its own distinct header (never set on
+// production). See decisions.md for the full threat-model writeup -- the
+// e2e- prefix guard below is the load-bearing security property: without it,
+// a leaked secret could POST an arbitrary "webhook event" marking a REAL
+// tenant as paid/credited, bypassing real payment entirely.
+var WEBHOOK_STUB_HEADER = 'x-e2e-webhook-stub';
+
+function _webhookStubEnabled() {
+  return !!process.env.E2E_STAGING_AUTH_STUB_SECRET;
+}
+
+function _webhookStubHeaderMatches(req) {
+  var expected = process.env.E2E_STAGING_AUTH_STUB_SECRET || '';
+  var supplied = (req.headers && req.headers[WEBHOOK_STUB_HEADER]) || '';
+  var suppliedBuf = Buffer.from(String(supplied));
+  var expectedBuf = Buffer.from(expected);
+  if (suppliedBuf.length !== expectedBuf.length) return false;
+  return crypto.timingSafeEqual(suppliedBuf, expectedBuf);
+}
+
+/**
+ * Collect every tenantId-shaped value a synthetic webhook event could carry,
+ * across the field paths the real dispatch switch below already reads from
+ * (client_reference_id, metadata.tenant_id, subscription_details.metadata.tenant_id).
+ * Used ONLY by the staging-safe stub gate to enforce the e2e- prefix guard --
+ * the real dispatch logic's own field-reading is untouched.
+ * @param {object} event
+ * @returns {string[]}
+ */
+function _collectCandidateTenantIds(event) {
+  var obj = (event && event.data && event.data.object) || {};
+  var ids = [];
+  if (obj.client_reference_id) ids.push(obj.client_reference_id);
+  if (obj.metadata && obj.metadata.tenant_id) ids.push(obj.metadata.tenant_id);
+  if (obj.subscription_details && obj.subscription_details.metadata && obj.subscription_details.metadata.tenant_id) {
+    ids.push(obj.subscription_details.metadata.tenant_id);
+  }
+  return ids;
+}
 
 // ── lab-s3.4: Injectable DB adapter for webhook idempotency (stripe_events table) ──────────────
 // Default stub throws — call setWebhookDbAdapter() with a real pg Pool before use in production.
@@ -213,13 +260,34 @@ async function handlePostStripeWebhook(req, res) {
   var webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   // AC1 step 2: verify signature — invalid/missing → 400
+  // bjs-s1: staging-safe stub bypass, gated by secret+header (see the
+  // WEBHOOK_STUB_HEADER comment block above). Falls through to the real,
+  // unmodified signature-verification path whenever the gate doesn't match.
   var event;
-  try {
-    event = stripeClient.verifyWebhookSignature(rawBody, sig, webhookSecret);
-  } catch (err) {
-    res.writeHead(400, { 'Content-Type': 'text/plain' });
-    res.end('Webhook signature invalid');
-    return;
+  var _webhookStubActive = _webhookStubEnabled() && _webhookStubHeaderMatches(req);
+  if (_webhookStubActive) {
+    try {
+      event = JSON.parse(rawBody.toString());
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'text/plain' });
+      res.end('Webhook payload invalid');
+      return;
+    }
+    var _candidateTenantIds = _collectCandidateTenantIds(event);
+    var _hasNonE2ETenantId = _candidateTenantIds.some(function(id) { return !/^e2e-/i.test(String(id)); });
+    if (_hasNonE2ETenantId) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'stub webhook events may only target e2e- tenants' }));
+      return;
+    }
+  } else {
+    try {
+      event = stripeClient.verifyWebhookSignature(rawBody, sig, webhookSecret);
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'text/plain' });
+      res.end('Webhook signature invalid');
+      return;
+    }
   }
 
   // AC5: idempotency — INSERT ON CONFLICT DO NOTHING (check-then-insert is unsafe under concurrent delivery)
@@ -360,5 +428,9 @@ module.exports = {
   handlePostStripeWebhook,
   setWebhookDbAdapter,
   handleGetBillingPortal,
-  handleGetBillingPlanState
+  handleGetBillingPlanState,
+  WEBHOOK_STUB_HEADER,
+  _webhookStubEnabled,
+  _webhookStubHeaderMatches,
+  _collectCandidateTenantIds
 };

@@ -28,16 +28,22 @@
 const { test, expect } = require('@playwright/test');
 const fs   = require('fs');
 const path = require('path');
-// dss-s1: only meaningful against real wuce-staging -- empty {} locally, so
-// this changes nothing about how this spec runs against the local harness.
-const { testEndpointBypassHeaders } = require('./fixtures/staging-auth');
+// dss-s1/bjs-s1: only meaningful against real wuce-staging -- empty {}
+// locally, so this changes nothing about how this spec runs against the
+// local harness.
+const { testEndpointBypassHeaders, webhookStubHeaders } = require('./fixtures/staging-auth');
 
 const TENANT_CAPS_PATH = path.join(__dirname, '..', '..', 'tenant-caps.json');
 
 /** Seed an isolated session (own cookie, own tenantId) and return the cookie header value. */
 async function seedTenantSession(request, suffix, tenantId) {
   const sessionId = 'e2e' + '0'.repeat(58) + suffix; // suffix is 2 hex chars — stays within [a-f0-9]+
-  const resp = await request.get(`/test/session?sessionId=${sessionId}&tenantId=${encodeURIComponent(tenantId)}`);
+  // bjs-s1: /test/session is NODE_ENV=test-only OR staging-safe-gated via this
+  // same header (a no-op {} locally). tenantId is always e2e--prefixed in
+  // this spec already, satisfying the server-side guard once gated.
+  const resp = await request.get(`/test/session?sessionId=${sessionId}&tenantId=${encodeURIComponent(tenantId)}`, {
+    headers: testEndpointBypassHeaders()
+  });
   expect(resp.ok()).toBeTruthy();
   return `session_id=${sessionId}`;
 }
@@ -50,7 +56,10 @@ async function getPlanState(request, cookie) {
 
 async function postWebhook(request, event) {
   return request.post('/webhook/stripe', {
-    headers: { 'content-type': 'application/json', 'stripe-signature': 'test-mode-bypass' },
+    headers: Object.assign(
+      { 'content-type': 'application/json', 'stripe-signature': 'test-mode-bypass' },
+      webhookStubHeaders()
+    ),
     data: JSON.stringify(event),
   });
 }

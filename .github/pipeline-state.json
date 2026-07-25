@@ -15655,6 +15655,40 @@
           "prStatus": "open"
         }
       ]
+    },
+    {
+      "slug": "2026-07-25-billing-journey-staging-safe",
+      "name": "bri-s3.5 billing journey staging-safe fixes (session seeding + webhook signature stub)",
+      "stage": "branch-complete",
+      "health": "green",
+      "reviewStatus": "not-required",
+      "highFindings": 0,
+      "updatedAt": "2026-07-25T07:10:38.780Z",
+      "track": "short",
+      "stories": [
+        {
+          "slug": "bjs-s1-billing-journey-staging-safe",
+          "id": "bjs-s1-billing-journey-staging-safe",
+          "name": "bri-s3.5 billing journey runs against real staging (session seeding + webhook signature stub)",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "not-required",
+          "highFindings": 0,
+          "updatedAt": "2026-07-25T07:10:38.780Z",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 17,
+            "passing": 17
+          },
+          "acTotal": 8,
+          "acVerified": 8,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": true,
+          "dorArtefact": "artefacts/2026-07-25-billing-journey-staging-safe/dor/bjs-s1-dor.md",
+          "dorStatus": "signed-off",
+          "prStatus": "open"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
