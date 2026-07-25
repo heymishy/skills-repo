@@ -15451,6 +15451,40 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-07-25-deploy-safety-net",
+      "name": "A single deploy-to-staging entry point that cannot silently use the wrong Fly config",
+      "stage": "branch-complete",
+      "health": "green",
+      "reviewStatus": "not-required",
+      "highFindings": 0,
+      "updatedAt": "2026-07-25T05:26:11.317Z",
+      "track": "short",
+      "stories": [
+        {
+          "slug": "dsn-s1-deploy-config-safety-net",
+          "id": "dsn-s1-deploy-config-safety-net",
+          "name": "A single deploy-to-staging entry point that cannot silently use the wrong Fly config",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "not-required",
+          "highFindings": 0,
+          "updatedAt": "2026-07-25T05:26:11.317Z",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 8,
+            "passing": 8
+          },
+          "acTotal": 6,
+          "acVerified": 6,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-07-25-deploy-safety-net/dor/dsn-s1-dor.md",
+          "dorStatus": "signed-off",
+          "prStatus": "open"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

@@ -47,8 +47,29 @@ jobs:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
+      # dsn-s1: the deploy-staging.js wrapper below has zero external
+      # (node_modules) dependencies -- only Node built-ins -- so only Node
+      # itself needs to be set up before it runs; npm ci is deferred until
+      # right before the later database-seeding step, the only step in this
+      # job that actually needs a node_modules install.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # dsn-s1: a single wrapper script (never a raw inline flyctl deploy)
+      # so CI and any manual deploy share one code path, with a post-deploy
+      # check that fails loudly if fly.staging.toml's config didn't actually
+      # apply -- see scripts/deploy-staging.js and workspace/capture-log.md
+      # for the recurring incident this fixes.
       - name: Deploy to wuce-staging
-        run: flyctl deploy --remote-only --config fly.staging.toml --app wuce-staging
+        # bri-s2.5's own governance check (T4/IT1) statically verifies this
+        # exact "--app wuce-staging" text is visible in this job's run: line,
+        # to prove push-to-master never deploys to production by accident --
+        # kept visible here even though deploy-staging.js also defaults to
+        # the same value, so that static check keeps working unmodified.
+        run: node scripts/deploy-staging.js --app wuce-staging
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
@@ -58,12 +79,6 @@ jobs:
       # auto-deploy was already failing earlier, at the FLY_API_TOKEN step
       # (see workspace/capture-log.md), so this step's own failure was never
       # actually reached in CI until that was fixed.
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
       - name: Install dependencies
         run: npm ci
 
