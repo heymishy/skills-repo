@@ -126,10 +126,15 @@ var ENV_VAR = 'E2E_STAGING_AUTH_STUB_SECRET';
     "pathname === '/test/stripe-call-count'",
     "pathname === '/test/complete-onboarding'",
     "pathname === '/test/real-llm-call-count'",
-    "pathname === '/test/seed-multi-user-roles'"
+    "pathname === '/test/seed-multi-user-roles'",
+    // bjs-s1: /test/session was widened by a later story (bri-s3.5's own
+    // staging-safety gap) -- moved here from untouchedRoutes below. See
+    // tests/check-bjs-s1-billing-journey-staging-safe.js for the additional
+    // e2e- tenantId guard this route also requires (not shared by the other
+    // 4, which don't mint an authenticated session for a caller-chosen tenant).
+    "pathname === '/test/session'"
   ];
   var untouchedRoutes = [
-    "pathname === '/test/session'",
     "pathname === '/test/seed-definition-session'",
     "pathname === '/test/canvas'",
     "pathname === '/test/seed-board-journey'"

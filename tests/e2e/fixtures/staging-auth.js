@@ -244,6 +244,30 @@ function namedIdentityStubHeaders() {
   return hasStubSecret() ? { [NAMED_IDENTITY_STUB_HEADER]: STUB_SECRET } : {};
 }
 
+/**
+ * bjs-s1: the header carrying the staging-only webhook-signature-verification
+ * stub bypass (routes/billing.js's handlePostStripeWebhook) -- lets
+ * bri-s3.5's synthetic Stripe webhook payloads be processed against real
+ * wuce-staging (which has a real STRIPE_SECRET_KEY wired, so real signature
+ * verification would otherwise always reject a synthetic payload). Reuses
+ * E2E_STAGING_AUTH_STUB_SECRET with its own distinct header. The server-side
+ * gate additionally requires every tenantId-shaped field in the event to be
+ * e2e--prefixed (see decisions.md) -- this header alone grants nothing for a
+ * payload targeting a non-synthetic tenant.
+ */
+const WEBHOOK_STUB_HEADER = 'x-e2e-webhook-stub';
+
+/**
+ * Headers to merge into a POST /webhook/stripe request that should use the
+ * bjs-s1 webhook-signature stub. Empty object when the secret isn't
+ * available -- the request then falls through to real signature
+ * verification, unchanged.
+ * @returns {Object<string, string>}
+ */
+function webhookStubHeaders() {
+  return hasStubSecret() ? { [WEBHOOK_STUB_HEADER]: STUB_SECRET } : {};
+}
+
 module.exports = {
   STAGING_BASE_URL,
   hasStubSecret,
@@ -257,5 +281,7 @@ module.exports = {
   TEST_ENDPOINT_BYPASS_HEADER,
   testEndpointBypassHeaders,
   NAMED_IDENTITY_STUB_HEADER,
-  namedIdentityStubHeaders
+  namedIdentityStubHeaders,
+  WEBHOOK_STUB_HEADER,
+  webhookStubHeaders
 };
