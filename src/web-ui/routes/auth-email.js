@@ -11,8 +11,28 @@ const { hashPassword, verifyPassword } = require('../modules/password');
 const _session = require('../middleware/session');
 // arl-s1: user-roles module (injectable adapter — D37). Loads role after tenantId is set.
 const _userRoles = require('../modules/user-roles');
+const _credits = require('../modules/credits'); // ftcg-s1
 // sec-perf-s3: session-scoped CSRF (Cross-Site Request Forgery) protection.
 const csrf = require('../middleware/csrf');
+
+/**
+ * ftcg-s1: grant a one-time free-tier credit balance to a brand-new tenant.
+ * Safe to call unconditionally (see credits.js's grantFreeTierIfNew — atomic,
+ * ON CONFLICT DO NOTHING). Never blocks or fails signup itself — a grant
+ * failure is logged and swallowed (AC8).
+ * @param {string} tenantId
+ */
+async function _grantFreeTierCredits(tenantId) {
+  try {
+    const amount = parseInt(process.env.CREDITS_FREE_TIER_GRANT || '10', 10);
+    const granted = await _credits.grantFreeTierIfNew(tenantId, amount);
+    if (granted) {
+      console.info('free_tier_credits_granted', { tenantId, amount });
+    }
+  } catch (err) {
+    console.warn('free_tier_credits_grant_failed', { tenantId, reason: err.message });
+  }
+}
 
 // ── D37: injectable user DB adapter ──────────────────────────────────────────
 // Default stub throws — call setUserDb(pgPool) before use.
@@ -224,6 +244,12 @@ async function handleEmailSignup(req, res) {
   // redirect below renders the plan-selection page instead of bouncing to /dashboard.
   // Set BEFORE session rotation so it is carried into the rotated (persisted) session.
   req.session.firstLogin  = true;
+
+  // ftcg-s1: this handler only ever reaches here for a genuinely new `users`
+  // row (the 23505 duplicate-email branch above already returned), so this
+  // is unconditionally a brand-new tenant -- but the grant call is still the
+  // same idempotent, no-op-on-conflict function as the other 2 auth paths.
+  await _grantFreeTierCredits(email);
 
   // tir-s1: load role via the person/team-scoped lookup (AC3). Falls back to
   // 'user' on error.

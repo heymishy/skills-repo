@@ -15451,6 +15451,40 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-07-25-free-tier-credit-grant",
+      "name": "Grant every brand-new tenant a free-tier credit balance at signup",
+      "stage": "branch-complete",
+      "health": "green",
+      "reviewStatus": "not-required",
+      "highFindings": 0,
+      "updatedAt": "2026-07-25T05:13:52.116Z",
+      "track": "short",
+      "stories": [
+        {
+          "slug": "ftcg-s1-free-tier-credit-grant",
+          "id": "ftcg-s1-free-tier-credit-grant",
+          "name": "Grant every brand-new tenant a free-tier credit balance at signup",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "not-required",
+          "highFindings": 0,
+          "updatedAt": "2026-07-25T05:13:52.116Z",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 13,
+            "passing": 13
+          },
+          "acTotal": 8,
+          "acVerified": 8,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-07-25-free-tier-credit-grant/dor/ftcg-s1-dor.md",
+          "dorStatus": "signed-off",
+          "prStatus": "open"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

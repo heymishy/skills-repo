@@ -66,6 +66,37 @@ async function adjustBalance(tenantId, delta) {
 }
 
 /**
+ * ftcg-s1: Grant a one-time free-tier credit balance to a tenant, IF (and only
+ * if) they have no existing credits row yet. Atomic and race-free -- uses
+ * ON CONFLICT DO NOTHING rather than a check-then-write, so this is safe to
+ * call unconditionally on every login/signup for every auth method, without
+ * needing to first determine "is this genuinely a first login" (GitHub has
+ * its own isFirstLogin mechanism; Google and email/password do not). Two
+ * concurrent calls for the same brand-new tenant still result in exactly one
+ * grant (whichever wins the INSERT; the other's ON CONFLICT fires and is a
+ * no-op), never a double-grant.
+ *
+ * Deliberately distinct from adjustBalance(): that function ADDS delta to an
+ * existing balance on conflict (used for turn deductions and paid top-ups,
+ * where "already has a row" must still apply the change). This function must
+ * do the opposite -- do NOTHING on conflict -- since re-granting an existing
+ * tenant (including one who has already spent their free credits down to
+ * exactly 0) would silently give unlimited free credits on every login.
+ *
+ * @param {string} tenantId
+ * @param {number} amount — the free-tier grant amount (e.g. CREDITS_FREE_TIER_GRANT)
+ * @returns {Promise<boolean>} true if a grant was actually applied (tenant was new), false if the tenant already had a row
+ */
+async function grantFreeTierIfNew(tenantId, amount) {
+  const db = requireAdapter();
+  const result = await db.query(
+    'INSERT INTO credits (tenant_id, balance) VALUES ($1, $2) ON CONFLICT (tenant_id) DO NOTHING RETURNING balance',
+    [tenantId, amount]
+  );
+  return result.rows.length > 0;
+}
+
+/**
  * Return all tenant balances ordered by tenant_id (for admin UI).
  * @returns {Promise<Array<{tenant_id: string, balance: number}>>}
  */
@@ -167,5 +198,6 @@ module.exports = {
   getAllTenantBalances,
   getValidTenantIds,
   adjustBalanceWithAudit,
-  getAuditLog
+  getAuditLog,
+  grantFreeTierIfNew
 };
