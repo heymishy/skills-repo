@@ -15301,7 +15301,7 @@
       "health": "green",
       "reviewStatus": "not-required",
       "highFindings": 0,
-      "updatedAt": "2026-07-25T00:15:44.596Z",
+      "updatedAt": "2026-07-25T00:25:16.775Z",
       "track": "short",
       "stories": [
         {
@@ -15312,7 +15312,7 @@
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-07-25T00:15:44.596Z",
+          "updatedAt": "2026-07-25T00:25:16.775Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 15,
@@ -15324,7 +15324,7 @@
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-07-25-feature-display-name-and-progress/dor/fdn-s1-dor.md",
           "dorStatus": "signed-off",
-          "prStatus": "open"
+          "prStatus": "merged"
         },
         {
           "slug": "fps-s1-progress-proxy-for-unknown-health",
@@ -15334,7 +15334,7 @@
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-07-25T00:15:44.596Z",
+          "updatedAt": "2026-07-25T00:25:16.775Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 7,
@@ -15346,7 +15346,7 @@
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-07-25-feature-display-name-and-progress/dor/fps-s1-dor.md",
           "dorStatus": "signed-off",
-          "prStatus": "open"
+          "prStatus": "merged"
         }
       ]
     }
