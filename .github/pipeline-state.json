@@ -15443,7 +15443,7 @@
             "passing": 16
           },
           "acTotal": 7,
-          "acVerified": 6,
+          "acVerified": 7,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": true,
           "dorArtefact": "artefacts/2026-07-25-staging-safe-test-endpoints/dor/dss-s1-dor.md",
