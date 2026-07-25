@@ -710,6 +710,12 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   source: agent-auto
 
 - date: 2026-07-25
+  session-phase: dsn-s1 implementation -- capacity request for later
+  signal-type: gap
+  signal-text: "Operator instruction, deferred to a future session rather than actioned now: fix the ~36 pre-existing baseline test failures tracked in tests/known-baseline-failures.json, so that every full `npm test` run in this session no longer requires a manual clean-master-baseline comparison (via git stash / a separate background run) to distinguish a real new regression from an already-known, unrelated failure -- the exact diagnostic workflow this session repeated at least 4 times (fdn-s1/fps-s1, spv-s1, dss-s1, ftcg-s1, dsn-s1). Candidate next step: a proper /discovery or /workflow pass to triage the current baseline list (scripts/check-pipeline-state-integrity.js, check-bri-s2.2-neon-staging-branch.js, check-p3.5-validate-trace.js, and ~33 others) into fix-now / fix-later / structurally-permanent-gap buckets, since some (e.g. check-p3.5-validate-trace.js's own capture-log entry, 2026-07-17) are already documented as environment-contention flakes rather than code defects, while others may be genuinely fixable."
+  source: operator-manual
+
+- date: 2026-07-25
   session-phase: pss-s1 implementation
   signal-type: gap
   signal-text: "New C12/C13 checks added to scripts/check-pipeline-state-integrity.js (pss-s1 -- catches invalid dodStatus/prStatus enum values that only used to surface as CI-only schema failures) immediately found 12 real, pre-existing violations already committed to .github/pipeline-state.json, invisible until now: dodStatus=\"passed\" on 5 stories (2026-05-05-web-ui-dynamic-skill-questions: dsq.1, dsq.1.5, dsq.2, dsq.3, dsq.4), dodStatus=\"complete-with-deviations\" on 2 stories (2026-05-07-web-ui-session-management: wsm.2, wsm.3), and prStatus=\"not-started\"/\"draft-open\" (both invalid enum values -- schema requires none|draft|open|merged) on 6 recent stories (wusl-s2, scsf-s1, cuf-s1, mgfd-s1, srmw-s1, serlb-s1). Per pss-s1's own Out of Scope, none of these were fixed as part of this story -- logged here as a follow-up data-cleanup candidate (a one-off corrective commit to pipeline-state.json, not a code change)."

@@ -15453,6 +15453,40 @@
       ]
     },
     {
+      "slug": "2026-07-25-deploy-safety-net",
+      "name": "A single deploy-to-staging entry point that cannot silently use the wrong Fly config",
+      "stage": "branch-complete",
+      "health": "green",
+      "reviewStatus": "not-required",
+      "highFindings": 0,
+      "updatedAt": "2026-07-25T05:26:11.317Z",
+      "track": "short",
+      "stories": [
+        {
+          "slug": "dsn-s1-deploy-config-safety-net",
+          "id": "dsn-s1-deploy-config-safety-net",
+          "name": "A single deploy-to-staging entry point that cannot silently use the wrong Fly config",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "not-required",
+          "highFindings": 0,
+          "updatedAt": "2026-07-25T05:26:11.317Z",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 8,
+            "passing": 8
+          },
+          "acTotal": 6,
+          "acVerified": 6,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-07-25-deploy-safety-net/dor/dsn-s1-dor.md",
+          "dorStatus": "signed-off",
+          "prStatus": "merged"
+        }
+      ]
+    },
+    {
       "slug": "2026-07-25-free-tier-credit-grant",
       "name": "Grant every brand-new tenant a free-tier credit balance at signup",
       "stage": "branch-complete",
@@ -15483,6 +15517,40 @@
           "dorArtefact": "artefacts/2026-07-25-free-tier-credit-grant/dor/ftcg-s1-dor.md",
           "dorStatus": "signed-off",
           "prStatus": "open"
+        }
+      ]
+    },
+    {
+      "slug": "2026-07-25-advance-cli-visibility",
+      "name": "bin/skills advance fails loudly on unknown story id",
+      "stage": "branch-complete",
+      "health": "green",
+      "reviewStatus": "not-required",
+      "highFindings": 0,
+      "updatedAt": "2026-07-25T05:55:18.370Z",
+      "track": "short",
+      "stories": [
+        {
+          "slug": "acv-s1-loud-story-creation-warning",
+          "id": "acv-s1-loud-story-creation-warning",
+          "name": "skills advance warns loudly when it creates a new story record instead of updating an existing one",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "not-required",
+          "highFindings": 0,
+          "updatedAt": "2026-07-25T05:55:18.370Z",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 16,
+            "passing": 16
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-07-25-advance-cli-visibility/dor/acv-s1-dor.md",
+          "dorStatus": "signed-off",
+          "prStatus": "merged"
         }
       ]
     },
