@@ -219,6 +219,31 @@ function testEndpointBypassHeaders() {
   return hasStubSecret() ? { [TEST_ENDPOINT_BYPASS_HEADER]: STUB_SECRET } : {};
 }
 
+/**
+ * nis-s1: the header carrying the staging-only named-identity stub bypass
+ * (routes/auth.js's handleAuthCallback) -- lets bri-s3.3/bri-s3.6 drive the
+ * real /auth/github/callback route with a caller-chosen, reusable login and
+ * (optionally) a shared tenantId, without staging needing TENANT_ORG_ALLOWLIST
+ * configured at all. Reuses E2E_STAGING_AUTH_STUB_SECRET, the same secret
+ * every other staging-only mechanism here uses, with its own distinct header.
+ * Only ever meaningful on real wuce-staging -- the secret is never set on
+ * production, and routes/auth.js additionally requires both the login (code)
+ * and any supplied stubTenant to start with "e2e-" (see decisions.md).
+ */
+const NAMED_IDENTITY_STUB_HEADER = 'x-e2e-named-identity-stub';
+
+/**
+ * Headers to merge into a GET /auth/github/callback request that should use
+ * the nis-s1 named-identity stub. Empty object when the secret isn't
+ * available (a normal contributor run without it) -- the request then falls
+ * through to whatever the real provider adapter does (NODE_ENV=test's own
+ * stub locally, a real GitHub exchange attempt otherwise), unchanged.
+ * @returns {Object<string, string>}
+ */
+function namedIdentityStubHeaders() {
+  return hasStubSecret() ? { [NAMED_IDENTITY_STUB_HEADER]: STUB_SECRET } : {};
+}
+
 module.exports = {
   STAGING_BASE_URL,
   hasStubSecret,
@@ -230,5 +255,7 @@ module.exports = {
   RATE_LIMIT_BYPASS_HEADER,
   STUB_SECRET,
   TEST_ENDPOINT_BYPASS_HEADER,
-  testEndpointBypassHeaders
+  testEndpointBypassHeaders,
+  NAMED_IDENTITY_STUB_HEADER,
+  namedIdentityStubHeaders
 };
