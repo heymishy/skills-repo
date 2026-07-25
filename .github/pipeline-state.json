@@ -15293,6 +15293,62 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-07-25-feature-display-name-and-progress",
+      "name": "Feature display name at creation/rename + progress proxy for unknown-health features",
+      "stage": "branch-complete",
+      "health": "green",
+      "reviewStatus": "not-required",
+      "highFindings": 0,
+      "updatedAt": "2026-07-25T00:15:44.596Z",
+      "track": "short",
+      "stories": [
+        {
+          "slug": "fdn-s1-feature-display-name",
+          "id": "fdn-s1-feature-display-name",
+          "name": "Give a feature a real name at creation, and let it be renamed afterward",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "not-required",
+          "highFindings": 0,
+          "updatedAt": "2026-07-25T00:15:44.596Z",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 15,
+            "passing": 15
+          },
+          "acTotal": 6,
+          "acVerified": 6,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-07-25-feature-display-name-and-progress/dor/fdn-s1-dor.md",
+          "dorStatus": "signed-off",
+          "prStatus": "open"
+        },
+        {
+          "slug": "fps-s1-progress-proxy-for-unknown-health",
+          "id": "fps-s1-progress-proxy-for-unknown-health",
+          "name": "Show pipeline progress instead of a bare Unknown for features with no test data yet",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "not-required",
+          "highFindings": 0,
+          "updatedAt": "2026-07-25T00:15:44.596Z",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 7,
+            "passing": 7
+          },
+          "acTotal": 6,
+          "acVerified": 6,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-07-25-feature-display-name-and-progress/dor/fps-s1-dor.md",
+          "dorStatus": "signed-off",
+          "prStatus": "open"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

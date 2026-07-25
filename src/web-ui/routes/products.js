@@ -232,7 +232,7 @@ function _renderEpicRow(f) {
   var label = f.health === 'red' ? '✕ Blocked' : f.health === 'amber' ? '⚠ Warning' : f.health === 'unknown' ? '? Unknown' : '✓ Healthy';
   return '<li style="padding:14px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center">' +
     '<div>' +
-      '<div style="font-size:14px;font-weight:500">' + _escapeHtml(f.featureSlug || f.journey_id) + '</div>' +
+      '<div style="font-size:14px;font-weight:500">' + _escapeHtml(f.displayName || f.featureSlug || f.journey_id) + '</div>' +
       '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + _escapeHtml(f.stage || '') + '</div>' +
     '</div>' +
     '<div style="display:flex;align-items:center;gap:12px">' +
@@ -292,6 +292,16 @@ function _renderPvcItemRow(item) {
   var discoveryLink = item.discoveryArtefact
     ? ' — <a href="/artefact/' + _escapeHtml(item.slug) + '/discovery" tabindex="0">' + _escapeHtml(item.discoveryArtefact) + '</a>'
     : '';
+  // fdn-s1 (AC4): rename affordance, a sibling <a>/<button> after the row's
+  // own link (nested interactive elements are invalid HTML -- same reason
+  // discoveryLink above is a sibling, not nested). Only offered when a
+  // journeyId is resolvable -- the rename route mutates a journey, so a
+  // pure-taxonomy item with no journey has nothing to rename yet.
+  var renameLink = item.journeyId
+    ? ' <button type="button" class="pvc-rename-btn" onclick="pshRenameFeature(\'' + _escapeHtml(item.journeyId) + '\',\'' + _escapeHtml(displayName).replace(/'/g, '&#39;') + '\')" ' +
+        'aria-label="Rename ' + _escapeHtml(displayName) + '" ' +
+        'style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0 4px">✎ Rename</button>'
+    : '';
   return '<li class="pvc-item" data-health="' + healthAttr + '" data-search="' + _escapeHtml(searchText) + '" ' +
     'style="padding:14px 0;border-bottom:1px solid var(--line)">' +
     '<a class="pvc-item-link" href="/features/' + _escapeHtml(item.slug) + '" ' +
@@ -306,7 +316,7 @@ function _renderPvcItemRow(item) {
         '<span data-a4-coverage style="font-size:12px;color:var(--muted)">' + _escapeHtml(item.coverageLabel || 'No test data yet') + '</span>' +
       '</div>' +
     '</a>' +
-    (discoveryLink ? '<div style="font-size:12px;margin-top:2px">' + discoveryLink + '</div>' : '') +
+    (discoveryLink || renameLink ? '<div style="font-size:12px;margin-top:2px">' + discoveryLink + renameLink + '</div>' : '') +
   '</li>';
 }
 
@@ -556,10 +566,28 @@ function _renderModulesManagement(productId, modules, csrfToken) {
   );
 }
 
-function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments) {
+// fps-s1 -- for a feature with no real test/DoD signal yet (health ===
+// 'unknown', which is every feature before /test-plan), show its actual
+// pipeline progress instead of a bare "No test data yet". Reuses
+// kanban-view.js's exact artefact-count wording (lines ~46, 316-317) rather
+// than inventing new copy for the same concept in a different view.
+// Falls back to the plain text (unchanged) when there's no resolvable
+// journeyId (e.g. a pure-taxonomy item) or no count data at all (e.g. the
+// bulk read failed -- AC4).
+function _unknownHealthCoverageLabel(item, artefactCountsByJourneyId) {
+  if (!item.journeyId || !artefactCountsByJourneyId.hasOwnProperty(item.journeyId)) {
+    return 'No test data yet';
+  }
+  var count = artefactCountsByJourneyId[item.journeyId];
+  var countLabel = count === 0 ? 'no artefacts yet' : (count + ' artefact' + (count === 1 ? '' : 's'));
+  return (item.stage || 'discovery') + ' · ' + countLabel;
+}
+
+function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId) {
   modules = modules || [];
   csrfToken = csrfToken || '';
   featureModuleAssignments = featureModuleAssignments || {};
+  artefactCountsByJourneyId = artefactCountsByJourneyId || {};
   var HEALTH_LABELS = { green: '✓ Healthy', amber: '⚠ Warning', red: '✕ Blocked', unknown: '? Unknown' };
   var HEALTH_COLORS = { green: '#22c55e', amber: '#f59e0b', red: '#ef4444', unknown: 'var(--muted)' };
   var healthCounts = (rollupRow && rollupRow.health_counts) ? _parseJsonbField(rollupRow.health_counts, null) : null;
@@ -614,9 +642,16 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
   var mergedItems = _productRollup.mergeFeatureSources(taxonomy, features).map(function(item) {
     var realHealth = healthBySlug.hasOwnProperty(item.slug) ? healthBySlug[item.slug] : 'unknown';
     var pct = coverageBySlug.hasOwnProperty(item.slug) ? coverageBySlug[item.slug] : null;
+    // fps-s1: only the 'unknown' case (no real test/DoD signal at all) gets
+    // a stage/artefact-count progress proxy instead of the bare "No test
+    // data yet" -- a real health value with no pct is left completely
+    // unchanged (AC5).
+    var coverageLabel = (pct === null || pct === undefined)
+      ? (realHealth === 'unknown' ? _unknownHealthCoverageLabel(item, artefactCountsByJourneyId) : 'No test data yet')
+      : (pct + '%');
     return Object.assign({}, item, {
       health: realHealth,
-      coverageLabel: (pct === null || pct === undefined) ? 'No test data yet' : (pct + '%'),
+      coverageLabel: coverageLabel,
       moduleId: featureModuleAssignments.hasOwnProperty(item.slug) ? featureModuleAssignments[item.slug] : null
     });
   });
@@ -679,6 +714,11 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
           '<button type="button" id="psh-new-feature-btn" onclick="pshToggleNewFeaturePanel()" style="padding:8px 16px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">New feature</button>' +
           '<div id="psh-new-feature-panel" style="display:none;position:absolute;right:0;top:calc(100% + 6px);z-index:20;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;min-width:290px;box-shadow:0 4px 14px rgba(0,0,0,.12)">' +
             '<form method="POST" action="/products/' + _escapeHtml(productId) + '/features" style="margin:0">' +
+              // fdn-s1: optional at creation -- the "Rough idea" path is
+              // explicitly for exploring before anything is named; renaming
+              // stays available anytime afterward (see decisions.md).
+              '<label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px" for="psh-new-feature-name">Name (optional)</label>' +
+              '<input type="text" id="psh-new-feature-name" name="displayName" placeholder="e.g. Checkout redesign" style="width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid var(--line);border-radius:6px;font-size:13px;margin-bottom:14px;background:var(--surface);color:var(--ink)">' +
               '<div style="font-size:13px;font-weight:600;margin-bottom:10px">Where are you starting from?</div>' +
               '<label style="display:flex;align-items:baseline;gap:8px;font-size:13px;margin-bottom:8px;cursor:pointer;line-height:1.5"><input type="radio" name="startSkill" value="ideate"> Rough idea — explore the opportunity space first</label>' +
               '<label style="display:flex;align-items:baseline;gap:8px;font-size:13px;margin-bottom:14px;cursor:pointer;line-height:1.5"><input type="radio" name="startSkill" value="discovery" checked> Formed idea — jump straight to discovery</label>' +
@@ -704,6 +744,15 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
         'if(r.ok){window.location.href=\'/dashboard\';}' +
         'else{alert(\'Failed to delete product\');}' +
       '}).catch(function(e){alert(\'Failed to delete product: \'+e.message);});' +
+    '}' +
+    'async function pshRenameFeature(journeyId,currentName){' +
+      'var name=prompt(\'Rename feature:\',currentName||\'\');' +
+      'if(name===null)return;' +
+      'try{' +
+        'var r=await fetch(\'/api/journey/\'+journeyId+\'/display-name\',{method:\'PUT\',headers:{\'Content-Type\':\'application/json\'},body:JSON.stringify({displayName:name.trim()})});' +
+        'if(r.ok){window.location.reload();}' +
+        'else{alert(\'Failed to rename feature\');}' +
+      '}catch(e){alert(\'Failed to rename feature: \'+e.message);}' +
     '}' +
     'async function pshTriggerSync(id){' +
       'var btn=document.getElementById(\'psh-refresh-btn\');' +
@@ -1016,7 +1065,7 @@ async function handleGetProductView(req, res, _next, pool) {
   // below, keyed by feature_slug) is consulted instead, the same map the
   // taxonomy section uses -- one read path for both sections.
   var rows = (await _pool.query(
-    "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage FROM journeys WHERE product_id = $1",
+    "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage, data->>'displayName' AS display_name FROM journeys WHERE product_id = $1",
     [productId]
   )).rows;
   // a4 -- fetch the product's curated modules (A1) for module-grouped
@@ -1048,6 +1097,7 @@ async function handleGetProductView(req, res, _next, pool) {
       stage: j.stage || 'discovery',
       health: 'green',
       featureSlug: j.feature_slug,
+      displayName: j.display_name || null,
       moduleId: featureModuleAssignments.hasOwnProperty(j.feature_slug) ? featureModuleAssignments[j.feature_slug] : null
     };
   });
@@ -1058,7 +1108,17 @@ async function handleGetProductView(req, res, _next, pool) {
     // to submit create/rename/delete, matching every other mutating form in
     // this app (settings.js's Credits/Billing tabs, etc.).
     var csrfToken = _csrf.generateCsrfToken(req);
-    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments);
+    // fps-s1 (AC6): ONE batched artefact-count read for the whole render,
+    // reusing s2.2's existing seam (same pattern already used for the
+    // kanban board) -- never a per-row query. AC4: a failed/unavailable
+    // read degrades to {} (every row's own fallback handles that).
+    var artefactCountsByJourneyId = {};
+    try {
+      artefactCountsByJourneyId = await _getArtefactCountsBulk(rows.map(function(j) { return j.journey_id; }));
+    } catch (_) {
+      artefactCountsByJourneyId = {};
+    }
+    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
@@ -1272,9 +1332,12 @@ function _aggregateJourneysByStage(productJourneyGroups) {
   (productJourneyGroups || []).forEach(function(group) {
     (group.journeys || []).forEach(function(j) {
       var health = j.health || 'green';
+      // fdn-s1: prefer the operator-set displayName over the raw slug,
+      // matching every other feature-identity render site.
+      var cardLabel = j.display_name || j.feature_slug || j.journey_id;
       var title = group.productName
-        ? (group.productName + ': ' + (j.feature_slug || j.journey_id))
-        : (j.feature_slug || j.journey_id);
+        ? (group.productName + ': ' + cardLabel)
+        : cardLabel;
       var activeSessionId = j.active_session_id || null;
       if (activeSessionId) sessionIdsToCheck.push(activeSessionId);
       allCards.push({
@@ -1353,7 +1416,7 @@ async function buildTenantKanbanColumns(pool, tenantId) {
 
   var productJourneyGroups = await Promise.all(products.map(async function(p) {
     var jRows = (await pool.query(
-      "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage, data->>'activeSessionId' AS active_session_id FROM journeys WHERE product_id = $1",
+      "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage, data->>'activeSessionId' AS active_session_id, data->>'displayName' AS display_name FROM journeys WHERE product_id = $1",
       [p.product_id]
     )).rows;
     return { productId: p.product_id, productName: p.name, journeys: jRows };
@@ -1394,7 +1457,7 @@ async function handleGetProductKanban(req, res, _next, pool, posthog) {
   }
 
   var rows = (await _pool.query(
-    "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage, data->>'activeSessionId' AS active_session_id FROM journeys WHERE product_id = $1",
+    "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage, data->>'activeSessionId' AS active_session_id, data->>'displayName' AS display_name FROM journeys WHERE product_id = $1",
     [productId]
   )).rows;
 
@@ -1447,7 +1510,7 @@ async function handleGetOrgKanban(req, res, _next, pool, posthog) {
   for (var i = 0; i < filteredProds.length; i++) {
     var p = filteredProds[i];
     var jRows = (await _pool.query(
-      "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage, data->>'activeSessionId' AS active_session_id FROM journeys WHERE product_id = $1 AND tenant_id = $2",
+      "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage, data->>'activeSessionId' AS active_session_id, data->>'displayName' AS display_name FROM journeys WHERE product_id = $1 AND tenant_id = $2",
       [p.product_id, tenantId]
     )).rows;
     allJourneyCount += jRows.length;
@@ -1596,6 +1659,11 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
   // change confined to this file.
   req.body = await _readBody(req);
   var startSkill = (req.body && req.body.startSkill === 'ideate') ? 'ideate' : 'discovery';
+  // fdn-s1: optional -- omission (or a blank/whitespace-only value) leaves
+  // displayName null, matching today's behaviour (raw slug shown).
+  var displayName = (req.body && typeof req.body.displayName === 'string' && req.body.displayName.trim())
+    ? req.body.displayName.trim()
+    : null;
 
   // jrf-s2: FIX — register the journey through the shared journey-store
   // (createJourney + setJourneyFields), the SAME path handlePostJourney
@@ -1611,6 +1679,7 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
   var featureSlug = 'new-feature-' + journeyId.slice(0, 8);
   _journeyStore.setJourneyFields(journeyId, {
     featureSlug: featureSlug,
+    displayName: displayName,
     ownerId:     (req.session && req.session.login) || null,
     tenantId:    tenantId,
     productId:   productId
@@ -2095,5 +2164,8 @@ module.exports = {
   buildTenantKanbanColumns,
   STAGE_COLUMNS,
   // frsr-s1: exported for direct unit testing (AC1), same convention as kbc-s1's column builders
-  _renderPvcItemRow
+  _renderPvcItemRow,
+  // fdn-s1: exported for direct unit testing, same convention as _renderPvcItemRow
+  _renderEpicRow,
+  _aggregateJourneysByStage
 };

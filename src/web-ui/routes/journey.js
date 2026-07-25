@@ -2574,6 +2574,37 @@ async function handleGetJourneyViewers(req, res) {
 }
 
 /**
+ * PUT /api/journey/:journeyId/display-name — fdn-s1: rename a feature's
+ * operator-facing label. Never touches featureSlug (the durable identifier
+ * behind disk artefact paths and pipeline-state.json keys) -- see
+ * ../../artefacts/2026-07-25-feature-display-name-and-progress/decisions.md.
+ * Requires authentication + tenant ownership (same guard as every other
+ * journey-scoped mutation route).
+ */
+async function handlePutJourneyDisplayName(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
+    return;
+  }
+  var body = await _readJsonBody(req);
+  var displayName = (body && typeof body.displayName === 'string' && body.displayName.trim())
+    ? body.displayName.trim()
+    : null;
+  _journeyStore.setJourneyFields(journeyId, { displayName: displayName });
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ displayName: displayName }));
+}
+
+/**
  * Check if a journey has been idle for > 30 minutes and set status:'idle' if so.
  * Uses injectable _now() for test isolation.
  * @param {string} journeyId
@@ -3752,6 +3783,7 @@ module.exports = {
   _isSafeBoardBackLink,
   handleGetJourneyState,
   handleGetJourneyViewers,
+  handlePutJourneyDisplayName,
   checkJourneyIdle,
   setNow,
   // wsm.3 — stage back-navigation and needs-review

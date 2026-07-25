@@ -27,7 +27,11 @@ function _sanitise(journey) {
     stories:           journey.stories            || [],
     storyList:         journey.storyList          || null,
     currentStoryIndex: journey.currentStoryIndex  || 0,
-    productProfile:    journey.productProfile     || 'default'
+    productProfile:    journey.productProfile     || 'default',
+    // fdn-s1: this allowlist is the only thing standing between a field
+    // working in-memory/on-disk and silently vanishing after a Postgres-
+    // backed restart -- must be added explicitly, not inferred.
+    displayName:       journey.displayName        || null
   };
   // Defensive: strip accessToken from any nested value (should never be there, but guard anyway)
   delete data.accessToken;
