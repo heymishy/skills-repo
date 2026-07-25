@@ -16230,6 +16230,29 @@
       "reviewStatus": "passed",
       "highFindings": 0,
       "stories": []
+    },
+    {
+      "slug": "2026-07-26-trace-validation-archived-path-fix",
+      "name": "Resolve archived-feature paths in the test_plan_coverage trace-validation check",
+      "track": "retrospective",
+      "stage": "test-plan",
+      "health": "amber",
+      "epics": [],
+      "stories": [
+        {
+          "id": "r-trace-validation-archived-paths",
+          "slug": "r-trace-validation-archived-paths",
+          "name": "Resolve archived-feature paths in test_plan_coverage (bash + PowerShell)",
+          "stage": "test-plan",
+          "health": "amber",
+          "acTotal": 3,
+          "acVerified": 2,
+          "artefact": "artefacts/2026-07-26-trace-validation-archived-path-fix/stories/r-trace-validation-archived-paths.md",
+          "notes": "Retrospective story. Fix already merged to master (commit f7aa0dad) via direct push, which itself was a process gap (scripts/ requires PR per Platform change policy). AC3 (test coverage) still open -- see story file Open Questions."
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-25T19:10:34.186Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
