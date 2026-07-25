@@ -279,6 +279,52 @@ Do not write the story on the assumption that the discovery artefact's named pre
 
 ---
 
+## Canvas markers — Program Design diagram (csd-s3)
+
+After all stories across all epics for this feature are decomposed and saved
+(end of Step 4), emit exactly one `program-design` canvas marker summarising
+the file-tree/call-stack shape of the planned implementation — the epic/story
+sequencing above translated into which modules/files will be touched and how
+they call into one another. Emit it on its own line, using this format:
+
+```
+---CANVAS-JSON: {"type":"program-design","title":"<string>","content":{"mermaid":"<mermaid source>"}}---
+```
+
+Fields:
+- `type`: always `program-design` for this marker
+- `title`: short human-readable title (e.g. "Program Design")
+- `content.mermaid`: Mermaid `flowchart` source showing the file-tree/call-stack
+  shape implied by the epic/story sequencing above. Reuse csd-s2's existing
+  rendering mechanism — do not introduce a new diagram format or a second
+  rendering path (ADR-026).
+
+Worked example:
+
+```
+---CANVAS-JSON: {"type":"program-design","title":"Program Design","content":{"mermaid":"flowchart LR\n    ROUTE[routes/feature.js]\n    ADAPTER[adapters/feature-store.js]\n    ROUTE --> ADAPTER"}}---
+```
+
+Feature granularity (AC3): like the System Architecture diagram, this is
+generated at **feature granularity by default** — one Program Design diagram
+set per feature, not one per story, and not duplicated per epic. Save the
+marker inside the **first epic** written for this feature in Step 3's
+ordering (`epics/[first-epic-slug].md`'s Goal section) — this is the
+canonical location for the feature's Program Design diagram, even when the
+feature has multiple epics. If a `program-design` marker already exists
+there — this is not the first time /definition has run for this feature,
+e.g. a second or third story is being added to an existing epic — **refresh
+the existing marker in place**, replacing its `content.mermaid` value with
+the current, complete file-tree/call-stack shape, rather than appending a
+second, duplicate marker into that file or any other epic file. Per-story
+granularity is used only if the operator explicitly decides so for this
+specific feature at /definition time — record that decision in
+`decisions.md` (a `DESIGN` or `SCOPE` entry) if taken.
+
+Do not emit more than one `program-design` marker per /definition session.
+
+---
+
 ## Step 4a — Regulated constraint propagation check
 
 **Run this step only when the discovery Constraints section contains at least one regulated constraint** — a constraint referencing an external compliance framework, a legal obligation, or a process gate requiring third-party assessment (e.g. PCI DSS, AML/CFT, GDPR, SOX, HIPAA). Skip this step only if no regulated constraints are present.

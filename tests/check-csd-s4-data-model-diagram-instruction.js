@@ -116,11 +116,18 @@ runTest('proposedSchemaChangeGeneratesDataModelBlock (AC1)', function() {
   const definitionHasContentMermaid = /"content"\s*:\s*\{\s*"mermaid"/.test(definitionSkillMd);
   const designWorkedExample     = markerExamplesIn(designSkillMd).some(function(m) { return m.indexOf('"data-model"') !== -1; });
   const definitionWorkedExample = markerExamplesIn(definitionSkillMd).some(function(m) { return m.indexOf('"data-model"') !== -1; });
-  // Tied to the "Data and state" question in /design's Step 2.
-  const dataAndStateIdx = designSkillMd.indexOf('Data and state');
+  // Tied to the "Data and state" question in /design's Step 2 -- checked
+  // structurally (marker falls within the Step 2 section, before Step 3
+  // begins) rather than by raw character distance from the "Data and
+  // state" phrase. A fixed-character-count threshold breaks whenever a
+  // sibling section (e.g. csd-s3's System Architecture marker docs) also
+  // lives inside Step 2 and pushes this marker further from the phrase --
+  // the marker is still correctly placed inside Step 2, just later in it.
+  const step2Idx = designSkillMd.indexOf('## Step 2');
+  const step3Idx = designSkillMd.indexOf('## Step 3');
   const designMarkerIdx = designSkillMd.indexOf('"type":"data-model"');
-  const tiedToDataAndState = dataAndStateIdx !== -1 && designMarkerIdx !== -1 &&
-    Math.abs(designMarkerIdx - dataAndStateIdx) < 2500;
+  const tiedToDataAndState = step2Idx !== -1 && step3Idx !== -1 && designMarkerIdx !== -1 &&
+    designMarkerIdx > step2Idx && designMarkerIdx < step3Idx;
   return designHasMarker && definitionHasMarker &&
     designHasContentMermaid && definitionHasContentMermaid &&
     designWorkedExample && definitionWorkedExample &&

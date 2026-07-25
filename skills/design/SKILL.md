@@ -88,6 +88,48 @@ If a constraint rules out an option, say so explicitly.
 
 ---
 
+## Canvas markers — System Architecture diagram (csd-s3)
+
+When this skill runs inside the web UI, once Step 2 (Solution architecture) is
+complete, emit exactly one `system-architecture` canvas marker summarising the
+service/component topology and interactions established in Step 2. Emit it on
+its own line immediately after the Step 2 Overview prose (`templates/design.md`'s
+Solution Architecture > Overview subsection), using this format:
+
+```
+---CANVAS-JSON: {"type":"system-architecture","title":"<string>","content":{"mermaid":"<mermaid source>"}}---
+```
+
+Fields:
+- `type`: always `system-architecture` for this marker
+- `title`: short human-readable title (e.g. "System Architecture")
+- `content.mermaid`: Mermaid `flowchart` or `sequenceDiagram` source showing the
+  components/services this feature touches and how they connect. Reuse
+  csd-s2's existing rendering mechanism — do not introduce a new diagram
+  format or a second rendering path (ADR-026).
+
+Worked example, for a feature adding one new service call:
+
+```
+---CANVAS-JSON: {"type":"system-architecture","title":"System Architecture","content":{"mermaid":"flowchart TD\n    WEBUI[Web UI]\n    NEWSVC[New Service]\n    POSTGRES[(Postgres)]\n    WEBUI --> NEWSVC\n    NEWSVC --> POSTGRES"}}---
+```
+
+Feature granularity (AC3): this diagram is generated at **feature granularity
+by default** — one System Architecture diagram set per feature, embedded in
+`design.md`'s Solution Architecture > Overview section, not one per story. If
+`design.md` already exists for this feature slug — this is not the first time
+/design has run for this feature, e.g. a later story in the same feature adds
+new architecture — **refresh the existing `system-architecture` marker in
+place**, replacing its `content.mermaid` value with the current, complete
+solution architecture, rather than appending a second, duplicate marker.
+Per-story granularity is used only if the operator explicitly decides so for
+this specific feature — record that decision in `decisions.md` (a `DESIGN` or
+`SCOPE` entry) if taken.
+
+Do not emit more than one `system-architecture` marker per /design session.
+
+---
+
 ## Data Model diagram markers (csd-s4)
 
 When point 2 ("Data and state") surfaces new tables, columns, or
