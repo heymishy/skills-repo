@@ -15425,7 +15425,7 @@
       "health": "green",
       "reviewStatus": "not-required",
       "highFindings": 0,
-      "updatedAt": "2026-07-25T02:09:04.313Z",
+      "updatedAt": "2026-07-25T04:40:52.747Z",
       "track": "short",
       "stories": [
         {
@@ -15436,7 +15436,7 @@
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-07-25T02:09:04.313Z",
+          "updatedAt": "2026-07-25T04:40:52.747Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 16,
@@ -15448,7 +15448,7 @@
           "e2eToolingRequired": true,
           "dorArtefact": "artefacts/2026-07-25-staging-safe-test-endpoints/dor/dss-s1-dor.md",
           "dorStatus": "signed-off",
-          "prStatus": "open"
+          "prStatus": "merged"
         }
       ]
     }
