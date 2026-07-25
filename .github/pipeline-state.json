@@ -15485,6 +15485,40 @@
           "prStatus": "open"
         }
       ]
+    },
+    {
+      "slug": "2026-07-25-advance-cli-visibility",
+      "name": "bin/skills advance fails loudly on unknown story id",
+      "stage": "branch-complete",
+      "health": "green",
+      "reviewStatus": "not-required",
+      "highFindings": 0,
+      "updatedAt": "2026-07-25T05:55:18.370Z",
+      "track": "short",
+      "stories": [
+        {
+          "slug": "acv-s1-loud-story-creation-warning",
+          "id": "acv-s1-loud-story-creation-warning",
+          "name": "skills advance warns loudly when it creates a new story record instead of updating an existing one",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "not-required",
+          "highFindings": 0,
+          "updatedAt": "2026-07-25T05:55:18.370Z",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 16,
+            "passing": 16
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-07-25-advance-cli-visibility/dor/acv-s1-dor.md",
+          "dorStatus": "signed-off",
+          "prStatus": "open"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
