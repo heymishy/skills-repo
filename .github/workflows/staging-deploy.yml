@@ -108,7 +108,21 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run @mocked suite against staging
-        run: npx playwright test --grep "@mocked"
+        # rlcc-s1: --workers=1 is a deliberate, narrowly-scoped-to-this-job fix,
+        # not a global playwright.config.js change -- same precedented pattern
+        # as e2e.yml's a2ccf-s1 fix for a structurally similar problem. Root
+        # cause: src/web-ui/server.js's real-LLM-call counter
+        # (global.__BRI_S3_2_REAL_LLM_CALL_COUNT__) is one process-wide number
+        # with no per-request attribution, shared by every spec against the
+        # single, real wuce-staging server. With the default 2-worker
+        # concurrency this job previously ran with, one spec's concurrently-
+        # running request could increment the counter inside a different
+        # spec's own before/after window, failing that spec's "zero real LLM
+        # calls" assertion for a reason unrelated to its own correctness
+        # (observed live: bri-s3.4 captured beforeCount=1, then afterCount=4).
+        # Serializing this job's specs removes the race entirely; it does not
+        # touch playwright.config.js, so local/dev parallelism is unaffected.
+        run: npx playwright test --grep "@mocked" --workers=1
         env:
           CI: 'true'
           E2E_BASE_URL: https://wuce-staging.fly.dev
