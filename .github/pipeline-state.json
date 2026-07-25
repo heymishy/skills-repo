@@ -15482,7 +15482,7 @@
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-07-25-deploy-safety-net/dor/dsn-s1-dor.md",
           "dorStatus": "signed-off",
-          "prStatus": "open"
+          "prStatus": "merged"
         }
       ]
     },
@@ -15549,6 +15549,40 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-07-25-advance-cli-visibility/dor/acv-s1-dor.md",
+          "dorStatus": "signed-off",
+          "prStatus": "merged"
+        }
+      ]
+    },
+    {
+      "slug": "2026-07-25-pipeline-state-schema-validation",
+      "name": "Local pipeline-state schema validation helper (C10-C14)",
+      "stage": "branch-complete",
+      "health": "green",
+      "reviewStatus": "not-required",
+      "highFindings": 0,
+      "updatedAt": "2026-07-25T06:06:41.477Z",
+      "track": "short",
+      "stories": [
+        {
+          "slug": "pss-s1-schema-required-field-checks",
+          "id": "pss-s1-schema-required-field-checks",
+          "name": "Local pipeline-state schema checks catch required-field/enum/type mistakes before CI",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "not-required",
+          "highFindings": 0,
+          "updatedAt": "2026-07-25T06:06:41.477Z",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 25,
+            "passing": 25
+          },
+          "acTotal": 6,
+          "acVerified": 6,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-07-25-pipeline-state-schema-validation/dor/pss-s1-dor.md",
           "dorStatus": "signed-off",
           "prStatus": "open"
         }
