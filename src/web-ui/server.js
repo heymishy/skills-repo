@@ -11,7 +11,7 @@ const { URL } = require('url');
 
 const { sessionMiddleware }                                          = require('./middleware/session');
 const { handleLanding }                                              = require('./routes/landing');     // bee.1
-const { handleRoot, handleWelcome }                                  = require('./routes/public');      // lab-s1.2 / lab-s2.3
+const { handleRoot, handleWelcome, handleMermaidAsset }              = require('./routes/public');      // lab-s1.2 / lab-s2.3 / csd-s1
 const { handleAuthGithub, handleAuthCallback, handleAuthGoogle, handleAuthGoogleCallback, handleLogout, authGuard } = require('./routes/auth');
 const { handleArtefactRoute }                                        = require('./routes/artefact');
 const { handleSignOff, handleArtefactRead }                             = require('./routes/sign-off');
@@ -1552,6 +1552,40 @@ async function router(req, res) {
     return;
   }
 
+  // csd-s1 E2E (AC2): seed an /ideate session with a hand-authored data-model
+  // diagram block pre-populated in session.canvasBlocks, so the Playwright
+  // spec can drive the real GET /skills/ideate/sessions/:id/chat render path
+  // (canvasBlocksInitScript's initial-hydration appendCanvasBlock() calls,
+  // a4's own mechanism) without needing a real/mocked model turn at all —
+  // the fixture content is hand-authored, not agent-generated (out of scope
+  // per the story), so no LLM round trip is needed to prove rendering works.
+  if (pathname === '/test/seed-ideate-canvas-session' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    const { _setHtmlSession } = require('./routes/skills');
+    let _body = '';
+    req.on('data', chunk => { _body += chunk; });
+    req.on('end', () => {
+      let _parsed = {};
+      try { _parsed = JSON.parse(_body || '{}'); } catch (_) { _parsed = {}; }
+      const _uid = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+      const _sessionId = 'ideate-e2e-' + _uid;
+      _setHtmlSession(_sessionId, {
+        skillName:      'ideate',
+        sessionPath:    null,
+        systemPrompt:   'test',
+        turns:          [],
+        artefactContent: null,
+        artefactPath:   null,
+        done:           false,
+        journeyId:      null,
+        assumptionCardsEnabled: true,
+        canvasBlocks:   Array.isArray(_parsed.canvasBlocks) ? _parsed.canvasBlocks : []
+      });
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ sessionId: _sessionId }));
+    });
+    return;
+  }
+
   // ── /test/canvas — one-shot browser shortcut (NODE_ENV=test only) ──────────
   // GET this URL in the browser to:
   //   1. authenticate as e2e-tester (no GitHub OAuth needed)
@@ -1809,6 +1843,12 @@ async function router(req, res) {
 
   } else if (pathname === '/health') {
     healthCheckHandler(req, res);
+
+  } else if (pathname === '/vendor/mermaid.min.js' && req.method === 'GET') {
+    // csd-s1: unauthenticated static asset (mermaid client bundle) — same
+    // trust level as any other client-side JS shipped with the page, no
+    // session/tenant data involved.
+    handleMermaidAsset(req, res);
 
   } else if (pathname === '/api/ideas' && req.method === 'GET') {
     authGuard(req, res, () => handleGetIdeas(req, res));

@@ -737,7 +737,10 @@ function parseCanvasBlock(text) {
   var MARKER_RE = /---CANVAS-JSON:\s*(\{[\s\S]*?\})\s*---/;
   var match = String(text).match(MARKER_RE);
   if (!match) { return null; }
-  var TYPE_ALLOW = ['cluster-tree', 'table', 'text'];
+  // csd-s1: 'data-model' is the first of the `diagram` content-block family
+  // (system-architecture, program-design follow in later stories per the
+  // epic — not wired up yet, out of scope for this story).
+  var TYPE_ALLOW = ['cluster-tree', 'table', 'text', 'data-model'];
   try {
     var parsed = JSON.parse(match[1]);
     if (TYPE_ALLOW.indexOf(String(parsed.type || '')) === -1) { return null; }
@@ -2385,6 +2388,13 @@ function _renderChatPage(skillName, sessionId, session, backUrl) {
     canvasBlocksInitScript = '<script>window.__SW_INITIAL_CANVAS_BLOCKS__=' + safeCanvasBlocks + ';</script>';
   }
 
+  // csd-s1: mermaid client bundle — only loaded on /ideate pages, the only
+  // canvas consumer of the `data-model` diagram block type today. Loaded via
+  // a plain <script src> (ADR-027: ordinary application code, no bundler) so
+  // renderCanvasBlock's data-model branch (in `script` below) can call
+  // window.mermaid.run() once the browser has fetched and executed it.
+  var mermaidAssetScript = isIdeate ? '<script src="/vendor/mermaid.min.js"></script>' : '';
+
   // dic.2: Phase model init script for definition sessions
   var phaseModelInitScript = '';
   if (skillName === 'definition') {
@@ -3299,9 +3309,33 @@ function _renderChatPage(skillName, sessionId, session, backUrl) {
     '    } else if (type === "text") {',
     '      var paras = (content.paragraphs || [String(content.text || "")]).map(function(p) { return "<p>" + escHtmlClient(String(p)) + "</p>"; }).join("");',
     '      bodyHtml = \'<div class="cv-text">\' + paras + "</div>";',
+    '    } else if (type === "data-model") {',
+    // csd-s1: first of the `diagram` content-block family (system-architecture,
+    // program-design follow in later stories, same dispatch shape). Mermaid
+    // syntax is placed as the .mermaid element's own text content -- this is
+    // mermaid's documented convention for what mermaid.run() looks for and
+    // replaces with rendered SVG once the client bundle has loaded (see
+    // appendCanvasBlock below). A collapsed <details> text alternative keeps
+    // the raw source available to screen readers (NFR: accessibility /
+    // MC-SEC-01's sibling accessibility requirement) even before/without JS.
+    '      var mermaidSrc = String(content.mermaid || content.source || "");',
+    '      var diagId = "cv-diagram-" + Math.random().toString(36).slice(2, 10);',
+    // Deliberately NOT interpolating mermaidSrc into an attribute (e.g.
+    // aria-label) here -- escHtmlClient only escapes &/</> for safe TEXT-NODE
+    // interpolation, not the double-quote character an attribute value is
+    // delimited by. Mermaid ER-diagram syntax routinely contains quoted
+    // attribute-comment text (e.g. `string name PK "primary key"`), so an
+    // unescaped `"` inside an attribute would break out of it -- exactly the
+    // injection MC-SEC-01 forbids. The accessible text alternative below
+    // places the raw source only as element TEXT CONTENT (<pre>), which
+    // escHtmlClient safely escapes for that context; aria-label stays static.
+    '      bodyHtml = \'<div class="cv-diagram-wrap">\' +',
+    '        \'<div class="mermaid" id="\' + diagId + \'" role="img" aria-label="Data model diagram">\' + escHtmlClient(mermaidSrc) + \'</div>\' +',
+    '        \'<details class="cv-diagram-alt"><summary>View diagram source (text alternative)</summary><pre class="cv-diagram-src">\' + escHtmlClient(mermaidSrc) + \'</pre></details>\' +',
+    '      "</div>";',
     '    }',
     '    var typeTag = \'<span class="canvas-type-tag">\' + escHtmlClient(type) + "</span>";',
-    '    return \'<div class="canvas-block"><div class="canvas-block-head">\' + typeTag + \' <span class="canvas-block-title">\' + title + \'</span></div><div class="canvas-block-body">\' + bodyHtml + "</div></div>";',
+    '    return \'<div class="canvas-block" data-block-type="\' + escHtmlClient(type) + \'"><div class="canvas-block-head">\' + typeTag + \' <span class="canvas-block-title">\' + title + \'</span></div><div class="canvas-block-body">\' + bodyHtml + "</div></div>";',
     '  }',
     '  function appendCanvasBlock(block) {',
     '    var container = document.getElementById("canvas-panel");',
@@ -3309,9 +3343,32 @@ function _renderChatPage(skillName, sessionId, session, backUrl) {
     '    var p = container.querySelector("p.cv-empty"); if (p) p.remove();',
     '    var wrapper = document.createElement("div");',
     '    wrapper.innerHTML = renderCanvasBlock(block);',
-    '    container.appendChild(wrapper.firstChild || wrapper);',
+    '    var appendedEl = wrapper.firstChild || wrapper;',
+    '    container.appendChild(appendedEl);',
+    // csd-s1 (MC-SEC-01): render mermaid diagram content client-side only
+    // through mermaid's own securityLevel:"strict" configuration (set once,
+    // below) -- never via raw innerHTML of unsanitised diagram text.
+    '    if (block && block.type === "data-model" && window.mermaid && typeof window.mermaid.run === "function" && appendedEl.querySelectorAll) {',
+    '      var mermaidNodes = appendedEl.querySelectorAll(".mermaid");',
+    '      if (mermaidNodes.length) {',
+    '        try { window.mermaid.run({ nodes: Array.prototype.slice.call(mermaidNodes) }); } catch (e) {}',
+    '      }',
+    '    }',
     '    var pip = document.querySelector(".cv-pip[data-lens=\\"" + (block._lens || "") + "\\"]");',
     '    if (pip) pip.classList.add("active");',
+    '  }',
+    // csd-s1 (MC-SEC-01, NFR-security): configure mermaid's security level
+    // explicitly once per page, before any diagram content is ever rendered.
+    // "strict" is mermaid\'s own documented safe default -- it escapes raw
+    // HTML in diagram text/labels and disables click-triggered script
+    // bindings, so diagram content (effectively agent/skill-authored text
+    // rendered client-side) can never inject markup or scripts, matching
+    // this repo\'s "no user-supplied content in innerHTML without
+    // sanitisation" mandatory constraint. Guarded by window.mermaid so pages
+    // that never load /vendor/mermaid.min.js (every skill except ideate) are
+    // unaffected.
+    '  if (window.mermaid && typeof window.mermaid.initialize === "function") {',
+    '    window.mermaid.initialize({ startOnLoad: false, securityLevel: "strict" });',
     '  }',
     '  // Section collapse/expand (expose as globals for onclick attrs)',
     '  window.swToggleSection = function(contentId, btn) {',
@@ -3569,7 +3626,7 @@ function _renderChatPage(skillName, sessionId, session, backUrl) {
     }
   }
 
-  var bodyContent = backLinkHtml + navigatorHtml + artefactInitScript + phaseModelInitScript + canvasBlocksInitScript + _renderChatView({
+  var bodyContent = backLinkHtml + navigatorHtml + artefactInitScript + phaseModelInitScript + canvasBlocksInitScript + mermaidAssetScript + _renderChatView({
     skillName:         skillName,
     skillLabel:        skillName,
     isIdeate:          isIdeate,
