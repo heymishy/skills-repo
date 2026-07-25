@@ -15587,6 +15587,40 @@
           "prStatus": "open"
         }
       ]
+    },
+    {
+      "slug": "2026-07-25-realllm-counter-isolation",
+      "name": "Staging smoke-test job worker isolation for the real-LLM-call counter",
+      "stage": "branch-complete",
+      "health": "green",
+      "reviewStatus": "not-required",
+      "highFindings": 0,
+      "updatedAt": "2026-07-25T06:21:27.765Z",
+      "track": "short",
+      "stories": [
+        {
+          "slug": "rlcc-s1-smoke-test-worker-isolation",
+          "id": "rlcc-s1-smoke-test-worker-isolation",
+          "name": "Staging smoke-test job runs single-worker so the real-LLM-call counter cannot be polluted by a concurrently-running spec",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "not-required",
+          "highFindings": 0,
+          "updatedAt": "2026-07-25T06:21:27.765Z",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 5,
+            "passing": 5
+          },
+          "acTotal": 3,
+          "acVerified": 3,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-07-25-realllm-counter-isolation/dor/rlcc-s1-dor.md",
+          "dorStatus": "signed-off",
+          "prStatus": "open"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
