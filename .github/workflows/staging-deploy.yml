@@ -52,6 +52,21 @@ jobs:
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
 
+      # dsds-s1: this job never installed dependencies before, so
+      # scripts/seed-staging.js's own require('pg') always failed with
+      # "Cannot find module 'pg'" -- masked until now because every merge's
+      # auto-deploy was already failing earlier, at the FLY_API_TOKEN step
+      # (see workspace/capture-log.md), so this step's own failure was never
+      # actually reached in CI until that was fixed.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
       - name: Seed staging database (bri-s2.4)
         run: node scripts/seed-staging.js
         env:
