@@ -13,6 +13,7 @@ const { persistSession, rotateSessionId, getSession } = require('../middleware/s
 const _userFlags = require('../modules/user-flags');
 // arl-s1: user-roles module (injectable adapter — D37). Loads role after tenantId is set.
 const _userRoles = require('../modules/user-roles');
+const _credits = require('../modules/credits'); // ftcg-s1
 
 // Wire the real GitHub provider adapter on module load.
 // This ensures handleAuthCallback works when auth.js is required without server.js
@@ -32,6 +33,28 @@ let _logger = {
  */
 function setLogger(logger) {
   _logger = logger;
+}
+
+/**
+ * ftcg-s1: grant a one-time free-tier credit balance to a brand-new tenant.
+ * Safe to call unconditionally on every login/signup (see credits.js's
+ * grantFreeTierIfNew — atomic, ON CONFLICT DO NOTHING) regardless of whether
+ * this specific auth path has its own first-login detection. Never blocks or
+ * fails the caller's own signup flow — a grant failure is logged and
+ * swallowed (AC8), matching this codebase's existing fire-and-forget
+ * pattern for non-critical post-signup side effects.
+ * @param {string} tenantId
+ */
+async function _grantFreeTierCredits(tenantId) {
+  try {
+    const amount = parseInt(process.env.CREDITS_FREE_TIER_GRANT || '10', 10);
+    const granted = await _credits.grantFreeTierIfNew(tenantId, amount);
+    if (granted) {
+      _logger.info('free_tier_credits_granted', { tenantId, amount });
+    }
+  } catch (err) {
+    _logger.warn('free_tier_credits_grant_failed', { tenantId, reason: err.message });
+  }
 }
 
 // Injectable org-fetch adapter (D37: stub throws; production wiring in server.js via setFetchOrgs)
@@ -199,6 +222,10 @@ async function handleAuthCallback(req, res) {
       req.session.tenantId = user.login;
     }
 
+    // ftcg-s1: no-op for a returning tenant (ON CONFLICT DO NOTHING) — safe to
+    // call on every login, not gated on isFirstLogin below.
+    await _grantFreeTierCredits(req.session.tenantId);
+
     // tir-s1: load role via the person/team-scoped lookup (replaces the arl-s1
     // legacy getUserRole(tenantId) tenant-wide lookup — AC3). Falls back to
     // 'user' on error (adapter not wired in test mode).
@@ -312,6 +339,11 @@ async function handleAuthGoogleCallback(req, res) {
     // c1: bookkeeping only (not new auth logic) -- see the matching comment in
     // handleAuthCallback above.
     req.session.authProvider = 'google';
+
+    // ftcg-s1: this auth path has no isFirstLogin/first-login detection at
+    // all, unlike the GitHub callback -- the atomic grant (no-op for a
+    // returning tenant) is this path's ONLY mechanism for granting anything.
+    await _grantFreeTierCredits(req.session.tenantId);
 
     // tir-s1: load role via the person/team-scoped lookup (AC3). Falls back to
     // 'user' on error.
