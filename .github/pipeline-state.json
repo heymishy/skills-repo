@@ -15689,6 +15689,539 @@
           "prStatus": "open"
         }
       ]
+    },
+    {
+      "slug": "2026-07-25-code-shape-diagrams",
+      "name": "Code Shape Diagrams (System Architecture, Program Design, Data Model) - outer-loop design + inner-loop as-built, with drift check",
+      "track": "standard",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "updatedAt": "2026-07-25T10:06:41.404Z",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "discoveryStatus": "clarified",
+      "discoveryArtefact": "artefacts/2026-07-25-code-shape-diagrams/discovery.md",
+      "metrics": [
+        {
+          "id": "p1",
+          "name": "Time-to-drift-determination",
+          "target": "under 30 seconds",
+          "baseline": "not yet established",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "p2",
+          "name": "Diagram completion rate",
+          "target": "100%",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "p3",
+          "name": "Diverged-flag true-positive rate",
+          "target": "over 70%",
+          "baseline": "not yet established",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m1",
+          "name": "Drift caught before it became a problem",
+          "target": "at least 1 catch in first 5 features",
+          "baseline": "not yet established",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "benefitMetricArtefact": "artefacts/2026-07-25-code-shape-diagrams/benefit-metric.md",
+      "slicingStrategy": "risk-first",
+      "nfrProfileArtefact": "artefacts/2026-07-25-code-shape-diagrams/nfr-profile.md",
+      "epics": [
+        {
+          "slug": "csd-e1-code-shape-diagrams",
+          "name": "Operators can see and trust the real shape of what is designed and what is built, without reading a diff",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "csd-s1-derisk-canvas-mermaid",
+              "name": "De-risk canvas diagram block + mermaid data-model fidelity",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 8,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": true,
+              "dorArtefact": "artefacts/2026-07-25-code-shape-diagrams/dor/csd-s1-dor.md",
+              "dorStatus": "signed-off",
+              "prStatus": "none"
+            },
+            {
+              "slug": "csd-s2-canvas-diagram-rendering",
+              "name": "Canvas rendering of the diagram content-block type",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 7,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": true,
+              "dorArtefact": "artefacts/2026-07-25-code-shape-diagrams/dor/csd-s2-dor.md",
+              "dorStatus": "signed-off",
+              "prStatus": "none"
+            },
+            {
+              "slug": "csd-s3-design-produces-architecture-and-program-diagrams",
+              "name": "/design//definition produce System Architecture + Program Design diagrams",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0
+              },
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorArtefact": "artefacts/2026-07-25-code-shape-diagrams/dor/csd-s3-dor.md",
+              "dorStatus": "signed-off",
+              "prStatus": "none"
+            },
+            {
+              "slug": "csd-s4-design-produces-data-model-diagrams",
+              "name": "/design//definition produce Data Model diagrams",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 9,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorArtefact": "artefacts/2026-07-25-code-shape-diagrams/dor/csd-s4-dor.md",
+              "dorStatus": "signed-off",
+              "prStatus": "none"
+            },
+            {
+              "slug": "csd-s5-as-built-diagram-generation",
+              "name": "As-built diagram generation via static migration-file parsing",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 10,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorArtefact": "artefacts/2026-07-25-code-shape-diagrams/dor/csd-s5-dor.md",
+              "dorStatus": "signed-off",
+              "prStatus": "none"
+            },
+            {
+              "slug": "csd-s6-drift-signal",
+              "name": "Drift signal - as-designed vs as-built comparison",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 17,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorArtefact": "artefacts/2026-07-25-code-shape-diagrams/dor/csd-s6-dor.md",
+              "dorStatus": "signed-off",
+              "prStatus": "none"
+            }
+          ]
+        }
+      ],
+      "guardrails": [
+        {
+          "id": "MC-SEC-01",
+          "category": "mandatory-constraint",
+          "label": "No user-supplied content in innerHTML without sanitisation",
+          "status": "met",
+          "evidence": "csd-s1/csd-s2 NFR + Architecture Constraints: mermaid security-level configuration disables HTML-injection-capable rendering features. Review finding 1-M4 (run 1) resolved.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-25T09:19:09.404Z"
+        },
+        {
+          "id": "MC-SEC-02",
+          "category": "mandatory-constraint",
+          "label": "No credentials, tokens, or personal data in committed files",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-SEC-03",
+          "category": "mandatory-constraint",
+          "label": "Viz reads local JSON only — no external fetch calls",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CORRECT-01",
+          "category": "mandatory-constraint",
+          "label": "Gate logic reads evidence fields from pipeline-state.json (not stage alone)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CORRECT-02",
+          "category": "mandatory-constraint",
+          "label": "Fields written to pipeline-state.json must exist in schema",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CORRECT-03",
+          "category": "mandatory-constraint",
+          "label": "Fields read by viz from pipeline-state.json must exist in schema",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-SELF-01",
+          "category": "mandatory-constraint",
+          "label": "dashboards/pipeline-viz.html renders without build step, server, or network",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-SELF-02",
+          "category": "mandatory-constraint",
+          "label": "No npm devDependencies in dashboards/pipeline-viz.html runtime",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CONSIST-01",
+          "category": "mandatory-constraint",
+          "label": "Stage enum in schema updated when skill adds/removes stage",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CONSIST-02",
+          "category": "mandatory-constraint",
+          "label": "Gate add/remove synced with SKILL.md criteria",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-A11Y-01",
+          "category": "mandatory-constraint",
+          "label": "Interactive elements keyboard-accessible",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-A11Y-02",
+          "category": "mandatory-constraint",
+          "label": "Colour not sole indicator of gate status (icons/labels present)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-001",
+          "category": "adr",
+          "label": "Single-file viz, no build step",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-002",
+          "category": "adr",
+          "label": "Gates must use evidence fields, not stage-proxy",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-003",
+          "category": "adr",
+          "label": "Schema-first: fields defined before use",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-004",
+          "category": "adr",
+          "label": "context.yml is the single config source of truth",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-005",
+          "category": "adr",
+          "label": "Agent instructions format driven by vcs.type (surface adapter concern)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-006",
+          "category": "adr",
+          "label": "Approval-channel adapter pattern for DoR sign-off",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-007",
+          "category": "adr",
+          "label": "EA registry surface-type mapping table (technology.hosting → platform surface type)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-008",
+          "category": "adr",
+          "label": "DoR touch-point contract is binding at pre-merge",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-01",
+          "category": "pattern",
+          "label": "Single-file HTML viz architecture",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-02",
+          "category": "pattern",
+          "label": "State access via parsed pipelineState global",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-03",
+          "category": "pattern",
+          "label": "Gate pass/fail by evidence fields",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-04",
+          "category": "pattern",
+          "label": "Schema evolution: add fields simultaneously",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-05",
+          "category": "pattern",
+          "label": "Config reading via context.yml",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-06",
+          "category": "pattern",
+          "label": "Execution pre-condition gate on runtime artefact existence (DoR PROCEED-BLOCKED)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-07",
+          "category": "pattern",
+          "label": "Group instruction-text-only changes at the same SKILL.md exit point into one story",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-01",
+          "category": "anti-pattern",
+          "label": "Gate logic checking feature.stage only",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-02",
+          "category": "anti-pattern",
+          "label": "Hardcoded org/tool names in skill files",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-03",
+          "category": "anti-pattern",
+          "label": "External CDN dependencies in viz at runtime",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-04",
+          "category": "anti-pattern",
+          "label": "Fields used by viz/skills but not in schema",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-05",
+          "category": "anti-pattern",
+          "label": "Committing viz changes without passing check-viz-syntax.js",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-06",
+          "category": "anti-pattern",
+          "label": "Directly mutating pipeline-state.json outside skills",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-07",
+          "category": "anti-pattern",
+          "label": "Bundling changes from story B into story A's PR (multi-story contamination)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-08",
+          "category": "anti-pattern",
+          "label": "Committing runtime artefact churn (traces, validation reports) in story branches",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-009",
+          "category": "adr",
+          "label": "Evaluation and write-back workflows must be separate triggers with separate permission scopes",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-010",
+          "category": "adr",
+          "label": "CI audit records must be persisted to main post-merge, not to feature branches",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-08",
+          "category": "pattern",
+          "label": "Two-workflow CI audit pattern: evaluate on pull_request (contents:read) + persist post-merge to main (contents:write)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-09",
+          "category": "pattern",
+          "label": "git commit --allow-empty to force synchronize event when required check has not re-run",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-09",
+          "category": "anti-pattern",
+          "label": "Required-check workflow committing back to the branch it evaluates (synchronize loop)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-10",
+          "category": "anti-pattern",
+          "label": "[ci skip] on a branch with required checks (suppresses status reporting)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-11",
+          "category": "anti-pattern",
+          "label": "Committing a new SKILL.md, src/ module, governance check script, dashboard behavioural change, copilot-instructions behavioural change, or structural pipeline-state change without a story artefact (artefact-first violation)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-011",
+          "category": "adr",
+          "label": "Artefact-first: new SKILL.md files, src/ modules, governance check scripts, dashboard behavioural changes, copilot-instructions behavioural changes, and structural pipeline-state.json changes require a story artefact before or alongside the commit",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-012",
+          "category": "adr",
+          "label": "Platform-agnostic architecture: prefer portable multi-VCS implementations over vendor-specific optimisations; adapters enable platform adaptation without fragmentation",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-013",
+          "category": "adr",
+          "label": "Phase 4 enforcement architecture: shared 3-operation governance package is the contract all surface adapters call — no surface adapter reimplements governance logic independently",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-phase4-enforcement",
+          "category": "adr",
+          "label": "Mechanism selection: which enforcement mechanism (MCP, CLI, or deferred) applies to each Phase 4 surface class",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-015",
+          "category": "adr",
+          "label": "Two-tier artefact scope model: system corpus vs feature delivery — /modernisation-decompose is the canonical bridge; ad-hoc cross-scope sharing not permitted",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-016",
+          "category": "adr",
+          "label": "Two-file state authority model: pipeline-state.json is delivery evidence (viz source of truth); workspace/state.json is operator session state — skills must not conflate the two",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-017",
+          "category": "adr",
+          "label": "Story nesting dual-structure: all new features use flat features[].stories[]; Phase 1/2 epics-nested shape is legacy and not migrated",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-018",
+          "category": "adr",
+          "label": "Playwright is the E2E testing framework; specs in tests/e2e/; devDependency only; unit test chain (npm test) must not invoke Playwright; auth bypass is test-fixture-layer only (NODE_ENV=test guard)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-025",
+          "category": "adr",
+          "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
+          "status": "not-assessed"
+        },
+        {
+          "id": "NFR-canvas-render-latency",
+          "category": "nfr",
+          "label": "Canvas diagram render latency - no perceptible added latency vs existing block types",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-25T10:06:41.404Z"
+        },
+        {
+          "id": "NFR-parsing-drift-time-budget",
+          "category": "nfr",
+          "label": "Migration-file parsing and drift comparison complete within normal /verify-completion session time budget",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-25T10:06:41.404Z"
+        },
+        {
+          "id": "NFR-mermaid-security-level",
+          "category": "nfr",
+          "label": "Mermaid rendering must disable HTML-injection-capable features",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-25T10:06:41.404Z"
+        },
+        {
+          "id": "NFR-data-exposure-scope",
+          "category": "nfr",
+          "label": "Diagrams show schema/structure only, never row-level or tenant-specific data",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-25T10:06:41.404Z"
+        }
+      ],
+      "reviewStatus": "passed",
+      "highFindings": 0
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

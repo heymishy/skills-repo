@@ -1,83 +1,59 @@
 {
-  "currentPhase": "inner-loop-execution",
-  "lastUpdated": "2026-07-23T00:00:00Z",
-  "activeFeature": "2026-07-23-e2e-core-journey-coverage",
-  "previousFeature": "2026-07-21-web-ui-experience-redesign",
+  "currentPhase": "review",
+  "lastUpdated": "2026-07-25T00:00:00Z",
+  "activeFeature": "2026-07-25-code-shape-diagrams",
+  "previousFeature": "2026-07-23-e2e-core-journey-coverage",
   "cycle": {
     "discovery": {
       "status": "approved",
-      "artefact": "artefacts/2026-07-23-e2e-core-journey-coverage/discovery.md",
-      "completedAt": "2026-07-23T00:00:00Z"
+      "artefact": "artefacts/2026-07-25-code-shape-diagrams/discovery.md",
+      "completedAt": "2026-07-25T00:00:00Z",
+      "note": "Clarified via /clarify (4 questions resolved), 3 decisions logged to decisions.md, approved by Hamish King."
     },
     "benefit-metric": {
-      "status": "active",
-      "artefact": "artefacts/2026-07-23-e2e-core-journey-coverage/benefit-metric.md",
-      "completedAt": "2026-07-23T00:00:00Z"
+      "status": "complete",
+      "artefact": "artefacts/2026-07-25-code-shape-diagrams/benefit-metric.md",
+      "completedAt": "2026-07-25T00:00:00Z",
+      "note": "Meta-benefit flag: Yes. 3 Tier 1 product metrics + 1 Tier 2 meta metric defined. Solo-operator posture noted (no non-engineering owner/reviewer available)."
     },
     "definition": {
       "status": "complete",
-      "artefact": "artefacts/2026-07-23-e2e-core-journey-coverage/epics/",
-      "completedAt": "2026-07-23T00:00:00Z",
-      "note": "2 epics (A: 5 stories, B: 3 stories), User-journey slicing, scope accumulator clean, NFR profile saved."
+      "artefact": "artefacts/2026-07-25-code-shape-diagrams/epics/",
+      "completedAt": "2026-07-25T00:00:00Z",
+      "note": "1 epic (csd-e1), 6 stories, risk-first slicing. Scope check clean (6 stories / 5 MVP items, ratio 1.2). Benefit coverage matrix: 4/4 metrics covered, no orphans. NFR profile saved -- no compliance/regulatory NFRs, no numeric performance baselines (new capability)."
     },
     "review": {
       "status": "passed",
-      "artefact": "artefacts/2026-07-23-e2e-core-journey-coverage/review/",
-      "completedAt": "2026-07-23T00:00:00Z",
-      "note": "8 stories, Run 1 + Run 2 (5 MEDIUM findings fixed and re-reviewed). 0 HIGH, 0 MEDIUM remaining across all 8 -- 2 LOW notes carried forward, non-blocking."
+      "artefact": "artefacts/2026-07-25-code-shape-diagrams/review/",
+      "completedAt": "2026-07-25T00:00:00Z",
+      "note": "Run 1, all 5 categories, all 6 stories. 0 HIGH, 5 MEDIUM (2 weak benefit linkages, 1 unacknowledged scope addition, 2 missing MC-SEC-01 citations), 2 LOW -- all resolved same-session (rewrote 2 benefit linkages, added MC-SEC-01/ADR-027 citations, added a SCOPE decision for csd-s4 AC4, tightened 1 vague AC). PASS."
     },
     "test-plan": {
       "status": "complete",
-      "artefact": "artefacts/2026-07-23-e2e-core-journey-coverage/test-plans/",
-      "completedAt": "2026-07-23T00:00:00Z",
-      "note": "8 test plans + 8 AC verification scripts. 2 acknowledged gaps: A3 (model-marker emission, Untestable-by-nature) and A5/B2 (branch-protection blocking, External-dependency) -- both have manual fallback scenarios."
+      "artefact": "artefacts/2026-07-25-code-shape-diagrams/test-plans/",
+      "completedAt": "2026-07-25T00:00:00Z",
+      "note": "6 technical test plans + 6 AC verification scripts, one per story. 57 tests total (csd-s1:8, csd-s2:7, csd-s3:6, csd-s4:9, csd-s5:10, csd-s6:17) covering 24 ACs. 3 CSS-layout-dependent gaps (csd-s1 AC2, csd-s2 AC3/AC4) handled via Playwright E2E tests -- E2E tooling already configured in this repo, no gap. Test data: synthetic fixtures + real repo migration files for naming-convention checks. No PCI/sensitivity constraints."
     },
     "definition-of-ready": {
-      "status": "signed-off (8 of 8 stories)",
-      "artefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/",
-      "completedAt": "2026-07-23T00:00:00Z",
-      "note": "All 8 stories (A1-A5, B1-B3) DoR-signed-off by Hamish King, Founder/Operator, 2026-07-23. All hard blocks passed (18/18 for A1, 19/19 for the rest). W4 RISK-ACCEPTed once in decisions.md (feature-wide -- verification scripts not pre-walked by a domain expert before DoR, solo-operator posture)."
-    },
-    "inner-loop": {
-      "status": "starting",
-      "note": "Dispatching per-story inner coding loop (branch-setup through branch-complete). Sequencing constraint: A1 (staging-safe auth stub) has no upstream dependency and blocks everything else in both epics (A2-A5 depend on it directly or transitively; B1 depends on it; B3 depends on A1+A3). Dispatch order: A1 first (solo, nothing else can start until it merges), then A2 and B1 can start in parallel once A1 is merged (B1 was deliberately made independent of A3 at /review to avoid spec run-order coupling), then A3 after A2, then A4 after A3, then A5 after A1-A4 all merged, then B2 after A5+B1 merged, then B3 after A1+A3 merged (can run parallel to A4/A5 once A3 is in)."
+      "status": "signed-off (6 of 6 stories)",
+      "artefact": "artefacts/2026-07-25-code-shape-diagrams/dor/",
+      "completedAt": "2026-07-25T00:00:00Z",
+      "note": "All 6 stories (csd-s1 through csd-s6) DoR-signed-off by Hamish King, Founder/Operator, 2026-07-25. All hard blocks passed for all 6. W4 (verification script domain-expert review) RISK-ACCEPTed once in decisions.md (epic-wide -- solo-operator posture, Medium oversight provides a real downstream review checkpoint at PR time). Dependency chain: csd-s1 (no upstream, dispatch first) -> csd-s2 (depends on csd-s1) -> csd-s3/csd-s4 (both depend on csd-s2, can run in parallel once it merges) -> csd-s5 (depends on csd-s2/s3/s4) -> csd-s6 (depends on csd-s3/s4/s5, last in the epic). Next: inner coding loop, starting with csd-s1."
     }
   },
-  "innerLoopExecution": {
-    "context": "2026-07-23-e2e-core-journey-coverage: 8 stories, all DoR-signed-off same day. Dispatch not yet started as of this checkpoint -- written proactively because session context usage reached ~86% before dispatch began, per CLAUDE.md's checkpoint discipline (invoke before reaching compaction threshold, not at it).",
-    "dependencyChain": {
-      "a1-staging-safe-auth-stub": { "dependsOn": [], "note": "No upstream -- dispatch first, alone. Everything else in this feature blocks on this story merging." },
-      "a2-stripe-test-mode-plan-selection": { "dependsOn": ["a1-staging-safe-auth-stub"] },
-      "a3-product-feature-ideate-canvas": { "dependsOn": ["a2-stripe-test-mode-plan-selection"] },
-      "a4-ideate-session-resume": { "dependsOn": ["a3-product-feature-ideate-canvas"] },
-      "a5-ci-gate-scenario-a-blocking": { "dependsOn": ["a1-staging-safe-auth-stub", "a2-stripe-test-mode-plan-selection", "a3-product-feature-ideate-canvas", "a4-ideate-session-resume"] },
-      "b1-formed-idea-outer-loop-story-map": { "dependsOn": ["a1-staging-safe-auth-stub"], "note": "Deliberately independent of a3's spec file (fixed at /review [1-M1] to avoid Playwright run-order coupling) -- can dispatch in parallel with a2 once a1 merges." },
-      "b2-ci-gate-scenario-b-coverage-mapping": { "dependsOn": ["a5-ci-gate-scenario-a-blocking", "b1-formed-idea-outer-loop-story-map"] },
-      "b3-staging-test-data-cleanup": { "dependsOn": ["a1-staging-safe-auth-stub", "a3-product-feature-ideate-canvas"] }
-    },
-    "nextAction": "a1-staging-safe-auth-stub COMPLETE (agent's report independently verified 2026-07-23 via gh pr view + git log/git show origin/a1-staging-safe-auth-stub -- not just trusted from the agent's own claim): real draft PR #551 (https://github.com/heymishy/skills-repo/pull/551), branch a1-staging-safe-auth-stub, 2 real commits (a82236e5 implementation, 0831fde1 pipeline-state bookkeeping) with real diffs (auth-stub.js, server.js wiring, 2 new check scripts, Playwright spec + fixture, ADR-018 addendum, decisions.md entry). pipeline-state.json on that branch shows stage=branch-complete, testPlan.passing=5/6 (6th is an honestly-flagged manual-only NFR-Security gap), acVerified=4/4, verifyStatus=passed. CI checks on the PR were still IN_PROGRESS (assurance gate, lint/test/build) as of last check -- 4 of 6 checks already SUCCESS. Caveat honestly flagged in the PR itself: AC2 was proven against the existing NODE_ENV=test fake-DB scaffold (no real Postgres in the agent's sandbox); real wuce-staging execution needs a post-merge `flyctl deploy --remote-only --config fly.staging.toml --app wuce-staging` plus `flyctl secrets set E2E_STAGING_AUTH_STUB_SECRET --app wuce-staging`, both still TODO. NEXT: (1) wait for/check remaining CI checks on PR #551, (2) merge it once green, (3) run the two flyctl commands above so the stub actually works against real staging, (4) THEN dispatch a2-stripe-test-mode-plan-selection and b1-formed-idea-outer-loop-story-map in parallel (both only depend on a1; b1 was deliberately decoupled from a3 at /review specifically to allow this). Do not dispatch a2/b1 before a1 is actually merged to master -- their worktrees need a1's code present in master, same lesson as the first dispatch failure above."
+  "estimate": {
+    "e1": {
+      "date": "2026-07-25",
+      "expectedCalendarDays": 1,
+      "engagementFraction": 0.25,
+      "outerLoopFocusH": 0.5,
+      "innerLoopHuman": null,
+      "expectedStoryCount": 6,
+      "confidence": "low",
+      "assumptions": "No assumptions volunteered beyond what's already in discovery.md's Assumptions and Risks section.",
+      "gaugeAtStart": null,
+      "premiumRequestsForecast": null
+    }
   },
-  "carriedForwardFromPreviousFeature": {
-    "feature": "2026-07-21-web-ui-experience-redesign",
-    "status": "Not re-verified this session -- carried forward from the last checkpoint on this feature (2026-07-21). Status below is AS OF 2026-07-21, not confirmed current.",
-    "openItems": [
-      "a4 (module-grouped rendering + scale gauge, final story in Epic A) -- dispatch status was unknown as of 2026-07-21 (worktree at .claude/worktrees/agent-a0bc2952bf2be7b85, branch feature/a4-module-grouped-rendering-scale-gauge). Check git log/git status fresh before assuming any outcome.",
-      "d1-d4 (Admin Impersonation epic, High oversight) remain blocked pending Hamish King's own named sign-off -- flagged multiple times, not yet given as of last check.",
-      "Retrospective-story.md artefacts for early hotfix PRs (#510, #511, #513, #516, #517) still not written -- non-blocking, carried forward.",
-      "FLY_API_TOKEN CI secret still expired as of last check (unchanged since 2026-06-29) -- commands to fix already given to the operator multiple times, not yet run."
-    ]
-  },
-  "checkpoint": {
-    "writtenAt": "2026-07-23",
-    "contextAtWrite": "Session reached ~86% context usage immediately after all 8 stories in the 2026-07-23-e2e-core-journey-coverage feature were DoR-signed-off. The operator asked to proceed straight to the inner loop but flagged the usage level, so this checkpoint is being written before any inner-loop dispatch work begins, per CLAUDE.md's checkpoint discipline (invoke before reaching compaction threshold, not at it). No inner-loop work has actually started yet -- the next action is dispatching a1's branch-setup/implementation-plan/subagent-execution.",
-    "resumeInstruction": "Read this entire state.json first. The active feature is 2026-07-23-e2e-core-journey-coverage -- all 8 stories (A1-A5, B1-B3) are DoR-signed-off (artefacts/2026-07-23-e2e-core-journey-coverage/dor/). Nothing has been dispatched to the inner loop yet. Start with a1-staging-safe-auth-stub (no upstream dependency, blocks everything else) -- read its DoR artefact and DoR contract in full, then run /branch-setup -> /implementation-plan -> /subagent-execution (dispatch as a background agent recommended, matching this session's established pattern of parallel background subagents with independent git/gh verification of completion) -> /verify-completion -> /branch-complete. Do NOT trust a dispatched agent's own completion report -- verify via git log/git status in its worktree and gh pr view, per CLAUDE.md's mandatory rule (repeatedly evidenced this session and prior sessions as a real failure mode). Once a1 merges, a2 and b1 can dispatch in parallel (b1 was deliberately decoupled from a3 at /review to allow this). Follow the dependencyChain block above for the rest of the sequencing. Separately, and not blocking this feature: the previous feature (2026-07-21-web-ui-experience-redesign) has open items carried forward in carriedForwardFromPreviousFeature above -- re-verify their status fresh (do not assume the 2026-07-21 snapshot is still accurate) when there's a natural gap in this feature's dispatch waves, or if the operator asks about it directly.",
-    "pendingActions": [
-      "Dispatch a1-staging-safe-auth-stub's inner loop first (no dependencies, blocks the rest of the feature) -- Owner: resuming session, immediate next step",
-      "Independently verify a1's completion via git log/gh pr view before trusting any dispatched agent's self-report, before dispatching a2/b1 -- Owner: resuming session",
-      "Once a1 merges: dispatch a2 and b1 in parallel (both only depend on a1) -- Owner: resuming session",
-      "Re-verify 2026-07-21-web-ui-experience-redesign's a4/d1-d4 status fresh when convenient -- not confirmed since 2026-07-21 -- Owner: resuming session, non-blocking to the current feature",
-      "Get Hamish King's named sign-off for d1-d4 (Admin Impersonation, High oversight) before dispatching them -- Owner: Hamish King, flagged multiple times already",
-      "FLY_API_TOKEN CI secret refresh -- Owner: Hamish King, commands already provided multiple times"
-    ]
-  }
+  "supersededNote": "The previous contents of this file (innerLoopExecution, carriedForwardFromPreviousFeature, checkpoint blocks dated 2026-07-23) were stale by the time this write happened -- they described in-flight dispatch work and open items (a1-staging-safe-auth-stub dispatch, FLY_API_TOKEN expiry, a4/d1-d4 status) that this same session's real git history (PRs #598-#605: dss-s1, ftcg-s1, dsn-s1, acv-s1, pss-s1, rlcc-s1, nis-s1, bjs-s1) shows were long since resolved or superseded. Removed rather than carried forward to avoid misleading a future session into re-verifying already-resolved items. Recent short-track delivery history for that period lives in git log and workspace/capture-log.md, not this file -- this file now tracks only the current active outer-loop feature (2026-07-25-code-shape-diagrams)."
 }
