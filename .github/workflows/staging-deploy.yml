@@ -97,6 +97,10 @@ jobs:
         env:
           CI: 'true'
           E2E_BASE_URL: https://wuce-staging.fly.dev
+          # dss-s1: lets the 4 named /test/* routes these specs depend on
+          # work against real staging (which has no NODE_ENV=test guard),
+          # matching e2e.yml's existing pattern for Scenario A/B.
+          E2E_STAGING_AUTH_STUB_SECRET: ${{ secrets.E2E_STAGING_AUTH_STUB_SECRET }}
 
       - name: Upload Playwright traces and screenshots on failure
         if: failure()

@@ -28,6 +28,9 @@
 'use strict';
 
 const { test, expect, request: playwrightRequest } = require('@playwright/test');
+// dss-s1: only meaningful against real wuce-staging -- empty {} locally, so
+// this changes nothing about how this spec runs against the local harness.
+const { testEndpointBypassHeaders } = require('./fixtures/staging-auth');
 
 const PASSWORD = 'Bri-S3-4-Test-Password-1!';
 
@@ -62,7 +65,7 @@ async function newTenantSession(label) {
   });
   expect(signupRes.status(), label + ' signup should redirect to /welcome').toBe(302);
 
-  const completeRes = await ctx.post('/test/complete-onboarding');
+  const completeRes = await ctx.post('/test/complete-onboarding', { headers: testEndpointBypassHeaders() });
   expect(completeRes.status()).toBe(200);
 
   return { ctx: ctx, email: email };
@@ -122,7 +125,7 @@ async function createStandard(ctx, productId, name, content) {
 test.describe('bri-s3.4 cross-tenant isolation journey @mocked @multi-tenant', () => {
 
   test('AC5 baseline: real-LLM-call counter is available', async ({ request }) => {
-    const res = await request.get('/test/real-llm-call-count');
+    const res = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     expect(res.status()).toBe(200);
     const body = await res.json();
     expect(typeof body.count).toBe('number');
@@ -131,7 +134,7 @@ test.describe('bri-s3.4 cross-tenant isolation journey @mocked @multi-tenant', (
   test('AC1/AC2/AC3/AC5: tenant A cannot read, list, or write tenant B\'s journeys/products/standards, with zero real LLM calls', async ({ request }) => {
     test.setTimeout(60000);
 
-    const beforeCountRes = await request.get('/test/real-llm-call-count');
+    const beforeCountRes = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     const beforeCount = (await beforeCountRes.json()).count;
 
     // ── Setup: two fully independent, simultaneously-authenticated tenants ──
@@ -202,7 +205,7 @@ test.describe('bri-s3.4 cross-tenant isolation journey @mocked @multi-tenant', (
     expect(bStandard.name, 'tenant B\'s standard name must be unmodified after the rejected cross-tenant write').toBe('Tenant B Standard');
 
     // ── AC5: zero real LLM calls were made across this whole run ──
-    const afterCountRes = await request.get('/test/real-llm-call-count');
+    const afterCountRes = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     const afterCount = (await afterCountRes.json()).count;
     expect(afterCount, 'no real Anthropic/Copilot API calls during the mocked cross-tenant run').toBe(beforeCount);
 

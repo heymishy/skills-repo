@@ -196,6 +196,29 @@ async function loginEmail(request, email, password) {
   }
 }
 
+/**
+ * dss-s1: the header carrying the staging-only bypass for the 4 named
+ * /test/* support routes the @mocked smoke suite needs against real staging
+ * (real-llm-call-count, complete-onboarding, seed-multi-user-roles,
+ * stripe-call-count) -- reuses E2E_STAGING_AUTH_STUB_SECRET, the same
+ * secret a1's GitHub-stub path and serlb-s1's rate-limit bypass already use,
+ * with its own distinct header name (see server.js's dss-s1 comment block
+ * for the full double-gate rationale). Only ever meaningful on real
+ * wuce-staging -- the secret is never set on production.
+ */
+const TEST_ENDPOINT_BYPASS_HEADER = 'x-e2e-test-endpoint-bypass';
+
+/**
+ * Headers to merge into a request to one of the 4 dss-s1-gated /test/*
+ * routes. Empty object when the secret isn't available (a normal
+ * contributor run without it) -- those routes then fall back to their
+ * original NODE_ENV=test-only behaviour, unchanged.
+ * @returns {Object<string, string>}
+ */
+function testEndpointBypassHeaders() {
+  return hasStubSecret() ? { [TEST_ENDPOINT_BYPASS_HEADER]: STUB_SECRET } : {};
+}
+
 module.exports = {
   STAGING_BASE_URL,
   hasStubSecret,
@@ -205,5 +228,7 @@ module.exports = {
   signUpEmail,
   loginEmail,
   RATE_LIMIT_BYPASS_HEADER,
-  STUB_SECRET
+  STUB_SECRET,
+  TEST_ENDPOINT_BYPASS_HEADER,
+  testEndpointBypassHeaders
 };
