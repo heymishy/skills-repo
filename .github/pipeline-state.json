@@ -15764,7 +15764,8 @@
               "testPlan": {
                 "status": "all-passing",
                 "totalTests": 10,
-                "passing": 10
+                "passing": 10,
+                "artefact": "artefacts/2026-07-25-code-shape-diagrams/test-plans/csd-s1-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 4,
@@ -15785,7 +15786,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-07-25-code-shape-diagrams/test-plans/csd-s2-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -15805,7 +15807,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-07-25-code-shape-diagrams/test-plans/csd-s3-test-plan.md"
               },
               "acTotal": 3,
               "acVerified": 0,
@@ -15825,7 +15828,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-07-25-code-shape-diagrams/test-plans/csd-s4-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -15845,7 +15849,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-07-25-code-shape-diagrams/test-plans/csd-s5-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -15865,7 +15870,8 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 17,
-                "passing": 0
+                "passing": 0,
+                "artefact": "artefacts/2026-07-25-code-shape-diagrams/test-plans/csd-s6-test-plan.md"
               },
               "acTotal": 5,
               "acVerified": 0,
