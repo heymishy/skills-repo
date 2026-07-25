@@ -1270,6 +1270,22 @@ A browser E2E framework is needed. The decision is: which one, and what structur
 
 **Why this does not weaken production auth:** the mechanism is inert everywhere `E2E_STAGING_AUTH_STUB_SECRET` is unset — which is every environment except `wuce-staging` once an operator deliberately sets that one Fly secret. Production (`wuce.fly.dev`, `fly.toml`) has no code path, configuration file, or CI secret that could ever set this variable, so the 404 branch is the only reachable branch there. This is a staging-only addition, additive to the original ADR-018 decision — the original `NODE_ENV=test` fixture-layer bypass is unchanged and continues to gate the existing local-harness specs exactly as before.
 
+#### Addendum — 2026-07-25 (dss-s1: staging-safe test endpoint gate)
+
+**Context:** The `Staging smoke test (@mocked)` job (`.github/workflows/staging-deploy.yml`) runs `@mocked`-tagged Playwright specs against real `wuce-staging` (`E2E_BASE_URL: https://wuce-staging.fly.dev`). Several of these specs depend on `/test/*` support routes (a real-LLM-call counter, a Stripe-call counter, an onboarding-completion bypass, multi-user-role seeding) that sit inside the same `NODE_ENV === 'test'`-only block the original ADR-018 decision (above) scoped for the local harness — `wuce-staging` runs `NODE_ENV=staging`, so this whole block, and every specific route in it, has never been reachable there. Discovered while root-causing the `Staging smoke test (@mocked)` job's failures on 2026-07-25.
+
+**Decision:** Exactly 4 of the 8 routes in that block — the ones actually called by `@mocked`-tagged specs (`GET /test/real-llm-call-count`, `POST /test/complete-onboarding`, `POST /test/seed-multi-user-roles`, `GET /test/stripe-call-count`) — get a second, independent admission path in `server.js`, following the exact same double-gate shape as this ADR's own a1 addendum and `serlb-s1` (`routes/auth-email.js`):
+
+- Each named route's condition becomes `NODE_ENV === 'test' || (E2E_STAGING_AUTH_STUB_SECRET configured AND a matching x-e2e-test-endpoint-bypass header, constant-time compared)`.
+- The secret is **reused**, not newly minted — the same `E2E_STAGING_AUTH_STUB_SECRET` already provisioned as both a Fly secret on `wuce-staging` and a GitHub Actions repo secret for a1's own use.
+- A **new, distinctly-named header** (`x-e2e-test-endpoint-bypass`) for this mechanism specifically — matching the established one-secret/many-headers convention (`x-e2e-stub-secret` for a1, `x-e2e-rate-limit-bypass` for `serlb-s1`).
+- The other 4 `/test/*` routes (`/test/session`, `/test/seed-definition-session`, `/test/canvas`, `/test/seed-board-journey`) are **not** touched — they remain `NODE_ENV=test`-only, since no `@mocked` spec run against staging calls them.
+- The real-LLM-call counter's `https.request`-wrapping instrumentation (previously also nested inside the `NODE_ENV=test`-only block, so it was never actually wired on staging even before this fix) now runs unconditionally in every environment — it has no side effects on the underlying call (always forwards to the original `https.request`), so this is safe, and is the only way the widened read-route can report a true count on staging rather than always reading 0.
+
+**Why this does not weaken production auth:** identical reasoning to the a1 addendum above — no code path, configuration file, or CI secret on production (`wuce.fly.dev`, `fly.toml`) can ever set `E2E_STAGING_AUTH_STUB_SECRET`, so all 4 widened routes remain exactly as unreachable there as they always were. `tests/check-a1-fly-config-isolation.js`'s existing guardrail already covers this secret's production-isolation; no new isolation test was needed since no new env var name was introduced.
+
+**Why NOT a blanket `NODE_ENV === 'staging'` widening of the whole block instead:** that same block also seeds a fully authenticated session using a fixed, publicly-known token (see the `SECURITY` comment directly above the block in `server.js`) — widening the entire block would have fixed the smoke tests but also reopened that auth-bypass mechanism, and the other seeding routes' direct DB writes, on a real, internet-reachable server. Scoping to exactly the 4 routes actually needed keeps that exposure at zero.
+
 ---
 
 ### ADR-025: Multi-tenancy enforced at the application layer — tenant_id scoping, not schema/DB-per-tenant

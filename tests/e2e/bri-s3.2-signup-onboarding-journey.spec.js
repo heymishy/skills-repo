@@ -36,6 +36,9 @@
 'use strict';
 
 const { test, expect } = require('@playwright/test');
+// dss-s1: only meaningful against real wuce-staging -- empty {} locally, so
+// this changes nothing about how this spec runs against the local harness.
+const { testEndpointBypassHeaders } = require('./fixtures/staging-auth');
 
 function uniqueEmail() {
   return 'bri-s3-2-' + Date.now() + '-' + Math.floor(Math.random() * 1e6) + '@example.test';
@@ -85,7 +88,7 @@ async function signUpAndCompleteOnboarding(request) {
 
   // bri-s3.2 AC1: complete the (mocked) onboarding gate — see server.js's
   // /test/complete-onboarding for why this bypasses a real Stripe checkout.
-  const completeRes = await request.post('/test/complete-onboarding');
+  const completeRes = await request.post('/test/complete-onboarding', { headers: testEndpointBypassHeaders() });
   expect(completeRes.status()).toBe(200);
 
   return email;
@@ -221,7 +224,7 @@ async function driveJourneyToDefinitionOfReady(request, featureName, e2eForceFai
 test.describe('bri-s3.2 signup -> onboarding -> first feature journey @mocked', () => {
 
   test('AC5 baseline: real-LLM-call counter is available and starts at a stable value', async ({ request }) => {
-    const res = await request.get('/test/real-llm-call-count');
+    const res = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     expect(res.status()).toBe(200);
     const body = await res.json();
     expect(typeof body.count).toBe('number');
@@ -241,7 +244,7 @@ test.describe('bri-s3.2 signup -> onboarding -> first feature journey @mocked', 
   test('AC2/AC3/AC5: full outer loop from a first product through a passing definition-of-ready reaches a visible gate-pass state, with zero real LLM calls', async ({ request }) => {
     test.setTimeout(60000);
 
-    const beforeCountRes = await request.get('/test/real-llm-call-count');
+    const beforeCountRes = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     const beforeCount = (await beforeCountRes.json()).count;
 
     await signUpAndCompleteOnboarding(request);
@@ -273,7 +276,7 @@ test.describe('bri-s3.2 signup -> onboarding -> first feature journey @mocked', 
     expect(completeHtml).toContain('start the inner coding loop');
 
     // AC5: zero real LLM calls were made across this whole pass-path run.
-    const afterCountRes = await request.get('/test/real-llm-call-count');
+    const afterCountRes = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     const afterCount = (await afterCountRes.json()).count;
     expect(afterCount, 'no real Anthropic/Copilot API calls during the mocked run').toBe(beforeCount);
   });
@@ -281,7 +284,7 @@ test.describe('bri-s3.2 signup -> onboarding -> first feature journey @mocked', 
   test('AC4: a deliberately incomplete definition-of-ready run shows a gate-fail result, distinct from the AC3 pass case, with zero real LLM calls', async ({ request }) => {
     test.setTimeout(60000);
 
-    const beforeCountRes = await request.get('/test/real-llm-call-count');
+    const beforeCountRes = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     const beforeCount = (await beforeCountRes.json()).count;
 
     await signUpAndCompleteOnboarding(request);
@@ -307,7 +310,7 @@ test.describe('bri-s3.2 signup -> onboarding -> first feature journey @mocked', 
     expect(dorTurnResult.response).not.toContain('✅ READY');
 
     // AC5: zero real LLM calls were made across this whole fail-path run either.
-    const afterCountRes = await request.get('/test/real-llm-call-count');
+    const afterCountRes = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     const afterCount = (await afterCountRes.json()).count;
     expect(afterCount, 'no real Anthropic/Copilot API calls during the mocked run').toBe(beforeCount);
   });

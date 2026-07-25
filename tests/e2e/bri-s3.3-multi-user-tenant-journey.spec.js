@@ -35,6 +35,9 @@
 'use strict';
 
 const { test, expect, request: playwrightRequest } = require('@playwright/test');
+// dss-s1: only meaningful against real wuce-staging -- empty {} locally, so
+// this changes nothing about how this spec runs against the local harness.
+const { testEndpointBypassHeaders } = require('./fixtures/staging-auth');
 
 // The shared org that both alice and bob are members of
 const SHARED_ORG = 'shared-org';
@@ -106,13 +109,13 @@ test.describe('bri-s3.3 multi-user within one tenant journey @mocked @multi-tena
     // Seed test data: alice (admin), bob (engineer), viewer (viewer) in shared-org
     const seedRes = await request.post('/test/seed-multi-user-roles', {
       data: { sharedOrg: SHARED_ORG },
-      headers: { 'Content-Type': 'application/json' }
+      headers: Object.assign({ 'Content-Type': 'application/json' }, testEndpointBypassHeaders())
     });
     expect(seedRes.status()).toBe(200);
   });
 
   test('AC4 baseline: real-LLM-call counter is available', async ({ request }) => {
-    const res = await request.get('/test/real-llm-call-count');
+    const res = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     expect(res.status()).toBe(200);
     const body = await res.json();
     expect(typeof body.count).toBe('number');
@@ -121,7 +124,7 @@ test.describe('bri-s3.3 multi-user within one tenant journey @mocked @multi-tena
   test('AC1: admin (alice) succeeds on role-gated feature, engineer (bob) is denied', async ({ request }) => {
     test.setTimeout(60000);
 
-    const beforeCountRes = await request.get('/test/real-llm-call-count');
+    const beforeCountRes = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     const beforeCount = (await beforeCountRes.json()).count;
 
     // ── Setup: two distinct GitHub users sharing one org tenant ──
@@ -142,7 +145,7 @@ test.describe('bri-s3.3 multi-user within one tenant journey @mocked @multi-tena
     expect(bobViewRes.status()).toBe(200);
 
     // Verify zero real LLM calls were made
-    const afterCountRes = await request.get('/test/real-llm-call-count');
+    const afterCountRes = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     const afterCount = (await afterCountRes.json()).count;
     expect(afterCount).toBe(beforeCount);
 
@@ -154,7 +157,7 @@ test.describe('bri-s3.3 multi-user within one tenant journey @mocked @multi-tena
   test('AC2: concurrent access by alice and bob to shared resource does not corrupt state', async ({ request }) => {
     test.setTimeout(60000);
 
-    const beforeCountRes = await request.get('/test/real-llm-call-count');
+    const beforeCountRes = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     const beforeCount = (await beforeCountRes.json()).count;
 
     // ── Setup: two concurrent sessions ──
@@ -184,7 +187,7 @@ test.describe('bri-s3.3 multi-user within one tenant journey @mocked @multi-tena
     expect(bobViewA.status()).toBe(200);
 
     // Verify zero real LLM calls
-    const afterCountRes = await request.get('/test/real-llm-call-count');
+    const afterCountRes = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     const afterCount = (await afterCountRes.json()).count;
     expect(afterCount).toBe(beforeCount);
 
@@ -196,7 +199,7 @@ test.describe('bri-s3.3 multi-user within one tenant journey @mocked @multi-tena
   test('AC3: viewer-role write attempt is denied', async ({ request }) => {
     test.setTimeout(60000);
 
-    const beforeCountRes = await request.get('/test/real-llm-call-count');
+    const beforeCountRes = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     const beforeCount = (await beforeCountRes.json()).count;
 
     // ── Setup: viewer role user ──
@@ -204,7 +207,7 @@ test.describe('bri-s3.3 multi-user within one tenant journey @mocked @multi-tena
     // For now, this is a placeholder that demonstrates the structure
 
     // Verify zero real LLM calls
-    const afterCountRes = await request.get('/test/real-llm-call-count');
+    const afterCountRes = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     const afterCount = (await afterCountRes.json()).count;
     expect(afterCount).toBe(beforeCount);
   });
@@ -212,7 +215,7 @@ test.describe('bri-s3.3 multi-user within one tenant journey @mocked @multi-tena
   test('AC4: spec is tagged @mocked @multi-tenant and uses S3.1 mock gateway (zero real LLM calls)', async ({ request }) => {
     // This test is already demonstrated by the real-LLM-call-count assertion
     // in the tests above. Verify the counter stays at zero throughout.
-    const res = await request.get('/test/real-llm-call-count');
+    const res = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     expect(res.status()).toBe(200);
     const body = await res.json();
     expect(typeof body.count).toBe('number');

@@ -6,6 +6,7 @@
 
 const http = require('http');
 const https = require('https');
+const crypto = require('crypto');
 const { URL } = require('url');
 
 const { sessionMiddleware }                                          = require('./middleware/session');
@@ -1083,6 +1084,49 @@ if (process.env.NODE_ENV !== 'test') {
   }
 }
 
+// ── dss-s1: narrow, staging-only bypass for the 4 /test/* routes the
+// @mocked smoke suite needs against real wuce-staging ───────────────────────
+// Reuses a1-staging-safe-auth-stub's own double-gate philosophy and its
+// established secret (E2E_STAGING_AUTH_STUB_SECRET, already a Fly secret on
+// wuce-staging AND a GitHub Actions repo secret) rather than minting a new
+// one -- see serlb-s1 (routes/auth-email.js) for the same reuse precedent.
+// A distinct header name per mechanism, matching that same precedent
+// (x-e2e-stub-secret for a1, x-e2e-rate-limit-bypass for serlb-s1, this one
+// for the 4 named /test/* routes only -- see decisions.md and the ADR-018
+// addendum in architecture-guardrails.md for the full rationale). Deliberately
+// self-contained here rather than a shared cross-module helper, matching
+// auth-email.js's own convention.
+const TEST_ENDPOINT_BYPASS_SECRET_ENV_VAR = 'E2E_STAGING_AUTH_STUB_SECRET';
+const TEST_ENDPOINT_BYPASS_HEADER_NAME = 'x-e2e-test-endpoint-bypass';
+
+function _testEndpointBypassSecretConfigured() {
+  return !!process.env[TEST_ENDPOINT_BYPASS_SECRET_ENV_VAR];
+}
+
+/** Constant-time comparison of the request-supplied header against the configured secret. */
+function _testEndpointBypassHeaderMatches(req) {
+  const expected = process.env[TEST_ENDPOINT_BYPASS_SECRET_ENV_VAR] || '';
+  const supplied = (req.headers && req.headers[TEST_ENDPOINT_BYPASS_HEADER_NAME]) || '';
+  const suppliedBuf = Buffer.from(String(supplied));
+  const expectedBuf = Buffer.from(expected);
+  if (suppliedBuf.length !== expectedBuf.length) return false;
+  return crypto.timingSafeEqual(suppliedBuf, expectedBuf);
+}
+
+/**
+ * True when either the existing NODE_ENV=test gate is satisfied (unchanged,
+ * local-harness behaviour), OR the staging-only secret is configured AND the
+ * request presents a matching bypass header. Used ONLY by the 4 named
+ * /test/* routes this story scopes -- every other /test/* route keeps its
+ * original, narrower NODE_ENV=test-only condition untouched (AC7).
+ * @param {object} req
+ * @returns {boolean}
+ */
+function _isTestEndpointAllowed(req) {
+  return process.env.NODE_ENV === 'test' ||
+    (_testEndpointBypassSecretConfigured() && _testEndpointBypassHeaderMatches(req));
+}
+
 // ── Test-mode infrastructure (NODE_ENV=test only) ─────────────────────────
 // Pre-seed a well-known test session and override the artefact fetcher with
 // fixture files so E2E tests can authenticate and render artefacts without
@@ -1375,24 +1419,31 @@ if (process.env.NODE_ENV === 'test') {
     });
   }
 
-  // bri-s3.2 AC5: real-LLM-call counter. Wraps https.request so an @mocked E2E
-  // spec can assert zero real calls were made to the Anthropic or Copilot
-  // Chat Completions APIs during the whole spec file's run, via
-  // GET /test/real-llm-call-count. Only counts calls whose hostname matches
-  // a real LLM provider — never affects the call itself (always forwards to
-  // the original https.request).
-  {
-    let _realLlmCallCount = 0;
-    const _origHttpsRequest = https.request;
-    https.request = function(options) {
-      const hostname = (options && (options.hostname || options.host)) || '';
-      if (hostname === 'api.anthropic.com' || String(hostname).indexOf('githubcopilot.com') !== -1) {
-        _realLlmCallCount++;
-      }
-      return _origHttpsRequest.apply(https, arguments);
-    };
-    global.__BRI_S3_2_REAL_LLM_CALL_COUNT__ = function() { return _realLlmCallCount; };
-  }
+}
+
+// dss-s1: moved outside the NODE_ENV=test block -- see decisions.md. This
+// instrumentation has no side effects on the underlying call (always
+// forwards to the original https.request unmodified) and is the only way
+// the widened GET /test/real-llm-call-count route (staging-safe below) can
+// report a true, non-trivial count rather than always reading 0 on staging.
+//
+// bri-s3.2 AC5: real-LLM-call counter. Wraps https.request so an @mocked E2E
+// spec can assert zero real calls were made to the Anthropic or Copilot
+// Chat Completions APIs during the whole spec file's run, via
+// GET /test/real-llm-call-count. Only counts calls whose hostname matches
+// a real LLM provider — never affects the call itself (always forwards to
+// the original https.request).
+{
+  let _realLlmCallCount = 0;
+  const _origHttpsRequest = https.request;
+  https.request = function(options) {
+    const hostname = (options && (options.hostname || options.host)) || '';
+    if (hostname === 'api.anthropic.com' || String(hostname).indexOf('githubcopilot.com') !== -1) {
+      _realLlmCallCount++;
+    }
+    return _origHttpsRequest.apply(https, arguments);
+  };
+  global.__BRI_S3_2_REAL_LLM_CALL_COUNT__ = function() { return _realLlmCallCount; };
 }
 
 /** Parse query parameters from a URL into a plain object. */
@@ -1556,7 +1607,7 @@ async function router(req, res) {
   // bri-s3.5 AC5 — test-only Stripe call-count spy read. Lets the @mocked/@billing
   // E2E spec assert zero real Stripe API calls happened during the billing journey
   // (NODE_ENV=test guard mirrors every other /test/* endpoint above).
-  if (pathname === '/test/stripe-call-count' && req.method === 'GET' && process.env.NODE_ENV === 'test') {
+  if (pathname === '/test/stripe-call-count' && req.method === 'GET' && _isTestEndpointAllowed(req)) {
     const { getCheckoutCallCount } = require('./modules/stripe-client');
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ count: getCheckoutCallCount() }));
@@ -1574,7 +1625,7 @@ async function router(req, res) {
   // just-created session without touching Stripe. Mirrors the existing
   // /test/session and /test/seed-definition-session test-infrastructure
   // pattern above — gated identically, never reachable outside NODE_ENV=test.
-  if (pathname === '/test/complete-onboarding' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+  if (pathname === '/test/complete-onboarding' && req.method === 'POST' && _isTestEndpointAllowed(req)) {
     if (req.session) { req.session.firstLogin = false; }
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true }));
@@ -1633,7 +1684,7 @@ async function router(req, res) {
   // bri-s3.2 AC5: exposes the real-LLM-call counter (wired above) so an
   // @mocked E2E spec can assert zero real calls were made to the Anthropic or
   // Copilot Chat Completions APIs across its whole run.
-  if (pathname === '/test/real-llm-call-count' && req.method === 'GET' && process.env.NODE_ENV === 'test') {
+  if (pathname === '/test/real-llm-call-count' && req.method === 'GET' && _isTestEndpointAllowed(req)) {
     const count = typeof global.__BRI_S3_2_REAL_LLM_CALL_COUNT__ === 'function'
       ? global.__BRI_S3_2_REAL_LLM_CALL_COUNT__()
       : 0;
@@ -1644,7 +1695,7 @@ async function router(req, res) {
 
   // bri-s3.3: Seed person_identities and team_memberships for multi-user testing
   // Allows E2E tests to set up alice/bob with different roles before they log in
-  if (pathname === '/test/seed-multi-user-roles' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+  if (pathname === '/test/seed-multi-user-roles' && req.method === 'POST' && _isTestEndpointAllowed(req)) {
     try {
       var body = '';
       req.on('data', chunk => { body += chunk; });
@@ -2450,4 +2501,12 @@ if (require.main === module) {
   });
 }
 
-module.exports = { createApp, router };
+module.exports = {
+  createApp,
+  router,
+  // dss-s1: exported for direct unit testing of the gate logic itself
+  _isTestEndpointAllowed,
+  _testEndpointBypassSecretConfigured,
+  _testEndpointBypassHeaderMatches,
+  TEST_ENDPOINT_BYPASS_HEADER_NAME
+};

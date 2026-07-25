@@ -28,6 +28,9 @@
 const { test, expect } = require('@playwright/test');
 const fs   = require('fs');
 const path = require('path');
+// dss-s1: only meaningful against real wuce-staging -- empty {} locally, so
+// this changes nothing about how this spec runs against the local harness.
+const { testEndpointBypassHeaders } = require('./fixtures/staging-auth');
 
 const TENANT_CAPS_PATH = path.join(__dirname, '..', '..', 'tenant-caps.json');
 
@@ -72,7 +75,7 @@ function withTenantCap(tenantId, cap, fn) {
 test.describe('@mocked @billing bri-s3.5 billing journey', () => {
 
   test('@mocked @billing AC5: zero real Stripe API calls at the start of the suite', async ({ request }) => {
-    const resp = await request.get('/test/stripe-call-count');
+    const resp = await request.get('/test/stripe-call-count', { headers: testEndpointBypassHeaders() });
     expect(resp.status()).toBe(200);
     const body = await resp.json();
     expect(body.count).toBe(0);
@@ -196,7 +199,7 @@ test.describe('@mocked @billing bri-s3.5 billing journey', () => {
   });
 
   test('@mocked @billing AC5: zero real Stripe API calls at the end of the suite', async ({ request }) => {
-    const resp = await request.get('/test/stripe-call-count');
+    const resp = await request.get('/test/stripe-call-count', { headers: testEndpointBypassHeaders() });
     expect(resp.status()).toBe(200);
     const body = await resp.json();
     expect(body.count).toBe(0);
