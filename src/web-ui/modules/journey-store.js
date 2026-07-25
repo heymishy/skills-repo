@@ -50,6 +50,10 @@ function createJourney(featureSlug, productProfile) {
   var journey = {
     journeyId:      journeyId,
     featureSlug:    featureSlug,
+    // fdn-s1: an optional, editable human-readable label -- featureSlug
+    // itself stays the durable identifier (disk paths, pipeline-state keys)
+    // and is never mutated by renaming this.
+    displayName:    null,
     productProfile: productProfile || 'default',
     activeSkill:    null,
     activeSessionId: null,

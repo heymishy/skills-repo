@@ -52,7 +52,10 @@ function freshRequire(p) {
         var s = String(sql);
         if (/SELECT name, tenant_id, repo_owner, repo_name FROM products/i.test(s)) return { rows: [{ name: 'Acme', tenant_id: 't1', repo_owner: null, repo_name: null }] };
         if (/SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups/i.test(s)) return { rows: [] };
-        if (/SELECT journey_id, feature_slug, data->>'activeSkill' AS stage FROM journeys/i.test(s)) return { rows: [{ journey_id: 'j1', feature_slug: 'f1', stage: 'discovery' }] };
+        // fdn-s1: this query now also selects data->>'displayName' AS display_name
+        // (see products.js's handleGetProductView) -- match tolerantly on the
+        // stable prefix/suffix rather than the exact historical column list.
+        if (/SELECT journey_id, feature_slug, data->>'activeSkill' AS stage.*FROM journeys/i.test(s)) return { rows: [{ journey_id: 'j1', feature_slug: 'f1', stage: 'discovery' }] };
         if (/SELECT id, name, created_at FROM product_modules/i.test(s)) return { rows: moduleRows };
         if (/SELECT feature_slug, module_id FROM feature_module_assignments/i.test(s)) return { rows: [{ feature_slug: 'f1', module_id: 'mod-1' }] };
         return { rows: [] };

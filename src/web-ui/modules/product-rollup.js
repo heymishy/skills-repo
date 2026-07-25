@@ -410,6 +410,10 @@ function mergeFeatureSources(taxonomy, journeyFeatures) {
     } else {
       bySlug[slug] = {
         slug: slug,
+        // fdn-s1: journey-sourced items have no taxonomy-provided name --
+        // fall through to the operator-set displayName (if any) so
+        // _renderPvcItemRow's item.name || item.slug fallback picks it up.
+        name: f.displayName || null,
         journeyId: f.journey_id,
         stage: f.stage,
         source: 'journey'

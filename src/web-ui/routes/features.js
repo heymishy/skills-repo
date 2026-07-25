@@ -106,12 +106,14 @@ function renderArtefactItem(artefact) {
  * repo-relative path _listArtefacts returns as a.path, since both trace
  * back to the same real artefact file on disk). Called once per
  * /features/:slug render, not once per artefact row (NFR-Performance).
- * @param {string} featureSlug
+ * fdn-s1: takes the already-fetched journey object (not a featureSlug),
+ * so the caller's own single getJourneyByFeatureSlug lookup (also needed
+ * for displayName) isn't duplicated -- see NFR-Performance test.
+ * @param {object|null} journey
  * @returns {Object<string, {skillName: string, sessionId: string}>}
  */
-function _resolveResumeLinksForFeature(featureSlug) {
+function _resolveResumeLinksForFeature(journey) {
   const lookup = {};
-  const journey = _journeyStore.getJourneyByFeatureSlug(featureSlug);
   if (!journey) return lookup;
   (journey.completedStages || []).forEach((stage) => {
     if (stage.sessionId && stage.artefactPath) {
@@ -202,14 +204,18 @@ async function handleGetFeatureArtefacts(req, res, featureSlug) {
   });
 
   if (acceptsHtml) {
-    // frsr-s1 (NFR-Performance): one lookup per page render, not per artefact row.
-    const resumeLookup = noArtefacts ? {} : _resolveResumeLinksForFeature(featureSlug);
+    // frsr-s1 (NFR-Performance): one lookup per page render, not per artefact
+    // row. fdn-s1: the same single lookup also supplies displayName, so it
+    // isn't fetched a second time.
+    const journeyForPage = _journeyStore.getJourneyByFeatureSlug(featureSlug);
+    const resumeLookup = noArtefacts ? {} : _resolveResumeLinksForFeature(journeyForPage);
     const listHtml = noArtefacts
       ? '<p class="artefact-list__empty">No artefacts found for this feature</p>'
       : renderArtefactIndexHtml(artefacts, featureSlug, resumeLookup);
-    const bodyContent = `<h1>${shellEscHtml(featureSlug)}</h1>\n${listHtml}`;
+    const displayTitle = (journeyForPage && journeyForPage.displayName) || featureSlug;
+    const bodyContent = `<h1>${shellEscHtml(displayTitle)}</h1>\n${listHtml}`;
     const html = renderShell({
-      title:       `Artefacts — ${shellEscHtml(featureSlug)}`,
+      title:       `Artefacts — ${shellEscHtml(displayTitle)}`,
       bodyContent,
       user:        { login: req.session.login || '' }
     });
