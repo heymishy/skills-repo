@@ -96,6 +96,20 @@ async function handlePostCheckout(req, res) {
     return;
   }
 
+  // spv-s1: catches a real incident's root cause -- a Stripe Product ID
+  // (prefix "prod_") pasted in place of a Price ID (prefix "price_"), which
+  // otherwise reaches Stripe's API and fails with an unhandled "No such
+  // price" exception, surfacing to the operator as a bare, undiagnosable
+  // 500 (see decisions.md). The client response stays exactly as generic as
+  // the check above -- only the server log is specific, so this is fixable
+  // from the log line alone, without needing a live log-tail session.
+  if (!/^price_/.test(priceId)) {
+    console.error('[billing] ' + priceEnvKey + ' is not a valid Stripe Price ID (expected a value starting with "price_" -- got a value that does not match, possibly a Product ID or other Stripe object ID pasted by mistake). Checkout cannot proceed until this env var is corrected.');
+    res.writeHead(500, { 'Content-Type': 'text/plain' });
+    res.end('Billing not configured');
+    return;
+  }
+
   // AC4: success_url must use Stripe template literal {CHECKOUT_SESSION_ID} — never URL-encoded
   var host = (req.headers && req.headers.host)
     ? 'https://' + req.headers.host

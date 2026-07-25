@@ -15349,6 +15349,40 @@
           "prStatus": "merged"
         }
       ]
+    },
+    {
+      "slug": "2026-07-25-stripe-price-id-validation",
+      "name": "Reject a non-price-shaped Stripe price ID config with a clear log",
+      "stage": "branch-complete",
+      "health": "green",
+      "reviewStatus": "not-required",
+      "highFindings": 0,
+      "updatedAt": "2026-07-25T00:41:45.529Z",
+      "track": "short",
+      "stories": [
+        {
+          "slug": "spv-s1-reject-non-price-id-checkout-config",
+          "id": "spv-s1-reject-non-price-id-checkout-config",
+          "name": "Fail fast with a clear log when a plan Stripe price ID env var is misconfigured",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "not-required",
+          "highFindings": 0,
+          "updatedAt": "2026-07-25T00:41:45.529Z",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 4,
+            "passing": 4
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorArtefact": "artefacts/2026-07-25-stripe-price-id-validation/dor/spv-s1-dor.md",
+          "dorStatus": "signed-off",
+          "prStatus": "open"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
