@@ -27,14 +27,30 @@ function _run(cmd) {
   return execSync(cmd, { encoding: 'utf8' }).trim();
 }
 
+/**
+ * Pure, git-free parsing of a PR number from a commit subject -- kept
+ * separate from buildVersionInfo() so it's testable with fabricated subject
+ * strings, never a real git subprocess call against a specific historical
+ * SHA (which may not exist in a shallow clone -- see AC1/AC2 test notes).
+ * @param {string} subject
+ * @returns {number|null}
+ */
+function parsePrNumberFromSubject(subject) {
+  const prMatch = String(subject || '').match(/\(#(\d+)\)\s*$/);
+  return prMatch ? Number(prMatch[1]) : null;
+}
+
+/**
+ * Always reads HEAD's own subject, never an arbitrary historical SHA's --
+ * actions/checkout@v4 sets HEAD to GITHUB_SHA regardless of clone depth, so
+ * this works under CI's default shallow (fetch-depth 1) clone, where older
+ * commit objects (e.g. a prior PR's merge commit) are not present locally.
+ */
 function buildVersionInfo() {
   const sha = process.env.GITHUB_SHA || _run('git rev-parse HEAD');
   const shortSha = sha.slice(0, 7);
-  const subject = process.env.GITHUB_SHA
-    ? _run('git log -1 --pretty=%s ' + sha)
-    : _run('git log -1 --pretty=%s');
-  const prMatch = subject.match(/\(#(\d+)\)\s*$/);
-  const prNumber = prMatch ? Number(prMatch[1]) : null;
+  const subject = _run('git log -1 --pretty=%s');
+  const prNumber = parsePrNumberFromSubject(subject);
 
   return {
     sha,
@@ -52,7 +68,7 @@ function main() {
   console.log('Wrote ' + outPath + ':', info);
 }
 
-module.exports = { buildVersionInfo };
+module.exports = { buildVersionInfo, parsePrNumberFromSubject };
 
 if (require.main === module) {
   main();

@@ -24,7 +24,7 @@ function eq(a, b, label) {
   }
 }
 
-const { buildVersionInfo } = require('../scripts/write-version-file');
+const { buildVersionInfo, parsePrNumberFromSubject } = require('../scripts/write-version-file');
 
 const ROOT = path.resolve(__dirname, '..');
 const VERSION_PATH = path.join(ROOT, 'version.json');
@@ -43,24 +43,35 @@ function freshVersionRouteModule() {
 
 function run() {
   // ── AC1: PR number parsed from a GitHub squash-merge commit subject ──
-  console.log('\n  AC1 -- buildVersionInfo parses PR number from "(#123)" suffix');
+  // parsePrNumberFromSubject is pure (no git subprocess call), tested against
+  // fabricated subjects -- buildVersionInfo() itself is only ever tested
+  // against the CURRENT checkout's real HEAD below (AC1b), never a
+  // hardcoded historical SHA: CI's default shallow (fetch-depth 1) clone
+  // does not contain older commit objects, so a hardcoded past SHA that
+  // happened to exist in a developer's full local clone would crash (not
+  // fail-gracefully) the moment this test ran in CI -- exactly what
+  // happened the first time this test was written.
+  console.log('\n  AC1 -- parsePrNumberFromSubject parses PR number from "(#123)" suffix');
   {
-    process.env.GITHUB_SHA = '777e16031a913c0bfd48894217934f4c47da3a27'; // real squash-merge commit, this repo
+    eq(parsePrNumberFromSubject('fix(alrf-s1): listArtefacts checks local filesystem before GitHub API (#614)'), 614, 'AC1: prNumber parsed from a realistic squash-merge subject');
+    eq(parsePrNumberFromSubject('some commit (#7)'), 7, 'AC1: prNumber parsed from a short subject');
+    eq(parsePrNumberFromSubject(''), null, 'AC1: empty subject yields null, not a throw');
+    eq(parsePrNumberFromSubject(undefined), null, 'AC1: undefined subject yields null, not a throw');
+  }
+
+  console.log('\n  AC1b -- buildVersionInfo() runs against the current checkout\'s real HEAD without throwing');
+  {
     const info = buildVersionInfo();
-    eq(info.sha, '777e16031a913c0bfd48894217934f4c47da3a27', 'AC1: sha matches GITHUB_SHA');
-    eq(info.shortSha, '777e160', 'AC1: shortSha is first 7 chars');
-    eq(info.prNumber, 614, 'AC1: prNumber parsed from commit subject "(#614)"');
-    ok(typeof info.deployedAt === 'string' && info.deployedAt.length > 0, 'AC1: deployedAt is a non-empty ISO string');
-    delete process.env.GITHUB_SHA;
+    ok(typeof info.sha === 'string' && info.sha.length === 40, 'AC1b: sha is a real 40-char commit hash');
+    eq(info.shortSha, info.sha.slice(0, 7), 'AC1b: shortSha is the first 7 chars of sha');
+    ok(typeof info.deployedAt === 'string' && info.deployedAt.length > 0, 'AC1b: deployedAt is a non-empty ISO string');
+    ok(info.prNumber === null || typeof info.prNumber === 'number', 'AC1b: prNumber is null or a number, whatever HEAD currently is');
   }
 
   // ── AC2: no PR pattern in commit subject -> prNumber is null, not a throw ──
-  console.log('\n  AC2 -- buildVersionInfo returns null prNumber for a non-PR commit');
+  console.log('\n  AC2 -- parsePrNumberFromSubject returns null for a non-PR commit subject');
   {
-    process.env.GITHUB_SHA = 'cb47053d596e95ebfdc60c7b03a30694d0407036'; // direct bookkeeping commit, no PR
-    const info = buildVersionInfo();
-    eq(info.prNumber, null, 'AC2: prNumber is null when commit subject has no "(#N)" suffix');
-    delete process.env.GITHUB_SHA;
+    eq(parsePrNumberFromSubject('chore: mark alrf-s1 prStatus=merged post PR #614'), null, 'AC2: prNumber is null when subject has no trailing "(#N)" suffix (mentions a PR mid-sentence, not the trailing pattern)');
   }
 
   // ── AC3: getVersionInfo() falls back to a clearly-labelled dev build when
