@@ -113,18 +113,22 @@ async function run() {
     ok(!resAbsent._body.includes('window.__SW_INITIAL_CANVAS_BLOCKS__'), 'AC2: no init script when canvasBlocks is absent entirely');
   }
 
-  // ── AC3: non-ideate session with a canvasBlocks-shaped field -> no init script (ideate-scoped only) ──
-  console.log('\n  AC3 -- non-ideate session with canvasBlocks set does NOT get the init script (ideate-scoped boundary)');
+  // ── AC3: non-canvas-supporting session with a canvasBlocks-shaped field -> no init script ──
+  // csd-s3/csd-s4 (found post-DoD, 2026-07-26): /design and /definition also
+  // emit CANVAS-JSON markers now, so they were added to the supportsCanvas
+  // set alongside /ideate -- this boundary check now uses a genuinely
+  // canvas-unsupported skill ('discovery') instead of 'definition'.
+  console.log('\n  AC3 -- non-canvas-supporting session with canvasBlocks set does NOT get the init script (supportsCanvas boundary)');
   {
-    const sessionId = 'icrh-s1-ac3-definition-session';
+    const sessionId = 'icrh-s1-ac3-discovery-session';
     _setHtmlSession(sessionId, {
-      skillName: 'definition', sessionPath: '/tmp/test', systemPrompt: 'test',
+      skillName: 'discovery', sessionPath: '/tmp/test', systemPrompt: 'test',
       turns: [], artefactContent: null, artefactPath: null, done: false,
       journeyId: null, canvasBlocks: [{ type: 'text', title: 'Should not leak', content: {} }]
     });
     const res = makeRes();
-    await handleGetChatHtml(makeReq(sessionId, 'definition'), res);
-    ok(!res._body.includes('window.__SW_INITIAL_CANVAS_BLOCKS__'), 'AC3: non-ideate session never gets the canvas-blocks init script, even if the field happens to be set');
+    await handleGetChatHtml(makeReq(sessionId, 'discovery'), res);
+    ok(!res._body.includes('window.__SW_INITIAL_CANVAS_BLOCKS__'), 'AC3: a skill outside supportsCanvas (ideate/design/definition) never gets the canvas-blocks init script, even if the field happens to be set');
   }
 
   // ── AC4: inline client script hydrates by calling appendCanvasBlock once per entry, in order ──
@@ -143,10 +147,12 @@ async function run() {
     const res = makeRes();
     await handleGetChatHtml(makeReq(sessionId, 'ideate'), res);
 
-    // The hydration call itself: guarded by IS_IDEATE, iterating __SW_INITIAL_CANVAS_BLOCKS__
-    // and calling appendCanvasBlock(block) once per entry.
-    const hydrationCallPattern = /IS_IDEATE[\s\S]{0,40}__SW_INITIAL_CANVAS_BLOCKS__[\s\S]{0,400}__SW_INITIAL_CANVAS_BLOCKS__\.forEach\(function\(block\)\s*\{\s*appendCanvasBlock\(block\);\s*\}\);/;
-    ok(hydrationCallPattern.test(res._body), 'AC4: inline script calls appendCanvasBlock(block) once per __SW_INITIAL_CANVAS_BLOCKS__ entry, guarded by IS_IDEATE');
+    // The hydration call itself: guarded by SUPPORTS_CANVAS (csd-s3/csd-s4 --
+    // renamed from IS_IDEATE when /design and /definition were added
+    // alongside /ideate), iterating __SW_INITIAL_CANVAS_BLOCKS__ and calling
+    // appendCanvasBlock(block) once per entry.
+    const hydrationCallPattern = /SUPPORTS_CANVAS[\s\S]{0,40}__SW_INITIAL_CANVAS_BLOCKS__[\s\S]{0,400}__SW_INITIAL_CANVAS_BLOCKS__\.forEach\(function\(block\)\s*\{\s*appendCanvasBlock\(block\);\s*\}\);/;
+    ok(hydrationCallPattern.test(res._body), 'AC4: inline script calls appendCanvasBlock(block) once per __SW_INITIAL_CANVAS_BLOCKS__ entry, guarded by SUPPORTS_CANVAS');
 
     // Ordering: the forEach iterates the array in its natural (insertion) order --
     // confirm the init script's own JSON array preserves session.canvasBlocks' order
