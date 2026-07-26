@@ -16387,8 +16387,9 @@
           "acTotal": 4,
           "acVerified": 4,
           "artefact": "artefacts/2026-07-26-storage-drift-audit/stories/alrf-s3-pipeline-state-writer-guard.md",
-          "prStatus": "none",
-          "notes": "Closes a CRITICAL finding: gate-confirm on staging was silently fabricating a fresh, near-empty pipeline-state.json on every stage completion, never committed to git. Guard-only fix; full durable-store unification (ideas.json, estimation-norms.md, artefact content) tracked separately in decisions.md D1."
+          "prStatus": "merged",
+          "notes": "Closes a CRITICAL finding: gate-confirm on staging was silently fabricating a fresh, near-empty pipeline-state.json on every stage completion, never committed to git. Guard-only fix; full durable-store unification (ideas.json, estimation-norms.md, artefact content) tracked separately in decisions.md D1.",
+          "updatedAt": "2026-07-26T07:35:19.906Z"
         }
       ],
       "metrics": [],
