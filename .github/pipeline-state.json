@@ -16375,8 +16375,9 @@
           "acTotal": 7,
           "acVerified": 7,
           "artefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/stories/alrf-s4-postgres-artefact-fallback.md",
-          "prStatus": "none",
-          "notes": "Implements D3s durable-artefact-store goal using a store that already existed: routes/skills.js already saves artefact content to Postgres on stage completion; nothing read it back for the feature-index page. Wires listArtefacts to check Postgres (via journey-store.getArtefactsForJourney) after local disk, before GitHub API."
+          "prStatus": "merged",
+          "notes": "Implements D3s durable-artefact-store goal using a store that already existed: routes/skills.js already saves artefact content to Postgres on stage completion; nothing read it back for the feature-index page. Wires listArtefacts to check Postgres (via journey-store.getArtefactsForJourney) after local disk, before GitHub API.",
+          "updatedAt": "2026-07-26T07:46:04.110Z"
         }
       ],
       "metrics": [],
