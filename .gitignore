@@ -1,5 +1,6 @@
 .vscode/
 trace-validation-report.json
+version.json
 .worktrees/
 .ci-artefact-staging/
 workspace/capture-log.md

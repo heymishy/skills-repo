@@ -16352,10 +16352,22 @@
           "prStatus": "merged",
           "notes": "Fixes the operator-reported staging mismatch (feature-index page showed No artefacts found for a feature the kanban board correctly showed 3 artefacts for). listArtefacts now checks local filesystem via repoRoot before falling back to the GitHub-API path. See decisions.md D1/D2.",
           "updatedAt": "2026-07-26T06:30:04.474Z"
+        },
+        {
+          "id": "alrf-s2",
+          "slug": "alrf-s2-build-identity-footer-stamp",
+          "name": "Build-identity footer stamp (commit SHA + PR #) for staging deploy confirmation",
+          "stage": "branch-complete",
+          "health": "green",
+          "acTotal": 7,
+          "acVerified": 7,
+          "artefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/stories/alrf-s2-build-identity-footer-stamp.md",
+          "prStatus": "none",
+          "notes": "Closes the same-day gap where alrf-s1 (PR #614) deployed successfully but the overall CI run showed red from an unrelated pre-existing smoke-test failure, making a real deploy indistinguishable from a failed one. Adds GET /version + a sidebar footer stamp (commit SHA + PR #)."
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-26T06:18:25.489Z"
+      "updatedAt": "2026-07-26T06:48:25.456Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
