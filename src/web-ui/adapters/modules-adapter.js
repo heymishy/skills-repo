@@ -259,37 +259,6 @@ async function bulkAssignFeaturesToModule(productId, tenantId, featureSlugs, mod
   return { assigned: r.rows.length };
 }
 
-/**
- * tmc-s1 -- Assign a single feature to a module. A thin wrapper over
- * bulkAssignFeaturesToModule (one-item batch) so both paths share the same
- * validation and single-query upsert behaviour.
- * @param {string} productId
- * @param {string} tenantId
- * @param {string} featureSlug
- * @param {string} moduleId
- * @returns {Promise<{assigned: number}>}
- */
-async function assignFeatureToModule(productId, tenantId, featureSlug, moduleId) {
-  return bulkAssignFeaturesToModule(productId, tenantId, [featureSlug], moduleId);
-}
-
-/**
- * tmc-s1 -- Remove a feature's module assignment entirely (reverts to
- * Unclassified -- no row, not a NULL-module row).
- * @param {string} productId
- * @param {string} tenantId
- * @param {string} featureSlug
- * @returns {Promise<{unassigned: boolean}>}
- */
-async function unassignFeature(productId, tenantId, featureSlug) {
-  var db = _requireAdapter();
-  var r = await db.query(
-    'DELETE FROM feature_module_assignments WHERE product_id = $1 AND tenant_id = $2 AND feature_slug = $3',
-    [productId, tenantId, featureSlug]
-  );
-  return { unassigned: r.rowCount > 0 };
-}
-
 module.exports = {
   setModulesAdapter,
   listModules,
@@ -298,7 +267,5 @@ module.exports = {
   deleteModule,
   reassignEpic,
   getFeatureModuleAssignments,
-  bulkAssignFeaturesToModule,
-  assignFeatureToModule,
-  unassignFeature
+  bulkAssignFeaturesToModule
 };

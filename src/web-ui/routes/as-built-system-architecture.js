@@ -21,6 +21,7 @@
 const path = require('path');
 const _detector = require('../../modules/service-call-detector');
 const _writer = require('../../modules/migration-schema-parser');
+const { getRepoRoot } = require('../adapters/repo-root');
 
 // Injectable adapters (tests only) — default to the real modules. D37-style
 // seams so tests can exercise the error path (a detection failure, or a
@@ -33,11 +34,6 @@ function setServiceCallDetectorAdapter(adapter) {
 }
 function setDiagramWriterAdapter(adapter) {
   _writerAdapter = adapter;
-}
-
-function _repoRoot() {
-  // src/web-ui/routes -> src/web-ui -> src -> repo root
-  return path.join(__dirname, '..', '..', '..');
 }
 
 /**
@@ -64,7 +60,13 @@ function handleGetAsBuiltSystemArchitecture(req, res) {
     return;
   }
 
-  const repoRoot = _repoRoot();
+  // alrf-s6: tenant-aware repo root (adapters/repo-root.js), replacing a
+  // private _repoRoot() that always resolved to the server's own static
+  // checkout regardless of req/tenant -- see decisions.md finding #2
+  // (function-level-audit). Dormant on this deployment (WUCE_TENANT_ROOT_BASE
+  // is unset everywhere today) but would have silently bypassed per-tenant
+  // repo isolation the moment that config is turned on.
+  const repoRoot = getRepoRoot(req);
 
   let result;
   try {
