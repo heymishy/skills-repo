@@ -15696,7 +15696,7 @@
       "track": "standard",
       "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-07-26T02:53:29.566Z",
+      "updatedAt": "2026-07-26T05:50:46.217Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -15944,8 +15944,8 @@
               "dorArtefact": "artefacts/2026-07-25-code-shape-diagrams/dor/csd-s7-dor.md",
               "dorStatus": "signed-off",
               "dorSignedOffAt": "2026-07-26T00:00:00Z",
-              "prStatus": "open",
-              "updatedAt": "2026-07-26T03:12:11.421Z"
+              "prStatus": "merged",
+              "updatedAt": "2026-07-26T05:50:46.215Z"
             }
           ]
         }
@@ -16319,6 +16319,30 @@
       ],
       "metrics": [],
       "updatedAt": "2026-07-25T19:10:34.186Z"
+    },
+    {
+      "slug": "2026-07-26-canvas-render-and-story-extraction-fix",
+      "name": "Fix /design and /definition canvas rendering + story-extraction, both broken by stale mock fixtures",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "amber",
+      "epics": [],
+      "stories": [
+        {
+          "id": "r-canvas-render-and-story-extraction-fix",
+          "slug": "r-canvas-render-and-story-extraction-fix",
+          "name": "Fix /design and /definition canvas rendering + story-extraction (stale mock fixtures)",
+          "stage": "branch-complete",
+          "health": "amber",
+          "acTotal": 4,
+          "acVerified": 3,
+          "artefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/stories/r-canvas-render-and-story-extraction-fix.md",
+          "prStatus": "merged",
+          "notes": "Retrospective story for PR #613 (merged). AC3 (story-extraction test coverage) is NEEDS-TESTS -- open gap, see story file Open Questions. A real 400-error observation on gate-confirm after a real streaming /definition turn was found but not root-caused."
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-26T05:51:55.725Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
