@@ -368,8 +368,21 @@ function renderChat(data) {
               '<span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">' + (data.skillName === 'definition' ? 'Story Map' : 'Artefact Draft') + '</span>',
               '<button id="sw-artefact-fs-btn" class="ad-fs-btn" onclick="swToggleArtefactFs()" title="Toggle fullscreen" aria-label="Toggle fullscreen">⊞</button>',
             '</div>',
-            '<div id="artefact-panel" role="region" aria-label="' + (data.skillName === 'definition' ? 'Story map' : 'Artefact draft') + '" style="flex:1 1 auto;overflow-y:auto;padding:' + (data.skillName === 'definition' ? '0' : '16px 20px') + '">',
+            '<div id="artefact-panel" role="region" aria-label="' + (data.skillName === 'definition' ? 'Story map' : 'Artefact draft') + '" style="flex:0 1 auto;overflow-y:auto;padding:' + (data.skillName === 'definition' ? '0' : '16px 20px') + '">',
               '<p style="margin:0;font-size:12px;color:var(--muted);padding:16px 20px">' + (data.skillName === 'definition' ? 'Story map will appear here as epics and stories are generated.' : 'Artefact will appear here as the session progresses.') + '</p>',
+            '</div>',
+            // csd-s3/csd-s4 (found post-DoD, see decisions.md): /design and
+            // /definition emit CANVAS-JSON diagram markers, but until this
+            // fix, this pane had no element for appendCanvasBlock() to
+            // attach to -- only the /ideate skill's 3-panel layout had one.
+            // Added as an additional section below the artefact/story-map
+            // panel above (which continues to work exactly as before) so
+            // diagrams have somewhere real to render for these two skills.
+            '<div class="cv-section-head" style="flex-shrink:0">',
+              '<span class="cv-section-label">Diagrams</span>',
+            '</div>',
+            '<div id="canvas-panel" role="region" aria-label="Diagrams" style="flex:1 1 auto;overflow-y:auto;padding:16px">',
+              '<p class="cv-empty">Diagrams will appear here as the session progresses.</p>',
             '</div>',
           '</section>',
         ].join('')

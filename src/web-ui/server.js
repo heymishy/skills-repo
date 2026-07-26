@@ -1230,6 +1230,15 @@ if (process.env.NODE_ENV === 'test') {
     '',
     'Complexity: 1',
     '',
+    // csd-s3/csd-s4 (found post-DoD, see decisions.md): this stub is
+    // skill-agnostic (no skill name is passed to the adapter function
+    // below), so both diagram marker types are included -- whichever
+    // session (/design or /definition) drives a turn locally sees both,
+    // exercising the same canvas-rendering path either fixture would.
+    '---CANVAS-JSON: {"type":"system-architecture","title":"System Architecture","content":{"mermaid":"flowchart TD\\n    WEBUI[Web UI]\\n    STUBSVC[Stub Service]\\n    POSTGRES[(Postgres)]\\n    WEBUI --> STUBSVC\\n    STUBSVC --> POSTGRES"}}---',
+    '',
+    '---CANVAS-JSON: {"type":"program-design","title":"Program Design","content":{"mermaid":"flowchart LR\\n    ROUTE[routes/stub-feature.js]\\n    STORE[adapters/stub-feature-store.js]\\n    ROUTE --> STORE"}}---',
+    '',
     '---ARTEFACT-COMPLETE---',
   ].join('\n');
 
