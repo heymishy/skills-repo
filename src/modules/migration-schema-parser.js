@@ -372,6 +372,16 @@ function generateAsBuiltDataModelDiagram(options) {
  * Each call writes a new, timestamped file; existing versions are never
  * overwritten, consistent with the "point-in-time snapshot" framing in this
  * story's Out of Scope.
+ *
+ * The filename prefix is derived from `canvasBlock.type` (e.g.
+ * `as-built-data-model-`, `as-built-system-architecture-`) so this single
+ * writer is genuinely reusable across diagram types, not hardcoded to Data
+ * Model — csd-s7 fix: the original implementation hardcoded the
+ * `as-built-data-model-` prefix regardless of the canvas block's actual
+ * `type`, which would have silently produced a wrongly-named file for any
+ * other diagram type reusing this function. Existing Data Model callers are
+ * unaffected (`canvasBlock.type === 'data-model'` produces the exact same
+ * filename as before).
  * @param {string} featureSlug
  * @param {object} canvasBlock
  * @param {{repoRoot?: string, timestamp?: string}} [options]
@@ -386,8 +396,9 @@ function writeAsBuiltDiagramArtefact(featureSlug, canvasBlock, options) {
   const dir = path.join(repoRoot, 'artefacts', featureSlug, 'diagrams');
   fs.mkdirSync(dir, { recursive: true });
 
+  const typePrefix = (canvasBlock && canvasBlock.type) ? canvasBlock.type : 'diagram';
   const stamp = (options.timestamp || new Date().toISOString()).replace(/[:.]/g, '-');
-  const fileName = 'as-built-data-model-' + stamp + '.json';
+  const fileName = 'as-built-' + typePrefix + '-' + stamp + '.json';
   const filePath = path.join(dir, fileName);
   fs.writeFileSync(filePath, JSON.stringify(canvasBlock, null, 2) + '\n', 'utf8');
   return filePath;
