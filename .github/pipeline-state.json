@@ -16365,10 +16365,21 @@
           "prStatus": "merged",
           "notes": "Closes the same-day gap where alrf-s1 (PR #614) deployed successfully but the overall CI run showed red from an unrelated pre-existing smoke-test failure, making a real deploy indistinguishable from a failed one. Adds GET /version + a sidebar footer stamp (commit SHA + PR #).",
           "updatedAt": "2026-07-26T07:04:21.414Z"
+        },
+        {
+          "id": "alrf-s4",
+          "slug": "alrf-s4-postgres-artefact-fallback",
+          "name": "Postgres artefact-content fallback for listArtefacts (D3/D4)",
+          "stage": "branch-complete",
+          "health": "green",
+          "acTotal": 7,
+          "acVerified": 7,
+          "artefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/stories/alrf-s4-postgres-artefact-fallback.md",
+          "prStatus": "none",
+          "notes": "Implements D3s durable-artefact-store goal using a store that already existed: routes/skills.js already saves artefact content to Postgres on stage completion; nothing read it back for the feature-index page. Wires listArtefacts to check Postgres (via journey-store.getArtefactsForJourney) after local disk, before GitHub API."
         }
       ],
-      "metrics": [],
-      "updatedAt": "2026-07-26T06:48:25.456Z"
+      "updatedAt": "2026-07-26T07:23:35.224Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

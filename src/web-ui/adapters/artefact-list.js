@@ -62,12 +62,23 @@ function deriveTypeFromPath(filePath) {
  * remains the fallback for multi-repo setups where the web-ui process has no local
  * checkout of the feature's repo. Source: canvas-render-and-story-extraction-fix retro.
  *
+ * alrf-s4: when the local directory doesn't exist either (the expected case
+ * on a redeployed, volumeless container — see decisions.md D3/D4), a third
+ * source is checked before falling to the GitHub-API path: pgArtefactRows,
+ * pre-fetched by the caller from journey-store's getArtefactsForJourney()
+ * (Postgres/Neon, already durably written on every stage completion — see
+ * routes/skills.js's "Persist artefact content to Postgres so cross-device
+ * / post-deploy resume works"). This was already being WRITTEN; nothing was
+ * reading it back for this page until now.
+ *
  * @param {string} featureSlug  e.g. "2026-05-02-test-feature"
  * @param {string} token        OAuth access token
  * @param {string} [repoRoot]   absolute path to a local checkout, from adapters/repo-root
+ * @param {Array<{skill_name:string, artefact_path:string, content:string}>} [pgArtefactRows]
+ *   pre-fetched rows from journey-store's getArtefactsForJourney(), or undefined/empty
  * @returns {Promise<{ artefacts: Array, grouped: Object, noArtefacts: boolean }>}
  */
-async function listArtefacts(featureSlug, token, repoRoot) {
+async function listArtefacts(featureSlug, token, repoRoot, pgArtefactRows) {
   if (repoRoot) {
     const localItems = listLocalArtefacts(repoRoot, featureSlug);
     if (localItems !== null) {
@@ -81,11 +92,28 @@ async function listArtefacts(featureSlug, token, repoRoot) {
           viewUrl: `/artefacts/${encodeURIComponent(relPath)}`
         };
       });
-      if (artefacts.length === 0) return { artefacts: [], grouped: {}, noArtefacts: true };
-      const grouped = groupArtefactsByStage(artefacts);
-      return { artefacts, grouped, noArtefacts: false };
+      if (artefacts.length > 0) {
+        const grouped = groupArtefactsByStage(artefacts);
+        return { artefacts, grouped, noArtefacts: false };
+      }
+      // Directory exists locally but is genuinely empty -- still worth
+      // checking Postgres below before giving up (a fresh container may
+      // have an empty artefacts/ dir baked in while Postgres has the real,
+      // durably-saved content from a prior container's sessions).
     }
-    // Directory doesn't exist locally — fall through to the GitHub-API path below.
+    // Directory doesn't exist locally at all — fall through.
+  }
+
+  if (Array.isArray(pgArtefactRows) && pgArtefactRows.length > 0) {
+    const artefacts = pgArtefactRows.map((row) => ({
+      name:    path.basename(row.artefact_path),
+      path:    row.artefact_path,
+      sha:     null,
+      type:    deriveTypeFromPath(row.artefact_path),
+      viewUrl: `/artefacts/${encodeURIComponent(row.artefact_path)}`
+    }));
+    const grouped = groupArtefactsByStage(artefacts);
+    return { artefacts, grouped, noArtefacts: false };
   }
 
   const repos = _getConfiguredRepositories();
