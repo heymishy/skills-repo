@@ -16467,10 +16467,22 @@
           "prStatus": "merged",
           "notes": "Fixes the real root cause behind the operator-reported resume-session bug: both turn-completion handlers in skills.js always preferred the mock (or real) response SLUG marker over an already-known real journey featureSlug, causing every real feature to collide onto the mock fixtures shared slug whenever MOCK_LLM_GATEWAY=true. Also adds a nav entry for the previously-unreachable /admin/mock-gateway toggle (amgt-s1).",
           "updatedAt": "2026-07-26T09:27:02.668Z"
+        },
+        {
+          "id": "alrf-s10",
+          "slug": "alrf-s10-delete-journey-capability",
+          "name": "DELETE /api/journey/:journeyId -- delete a stale/corrupted feature",
+          "stage": "branch-complete",
+          "health": "green",
+          "acTotal": 8,
+          "acVerified": 8,
+          "artefact": "artefacts/2026-07-26-function-level-audit/stories/alrf-s10-delete-journey-capability.md",
+          "prStatus": "none",
+          "notes": "Operator-requested: a real way to delete stale/corrupted staging data. Hard delete (journeys + artefacts rows), tenant-scoped (404 not 403 cross-tenant), CSRF-protected, audit-logged. UI: a real Delete button on the feature-index page. Follows the established handleDeleteProduct convention exactly."
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-26T09:09:48.080Z"
+      "updatedAt": "2026-07-26T09:42:41.718Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
