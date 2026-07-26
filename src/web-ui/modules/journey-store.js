@@ -118,6 +118,26 @@ function getJourneyBySession(sessionId) {
  * @param {string} featureSlug
  * @returns {object|null}
  */
+/**
+ * alrf-s4 — read a journey's durably-saved artefact content back from
+ * Postgres (populated by adapters/journey-store-pg.js's saveArtefact() on
+ * every stage completion when DATABASE_URL is set -- see routes/skills.js's
+ * "Persist artefact content to Postgres so cross-device / post-deploy
+ * resume works" comment, wsm.1-era). Local disk is NOT durable across a
+ * redeploy on this deployment topology (see decisions.md D3/D4); Postgres
+ * already is, and was already being written to -- nothing was reading it
+ * back for the feature-index page until this. Returns [] when no pg
+ * adapter is wired (local dev, disk-only mode) rather than throwing --
+ * callers already treat [] as "nothing found here, keep looking."
+ * @param {string} journeyId
+ * @returns {Promise<Array<{skill_name: string, artefact_path: string, content: string}>>}
+ */
+async function getArtefactsForJourney(journeyId) {
+  var adapter = _activePgAdapter();
+  if (!adapter || !journeyId) return [];
+  return adapter.getArtefactsForJourney(journeyId);
+}
+
 function getJourneyByFeatureSlug(featureSlug) {
   var match = null;
   for (var journey of _journeys.values()) {
@@ -359,6 +379,7 @@ module.exports = {
   setActiveSession,
   getJourneyBySession,
   getJourneyByFeatureSlug,
+  getArtefactsForJourney,
   completeStage,
   getNextStage,
   getJourneyStories,

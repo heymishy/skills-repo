@@ -196,7 +196,18 @@ async function handleGetFeatureArtefacts(req, res, featureSlug) {
     : false;
 
   const repoRoot = getRepoRoot(req);
-  const { artefacts, grouped, noArtefacts } = await _listArtefacts(featureSlug, token, repoRoot);
+  // frsr-s1 (NFR-Performance): one lookup per page render, not per artefact
+  // row. fdn-s1: the same single lookup also supplies displayName, so it
+  // isn't fetched a second time. alrf-s4: also feeds the Postgres artefact-
+  // content fallback below, so this stays a single lookup for that too.
+  const journeyForPage = _journeyStore.getJourneyByFeatureSlug(featureSlug);
+  let pgArtefactRows = [];
+  if (journeyForPage && journeyForPage.journeyId) {
+    try {
+      pgArtefactRows = await _journeyStore.getArtefactsForJourney(journeyForPage.journeyId);
+    } catch (_) { pgArtefactRows = []; }
+  }
+  const { artefacts, grouped, noArtefacts } = await _listArtefacts(featureSlug, token, repoRoot, pgArtefactRows);
 
   // Audit log: userId, route, featureSlug, timestamp — no token
   _logger.info('feature_artefacts_accessed', {
@@ -207,10 +218,6 @@ async function handleGetFeatureArtefacts(req, res, featureSlug) {
   });
 
   if (acceptsHtml) {
-    // frsr-s1 (NFR-Performance): one lookup per page render, not per artefact
-    // row. fdn-s1: the same single lookup also supplies displayName, so it
-    // isn't fetched a second time.
-    const journeyForPage = _journeyStore.getJourneyByFeatureSlug(featureSlug);
     const resumeLookup = noArtefacts ? {} : _resolveResumeLinksForFeature(journeyForPage);
     const listHtml = noArtefacts
       ? '<p class="artefact-list__empty">No artefacts found for this feature</p>'
