@@ -19,6 +19,8 @@ const {
   listArtefacts: _listArtefactsDefault
 } = require('../adapters/artefact-list');
 
+const { getRepoRoot } = require('../adapters/repo-root');
+
 const { renderShell, escHtml } = require('../utils/html-shell');
 const shellEscHtml = escHtml; // internal alias used by artefact-index handlers
 const { getLabel } = require('../utils/artefact-labels');
@@ -193,7 +195,8 @@ async function handleGetFeatureArtefacts(req, res, featureSlug) {
     ? req.headers.accept.includes('text/html')
     : false;
 
-  const { artefacts, grouped, noArtefacts } = await _listArtefacts(featureSlug, token);
+  const repoRoot = getRepoRoot(req);
+  const { artefacts, grouped, noArtefacts } = await _listArtefacts(featureSlug, token, repoRoot);
 
   // Audit log: userId, route, featureSlug, timestamp — no token
   _logger.info('feature_artefacts_accessed', {

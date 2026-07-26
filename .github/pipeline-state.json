@@ -16325,7 +16325,7 @@
       "name": "Fix /design and /definition canvas rendering + story-extraction, both broken by stale mock fixtures",
       "track": "short",
       "stage": "branch-complete",
-      "health": "amber",
+      "health": "green",
       "epics": [],
       "stories": [
         {
@@ -16339,10 +16339,22 @@
           "artefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/stories/r-canvas-render-and-story-extraction-fix.md",
           "prStatus": "merged",
           "notes": "Retrospective story for PR #613 (merged). AC3 (story-extraction test coverage) is NEEDS-TESTS -- open gap, see story file Open Questions. A real 400-error observation on gate-confirm after a real streaming /definition turn was found but not root-caused."
+        },
+        {
+          "id": "alrf-s1",
+          "slug": "alrf-s1-artefact-list-repo-root-fallback",
+          "name": "Artefact-list repo-root fallback (close the artefact-listing mismatch)",
+          "stage": "branch-complete",
+          "health": "green",
+          "acTotal": 4,
+          "acVerified": 4,
+          "artefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/stories/alrf-s1-artefact-list-repo-root-fallback.md",
+          "prStatus": "none",
+          "notes": "Fixes the operator-reported staging mismatch (feature-index page showed No artefacts found for a feature the kanban board correctly showed 3 artefacts for). listArtefacts now checks local filesystem via repoRoot before falling back to the GitHub-API path. See decisions.md D1/D2."
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-26T05:51:55.725Z"
+      "updatedAt": "2026-07-26T06:18:25.489Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
