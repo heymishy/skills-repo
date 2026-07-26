@@ -44,6 +44,23 @@ class MigrationParseError extends Error {
   }
 }
 
+/**
+ * alrf-s5 — thrown by writeAsBuiltDiagramArtefact() when featureSlug (taken
+ * directly from an unvalidated request query param by both as-built-diagrams.js
+ * and as-built-system-architecture.js) resolves outside repoRoot. Callers
+ * must map this to an HTTP 400 (never 500) and must NOT log the raw path in
+ * production, per the existing path-traversal guard convention (see
+ * routes/journey.js's own resolvedRoot/startsWith check). A dedicated
+ * `name` lets route handlers distinguish this from a genuine write failure
+ * without string-matching the message.
+ */
+class ArtefactPathTraversalError extends Error {
+  constructor() {
+    super('featureSlug resolves outside the artefacts directory');
+    this.name = 'ArtefactPathTraversalError';
+  }
+}
+
 // Audit logger (NFR — as-built generation events are logged: feature,
 // diagram types, success/failure). Injectable so callers (the route wiring,
 // tests) can supply a real logger; defaults to a no-op so importing this
@@ -394,6 +411,17 @@ function writeAsBuiltDiagramArtefact(featureSlug, canvasBlock, options) {
   }
   const repoRoot = options.repoRoot || process.cwd();
   const dir = path.join(repoRoot, 'artefacts', featureSlug, 'diagrams');
+
+  // Security: path traversal check (alrf-s5) — featureSlug is taken directly
+  // from an unvalidated request query param by both callers of this function
+  // (as-built-diagrams.js, as-built-system-architecture.js). Matches the
+  // established resolve+startsWith pattern already used in routes/journey.js.
+  const resolvedDir = path.resolve(dir);
+  const resolvedRoot = path.resolve(repoRoot);
+  if (!resolvedDir.startsWith(resolvedRoot + path.sep) && resolvedDir !== resolvedRoot) {
+    throw new ArtefactPathTraversalError();
+  }
+
   fs.mkdirSync(dir, { recursive: true });
 
   const typePrefix = (canvasBlock && canvasBlock.type) ? canvasBlock.type : 'diagram';
@@ -406,6 +434,7 @@ function writeAsBuiltDiagramArtefact(featureSlug, canvasBlock, options) {
 
 module.exports = {
   MigrationParseError,
+  ArtefactPathTraversalError,
   discoverMigrationFiles,
   parseMigrationFile,
   parseMigrationFiles,
