@@ -15696,7 +15696,7 @@
       "track": "standard",
       "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-07-26T05:50:46.217Z",
+      "updatedAt": "2026-07-26T09:20:30.284Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -15946,6 +15946,18 @@
               "dorSignedOffAt": "2026-07-26T00:00:00Z",
               "prStatus": "merged",
               "updatedAt": "2026-07-26T05:50:46.215Z"
+            },
+            {
+              "id": "alrf-s9",
+              "slug": "alrf-s9-design-as-built-context-injection",
+              "name": "Feed as-built Data Model / System Architecture into /design system prompt",
+              "stage": "branch-complete",
+              "health": "green",
+              "acTotal": 6,
+              "acVerified": 6,
+              "artefact": "artefacts/2026-07-25-code-shape-diagrams/stories/alrf-s9-design-as-built-context-injection.md",
+              "prStatus": "none",
+              "notes": "Answers the operators architecture question: does /design need a tie-in to the products existing data model/architecture from prior feature runs? Yes -- SKILL.md already required it but nothing fed it in. buildSystemPrompt() now injects a fresh, read-only as-built snapshot (via the existing csd-s5/csd-s7 generators) into /design sessions only."
             }
           ]
         }
