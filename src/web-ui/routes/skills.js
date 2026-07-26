@@ -2048,7 +2048,10 @@ async function htmlSubmitTurn(skillName, sessionId, rawAnswer, token, tenantId) 
 
   if (artefactMatch) {
     session.artefactContent = artefactMatch[1].trim();
-    var slug = slugMatch ? slugMatch[1].trim() : new Date().toISOString().slice(0, 10) + '-' + skillName;
+    // alrf-s8: same fix as the streaming turn handler below -- a journey-linked
+    // session's real featureSlug must always win over the response's own
+    // ---SLUG--- marker (see that comment for the full rationale).
+    var slug = session.featureSlug || (slugMatch ? slugMatch[1].trim() : new Date().toISOString().slice(0, 10) + '-' + skillName);
     session.artefactPath = 'artefacts/' + slug + '/' + session.skillName + '.md';
     session.done = true;
   }
@@ -4460,7 +4463,19 @@ async function handlePostTurnStreamHtml(req, res) {
   if (done && _artefactText) {
     session.artefactContent = _artefactText;
     var skillName = (req.params && req.params.name) || '';
-    var slug = slugMatch ? slugMatch[1].trim() : new Date().toISOString().slice(0, 10) + '-' + skillName;
+    // alrf-s8: a journey-linked session already has a real, meaningful
+    // featureSlug assigned at journey-creation time (linkSessionToJourney,
+    // above) -- that must always win over whatever slug the model's own
+    // ---SLUG--- marker announces. Previously the marker always won, which
+    // was invisible with a real model (which has no reason to invent a
+    // different slug than the one it's told) but became a real, active bug
+    // under MOCK_LLM_GATEWAY=true: every fixture hardcodes the same
+    // ---SLUG---, so every real feature's artefacts collapsed onto the
+    // fixture's slug instead of the feature's own. The marker remains
+    // authoritative only for sessions with no journey (standalone /skills
+    // or CLI usage), where session.featureSlug is never set and the model
+    // deciding the slug is the intended, only mechanism.
+    var slug = session.featureSlug || (slugMatch ? slugMatch[1].trim() : new Date().toISOString().slice(0, 10) + '-' + skillName);
     session.artefactPath = 'artefacts/' + slug + '/' + (session.skillName || skillName) + '.md';
     session.done = true;
 

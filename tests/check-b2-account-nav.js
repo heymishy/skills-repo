@@ -177,6 +177,22 @@ async function main() {
     });
   });
 
+  // ── alrf-s7 — the mock-gateway toggle (amgt-s1) has a real nav entry ────────
+  // amgt-s1's GET /admin/mock-gateway route shipped fully wired and requireAdmin-
+  // gated, but with zero NAV_ITEMS entry -- reachable only by typing the URL
+  // directly. Same gap AC3's own dangling-link check exists to catch, just in
+  // the opposite direction (a route with no link in, not a link with no route).
+  queue.push(function() {
+    console.log('\nalrf-s7 — the mock-gateway toggle (amgt-s1) has a real nav entry, not just a route');
+    return test('alrf-s7: /admin/mock-gateway present in NAV_ITEMS, admin-only, account section', function() {
+      var shell = freshRequire(HTML_SHELL_PATH);
+      var mockGatewayItem = shell.NAV_ITEMS.find(function(i) { return i.href === '/admin/mock-gateway'; });
+      assert.ok(mockGatewayItem, 'expected a NAV_ITEMS entry for /admin/mock-gateway');
+      assert.strictEqual(mockGatewayItem.section, 'account', 'Mock LLM gateway must be tagged section: account');
+      assert.strictEqual(mockGatewayItem.adminOnly, true, 'Mock LLM gateway must be tagged adminOnly: true');
+    });
+  });
+
   // ── AC4 — test validity: the same check fails against the pre-fix shape ────
   queue.push(function() {
     console.log('\nAC4 — the resolution check fails against the CURRENT (pre-fix) NAV_ITEMS shape');
