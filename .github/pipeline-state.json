@@ -16362,8 +16362,9 @@
           "acTotal": 7,
           "acVerified": 7,
           "artefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/stories/alrf-s2-build-identity-footer-stamp.md",
-          "prStatus": "none",
-          "notes": "Closes the same-day gap where alrf-s1 (PR #614) deployed successfully but the overall CI run showed red from an unrelated pre-existing smoke-test failure, making a real deploy indistinguishable from a failed one. Adds GET /version + a sidebar footer stamp (commit SHA + PR #)."
+          "prStatus": "merged",
+          "notes": "Closes the same-day gap where alrf-s1 (PR #614) deployed successfully but the overall CI run showed red from an unrelated pre-existing smoke-test failure, making a real deploy indistinguishable from a failed one. Adds GET /version + a sidebar footer stamp (commit SHA + PR #).",
+          "updatedAt": "2026-07-26T07:04:21.414Z"
         }
       ],
       "metrics": [],
