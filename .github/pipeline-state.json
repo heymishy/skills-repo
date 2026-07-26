@@ -16413,7 +16413,7 @@
       "name": "Function-level audit: dead code and duplicate implementations beyond storage",
       "track": "short",
       "stage": "branch-complete",
-      "health": "amber",
+      "health": "green",
       "epics": [],
       "stories": [
         {
@@ -16428,10 +16428,22 @@
           "prStatus": "merged",
           "notes": "CRITICAL, active, exploitable path-traversal write vulnerability in as-built-diagrams.js (csd-s5) and as-built-system-architecture.js (csd-s7), shared via migration-schema-parser.js writeAsBuiltDiagramArtefact(). featureSlug taken directly from req.query with zero validation. Fixed immediately (not batched) given active severity. 3 more findings (tenant-isolation _repoRoot() bypass, orphaned assignFeatureToModule/unassignFeature, auth-email.js rate-limiter duplication) deferred to a batch fix per operator direction -- see decisions.md.",
           "updatedAt": "2026-07-26T08:38:11.257Z"
+        },
+        {
+          "id": "alrf-s6",
+          "slug": "alrf-s6-batch-fix-tenant-isolation-and-dead-code",
+          "name": "Batch fix: tenant-isolation, dead-code removal, rate-limiter re-assessment",
+          "stage": "branch-complete",
+          "health": "green",
+          "acTotal": 5,
+          "acVerified": 5,
+          "artefact": "artefacts/2026-07-26-function-level-audit/stories/alrf-s6-batch-fix-tenant-isolation-and-dead-code.md",
+          "prStatus": "none",
+          "notes": "Fixes finding #2 (tenant-isolation bypass -- both as-built routes now use getRepoRoot(req)). Findings #3/#4 revised after deeper investigation: #3 (assignFeatureToModule/unassignFeature) was dead code sitting alongside an already-wired real mechanism (bulkAssignFeaturesToModule), removed rather than wired to a nonexistent gap. #4 (auth-email.js rate-limiter) confirmed acceptable -- carries incident-driven bypass logic the shared limiter should not carry, no fix needed."
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-26T08:31:23.652Z"
+      "updatedAt": "2026-07-26T08:49:09.847Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

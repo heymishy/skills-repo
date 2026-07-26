@@ -21,6 +21,7 @@
 
 const path = require('path');
 const _parser = require('../../modules/migration-schema-parser');
+const { getRepoRoot } = require('../adapters/repo-root');
 
 // Injectable adapter (tests only) — defaults to the real parser module.
 // Lets tests exercise the malformed-migration-file error path (AC4,
@@ -30,11 +31,6 @@ const _parser = require('../../modules/migration-schema-parser');
 let _parserAdapter = _parser;
 function setMigrationSchemaParserAdapter(adapter) {
   _parserAdapter = adapter;
-}
-
-function _repoRoot() {
-  // src/web-ui/routes -> src/web-ui -> src -> repo root
-  return path.join(__dirname, '..', '..', '..');
 }
 
 /**
@@ -61,7 +57,13 @@ function handleGetAsBuiltDataModel(req, res) {
     return;
   }
 
-  const repoRoot = _repoRoot();
+  // alrf-s6: tenant-aware repo root (adapters/repo-root.js), replacing a
+  // private _repoRoot() that always resolved to the server's own static
+  // checkout regardless of req/tenant -- see decisions.md finding #2
+  // (function-level-audit). Dormant on this deployment (WUCE_TENANT_ROOT_BASE
+  // is unset everywhere today) but would have silently bypassed per-tenant
+  // repo isolation the moment that config is turned on.
+  const repoRoot = getRepoRoot(req);
 
   let result;
   try {
