@@ -16467,10 +16467,22 @@
           "prStatus": "merged",
           "notes": "Fixes the real root cause behind the operator-reported resume-session bug: both turn-completion handlers in skills.js always preferred the mock (or real) response SLUG marker over an already-known real journey featureSlug, causing every real feature to collide onto the mock fixtures shared slug whenever MOCK_LLM_GATEWAY=true. Also adds a nav entry for the previously-unreachable /admin/mock-gateway toggle (amgt-s1).",
           "updatedAt": "2026-07-26T09:27:02.668Z"
+        },
+        {
+          "id": "alrf-s11",
+          "slug": "alrf-s11-purge-e2e-tenants-ci-cleanup",
+          "name": "Auto-purge e2e-test- tenants after every staging E2E CI run",
+          "stage": "branch-complete",
+          "health": "green",
+          "acTotal": 6,
+          "acVerified": 6,
+          "artefact": "artefacts/2026-07-26-function-level-audit/stories/alrf-s11-purge-e2e-tenants-ci-cleanup.md",
+          "prStatus": "none",
+          "notes": "Operator noticed hundreds of persistent e2e-test-/UAT tenants on staging via /admin/credits. Sequencing agreed: stop the leak first (this story), retroactive purge next, admin view + PostHog tie-in later. New scripts/purge-e2e-tenants.js wired into e2e.yml Scenario A/B and staging-deploy.yml smoke-test, always() so cleanup happens on pass or fail."
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-26T09:09:48.080Z"
+      "updatedAt": "2026-07-26T09:52:13.397Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

@@ -227,6 +227,17 @@ jobs:
         if: steps.scenario-a-config.outputs.scenario_a_enabled != 'true'
         run: 'echo "Scenario A staging E2E skipped — set audit.staging_e2e_scenario_a: true in .github/context.yml to enable"'
 
+      # alrf-s11: purge every e2e-test- tagged tenant this run created,
+      # regardless of pass/fail (always()) -- the operator noticed hundreds
+      # of persistent e2e-test-/UAT tenants accumulated on staging, since no
+      # step had ever cleaned these up after a run. Runs against the same
+      # staging Postgres the seed/deploy steps already use.
+      - name: Purge e2e-test- tenants created by this run
+        if: always() && steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
+        run: node scripts/purge-e2e-tenants.js
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
   # ── Scenario B CI-blocking gate (story b2-ci-gate-scenario-b-coverage-mapping) ──
   # Runs B1's spec file (tests/e2e/b1-formed-idea-outer-loop-story-map.spec.js)
   # against real wuce-staging, following A5's exact gate mechanism (distinct
@@ -344,3 +355,10 @@ jobs:
       - name: Scenario B E2E skipped (opt-in flag not set)
         if: steps.scenario-b-config.outputs.scenario_b_enabled != 'true'
         run: 'echo "Scenario B staging E2E skipped — set audit.staging_e2e_scenario_b: true in .github/context.yml to enable"'
+
+      # alrf-s11: same cleanup as Scenario A's job -- see that job's comment.
+      - name: Purge e2e-test- tenants created by this run
+        if: always() && steps.scenario-b-config.outputs.scenario_b_enabled == 'true'
+        run: node scripts/purge-e2e-tenants.js
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}

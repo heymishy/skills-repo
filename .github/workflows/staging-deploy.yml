@@ -154,6 +154,17 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
+      # alrf-s11: purge every e2e-test- tagged tenant this run created,
+      # regardless of pass/fail -- this job's @mocked suite also creates real
+      # e2e-test- tenants on staging, and this deploy fires on every push to
+      # master, so it was contributing to the same accumulation as e2e.yml's
+      # Scenario A/B jobs.
+      - name: Purge e2e-test- tenants created by this run
+        if: always()
+        run: node scripts/purge-e2e-tenants.js
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
   promote-to-prod:
     name: Promote to production (manual approval required)
     needs: smoke-test
