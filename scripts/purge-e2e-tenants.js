@@ -110,21 +110,52 @@ async function purgeE2eTenants(db) {
   return { tenantCount: tenantIds.length, tenantIds };
 }
 
+/**
+ * Race a promise against a hard deadline. First real regression this script
+ * hit in CI (2026-07-26, PR #622): pg's Pool has no default connection
+ * timeout, so a bad/unreachable DATABASE_URL hangs the connection attempt
+ * forever rather than failing fast -- the actual E2E tests had already
+ * passed, but this cleanup step hung until the JOB's own external timeout
+ * (15 minutes) killed the whole run, making a passing test run look failed.
+ * connectionTimeoutMillis alone did not fully close this (still observed a
+ * full-timeout hang), so this is a second, independent guard at the
+ * call-site level -- the cleanup is pure hygiene and must never be able to
+ * consume the whole job's timeout budget.
+ * @param {Promise} promise
+ * @param {number} ms
+ * @param {string} label
+ */
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(label + ' timed out after ' + ms + 'ms')), ms))
+  ]);
+}
+
 if (require.main === module) {
   (async () => {
+    // eslint-disable-next-line global-require
+    const { Pool } = require('pg');
+    const pool = new Pool({
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+      connectionTimeoutMillis: 10000
+    });
+    setDbConnection(pool);
     try {
-      // eslint-disable-next-line global-require
-      const { Pool } = require('pg');
-      setDbConnection(new Pool({
-        connectionString: process.env.DATABASE_URL,
-        ssl: { rejectUnauthorized: false }
-      }));
-      const summary = await purgeE2eTenants(requireDbConnection());
+      const summary = await withTimeout(purgeE2eTenants(requireDbConnection()), 60000, 'purgeE2eTenants');
       console.log(`Purged ${summary.tenantCount} e2e-test- tenant(s): ${summary.tenantIds.join(', ') || '(none found)'}`);
-      process.exit(0);
+      process.exitCode = 0;
     } catch (err) {
-      console.error('purge-e2e-tenants failed:', err.message);
-      process.exit(1);
+      // Never a hard failure here (D37-adjacent, but deliberately inverted):
+      // this is pure post-run hygiene, not a correctness gate -- a failure
+      // must be visible in the log but must never be able to fail the job
+      // that ran the actual tests. See CI wiring's own continue-on-error.
+      console.error('purge-e2e-tenants failed (non-blocking):', err.message);
+      process.exitCode = 0;
+    } finally {
+      try { await withTimeout(pool.end(), 5000, 'pool.end'); } catch (_) {}
+      process.exit(process.exitCode || 0);
     }
   })();
 }

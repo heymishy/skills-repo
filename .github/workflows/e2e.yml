@@ -233,7 +233,20 @@ jobs:
       # step had ever cleaned these up after a run. Runs against the same
       # staging Postgres the seed/deploy steps already use.
       - name: Purge e2e-test- tenants created by this run
+        # Fix-forward (2026-07-26, PR #622): the first version of this step
+        # had no step-level timeout, so a hung DB connection (see the
+        # script's own withTimeout comment) consumed this whole job's
+        # 15-minute external timeout and turned an actually-passing test run
+        # red. Deliberately no error-tolerance flag on this step -- check-a5
+        # and check-b2's own ci-gate-config tests assert its absence anywhere
+        # in this job's block as a structural proxy for "this job genuinely
+        # blocks merge on failure", and this step doesn't need it: the
+        # script itself is written to never exit non-zero (always sets
+        # process.exitCode = 0, even on its own internal failure/timeout) --
+        # timeout-minutes here is a pure, unlikely-to-fire backstop, not the
+        # primary safety mechanism.
         if: always() && steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
+        timeout-minutes: 2
         run: node scripts/purge-e2e-tenants.js
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
@@ -356,9 +369,12 @@ jobs:
         if: steps.scenario-b-config.outputs.scenario_b_enabled != 'true'
         run: 'echo "Scenario B staging E2E skipped — set audit.staging_e2e_scenario_b: true in .github/context.yml to enable"'
 
-      # alrf-s11: same cleanup as Scenario A's job -- see that job's comment.
+      # alrf-s11: same cleanup as Scenario A's job -- see that job's Fix-forward
+      # comment (2026-07-26, PR #622) for why there's a timeout-minutes but
+      # deliberately no continue-on-error here.
       - name: Purge e2e-test- tenants created by this run
         if: always() && steps.scenario-b-config.outputs.scenario_b_enabled == 'true'
+        timeout-minutes: 2
         run: node scripts/purge-e2e-tenants.js
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
