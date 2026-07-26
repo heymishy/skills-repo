@@ -79,6 +79,13 @@ function handleGetAsBuiltSystemArchitecture(req, res) {
   try {
     artefactPath = _writerAdapter.writeAsBuiltDiagramArtefact(featureSlug, result.canvasBlock, { repoRoot: repoRoot });
   } catch (e) {
+    // Security: path traversal (alrf-s5) -> 400, never 500, and never log the
+    // raw featureSlug value in production (CLAUDE.md path-traversal guard rule).
+    if (e && e.name === 'ArtefactPathTraversalError') {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ ok: false, error: 'invalid featureSlug' }));
+      return;
+    }
     res.writeHead(500, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: false, error: 'Diagram generated but could not be saved: ' + e.message }));
     return;

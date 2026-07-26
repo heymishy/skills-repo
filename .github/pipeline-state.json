@@ -16407,6 +16407,30 @@
       ],
       "metrics": [],
       "updatedAt": "2026-07-26T07:16:03.315Z"
+    },
+    {
+      "slug": "2026-07-26-function-level-audit",
+      "name": "Function-level audit: dead code and duplicate implementations beyond storage",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "amber",
+      "epics": [],
+      "stories": [
+        {
+          "id": "alrf-s5",
+          "slug": "alrf-s5-artefact-path-traversal-guard",
+          "name": "Path-traversal guard for as-built diagram artefact writes",
+          "stage": "branch-complete",
+          "health": "green",
+          "acTotal": 4,
+          "acVerified": 4,
+          "artefact": "artefacts/2026-07-26-function-level-audit/stories/alrf-s5-artefact-path-traversal-guard.md",
+          "prStatus": "none",
+          "notes": "CRITICAL, active, exploitable path-traversal write vulnerability in as-built-diagrams.js (csd-s5) and as-built-system-architecture.js (csd-s7), shared via migration-schema-parser.js writeAsBuiltDiagramArtefact(). featureSlug taken directly from req.query with zero validation. Fixed immediately (not batched) given active severity. 3 more findings (tenant-isolation _repoRoot() bypass, orphaned assignFeatureToModule/unassignFeature, auth-email.js rate-limiter duplication) deferred to a batch fix per operator direction -- see decisions.md."
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-26T08:31:23.652Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
