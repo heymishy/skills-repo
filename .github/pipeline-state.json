@@ -16469,6 +16469,19 @@
           "updatedAt": "2026-07-26T09:27:02.668Z"
         },
         {
+          "id": "alrf-s10",
+          "slug": "alrf-s10-delete-journey-capability",
+          "name": "DELETE /api/journey/:journeyId -- delete a stale/corrupted feature",
+          "stage": "branch-complete",
+          "health": "green",
+          "acTotal": 8,
+          "acVerified": 8,
+          "artefact": "artefacts/2026-07-26-function-level-audit/stories/alrf-s10-delete-journey-capability.md",
+          "prStatus": "merged",
+          "notes": "Operator-requested: a real way to delete stale/corrupted staging data. Hard delete (journeys + artefacts rows), tenant-scoped (404 not 403 cross-tenant), CSRF-protected, audit-logged. UI: a real Delete button on the feature-index page. Follows the established handleDeleteProduct convention exactly.",
+          "updatedAt": "2026-07-26T22:48:58.319Z"
+        },
+        {
           "id": "alrf-s11",
           "slug": "alrf-s11-purge-e2e-tenants-ci-cleanup",
           "name": "Auto-purge e2e-test- tenants after every staging E2E CI run",
@@ -16478,7 +16491,8 @@
           "acVerified": 6,
           "artefact": "artefacts/2026-07-26-function-level-audit/stories/alrf-s11-purge-e2e-tenants-ci-cleanup.md",
           "prStatus": "none",
-          "notes": "Operator noticed hundreds of persistent e2e-test-/UAT tenants on staging via /admin/credits. Sequencing agreed: stop the leak first (this story), retroactive purge next, admin view + PostHog tie-in later. New scripts/purge-e2e-tenants.js wired into e2e.yml Scenario A/B and staging-deploy.yml smoke-test, always() so cleanup happens on pass or fail."
+          "notes": "Operator noticed hundreds of persistent e2e-test-/UAT tenants on staging via /admin/credits. Sequencing agreed: stop the leak first (this story), retroactive purge next, admin view + PostHog tie-in later. New scripts/purge-e2e-tenants.js wired into e2e.yml Scenario A/B and staging-deploy.yml smoke-test, always() so cleanup happens on pass or fail.",
+          "updatedAt": "2026-07-26T09:52:13.397Z"
         }
       ],
       "metrics": [],

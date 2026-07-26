@@ -444,6 +444,53 @@ async function handlePostJourney(req, res) {
   }
 }
 
+/**
+ * alrf-s10 — DELETE /api/journey/:journeyId: hard-delete a journey (and all
+ * its artefact rows) entirely. Requested by the operator specifically to
+ * clean up stale/corrupted staging data (e.g. features whose artefacts were
+ * mis-recorded under the mock-fixture-feature slug before alrf-s8's fix).
+ * Tenant-scoped: a journey belonging to a different tenant, or a journey
+ * that doesn't exist at all, both return 404 -- never 403 -- matching the
+ * existing FORBIDDEN-vs-NOT_FOUND policy used elsewhere in this codebase
+ * (routes/products.js's handleDeleteProduct), so a cross-tenant probe can't
+ * distinguish "not yours" from "doesn't exist." Hard delete, wuce-side data
+ * only -- never a GitHub API call, never touches a connected repo.
+ * @param {object} req
+ * @param {object} res
+ */
+async function handleDeleteJourney(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
+    return;
+  }
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
+  var journeyId = req.params && req.params.journeyId;
+  var journey = journeyId ? _journeyStore.getJourney(journeyId) : null;
+  var tenantId = req.session.tenantId;
+  if (!journey || (journey.tenantId && journey.tenantId !== tenantId)) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'not found' }));
+    return;
+  }
+
+  var result = await _journeyStore.deleteJourney(journeyId);
+
+  console.info(JSON.stringify({
+    event: 'journey_deleted',
+    journeyId: journeyId,
+    featureSlug: journey.featureSlug || null,
+    tenantId: tenantId || null,
+    deletedBy: req.session.login || null,
+    timestamp: new Date().toISOString()
+  }));
+
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ deleted: !!(result && result.deleted) }));
+}
+
 // ---------------------------------------------------------------------------
 // Step 5 — Artefact review panel
 // ---------------------------------------------------------------------------
@@ -3757,6 +3804,7 @@ async function handleGetWizardBootstrapped(req, res, deps) {
 module.exports = {
   handleGetJourney,
   handlePostJourney,
+  handleDeleteJourney,
   handleGetJourneyResume,
   handleGetStageReview,
   handleGetReference,
