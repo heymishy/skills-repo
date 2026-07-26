@@ -16477,8 +16477,9 @@
           "acTotal": 8,
           "acVerified": 8,
           "artefact": "artefacts/2026-07-26-function-level-audit/stories/alrf-s10-delete-journey-capability.md",
-          "prStatus": "none",
-          "notes": "Operator-requested: a real way to delete stale/corrupted staging data. Hard delete (journeys + artefacts rows), tenant-scoped (404 not 403 cross-tenant), CSRF-protected, audit-logged. UI: a real Delete button on the feature-index page. Follows the established handleDeleteProduct convention exactly."
+          "prStatus": "merged",
+          "notes": "Operator-requested: a real way to delete stale/corrupted staging data. Hard delete (journeys + artefacts rows), tenant-scoped (404 not 403 cross-tenant), CSRF-protected, audit-logged. UI: a real Delete button on the feature-index page. Follows the established handleDeleteProduct convention exactly.",
+          "updatedAt": "2026-07-26T22:48:58.319Z"
         }
       ],
       "metrics": [],
