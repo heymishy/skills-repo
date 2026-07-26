@@ -59,12 +59,25 @@ module.exports = function pipelineStateWriterFactory(repoRoot) {
       }
     }
 
-    // Read current state
+    // Read current state. This file is git-tracked and must already exist --
+    // never fabricate a fresh, near-empty state when it's missing. A missing
+    // file here means repoRoot is not a real, governed checkout (e.g. a
+    // deployed container where .github/ is deliberately excluded from the
+    // built image, see .dockerignore) -- silently starting from {features:[]}
+    // would overwrite real history with a file containing only the one
+    // feature/story just touched, and that file is never committed back to
+    // git, so the real state is lost the moment this container is replaced.
+    // Source: workspace/capture-log.md, 2026-07-26 (alrf storage-drift audit).
     var state;
     try {
       state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
-    } catch (_) {
-      state = { schemaVersion: '1', features: [] };
+    } catch (readErr) {
+      throw new Error(
+        'pipeline-state-writer: cannot read ' + statePath + ' (' +
+        (readErr && readErr.message ? readErr.message : String(readErr)) + '). ' +
+        'Refusing to fabricate a fresh state file -- this usually means repoRoot ' +
+        'is not a real git-backed checkout of this repository.'
+      );
     }
 
     if (!Array.isArray(state.features)) {
