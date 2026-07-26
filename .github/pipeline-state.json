@@ -15696,7 +15696,7 @@
       "track": "standard",
       "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-07-25T10:06:41.404Z",
+      "updatedAt": "2026-07-26T02:34:37.292Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -15711,8 +15711,13 @@
           "baseline": "not yet established",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "Feature merged 2026-07-26; zero real features have run the full /design->/verify-completion->drift-check cycle yet. Cannot be measured until real usage occurs.",
+          "contributingStories": [
+            "csd-s3",
+            "csd-s4",
+            "csd-s5",
+            "csd-s6"
+          ]
         },
         {
           "id": "p2",
@@ -15721,8 +15726,13 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "Feature merged 2026-07-26; zero real features have run the full /design->/verify-completion->drift-check cycle yet. Cannot be measured until real usage occurs.",
+          "contributingStories": [
+            "csd-s1",
+            "csd-s2",
+            "csd-s3",
+            "csd-s4"
+          ]
         },
         {
           "id": "p3",
@@ -15731,8 +15741,11 @@
           "baseline": "not yet established",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "Feature merged 2026-07-26; zero real features have run the full /design->/verify-completion->drift-check cycle yet. Cannot be measured until real usage occurs.",
+          "contributingStories": [
+            "csd-s4",
+            "csd-s6"
+          ]
         },
         {
           "id": "m1",
@@ -15741,8 +15754,10 @@
           "baseline": "not yet established",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "Feature merged 2026-07-26; zero real features have run the full /design->/verify-completion->drift-check cycle yet. Cannot be measured until real usage occurs.",
+          "contributingStories": [
+            "csd-s6"
+          ]
         }
       ],
       "benefitMetricArtefact": "artefacts/2026-07-25-code-shape-diagrams/benefit-metric.md",
@@ -15752,12 +15767,12 @@
         {
           "slug": "csd-e1-code-shape-diagrams",
           "name": "Operators can see and trust the real shape of what is designed and what is built, without reading a diff",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "csd-s1-derisk-canvas-mermaid",
               "name": "De-risk canvas diagram block + mermaid data-model fidelity",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -15773,14 +15788,17 @@
               "e2eToolingRequired": true,
               "dorArtefact": "artefacts/2026-07-25-code-shape-diagrams/dor/csd-s1-dor.md",
               "dorStatus": "signed-off",
-              "prStatus": "open",
-              "updatedAt": "2026-07-25T10:55:02.307Z"
+              "prStatus": "merged",
+              "updatedAt": "2026-07-26T02:34:37.292Z",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-25-code-shape-diagrams/dod/csd-s1-derisk-canvas-mermaid-dod.md"
             },
             {
               "slug": "csd-s2-canvas-diagram-rendering",
               "name": "Canvas rendering of the diagram content-block type",
-              "stage": "branch-complete",
-              "health": "green",
+              "stage": "definition-of-done",
+              "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -15795,13 +15813,18 @@
               "e2eToolingRequired": true,
               "dorArtefact": "artefacts/2026-07-25-code-shape-diagrams/dor/csd-s2-dor.md",
               "dorStatus": "signed-off",
-              "prStatus": "open"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "blocker": "AC3 labelling asymmetry: \"As Designed\" side has no explicit prefix while \"As Built\" side does -- distinguishable but not symmetric. Not release-blocking. See csd-s2-dod.md.",
+              "dodArtefact": "artefacts/2026-07-25-code-shape-diagrams/dod/csd-s2-canvas-diagram-rendering-dod.md",
+              "updatedAt": "2026-07-26T02:34:37.292Z"
             },
             {
               "slug": "csd-s3-design-produces-architecture-and-program-diagrams",
               "name": "/design//definition produce System Architecture + Program Design diagrams",
-              "stage": "branch-complete",
-              "health": "green",
+              "stage": "definition-of-done",
+              "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -15816,13 +15839,17 @@
               "e2eToolingRequired": false,
               "dorArtefact": "artefacts/2026-07-25-code-shape-diagrams/dor/csd-s3-dor.md",
               "dorStatus": "signed-off",
-              "prStatus": "open",
-              "updatedAt": "2026-07-25T21:28:52.352Z"
+              "prStatus": "merged",
+              "updatedAt": "2026-07-26T02:34:37.292Z",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "blocker": "AC1/AC2 wording says \"saved as part of the DoR artefact\" -- neither skill produces a literal file so named; interpreted as the skill's own artefact. Cosmetic wording gap, not functional. See csd-s3-dod.md.",
+              "dodArtefact": "artefacts/2026-07-25-code-shape-diagrams/dod/csd-s3-design-produces-architecture-and-program-diagrams-dod.md"
             },
             {
               "slug": "csd-s4-design-produces-data-model-diagrams",
               "name": "/design//definition produce Data Model diagrams",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -15838,14 +15865,17 @@
               "e2eToolingRequired": false,
               "dorArtefact": "artefacts/2026-07-25-code-shape-diagrams/dor/csd-s4-dor.md",
               "dorStatus": "signed-off",
-              "prStatus": "open",
-              "updatedAt": "2026-07-25T21:26:05.593Z"
+              "prStatus": "merged",
+              "updatedAt": "2026-07-26T02:34:37.292Z",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-25-code-shape-diagrams/dod/csd-s4-design-produces-data-model-diagrams-dod.md"
             },
             {
               "slug": "csd-s5-as-built-diagram-generation",
               "name": "As-built diagram generation via static migration-file parsing",
-              "stage": "definition-of-ready",
-              "health": "green",
+              "stage": "definition-of-done",
+              "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -15860,13 +15890,18 @@
               "e2eToolingRequired": false,
               "dorArtefact": "artefacts/2026-07-25-code-shape-diagrams/dor/csd-s5-dor.md",
               "dorStatus": "signed-off",
-              "prStatus": "open"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "AC2 only half-satisfied: System Architecture as-built generation was never built (no resolved decisions.md ARCH entry authorizing an extraction method). Program Design + Data Model as-built generation are complete. Needs a decisions.md entry + follow-up story. See csd-s5-dod.md.",
+              "dodArtefact": "artefacts/2026-07-25-code-shape-diagrams/dod/csd-s5-as-built-diagram-generation-dod.md",
+              "updatedAt": "2026-07-26T02:34:37.292Z"
             },
             {
               "slug": "csd-s6-drift-signal",
               "name": "Drift signal - as-designed vs as-built comparison",
-              "stage": "branch-complete",
-              "health": "green",
+              "stage": "definition-of-done",
+              "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -15881,8 +15916,12 @@
               "e2eToolingRequired": false,
               "dorArtefact": "artefacts/2026-07-25-code-shape-diagrams/dor/csd-s6-dor.md",
               "dorStatus": "signed-off",
-              "prStatus": "open",
-              "updatedAt": "2026-07-26T02:16:05.164Z"
+              "prStatus": "merged",
+              "updatedAt": "2026-07-26T02:34:37.292Z",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "AC3 comparison logic is implemented and tested but cannot exercise its full real-usage path until csd-s5's System Architecture as-built gap closes (same upstream gap as csd-s5's own blocker). See csd-s6-dod.md.",
+              "dodArtefact": "artefacts/2026-07-25-code-shape-diagrams/dod/csd-s6-drift-signal-dod.md"
             }
           ]
         }
