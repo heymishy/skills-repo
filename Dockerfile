@@ -43,6 +43,15 @@ COPY --chown=node:node --from=builder /app/src ./src/
 COPY --chown=node:node skills/ ./skills/
 COPY --chown=node:node product/ ./product/
 
+# Build-identity stamp (commit SHA, originating PR #, deploy timestamp),
+# written by scripts/write-version-file.js immediately before `flyctl deploy`
+# in the staging-deploy workflow -- see src/web-ui/utils/version-info.js.
+# The bracket glob makes this an optional copy: a local `docker build` run
+# without that script having run first (version.json absent) matches
+# nothing here rather than failing, and version-info.js's DEV_FALLBACK
+# takes over at runtime.
+COPY --chown=node:node version.jso[n] ./
+
 # Copy the mock-LLM-gateway fixture set only (not the whole tests/ tree —
 # see .dockerignore and artefacts/2026-07-23-mock-gateway-fixtures-deploy-fix/
 # decisions.md). mock-llm-gateway.js's FIXTURE_DIR resolves to this exact

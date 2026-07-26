@@ -1,5 +1,7 @@
 'use strict';
 
+const { getVersionInfo } = require('./version-info');
+
 // html-shell.js — shared HTML shell renderer and canonical XSS-escaping utility.
 // Notion-calm design system inlined; consumed by every server-rendered route.
 //
@@ -117,8 +119,27 @@ function renderSidebar(active, login, isAdmin) {
         '<span>' + escHtml(login || 'signed in') + '</span>',
         '<a class="sw-signout" href="/auth/logout" title="Sign out">↗</a>',
       '</div>',
+      renderVersionStamp(),
     '</aside>'
   ].join('');
+}
+
+/**
+ * alrf-s2 — build-identity footer stamp (commit SHA + originating PR #),
+ * added after the same-day artefact-listing mismatch made "did my fix
+ * actually deploy?" impossible to answer from the UI alone. Reads the
+ * version.json written by scripts/write-version-file.js before deploy;
+ * falls back to a "dev" label with no link when unset (local development).
+ * @returns {string}
+ */
+function renderVersionStamp() {
+  const info = getVersionInfo();
+  const shaLabel = escHtml(info.shortSha || 'dev');
+  const prLabel = info.prNumber ? ' · #' + info.prNumber : '';
+  const shaLink = info.sha
+    ? '<a class="sw-version-stamp-link" href="https://github.com/heymishy/skills-repo/commit/' + escHtml(info.sha) + '" title="' + escHtml(info.commitSubject || '') + '" target="_blank" rel="noopener">' + shaLabel + prLabel + '</a>'
+    : '<span class="sw-version-stamp-link">' + shaLabel + '</span>';
+  return '<div class="sw-version-stamp" title="Build identity">' + shaLink + '</div>';
 }
 
 /**
@@ -390,6 +411,12 @@ a { color: inherit; }
 }
 .sw-signout { margin-left: auto; color: var(--muted-2); text-decoration: none; }
 .sw-signout:hover { color: var(--ink-2); }
+.sw-version-stamp {
+  padding: 4px 8px 0; font-family: var(--mono); font-size: 10px;
+  color: var(--muted-2); letter-spacing: 0.02em;
+}
+.sw-version-stamp-link { color: inherit; text-decoration: none; }
+.sw-version-stamp-link:hover { color: var(--muted); text-decoration: underline; }
 
 /* ── d2: impersonation banner ───────────────────────────────────────────────
    Persistent, sticky, at the very top of the viewport -- above the sidebar's
@@ -447,7 +474,8 @@ a { color: inherit; }
 .sw-sidebar--collapsed .sw-brand-name,
 .sw-sidebar--collapsed nav .sw-nav-item > span:not(.sw-nav-icon),
 .sw-sidebar--collapsed .sw-user > span,
-.sw-sidebar--collapsed .sw-signout { display:none; }
+.sw-sidebar--collapsed .sw-signout,
+.sw-sidebar--collapsed .sw-version-stamp { display:none; }
 .sw-sidebar--collapsed .sw-brand { justify-content:center; padding:0; }
 .sw-sidebar--collapsed .sw-nav-item { justify-content:center; padding:8px 0; }
 .sw-sidebar--collapsed .sw-nav-icon { width:auto; color:var(--muted); }

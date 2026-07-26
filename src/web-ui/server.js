@@ -16,6 +16,7 @@ const { handleAuthGithub, handleAuthCallback, handleAuthGoogle, handleAuthGoogle
 const { handleArtefactRoute }                                        = require('./routes/artefact');
 const { handleSignOff, handleArtefactRead }                             = require('./routes/sign-off');
 const { healthCheckHandler }                                         = require('./routes/health');
+const { versionHandler }                                             = require('./routes/version');
 const { validateRequiredEnvVars }                                    = require('./config/validate-env');
 const { handleGetActions, handleDashboard }                          = require('./routes/dashboard');
 const { handleGetFeatureArtefacts, handleGetIdeas, handlePostIdea, handleDeleteIdea } = require('./routes/features');
@@ -1854,6 +1855,9 @@ async function router(req, res) {
 
   } else if (pathname === '/health') {
     healthCheckHandler(req, res);
+
+  } else if (pathname === '/version') {
+    versionHandler(req, res);
 
   } else if (pathname === '/vendor/mermaid.min.js' && req.method === 'GET') {
     // csd-s1: unauthenticated static asset (mermaid client bundle) — same

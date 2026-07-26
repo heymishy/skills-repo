@@ -58,6 +58,18 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      # alrf-s2: stamp the build with its commit SHA + originating PR # before
+      # the image is built, so the running app can answer "which build is
+      # this?" from its own footer/GET /version -- see
+      # scripts/write-version-file.js and workspace/capture-log.md (2026-07-26)
+      # for the incident this closes (a deploy landed but its overall CI run
+      # showed red from an unrelated smoke-test failure, making "did my fix
+      # actually deploy?" impossible to answer from the UI alone).
+      - name: Write version stamp
+        run: node scripts/write-version-file.js
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+
       # dsn-s1: a single wrapper script (never a raw inline flyctl deploy)
       # so CI and any manual deploy share one code path, with a post-deploy
       # check that fails loudly if fly.staging.toml's config didn't actually
