@@ -2,9 +2,9 @@
   "stage": "definition",
   "scenarioName": "success",
   "model": "claude-sonnet-4.6",
-  "response": "Proceeding with the full definition.\n\n---ARTEFACT-START---\n# Definition: Mock Fixture Feature\n\n**Status:** Approved (mock fixture — bri-s3.1)\n**Feature slug:** mock-fixture-feature\n**Date:** 2026-07-10\n**Skill version:** /definition\n\n## Epic 1 — Mock Epic\n\n### mock-story-1 — Mock story\nComplexity: 1\n\nAC1: Fixture-driven definition completes deterministically.\n---ARTEFACT-END---\n---SLUG---\n2026-07-10-mock-fixture-feature",
+  "response": "Proceeding with the full definition.\n\n---CANVAS-JSON: {\"type\":\"program-design\",\"title\":\"Program Design\",\"content\":{\"mermaid\":\"flowchart LR\\n    ROUTE[routes/mock-fixture.js]\\n    STORE[adapters/mock-fixture-store.js]\\n    ROUTE --> STORE\"}}---\n\n---ARTEFACT-START---\n# Definition: Mock Fixture Feature\n\n**Status:** Approved (mock fixture — bri-s3.1)\n**Feature slug:** mock-fixture-feature\n**Date:** 2026-07-10\n**Skill version:** /definition\n\n# Epic 1: Mock Epic\n\n## Stories in this epic\n- mock-fixture.1\n\n# Story mock-fixture.1 — Mock story\nComplexity: 1\n\nAC1: Fixture-driven definition completes deterministically.\n\nA CANVAS-JSON program-design marker (csd-s3, added 2026-07-26) precedes the artefact block, so the definition stage's canvas panel also has real content to render -- this fixture predated csd-s3/csd-s4's marker-emission convention by two weeks, which meant staging's mocked /definition sessions never rendered a diagram until this fix. The H1 Epic/Story header format and dot-separated story ID (dtra-s1/dsda-s1, added 2026-07-26) replace the original H2/H3 headers and hyphenated \"mock-story-1\" ID, which extractStoryIdsFromDefinitionArtefact never recognised -- meaning staging's mocked /definition sessions always fell back to the manual story-list confirm page, a second real gap found from the same stale-fixture root cause as the missing canvas marker.\n---ARTEFACT-END---\n---SLUG---\n2026-07-10-mock-fixture-feature",
   "usage": {
     "input_tokens": 410,
-    "output_tokens": 210
+    "output_tokens": 260
   }
 }

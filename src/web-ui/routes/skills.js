@@ -2357,6 +2357,13 @@ function _renderChatPage(skillName, sessionId, session, backUrl) {
 
   var isIdeate = skillName === 'ideate';
 
+  // csd-s3/csd-s4 (found post-DoD, see decisions.md): /design and /definition
+  // now emit CANVAS-JSON diagram markers too, not just /ideate's own lens
+  // output. This flag gates the (now non-ideate-exclusive) canvas-hydration
+  // and mermaid-asset-loading logic below -- chat-view.js's artefact-pane
+  // branch gained its own #canvas-panel element to match.
+  var supportsCanvas = isIdeate || skillName === 'design' || skillName === 'definition';
+
   // For ideate: pass draftSections to populate the canvas panel on initial load.
   // For non-ideate: the artefact panel is populated via a JS init block below.
   var draftSections = [];
@@ -2383,18 +2390,19 @@ function _renderChatPage(skillName, sessionId, session, backUrl) {
   // data was simply never being read here to seed the initial HTML. Mirrors the
   // existing __SW_INITIAL_ARTEFACT__ pattern above.
   var canvasBlocksInitScript = '';
-  if (isIdeate && Array.isArray(session.canvasBlocks) && session.canvasBlocks.length) {
+  if (supportsCanvas && Array.isArray(session.canvasBlocks) && session.canvasBlocks.length) {
     var safeCanvasBlocks = JSON.stringify(session.canvasBlocks)
       .replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
     canvasBlocksInitScript = '<script>window.__SW_INITIAL_CANVAS_BLOCKS__=' + safeCanvasBlocks + ';</script>';
   }
 
-  // csd-s1: mermaid client bundle — only loaded on /ideate pages, the only
-  // canvas consumer of the `data-model` diagram block type today. Loaded via
-  // a plain <script src> (ADR-027: ordinary application code, no bundler) so
-  // renderCanvasBlock's data-model branch (in `script` below) can call
-  // window.mermaid.run() once the browser has fetched and executed it.
-  var mermaidAssetScript = isIdeate ? '<script src="/vendor/mermaid.min.js"></script>' : '';
+  // csd-s1/csd-s3/csd-s4: mermaid client bundle — loaded on any page whose
+  // skill can emit a diagram content-block (/ideate, /design, /definition).
+  // Loaded via a plain <script src> (ADR-027: ordinary application code, no
+  // bundler) so renderCanvasBlock's diagram branches (in `script` below)
+  // can call window.mermaid.run() once the browser has fetched and
+  // executed it.
+  var mermaidAssetScript = supportsCanvas ? '<script src="/vendor/mermaid.min.js"></script>' : '';
 
   // dic.2: Phase model init script for definition sessions
   var phaseModelInitScript = '';
@@ -2418,6 +2426,7 @@ function _renderChatPage(skillName, sessionId, session, backUrl) {
     '  var TURN_URL   = "' + escHtml(turnUrl) + '";',
     '  var STREAM_URL = TURN_URL + "-stream";',
     '  var IS_IDEATE      = ' + (isIdeate ? 'true' : 'false') + ';',
+    '  var SUPPORTS_CANVAS = ' + (supportsCanvas ? 'true' : 'false') + ';',
     '  var IS_DEFINITION  = ' + (skillName === 'definition' ? 'true' : 'false') + ';',
     // Pre-compute gate-confirm URL server-side — avoids embedding /api/journey/ literal when no journey
     '  var GATE_CONFIRM_URL = "' + (session.journeyId ? escHtml('/api/journey/' + session.journeyId + '/gate-confirm') : '') + '";',
@@ -3548,7 +3557,7 @@ function _renderChatPage(skillName, sessionId, session, backUrl) {
     '  // restored session.canvasBlocks on page load/session-resume, since these',
     '  // .canvas-block elements are otherwise only ever created reactively via live',
     '  // SSE canvasBlock events and would render empty on a cold reload.',
-    '  if(IS_IDEATE && typeof __SW_INITIAL_CANVAS_BLOCKS__ !== "undefined" && __SW_INITIAL_CANVAS_BLOCKS__ && __SW_INITIAL_CANVAS_BLOCKS__.length) {',
+    '  if(SUPPORTS_CANVAS && typeof __SW_INITIAL_CANVAS_BLOCKS__ !== "undefined" && __SW_INITIAL_CANVAS_BLOCKS__ && __SW_INITIAL_CANVAS_BLOCKS__.length) {',
     '    __SW_INITIAL_CANVAS_BLOCKS__.forEach(function(block) { appendCanvasBlock(block); });',
     '  }',
     '  // dic.5: Apply-changes dispatch ─────────────────────────────────────────',
