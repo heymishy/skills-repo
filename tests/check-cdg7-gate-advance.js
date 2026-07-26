@@ -323,6 +323,47 @@ const pipelineStateWriterFactory = require('../src/web-ui/adapters/pipeline-stat
   } finally { rmDir(tmpDir); }
 }
 
+// ── T-alrf-s3a — pipeline-state-writer refuses to fabricate a fresh state
+//    file when .github/pipeline-state.json doesn't already exist ─────────────
+// Source: workspace/capture-log.md (2026-07-26 storage-drift audit) --
+// previously this silently fell back to {schemaVersion:'1', features:[]} and
+// wrote THAT back, discarding all real history. On the deployed (volumeless,
+// .github/-excluded-from-image) web-ui surface, every gate-confirm was
+// silently creating a near-empty pipeline-state.json that never reached git.
+
+{
+  const T = 'T-alrf-s3a-missing-file-throws';
+  const tmpDir = makeTempDir(); // deliberately NOT seeded with .github/pipeline-state.json
+  try {
+    const writer = pipelineStateWriterFactory(tmpDir);
+    assertThrows(T, () => writer('some-feature', null, { stage: 'discovery' }), 'Refusing to fabricate a fresh state file');
+  } finally { rmDir(tmpDir); }
+}
+
+{
+  const T = 'T-alrf-s3b-missing-file-no-file-created';
+  const tmpDir = makeTempDir();
+  try {
+    const writer = pipelineStateWriterFactory(tmpDir);
+    try { writer('some-feature', null, { stage: 'discovery' }); } catch (_) {}
+    const statePath = path.join(tmpDir, '.github', 'pipeline-state.json');
+    assert(T, !fs.existsSync(statePath), 'Expected no pipeline-state.json to be created on the refused write, but one exists');
+  } finally { rmDir(tmpDir); }
+}
+
+{
+  const T = 'T-alrf-s3c-existing-file-unaffected';
+  const tmpDir = makeTempDir();
+  try {
+    const state = makeMinimalPipelineState('test-feat', 's1', false);
+    writePipelineState(tmpDir, state);
+    const writer = pipelineStateWriterFactory(tmpDir);
+    writer('test-feat', 's1', { prStatus: 'open' });
+    const after = readPipelineState(tmpDir);
+    assert(T, after.features[0].stories[0].prStatus === 'open', 'Normal write path (file already exists) should still work exactly as before');
+  } finally { rmDir(tmpDir); }
+}
+
 // ── T13 — AC6: copilot-instructions.md contains gate-advance mandate ──────────
 
 {

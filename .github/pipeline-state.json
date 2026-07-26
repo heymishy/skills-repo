@@ -16369,6 +16369,30 @@
       ],
       "metrics": [],
       "updatedAt": "2026-07-26T06:48:25.456Z"
+    },
+    {
+      "slug": "2026-07-26-storage-drift-audit",
+      "name": "Storage-drift audit: find and guard other instances of the artefact-listing bug class",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "amber",
+      "epics": [],
+      "stories": [
+        {
+          "id": "alrf-s3",
+          "slug": "alrf-s3-pipeline-state-writer-guard",
+          "name": "pipeline-state-writer refuses to fabricate state on a missing file",
+          "stage": "branch-complete",
+          "health": "green",
+          "acTotal": 4,
+          "acVerified": 4,
+          "artefact": "artefacts/2026-07-26-storage-drift-audit/stories/alrf-s3-pipeline-state-writer-guard.md",
+          "prStatus": "none",
+          "notes": "Closes a CRITICAL finding: gate-confirm on staging was silently fabricating a fresh, near-empty pipeline-state.json on every stage completion, never committed to git. Guard-only fix; full durable-store unification (ideas.json, estimation-norms.md, artefact content) tracked separately in decisions.md D1."
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-26T07:16:03.315Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
