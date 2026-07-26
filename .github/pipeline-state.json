@@ -15849,18 +15849,18 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 10,
-                "passing": 0,
+                "passing": 10,
                 "artefact": "artefacts/2026-07-25-code-shape-diagrams/test-plans/csd-s5-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorArtefact": "artefacts/2026-07-25-code-shape-diagrams/dor/csd-s5-dor.md",
               "dorStatus": "signed-off",
-              "prStatus": "none"
+              "prStatus": "open"
             },
             {
               "slug": "csd-s6-drift-signal",

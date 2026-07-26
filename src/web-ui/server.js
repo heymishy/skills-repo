@@ -19,6 +19,7 @@ const { healthCheckHandler }                                         = require('
 const { validateRequiredEnvVars }                                    = require('./config/validate-env');
 const { handleGetActions, handleDashboard }                          = require('./routes/dashboard');
 const { handleGetFeatureArtefacts, handleGetIdeas, handlePostIdea, handleDeleteIdea } = require('./routes/features');
+const { handleGetAsBuiltDataModel }                                  = require('./routes/as-built-diagrams'); // csd-s5
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
 const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
 const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCompletePage, handleGetChatHtml, handlePostTurnHtml, handlePostTurnStreamHtml, handlePostAssumptionConfirm, handlePostCanvasEditHtml } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25 / dsq.3 / mfc.1 / mfc.3 / iwu.4 / dic.5
@@ -1849,6 +1850,13 @@ async function router(req, res) {
     // trust level as any other client-side JS shipped with the page, no
     // session/tenant data involved.
     handleMermaidAsset(req, res);
+
+  } else if (pathname === '/api/as-built-diagrams/data-model' && req.method === 'GET') {
+    // csd-s5: as-built Data Model diagram, statically parsed from this
+    // repo's real scripts/migrate-schema-*.js files (ADR-027 — ordinary
+    // application code, not a skill; ADR-026 — reuses the existing canvas
+    // content-block shape, no parallel rendering path).
+    authGuard(req, res, () => handleGetAsBuiltDataModel(req, res));
 
   } else if (pathname === '/api/ideas' && req.method === 'GET') {
     authGuard(req, res, () => handleGetIdeas(req, res));
