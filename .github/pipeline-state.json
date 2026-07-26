@@ -15696,7 +15696,7 @@
       "track": "standard",
       "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-07-26T02:34:37.292Z",
+      "updatedAt": "2026-07-26T02:53:29.566Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -15767,7 +15767,7 @@
         {
           "slug": "csd-e1-code-shape-diagrams",
           "name": "Operators can see and trust the real shape of what is designed and what is built, without reading a diff",
-          "status": "complete",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "csd-s1-derisk-canvas-mermaid",
@@ -15922,6 +15922,29 @@
               "releaseReady": false,
               "blocker": "AC3 comparison logic is implemented and tested but cannot exercise its full real-usage path until csd-s5's System Architecture as-built gap closes (same upstream gap as csd-s5's own blocker). See csd-s6-dod.md.",
               "dodArtefact": "artefacts/2026-07-25-code-shape-diagrams/dod/csd-s6-drift-signal-dod.md"
+            },
+            {
+              "id": "csd-s7-as-built-system-architecture-diagram",
+              "slug": "csd-s7-as-built-system-architecture-diagram",
+              "name": "As-built System Architecture diagram generation via static service-call detection",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "not-started",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 8,
+                "passing": 0,
+                "artefact": "artefacts/2026-07-25-code-shape-diagrams/test-plans/csd-s7-test-plan.md"
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorArtefact": "artefacts/2026-07-25-code-shape-diagrams/dor/csd-s7-dor.md",
+              "dorStatus": "signed-off",
+              "dorSignedOffAt": "2026-07-26T00:00:00Z",
+              "prStatus": "none"
             }
           ]
         }
