@@ -124,6 +124,24 @@ async function getArtefactCountsForJourneys(journeyIds) {
   return map;
 }
 
+/**
+ * alrf-s10 — hard-delete a journey and all its artefact rows. artefacts.journey_id
+ * has a plain FK to journeys(journey_id) with no ON DELETE clause (default
+ * RESTRICT), so artefacts MUST be deleted first or the journeys DELETE would
+ * fail the constraint. Explicit two-statement delete, not a cascade, matching
+ * this codebase's established "assertable DELETE, not cascade-reliance-alone"
+ * convention (see routes/products.js's handleDeleteProduct).
+ * @param {string} journeyId
+ * @returns {Promise<{deleted: boolean}>}
+ */
+async function deleteJourney(journeyId) {
+  const pool = _getPool();
+  if (!pool) return { deleted: false };
+  await pool.query('DELETE FROM artefacts WHERE journey_id = $1', [journeyId]);
+  const result = await pool.query('DELETE FROM journeys WHERE journey_id = $1', [journeyId]);
+  return { deleted: result.rowCount > 0 };
+}
+
 async function listJourneys() {
   const pool = _getPool();
   if (!pool) return [];
@@ -142,4 +160,4 @@ async function listJourneys() {
   });
 }
 
-module.exports = { saveJourney, listJourneys, migrateSchema, saveArtefact, getArtefactsForJourney, getArtefactCountsForJourneys };
+module.exports = { saveJourney, listJourneys, migrateSchema, saveArtefact, getArtefactsForJourney, getArtefactCountsForJourneys, deleteJourney };

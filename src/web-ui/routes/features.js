@@ -22,6 +22,7 @@ const {
 const { getRepoRoot } = require('../adapters/repo-root');
 
 const { renderShell, escHtml } = require('../utils/html-shell');
+const { generateCsrfToken, csrfField } = require('../middleware/csrf');
 const shellEscHtml = escHtml; // internal alias used by artefact-index handlers
 const { getLabel } = require('../utils/artefact-labels');
 
@@ -223,7 +224,32 @@ async function handleGetFeatureArtefacts(req, res, featureSlug) {
       ? '<p class="artefact-list__empty">No artefacts found for this feature</p>'
       : renderArtefactIndexHtml(artefacts, featureSlug, resumeLookup);
     const displayTitle = (journeyForPage && journeyForPage.displayName) || featureSlug;
-    const bodyContent = `<h1>${shellEscHtml(displayTitle)}</h1>\n${listHtml}`;
+    // alrf-s10 — operator-requested: a real "Delete this feature" action, for
+    // cleaning up stale/corrupted staging data (e.g. a feature whose
+    // artefacts were mis-recorded under another feature's slug before
+    // alrf-s8's fix). Only rendered when a real journey was resolved for
+    // this slug -- nothing to delete otherwise. Hard delete, wuce-side data
+    // only; confirm() before the destructive fetch, same pattern as
+    // products.js's module-delete button.
+    const deleteSectionHtml = (journeyForPage && journeyForPage.journeyId) ? [
+      '<div style="margin:12px 0">',
+        '<button type="button" id="alrf-s10-delete-feature-btn" style="padding:6px 14px;background:var(--red-soft);color:var(--red);border:1px solid var(--red);border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Delete this feature</button>',
+        '<span id="alrf-s10-delete-error" style="color:var(--red);font-size:13px;margin-left:8px;display:none"></span>',
+      '</div>',
+      '<script>(function(){',
+        'var btn=document.getElementById("alrf-s10-delete-feature-btn");',
+        'var errEl=document.getElementById("alrf-s10-delete-error");',
+        'if(!btn)return;',
+        'btn.addEventListener("click",function(){',
+          'if(!confirm(' + JSON.stringify('Delete "' + displayTitle + '"? This permanently removes its artefacts and journey record. This cannot be undone.') + '))return;',
+          'fetch(' + JSON.stringify('/api/journey/' + journeyForPage.journeyId) + ',{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({_csrf:' + JSON.stringify(generateCsrfToken(req)) + '})})',
+            '.then(function(r){if(!r.ok){return r.json().then(function(j){throw new Error((j&&j.error)||("Request failed ("+r.status+")"));});}return r.json();})',
+            '.then(function(){window.location.href="/journey";})',
+            '.catch(function(e){if(errEl){errEl.textContent=e.message;errEl.style.display="inline";}});',
+        '});',
+      '})()<\/script>'
+    ].join('') : '';
+    const bodyContent = `<h1>${shellEscHtml(displayTitle)}</h1>\n${deleteSectionHtml}\n${listHtml}`;
     const html = renderShell({
       title:       `Artefacts — ${shellEscHtml(displayTitle)}`,
       bodyContent,

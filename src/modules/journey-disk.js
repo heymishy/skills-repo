@@ -159,9 +159,29 @@ function setActiveSession(featureSlug, stageName, sessionId, repoRoot) {
   return updateStage(featureSlug, stageName, { status: 'active', sessionId: sessionId }, repoRoot);
 }
 
+/**
+ * alrf-s10 — delete a journey's on-disk record entirely (local-dev-only
+ * counterpart to journey-store-pg.js's deleteJourney). Removes the whole
+ * workspace/journeys/{featureSlug}/ directory. A missing directory is not an
+ * error -- deleting something already gone is the same end state.
+ * @param {string} featureSlug
+ * @param {string} [repoRoot]
+ * @returns {{deleted: boolean}}
+ */
+function deleteJourney(featureSlug, repoRoot) {
+  var dir = _journeyDir(featureSlug, repoRoot);
+  try {
+    fs.rmSync(dir, { recursive: true, force: true });
+    return { deleted: true };
+  } catch (_) {
+    return { deleted: false };
+  }
+}
+
 module.exports = {
   createJourney,
   loadJourney,
+  deleteJourney,
   saveJourney,
   listJourneys,
   journeyExists,

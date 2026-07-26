@@ -33,7 +33,7 @@ const skillsAdapter                                                  = require('
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
-const { handleGetJourney, handlePostJourney, handleGetJourneyResume, handleGetJourneyById, handleGetStageReview, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, handlePutJourneyDisplayName, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handleGetWizardBootstrapped, handlePostWizardSelection, handleJourneys, setListJourneys } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2 / bri-s1.5 / s3.4 / fdn-s1
+const { handleGetJourney, handlePostJourney, handleDeleteJourney, handleGetJourneyResume, handleGetJourneyById, handleGetStageReview, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, handlePutJourneyDisplayName, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handleGetWizardBootstrapped, handlePostWizardSelection, handleJourneys, setListJourneys } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2 / bri-s1.5 / s3.4 / fdn-s1
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
 const { setCreditsAdapter }                                          = require('./modules/credits');       // lab-s3.1
@@ -2192,6 +2192,13 @@ async function router(req, res) {
     const journeyIdPart = pathname.split('/')[3];
     req.params = { journeyId: journeyIdPart };
     authGuard(req, res, async () => await handleDeleteSideTrip(req, res));
+
+  } else if (pathname.match(/^\/api\/journey\/[^/]+$/) && req.method === 'DELETE') {
+    // alrf-s10 — hard-delete a journey (operator request: clean up stale/
+    // corrupted staging data)
+    const journeyIdPart = pathname.split('/')[3];
+    req.params = { journeyId: journeyIdPart };
+    authGuard(req, res, async () => await handleDeleteJourney(req, res));
 
   } else if (pathname.match(/^\/api\/journey\/[^/]+$/) && req.method === 'GET') {
     // owle.1 — journey state (excludes sideTripSessionId)

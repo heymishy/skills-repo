@@ -138,6 +138,40 @@ async function getArtefactsForJourney(journeyId) {
   return adapter.getArtefactsForJourney(journeyId);
 }
 
+/**
+ * alrf-s10 — hard-delete a journey: removes it from the in-memory store, the
+ * durable store (Postgres, when wired -- journey rows + all its artefact
+ * rows), and the disk adapter's on-disk record (local-dev-only). Never
+ * touches artefacts/<slug>/ on local disk deliberately -- that path is not a
+ * durable store on any deployed surface (see decisions.md D3/D4,
+ * 2026-07-26-canvas-render-and-story-extraction-fix), so there is nothing
+ * real to clean up there beyond what a future redeploy already wipes.
+ * @param {string} journeyId
+ * @returns {Promise<{deleted: boolean}>}
+ */
+async function deleteJourney(journeyId) {
+  var journey = _journeys.get(journeyId);
+  var featureSlug = journey ? journey.featureSlug : null;
+  _journeys.delete(journeyId);
+
+  var pgDeleted = false;
+  var adapter = _activePgAdapter();
+  if (adapter && adapter.deleteJourney) {
+    var pgResult = await adapter.deleteJourney(journeyId);
+    pgDeleted = !!(pgResult && pgResult.deleted);
+  }
+
+  var diskDeleted = false;
+  if (_diskAdapter && featureSlug && _diskAdapter.deleteJourney) {
+    try {
+      var diskResult = _diskAdapter.deleteJourney(featureSlug);
+      diskDeleted = !!(diskResult && diskResult.deleted);
+    } catch (_) {}
+  }
+
+  return { deleted: !!journey || pgDeleted || diskDeleted };
+}
+
 function getJourneyByFeatureSlug(featureSlug) {
   var match = null;
   for (var journey of _journeys.values()) {
@@ -380,6 +414,7 @@ module.exports = {
   getJourneyBySession,
   getJourneyByFeatureSlug,
   getArtefactsForJourney,
+  deleteJourney,
   completeStage,
   getNextStage,
   getJourneyStories,
