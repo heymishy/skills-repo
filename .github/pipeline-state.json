@@ -16349,8 +16349,9 @@
           "acTotal": 4,
           "acVerified": 4,
           "artefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/stories/alrf-s1-artefact-list-repo-root-fallback.md",
-          "prStatus": "none",
-          "notes": "Fixes the operator-reported staging mismatch (feature-index page showed No artefacts found for a feature the kanban board correctly showed 3 artefacts for). listArtefacts now checks local filesystem via repoRoot before falling back to the GitHub-API path. See decisions.md D1/D2."
+          "prStatus": "merged",
+          "notes": "Fixes the operator-reported staging mismatch (feature-index page showed No artefacts found for a feature the kanban board correctly showed 3 artefacts for). listArtefacts now checks local filesystem via repoRoot before falling back to the GitHub-API path. See decisions.md D1/D2.",
+          "updatedAt": "2026-07-26T06:30:04.474Z"
         }
       ],
       "metrics": [],
