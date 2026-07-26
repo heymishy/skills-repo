@@ -16425,8 +16425,9 @@
           "acTotal": 4,
           "acVerified": 4,
           "artefact": "artefacts/2026-07-26-function-level-audit/stories/alrf-s5-artefact-path-traversal-guard.md",
-          "prStatus": "none",
-          "notes": "CRITICAL, active, exploitable path-traversal write vulnerability in as-built-diagrams.js (csd-s5) and as-built-system-architecture.js (csd-s7), shared via migration-schema-parser.js writeAsBuiltDiagramArtefact(). featureSlug taken directly from req.query with zero validation. Fixed immediately (not batched) given active severity. 3 more findings (tenant-isolation _repoRoot() bypass, orphaned assignFeatureToModule/unassignFeature, auth-email.js rate-limiter duplication) deferred to a batch fix per operator direction -- see decisions.md."
+          "prStatus": "merged",
+          "notes": "CRITICAL, active, exploitable path-traversal write vulnerability in as-built-diagrams.js (csd-s5) and as-built-system-architecture.js (csd-s7), shared via migration-schema-parser.js writeAsBuiltDiagramArtefact(). featureSlug taken directly from req.query with zero validation. Fixed immediately (not batched) given active severity. 3 more findings (tenant-isolation _repoRoot() bypass, orphaned assignFeatureToModule/unassignFeature, auth-email.js rate-limiter duplication) deferred to a batch fix per operator direction -- see decisions.md.",
+          "updatedAt": "2026-07-26T08:38:11.257Z"
         }
       ],
       "metrics": [],
