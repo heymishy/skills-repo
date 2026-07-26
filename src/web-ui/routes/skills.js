@@ -1438,6 +1438,42 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
     }
   }
 
+  // 3.6. As-built Data Model / System Architecture snapshot — /design only (alrf-s9).
+  // skills/design/SKILL.md's Data Model diagram markers section already requires
+  // "existing entities the feature touches, even with no schema change" to appear
+  // in the as-designed diagram -- but /design is conversational, with nothing
+  // grounding it in the product's REAL current schema/architecture before it
+  // draws. Without this, the model can only rely on the operator's own recall,
+  // exactly the "describe from memory what already exists" anti-pattern the
+  // as-built generators (csd-s5/csd-s7) were built to reject. Both generators
+  // already solve "cumulative across every prior feature run" correctly on
+  // their own (they re-scan the WHOLE product's real files every time, not
+  // scoped to one feature) -- this closes the one-directional gap by feeding
+  // that already-correct snapshot into /design's own context. Read-only: never
+  // calls writeAsBuiltDiagramArtefact, so starting a /design session never
+  // creates a new versioned artefact file as a side effect. Best-effort -- a
+  // brand-new product with no migrations/services yet is not an error, it
+  // just has nothing to show; any generation failure is silently skipped
+  // rather than blocking session creation.
+  if (skillName === 'design') {
+    try {
+      var _asBuiltDataModel = require('../../modules/migration-schema-parser')
+        .generateAsBuiltDataModelDiagram({ repoRoot: root, featureSlug: ctx.activeFeatureSlug || null });
+      if (_asBuiltDataModel && _asBuiltDataModel.canvasBlock && _asBuiltDataModel.canvasBlock.content) {
+        parts.push('--- EXISTING PRODUCT DATA MODEL (as-built, from real migration files) ---\n\n' +
+          _asBuiltDataModel.canvasBlock.content.mermaid);
+      }
+    } catch (_) { /* no migrations yet, or unparseable -- not this session's concern, skip */ }
+    try {
+      var _asBuiltSystemArch = require('../../modules/service-call-detector')
+        .generateAsBuiltSystemArchitectureDiagram({ repoRoot: root, featureSlug: ctx.activeFeatureSlug || null });
+      if (_asBuiltSystemArch && _asBuiltSystemArch.canvasBlock && _asBuiltSystemArch.canvasBlock.content) {
+        parts.push('--- EXISTING PRODUCT SYSTEM ARCHITECTURE (as-built, from real service-call scan) ---\n\n' +
+          _asBuiltSystemArch.canvasBlock.content.mermaid);
+      }
+    } catch (_) { /* skip -- see above */ }
+  }
+
   // 4. Reference materials from artefacts/[feature-slug]/reference/ (if present)
   if (sessionPath) {
     var artefactsRoot = path.join(root, 'artefacts');
@@ -2048,7 +2084,10 @@ async function htmlSubmitTurn(skillName, sessionId, rawAnswer, token, tenantId) 
 
   if (artefactMatch) {
     session.artefactContent = artefactMatch[1].trim();
-    var slug = slugMatch ? slugMatch[1].trim() : new Date().toISOString().slice(0, 10) + '-' + skillName;
+    // alrf-s8: same fix as the streaming turn handler below -- a journey-linked
+    // session's real featureSlug must always win over the response's own
+    // ---SLUG--- marker (see that comment for the full rationale).
+    var slug = session.featureSlug || (slugMatch ? slugMatch[1].trim() : new Date().toISOString().slice(0, 10) + '-' + skillName);
     session.artefactPath = 'artefacts/' + slug + '/' + session.skillName + '.md';
     session.done = true;
   }
@@ -4460,7 +4499,19 @@ async function handlePostTurnStreamHtml(req, res) {
   if (done && _artefactText) {
     session.artefactContent = _artefactText;
     var skillName = (req.params && req.params.name) || '';
-    var slug = slugMatch ? slugMatch[1].trim() : new Date().toISOString().slice(0, 10) + '-' + skillName;
+    // alrf-s8: a journey-linked session already has a real, meaningful
+    // featureSlug assigned at journey-creation time (linkSessionToJourney,
+    // above) -- that must always win over whatever slug the model's own
+    // ---SLUG--- marker announces. Previously the marker always won, which
+    // was invisible with a real model (which has no reason to invent a
+    // different slug than the one it's told) but became a real, active bug
+    // under MOCK_LLM_GATEWAY=true: every fixture hardcodes the same
+    // ---SLUG---, so every real feature's artefacts collapsed onto the
+    // fixture's slug instead of the feature's own. The marker remains
+    // authoritative only for sessions with no journey (standalone /skills
+    // or CLI usage), where session.featureSlug is never set and the model
+    // deciding the slug is the intended, only mechanism.
+    var slug = session.featureSlug || (slugMatch ? slugMatch[1].trim() : new Date().toISOString().slice(0, 10) + '-' + skillName);
     session.artefactPath = 'artefacts/' + slug + '/' + (session.skillName || skillName) + '.md';
     session.done = true;
 

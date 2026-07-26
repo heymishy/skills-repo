@@ -52,8 +52,14 @@ const NAV_ITEMS = [
   // `adminOnly` items are additionally filtered by the caller-supplied `isAdmin`
   // flag at render time (see renderSidebar) -- gated the same way the /admin/credits
   // route itself is gated (requireAdmin's live role check), not a visual-only toggle.
-  { id: 'settings',      label: 'Settings',      href: '/settings',      icon: '⚙', section: 'account' },
-  { id: 'admin-credits', label: 'Admin credits', href: '/admin/credits', icon: '◈', section: 'account', adminOnly: true }
+  { id: 'settings',           label: 'Settings',           href: '/settings',            icon: '⚙', section: 'account' },
+  { id: 'admin-credits',      label: 'Admin credits',      href: '/admin/credits',        icon: '◈', section: 'account', adminOnly: true },
+  // alrf-s7: amgt-s1's mock-gateway toggle route (GET /admin/mock-gateway,
+  // requireAdmin-gated) shipped with no nav entry at all, so it was only ever
+  // reachable by typing the URL directly -- same "API shipped, UI never
+  // wired" gap as admin-credits/the modules taxonomy CRUD had before their
+  // own fix-forward nav additions.
+  { id: 'admin-mock-gateway', label: 'Mock LLM gateway',  href: '/admin/mock-gateway',  icon: '◧', section: 'account', adminOnly: true }
 ];
 
 // b1: small List/Board switcher rendered directly under the Home nav item —
