@@ -15865,23 +15865,24 @@
             {
               "slug": "csd-s6-drift-signal",
               "name": "Drift signal - as-designed vs as-built comparison",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "written",
-                "totalTests": 17,
-                "passing": 0,
+                "status": "all-passing",
+                "totalTests": 18,
+                "passing": 18,
                 "artefact": "artefacts/2026-07-25-code-shape-diagrams/test-plans/csd-s6-test-plan.md"
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorArtefact": "artefacts/2026-07-25-code-shape-diagrams/dor/csd-s6-dor.md",
               "dorStatus": "signed-off",
-              "prStatus": "none"
+              "prStatus": "open",
+              "updatedAt": "2026-07-26T02:16:05.164Z"
             }
           ]
         }

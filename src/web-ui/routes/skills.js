@@ -738,11 +738,10 @@ function parseCanvasBlock(text) {
   var match = String(text).match(MARKER_RE);
   if (!match) { return null; }
   // csd-s1 introduced 'data-model' as the first of the `diagram`
-  // content-block family. csd-s2 completes the family by wiring up the
-  // remaining two diagram types through the SAME dispatch mechanism
-  // (ADR-026) -- see renderCanvasBlock's buildDiagramBodyHtml() helper below,
-  // shared by all three rather than a per-type parallel path.
-  var TYPE_ALLOW = ['cluster-tree', 'table', 'text', 'data-model', 'system-architecture', 'program-design'];
+  // content-block family. csd-s2 completes the family (ADR-026 -- shared
+  // dispatch, no parallel path). csd-s6 adds 'drift-signal' (see
+  // src/modules/drift-comparator.js) the same way.
+  var TYPE_ALLOW = ['cluster-tree', 'table', 'text', 'data-model', 'system-architecture', 'program-design', 'drift-signal'];
   try {
     var parsed = JSON.parse(match[1]);
     if (TYPE_ALLOW.indexOf(String(parsed.type || '')) === -1) { return null; }
@@ -3365,6 +3364,31 @@ function _renderChatPage(skillName, sessionId, session, backUrl) {
     '    } else if (type === "program-design") {',
     // csd-s2: the third and last of the `diagram` content-block family.
     '      bodyHtml = buildDiagramBodyHtml("Program Design", content);',
+    '    } else if (type === "drift-signal") {',
+    // csd-s6: the match/diverged drift signal. Conveyed by an aria-hidden
+    // icon PLUS an explicit text label ("Matches"/"Diverged") -- never
+    // colour alone (NFR: accessibility, WCAG 2.1 AA) -- and, when diverged,
+    // a bullet list naming the specific difference(s) (AC5), never a bare
+    // "diverged" label with no detail. A diagram type with no drift still
+    // renders its own explicit "Matches" item (AC4) -- this branch never
+    // produces empty/blank output for a MATCHED item.
+    '      var driftItems = content.items || [];',
+    '      var driftItemsHtml = driftItems.map(function(it) {',
+    '        var isDiverged = it.status === "DIVERGED";',
+    '        var statusClass = isDiverged ? "cv-drift-diverged" : "cv-drift-matched";',
+    '        var icon = isDiverged ? "\\u26A0" : "\\u2713";',
+    '        var diffs = it.differences || [];',
+    '        var diffsHtml = diffs.length ? (\'<ul class="cv-drift-diffs">\' + diffs.map(function(d) {',
+    '          return "<li>" + escHtmlClient(String(d)) + "</li>";',
+    '        }).join("") + "</ul>") : "";',
+    '        return \'<div class="cv-drift-item \' + statusClass + \'" data-diagram-type="\' + escHtmlClient(String(it.diagramType || "")) + \'" data-drift-status="\' + escHtmlClient(String(it.status || "")) + \'">\' +',
+    '          \'<span class="cv-drift-icon" aria-hidden="true">\' + icon + "</span>" +',
+    '          \'<span class="cv-drift-type-label">\' + escHtmlClient(String(it.diagramLabel || it.diagramType || "")) + "</span>" +',
+    '          \'<span class="cv-drift-status-label">\' + escHtmlClient(String(it.label || it.status || "")) + "</span>" +',
+    '          diffsHtml +',
+    '        "</div>";',
+    '      }).join("");',
+    '      bodyHtml = \'<div class="cv-drift-wrap">\' + driftItemsHtml + "</div>";',
     '    }',
     '    var typeTag = \'<span class="canvas-type-tag">\' + escHtmlClient(type) + "</span>";',
     '    return \'<div class="canvas-block" data-block-type="\' + escHtmlClient(type) + \'"><div class="canvas-block-head">\' + typeTag + \' <span class="canvas-block-title">\' + title + \'</span></div><div class="canvas-block-body">\' + bodyHtml + "</div></div>";',
