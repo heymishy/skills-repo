@@ -227,6 +227,30 @@ jobs:
         if: steps.scenario-a-config.outputs.scenario_a_enabled != 'true'
         run: 'echo "Scenario A staging E2E skipped — set audit.staging_e2e_scenario_a: true in .github/context.yml to enable"'
 
+      # alrf-s11: purge every e2e-test- tagged tenant this run created,
+      # regardless of pass/fail (always()) -- the operator noticed hundreds
+      # of persistent e2e-test-/UAT tenants accumulated on staging, since no
+      # step had ever cleaned these up after a run. Runs against the same
+      # staging Postgres the seed/deploy steps already use.
+      - name: Purge e2e-test- tenants created by this run
+        # Fix-forward (2026-07-26, PR #622): the first version of this step
+        # had no step-level timeout, so a hung DB connection (see the
+        # script's own withTimeout comment) consumed this whole job's
+        # 15-minute external timeout and turned an actually-passing test run
+        # red. Deliberately no error-tolerance flag on this step -- check-a5
+        # and check-b2's own ci-gate-config tests assert its absence anywhere
+        # in this job's block as a structural proxy for "this job genuinely
+        # blocks merge on failure", and this step doesn't need it: the
+        # script itself is written to never exit non-zero (always sets
+        # process.exitCode = 0, even on its own internal failure/timeout) --
+        # timeout-minutes here is a pure, unlikely-to-fire backstop, not the
+        # primary safety mechanism.
+        if: always() && steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
+        timeout-minutes: 2
+        run: node scripts/purge-e2e-tenants.js
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
   # ── Scenario B CI-blocking gate (story b2-ci-gate-scenario-b-coverage-mapping) ──
   # Runs B1's spec file (tests/e2e/b1-formed-idea-outer-loop-story-map.spec.js)
   # against real wuce-staging, following A5's exact gate mechanism (distinct
@@ -344,3 +368,13 @@ jobs:
       - name: Scenario B E2E skipped (opt-in flag not set)
         if: steps.scenario-b-config.outputs.scenario_b_enabled != 'true'
         run: 'echo "Scenario B staging E2E skipped — set audit.staging_e2e_scenario_b: true in .github/context.yml to enable"'
+
+      # alrf-s11: same cleanup as Scenario A's job -- see that job's Fix-forward
+      # comment (2026-07-26, PR #622) for why there's a timeout-minutes but
+      # deliberately no continue-on-error here.
+      - name: Purge e2e-test- tenants created by this run
+        if: always() && steps.scenario-b-config.outputs.scenario_b_enabled == 'true'
+        timeout-minutes: 2
+        run: node scripts/purge-e2e-tenants.js
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
