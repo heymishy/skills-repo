@@ -142,7 +142,20 @@ if (require.main === module) {
       connectionTimeoutMillis: 10000
     });
     setDbConnection(pool);
+    // --dry-run: read-only preview for an operator running this by hand
+    // against real staging data (e.g. the one-off retroactive purge) --
+    // lists what WOULD be deleted without deleting anything. CI's own
+    // always()-gated cleanup steps never pass this flag.
+    const isDryRun = process.argv.includes('--dry-run');
     try {
+      if (isDryRun) {
+        const tenantIds = await withTimeout(findE2eTenantIds(requireDbConnection()), 60000, 'findE2eTenantIds');
+        console.log(`[dry-run] Would purge ${tenantIds.length} e2e-test- tenant(s): ${tenantIds.join(', ') || '(none found)'}`);
+        process.exitCode = 0;
+        try { await withTimeout(pool.end(), 5000, 'pool.end'); } catch (_) {}
+        process.exit(process.exitCode || 0);
+        return;
+      }
       const summary = await withTimeout(purgeE2eTenants(requireDbConnection()), 60000, 'purgeE2eTenants');
       console.log(`Purged ${summary.tenantCount} e2e-test- tenant(s): ${summary.tenantIds.join(', ') || '(none found)'}`);
       process.exitCode = 0;
