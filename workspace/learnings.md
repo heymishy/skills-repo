@@ -2478,3 +2478,33 @@ audit:
 **Resolution pattern, applied identically each time:** `.github/pipeline-state.json` and any artefact "add/add" conflicts (a third, already-merged story's own `stories/`/`test-plans/`/`verification-scripts/` files, which the still-open branch's stale base also happened to be adding for the first time) were resolved by taking the incoming/already-merged side wholesale (`git checkout --theirs`) — these are never hand-mergeable JSON diffs worth reconciling line-by-line, the "theirs" copy is simply more current. The real code conflicts (duplicate `else if` route branches in `server.js`, duplicate tab-panel markup and `require` lists in `settings.js`) were resolved additively — both sides' distinct additions were kept in sequence, and where both stories independently needed the same shared value (e.g. two stories each generating their own CSRF token), the code was collapsed to compute it once and reuse it for both, rather than arbitrarily picking one side and discarding the other's real logic. After every resolution, both affected stories' own test files (not just the one being merged) were re-run before pushing, to catch a merge silently breaking the other story.
 
 **Takeaway:** When wave-dispatching parallel stories that an epic's own Architecture Constraints already flag as touching the same file (a shared shell, a shared route-registration file), budget a short manual conflict-resolution pass after each wave as the expected, normal outcome — not a signal that something went wrong. The fix is mechanical and fast once you know the shape (bookkeeping/artefact conflicts → take theirs; real code conflicts → merge additively, re-test both stories) — the risk is only in not expecting it and either force-pushing over one side's real work or spending too long trying to prevent the conflict rather than just resolving it quickly when it happens.
+
+---
+
+## A handler can be fully built and unit-tested, yet still be completely unreachable — router-dispatch tests are the only test that catches it
+
+### Observed — 2026-07-27 (jsvr-s1, wire-stage-view-route)
+
+**Circumstance:** `handleGetJourneyStageView` (`GET /journey/:id/stage/:name` — the destination of every "view a completed stage" breadcrumb link) was fully implemented and already covered by `check-p0.2-journey-guard-wiring.js` — but that test calls the handler function directly, never through `server.js`'s actual router. The route had simply never been registered in the router's dispatch chain, so every real request to it fell through to the final `else` branch and silently served the sign-in page. This is the same shape as an earlier finding this session (the `/admin/mock-gateway` toggle: fully wired API, zero `NAV_ITEMS` entry) — "fully built and tested in isolation, but nothing connects it to the real request path."
+
+**Takeaway:** A handler-level unit test proves the handler is *correct*; it says nothing about whether the handler is *reachable*. The fix (added in jsvr-s1's own regression test) is to dispatch the real pathname through the actual exported `router`/`createApp()` entry point, not call the handler directly — that's the only test shape that would have caught the original gap, and it's cheap to add alongside the existing handler-level test rather than instead of it. Worth a standing check when reviewing any new route handler: does at least one test exercise it through the real router, not just the function signature?
+
+---
+
+## `.dockerignore` excludes `scripts/` from the deployed image — SSH-ing into a running Fly container to run an operational script will always fail
+
+### Observed — 2026-07-27 (alrf-s11/s12, purge-e2e-tenants.js retroactive purge attempt)
+
+**Circumstance:** Tried to run the newly-built `purge-e2e-tenants.js` against real staging data via `flyctl ssh console --app wuce-staging -C "node scripts/purge-e2e-tenants.js"` — failed with `Cannot find module '/app/scripts/purge-e2e-tenants.js'`. `.dockerignore` deliberately excludes the entire `scripts/` directory from the production image ("Scripts — governance scripts only needed for CI"), by design — the running container genuinely has no `scripts/` at all. This is unrelated to (and was initially confused with) a separate, real Windows `cmd.exe` quoting problem that mangled a different attempted command in the same session.
+
+**Takeaway:** Any operational script meant to run against real staging data cannot be invoked by SSH-ing into the app container and pointing at `scripts/` — that path is structurally absent by design, not a deploy gap to fix. The working pattern: pull the real `DATABASE_URL` value out of the running container (`flyctl ssh console -C "printenv DATABASE_URL"`, which *is* available as an env var even though the script isn't) and run the script from a local checkout instead, where `scripts/` genuinely exists.
+
+---
+
+## `workspace/state.json` silently fell days out of date mid-session despite `pipeline-state.json` being kept current throughout
+
+### Observed — 2026-07-28 (durable-session-history, /estimate E1)
+
+**Circumstance:** Running `/estimate` surfaced that `workspace/state.json`'s `cycle`/`estimate` blocks still described `2026-07-25-code-shape-diagrams` — a feature that had, per `.github/pipeline-state.json` (updated directly and correctly throughout this session), already progressed to `definition-of-ready` days earlier. Nothing in the several features worked on in between (jsvr-s1, alrf-s10/s11/s12) had touched `state.json` at all, because each skill only writes the state block for its *own* active feature — nothing forces a check that `state.json`'s `activeFeature` still matches whatever is actually being worked on when a long session jumps between many short-track fixes and full outer-loop features in sequence.
+
+**Takeaway:** `pipeline-state.json` (per-feature, written by every skill) is the authoritative source of *where a specific feature actually is*; `workspace/state.json` (singular, global "current work" pointer) is only as fresh as the last skill that explicitly wrote to it — and in a long multi-feature session, that can silently lag by days. Worth a cheap habit: before trusting `state.json`'s `activeFeature`/`currentPhase` for anything (especially `/estimate`'s E1/E2 mode-detection logic, which reads `currentPhase` to decide which mode to run), cross-check it against `pipeline-state.json`'s actual current stage for that slug rather than assuming it's been kept in sync.
