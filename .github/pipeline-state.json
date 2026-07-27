@@ -16529,6 +16529,24 @@
       ],
       "metrics": [],
       "updatedAt": "2026-07-27"
+    },
+    {
+      "slug": "2026-07-28-durable-session-history",
+      "name": "Durable Session History for Completed Pipeline Stages",
+      "stage": "discovery",
+      "health": "green",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "updatedAt": "2026-07-28",
+      "discovery": {
+        "status": "approved",
+        "artefact": "artefacts/2026-07-28-durable-session-history/discovery.md"
+      },
+      "metrics": [],
+      "stories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
