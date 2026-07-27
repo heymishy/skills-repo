@@ -16511,9 +16511,9 @@
           },
           "testPlanArtefact": "artefacts/2026-07-26-function-level-audit/test-plans/alrf-s12-purge-script-dry-run-flag-test-plan.md",
           "dorStatus": "signed-off",
-          "prStatus": "none",
+          "prStatus": "merged",
           "notes": "Operator needs to run a one-off retroactive purge of stale e2e-test- tenants directly against staging (flyctl ssh console) -- a real, irreversible delete -- and wants a read-only preview first. --dry-run calls the existing findE2eTenantIds instead of purgeE2eTenants; underlying purge functions unchanged.",
-          "updatedAt": "2026-07-27"
+          "updatedAt": "2026-07-27T20:54:44.236Z"
         }
       ],
       "metrics": [],
