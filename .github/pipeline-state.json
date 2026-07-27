@@ -16554,7 +16554,7 @@
     {
       "slug": "2026-07-28-durable-session-history",
       "name": "Durable Session History for Completed Pipeline Stages",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "track": "standard",
       "regulated": false,
@@ -16566,7 +16566,43 @@
         "status": "approved",
         "artefact": "artefacts/2026-07-28-durable-session-history/discovery.md"
       },
-      "metrics": [],
+      "benefitMetric": {
+        "status": "complete",
+        "artefact": "artefacts/2026-07-28-durable-session-history/benefit-metric.md",
+        "metaBenefitFlag": false
+      },
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Resume conversation link success rate",
+          "target": "100% (min validation signal: 95%)",
+          "baseline": "~0% for stages completed before last server restart",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Breadcrumb view-completed-stage shows real conversation",
+          "target": "100% of post-fix completed stages",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Turn storage stays bounded (60-day archive)",
+          "target": "100% of turns >60 days archived; rehydration succeeds",
+          "baseline": "0% (no growth today -- turns deleted at completion)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
       "stories": []
     }
   ],
