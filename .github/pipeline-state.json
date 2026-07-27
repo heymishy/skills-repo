@@ -16514,7 +16514,13 @@
           "acTotal": 4,
           "acVerified": 4,
           "artefact": "artefacts/2026-07-27-journey-stage-view-routing/stories/jsvr-s1-wire-stage-view-route.md",
-          "testPlan": "artefacts/2026-07-27-journey-stage-view-routing/test-plans/jsvr-s1-wire-stage-view-route-test-plan.md",
+          "testPlan": {
+            "status": "all-passing",
+            "testFile": "tests/check-jsvr-s1-wire-stage-view-route.js",
+            "totalTests": 6,
+            "passing": 6
+          },
+          "testPlanArtefact": "artefacts/2026-07-27-journey-stage-view-routing/test-plans/jsvr-s1-wire-stage-view-route-test-plan.md",
           "dorStatus": "signed-off",
           "prStatus": "none",
           "notes": "Operator reported breadcrumb back-navigation on a resumed journey gives an error. Investigation confirmed the real, live-reproducible defect: GET /journey/:id/stage/:name (handleGetJourneyStageView), the destination of every completed-stage breadcrumb link, was fully built and unit-tested but never registered in server.js's router -- clicking it silently served the sign-in page instead of the artefact. Fixed by wiring the two missing else-if branches; added a router-dispatch regression test (dispatches through the real exported router, not a direct handler call) so this class of bug fails CI if it recurs.",
