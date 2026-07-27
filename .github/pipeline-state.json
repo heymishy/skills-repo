@@ -16490,13 +16490,34 @@
           "acTotal": 6,
           "acVerified": 6,
           "artefact": "artefacts/2026-07-26-function-level-audit/stories/alrf-s11-purge-e2e-tenants-ci-cleanup.md",
-          "prStatus": "none",
+          "prStatus": "merged",
           "notes": "Operator noticed hundreds of persistent e2e-test-/UAT tenants on staging via /admin/credits. Sequencing agreed: stop the leak first (this story), retroactive purge next, admin view + PostHog tie-in later. New scripts/purge-e2e-tenants.js wired into e2e.yml Scenario A/B and staging-deploy.yml smoke-test, always() so cleanup happens on pass or fail.",
-          "updatedAt": "2026-07-26T09:52:13.397Z"
+          "updatedAt": "2026-07-27T00:08:33.000Z"
+        },
+        {
+          "id": "alrf-s12",
+          "slug": "alrf-s12-purge-script-dry-run-flag",
+          "name": "Add a --dry-run flag to scripts/purge-e2e-tenants.js",
+          "stage": "branch-complete",
+          "health": "green",
+          "acTotal": 4,
+          "acVerified": 4,
+          "artefact": "artefacts/2026-07-26-function-level-audit/stories/alrf-s12-purge-script-dry-run-flag.md",
+          "testPlan": {
+            "status": "all-passing",
+            "testFile": "tests/check-alrf-s11-purge-e2e-tenants.js",
+            "totalTests": 11,
+            "passing": 11
+          },
+          "testPlanArtefact": "artefacts/2026-07-26-function-level-audit/test-plans/alrf-s12-purge-script-dry-run-flag-test-plan.md",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "notes": "Operator needs to run a one-off retroactive purge of stale e2e-test- tenants directly against staging (flyctl ssh console) -- a real, irreversible delete -- and wants a read-only preview first. --dry-run calls the existing findE2eTenantIds instead of purgeE2eTenants; underlying purge functions unchanged.",
+          "updatedAt": "2026-07-27"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-26T09:52:13.397Z"
+      "updatedAt": "2026-07-27"
     },
     {
       "slug": "2026-07-27-journey-stage-view-routing",
