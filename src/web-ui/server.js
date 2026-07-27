@@ -33,7 +33,7 @@ const skillsAdapter                                                  = require('
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
-const { handleGetJourney, handlePostJourney, handleDeleteJourney, handleGetJourneyResume, handleGetJourneyById, handleGetStageReview, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, handlePutJourneyDisplayName, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handleGetWizardBootstrapped, handlePostWizardSelection, handleJourneys, setListJourneys } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2 / bri-s1.5 / s3.4 / fdn-s1
+const { handleGetJourney, handlePostJourney, handleDeleteJourney, handleGetJourneyResume, handleGetJourneyById, handleGetStageReview, handleGetJourneyStageView, handlePostJourneyStageArtefact, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, handlePutJourneyDisplayName, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handleGetWizardBootstrapped, handlePostWizardSelection, handleJourneys, setListJourneys } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2 / bri-s1.5 / s3.4 / fdn-s1 / jsvr-s1
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
 const { setCreditsAdapter }                                          = require('./modules/credits');       // lab-s3.1
@@ -2086,6 +2086,25 @@ async function router(req, res) {
     // step5 — artefact review panel before gate-confirm
     req.params = { journeyId: pathname.split('/')[2] };
     await handleGetStageReview(req, res);
+
+  } else if (pathname.match(/^\/journey\/[^/]+\/stage\/[^/]+$/) && req.method === 'GET') {
+    // jsvr-s1 — step6 — read-only view of a completed stage's artefact.
+    // handleGetJourneyStageView already existed (built alongside step4/step5
+    // in the original p0.1/p0.2 commit) and is already unit-tested by
+    // check-p0.2-journey-guard-wiring.js, but this route was never
+    // registered here -- every breadcrumb "view a completed stage" link in
+    // the app (skills.js's chat-page nav strip, and this handler's own nav
+    // strip) pointed at a URL the server could not actually answer, so it
+    // silently fell through to the final else branch's sign-in page instead
+    // of the artefact view. See decisions.md.
+    req.params = { journeyId: pathname.split('/')[2], stageName: decodeURIComponent(pathname.split('/')[4]) };
+    await handleGetJourneyStageView(req, res);
+
+  } else if (pathname.match(/^\/api\/journey\/[^/]+\/stage\/[^/]+\/artefact$/) && req.method === 'POST') {
+    // jsvr-s1 — save inline-edited artefact content from the stage-view page
+    // above. Same wiring gap as handleGetJourneyStageView.
+    req.params = { journeyId: pathname.split('/')[3], stageName: decodeURIComponent(pathname.split('/')[5]) };
+    await handlePostJourneyStageArtefact(req, res);
 
   } else if (pathname.match(/^\/journey\/[^/]+\/reference$/) && req.method === 'GET') {
     // step7 — reference docs list + upload form
