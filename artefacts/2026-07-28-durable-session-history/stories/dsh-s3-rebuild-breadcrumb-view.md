@@ -18,6 +18,7 @@ So that **I can understand why a decision was made without being limited to a ba
 ## Architecture Constraints
 
 - **ADR-025** (multi-tenancy): must preserve `handleGetJourneyStageView`'s existing cross-tenant 404 behaviour (already covered by `check-p0.2-journey-guard-wiring.js`) — this story must not regress that guard while rebuilding the rendering.
+- **ADR-027** (live SaaS mechanisms are ordinary application code): this route handler lives in `src/web-ui/routes/journey.js`, reached directly by any authenticated tenant's browser — not a governed SKILL.md skill.
 - **Reuse existing rendering, don't invent a new layout:** the chat-left/artefact-right split must reuse the visual pattern already established by the live chat page's rendering (`_renderChatPage` in `routes/skills.js`), not a third, novel layout.
 - **jsvr-s1 dependency:** this route (`GET /journey/:journeyId/stage/:stageName`) was only wired into `server.js`'s router as of jsvr-s1 (PR #623) — this story builds on that fix, it does not need to re-wire the route itself.
 

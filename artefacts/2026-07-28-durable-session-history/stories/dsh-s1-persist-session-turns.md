@@ -13,12 +13,13 @@ So that **the conversation still exists after the server restarts, feeding both 
 ## Benefit Linkage
 
 **Metric moved:** Resume conversation link success rate; Breadcrumb view-completed-stage shows real conversation
-**How:** This story is the durability foundation both consumer metrics depend on — without a durable write, no downstream read path can ever show a real conversation after a restart, regardless of how the consumer pages are built.
+**How:** This story delivers the specific, observable state change both metrics require: a completed stage's conversation record continues to exist in Postgres after the process that created it has gone away. That property (data survives a restart) is independently verifiable the moment this story ships — via a direct database check, not only through dsh-s3/dsh-s4's UI — even though the operator-visible payoff (seeing that conversation rendered) is completed by dsh-s3/dsh-s4. This story unblocks dsh-s2, dsh-s5.
 
 ## Architecture Constraints
 
 - **ADR-025** (multi-tenancy at application layer): `session_turns` rows must carry `tenant_id`, matching `journeys`' own convention, so the same `requireJourneyAccess`/`isSameTenant` guard pattern can scope reads later (story dsh-s2) — this story is write-only but must not omit the column.
 - **ADR-026** (reuse before inventing): resolved at `/clarify` — new table chosen over extending `artefacts`, logged in `decisions.md`.
+- **ADR-027** (live SaaS mechanisms are ordinary application code): the completion-write hook lives in `src/web-ui/routes/skills.js`, fired by a live tenant's own request — not a governed SKILL.md skill.
 - **CLAUDE.md Injectable adapter rule (D37):** the DB-writing module must follow the injectable-adapter pattern — stub throws (`Adapter not wired: sessionTurnsStore. Call setSessionTurnsStore() with a real implementation before use.`), real Postgres wiring in `server.js`, and a behavioural wiring test (not just "a function reference was assigned").
 - **Postgres-first, disk/memory fallback pattern:** matches the existing convention used by `journeys`/`artefacts`/`credits` — this is not a new persistence pattern, just a new table using the established one.
 

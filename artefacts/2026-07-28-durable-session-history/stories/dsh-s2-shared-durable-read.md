@@ -4,20 +4,27 @@
 **Discovery reference:** artefacts/2026-07-28-durable-session-history/discovery.md
 **Benefit-metric reference:** artefacts/2026-07-28-durable-session-history/benefit-metric.md
 
+## Technical Enabler
+
+**This story is a technical enabler, not an independently user-facing story.** Per `templates/story.md`'s own guidance ("If a story is a pure technical dependency, label it as a task and note which story it unblocks"), it is retained in `story.md` format (this repo has no separate task template) but labelled honestly rather than framed with a fabricated independent persona. It has no UI surface of its own and moves no metric by itself — it exists solely so dsh-s3 and dsh-s4 share one durability/access-control implementation instead of two independently-written, potentially-diverging ones.
+
+**Unblocks:** dsh-s3 (breadcrumb view rebuild), dsh-s4 (resume-link fix) — neither can be correctly implemented without this shared read path existing first.
+
 ## User Story
 
-As a **developer building the two consumer pages that will show a completed stage's conversation**,
-I want to **call one shared, tenant-scoped function to fetch a stage's turns, rather than each page reimplementing its own read logic**,
-So that **the breadcrumb-view rebuild (dsh-s3) and the resume-link fix (dsh-s4) share identical durability and access-control behaviour instead of two independently-written, potentially-diverging read paths**.
+As a **pipeline operator relying on both "Resume conversation" and breadcrumb navigation to reach the same completed stage**,
+I want **both entry points to enforce identical durability and tenant-access-control behaviour**,
+So that **I never get a different (or less safe) outcome depending on which link I happened to click — a guarantee this story provides by giving dsh-s3 and dsh-s4 one shared implementation to call, rather than two that could silently diverge**.
 
 ## Benefit Linkage
 
-**Metric moved:** Resume conversation link success rate; Breadcrumb view-completed-stage shows real conversation
-**How:** Both consumer stories (dsh-s3, dsh-s4) depend on this shared function to actually retrieve durable turns — this story is the technical dependency both metrics' fixes are built on top of, not a metric-moving change by itself.
+**Metric moved:** None directly — see Technical Enabler section above. Indirectly underwrites both Resume conversation link success rate and Breadcrumb view-completed-stage shows real conversation, since dsh-s3/dsh-s4 (which do move those metrics) both depend on this story's correctness.
+**How:** N/A — this story is infrastructure for dsh-s3/dsh-s4, not a metric-moving change in its own right. See Technical Enabler section.
 
 ## Architecture Constraints
 
 - **ADR-025** (multi-tenancy at application layer): this function must enforce the same `requireJourneyAccess`/`isSameTenant` guard already used by every other journey-scoped read in this codebase — a request for another tenant's turns must be rejected the same way `handleGetJourneyStageView` already rejects a cross-tenant artefact view (404, not 403 — see the existing FORBIDDEN-vs-NOT_FOUND policy in CLAUDE.md).
+- **ADR-027** (live SaaS mechanisms are ordinary application code): this function lives in `src/web-ui/`, called directly by any authenticated tenant's page load — not a governed SKILL.md skill.
 - **CLAUDE.md D37:** reuses dsh-s1's existing injectable Postgres adapter (`setSessionTurnsStore`) — no second, parallel adapter is introduced for reads.
 - **Postgres-first, disk/memory fallback pattern:** prefers the live in-memory session (freshest) when the stage's session is still resident in the current process, falling back to the durable `session_turns` row otherwise — matching the same tiered-fallback shape already used by `_getSessionOrRestore` (memory → Redis), with Postgres replacing Redis as the durable tier for this specific data.
 

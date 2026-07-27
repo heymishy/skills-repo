@@ -20,6 +20,7 @@ So that **storage stays bounded even as more stages complete over time, without 
 - **`product/constraints.md` #11 (no persistent agent runtime dependency):** this job must run on standard CI/cron infrastructure — a scheduled GitHub Actions workflow, matching this repo's existing scheduled-job precedent — not a bespoke long-running service.
 - **CLAUDE.md D37 injectable adapter rule:** follows the exact CLI-entrypoint pattern already established by `scripts/purge-e2e-tenants.js` (stub throws, real Postgres wiring only in the CLI entrypoint block, never throws out of the main archival loop — logs and continues instead, matching that script's own non-fatal per-row error handling).
 - **ADR-025** (multi-tenancy): archived rows retain their `tenant_id` — archiving must never strip or alter tenant scoping.
+- **ADR-027** (live SaaS mechanisms are ordinary application code): this is a `scripts/` CLI job in the same family as `purge-e2e-tenants.js`, not a governed SKILL.md skill.
 
 ## Dependencies
 
@@ -32,7 +33,7 @@ So that **storage stays bounded even as more stages complete over time, without 
 
 **AC2:** Given a `session_turns` row with `created_at` within the last 60 days, When the archive job runs, Then that row remains untouched in the hot table.
 
-**AC3:** Given the archive job is deployed, When it executes, Then it runs as a scheduled GitHub Actions workflow (cron trigger) — not a persistent process, matching the "no persistent agent runtime dependency" constraint.
+**AC3:** Given the archive job is triggered on its schedule, When it runs to completion, Then no process remains running afterward — the job exits cleanly between runs, satisfying the "no persistent agent runtime dependency" constraint regardless of which specific scheduler triggers it. (Architecture Constraints specifies the actual mechanism: a scheduled GitHub Actions workflow.)
 
 **AC4:** Given the job encounters a transient error moving one row (e.g. a single insert fails), When it processes its batch, Then it logs the failure and continues archiving the remaining eligible rows — matching `purge-e2e-tenants.js`'s existing per-row non-fatal error handling — rather than aborting the entire run.
 

@@ -18,6 +18,7 @@ So that **the archive/bounded-storage design (dsh-s5) never costs me visibility 
 ## Architecture Constraints
 
 - **ADR-025** (multi-tenancy): the same tenant-ownership guard applies to archive-table reads as hot-table reads — archiving must never create a weaker-guarded read path.
+- **ADR-027** (live SaaS mechanisms are ordinary application code): extends dsh-s2's function, itself ordinary `src/web-ui/` code — not a governed SKILL.md skill.
 - **Reuse, don't duplicate:** extends dsh-s2's existing shared read function with a second fallback tier (archive table), rather than introducing a parallel "archived stage view" function or route — dsh-s3 and dsh-s4 require zero changes to benefit from this story.
 - **CLAUDE.md D37:** reuses the same injectable adapter already wired in dsh-s1/dsh-s2 — no new adapter.
 

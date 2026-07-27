@@ -19,6 +19,7 @@ So that **I never hit "Session not found" for a completed stage, regardless of h
 
 - **Reuse, don't duplicate (ADR-026 spirit applied at the routing level):** rather than teaching `handleGetChatHtml`'s existing `/skills/.../chat` route a second durable-read fallback, this story repoints the link at dsh-s3's already-rebuilt stage-view route — one rendering path for "view a completed stage," reached via two navigation triggers (breadcrumb, Resume-conversation link), not two independently-maintained pages.
 - **ADR-025** (multi-tenancy): the stage-view route already enforces tenant-ownership (per dsh-s3); no separate guard is introduced here.
+- **ADR-027** (live SaaS mechanisms are ordinary application code): the link's `href` is computed in `src/web-ui/routes/features.js` at page-render time for any authenticated tenant — not a governed SKILL.md skill.
 
 ## Dependencies
 
