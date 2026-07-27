@@ -16608,12 +16608,12 @@
         {
           "slug": "dsh-e1-durable-session-history",
           "name": "Operators can always see the conversation behind a completed pipeline stage",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "dsh-s1-persist-session-turns",
               "name": "Persist a stage's session turns to Postgres on completion",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -16627,7 +16627,45 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Add session_turns table to schema migration",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s1-persist-session-turns-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Create D37 adapter module with throwing stub (AC4)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s1-persist-session-turns-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Insert a row on stage completion (AC1)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s1-persist-session-turns-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Re-completion upserts, does not duplicate (AC2)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s1-persist-session-turns-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Wire completion hook into routes/skills.js, non-fatal on failure (AC3)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s1-persist-session-turns-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "Wire real Postgres adapter in server.js, real round-trip test (AC5)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s1-persist-session-turns-plan.md"
+                }
+              ]
             },
             {
               "slug": "dsh-s2-shared-durable-read",
