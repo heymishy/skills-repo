@@ -16554,7 +16554,7 @@
     {
       "slug": "2026-07-28-durable-session-history",
       "name": "Durable Session History for Completed Pipeline Stages",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "health": "green",
       "track": "standard",
       "regulated": false,
@@ -16613,7 +16613,7 @@
             {
               "slug": "dsh-s1-persist-session-turns",
               "name": "Persist a stage's session turns to Postgres on completion",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -16626,12 +16626,13 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "dsh-s2-shared-durable-read",
               "name": "A single, tenant-scoped read path for a completed stage's turns",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -16644,12 +16645,13 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "dsh-s3-rebuild-breadcrumb-view",
               "name": "Rebuild the breadcrumb view-a-completed-stage page into a chat+artefact split view",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -16662,12 +16664,13 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": true
+              "e2eToolingRequired": true,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "dsh-s4-fix-resume-conversation-link",
               "name": "Fix Resume conversation to always resolve to a real conversation view",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -16680,12 +16683,13 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": true
+              "e2eToolingRequired": true,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "dsh-s5-archive-job",
               "name": "Archive turns older than 60 days out of the hot table",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -16698,12 +16702,13 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "dsh-s6-rehydrate-archived-turns",
               "name": "Transparently rehydrate an archived stage's turns on read",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -16716,7 +16721,8 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": true
+              "e2eToolingRequired": true,
+              "dorStatus": "signed-off"
             }
           ]
         }
@@ -17047,6 +17053,51 @@
           "status": "met",
           "evidence": "Run 2: all 6 stories (dsh-s1 through dsh-s6) now cite ADR-027 in Architecture Constraints. Resolved findings: 1-M2 dsh-s1, 1-M2 dsh-s2, 1-M1 dsh-s3, 1-M1 dsh-s4, 1-M2 dsh-s5, 1-M1 dsh-s6.",
           "assessedBy": "/review",
+          "assessedAt": "2026-07-28T00:00:00.000Z"
+        },
+        {
+          "id": "NFR-performance",
+          "category": "nfr",
+          "label": "Directional latency budgets (write/read/render, hot vs archive tier)",
+          "status": "met",
+          "evidence": "All 6 stories name a directional latency target in nfr-profile.md; no formal SLO breach possible pre-implementation.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-28T00:00:00.000Z"
+        },
+        {
+          "id": "NFR-security",
+          "category": "nfr",
+          "label": "Tenant-isolation guard, FORBIDDEN-vs-NOT_FOUND policy, no accessToken in persisted turns",
+          "status": "met",
+          "evidence": "ADR-025 cited in all 6 stories; dsh-s1 AC4/dsh-s2 AC4/dsh-s6 AC5 assert the guard directly.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-28T00:00:00.000Z"
+        },
+        {
+          "id": "NFR-data-residency",
+          "category": "nfr",
+          "label": "No data residency requirement applies",
+          "status": "na",
+          "evidence": "meta.regulated: false; same Postgres instance already used for journeys/artefacts.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-28T00:00:00.000Z"
+        },
+        {
+          "id": "NFR-availability",
+          "category": "nfr",
+          "label": "RPO: zero data loss going forward once persisted",
+          "status": "met",
+          "evidence": "This is the core guarantee the epic exists to deliver; dsh-s4 AC2 (real staging) is the direct confirmation test.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-07-28T00:00:00.000Z"
+        },
+        {
+          "id": "NFR-compliance",
+          "category": "nfr",
+          "label": "Internal data-governance gap (product/constraints.md #5) closure",
+          "status": "met",
+          "evidence": "Resolved via /clarify -- 60-day archive (dsh-s5) + existing tenant-isolation access control (ADR-025) together close the gap; logged in decisions.md.",
+          "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-07-28T00:00:00.000Z"
         }
       ]

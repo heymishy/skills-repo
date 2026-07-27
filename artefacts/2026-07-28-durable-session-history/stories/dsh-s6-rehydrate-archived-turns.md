@@ -3,6 +3,7 @@
 **Epic reference:** artefacts/2026-07-28-durable-session-history/epics/dsh-e1-durable-session-history.md
 **Discovery reference:** artefacts/2026-07-28-durable-session-history/discovery.md
 **Benefit-metric reference:** artefacts/2026-07-28-durable-session-history/benefit-metric.md
+**Domain:** [web-ui, data, security]
 
 ## User Story
 
