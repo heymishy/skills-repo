@@ -1,49 +1,19 @@
 {
-  "currentPhase": "review",
-  "lastUpdated": "2026-07-25T00:00:00Z",
-  "activeFeature": "2026-07-25-code-shape-diagrams",
-  "previousFeature": "2026-07-23-e2e-core-journey-coverage",
+  "currentPhase": "discovery",
+  "lastUpdated": "2026-07-28T00:00:00Z",
+  "activeFeature": "2026-07-28-durable-session-history",
+  "previousFeature": "2026-07-25-code-shape-diagrams",
   "cycle": {
     "discovery": {
       "status": "approved",
-      "artefact": "artefacts/2026-07-25-code-shape-diagrams/discovery.md",
-      "completedAt": "2026-07-25T00:00:00Z",
-      "note": "Clarified via /clarify (4 questions resolved), 3 decisions logged to decisions.md, approved by Hamish King."
-    },
-    "benefit-metric": {
-      "status": "complete",
-      "artefact": "artefacts/2026-07-25-code-shape-diagrams/benefit-metric.md",
-      "completedAt": "2026-07-25T00:00:00Z",
-      "note": "Meta-benefit flag: Yes. 3 Tier 1 product metrics + 1 Tier 2 meta metric defined. Solo-operator posture noted (no non-engineering owner/reviewer available)."
-    },
-    "definition": {
-      "status": "complete",
-      "artefact": "artefacts/2026-07-25-code-shape-diagrams/epics/",
-      "completedAt": "2026-07-25T00:00:00Z",
-      "note": "1 epic (csd-e1), 6 stories, risk-first slicing. Scope check clean (6 stories / 5 MVP items, ratio 1.2). Benefit coverage matrix: 4/4 metrics covered, no orphans. NFR profile saved -- no compliance/regulatory NFRs, no numeric performance baselines (new capability)."
-    },
-    "review": {
-      "status": "passed",
-      "artefact": "artefacts/2026-07-25-code-shape-diagrams/review/",
-      "completedAt": "2026-07-25T00:00:00Z",
-      "note": "Run 1, all 5 categories, all 6 stories. 0 HIGH, 5 MEDIUM (2 weak benefit linkages, 1 unacknowledged scope addition, 2 missing MC-SEC-01 citations), 2 LOW -- all resolved same-session (rewrote 2 benefit linkages, added MC-SEC-01/ADR-027 citations, added a SCOPE decision for csd-s4 AC4, tightened 1 vague AC). PASS."
-    },
-    "test-plan": {
-      "status": "complete",
-      "artefact": "artefacts/2026-07-25-code-shape-diagrams/test-plans/",
-      "completedAt": "2026-07-25T00:00:00Z",
-      "note": "6 technical test plans + 6 AC verification scripts, one per story. 57 tests total (csd-s1:8, csd-s2:7, csd-s3:6, csd-s4:9, csd-s5:10, csd-s6:17) covering 24 ACs. 3 CSS-layout-dependent gaps (csd-s1 AC2, csd-s2 AC3/AC4) handled via Playwright E2E tests -- E2E tooling already configured in this repo, no gap. Test data: synthetic fixtures + real repo migration files for naming-convention checks. No PCI/sensitivity constraints."
-    },
-    "definition-of-ready": {
-      "status": "signed-off (6 of 6 stories)",
-      "artefact": "artefacts/2026-07-25-code-shape-diagrams/dor/",
-      "completedAt": "2026-07-25T00:00:00Z",
-      "note": "All 6 stories (csd-s1 through csd-s6) DoR-signed-off by Hamish King, Founder/Operator, 2026-07-25. All hard blocks passed for all 6. W4 (verification script domain-expert review) RISK-ACCEPTed once in decisions.md (epic-wide -- solo-operator posture, Medium oversight provides a real downstream review checkpoint at PR time). Dependency chain: csd-s1 (no upstream, dispatch first) -> csd-s2 (depends on csd-s1) -> csd-s3/csd-s4 (both depend on csd-s2, can run in parallel once it merges) -> csd-s5 (depends on csd-s2/s3/s4) -> csd-s6 (depends on csd-s3/s4/s5, last in the epic). Next: inner coding loop, starting with csd-s1."
+      "artefact": "artefacts/2026-07-28-durable-session-history/discovery.md",
+      "completedAt": "2026-07-28T00:00:00Z",
+      "note": "Discovered live via operator dogfooding two broken UX flows (Resume conversation 404s; breadcrumb stage-view shows no chat history) on the web-ui staging surface. Root-caused to the same gap: completed-stage conversation turns are deleted from Redis on completion, only the final artefact text survives. Clarified via /clarify (2 assumptions resolved), both logged as decisions. Approved by Hamish King, Platform owner, 2026-07-28."
     }
   },
   "estimate": {
     "e1": {
-      "date": "2026-07-25",
+      "date": "2026-07-28",
       "expectedCalendarDays": 1,
       "engagementFraction": 0.25,
       "outerLoopFocusH": 0.5,
@@ -55,5 +25,5 @@
       "premiumRequestsForecast": null
     }
   },
-  "supersededNote": "The previous contents of this file (innerLoopExecution, carriedForwardFromPreviousFeature, checkpoint blocks dated 2026-07-23) were stale by the time this write happened -- they described in-flight dispatch work and open items (a1-staging-safe-auth-stub dispatch, FLY_API_TOKEN expiry, a4/d1-d4 status) that this same session's real git history (PRs #598-#605: dss-s1, ftcg-s1, dsn-s1, acv-s1, pss-s1, rlcc-s1, nis-s1, bjs-s1) shows were long since resolved or superseded. Removed rather than carried forward to avoid misleading a future session into re-verifying already-resolved items. Recent short-track delivery history for that period lives in git log and workspace/capture-log.md, not this file -- this file now tracks only the current active outer-loop feature (2026-07-25-code-shape-diagrams)."
+  "supersededNote": "This file's prior contents (cycle block through definition-of-ready, estimate.e1) belonged entirely to 2026-07-25-code-shape-diagrams, which -- per .github/pipeline-state.json (the authoritative, continuously-updated source throughout this session) -- had already progressed to stage: definition-of-ready (signed off 2026-07-25, updatedAt 2026-07-26T09:20:30.284Z) by the time this write happened; this file had simply gone stale relative to it and was never updated as work continued (jsvr-s1 route-wiring fix, alrf-s10/s11/s12 delete/purge-tenant/dry-run work) across the following days. Replaced rather than carried forward, per this file's own established convention (see the prior supersededNote this one replaces) of not misleading a future session into re-verifying already-resolved items. This file now tracks only the current active outer-loop feature (2026-07-28-durable-session-history); code-shape-diagrams' real current state lives in .github/pipeline-state.json under that slug."
 }
