@@ -16613,38 +16613,56 @@
             {
               "slug": "dsh-s1-persist-session-turns",
               "name": "Persist a stage's session turns to Postgres on completion",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "has-findings",
+              "highFindings": 0,
+              "updatedAt": "2026-07-28"
             },
             {
               "slug": "dsh-s2-shared-durable-read",
               "name": "A single, tenant-scoped read path for a completed stage's turns",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "red",
+              "reviewStatus": "has-findings",
+              "highFindings": 1,
+              "updatedAt": "2026-07-28"
             },
             {
               "slug": "dsh-s3-rebuild-breadcrumb-view",
               "name": "Rebuild the breadcrumb view-a-completed-stage page into a chat+artefact split view",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "has-findings",
+              "highFindings": 0,
+              "updatedAt": "2026-07-28"
             },
             {
               "slug": "dsh-s4-fix-resume-conversation-link",
               "name": "Fix Resume conversation to always resolve to a real conversation view",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "has-findings",
+              "highFindings": 0,
+              "updatedAt": "2026-07-28"
             },
             {
               "slug": "dsh-s5-archive-job",
               "name": "Archive turns older than 60 days out of the hot table",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "has-findings",
+              "highFindings": 0,
+              "updatedAt": "2026-07-28"
             },
             {
               "slug": "dsh-s6-rehydrate-archived-turns",
               "name": "Transparently rehydrate an archived stage's turns on read",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "has-findings",
+              "highFindings": 0,
+              "updatedAt": "2026-07-28"
             }
           ]
         }
@@ -16953,8 +16971,29 @@
         {
           "id": "ADR-025",
           "category": "adr",
-          "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
-          "status": "not-assessed"
+          "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping",
+          "status": "met",
+          "evidence": "All 6 stories (dsh-s1 through dsh-s6) cite ADR-025 in Architecture Constraints and require tenant_id scoping + the existing requireJourneyAccess/isSameTenant guard on every read/write. No violations found in review run 1.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-28T00:00:00.000Z"
+        },
+        {
+          "id": "ADR-026",
+          "category": "adr",
+          "label": "Reuse an existing entity/primitive when its shape already covers a new concept",
+          "status": "met",
+          "evidence": "The new-table-vs-extend-artefacts reuse-check was resolved during /clarify and logged in decisions.md; dsh-s1 cites this resolution rather than re-litigating it. No violations found.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-28T00:00:00.000Z"
+        },
+        {
+          "id": "ADR-027",
+          "category": "adr",
+          "label": "Live SaaS-user-facing mechanisms are ordinary application code, not governed SKILL.md skills",
+          "status": "not-met",
+          "evidence": "MEDIUM finding across all 6 stories (1-M2 dsh-s1, 1-M2 dsh-s2, 1-M1 dsh-s3, 1-M1 dsh-s4, 1-M2 dsh-s5, 1-M1 dsh-s6): ADR-027 was flagged as directly relevant during /definition Step 1.5 but is not cited in any story's Architecture Constraints field, despite this feature introducing new src/web-ui/ application code.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-07-28T00:00:00.000Z"
         }
       ]
     }
