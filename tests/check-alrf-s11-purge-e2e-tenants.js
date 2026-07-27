@@ -7,6 +7,7 @@
 
 var assert = require('assert');
 var path   = require('path');
+var { execFileSync } = require('child_process');
 
 var SCRIPT_PATH = path.resolve(__dirname, '../scripts/purge-e2e-tenants.js');
 
@@ -160,6 +161,33 @@ async function main() {
     };
     await test('AC4: purgeTenant does not throw even when one DELETE fails', async function() {
       await mod.purgeTenant(db, 'e2e-test-anything'); // must not throw
+    });
+  }
+
+  // -- CLI --dry-run flag: read-only preview, never deletes -- added for the
+  //    operator's manual one-off retroactive purge (a real terminal command
+  //    they run themselves against staging), so they can see what WOULD be
+  //    deleted before running the real purge.
+  console.log('\n[alrf-s11] CLI --dry-run flag -- read-only preview, never deletes');
+  {
+    await test('--dry-run: exits 0 and prints "[dry-run]" (not "Purged") against an unreachable DB', function() {
+      var out = execFileSync(process.execPath, [SCRIPT_PATH, '--dry-run'], {
+        env: Object.assign({}, process.env, { DATABASE_URL: 'postgres://baduser:badpass@127.0.0.1:1/nonexistent' }),
+        timeout: 15000,
+        encoding: 'utf8'
+      });
+      assert.ok(out.indexOf('[dry-run]') !== -1, 'expected "[dry-run]" in output, got: ' + out);
+      assert.ok(out.indexOf('Purged ') === -1, 'dry-run must never print the real-purge "Purged" message, got: ' + out);
+    });
+
+    await test('without --dry-run: still runs the real purge path ("Purged", not "[dry-run]")', function() {
+      var out = execFileSync(process.execPath, [SCRIPT_PATH], {
+        env: Object.assign({}, process.env, { DATABASE_URL: 'postgres://baduser:badpass@127.0.0.1:1/nonexistent' }),
+        timeout: 15000,
+        encoding: 'utf8'
+      });
+      assert.ok(out.indexOf('Purged ') !== -1, 'expected the real-purge "Purged" message, got: ' + out);
+      assert.ok(out.indexOf('[dry-run]') === -1, 'non-dry-run must never print "[dry-run]", got: ' + out);
     });
   }
 
