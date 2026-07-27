@@ -154,6 +154,25 @@ jobs:
           retention-days: 7
           if-no-files-found: ignore
 
+      # alrf-s11: purge every e2e-test- tagged tenant this run created,
+      # regardless of pass/fail -- this job's @mocked suite also creates real
+      # e2e-test- tenants on staging, and this deploy fires on every push to
+      # master, so it was contributing to the same accumulation as e2e.yml's
+      # Scenario A/B jobs.
+      - name: Purge e2e-test- tenants created by this run
+        # Fix-forward (2026-07-26, PR #622): see e2e.yml's identical comment --
+        # a hung DB connection previously consumed this job's whole timeout
+        # budget. This is pure post-run hygiene, never a correctness gate.
+        # Deliberately no error-tolerance flag on this step --
+        # check-bri-s2.6-smoke-test-promote-gate.js asserts this job (which
+        # gates promote-to-prod) has none anywhere in its block; the script
+        # itself is written to never exit non-zero regardless.
+        if: always()
+        timeout-minutes: 2
+        run: node scripts/purge-e2e-tenants.js
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
   promote-to-prod:
     name: Promote to production (manual approval required)
     needs: smoke-test
