@@ -16856,11 +16856,11 @@
             {
               "slug": "dsh-s6-rehydrate-archived-turns",
               "name": "Transparently rehydrate an archived stage's turns on read",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-28",
+              "updatedAt": "2026-07-28T20:49:47.580Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
