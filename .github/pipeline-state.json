@@ -16679,11 +16679,11 @@
             {
               "slug": "dsh-s2-shared-durable-read",
               "name": "A single, tenant-scoped read path for a completed stage's turns",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-28T04:41:43.167Z",
+              "updatedAt": "2026-07-28T04:51:16.800Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -16693,7 +16693,21 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Write AC1-AC5 + NFR unit tests (red)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s2-shared-durable-read-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Implement getTurnsForStage in session-turns-pg.js (green)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s2-shared-durable-read-plan.md"
+                }
+              ]
             },
             {
               "slug": "dsh-s3-rebuild-breadcrumb-view",
