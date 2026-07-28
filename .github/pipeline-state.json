@@ -16592,10 +16592,11 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "dsh-s1 (write) + dsh-s2 (shared read path) both merged; still not user-observable -- requires dsh-s3 (breadcrumb UI) and/or dsh-s4 (resume UI) to also ship before this metric can be measured.",
+          "evidence": "The full write (dsh-s1) -> read (dsh-s2) -> render (dsh-s3) chain is now merged, so this metric is technically observable for any stage completed after dsh-s1 shipped (2026-07-28) -- but no real operator usage has been observed yet (pre-existing stages fall back to the old artefact-only view by design, AC2). Still not-yet-measured pending an actual observation.",
           "contributingStories": [
             "dsh-s1-persist-session-turns",
-            "dsh-s2-shared-durable-read"
+            "dsh-s2-shared-durable-read",
+            "dsh-s3-rebuild-breadcrumb-view"
           ]
         },
         {
@@ -16719,11 +16720,11 @@
             {
               "slug": "dsh-s3-rebuild-breadcrumb-view",
               "name": "Rebuild the breadcrumb view-a-completed-stage page into a chat+artefact split view",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-28T06:49:49.593Z",
+              "updatedAt": "2026-07-28T06:50:46.151Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -16762,7 +16763,9 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/627"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/627",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "dsh-s4-fix-resume-conversation-link",
