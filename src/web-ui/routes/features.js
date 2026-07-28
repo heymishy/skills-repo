@@ -112,15 +112,20 @@ function renderArtefactItem(artefact) {
  * fdn-s1: takes the already-fetched journey object (not a featureSlug),
  * so the caller's own single getJourneyByFeatureSlug lookup (also needed
  * for displayName) isn't duplicated -- see NFR-Performance test.
+ * dsh-s4 (AC1): also carries the journey's own journeyId in each entry, so
+ * renderArtefactIndexHtml can build the "Resume conversation" link's href
+ * as /journey/:journeyId/stage/:stageName (dsh-s3's rebuilt route) instead
+ * of the old /skills/:skillName/sessions/:sessionId/chat, which 404s once
+ * a session is gone from both memory and Redis.
  * @param {object|null} journey
- * @returns {Object<string, {skillName: string, sessionId: string}>}
+ * @returns {Object<string, {skillName: string, sessionId: string, journeyId: string}>}
  */
 function _resolveResumeLinksForFeature(journey) {
   const lookup = {};
   if (!journey) return lookup;
   (journey.completedStages || []).forEach((stage) => {
     if (stage.sessionId && stage.artefactPath) {
-      lookup[stage.artefactPath] = { skillName: stage.skillName, sessionId: stage.sessionId };
+      lookup[stage.artefactPath] = { skillName: stage.skillName, sessionId: stage.sessionId, journeyId: journey.journeyId };
     }
   });
   return lookup;
@@ -132,10 +137,14 @@ function _resolveResumeLinksForFeature(journey) {
  * Returns empty-state message if artefacts array is empty.
  * @param {Array} artefacts  e.g. [{ type, createdAt, path }, ...]
  * @param {string} featureSlug
- * @param {Object<string, {skillName: string, sessionId: string}>} [resumeLookup]
+ * @param {Object<string, {skillName: string, sessionId: string, journeyId: string}>} [resumeLookup]
  *   frsr-s1 (AC3) — from _resolveResumeLinksForFeature; when an artefact's
  *   path has a resolvable session, a second "Resume conversation" link is
- *   added alongside the existing "View" link.
+ *   added alongside the existing "View" link. dsh-s4: the link now points
+ *   at dsh-s3's durable /journey/:journeyId/stage/:stageName route rather
+ *   than the raw /skills/.../sessions/.../chat route, using journeyId
+ *   (also carried in each lookup entry) and the stage's skillName as the
+ *   stageName the destination route expects.
  * @returns {string} HTML string
  */
 function renderArtefactIndexHtml(artefacts, featureSlug, resumeLookup) {
@@ -161,7 +170,7 @@ function renderArtefactIndexHtml(artefacts, featureSlug, resumeLookup) {
       const date     = shellEscHtml(a.createdAt || '');
       const resumable = resumeLookup[a.path || ''];
       const resumeLink = resumable
-        ? ` <a class="artefact-list__resume-link" href="/skills/${encodeURIComponent(resumable.skillName)}/sessions/${encodeURIComponent(resumable.sessionId)}/chat">Resume conversation</a>`
+        ? ` <a class="artefact-list__resume-link" href="/journey/${encodeURIComponent(resumable.journeyId)}/stage/${encodeURIComponent(resumable.skillName)}">Resume conversation</a>`
         : '';
       return base.slice(0, -5) + `<time class="artefact-list__date">${date}</time>${resumeLink}</li>`;
     }).join('');
