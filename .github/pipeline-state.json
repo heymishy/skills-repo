@@ -16881,7 +16881,7 @@
                 {
                   "id": "task-2",
                   "name": "Extend seed-durable-stage with archived flag + E2E spec (AC4)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s6-rehydrate-archived-turns-plan.md"
                 }
               ]
