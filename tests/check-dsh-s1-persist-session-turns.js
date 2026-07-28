@@ -119,6 +119,39 @@ async function main() {
     });
   }
 
+  // -- AC5: real Postgres wiring, two tenants, no cross-contamination
+  console.log('\n[dsh-s1] AC5 -- real Postgres wiring, two tenants, no cross-contamination');
+  if (!process.env.DATABASE_URL) {
+    console.log('  [SKIP] AC5: DATABASE_URL not set — integration test requires a real Postgres connection');
+  } else {
+    var { Pool } = require('pg');
+    var pgPool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false }, connectionTimeoutMillis: 10000 });
+    var mod = freshRequire();
+    mod.setSessionTurnsStore(pgPool);
+    await test('AC5: two tenants\' turns are stored and read back without cross-contamination', async function() {
+      var jA = 'dsh-s1-test-journey-a-' + Date.now();
+      var jB = 'dsh-s1-test-journey-b-' + Date.now();
+      // Minimal journeys rows so the FK constraint is satisfied.
+      await pgPool.query("INSERT INTO journeys (journey_id, tenant_id, feature_slug) VALUES ($1, 'tenant-a', 'dsh-s1-test') ON CONFLICT DO NOTHING", [jA]);
+      await pgPool.query("INSERT INTO journeys (journey_id, tenant_id, feature_slug) VALUES ($1, 'tenant-b', 'dsh-s1-test') ON CONFLICT DO NOTHING", [jB]);
+
+      await mod.writeSessionTurns({ journeyId: jA, tenantId: 'tenant-a', skillName: 'discovery', turns: [{ role: 'user', content: 'tenant A content' }] });
+      await mod.writeSessionTurns({ journeyId: jB, tenantId: 'tenant-b', skillName: 'discovery', turns: [{ role: 'user', content: 'tenant B content' }] });
+
+      var rowA = (await pgPool.query('SELECT turns FROM session_turns WHERE journey_id = $1', [jA])).rows[0];
+      var rowB = (await pgPool.query('SELECT turns FROM session_turns WHERE journey_id = $1', [jB])).rows[0];
+
+      assert.deepStrictEqual(rowA.turns, [{ role: 'user', content: 'tenant A content' }]);
+      assert.deepStrictEqual(rowB.turns, [{ role: 'user', content: 'tenant B content' }]);
+      assert.notDeepStrictEqual(rowA.turns, rowB.turns);
+
+      // Cleanup this test's own rows
+      await pgPool.query('DELETE FROM session_turns WHERE journey_id IN ($1, $2)', [jA, jB]);
+      await pgPool.query('DELETE FROM journeys WHERE journey_id IN ($1, $2)', [jA, jB]);
+    });
+    await pgPool.end();
+  }
+
   console.log('\n--- dsh-s1 Results ---');
   console.log('Passed:', passed, ' Failed:', failed);
   if (failures.length) {
