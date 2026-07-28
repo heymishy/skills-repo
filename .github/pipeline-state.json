@@ -17270,6 +17270,34 @@
         }
       ],
       "stories": []
+    },
+    {
+      "slug": "2026-07-29-delete-feature-redirect-fix",
+      "name": "Fix delete-feature redirect to the owning product, not the generic journeys list",
+      "stage": "verify-completion",
+      "health": "green",
+      "stories": [
+        {
+          "id": "dfr-s1-fix-delete-feature-redirect",
+          "stage": "verify-completion",
+          "dorStatus": "signed-off",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 4
+          },
+          "acTotal": 3,
+          "acVerified": 3,
+          "verifyStatus": "passed",
+          "updatedAt": "2026-07-28T22:28:24.358Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-28T22:29:06.467Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
