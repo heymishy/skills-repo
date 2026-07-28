@@ -1438,6 +1438,16 @@ if (process.env.NODE_ENV === 'test') {
         });
       }
     });
+
+    // dsh-s3: bridge session-turns-pg.js's D37 injectable adapter to this SAME
+    // fake db instance, test-mode only. Without this, writeSessionTurns/
+    // getTurnsForStage (dsh-s1/dsh-s2) throw "Adapter not wired" in every
+    // local E2E run, since setSessionTurnsStore is otherwise only wired above
+    // when a real DATABASE_URL is configured. Mirrors the setPgAdapter bridge
+    // immediately above -- same fake db, a second narrow query surface
+    // (session_turns) added to fake-test-db.js's query() rather than a
+    // second, independently-drifting in-memory store.
+    require('./adapters/session-turns-pg').setSessionTurnsStore(_fakeTestDb);
   }
 
 }
@@ -1745,6 +1755,66 @@ async function router(req, res) {
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ journeyId: journeyId, sessionId: sessionId, productId: productId, tenantId: tenantId, stage: stage }));
+    return;
+  }
+
+  // dsh-s3: seed a journey with a completed stage whose conversation turns
+  // exist ONLY in the durable session_turns store (via writeSessionTurns),
+  // with NO in-memory HTML session ever created -- genuinely simulating
+  // "server restarted, memory is gone" without an actual restart. Lets the
+  // breadcrumb split-view E2E spec (Task 4) navigate straight to
+  // GET /journey/:journeyId/stage/:stageName and exercise the durable-read
+  // path (getTurnsForStage) exclusively. Mirrors /test/seed-board-journey's
+  // inline NODE_ENV=test guard exactly above -- NOT _isTestEndpointAllowed(),
+  // a different, wider convention used by a different subset of routes.
+  // Body: { featureSlug, tenantId, ownerId, stageName, artefactContent, turns }
+  if (pathname === '/test/seed-durable-stage' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    let rawDurable = '';
+    for await (const chunk of req) { rawDurable += chunk; }
+    let durableBody = {};
+    try { durableBody = rawDurable ? JSON.parse(rawDurable) : {}; } catch (_) { durableBody = {}; }
+
+    const _journeyStoreForDurable = require('./modules/journey-store');
+    const _sessionTurnsForDurable = require('./adapters/session-turns-pg');
+    const _fsForDurable = require('fs');
+    const { getRepoRoot: _getRepoRootForDurable } = require('./adapters/repo-root');
+
+    const durableFeatureSlug = durableBody.featureSlug || ('dsh-s3-e2e-feature-' + Date.now());
+    const durableTenantId = durableBody.tenantId || 'e2e-test-tenant';
+    const durableOwnerId = durableBody.ownerId || 'e2e-tester';
+    const durableStageName = durableBody.stageName || 'discovery';
+    const durableArtefactContent = durableBody.artefactContent ||
+      ('# Seeded artefact for ' + durableFeatureSlug + '\n\nSeeded by /test/seed-durable-stage.\n');
+    const durableTurns = Array.isArray(durableBody.turns) ? durableBody.turns : [
+      { role: 'user', content: 'Seeded question for ' + durableStageName },
+      { role: 'assistant', content: 'Seeded answer for ' + durableStageName }
+    ];
+
+    const durableJourney = _journeyStoreForDurable.createJourney(durableFeatureSlug, 'default');
+    const durableJourneyId = durableJourney.journeyId;
+    _journeyStoreForDurable.setJourneyFields(durableJourneyId, { tenantId: durableTenantId, ownerId: durableOwnerId });
+
+    const durableArtefactRelPath = 'artefacts/' + durableFeatureSlug + '/' + durableStageName + '-seeded.md';
+    const durableRepoRoot = _getRepoRootForDurable(req);
+    const durableArtefactAbsPath = _path.resolve(_path.join(durableRepoRoot, durableArtefactRelPath));
+    _fsForDurable.mkdirSync(_path.dirname(durableArtefactAbsPath), { recursive: true });
+    _fsForDurable.writeFileSync(durableArtefactAbsPath, durableArtefactContent);
+
+    _journeyStoreForDurable.completeStage(durableJourneyId, durableStageName, durableArtefactRelPath, null, null);
+
+    // Deliberately no _setHtmlSession/setActiveSession call here -- the whole
+    // point of this endpoint is that the seeded stage's turns exist ONLY via
+    // the durable-read path (session-turns-pg.js's getTurnsForStage), with
+    // zero in-memory backing.
+    await _sessionTurnsForDurable.writeSessionTurns({
+      journeyId: durableJourneyId,
+      tenantId: durableTenantId,
+      skillName: durableStageName,
+      turns: durableTurns
+    });
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ journeyId: durableJourneyId, stageName: durableStageName, artefactPath: durableArtefactRelPath }));
     return;
   }
 

@@ -5,6 +5,7 @@ var os = require('os');
 var fs = require('fs');
 var { renderShell, escHtml } = require('../utils/html-shell');
 var { requireJourneyAccess, asHttpResponse, POLICY } = require('../middleware/journey-access');
+var { renderChat } = require('../views/chat-view'); // dsh-s3
 var { isEffectivelyAdmin } = require('../modules/impersonation'); // d2
 var _csrf = require('../middleware/csrf'); // d2 -- impersonation exit banner CSRF token
 var { updateJourneyReferenceFiles } = require('../modules/journey-state-persistence');
@@ -20,6 +21,10 @@ var _readSessionFromRedisFn = null;
 var _mergeRedisSessionDataFn = null;
 var _repoRoot = null;
 var _repoRootAdapter = require('../adapters/repo-root');
+// dsh-s3: injectable so tests can stub the durable-turns read without a real
+// Postgres pool wired up; defaults to the real dsh-s2 read function.
+var _getTurnsForStageFn = require('../adapters/session-turns-pg').getTurnsForStage;
+function setGetTurnsForStage(fn) { _getTurnsForStageFn = fn; }
 
 function getRegisterHtmlSession() {
   if (_registerHtmlSession) return _registerHtmlSession;
@@ -742,6 +747,21 @@ async function handleGetJourneyStageView(req, res) {
   var url = req.url || '';
   var isEdit = url.indexOf('edit=true') !== -1 || (req.query && req.query.edit === 'true');
 
+  // dsh-s3 (AC1/AC2): fetch this stage's durable conversation turns, via
+  // dsh-s2's shared tenant-scoped read function. Skipped entirely in edit
+  // mode -- AC3's existing inline edit flow never needs them, so skipping
+  // keeps that path at today's exact latency (no added ~200ms read).
+  var _dshTurns = null;
+  if (!isEdit) {
+    try { _dshTurns = await _getTurnsForStageFn(journeyId, stageName, req.session); }
+    catch (_) { _dshTurns = null; }
+  }
+  // AC1 fires only when turns are a genuinely non-empty array and we are not
+  // editing; AC2 (null, or an empty array -- e.g. a stage completed before
+  // this feature shipped) and the isEdit case both fall through unchanged
+  // to today's existing artefact-only rendering below.
+  var _useChatSplit = !isEdit && Array.isArray(_dshTurns) && _dshTurns.length > 0;
+
   var stageMeta = STAGE_META.find(function(s) { return s.id === stageName; });
   var stageLabel = stageMeta ? (stageMeta.num + '. ' + stageMeta.label) : stageName;
   var safeJourneyId = escHtml(journeyId);
@@ -802,6 +822,82 @@ async function handleGetJourneyStageView(req, res) {
     ? '/skills/' + encodeURIComponent(_activeSkill || 'discovery') + '/sessions/' + encodeURIComponent(_activeSid) + '/chat'
     : '/journey';
 
+  var body;
+  if (_useChatSplit) {
+    // AC1 (dsh-s3): historical chat-left / artefact-right split view.
+    // Reuses the exact turns->priorQA pairing convention from
+    // routes/skills.js's _renderChatPage (lines ~2380-2395): consume
+    // assistant+user pairs together; a lone user turn (no preceding
+    // assistant) falls back to an empty-question answer; a trailing
+    // unanswered assistant turn is intentionally dropped rather than
+    // surfaced as data.currentQuestion -- AC5 requires no live
+    // "current question" affordance in this read-only view.
+    var _priorQA = [];
+    for (var _dshI = 0; _dshI < _dshTurns.length; _dshI++) {
+      var _dshTurn = _dshTurns[_dshI];
+      if (_dshTurn.role === 'assistant') {
+        var _dshNext = _dshTurns[_dshI + 1];
+        if (_dshNext && _dshNext.role === 'user') {
+          _priorQA.push({ question: _dshTurn.content, answer: _dshNext.content, modelResponse: '' });
+          _dshI++;
+        }
+        // else: last unanswered assistant turn -- dropped, per AC5 above.
+      } else if (_dshTurn.role === 'user') {
+        _priorQA.push({ question: '', answer: _dshTurn.content, modelResponse: '' });
+      }
+    }
+
+    // renderChat's non-ideate right pane never reads an artefact field on
+    // its own -- on the live chat page it's populated client-side via an
+    // SSE pump this read-only view has no equivalent of. Pass the same
+    // pre-rendered artefactHtml the artefact-only view already computes
+    // below so the right pane shows real content, not the "will appear
+    // here" placeholder (see chat-view.js's data.artefactContent doc).
+    // A completed 'ideate' stage is deliberately NOT passed through as
+    // skillName: renderChat's right pane branches to a 3-panel
+    // Conditions/Assumptions/Canvas layout when skillName === 'ideate',
+    // which needs live lens/assumption state this durable-turns view does
+    // not have -- renaming forces the single-artefact-pane branch this
+    // story's AC1 actually asks for.
+    var _chatBodyHtml = renderChat({
+      skillName: stageName === 'ideate' ? 'ideate-history' : stageName,
+      skillLabel: stageMeta ? stageMeta.label : stageName,
+      featureSlug: journey.featureSlug || '',
+      sessionId: '',
+      questionIndex: _priorQA.length,
+      totalQuestions: _priorQA.length,
+      currentQuestion: '',
+      priorQA: _priorQA,
+      draftSections: [],
+      pendingConfirmation: false,
+      readOnly: true,
+      userInitial: (req.session.login || 'M').charAt(0).toUpperCase(),
+      modelLabel: _stageModelShort || null,
+      artefactContent: artefactHtml || '<p style="margin:0;font-size:12px;color:var(--muted);padding:16px 20px">No artefact content found.</p>'
+    });
+
+    body = [
+      '<style>',
+      '.sv-split-wrap{padding:16px 16px 24px}',
+      '.sv-split-eyebrow{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px}',
+      '.sv-split-title{font-size:18px;font-weight:700;margin:0}',
+      '</style>',
+      navigatorHtml,
+      '<div class="sv-split-wrap">',
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px">',
+          '<div>',
+            '<p class="sv-split-eyebrow">' + escHtml(stageLabel) + ' — historical conversation</p>',
+            '<h1 class="sv-split-title">' + featureName + '</h1>',
+          '</div>',
+          '<div style="display:flex;gap:8px;flex-shrink:0">',
+            '<a href="' + escHtml(currentChatUrl) + '" class="sw-btn" style="border:1px solid var(--line);font-size:13px">← Current stage</a>',
+            '<a href="/journey/' + safeJourneyId + '/stage/' + encodeURIComponent(stageName) + '?edit=true" class="sw-btn sw-btn--primary" style="font-size:13px">Edit artefact</a>',
+          '</div>',
+        '</div>',
+        _chatBodyHtml,
+      '</div>'
+    ].join('');
+  } else {
   var mainPanel;
   if (isEdit) {
     mainPanel = [
@@ -1073,7 +1169,7 @@ async function handleGetJourneyStageView(req, res) {
     ].join('');
   }
 
-  var body = [
+  body = [
     '<style>',
     '.sv-page{max-width:740px;margin:0 auto;padding:24px 24px 100px}',
     '.sv-eyebrow{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px}',
@@ -1112,6 +1208,7 @@ async function handleGetJourneyStageView(req, res) {
       '</div>'
     ].join('') : ''
   ].join('');
+  }
 
   var html = renderShell({ title: stageLabel + ' — ' + featureName, bodyContent: body, user: { login: req.session.login || '' }, active: 'journey' });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
@@ -3855,6 +3952,7 @@ module.exports = {
   setPipelineStateWriter,
   setValidate,
   setWriteTrace,
+  setGetTurnsForStage, // dsh-s3
   // wucp.2 — slash command router
   SLASH_CAPABILITY_MAP,
   getAvailableSkills,

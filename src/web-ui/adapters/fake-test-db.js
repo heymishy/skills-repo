@@ -44,6 +44,14 @@ function createFakeTestDb() {
   // real gate-confirm advance updates the SAME row this fake queries against
   // -- not a second, independently-drifting copy of journey state.
   var journeys = [];     // { journey_id, tenant_id, product_id, feature_slug, stage, active_session_id }
+  // dsh-s3: in-memory backing for session_turns, so writeSessionTurns/
+  // getTurnsForStage (adapters/session-turns-pg.js) are wired and usable in
+  // NODE_ENV=test with no DATABASE_URL -- without this, the durable-read path
+  // exercised by /test/seed-durable-stage's E2E spec would throw "Adapter not
+  // wired" locally. Keyed by (journey_id, skill_name), upsert on conflict,
+  // mirroring the journeys/_upsertJourney pattern above rather than a generic
+  // SQL engine.
+  var sessionTurns = []; // { journey_id, tenant_id, skill_name, turns }
 
   function query(sql, params) {
     var s = _normalise(sql);
@@ -306,6 +314,32 @@ function createFakeTestDb() {
       return Promise.resolve({ rows: tmExists ? [{ '?column?': 1 }] : [] });
     }
 
+    // ── session_turns (dsh-s3) ───────────────────────────────────────────
+    // Upsert on (journey_id, skill_name). turns arrives as a JSON STRING
+    // (matching the real INSERT session-turns-pg.js issues); stored and
+    // returned already-parsed, matching how the real `pg` driver auto-parses
+    // a jsonb column on read.
+    if (s.indexOf('INSERT INTO SESSION_TURNS') === 0) {
+      var stJourneyId = p[0];
+      var stTenantId = p[1];
+      var stSkillName = p[2];
+      var stTurns = JSON.parse(p[3]);
+      var stExisting = sessionTurns.find(function(r) { return r.journey_id === stJourneyId && r.skill_name === stSkillName; });
+      if (stExisting) {
+        stExisting.turns = stTurns;
+        stExisting.tenant_id = stTenantId;
+      } else {
+        sessionTurns.push({ journey_id: stJourneyId, tenant_id: stTenantId, skill_name: stSkillName, turns: stTurns });
+      }
+      return Promise.resolve({ rows: [], rowCount: 1 });
+    }
+    if (s.indexOf('SELECT TURNS FROM SESSION_TURNS') === 0) {
+      var lookupStJourneyId = p[0];
+      var lookupStSkillName = p[1];
+      var stMatch = sessionTurns.find(function(r) { return r.journey_id === lookupStJourneyId && r.skill_name === lookupStSkillName; });
+      return Promise.resolve({ rows: stMatch ? [{ turns: stMatch.turns }] : [] });
+    }
+
     // Unknown statement — resolve empty rather than throw, so an unanticipated
     // startup-time query never crashes the test server. Logged for visibility.
     console.warn('[fake-test-db] unhandled query (returning empty rows): ' + s.slice(0, 120));
@@ -337,6 +371,7 @@ function createFakeTestDb() {
       teamMemberships = [];
       personIdentities = [];
       journeys = [];
+      sessionTurns = [];
     }
   };
 }
