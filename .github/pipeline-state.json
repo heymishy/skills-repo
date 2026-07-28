@@ -16770,11 +16770,11 @@
             {
               "slug": "dsh-s4-fix-resume-conversation-link",
               "name": "Fix Resume conversation to always resolve to a real conversation view",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-28T10:28:57.779Z",
+              "updatedAt": "2026-07-28T10:30:34.945Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 3,
@@ -16806,7 +16806,9 @@
                 }
               ],
               "verifyStatus": "passed",
-              "blocker": "AC2 real-staging E2E confirmation pending post-merge (Scenario A re-run) -- see decisions.md RISK-ACCEPT"
+              "blocker": "AC2 real-staging E2E confirmation pending post-merge (Scenario A re-run) -- see decisions.md RISK-ACCEPT",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/628"
             },
             {
               "slug": "dsh-s5-archive-job",
