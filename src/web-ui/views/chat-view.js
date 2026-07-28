@@ -32,6 +32,12 @@ function lightMarkdown(text) {
  *   input-form footer (no <input>/<textarea>/submit button) and the client-side
  *   <script> tag — used for viewing a completed/durable stage with no live
  *   interactivity. Default (falsy/absent) is unchanged live-chat behaviour.
+ * @param {string} [data.artefactContent]        dsh-s3: pre-rendered HTML for the
+ *   non-ideate right-pane artefact panel. The live chat page populates this pane
+ *   client-side via SSE (no value passed here, ever, from that call site) — this
+ *   field exists for callers with no live session driving that pump (the
+ *   read-only historical-stage view). Falsy/absent preserves the original
+ *   static placeholder text unchanged.
  */
 function renderChat(data) {
   const messages = [];
@@ -409,7 +415,14 @@ function renderChat(data) {
               '<button id="sw-artefact-fs-btn" class="ad-fs-btn" onclick="swToggleArtefactFs()" title="Toggle fullscreen" aria-label="Toggle fullscreen">⊞</button>',
             '</div>',
             '<div id="artefact-panel" role="region" aria-label="' + (data.skillName === 'definition' ? 'Story map' : 'Artefact draft') + '" style="flex:0 1 auto;overflow-y:auto;padding:' + (data.skillName === 'definition' ? '0' : '16px 20px') + '">',
-              '<p style="margin:0;font-size:12px;color:var(--muted);padding:16px 20px">' + (data.skillName === 'definition' ? 'Story map will appear here as epics and stories are generated.' : 'Artefact will appear here as the session progresses.') + '</p>',
+              // dsh-s3: when a caller supplies pre-rendered artefact HTML (the
+              // read-only historical-stage view has no live SSE pump to
+              // populate this pane client-side the way the live chat page
+              // does), render it directly. Absent/falsy (every existing
+              // live-session call site) preserves the exact placeholder
+              // text that was here before this option existed.
+              (data.artefactContent ||
+                '<p style="margin:0;font-size:12px;color:var(--muted);padding:16px 20px">' + (data.skillName === 'definition' ? 'Story map will appear here as epics and stories are generated.' : 'Artefact will appear here as the session progresses.') + '</p>'),
             '</div>',
             // csd-s3/csd-s4 (found post-DoD, see decisions.md): /design and
             // /definition emit CANVAS-JSON diagram markers, but until this
