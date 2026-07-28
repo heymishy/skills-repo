@@ -16770,11 +16770,11 @@
             {
               "slug": "dsh-s4-fix-resume-conversation-link",
               "name": "Fix Resume conversation to always resolve to a real conversation view",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-28",
+              "updatedAt": "2026-07-28T07:01:28.272Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 3,
