@@ -16738,7 +16738,7 @@
                 {
                   "id": "task-1",
                   "name": "Add read-only mode to renderChat (chat-view.js)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s3-rebuild-breadcrumb-view-plan.md"
                 },
                 {
