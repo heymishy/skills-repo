@@ -16789,7 +16789,7 @@
                 {
                   "id": "task-1",
                   "name": "Repoint Resume conversation link href (routes/features.js)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s4-fix-resume-conversation-link-plan.md"
                 },
                 {
