@@ -84,6 +84,15 @@
 
 ---
 
+**2026-07-28 | RISK-ACCEPT | branch-setup**
+**Decision:** Confirmed the same 37-of-432 pre-existing test failure baseline in the dsh-s5 worktree (branched from master post-dsh-s4-merge) and proceeded without fixing them.
+**Alternatives considered:** Investigate and fix all 37 pre-existing failures before starting dsh-s5.
+**Rationale:** Identical failing-file list to dsh-s1/dsh-s2/dsh-s3/dsh-s4's own accepted baseline — no new failures introduced by the dsh-s4 merge.
+**Made by:** Hamish King — Platform owner (implicit, via "OK are improvements logged? If so move on to dsh5")
+**Revisit trigger:** Same as the prior stories' entries above.
+
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature -->
