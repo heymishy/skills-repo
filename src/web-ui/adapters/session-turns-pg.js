@@ -34,6 +34,29 @@ async function writeSessionTurns(params) {
 }
 
 /**
+ * dsh-s6: seed helper — write a row directly into the archive tier
+ * (session_turns_archive), bypassing session_turns entirely. Used only by
+ * the local test-seeding endpoint (/test/seed-durable-stage with
+ * archived: true) so the archive-fallback tier in getTurnsForStage can be
+ * exercised end-to-end without waiting on dsh-s5's real 60-day archival job.
+ * Mirrors scripts/archive-session-turns.js's own archiveRow() INSERT shape
+ * exactly (id, journey_id, tenant_id, skill_name, turns, created_at) —
+ * session_turns_archive.id is a plain INTEGER PRIMARY KEY (not SERIAL):
+ * production rows get their id from the original hot-table row being moved,
+ * so a seeded row needs an explicit synthetic id instead.
+ * @param {{journeyId: string, tenantId: string, skillName: string, turns: Array, id: ?number}} params
+ * @returns {Promise<void>}
+ */
+async function writeSessionTurnsArchive(params) {
+  const pool = requireSessionTurnsStore();
+  const id = params.id || Date.now();
+  await pool.query(
+    'INSERT INTO session_turns_archive (id, journey_id, tenant_id, skill_name, turns, created_at) VALUES ($1, $2, $3, $4, $5, $6)',
+    [id, params.journeyId, params.tenantId, params.skillName, JSON.stringify(params.turns || []), new Date().toISOString()]
+  );
+}
+
+/**
  * dsh-s2: a single, tenant-scoped read path for a completed stage's turns.
  * Prefers the live in-memory session (freshest) over the durable Postgres
  * row, falling back to Postgres only when no matching in-memory session is
@@ -68,8 +91,20 @@ async function getTurnsForStage(journeyId, skillName, requestingSession) {
     'SELECT turns FROM session_turns WHERE journey_id = $1 AND skill_name = $2',
     [journeyId, skillName]
   );
-  if (!result.rows.length) return null;
-  return result.rows[0].turns;
+  if (result.rows.length) return result.rows[0].turns;
+
+  // dsh-s6: hot-table miss -- fall back to the archive tier (dsh-s5's
+  // session_turns_archive) before giving up. Only reached when the hot-table
+  // query above found zero rows (AC2 -- never query archive on a hot hit).
+  // Read-only: never re-promote an archived row back into session_turns
+  // (explicit Out of Scope -- avoids the hot table re-growing from repeated
+  // views of old stages).
+  const archiveResult = await pool.query(
+    'SELECT turns FROM session_turns_archive WHERE journey_id = $1 AND skill_name = $2',
+    [journeyId, skillName]
+  );
+  if (!archiveResult.rows.length) return null;
+  return archiveResult.rows[0].turns;
 }
 
-module.exports = { setSessionTurnsStore, requireSessionTurnsStore, writeSessionTurns, getTurnsForStage };
+module.exports = { setSessionTurnsStore, requireSessionTurnsStore, writeSessionTurns, writeSessionTurnsArchive, getTurnsForStage };
