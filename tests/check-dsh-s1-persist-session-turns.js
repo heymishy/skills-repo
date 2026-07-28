@@ -140,6 +140,10 @@ async function main() {
   {
     var _tmpRepoRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'dsh-s1-'));
     process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
+    // Save/restore rather than delete: a real DATABASE_URL may already be set
+    // in the environment (e.g. AC5's integration run) and must not be wiped
+    // out by this block's own fake placeholder value.
+    var _priorDatabaseUrl = process.env.DATABASE_URL;
     process.env.DATABASE_URL = 'postgres://fake-for-test-only';
 
     var journeyStore = freshRequirePath(JOURNEY_STORE_PATH);
@@ -187,7 +191,8 @@ async function main() {
     });
 
     delete process.env.COPILOT_REPO_PATH;
-    delete process.env.DATABASE_URL;
+    if (_priorDatabaseUrl === undefined) { delete process.env.DATABASE_URL; }
+    else { process.env.DATABASE_URL = _priorDatabaseUrl; }
     fs.rmSync(_tmpRepoRoot, { recursive: true, force: true });
   }
 
