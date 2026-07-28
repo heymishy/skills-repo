@@ -16719,11 +16719,11 @@
             {
               "slug": "dsh-s3-rebuild-breadcrumb-view",
               "name": "Rebuild the breadcrumb view-a-completed-stage page into a chat+artefact split view",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-28T05:24:09.987Z",
+              "updatedAt": "2026-07-28T05:27:30.618Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -16733,7 +16733,33 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Add read-only mode to renderChat (chat-view.js)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s3-rebuild-breadcrumb-view-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Add POST /test/seed-durable-stage (server.js)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s3-rebuild-breadcrumb-view-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Rebuild handleGetJourneyStageView (routes/journey.js) -- AC1/AC2/AC3/AC5 + AC4 regression",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s3-rebuild-breadcrumb-view-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Playwright E2E spec (dsh-s3-breadcrumb-split-view.spec.js)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s3-rebuild-breadcrumb-view-plan.md"
+                }
+              ]
             },
             {
               "slug": "dsh-s4-fix-resume-conversation-link",
