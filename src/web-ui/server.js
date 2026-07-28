@@ -832,6 +832,15 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     });
   }
 
+  // dsh-s1 D37 wiring: wire the durable session-turns adapter (separate task
+  // from the completion hook, per CLAUDE.md's Injectable adapter rule).
+  if (process.env.DATABASE_URL) {
+    const { Pool } = require('pg');
+    const _sessionTurnsPool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false }, connectionTimeoutMillis: 10000 });
+    require('./adapters/session-turns-pg').setSessionTurnsStore(_sessionTurnsPool);
+    console.log('Session-turns DB adapter wired');
+  }
+
   // psh-s3 D37 wiring: wire AI draft generator for product creation
   {
     setGenerateProductDraft(async function(fields) {
