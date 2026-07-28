@@ -40,6 +40,18 @@ async function main() {
     `);
     await pool.query(`CREATE INDEX IF NOT EXISTS session_turns_journey_id_idx ON session_turns (journey_id)`);
     console.log('Schema created (or already exists): session_turns table + journey_id index');
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS session_turns_archive (
+        id            INTEGER      PRIMARY KEY,
+        journey_id    VARCHAR      NOT NULL,
+        tenant_id     VARCHAR,
+        skill_name    VARCHAR      NOT NULL,
+        turns         JSONB        NOT NULL DEFAULT '[]',
+        created_at    TIMESTAMPTZ  NOT NULL
+      )
+    `);
+    await pool.query(`CREATE INDEX IF NOT EXISTS session_turns_archive_journey_id_idx ON session_turns_archive (journey_id)`);
+    console.log('Schema created (or already exists): session_turns_archive table + journey_id index');
   } finally {
     await pool.end();
   }
