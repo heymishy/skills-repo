@@ -16744,7 +16744,7 @@
                 {
                   "id": "task-2",
                   "name": "Add POST /test/seed-durable-stage (server.js)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s3-rebuild-breadcrumb-view-plan.md"
                 },
                 {
