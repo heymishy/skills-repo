@@ -16579,8 +16579,10 @@
           "baseline": "~0% for stages completed before last server restart",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "dsh-s1 is infrastructure-only (write path); no user-facing surface has shipped yet -- requires dsh-s2 (read path) plus dsh-s3/dsh-s4 (UI) before this is observable.",
+          "contributingStories": [
+            "dsh-s1-persist-session-turns"
+          ]
         },
         {
           "id": "m2",
@@ -16589,8 +16591,10 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "dsh-s1 is infrastructure-only (write path); no user-facing surface has shipped yet -- requires dsh-s2 (read path) plus dsh-s3/dsh-s4 (UI) before this is observable.",
+          "contributingStories": [
+            "dsh-s1-persist-session-turns"
+          ]
         },
         {
           "id": "m3",
@@ -16613,11 +16617,11 @@
             {
               "slug": "dsh-s1-persist-session-turns",
               "name": "Persist a stage's session turns to Postgres on completion",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-28T04:20:20.678Z",
+              "updatedAt": "2026-07-28T04:24:06.098Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -16668,7 +16672,9 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/625"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/625",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "dsh-s2-shared-durable-read",
