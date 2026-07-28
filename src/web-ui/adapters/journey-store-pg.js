@@ -3,8 +3,19 @@
 const { Pool } = require('pg');
 
 let _pool = null;
+let _poolForTesting = null;
+
+// dfr-s1: test-only override so a fake db double can exercise this module's
+// real functions (e.g. listJourneys()'s row-mapping logic) without a live
+// Postgres connection -- mirrors journey-store.js's own
+// setPgAdapterForTesting naming convention. Never used on the real
+// request path; production always resolves through _getPool() below.
+function _setPoolForTesting(pool) {
+  _poolForTesting = pool;
+}
 
 function _getPool() {
+  if (_poolForTesting) return _poolForTesting;
   if (!_pool && process.env.DATABASE_URL) {
     _pool = new Pool({
       connectionString: process.env.DATABASE_URL,
@@ -145,8 +156,13 @@ async function deleteJourney(journeyId) {
 async function listJourneys() {
   const pool = _getPool();
   if (!pool) return [];
+  // dfr-s1: product_id is written on every saveJourney() call but was never
+  // selected back out here, so productId silently vanished from every
+  // journey rehydrated from Postgres after a server restart -- breaking
+  // any feature further downstream (like the delete-feature redirect) that
+  // depends on it.
   const result = await pool.query(
-    'SELECT journey_id, tenant_id, owner_id, feature_slug, created_at, data FROM journeys ORDER BY created_at ASC'
+    'SELECT journey_id, tenant_id, owner_id, feature_slug, product_id, created_at, data FROM journeys ORDER BY created_at ASC'
   );
   return result.rows.map(function(row) {
     const d = row.data || {};
@@ -155,9 +171,10 @@ async function listJourneys() {
       tenantId:   row.tenant_id,
       ownerId:    row.owner_id,
       featureSlug: row.feature_slug,
+      productId:  row.product_id,
       createdAt:  row.created_at
     });
   });
 }
 
-module.exports = { saveJourney, listJourneys, migrateSchema, saveArtefact, getArtefactsForJourney, getArtefactCountsForJourneys, deleteJourney };
+module.exports = { saveJourney, listJourneys, migrateSchema, saveArtefact, getArtefactsForJourney, getArtefactCountsForJourneys, deleteJourney, _setPoolForTesting };
