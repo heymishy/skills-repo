@@ -68,8 +68,20 @@ async function getTurnsForStage(journeyId, skillName, requestingSession) {
     'SELECT turns FROM session_turns WHERE journey_id = $1 AND skill_name = $2',
     [journeyId, skillName]
   );
-  if (!result.rows.length) return null;
-  return result.rows[0].turns;
+  if (result.rows.length) return result.rows[0].turns;
+
+  // dsh-s6: hot-table miss -- fall back to the archive tier (dsh-s5's
+  // session_turns_archive) before giving up. Only reached when the hot-table
+  // query above found zero rows (AC2 -- never query archive on a hot hit).
+  // Read-only: never re-promote an archived row back into session_turns
+  // (explicit Out of Scope -- avoids the hot table re-growing from repeated
+  // views of old stages).
+  const archiveResult = await pool.query(
+    'SELECT turns FROM session_turns_archive WHERE journey_id = $1 AND skill_name = $2',
+    [journeyId, skillName]
+  );
+  if (!archiveResult.rows.length) return null;
+  return archiveResult.rows[0].turns;
 }
 
 module.exports = { setSessionTurnsStore, requireSessionTurnsStore, writeSessionTurns, getTurnsForStage };
