@@ -16579,9 +16579,10 @@
           "baseline": "~0% for stages completed before last server restart",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "dsh-s1 is infrastructure-only (write path); no user-facing surface has shipped yet -- requires dsh-s2 (read path) plus dsh-s3/dsh-s4 (UI) before this is observable.",
+          "evidence": "dsh-s1 (write) + dsh-s2 (shared read path) both merged; still not user-observable -- requires dsh-s3 (breadcrumb UI) and/or dsh-s4 (resume UI) to also ship before this metric can be measured.",
           "contributingStories": [
-            "dsh-s1-persist-session-turns"
+            "dsh-s1-persist-session-turns",
+            "dsh-s2-shared-durable-read"
           ]
         },
         {
@@ -16591,9 +16592,10 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "dsh-s1 is infrastructure-only (write path); no user-facing surface has shipped yet -- requires dsh-s2 (read path) plus dsh-s3/dsh-s4 (UI) before this is observable.",
+          "evidence": "dsh-s1 (write) + dsh-s2 (shared read path) both merged; still not user-observable -- requires dsh-s3 (breadcrumb UI) and/or dsh-s4 (resume UI) to also ship before this metric can be measured.",
           "contributingStories": [
-            "dsh-s1-persist-session-turns"
+            "dsh-s1-persist-session-turns",
+            "dsh-s2-shared-durable-read"
           ]
         },
         {
@@ -16679,11 +16681,11 @@
             {
               "slug": "dsh-s2-shared-durable-read",
               "name": "A single, tenant-scoped read path for a completed stage's turns",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-28T05:14:03.031Z",
+              "updatedAt": "2026-07-28T05:14:49.096Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -16710,7 +16712,9 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/626"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/626",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "dsh-s3-rebuild-breadcrumb-view",
