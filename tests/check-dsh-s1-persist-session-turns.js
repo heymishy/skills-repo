@@ -51,6 +51,30 @@ async function main() {
     });
   }
 
+  // -- AC1: completion write inserts a row with journey_id, tenant_id, skill_name, and full turns array
+  console.log('\n[dsh-s1] AC1 -- completion write inserts a row with correct fields');
+  {
+    var mod = freshRequire();
+    var inserted = [];
+    var fakeDb = {
+      query: async function(sql, params) {
+        inserted.push({ sql: sql, params: params });
+        return { rows: [], rowCount: 1 };
+      }
+    };
+    mod.setSessionTurnsStore(fakeDb);
+    await test('AC1: writeSessionTurns inserts journey_id, tenant_id, skill_name, turns', async function() {
+      var turns = [{ role: 'user', content: 'hi' }, { role: 'assistant', content: 'hello' }];
+      await mod.writeSessionTurns({ journeyId: 'j1', tenantId: 't1', skillName: 'discovery', turns: turns });
+      assert.strictEqual(inserted.length, 1);
+      var p = inserted[0].params;
+      assert.strictEqual(p[0], 'j1');
+      assert.strictEqual(p[1], 't1');
+      assert.strictEqual(p[2], 'discovery');
+      assert.deepStrictEqual(JSON.parse(p[3]), turns);
+    });
+  }
+
   console.log('\n--- dsh-s1 Results ---');
   console.log('Passed:', passed, ' Failed:', failed);
   if (failures.length) {
