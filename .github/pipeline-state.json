@@ -17279,7 +17279,7 @@
       "stories": [
         {
           "id": "dfr-s1-fix-delete-feature-redirect",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -17292,7 +17292,9 @@
           "acTotal": 3,
           "acVerified": 3,
           "verifyStatus": "passed",
-          "updatedAt": "2026-07-28T22:28:24.358Z"
+          "updatedAt": "2026-07-28T22:30:05.039Z",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/631"
         }
       ],
       "metrics": [],
