@@ -16816,11 +16816,11 @@
             {
               "slug": "dsh-s5-archive-job",
               "name": "Archive turns older than 60 days out of the hot table",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-28",
+              "updatedAt": "2026-07-28T19:45:42.031Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
