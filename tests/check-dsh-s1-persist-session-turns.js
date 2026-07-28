@@ -4,13 +4,23 @@
 // artefacts/2026-07-28-durable-session-history/stories/dsh-s1-persist-session-turns.md
 
 var assert = require('assert');
+var fs     = require('fs');
+var os     = require('os');
 var path   = require('path');
 
 var MODULE_PATH = path.resolve(__dirname, '../src/web-ui/adapters/session-turns-pg.js');
+var ROUTES_PATH = path.resolve(__dirname, '../src/web-ui/routes/skills.js');
+var JOURNEY_STORE_PATH = path.resolve(__dirname, '../src/web-ui/modules/journey-store.js');
+var JOURNEY_STORE_PG_PATH = path.resolve(__dirname, '../src/web-ui/adapters/journey-store-pg.js');
 
 function freshRequire() {
   try { delete require.cache[require.resolve(MODULE_PATH)]; } catch (_) {}
   return require(MODULE_PATH);
+}
+
+function freshRequirePath(modulePath) {
+  try { delete require.cache[require.resolve(modulePath)]; } catch (_) {}
+  return require(modulePath);
 }
 
 var passed = 0;
@@ -117,6 +127,68 @@ async function main() {
       }
       assert.ok(rejected, 'expected writeSessionTurns to reject when the underlying query throws');
     });
+  }
+
+  // -- AC1 regression: the persisted turns array must include the completing
+  // assistant turn (the artefact-bearing one). Drives the real
+  // handlePostTurnStreamHtml call site (not just the adapter in isolation) --
+  // a fresh final-review pass on dsh-s1 found the original wiring read
+  // session.turns for the Postgres write BEFORE the completing assistant
+  // turn was pushed onto that same array, so every persisted conversation
+  // was missing its own final turn.
+  console.log('\n[dsh-s1] AC1 regression -- persisted turns include the completing assistant turn (real call site)');
+  {
+    var _tmpRepoRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'dsh-s1-'));
+    process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
+    process.env.DATABASE_URL = 'postgres://fake-for-test-only';
+
+    var journeyStore = freshRequirePath(JOURNEY_STORE_PATH);
+    var journeyStorePg = freshRequirePath(JOURNEY_STORE_PG_PATH);
+    journeyStorePg.saveArtefact = function() { return Promise.resolve(); };
+
+    var turnsMod = freshRequire();
+    var capturedWrites = [];
+    turnsMod.setSessionTurnsStore({
+      query: function(sql, params) {
+        capturedWrites.push(params);
+        return Promise.resolve({ rows: [], rowCount: 1 });
+      }
+    });
+
+    var routes = freshRequirePath(ROUTES_PATH);
+    var FIXTURE = 'Understood.\n\n---ARTEFACT-START---\n# Discovery\n\nReal content.\n---ARTEFACT-END---\n---SLUG---\ndsh-s1-regression-slug';
+    routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
+      onFirstChunk(0);
+      onChunk(FIXTURE);
+      return Promise.resolve({ text: FIXTURE, usage: {} });
+    });
+
+    var journey = journeyStore.createJourney('dsh-s1-regression-slug');
+    var sid = 'test-dsh-s1-ordering-' + Math.random().toString(36).slice(2);
+    routes._setHtmlSession(sid, {
+      skillName: 'discovery', sessionPath: '/tmp/t', systemPrompt: '# discovery',
+      turns: [{ role: 'user', content: 'hi' }],
+      artefactContent: null, artefactPath: null, done: false,
+      journeyId: journey.journeyId, featureSlug: 'dsh-s1-regression-slug'
+    });
+
+    function noopRes() { return { writeHead: function() {}, write: function() {}, end: function() {} }; }
+
+    await test('AC1 regression: writeSessionTurns is called with the completing assistant turn included', async function() {
+      await routes.handlePostTurnStreamHtml(
+        { session: { accessToken: 'tok', tenantId: 'org-a' }, params: { name: 'discovery', id: sid }, body: { answer: 'hi' } },
+        noopRes()
+      );
+      assert.strictEqual(capturedWrites.length, 1, 'expected exactly one session_turns write');
+      var writtenTurns = JSON.parse(capturedWrites[0][3]);
+      var lastTurn = writtenTurns[writtenTurns.length - 1];
+      assert.strictEqual(lastTurn && lastTurn.role, 'assistant', 'expected the last persisted turn to be the completing assistant turn');
+      assert.strictEqual(lastTurn && lastTurn.content, FIXTURE, 'expected the persisted final turn content to match the completing response');
+    });
+
+    delete process.env.COPILOT_REPO_PATH;
+    delete process.env.DATABASE_URL;
+    fs.rmSync(_tmpRepoRoot, { recursive: true, force: true });
   }
 
   // -- AC5: real Postgres wiring, two tenants, no cross-contamination

@@ -4555,11 +4555,15 @@ async function handlePostTurnStreamHtml(req, res) {
       // of the completion flow (artefact save, Redis delete, response).
       if (process.env.DATABASE_URL) {
         var _turnsJourney = _journeyStore.getJourney(session.journeyId);
+        // AC1 fix: session.turns doesn't yet include the completing assistant
+        // turn at this point in the flow (it's pushed below, after this
+        // block) — append it explicitly so the persisted row is complete.
+        var _finalTurns = (session.turns || []).concat([{ role: 'assistant', content: fullText }]);
         require('../adapters/session-turns-pg').writeSessionTurns({
           journeyId: session.journeyId,
           tenantId: _turnsJourney ? _turnsJourney.tenantId : null,
           skillName: session.skillName,
-          turns: session.turns || []
+          turns: _finalTurns
         }).catch(function(e) {
           console.warn(JSON.stringify({ event: 'session_turns_pg_save_failed', sessionId: sessionId, error: e.message }));
         });
