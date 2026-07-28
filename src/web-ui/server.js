@@ -1789,6 +1789,14 @@ async function router(req, res) {
       { role: 'user', content: 'Seeded question for ' + durableStageName },
       { role: 'assistant', content: 'Seeded answer for ' + durableStageName }
     ];
+    // dsh-s6: when true, seed the turns via the archive tier
+    // (session_turns_archive) instead of the hot tier (session_turns), so an
+    // E2E spec can prove dsh-s2's read function actually falls back to and
+    // rehydrates from archive storage -- not just that a hot-table row was
+    // findable. The seeded row must NOT also exist in the hot table in this
+    // case, which is why this is an either/or branch below, not "also write
+    // to the hot table".
+    const durableArchived = durableBody.archived === true;
 
     const durableJourney = _journeyStoreForDurable.createJourney(durableFeatureSlug, 'default');
     const durableJourneyId = durableJourney.journeyId;
@@ -1806,12 +1814,25 @@ async function router(req, res) {
     // point of this endpoint is that the seeded stage's turns exist ONLY via
     // the durable-read path (session-turns-pg.js's getTurnsForStage), with
     // zero in-memory backing.
-    await _sessionTurnsForDurable.writeSessionTurns({
-      journeyId: durableJourneyId,
-      tenantId: durableTenantId,
-      skillName: durableStageName,
-      turns: durableTurns
-    });
+    if (durableArchived) {
+      // dsh-s6 AC4: write ONLY to session_turns_archive -- never also to
+      // session_turns -- so the rendered page can only succeed if
+      // getTurnsForStage's archive-tier fallback (dsh-s6) is what actually
+      // served the read, proving the fallback rather than assuming it.
+      await _sessionTurnsForDurable.writeSessionTurnsArchive({
+        journeyId: durableJourneyId,
+        tenantId: durableTenantId,
+        skillName: durableStageName,
+        turns: durableTurns
+      });
+    } else {
+      await _sessionTurnsForDurable.writeSessionTurns({
+        journeyId: durableJourneyId,
+        tenantId: durableTenantId,
+        skillName: durableStageName,
+        turns: durableTurns
+      });
+    }
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ journeyId: durableJourneyId, stageName: durableStageName, artefactPath: durableArtefactRelPath }));

@@ -52,6 +52,14 @@ function createFakeTestDb() {
   // mirroring the journeys/_upsertJourney pattern above rather than a generic
   // SQL engine.
   var sessionTurns = []; // { journey_id, tenant_id, skill_name, turns }
+  // dsh-s6: in-memory backing for session_turns_archive, so the local
+  // /test/seed-durable-stage `archived: true` seed path and getTurnsForStage's
+  // archive-tier fallback (adapters/session-turns-pg.js) are both usable in
+  // NODE_ENV=test with no DATABASE_URL. Kept as a separate array (not reusing
+  // sessionTurns above) since the whole point of dsh-s6's E2E scenario is
+  // proving the row is NOT in the hot table -- a shared array would make that
+  // distinction untestable.
+  var sessionTurnsArchive = []; // { id, journey_id, tenant_id, skill_name, turns, created_at }
 
   function query(sql, params) {
     var s = _normalise(sql);
@@ -314,6 +322,33 @@ function createFakeTestDb() {
       return Promise.resolve({ rows: tmExists ? [{ '?column?': 1 }] : [] });
     }
 
+    // ── session_turns_archive (dsh-s6) ──────────────────────────────────
+    // Checked BEFORE the session_turns branches below: "INSERT INTO
+    // SESSION_TURNS_ARCHIVE ..." / "SELECT TURNS FROM SESSION_TURNS_ARCHIVE
+    // ..." both have "...SESSION_TURNS..." as a literal prefix, so the
+    // shorter session_turns checks would otherwise match first and
+    // mis-route archive rows into the hot-table array. Same exact-prefix
+    // ordering concern already documented above for the products table.
+    if (s.indexOf('INSERT INTO SESSION_TURNS_ARCHIVE') === 0) {
+      var staId = p[0];
+      var staJourneyId = p[1];
+      var staTenantId = p[2];
+      var staSkillName = p[3];
+      var staTurns = JSON.parse(p[4]);
+      var staCreatedAt = p[5];
+      sessionTurnsArchive.push({
+        id: staId, journey_id: staJourneyId, tenant_id: staTenantId,
+        skill_name: staSkillName, turns: staTurns, created_at: staCreatedAt
+      });
+      return Promise.resolve({ rows: [], rowCount: 1 });
+    }
+    if (s.indexOf('SELECT TURNS FROM SESSION_TURNS_ARCHIVE') === 0) {
+      var lookupStaJourneyId = p[0];
+      var lookupStaSkillName = p[1];
+      var staMatch = sessionTurnsArchive.find(function(r) { return r.journey_id === lookupStaJourneyId && r.skill_name === lookupStaSkillName; });
+      return Promise.resolve({ rows: staMatch ? [{ turns: staMatch.turns }] : [] });
+    }
+
     // ── session_turns (dsh-s3) ───────────────────────────────────────────
     // Upsert on (journey_id, skill_name). turns arrives as a JSON STRING
     // (matching the real INSERT session-turns-pg.js issues); stored and
@@ -372,6 +407,7 @@ function createFakeTestDb() {
       personIdentities = [];
       journeys = [];
       sessionTurns = [];
+      sessionTurnsArchive = [];
     }
   };
 }
