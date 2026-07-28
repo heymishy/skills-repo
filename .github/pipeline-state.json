@@ -16841,7 +16841,7 @@
                 {
                   "id": "task-2",
                   "name": "CLI-spawn test (AC3) + scheduled GitHub Actions workflow",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s5-archive-job-plan.md"
                 }
               ]
