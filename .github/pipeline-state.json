@@ -16607,9 +16607,10 @@
           "baseline": "0% (no growth today -- turns deleted at completion)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "The archive job is merged and deployed (daily scheduled GitHub Actions workflow), but has not yet had a real scheduled run in production, and this metric's own target (\"100% of turns >60 days archived; rehydration succeeds\") requires dsh-s6 (rehydration) to also ship before it can be considered met. Still not-yet-measured.",
+          "evidence": "Both halves of this metric are now merged: dsh-s5 (archive job) and dsh-s6 (transparent rehydration on read). The rehydration path is confirmed working end-to-end via a local E2E test. Still not-yet-measured: no session_turns row will actually be 60 days old for roughly two months (the table only started accumulating data with dsh-s1's merge on 2026-07-28), so a real archive-then-rehydrate cycle has not yet been observed in production.",
           "contributingStories": [
-            "dsh-s5-archive-job"
+            "dsh-s5-archive-job",
+            "dsh-s6-rehydrate-archived-turns"
           ]
         }
       ],
@@ -16618,7 +16619,7 @@
         {
           "slug": "dsh-e1-durable-session-history",
           "name": "Operators can always see the conversation behind a completed pipeline stage",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "dsh-s1-persist-session-turns",
@@ -16856,11 +16857,11 @@
             {
               "slug": "dsh-s6-rehydrate-archived-turns",
               "name": "Transparently rehydrate an archived stage's turns on read",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-28T21:42:52.820Z",
+              "updatedAt": "2026-07-28T21:43:33.894Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -16887,7 +16888,9 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/630"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/630",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         }
@@ -17198,45 +17201,45 @@
           "category": "adr",
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping",
           "status": "met",
-          "evidence": "All 6 stories (dsh-s1 through dsh-s6) cite ADR-025 in Architecture Constraints and require tenant_id scoping + the existing requireJourneyAccess/isSameTenant guard on every read/write. No violations found in review run 1.",
-          "assessedBy": "/review",
-          "assessedAt": "2026-07-28T00:00:00.000Z"
+          "evidence": "All 6 stories (dsh-s1 through dsh-s6) cite ADR-025 in Architecture Constraints and require tenant_id scoping + the existing requireJourneyAccess/isSameTenant guard on every read/write. No violations found in review run 1. All 6 stories (dsh-s1 through dsh-s6) confirmed merged and DoD-complete as of dsh-s6.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-28T21:44:30.463Z"
         },
         {
           "id": "ADR-026",
           "category": "adr",
           "label": "Reuse an existing entity/primitive when its shape already covers a new concept",
           "status": "met",
-          "evidence": "The new-table-vs-extend-artefacts reuse-check was resolved during /clarify and logged in decisions.md; dsh-s1 cites this resolution rather than re-litigating it. No violations found.",
-          "assessedBy": "/review",
-          "assessedAt": "2026-07-28T00:00:00.000Z"
+          "evidence": "The new-table-vs-extend-artefacts reuse-check was resolved during /clarify and logged in decisions.md; dsh-s1 cites this resolution rather than re-litigating it. No violations found. All 6 stories (dsh-s1 through dsh-s6) confirmed merged and DoD-complete as of dsh-s6.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-28T21:44:30.463Z"
         },
         {
           "id": "ADR-027",
           "category": "adr",
           "label": "Live SaaS-user-facing mechanisms are ordinary application code, not governed SKILL.md skills",
           "status": "met",
-          "evidence": "Run 2: all 6 stories (dsh-s1 through dsh-s6) now cite ADR-027 in Architecture Constraints. Resolved findings: 1-M2 dsh-s1, 1-M2 dsh-s2, 1-M1 dsh-s3, 1-M1 dsh-s4, 1-M2 dsh-s5, 1-M1 dsh-s6.",
-          "assessedBy": "/review",
-          "assessedAt": "2026-07-28T00:00:00.000Z"
+          "evidence": "Run 2: all 6 stories (dsh-s1 through dsh-s6) now cite ADR-027 in Architecture Constraints. Resolved findings: 1-M2 dsh-s1, 1-M2 dsh-s2, 1-M1 dsh-s3, 1-M1 dsh-s4, 1-M2 dsh-s5, 1-M1 dsh-s6. All 6 stories (dsh-s1 through dsh-s6) confirmed merged and DoD-complete as of dsh-s6.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-28T21:44:30.463Z"
         },
         {
           "id": "NFR-performance",
           "category": "nfr",
           "label": "Directional latency budgets (write/read/render, hot vs archive tier)",
           "status": "met",
-          "evidence": "All 6 stories name a directional latency target in nfr-profile.md; no formal SLO breach possible pre-implementation.",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-07-28T00:00:00.000Z"
+          "evidence": "All 6 stories name a directional latency target in nfr-profile.md; no formal SLO breach possible pre-implementation. All 6 stories (dsh-s1 through dsh-s6) confirmed merged and DoD-complete as of dsh-s6.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-28T21:44:30.463Z"
         },
         {
           "id": "NFR-security",
           "category": "nfr",
           "label": "Tenant-isolation guard, FORBIDDEN-vs-NOT_FOUND policy, no accessToken in persisted turns",
           "status": "met",
-          "evidence": "ADR-025 cited in all 6 stories; dsh-s1 AC4/dsh-s2 AC4/dsh-s6 AC5 assert the guard directly.",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-07-28T00:00:00.000Z"
+          "evidence": "ADR-025 cited in all 6 stories; dsh-s1 AC4/dsh-s2 AC4/dsh-s6 AC5 assert the guard directly. All 6 stories (dsh-s1 through dsh-s6) confirmed merged and DoD-complete as of dsh-s6.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-28T21:44:30.463Z"
         },
         {
           "id": "NFR-data-residency",
@@ -17252,18 +17255,18 @@
           "category": "nfr",
           "label": "RPO: zero data loss going forward once persisted",
           "status": "met",
-          "evidence": "This is the core guarantee the epic exists to deliver; dsh-s4 AC2 (real staging) is the direct confirmation test.",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-07-28T00:00:00.000Z"
+          "evidence": "This is the core guarantee the epic exists to deliver; dsh-s4 AC2 (real staging) is the direct confirmation test. All 6 stories (dsh-s1 through dsh-s6) confirmed merged and DoD-complete as of dsh-s6.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-28T21:44:30.463Z"
         },
         {
           "id": "NFR-compliance",
           "category": "nfr",
           "label": "Internal data-governance gap (product/constraints.md #5) closure",
           "status": "met",
-          "evidence": "Resolved via /clarify -- 60-day archive (dsh-s5) + existing tenant-isolation access control (ADR-025) together close the gap; logged in decisions.md.",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-07-28T00:00:00.000Z"
+          "evidence": "Resolved via /clarify -- 60-day archive (dsh-s5) + existing tenant-isolation access control (ADR-025) together close the gap; logged in decisions.md. All 6 stories (dsh-s1 through dsh-s6) confirmed merged and DoD-complete as of dsh-s6.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-07-28T21:44:30.463Z"
         }
       ],
       "stories": []
