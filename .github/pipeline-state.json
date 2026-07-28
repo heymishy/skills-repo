@@ -16856,18 +16856,18 @@
             {
               "slug": "dsh-s6-rehydrate-archived-turns",
               "name": "Transparently rehydrate an archived stage's turns on read",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-28T20:50:33.548Z",
+              "updatedAt": "2026-07-28T21:18:18.630Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 0
+                "passing": 6
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
@@ -16884,7 +16884,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s6-rehydrate-archived-turns-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             }
           ]
         }
