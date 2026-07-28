@@ -16835,7 +16835,7 @@
                 {
                   "id": "task-1",
                   "name": "archive-session-turns.js + session_turns_archive table + unit tests",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s5-archive-job-plan.md"
                 },
                 {
