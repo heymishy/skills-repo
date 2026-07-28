@@ -16750,7 +16750,7 @@
                 {
                   "id": "task-3",
                   "name": "Rebuild handleGetJourneyStageView (routes/journey.js) -- AC1/AC2/AC3/AC5 + AC4 regression",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s3-rebuild-breadcrumb-view-plan.md"
                 },
                 {
