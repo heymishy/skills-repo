@@ -174,11 +174,16 @@ queue.push(function() {
     await m.features.handleGetFeatureArtefacts(req, res, 'frsr-test-feature');
 
     assert.strictEqual(res.statusCode, 200, 'expected 200, got ' + res.statusCode);
-    assert.ok(res.body.includes('/skills/discovery/sessions/' + sid + '/chat'), 'expected a resume link to the resolvable discovery session');
+    // dsh-s4: the resume link now points at dsh-s3's durable stage-view route
+    // (/journey/:journeyId/stage/:stageName) rather than the raw
+    // /skills/.../sessions/.../chat route, which 404s once a session is gone
+    // from both memory and Redis. sid is still recorded on the completedStages
+    // entry (AC2, unchanged) even though the link no longer references it directly.
+    assert.ok(res.body.includes('/journey/' + journey.journeyId + '/stage/discovery'), 'expected a resume link to the durable stage-view route for the resolvable discovery session');
     assert.ok(res.body.includes('Resume conversation'), 'expected the "Resume conversation" label');
     assert.ok(res.body.includes('/artefact/frsr-test-feature/discovery'), 'expected the existing View link to still be present, not replaced');
     // The definition artefact (no resolvable session) must not get a resume link to a bogus URL.
-    assert.ok(!res.body.includes('/skills/definition/sessions/'), 'expected no resume link for a stage with no resolvable sessionId');
+    assert.ok(!res.body.includes('/journey/' + journey.journeyId + '/stage/definition'), 'expected no resume link for a stage with no resolvable sessionId');
   });
 });
 

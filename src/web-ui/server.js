@@ -1887,6 +1887,37 @@ async function router(req, res) {
     return;
   }
 
+  // dsh-s4: evict a session from the in-memory _sessionStore only -- simulates
+  // "this session is gone from memory" (the real post-restart condition)
+  // without a disruptive full restart. NEVER touches Redis or Postgres.
+  // Gated by _isTestEndpointAllowed(req) (not the plain NODE_ENV=test inline
+  // check some other seed endpoints use) because dsh-s4's own Playwright E2E
+  // spec runs against real deployed staging, not the local ephemeral server.
+  if (pathname === '/test/evict-skill-session' && req.method === 'POST' && _isTestEndpointAllowed(req)) {
+    try {
+      var evictBody = '';
+      req.on('data', chunk => { evictBody += chunk; });
+      req.on('end', function() {
+        try {
+          var evictData = JSON.parse(evictBody || '{}');
+          var { _evictHtmlSession } = require('./routes/skills');
+          var evicted = _evictHtmlSession(evictData.sessionId);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ evicted: evicted }));
+        } catch (e) {
+          console.error('[dsh-s4] evict-skill-session error:', e);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: e.message }));
+        }
+      });
+    } catch (e) {
+      console.error('[dsh-s4] evict-skill-session setup error:', e);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: e.message }));
+    }
+    return;
+  }
+
   if (pathname === '/auth/github' && req.method === 'GET') {
     await handleAuthGithub(req, res);
 
