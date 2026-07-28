@@ -28,6 +28,10 @@ function lightMarkdown(text) {
  * @param {Array<{question, answer, modelResponse}>} data.priorQA
  * @param {Array<{title, body, state}>} data.draftSections   state ∈ 'drafted'|'pending'|'empty'
  * @param {boolean} data.pendingConfirmation
+ * @param {boolean} [data.readOnly]              dsh-s3: when truthy, suppresses the
+ *   input-form footer (no <input>/<textarea>/submit button) and the client-side
+ *   <script> tag — used for viewing a completed/durable stage with no live
+ *   interactivity. Default (falsy/absent) is unchanged live-chat behaviour.
  */
 function renderChat(data) {
   const messages = [];
@@ -99,6 +103,53 @@ function renderChat(data) {
 
   const formAction = '/api/skills/' + escHtml(data.skillName) + '/sessions/' +
     escHtml(data.sessionId) + '/answer';
+
+  // dsh-s3: read-only mode (breadcrumb "view a completed stage" split view)
+  // suppresses the input-form footer and the client-side <script> tag —
+  // there is nothing to submit and no live SSE pump to wire up when
+  // rendering a durable, already-completed stage. Default (readOnly
+  // falsy/absent) is unchanged from before this option existed.
+  const footerHtml = data.readOnly ? '' : (
+    '<footer class="sw-chat-foot">' +
+      confirmBanner +
+      '<form method="POST" action="' + formAction + '" id="chat-form">' +
+        '<div class="sw-chat-input">' +
+          '<textarea id="chat-input" name="answer" placeholder="Type your answer…" autofocus></textarea>' +
+          '<div class="sw-chat-input-row">' +
+            '<span style="font-size:12px;color:var(--muted)">Press ⌘↵ or Ctrl+↵ to send</span>' +
+            btn('primary', 'Send →', { type: 'submit' }) +
+          '</div>' +
+        '</div>' +
+      '</form>' +
+    '</footer>'
+  );
+
+  const scriptHtml = data.readOnly ? '' : (
+    '<script>' +
+      'function escHtmlClient(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}' +
+      'function appendConditionItem(item){' +
+        'var container=document.getElementById("condition-items");' +
+        'if(!container)return;' +
+        'var p=container.querySelector("p");if(p)p.remove();' +
+        'var typeKey=(item.type||"").toLowerCase().replace(/[^a-z]/g,"");' +
+        'var typeClass=["constraint","dependency","outcome"].indexOf(typeKey)>=0?typeKey:"constraint";' +
+        'var cardEl=document.createElement("div");' +
+        'cardEl.className="condition-card";' +
+        'cardEl.innerHTML=\'<div class="condition-card-meta">\'+' +
+          '\'<span class="ci-type-tag ci-type-\'+typeClass+\'">\'+escHtmlClient(item.type||"constraint")+\'</span>\'+' +
+          '\'<span class="ci-source">\'+escHtmlClient(item.source||"model")+\'</span>\'+' +
+          '\'</div><div class="condition-card-text">\'+escHtmlClient(item.text||"")+\'</div>\';' +
+        'container.appendChild(cardEl);' +
+      '}' +
+      'function swToggleArtefactFs(){var p=document.getElementById("sw-artefact-pane");var b=document.getElementById("sw-artefact-fs-btn");if(!p)return;p.classList.toggle("ad-fs");b.textContent=p.classList.contains("ad-fs")?"⊡":"⊞";}' +
+      '// SSE pump wires: appendConditionItem, appendCanvasBlock defined in the IIFE (skills.js)' +
+      'document.addEventListener("keydown",function(e){' +
+        'if((e.metaKey||e.ctrlKey)&&e.key==="Enter"){' +
+          'var f=document.getElementById("chat-form");if(f)f.submit();' +
+        '}' +
+      '});' +
+    '</script>'
+  );
 
   return [
     '<style>',
@@ -304,18 +355,7 @@ function renderChat(data) {
           (data.modelLabel ? '<span style="font-size:11px;color:var(--muted);background:var(--line-2);padding:2px 8px;border-radius:10px;font-family:var(--mono)">' + escHtml(data.modelLabel) + '</span>' : ''),
         '</header>',
         '<div class="sw-chat-thread" id="chat-messages">' + messages.join('') + '</div>',
-        '<footer class="sw-chat-foot">',
-          confirmBanner,
-          '<form method="POST" action="' + formAction + '" id="chat-form">',
-            '<div class="sw-chat-input">',
-              '<textarea id="chat-input" name="answer" placeholder="Type your answer…" autofocus></textarea>',
-              '<div class="sw-chat-input-row">',
-                '<span style="font-size:12px;color:var(--muted)">Press ⌘↵ or Ctrl+↵ to send</span>',
-                btn('primary', 'Send →', { type: 'submit' }),
-              '</div>',
-            '</div>',
-          '</form>',
-        '</footer>',
+        footerHtml,
       '</section>',
 
       // RIGHT: ideate → 3-panel; all other skills → artefact draft panel
@@ -390,30 +430,7 @@ function renderChat(data) {
 
     '</div>',
     // Cmd/Ctrl+Enter to submit + inc2.1 condition-item client rendering
-    '<script>',
-      'function escHtmlClient(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}',
-      'function appendConditionItem(item){',
-        'var container=document.getElementById("condition-items");',
-        'if(!container)return;',
-        'var p=container.querySelector("p");if(p)p.remove();',
-        'var typeKey=(item.type||"").toLowerCase().replace(/[^a-z]/g,"");',
-        'var typeClass=["constraint","dependency","outcome"].indexOf(typeKey)>=0?typeKey:"constraint";',
-        'var cardEl=document.createElement("div");',
-        'cardEl.className="condition-card";',
-        'cardEl.innerHTML=\'<div class="condition-card-meta">\'+',
-          '\'<span class="ci-type-tag ci-type-\'+typeClass+\'">\'+escHtmlClient(item.type||"constraint")+\'</span>\'+',
-          '\'<span class="ci-source">\'+escHtmlClient(item.source||"model")+\'</span>\'+',
-          '\'</div><div class="condition-card-text">\'+escHtmlClient(item.text||"")+\'</div>\';',
-        'container.appendChild(cardEl);',
-      '}',
-      'function swToggleArtefactFs(){var p=document.getElementById("sw-artefact-pane");var b=document.getElementById("sw-artefact-fs-btn");if(!p)return;p.classList.toggle("ad-fs");b.textContent=p.classList.contains("ad-fs")?"⊡":"⊞";}',
-      '// SSE pump wires: appendConditionItem, appendCanvasBlock defined in the IIFE (skills.js)',
-      'document.addEventListener("keydown",function(e){',
-        'if((e.metaKey||e.ctrlKey)&&e.key==="Enter"){',
-          'var f=document.getElementById("chat-form");if(f)f.submit();',
-        '}',
-      '});',
-    '</script>'
+    scriptHtml
   ].join('');
 }
 
