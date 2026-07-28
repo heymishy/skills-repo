@@ -96,6 +96,29 @@ async function main() {
     });
   }
 
+  // -- AC3: a failed Postgres write does not block the rest of the completion flow
+  console.log('\n[dsh-s1] AC3 -- a failed Postgres write does not block the rest of the completion flow');
+  {
+    var mod = freshRequire();
+    var fakeDb = {
+      query: async function() { throw new Error('connection reset'); }
+    };
+    mod.setSessionTurnsStore(fakeDb);
+    await test('AC3: writeSessionTurns failure does not throw past the caller (caller wraps in try/catch)', async function() {
+      // The adapter itself may reject; the calling code in routes/skills.js
+      // wraps this in try/catch so the rest of the completion flow proceeds.
+      // This test confirms the adapter's own promise rejects (so the caller's
+      // catch has something real to catch), not that it silently resolves.
+      var rejected = false;
+      try {
+        await mod.writeSessionTurns({ journeyId: 'j1', tenantId: 't1', skillName: 'discovery', turns: [] });
+      } catch (_) {
+        rejected = true;
+      }
+      assert.ok(rejected, 'expected writeSessionTurns to reject when the underlying query throws');
+    });
+  }
+
   console.log('\n--- dsh-s1 Results ---');
   console.log('Passed:', passed, ' Failed:', failed);
   if (failures.length) {

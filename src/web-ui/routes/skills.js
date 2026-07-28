@@ -4548,6 +4548,22 @@ async function handlePostTurnStreamHtml(req, res) {
           console.warn(JSON.stringify({ event: 'artefact_pg_save_failed', sessionId: sessionId, error: e.message }));
         });
       }
+      // dsh-s1: durably persist this stage's conversation turns — separate
+      // from the artefact-content save above, so the conversation survives a
+      // restart even though it's stored in a different table (session_turns,
+      // not artefacts). Non-fatal: a failure here must never block the rest
+      // of the completion flow (artefact save, Redis delete, response).
+      if (process.env.DATABASE_URL) {
+        var _turnsJourney = _journeyStore.getJourney(session.journeyId);
+        require('../adapters/session-turns-pg').writeSessionTurns({
+          journeyId: session.journeyId,
+          tenantId: _turnsJourney ? _turnsJourney.tenantId : null,
+          skillName: session.skillName,
+          turns: session.turns || []
+        }).catch(function(e) {
+          console.warn(JSON.stringify({ event: 'session_turns_pg_save_failed', sessionId: sessionId, error: e.message }));
+        });
+      }
     }
   }
 
