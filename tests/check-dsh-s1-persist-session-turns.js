@@ -75,6 +75,27 @@ async function main() {
     });
   }
 
+  // -- AC2: re-completing the same stage upserts, does not duplicate
+  console.log('\n[dsh-s1] AC2 -- re-completing the same stage upserts, does not duplicate');
+  {
+    var mod = freshRequire();
+    var rows = {};
+    var fakeDb = {
+      query: async function(sql, params) {
+        var key = params[0] + '::' + params[2];
+        rows[key] = { journey_id: params[0], tenant_id: params[1], skill_name: params[2], turns: params[3] };
+        return { rows: [], rowCount: 1 };
+      }
+    };
+    mod.setSessionTurnsStore(fakeDb);
+    await test('AC2: second completion write for the same stage upserts, one row remains', async function() {
+      await mod.writeSessionTurns({ journeyId: 'j1', tenantId: 't1', skillName: 'discovery', turns: [{ role: 'user', content: 'v1' }] });
+      await mod.writeSessionTurns({ journeyId: 'j1', tenantId: 't1', skillName: 'discovery', turns: [{ role: 'user', content: 'v2' }] });
+      assert.strictEqual(Object.keys(rows).length, 1, 'expected exactly one row for (j1, discovery)');
+      assert.deepStrictEqual(JSON.parse(rows['j1::discovery'].turns), [{ role: 'user', content: 'v2' }]);
+    });
+  }
+
   console.log('\n--- dsh-s1 Results ---');
   console.log('Passed:', passed, ' Failed:', failed);
   if (failures.length) {
