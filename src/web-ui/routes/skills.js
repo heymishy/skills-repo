@@ -1993,6 +1993,19 @@ function _setHtmlSession(sessionId, data) {
 }
 
 /**
+ * dsh-s4 -- delete exactly one entry from _sessionStore by key. Used by the
+ * staging-safe POST /test/evict-skill-session endpoint (server.js) to
+ * simulate "this session is gone from the current process's memory" (the
+ * real post-restart condition) without an actual restart. Never touches
+ * Redis or Postgres -- in-memory eviction only.
+ * @param {string} sessionId
+ * @returns {boolean} true if the key existed and was deleted, false otherwise
+ */
+function _evictHtmlSession(sessionId) {
+  return _sessionStore.delete(sessionId);
+}
+
+/**
  * List all entries in the session store — used by pmf.3 orientation wizard Step 3.
  * @returns {Array<{sessionId: string, session: object}>}
  */
@@ -5006,6 +5019,8 @@ module.exports = {
   htmlSubmitTurn, buildSystemPrompt,
   // wuce.26 — test helpers + skill-turn executor adapter setter
   _getHtmlSession, _setHtmlSession, _listHtmlSessions, _getHtmlSessionsBulk, setSkillTurnExecutorAdapter,
+  // dsh-s4 — in-memory-only session eviction test helper (POST /test/evict-skill-session)
+  _evictHtmlSession,
   // wsm.1 — disk session writer injectable
   setSessionStore,
   // wsm.2 — Redis skill session injectable, compact read/merge, eviction
