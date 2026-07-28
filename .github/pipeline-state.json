@@ -16770,11 +16770,11 @@
             {
               "slug": "dsh-s4-fix-resume-conversation-link",
               "name": "Fix Resume conversation to always resolve to a real conversation view",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-28T07:01:28.272Z",
+              "updatedAt": "2026-07-28T07:03:54.752Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 3,
@@ -16784,7 +16784,27 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Repoint Resume conversation link href (routes/features.js)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s4-fix-resume-conversation-link-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Add POST /test/evict-skill-session (server.js + skills.js)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s4-fix-resume-conversation-link-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Playwright E2E spec against real staging + wire into Scenario A",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s4-fix-resume-conversation-link-plan.md"
+                }
+              ]
             },
             {
               "slug": "dsh-s5-archive-job",
