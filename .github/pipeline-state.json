@@ -16613,11 +16613,11 @@
             {
               "slug": "dsh-s1-persist-session-turns",
               "name": "Persist a stage's session turns to Postgres on completion",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-28T03:47:17.982Z",
+              "updatedAt": "2026-07-28T03:55:30.980Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -16666,7 +16666,9 @@
                   "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s1-persist-session-turns-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/625"
             },
             {
               "slug": "dsh-s2-shared-durable-read",
