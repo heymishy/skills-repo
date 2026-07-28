@@ -16679,18 +16679,18 @@
             {
               "slug": "dsh-s2-shared-durable-read",
               "name": "A single, tenant-scoped read path for a completed stage's turns",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-28T04:51:16.800Z",
+              "updatedAt": "2026-07-28T04:52:35.908Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
-                "passing": 0
+                "passing": 7
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -16707,7 +16707,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s2-shared-durable-read-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "dsh-s3-rebuild-breadcrumb-view",
