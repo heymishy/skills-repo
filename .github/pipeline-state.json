@@ -16816,18 +16816,18 @@
             {
               "slug": "dsh-s5-archive-job",
               "name": "Archive turns older than 60 days out of the hot table",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-28T19:46:40.760Z",
+              "updatedAt": "2026-07-28T20:11:11.460Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0
+                "passing": 5
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -16844,7 +16844,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s5-archive-job-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "dsh-s6-rehydrate-archived-turns",
