@@ -16801,7 +16801,7 @@
                 {
                   "id": "task-3",
                   "name": "Playwright E2E spec against real staging + wire into Scenario A",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s4-fix-resume-conversation-link-plan.md"
                 }
               ]
