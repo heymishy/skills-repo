@@ -16579,10 +16579,11 @@
           "baseline": "~0% for stages completed before last server restart",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "dsh-s1 (write) + dsh-s2 (shared read path) both merged; still not user-observable -- requires dsh-s3 (breadcrumb UI) and/or dsh-s4 (resume UI) to also ship before this metric can be measured.",
+          "evidence": "The literal originally-reported bug (Session not found on Resume conversation) is fixed and confirmed against real, redeployed wuce-staging: a session evicted from memory now renders the durable conversation via the repointed link, never a 404. No real operator usage/analytics data has been collected yet -- still not-yet-measured pending actual usage observation, but the fix itself is deployed and independently confirmed working end-to-end.",
           "contributingStories": [
             "dsh-s1-persist-session-turns",
-            "dsh-s2-shared-durable-read"
+            "dsh-s2-shared-durable-read",
+            "dsh-s4-fix-resume-conversation-link"
           ]
         },
         {
@@ -16770,11 +16771,11 @@
             {
               "slug": "dsh-s4-fix-resume-conversation-link",
               "name": "Fix Resume conversation to always resolve to a real conversation view",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-28T19:31:36.960Z",
+              "updatedAt": "2026-07-28T19:32:32.312Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 3,
@@ -16808,7 +16809,9 @@
               "verifyStatus": "passed",
               "blocker": "",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/628"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/628",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "dsh-s5-archive-job",
