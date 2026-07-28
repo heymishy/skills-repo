@@ -16632,7 +16632,7 @@
                 {
                   "id": "task-1",
                   "name": "Add session_turns table to schema migration",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s1-persist-session-turns-plan.md"
                 },
                 {
