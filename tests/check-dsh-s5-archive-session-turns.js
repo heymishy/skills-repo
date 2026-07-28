@@ -3,11 +3,12 @@
 // rows older than 60 days out of the hot table into session_turns_archive.
 // artefacts/2026-07-28-durable-session-history/stories/dsh-s5-archive-job.md
 //
-// Covers AC1, AC2, AC4, AC5 (Task 1). AC3 (CLI-spawn, no lingering process)
-// is added separately in Task 2, once the scheduled workflow also exists.
+// Covers AC1, AC2, AC4, AC5 (Task 1) plus AC3 (Task 2, added once the
+// scheduled workflow also exists -- see .github/workflows/archive-session-turns.yml).
 
 var assert = require('assert');
 var path   = require('path');
+var { execFileSync } = require('child_process');
 
 var MODULE_PATH = path.resolve(__dirname, '../scripts/archive-session-turns.js');
 
@@ -224,6 +225,33 @@ async function main() {
     } finally {
       console.log = originalLog;
     }
+  }
+
+  // -- AC3: the CLI entrypoint, spawned as a real child process, exits
+  // cleanly and does not hang -- no persistent process remains running after
+  // it returns, satisfying product/constraints.md #11 (no persistent agent
+  // runtime dependency). Mirrors check-alrf-s11-purge-e2e-tenants.js's exact
+  // CLI-spawn pattern for purge-e2e-tenants.js, including pointing
+  // DATABASE_URL at an intentionally-unreachable address (127.0.0.1:1) so
+  // this test never depends on a real database being available.
+  console.log('\n[dsh-s5] AC3 -- CLI entrypoint exits cleanly (no lingering process) against an unreachable DATABASE_URL');
+  {
+    await test('AC3: node scripts/archive-session-turns.js exits 0 and does not hang, even when the DB is unreachable', function() {
+      // execFileSync throws if the child exits non-zero OR if it exceeds the
+      // timeout -- reaching the assertion below at all already proves both
+      // halves of AC3 (exit 0, no hang). archive-session-turns.js's CLI
+      // entrypoint always sets process.exitCode = 0 in both its success and
+      // catch branches (see the script's own comment: "Never a hard failure
+      // here ... this is pure post-run hygiene, not a correctness gate"), so
+      // a real connection failure here still exits 0 rather than throwing
+      // out to the shell or hanging past the 15s timeout.
+      var out = execFileSync(process.execPath, [MODULE_PATH], {
+        env: Object.assign({}, process.env, { DATABASE_URL: 'postgres://baduser:badpass@127.0.0.1:1/nonexistent' }),
+        timeout: 15000,
+        encoding: 'utf8'
+      });
+      assert.strictEqual(typeof out, 'string', 'expected execFileSync to return captured stdout without throwing (i.e. exit 0, no hang)');
+    });
   }
 
   console.log('\n--- dsh-s5 Results ---');
