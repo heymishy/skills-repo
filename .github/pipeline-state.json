@@ -16875,7 +16875,7 @@
                 {
                   "id": "task-1",
                   "name": "Extend getTurnsForStage with archive fallback + unit tests",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s6-rehydrate-archived-turns-plan.md"
                 },
                 {
