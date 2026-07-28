@@ -16679,11 +16679,11 @@
             {
               "slug": "dsh-s2-shared-durable-read",
               "name": "A single, tenant-scoped read path for a completed stage's turns",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-28",
+              "updatedAt": "2026-07-28T04:41:43.167Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
