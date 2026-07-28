@@ -16607,8 +16607,10 @@
           "baseline": "0% (no growth today -- turns deleted at completion)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "The archive job is merged and deployed (daily scheduled GitHub Actions workflow), but has not yet had a real scheduled run in production, and this metric's own target (\"100% of turns >60 days archived; rehydration succeeds\") requires dsh-s6 (rehydration) to also ship before it can be considered met. Still not-yet-measured.",
+          "contributingStories": [
+            "dsh-s5-archive-job"
+          ]
         }
       ],
       "slicingStrategy": "walking-skeleton",
@@ -16816,11 +16818,11 @@
             {
               "slug": "dsh-s5-archive-job",
               "name": "Archive turns older than 60 days out of the hot table",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-28T20:39:29.259Z",
+              "updatedAt": "2026-07-28T20:40:09.891Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -16847,7 +16849,9 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/629"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/629",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "dsh-s6-rehydrate-archived-turns",
