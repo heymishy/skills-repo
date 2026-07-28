@@ -16770,18 +16770,18 @@
             {
               "slug": "dsh-s4-fix-resume-conversation-link",
               "name": "Fix Resume conversation to always resolve to a real conversation view",
-              "stage": "implementation-plan",
-              "health": "green",
+              "stage": "verify-completion",
+              "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-28T07:03:54.752Z",
+              "updatedAt": "2026-07-28T10:28:57.779Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 3,
-                "passing": 0
+                "passing": 2
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 3,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
@@ -16804,7 +16804,9 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s4-fix-resume-conversation-link-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed",
+              "blocker": "AC2 real-staging E2E confirmation pending post-merge (Scenario A re-run) -- see decisions.md RISK-ACCEPT"
             },
             {
               "slug": "dsh-s5-archive-job",
