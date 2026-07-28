@@ -16856,11 +16856,11 @@
             {
               "slug": "dsh-s6-rehydrate-archived-turns",
               "name": "Transparently rehydrate an archived stage's turns on read",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-28T21:18:18.630Z",
+              "updatedAt": "2026-07-28T21:19:13.916Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -16885,7 +16885,9 @@
                   "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s6-rehydrate-archived-turns-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/630"
             }
           ]
         }
