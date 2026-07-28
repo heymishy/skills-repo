@@ -16621,7 +16621,7 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0
+                "passing": 1
               },
               "acTotal": 5,
               "acVerified": 0,
@@ -16638,7 +16638,7 @@
                 {
                   "id": "task-2",
                   "name": "Create D37 adapter module with throwing stub (AC4)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s1-persist-session-turns-plan.md"
                 },
                 {
