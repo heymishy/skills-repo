@@ -16621,7 +16621,7 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 2
+                "passing": 3
               },
               "acTotal": 5,
               "acVerified": 0,
@@ -16650,7 +16650,7 @@
                 {
                   "id": "task-4",
                   "name": "Re-completion upserts, does not duplicate (AC2)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s1-persist-session-turns-plan.md"
                 },
                 {
