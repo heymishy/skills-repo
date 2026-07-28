@@ -16756,7 +16756,7 @@
                 {
                   "id": "task-4",
                   "name": "Playwright E2E spec (dsh-s3-breadcrumb-split-view.spec.js)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s3-rebuild-breadcrumb-view-plan.md"
                 }
               ]
