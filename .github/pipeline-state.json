@@ -16613,18 +16613,18 @@
             {
               "slug": "dsh-s1-persist-session-turns",
               "name": "Persist a stage's session turns to Postgres on completion",
-              "stage": "subagent-execution",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-28",
+              "updatedAt": "2026-07-28T03:47:17.982Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
                 "passing": 5
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -16665,7 +16665,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-07-28-durable-session-history/plans/dsh-s1-persist-session-turns-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "dsh-s2-shared-durable-read",
@@ -17138,7 +17139,8 @@
           "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-07-28T00:00:00.000Z"
         }
-      ]
+      ],
+      "stories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
