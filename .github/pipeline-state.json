@@ -11777,7 +11777,7 @@
       "slug": "2026-07-18-domain-tag-activation",
       "name": "Activate domain-tag standards injection at story authoring time",
       "track": "short",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "epics": [],
       "stories": [
@@ -11785,7 +11785,7 @@
           "id": "dta-s1",
           "slug": "dta-s1",
           "name": "Activate domain-tag standards injection at story authoring time",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -11803,14 +11803,16 @@
           "dorArtefact": "artefacts/2026-07-18-domain-tag-activation/dor/dta-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-18-domain-tag-activation/dor/dta-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-18T00:00:00Z",
-          "prStatus": "draft",
-          "updatedAt": "2026-07-29T07:10:39.444Z",
+          "prStatus": "merged",
+          "updatedAt": "2026-07-29T07:26:05.460Z",
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/636"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/636",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-29T07:09:54.768Z"
+      "updatedAt": "2026-07-29T07:26:05.596Z"
     },
     {
       "slug": "2026-07-19-new-feature-redirect-fix",
