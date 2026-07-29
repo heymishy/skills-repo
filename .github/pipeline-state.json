@@ -17481,6 +17481,26 @@
       "metrics": [],
       "updatedAt": "2026-07-29T19:37:32.823Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-07-30-agency-client-organisations",
+      "name": "Agency and Client organisation subtypes -- first-class Organisation entity with agency-to-client relationships, shared access grants, and self-service client conversion to independent paying accounts",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [],
+      "metrics": [],
+      "updatedAt": "2026-07-29T20:21:27.839Z",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": [],
+      "discovery": {
+        "status": "clarified",
+        "artefact": "artefacts/2026-07-30-agency-client-organisations/discovery.md",
+        "clarifiedAt": "2026-07-30"
+      }
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
