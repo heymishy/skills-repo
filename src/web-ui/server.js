@@ -19,7 +19,8 @@ const { healthCheckHandler }                                         = require('
 const { versionHandler }                                             = require('./routes/version');
 const { validateRequiredEnvVars, warnOnOptionalEnvVars }             = require('./config/validate-env');
 const { handleGetActions, handleDashboard }                          = require('./routes/dashboard');
-const { handleGetFeatureArtefacts, handleGetIdeas, handlePostIdea, handleDeleteIdea } = require('./routes/features');
+const { handleGetFeatureArtefacts, handleGetIdeas, handlePostIdea, handleDeleteIdea, setIdeasStore } = require('./routes/features');
+const _ideasStorePg = require('./adapters/ideas-store-pg'); // idp-s1
 const { handleGetAsBuiltDataModel }                                  = require('./routes/as-built-diagrams'); // csd-s5
 const { handleGetAsBuiltSystemArchitecture }                         = require('./routes/as-built-system-architecture'); // csd-s7
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
@@ -477,6 +478,21 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // prc-s1.1: repo association columns on products (repo_provider/repo_owner/repo_name)
     migrateProductRepoColumns(_creditsPool).catch(function(err) {
       console.error('[prc-s1.1] products repo-column migration failed:', err.message);
+    });
+
+    // idp-s1: wire the real Postgres-backed ideas store (D37 mandatory
+    // separate wiring task) -- replaces workspace/ideas.json, which was
+    // silently wiped on every redeploy (no Fly volume mounted). Reuses the
+    // already-open _creditsPool, same pattern as products/credits above.
+    _ideasStorePg.migrateIdeasSchema(_creditsPool).then(function() {
+      setIdeasStore({
+        listIdeas:  function()       { return _ideasStorePg.listIdeas(_creditsPool); },
+        createIdea: function(fields) { return _ideasStorePg.createIdea(_creditsPool, fields); },
+        deleteIdea: function(id)     { return _ideasStorePg.deleteIdea(_creditsPool, id); }
+      });
+      console.log('[idp-s1] ideas store wired to Postgres');
+    }).catch(function(err) {
+      console.error('[idp-s1] ideas schema migration failed:', err.message);
     });
 
     // pr-s1: register skills-framework itself as a product row for the

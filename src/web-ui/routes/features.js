@@ -36,7 +36,7 @@ function setJourneyStoreModule(mod) { _journeyStore = mod; }
 
 const IDEAS_PATH = path.join(__dirname, '..', '..', '..', 'workspace', 'ideas.json');
 
-function _readIdeas() {
+function _readIdeasFile() {
   try {
     return JSON.parse(fs.readFileSync(IDEAS_PATH, 'utf8'));
   } catch (_) {
@@ -44,9 +44,42 @@ function _readIdeas() {
   }
 }
 
-function _writeIdeas(data) {
+function _writeIdeasFile(data) {
   fs.writeFileSync(IDEAS_PATH, JSON.stringify(data, null, 2) + '\n', 'utf8');
 }
+
+// idp-s1 — injectable ideas store (D37). Unlike the usual D37 pattern, the
+// DEFAULT here is the existing, already-working file-based implementation
+// (not a throw-stub) -- see artefacts/2026-07-29-ideas-postgres-persistence/
+// decisions.md for why: this default is a legitimate, already-correct
+// fallback for any environment without DATABASE_URL, not a stub masking a
+// real problem. setIdeasStore() overrides it with the real Postgres-backed
+// implementation once DATABASE_URL is set (server.js).
+let _ideasStore = {
+  listIdeas: async function () { return _readIdeasFile(); },
+  createIdea: async function (fields) {
+    const data = _readIdeasFile();
+    const idea = {
+      id:        'idea-' + Date.now(),
+      title:     fields.title,
+      notes:     fields.notes || '',
+      createdAt: new Date().toISOString(),
+    };
+    data.ideas.push(idea);
+    _writeIdeasFile(data);
+    return idea;
+  },
+  deleteIdea: async function (id) {
+    const data   = _readIdeasFile();
+    const before = data.ideas.length;
+    data.ideas   = data.ideas.filter(function (i) { return i.id !== id; });
+    if (data.ideas.length === before) return { deleted: false };
+    _writeIdeasFile(data);
+    return { deleted: true };
+  },
+};
+
+function setIdeasStore(store) { _ideasStore = store; }
 
 // listArtefacts dependency — replaceable in tests via setListArtefacts()
 let _listArtefacts = _listArtefactsDefault;
@@ -289,8 +322,8 @@ async function handleGetFeatureArtefacts(req, res, featureSlug) {
 /**
  * GET /api/ideas — return the ideas backlog as JSON.
  */
-function handleGetIdeas(req, res) {
-  const data = _readIdeas();
+async function handleGetIdeas(req, res) {
+  const data = await _ideasStore.listIdeas();
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(data));
 }
@@ -313,15 +346,10 @@ async function handlePostIdea(req, res) {
     res.end(JSON.stringify({ error: 'title is required' }));
     return;
   }
-  const data = _readIdeas();
-  const idea = {
-    id:        'idea-' + Date.now(),
+  const idea = await _ideasStore.createIdea({
     title,
-    notes:     (parsed.notes || '').toString().slice(0, 500).trim(),
-    createdAt: new Date().toISOString()
-  };
-  data.ideas.push(idea);
-  _writeIdeas(data);
+    notes: (parsed.notes || '').toString().slice(0, 500).trim(),
+  });
   res.writeHead(201, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(idea));
 }
@@ -329,16 +357,13 @@ async function handlePostIdea(req, res) {
 /**
  * DELETE /api/ideas/:id — remove an idea by id.
  */
-function handleDeleteIdea(req, res, ideaId) {
-  const data  = _readIdeas();
-  const before = data.ideas.length;
-  data.ideas   = data.ideas.filter(function(i) { return i.id !== ideaId; });
-  if (data.ideas.length === before) {
+async function handleDeleteIdea(req, res, ideaId) {
+  const result = await _ideasStore.deleteIdea(ideaId);
+  if (!result.deleted) {
     res.writeHead(404, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'not found' }));
     return;
   }
-  _writeIdeas(data);
   res.writeHead(204);
   res.end();
 }
@@ -348,6 +373,7 @@ module.exports = {
   handleGetIdeas,
   handlePostIdea,
   handleDeleteIdea,
+  setIdeasStore,
   setAuditLogger,
   setListArtefacts,
   setJourneyStoreModule,
