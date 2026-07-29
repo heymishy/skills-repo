@@ -17,7 +17,7 @@ const { handleArtefactRoute }                                        = require('
 const { handleSignOff, handleArtefactRead }                             = require('./routes/sign-off');
 const { healthCheckHandler }                                         = require('./routes/health');
 const { versionHandler }                                             = require('./routes/version');
-const { validateRequiredEnvVars }                                    = require('./config/validate-env');
+const { validateRequiredEnvVars, warnOnOptionalEnvVars }             = require('./config/validate-env');
 const { handleGetActions, handleDashboard }                          = require('./routes/dashboard');
 const { handleGetFeatureArtefacts, handleGetIdeas, handlePostIdea, handleDeleteIdea } = require('./routes/features');
 const { handleGetAsBuiltDataModel }                                  = require('./routes/as-built-diagrams'); // csd-s5
@@ -2741,6 +2741,8 @@ if (require.main === module) {
     console.error('[startup] ' + err.message);
     process.exit(1);
   }
+  // ebv-s1 — never throws, only logs; runs alongside the hard-fail check above.
+  warnOnOptionalEnvVars(process.env, console);
   const server = createApp();
   server.listen(PORT, () => {
     const gheMode = !!process.env.GITHUB_API_BASE_URL;
