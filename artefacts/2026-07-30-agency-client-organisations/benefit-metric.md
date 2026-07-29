@@ -49,8 +49,8 @@ This is a pure product/go-to-market initiative — a new organisation-relationsh
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Metric 1 — Agency-led client provisioning | *(populated by /definition once stories are created)* | Gap — pending /definition |
-| Metric 2 — Ongoing client-agency artefact collaboration | *(populated by /definition once stories are created)* | Gap — pending /definition |
+| Metric 1 — Agency-led client provisioning | Story 1 (organisation entity), Story 2 (relationship + grants + enforcement), Story 3 (self-service provisioning), Story 4 (dual-path auth) | Covered |
+| Metric 2 — Ongoing client-agency artefact collaboration | Story 5 (comments) | Covered |
 
 ---
 

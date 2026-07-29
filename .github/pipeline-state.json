@@ -17485,7 +17485,7 @@
     {
       "slug": "2026-07-30-agency-client-organisations",
       "name": "Agency and Client organisation subtypes -- first-class Organisation entity with agency-to-client relationships, shared access grants, and self-service client conversion to independent paying accounts",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
       "stories": [],
       "metrics": [
@@ -17510,18 +17510,64 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-07-29T20:37:49.037Z",
+      "updatedAt": "2026-07-29T22:58:46.964Z",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "epics": [],
+      "epics": [
+        {
+          "slug": "agency-client-organisations",
+          "name": "Agencies can sign up, manage, and collaborate with their own client organisations",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "story-1-organisation-entity",
+              "name": "Organisation as a first-class entity with org_type",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "story-2-relationship-grants-enforcement",
+              "name": "Agency-Client relationship, shared-access grants, and read-only enforcement",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "story-3-self-service-provisioning",
+              "name": "Self-service Agency-to-Client provisioning",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "story-4-dual-path-authentication",
+              "name": "Client-org dual-path authentication",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "story-5-client-agency-comments",
+              "name": "Client-org lightweight collaboration -- comments only",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "story-6-conversion-to-independent",
+              "name": "Client org self-service conversion to an independent paying account",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
+        }
+      ],
       "discovery": {
         "status": "clarified",
         "artefact": "artefacts/2026-07-30-agency-client-organisations/discovery.md",
         "clarifiedAt": "2026-07-30"
-      }
+      },
+      "slicingStrategy": "risk-first",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
