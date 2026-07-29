@@ -202,6 +202,22 @@ If migration story template confirmed: write the story using
 >
 > Reply: 1, 2, or 3
 
+**Domain tag check (dta-s1 — applied before saving each story):**
+Read `.github/standards/index.yml`'s domain keys dynamically (do not hardcode a
+copy of the current key list here — it drifts as domains are added or removed).
+If the story's scope clearly touches one or more of those domains (e.g. a story
+whose ACs describe `src/web-ui/routes/*.js` changes matches `web-ui`; auth-flow
+changes match `auth`), prompt:
+
+> This story appears to touch the **[domain]** domain. Set `domain: [<domain>]`
+> on the story so `/definition-of-ready` injects the matching standards into
+> the coding agent instructions?
+> Reply: yes — or specify a different domain / none
+
+This is advisory, not a hard block — proceed with the story either way. Setting
+`domain` is never mandatory; omit it entirely when no listed domain clearly
+applies.
+
 Save each story to `artefacts/[feature]/stories/[story-slug].md`
 
 **Data Model diagram markers (csd-s4):**
