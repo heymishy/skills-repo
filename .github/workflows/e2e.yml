@@ -310,6 +310,19 @@ jobs:
     # cif-s1: same concurrency guard as scenario-a-staging-e2e above -- see
     # that job's comment for the full rationale.
     concurrency: deploy-group
+    # cif-s2: without this needs: edge, Scenario A and Scenario B both fire
+    # from the same pull_request event and simultaneously request the same
+    # deploy-group -- GitHub Actions allows only one running plus one queued
+    # request per group, so a third concurrent request (another open PR's own
+    # Scenario A/B pair, or a deploy-staging run) can cancel the queued one
+    # outright rather than merely delay it. Confirmed live on PR #633: two
+    # rapid pushes produced four simultaneous requests for the group and
+    # Scenario B was cancelled ("Canceling since a higher priority waiting
+    # request for deploy-group exists"); an isolated re-run passed cleanly.
+    # Sequencing here means at most one of the two scenarios is ever an
+    # active requester, freeing the group's single queued slot for genuine
+    # cross-PR/deploy contention. See decisions.md, 2026-07-29.
+    needs: scenario-a-staging-e2e
 
     steps:
       - name: Checkout
