@@ -173,6 +173,113 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
 
+  # pmec-s1: closes the "new staging-safe endpoint + same-PR real-staging
+  # E2E test" bootstrapping gap (workspace/capture-log.md, 2026-07-28,
+  # dsh-s4 subagent-execution entry; D44 in standards/governance/delivery-patterns.md).
+  # staging-deploy.yml only deploys on push to master -- there is no
+  # PR-preview deploy mechanism -- so a PR that introduces both a new
+  # staging-safe endpoint AND a real-staging E2E test of that same endpoint
+  # cannot pass that check on its own pre-merge CI run; the endpoint
+  # genuinely isn't live yet. This job re-runs the exact same Scenario A/B
+  # spec files (behind the exact same audit.staging_e2e_scenario_a/b flags
+  # as e2e.yml) immediately after every real deploy, so that confirmation
+  # happens automatically the same day instead of depending on a human
+  # remembering to do a manual local re-run. Deliberately NOT a dependency
+  # of promote-to-prod (see decisions.md, 2026-07-29) -- smoke-test alone
+  # continues to gate promotion; this job is same-day visibility, not a
+  # release gate.
+  post-deploy-e2e-confirm:
+    name: Post-deploy real-staging E2E confirmation
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check opt-in flags (audit.staging_e2e_scenario_a / _b in context.yml)
+        id: pmec-config
+        run: |
+          # ADR-004: context.yml is the single config source of truth -- same
+          # flags e2e.yml's scenario-a-staging-e2e/scenario-b-staging-e2e jobs
+          # already read; no new flag introduced by this job.
+          SCENARIO_A_ENABLED="false"
+          SCENARIO_B_ENABLED="false"
+          if [ -f ".github/context.yml" ]; then
+            if command -v yq >/dev/null 2>&1; then
+              SCENARIO_A_ENABLED=$(yq e '.audit.staging_e2e_scenario_a // false' .github/context.yml)
+              SCENARIO_B_ENABLED=$(yq e '.audit.staging_e2e_scenario_b // false' .github/context.yml)
+            else
+              if grep -q 'staging_e2e_scenario_a: true' .github/context.yml; then
+                SCENARIO_A_ENABLED="true"
+              fi
+              if grep -q 'staging_e2e_scenario_b: true' .github/context.yml; then
+                SCENARIO_B_ENABLED="true"
+              fi
+            fi
+          fi
+          echo "scenario_a_enabled=${SCENARIO_A_ENABLED}" >> "$GITHUB_OUTPUT"
+          echo "scenario_b_enabled=${SCENARIO_B_ENABLED}" >> "$GITHUB_OUTPUT"
+          echo "Post-deploy confirmation flags: A=${SCENARIO_A_ENABLED} B=${SCENARIO_B_ENABLED}"
+
+      - name: Set up Node.js
+        if: steps.pmec-config.outputs.scenario_a_enabled == 'true' || steps.pmec-config.outputs.scenario_b_enabled == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        if: steps.pmec-config.outputs.scenario_a_enabled == 'true' || steps.pmec-config.outputs.scenario_b_enabled == 'true'
+        run: npm ci
+
+      - name: Install Playwright browsers (Chromium only)
+        if: steps.pmec-config.outputs.scenario_a_enabled == 'true' || steps.pmec-config.outputs.scenario_b_enabled == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Re-run Scenario A spec files against the freshly-deployed app
+        # Same spec file list as e2e.yml's scenario-a-staging-e2e job --
+        # kept in sync manually (see delivery-patterns.md D44); this is a
+        # re-run of existing pre-merge coverage against confirmed-live code,
+        # not new test coverage.
+        if: steps.pmec-config.outputs.scenario_a_enabled == 'true'
+        id: pmec-scenario-a-run
+        run: npx playwright test tests/e2e/a1-staging-auth-stub.spec.js tests/e2e/a2-stripe-test-mode-plan-selection.spec.js tests/e2e/a3-product-feature-ideate-canvas.spec.js tests/e2e/a4-ideate-session-resume.spec.js tests/e2e/dsh-s4-resume-conversation-survives-restart.spec.js --workers=1
+        env:
+          CI: 'true'
+          E2E_STAGING_BASE_URL: ${{ secrets.E2E_STAGING_BASE_URL }}
+          E2E_STAGING_AUTH_STUB_SECRET: ${{ secrets.E2E_STAGING_AUTH_STUB_SECRET }}
+          E2E_STAGING_ADMIN_PASSWORD: ${{ secrets.E2E_STAGING_ADMIN_PASSWORD }}
+
+      - name: Re-run Scenario B spec file against the freshly-deployed app
+        # Same spec file as e2e.yml's scenario-b-staging-e2e job.
+        if: steps.pmec-config.outputs.scenario_b_enabled == 'true'
+        id: pmec-scenario-b-run
+        run: npx playwright test tests/e2e/b1-formed-idea-outer-loop-story-map.spec.js --workers=1
+        env:
+          CI: 'true'
+          E2E_STAGING_BASE_URL: ${{ secrets.E2E_STAGING_BASE_URL }}
+          E2E_STAGING_AUTH_STUB_SECRET: ${{ secrets.E2E_STAGING_AUTH_STUB_SECRET }}
+          E2E_STAGING_ADMIN_PASSWORD: ${{ secrets.E2E_STAGING_ADMIN_PASSWORD }}
+
+      - name: Upload Playwright traces and screenshots on failure
+        if: always() && (steps.pmec-scenario-a-run.outcome == 'failure' || steps.pmec-scenario-b-run.outcome == 'failure')
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-deploy-e2e-confirm-traces-${{ github.run_id }}
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      # Same cleanup convention as e2e.yml's Scenario A/B jobs (alrf-s11) --
+      # this job's specs also create real e2e-test- tagged tenants.
+      - name: Purge e2e-test- tenants created by this run
+        if: always() && (steps.pmec-config.outputs.scenario_a_enabled == 'true' || steps.pmec-config.outputs.scenario_b_enabled == 'true')
+        timeout-minutes: 2
+        run: node scripts/purge-e2e-tenants.js
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
   promote-to-prod:
     name: Promote to production (manual approval required)
     needs: smoke-test
