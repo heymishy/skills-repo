@@ -17431,12 +17431,12 @@
     {
       "slug": "2026-07-29-ideas-postgres-persistence",
       "name": "Persist the kanban Ideas backlog in Postgres instead of an ephemeral file",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "id": "idp-s1-persist-ideas-in-postgres",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -17449,13 +17449,15 @@
           "acTotal": 5,
           "acVerified": 5,
           "verifyStatus": "passed",
-          "updatedAt": "2026-07-29T08:38:41.602Z",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/638"
+          "updatedAt": "2026-07-29T17:59:29.434Z",
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/638",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-29T08:38:41.769Z",
+      "updatedAt": "2026-07-29T17:59:29.570Z",
       "track": "short"
     }
   ],
