@@ -17592,6 +17592,30 @@
       "metrics": [],
       "updatedAt": "2026-07-29T23:03:05.062Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-07-30-real-llm-call-leak-diagnostics",
+      "name": "Temporary diagnostic logging to identify the real-LLM-call leak documented but unsolved in rlcc-s1",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [
+        {
+          "id": "rlld-s1",
+          "testPlanWritten": "true",
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "updatedAt": "2026-07-29T23:50:00.940Z",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 2,
+            "passing": 2,
+            "artefact": "artefacts/2026-07-30-real-llm-call-leak-diagnostics/test-plans/rlld-s1-test-plan.md"
+          }
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-29T23:50:12.332Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
