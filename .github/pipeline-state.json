@@ -17306,7 +17306,7 @@
     {
       "slug": "2026-07-29-ci-deploy-collision-fix",
       "name": "Prevent staging redeploy from racing a PR's real-staging E2E job",
-      "stage": "verify-completion",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
@@ -17332,7 +17332,7 @@
         },
         {
           "id": "cif-s2-sequence-scenario-b-after-scenario-a",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -17345,11 +17345,13 @@
           "acTotal": 4,
           "acVerified": 4,
           "verifyStatus": "passed",
-          "updatedAt": "2026-07-29T05:39:46.928Z"
+          "updatedAt": "2026-07-29T05:40:46.472Z",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/634"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-29T05:40:03.544Z",
+      "updatedAt": "2026-07-29T05:40:46.612Z",
       "track": "short"
     }
   ],
