@@ -17338,12 +17338,12 @@
     {
       "slug": "2026-07-29-post-merge-e2e-confirmation",
       "name": "Auto-confirm real-staging E2E specs immediately after every master deploy",
-      "stage": "verify-completion",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "id": "pmec-s1-post-merge-e2e-confirmation-job",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -17356,11 +17356,13 @@
           "acTotal": 5,
           "acVerified": 5,
           "verifyStatus": "passed",
-          "updatedAt": "2026-07-29T05:01:58.510Z"
+          "updatedAt": "2026-07-29T05:03:43.481Z",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/633"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-29T05:02:12.834Z",
+      "updatedAt": "2026-07-29T05:03:43.648Z",
       "track": "short"
     }
   ],
