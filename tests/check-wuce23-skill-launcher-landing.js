@@ -234,8 +234,11 @@ async function run() {
     eq(res.statusCode, 302, 'T12: POST no session → 302');
   }
 
-  // ── T13: GET /dashboard nav has href="/skills" ──────────────────────────────
-  console.log('\n  T13 — GET /dashboard nav includes href="/skills"');
+  // ── T13: GET /dashboard nav no longer has a "Run a Skill" entry ─────────────
+  // pan-s1 (2026-07-30) removed "Run a Skill" from NAV_ITEMS — the /skills
+  // route itself remains reachable by direct URL, just not linked from the
+  // nav — see artefacts/2026-07-30-product-aware-navigation.
+  console.log('\n  T13 — GET /dashboard nav no longer links to /skills');
   {
     const req = Object.assign({
       session:   { accessToken: 'test-token', userId: 42, login: 'alice' },
@@ -247,7 +250,7 @@ async function run() {
     });
     const res = mockRes();
     await handleDashboard(req, res);
-    ok(res.body.includes('href="/skills"'), 'T13: nav "Run a Skill" href=/skills present');
+    ok(!res.body.includes('href="/skills"'), 'T13: nav "Run a Skill" href=/skills removed (pan-s1)');
   }
 
   // ── T14: GET /skills — form submission requires no JavaScript ───────────────

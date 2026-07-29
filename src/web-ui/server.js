@@ -2206,7 +2206,7 @@ async function router(req, res) {
   } else if (pathname === '/journey' && req.method === 'GET') {
     // jdsk.1 — journey home screen (replaces old wizard-first routing)
     {
-      handleGetJourney(req, res);
+      await handleGetJourney(req, res, null, _pshPool);
     }
 
   } else if (pathname.match(/^\/journey\/[^/]+$/) && req.method === 'GET') {

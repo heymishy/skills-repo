@@ -10,6 +10,7 @@ var { isEffectivelyAdmin } = require('../modules/impersonation'); // d2
 var _csrf = require('../middleware/csrf'); // d2 -- impersonation exit banner CSRF token
 var { updateJourneyReferenceFiles } = require('../modules/journey-state-persistence');
 var _flagBootstrap = require('../modules/flag-bootstrap'); // bri-s1.3
+var _getProductsNavSummary = require('./products').getProductsNavSummary; // pan-s1 -- shared sidebar products summary
 
 // Injectable adapters — defaults wire to real implementations
 var _journeyStore = require('../modules/journey-store');
@@ -282,7 +283,7 @@ function _renderJourneyHome(data) {
 /**
  * GET /journey — journey home screen: list features, start new.
  */
-function handleGetJourney(req, res) {
+async function handleGetJourney(req, res, _next, pool) {
   if (!req.session || !req.session.accessToken) {
     res.writeHead(302, { Location: '/auth/github' });
     res.end();
@@ -316,6 +317,11 @@ function handleGetJourney(req, res) {
       return false;
     });
   }
+  // pan-s1 (AC4): /journey is now the "no product" bucket -- products get
+  // their own journeys list via their own page (/products/:id). Journeys
+  // without a product remain a fully supported, non-error case (e.g.
+  // solo/personal-project use), not disallowed by this filter.
+  journeys = journeys.filter(function(j) { return j.productId == null; });
   journeys.sort(function(a, b) { return (b.createdAt ? new Date(b.createdAt).toISOString() : '').localeCompare(a.createdAt ? new Date(a.createdAt).toISOString() : ''); });
   var showNewForm = !!(req.query && req.query.new === '1');
   var body = _renderJourneyHome({ profiles: profiles, activeProfile: activeProfile, journeys: journeys, showNewForm: showNewForm });
@@ -329,7 +335,28 @@ function handleGetJourney(req, res) {
   var impersonation = (imp && imp.active && imp.target)
     ? { active: true, targetLogin: imp.target.login, targetTenantId: imp.target.tenantId, csrfToken: _csrf.generateCsrfToken(req) }
     : null;
-  var html = renderShell({ title: 'Journeys', active: 'journey', bodyContent: body, user: { login: login }, isAdmin: isAdmin, impersonation: impersonation });
+  // pan-s1: sidebar Products section, populated via the shared helper when a
+  // pool is available (production wiring). Test callers that invoke this
+  // handler without a pool (the vast majority of this file's existing test
+  // coverage) skip this entirely -- no await is reached on that path, so the
+  // handler still completes synchronously for them, matching prior behaviour.
+  var navProducts, noProductJourneyCount;
+  if (pool) {
+    var navSummary = await _getProductsNavSummary(pool, _tid);
+    navProducts = navSummary.products;
+    noProductJourneyCount = navSummary.noProductJourneyCount;
+  }
+  var html = renderShell({
+    title: 'Journeys',
+    active: 'journey',
+    bodyContent: body,
+    user: { login: login },
+    isAdmin: isAdmin,
+    impersonation: impersonation,
+    products: navProducts,
+    activeProductId: null,
+    noProductJourneyCount: noProductJourneyCount
+  });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }

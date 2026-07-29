@@ -40,10 +40,17 @@ function escHtml(str) {
     .replace(/'/g, '&#x27;');
 }
 
+// pan-s1: 'dashboard' (Home), 'journey' (Journeys), and 'skills' (Run a
+// Skill) all removed as NAV_ITEMS rows. Products are now listed directly in
+// the sidebar (renderSidebar's `products` param, rendered above this
+// product-section loop) instead of behind a generic Home landing page --
+// "See all products" (linking to /dashboard, unchanged) replaces Home's old
+// role. Journeys duplicated each product's own List/Board view; Run a Skill
+// let an operator launch any skill standalone, bypassing the journey/
+// product structure entirely. None of the underlying routes (/dashboard,
+// /journey, /skills) are deleted -- only these NAV_ITEMS entries. See
+// artefacts/2026-07-30-product-aware-navigation/decisions.md.
 const NAV_ITEMS = [
-  { id: 'dashboard',  label: 'Home',        href: '/dashboard',  icon: '⌂' },
-  { id: 'journey',    label: 'Journeys',    href: '/journey',    icon: '◎' },
-  { id: 'skills',     label: 'Run a Skill', href: '/skills',     icon: '✦' },
   { id: 'org-kanban', label: 'Org board',   href: '/org/kanban', icon: '▦' },
   // b2: account-level items, rendered in a visually distinct bottom section by
   // renderSidebar (not the main product <nav> loop above) -- kept in this SAME
@@ -62,29 +69,83 @@ const NAV_ITEMS = [
   { id: 'admin-mock-gateway', label: 'Mock LLM gateway',  href: '/admin/mock-gateway',  icon: '◧', section: 'account', adminOnly: true }
 ];
 
-// b1: small List/Board switcher rendered directly under the Home nav item —
-// /dashboard?view=board is a query-param variant of /dashboard, not a separate
-// route, so it is not a second top-level NAV_ITEMS entry (Architecture
-// Constraints, story b1-remove-dead-links-add-missing-nav.md).
-function renderHomeViewToggle() {
+// pan-s1: replaces the old renderHomeViewToggle (previously attached to a
+// "Home" NAV_ITEMS row that no longer exists). /dashboard?view=board is
+// still a query-param variant of /dashboard, not a separate route -- the
+// List/Board toggle now lives next to "See all products" instead, which is
+// the only remaining route into /dashboard. Preserves the pre-existing
+// ability to reach the tenant-wide kanban board via the UI (previously the
+// sidebar's Home toggle was the ONLY way to reach it -- confirmed
+// _renderProductDashboard's own page body has no such toggle).
+function renderSeeAllProductsRow() {
   return [
-    '<div class="sw-nav-subrow" role="group" aria-label="Home view">',
+    '<a href="/dashboard" class="sw-see-all-products">See all products →</a>',
+    '<div class="sw-nav-subrow" role="group" aria-label="All-products view">',
       '<a href="/dashboard" class="sw-nav-subitem">List</a>',
       '<a href="/dashboard?view=board" class="sw-nav-subitem">Board</a>',
     '</div>'
   ].join('');
 }
 
+/**
+ * pan-s1: renders one product row in the sidebar's live Products list.
+ * @param {{productId: string, name: string, journeyCount: number}} product
+ * @param {string} [activeProductId]
+ */
+function _renderProductNavItem(product, activeProductId) {
+  const isActive = product.productId === activeProductId;
+  return [
+    '<a href="/products/' + encodeURIComponent(product.productId) + '"',
+    ' class="sw-product-nav-item' + (isActive ? ' sw-product-nav-item--active' : '') + '">',
+    '<span class="sw-product-dot"></span>',
+    '<span class="sw-product-name">' + escHtml(product.name) + '</span>',
+    '<span class="sw-product-count">' + escHtml(String(product.journeyCount != null ? product.journeyCount : 0)) + '</span>',
+    '</a>'
+  ].join('');
+}
+
+/**
+ * pan-s1: renders the sidebar's Products section -- the live list plus a
+ * pinned "No product" entry and the "See all products" link. Renders
+ * nothing at all when `products` is omitted (undefined), which is the
+ * default for every renderShell call site that doesn't opt in -- this is
+ * what keeps the other ~60 unwired pages byte-for-byte unchanged (AC5).
+ * @param {Array<{productId: string, name: string, journeyCount: number}>} [products]
+ * @param {string} [activeProductId]
+ * @param {number} [noProductJourneyCount]
+ */
+function renderProductsSection(products, activeProductId, noProductJourneyCount) {
+  if (!products) return '';
+  const rows = products.map(function(p) { return _renderProductNavItem(p, activeProductId); }).join('');
+  const noProductActive = activeProductId == null && noProductJourneyCount != null;
+  const noProductRow = (noProductJourneyCount != null)
+    ? [
+        '<a href="/journey" class="sw-product-nav-item sw-product-nav-item--no-product' + (noProductActive ? ' sw-product-nav-item--active' : '') + '">',
+          '<span class="sw-product-dot sw-product-dot--none"></span>',
+          '<span class="sw-product-name">No product</span>',
+          '<span class="sw-product-count">' + escHtml(String(noProductJourneyCount)) + '</span>',
+        '</a>'
+      ].join('')
+    : '';
+  return [
+    '<div class="sw-nav-eyebrow-row">',
+      '<span class="sw-nav-eyebrow">Products</span>',
+      '<a href="/products/new" class="sw-add-product" title="New product">+</a>',
+    '</div>',
+    '<nav class="sw-product-nav-list" aria-label="Products">' + rows + noProductRow + '</nav>',
+    renderSeeAllProductsRow(),
+  ].join('');
+}
+
 function _renderNavLink(item, active) {
   const isActive = item.id === active;
-  const link = [
+  return [
     '<a href="' + escHtml(item.href) + '"',
     ' class="sw-nav-item' + (isActive ? ' sw-nav-item--active' : '') + '">',
     '<span class="sw-nav-icon">' + item.icon + '</span>',
     '<span>' + escHtml(item.label) + '</span>',
     '</a>'
   ].join('');
-  return item.id === 'dashboard' ? link + renderHomeViewToggle() : link;
 }
 
 /**
@@ -96,13 +157,20 @@ function _renderNavLink(item, active) {
  *   see html-shell.js's callers (dashboard.js, settings.js) for how this is computed.
  *   This flag is a UX convenience only; requireAdmin on the real route is the
  *   actual security boundary regardless of what this renders.
+ * @param {Array<{productId: string, name: string, journeyCount: number}>} [products] -
+ *   pan-s1: the tenant's products, rendered live in the sidebar. Omitted (undefined)
+ *   by every call site except handleGetDashboard/handleGetProductView/handleGetJourney
+ *   -- see decisions.md for why only these 3 are wired in this story.
+ * @param {string} [activeProductId] - pan-s1: marks one product row as active
+ * @param {number} [noProductJourneyCount] - pan-s1: count shown on the pinned "No product" row
  */
-function renderSidebar(active, login, isAdmin) {
+function renderSidebar(active, login, isAdmin, products, activeProductId, noProductJourneyCount) {
   const productItems = NAV_ITEMS.filter(function(item) { return item.section !== 'account'; });
   const accountItems  = NAV_ITEMS.filter(function(item) {
     return item.section === 'account' && (!item.adminOnly || isAdmin);
   });
 
+  const productsSection = renderProductsSection(products, activeProductId, noProductJourneyCount);
   const items = productItems.map(function(item) { return _renderNavLink(item, active); }).join('');
   const accountNav = accountItems.length
     ? '<nav class="sw-nav-account" aria-label="Account navigation">' +
@@ -117,6 +185,7 @@ function renderSidebar(active, login, isAdmin) {
         '<div class="sw-brand-mark">S</div>',
         '<span class="sw-brand-name">Skills</span>',
       '</div>',
+      productsSection,
       '<nav aria-label="Main navigation">' + items + '</nav>',
       '<button class="sw-nav-collapse-btn" id="sw-nav-collapse-btn" onclick="swCollapseNav()" title="Collapse navigation">◂</button>',
       accountNav,
@@ -286,6 +355,12 @@ function renderShell(opts) {
   // is actually active -- absent/false renders no banner at all.
   const impersonation = (opts.impersonation && opts.impersonation.active) ? opts.impersonation : null;
   const bannerHtml   = impersonation ? renderImpersonationBanner(impersonation) : '';
+  // pan-s1: all three undefined by default -- renderProductsSection() renders
+  // nothing at all when `products` is undefined, keeping every unwired call
+  // site byte-for-byte unchanged (AC5).
+  const products              = opts.products;
+  const activeProductId       = opts.activeProductId;
+  const noProductJourneyCount = opts.noProductJourneyCount;
 
   const themeToggle =
     '<button class="sw-theme-toggle" onclick="swToggleTheme()" aria-label="Toggle dark mode" title="Toggle dark/light mode">◑</button>';
@@ -305,7 +380,7 @@ function renderShell(opts) {
     bannerHtml +
     '<div class="sw-app">' +
       '<div class="sw-overlay" id="sw-overlay" onclick="swCloseSidebar()"></div>' +
-      renderSidebar(active, login, isAdmin) +
+      renderSidebar(active, login, isAdmin, products, activeProductId, noProductJourneyCount) +
       '<div class="sw-main">' +
         '<header>' +
           hamburger +
@@ -399,6 +474,29 @@ a { color: inherit; }
 }
 .sw-nav-subitem:hover { background: var(--line-2); color: var(--ink-2); }
 .sw-nav-subitem:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+/* pan-s1: Products section -- live product list rendered directly in the
+   sidebar, replacing the old Home/Journeys nav rows. */
+.sw-nav-eyebrow-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 10px 4px; }
+.sw-nav-eyebrow { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-2); font-weight: 700; }
+.sw-add-product { font-size: 14px; color: var(--muted-2); text-decoration: none; line-height: 1; }
+.sw-add-product:hover { color: var(--accent); }
+.sw-product-nav-list { display: flex; flex-direction: column; gap: 2px; max-height: 240px; overflow-y: auto; }
+.sw-product-nav-item {
+  display: flex; align-items: center; gap: 9px; padding: 6px 10px; border-radius: 6px;
+  text-decoration: none; color: var(--ink-2); font-size: 13.5px;
+}
+.sw-product-nav-item:hover { background: var(--line-2); }
+.sw-product-nav-item--active {
+  color: var(--ink); background: var(--surface);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px var(--line);
+  font-weight: 500;
+}
+.sw-product-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.sw-product-dot--none { background: none; border: 1.5px dashed var(--muted-2); }
+.sw-product-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sw-product-count { font-size: 11px; color: var(--muted-2); font-variant-numeric: tabular-nums; }
+.sw-see-all-products { display: block; font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 500; padding: 6px 10px 0; }
+.sw-see-all-products:hover { text-decoration: underline; }
 /* b2: account-level nav section (Settings + the admin-only entry) -- visually
    distinct from the product nav above via a top divider, pushed to the sidebar
    bottom (margin-top: auto) directly above the identity block. */
