@@ -17334,6 +17334,34 @@
       "metrics": [],
       "updatedAt": "2026-07-29T03:58:18.888Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-07-29-post-merge-e2e-confirmation",
+      "name": "Auto-confirm real-staging E2E specs immediately after every master deploy",
+      "stage": "verify-completion",
+      "health": "green",
+      "stories": [
+        {
+          "id": "pmec-s1-post-merge-e2e-confirmation-job",
+          "stage": "verify-completion",
+          "dorStatus": "signed-off",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 5
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "verifyStatus": "passed",
+          "updatedAt": "2026-07-29T05:01:58.510Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-29T05:02:12.834Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
