@@ -17475,11 +17475,17 @@
           "stage": "definition-of-done",
           "dodStatus": "complete",
           "health": "green",
-          "releaseReady": true
+          "releaseReady": true,
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 11,
+            "passing": 11,
+            "artefact": "artefacts/2026-07-30-product-aware-navigation/test-plans/pan-s1-product-aware-navigation-test-plan.md"
+          }
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-29T19:37:32.823Z",
+      "updatedAt": "2026-07-29T23:09:36.467Z",
       "track": "short"
     },
     {
@@ -17568,6 +17574,24 @@
       },
       "slicingStrategy": "risk-first",
       "guardrails": []
+    },
+    {
+      "slug": "2026-07-30-staging-smoke-test-regressions",
+      "name": "Fix the E2E test gaps blocking every staging-deploy smoke test since at least 2026-07-28",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [
+        {
+          "id": "ssr-s1",
+          "testPlanWritten": "true",
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "updatedAt": "2026-07-29T23:03:05.063Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-29T23:03:05.062Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
