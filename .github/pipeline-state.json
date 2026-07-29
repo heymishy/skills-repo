@@ -11736,7 +11736,7 @@
       "slug": "2026-07-18-gate-advance-validation",
       "name": "Extend gate-advance structural validation to all 7 canonical gate names",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "epics": [],
       "stories": [
@@ -11744,18 +11744,18 @@
           "id": "gav-s1",
           "slug": "gav-s1",
           "name": "Extend gate-advance structural validation to all 7 canonical gate names",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 29,
-            "passing": 0,
+            "passing": 29,
             "artefact": "artefacts/2026-07-18-gate-advance-validation/test-plans/gav-s1-test-plan.md"
           },
           "acTotal": 7,
-          "acVerified": 0,
+          "acVerified": 7,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
@@ -11763,11 +11763,12 @@
           "dorContractArtefact": "artefacts/2026-07-18-gate-advance-validation/dor/gav-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-18T00:00:00Z",
           "prStatus": "none",
-          "updatedAt": "2026-07-17T19:57:36.767Z"
+          "updatedAt": "2026-07-29T06:28:35.119Z",
+          "verifyStatus": "passed"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-17T19:57:36.768Z"
+      "updatedAt": "2026-07-29T06:28:35.262Z"
     },
     {
       "slug": "2026-07-18-domain-tag-activation",
