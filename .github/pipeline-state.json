@@ -17568,6 +17568,24 @@
       },
       "slicingStrategy": "risk-first",
       "guardrails": []
+    },
+    {
+      "slug": "2026-07-30-staging-smoke-test-regressions",
+      "name": "Fix the E2E test gaps blocking every staging-deploy smoke test since at least 2026-07-28",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [
+        {
+          "id": "ssr-s1",
+          "testPlanWritten": "true",
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "updatedAt": "2026-07-29T23:03:05.063Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-29T23:03:05.062Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

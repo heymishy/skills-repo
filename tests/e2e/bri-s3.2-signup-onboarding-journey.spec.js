@@ -38,10 +38,18 @@
 const { test, expect } = require('@playwright/test');
 // dss-s1: only meaningful against real wuce-staging -- empty {} locally, so
 // this changes nothing about how this spec runs against the local harness.
-const { testEndpointBypassHeaders } = require('./fixtures/staging-auth');
+// fix-forward (post-launch): this spec's own signup call previously used a
+// non-"e2e-test-"-prefixed email and never sent the rate-limit-bypass header,
+// so it did not qualify for the serlb-s1 bypass carve-out (routes/auth-email.js)
+// -- every real run against wuce-staging's persistent per-IP counter eventually
+// tripped the genuine 10-attempt/5-minute limiter once enough runs had signed up
+// from the same CI runner IP. Aligning with fixtures/staging-auth.js's own
+// uniqueEmail()/signUpEmail() convention fixes this without weakening the
+// limiter itself.
+const { testEndpointBypassHeaders, hasStubSecret, RATE_LIMIT_BYPASS_HEADER, STUB_SECRET } = require('./fixtures/staging-auth');
 
 function uniqueEmail() {
-  return 'bri-s3-2-' + Date.now() + '-' + Math.floor(Math.random() * 1e6) + '@example.test';
+  return 'e2e-test-bri-s3-2-' + Date.now() + '-' + Math.floor(Math.random() * 1e6) + '@example.test';
 }
 
 const PASSWORD = 'Bri-S3-2-Test-Password-1!';
@@ -76,8 +84,12 @@ async function signUpAndCompleteOnboarding(request) {
   const csrfToken = csrfMatch ? csrfMatch[1] : null;
   expect(csrfToken, 'landing page must embed a _csrf token in the signup form').toBeTruthy();
 
+  const signupHeaders = {};
+  if (hasStubSecret()) signupHeaders[RATE_LIMIT_BYPASS_HEADER] = STUB_SECRET;
+
   const signupRes = await request.post('/auth/email/signup', {
     form: { email: email, password: PASSWORD, _csrf: csrfToken },
+    headers: signupHeaders,
     maxRedirects: 0
   });
   expect(signupRes.status(), 'signup should redirect to /welcome').toBe(302);
@@ -179,16 +191,19 @@ async function driveJourneyToDefinitionOfReady(request, featureName, e2eForceFai
   expect(definitionTurn.done, 'definition stage should complete via the mock gateway').toBe(true);
   const afterDefinitionGate = await request.post(`/api/journey/${journeyId}/gate-confirm`, { maxRedirects: 0 });
   expect(afterDefinitionGate.status()).toBe(303);
-  expect(afterDefinitionGate.headers()['location']).toBe('/journey/' + journeyId + '/stories');
+  // fix-forward (post-launch): definition.success.json's mock artefact carries
+  // an H1 "# Story mock-fixture.1 -- Mock story" heading (added for dtra-s1/
+  // dsda-s1's own fixture fix), which extractStoryIdsFromDefinitionArtefact
+  // now recognises -- so this journey auto-extracts a single story
+  // ("mock-fixture.1") and switches straight into that story's review session,
+  // skipping the manual /journey/:id/stories confirm page entirely (dtra-s1
+  // AC1/AC2). This spec previously still expected the old manual-confirm
+  // redirect and then POSTed its own story list, which the app no longer
+  // reaches -- updated to assert the actual (correct) auto-skip destination.
+  const afterDefinitionLocation = afterDefinitionGate.headers()['location'];
+  expect(afterDefinitionLocation, 'definition gate-confirm should auto-skip straight into a review session').toMatch(/^\/skills\/review\/sessions\/[0-9a-f-]+\/chat$/);
 
-  // Enter a single-story list so the per-story sequence (review -> test-plan
-  // -> definition-of-ready) has exactly one story to complete.
-  const storiesRes = await request.post(`/api/journey/${journeyId}/stories`, {
-    form: { stories: 'bri-s3-2-e2e-story.1' },
-    maxRedirects: 0
-  });
-  expect(storiesRes.status(), 'story list submission').toBe(303);
-  let perStoryLocation = storiesRes.headers()['location'];
+  let perStoryLocation = afterDefinitionLocation;
   let perStoryStage = 'review';
   let perStorySessionId = sessionIdFromChatPath(perStoryLocation);
 
