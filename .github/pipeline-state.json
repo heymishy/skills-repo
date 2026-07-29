@@ -17475,11 +17475,17 @@
           "stage": "definition-of-done",
           "dodStatus": "complete",
           "health": "green",
-          "releaseReady": true
+          "releaseReady": true,
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 11,
+            "passing": 11,
+            "artefact": "artefacts/2026-07-30-product-aware-navigation/test-plans/pan-s1-product-aware-navigation-test-plan.md"
+          }
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-29T19:37:32.823Z",
+      "updatedAt": "2026-07-29T23:09:36.467Z",
       "track": "short"
     },
     {
