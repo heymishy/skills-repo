@@ -11736,7 +11736,7 @@
       "slug": "2026-07-18-gate-advance-validation",
       "name": "Extend gate-advance structural validation to all 7 canonical gate names",
       "track": "short",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "epics": [],
       "stories": [
@@ -11744,7 +11744,7 @@
           "id": "gav-s1",
           "slug": "gav-s1",
           "name": "Extend gate-advance structural validation to all 7 canonical gate names",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -11762,14 +11762,16 @@
           "dorArtefact": "artefacts/2026-07-18-gate-advance-validation/dor/gav-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-18-gate-advance-validation/dor/gav-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-18T00:00:00Z",
-          "prStatus": "draft",
-          "updatedAt": "2026-07-29T06:29:16.418Z",
+          "prStatus": "merged",
+          "updatedAt": "2026-07-29T06:44:35.953Z",
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/635"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/635",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-29T06:28:35.262Z"
+      "updatedAt": "2026-07-29T06:44:36.105Z"
     },
     {
       "slug": "2026-07-18-domain-tag-activation",
