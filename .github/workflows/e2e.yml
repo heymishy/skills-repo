@@ -114,6 +114,14 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
+    # cif-s1: shares staging-deploy.yml's deploy-staging concurrency group so
+    # a master-push redeploy and this job never run at the same time against
+    # real wuce-staging -- a job entering an occupied group queues rather than
+    # cancelling (bare-string form, no cancel-in-progress override), so neither
+    # a deploy nor a real E2E run is ever interrupted mid-flight. Confirmed
+    # false-negative collision pattern 5x this session (PRs #626-#630); see
+    # artefacts/2026-07-29-ci-deploy-collision-fix/stories/cif-s1-add-deploy-concurrency-guard.md
+    concurrency: deploy-group
 
     steps:
       - name: Checkout
@@ -299,6 +307,9 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
+    # cif-s1: same concurrency guard as scenario-a-staging-e2e above -- see
+    # that job's comment for the full rationale.
+    concurrency: deploy-group
 
     steps:
       - name: Checkout
