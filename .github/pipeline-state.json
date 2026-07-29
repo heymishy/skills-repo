@@ -17300,6 +17300,34 @@
       "metrics": [],
       "updatedAt": "2026-07-28T22:29:06.467Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-07-29-ci-deploy-collision-fix",
+      "name": "Prevent staging redeploy from racing a PR's real-staging E2E job",
+      "stage": "verify-completion",
+      "health": "green",
+      "stories": [
+        {
+          "id": "cif-s1-add-deploy-concurrency-guard",
+          "stage": "verify-completion",
+          "dorStatus": "signed-off",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 4
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "verifyStatus": "passed",
+          "updatedAt": "2026-07-29T01:16:17.350Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-29T01:16:58.596Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
