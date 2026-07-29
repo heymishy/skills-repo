@@ -11803,9 +11803,10 @@
           "dorArtefact": "artefacts/2026-07-18-domain-tag-activation/dor/dta-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-18-domain-tag-activation/dor/dta-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-18T00:00:00Z",
-          "prStatus": "none",
-          "updatedAt": "2026-07-29T07:09:46.098Z",
-          "verifyStatus": "passed"
+          "prStatus": "draft",
+          "updatedAt": "2026-07-29T07:10:39.444Z",
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/636"
         }
       ],
       "metrics": [],
