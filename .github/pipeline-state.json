@@ -17485,11 +17485,22 @@
     {
       "slug": "2026-07-30-agency-client-organisations",
       "name": "Agency and Client organisation subtypes -- first-class Organisation entity with agency-to-client relationships, shared access grants, and self-service client conversion to independent paying accounts",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "stories": [],
-      "metrics": [],
-      "updatedAt": "2026-07-29T20:21:27.839Z",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Agency-led client provisioning",
+          "target": "At least 1 Agency organisation completes the full flow (sign-up, self-service client creation, client-user invite, client-user login, client-user views a shared product/feature) during the pilot window",
+          "baseline": "Not yet established (pre-signal, no measured internal baseline)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "updatedAt": "2026-07-29T20:28:50.044Z",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",

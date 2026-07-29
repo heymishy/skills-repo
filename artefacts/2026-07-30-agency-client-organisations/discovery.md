@@ -1,8 +1,8 @@
 # Discovery: Agency and Client organisation subtypes
 
-**Status:** Clarified — awaiting approval
+**Status:** Approved
 **Created:** 2026-07-30
-**Approved by:** Pending
+**Approved by:** Hamish King — Product/Platform Owner — 2026-07-30
 **Author:** Copilot
 
 ---
@@ -68,7 +68,7 @@ None identified.
 
 ## Approved By
 
-Pending
+Hamish King — Product/Platform Owner — 2026-07-30
 
 ---
 
