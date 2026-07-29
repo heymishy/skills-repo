@@ -17274,12 +17274,12 @@
     {
       "slug": "2026-07-29-delete-feature-redirect-fix",
       "name": "Fix delete-feature redirect to the owning product, not the generic journeys list",
-      "stage": "verify-completion",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "id": "dfr-s1-fix-delete-feature-redirect",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -17292,24 +17292,26 @@
           "acTotal": 3,
           "acVerified": 3,
           "verifyStatus": "passed",
-          "updatedAt": "2026-07-28T22:30:05.039Z",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/631"
+          "updatedAt": "2026-07-29T03:57:26.434Z",
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/631",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-28T22:29:06.467Z",
+      "updatedAt": "2026-07-29T03:57:34.169Z",
       "track": "short"
     },
     {
       "slug": "2026-07-29-ci-deploy-collision-fix",
       "name": "Prevent staging redeploy from racing a PR's real-staging E2E job",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "id": "cif-s1-add-deploy-concurrency-guard",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -17322,13 +17324,15 @@
           "acTotal": 4,
           "acVerified": 4,
           "verifyStatus": "passed",
-          "updatedAt": "2026-07-29T01:18:11.204Z",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/632"
+          "updatedAt": "2026-07-29T03:58:18.736Z",
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/632",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-29T01:18:16.256Z",
+      "updatedAt": "2026-07-29T03:58:18.888Z",
       "track": "short"
     }
   ],
