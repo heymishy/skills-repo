@@ -17498,9 +17498,19 @@
           "lastMeasured": null,
           "evidence": null,
           "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Ongoing client-agency artefact collaboration",
+          "target": "At least 1 comment thread exists with both an Agency-org and a Client-org participant, within the pilot window",
+          "baseline": "Not yet established (new capability, no prior usage)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
         }
       ],
-      "updatedAt": "2026-07-29T20:28:50.044Z",
+      "updatedAt": "2026-07-29T20:37:49.037Z",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",

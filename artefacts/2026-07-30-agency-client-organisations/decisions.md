@@ -49,6 +49,15 @@
 ---
 
 ---
+**2026-07-30 | SCOPE | benefit-metric**
+**Decision:** MVP scope expanded to include comment-only collaboration for Client-org users — a Client-org (read-only) user can leave comments/feedback on an artefact or product/feature shared with them by an Agency, visible to the Agency. This does not grant edit access to the underlying shared content.
+**Alternatives considered:** (a) View-only, no new capability — build an ongoing-usage benefit metric on the read-only access already scoped, with no MVP scope change. (b) Full real-time joint editing / suggestion mode — rejected as materially larger scope than warranted for MVP.
+**Rationale:** The benefit-metric review surfaced that the original success indicator (agency provisions a client, client logs in once) only measured a one-time setup event, not the actual ongoing value of the Agency/Client relationship — genuine collaboration on shared work. Comment-only was chosen as the smallest capability that constitutes real two-way collaboration without opening up full collaborative editing.
+**Made by:** Hamish King — Product/Platform Owner
+**Revisit trigger:** If client feedback indicates comments alone don't meet real collaboration needs (e.g. requests for suggested edits or joint document editing), a follow-up story could extend this — not built by default now.
+---
+
+---
 
 ## Architecture Decision Records
 

@@ -30,6 +30,19 @@ This is a pure product/go-to-market initiative — a new organisation-relationsh
 | **Measurement method** | Count of organisations with `org_type=agency` that have at least 1 linked Client organisation, plus at least 1 successful Client-org user login event and at least 1 product-view event by that Client-org user — tracked via PostHog org-level events, matching the existing group-identify pattern already used elsewhere in this codebase (`_posthog.groupIdentify`). Measured by the metric owner, reviewed at the next `/definition-of-done` pass for this feature's stories, and again at the next `/metric-review` if this initiative is later run as a programme.
 | **Feedback loop** | If the minimum validation signal is not met within the pilot window: the metric owner decides whether to (a) extend the pilot window if there is qualitative evidence of agency interest but onboarding friction, (b) investigate the "not-worth-building" risk named in discovery.md (agencies may prefer external reporting over in-tool client management), or (c) deprioritise further investment in the Agency/Client model beyond MVP. |
 
+### Metric 2: Ongoing client-agency artefact collaboration
+
+<!-- Added 2026-07-30: Metric 1 only captures a one-time setup event (agency provisions a client, client logs in once). This metric captures the actual ongoing value of the relationship — ADDED to MVP scope alongside this metric: comment-only collaboration for Client-org users (see discovery.md MVP Scope and decisions.md). -->
+
+| Field | Value |
+|-------|-------|
+| **What we measure** | Whether genuine two-way collaboration occurs on shared artefacts/products/features between an Agency and a Client org — specifically, comment threads with participants from both org types. |
+| **Baseline** | Not yet established — this is a new capability with no prior usage (comments did not exist for Client-org users before this feature). |
+| **Target** | At least 1 comment thread exists with both an Agency-side and a Client-org participant, within the pilot window. |
+| **Minimum validation signal** | The same as the target (n=1) — binary validation that collaboration, not just provisioning, actually happens. If Metric 1 is met (a client is provisioned and logs in) but this metric is not, that signals clients are viewing but not engaging — a distinct and useful failure mode to distinguish from "nobody signs up at all." |
+| **Measurement method** | Count of comment records where the thread has at least one comment from an Agency-org user and at least one from a Client-org user, on the same artefact/product/feature — tracked via PostHog event, same org-level pattern as Metric 1. Measured by the metric owner, reviewed at the same cadence as Metric 1. |
+| **Feedback loop** | If Metric 1 succeeds but this metric does not within the pilot window: investigate whether comment-only collaboration is discoverable/usable in the shipped UI before concluding clients don't want to collaborate — a UX gap and a genuine lack of demand look identical in this metric alone, so the metric owner should pair this signal with qualitative check-ins before deciding to deprioritise the collaboration capability. |
+
 ---
 
 ## Metric Coverage Matrix
@@ -37,6 +50,7 @@ This is a pure product/go-to-market initiative — a new organisation-relationsh
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
 | Metric 1 — Agency-led client provisioning | *(populated by /definition once stories are created)* | Gap — pending /definition |
+| Metric 2 — Ongoing client-agency artefact collaboration | *(populated by /definition once stories are created)* | Gap — pending /definition |
 
 ---
 

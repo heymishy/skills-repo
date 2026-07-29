@@ -31,6 +31,7 @@ Deliberate new go-to-market wedge, named directly by the operator: agencies/cons
 - **Shared access grant model (not ownership transfer).** A product/feature keeps one owning organisation (the Agency, in the agency-serving-client case), and can be granted visibility to a second organisation (the Client) without changing who owns it. This is the chosen MVP model from the two options discussed — see Assumptions and Out of Scope for the deferred alternative (transferable ownership).
 - **Access control extension.** A Client org's read-only user can view (not edit) whatever products/features have been explicitly granted to their org — built on top of, not replacing, the existing tenant-isolation boundary already enforced and tested (`bri-s3.4`).
 - **Client-org authentication — dual path.** A Client-org user can sign in either via GitHub OAuth (same mechanism as today, scoped to their Client org) or via a new lightweight email + magic-link mechanism for users without a GitHub account. Agency and Standalone tenants continue to use GitHub OAuth exclusively (unchanged) — the magic-link path is scoped to Client-org accounts only for this MVP, not a general-purpose alternative login method for every tenant type.
+- **Client-org lightweight collaboration — comments only.** A Client-org user (read-only role) can leave comments/feedback on an artefact or product/feature shared with them by an Agency, visible to the Agency. This does not grant edit access to the underlying shared content — a comment is a new, additive object, not a mutation of what's shared. The read-only boundary on the artefact/product/feature itself is unchanged. Added 2026-07-30 during the benefit-metric follow-up — the ongoing value of the Agency/Client relationship is genuine collaboration on shared work, not just a one-time provisioning event.
 
 ## Out of Scope
 
@@ -38,12 +39,13 @@ Deliberate new go-to-market wedge, named directly by the operator: agencies/cons
 - **Billing model redesign** — who pays (agency vs. client), and whether pricing is per-org or per-relationship, is a real open question this discovery does not resolve. MVP keeps today's existing 1-tenant-1-Stripe-customer model unchanged: the Agency's own tenant remains the paying entity. Flagged for a dedicated follow-up discovery before any billing changes are built.
 - **Retroactive migration of existing tenants** into the new org-type model — existing solo and GitHub-org tenants default to the new `standalone` org type with no forced backfill or re-classification exercise. See Assumptions.
 - **UI/visual design** of any agency/client-facing screens — a separate design pass, once the data and access model below is settled, per this repo's own pipeline convention.
+- **Real-time joint editing, suggestion/track-changes mode, or any mutation of underlying shared content by a Client-org user** — comments (see MVP Scope) are the only Client-org write capability in this MVP. Added 2026-07-30 alongside the comments capability, to keep "collaboration" bounded rather than open-ended.
 
 ## Assumptions and Risks
 
 - [ASSUMPTION] Existing tenants do not need retroactive migration into Agency/Client/Standalone types for this MVP — they default to `standalone` with no forced backfill — unconfirmed, requires /clarify before scope is locked.
 - [ASSUMPTION] A Client org's users are provisioned by the Agency (not a self-service sign-up path) — unconfirmed, requires /clarify before scope is locked.
-- [ASSUMPTION] "Read-only / view" access means read-only across everything shared with the client org, not a granular per-resource permission model — unconfirmed, requires /clarify before scope is locked.
+- [ASSUMPTION] "Read-only / view" access means read-only across everything shared with the client org, plus the ability to leave comments (an additive object, not edit access to the underlying resource) — not a granular per-resource permission model otherwise. Revised 2026-07-30 during the benefit-metric follow-up (see Clarification log) from the original pure-read-only assumption.
 - [ASSUMPTION] When a Client org converts to an independent standalone paying account, its existing Agency relationship(s) and previously-granted shared access persist unchanged (conversion adds independent billing/ownership capability, it does not sever existing agency relationships) — unconfirmed, requires /clarify before scope is locked.
 
 **Corrected during /clarify (was previously an open assumption, now confirmed):** A Client org may belong to multiple Agencies simultaneously, with shared-access grants scoped per Agency–Client relationship, not per Client org as a whole.
@@ -80,6 +82,9 @@ Hamish King — Product/Platform Owner — 2026-07-30
 - Q: Is Agency→Client org provisioning self-service or assisted for MVP?  A: Self-service — the Agency admin gets a full in-app create-and-invite flow, no platform-operator involvement needed.
 - Q: Do the 4 existing assumptions stand as written?  A: No — assumption 4 was wrong. A Client org may belong to multiple Agencies simultaneously (many-to-many), with shared-access grants scoped per Agency–Client relationship, not per Client org as a whole.
 - Q: Does "convert to a full paying account" require a new billing/checkout mechanism, or is it structural only for MVP?  A: Structural only, using the existing Stripe checkout mechanism (every standalone tenant already has one), triggered by an org-conversion action rather than a net-new sign-up. The same org entity and its existing data must be retained under the same org_id — never a second, brand-new org requiring data migration.
+
+**[2026-07-30] Post-approval amendment (during /benefit-metric):**
+- Q: Should the benefit metric include client-agency artefact collaboration, not just one-time client provisioning?  A: Yes — and this requires a real MVP scope change: Client-org users get comment-only collaboration on shared artefacts (not just viewing), added as new MVP Scope and Out of Scope items above, with the read-only assumption revised accordingly.
 
 ---
 
