@@ -17395,6 +17395,36 @@
       "metrics": [],
       "updatedAt": "2026-07-29T05:52:57.568Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-07-29-env-boot-validation",
+      "name": "Warn at boot time for silently-misconfigured-but-optional env vars",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "id": "ebv-s1-boot-time-env-var-warnings",
+          "stage": "branch-complete",
+          "dorStatus": "signed-off",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 11,
+            "passing": 11
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "verifyStatus": "passed",
+          "updatedAt": "2026-07-29T07:41:01.338Z",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/637"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-29T07:41:01.478Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
