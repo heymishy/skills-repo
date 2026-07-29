@@ -41,6 +41,15 @@
 **Revisit trigger:** If implementation reveals the 6-gate scope is meaningfully larger or more ambiguous than estimated, split the remaining unimplemented gates into a separate follow-up story rather than let this one run indefinitely.
 ---
 
+---
+**2026-07-29 | GAP | implementation-plan (AC6 artefact-path ambiguity)**
+**Decision:** For `branch-complete` (AC6), `artefactPath` resolves to a minimal per-story JSON file containing exactly `prUrl` and `verifyStatus` — not the full multi-feature `.github/pipeline-state.json`.
+**Alternatives considered:** (a) Point `artefactPath` at the real `.github/pipeline-state.json` and add a separate feature/story parameter to `validate()`'s signature — rejected, since this would change every existing caller's signature (H1-H9 checks and `cli-gate-advance.js`'s own call) for a single gate's benefit. (b) Encode `featureSlug/storyId` inside the path string itself (e.g. `state.json#feature/story`) — rejected as a hacky, unprecedented convention with no parser support anywhere else in this codebase.
+**Rationale:** `validate(artefactPath, gateName, repoRoot)`'s signature is fixed and shared by all 8 gates; it has no feature/story parameter. The DoR contract's own Assumptions section acknowledged this design question ("repurposed to mean 'the feature-slug context to look up'") without fully resolving it. A minimal, purpose-scoped JSON artefact is the simplest resolution consistent with the existing signature, and matches the test plan's own fixture wording ("Temp pipeline-state.json fixture with the story's prUrl set") closely enough to be a faithful, testable interpretation.
+**Made by:** Claude (agent), during implementation, 2026-07-29
+**Revisit trigger:** If `gate-advance` is ever wired into a real SKILL.md caller (currently out of scope per this story), confirm the caller can produce this minimal JSON extract cheaply from the real `pipeline-state.json` — if not, revisit this design.
+---
+
 ## Architecture Decision Records
 
 None promoted to repo-level ADR status. If a future feature needs to extend `validate()` again for a new gate type beyond the current 7, consider whether the gate-check pattern established here (typed exit codes, artefact-read-then-structural-check) is worth promoting to `.github/architecture-guardrails.md` as a formal ADR.
