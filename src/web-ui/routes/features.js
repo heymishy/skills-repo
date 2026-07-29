@@ -240,6 +240,13 @@ async function handleGetFeatureArtefacts(req, res, featureSlug) {
     // this slug -- nothing to delete otherwise. Hard delete, wuce-side data
     // only; confirm() before the destructive fetch, same pattern as
     // products.js's module-delete button.
+    // dfr-s1: redirect back to the feature's own product page after a
+    // successful delete, not the generic /journey list -- falls back to
+    // /journey only when productId is genuinely unresolvable (AC3), never
+    // to /products/undefined.
+    const deletePostRedirect = (journeyForPage && journeyForPage.productId)
+      ? '/products/' + journeyForPage.productId
+      : '/journey';
     const deleteSectionHtml = (journeyForPage && journeyForPage.journeyId) ? [
       '<div style="margin:12px 0">',
         '<button type="button" id="alrf-s10-delete-feature-btn" style="padding:6px 14px;background:var(--red-soft);color:var(--red);border:1px solid var(--red);border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Delete this feature</button>',
@@ -253,7 +260,7 @@ async function handleGetFeatureArtefacts(req, res, featureSlug) {
           'if(!confirm(' + JSON.stringify('Delete "' + displayTitle + '"? This permanently removes its artefacts and journey record. This cannot be undone.') + '))return;',
           'fetch(' + JSON.stringify('/api/journey/' + journeyForPage.journeyId) + ',{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({_csrf:' + JSON.stringify(generateCsrfToken(req)) + '})})',
             '.then(function(r){if(!r.ok){return r.json().then(function(j){throw new Error((j&&j.error)||("Request failed ("+r.status+")"));});}return r.json();})',
-            '.then(function(){window.location.href="/journey";})',
+            '.then(function(){window.location.href=' + JSON.stringify(deletePostRedirect) + ';})',
             '.catch(function(e){if(errEl){errEl.textContent=e.message;errEl.style.display="inline";}});',
         '});',
       '})()<\/script>'
