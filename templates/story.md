@@ -19,6 +19,7 @@
 **Epic reference:** [Link to parent epic]
 **Discovery reference:** [Link to approved discovery artefact]
 **Benefit-metric reference:** [Link to benefit-metric artefact]
+**Domain:** [Optional — one or more keys from `.github/standards/index.yml`, e.g. `[web-ui, security]`. Set this when the story's scope clearly matches a listed domain, so `/definition-of-ready` injects the matching standards into the coding agent instructions. Omit entirely if no domain applies — this is never mandatory.]
 
 ## User Story
 
