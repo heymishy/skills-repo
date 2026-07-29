@@ -17459,6 +17459,24 @@
       "metrics": [],
       "updatedAt": "2026-07-29T17:59:29.570Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-07-30-product-aware-navigation",
+      "name": "List products directly in the sidebar; remove redundant Run a Skill and Journeys nav items",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "id": "pan-s1",
+          "testPlanWritten": "true",
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "updatedAt": "2026-07-29T18:44:41.619Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-29T19:14:21.306Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

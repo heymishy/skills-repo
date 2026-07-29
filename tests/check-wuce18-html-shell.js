@@ -83,15 +83,17 @@ console.log('\nT1 — renderShell returns complete HTML document');
 // T2 — Unit: renderShell nav contains the current real nav links
 // (b1: Features/Actions/Status were removed as dead links — kbc-s1 removed
 // the routes they pointed to but left these NAV_ITEMS entries dangling;
-// Org board was added — see artefacts/2026-07-21-web-ui-experience-redesign)
+// Org board was added — see artefacts/2026-07-21-web-ui-experience-redesign.
+// pan-s1 (2026-07-30) removed "Journeys" and "Run a Skill" from NAV_ITEMS —
+// products are now listed directly in the sidebar instead — see
+// artefacts/2026-07-30-product-aware-navigation)
 // ─────────────────────────────────────────────────────────────────────────────
 console.log('\nT2 — renderShell nav contains the real nav links');
 {
   const output = renderShell({ title: 'T', bodyContent: '', user: { login: 'alice' } });
-  ok(output.includes('href="/journey"'), 'T2.1: Journeys link href');
-  ok(output.includes('href="/skills"'), 'T2.2: Run a Skill link href');
-  ok(output.includes('href="/org/kanban"'), 'T2.3: Org board link href');
-  ok(output.includes('aria-label="Main navigation"'), 'T2.4: nav aria-label');
+  ok(!output.includes('href="/skills"'), 'T2.1: Run a Skill link removed (pan-s1)');
+  ok(output.includes('href="/org/kanban"'), 'T2.2: Org board link href');
+  ok(output.includes('aria-label="Main navigation"'), 'T2.3: nav aria-label');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -100,8 +102,8 @@ console.log('\nT2 — renderShell nav contains the real nav links');
 console.log('\nT3 — renderShell nav has descriptive link text');
 {
   const output = renderShell({ title: 'T', bodyContent: '', user: { login: 'alice' } });
-  ok(output.includes('>Journeys<'), 'T3.1: "Journeys" text');
-  ok(output.includes('>Run a Skill<'), 'T3.2: "Run a Skill" text');
+  ok(!output.includes('>Journeys<'), 'T3.1: "Journeys" nav item removed (pan-s1)');
+  ok(!output.includes('>Run a Skill<'), 'T3.2: "Run a Skill" nav item removed (pan-s1)');
   ok(output.includes('>Org board<'), 'T3.3: "Org board" text');
 }
 
@@ -171,9 +173,8 @@ console.log('\nT9 — handleDashboard (authenticated) returns 200 HTML with nav'
   handleDashboard(req, res);
   eq(res.statusCode, 200, 'T9.1: status 200');
   ok(res.body.includes('<nav aria-label="Main navigation">'), 'T9.2: body has nav with aria-label');
-  ok(res.body.includes('href="/journey"'), 'T9.3: Journeys link present');
-  ok(res.body.includes('href="/skills"'), 'T9.4: Run a Skill link present');
-  ok(res.body.includes('href="/org/kanban"'), 'T9.5: Org board link present');
+  ok(!res.body.includes('href="/skills"'), 'T9.3: Run a Skill link removed (pan-s1)');
+  ok(res.body.includes('href="/org/kanban"'), 'T9.4: Org board link present');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

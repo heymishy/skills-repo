@@ -135,7 +135,7 @@ function _renderGroupedCoverageBreakdown(coverage) {
   return epicsSectionHtml + ungroupedSectionHtml;
 }
 
-function _renderProductDashboard(products, login) {
+function _renderProductDashboard(products, login, navProducts, activeProductId, noProductJourneyCount) {
   var cardsHtml = products.length === 0
     ? '<div style="padding:48px 0;text-align:center;color:var(--muted)">' +
         '<p style="font-size:18px;margin:0 0 16px">No products yet</p>' +
@@ -160,7 +160,15 @@ function _renderProductDashboard(products, login) {
       '<a href="/org/kanban" style="font-size:14px;color:var(--muted);text-decoration:none">View org kanban →</a>' +
     '</div>' +
   '</div>';
-  return _htmlShell.renderShell({ title: 'Products', bodyContent: body, user: { login: login }, active: 'dashboard' });
+  return _htmlShell.renderShell({
+    title: 'Products',
+    bodyContent: body,
+    user: { login: login },
+    active: 'dashboard',
+    products: navProducts,
+    activeProductId: activeProductId,
+    noProductJourneyCount: noProductJourneyCount
+  });
 }
 
 function _renderProductNew(login, error) {
@@ -583,7 +591,7 @@ function _unknownHealthCoverageLabel(item, artefactCountsByJourneyId) {
   return (item.stage || 'discovery') + ' · ' + countLabel;
 }
 
-function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId) {
+function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navProducts, noProductJourneyCount) {
   modules = modules || [];
   csrfToken = csrfToken || '';
   featureModuleAssignments = featureModuleAssignments || {};
@@ -772,7 +780,15 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     'async function rpcSubmitConnect(productId){var owner=document.getElementById("rpc-connect-owner").value.trim();var repo=document.getElementById("rpc-connect-repo").value.trim();if(!owner||!repo){alert("Owner and repo required");return;}try{var r=await fetch("/products/"+productId,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({owner:owner,repo:repo})});if(r.ok){window.location.reload();}else{var j=await r.json();alert("Error: "+(j.error||"Failed"));}}catch(e){alert("Error: "+e.message);}}' +
     '<\/script>' +
   '</div>';
-  return _htmlShell.renderShell({ title: productName, bodyContent: body, user: { login: login }, active: 'dashboard' });
+  return _htmlShell.renderShell({
+    title: productName,
+    bodyContent: body,
+    user: { login: login },
+    active: 'dashboard',
+    products: navProducts,
+    activeProductId: productId,
+    noProductJourneyCount: noProductJourneyCount
+  });
 }
 
 /**
@@ -980,6 +996,43 @@ async function handlePostProductConfirm(req, res, _next, pool, posthog) {
   }
 }
 
+/**
+ * pan-s1: shared products-for-sidebar summary, extracted out of
+ * handleGetDashboard's own inline query (which previously computed the same
+ * per-product journey count only for its own card rendering). Returns
+ * [{productId, name, journeyCount}] plus the tenant's no-product journey
+ * count -- both feed the sidebar's Products section on every wired page
+ * (handleGetDashboard, handleGetProductView, handleGetJourney), so the
+ * count shown in the sidebar always matches the same journeys table these
+ * pages already query, regardless of which page's body is rendering.
+ */
+async function getProductsNavSummary(pool, tenantId) {
+  var products = (await pool.query(
+    'SELECT product_id, name, created_at FROM products WHERE tenant_id = $1 ORDER BY created_at DESC',
+    [tenantId]
+  )).rows;
+  var withStats = await Promise.all(products.map(async function(p) {
+    var journeyRows = (await pool.query(
+      'SELECT journey_id, created_at AS updated_at FROM journeys WHERE product_id = $1',
+      [p.product_id]
+    )).rows;
+    var lastUpdated = journeyRows.reduce(function(mx, j) {
+      return (!mx || j.updated_at > mx) ? j.updated_at : mx;
+    }, null);
+    return {
+      productId: p.product_id,
+      name: p.name,
+      journeyCount: journeyRows.length,
+      lastUpdated: lastUpdated
+    };
+  }));
+  var noProductRows = (await pool.query(
+    'SELECT journey_id FROM journeys WHERE tenant_id = $1 AND product_id IS NULL',
+    [tenantId]
+  )).rows;
+  return { products: withStats, noProductJourneyCount: noProductRows.length };
+}
+
 async function handleGetDashboard(req, res, _next, pool) {
   var _pool = pool;
   var tenantId = req.session && req.session.tenantId;
@@ -997,29 +1050,19 @@ async function handleGetDashboard(req, res, _next, pool) {
     return;
   }
 
-  var products = (await _pool.query(
-    'SELECT product_id, name, created_at FROM products WHERE tenant_id = $1 ORDER BY created_at DESC',
-    [tenantId]
-  )).rows;
-  var cards = await Promise.all(products.map(async function(p) {
-    var journeyRows = (await _pool.query(
-      'SELECT journey_id, created_at AS updated_at FROM journeys WHERE product_id = $1',
-      [p.product_id]
-    )).rows;
-    var lastUpdated = journeyRows.reduce(function(mx, j) {
-      return (!mx || j.updated_at > mx) ? j.updated_at : mx;
-    }, null);
+  var navSummary = await getProductsNavSummary(_pool, tenantId);
+  var cards = navSummary.products.map(function(p) {
     return {
-      product_id: p.product_id,
+      product_id: p.productId,
       name: _escapeHtml(p.name),
-      featureCount: journeyRows.length,
-      lastUpdated: lastUpdated
+      featureCount: p.journeyCount,
+      lastUpdated: p.lastUpdated
     };
-  }));
+  });
   if (res.json) {
     res.json({ products: cards, showCta: cards.length === 0 });
   } else {
-    var html = _renderProductDashboard(cards, login);
+    var html = _renderProductDashboard(cards, login, navSummary.products, null, navSummary.noProductJourneyCount);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
@@ -1118,7 +1161,8 @@ async function handleGetProductView(req, res, _next, pool) {
     } catch (_) {
       artefactCountsByJourneyId = {};
     }
-    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId);
+    var navSummary = await getProductsNavSummary(_pool, tenantId);
+    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navSummary.products, navSummary.noProductJourneyCount);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
@@ -2134,6 +2178,8 @@ module.exports = {
   handlePostProductNew,
   handlePostProductConfirm,
   handleGetDashboard,
+  // pan-s1: shared products-for-sidebar summary, also consumed by routes/journey.js
+  getProductsNavSummary,
   handleGetProductNew,
   handleGetProductView,
   handleGetProductRoadmap,
