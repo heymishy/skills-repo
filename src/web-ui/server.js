@@ -1487,6 +1487,22 @@ if (process.env.NODE_ENV === 'test') {
     const hostname = (options && (options.hostname || options.host)) || '';
     if (hostname === 'api.anthropic.com' || String(hostname).indexOf('githubcopilot.com') !== -1) {
       _realLlmCallCount++;
+      // ssr-s1 fix-forward (diagnostic, temporary): rlcc-s1 documented this
+      // exact "extra real-looking calls" symptom and explicitly deferred
+      // finding the source (see artefacts/2026-07-25-realllm-counter-isolation/
+      // stories/rlcc-s1-smoke-test-worker-isolation.md, Out of Scope). Worker
+      // concurrency is already ruled out (staging-deploy.yml's smoke-test job
+      // runs --workers=1). This log line captures the calling stack so the
+      // next staging-deploy run's logs reveal the actual caller -- remove once
+      // the real source is identified and fixed.
+      console.warn(JSON.stringify({
+        event: 'unexpected_real_llm_call',
+        hostname: String(hostname),
+        path: (options && options.path) || null,
+        method: (options && options.method) || null,
+        callCount: _realLlmCallCount,
+        stack: new Error('unexpected_real_llm_call').stack
+      }));
     }
     return _origHttpsRequest.apply(https, arguments);
   };
