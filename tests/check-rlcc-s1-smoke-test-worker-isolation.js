@@ -35,22 +35,44 @@ console.log('\n[rlcc-s1] AC1 — smoke-test job\'s @mocked run includes --worker
     'AC1b: that line includes --workers=1');
 }
 
-// ── AC2: change is scoped — exactly one `run:` command carries --workers=1 ────
-console.log('\n[rlcc-s1] AC2 — --workers=1 appears on exactly one run: line, scoped to smoke-test only');
+// ── AC2: change is scoped — exactly one `run:` command inside the smoke-test
+// job carries --workers=1 (not "exactly one in the whole file" — pmec-s1
+// added a wholly separate post-deploy-e2e-confirm job that legitimately
+// reuses --workers=1 for the same CPU-contention reason e2e.yml's Scenario
+// A/B jobs already do; the scope guarantee this AC actually cares about is
+// "the flag didn't leak into deploy-staging/promote-to-prod", not "no other
+// job anywhere in the file may ever use it too") ────────────────────────────
+console.log('\n[rlcc-s1] AC2 — --workers=1 appears on exactly one run: line inside the smoke-test job, and never inside deploy-staging or promote-to-prod');
 {
-  const runLinesWithFlag = lines.filter(function(l) {
-    return /^\s*run:/.test(l) && l.indexOf('--workers=1') !== -1;
-  });
-  assert(runLinesWithFlag.length === 1, 'AC2a: exactly one run: command carries --workers=1');
-
-  // Confirm it lives inside the smoke-test job, not deploy-staging or promote-to-prod
   const smokeTestIdx = workflowText.indexOf('smoke-test:');
   const promoteIdx   = workflowText.indexOf('promote-to-prod:');
-  const runLineIdx   = workflowText.indexOf('run: npx playwright test --grep "@mocked" --workers=1');
-  assert(
-    smokeTestIdx !== -1 && runLineIdx > smokeTestIdx && (promoteIdx === -1 || runLineIdx < promoteIdx),
-    'AC2b: the flagged run: command is positioned inside the smoke-test job block'
-  );
+  const smokeTestBlock = (smokeTestIdx !== -1)
+    ? workflowText.slice(smokeTestIdx, promoteIdx !== -1 ? promoteIdx : undefined)
+    : '';
+  // Only count within the smoke-test job's own block (up to the next job
+  // boundary that isn't itself part of smoke-test — post-deploy-e2e-confirm
+  // sits between smoke-test and promote-to-prod, so bound the slice at the
+  // next top-level job header instead of directly at promote-to-prod).
+  const nextJobMatch = /\n  [A-Za-z0-9_.-]+:\s*\n/.exec(smokeTestBlock.slice(1));
+  const smokeTestOwnBlock = nextJobMatch ? smokeTestBlock.slice(0, nextJobMatch.index + 1) : smokeTestBlock;
+
+  const runLinesWithFlagInSmokeTest = smokeTestOwnBlock.split('\n').filter(function(l) {
+    return /^\s*run:/.test(l) && l.indexOf('--workers=1') !== -1;
+  });
+  assert(runLinesWithFlagInSmokeTest.length === 1, 'AC2a: exactly one run: command inside the smoke-test job carries --workers=1');
+
+  // Confirm the deploy-staging and promote-to-prod job blocks never carry it
+  const deployStagingIdx = workflowText.indexOf('deploy-staging:');
+  const deployStagingBlock = (deployStagingIdx !== -1 && smokeTestIdx !== -1)
+    ? workflowText.slice(deployStagingIdx, smokeTestIdx)
+    : '';
+  const promoteBlock = (promoteIdx !== -1) ? workflowText.slice(promoteIdx) : '';
+  const leakedOutsideSmokeTest = [deployStagingBlock, promoteBlock].some(function(block) {
+    return block.split('\n').some(function(l) {
+      return /^\s*run:/.test(l) && l.indexOf('--workers=1') !== -1;
+    });
+  });
+  assert(!leakedOutsideSmokeTest, 'AC2b: --workers=1 does not appear inside deploy-staging or promote-to-prod');
 }
 
 // ── AC3: playwright.config.js is unmodified — no top-level workers: key ───────

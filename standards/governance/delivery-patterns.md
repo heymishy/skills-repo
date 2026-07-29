@@ -146,3 +146,17 @@ git push origin master
 **Rule:** Whenever a review finding splits an AC and defers part of it to "the epic level" (or any level beyond the current story), the review or DoR artefact must name the specific mechanism that will perform the deferred check — a dedicated test, a manual verification step, or an explicit epic-level story. An implicit expectation with no assigned owner is equivalent to the check never happening.
 
 **Source:** product-rollup epic, pr-s7 review finding 7-M1 (AC4 split), surfaced at `/definition-of-done`.
+
+---
+
+## New-Endpoint Same-PR Real-Staging E2E Bootstrapping Gap (D44)
+
+**The gap:** A PR that both introduces a new staging-safe endpoint AND adds a real-staging E2E test of that same endpoint in the same PR cannot pass that check on its own pre-merge CI run. `staging-deploy.yml` only deploys to `wuce-staging` on push to master — there is no PR-preview deploy mechanism anywhere in `.github/workflows/` — so the new endpoint genuinely is not live on staging until after the PR merges.
+
+**How to recognise it in CI output:** the failure does not look like a real assertion failure. Typical symptoms: a JSON-parse error where the test expected a JSON response but got the generic sign-in page HTML back, or a 404/redirect where the test expected the new route. If the endpoint's own dedicated unit test already passes (proving the logic is correct in isolation) but the same-PR real-staging E2E test of that endpoint fails with one of these shapes, this is almost certainly the bootstrapping gap, not a real defect.
+
+**The manual workaround (for the window between merge and the automated confirmation below):** merge the PR with the one known-red check — do not hold the merge hostage to a check that structurally cannot pass yet. After merge, confirm the endpoint's real behaviour via a direct local run of the spec file from a worktree/checkout, targeting the real deployed `wuce-staging` URL directly (with any required secret retrieved via `flyctl ssh console --app wuce-staging -C "printenv <VAR>"`, piped to a job-scoped temp file, used inline, then deleted — never printed or committed). **Do not use `gh run rerun` for this** — once GitHub deletes the merged PR's source branch (its default post-merge behaviour), `gh run rerun` fails at the checkout step trying to fetch the now-nonexistent branch ref, which looks like a fast failure but is unrelated to the code under test.
+
+**The automated confirmation (primary mechanism going forward):** `staging-deploy.yml`'s `post-deploy-e2e-confirm` job (pmec-s1) re-runs the exact same Scenario A/B real-staging spec files, behind the exact same `audit.staging_e2e_scenario_a`/`audit.staging_e2e_scenario_b` flags, immediately after every real deploy (`needs: deploy-staging`). This closes the gap automatically — a newly-merged endpoint's spec gets its first genuine confirmation the same day, without depending on a human remembering to do the manual re-run above. The job is deliberately non-blocking (not a dependency of `promote-to-prod`, which continues to depend on `smoke-test` alone) — a failure here is a same-day investigation signal, not an automatic release block.
+
+**Source:** durable-session-history epic, dsh-s4 (`workspace/capture-log.md`, 2026-07-28, two entries: the pattern itself and the `gh run rerun` gap); closed by `post-merge-e2e-confirmation` (pmec-s1, 2026-07-29).
