@@ -17399,12 +17399,12 @@
     {
       "slug": "2026-07-29-env-boot-validation",
       "name": "Warn at boot time for silently-misconfigured-but-optional env vars",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "id": "ebv-s1-boot-time-env-var-warnings",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -17417,13 +17417,15 @@
           "acTotal": 5,
           "acVerified": 5,
           "verifyStatus": "passed",
-          "updatedAt": "2026-07-29T07:41:01.338Z",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/637"
+          "updatedAt": "2026-07-29T08:06:14.072Z",
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/637",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-29T07:41:01.478Z",
+      "updatedAt": "2026-07-29T08:06:14.216Z",
       "track": "short"
     }
   ],
