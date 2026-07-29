@@ -17427,6 +17427,34 @@
       "metrics": [],
       "updatedAt": "2026-07-29T08:06:14.216Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-07-29-ideas-postgres-persistence",
+      "name": "Persist the kanban Ideas backlog in Postgres instead of an ephemeral file",
+      "stage": "verify-completion",
+      "health": "green",
+      "stories": [
+        {
+          "id": "idp-s1-persist-ideas-in-postgres",
+          "stage": "verify-completion",
+          "dorStatus": "signed-off",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 10,
+            "passing": 10
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "verifyStatus": "passed",
+          "updatedAt": "2026-07-29T08:37:40.479Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-29T08:37:50.080Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
