@@ -870,3 +870,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: gap
   signal-text: "gh run rerun on a merged PR's CI check fails at the checkout step, not by re-testing anything, once GitHub has deleted the PR's source branch (its default post-merge behaviour) -- the workflow's checkout action tries to fetch the now-nonexistent feature branch ref and errors out in ~30s, which looks superficially like a fast test failure but is actually unrelated to the code under test. Discovered while trying to get a definitive post-merge confirmation of dsh-s4's AC2 (a real-staging E2E test that could only genuinely pass after the endpoint it tests was deployed). Workaround: run the spec file directly from a local worktree/checkout against the real deployed target (with the correct secret retrieved via flyctl ssh, used inline, never persisted) rather than trying to re-trigger the merged PR's own CI run. Prevention: for any story whose AC2-style verification is deliberately deferred to post-merge, plan to confirm it via a direct local/manual re-run against the live target, not via gh run rerun on the now-merged PR."
   source: agent-auto
+
+- date: 2026-07-29
+  session-phase: cif-s1 branch-complete / dfr-s1 PR #631 CI review
+  signal-type: gap
+  signal-text: "Operator-reported nav/routing gap: the left-hand nav's Run a Skill entry (/skills) is now redundant, and there is overlap with /journey, which needs to become product-aware. Today /journey is a flat list of all features regardless of product; it should instead be scoped per product and surfaced via a list or board view, matching how kanban/board views already work per-product elsewhere in the app (e.g. /products/:id/kanban). Not yet scoped or scheduled -- logged for triage as a nav/routing redesign candidate covering both the /skills redundancy and the /journey product-aware rework."
+  source: operator-manual
