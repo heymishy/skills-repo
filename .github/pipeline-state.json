@@ -17306,7 +17306,7 @@
     {
       "slug": "2026-07-29-ci-deploy-collision-fix",
       "name": "Prevent staging redeploy from racing a PR's real-staging E2E job",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
@@ -17332,7 +17332,7 @@
         },
         {
           "id": "cif-s2-sequence-scenario-b-after-scenario-a",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -17345,24 +17345,26 @@
           "acTotal": 4,
           "acVerified": 4,
           "verifyStatus": "passed",
-          "updatedAt": "2026-07-29T05:40:46.472Z",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/634"
+          "updatedAt": "2026-07-29T05:52:57.725Z",
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/634",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-29T05:40:46.612Z",
+      "updatedAt": "2026-07-29T05:52:57.870Z",
       "track": "short"
     },
     {
       "slug": "2026-07-29-post-merge-e2e-confirmation",
       "name": "Auto-confirm real-staging E2E specs immediately after every master deploy",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "id": "pmec-s1-post-merge-e2e-confirmation-job",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -17375,13 +17377,15 @@
           "acTotal": 5,
           "acVerified": 5,
           "verifyStatus": "passed",
-          "updatedAt": "2026-07-29T05:03:43.481Z",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/633"
+          "updatedAt": "2026-07-29T05:52:57.419Z",
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/633",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-29T05:03:43.648Z",
+      "updatedAt": "2026-07-29T05:52:57.568Z",
       "track": "short"
     }
   ],
