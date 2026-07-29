@@ -17461,9 +17461,9 @@
       "track": "short"
     },
     {
-      "slug": "pan-s1-product-aware-navigation",
+      "slug": "2026-07-30-product-aware-navigation",
       "name": "List products directly in the sidebar; remove redundant Run a Skill and Journeys nav items",
-      "stage": "discovery",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
@@ -17475,7 +17475,7 @@
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-29T18:44:41.617Z",
+      "updatedAt": "2026-07-29T19:14:21.306Z",
       "track": "short"
     }
   ],
