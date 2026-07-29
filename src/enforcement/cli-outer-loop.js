@@ -7,12 +7,23 @@
 const fs   = require('fs');
 const path = require('path');
 
-const SUPPORTED_GATES = ['definition-of-ready'];
+// gav-s1: 'definition-of-ready' kept as a permanent alias of the canonical
+// 'dor-signed-off' name (src/enforcement/gate-map.js) -- both route through
+// the same, unchanged H1-H9 logic below. The other 6 canonical gate names
+// each get their own dedicated validation function.
+const SUPPORTED_GATES = [
+  'definition-of-ready', 'dor-signed-off',
+  'discovery-approved', 'benefit-metric-active', 'definition-complete',
+  'test-plan-complete', 'branch-complete', 'definition-of-done',
+];
 
 // Exit code constants — first-failing category determines the exit code.
 const EXIT = {
   OK: 0,
   H1: 1, H2: 2, H3: 3, H4: 4, H5: 5, H6: 6, H7_THROUGH_H9: 7, SYSTEM: 8,
+  // gav-s1: new gate-specific exit codes, non-colliding with 0-8 above.
+  DISCOVERY: 9, BENEFIT_METRIC: 10, DEFINITION_COMPLETE: 11,
+  TEST_PLAN_COMPLETE: 12, BRANCH_COMPLETE: 13, DOD: 14,
 };
 
 // H1: embedded scan — matches artefacts/<feature-slug>/stories/<story-slug>.md
@@ -22,6 +33,272 @@ const STORY_REF_RE = /artefacts\/[^/\s\n]+\/stories\/([^/\s\n.]+)\.md/g;
 const STORY_REF_HEADER_RE    = /\*\*Story reference:\*\*\s+(\S+\.md)/;
 const TESTPLAN_REF_HEADER_RE = /\*\*Test plan reference:\*\*\s+(\S+\.md)/;
 const REVIEW_REF_HEADER_RE   = /\*\*Review artefact:\*\*\s+(\S+\.md)/;
+
+// gav-s1: shared heading-body extractor for the 6 new gate validators below.
+// Returns null if the heading itself is not found; returns '' (falsy) if the
+// heading is found but its body is blank — callers distinguish "missing
+// section" from "blank section" using this difference.
+//
+// stopRe controls where the body ends: defaults to "any #{1,3} heading",
+// which is correct for sections with no nested subheadings (Problem
+// Statement, Out of Scope, etc.). A section that legitimately contains its
+// own ### subheadings (e.g. benefit-metric's "## Tier 1" containing
+// "### Metric 1", "### Metric 2") must pass a stopRe that only matches a
+// same-or-higher-level heading (## or #), not the nested ### markers —
+// otherwise the body is truncated at the first subheading instead of
+// including it.
+function extractSectionBody(content, headingPattern, stopRe) {
+  const re = new RegExp('^#{1,3}\\s+' + headingPattern + '\\s*$', 'im');
+  const match = re.exec(content);
+  if (!match) return null;
+  const bodyStart = match.index + match[0].length;
+  const nextHeadingMatch = (stopRe || /^#{1,3}\s+/m).exec(content.slice(bodyStart));
+  const body = nextHeadingMatch
+    ? content.slice(bodyStart, bodyStart + nextHeadingMatch.index)
+    : content.slice(bodyStart);
+  return body.trim();
+}
+
+// gav-s1: resolves a path relative to repoRoot and enforces the same OWASP
+// A01 guard as the top-level check in validate() below. Returns null on
+// traversal (caller returns EXIT.SYSTEM).
+function resolveWithinRoot(relOrAbsPath, repoRoot) {
+  const resolved = path.isAbsolute(relOrAbsPath)
+    ? path.resolve(relOrAbsPath)
+    : path.resolve(repoRoot, relOrAbsPath);
+  const rootWithSep = repoRoot.endsWith(path.sep) ? repoRoot : repoRoot + path.sep;
+  if (!resolved.startsWith(rootWithSep)) return null;
+  return resolved;
+}
+
+// ── gav-s1: discovery-approved (AC2) ─────────────────────────────────────────
+function validateDiscoveryApproved(resolved) {
+  let content;
+  try {
+    content = fs.readFileSync(resolved, 'utf8');
+  } catch (_) {
+    return { exitCode: EXIT.DISCOVERY, stdout: '', stderr: 'DISCOVERY FAIL: could not read artefact (file not found or unreadable)' };
+  }
+
+  const requiredSections = [
+    ['Problem Statement', 'problem\\s+statement'],
+    ['Who It Affects', 'who\\s+it\\s+affects'],
+    ['Why Now', 'why\\s+now'],
+    ['MVP Scope', 'mvp\\s+scope'],
+    ['Out of Scope', 'out[\\s-]of[\\s-]?scope'],
+  ];
+  for (let i = 0; i < requiredSections.length; i++) {
+    const label = requiredSections[i][0];
+    const pattern = requiredSections[i][1];
+    const body = extractSectionBody(content, pattern);
+    if (body === null) {
+      return { exitCode: EXIT.DISCOVERY, stdout: '', stderr: `DISCOVERY FAIL: discovery artefact has no "${label}" section` };
+    }
+    if (!body) {
+      return { exitCode: EXIT.DISCOVERY, stdout: '', stderr: `DISCOVERY FAIL: "${label}" section body is blank` };
+    }
+  }
+
+  const approvedBody = extractSectionBody(content, 'approved\\s+by');
+  if (approvedBody === null) {
+    return { exitCode: EXIT.DISCOVERY, stdout: '', stderr: 'DISCOVERY FAIL: discovery artefact has no "Approved By" section' };
+  }
+  if (!approvedBody) {
+    return { exitCode: EXIT.DISCOVERY, stdout: '', stderr: '"Approved By" section body is blank — DISCOVERY FAIL' };
+  }
+  const placeholderRe = /^\[fill in\]$|^tbd$|^\[name\s*[-—]\s*role\s*[-—]\s*date\]$/i;
+  if (placeholderRe.test(approvedBody.trim())) {
+    return { exitCode: EXIT.DISCOVERY, stdout: '', stderr: 'DISCOVERY FAIL: "Approved By" contains a placeholder value, not a named individual' };
+  }
+
+  return { exitCode: EXIT.OK, stdout: 'validate OK: discovery-approved — 0 violations found', stderr: '' };
+}
+
+// ── gav-s1: benefit-metric-active (AC3) ──────────────────────────────────────
+function validateBenefitMetricActive(resolved) {
+  let content;
+  try {
+    content = fs.readFileSync(resolved, 'utf8');
+  } catch (_) {
+    return { exitCode: EXIT.BENEFIT_METRIC, stdout: '', stderr: 'BENEFIT_METRIC FAIL: could not read artefact (file not found or unreadable)' };
+  }
+
+  // Tier 1's body legitimately contains its own ### Metric N subsections, so
+  // stop only at the next ## (or #) heading or a --- rule, never at ###.
+  const tier1Body = extractSectionBody(
+    content,
+    'tier\\s*1\\s*:?\\s*product\\s+metrics[^\\n]*',
+    /^##[^#]|^#[^#]|^---\s*$/m
+  );
+  if (tier1Body === null) {
+    return { exitCode: EXIT.BENEFIT_METRIC, stdout: '', stderr: 'BENEFIT_METRIC FAIL: benefit-metric artefact has no "Tier 1: Product Metrics" section' };
+  }
+
+  const metricBlocks = tier1Body.split(/^###\s+/m).slice(1);
+  if (metricBlocks.length === 0) {
+    return { exitCode: EXIT.BENEFIT_METRIC, stdout: '', stderr: 'BENEFIT_METRIC FAIL: no Tier 1 metric subsections found' };
+  }
+
+  const requiredFields = ['What we measure', 'Baseline', 'Target', 'Measurement method'];
+  const anyComplete = metricBlocks.some(function (block) {
+    return requiredFields.every(function (field) {
+      const re = new RegExp('\\*\\*' + field.replace(/ /g, '\\s+') + '\\*\\*\\s*\\|\\s*([^|\\n]+)');
+      const m = re.exec(block);
+      if (!m) return false;
+      const value = m[1].trim();
+      if (!value) return false;
+      if (/^\[.*\]$/.test(value)) return false;
+      return true;
+    });
+  });
+
+  if (!anyComplete) {
+    return { exitCode: EXIT.BENEFIT_METRIC, stdout: '', stderr: 'BENEFIT_METRIC FAIL: no Tier 1 metric has all required fields (What we measure, Baseline, Target, Measurement method) populated' };
+  }
+
+  return { exitCode: EXIT.OK, stdout: 'validate OK: benefit-metric-active — 0 violations found', stderr: '' };
+}
+
+// ── gav-s1: definition-complete (AC4) ────────────────────────────────────────
+function validateDefinitionComplete(resolved) {
+  let content;
+  try {
+    content = fs.readFileSync(resolved, 'utf8');
+  } catch (_) {
+    return { exitCode: EXIT.DEFINITION_COMPLETE, stdout: '', stderr: 'DEFINITION_COMPLETE FAIL: could not read artefact (file not found or unreadable)' };
+  }
+
+  let acCount = 0;
+  const acMarkerRe = /\*\*AC(\d+):\*\*/g;
+  while (acMarkerRe.exec(content) !== null) acCount++;
+  if (acCount < 3) {
+    return { exitCode: EXIT.DEFINITION_COMPLETE, stdout: '', stderr: `DEFINITION_COMPLETE FAIL: minimum 3 ACs required, found ${acCount}` };
+  }
+
+  const oosBody = extractSectionBody(content, 'out[\\s-]of[\\s-]?scope');
+  if (oosBody === null) {
+    return { exitCode: EXIT.DEFINITION_COMPLETE, stdout: '', stderr: 'DEFINITION_COMPLETE FAIL: story has no "Out of Scope" section' };
+  }
+  if (!oosBody) {
+    return { exitCode: EXIT.DEFINITION_COMPLETE, stdout: '', stderr: 'DEFINITION_COMPLETE FAIL: "Out of Scope" section body is blank' };
+  }
+
+  if (!/(?:complexity|rating)[^\n]*?(?::[*\s]*|is\s+)[1-3]\b/i.test(content)) {
+    return { exitCode: EXIT.DEFINITION_COMPLETE, stdout: '', stderr: 'DEFINITION_COMPLETE FAIL: Complexity rating value must be 1, 2, or 3' };
+  }
+
+  return { exitCode: EXIT.OK, stdout: 'validate OK: definition-complete — 0 violations found', stderr: '' };
+}
+
+// ── gav-s1: test-plan-complete (AC5) — generalises the existing H3/H8
+// coverage-check logic to run standalone against a test plan's own
+// referenced story, without requiring a DoR wrapper artefact. ───────────────
+function validateTestPlanComplete(resolved, repoRoot) {
+  let content;
+  try {
+    content = fs.readFileSync(resolved, 'utf8');
+  } catch (_) {
+    return { exitCode: EXIT.TEST_PLAN_COMPLETE, stdout: '', stderr: 'TEST_PLAN_COMPLETE FAIL: could not read artefact (file not found or unreadable)' };
+  }
+
+  const storyRefMatch = STORY_REF_HEADER_RE.exec(content);
+  if (!storyRefMatch) {
+    return { exitCode: EXIT.TEST_PLAN_COMPLETE, stdout: '', stderr: 'TEST_PLAN_COMPLETE FAIL: no story reference found in test plan (**Story reference:** <path>)' };
+  }
+
+  const absStory = resolveWithinRoot(storyRefMatch[1], repoRoot);
+  if (!absStory) {
+    return { exitCode: EXIT.SYSTEM, stdout: '', stderr: 'Error: story reference path resolves outside repository root. Path traversal prevented (OWASP A01).' };
+  }
+
+  let storyContent;
+  try {
+    storyContent = fs.readFileSync(absStory, 'utf8');
+  } catch (_) {
+    return { exitCode: EXIT.TEST_PLAN_COMPLETE, stdout: '', stderr: `TEST_PLAN_COMPLETE FAIL: referenced story not found at ${storyRefMatch[1]}` };
+  }
+
+  const acMarkerRe = /\*\*AC(\d+):\*\*/g;
+  let m;
+  while ((m = acMarkerRe.exec(storyContent)) !== null) {
+    const acLabel = `AC${m[1]}`;
+    if (!content.includes(acLabel)) {
+      return { exitCode: EXIT.TEST_PLAN_COMPLETE, stdout: '', stderr: `TEST_PLAN_COMPLETE FAIL: ${acLabel} not covered in test plan` };
+    }
+  }
+
+  return { exitCode: EXIT.OK, stdout: 'validate OK: test-plan-complete — 0 violations found', stderr: '' };
+}
+
+// ── gav-s1: branch-complete (AC6) — the artefact is a minimal, per-story JSON
+// snapshot (prUrl, verifyStatus), not the full multi-feature pipeline-state.json.
+// See artefacts/2026-07-18-gate-advance-validation/decisions.md (2026-07-29
+// GAP entry) for why: validate()'s single-path signature has no feature/story
+// parameter to index into the real pipeline-state.json with. ───────────────
+function validateBranchComplete(resolved) {
+  let raw;
+  try {
+    raw = fs.readFileSync(resolved, 'utf8');
+  } catch (_) {
+    return { exitCode: EXIT.BRANCH_COMPLETE, stdout: '', stderr: 'BRANCH_COMPLETE FAIL: could not read artefact (file not found or unreadable)' };
+  }
+
+  let data;
+  try {
+    data = JSON.parse(raw);
+  } catch (_) {
+    return { exitCode: EXIT.BRANCH_COMPLETE, stdout: '', stderr: 'BRANCH_COMPLETE FAIL: artefact is not valid JSON' };
+  }
+
+  if (!data.prUrl) {
+    return { exitCode: EXIT.BRANCH_COMPLETE, stdout: '', stderr: 'BRANCH_COMPLETE FAIL: prUrl is empty or missing' };
+  }
+  if (data.verifyStatus !== 'passed') {
+    return { exitCode: EXIT.BRANCH_COMPLETE, stdout: '', stderr: `BRANCH_COMPLETE FAIL: verifyStatus is "${data.verifyStatus}", expected "passed"` };
+  }
+
+  return { exitCode: EXIT.OK, stdout: 'validate OK: branch-complete — 0 violations found', stderr: '' };
+}
+
+// ── gav-s1: definition-of-done (AC7) ──────────────────────────────────────────
+function validateDefinitionOfDone(resolved) {
+  let content;
+  try {
+    content = fs.readFileSync(resolved, 'utf8');
+  } catch (_) {
+    return { exitCode: EXIT.DOD, stdout: '', stderr: 'DOD FAIL: could not read artefact (file not found or unreadable)' };
+  }
+
+  const acCoverageBody = extractSectionBody(content, 'ac\\s+coverage');
+  if (acCoverageBody === null) {
+    return { exitCode: EXIT.DOD, stdout: '', stderr: 'DOD FAIL: dod artefact has no "AC Coverage" section' };
+  }
+
+  const rowRe = /^\|\s*(AC\d+)\s*\|([^|]*)\|([^|]*)\|([^|]*)\|([^|]*)\|\s*$/gm;
+  let m;
+  let rowCount = 0;
+  while ((m = rowRe.exec(acCoverageBody)) !== null) {
+    const acLabel   = m[1];
+    const status    = m[2].trim();
+    const deviation = m[5].trim();
+    rowCount++;
+
+    const isCheck = status.indexOf('✅') !== -1;
+    const isWarn  = status.indexOf('⚠️') !== -1 || status.indexOf('⚠') !== -1;
+    const hasDeviationNote = !!deviation && !/^none$/i.test(deviation);
+
+    if (isCheck) continue;
+    if (isWarn && hasDeviationNote) continue;
+
+    return { exitCode: EXIT.DOD, stdout: '', stderr: `DOD FAIL: ${acLabel} row is not satisfied (status="${status}") with no recorded deviation` };
+  }
+
+  if (rowCount === 0) {
+    return { exitCode: EXIT.DOD, stdout: '', stderr: 'DOD FAIL: AC Coverage table has no AC rows' };
+  }
+
+  return { exitCode: EXIT.OK, stdout: 'validate OK: definition-of-done — 0 violations found', stderr: '' };
+}
 
 /**
  * Validate an artefact against a gate.
@@ -54,6 +331,17 @@ function validate(artefactPath, gateName, repoRoot) {
       stderr: `UNSUPPORTED_GATE: '${gateName}' is not a recognised gate. Supported gates: ${SUPPORTED_GATES.join(', ')}`,
     };
   }
+
+  // gav-s1: dispatch the 6 new canonical gate names to their own validators.
+  // 'definition-of-ready' and 'dor-signed-off' both fall through unchanged to
+  // the existing H1-H9 logic below (dor-signed-off is a permanent alias, not
+  // a separate implementation).
+  if (gateName === 'discovery-approved')    return validateDiscoveryApproved(resolved);
+  if (gateName === 'benefit-metric-active') return validateBenefitMetricActive(resolved);
+  if (gateName === 'definition-complete')   return validateDefinitionComplete(resolved);
+  if (gateName === 'test-plan-complete')    return validateTestPlanComplete(resolved, repoRoot);
+  if (gateName === 'branch-complete')       return validateBranchComplete(resolved);
+  if (gateName === 'definition-of-done')    return validateDefinitionOfDone(resolved);
 
   // ── H1: story artefact exists (embedded scan) ───────────────────────────────
   let content;
