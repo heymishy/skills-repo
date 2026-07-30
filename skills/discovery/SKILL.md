@@ -235,6 +235,11 @@ When you have enough to write a section confidently, write it and confirm:
 > "I've written the [section] section as: [summary]. Does that capture it?
 > Reply: yes - or correct me"
 
+**Callout markers (sdg.5):** When a section of your output cites or is grounded in
+uploaded reference content, include the marker `[Grounded in: <filename>]` at the
+end of that section. Use the exact filename from the reference material. Do not
+use this marker if no reference files were uploaded.
+
 ### Section 1 - Problem statement
 
 Ask:

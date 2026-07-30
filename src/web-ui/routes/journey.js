@@ -2186,7 +2186,10 @@ async function handlePostGateConfirm(req, res) {
     // Feature-level: create session for next stage
     newSid = crypto.randomUUID();
     newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-' + nextStage + '.md');
-    getRegisterHtmlSession()(newSid, newSessionPath, nextStage, { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug, mockScenarioName: _mockScenarioForStage(journey, nextStage) });
+    // sdg.5: thread the journey's uploaded reference files through to the
+    // next stage's system prompt too (e.g. ideate -> discovery) -- same
+    // mechanism sdg.4 wired for the very first session in the journey.
+    getRegisterHtmlSession()(newSid, newSessionPath, nextStage, { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug, mockScenarioName: _mockScenarioForStage(journey, nextStage), referenceFiles: journey.referenceFiles && journey.referenceFiles.length ? journey.referenceFiles : undefined });
     getLinkSessionToJourney()(newSid, journeyId);
     if (_journeyStore.setActiveSession) {
       _journeyStore.setActiveSession(journeyId, newSid, nextStage);
