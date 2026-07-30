@@ -6350,29 +6350,44 @@
         {
           "id": "sdg.1",
           "name": "Reference upload modal UI",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "testPlanStatus": "written",
           "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg1-test-plan.md",
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub-dor-sdg-1/definition-of-ready.md"
+          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub-dor-sdg-1/definition-of-ready.md",
+          "prStatus": "merged",
+          "health": "amber",
+          "updatedAt": "2026-07-30T08:54:10.702Z",
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dod/sdg.1-dod.md"
         },
         {
           "id": "sdg.2",
           "name": "Reference file persistence in journey state",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub-dor-sdg-2/definition-of-ready.md",
           "testPlanStatus": "written",
-          "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg2-test-plan.md"
+          "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg2-test-plan.md",
+          "prStatus": "merged",
+          "health": "green",
+          "updatedAt": "2026-07-30T08:54:10.846Z",
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dod/sdg.2-dod.md"
         },
         {
           "id": "sdg.3",
           "name": "Reference file content reading and validation",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "testPlanStatus": "written",
           "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg3-test-plan.md",
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg3-dor.md"
+          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg3-dor.md",
+          "prStatus": "merged",
+          "health": "green",
+          "updatedAt": "2026-07-30T08:54:10.975Z",
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dod/sdg.3-dod.md"
         },
         {
           "id": "sdg.4",
