@@ -1953,6 +1953,30 @@ async function handlePostGateConfirm(req, res) {
       console.error('[artefact] Postgres save failed:', _pgArtErr.message);
     }
   }
+  // sdg.6: post-completion metrics hook, /ideate and /discovery only (per
+  // that story's scope). Disk write above precedes this, per ougl disk
+  // canonicity — read the artefact back from disk rather than trusting
+  // session.artefactContent directly.
+  if (session.skillName === 'ideate' || session.skillName === 'discovery') {
+    try {
+      var _strategyMetrics = require('../modules/strategy-metrics');
+      var _diskArtefactContent = fs.readFileSync(absPath, 'utf8');
+      var _refFiles = journey.referenceFiles || [];
+      var _calloutResult = _strategyMetrics.detectCalloutMarkers(_diskArtefactContent);
+      var _workspaceDir = path.join(repoRoot, 'workspace');
+      _strategyMetrics.recordMetrics(_workspaceDir, {
+        featureSlug:        journey.featureSlug,
+        stage:               session.skillName,
+        hasReferenceFiles:   _refFiles.length > 0,
+        referenceFileCount:  _refFiles.length,
+        referenceFileNames:  _refFiles.map(function(rf) { return path.basename(rf.path); }),
+        calloutCount:        _calloutResult.count,
+        totalSections:       _strategyMetrics.countSections(_diskArtefactContent)
+      });
+    } catch (_metricsErr) {
+      console.error('[strategy-metrics] recordMetrics failed:', _metricsErr.message);
+    }
+  }
   // Call completeStage to record this stage (guard: auto-save may have already called this)
   if (!session._stageDone) {
     session._stageDone = true;
@@ -2186,7 +2210,10 @@ async function handlePostGateConfirm(req, res) {
     // Feature-level: create session for next stage
     newSid = crypto.randomUUID();
     newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-' + nextStage + '.md');
-    getRegisterHtmlSession()(newSid, newSessionPath, nextStage, { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug, mockScenarioName: _mockScenarioForStage(journey, nextStage) });
+    // sdg.5: thread the journey's uploaded reference files through to the
+    // next stage's system prompt too (e.g. ideate -> discovery) -- same
+    // mechanism sdg.4 wired for the very first session in the journey.
+    getRegisterHtmlSession()(newSid, newSessionPath, nextStage, { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug, mockScenarioName: _mockScenarioForStage(journey, nextStage), referenceFiles: journey.referenceFiles && journey.referenceFiles.length ? journey.referenceFiles : undefined });
     getLinkSessionToJourney()(newSid, journeyId);
     if (_journeyStore.setActiveSession) {
       _journeyStore.setActiveSession(journeyId, newSid, nextStage);

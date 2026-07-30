@@ -6403,20 +6403,24 @@
         {
           "id": "sdg.5",
           "name": "Reference content injection into /discovery system prompt",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "testPlanStatus": "written",
           "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg5-test-plan.md",
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg5-dor.md"
+          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg5-dor.md",
+          "health": "green",
+          "updatedAt": "2026-07-30T09:25:20.177Z"
         },
         {
           "id": "sdg.6",
           "name": "Callout markers in discovery artefact output",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "testPlanStatus": "written",
           "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg6-test-plan.md",
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg6-dor.md"
+          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg6-dor.md",
+          "health": "green",
+          "updatedAt": "2026-07-30T09:33:51.489Z"
         }
       ]
     },
