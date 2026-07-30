@@ -30,7 +30,9 @@
 // static tenant ID left 'paid' or 'past_due' by a previous run leaks into the
 // next run's "starts from trial" assumptions. Each tenant ID below is suffixed
 // with a unique-per-run token (RUN_SUFFIX) so every run gets genuinely fresh
-// tenant identities, not just fresh sessions.
+// tenant identities, not just fresh sessions. The same static-identifier
+// problem applied to this spec's webhook event `id` fields too (see below) —
+// both are now unique per run.
 
 const { test, expect } = require('@playwright/test');
 // dss-s1/bjs-s1: only meaningful against real wuce-staging -- empty {}
@@ -48,6 +50,19 @@ const { testEndpointBypassHeaders, webhookStubHeaders } = require('./fixtures/st
 // starts as trial". A unique-per-run suffix, matching the convention already
 // established in bri-s3.2/bri-s3.4's own uniqueEmail() helpers, gives each
 // run's tenants a genuinely fresh identity.
+//
+// fix-forward (post-launch, round 2): giving tenant IDs alone a unique
+// suffix (btii-s1) surfaced a second, previously-masked static-identifier bug:
+// this spec's webhook event `id` fields (e.g. 'evt_e2e_ac1') were ALSO
+// hardcoded and static. billing.js's AC5 idempotency guard
+// (`INSERT INTO stripe_events ... ON CONFLICT DO NOTHING`) persists every
+// processed stripe_event_id forever in the same real Postgres database --
+// so from the second time this spec ever ran onward, every webhook POST in
+// this file was silently treated as an already-processed duplicate and
+// returned 200 without the switch statement (and therefore setPlanState)
+// ever running. Confirmed via temporary diagnostic logging (tpwd-s1, since
+// removed) showing getPlanState calls but zero setPlanState calls for any
+// tenant in this spec. Event IDs now get the same RUN_SUFFIX treatment.
 const RUN_SUFFIX = Date.now() + '-' + Math.floor(Math.random() * 1e6);
 
 /** Seed an isolated session (own cookie, own tenantId) and return the cookie header value. */
@@ -125,7 +140,7 @@ test.describe('@mocked @billing bri-s3.5 billing journey', () => {
     expect(before.plan).toBe('trial');
 
     const webhookResp = await postWebhook(request, {
-      id: 'evt_e2e_ac1',
+      id: 'evt_e2e_ac1_' + RUN_SUFFIX,
       type: 'checkout.session.completed',
       data: { object: { client_reference_id: tenantId, metadata: { planName: 'STARTER' } } },
     });
@@ -142,7 +157,7 @@ test.describe('@mocked @billing bri-s3.5 billing journey', () => {
 
     // Start from paid/active (as if the tenant had already upgraded).
     await postWebhook(request, {
-      id: 'evt_e2e_ac3_upgrade',
+      id: 'evt_e2e_ac3_upgrade_' + RUN_SUFFIX,
       type: 'checkout.session.completed',
       data: { object: { client_reference_id: tenantId, metadata: { planName: 'STARTER' } } },
     });
@@ -151,7 +166,7 @@ test.describe('@mocked @billing bri-s3.5 billing journey', () => {
     expect(whilePaid.status).toBe('active');
 
     const webhookResp = await postWebhook(request, {
-      id: 'evt_e2e_ac3_failure',
+      id: 'evt_e2e_ac3_failure_' + RUN_SUFFIX,
       type: 'invoice.payment_failed',
       data: { object: { customer: 'cus_e2e', metadata: { tenant_id: tenantId } } },
     });
@@ -198,7 +213,7 @@ test.describe('@mocked @billing bri-s3.5 billing journey', () => {
     await withTenantCap(request, tenantId, 1, async () => {
       // Upgrade to paid — usage gate becomes unlimited regardless of the cap=1 override.
       await postWebhook(request, {
-        id: 'evt_e2e_ac4_upgrade',
+        id: 'evt_e2e_ac4_upgrade_' + RUN_SUFFIX,
         type: 'checkout.session.completed',
         data: { object: { client_reference_id: tenantId, metadata: { planName: 'STARTER' } } },
       });
@@ -216,7 +231,7 @@ test.describe('@mocked @billing bri-s3.5 billing journey', () => {
 
       // Cancel the subscription.
       const cancelResp = await postWebhook(request, {
-        id: 'evt_e2e_ac4_cancel',
+        id: 'evt_e2e_ac4_cancel_' + RUN_SUFFIX,
         type: 'customer.subscription.deleted',
         data: { object: { customer: 'cus_e2e_cancel', metadata: { tenant_id: tenantId } } },
       });

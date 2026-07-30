@@ -17762,6 +17762,31 @@
       "metrics": [],
       "updatedAt": "2026-07-30",
       "track": "short"
+    },
+    {
+      "slug": "2026-07-30-stripe-event-idempotency-collision",
+      "name": "Give bri-s3.5's webhook event IDs unique per-run values so the AC5 idempotency guard doesn't silently skip processing",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [
+        {
+          "id": "seic-s1",
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "testPlanWritten": true,
+          "track": "short",
+          "updatedAt": "2026-07-30T05:37:54.021Z",
+          "testPlan": {
+            "artefact": "artefacts/2026-07-30-stripe-event-idempotency-collision/test-plans/seic-s1-test-plan.md",
+            "status": "all-passing",
+            "totalTests": 17,
+            "passing": 17
+          }
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-30",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
