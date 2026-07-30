@@ -4617,6 +4617,29 @@ async function handlePostTurnStreamHtml(req, res) {
         : 'feat: ' + (session.skillName || skillName) + ' artefact';
       _skillTurnGitCommit(session.artefactPath, _commitMsg, _autoRepoRoot);
     } catch (_gitErr) { /* git unavailable in production — disk write above is the durable record */ }
+    // sdg.6: post-completion metrics hook, /ideate and /discovery only. Disk
+    // write above precedes this (ougl disk canonicity) -- read the artefact
+    // back from disk rather than trusting session.artefactContent directly.
+    if ((session.skillName === 'ideate' || session.skillName === 'discovery') && session.journeyId) {
+      try {
+        var _strategyMetricsAuto = require('../modules/strategy-metrics');
+        var _diskArtefactContentAuto = fs.readFileSync(_autoAbsPath, 'utf8');
+        var _autoJourney = _journeyStore.getJourney(session.journeyId);
+        var _autoRefFiles = (_autoJourney && _autoJourney.referenceFiles) || [];
+        var _autoCalloutResult = _strategyMetricsAuto.detectCalloutMarkers(_diskArtefactContentAuto);
+        _strategyMetricsAuto.recordMetrics(path.join(_autoRepoRoot, 'workspace'), {
+          featureSlug:        (_autoJourney && _autoJourney.featureSlug) || slug,
+          stage:              session.skillName,
+          hasReferenceFiles:  _autoRefFiles.length > 0,
+          referenceFileCount: _autoRefFiles.length,
+          referenceFileNames: _autoRefFiles.map(function(rf) { return path.basename(rf.path); }),
+          calloutCount:       _autoCalloutResult.count,
+          totalSections:      _strategyMetricsAuto.countSections(_diskArtefactContentAuto)
+        });
+      } catch (_autoMetricsErr) {
+        console.error('[strategy-metrics] recordMetrics failed:', _autoMetricsErr.message);
+      }
+    }
     // Mark stage complete in journey so resume can load it as a prior artefact
     if (session.journeyId && !session._stageDone) {
       session._stageDone = true;
