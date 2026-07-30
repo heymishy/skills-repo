@@ -912,3 +912,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: decision
   signal-text: "Operator (Hamish King) confirmed: (1) named High-oversight sign-off on Story 2 (relationship-grants-enforcement), recorded in its DoR artefact and pipeline-state.json's dorApprover field; (2) RISK-ACCEPT logged in decisions.md for all 6 stories' W4 warning (AC verification scripts not pre-code-reviewed by a domain expert -- deferred to post-merge smoke test); (3) approval to proceed into the inner coding loop for all 6 stories. All 6 stories are now dorStatus=signed-off, health=green (Story 2 upgraded from amber after named sign-off recorded). Next pipeline step is /branch-setup per story."
   source: agent-auto
+
+- date: 2026-07-31
+  session-phase: inner coding loop / story-1-organisation-entity (2026-07-30-agency-client-organisations)
+  signal-type: gap
+  signal-text: "Implemented story-1-organisation-entity end to end (organisations table migration, resolveOrganisationForTenant resolve-or-create, backfillStandaloneOrganisations, all 8 test-plan tests passing, zero new failures against the 38-pre-existing-failure baseline). One deliberate scope boundary flagged rather than silently resolved either way: the OAuth-callback resolution step was wired into routes/auth.js's GitHub and Google callback handlers only, NOT into routes/auth-email.js's email/password signup/login -- AC3's literal wording ('resolved at OAuth callback') and the DoR contract's touch-point list name only the OAuth callback, not auth-email.js, even though the sibling ftcg-s1 story wired its equivalent free-tier-credit-grant hook into all three login paths. Logged in decisions.md and flagged in the PR description for operator confirmation -- if Story 3's self-service provisioning needs email/password tenants to already have an organisations row, this gap must be closed explicitly in a follow-up."
+  source: agent-auto

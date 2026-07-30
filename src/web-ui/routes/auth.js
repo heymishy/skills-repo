@@ -16,6 +16,10 @@ const _userFlags = require('../modules/user-flags');
 // arl-s1: user-roles module (injectable adapter — D37). Loads role after tenantId is set.
 const _userRoles = require('../modules/user-roles');
 const _credits = require('../modules/credits'); // ftcg-s1
+// story-1-organisation-entity: organisations module (D37 not needed here --
+// resolveOrganisationForTenant takes `pool` as an explicit argument, see
+// modules/organisations.js header comment and DoR H-ADAPTER).
+const _organisations = require('../modules/organisations');
 
 // Wire the real GitHub provider adapter on module load.
 // This ensures handleAuthCallback works when auth.js is required without server.js
@@ -56,6 +60,37 @@ async function _grantFreeTierCredits(tenantId) {
     }
   } catch (err) {
     _logger.warn('free_tier_credits_grant_failed', { tenantId, reason: err.message });
+  }
+}
+
+// story-1-organisation-entity: pool handed in by server.js at startup (AC2/AC3).
+// No D37 stub-throw here -- a missing pool (e.g. no DATABASE_URL configured)
+// must never break login, it should simply skip organisation resolution
+// (mirrors _grantFreeTierCredits's own "never blocks the caller's flow" rule).
+let _organisationsPool = null;
+
+/**
+ * Replace the pool used for organisation resolution (called once by server.js at startup).
+ * @param {object} pool - pg-Pool-shaped object exposing query(sql, params)
+ */
+function setOrganisationsPool(pool) {
+  _organisationsPool = pool;
+}
+
+/**
+ * story-1-organisation-entity (AC2/AC3): resolve or create the `organisations`
+ * row for this tenantId at OAuth callback -- purely additive (AC4), never
+ * blocks or fails the caller's own login/signup flow. Mirrors
+ * _grantFreeTierCredits's fire-and-forget, try/catch-wrapped shape and
+ * placement immediately after req.session.tenantId is set.
+ * @param {string} tenantId
+ */
+async function _resolveOrganisation(tenantId) {
+  if (!_organisationsPool) return; // not wired (e.g. no DATABASE_URL) -- safe no-op
+  try {
+    await _organisations.resolveOrganisationForTenant(_organisationsPool, tenantId);
+  } catch (err) {
+    _logger.warn('organisation_resolution_failed', { tenantId, reason: err.message });
   }
 }
 
@@ -300,6 +335,11 @@ async function handleAuthCallback(req, res) {
     // call on every login, not gated on isFirstLogin below.
     await _grantFreeTierCredits(req.session.tenantId);
 
+    // story-1-organisation-entity (AC3): resolve or create the standalone
+    // organisations row for this tenantId -- additive only (AC4), never
+    // blocks this login/signup flow (see _resolveOrganisation).
+    await _resolveOrganisation(req.session.tenantId);
+
     // tir-s1: load role via the person/team-scoped lookup (replaces the arl-s1
     // legacy getUserRole(tenantId) tenant-wide lookup — AC3). Falls back to
     // 'user' on error (adapter not wired in test mode).
@@ -419,6 +459,10 @@ async function handleAuthGoogleCallback(req, res) {
     // returning tenant) is this path's ONLY mechanism for granting anything.
     await _grantFreeTierCredits(req.session.tenantId);
 
+    // story-1-organisation-entity (AC3): resolve or create the standalone
+    // organisations row for this tenantId -- additive only (AC4).
+    await _resolveOrganisation(req.session.tenantId);
+
     // tir-s1: load role via the person/team-scoped lookup (AC3). Falls back to
     // 'user' on error.
     //
@@ -524,6 +568,7 @@ module.exports = {
   setFetchOrgMembers,
   getOrgMembers,
   resolveTenant,
+  setOrganisationsPool,
   NAMED_IDENTITY_STUB_HEADER,
   _namedIdentityStubEnabled,
   _namedIdentityStubHeaderMatches,
