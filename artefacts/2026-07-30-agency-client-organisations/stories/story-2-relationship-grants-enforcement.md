@@ -20,6 +20,7 @@ So that **I get real visibility into the work being done for me, without one age
 
 - **ADR-025 (Multi-tenancy enforced at the application layer):** this story extends the existing `requireJourneyAccess`/`isSameTenant` guard pattern to a materially new relationship shape (many-to-many, per-relationship scoping) — there is no infrastructure backstop if this guard is missed, so every new read path touching a Client-org user's view of shared data must go through it or an equivalent guard. This is the single highest-risk story in the epic, directly analogous in kind (though not in cause) to the real cross-tenant access bug fixed in `bri-s3.4`.
 - **Guardrail:** no direct DB access from the UI layer for access checks — all grant/relationship reads go through a dedicated adapter function, not ad hoc queries scattered across route handlers, so the enforcement logic has exactly one place to audit.
+- **Caching (added 2026-07-31, resolves review [1-M1]):** no caching in MVP — grant checks are always a direct query against `shared_access_grants`/`agency_client_relationships`. AC5's "immediate, not after a caching delay" requirement is satisfied by construction, not by a cache-invalidation mechanism. If a caching layer is added in a future performance pass, that story must explicitly design its own invalidation-on-revoke behaviour and re-verify this AC.
 
 ## Dependencies
 

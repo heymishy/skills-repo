@@ -34,7 +34,7 @@ So that **I can give feedback directly in the tool, instead of only being able t
 
 **AC3:** Given an Agency-org user has access to a product/feature shared with a Client org, When they view that resource, Then they see comments left by Client-org users on it, and can reply with their own comment.
 
-**AC4:** Given a comment thread exists with at least one comment from an Agency-org participant and at least one from a Client-org participant, When the benefit-metric measurement runs, Then this thread is counted as satisfying the "ongoing client-agency artefact collaboration" metric's minimum validation signal.
+**AC4:** Given a comment thread exists with at least one comment from an Agency-org participant and at least one from a Client-org participant, When the benefit-metric measurement runs, Then this thread is counted as satisfying the "ongoing client-agency artefact collaboration" metric's minimum validation signal. A `client_agency_comment_created` PostHog event (resolves review [1-M1], added 2026-07-31) is fired on every comment creation, carrying `org_id`, `resource_type`, `resource_id`, and a `thread_has_both_org_types` boolean — this is the concrete event `benefit-metric.md`'s Metric 2 measurement method references, matching this codebase's existing `journey_created`-style event-naming convention.
 
 ## Out of Scope
 
