@@ -40,6 +40,7 @@ const { setToolExecutor }                                            = require('
 const { setCreditsAdapter, getValidTenantIds }                       = require('./modules/credits');       // lab-s3.1 / story-1-organisation-entity
 const { migrateOrganisationsSchema, backfillStandaloneOrganisations } = require('./modules/organisations'); // story-1-organisation-entity
 const { setOrganisationsPool }                                       = require('./routes/auth');            // story-1-organisation-entity
+const { migrateAgencyClientGrantsSchema }                            = require('./modules/agency-client-grants'); // story-2-relationship-grants-enforcement
 const { setPlanStateAdapter }                                        = require('./modules/tenant-plan');   // jlc-s1
 const { migrateProductRepoColumns }                                  = require('./modules/product-repo');  // prc-s1.1
 const { registerSelfAsProduct }                                       = require('./modules/platform-self-registration'); // pr-s1
@@ -434,6 +435,20 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.log('[story-1-organisation-entity] organisations pool wired to auth-email.js signup/login resolution step');
     }).catch(function(err) {
       console.error('[story-1-organisation-entity] organisations migration/backfill failed:', err.message);
+    });
+
+    // story-2-relationship-grants-enforcement — Auto-migrate
+    // agency_client_relationships + shared_access_grants (AC1). Reuses
+    // _userRolesPool, same reuse pattern as story-1's organisations
+    // migration immediately above. No live URL dispatch wiring for the new
+    // route handlers yet (see products.js's own scope note and
+    // decisions.md) -- Story 3/4 own the real user-facing routes; this
+    // wiring only ensures the tables exist so the data model + grant-check
+    // adapter are usable once those stories land.
+    migrateAgencyClientGrantsSchema(_userRolesPool).then(function() {
+      console.log('[story-2-relationship-grants-enforcement] agency_client_relationships / shared_access_grants tables ready');
+    }).catch(function(err) {
+      console.error('[story-2-relationship-grants-enforcement] schema migration failed:', err.message);
     });
 
     // tir-s2 — Wire the /settings/link-account callback handlers to the same

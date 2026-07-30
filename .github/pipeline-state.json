@@ -17586,22 +17586,24 @@
             {
               "slug": "story-2-relationship-grants-enforcement",
               "name": "Agency-Client relationship, shared-access grants, and read-only enforcement",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-30T19:43:20.663Z",
+              "updatedAt": "2026-07-30T23:00:54.691Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 13,
-                "passing": 0
+                "totalTests": 15,
+                "passing": 15
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
-              "dorApprover": "Hamish King"
+              "dorApprover": "Hamish King",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/658"
             },
             {
               "slug": "story-3-self-service-provisioning",

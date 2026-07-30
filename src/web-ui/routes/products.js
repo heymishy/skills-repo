@@ -14,6 +14,8 @@ var _roadmapScan = require('../modules/roadmap-scan'); // a5 -- read-only artefa
 var _repoRootAdapter = require('../adapters/repo-root'); // a5 -- reuses the existing local-disk repo-root pattern (already used by handlePostProductFeature)
 var _modulesAdapter = require('../adapters/modules-adapter'); // a1 -- curated per-product Modules taxonomy CRUD
 var _csrf = require('../middleware/csrf'); // fix-forward (post-a1) -- module CRUD forms need CSRF like every other mutating form in this app
+var _agencyClientGrants = require('../modules/agency-client-grants'); // story-2-relationship-grants-enforcement -- the ONE dedicated grant-check adapter (story Guardrail)
+var _journeyAccess = require('../middleware/journey-access'); // story-2-relationship-grants-enforcement -- reuses requireGrantAccess/asHttpResponse/POLICY (ADR-025 guard extension)
 
 // s1.1 -- injectable bulk session-store reader. Defaults to a lazy require of
 // skills.js's real _getHtmlSessionsBulk (mirrors the same lazy-getter shape
@@ -2203,6 +2205,143 @@ async function handlePostBulkAssignFeatureModules(req, res, _next, pool, posthog
   else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ assigned: result.assigned, module_id: moduleId })); }
 }
 
+// ===========================================================================
+// story-2-relationship-grants-enforcement (artefacts/2026-07-30-agency-client-organisations)
+//
+// Agency-Client relationships, shared-access grants, and read-only
+// enforcement. Every read path below calls ONLY
+// modules/agency-client-grants.js's dedicated grant-check adapter (or its
+// sibling relationship/grant-CRUD functions) -- never an ad hoc query
+// against agency_client_relationships/shared_access_grants directly in this
+// file (story Guardrail; verified by this story's own
+// everyNewReadPathGoesThroughGrantCheckGuard NFR source-scan test).
+//
+// Scope note (flagged in decisions.md and the PR description): this story's
+// own DoR contract states "What will NOT be built: the Agency-side UI/flow
+// ... this story is the data model and enforcement guard only." These
+// handlers are implemented and fully tested (calling them directly with
+// mock req/res + a fake pool, mirroring tests/check-bri-s3.4-cross-tenant-
+// isolation.js's established pattern) but are NOT registered in server.js's
+// live URL dispatch table -- Story 3 (self-service provisioning) and Story 4
+// (dual-path authentication) are what determine the real user-facing URLs
+// and the Client-org session/identity shape these handlers will be reached
+// through. Wiring them into server.js's router now, ahead of those stories,
+// would risk guessing at a URL/session contract only they can define.
+// ===========================================================================
+
+var _sharedAccessLoggerFn = null;
+function _sharedAccessLogger() {
+  return _sharedAccessLoggerFn || { info: function(msg) { console.log(msg); } };
+}
+function setSharedAccessLogger(logger) { _sharedAccessLoggerFn = logger; }
+
+function _sendJson(res, status, body) {
+  if (res.status) { res.status(status).json(body); }
+  else { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(body)); }
+}
+
+/**
+ * AC1: Agency admin shares a specific resource with a Client org, through a
+ * specific already-established relationship. The grant is created scoped to
+ * that relationship_id -- never to the Client org broadly. The caller's own
+ * org must be the relationship's agency_org_id: a Client org (or an
+ * unrelated org) cannot create a grant for a relationship it is not the
+ * Agency party of. Full authorisation of "is this session actually an
+ * Agency admin" is Story 3's job (self-service provisioning owns that UI/
+ * flow) -- this check is the minimal relationship-ownership guard this
+ * story's own data model requires.
+ */
+async function handleCreateGrant(req, res, pool) {
+  var body = req.body || {};
+  var relationshipId = body.relationshipId;
+  var resourceType = body.resourceType;
+  var resourceId = body.resourceId;
+  var callerOrgId = req.session && req.session.tenantId;
+
+  if (!relationshipId || !resourceType || !resourceId) {
+    _sendJson(res, 400, { error: 'relationshipId, resourceType, and resourceId are required' });
+    return;
+  }
+
+  var relationship = await _agencyClientGrants.getRelationshipById(pool, relationshipId);
+  if (!relationship || relationship.agency_org_id !== callerOrgId) {
+    _sendJson(res, 404, { error: 'not found' });
+    return;
+  }
+
+  var grant = await _agencyClientGrants.createGrant(pool, relationshipId, resourceType, resourceId, _sharedAccessLogger());
+  _sendJson(res, 200, { success: true, grant: grant });
+}
+
+/**
+ * AC2: Client-org user's list of resources visible to them -- every active
+ * grant reachable through ANY of their relationships (however many
+ * Agencies), scoped per-relationship so a grant on one relationship never
+ * surfaces via a different one.
+ */
+async function handleListSharedProducts(req, res, pool) {
+  var clientOrgId = req.session && req.session.tenantId;
+  var rows = await _agencyClientGrants.listGrantedResourcesForClient(pool, clientOrgId, 'product');
+  _sendJson(res, 200, {
+    resources: rows.map(function(r) {
+      return { resourceId: r.resource_id, resourceType: r.resource_type, grantedAt: r.granted_at };
+    })
+  });
+}
+
+/**
+ * AC4/AC5: Client-org user requests a specific shared product by ID. No
+ * grant (never shared, shared only via a different relationship, or
+ * revoked) -> 404, identical in shape to a genuinely non-existent resource
+ * -- never a 403 that would confirm the resource's existence to an
+ * unauthorised viewer. Every denial is audit-logged (relationship_id,
+ * org_id, resource_id, timestamp).
+ */
+async function handleGetSharedProduct(req, res, pool) {
+  var clientOrgId = req.session && req.session.tenantId;
+  var resourceId = req.params && req.params.id;
+
+  var grant = await _agencyClientGrants.checkGrantAccess(pool, clientOrgId, 'product', resourceId);
+  try {
+    _journeyAccess.requireGrantAccess(grant);
+  } catch (e) {
+    _agencyClientGrants.logDeniedAccess(_sharedAccessLogger(), clientOrgId, 'product', resourceId);
+    var status = _journeyAccess.asHttpResponse(e, _journeyAccess.POLICY.TENANT);
+    _sendJson(res, status, { error: 'not found' });
+    return;
+  }
+
+  _sendJson(res, 200, { resourceId: resourceId, resourceType: 'product', grantedAt: grant.granted_at });
+}
+
+/**
+ * AC3: a shared-access grant conveys READ-ONLY access, never write/edit
+ * access to the underlying shared resource. This route rejects EVERY
+ * Client-org caller with 403, regardless of whether they hold a valid read
+ * grant for the resource -- write capability is never conferred by this
+ * grant model, so the grant is never even consulted here, and no mutation
+ * is ever attempted against the pool.
+ */
+function handleMutateSharedProduct(req, res, pool) { // eslint-disable-line no-unused-vars
+  _sendJson(res, 403, { error: 'forbidden -- shared-access grants are read-only' });
+}
+
+/**
+ * AC5: Agency revokes a previously-granted resource. Because
+ * checkGrantAccess (used by handleGetSharedProduct above) always queries
+ * live with no caching layer, the very next read for this resource sees the
+ * revocation immediately -- no delay, no stale-read window.
+ */
+async function handleRevokeGrant(req, res, pool) {
+  var grantId = req.params && req.params.grantId;
+  var revoked = await _agencyClientGrants.revokeGrant(pool, grantId, _sharedAccessLogger());
+  if (!revoked) {
+    _sendJson(res, 404, { error: 'not found' });
+    return;
+  }
+  _sendJson(res, 200, { success: true });
+}
+
 module.exports = {
   _renderProductView,
   handlePostProductNew,
@@ -2243,5 +2382,12 @@ module.exports = {
   _renderPvcItemRow,
   // fdn-s1: exported for direct unit testing, same convention as _renderPvcItemRow
   _renderEpicRow,
-  _aggregateJourneysByStage
+  _aggregateJourneysByStage,
+  // story-2-relationship-grants-enforcement: Agency-Client relationships, shared-access grants, read-only enforcement
+  setSharedAccessLogger,
+  handleCreateGrant,
+  handleListSharedProducts,
+  handleGetSharedProduct,
+  handleMutateSharedProduct,
+  handleRevokeGrant
 };
