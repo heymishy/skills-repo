@@ -17688,6 +17688,30 @@
       "metrics": [],
       "updatedAt": "2026-07-30T01:00:18.569Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-07-30-tenant-cap-remote-override",
+      "name": "Replace bri-s3.5's local-file tenant-cap mechanism with a real remote override",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [
+        {
+          "id": "tcro-s1",
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "updatedAt": "2026-07-30T02:50:22.180Z",
+          "testPlanWritten": true,
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 5,
+            "passing": 5,
+            "artefact": "artefacts/2026-07-30-tenant-cap-remote-override/test-plans/tcro-s1-test-plan.md"
+          }
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-30T02:50:37.372Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

@@ -1584,6 +1584,36 @@ async function router(req, res) {
     return;
   }
 
+  // fix-forward (post-launch): staging-safe remote tenant-cap override,
+  // replacing bri-s3.5's own local tenant-caps.json file write. A CI test
+  // runner's local filesystem write has zero effect on a real deployed
+  // server's own filesystem (a different process, a different container) --
+  // this route lets a test set/clear a per-tenant cap on the ACTUAL server
+  // process being tested against, in memory, taking effect immediately.
+  if (pathname === '/test/tenant-cap' && req.method === 'POST' && _isTestEndpointAllowed(req)) {
+    let raw = '';
+    for await (const chunk of req) { raw += chunk; }
+    let body = {};
+    try { body = raw ? JSON.parse(raw) : {}; } catch (_) { body = {}; }
+
+    const tenantId = body.tenantId;
+    if (!tenantId || !/^e2e-/i.test(tenantId)) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'tenantId must start with "e2e-"' }));
+      return;
+    }
+
+    const _tenantPlanForCap = require('./modules/tenant-plan');
+    if (body.cap == null) {
+      _tenantPlanForCap.clearTenantCapOverride(tenantId);
+    } else {
+      _tenantPlanForCap.setTenantCapOverride(tenantId, Number(body.cap));
+    }
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ tenantId: tenantId, cap: body.cap == null ? null : Number(body.cap) }));
+    return;
+  }
+
   // dic-canvas E2E: seed a definition session with stub artefact content
   if (pathname === '/test/seed-definition-session' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
     const { _setHtmlSession } = require('./routes/skills');
