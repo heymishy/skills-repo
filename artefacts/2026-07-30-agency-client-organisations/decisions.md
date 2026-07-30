@@ -93,6 +93,15 @@
 **Revisit trigger:** If Story 3 (self-service provisioning) or any later story in this epic needs email/password-authenticated tenants to already have an `organisations` row, this gap must be closed explicitly — either by extending this story's wiring or by an explicit new AC in a later story.
 ---
 
+---
+**2026-07-31 | ARCH | story-1-organisation-entity implementation (follow-up, resolves gap above)**
+**Decision:** Operator confirmed via PR review: wire `_resolveOrganisation` into `routes/auth-email.js`'s email/password signup AND login handlers too, matching `ftcg-s1`'s precedent of covering all three login paths (GitHub, Google, email/password). Added the same fire-and-forget, try/catch-wrapped `_resolveOrganisation`/`setOrganisationsPool` pair to `auth-email.js` (mirroring `auth.js`'s implementation exactly), wired both in `server.js` alongside the existing OAuth wiring, and added 2 new tests (`emailSignupResolvesOrganisationForNewTenant`, `emailLoginResolvesOrganisationForExistingTenant`) to `tests/check-story1-organisation-entity.js` (10 tests total, up from 8). Full suite re-run: 450 files, 38 failures — identical to the pre-existing baseline, zero new regressions.
+**Alternatives considered:** None re-litigated — this directly resolves alternative (b) from the entry above, which was deliberately left open rather than decided either way at implementation time.
+**Rationale:** Resolution wired into OAuth callbacks only would leave brand-new email/password signups without an `organisations` row until the next server-restart backfill sweep — a real gap for Story 3, which needs every org (regardless of how its first user signed in) to be provisionable as an Agency or Client. Symmetry with the existing `ftcg-s1` all-three-paths precedent was the deciding factor once flagged.
+**Made by:** Hamish King — Product/Platform Owner (confirmed the fix direction); implemented by Claude (coding agent) in the same PR, pre-merge.
+**Revisit trigger:** None — this closes the gap; no further action needed unless a future story finds another auth path this resolution step should also cover.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded yet for this feature. The 3 log entries above are structurally significant but were deliberately kept as lightweight log entries rather than full ADRs, per the /decisions skill's own default ("not sure? default to log entry") — an ADR can be written retrospectively if this proves to matter more than expected once implementation begins. -->

@@ -4,7 +4,7 @@
 // Story: artefacts/2026-07-30-agency-client-organisations/stories/story-1-organisation-entity.md
 // Test plan: artefacts/2026-07-30-agency-client-organisations/test-plans/story-1-organisation-entity-test-plan.md
 //
-// Covers (8 tests across 4 ACs, matching the test plan exactly):
+// Covers (10 tests across 4 ACs, matching the test plan plus a same-PR follow-up):
 //   AC1: createsOrganisationsTableWithCorrectColumns
 //   AC2: resolvesOrgTypeStandaloneForBackfilledTenant, backfillPathIntegratesWithSessionResolution
 //   AC3: resolvesOrgTypeStandaloneForNewSignupNoAllowlistMatch
@@ -12,6 +12,11 @@
 //   NFR (Performance): organisationLookupAddsAtMostOneIndexedQuery
 //   NFR (Security):    organisationLookupScopedByTrustedSessionTenantId
 //   NFR (Audit):        organisationCreationIsAudited
+//
+// Follow-up (2026-07-31, same PR, pre-merge): closes the gap where organisation
+// resolution was wired into GitHub/Google OAuth callbacks only, not
+// email/password signup/login (see decisions.md) --
+//   emailSignupResolvesOrganisationForNewTenant, emailLoginResolvesOrganisationForExistingTenant
 //
 // Follows this repo's hand-rolled test()/assert style (see
 // tests/check-tir-s1-person-team-schema.js, tests/check-ftcg-s1-free-tier-credit-grant.js)
@@ -39,6 +44,7 @@ function test(name, fn) {
 var ROOT = path.join(__dirname, '..');
 var ORGANISATIONS_PATH = require.resolve(path.join(ROOT, 'src', 'web-ui', 'modules', 'organisations'));
 var AUTH_PATH = require.resolve(path.join(ROOT, 'src', 'web-ui', 'routes', 'auth'));
+var AUTH_EMAIL_PATH = require.resolve(path.join(ROOT, 'src', 'web-ui', 'routes', 'auth-email'));
 
 var tokenSuccessFixture = require('./fixtures/github/oauth-token-exchange-success.json');
 var userIdentityFixture = require('./fixtures/github/user-identity.json');
@@ -340,6 +346,103 @@ function makeFakeOrgPool(seedRows) {
     assert.strictEqual(parsedBackfill.tenant_id, 'audited-backfill-tenant');
     assert.strictEqual(parsedBackfill.org_type, 'standalone');
     assert.ok(parsedBackfill.timestamp);
+  });
+
+  // ===========================================================================
+  // Follow-up (2026-07-31): email/password signup + login wire the same
+  // organisation-resolution step as the OAuth callbacks. Closes the gap
+  // flagged in decisions.md where brand-new email/password signups had no
+  // organisations row until the next server-restart backfill sweep.
+  // ===========================================================================
+
+  function mockEmailReq(overrides) {
+    var req = Object.assign({
+      session: {}, sessionId: 'test-sid-' + Math.random().toString(36).slice(2),
+      headers: {}, connection: { remoteAddress: '127.0.0.1' }, body: undefined
+    }, overrides || {});
+    if (!req.session.csrfToken) req.session.csrfToken = 'test-csrf-' + Math.random().toString(36).slice(2);
+    if (req.body && typeof req.body === 'object' && req.body._csrf === undefined) {
+      req.body = Object.assign({}, req.body, { _csrf: req.session.csrfToken });
+    }
+    return req;
+  }
+
+  function mockEmailRes() {
+    var _headers = {};
+    return {
+      statusCode: null,
+      get headers() { return _headers; },
+      writeHead: function(code, hdrs) { this.statusCode = code; if (hdrs) Object.assign(_headers, hdrs); },
+      setHeader: function(name, value) { _headers[name] = value; },
+      end: function(body) { this.body = (body != null ? String(body) : ''); this._ended = true; }
+    };
+  }
+
+  // Stub password adapter -- always succeeds. Password correctness itself is
+  // already covered by check-lab-s2.2-email-password.js; this file only needs
+  // signup/login to reach the point where organisation resolution fires.
+  var STUB_PASSWORD_ADAPTER = {
+    hash: async function() { return 'stub-hash'; },
+    compare: async function() { return true; }
+  };
+
+  await test('emailSignupResolvesOrganisationForNewTenant (AC3 follow-up)', async function() {
+    var password = freshRequire(path.join(ROOT, 'src', 'web-ui', 'modules', 'password'));
+    password.setPasswordAdapter(STUB_PASSWORD_ADAPTER);
+    var authEmail = freshRequire(AUTH_EMAIL_PATH);
+    authEmail._clearRateLimits();
+
+    var pool = makeFakeOrgPool([]);
+    authEmail.setOrganisationsPool(pool);
+
+    var db = {
+      query: async function(sql) {
+        if (/INSERT INTO users/i.test(sql)) return { rows: [{ id: 'uuid-signup-1' }] };
+        if (/SELECT.*FROM users WHERE email/i.test(sql)) return { rows: [] };
+        return { rows: [] };
+      }
+    };
+    authEmail.setUserDb(db);
+
+    var req = mockEmailReq({ body: { email: 'newtenant@example.com', password: 'TestPassw0rd!xyz' } });
+    var res = mockEmailRes();
+    await authEmail.handleEmailSignup(req, res);
+
+    assert.strictEqual(res.statusCode, 302, 'expected the standard signup redirect, unchanged by organisation resolution');
+    var row = pool._state().rows.find(function(r) { return r.org_id === 'newtenant@example.com'; });
+    assert.ok(row, 'expected an organisations row to be created for the new email/password tenant');
+    assert.strictEqual(row.org_type, 'standalone');
+  });
+
+  await test('emailLoginResolvesOrganisationForExistingTenant (follow-up, mirrors OAuth every-login behaviour)', async function() {
+    var password = freshRequire(path.join(ROOT, 'src', 'web-ui', 'modules', 'password'));
+    password.setPasswordAdapter(STUB_PASSWORD_ADAPTER);
+    var authEmail = freshRequire(AUTH_EMAIL_PATH);
+    authEmail._clearRateLimits();
+
+    // Precondition: tenant already has an organisations row (e.g. from an
+    // earlier signup or the startup backfill) -- login must resolve/reuse it,
+    // not fail, and must not duplicate it.
+    var pool = makeFakeOrgPool([{ org_id: 'existing@example.com', name: 'existing@example.com', org_type: 'standalone', created_at: new Date().toISOString() }]);
+    authEmail.setOrganisationsPool(pool);
+
+    var db = {
+      query: async function(sql) {
+        if (/SELECT.*FROM users WHERE email/i.test(sql)) {
+          return { rows: [{ id: 'uuid-login-1', email: 'existing@example.com', password_hash: 'stub-hash' }] };
+        }
+        return { rows: [] };
+      }
+    };
+    authEmail.setUserDb(db);
+
+    var req = mockEmailReq({ body: { email: 'existing@example.com', password: 'TestPassw0rd!xyz' } });
+    var res = mockEmailRes();
+    await authEmail.handleEmailLogin(req, res);
+
+    assert.strictEqual(res.statusCode, 302, 'expected the standard login redirect, unchanged by organisation resolution');
+    var matches = pool._state().rows.filter(function(r) { return r.org_id === 'existing@example.com'; });
+    assert.strictEqual(matches.length, 1, 'expected the pre-existing organisations row to be reused, not duplicated, on login');
   });
 
   console.log('\n[story-1-organisation-entity] Results: ' + passed + ' passed, ' + failed + ' failed');

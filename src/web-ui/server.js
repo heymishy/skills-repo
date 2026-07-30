@@ -49,7 +49,7 @@ const { handlePostConnectRepo }                                      = require('
 const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter, handleGetBillingPortal, handleGetBillingPlanState } = require('./routes/billing'); // lab-s3.2 / lab-s3.4 / lab-s3.5 / bri-s3.5
 const { setStripeAdapter }                                           = require('./modules/stripe-client');  // lab-s3.2
 const { creditsGuard }                                               = require('./middleware/credits-guard'); // lab-s3.3
-const { handleEmailSignup, handleEmailLogin, setUserDb }             = require('./routes/auth-email');       // lab-s2.2
+const { handleEmailSignup, handleEmailLogin, setUserDb, setOrganisationsPool: setEmailOrganisationsPool } = require('./routes/auth-email'); // lab-s2.2 / story-1-organisation-entity follow-up
 const { handleAuthStubGithub, handleAuthStubAudit }                  = require('./routes/auth-stub');         // a1-staging-safe-auth-stub
 const { setPasswordAdapter }                                         = require('./modules/password');         // lab-s2.2
 const { setUserFlagsAdapter }                                        = require('./modules/user-flags');       // lab-s2.3
@@ -427,6 +427,11 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.log('[story-1-organisation-entity] organisations backfill complete (' + createdCount + ' row(s) created)');
       setOrganisationsPool(_userRolesPool);
       console.log('[story-1-organisation-entity] organisations pool wired to auth.js OAuth-callback resolution step');
+      // Follow-up (2026-07-31): also wire auth-email.js's resolution step, closing
+      // the gap where brand-new email/password signups had no organisations row
+      // until the next server-restart backfill sweep (see decisions.md).
+      setEmailOrganisationsPool(_userRolesPool);
+      console.log('[story-1-organisation-entity] organisations pool wired to auth-email.js signup/login resolution step');
     }).catch(function(err) {
       console.error('[story-1-organisation-entity] organisations migration/backfill failed:', err.message);
     });
