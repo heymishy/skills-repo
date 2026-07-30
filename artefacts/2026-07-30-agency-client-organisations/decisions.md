@@ -85,6 +85,22 @@
 ---
 
 ---
+**2026-07-31 | ARCH | story-1-organisation-entity implementation**
+**Decision:** (1) The one-time backfill's source of "known pre-existing tenant_id values" reuses `credits.js`'s existing `getValidTenantIds()` (the union of `users.email` / `team_memberships.tenant_id` / `credits.tenant_id`) rather than a new query against those same tables. (2) The OAuth-callback resolution step (`_resolveOrganisation`) is wired into both GitHub (`handleAuthCallback`) and Google (`handleAuthGoogleCallback`) callback handlers in `routes/auth.js` — the two handlers literally named "callback" — but NOT into `routes/auth-email.js`'s email/password signup/login, since AC3's wording ("resolved at OAuth callback") and the DoR contract's touch-point list name only the OAuth callback / `server.js` wiring, not `auth-email.js`.
+**Alternatives considered:** (a) A new dedicated "list all known tenants" query for the backfill — rejected under ADR-026 (reuse before introducing a new entity/query) since `getValidTenantIds()` already returns exactly this set for the exact same purpose credits' own free-tier grant reconciliation would need. (b) Wiring `_resolveOrganisation` into `auth-email.js` as well, matching `ftcg-s1`'s precedent of wiring `_grantFreeTierCredits` into all three login paths (GitHub, Google, email/password) — deferred rather than rejected outright; flagged as an open ambiguity in the PR rather than silently either including or excluding it.
+**Rationale:** Reusing `getValidTenantIds()` avoids a second, potentially-diverging definition of "every tenant this codebase knows about." The OAuth-only wiring follows the story's and DoR's literal text precisely; extending to email/password would be scope not explicitly asked for, and this codebase's Out-of-Scope convention treats un-asked-for scope as a defect, not a bonus. If email/password tenants also need an `organisations` row (so that Story 3's agency/client provisioning eventually covers them too), that should be confirmed and added as an explicit follow-up AC rather than assumed here.
+**Made by:** Claude (coding agent) — flagged for operator confirmation via PR comment.
+**Revisit trigger:** If Story 3 (self-service provisioning) or any later story in this epic needs email/password-authenticated tenants to already have an `organisations` row, this gap must be closed explicitly — either by extending this story's wiring or by an explicit new AC in a later story.
+---
+
+---
+**2026-07-31 | ARCH | story-1-organisation-entity implementation (follow-up, resolves gap above)**
+**Decision:** Operator confirmed via PR review: wire `_resolveOrganisation` into `routes/auth-email.js`'s email/password signup AND login handlers too, matching `ftcg-s1`'s precedent of covering all three login paths (GitHub, Google, email/password). Added the same fire-and-forget, try/catch-wrapped `_resolveOrganisation`/`setOrganisationsPool` pair to `auth-email.js` (mirroring `auth.js`'s implementation exactly), wired both in `server.js` alongside the existing OAuth wiring, and added 2 new tests (`emailSignupResolvesOrganisationForNewTenant`, `emailLoginResolvesOrganisationForExistingTenant`) to `tests/check-story1-organisation-entity.js` (10 tests total, up from 8). Full suite re-run: 450 files, 38 failures — identical to the pre-existing baseline, zero new regressions.
+**Alternatives considered:** None re-litigated — this directly resolves alternative (b) from the entry above, which was deliberately left open rather than decided either way at implementation time.
+**Rationale:** Resolution wired into OAuth callbacks only would leave brand-new email/password signups without an `organisations` row until the next server-restart backfill sweep — a real gap for Story 3, which needs every org (regardless of how its first user signed in) to be provisionable as an Agency or Client. Symmetry with the existing `ftcg-s1` all-three-paths precedent was the deciding factor once flagged.
+**Made by:** Hamish King — Product/Platform Owner (confirmed the fix direction); implemented by Claude (coding agent) in the same PR, pre-merge.
+**Revisit trigger:** None — this closes the gap; no further action needed unless a future story finds another auth path this resolution step should also cover.
+---
 
 ## Architecture Decision Records
 

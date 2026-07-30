@@ -37,7 +37,9 @@ const _path                                                          = require('
 const { handleGetJourney, handlePostJourney, handleDeleteJourney, handleGetJourneyResume, handleGetJourneyById, handleGetStageReview, handleGetJourneyStageView, handlePostJourneyStageArtefact, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, handlePutJourneyDisplayName, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handleGetWizardBootstrapped, handlePostWizardSelection, handleJourneys, setListJourneys } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2 / bri-s1.5 / s3.4 / fdn-s1 / jsvr-s1
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
-const { setCreditsAdapter }                                          = require('./modules/credits');       // lab-s3.1
+const { setCreditsAdapter, getValidTenantIds }                       = require('./modules/credits');       // lab-s3.1 / story-1-organisation-entity
+const { migrateOrganisationsSchema, backfillStandaloneOrganisations } = require('./modules/organisations'); // story-1-organisation-entity
+const { setOrganisationsPool }                                       = require('./routes/auth');            // story-1-organisation-entity
 const { setPlanStateAdapter }                                        = require('./modules/tenant-plan');   // jlc-s1
 const { migrateProductRepoColumns }                                  = require('./modules/product-repo');  // prc-s1.1
 const { registerSelfAsProduct }                                       = require('./modules/platform-self-registration'); // pr-s1
@@ -47,7 +49,7 @@ const { handlePostConnectRepo }                                      = require('
 const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter, handleGetBillingPortal, handleGetBillingPlanState } = require('./routes/billing'); // lab-s3.2 / lab-s3.4 / lab-s3.5 / bri-s3.5
 const { setStripeAdapter }                                           = require('./modules/stripe-client');  // lab-s3.2
 const { creditsGuard }                                               = require('./middleware/credits-guard'); // lab-s3.3
-const { handleEmailSignup, handleEmailLogin, setUserDb }             = require('./routes/auth-email');       // lab-s2.2
+const { handleEmailSignup, handleEmailLogin, setUserDb, setOrganisationsPool: setEmailOrganisationsPool } = require('./routes/auth-email'); // lab-s2.2 / story-1-organisation-entity follow-up
 const { handleAuthStubGithub, handleAuthStubAudit }                  = require('./routes/auth-stub');         // a1-staging-safe-auth-stub
 const { setPasswordAdapter }                                         = require('./modules/password');         // lab-s2.2
 const { setUserFlagsAdapter }                                        = require('./modules/user-flags');       // lab-s2.3
@@ -408,6 +410,31 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       // references people(id)).
       return migrateIdentityLinksSchema(_userRolesPool);
     }).catch(function(err) { console.error('[tir-s1] people/team_memberships migration failed:', err.message); });
+
+    // story-1-organisation-entity — Auto-migrate the organisations table (AC1),
+    // then run the one-time backfill (AC2) for every pre-existing tenant_id
+    // known to this codebase (reuses credits.getValidTenantIds() -- ADR-026:
+    // reuse before introducing a new "known tenants" query), then wire the
+    // pool into auth.js's OAuth-callback resolution step (AC3). Reuses
+    // _userRolesPool (same reuse pattern as tir-s2/c1 above) rather than
+    // opening a new Postgres connection.
+    migrateOrganisationsSchema(_userRolesPool).then(function() {
+      console.log('[story-1-organisation-entity] organisations table ready');
+      return getValidTenantIds();
+    }).then(function(tenantIds) {
+      return backfillStandaloneOrganisations(_userRolesPool, tenantIds);
+    }).then(function(createdCount) {
+      console.log('[story-1-organisation-entity] organisations backfill complete (' + createdCount + ' row(s) created)');
+      setOrganisationsPool(_userRolesPool);
+      console.log('[story-1-organisation-entity] organisations pool wired to auth.js OAuth-callback resolution step');
+      // Follow-up (2026-07-31): also wire auth-email.js's resolution step, closing
+      // the gap where brand-new email/password signups had no organisations row
+      // until the next server-restart backfill sweep (see decisions.md).
+      setEmailOrganisationsPool(_userRolesPool);
+      console.log('[story-1-organisation-entity] organisations pool wired to auth-email.js signup/login resolution step');
+    }).catch(function(err) {
+      console.error('[story-1-organisation-entity] organisations migration/backfill failed:', err.message);
+    });
 
     // tir-s2 — Wire the /settings/link-account callback handlers to the same
     // Postgres pool (same reuse pattern as arl-s1/tir-s1 above). No new D37

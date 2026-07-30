@@ -12,6 +12,7 @@ const _session = require('../middleware/session');
 // arl-s1: user-roles module (injectable adapter — D37). Loads role after tenantId is set.
 const _userRoles = require('../modules/user-roles');
 const _credits = require('../modules/credits'); // ftcg-s1
+const _organisations = require('../modules/organisations'); // story-1-organisation-entity
 // sec-perf-s3: session-scoped CSRF (Cross-Site Request Forgery) protection.
 const csrf = require('../middleware/csrf');
 
@@ -31,6 +32,41 @@ async function _grantFreeTierCredits(tenantId) {
     }
   } catch (err) {
     console.warn('free_tier_credits_grant_failed', { tenantId, reason: err.message });
+  }
+}
+
+// story-1-organisation-entity (follow-up, 2026-07-31): pool handed in by
+// server.js at startup, mirroring auth.js's setOrganisationsPool. A missing
+// pool must never break signup/login, it should simply skip organisation
+// resolution (mirrors _grantFreeTierCredits's own "never blocks the caller's
+// flow" rule).
+let _organisationsPool = null;
+
+/**
+ * Replace the pool used for organisation resolution (called once by server.js at startup).
+ * @param {object} pool - pg-Pool-shaped object exposing query(sql, params)
+ */
+function setOrganisationsPool(pool) {
+  _organisationsPool = pool;
+}
+
+/**
+ * story-1-organisation-entity (follow-up, 2026-07-31): resolve or create the
+ * `organisations` row for this tenantId at email/password signup/login --
+ * purely additive, never blocks or fails the caller's own login/signup flow.
+ * Mirrors auth.js's _resolveOrganisation and _grantFreeTierCredits's
+ * fire-and-forget, try/catch-wrapped shape. Closes the gap flagged in
+ * decisions.md where this story's OAuth-only wiring left brand-new
+ * email/password signups without an organisations row until the next
+ * server-restart backfill sweep.
+ * @param {string} tenantId
+ */
+async function _resolveOrganisation(tenantId) {
+  if (!_organisationsPool) return; // not wired (e.g. no DATABASE_URL) -- safe no-op
+  try {
+    await _organisations.resolveOrganisationForTenant(_organisationsPool, tenantId);
+  } catch (err) {
+    console.warn('organisation_resolution_failed', { tenantId, reason: err.message });
   }
 }
 
@@ -251,6 +287,10 @@ async function handleEmailSignup(req, res) {
   // same idempotent, no-op-on-conflict function as the other 2 auth paths.
   await _grantFreeTierCredits(email);
 
+  // story-1-organisation-entity (follow-up, 2026-07-31): resolve/create the
+  // organisations row for this tenant -- see _resolveOrganisation above.
+  await _resolveOrganisation(email);
+
   // tir-s1: load role via the person/team-scoped lookup (AC3). Falls back to
   // 'user' on error.
   try {
@@ -316,6 +356,12 @@ async function handleEmailLogin(req, res) {
   req.session.tenantId    = email;
   req.session.login       = email;
 
+  // story-1-organisation-entity (follow-up, 2026-07-31): no-op for a
+  // returning tenant (resolve-or-create, ON CONFLICT DO NOTHING) -- safe to
+  // call on every login, mirroring auth.js's OAuth-path placement (called on
+  // every login there too, not gated to first-login).
+  await _resolveOrganisation(email);
+
   // tir-s1: load role via the person/team-scoped lookup (AC3). Falls back to
   // 'user' on error.
   try {
@@ -339,5 +385,6 @@ module.exports = {
   handleEmailLogin,
   setUserDb,
   setRotateSessionId,
+  setOrganisationsPool,
   _clearRateLimits
 };

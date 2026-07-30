@@ -17560,26 +17560,28 @@
         {
           "slug": "agency-client-organisations",
           "name": "Agencies can sign up, manage, and collaborate with their own client organisations",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "story-1-organisation-entity",
               "name": "Organisation as a first-class entity with org_type",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-30T19:27:45.924Z",
+              "updatedAt": "2026-07-30T22:29:04.544Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 8,
-                "passing": 0
+                "totalTests": 10,
+                "passing": 10
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/657"
             },
             {
               "slug": "story-2-relationship-grants-enforcement",
