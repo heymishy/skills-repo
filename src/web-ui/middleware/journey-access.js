@@ -25,4 +25,22 @@ function asHttpResponse(err, policy) {
   return 500;
 }
 
-module.exports = { POLICY, isSameTenant, requireJourneyAccess, asHttpResponse };
+// story-2-relationship-grants-enforcement (artefacts/2026-07-30-agency-client-organisations)
+// AC4/AC5: extends this module's existing FORBIDDEN-vs-NOT_FOUND guard
+// pattern to the new relationship-scoped shared-access-grant shape. A
+// Client-org requester with no grant for a resource (never shared, shared
+// only via a different relationship, or revoked) must see the exact same
+// outcome as a genuinely non-existent resource -- never a 403 that would
+// confirm the resource's existence to an unauthorised viewer.
+//
+// The grant itself is checked live by modules/agency-client-grants.js's
+// checkGrantAccess (the story's own dedicated grant-check adapter) BEFORE
+// this guard is called -- this function only converts "no grant" into the
+// same structured error shape requireJourneyAccess already uses, so callers
+// use the existing asHttpResponse(err, POLICY.TENANT) to get 404, exactly
+// like every other TENANT-policy guard in this module.
+function requireGrantAccess(grant) {
+  if (grant == null) throw { code: 'NOT_FOUND' };
+}
+
+module.exports = { POLICY, isSameTenant, requireJourneyAccess, requireGrantAccess, asHttpResponse };
