@@ -76,7 +76,7 @@ function createImpersonationHandlers(pool) {
     // handlers (bri-s1.5 precedent). Keyed by tenantId so PostHog's
     // tenant-group targeting applies identically to every other flag.
     var _tenantId = req.session && req.session.tenantId;
-    var _impersonationOn = await _postHogFlags.isEnabled(_flagKeys.ADMIN_IMPERSONATION, { tenantId: _tenantId });
+    var _impersonationOn = await _postHogFlags.isEnabledOrDefault(_flagKeys.ADMIN_IMPERSONATION, { tenantId: _tenantId });
     if (!_impersonationOn) {
       _respondImpersonationFlagDisabled(res);
       return;
@@ -143,7 +143,7 @@ function createImpersonationHandlers(pool) {
     // search page above: a disabled feature behaves as if the route does
     // not exist at all.
     var _tenantId = req.session && req.session.tenantId;
-    var _impersonationOn = await _postHogFlags.isEnabled(_flagKeys.ADMIN_IMPERSONATION, { tenantId: _tenantId });
+    var _impersonationOn = await _postHogFlags.isEnabledOrDefault(_flagKeys.ADMIN_IMPERSONATION, { tenantId: _tenantId });
     if (!_impersonationOn) {
       _respondImpersonationFlagDisabled(res);
       return;
