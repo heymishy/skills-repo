@@ -17603,7 +17603,7 @@
               "dorStatus": "signed-off",
               "dorApprover": "Hamish King",
               "prStatus": "draft",
-              "prUrl": "PENDING_PR_URL"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/658"
             },
             {
               "slug": "story-3-self-service-provisioning",
