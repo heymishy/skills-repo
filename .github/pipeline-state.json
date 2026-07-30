@@ -17747,10 +17747,10 @@
         {
           "id": "tpwd-s1",
           "dorStatus": "signed-off",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "testPlanWritten": true,
           "track": "short",
-          "updatedAt": "2026-07-30T04:59:51.958Z",
+          "updatedAt": "2026-07-30T05:30:09.259Z",
           "testPlan": {
             "artefact": "artefacts/2026-07-30-tenant-plan-write-diagnostics/test-plans/tpwd-s1-test-plan.md",
             "status": "all-passing",
