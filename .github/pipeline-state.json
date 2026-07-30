@@ -17585,8 +17585,8 @@
           "id": "ssr-s1",
           "testPlanWritten": "true",
           "dorStatus": "signed-off",
-          "prStatus": "draft",
-          "updatedAt": "2026-07-29T23:03:05.063Z"
+          "prStatus": "merged",
+          "updatedAt": "2026-07-30T04:49:19.038Z"
         }
       ],
       "metrics": [],
@@ -17603,8 +17603,8 @@
           "id": "rlld-s1",
           "testPlanWritten": "true",
           "dorStatus": "signed-off",
-          "prStatus": "draft",
-          "updatedAt": "2026-07-29T23:50:00.940Z",
+          "prStatus": "merged",
+          "updatedAt": "2026-07-30T04:49:19.182Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 2,
@@ -17627,8 +17627,8 @@
           "id": "rlld-s2",
           "testPlanWritten": "true",
           "dorStatus": "signed-off",
-          "prStatus": "draft",
-          "updatedAt": "2026-07-30T00:14:50.315Z",
+          "prStatus": "merged",
+          "updatedAt": "2026-07-30T04:49:19.307Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 4,
@@ -17650,8 +17650,8 @@
         {
           "id": "bslb-s1",
           "dorStatus": "signed-off",
-          "prStatus": "draft",
-          "updatedAt": "2026-07-30T00:34:40.162Z",
+          "prStatus": "merged",
+          "updatedAt": "2026-07-30T04:49:19.451Z",
           "testPlanWritten": true,
           "testPlan": {
             "status": "all-passing",
@@ -17674,8 +17674,8 @@
         {
           "id": "swts-s1",
           "dorStatus": "signed-off",
-          "prStatus": "draft",
-          "updatedAt": "2026-07-30T01:00:07.930Z",
+          "prStatus": "merged",
+          "updatedAt": "2026-07-30T04:49:19.608Z",
           "testPlanWritten": true,
           "testPlan": {
             "status": "all-passing",
@@ -17698,8 +17698,8 @@
         {
           "id": "tcro-s1",
           "dorStatus": "signed-off",
-          "prStatus": "draft",
-          "updatedAt": "2026-07-30T02:50:22.180Z",
+          "prStatus": "merged",
+          "updatedAt": "2026-07-30T04:49:19.735Z",
           "testPlanWritten": true,
           "testPlan": {
             "status": "all-passing",
@@ -17722,10 +17722,10 @@
         {
           "id": "btii-s1",
           "dorStatus": "signed-off",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "testPlanWritten": true,
           "track": "short",
-          "updatedAt": "2026-07-30T03:17:22.505Z",
+          "updatedAt": "2026-07-30T04:48:44.375Z",
           "testPlan": {
             "artefact": "artefacts/2026-07-30-billing-tenant-id-isolation/test-plans/btii-s1-test-plan.md",
             "status": "all-passing",
