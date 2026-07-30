@@ -65,6 +65,21 @@ const { testEndpointBypassHeaders, webhookStubHeaders } = require('./fixtures/st
 // tenant in this spec. Event IDs now get the same RUN_SUFFIX treatment.
 const RUN_SUFFIX = Date.now() + '-' + Math.floor(Math.random() * 1e6);
 
+// fix-forward (post-launch, round 3): AC2's manually-added browser cookie
+// hardcoded `domain: 'localhost'`, copied from fixtures/auth.js's withAuth
+// helper -- but that helper is explicitly guarded to NODE_ENV=test only and
+// never runs against real staging. This spec IS tagged @mocked and does run
+// against real wuce-staging (E2E_BASE_URL=https://wuce-staging.fly.dev in
+// the smoke-test job), where a domain:'localhost' cookie can never attach to
+// a wuce-staging.fly.dev request -- so page.goto('/journey') always ran
+// unauthenticated on staging, deterministically failing (not flaking) every
+// time, regardless of what else in this file got fixed. Derive both the
+// cookie domain and the secure flag from the actual base URL so this works
+// against both the local harness (http://localhost:3999) and real staging.
+const _baseUrl = new URL(process.env.E2E_BASE_URL || 'http://localhost:3999');
+const SESSION_COOKIE_DOMAIN = _baseUrl.hostname;
+const SESSION_COOKIE_SECURE = _baseUrl.protocol === 'https:';
+
 /** Seed an isolated session (own cookie, own tenantId) and return the cookie header value. */
 async function seedTenantSession(request, suffix, tenantId) {
   const sessionId = 'e2e' + '0'.repeat(58) + suffix; // suffix is 2 hex chars — stays within [a-f0-9]+
@@ -181,7 +196,8 @@ test.describe('@mocked @billing bri-s3.5 billing journey', () => {
     const tenantId = 'e2e-bri-billing-capped-' + RUN_SUFFIX;
     const cookie = await seedTenantSession(request, '03', tenantId);
     await page.context().addCookies([{
-      name: 'session_id', value: cookie.split('=')[1], domain: 'localhost', path: '/',
+      name: 'session_id', value: cookie.split('=')[1],
+      domain: SESSION_COOKIE_DOMAIN, path: '/', secure: SESSION_COOKIE_SECURE,
     }]);
 
     await withTenantCap(request, tenantId, 0, async () => {
