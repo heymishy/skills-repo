@@ -1709,6 +1709,36 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
     ? req.body.displayName.trim()
     : null;
 
+  // fix-forward (post-launch): pre-flight billing gate, ported from
+  // handlePostJourney (routes/journey.js, POST /api/journey, s2.1). This
+  // handler (the "add feature" flow from within a product's own page) is a
+  // SEPARATE journey-creation entry point that had never been wired to the
+  // usage-cap check at all -- a trial tenant could create unlimited
+  // features here regardless of MAX_JOURNEYS_PER_TENANT, bypassing the same
+  // gate the standalone /journey form has always correctly enforced. Found
+  // live in production: a signup that never completed Stripe checkout could
+  // still create products and features with no restriction via this path.
+  var _journeyStoreForCap = require('../modules/journey-store');
+  var _tenantPlanForCap = require('../modules/tenant-plan');
+  var _repoRootAdapterForCap = require('../adapters/repo-root');
+  if (tenantId) {
+    var _repoRootForCap = _repoRootAdapterForCap.getRepoRoot(req);
+    var _allForCap = [];
+    try { _allForCap = _journeyStoreForCap.listJourneys ? _journeyStoreForCap.listJourneys(_repoRootForCap) : []; } catch (_) {}
+    var _tenantCountForCap = _allForCap.filter(function(j) { return j.tenantId === tenantId; }).length;
+    var _capResult = await _tenantPlanForCap.checkJourneyCap(tenantId, _tenantCountForCap, _repoRootForCap);
+    if (!_capResult.allowed) {
+      console.error('[handlePostProductFeature] Journey limit reached for tenant ' + tenantId + ' (cap=' + _capResult.cap + ')');
+      res.writeHead(402, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(_htmlShell.renderShell({
+        title: 'Journey limit reached',
+        bodyContent: '<div class="sw-page-content"><h1>Journey limit reached</h1><p>You have reached the maximum of ' + _capResult.cap + ' journey' + (_capResult.cap === 1 ? '' : 's') + ' for your account. Please contact the operator to increase your limit.</p><a href="/dashboard">Back to dashboard</a></div>',
+        user: { login: req.session && req.session.login || '' }
+      }));
+      return;
+    }
+  }
+
   // jrf-s2: FIX — register the journey through the shared journey-store
   // (createJourney + setJourneyFields), the SAME path handlePostJourney
   // (routes/journey.js) already uses correctly. The previous raw, direct

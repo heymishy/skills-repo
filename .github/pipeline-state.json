@@ -17863,12 +17863,37 @@
         {
           "id": "pfgd-s1",
           "dorStatus": "signed-off",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "testPlanWritten": true,
           "track": "short",
           "updatedAt": "2026-07-30T07:14:48.320Z",
           "testPlan": {
             "artefact": "artefacts/2026-07-30-posthog-flag-graceful-degradation/test-plans/pfgd-s1-test-plan.md",
+            "status": "all-passing",
+            "totalTests": 5,
+            "passing": 5
+          }
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-30",
+      "track": "short"
+    },
+    {
+      "slug": "2026-07-30-product-feature-cap-bypass",
+      "name": "Close the usage-cap bypass in the add-feature-from-within-a-product flow",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [
+        {
+          "id": "pfcb-s1",
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "testPlanWritten": true,
+          "track": "short",
+          "updatedAt": "2026-07-30T07:31:28.422Z",
+          "testPlan": {
+            "artefact": "artefacts/2026-07-30-product-feature-cap-bypass/test-plans/pfcb-s1-test-plan.md",
             "status": "all-passing",
             "totalTests": 5,
             "passing": 5
