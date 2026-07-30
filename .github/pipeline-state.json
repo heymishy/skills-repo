@@ -17616,6 +17616,30 @@
       "metrics": [],
       "updatedAt": "2026-07-29T23:50:12.332Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-07-30-product-draft-mock-gateway-bypass",
+      "name": "Fix generateProductDraft bypassing the mock LLM gateway on staging -- root cause of the real-LLM-call leak found via rlld-s1's diagnostic logging",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [
+        {
+          "id": "rlld-s2",
+          "testPlanWritten": "true",
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "updatedAt": "2026-07-30T00:14:50.315Z",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 4,
+            "passing": 4,
+            "artefact": "artefacts/2026-07-30-product-draft-mock-gateway-bypass/test-plans/rlld-s2-test-plan.md"
+          }
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-30T00:15:05.065Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
