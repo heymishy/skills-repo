@@ -6343,7 +6343,7 @@
       "name": "Strategy and Data Hub",
       "track": "short",
       "health": "green",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-06-04-strategy-data-grounding/discovery.md",
       "stories": [
@@ -6392,40 +6392,50 @@
         {
           "id": "sdg.4",
           "name": "Reference content injection into /ideate system prompt",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "testPlanStatus": "written",
           "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg4-test-plan.md",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg4-dor.md",
-          "health": "green",
-          "updatedAt": "2026-07-30T09:59:27.557Z",
-          "prStatus": "merged"
+          "health": "amber",
+          "updatedAt": "2026-07-30T10:08:24.258Z",
+          "prStatus": "merged",
+          "releaseReady": false,
+          "dodStatus": "complete",
+          "blocker": "AC5 manual smoke test (model grounds >=2/5 questions in strategy) not yet performed - accepted MEDIUM finding"
         },
         {
           "id": "sdg.5",
           "name": "Reference content injection into /discovery system prompt",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "testPlanStatus": "written",
           "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg5-test-plan.md",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg5-dor.md",
-          "health": "green",
-          "updatedAt": "2026-07-30T09:59:27.712Z",
-          "prStatus": "merged"
+          "health": "amber",
+          "updatedAt": "2026-07-30T10:08:24.401Z",
+          "prStatus": "merged",
+          "releaseReady": false,
+          "dodStatus": "complete",
+          "blocker": "AC2 manual smoke test (model grounds scope against strategy) not yet performed - accepted MEDIUM finding"
         },
         {
           "id": "sdg.6",
           "name": "Callout markers in discovery artefact output",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "testPlanStatus": "written",
           "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg6-test-plan.md",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg6-dor.md",
-          "health": "green",
-          "updatedAt": "2026-07-30T09:59:27.860Z",
-          "prStatus": "merged"
+          "health": "amber",
+          "updatedAt": "2026-07-30T10:08:24.529Z",
+          "prStatus": "merged",
+          "releaseReady": false,
+          "dodStatus": "complete",
+          "blocker": "Real end-to-end confirmation (a live session producing a real strategy-metrics.json entry) not yet performed; benefit-metric.md gap across the whole epic still unresolved"
         }
-      ]
+      ],
+      "updatedAt": "2026-07-30T10:08:45.520Z"
     },
     {
       "slug": "2026-06-21-rtp-receiving-integration",
