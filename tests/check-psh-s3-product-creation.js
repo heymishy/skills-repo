@@ -111,6 +111,26 @@ setTimeout(function() {
       pass('server.js wires setGenerateProductDraft D37 adapter');
     } catch(e) { fail('server.js wires setGenerateProductDraft D37 adapter', e); }
 
+    // T7 — rlld-s2 fix-forward: the wired generateProductDraft implementation checks
+    // isMockGatewayEnabled() BEFORE attempting any real api.anthropic.com call --
+    // previously it checked only whether ANTHROPIC_API_KEY was set, which made an
+    // unconditional real call whenever a real key happened to also be configured
+    // alongside MOCK_LLM_GATEWAY=true (true on wuce-staging), leaking into the
+    // real-LLM-call-count counter every @mocked E2E product-creation run.
+    try {
+      const src = require('fs').readFileSync('src/web-ui/server.js', 'utf8');
+      const wireStart = src.indexOf('setGenerateProductDraft(async function(fields) {');
+      assert(wireStart !== -1, 'could not locate the wired generateProductDraft function body');
+      const nextWireStart = src.indexOf('setGenerateProductDraft(async function(fields) {', wireStart + 1);
+      const wireBody = src.slice(wireStart, nextWireStart !== -1 ? nextWireStart : wireStart + 3000);
+      const mockCheckIdx = wireBody.indexOf('isMockGatewayEnabled()');
+      const apiKeyCheckIdx = wireBody.indexOf('process.env.ANTHROPIC_API_KEY');
+      assert(mockCheckIdx !== -1, 'isMockGatewayEnabled() check not found in the wired generateProductDraft implementation');
+      assert(apiKeyCheckIdx === -1 || mockCheckIdx < apiKeyCheckIdx, 'isMockGatewayEnabled() must be checked before the ANTHROPIC_API_KEY check, so mock mode never reaches the real-call path');
+      assert(wireBody.indexOf('https.request') === -1 || wireBody.indexOf('https.request') > mockCheckIdx, 'the real https.request call must occur after the isMockGatewayEnabled() check');
+      pass('wired generateProductDraft checks isMockGatewayEnabled() before any real API call');
+    } catch(e) { fail('wired generateProductDraft checks isMockGatewayEnabled() before any real API call', e); }
+
     // T-NFR1 — team plan: no product count check blocking creation
     try {
       const ph = { capture: function() {} };

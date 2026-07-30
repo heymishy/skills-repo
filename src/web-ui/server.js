@@ -860,9 +860,30 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   // psh-s3 D37 wiring: wire AI draft generator for product creation
   {
     setGenerateProductDraft(async function(fields) {
-      const apiKey = process.env.ANTHROPIC_API_KEY;
       const name = fields.name || 'this product';
       const description = fields.description || '';
+
+      // rlld-s2 fix-forward: this call previously checked only whether
+      // ANTHROPIC_API_KEY was set, never mockLlmGateway.isMockGatewayEnabled()
+      // -- unlike every skill-turn path in this codebase, which always checks
+      // the mock gateway first. On any environment where MOCK_LLM_GATEWAY=true
+      // AND a real ANTHROPIC_API_KEY happens to also be configured (true on
+      // wuce-staging), this made a genuine, unconditional real call to
+      // api.anthropic.com on every product creation -- discovered via rlld-s1's
+      // diagnostic logging, which traced the leak documented but never
+      // root-caused in rlcc-s1 (2026-07-25) directly to this call.
+      const _mockLlmGateway = require('./modules/mock-llm-gateway');
+      if (_mockLlmGateway.isMockGatewayEnabled()) {
+        return {
+          mission:                'Mock-generated mission for ' + name + '.',
+          roadmap:                '- Mock roadmap item 1\n- Mock roadmap item 2',
+          techStack:              'Mock tech stack for ' + name + '.',
+          constraints:            'Mock constraints.',
+          architectureGuardrails: 'Mock architecture guardrails.'
+        };
+      }
+
+      const apiKey = process.env.ANTHROPIC_API_KEY;
 
       if (!apiKey) {
         return { mission: '', roadmap: '', techStack: '', constraints: '', architectureGuardrails: '' };
@@ -1487,22 +1508,6 @@ if (process.env.NODE_ENV === 'test') {
     const hostname = (options && (options.hostname || options.host)) || '';
     if (hostname === 'api.anthropic.com' || String(hostname).indexOf('githubcopilot.com') !== -1) {
       _realLlmCallCount++;
-      // ssr-s1 fix-forward (diagnostic, temporary): rlcc-s1 documented this
-      // exact "extra real-looking calls" symptom and explicitly deferred
-      // finding the source (see artefacts/2026-07-25-realllm-counter-isolation/
-      // stories/rlcc-s1-smoke-test-worker-isolation.md, Out of Scope). Worker
-      // concurrency is already ruled out (staging-deploy.yml's smoke-test job
-      // runs --workers=1). This log line captures the calling stack so the
-      // next staging-deploy run's logs reveal the actual caller -- remove once
-      // the real source is identified and fixed.
-      console.warn(JSON.stringify({
-        event: 'unexpected_real_llm_call',
-        hostname: String(hostname),
-        path: (options && options.path) || null,
-        method: (options && options.method) || null,
-        callCount: _realLlmCallCount,
-        stack: new Error('unexpected_real_llm_call').stack
-      }));
     }
     return _origHttpsRequest.apply(https, arguments);
   };
