@@ -1480,7 +1480,7 @@ async function handleGetProductKanban(req, res, _next, pool, posthog) {
 
   // bri-s1.5 AC2 — gate before the DB call; D37: only the shared isEnabled() helper,
   // no bespoke per-flag evaluation logic.
-  var _productKanbanOn = await _postHogFlags.isEnabled(_flagKeys.PRODUCT_KANBAN_VIEW, { tenantId: tenantId });
+  var _productKanbanOn = await _postHogFlags.isEnabledOrDefault(_flagKeys.PRODUCT_KANBAN_VIEW, { tenantId: tenantId });
   if (!_productKanbanOn) {
     _respondFlagDisabled(res);
     return;
@@ -1534,7 +1534,7 @@ async function handleGetOrgKanban(req, res, _next, pool, posthog) {
   // group targeting (bri-s1.4) applies. Not-found/disabled for a non-targeted tenant
   // never touches the products/journeys query below, so no other tenant's board
   // data can leak even transiently (Security NFR, ADR-025).
-  var _orgKanbanOn = await _postHogFlags.isEnabled(_flagKeys.ORG_KANBAN_VIEW, { tenantId: tenantId });
+  var _orgKanbanOn = await _postHogFlags.isEnabledOrDefault(_flagKeys.ORG_KANBAN_VIEW, { tenantId: tenantId });
   if (!_orgKanbanOn) {
     _respondFlagDisabled(res);
     return;

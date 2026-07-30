@@ -507,7 +507,7 @@ function createSettingsHandlers(pool) {
       // d4 (AC5): whether the "Start a new impersonation session" link is
       // shown -- independent of whether audit history itself is fetched
       // above (indefinite retention/reviewability is unaffected by this flag).
-      impersonationStartEnabled = await _postHogFlags.isEnabled(_flagKeys.ADMIN_IMPERSONATION, { tenantId: req.session && req.session.tenantId });
+      impersonationStartEnabled = await _postHogFlags.isEnabledOrDefault(_flagKeys.ADMIN_IMPERSONATION, { tenantId: req.session && req.session.tenantId });
     }
 
     // c3 (AC4): the initial page load never has a prior rejection to show --

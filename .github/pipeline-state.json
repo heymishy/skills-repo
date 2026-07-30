@@ -17855,6 +17855,31 @@
       "track": "short"
     },
     {
+      "slug": "2026-07-30-posthog-flag-graceful-degradation",
+      "name": "Degrade gracefully when the PostHog flags adapter is unwired, instead of 500ing every gated page",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [
+        {
+          "id": "pfgd-s1",
+          "dorStatus": "signed-off",
+          "prStatus": "merged",
+          "testPlanWritten": true,
+          "track": "short",
+          "updatedAt": "2026-07-30T07:14:48.320Z",
+          "testPlan": {
+            "artefact": "artefacts/2026-07-30-posthog-flag-graceful-degradation/test-plans/pfgd-s1-test-plan.md",
+            "status": "all-passing",
+            "totalTests": 5,
+            "passing": 5
+          }
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-30",
+      "track": "short"
+    },
+    {
       "slug": "2026-07-30-product-feature-cap-bypass",
       "name": "Close the usage-cap bypass in the add-feature-from-within-a-product flow",
       "stage": "discovery",
