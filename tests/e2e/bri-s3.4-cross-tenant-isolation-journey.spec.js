@@ -30,12 +30,19 @@
 const { test, expect, request: playwrightRequest } = require('@playwright/test');
 // dss-s1: only meaningful against real wuce-staging -- empty {} locally, so
 // this changes nothing about how this spec runs against the local harness.
-const { testEndpointBypassHeaders } = require('./fixtures/staging-auth');
+// fix-forward (post-launch, rlld-s2 follow-up): this spec's own signup call
+// previously used a non-"e2e-test-"-prefixed email and never sent the
+// rate-limit-bypass header, so it did not qualify for the serlb-s1 bypass
+// carve-out (routes/auth-email.js) -- exactly the same gap fixed in
+// bri-s3.2-signup-onboarding-journey.spec.js (ssr-s1). This spec creates TWO
+// tenant sessions per test, so it tripped the real 10-attempt/5-minute
+// per-IP limiter twice as fast.
+const { testEndpointBypassHeaders, hasStubSecret, RATE_LIMIT_BYPASS_HEADER, STUB_SECRET } = require('./fixtures/staging-auth');
 
 const PASSWORD = 'Bri-S3-4-Test-Password-1!';
 
 function uniqueEmail(label) {
-  return 'bri-s3-4-' + label + '-' + Date.now() + '-' + Math.floor(Math.random() * 1e6) + '@example.test';
+  return 'e2e-test-bri-s3-4-' + label + '-' + Date.now() + '-' + Math.floor(Math.random() * 1e6) + '@example.test';
 }
 
 /**
@@ -59,8 +66,12 @@ async function newTenantSession(label) {
   const csrfToken = csrfMatch ? csrfMatch[1] : null;
   expect(csrfToken, label + ' landing page must embed a _csrf token in the signup form').toBeTruthy();
 
+  const signupHeaders = {};
+  if (hasStubSecret()) signupHeaders[RATE_LIMIT_BYPASS_HEADER] = STUB_SECRET;
+
   const signupRes = await ctx.post('/auth/email/signup', {
     form: { email: email, password: PASSWORD, _csrf: csrfToken },
+    headers: signupHeaders,
     maxRedirects: 0
   });
   expect(signupRes.status(), label + ' signup should redirect to /welcome').toBe(302);
