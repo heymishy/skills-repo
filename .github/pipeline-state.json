@@ -6398,7 +6398,8 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg4-dor.md",
           "health": "green",
-          "updatedAt": "2026-07-30T09:13:51.670Z"
+          "updatedAt": "2026-07-30T09:59:27.557Z",
+          "prStatus": "merged"
         },
         {
           "id": "sdg.5",
@@ -6409,7 +6410,8 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg5-dor.md",
           "health": "green",
-          "updatedAt": "2026-07-30T09:25:20.177Z"
+          "updatedAt": "2026-07-30T09:59:27.712Z",
+          "prStatus": "merged"
         },
         {
           "id": "sdg.6",
@@ -6420,7 +6422,8 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg6-dor.md",
           "health": "green",
-          "updatedAt": "2026-07-30T09:33:51.489Z"
+          "updatedAt": "2026-07-30T09:59:27.860Z",
+          "prStatus": "merged"
         }
       ]
     },
