@@ -17586,7 +17586,11 @@
           "testPlanWritten": "true",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "updatedAt": "2026-07-30T04:49:19.038Z"
+          "updatedAt": "2026-07-30T07:04:27.037Z",
+          "health": "green",
+          "releaseReady": true,
+          "stage": "definition-of-done",
+          "dodStatus": "complete"
         }
       ],
       "metrics": [],
@@ -17604,13 +17608,17 @@
           "testPlanWritten": "true",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "updatedAt": "2026-07-30T04:49:19.182Z",
+          "updatedAt": "2026-07-30T07:04:27.180Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 2,
             "passing": 2,
             "artefact": "artefacts/2026-07-30-real-llm-call-leak-diagnostics/test-plans/rlld-s1-test-plan.md"
-          }
+          },
+          "health": "green",
+          "releaseReady": true,
+          "stage": "definition-of-done",
+          "dodStatus": "complete"
         }
       ],
       "metrics": [],
@@ -17628,13 +17636,17 @@
           "testPlanWritten": "true",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "updatedAt": "2026-07-30T04:49:19.307Z",
+          "updatedAt": "2026-07-30T07:04:27.347Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 4,
             "passing": 4,
             "artefact": "artefacts/2026-07-30-product-draft-mock-gateway-bypass/test-plans/rlld-s2-test-plan.md"
-          }
+          },
+          "health": "green",
+          "releaseReady": true,
+          "stage": "definition-of-done",
+          "dodStatus": "complete"
         }
       ],
       "metrics": [],
@@ -17651,14 +17663,18 @@
           "id": "bslb-s1",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "updatedAt": "2026-07-30T04:49:19.451Z",
+          "updatedAt": "2026-07-30T07:04:27.481Z",
           "testPlanWritten": true,
           "testPlan": {
             "status": "all-passing",
             "totalTests": 3,
             "passing": 3,
             "artefact": "artefacts/2026-07-30-bri-s34-rate-limit-bypass/test-plans/bslb-s1-test-plan.md"
-          }
+          },
+          "health": "green",
+          "releaseReady": true,
+          "stage": "definition-of-done",
+          "dodStatus": "complete"
         }
       ],
       "metrics": [],
@@ -17675,14 +17691,18 @@
           "id": "swts-s1",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "updatedAt": "2026-07-30T04:49:19.608Z",
+          "updatedAt": "2026-07-30T07:04:27.651Z",
           "testPlanWritten": true,
           "testPlan": {
             "status": "all-passing",
             "totalTests": 5,
             "passing": 5,
             "artefact": "artefacts/2026-07-30-seedtestsession-and-withauth-staging/test-plans/swts-s1-test-plan.md"
-          }
+          },
+          "health": "green",
+          "releaseReady": true,
+          "stage": "definition-of-done",
+          "dodStatus": "complete"
         }
       ],
       "metrics": [],
@@ -17699,14 +17719,19 @@
           "id": "tcro-s1",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "updatedAt": "2026-07-30T04:49:19.735Z",
+          "updatedAt": "2026-07-30T07:04:27.788Z",
           "testPlanWritten": true,
           "testPlan": {
             "status": "all-passing",
             "totalTests": 5,
             "passing": 5,
             "artefact": "artefacts/2026-07-30-tenant-cap-remote-override/test-plans/tcro-s1-test-plan.md"
-          }
+          },
+          "health": "amber",
+          "releaseReady": false,
+          "stage": "definition-of-done",
+          "dodStatus": "complete",
+          "blocker": "AC2 (a page.fill/timeout in bri-s3.5's own AC2) not resolved by this story - correctly scoped out, later fixed by bcdm-s1"
         }
       ],
       "metrics": [],
@@ -17725,13 +17750,17 @@
           "prStatus": "merged",
           "testPlanWritten": true,
           "track": "short",
-          "updatedAt": "2026-07-30T04:48:44.375Z",
+          "updatedAt": "2026-07-30T07:04:27.940Z",
           "testPlan": {
             "artefact": "artefacts/2026-07-30-billing-tenant-id-isolation/test-plans/btii-s1-test-plan.md",
             "status": "all-passing",
             "totalTests": 17,
             "passing": 17
-          }
+          },
+          "health": "green",
+          "releaseReady": true,
+          "stage": "definition-of-done",
+          "dodStatus": "complete"
         }
       ],
       "metrics": [],
@@ -17750,13 +17779,17 @@
           "prStatus": "merged",
           "testPlanWritten": true,
           "track": "short",
-          "updatedAt": "2026-07-30T05:30:09.259Z",
+          "updatedAt": "2026-07-30T07:04:28.078Z",
           "testPlan": {
             "artefact": "artefacts/2026-07-30-tenant-plan-write-diagnostics/test-plans/tpwd-s1-test-plan.md",
             "status": "all-passing",
             "totalTests": 17,
             "passing": 17
-          }
+          },
+          "health": "green",
+          "releaseReady": true,
+          "stage": "definition-of-done",
+          "dodStatus": "complete"
         }
       ],
       "metrics": [],
@@ -17775,13 +17808,17 @@
           "prStatus": "merged",
           "testPlanWritten": true,
           "track": "short",
-          "updatedAt": "2026-07-30T05:52:01.608Z",
+          "updatedAt": "2026-07-30T07:04:28.219Z",
           "testPlan": {
             "artefact": "artefacts/2026-07-30-stripe-event-idempotency-collision/test-plans/seic-s1-test-plan.md",
             "status": "all-passing",
             "totalTests": 17,
             "passing": 17
-          }
+          },
+          "health": "green",
+          "releaseReady": true,
+          "stage": "definition-of-done",
+          "dodStatus": "complete"
         }
       ],
       "metrics": [],
@@ -17800,13 +17837,17 @@
           "prStatus": "merged",
           "testPlanWritten": true,
           "track": "short",
-          "updatedAt": "2026-07-30T06:20:20.647Z",
+          "updatedAt": "2026-07-30T07:04:28.361Z",
           "testPlan": {
             "artefact": "artefacts/2026-07-30-billing-cookie-domain-mismatch/test-plans/bcdm-s1-test-plan.md",
             "status": "written",
             "totalTests": 0,
             "passing": 0
-          }
+          },
+          "health": "green",
+          "releaseReady": true,
+          "stage": "definition-of-done",
+          "dodStatus": "complete"
         }
       ],
       "metrics": [],
