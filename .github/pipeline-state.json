@@ -17664,6 +17664,30 @@
       "metrics": [],
       "updatedAt": "2026-07-30T00:34:54.031Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-07-30-seedtestsession-and-withauth-staging",
+      "name": "Fix seedTestSession's dead staging bypass and withAuth's staging-incompatible tests",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [
+        {
+          "id": "swts-s1",
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "updatedAt": "2026-07-30T01:00:07.930Z",
+          "testPlanWritten": true,
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 5,
+            "passing": 5,
+            "artefact": "artefacts/2026-07-30-seedtestsession-and-withauth-staging/test-plans/swts-s1-test-plan.md"
+          }
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-30T01:00:18.569Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

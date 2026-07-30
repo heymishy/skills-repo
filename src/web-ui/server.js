@@ -1559,12 +1559,18 @@ async function router(req, res) {
       res.end(JSON.stringify({ error: 'tenantId must start with "e2e-"' }));
       return;
     }
+    // fix-forward (post-launch): this route's own gate (_isTestEndpointAllowed
+    // above) already validates the staging-safe bypass secret+header, but
+    // seedTestSession() had its own separate, unconditional NODE_ENV=test
+    // check that always threw on real staging regardless -- allowOutsideTest
+    // asserts that this specific call site has already passed an equivalent
+    // gate, so it is safe to bypass seedTestSession's own internal check here.
     seedTestSession(sessionId, {
       accessToken: 'e2e-test-access-token',
       userId:      9999,
       login:       'e2e-tester',
       tenantId:    tenantId,
-    });
+    }, { allowOutsideTest: true });
     // Return Set-Cookie so Playwright's APIRequestContext (page.request) stores
     // the session cookie in its own cookie jar. Without this, page.request.post()
     // doesn't send the cookie because APIRequestContext has a separate cookie store

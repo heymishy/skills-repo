@@ -24,9 +24,13 @@
 'use strict';
 
 const { test, expect } = require('@playwright/test');
-const { withAuth }      = require('./fixtures/auth');
 // nis-s1: only meaningful against real wuce-staging -- empty {} locally, so
 // this changes nothing about how this spec runs against the local harness.
+// fix-forward (post-launch): withAuth (fixtures/auth.js) was removed from
+// this file -- it relies on a NODE_ENV=test-only server-side OAuth stub and
+// throws by design outside that environment, so every test using it was
+// unreachable against real wuce-staging. All tests in this file now use the
+// same staging-safe named-identity-stub pattern.
 const { namedIdentityStubHeaders } = require('./fixtures/staging-auth');
 
 const REAL_PROVIDER_DOMAINS = [
@@ -119,12 +123,20 @@ test.describe('bri-s3.6 auth journey @mocked', () => {
     expect(getRealHitCount(), 'zero real GitHub/Google OAuth endpoints were ever contacted').toBe(0);
   });
 
-  withAuth('AC3: an invalidated session redirects to re-authenticate, not a dead end', async ({ page }) => {
-    // NOTE: withAuth's own `page` fixture creates its own internal BrowserContext
-    // (see fixtures/auth.js) — the base test's `context` fixture would be a different,
-    // unrelated context, so we must use page.context() to reach the one that actually
-    // owns this page's cookies.
-    const ownContext = page.context();
+  // fix-forward (post-launch): previously used withAuth (fixtures/auth.js),
+  // which relies on server.js's NODE_ENV=test-only OAuth provider stub --
+  // staging-incompatible by design (that fixture explicitly throws outside
+  // NODE_ENV=test). AC1/AC2 in this same file already established the
+  // correct staging-safe pattern (real /auth/github/callback route +
+  // namedIdentityStubHeaders) -- converted to match, since this test needs
+  // no different authentication mechanism, only the same login followed by
+  // a deliberate session invalidation.
+  test('AC3: an invalidated session redirects to re-authenticate, not a dead end', async ({ page, context }) => {
+    const getRealHitCount = await installRealProviderGuard(context);
+    const state = await startGithubLogin(context);
+    await context.setExtraHTTPHeaders(namedIdentityStubHeaders());
+
+    await page.goto(`/auth/github/callback?code=${SYNTHETIC_LOGIN}-ac3&state=${state}`);
 
     // Confirm the seeded session is genuinely authenticated first.
     const authedResponse = await page.goto('/dashboard');
@@ -132,7 +144,7 @@ test.describe('bri-s3.6 auth journey @mocked', () => {
 
     // Simulate the session expiring / being deliberately invalidated: the server
     // no longer recognises the session cookie as carrying a valid accessToken.
-    await ownContext.clearCookies();
+    await context.clearCookies();
 
     // SAFETY: use context.request (not page.goto) to inspect the redirect without ever
     // letting a real browser navigation follow it. In this deployment /dashboard's
@@ -140,18 +152,25 @@ test.describe('bri-s3.6 auth journey @mocked', () => {
     // the real github.com authorise endpoint) — page.goto() would actually leave the
     // app and contact github.com for real, which AC5's no-real-network-calls guarantee
     // must hold for every scenario in this spec, not just the GitHub-login ones.
-    const response = await ownContext.request.get('/dashboard', { maxRedirects: 0 });
+    const response = await context.request.get('/dashboard', { maxRedirects: 0 });
     // Redirected to a re-authentication surface — not a dead end, blank error page, or
     // a silent 200 with no path forward.
     expect(response.status()).toBe(302);
     const location = response.headers()['location'] || '';
     expect(['/', '/auth/github']).toContain(location);
+    expect(getRealHitCount(), 'zero real GitHub/Google OAuth endpoints were ever contacted').toBe(0);
   });
 
-  withAuth('AC4: accessToken never appears in rendered page content', async ({ page }) => {
+  // fix-forward (post-launch): converted from withAuth to the same
+  // staging-safe pattern as AC1-AC3 above, for the same reason.
+  test('AC4: accessToken never appears in rendered page content', async ({ page, context }) => {
+    const state = await startGithubLogin(context);
+    await context.setExtraHTTPHeaders(namedIdentityStubHeaders());
+    await page.goto(`/auth/github/callback?code=${SYNTHETIC_LOGIN}-ac4&state=${state}`);
+
     await page.goto('/dashboard');
     const content = await page.content();
-    // The withAuth fixture's seeded token (tests/e2e/fixtures/auth.js) — must never render.
-    expect(content).not.toContain('e2e-test-access-token');
+    // The named-identity stub's seeded token (routes/auth.js) — must never render.
+    expect(content).not.toContain('e2e-oauth-token-');
   });
 });

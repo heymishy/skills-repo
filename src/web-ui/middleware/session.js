@@ -232,17 +232,31 @@ function rotateSessionId(oldId, res, existingData) {
 }
 
 /**
- * Seed a test session with a known ID and data (NODE_ENV=test only).
+ * Seed a test session with a known ID and data (NODE_ENV=test only, unless
+ * the caller explicitly asserts it has already gated this call some other
+ * way -- see options.allowOutsideTest below).
  * Used by the E2E test infrastructure so Playwright tests can inject an
  * authenticated session without completing the real GitHub OAuth flow.
  *
- * Security: throws if called outside NODE_ENV=test.
+ * Security: throws if called outside NODE_ENV=test, unless
+ * options.allowOutsideTest is true. This function has no access to the
+ * incoming request, so it cannot independently verify a staging-safe
+ * bypass itself -- options.allowOutsideTest must only ever be set true by
+ * a caller that has ALREADY validated the request through an equivalent
+ * gate (e.g. server.js's _isTestEndpointAllowed(req), which checks
+ * NODE_ENV==='test' OR a staging-only bypass secret + header). Bug fix
+ * (post-launch): this function previously had no such escape hatch at all,
+ * so /test/session's own route-level staging bypass (dss-s1) was
+ * effectively dead on real staging -- the route's gate passed, but this
+ * function's own hardcoded NODE_ENV check always threw anyway.
  *
  * @param {string} id   - hex session ID (must match /^[a-f0-9]+$/)
  * @param {object} data - session data (e.g. { accessToken, userId, login })
+ * @param {{allowOutsideTest?: boolean}} [options]
  */
-function seedTestSession(id, data) {
-  if (process.env.NODE_ENV !== 'test') {
+function seedTestSession(id, data, options) {
+  const allowOutsideTest = !!(options && options.allowOutsideTest);
+  if (process.env.NODE_ENV !== 'test' && !allowOutsideTest) {
     throw new Error('seedTestSession is only available in NODE_ENV=test');
   }
   _sessions.set(id, Object.assign({}, data));
