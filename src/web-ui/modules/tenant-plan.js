@@ -81,17 +81,6 @@ async function setPlanState(tenantId, plan, status) {
       'ON CONFLICT (tenant_id) DO UPDATE SET plan = EXCLUDED.plan, status = EXCLUDED.status, updated_at = EXCLUDED.updated_at',
       [tenantId, plan, status]
     );
-    // fix-forward (post-launch, temporary diagnostic): bri-s3.5's billing E2E
-    // spec started seeing "webhook returned 200 but the following read still
-    // shows trial" for e2e-prefixed tenants once its tenant IDs were made
-    // unique per run (btii-s1) -- this write-succeeded confirmation, scoped
-    // to e2e- tenants only, lets the next staging-deploy run's logs show
-    // whether the write itself completed, isolating the fault to either the
-    // write path or the immediately-following read path. Remove once
-    // root-caused (see rlld-s1/rlld-s2 for the same temporary-log pattern).
-    if (/^e2e-/i.test(tenantId)) {
-      console.log('[tenant-plan][diag] setPlanState wrote OK for ' + tenantId + ' -> ' + plan + '/' + status);
-    }
   } catch (err) {
     console.error('[tenant-plan] setPlanState failed for tenant ' + tenantId + ': ' + err.message);
   }
@@ -110,19 +99,9 @@ async function getPlanState(tenantId) {
   try {
     var db = requirePlanStateAdapter();
     var result = await db.query('SELECT plan, status FROM tenant_plan WHERE tenant_id = $1', [tenantId]);
-    // fix-forward (post-launch, temporary diagnostic): see setPlanState's
-    // matching comment above -- this distinguishes "no row found" (write
-    // never landed, or landed under a different tenantId) from a genuine
-    // read-path error, for e2e- tenants only. Remove once root-caused.
-    if (/^e2e-/i.test(tenantId)) {
-      console.log('[tenant-plan][diag] getPlanState for ' + tenantId + ' -> rows=' + result.rows.length);
-    }
     if (!result.rows.length) return Object.assign({}, DEFAULT_PLAN_STATE);
     return { plan: result.rows[0].plan, status: result.rows[0].status };
   } catch (err) {
-    if (/^e2e-/i.test(tenantId)) {
-      console.error('[tenant-plan][diag] getPlanState FAILED for ' + tenantId + ': ' + err.message);
-    }
     return Object.assign({}, DEFAULT_PLAN_STATE);
   }
 }
