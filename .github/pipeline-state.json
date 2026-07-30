@@ -17737,6 +17737,31 @@
       "metrics": [],
       "updatedAt": "2026-07-30",
       "track": "short"
+    },
+    {
+      "slug": "2026-07-30-tenant-plan-write-diagnostics",
+      "name": "Add temporary diagnostic logging to identify why bri-s3.5's paid-plan writes aren't taking effect",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [
+        {
+          "id": "tpwd-s1",
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "testPlanWritten": true,
+          "track": "short",
+          "updatedAt": "2026-07-30T04:59:51.958Z",
+          "testPlan": {
+            "artefact": "artefacts/2026-07-30-tenant-plan-write-diagnostics/test-plans/tpwd-s1-test-plan.md",
+            "status": "all-passing",
+            "totalTests": 17,
+            "passing": 17
+          }
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-30",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
