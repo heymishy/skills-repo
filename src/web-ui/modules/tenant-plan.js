@@ -7,6 +7,31 @@ var path = require('path');
 var _capReader = null;
 function setCapReader(fn) { _capReader = fn; }
 
+// fix-forward (post-launch): per-tenant, in-memory cap overrides settable
+// remotely via a staging-safe test-only route (server.js's POST
+// /test/tenant-cap). The pre-existing tenant-caps.json file mechanism only
+// ever worked for the LOCAL Playwright harness, where the test runner and
+// the server share the same process/filesystem checkout -- against a real
+// deployed server (wuce-staging), a test runner's local file write has zero
+// effect on the server's own filesystem, so bri-s3.5's withTenantCap() was
+// structurally unable to affect real staging at all despite looking correct.
+var _tenantCapOverrides = new Map();
+
+/** Set (or update) a per-tenant cap override, effective immediately, no restart needed. */
+function setTenantCapOverride(tenantId, cap) {
+  _tenantCapOverrides.set(tenantId, cap);
+}
+
+/** Clear a single tenant's cap override, reverting to the next-priority resolution. */
+function clearTenantCapOverride(tenantId) {
+  _tenantCapOverrides.delete(tenantId);
+}
+
+/** Test-only helper: clear all cap overrides. */
+function clearAllTenantCapOverridesForTesting() {
+  _tenantCapOverrides.clear();
+}
+
 // ── jlc-s1: tenant plan-state store, persisted to Postgres ──────────────────
 // bri-s3.5 originally stored this in a plain in-memory Map, updated by the
 // Stripe webhook handler (src/web-ui/routes/billing.js) when a
@@ -100,7 +125,8 @@ async function resetPlanState() {
 
 /**
  * Resolve the journey cap for a given tenantId.
- * Priority: injected capReader > per-tenant tenant-caps.json entry > MAX_JOURNEYS_PER_TENANT env var.
+ * Priority: injected capReader > in-memory remote override (setTenantCapOverride)
+ * > per-tenant tenant-caps.json entry > MAX_JOURNEYS_PER_TENANT env var.
  * Returns null (unlimited) when no cap is configured.
  * @param {string} tenantId
  * @param {string} [repoRoot]
@@ -108,6 +134,8 @@ async function resetPlanState() {
  */
 function getJourneyCap(tenantId, repoRoot) {
   if (_capReader) return _capReader(tenantId);
+
+  if (_tenantCapOverrides.has(tenantId)) return _tenantCapOverrides.get(tenantId);
 
   // Per-tenant override file
   if (repoRoot) {
@@ -157,5 +185,8 @@ module.exports = {
   getPlanState,
   setPlanState,
   resetPlanState,
-  setPlanStateAdapter
+  setPlanStateAdapter,
+  setTenantCapOverride,
+  clearTenantCapOverride,
+  clearAllTenantCapOverridesForTesting
 };

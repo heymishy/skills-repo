@@ -26,14 +26,10 @@
 // other spec files rely on, and scenarios don't interfere with each other.
 
 const { test, expect } = require('@playwright/test');
-const fs   = require('fs');
-const path = require('path');
 // dss-s1/bjs-s1: only meaningful against real wuce-staging -- empty {}
 // locally, so this changes nothing about how this spec runs against the
 // local harness.
 const { testEndpointBypassHeaders, webhookStubHeaders } = require('./fixtures/staging-auth');
-
-const TENANT_CAPS_PATH = path.join(__dirname, '..', '..', 'tenant-caps.json');
 
 /** Seed an isolated session (own cookie, own tenantId) and return the cookie header value. */
 async function seedTenantSession(request, suffix, tenantId) {
@@ -64,21 +60,33 @@ async function postWebhook(request, event) {
   });
 }
 
-/** Write (or update) a single tenant's cap override in tenant-caps.json, restoring the prior file afterward. */
-function withTenantCap(tenantId, cap, fn) {
-  let priorContent = null;
-  let hadFile = false;
-  try { priorContent = fs.readFileSync(TENANT_CAPS_PATH, 'utf8'); hadFile = true; } catch (_) {}
-  const caps = hadFile ? JSON.parse(priorContent) : {};
-  caps[tenantId] = cap;
-  fs.writeFileSync(TENANT_CAPS_PATH, JSON.stringify(caps));
-  return Promise.resolve(fn()).finally(function() {
-    if (hadFile) {
-      fs.writeFileSync(TENANT_CAPS_PATH, priorContent);
-    } else {
-      try { fs.unlinkSync(TENANT_CAPS_PATH); } catch (_) {}
-    }
-  });
+/** Set (via the real server's own state, not a local file — see /test/tenant-cap
+ * on server.js) a single tenant's cap override, clearing it afterward.
+ *
+ * fix-forward (post-launch): the original implementation wrote directly to
+ * a local tenant-caps.json file on the TEST RUNNER's own filesystem -- which
+ * has zero effect on a real deployed server (a different process, a
+ * different container's filesystem entirely). Every use of this helper in
+ * this spec silently no-op'd against real wuce-staging despite looking
+ * correct against the local harness (where the test runner and server share
+ * the same process). Now calls the real server's own in-memory override via
+ * POST /test/tenant-cap, so the cap genuinely takes effect on whichever
+ * server this spec is actually running against.
+ */
+async function withTenantCap(request, tenantId, cap, fn) {
+  async function setCap(value) {
+    const resp = await request.post('/test/tenant-cap', {
+      headers: Object.assign({ 'content-type': 'application/json' }, testEndpointBypassHeaders()),
+      data: JSON.stringify({ tenantId: tenantId, cap: value }),
+    });
+    expect(resp.ok(), 'POST /test/tenant-cap').toBeTruthy();
+  }
+  await setCap(cap);
+  try {
+    return await fn();
+  } finally {
+    await setCap(null);
+  }
 }
 
 test.describe('@mocked @billing bri-s3.5 billing journey', () => {
@@ -140,7 +148,7 @@ test.describe('@mocked @billing bri-s3.5 billing journey', () => {
       name: 'session_id', value: cookie.split('=')[1], domain: 'localhost', path: '/',
     }]);
 
-    await withTenantCap(tenantId, 0, async () => {
+    await withTenantCap(request, tenantId, 0, async () => {
       // cap=0 means the very first journey attempt is already "at the limit" —
       // a valid, deterministic way to exercise the blocked path without first
       // needing to create N journeys through the UI.
@@ -166,7 +174,7 @@ test.describe('@mocked @billing bri-s3.5 billing journey', () => {
     const tenantId = 'e2e-bri-billing-cancel';
     const cookie = await seedTenantSession(request, '04', tenantId);
 
-    await withTenantCap(tenantId, 1, async () => {
+    await withTenantCap(request, tenantId, 1, async () => {
       // Upgrade to paid — usage gate becomes unlimited regardless of the cap=1 override.
       await postWebhook(request, {
         id: 'evt_e2e_ac4_upgrade',

@@ -49,6 +49,7 @@ tenantPlan.setPlanStateAdapter({
 
 async function reset() {
   tenantPlan.setCapReader(null);
+  tenantPlan.clearAllTenantCapOverridesForTesting();
   delete process.env.MAX_JOURNEYS_PER_TENANT;
   await tenantPlan.resetPlanState();
 }
@@ -125,6 +126,37 @@ await (async function() {
   await tenantPlan.setPlanState('tenant-c', 'paid', 'past_due');
   var result = await tenantPlan.checkJourneyCap('tenant-c', 1);
   ok('past_due paid tenant is capped like trial (not unlimited)', result.allowed === false);
+})();
+
+// ── fix-forward: setTenantCapOverride is a real, in-memory, remotely-settable
+// cap (server.js's POST /test/tenant-cap), replacing bri-s3.5's original
+// local tenant-caps.json file mechanism that had zero effect against a real
+// deployed server. ────────────────────────────────────────────────────────
+console.log('\nfix-forward — setTenantCapOverride takes effect immediately, in-memory');
+await (async function() {
+  await reset();
+  tenantPlan.setTenantCapOverride('e2e-override-tenant', 0);
+  var result = await tenantPlan.checkJourneyCap('e2e-override-tenant', 0);
+  ok('cap=0 override blocks the very first journey attempt', result.allowed === false);
+  ok('override cap is reported', result.cap === 0);
+})();
+
+console.log('\nfix-forward — clearTenantCapOverride reverts to the next-priority resolution (unlimited by default)');
+await (async function() {
+  await reset();
+  tenantPlan.setTenantCapOverride('e2e-override-tenant-2', 0);
+  tenantPlan.clearTenantCapOverride('e2e-override-tenant-2');
+  var result = await tenantPlan.checkJourneyCap('e2e-override-tenant-2', 100);
+  ok('after clearing the override, tenant is unlimited again (no other cap source configured)', result.allowed === true);
+})();
+
+console.log('\nfix-forward — an injected capReader still takes priority over a tenant cap override');
+await (async function() {
+  await reset();
+  tenantPlan.setCapReader(function() { return 5; });
+  tenantPlan.setTenantCapOverride('e2e-override-tenant-3', 0);
+  var result = await tenantPlan.checkJourneyCap('e2e-override-tenant-3', 5);
+  ok('capReader (5) wins over the tenant override (0) — exactly-at-limit(5) blocked per capReader, not override', result.allowed === false && result.cap === 5);
 })();
 
 // ── resetPlanState clears all tracked tenants back to default trial ────────
