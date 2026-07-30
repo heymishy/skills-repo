@@ -17581,7 +17581,7 @@
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
               "prStatus": "draft",
-              "prUrl": "PENDING_PR_URL"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/657"
             },
             {
               "slug": "story-2-relationship-grants-enforcement",
