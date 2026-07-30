@@ -17772,10 +17772,10 @@
         {
           "id": "seic-s1",
           "dorStatus": "signed-off",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "testPlanWritten": true,
           "track": "short",
-          "updatedAt": "2026-07-30T05:37:54.021Z",
+          "updatedAt": "2026-07-30T05:52:01.608Z",
           "testPlan": {
             "artefact": "artefacts/2026-07-30-stripe-event-idempotency-collision/test-plans/seic-s1-test-plan.md",
             "status": "all-passing",
