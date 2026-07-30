@@ -17787,6 +17787,31 @@
       "metrics": [],
       "updatedAt": "2026-07-30",
       "track": "short"
+    },
+    {
+      "slug": "2026-07-30-billing-cookie-domain-mismatch",
+      "name": "Fix bri-s3.5 AC2's browser session cookie so it actually attaches to real staging requests",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [
+        {
+          "id": "bcdm-s1",
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "testPlanWritten": true,
+          "track": "short",
+          "updatedAt": "2026-07-30T06:02:53.180Z",
+          "testPlan": {
+            "artefact": "artefacts/2026-07-30-billing-cookie-domain-mismatch/test-plans/bcdm-s1-test-plan.md",
+            "status": "written",
+            "totalTests": 0,
+            "passing": 0
+          }
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-30",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
