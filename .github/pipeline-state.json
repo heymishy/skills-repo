@@ -17797,10 +17797,10 @@
         {
           "id": "bcdm-s1",
           "dorStatus": "signed-off",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "testPlanWritten": true,
           "track": "short",
-          "updatedAt": "2026-07-30T06:02:53.180Z",
+          "updatedAt": "2026-07-30T06:20:20.647Z",
           "testPlan": {
             "artefact": "artefacts/2026-07-30-billing-cookie-domain-mismatch/test-plans/bcdm-s1-test-plan.md",
             "status": "written",
