@@ -109,6 +109,32 @@ async function isEnabled(flagKey, context) {
 }
 
 /**
+ * Defense-in-depth wrapper around isEnabled() for call sites that gate an
+ * entire request/page on a single flag (e.g. handleGetOrgKanban,
+ * handleGetSettings's impersonation-start link). isEnabled() itself must
+ * keep throwing when unwired (D37, AC2 — a misconfiguration must be visible
+ * immediately) and this wrapper does not weaken that contract or change
+ * isEnabled() itself. It exists because a genuinely unwired adapter (e.g. a
+ * missing POSTHOG_KEY_PROD secret in production — see bri-s1.2) should not
+ * be able to take down every page that happens to check a flag: the
+ * misconfiguration is still logged loudly here (console.error, so it remains
+ * visible in logs exactly as D37 intends), but the caller gets the same safe
+ * default (`false`) it would get from a transient PostHog API failure (AC4),
+ * rather than an unhandled 500.
+ * @param {string} flagKey
+ * @param {object} [context]
+ * @returns {Promise<boolean>}
+ */
+async function isEnabledOrDefault(flagKey, context) {
+  try {
+    return await isEnabled(flagKey, context);
+  } catch (err) {
+    console.error('[posthog-flags] isEnabled(' + flagKey + ') failed — defaulting to false:', err && err.message);
+    return false;
+  }
+}
+
+/**
  * Register (identify) a tenant as a PostHog Group Analytics group ahead of flag evaluation
  * (bri-s1.4), so PostHog has a group record to target flags against (AC2). Wired through the
  * same D37 injectable adapter as isEnabled() — no second, parallel adapter mechanism
@@ -150,4 +176,4 @@ function resolveTenantIdFromRequest(req) {
   return (req && req.session && req.session.tenantId) || null;
 }
 
-module.exports = { setPostHogFlagsAdapter, isEnabled, identifyTenantGroup, resolveTenantIdFromRequest };
+module.exports = { setPostHogFlagsAdapter, isEnabled, isEnabledOrDefault, identifyTenantGroup, resolveTenantIdFromRequest };
