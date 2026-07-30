@@ -17888,10 +17888,10 @@
         {
           "id": "pfcb-s1",
           "dorStatus": "signed-off",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "testPlanWritten": true,
           "track": "short",
-          "updatedAt": "2026-07-30T07:31:28.422Z",
+          "updatedAt": "2026-07-30T08:37:21.961Z",
           "testPlan": {
             "artefact": "artefacts/2026-07-30-product-feature-cap-bypass/test-plans/pfcb-s1-test-plan.md",
             "status": "all-passing",
