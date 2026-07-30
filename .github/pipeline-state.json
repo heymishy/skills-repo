@@ -6392,11 +6392,13 @@
         {
           "id": "sdg.4",
           "name": "Reference content injection into /ideate system prompt",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "testPlanStatus": "written",
           "testPlanArtefact": "artefacts/2026-06-21-strategy-and-data-hub/test-plans/sdg4-test-plan.md",
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg4-dor.md"
+          "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dor/sdg4-dor.md",
+          "health": "green",
+          "updatedAt": "2026-07-30T09:13:51.670Z"
         },
         {
           "id": "sdg.5",

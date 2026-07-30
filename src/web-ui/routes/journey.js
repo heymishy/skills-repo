@@ -1592,7 +1592,13 @@ async function handleGetReferenceModalStart(req, res) {
   var sid         = crypto.randomUUID();
   var sessionPath = path.join(repoRoot, 'artefacts', featureSlug, 'sessions', sid);
 
-  getRegisterHtmlSession()(sid, sessionPath, startSkill, { productProfile: profileName, featureSlug: featureSlug });
+  // sdg.4: pass the journey's uploaded reference files (sdg.1/sdg.2) through
+  // to the system prompt builder, so /ideate (or /discovery) can inject them.
+  getRegisterHtmlSession()(sid, sessionPath, startSkill, {
+    productProfile: profileName,
+    featureSlug: featureSlug,
+    referenceFiles: journey.referenceFiles && journey.referenceFiles.length ? journey.referenceFiles : undefined
+  });
   getLinkSessionToJourney()(sid, journeyId);
   if (_journeyStore.setActiveSession) {
     _journeyStore.setActiveSession(journeyId, sid, startSkill);
