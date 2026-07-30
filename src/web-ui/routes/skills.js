@@ -1353,6 +1353,17 @@ async function handleGetResultHtml(req, res) {
  * @returns {string}
  */
 function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, sessionContext, _outContextFiles) {
+  // sdg.4: the 4th param stays backward-compatible with the legacy bare-array
+  // calling convention (priorArtefacts array directly) -- but when called with
+  // an options object shape { priorArtefacts, referenceFiles }, unwrap both
+  // fields here so every existing `priorArtefacts.forEach`/`.length` reference
+  // below keeps working unchanged, and referenceFiles becomes available for
+  // the strategic-context injection at the end of this function.
+  var referenceFiles = null;
+  if (priorArtefacts && !Array.isArray(priorArtefacts) && typeof priorArtefacts === 'object') {
+    referenceFiles = priorArtefacts.referenceFiles || null;
+    priorArtefacts = priorArtefacts.priorArtefacts || null;
+  }
   var root = repoRoot || _getRepoPath();
   var ctx = sessionContext || {};
   var parts = [];
@@ -1795,6 +1806,56 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
     ].join('\n'));
   }
 
+  // sdg.4: inject uploaded reference files (sdg.1/sdg.2) as a new system
+  // prompt section, read via sdg.3's reference-reader.js (fs.readFileSync,
+  // no third-party deps — same NFR this whole feature has followed). Omitted
+  // entirely when referenceFiles is absent or empty (AC6) — no section, no
+  // error, no change to existing behaviour for callers not opted in.
+  if (referenceFiles && referenceFiles.length > 0) {
+    var _refReader = require('../modules/reference-reader');
+    var _refAbsPaths = referenceFiles.map(function(rf) {
+      return path.isAbsolute(rf.path) ? rf.path : path.join(root, rf.path);
+    });
+    var _refResults = _refReader.readReferenceFiles(_refAbsPaths);
+    if (_refResults.length > 0) {
+      // Token budget (soft, 4-chars-per-token heuristic, per NFR): SKILL/product
+      // context assembled so far in `parts`, minus priorArtefacts' own content
+      // (tracked separately so it isn't double-counted), plus reference content.
+      var _priorCharLen = 0;
+      (priorArtefacts || []).forEach(function(pa) { _priorCharLen += (pa && pa.content ? pa.content.length : 0); });
+      var _assembledCharLen = parts.reduce(function(sum, p) { return sum + p.length; }, 0);
+      var _skillCharLen = Math.max(0, _assembledCharLen - _priorCharLen);
+
+      var _refContents = _refResults.map(function(r) { return r.content; });
+      var _refCharLen = _refContents.reduce(function(sum, c) { return sum + c.length; }, 0);
+
+      var _skillTokens     = Math.ceil(_skillCharLen / 4);
+      var _priorTokens     = Math.ceil(_priorCharLen / 4);
+      var _referenceTokens = Math.ceil(_refCharLen / 4);
+      var _totalTokens     = _skillTokens + _priorTokens + _referenceTokens;
+
+      // AC3: if the total exceeds the soft budget, truncate the LARGEST
+      // reference file to fit rather than dropping any file entirely —
+      // truncation preserves a leading portion of semantic content instead
+      // of losing it altogether.
+      if (_totalTokens > 12000) {
+        var _largestIdx = 0;
+        _refContents.forEach(function(c, i) { if (c.length > _refContents[_largestIdx].length) { _largestIdx = i; } });
+        var _overageChars = (_totalTokens - 12000) * 4;
+        var _keepChars = Math.max(0, _refContents[_largestIdx].length - _overageChars);
+        _refContents[_largestIdx] = _refContents[_largestIdx].slice(0, _keepChars) + '\n\n[TRUNCATED — remaining content exceeds token budget]';
+        console.warn('[WARN] Reference file truncated to fit token budget');
+      }
+
+      // AC2: logs the [INFO] breakdown always, and its own [WARN] exceeds-budget
+      // line (using the pre-truncation reference token estimate, matching the
+      // trigger condition that decided whether to truncate above) when over budget.
+      _refReader.logTokenBudget({ skillTokens: _skillTokens, referenceTokens: _referenceTokens, priorTokens: _priorTokens });
+
+      parts.push('## Strategic context and reference material\n\n' + _refContents.join('\n\n'));
+    }
+  }
+
   // Gate 2: Haiku format enforcement — EXP-002a/EXP-021 findings.
   // Haiku produces consulting-style advisory notes instead of template-format artefacts,
   // always ends with an open question, and never terminates cleanly.
@@ -1929,9 +1990,17 @@ function registerHtmlSession(sessionId, sessionPath, skillName, opts) {
   var options = Array.isArray(opts) ? { priorArtefacts: opts } : (opts || {});
   var contextFiles = [];
   var resolvedModel = getModelForSkill(skillName);
+  // sdg.4: thread referenceFiles through to buildSystemPrompt whenever the
+  // caller supplied any (e.g. handleGetReferenceModalStart passing
+  // journey.referenceFiles) -- otherwise fall back to the legacy bare-array
+  // priorArtefacts shape unchanged, so every existing caller that never opts
+  // into reference files keeps behaving exactly as before.
+  var _priorArtefactsArg = options.referenceFiles
+    ? { priorArtefacts: options.priorArtefacts || [], referenceFiles: options.referenceFiles }
+    : (options.priorArtefacts || undefined);
   var systemPrompt = buildSystemPrompt(
     skillName, sessionPath, undefined,
-    options.priorArtefacts || undefined,
+    _priorArtefactsArg,
     { productProfile: options.productProfile || undefined, activeFeatureSlug: options.featureSlug || undefined, modelId: resolvedModel },
     contextFiles
   );
