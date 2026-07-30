@@ -17640,6 +17640,30 @@
       "metrics": [],
       "updatedAt": "2026-07-30T00:15:05.065Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-07-30-bri-s34-rate-limit-bypass",
+      "name": "Fix bri-s3.4's own rate-limit bypass gap -- same class of fix as ssr-s1",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [
+        {
+          "id": "bslb-s1",
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "updatedAt": "2026-07-30T00:34:40.162Z",
+          "testPlanWritten": true,
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 3,
+            "passing": 3,
+            "artefact": "artefacts/2026-07-30-bri-s34-rate-limit-bypass/test-plans/bslb-s1-test-plan.md"
+          }
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-30T00:34:54.031Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
