@@ -51,6 +51,7 @@ This is a pure product/go-to-market initiative — a new organisation-relationsh
 |--------|---------------------|-----------------|
 | Metric 1 — Agency-led client provisioning | Story 1 (organisation entity), Story 2 (relationship + grants + enforcement), Story 3 (self-service provisioning), Story 4 (dual-path auth) | Covered |
 | Metric 2 — Ongoing client-agency artefact collaboration | Story 5 (comments) | Covered |
+| N/A — no lock-in / adoption objection removal | Story 6 (conversion to independent) | Indirect / risk-mitigation, not directly measured — added 2026-07-31, resolves review [1-M1]. Story 6 does not move either Tier 1 metric directly; it removes a potential adoption objection (no lock-in) that could otherwise suppress Metric 1. See Story 6's own Benefit Linkage field. |
 
 ---
 

@@ -17565,56 +17565,117 @@
             {
               "slug": "story-1-organisation-entity",
               "name": "Organisation as a first-class entity with org_type",
-              "stage": "review",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-30T10:46:15.358Z"
+              "updatedAt": "2026-07-30T19:27:45.924Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 8,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "false",
+              "e2eToolingRequired": "false",
+              "dorStatus": "signed-off"
             },
             {
               "slug": "story-2-relationship-grants-enforcement",
               "name": "Agency-Client relationship, shared-access grants, and read-only enforcement",
-              "stage": "review",
-              "health": "amber",
+              "stage": "definition-of-ready",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-30T10:46:57.654Z"
+              "updatedAt": "2026-07-30T19:43:20.663Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 13,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "false",
+              "e2eToolingRequired": "false",
+              "dorStatus": "signed-off",
+              "dorApprover": "Hamish King"
             },
             {
               "slug": "story-3-self-service-provisioning",
               "name": "Self-service Agency-to-Client provisioning",
-              "stage": "review",
-              "health": "red",
-              "reviewStatus": "has-findings",
-              "highFindings": 2,
-              "updatedAt": "2026-07-30T10:47:35.114Z"
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-07-30T19:29:45.720Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 16,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "false",
+              "e2eToolingRequired": "false",
+              "dorStatus": "signed-off"
             },
             {
               "slug": "story-4-dual-path-authentication",
               "name": "Client-org dual-path authentication",
-              "stage": "review",
-              "health": "red",
-              "reviewStatus": "has-findings",
-              "highFindings": 1,
-              "updatedAt": "2026-07-30T10:48:06.215Z"
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-07-30T19:30:30.255Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 17,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "false",
+              "e2eToolingRequired": "false",
+              "dorStatus": "signed-off"
             },
             {
               "slug": "story-5-client-agency-comments",
               "name": "Client-org lightweight collaboration -- comments only",
-              "stage": "review",
-              "health": "amber",
+              "stage": "definition-of-ready",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-30T10:48:39.588Z"
+              "updatedAt": "2026-07-30T19:32:19.335Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 13,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "false",
+              "e2eToolingRequired": "false",
+              "dorStatus": "signed-off"
             },
             {
               "slug": "story-6-conversion-to-independent",
               "name": "Client org self-service conversion to an independent paying account",
-              "stage": "review",
-              "health": "red",
-              "reviewStatus": "has-findings",
-              "highFindings": 1,
-              "updatedAt": "2026-07-30T10:49:26.952Z"
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-07-30T19:33:15.044Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 13,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "false",
+              "e2eToolingRequired": "false",
+              "dorStatus": "signed-off"
             }
           ]
         }
