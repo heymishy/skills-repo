@@ -23,13 +23,32 @@
 // Session/tenant isolation: each scenario seeds its own session + tenantId via
 // GET /test/session?sessionId=&tenantId= (bri-s3.5 extension to the existing
 // test-only endpoint) so this spec never touches the shared 'e2e-tester' tenant
-// other spec files rely on, and scenarios don't interfere with each other.
+// other spec files rely on, and scenarios don't interfere with each other
+// WITHIN a single run. Fix-forward (post-launch): that isolation does NOT hold
+// ACROSS separate runs of this same spec file — jlc-s1 made tenant plan state
+// persist to a real Postgres table (tenant_plan) that survives redeploys, so a
+// static tenant ID left 'paid' or 'past_due' by a previous run leaks into the
+// next run's "starts from trial" assumptions. Each tenant ID below is suffixed
+// with a unique-per-run token (RUN_SUFFIX) so every run gets genuinely fresh
+// tenant identities, not just fresh sessions.
 
 const { test, expect } = require('@playwright/test');
 // dss-s1/bjs-s1: only meaningful against real wuce-staging -- empty {}
 // locally, so this changes nothing about how this spec runs against the
 // local harness.
 const { testEndpointBypassHeaders, webhookStubHeaders } = require('./fixtures/staging-auth');
+
+// fix-forward (post-launch): this spec previously used 4 hardcoded, static
+// tenant IDs (e.g. 'e2e-bri-billing-upgrade') shared across every run of this
+// file, forever. jlc-s1 (2026-07-xx) moved plan-state persistence from an
+// in-memory Map (wiped on every redeploy) to a real Postgres table
+// (tenant_plan) that survives redeploys -- so a prior CI run's leftover
+// 'paid'/'past_due' state for the same hardcoded tenant ID now silently
+// leaks into every subsequent run, breaking assumptions like "this tenant
+// starts as trial". A unique-per-run suffix, matching the convention already
+// established in bri-s3.2/bri-s3.4's own uniqueEmail() helpers, gives each
+// run's tenants a genuinely fresh identity.
+const RUN_SUFFIX = Date.now() + '-' + Math.floor(Math.random() * 1e6);
 
 /** Seed an isolated session (own cookie, own tenantId) and return the cookie header value. */
 async function seedTenantSession(request, suffix, tenantId) {
@@ -99,7 +118,8 @@ test.describe('@mocked @billing bri-s3.5 billing journey', () => {
   });
 
   test('@mocked @billing AC1: checkout.session.completed upgrade reflects paid plan immediately', async ({ request }) => {
-    const cookie = await seedTenantSession(request, '01', 'e2e-bri-billing-upgrade');
+    const tenantId = 'e2e-bri-billing-upgrade-' + RUN_SUFFIX;
+    const cookie = await seedTenantSession(request, '01', tenantId);
 
     const before = await getPlanState(request, cookie);
     expect(before.plan).toBe('trial');
@@ -107,7 +127,7 @@ test.describe('@mocked @billing bri-s3.5 billing journey', () => {
     const webhookResp = await postWebhook(request, {
       id: 'evt_e2e_ac1',
       type: 'checkout.session.completed',
-      data: { object: { client_reference_id: 'e2e-bri-billing-upgrade', metadata: { planName: 'STARTER' } } },
+      data: { object: { client_reference_id: tenantId, metadata: { planName: 'STARTER' } } },
     });
     expect(webhookResp.status()).toBe(200);
 
@@ -117,13 +137,14 @@ test.describe('@mocked @billing bri-s3.5 billing journey', () => {
   });
 
   test('@mocked @billing AC3: payment-failure webhook reflects failure state, not silently ignored', async ({ request }) => {
-    const cookie = await seedTenantSession(request, '02', 'e2e-bri-billing-failure');
+    const tenantId = 'e2e-bri-billing-failure-' + RUN_SUFFIX;
+    const cookie = await seedTenantSession(request, '02', tenantId);
 
     // Start from paid/active (as if the tenant had already upgraded).
     await postWebhook(request, {
       id: 'evt_e2e_ac3_upgrade',
       type: 'checkout.session.completed',
-      data: { object: { client_reference_id: 'e2e-bri-billing-failure', metadata: { planName: 'STARTER' } } },
+      data: { object: { client_reference_id: tenantId, metadata: { planName: 'STARTER' } } },
     });
     const whilePaid = await getPlanState(request, cookie);
     expect(whilePaid.plan).toBe('paid');
@@ -132,7 +153,7 @@ test.describe('@mocked @billing bri-s3.5 billing journey', () => {
     const webhookResp = await postWebhook(request, {
       id: 'evt_e2e_ac3_failure',
       type: 'invoice.payment_failed',
-      data: { object: { customer: 'cus_e2e', metadata: { tenant_id: 'e2e-bri-billing-failure' } } },
+      data: { object: { customer: 'cus_e2e', metadata: { tenant_id: tenantId } } },
     });
     expect(webhookResp.status()).toBe(200);
 
@@ -142,7 +163,7 @@ test.describe('@mocked @billing bri-s3.5 billing journey', () => {
   });
 
   test('@mocked @billing AC2: hitting the usage limit blocks with a clear, human-readable error in the UI', async ({ page, request }) => {
-    const tenantId = 'e2e-bri-billing-capped';
+    const tenantId = 'e2e-bri-billing-capped-' + RUN_SUFFIX;
     const cookie = await seedTenantSession(request, '03', tenantId);
     await page.context().addCookies([{
       name: 'session_id', value: cookie.split('=')[1], domain: 'localhost', path: '/',
@@ -171,7 +192,7 @@ test.describe('@mocked @billing bri-s3.5 billing journey', () => {
   });
 
   test('@mocked @billing AC4: cancellation downgrades plan and restricts usage gates per the new plan', async ({ request }) => {
-    const tenantId = 'e2e-bri-billing-cancel';
+    const tenantId = 'e2e-bri-billing-cancel-' + RUN_SUFFIX;
     const cookie = await seedTenantSession(request, '04', tenantId);
 
     await withTenantCap(request, tenantId, 1, async () => {

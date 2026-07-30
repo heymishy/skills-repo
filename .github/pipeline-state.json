@@ -17712,6 +17712,31 @@
       "metrics": [],
       "updatedAt": "2026-07-30T02:50:37.372Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-07-30-billing-tenant-id-isolation",
+      "name": "Give bri-s3.5's billing E2E tenants unique per-run IDs to prevent cross-run plan-state pollution",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [
+        {
+          "id": "btii-s1",
+          "dorStatus": "signed-off",
+          "prStatus": "draft",
+          "testPlanWritten": true,
+          "track": "short",
+          "updatedAt": "2026-07-30T03:17:22.505Z",
+          "testPlan": {
+            "artefact": "artefacts/2026-07-30-billing-tenant-id-isolation/test-plans/btii-s1-test-plan.md",
+            "status": "all-passing",
+            "totalTests": 17,
+            "passing": 17
+          }
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-07-30",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
