@@ -20,16 +20,13 @@
 // modules/invitation-email.js's sendInvitationEmail (AC5) -- a genuinely external,
 // swappable integration (Resend) -- wired separately in server.js.
 //
-// Scope note (flagged, not guessed -- see decisions.md 2026-07-31, story-3): the
-// invite-user routes below verify the CALLER's own org_type is 'agency', but do
-// NOT verify that the calling Agency org is specifically the one with an
-// agency_client_relationships row to the target client_org_id. Story 2's
-// modules/agency-client-grants.js exposes no "list relationships for an agency"
-// lookup, and adding one is outside this story's DoR-contracted touch points.
-// This means any two Agency-type orgs can currently invite a user into any
-// Client org whose ID they know or guess, not just a Client org they created.
-// Flagged for operator confirmation (PR description + decisions.md) rather than
-// silently guessed at or silently left undocumented.
+// Relationship-ownership fix (2026-07-31, see decisions.md): the invite-user
+// routes below verify BOTH the caller's own org_type is 'agency' AND that the
+// calling Agency org actually owns an agency_client_relationships row to the
+// target client_org_id, via modules/agency-client-grants.js's
+// getRelationshipForAgencyAndClient -- closing the gap originally flagged
+// (and RISK-ACCEPTed) where any Agency-type org could invite a user into any
+// Client org whose ID it knew or guessed, not only one it created.
 
 var crypto = require('crypto');
 var organisations = require('../modules/organisations');
@@ -169,6 +166,14 @@ function createAgencyProvisioningHandlers(pool) {
       _sendJson(res, 403, { error: 'This flow is only reachable by Agency-type organisations.' });
       return;
     }
+    // fix-forward (2026-07-31): confirm this specific Agency org actually
+    // owns a relationship with the target Client org -- closes the
+    // relationship-ownership gap flagged in decisions.md (RISK-ACCEPT).
+    var relationship = await agencyClientGrants.getRelationshipForAgencyAndClient(pool, callerOrg.org_id, clientOrgId);
+    if (!relationship) {
+      _sendJson(res, 404, { error: 'Not found.' });
+      return;
+    }
     var html = '<!DOCTYPE html><html><head><title>Invite user</title></head><body>' +
       '<h1>Invite the first user of this Client organisation</h1>' +
       '<form method="POST" action="/agency/clients/' + _escapeHtml(clientOrgId) + '/invite">' +
@@ -190,6 +195,16 @@ function createAgencyProvisioningHandlers(pool) {
     var callerOrg = await organisations.resolveOrganisationForTenant(pool, tenantId);
     if (!callerOrg || callerOrg.org_type !== 'agency') {
       _sendJson(res, 403, { error: 'This flow is only reachable by Agency-type organisations.' });
+      return;
+    }
+    // fix-forward (2026-07-31): confirm this specific Agency org actually
+    // owns a relationship with the target Client org -- closes the
+    // relationship-ownership gap flagged in decisions.md (RISK-ACCEPT).
+    // 404 (not 403), matching Story 2's established FORBIDDEN-vs-NOT_FOUND
+    // policy -- never confirm a guessed client_org_id's existence.
+    var relationship = await agencyClientGrants.getRelationshipForAgencyAndClient(pool, callerOrg.org_id, clientOrgId);
+    if (!relationship) {
+      _sendJson(res, 404, { error: 'Not found.' });
       return;
     }
     if (!email) {

@@ -113,6 +113,32 @@ async function getRelationshipById(pool, relationshipId) {
 }
 
 /**
+ * story-3-self-service-provisioning (fix-forward, 2026-07-31): confirm a
+ * specific Agency org actually owns a relationship with a specific Client
+ * org, before allowing that Agency to act on the Client org (e.g. invite a
+ * user into it). Closes the RISK-ACCEPT gap flagged in decisions.md where an
+ * Agency org's invite-user route checked org_type='agency' but not
+ * relationship ownership -- any Agency knowing/guessing another org's
+ * client_org_id could otherwise invite a user (with role='admin') into a
+ * Client org it does not actually own. Reuses this module's existing table
+ * (no new entity, ADR-026) and keeps the "one dedicated adapter" Guardrail
+ * intact -- callers must not query agency_client_relationships directly.
+ * @param {object} pool
+ * @param {string} agencyOrgId
+ * @param {string} clientOrgId
+ * @returns {Promise<object|null>} the relationship row if the pair is
+ *   related, or null if no such relationship exists
+ */
+async function getRelationshipForAgencyAndClient(pool, agencyOrgId, clientOrgId) {
+  var result = await pool.query(
+    'SELECT relationship_id, agency_org_id, client_org_id, created_at ' +
+    'FROM agency_client_relationships WHERE agency_org_id = $1 AND client_org_id = $2',
+    [agencyOrgId, clientOrgId]
+  );
+  return result.rows.length ? result.rows[0] : null;
+}
+
+/**
  * AC1: create a grant scoped to a SPECIFIC relationship_id -- never a bare
  * client_org_id-only scoping. This is what makes AC2's per-relationship
  * isolation possible: a grant only ever exists attached to one relationship
@@ -263,6 +289,7 @@ module.exports = {
   migrateAgencyClientGrantsSchema,
   createRelationship,
   getRelationshipById,
+  getRelationshipForAgencyAndClient,
   createGrant,
   checkGrantAccess,
   listGrantedResourcesForClient,

@@ -4,8 +4,9 @@
 // Story: artefacts/2026-07-30-agency-client-organisations/stories/story-3-self-service-provisioning.md
 // Test plan: artefacts/2026-07-30-agency-client-organisations/test-plans/story-3-self-service-provisioning-test-plan.md
 //
-// Covers (17 tests -- 16 across 5 ACs matching the test plan, plus 1 extra
-// regression test for a real bug found during implementation, see AC5 below):
+// Covers (18 tests -- 16 across 5 ACs matching the test plan, plus 2 extra
+// regression tests found during implementation, see AC5 and the fix-forward
+// note below):
 //   AC1: createsClientOrgAndRelationshipForAgencyUser, createClientFlowEndToEndAsAgencyAdmin
 //   AC2: rejectsCreateClientForNonAgencyOrgType, createClientFlowRejectedForWrongOrgTypeAtRouteLevel
 //   AC3: invitationRecordCreatedWithPassportMagicLinkToken, invitationRedemptionCreatesAdminRoleTeamMembership,
@@ -14,6 +15,9 @@
 //   AC5: sendInvitationEmailAdapterStubThrowsWhenUnwired, serverJsWiresSendInvitationEmailToRealDifferentiatedResendCalls,
 //        inviteRouteSurfaces500WhenAdapterFails (extra regression -- passport-magic-login's own
 //        .send() swallows a rejected sendMagicLink into {success:false}, found during implementation)
+//   Fix-forward (2026-07-31, pre-merge): inviteRouteRejectsUnrelatedAgency -- closes the
+//        relationship-ownership gap originally RISK-ACCEPTed, then resolved before merge
+//        per operator decision (see decisions.md)
 //   NFR (Security):     createClientOrgTypeCheckIsServerSideNotClientSideOnly
 //   NFR (Audit):        invitationTokenNeverLoggedInPlaintext, createClientAndInviteAreAudited
 //   NFR (Accessibility): createClientFormIsKeyboardNavigable
@@ -106,9 +110,14 @@ function makeFakePool(seed) {
       relationships.push(relRow);
       return Promise.resolve({ rows: [relRow] });
     }
-    if (s.indexOf('SELECT RELATIONSHIP_ID, AGENCY_ORG_ID, CLIENT_ORG_ID, CREATED_AT FROM AGENCY_CLIENT_RELATIONSHIPS') === 0) {
+    if (s.indexOf('SELECT RELATIONSHIP_ID, AGENCY_ORG_ID, CLIENT_ORG_ID, CREATED_AT FROM AGENCY_CLIENT_RELATIONSHIPS WHERE RELATIONSHIP_ID') === 0) {
       var relMatch = relationships.filter(function(r) { return r.relationship_id === p[0]; });
       return Promise.resolve({ rows: relMatch });
+    }
+    if (s.indexOf('SELECT RELATIONSHIP_ID, AGENCY_ORG_ID, CLIENT_ORG_ID, CREATED_AT FROM AGENCY_CLIENT_RELATIONSHIPS WHERE AGENCY_ORG_ID') === 0) {
+      // getRelationshipForAgencyAndClient (fix-forward, 2026-07-31)
+      var relPairMatch = relationships.filter(function(r) { return r.agency_org_id === p[0] && r.client_org_id === p[1]; });
+      return Promise.resolve({ rows: relPairMatch });
     }
 
     // ── client_invitations ───────────────────────────────────────────────────
@@ -170,7 +179,10 @@ function makeFakePool(seed) {
         queryLog: queryLog
       };
     },
-    _seedOrg: function(orgId, name, orgType) { orgs.push({ org_id: orgId, name: name, org_type: orgType, created_at: new Date().toISOString() }); }
+    _seedOrg: function(orgId, name, orgType) { orgs.push({ org_id: orgId, name: name, org_type: orgType, created_at: new Date().toISOString() }); },
+    _seedRelationship: function(relationshipId, agencyOrgId, clientOrgId) {
+      relationships.push({ relationship_id: relationshipId, agency_org_id: agencyOrgId, client_org_id: clientOrgId, created_at: new Date().toISOString() });
+    }
   };
 }
 
@@ -240,6 +252,7 @@ function mockRes() {
 
     var pool = makeFakePool();
     pool._seedOrg('agency-org-2', 'Agency Co', 'agency');
+    pool._seedRelationship('rel-2', 'agency-org-2', 'client-org-x');
     var handlers = provisioning.createAgencyProvisioningHandlers(pool);
 
     var req = { session: { tenantId: 'agency-org-2' }, params: { id: 'client-org-x' }, body: { email: 'newuser@example.com' } };
@@ -342,6 +355,7 @@ function mockRes() {
 
     var pool = makeFakePool();
     pool._seedOrg('agency-org-12', 'Agency Co', 'agency');
+    pool._seedRelationship('rel-12', 'agency-org-12', 'client-org-adapter-fail');
     var handlers = provisioning.createAgencyProvisioningHandlers(pool);
 
     var req = { session: { tenantId: 'agency-org-12' }, params: { id: 'client-org-adapter-fail' }, body: { email: 'willfail@example.com' } };
@@ -349,6 +363,55 @@ function mockRes() {
     await handlers.handlePostInviteUser(req, res);
 
     assert.strictEqual(res._s, 500, 'expected the route to surface a 500 when the sendInvitationEmail adapter fails, not a silent 200');
+  });
+
+  // ===========================================================================
+  // Fix-forward (2026-07-31) -- inviteRouteRejectsUnrelatedAgency
+  //
+  // Closes the relationship-ownership gap flagged in decisions.md (RISK-ACCEPT,
+  // resolved before merge per operator decision): an Agency-type org with NO
+  // agency_client_relationships row to the target Client org must be rejected
+  // -- both on the GET form and the POST issuance -- even though its own
+  // org_type='agency' check passes. 404 (not 403), matching Story 2's
+  // established FORBIDDEN-vs-NOT_FOUND policy.
+  // ===========================================================================
+  await test('inviteRouteRejectsUnrelatedAgency (relationship-ownership fix-forward)', async function() {
+    var strategy = freshRequire(MAGIC_LINK_STRATEGY_PATH);
+    var provisioning = freshRequire(AGENCY_PROVISIONING_PATH);
+    strategy._resetForTesting();
+    var sentCalls = [];
+    strategy.registerMagicLinkStrategy({
+      secret: 'unrelated-agency-test-secret',
+      callbackUrl: '/invite/redeem',
+      sendMagicLink: async function(destination, href) { sentCalls.push({ destination: destination, href: href }); },
+      verify: async function() {}
+    });
+
+    var pool = makeFakePool();
+    // Agency A owns client-org-owned-by-a. Agency B is a completely separate,
+    // unrelated Agency org -- no relationship row links it to that Client org.
+    pool._seedOrg('agency-org-a', 'Agency A', 'agency');
+    pool._seedOrg('agency-org-b', 'Agency B', 'agency');
+    pool._seedRelationship('rel-a', 'agency-org-a', 'client-org-owned-by-a');
+    var handlers = provisioning.createAgencyProvisioningHandlers(pool);
+
+    var getReq = { session: { tenantId: 'agency-org-b' }, params: { id: 'client-org-owned-by-a' } };
+    var getRes = mockRes();
+    await handlers.handleGetInviteUser(getReq, getRes);
+    assert.strictEqual(getRes._s, 404, 'expected the GET form to reject an Agency with no relationship to this Client org, 404 not 403');
+
+    var postReq = { session: { tenantId: 'agency-org-b' }, params: { id: 'client-org-owned-by-a' }, body: { email: 'sneaky@example.com' } };
+    var postRes = mockRes();
+    await handlers.handlePostInviteUser(postReq, postRes);
+    assert.strictEqual(postRes._s, 404, 'expected the POST issuance to reject an Agency with no relationship to this Client org, 404 not 403');
+    assert.strictEqual(sentCalls.length, 0, 'no invitation email must be sent for an unrelated Agency');
+    assert.strictEqual(pool._state().invitations.length, 0, 'no invitation record must be created for an unrelated Agency');
+
+    // Sanity: Agency A (the actual owner) is still allowed through.
+    var ownerReq = { session: { tenantId: 'agency-org-a' }, params: { id: 'client-org-owned-by-a' }, body: { email: 'legit@example.com' } };
+    var ownerRes = mockRes();
+    await handlers.handlePostInviteUser(ownerReq, ownerRes);
+    assert.strictEqual(ownerRes._s, 200, 'expected the actual owning Agency to still be allowed through');
   });
 
   // ===========================================================================
@@ -408,6 +471,7 @@ function mockRes() {
 
     var pool = makeFakePool();
     pool._seedOrg('agency-org-6', 'Agency Co', 'agency');
+    pool._seedRelationship('rel-6', 'agency-org-6', 'client-org-z');
     var handlers = provisioning.createAgencyProvisioningHandlers(pool);
 
     var req = { session: { tenantId: 'agency-org-6' }, params: { id: 'client-org-z' }, body: { email: 'invitee@example.com' } };
@@ -579,6 +643,7 @@ function mockRes() {
     });
 
     pool._seedOrg('agency-org-9', 'Agency Co', 'agency');
+    pool._seedRelationship('rel-9', 'agency-org-9', 'client-org-audit');
     var handlers = provisioning.createAgencyProvisioningHandlers(pool);
     var origConsoleLog = console.log;
     console.log = function(msg) { loggerCalls.push(String(msg)); };
