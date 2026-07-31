@@ -41,6 +41,10 @@ const { setCreditsAdapter, getValidTenantIds }                       = require('
 const { migrateOrganisationsSchema, backfillStandaloneOrganisations } = require('./modules/organisations'); // story-1-organisation-entity
 const { setOrganisationsPool }                                       = require('./routes/auth');            // story-1-organisation-entity
 const { migrateAgencyClientGrantsSchema }                            = require('./modules/agency-client-grants'); // story-2-relationship-grants-enforcement
+const { migrateClientInvitationsSchema, redeemInvitation }           = require('./modules/client-invitations'); // story-3-self-service-provisioning
+const { setSendInvitationEmail }                                     = require('./modules/invitation-email'); // story-3-self-service-provisioning (D37, AC5)
+const { registerMagicLinkStrategy }                                  = require('./auth/magic-link-strategy'); // story-3-self-service-provisioning -- ONE shared strategy registration point (Story 4 extends via setVerifyCallback)
+const { createAgencyProvisioningHandlers }                           = require('./routes/agency-provisioning'); // story-3-self-service-provisioning
 const { setPlanStateAdapter }                                        = require('./modules/tenant-plan');   // jlc-s1
 const { migrateProductRepoColumns }                                  = require('./modules/product-repo');  // prc-s1.1
 const { registerSelfAsProduct }                                       = require('./modules/platform-self-registration'); // pr-s1
@@ -104,6 +108,12 @@ let _githubOrgBulkAddHandlers = null;
 // start endpoint (assigned inside the DATABASE_URL block, same pattern as
 // _teamManagementHandlers above — real-Postgres-only, no NODE_ENV=test fallback).
 let _impersonationHandlers = null;
+
+// story-3-self-service-provisioning: module-level handler reference for the
+// agency/clients routes and /invite/redeem (assigned inside the
+// DATABASE_URL block, same pattern as _impersonationHandlers above --
+// real-Postgres-only, no NODE_ENV=test fallback).
+let _agencyProvisioningHandlers = null;
 
 // Wire up console logger for auth events (login, logout, state_mismatch)
 const _ts = () => new Date().toISOString();
@@ -449,6 +459,76 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.log('[story-2-relationship-grants-enforcement] agency_client_relationships / shared_access_grants tables ready');
     }).catch(function(err) {
       console.error('[story-2-relationship-grants-enforcement] schema migration failed:', err.message);
+    });
+
+    // story-3-self-service-provisioning — Auto-migrate client_invitations
+    // (mirrors story-1/story-2's own migration-wiring precedent immediately
+    // above, reusing _userRolesPool). Then wire the 5 real user-facing routes
+    // (handlers factory) and register the ONE shared Passport.js +
+    // passport-magic-login strategy instance (AC3) -- Story 4 (dual-path
+    // authentication) reuses this SAME registered instance via
+    // setVerifyCallback() rather than calling registerMagicLinkStrategy()
+    // again (see decisions.md 2026-07-31 ARCH entry, and
+    // auth/magic-link-strategy.js's own module header for the full writeup).
+    migrateClientInvitationsSchema(_userRolesPool).then(function() {
+      console.log('[story-3-self-service-provisioning] client_invitations table ready');
+
+      _agencyProvisioningHandlers = createAgencyProvisioningHandlers(_userRolesPool);
+      console.log('[story-3-self-service-provisioning] agency-provisioning handlers wired');
+
+      // AC3: the registered verify() callback delegates to
+      // modules/client-invitations.js's redeemInvitation() -- the domain
+      // logic that resolves the invitationId carried inside the redeemed
+      // JWT payload, atomically marks the invitation redeemed (rejecting a
+      // second redemption of an already-used token -- AC3 edge case), and
+      // creates the Client-org user account + team_memberships(role='admin')
+      // row. Closed over _userRolesPool, same reuse pattern as every other
+      // pool-closure wired in this block.
+      async function _verifyInvitationRedemption(payload, callback) {
+        try {
+          var result = await redeemInvitation(_userRolesPool, payload);
+          if (!result.ok) {
+            callback(null, false, { message: result.reason });
+            return;
+          }
+          callback(null, result.user);
+        } catch (err) {
+          callback(err);
+        }
+      }
+
+      registerMagicLinkStrategy({
+        // Reuses the existing required SESSION_SECRET env var (ADR-026:
+        // reuse before introducing a new required env var) as the JWT
+        // signing secret for invitation/magic-link tokens.
+        secret: process.env.SESSION_SECRET || 'dev-only-insecure-magic-link-secret',
+        callbackUrl: '/invite/redeem',
+        sendMagicLink: function(destination, href, code) {
+          var _invitationEmail = require('./modules/invitation-email');
+          return _invitationEmail.sendInvitationEmail(destination, href, code);
+        },
+        verify: _verifyInvitationRedemption
+      });
+      console.log('[story-3-self-service-provisioning] shared Passport.js + passport-magic-login strategy registered (callbackUrl=/invite/redeem) -- Story 4 extends via setVerifyCallback(), never re-registers');
+
+      // AC5 (D37): wire sendInvitationEmail to the real Resend SDK. Only
+      // wired when RESEND_API_KEY is configured -- mirrors this codebase's
+      // existing "never blocks the caller's flow for an optional external
+      // service" convention (e.g. GOOGLE_CLIENT_ID-gated Google OAuth wiring
+      // above). If unwired, the D37 stub still throws (AC5) rather than
+      // silently no-opping -- the invite-send route will surface a real
+      // error instead of pretending an email was sent.
+      if (process.env.RESEND_API_KEY) {
+        var Resend = require('resend').Resend;
+        var _resendClient = new Resend(process.env.RESEND_API_KEY);
+        var _invitationEmailModule = require('./modules/invitation-email');
+        setSendInvitationEmail(_invitationEmailModule.createResendSendInvitationEmail(_resendClient, process.env.RESEND_FROM_EMAIL));
+        console.log('[story-3-self-service-provisioning] sendInvitationEmail wired to the real Resend SDK');
+      } else {
+        console.warn('[story-3-self-service-provisioning] RESEND_API_KEY not set -- sendInvitationEmail remains unwired (throws if the invite flow is used)');
+      }
+    }).catch(function(err) {
+      console.error('[story-3-self-service-provisioning] client_invitations migration/wiring failed:', err.message);
     });
 
     // tir-s2 — Wire the /settings/link-account callback handlers to the same
@@ -2818,6 +2898,56 @@ async function router(req, res) {
     req.params = { id: pathname.split('/')[2] };
     const _standardsRoutes = require('./routes/standards');
     authGuard(req, res, async () => { await _standardsRoutes.optoutDelete(req, res, null, _pshPool, null); });
+
+  } else if (pathname === '/agency/clients/new' && req.method === 'GET') {
+    // story-3-self-service-provisioning — Create Client form (Agency-only, AC2)
+    if (!_agencyProvisioningHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Agency provisioning unavailable');
+    } else {
+      authGuard(req, res, async () => { await _agencyProvisioningHandlers.handleGetCreateClient(req, res); });
+    }
+
+  } else if (pathname === '/agency/clients/new' && req.method === 'POST') {
+    // story-3-self-service-provisioning — create the Client org + relationship (AC1/AC2/AC4)
+    if (!_agencyProvisioningHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Agency provisioning unavailable');
+    } else {
+      authGuard(req, res, async () => { await _agencyProvisioningHandlers.handlePostCreateClient(req, res); });
+    }
+
+  } else if (pathname.match(/^\/agency\/clients\/[^/]+\/invite$/) && req.method === 'GET') {
+    // story-3-self-service-provisioning — invite-first-user form (Agency-only)
+    req.params = { id: pathname.split('/')[3] };
+    if (!_agencyProvisioningHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Agency provisioning unavailable');
+    } else {
+      authGuard(req, res, async () => { await _agencyProvisioningHandlers.handleGetInviteUser(req, res); });
+    }
+
+  } else if (pathname.match(/^\/agency\/clients\/[^/]+\/invite$/) && req.method === 'POST') {
+    // story-3-self-service-provisioning — issue the invitation (AC3, AC5)
+    req.params = { id: pathname.split('/')[3] };
+    if (!_agencyProvisioningHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Agency provisioning unavailable');
+    } else {
+      authGuard(req, res, async () => { await _agencyProvisioningHandlers.handlePostInviteUser(req, res); });
+    }
+
+  } else if (pathname === '/invite/redeem' && req.method === 'GET') {
+    // story-3-self-service-provisioning — redeem an invitation link (AC3).
+    // Deliberately NOT behind authGuard -- this is the unauthenticated entry
+    // point that CREATES a brand-new session for the invited user, mirroring
+    // /auth/github/callback and /auth/google/callback above.
+    if (!_agencyProvisioningHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Agency provisioning unavailable');
+    } else {
+      await _agencyProvisioningHandlers.handleGetInviteRedeem(req, res);
+    }
 
   } else if (pathname === '/' && req.method === 'GET') {
     // lab-s1.2 — public landing page with PostHog event + auth redirect to /dashboard

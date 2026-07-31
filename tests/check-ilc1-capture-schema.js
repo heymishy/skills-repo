@@ -170,7 +170,13 @@ console.log('\n[ilc1-capture-schema] NFR — no new dependencies');
   // `data-model` block type) -- an explicit ARCH decision deliberately
   // relaxing this repo's usual zero-new-npm-dependency Web UI rule for this
   // one feature only, see artefacts/2026-07-25-code-shape-diagrams/decisions.md.
-  const ALLOWED_PROD_DEPS = ['pino', '@upstash/redis', 'bcrypt', 'pg', 'posthog-node', 'stripe', 'mermaid'];
+  // story-3-self-service-provisioning (2026-07-31): added passport +
+  // passport-magic-login (shared invitation/magic-link token issuance and
+  // verification, reused by Story 4's dual-path authentication) and resend
+  // (transactional invitation email delivery) -- an explicit ARCH decision,
+  // see artefacts/2026-07-30-agency-client-organisations/decisions.md
+  // (2026-07-31 entry).
+  const ALLOWED_PROD_DEPS = ['pino', '@upstash/redis', 'bcrypt', 'pg', 'posthog-node', 'stripe', 'mermaid', 'passport', 'passport-magic-login', 'resend'];
   const unexpected = deps.filter(d => !ALLOWED_PROD_DEPS.includes(d));
   assert(
     unexpected.length === 0,
