@@ -17608,21 +17608,23 @@
             {
               "slug": "story-3-self-service-provisioning",
               "name": "Self-service Agency-to-Client provisioning",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-30T19:29:45.720Z",
+              "updatedAt": "2026-07-31T08:30:06.415Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 16,
-                "passing": 0
+                "passing": 16
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/660"
             },
             {
               "slug": "story-4-dual-path-authentication",
