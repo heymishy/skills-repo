@@ -17612,14 +17612,14 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-31T09:03:31.386Z",
+              "updatedAt": "2026-07-31T19:22:11.083Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 16,
-                "passing": 0
+                "totalTests": 18,
+                "passing": 18
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
@@ -17632,10 +17632,10 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-31T19:20:05.725Z",
+              "updatedAt": "2026-07-31T19:22:11.221Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 17,
+                "totalTests": 14,
                 "passing": 14
               },
               "acTotal": 5,
