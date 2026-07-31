@@ -17608,11 +17608,11 @@
             {
               "slug": "story-3-self-service-provisioning",
               "name": "Self-service Agency-to-Client provisioning",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-30T19:29:45.720Z",
+              "updatedAt": "2026-07-31T09:03:31.386Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 16,
@@ -17622,7 +17622,8 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "prStatus": "merged"
             },
             {
               "slug": "story-4-dual-path-authentication",
