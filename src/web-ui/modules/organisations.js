@@ -156,9 +156,50 @@ async function createOrganisation(pool, orgId, name, orgType, logger) {
   return row;
 }
 
+/**
+ * Convert an organisation from org_type='client' to org_type='standalone', IN
+ * PLACE on the SAME org_id row -- never a second, brand-new org, never a data
+ * migration (story-6-conversion-to-independent, AC1; decisions.md 2026-07-30
+ * "conversion is structural only" entry). Single-statement, atomic UPDATE:
+ * no read-modify-write race is possible, and no other table is ever touched
+ * by this function -- AC3 (existing Agency relationships / shared-access
+ * grants remain unaffected) is satisfied by construction, not by convention.
+ *
+ * Idempotent-safe: the WHERE clause only ever matches a row that is
+ * currently org_type='client', so calling this twice (or racing a second
+ * caller) can never flip an already-standalone org a second time or produce
+ * more than one audit log entry for the same conversion.
+ *
+ * @param {object} pool - pg-Pool-shaped object exposing query(sql, params)
+ * @param {string} orgId - the organisation's own org_id (never a
+ *   request-supplied value distinct from the authenticated session's own tenant)
+ * @param {{info: Function}} [logger] - injectable logger (defaults to console.log)
+ * @returns {Promise<{org_id: string, name: string, org_type: string, created_at: string}|null>}
+ *   the updated row, or null if the org was not currently org_type='client'
+ *   (already converted, or does not exist) -- caller decides how to respond.
+ */
+async function convertOrganisationToStandalone(pool, orgId, logger) {
+  var log = logger || _defaultLogger;
+  var result = await pool.query(
+    "UPDATE organisations SET org_type = 'standalone' WHERE org_id = $1 AND org_type = 'client' " +
+    'RETURNING org_id, name, org_type, created_at',
+    [orgId]
+  );
+  var row = result.rows.length ? result.rows[0] : null;
+  if (row) {
+    log.info(JSON.stringify({
+      event: 'organisation_converted_to_standalone',
+      org_id: orgId,
+      timestamp: new Date().toISOString()
+    }));
+  }
+  return row;
+}
+
 module.exports = {
   migrateOrganisationsSchema,
   resolveOrganisationForTenant,
   backfillStandaloneOrganisations,
-  createOrganisation
+  createOrganisation,
+  convertOrganisationToStandalone
 };
