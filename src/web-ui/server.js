@@ -48,6 +48,7 @@ const { createAgencyProvisioningHandlers }                           = require('
 const { setVerifyCallback }                                          = require('./auth/magic-link-strategy'); // story-4-dual-path-authentication -- extends Story 3's shared strategy, never re-registers
 const clientLoginModule                                              = require('./modules/client-login');  // story-4-dual-path-authentication
 const { createClientLoginHandlers }                                  = require('./routes/client-login');   // story-4-dual-path-authentication
+const { createOrgConversionHandlers }                                = require('./routes/org-conversion');   // story-6-conversion-to-independent
 const { setPlanStateAdapter }                                        = require('./modules/tenant-plan');   // jlc-s1
 const { migrateProductRepoColumns }                                  = require('./modules/product-repo');  // prc-s1.1
 const { registerSelfAsProduct }                                       = require('./modules/platform-self-registration'); // pr-s1
@@ -122,6 +123,16 @@ let _agencyProvisioningHandlers = null;
 // /auth/magic-link routes (assigned inside the DATABASE_URL block, same
 // pattern as _agencyProvisioningHandlers above).
 let _clientLoginHandlers = null;
+
+// story-6-conversion-to-independent: module-level handler reference for
+// /organisations/convert (assigned inside the DATABASE_URL block, same
+// pattern as _agencyProvisioningHandlers above -- real-Postgres-only, no
+// NODE_ENV=test fallback). Wired as a real, reachable URL (not left unwired
+// like Story 2/5's own backend-enforcement handlers) because this is a
+// genuine self-service UI flow, mirroring Story 3's precedent, now that
+// Story 3 has resolved the Client-org session-shape ambiguity Story 2/5
+// flagged for their own handlers (see decisions.md).
+let _orgConversionHandlers = null;
 
 // Wire up console logger for auth events (login, logout, state_mismatch)
 const _ts = () => new Date().toISOString();
@@ -454,6 +465,13 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     }).catch(function(err) {
       console.error('[story-1-organisation-entity] organisations migration/backfill failed:', err.message);
     });
+
+    // story-6-conversion-to-independent — wire the conversion route handlers
+    // (reuses the organisations table + user-roles.js's resolveRoleForPerson
+    // directly -- no new schema, no new D37 adapter). Reuses _userRolesPool,
+    // same reuse pattern as every other pool-closure wired in this block.
+    _orgConversionHandlers = createOrgConversionHandlers(_userRolesPool);
+    console.log('[story-6-conversion-to-independent] org-conversion handlers wired');
 
     // story-2-relationship-grants-enforcement — Auto-migrate
     // agency_client_relationships + shared_access_grants (AC1). Reuses
@@ -2992,6 +3010,25 @@ async function router(req, res) {
       res.end('Agency provisioning unavailable');
     } else {
       authGuard(req, res, async () => { await _agencyProvisioningHandlers.handlePostInviteUser(req, res); });
+    }
+
+  } else if (pathname === '/organisations/convert' && req.method === 'GET') {
+    // story-6-conversion-to-independent — confirmation form (NFR-Accessibility)
+    if (!_orgConversionHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Organisation conversion unavailable');
+    } else {
+      authGuard(req, res, async () => { await _orgConversionHandlers.handleGetConvertForm(req, res); });
+    }
+
+  } else if (pathname === '/organisations/convert' && req.method === 'POST') {
+    // story-6-conversion-to-independent — perform the conversion (AC1), then
+    // redirect into the existing createCheckoutSession Stripe flow (AC2)
+    if (!_orgConversionHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Organisation conversion unavailable');
+    } else {
+      authGuard(req, res, async () => { await _orgConversionHandlers.handlePostConvertOrganisation(req, res); });
     }
 
   } else if (pathname === '/invite/redeem' && req.method === 'GET') {
