@@ -26,9 +26,12 @@
     "@upstash/redis": "^1.38.0",
     "bcrypt": "^6.0.0",
     "mermaid": "^11.16.0",
+    "passport": "^0.7.0",
+    "passport-magic-login": "^1.2.4",
     "pg": "^8.22.0",
     "pino": "10.3.1",
     "posthog-node": "^5.40.0",
+    "resend": "^6.18.1",
     "stripe": "^22.3.0"
   }
 }

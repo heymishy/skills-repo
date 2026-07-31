@@ -122,8 +122,43 @@ async function backfillStandaloneOrganisations(pool, tenantIds, logger) {
   return createdCount;
 }
 
+/**
+ * Create a new organisations row with an explicit org_id/org_type
+ * (story-3-self-service-provisioning, AC1). Unlike
+ * resolveOrganisationForTenant (which always creates org_type='standalone'
+ * for an unknown tenantId), this is used when the caller already knows the
+ * desired org_type up front -- e.g. the Create-Client flow, which creates a
+ * brand-new org_type='client' row rather than resolving an existing
+ * tenant's row. Added as an additive export (existing exports/behaviour
+ * unchanged) rather than a new ad hoc INSERT scattered in a route file, to
+ * keep a single sanctioned write path for the organisations table -- see
+ * decisions.md (2026-07-31, story-3) for the touch-point note.
+ * @param {object} pool - pg-Pool-shaped object exposing query(sql, params)
+ * @param {string} orgId
+ * @param {string} name
+ * @param {string} orgType
+ * @param {{info: Function}} [logger] - injectable logger (defaults to console.log)
+ * @returns {Promise<{org_id: string, name: string, org_type: string, created_at: string}>}
+ */
+async function createOrganisation(pool, orgId, name, orgType, logger) {
+  var log = logger || _defaultLogger;
+  var result = await pool.query(
+    'INSERT INTO organisations (org_id, name, org_type) VALUES ($1, $2, $3) RETURNING org_id, name, org_type, created_at',
+    [orgId, name, orgType]
+  );
+  var row = result.rows[0];
+  log.info(JSON.stringify({
+    event: 'organisation_created',
+    tenant_id: orgId,
+    org_type: orgType,
+    timestamp: new Date().toISOString()
+  }));
+  return row;
+}
+
 module.exports = {
   migrateOrganisationsSchema,
   resolveOrganisationForTenant,
-  backfillStandaloneOrganisations
+  backfillStandaloneOrganisations,
+  createOrganisation
 };
