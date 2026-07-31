@@ -17668,21 +17668,23 @@
             {
               "slug": "story-6-conversion-to-independent",
               "name": "Client org self-service conversion to an independent paying account",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-30T19:33:15.044Z",
+              "updatedAt": "2026-07-31T18:51:57.903Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 13,
-                "passing": 0
+                "passing": 13
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/662"
             }
           ]
         }
