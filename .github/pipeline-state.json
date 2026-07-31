@@ -17646,21 +17646,23 @@
             {
               "slug": "story-5-client-agency-comments",
               "name": "Client-org lightweight collaboration -- comments only",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-30T19:32:19.335Z",
+              "updatedAt": "2026-07-31T08:19:01.049Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 13,
-                "passing": 0
+                "passing": 13
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/659"
             },
             {
               "slug": "story-6-conversion-to-independent",
