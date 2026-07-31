@@ -108,6 +108,35 @@ const _rateLimits = new Map();
 const RATE_MAX    = process.env.E2E_RATE_LIMIT_BYPASS === 'true' ? 100000 : 10;
 const RATE_WIN_MS = 5 * 60 * 1000; // 5 minutes
 
+// ── story-4-dual-path-authentication: reusable sliding-window rate-limiter
+// primitive ─────────────────────────────────────────────────────────────────
+// Extracted from _checkRateLimit's own inline Map logic below so that
+// routes/client-login.js's magic-link request endpoint can reuse this SAME
+// mechanism and threshold for its own per-IP AND per-target-email checks
+// (NFR, resolves review run 1's [1-M1]) instead of building a new, bespoke
+// limiter. Pure extraction -- _checkRateLimit's own behaviour/threshold for
+// the existing signup/login callers below is unchanged: it still uses the
+// same _rateLimits Map, RATE_MAX, and RATE_WIN_MS it always has.
+/**
+ * Sliding-window rate-limit check. Filters `store`'s timestamps for `key` to
+ * the current window, records this attempt, and returns whether the count is
+ * still within `max`. Caller decides what to do when this returns false
+ * (e.g. write a 429).
+ * @param {Map<string, number[]>} store - a Map the caller owns (one Map per limiter)
+ * @param {string} key - e.g. an IP address or an email address
+ * @param {number} max - max attempts allowed within windowMs
+ * @param {number} windowMs - sliding window size in milliseconds
+ * @returns {boolean} true if this attempt is within the limit
+ */
+function checkSlidingWindowRateLimit(store, key, max, windowMs) {
+  const now = Date.now();
+  const cutoff = now - windowMs;
+  const timestamps = (store.get(key) || []).filter(function(t) { return t > cutoff; });
+  timestamps.push(now);
+  store.set(key, timestamps);
+  return timestamps.length <= max;
+}
+
 // ── serlb-s1: narrow, staging-only, triple-gated rate-limit bypass ───────────
 // Fix-forward for PR #563 (story a5-ci-gate-scenario-a-blocking): the newly-wired
 // "Scenario A E2E (staging)" CI job signs up a fresh e2e-test--tagged tenant in
@@ -171,14 +200,9 @@ function _getIP(req) {
  * instead of re-reading the already-consumed request stream.
  */
 async function _checkRateLimit(req, res) {
-  const ip     = _getIP(req);
-  const now    = Date.now();
-  const cutoff = now - RATE_WIN_MS;
-  const timestamps = (_rateLimits.get(ip) || []).filter(function(t) { return t > cutoff; });
-  timestamps.push(now);
-  _rateLimits.set(ip, timestamps);
+  const ip = _getIP(req);
 
-  if (timestamps.length <= RATE_MAX) return true;
+  if (checkSlidingWindowRateLimit(_rateLimits, ip, RATE_MAX, RATE_WIN_MS)) return true;
 
   // Over the normal limit -- only now check the narrow staging E2E bypass.
   if (_stagingBypassSecretConfigured() && _stagingBypassHeaderMatches(req)) {
@@ -386,5 +410,10 @@ module.exports = {
   setUserDb,
   setRotateSessionId,
   setOrganisationsPool,
-  _clearRateLimits
+  _clearRateLimits,
+  // story-4-dual-path-authentication: reused directly by routes/client-login.js
+  // for its own per-IP AND per-target-email rate limiting (NFR).
+  checkSlidingWindowRateLimit,
+  RATE_MAX,
+  RATE_WIN_MS
 };

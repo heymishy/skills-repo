@@ -45,6 +45,9 @@ const { migrateClientInvitationsSchema, redeemInvitation }           = require('
 const { setSendInvitationEmail }                                     = require('./modules/invitation-email'); // story-3-self-service-provisioning (D37, AC5)
 const { registerMagicLinkStrategy }                                  = require('./auth/magic-link-strategy'); // story-3-self-service-provisioning -- ONE shared strategy registration point (Story 4 extends via setVerifyCallback)
 const { createAgencyProvisioningHandlers }                           = require('./routes/agency-provisioning'); // story-3-self-service-provisioning
+const { setVerifyCallback }                                          = require('./auth/magic-link-strategy'); // story-4-dual-path-authentication -- extends Story 3's shared strategy, never re-registers
+const clientLoginModule                                              = require('./modules/client-login');  // story-4-dual-path-authentication
+const { createClientLoginHandlers }                                  = require('./routes/client-login');   // story-4-dual-path-authentication
 const { createOrgConversionHandlers }                                = require('./routes/org-conversion');   // story-6-conversion-to-independent
 const { setPlanStateAdapter }                                        = require('./modules/tenant-plan');   // jlc-s1
 const { migrateProductRepoColumns }                                  = require('./modules/product-repo');  // prc-s1.1
@@ -115,6 +118,11 @@ let _impersonationHandlers = null;
 // DATABASE_URL block, same pattern as _impersonationHandlers above --
 // real-Postgres-only, no NODE_ENV=test fallback).
 let _agencyProvisioningHandlers = null;
+
+// story-4-dual-path-authentication: module-level handler reference for the
+// /auth/magic-link routes (assigned inside the DATABASE_URL block, same
+// pattern as _agencyProvisioningHandlers above).
+let _clientLoginHandlers = null;
 
 // story-6-conversion-to-independent: module-level handler reference for
 // /organisations/convert (assigned inside the DATABASE_URL block, same
@@ -545,6 +553,55 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       } else {
         console.warn('[story-3-self-service-provisioning] RESEND_API_KEY not set -- sendInvitationEmail remains unwired (throws if the invite flow is used)');
       }
+
+      // story-4-dual-path-authentication: extend the SAME shared strategy
+      // registered immediately above via registerMagicLinkStrategy() --
+      // NEVER call registerMagicLinkStrategy() a second time (see
+      // auth/magic-link-strategy.js's module header and decisions.md,
+      // 2026-07-31 ARCH entry, Stories 3+4). Placed in this SAME .then()
+      // callback, after registerMagicLinkStrategy() above, so ordering is
+      // guaranteed synchronously -- setVerifyCallback() throws if the
+      // strategy hasn't been registered yet.
+      //
+      // AC5 (D37): the send-side adapter (sendInvitationEmail, wired above)
+      // is reused unchanged for login links too -- Story 4 introduces no
+      // second send adapter, only a new verify() dispatcher.
+      //
+      // AC2/AC3/AC4: the registered verify() callback below dispatches by
+      // payload shape -- payload.invitationId present means Story 3's
+      // invitation redemption (_verifyInvitationRedemption, defined above,
+      // unchanged); its absence means Story 4's own Client-org login
+      // resolution (modules/client-login.js's resolveLoginToken).
+      async function _verifyClientLogin(payload, callback) {
+        try {
+          var result = await clientLoginModule.resolveLoginToken(_userRolesPool, payload);
+          if (!result.ok) {
+            callback(null, false, { message: result.reason });
+            return;
+          }
+          callback(null, result.user);
+        } catch (err) {
+          callback(err);
+        }
+      }
+
+      function _combinedMagicLinkVerify(payload, callback, req) {
+        if (payload && payload.invitationId) {
+          return _verifyInvitationRedemption(payload, callback, req);
+        }
+        return _verifyClientLogin(payload, callback, req);
+      }
+
+      setVerifyCallback(_combinedMagicLinkVerify);
+      console.log('[story-4-dual-path-authentication] combined verify() dispatcher wired via setVerifyCallback() (Story 3 invitation redemption + Story 4 Client-org login), extending the shared strategy -- never re-registering it');
+
+      clientLoginModule.migrateClientLoginTokensSchema(_userRolesPool).then(function() {
+        console.log('[story-4-dual-path-authentication] client_login_tokens table ready');
+        _clientLoginHandlers = createClientLoginHandlers(_userRolesPool);
+        console.log('[story-4-dual-path-authentication] client-login handlers wired');
+      }).catch(function(err) {
+        console.error('[story-4-dual-path-authentication] client_login_tokens migration/wiring failed:', err.message);
+      });
     }).catch(function(err) {
       console.error('[story-3-self-service-provisioning] client_invitations migration/wiring failed:', err.message);
     });
@@ -2984,6 +3041,31 @@ async function router(req, res) {
       res.end('Agency provisioning unavailable');
     } else {
       await _agencyProvisioningHandlers.handleGetInviteRedeem(req, res);
+    }
+
+  } else if (pathname === '/auth/magic-link' && req.method === 'GET') {
+    // story-4-dual-path-authentication — sign-in-with-email request form.
+    // Deliberately NOT behind authGuard -- this IS a sign-in entry point,
+    // mirroring /auth/github and /auth/google above.
+    if (!_clientLoginHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Client login unavailable');
+    } else {
+      await _clientLoginHandlers.handleGetMagicLinkRequestForm(req, res);
+    }
+
+  } else if (pathname === '/auth/magic-link/request' && req.method === 'POST') {
+    // story-4-dual-path-authentication — issue a Client-org login magic-link
+    // (AC2/AC3). Deliberately NOT behind authGuard, same reasoning as above.
+    // Redemption reuses the EXISTING /invite/redeem GET route above -- the
+    // shared strategy's callbackUrl is a single, construction-time-fixed
+    // value shared by both Story 3's invitation links and this story's
+    // login links (see auth/magic-link-strategy.js's module header).
+    if (!_clientLoginHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Client login unavailable');
+    } else {
+      await _clientLoginHandlers.handlePostMagicLinkRequest(req, res);
     }
 
   } else if (pathname === '/' && req.method === 'GET') {

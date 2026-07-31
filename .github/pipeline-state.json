@@ -17628,21 +17628,22 @@
             {
               "slug": "story-4-dual-path-authentication",
               "name": "Client-org dual-path authentication",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-30T19:30:30.255Z",
+              "updatedAt": "2026-07-31T18:57:14.053Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 17,
-                "passing": 0
+                "passing": 14
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "prStatus": "draft"
             },
             {
               "slug": "story-5-client-agency-comments",
