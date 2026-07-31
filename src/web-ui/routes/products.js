@@ -16,6 +16,7 @@ var _modulesAdapter = require('../adapters/modules-adapter'); // a1 -- curated p
 var _csrf = require('../middleware/csrf'); // fix-forward (post-a1) -- module CRUD forms need CSRF like every other mutating form in this app
 var _agencyClientGrants = require('../modules/agency-client-grants'); // story-2-relationship-grants-enforcement -- the ONE dedicated grant-check adapter (story Guardrail)
 var _journeyAccess = require('../middleware/journey-access'); // story-2-relationship-grants-enforcement -- reuses requireGrantAccess/asHttpResponse/POLICY (ADR-025 guard extension)
+var _agencyClientComments = require('../modules/agency-client-comments'); // story-5-client-agency-comments -- append-only comments adapter
 
 // s1.1 -- injectable bulk session-store reader. Defaults to a lazy require of
 // skills.js's real _getHtmlSessionsBulk (mirrors the same lazy-getter shape
@@ -2342,6 +2343,212 @@ async function handleRevokeGrant(req, res, pool) {
   _sendJson(res, 200, { success: true });
 }
 
+// ===========================================================================
+// story-5-client-agency-comments (artefacts/2026-07-30-agency-client-organisations)
+//
+// Client-org lightweight collaboration -- comments only. Append-only comment
+// thread on a shared product/feature.
+//
+// AC1/AC2: the CLIENT-side routes below (handleCreateSharedComment,
+// handleListSharedComments) go through the EXACT SAME grant-check guard as
+// Story 2's handleGetSharedProduct above -- _agencyClientGrants.checkGrantAccess
+// then _journeyAccess.requireGrantAccess/asHttpResponse -- never a
+// parallel/duplicate access-control path (NFR-security,
+// commentEndpointsGoThroughSameGrantCheckGuardAsStory2). A Client-org caller
+// with no grant gets the identical 404 (never 403) Story 2's own AC4 policy
+// established.
+//
+// AC3: the AGENCY-side routes below (handleCreateAgencyComment,
+// handleListAgencyComments) act on a resource the Agency org already owns --
+// exactly like every other existing route in this file that renders an
+// Agency's own product, they do not call checkGrantAccess at all (that guard
+// exists to gate a Client org's access to something ELSE'S resource, not an
+// Agency's access to its own). Agency replies persist through the same
+// _agencyClientComments.createComment path as the Client side, so they are
+// immediately visible in the next listCommentsForResource read -- there is
+// only one comments table and one write path, not two.
+//
+// AC4: every comment creation (both sides) fires client_agency_comment_created
+// via _createCommentAndFireEvent below, with a freshly computed (never
+// hardcoded) thread_has_both_org_types boolean -- see
+// modules/agency-client-comments.js's getThreadOrgTypes/threadHasBothOrgTypes.
+//
+// Out of scope (story's own "What will NOT be built"): no edit/delete route
+// exists anywhere in this section, on purpose.
+//
+// Scope note (mirrors Story 2's own scope note immediately above): these
+// handlers are implemented and fully tested (mock req/res + fake pool,
+// mirroring tests/check-story2-relationship-grants-enforcement.js's
+// established pattern) but are NOT registered in server.js's live URL
+// dispatch table, for the same reason Story 2's handlers aren't -- Story 3
+// (self-service provisioning) and Story 4 (dual-path authentication) own the
+// real user-facing URL/session shape these would be reached through. Wiring
+// them ahead of those stories would risk guessing at a contract only they
+// can define.
+// ===========================================================================
+
+/**
+ * Fires client_agency_comment_created (AC4) after a comment is persisted.
+ * thread_has_both_org_types is computed AFTER the insert, so the
+ * just-created comment's own org_type is already reflected -- false on the
+ * first comment in a thread, true from the moment a second org_type joins.
+ * @param {object} pool
+ * @param {string} resourceType
+ * @param {string} resourceId
+ * @param {string} orgId
+ * @param {string} userId
+ * @param {string} commentBody
+ * @returns {Promise<object>} the persisted comment row
+ */
+async function _createCommentAndFireEvent(pool, resourceType, resourceId, orgId, userId, commentBody) {
+  var comment = await _agencyClientComments.createComment(pool, resourceType, resourceId, orgId, userId, commentBody, _sharedAccessLogger());
+  var orgTypes = await _agencyClientComments.getThreadOrgTypes(pool, resourceType, resourceId);
+  var bothTypes = _agencyClientComments.threadHasBothOrgTypes(orgTypes);
+  _posthog.capture(userId || orgId, 'client_agency_comment_created', {
+    org_id: orgId,
+    resource_type: resourceType,
+    resource_id: resourceId,
+    thread_has_both_org_types: bothTypes
+  });
+  return comment;
+}
+
+function _serializeComment(row) {
+  return {
+    commentId: row.comment_id,
+    resourceType: row.resource_type,
+    resourceId: row.resource_id,
+    orgId: row.org_id,
+    userId: row.user_id,
+    body: row.body,
+    createdAt: row.created_at
+  };
+}
+
+/**
+ * AC1: a Client-org user with a valid grant submits a comment. AC2: with no
+ * grant, rejected with the same 404 (not 403) as Story 2's AC4 -- via the
+ * identical checkGrantAccess/requireGrantAccess/asHttpResponse call sequence
+ * as handleGetSharedProduct above (same function references, not a copy).
+ */
+async function handleCreateSharedComment(req, res, pool) {
+  var body = req.body || {};
+  var resourceType = body.resourceType || 'product';
+  var resourceId = body.resourceId;
+  var clientOrgId = req.session && req.session.tenantId;
+  var userId = (req.session && req.session.login) || clientOrgId;
+  var commentBody = body.body;
+
+  if (!resourceId || !commentBody) {
+    _sendJson(res, 400, { error: 'resourceId and body are required' });
+    return;
+  }
+
+  var grant = await _agencyClientGrants.checkGrantAccess(pool, clientOrgId, resourceType, resourceId);
+  try {
+    _journeyAccess.requireGrantAccess(grant);
+  } catch (e) {
+    _agencyClientGrants.logDeniedAccess(_sharedAccessLogger(), clientOrgId, resourceType, resourceId);
+    var status = _journeyAccess.asHttpResponse(e, _journeyAccess.POLICY.TENANT);
+    _sendJson(res, status, { error: 'not found' });
+    return;
+  }
+
+  var comment = await _createCommentAndFireEvent(pool, resourceType, resourceId, clientOrgId, userId, commentBody);
+  _sendJson(res, 200, { success: true, comment: _serializeComment(comment) });
+}
+
+/**
+ * AC1/AC3: list every comment on a resource shared with this Client-org
+ * user -- gated by the same checkGrantAccess/requireGrantAccess guard as
+ * comment creation and as Story 2's own read route.
+ */
+async function handleListSharedComments(req, res, pool) {
+  var resourceType = (req.query && req.query.resourceType) || 'product';
+  var resourceId = req.params && req.params.id;
+  var clientOrgId = req.session && req.session.tenantId;
+
+  var grant = await _agencyClientGrants.checkGrantAccess(pool, clientOrgId, resourceType, resourceId);
+  try {
+    _journeyAccess.requireGrantAccess(grant);
+  } catch (e) {
+    _agencyClientGrants.logDeniedAccess(_sharedAccessLogger(), clientOrgId, resourceType, resourceId);
+    var status = _journeyAccess.asHttpResponse(e, _journeyAccess.POLICY.TENANT);
+    _sendJson(res, status, { error: 'not found' });
+    return;
+  }
+
+  var comments = await _agencyClientComments.listCommentsForResource(pool, resourceType, resourceId);
+  _sendJson(res, 200, { comments: comments.map(_serializeComment) });
+}
+
+/**
+ * AC3: an Agency-org user replies on a product/feature it already owns --
+ * no grant check (that guard exists for a Client org's access to something
+ * else's resource, not an Agency's access to its own). Persists through the
+ * same write path as the Client side, so the reply itself is immediately
+ * visible via handleListAgencyComments / handleListSharedComments.
+ */
+async function handleCreateAgencyComment(req, res, pool) {
+  var body = req.body || {};
+  var resourceType = body.resourceType || 'product';
+  var resourceId = body.resourceId;
+  var agencyOrgId = req.session && req.session.tenantId;
+  var userId = (req.session && req.session.login) || agencyOrgId;
+  var commentBody = body.body;
+
+  if (!resourceId || !commentBody) {
+    _sendJson(res, 400, { error: 'resourceId and body are required' });
+    return;
+  }
+
+  var comment = await _createCommentAndFireEvent(pool, resourceType, resourceId, agencyOrgId, userId, commentBody);
+  _sendJson(res, 200, { success: true, comment: _serializeComment(comment) });
+}
+
+/**
+ * AC3: an Agency-org user reads the comment thread on its own resource
+ * (including any Client-org comments on it) -- no grant check, same reason
+ * as handleCreateAgencyComment above.
+ */
+async function handleListAgencyComments(req, res, pool) {
+  var resourceType = (req.query && req.query.resourceType) || 'product';
+  var resourceId = req.params && req.params.id;
+  var comments = await _agencyClientComments.listCommentsForResource(pool, resourceType, resourceId);
+  _sendJson(res, 200, { comments: comments.map(_serializeComment) });
+}
+
+/**
+ * Accessibility NFR (commentFormIsKeyboardNavigable): real
+ * <form>/<textarea>/semantic list markup for the comment thread + posting
+ * form, keyboard-navigable by construction (native form controls, no
+ * custom-widget-only interaction).
+ * @param {Array<object>} comments - rows shaped like _serializeComment's output
+ * @param {string} resourceType
+ * @param {string} resourceId
+ * @returns {string} HTML
+ */
+function renderCommentThreadHtml(comments, resourceType, resourceId) {
+  var items = (comments || []).map(function(c) {
+    return '<li class="sw-comment">' +
+      '<span class="sw-comment-author">' + _escapeHtml(c.orgId) + '</span> ' +
+      '<span class="sw-comment-time">' + _escapeHtml(c.createdAt) + '</span>' +
+      '<p class="sw-comment-body">' + _escapeHtml(c.body) + '</p>' +
+      '</li>';
+  }).join('');
+
+  return '<section class="sw-comment-thread" aria-label="Comments">' +
+    '<ul class="sw-comment-list">' + items + '</ul>' +
+    '<form method="POST" action="/shared/comments" class="sw-comment-form">' +
+      '<input type="hidden" name="resourceType" value="' + _escapeHtml(resourceType) + '">' +
+      '<input type="hidden" name="resourceId" value="' + _escapeHtml(resourceId) + '">' +
+      '<label for="sw-comment-body">Add a comment</label>' +
+      '<textarea id="sw-comment-body" name="body" required></textarea>' +
+      '<button type="submit">Post comment</button>' +
+    '</form>' +
+  '</section>';
+}
+
 module.exports = {
   _renderProductView,
   handlePostProductNew,
@@ -2389,5 +2596,11 @@ module.exports = {
   handleListSharedProducts,
   handleGetSharedProduct,
   handleMutateSharedProduct,
-  handleRevokeGrant
+  handleRevokeGrant,
+  // story-5-client-agency-comments: append-only Client<->Agency comment thread
+  handleCreateSharedComment,
+  handleListSharedComments,
+  handleCreateAgencyComment,
+  handleListAgencyComments,
+  renderCommentThreadHtml
 };
