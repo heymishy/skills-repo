@@ -17536,8 +17536,13 @@
           "baseline": "Not yet established (pre-signal, no measured internal baseline)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "All 4 contributing stories merged and DoD-complete as of 2026-08-01; feature deployed to staging only, not yet production — no real Agency usage exists yet to measure.",
+          "contributingStories": [
+            "story-1-organisation-entity",
+            "story-2-relationship-grants-enforcement",
+            "story-3-self-service-provisioning",
+            "story-4-dual-path-authentication"
+          ]
         },
         {
           "id": "m2",
@@ -17546,8 +17551,10 @@
           "baseline": "Not yet established (new capability, no prior usage)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "Story 5 merged and DoD-complete as of 2026-08-01; feature deployed to staging only, not yet production — no real comment thread exists yet to measure.",
+          "contributingStories": [
+            "story-5-client-agency-comments"
+          ]
         }
       ],
       "updatedAt": "2026-07-29T22:58:46.964Z",
@@ -17560,16 +17567,16 @@
         {
           "slug": "agency-client-organisations",
           "name": "Agencies can sign up, manage, and collaborate with their own client organisations",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "story-1-organisation-entity",
               "name": "Organisation as a first-class entity with org_type",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-30T22:29:04.544Z",
+              "updatedAt": "2026-08-01T00:51:20.197Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
@@ -17581,16 +17588,18 @@
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
               "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/657"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/657",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "story-2-relationship-grants-enforcement",
               "name": "Agency-Client relationship, shared-access grants, and read-only enforcement",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-30T23:13:26.833Z",
+              "updatedAt": "2026-08-01T00:52:28.100Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 15,
@@ -17603,16 +17612,18 @@
               "dorStatus": "signed-off",
               "dorApprover": "Hamish King",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/658"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/658",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "story-3-self-service-provisioning",
               "name": "Self-service Agency-to-Client provisioning",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-31T19:22:11.083Z",
+              "updatedAt": "2026-08-01T00:53:18.316Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 18,
@@ -17623,16 +17634,18 @@
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "story-4-dual-path-authentication",
               "name": "Client-org dual-path authentication",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-31T19:22:11.221Z",
+              "updatedAt": "2026-08-01T00:54:07.420Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 14,
@@ -17643,16 +17656,18 @@
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "story-5-client-agency-comments",
               "name": "Client-org lightweight collaboration -- comments only",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-31T08:19:01.049Z",
+              "updatedAt": "2026-08-01T00:54:49.543Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 13,
@@ -17664,16 +17679,18 @@
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/659"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/659",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "story-6-conversion-to-independent",
               "name": "Client org self-service conversion to an independent paying account",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-07-31T19:08:48.392Z",
+              "updatedAt": "2026-08-01T00:55:36.714Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 13,
@@ -17685,7 +17702,9 @@
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/662"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/662",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         }
@@ -17696,7 +17715,188 @@
         "clarifiedAt": "2026-07-30"
       },
       "slicingStrategy": "risk-first",
-      "guardrails": []
+      "guardrails": [
+        {
+          "id": "ADR-025",
+          "category": "adr",
+          "label": "Multi-tenancy enforced at the application layer",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-01T00:56:11.330Z",
+          "evidence": "Verified across Stories 1,2,3,4,5,6 — no schema-per-tenant infra introduced; organisations.org_id extends existing tenant_id scoping."
+        },
+        {
+          "id": "ADR-026",
+          "category": "adr",
+          "label": "Reuse before introducing new entities",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-01T00:56:11.330Z",
+          "evidence": "Confirmed per-story: organisations/agency_client_relationships/shared_access_grants/comments are genuinely new (no existing equivalent); Story 3/6 reused the existing team_memberships role model rather than inventing a new one."
+        },
+        {
+          "id": "ADR-027",
+          "category": "adr",
+          "label": "Live SaaS features are ordinary app code",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-01T00:56:11.330Z",
+          "evidence": "All new routes/modules are ordinary src/web-ui/ application code, not SKILL.md skills."
+        },
+        {
+          "id": "NFR-story1-perf",
+          "category": "nfr",
+          "label": "Organisation resolution adds at most one indexed lookup",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-01T00:56:11.330Z",
+          "evidence": "organisationLookupAddsAtMostOneIndexedQuery test"
+        },
+        {
+          "id": "NFR-story1-security",
+          "category": "nfr",
+          "label": "No new tenant-scope surface (trusted session value only)",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-01T00:56:11.330Z",
+          "evidence": "organisationLookupScopedByTrustedSessionTenantId test"
+        },
+        {
+          "id": "NFR-story1-audit",
+          "category": "nfr",
+          "label": "Organisation creation audit logged",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-01T00:56:11.330Z",
+          "evidence": "organisationCreationIsAudited test"
+        },
+        {
+          "id": "NFR-story2-perf",
+          "category": "nfr",
+          "label": "Grant-check adds at most one query per protected route",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-01T00:56:11.330Z",
+          "evidence": "grantCheckAddsAtMostOneQueryPerProtectedRoute test"
+        },
+        {
+          "id": "NFR-story2-security",
+          "category": "nfr",
+          "label": "Every new read path through the grant-check guard; no caching",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-01T00:56:11.330Z",
+          "evidence": "everyNewReadPathGoesThroughGrantCheckGuard source-scan test; bri-s3.4 regression suite (14/14) independently re-confirmed"
+        },
+        {
+          "id": "NFR-story2-audit",
+          "category": "nfr",
+          "label": "Grant creation/revocation/denial audit logged",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-01T00:56:11.330Z",
+          "evidence": "deniedAccessAttemptsAreAudited test"
+        },
+        {
+          "id": "NFR-story3-security",
+          "category": "nfr",
+          "label": "Server-side org_type check on Create Client",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-01T00:56:11.330Z",
+          "evidence": "createClientOrgTypeCheckIsServerSideNotClientSideOnly test"
+        },
+        {
+          "id": "NFR-story3-audit",
+          "category": "nfr",
+          "label": "Client-org creation/invitation audit logged; token never in plaintext",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-01T00:56:11.330Z",
+          "evidence": "createClientAndInviteAreAudited, invitationTokenNeverLoggedInPlaintext tests"
+        },
+        {
+          "id": "NFR-story3-accessibility",
+          "category": "nfr",
+          "label": "Create-client form real, keyboard-navigable",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-01T00:56:11.330Z",
+          "evidence": "createClientFormIsKeyboardNavigable test"
+        },
+        {
+          "id": "NFR-story4-security",
+          "category": "nfr",
+          "label": "Magic-links single-use, time-limited, address-bound, rate-limited",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-01T00:56:11.330Z",
+          "evidence": "magicLinkSingleUseTimeLimitedAndAddressBound, magicLinkRequestEndpointIsRateLimited tests"
+        },
+        {
+          "id": "NFR-story4-audit",
+          "category": "nfr",
+          "label": "Magic-link requests/sends/redemptions audit logged, no raw token",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-01T00:56:11.330Z",
+          "evidence": "magicLinkEventsAuditedWithoutRawToken test"
+        },
+        {
+          "id": "NFR-story4-performance",
+          "category": "nfr",
+          "label": "Email delivery latency within existing norms",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-01T00:56:11.330Z",
+          "evidence": "No automated test by test-plan design (third-party delivery latency not unit-testable); reuses Story 3's already-wired Resend adapter unchanged."
+        },
+        {
+          "id": "NFR-story5-perf",
+          "category": "nfr",
+          "label": "Comment list retrieval batched, no N+1",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-01T00:56:11.330Z",
+          "evidence": "commentListUsesBatchedQueryNotN1 test"
+        },
+        {
+          "id": "NFR-story5-security",
+          "category": "nfr",
+          "label": "Comment endpoints reuse Story 2 grant-check guard",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-01T00:56:11.330Z",
+          "evidence": "commentEndpointsGoThroughSameGrantCheckGuardAsStory2 test"
+        },
+        {
+          "id": "NFR-story5-audit",
+          "category": "nfr",
+          "label": "Comment creation audit logged",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-01T00:56:11.330Z",
+          "evidence": "commentCreationIsAudited test"
+        },
+        {
+          "id": "NFR-story6-security",
+          "category": "nfr",
+          "label": "Conversion restricted to team_memberships.role=admin, server-side only",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-01T00:56:11.330Z",
+          "evidence": "conversionRestrictedToAdminRoleServerSide test"
+        },
+        {
+          "id": "NFR-story6-audit",
+          "category": "nfr",
+          "label": "Conversion audit logged with org_id, initiating user, timestamp",
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-01T00:56:11.330Z",
+          "evidence": "conversionIsAudited test"
+        }
+      ]
     },
     {
       "slug": "2026-07-30-staging-smoke-test-regressions",
