@@ -17525,7 +17525,7 @@
     {
       "slug": "2026-07-30-agency-client-organisations",
       "name": "Agency and Client organisation subtypes -- first-class Organisation entity with agency-to-client relationships, shared access grants, and self-service client conversion to independent paying accounts",
-      "stage": "definition",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [],
       "metrics": [
@@ -17576,7 +17576,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-01T00:51:20.197Z",
+              "updatedAt": "2026-08-04T08:59:44.268Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
@@ -17587,7 +17587,7 @@
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/657",
               "dodStatus": "complete",
               "releaseReady": true
@@ -18189,13 +18189,17 @@
           "prStatus": "merged",
           "testPlanWritten": true,
           "track": "short",
-          "updatedAt": "2026-07-30T07:14:48.320Z",
+          "updatedAt": "2026-08-04T09:02:34.688Z",
           "testPlan": {
             "artefact": "artefacts/2026-07-30-posthog-flag-graceful-degradation/test-plans/pfgd-s1-test-plan.md",
             "status": "all-passing",
             "totalTests": 5,
             "passing": 5
-          }
+          },
+          "stage": "definition-of-done",
+          "dodStatus": "complete",
+          "health": "green",
+          "releaseReady": true
         }
       ],
       "metrics": [],
@@ -18214,13 +18218,17 @@
           "prStatus": "merged",
           "testPlanWritten": true,
           "track": "short",
-          "updatedAt": "2026-07-30T08:37:21.961Z",
+          "updatedAt": "2026-08-04T09:03:35.569Z",
           "testPlan": {
             "artefact": "artefacts/2026-07-30-product-feature-cap-bypass/test-plans/pfcb-s1-test-plan.md",
             "status": "all-passing",
             "totalTests": 5,
             "passing": 5
-          }
+          },
+          "stage": "definition-of-done",
+          "dodStatus": "complete",
+          "health": "green",
+          "releaseReady": true
         }
       ],
       "metrics": [],
