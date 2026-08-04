@@ -2520,3 +2520,133 @@ audit:
 **Resolution:** Retrieved the real, current `DATABASE_URL` directly from the running `wuce-staging` Fly machine via `flyctl ssh console --app wuce-staging -C "printenv DATABASE_URL"`, piped straight into a job-scoped temp file (never printed to visible output), then used it as an inline env var for the one-off `node scripts/migrate-schema-pg.js` / test-file invocations that needed a real Postgres connection — never written into `.env`, never logged, never pasted into a subagent's prompt text.
 
 **Takeaway:** A local `.env` file is a point-in-time snapshot of a credential that Fly's own secrets store may have rotated since — there is no automatic sync between the two, so `.env` going stale (password rotated, `flyctl secrets set` run since the file was last touched, etc.) is a real, recurring failure mode, not a one-off fluke. When a local dev-DB connection fails with an auth error, don't assume the credential itself is wrong or needs fixing — check whether the corresponding Fly app's secret has simply moved on without `.env` and pull the current value from there (`flyctl ssh console -C "printenv <VAR>"`) rather than trying to guess or reconstruct a new one.
+
+---
+
+## Left-hand nav has a redundant entry and /journey needs to become product-aware
+
+### Observed — 2026-07-29 (cif-s1 branch-complete / dfr-s1 PR #631 CI review)
+
+**Circumstance:** Operator-reported gap during an unrelated CI review: the left-hand nav's "Run a Skill" entry (`/skills`) is now redundant, and there's overlap with `/journey`, which today shows a flat list of all features regardless of product. It should instead be scoped per product and surfaced via a list or board view, matching how kanban/board views already work per-product elsewhere in the app (e.g. `/products/:id/kanban`).
+
+**Takeaway:** Not yet scoped or scheduled — logged here as a nav/routing redesign candidate covering both the `/skills` redundancy and the `/journey` product-aware rework, so it isn't lost between sessions.
+
+---
+
+## A story's Complexity rating can silently understate risk when it assumes infrastructure exists that was never named
+
+### Observed — 2026-07-30 (/review — agency-client-organisations, stories 3, 4, 6)
+
+**Circumstance:** Stories 3 and 4 both required sending real transactional email (invitation link, magic-link), but no email-sending mechanism existed anywhere in the codebase — confirmed by checking for a `nodemailer`/`sendgrid`/`mailgun`-equivalent dependency and a `sendEmail`-shaped function, finding neither. Neither story's Architecture Constraints or NFRs named a provider or acknowledged new infrastructure was needed, and both rated Complexity as 2 ("well understood") — a rating that doesn't hold if email delivery has to be built from scratch. Separately, Story 6 required a Client-org user with "appropriate permissions, not just any read-only viewer" to trigger conversion, but Story 3 (the only story provisioning Client-org users) only ever created users with a read-only role — no story anywhere created the more-privileged role Story 6 depended on.
+
+**Takeaway:** A story's Complexity rating is only as accurate as the assumptions baked into its Architecture Constraints. When a story silently assumes infrastructure exists (a mail provider, a permission tier) without naming it, that assumption is invisible to the Complexity score until `/review` catches it as a HIGH finding. Worth checking at `/definition` time, not just `/review`: does every "well understood" story actually name every piece of infrastructure its ACs depend on?
+
+---
+
+## Auth-library selection: prefer libraries that extend an existing session model over ones that want to own it
+
+### Observed — 2026-07-31 (review follow-up, Stories 3/4, agency-client-organisations)
+
+**Circumstance:** Resolving the email-infrastructure HIGH finding required choosing a magic-link mechanism. Considered Better Auth and Auth.js (both want to own the full session lifecycle — cookies, session table — which would require bridging two session systems against this codebase's already-hardened custom session model for no clear security payoff) versus Passport.js + `passport-magic-login` (does not own sessions at all — it only writes identity into the app's existing `req.session`, matching this codebase's established hand-rolled GitHub/Google OAuth convention exactly).
+
+**Takeaway:** When choosing a third-party auth library to add a *new* auth path onto an *already-hardened* custom session system, the deciding factor isn't feature completeness — it's whether the library wants to own the session or just contribute identity into an existing one. A library that tries to own sessions forces a bridge between two systems; a library that only sets fields on whatever session object you hand it slots in as a peer to your existing hand-rolled paths instead of a competitor to them.
+
+---
+
+## Cross-story role-model gaps often come from conflating "org-level privilege" with "resource-level access restriction"
+
+### Observed — 2026-07-31 (review follow-up, Stories 3/6, agency-client-organisations)
+
+**Circumstance:** Story 3's original AC3 wording said the invited user's account was created "with a read-only role" — but Story 6 needed a Client-org user with "appropriate permissions, not just any read-only viewer" to trigger org conversion, and no story anywhere created that more-privileged role. The fix was reusing the existing `team_memberships` role model (already built in an earlier epic) rather than inventing a new Client-org-specific role field. The real unblocking insight: Story 3's "read-only role" wording had conflated two independent axes — a person's own org-level privilege (`team_memberships.role`, e.g. admin vs viewer) and a *separate* story's unconditional read-only enforcement on Agency-shared resources, which applies to every Client-org user regardless of their own role.
+
+**Takeaway:** When a story's AC describes a user as having "a read-only role," check whether that's actually describing the person's own privilege level within their org, or a resource-level access restriction imposed by a different mechanism entirely. Conflating the two can make a downstream story's stated precondition literally unsatisfiable by anything the upstream story builds — and the fix is usually "reuse the existing per-person role model," not "invent a new role field."
+
+---
+
+## External-dependency test gaps (Resend, Stripe) are a named, legitimate gap type — not a failure to route around
+
+### Observed — 2026-07-31 (test-plan, agency-client-organisations, all 6 stories)
+
+**Circumstance:** Story 3/4's invitation and magic-link emails mock the Resend adapter call in automated tests; actual delivery is deferred to a manual verification scenario, since a third-party email pipeline is outside the unit-test boundary. This is the same `External-dependency` gap type this codebase already uses for Stripe checkout tests.
+
+**Takeaway:** Not every "the test doesn't cover the real third-party call" observation is a coverage gap to close — some are the correct, permanent shape for that class of test. When a gap fits an established `External-dependency` pattern already used elsewhere in the same codebase (Stripe, and now Resend), name it as that pattern explicitly rather than treating it as unresolved. The manual verification scenario is the actual coverage for that half, not a compromise.
+
+---
+
+## Add D37 wiring ACs proactively, before the DoR H-ADAPTER check would block on their absence
+
+### Observed — 2026-07-31 (definition-of-ready, agency-client-organisations, all 6 stories)
+
+**Circumstance:** Stories 3 and 4 each introduced a genuinely new external-service adapter (Resend send, `passport-magic-login` verify/send callbacks) partway through test-plan/DoR prep. Rather than waiting for DoR's H-ADAPTER check to fail on the missing wiring AC, explicit D37 adapter-wiring ACs (stub-throws-when-unwired, wiring test asserts a differentiating outcome) were added to both stories' AC lists before running DoR.
+
+**Takeaway:** As soon as a story is found to introduce a new external-service adapter (not just an internal one), add its D37 wiring AC immediately — don't wait for the DoR gate to catch the omission. The check exists to catch a gap that's cheaper to fix at the moment it's discovered than after a formal gate has already failed on it.
+
+---
+
+## A story's own self-declared risk level can (and should) override its epic's default oversight tier
+
+### Observed — 2026-07-31 (definition-of-ready, agency-client-organisations, Story 2)
+
+**Circumstance:** The epic's default oversight was Medium, but Story 2 (relationship-grants-enforcement) had explicitly self-escalated in both its own Architecture Constraints and the NFR profile's Gaps table, naming itself the highest-risk story in the epic. It was flagged for — and received — a named human sign-off at DoR despite the epic default.
+
+**Takeaway:** An epic-level oversight tier is a floor, not a ceiling. When a story's own artefacts explicitly call out elevated risk (a security-critical guard, a novel relationship shape, a direct analog to a past real incident), treat that self-escalation as binding at DoR even if the epic default would otherwise waive named sign-off.
+
+---
+
+## A story's AC wording can literally undershoot what a sibling story actually needs — check downstream assumptions before merging
+
+### Observed — 2026-07-31 (inner coding loop, story-1-organisation-entity, agency-client-organisations)
+
+**Circumstance:** Story 1's AC3 said organisation resolution should happen "at OAuth callback" — implemented literally, wiring only into `routes/auth.js`'s GitHub/Google callbacks, not `routes/auth-email.js`'s email/password signup/login. A sibling story from an earlier epic (`ftcg-s1`) had wired its equivalent hook into all three login paths. The gap was caught and fixed before merge, once flagged rather than silently resolved either way.
+
+**Takeaway:** When a story's AC names one specific entry point ("OAuth callback") for a cross-cutting resolution step, check whether any *other* login/entry path in the same codebase already established a "wire into all N paths" precedent for the equivalent hook. A literal reading of one story's AC can undershoot a downstream story's actual requirement even when the code exactly matches what was written.
+
+---
+
+## "Data model and enforcement guard only" stories should leave their routes unwired for the next story to claim
+
+### Observed — 2026-07-31 (inner coding loop, story-2-relationship-grants-enforcement, agency-client-organisations)
+
+**Circumstance:** Story 2 built and fully tested 5 new route handlers by direct invocation, but deliberately did not wire them into `server.js`'s live URL dispatch table — because the DoR contract's own text scoped this story as "the data model and enforcement guard only," with the real user-facing URLs and session/identity shape belonging to Stories 3/4. The same pattern repeated for Story 5.
+
+**Takeaway:** When a story's DoR contract explicitly scopes it as a backend-only layer ("data model and X only"), leaving its new routes unwired from live dispatch is the correct behavior, not an incomplete implementation — wiring them prematurely would guess at a session/URL contract that a later, more-informed story is responsible for defining. Flag the deferred wiring explicitly in `decisions.md` so the handoff is traceable, but don't try to guess ahead of the story that owns the decision.
+
+---
+
+## A literal `/*` inside a new code comment can silently corrupt an unrelated test's naive comment-stripping regex
+
+### Observed — 2026-07-31 (inner coding loop, story-3-self-service-provisioning, agency-client-organisations)
+
+**Circumstance:** A new code comment describing the `/agency/clients/*` URL pattern contained the literal substring `/*`, which corrupted `check-csd-s7-as-built-system-architecture-diagram.js`'s naive regex-based comment-stripping logic — silently swallowing real code between the accidental comment-open and the next genuine `*/` elsewhere in the file. Fixed by rewording the comment, not by touching the test.
+
+**Takeaway:** Any codebase with a regex-based (not AST-based) comment-stripping static-analysis test is vulnerable to this exact failure mode: a perfectly ordinary code comment containing the literal characters `/*` (e.g. describing a glob pattern) can be misread as a real comment-open token and corrupt the tool's parse of everything after it. When a full-suite run surfaces an unrelated static-analysis test failure right after adding a comment describing any wildcard/glob pattern, check the comment's literal text for `/*` or `*/` substrings before assuming the test itself broke.
+
+---
+
+## Prove a "computed, not hardcoded" claim with an edge case that would fail if it were actually hardcoded
+
+### Observed — 2026-07-31 (inner coding loop, story-5-client-agency-comments, agency-client-organisations)
+
+**Circumstance:** Story 5's `thread_has_both_org_types` boolean (used in a PostHog event) is computed via a live JOIN from `comments.org_id` to `organisations.org_type` after each insert. An explicit edge-case test confirms it's `false` after the first (single-org-type) comment and flips to `true` only once both org types have commented on the same thread — not a static or memoized value.
+
+**Takeaway:** "Confirmed as a real, flipping computation, not hardcoded" is only a meaningful claim if there's a test that would actually fail if the value *were* hardcoded to `true`. A single happy-path test where the qualifying condition is already true by the time it's checked can pass identically whether the computation is real or a stub — the flip-state edge case is what actually proves it.
+
+---
+
+## Read the actual third-party library source before assuming an extension point exists in the shape you need
+
+### Observed — 2026-08-01 (inner coding loop, story-4-dual-path-authentication, agency-client-organisations)
+
+**Circumstance:** Story 4 needed to extend Story 3's shared `passport-magic-login` strategy instance for a second purpose (ongoing login, not just invitation redemption) without re-registering a second, conflicting instance. Reading `node_modules/passport-magic-login/src/index.ts` directly confirmed that `sendMagicLink`/`callbackUrl` are fixed at construction time, while `verify` is not — informing the correct extension mechanism (`setVerifyCallback`) and the correct, deliberate consequence (both invitation and login links necessarily redirect through the same fixed callback URL, since only `verify` can be swapped after construction).
+
+**Takeaway:** When extending shared third-party-backed infrastructure that a sibling story already registered, read the actual library source for the extension surface rather than assuming a mutable indirection exists wherever you need one. What's fixed at construction time versus swappable afterward is often not obvious from the library's own public API docs alone, and guessing wrong produces either a silent behavioral gap or a duplicated, conflicting registration.
+
+---
+
+## Genuine concurrency tests need a controlled-interleaving test double, not two sequential awaits in disguise
+
+### Observed — 2026-08-01 (inner coding loop, story-6-conversion-to-independent, agency-client-organisations)
+
+**Circumstance:** Story 6's AC4 required proving that a conversion transaction and a concurrent grant-creation call don't corrupt each other's data. The test built a "gated pool" wrapper whose `query()` calls are queued (not executed) and return an unresolved Promise; a test-controlled `releaseNext()` is the only thing that actually runs a queued query and resolves its caller. Both operations are started without awaiting, confirmed genuinely in-flight simultaneously (two pending queue entries) before either resolves, then released in both possible orders to assert the final state is non-corrupted either way.
+
+**Takeaway:** `await a(); await b();` never produces genuine concurrency — the two operations are never actually in flight at the same instant, no matter how the assertions afterward are worded. A real concurrency test needs a mechanism that can prove two operations are simultaneously pending before either completes, and needs to exercise both possible completion orders explicitly, not just one.
