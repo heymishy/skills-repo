@@ -8829,7 +8829,7 @@
               "name": "The identityKey passed to login-time role resolution must be each person's own identity, not the shared tenantId",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-07-14T00:26:08.511Z",
+              "updatedAt": "2026-08-04T10:22:25.344Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s9-review-1.md",
@@ -8847,8 +8847,9 @@
               "dorSignedOffAt": "2026-07-14T00:26:08.511Z",
               "dorArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s9-dor.md",
               "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s9-dor-contract.md",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/472"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/472",
+              "prNumber": 472
             }
           ]
         }
@@ -13345,7 +13346,7 @@
           "dorArtefact": "artefacts/2026-07-22-product-view-consolidation/dor/pvc-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-22-product-view-consolidation/dor/pvc-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-22T08:25:26.196Z",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "tasks": [
             {
               "id": "task-1",
@@ -13358,7 +13359,7 @@
               "tddState": "committed"
             }
           ],
-          "updatedAt": "2026-07-22T08:41:20.190Z",
+          "updatedAt": "2026-08-04T10:22:25.487Z",
           "prNumber": 545
         }
       ],
@@ -13560,7 +13561,7 @@
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-23-skill-session-full-restore/dor/wusl-s2-dor.md",
-          "prStatus": "not-started",
+          "prStatus": "merged",
           "tasks": [
             {
               "id": "task-1",
@@ -13568,7 +13569,8 @@
               "tddState": "committed"
             }
           ],
-          "updatedAt": "2026-07-22T18:22:15.655Z"
+          "updatedAt": "2026-08-04T10:22:25.648Z",
+          "prNumber": 550
         }
       ],
       "metrics": []
@@ -14086,13 +14088,13 @@
               "name": "Drive Stripe test-mode plan selection on real staging",
               "stage": "dor-signed-off",
               "health": "amber",
-              "updatedAt": "2026-07-22T23:58:57.580Z",
+              "updatedAt": "2026-08-04T10:23:33.846Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 3,
-                "passing": 2
+                "passing": 3
               },
               "acTotal": 3,
               "acVerified": 2,
@@ -14103,7 +14105,7 @@
               "dorSignedOffAt": "2026-07-22T21:01:03.850Z",
               "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a2-stripe-test-mode-plan-selection-dor.md",
               "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a2-stripe-test-mode-plan-selection-dor-contract.md",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/552",
               "prNumber": 552,
               "verifyStatus": "running"
@@ -14113,13 +14115,13 @@
               "name": "Drive product + first-feature creation via rough-idea/ideate, assert canvas and artefact persistence",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-22T21:01:44.432Z",
+              "updatedAt": "2026-08-04T10:23:33.990Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
-                "passing": 0
+                "passing": 4
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -14129,20 +14131,22 @@
               "dorApprover": "Hamish King",
               "dorSignedOffAt": "2026-07-22T21:01:44.432Z",
               "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a3-product-feature-ideate-canvas-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a3-product-feature-ideate-canvas-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a3-product-feature-ideate-canvas-dor-contract.md",
+              "prStatus": "merged",
+              "prNumber": 557
             },
             {
               "slug": "a4-ideate-session-resume",
               "name": "Assert full session close/resume mid-SSE-stream for the ideate canvas",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-22T21:02:20.780Z",
+              "updatedAt": "2026-08-04T10:23:34.117Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0
+                "passing": 5
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -14152,20 +14156,22 @@
               "dorApprover": "Hamish King",
               "dorSignedOffAt": "2026-07-22T21:02:20.780Z",
               "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a4-ideate-session-resume-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a4-ideate-session-resume-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a4-ideate-session-resume-dor-contract.md",
+              "prStatus": "merged",
+              "prNumber": 559
             },
             {
               "slug": "a5-ci-gate-scenario-a-blocking",
               "name": "Wire Scenario A as a CI-blocking gate",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-22T21:03:00.118Z",
+              "updatedAt": "2026-08-04T10:23:34.259Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 3,
-                "passing": 0
+                "passing": 3
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -14175,7 +14181,9 @@
               "dorApprover": "Hamish King",
               "dorSignedOffAt": "2026-07-22T21:03:00.118Z",
               "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a5-ci-gate-scenario-a-blocking-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a5-ci-gate-scenario-a-blocking-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a5-ci-gate-scenario-a-blocking-dor-contract.md",
+              "prStatus": "merged",
+              "prNumber": 566
             }
           ]
         },
@@ -14189,13 +14197,13 @@
               "name": "Drive the formed-idea outer loop to DoR and assert the /definition story-map canvas, close/resume mid-SSE",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-22T21:03:38.752Z",
+              "updatedAt": "2026-08-04T10:23:34.418Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 0
+                "passing": 6
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -14205,20 +14213,22 @@
               "dorApprover": "Hamish King",
               "dorSignedOffAt": "2026-07-22T21:03:38.752Z",
               "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/b1-formed-idea-outer-loop-story-map-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/b1-formed-idea-outer-loop-story-map-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/b1-formed-idea-outer-loop-story-map-dor-contract.md",
+              "prStatus": "merged",
+              "prNumber": 553
             },
             {
               "slug": "b2-ci-gate-scenario-b-coverage-mapping",
               "name": "Add Scenario B to the CI-blocking gate and publish the spec-to-journey-step coverage mapping",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-22T21:04:18.087Z",
+              "updatedAt": "2026-08-04T10:23:34.547Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 3,
-                "passing": 0
+                "passing": 3
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -14228,20 +14238,22 @@
               "dorApprover": "Hamish King",
               "dorSignedOffAt": "2026-07-22T21:04:18.087Z",
               "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/b2-ci-gate-scenario-b-coverage-mapping-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/b2-ci-gate-scenario-b-coverage-mapping-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/b2-ci-gate-scenario-b-coverage-mapping-dor-contract.md",
+              "prStatus": "merged",
+              "prNumber": 567
             },
             {
               "slug": "b3-staging-test-data-cleanup",
               "name": "Design and implement a staging test-data cleanup strategy for E2E-generated accounts and records",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-22T21:04:57.064Z",
+              "updatedAt": "2026-08-04T10:23:34.688Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0
+                "passing": 5
               },
               "acTotal": 3,
               "acVerified": 0,
@@ -14251,7 +14263,9 @@
               "dorApprover": "Hamish King",
               "dorSignedOffAt": "2026-07-22T21:04:57.064Z",
               "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/b3-staging-test-data-cleanup-dor.md",
-              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/b3-staging-test-data-cleanup-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/b3-staging-test-data-cleanup-dor-contract.md",
+              "prStatus": "merged",
+              "prNumber": 561
             }
           ]
         }
@@ -14310,7 +14324,7 @@
       "slug": "2026-07-23-session-cookie-samesite-fix",
       "name": "Fix session cookie SameSite=Strict dropping the session on Stripe post-checkout redirect",
       "track": "short",
-      "stage": "branch-complete",
+      "stage": "definition-of-ready",
       "health": "green",
       "epics": [],
       "stories": [
@@ -14318,36 +14332,36 @@
           "id": "scsf-s1",
           "slug": "scsf-s1",
           "name": "Fix session cookie SameSite=Strict dropping the session on Stripe post-checkout redirect",
-          "stage": "branch-complete",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 19,
-            "passing": 19,
+            "passing": 0,
             "artefact": "artefacts/2026-07-23-session-cookie-samesite-fix/test-plans/scsf-s1-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 5,
+          "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": true,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-23-session-cookie-samesite-fix/dor/scsf-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-23-session-cookie-samesite-fix/dor/scsf-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-23T00:16:03.534Z",
-          "prStatus": "draft-open",
-          "updatedAt": "2026-07-23T00:26:09.261Z"
+          "prStatus": "none",
+          "updatedAt": "2026-08-04T19:16:00.851Z"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-23T00:26:09.261Z"
+      "updatedAt": "2026-08-04T19:16:39.043Z"
     },
     {
       "slug": "2026-07-23-credits-upsert-fix",
       "name": "Fix credits.js UPDATE-only balance adjustment silently dropping a brand-new tenant's first credit provisioning",
       "track": "short",
-      "stage": "branch-complete",
+      "stage": "definition-of-ready",
       "health": "green",
       "epics": [],
       "stories": [
@@ -14355,36 +14369,36 @@
           "id": "cuf-s1",
           "slug": "cuf-s1",
           "name": "Fix credits.js UPDATE-only balance adjustment silently dropping a brand-new tenant's first credit provisioning",
-          "stage": "branch-complete",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 12,
-            "passing": 12,
+            "passing": 0,
             "artefact": "artefacts/2026-07-23-credits-upsert-fix/test-plans/cuf-s1-test-plan.md"
           },
           "acTotal": 6,
-          "acVerified": 6,
+          "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": true,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-23-credits-upsert-fix/dor/cuf-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-23-credits-upsert-fix/dor/cuf-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-23T00:00:00.000Z",
-          "prStatus": "draft-open",
-          "updatedAt": "2026-07-23T00:00:00.000Z"
+          "prStatus": "none",
+          "updatedAt": "2026-08-04T19:16:49.671Z"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-23T00:00:00.000Z"
+      "updatedAt": "2026-08-04T19:16:49.670Z"
     },
     {
       "slug": "2026-07-23-mock-gateway-fixtures-deploy-fix",
       "name": "Fix production Dockerfile silently shipping a structurally-active but fixture-less mock-LLM-gateway to wuce-staging",
       "track": "short",
-      "stage": "branch-complete",
+      "stage": "definition-of-ready",
       "health": "green",
       "epics": [],
       "stories": [
@@ -14392,34 +14406,35 @@
           "id": "mgfd-s1",
           "slug": "mgfd-s1",
           "name": "Fix production Dockerfile silently shipping a structurally-active but fixture-less mock-LLM-gateway to wuce-staging",
-          "stage": "branch-complete",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 12,
-            "passing": 12,
+            "passing": 0,
             "artefact": "artefacts/2026-07-23-mock-gateway-fixtures-deploy-fix/test-plans/mgfd-s1-test-plan.md"
           },
           "acTotal": 6,
-          "acVerified": 6,
+          "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": true,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-23-mock-gateway-fixtures-deploy-fix/dor/mgfd-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-23-mock-gateway-fixtures-deploy-fix/dor/mgfd-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-23T03:07:06.950Z",
-          "prStatus": "draft-open",
-          "updatedAt": "2026-07-23T03:07:06.950Z"
+          "prStatus": "none",
+          "updatedAt": "2026-08-04T19:16:49.798Z"
         }
-      ]
+      ],
+      "updatedAt": "2026-08-04T19:16:49.797Z"
     },
     {
       "slug": "2026-07-23-streaming-route-mock-gateway-wiring",
       "name": "Wire {stage, scenarioName} into handlePostTurnStreamHtml so MOCK_LLM_GATEWAY actually activates for the real chat UI streaming turn endpoint",
       "track": "short",
-      "stage": "branch-complete",
+      "stage": "definition-of-ready",
       "health": "green",
       "epics": [],
       "stories": [
@@ -14427,28 +14442,29 @@
           "id": "srmw-s1",
           "slug": "srmw-s1",
           "name": "Wire {stage, scenarioName} into handlePostTurnStreamHtml so MOCK_LLM_GATEWAY actually activates for the real chat UI streaming turn endpoint",
-          "stage": "branch-complete",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 5,
-            "passing": 5,
+            "passing": 0,
             "artefact": "artefacts/2026-07-23-streaming-route-mock-gateway-wiring/test-plans/srmw-s1-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 5,
+          "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": true,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-23-streaming-route-mock-gateway-wiring/dor/srmw-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-23-streaming-route-mock-gateway-wiring/dor/srmw-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-23T03:31:19.368Z",
-          "prStatus": "draft-open",
-          "updatedAt": "2026-07-23T03:37:44.560Z"
+          "prStatus": "none",
+          "updatedAt": "2026-08-04T19:16:49.957Z"
         }
-      ]
+      ],
+      "updatedAt": "2026-08-04T19:16:49.956Z"
     },
     {
       "slug": "2026-07-23-staging-e2e-rate-limit-bypass",
@@ -14479,10 +14495,11 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-23-staging-e2e-rate-limit-bypass/dor/serlb-s1-dor.md",
           "dorSignedOffAt": "2026-07-23T05:05:01.711Z",
-          "prStatus": "draft-open",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/564",
-          "updatedAt": "2026-07-23T05:05:01.711Z",
-          "notes": "AC1-AC4 fully verified (unit tests + zero regressions). AC5 partial: fix deployed to real wuce-staging and underlying defect re-confirmed live, but full CI-green activation blocked pending operator action -- E2E_STAGING_AUTH_STUB_SECRET was never configured as a GitHub Actions secret (only as a Fly secret); rotating/setting it was correctly blocked by the auto-mode classifier. See decisions.md RISK-ACCEPT entry."
+          "updatedAt": "2026-08-04T10:24:54.763Z",
+          "notes": "AC1-AC4 fully verified (unit tests + zero regressions). AC5 partial: fix deployed to real wuce-staging and underlying defect re-confirmed live, but full CI-green activation blocked pending operator action -- E2E_STAGING_AUTH_STUB_SECRET was never configured as a GitHub Actions secret (only as a Fly secret); rotating/setting it was correctly blocked by the auto-mode classifier. See decisions.md RISK-ACCEPT entry.",
+          "prNumber": 564
         }
       ]
     },
@@ -14596,7 +14613,7 @@
       "slug": "2026-07-23-credits-admin-topup-tenant-check-fix",
       "name": "Admin credit top-up checks real tenant existence (users/team_memberships/credits), not just an existing credits row",
       "track": "short",
-      "stage": "branch-complete",
+      "stage": "definition-of-ready",
       "health": "green",
       "epics": [],
       "stories": [
@@ -14604,31 +14621,31 @@
           "id": "catc-s1",
           "slug": "catc-s1",
           "name": "Admin credit top-up checks real tenant existence, not just an existing credits row",
-          "stage": "branch-complete",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 5,
-            "passing": 5,
+            "passing": 0,
             "artefact": "artefacts/2026-07-23-credits-admin-topup-tenant-check-fix/test-plans/catc-s1-test-plan.md"
           },
           "acTotal": 6,
-          "acVerified": 6,
+          "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": true,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-23-credits-admin-topup-tenant-check-fix/dor/catc-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-23-credits-admin-topup-tenant-check-fix/dor/catc-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-23T09:37:07.217Z",
-          "prStatus": "open",
+          "prStatus": "none",
           "notes": "getValidTenantIds() now unions users.email + team_memberships.tenant_id + credits.tenant_id (strict superset of old credits-only check). Deployed and verified against real wuce-staging: b1 AC1 (formed-idea discovery) now genuinely passes, previously skipped on this exact credits-admin-topup gap. a3 AC3 and a4 AC2/AC3 now run (no longer skip) but originally failed for separate, unrelated reasons (canvas rendering/resume) -- fixed as icrh-s1 (PR #569, merged) and icv-s1 (PR #570, merged). Rebased onto master post-#569/#570 to combine all three fixes.",
-          "updatedAt": "2026-07-23T09:37:07.217Z"
+          "updatedAt": "2026-08-04T19:16:50.100Z"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-23T09:37:07.217Z"
+      "updatedAt": "2026-08-04T19:16:50.098Z"
     },
     {
       "slug": "2026-07-24-chat-message-text-truncation-fix",
@@ -14670,7 +14687,7 @@
       "slug": "2026-07-23-b1-story-map-stage-sequence-fix",
       "name": "Fix b1 real-staging spec hardcoding a stale stage sequence that silently skips the real design stage",
       "track": "short",
-      "stage": "branch-complete",
+      "stage": "definition-of-ready",
       "health": "green",
       "epics": [],
       "stories": [
@@ -14678,34 +14695,34 @@
           "id": "bssm-s1",
           "slug": "bssm-s1",
           "name": "Fix b1 real-staging spec hardcoding a stale stage sequence that silently skips the real design stage",
-          "stage": "branch-complete",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 5,
-            "passing": 5,
+            "passing": 0,
             "artefact": "artefacts/2026-07-23-b1-story-map-stage-sequence-fix/test-plans/bssm-s1-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 5,
+          "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": true,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-23-b1-story-map-stage-sequence-fix/dor/bssm-s1-dor.md",
-          "prStatus": "draft",
-          "updatedAt": "2026-07-23T20:18:17.929Z",
+          "prStatus": "none",
+          "updatedAt": "2026-08-04T19:16:50.252Z",
           "notes": "Fix implemented in tests/e2e/b1-formed-idea-outer-loop-story-map.spec.js only, per the DoR: added _extractSkillNameFromRedirect() and used it at every driveSkillToCompletion call site instead of a hardcoded literal, and folded the one-time /journey/:id/stories redirect handling into gateConfirmAndAdvance() itself so it applies transparently at whatever transition it actually occurs (not just after a hardcoded definition call site). Re-verified against real wuce-staging: AC1, AC2, AC3, and the NFR-Security test all pass, 4 of 4, confirmed via real Playwright runs against https://wuce-staging.fly.dev, not assumed. AC3 now directly asserts completedStages records design and definition as two distinct, correctly-ordered entries. npm test: 36 failing files, all pre-existing baseline gaps per tests/known-baseline-failures.json, 34 baseline files now pass, zero new regressions, confirmed via scripts/ci-test-regression-check.js exit 0. No server-side files touched, per the DoR constraint."
         }
       ],
-      "updatedAt": "2026-07-23T20:18:17.928Z"
+      "updatedAt": "2026-08-04T19:16:50.251Z"
     },
     {
       "slug": "2026-07-23-e2e-admin-topup-rate-limit-bypass",
       "name": "Wire the existing staging rate-limit bypass header into admin-credits-topup.js login/signup calls",
       "track": "short",
-      "stage": "branch-complete",
+      "stage": "definition-of-ready",
       "health": "amber",
       "epics": [],
       "stories": [
@@ -14713,28 +14730,28 @@
           "id": "eatrl-s1",
           "slug": "eatrl-s1",
           "name": "Wire the existing staging rate-limit bypass header into admin-credits-topup.js login/signup calls",
-          "stage": "branch-complete",
+          "stage": "definition-of-ready",
           "health": "amber",
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 4,
-            "passing": 3,
+            "passing": 0,
             "artefact": "artefacts/2026-07-23-e2e-admin-topup-rate-limit-bypass/test-plans/eatrl-s1-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 3,
+          "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": true,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-23-e2e-admin-topup-rate-limit-bypass/dor/eatrl-s1-dor.md",
-          "prStatus": "draft",
-          "updatedAt": "2026-07-23T21:16:34.467Z",
+          "prStatus": "none",
+          "updatedAt": "2026-08-04T19:16:50.421Z",
           "notes": "Fix implemented: exported RATE_LIMIT_BYPASS_HEADER and STUB_SECRET from staging-auth.js and wired them into admin-credits-topup.js's _adminLogin()/_adminSignupOnce(), mirroring signUpEmail()'s pattern. Branch fix-forward-e2e-admin-topup-rate-limit-bypass, draft PR https://github.com/heymishy/skills-repo/pull/573. AC1 verified by code inspection. AC3 verified locally (36 failing files, all subset of the 68-entry known-baseline-failures.json, zero new regressions) and via CI (one CI-runner-only flake, tests/check-p4-enf-second-line.js, unrelated to this change -- untouched by the diff, passes standalone, reproduced twice in full-suite CI matching this repo's documented resource-contention flake pattern). AC2/AC4 verified via real CI (E2E_STAGING_AUTH_STUB_SECRET is a GitHub Actions secret unavailable locally, per this story's own documented test-plan contingency): scenario-b-staging-e2e 4/4 passed 0 skipped 0 failed (b1 AC1-3 no longer skip); scenario-a-staging-e2e 7 passed/3 skipped(a2 intentional manual-only)/1 failed -- a3 AC3 (the specific test that skipped on PR 572) now passes, and a4's combined AC2-AC3 test failed on a genuine, separate, out-of-scope session-resume turn-history assertion mismatch (not a rate-limit skip -- credits top-up and login succeeded). Fix confirmed working as designed: zero rate-limit-caused skips observed across both real CI jobs. Two unrelated findings recorded in decisions.md for follow-up (a4 session-resume defect; check-p4-enf-second-line.js baseline gap). health=amber reflects these two open, honestly-reported, out-of-scope findings -- not a defect in this story's own fix."
         }
       ],
-      "updatedAt": "2026-07-23T21:16:40.152Z"
+      "updatedAt": "2026-08-04T19:16:50.419Z"
     },
     {
       "slug": "2026-07-24-interactive-kanban-boards",
@@ -15410,7 +15427,7 @@
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-07-25T00:41:45.529Z",
+          "updatedAt": "2026-08-04T10:24:54.905Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 4,
@@ -15422,41 +15439,42 @@
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-07-25-stripe-price-id-validation/dor/spv-s1-dor.md",
           "dorStatus": "signed-off",
-          "prStatus": "open"
+          "prStatus": "merged",
+          "prNumber": 595
         }
       ]
     },
     {
       "slug": "2026-07-25-staging-deploy-seed-fix",
       "name": "Install dependencies before the staging-deploy seed step",
-      "stage": "branch-complete",
+      "stage": "definition-of-ready",
       "health": "green",
       "reviewStatus": "not-required",
       "highFindings": 0,
-      "updatedAt": "2026-07-25T01:12:38.976Z",
+      "updatedAt": "2026-08-04T19:16:50.544Z",
       "track": "short",
       "stories": [
         {
           "slug": "dsds-s1-install-deps-before-seed-step",
           "id": "dsds-s1-install-deps-before-seed-step",
           "name": "Install dependencies before the staging-deploy seed step runs",
-          "stage": "branch-complete",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-07-25T01:12:38.976Z",
+          "updatedAt": "2026-08-04T19:16:50.545Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 1,
-            "passing": 1
+            "passing": 0
           },
           "acTotal": 2,
-          "acVerified": 1,
+          "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-07-25-staging-deploy-seed-fix/dor/dsds-s1-dor.md",
           "dorStatus": "signed-off",
-          "prStatus": "open"
+          "prStatus": "none"
         }
       ]
     },
@@ -15546,7 +15564,7 @@
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-07-25T05:13:52.116Z",
+          "updatedAt": "2026-08-04T10:22:25.773Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 13,
@@ -15558,7 +15576,8 @@
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-07-25-free-tier-credit-grant/dor/ftcg-s1-dor.md",
           "dorStatus": "signed-off",
-          "prStatus": "open"
+          "prStatus": "merged",
+          "prNumber": 599
         }
       ]
     },
@@ -15614,7 +15633,7 @@
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-07-25T06:06:41.477Z",
+          "updatedAt": "2026-08-04T10:24:55.061Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 25,
@@ -15626,7 +15645,8 @@
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-07-25-pipeline-state-schema-validation/dor/pss-s1-dor.md",
           "dorStatus": "signed-off",
-          "prStatus": "open"
+          "prStatus": "merged",
+          "prNumber": 602
         }
       ]
     },
@@ -15648,7 +15668,7 @@
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-07-25T06:21:27.765Z",
+          "updatedAt": "2026-08-04T10:22:25.937Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 5,
@@ -15660,7 +15680,8 @@
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-07-25-realllm-counter-isolation/dor/rlcc-s1-dor.md",
           "dorStatus": "signed-off",
-          "prStatus": "open"
+          "prStatus": "merged",
+          "prNumber": 603
         }
       ]
     },
@@ -15682,7 +15703,7 @@
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-07-25T06:50:12.088Z",
+          "updatedAt": "2026-08-04T10:22:26.080Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 16,
@@ -15694,7 +15715,8 @@
           "e2eToolingRequired": true,
           "dorArtefact": "artefacts/2026-07-25-named-identity-stub/dor/nis-s1-dor.md",
           "dorStatus": "signed-off",
-          "prStatus": "open"
+          "prStatus": "merged",
+          "prNumber": 604
         }
       ]
     },
@@ -15716,7 +15738,7 @@
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-07-25T07:10:38.780Z",
+          "updatedAt": "2026-08-04T10:22:26.222Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 17,
@@ -15728,7 +15750,8 @@
           "e2eToolingRequired": true,
           "dorArtefact": "artefacts/2026-07-25-billing-journey-staging-safe/dor/bjs-s1-dor.md",
           "dorStatus": "signed-off",
-          "prStatus": "open"
+          "prStatus": "merged",
+          "prNumber": 605
         }
       ]
     },
