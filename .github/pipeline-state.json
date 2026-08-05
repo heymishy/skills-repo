@@ -15447,25 +15447,25 @@
     {
       "slug": "2026-07-25-staging-deploy-seed-fix",
       "name": "Install dependencies before the staging-deploy seed step",
-      "stage": "definition-of-ready",
+      "stage": "review",
       "health": "green",
       "reviewStatus": "not-required",
       "highFindings": 0,
-      "updatedAt": "2026-08-04T19:16:50.544Z",
+      "updatedAt": "2026-08-05T09:28:36.750Z",
       "track": "short",
       "stories": [
         {
           "slug": "dsds-s1-install-deps-before-seed-step",
           "id": "dsds-s1-install-deps-before-seed-step",
           "name": "Install dependencies before the staging-deploy seed step runs",
-          "stage": "definition-of-ready",
+          "stage": "review",
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-08-04T19:16:50.545Z",
+          "updatedAt": "2026-08-05T09:28:36.751Z",
           "testPlan": {
-            "status": "all-passing",
-            "totalTests": 1,
+            "status": "not-started",
+            "totalTests": 0,
             "passing": 0
           },
           "acTotal": 2,
@@ -15473,7 +15473,7 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-07-25-staging-deploy-seed-fix/dor/dsds-s1-dor.md",
-          "dorStatus": "signed-off",
+          "dorStatus": "not-started",
           "prStatus": "none"
         }
       ]
@@ -18257,6 +18257,243 @@
       "metrics": [],
       "updatedAt": "2026-07-30",
       "track": "short"
+    },
+    {
+      "slug": "2026-08-05-repo-bootstrap-no-fork",
+      "name": "No-Fork Repo Bootstrap for the Inner (and Optionally Outer) Loop",
+      "stage": "definition",
+      "health": "green",
+      "stories": [],
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Bootstrap-to-first-inner-loop-run time",
+          "target": "Under 10 minutes",
+          "baseline": "Not yet established",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "SaaS-to-inner-loop conversion rate",
+          "target": ">= 30% within 7 days of DoR sign-off",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Fork/clone avoidance rate among new adopters",
+          "target": "> 50% within 3 months",
+          "baseline": "100%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "updatedAt": "2026-08-05T07:00:58.715Z",
+      "discoveryArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/discovery.md",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "track": "standard",
+      "benefitMetricArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/benefit-metric.md",
+      "slicingStrategy": "walking-skeleton",
+      "epics": [
+        {
+          "slug": "rb-e1-no-fork-bootstrap-core",
+          "name": "A developer can start the inner loop in a real repo without forking or cloning the platform",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "rb-s1",
+              "name": "Bootstrap a minimal fresh repo with one init command",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/review/rb-s1-review-2.md",
+              "updatedAt": "2026-08-05T08:27:31.567Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 9,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "testPlanArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/test-plans/rb-s1-test-plan.md",
+              "verificationScriptArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/verification-scripts/rb-s1-verification.md",
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s1-dor.md",
+              "dorContractArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s1-dor-contract.md"
+            },
+            {
+              "slug": "rb-s2",
+              "name": "Install the full skill set with a lightweight outer/inner/ancillary registry",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/review/rb-s2-review-2.md",
+              "updatedAt": "2026-08-05T08:28:27.252Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "testPlanArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/test-plans/rb-s2-test-plan.md",
+              "verificationScriptArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/verification-scripts/rb-s2-verification.md",
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s2-dor.md",
+              "dorContractArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s2-dor-contract.md"
+            },
+            {
+              "slug": "rb-s3",
+              "name": "Generate harness-agnostic instruction files from one source",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/review/rb-s3-review-1.md",
+              "updatedAt": "2026-08-05T08:29:14.654Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 7,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "testPlanArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/test-plans/rb-s3-test-plan.md",
+              "verificationScriptArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/verification-scripts/rb-s3-verification.md",
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s3-dor.md",
+              "dorContractArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s3-dor-contract.md"
+            }
+          ]
+        },
+        {
+          "slug": "rb-e2-saas-connected-bootstrap-and-outer-loop",
+          "name": "A SaaS-only user can convert a DoR-approved artefact into a real, executing repo",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "rb-s4",
+              "name": "Bootstrap an existing repo from a DoR-approved SaaS artefact",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/review/rb-s4-review-3.md",
+              "updatedAt": "2026-08-05T08:31:16.821Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 14,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "testPlanArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/test-plans/rb-s4-test-plan.md",
+              "verificationScriptArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/verification-scripts/rb-s4-verification.md",
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s4-dor.md",
+              "dorContractArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s4-dor-contract.md"
+            },
+            {
+              "slug": "rb-s5",
+              "name": "Optionally install the full outer loop during bootstrap",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/review/rb-s5-review-1.md",
+              "updatedAt": "2026-08-05T08:31:55.244Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "testPlanArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/test-plans/rb-s5-test-plan.md",
+              "verificationScriptArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/verification-scripts/rb-s5-verification.md",
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s5-dor.md",
+              "dorContractArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s5-dor-contract.md"
+            }
+          ]
+        }
+      ],
+      "guardrails": [
+        {
+          "id": "ADR-004",
+          "category": "adr",
+          "label": "context.yml is the single config source of truth",
+          "status": "met",
+          "evidence": "H9 confirmed at DoR across all 5 stories -- no parallel config file introduced.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-05T08:32:28.882Z"
+        },
+        {
+          "id": "ADR-005",
+          "category": "adr",
+          "label": "Agent instructions format driven by vcs.type (surface adapter concern)",
+          "status": "met",
+          "evidence": "H9 confirmed at DoR -- rb-s3 extends the existing mechanism, no new one introduced.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-05T08:32:28.882Z"
+        },
+        {
+          "id": "ADR-011",
+          "category": "adr",
+          "label": "Artefact-first: new scripts require a story artefact before or alongside the commit",
+          "status": "met",
+          "evidence": "H9 confirmed at DoR -- full discovery through DoR chain exists for this feature.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-05T08:32:28.882Z"
+        },
+        {
+          "id": "NFR-performance-rb-s1",
+          "category": "nfr",
+          "label": "Init command completes under 30s",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-05T08:32:28.882Z"
+        },
+        {
+          "id": "NFR-security-credential-handling",
+          "category": "nfr",
+          "label": "Credentials never logged/written to disk (product/constraints.md #12)",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-05T08:32:28.882Z"
+        },
+        {
+          "id": "NFR-audit-export-endpoint",
+          "category": "nfr",
+          "label": "SaaS export endpoint logs each fetch",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-05T08:32:28.882Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
