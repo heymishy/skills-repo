@@ -4,6 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const { buildRegistry, copySkillsFromRegistry, writeRegistryFile } = require('./skills-registry');
+const { promptForCredential } = require('./credential-prompt');
+const { fetchFromSaas } = require('./saas-fetch');
 
 const HARNESS_INSTRUCTION_FILES = [
   'CLAUDE.md',
@@ -138,11 +140,28 @@ function assembleHarnessInstructions(resolvedTarget, platformRoot, force) {
   return { ran: true, files: HARNESS_INSTRUCTION_FILES };
 }
 
-function runInit(targetDir, opts) {
+async function runInit(targetDir, opts) {
   opts = opts || {};
   const platformRoot = opts.platformRoot || resolvePlatformRoot(__dirname);
   const resolvedTarget = path.resolve(targetDir);
   const force = !!opts.force;
+
+  // rb-s4: --from-saas fetches a DoR-approved feature's artefact + pipeline-
+  // state entry from the hosted SaaS before any fresh-repo scaffolding runs.
+  // This ordering is what makes AC3 ("no silent fallback") structurally
+  // true: if the fetch throws (e.g. a 403), this function returns/propagates
+  // before requirePlatformInit or anything else below has written a single
+  // byte to resolvedTarget.
+  if (opts.fromSaas) {
+    const promptFn = opts.promptFn || promptForCredential;
+    const credential = opts.credential || await promptFn();
+    fs.mkdirSync(resolvedTarget, { recursive: true });
+    await fetchFromSaas(resolvedTarget, opts.fromSaas, credential, {
+      baseUrl: opts.saasBaseUrl,
+      fetchImpl: opts.fetchImpl
+    });
+    console.log(`[skills-repo-init] Fetched DoR-approved feature '${opts.fromSaas}' from the SaaS and materialized it locally.`);
+  }
 
   requirePlatformInit(resolvedTarget, platformRoot, force);
 
