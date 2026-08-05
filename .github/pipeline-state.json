@@ -18430,26 +18430,29 @@
             {
               "slug": "rb-s4",
               "name": "Bootstrap an existing repo from a DoR-approved SaaS artefact",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/review/rb-s4-review-3.md",
-              "updatedAt": "2026-08-05T08:31:16.821Z",
+              "updatedAt": "2026-08-05T19:07:41.665Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 14,
-                "passing": 0
+                "totalTests": 15,
+                "passing": 15
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "testPlanArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/test-plans/rb-s4-test-plan.md",
               "verificationScriptArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/verification-scripts/rb-s4-verification.md",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s4-dor.md",
-              "dorContractArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s4-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s4-dor-contract.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/668",
+              "planArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/plans/rb-s4-plan.md"
             },
             {
               "slug": "rb-s5",
