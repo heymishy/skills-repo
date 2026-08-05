@@ -130,6 +130,22 @@ function copySkillsFromRegistry(skillsDir, destDir, registry, force) {
   return copied;
 }
 
+/**
+ * rb-s5: Returns the subset of registry.skills eligible for installation given
+ * whether the outer-loop opt-in (`--with-outer-loop`) is active. This is the
+ * one place allowed to branch on category for install-eligibility -- kept
+ * separate from copySkillsFromRegistry (which must stay category-agnostic
+ * per rb-s2 AC3) so a new category still copies with zero code change there;
+ * only this filter needs to know that 'outer-loop' is the gated category.
+ * The registry file written to disk always lists every skill regardless of
+ * this filter -- the registry is the categorisation manifest (what exists
+ * and what category it is), not a log of what got copied this run.
+ */
+function installableSkills(registry, withOuterLoop) {
+  if (withOuterLoop) return registry.skills;
+  return registry.skills.filter(entry => entry.category !== 'outer-loop');
+}
+
 /** Writes the registry manifest as pretty-printed JSON, always overwriting (registry reflects the current run). */
 function writeRegistryFile(registry, destPath) {
   fs.mkdirSync(path.dirname(destPath), { recursive: true });
@@ -186,6 +202,7 @@ module.exports = {
   buildRegistry,
   copyDirRecursive,
   copySkillsFromRegistry,
+  installableSkills,
   writeRegistryFile,
   extractPipelineOverviewSection,
   parseDiagramSteps,

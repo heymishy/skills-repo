@@ -183,9 +183,21 @@ test('extractPipelineOverviewSection_stopsAtNextHeading', () => {
 
 console.log('\n[rb-s2] Integration tests\n');
 
-test('fullSkillSetAndRegistry_buildOnRbS1Output', () => {
+// rb-s5 note: this test originally asserted that a plain `runInit(tmp, {})`
+// (no flags) installs literally every real skill name, matching the
+// discovery.md MVP framing of "copies the full skill set uniformly every
+// time". rb-s5's epic (rb-e2) explicitly superseded that framing -- the
+// default (no `--with-outer-loop`) install now excludes outer-loop skills on
+// both bootstrap entry points, per rb-s5 AC1/AC2 and the decisions.md ARCH
+// entry recording that reconciliation. The registry file itself still lists
+// every real skill with its correct category regardless of what was actually
+// copied (the registry is a categorisation manifest, not an install log) --
+// that half of the original assertion is preserved below. A second test
+// (fullSkillSetReachable_withOuterLoopFlag) restores the "everything gets
+// installed" coverage this test used to provide, gated behind the flag.
+test('defaultInstall_excludesOuterLoopSkills_butRegistryStillListsEveryRealSkill', () => {
   const { runInit } = require('../cli/lib/init');
-  const { listSkillDirs } = require('../cli/lib/skills-registry');
+  const { listSkillDirs, SKILL_CATEGORIES } = require('../cli/lib/skills-registry');
   const tmp = mktmp();
   try {
     runInit(tmp, {});
@@ -195,16 +207,36 @@ test('fullSkillSetAndRegistry_buildOnRbS1Output', () => {
     const destSkillsDir = path.join(tmp, '.github', 'skills');
     const destSkills = fs.readdirSync(destSkillsDir);
     for (const name of realSkillNames) {
-      assert.ok(destSkills.includes(name), `missing real skill "${name}" under .github/skills after init`);
+      const category = Object.prototype.hasOwnProperty.call(SKILL_CATEGORIES, name) ? SKILL_CATEGORIES[name] : 'ancillary';
+      if (category === 'outer-loop') {
+        assert.ok(!destSkills.includes(name), `outer-loop skill "${name}" should NOT be installed under .github/skills without --with-outer-loop`);
+      } else {
+        assert.ok(destSkills.includes(name), `missing real skill "${name}" (category ${category}) under .github/skills after default init`);
+      }
     }
     const registryPath = path.join(tmp, '.github', 'skills-registry.json');
     assert.ok(fs.existsSync(registryPath), 'skills-registry.json was not generated');
     const registry = JSON.parse(fs.readFileSync(registryPath, 'utf8'));
     for (const name of realSkillNames) {
       const entry = registry.skills.find(s => s.name === name);
-      assert.ok(entry, `registry missing entry for real skill "${name}"`);
+      assert.ok(entry, `registry missing entry for real skill "${name}" -- registry must list every real skill regardless of whether it was installed this run`);
       assert.ok(['outer-loop', 'inner-loop', 'ancillary'].includes(entry.category),
         `invalid category "${entry.category}" for real skill "${name}"`);
+    }
+  } finally { rmtmp(tmp); }
+});
+
+test('fullSkillSetReachable_withOuterLoopFlag', () => {
+  const { runInit } = require('../cli/lib/init');
+  const { listSkillDirs } = require('../cli/lib/skills-registry');
+  const tmp = mktmp();
+  try {
+    runInit(tmp, { withOuterLoop: true });
+    const realSkillNames = listSkillDirs(path.join(ROOT, 'skills'));
+    const destSkillsDir = path.join(tmp, '.github', 'skills');
+    const destSkills = fs.readdirSync(destSkillsDir);
+    for (const name of realSkillNames) {
+      assert.ok(destSkills.includes(name), `missing real skill "${name}" under .github/skills after init with --with-outer-loop -- the full set (rb-s2) must still be reachable in one call (rb-s5)`);
     }
   } finally { rmtmp(tmp); }
 });

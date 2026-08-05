@@ -215,8 +215,19 @@ Inner loop skills are available on demand via `/load [skill-name]`.
 
 DISCLOSURE
 
+  # rb-s5: OUTER_LOOP_SKILLS above is a separate, pre-existing categorisation
+  # list from an earlier initiative -- it does not know whether the target
+  # was bootstrapped with --with-outer-loop (rb-s2's registry is the current
+  # source of truth for that). Since rb-s5 made outer-loop skills absent by
+  # default, a skill whose SKILL.md is missing here is not "available at
+  # session start" -- it must be skipped, not described as available with a
+  # placeholder "(skill file not found)" body, which previously never
+  # happened because every skill was always installed unconditionally.
   for skill in "${OUTER_LOOP_SKILLS[@]}"; do
     local skill_file="$SKILLS_DIR/$skill/SKILL.md"
+    if [[ ! -f "$skill_file" ]]; then
+      continue
+    fi
     local desc
     desc="$(get_skill_description "$skill_file")"
     echo "- **/$skill** — $desc"

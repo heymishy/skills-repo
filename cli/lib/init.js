@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const { buildRegistry, copySkillsFromRegistry, writeRegistryFile } = require('./skills-registry');
+const { buildRegistry, copySkillsFromRegistry, installableSkills, writeRegistryFile } = require('./skills-registry');
 const { promptForCredential } = require('./credential-prompt');
 const { fetchFromSaas } = require('./saas-fetch');
 
@@ -70,11 +70,21 @@ function seedPipelineState(resolvedTarget, force) {
 // alongside it. Deliberately does not modify platform-init.js — see
 // artefacts/2026-08-05-repo-bootstrap-no-fork/plans/rb-s2-plan.md
 // "Pre-implementation finding".
-function installFullSkillSetAndRegistry(resolvedTarget, platformRoot, force) {
+//
+// rb-s5: withOuterLoop gates which registry entries actually get copied —
+// by default (withOuterLoop falsy), outer-loop-categorized skills are
+// excluded; the flag restores them. The registry FILE written to disk always
+// lists every skill with its real category regardless of this filter (the
+// registry is the categorisation manifest, not an install log) — see
+// artefacts/2026-08-05-repo-bootstrap-no-fork/plans/rb-s5-plan.md
+// "Pre-implementation finding" for why the default narrowed from "install
+// everything, always" to this.
+function installFullSkillSetAndRegistry(resolvedTarget, platformRoot, force, withOuterLoop) {
   const skillsSourceDir = path.join(platformRoot, 'skills');
   const skillsDestDir = path.join(resolvedTarget, '.github', 'skills');
   const registry = buildRegistry(skillsSourceDir);
-  const copied = copySkillsFromRegistry(skillsSourceDir, skillsDestDir, registry, force);
+  const installRegistry = { ...registry, skills: installableSkills(registry, withOuterLoop) };
+  const copied = copySkillsFromRegistry(skillsSourceDir, skillsDestDir, installRegistry, force);
   const registryDest = path.join(resolvedTarget, '.github', 'skills-registry.json');
   // Same skip-unless-force semantics as every other seeded file (context.yml,
   // pipeline-state.json, individual skill files) — a second init run must not
@@ -165,9 +175,10 @@ async function runInit(targetDir, opts) {
 
   requirePlatformInit(resolvedTarget, platformRoot, force);
 
+  const withOuterLoop = !!opts.withOuterLoop;
   const contextResult = seedContextYml(resolvedTarget, platformRoot, force);
   const stateResult = seedPipelineState(resolvedTarget, force);
-  const skillSetResult = installFullSkillSetAndRegistry(resolvedTarget, platformRoot, force);
+  const skillSetResult = installFullSkillSetAndRegistry(resolvedTarget, platformRoot, force, withOuterLoop);
   const harnessResult = assembleHarnessInstructions(resolvedTarget, platformRoot, force);
 
   const seeded = [];
@@ -183,7 +194,11 @@ async function runInit(targetDir, opts) {
     console.log(`[skills-repo-init] Skipped ${skipped.length} existing file(s) (run \`npm run platform:fetch\` to pull updates, or pass --force to overwrite):`);
     for (const f of skipped) console.log(`  ~ ${f}`);
   }
-  console.log(`[skills-repo-init] Installed ${skillSetResult.copiedCount} skill(s) (full skill set) under .github/skills/`);
+  const skillSetLabel = withOuterLoop ? 'full skill set, incl. outer loop' : 'inner-loop + ancillary skills only';
+  console.log(`[skills-repo-init] Installed ${skillSetResult.copiedCount} skill(s) (${skillSetLabel}) under .github/skills/`);
+  if (!withOuterLoop) {
+    console.log('[skills-repo-init] Outer-loop skills (discovery through decisions) were not installed. Re-run this same command later with --with-outer-loop (add-on mode) to add them on top -- it will not touch or remove anything already here.');
+  }
   if (skillSetResult.registryWritten) {
     console.log(`[skills-repo-init] Wrote skills registry: ${path.relative(resolvedTarget, skillSetResult.registryPath)}`);
   } else {
