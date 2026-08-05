@@ -18594,14 +18594,22 @@
             {
               "slug": "mtrr-s1",
               "name": "Resolve each product's own repo for SaaS export, tenant-scoped",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/review/mtrr-s1-review-2.md",
+              "updatedAt": "2026-08-05T21:39:55.298Z"
             },
             {
               "slug": "mtrr-s2",
               "name": "Connect a repo by picking from your own accessible repos",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/review/mtrr-s2-review-1.md",
+              "updatedAt": "2026-08-05T21:39:55.472Z"
             }
           ]
         }
@@ -18611,7 +18619,10 @@
           "id": "ADR-025",
           "category": "adr",
           "label": "Multi-tenancy enforced at the application layer",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "mtrr-s1 Run 2 review confirmed no second isolation mechanism introduced; AC3 revised to preserve rb-s4 status codes while closing the real information-leak.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-08-05T21:40:12.102Z"
         }
       ]
     },
