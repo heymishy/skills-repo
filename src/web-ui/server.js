@@ -14,6 +14,8 @@ const { handleLanding }                                              = require('
 const { handleRoot, handleWelcome, handleMermaidAsset }              = require('./routes/public');      // lab-s1.2 / lab-s2.3 / csd-s1
 const { handleAuthGithub, handleAuthCallback, handleAuthGoogle, handleAuthGoogleCallback, handleLogout, authGuard } = require('./routes/auth');
 const { handleArtefactRoute }                                        = require('./routes/artefact');
+const { handleExportRoute, setExportDataSource }                     = require('./routes/export');    // rb-s4
+const { realExportDataSource }                                       = require('./adapters/export-data-source'); // rb-s4
 const { handleSignOff, handleArtefactRead }                             = require('./routes/sign-off');
 const { healthCheckHandler }                                         = require('./routes/health');
 const { versionHandler }                                             = require('./routes/version');
@@ -172,6 +174,18 @@ if (process.env.NODE_ENV !== 'test') {
 if (process.env.NODE_ENV !== 'test') {
   setPipelineStateFetchAdapter(realFetchPipelineState);
   console.log('[pr-s2] pipeline-state fetch adapter wired');
+}
+
+// rb-s4 / D37 mandatory separate wiring task -- wire the real export
+// data-source adapter (reuses fetchArtefact + realFetchPipelineState under
+// the hood, so it is byte-identical with handleArtefactRoute's own fetch
+// path -- AC4). Never wired in NODE_ENV=test (tests call
+// setExportDataSource() themselves with a mock or with realExportDataSource
+// directly against a mocked global.fetch); the throwing stub stays active
+// there, matching the pattern already used by the adapters above.
+if (process.env.NODE_ENV !== 'test') {
+  setExportDataSource(realExportDataSource);
+  console.log('[rb-s4] export data source adapter wired');
 }
 
 // prc-s2.1 / D37 mandatory separate wiring task -- wire the real GitHub
@@ -2253,6 +2267,13 @@ async function router(req, res) {
     const slug         = parts[1];
     const artefactType = parts[2];
     await handleArtefactRoute(req, res, slug, artefactType);
+
+  } else if (pathname.match(/^\/api\/export\/[^/]+$/) && req.method === 'GET') {
+    // rb-s4: machine-to-machine export for the bootstrap CLI's --from-saas
+    // flow -- gated by a per-request Bearer credential, never req.session.
+    const parts = pathname.split('/').filter(Boolean);
+    const slug  = parts[2];
+    await handleExportRoute(req, res, slug);
 
   } else if (pathname === '/health') {
     healthCheckHandler(req, res);
