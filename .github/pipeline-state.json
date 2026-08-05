@@ -15447,25 +15447,25 @@
     {
       "slug": "2026-07-25-staging-deploy-seed-fix",
       "name": "Install dependencies before the staging-deploy seed step",
-      "stage": "definition-of-ready",
+      "stage": "review",
       "health": "green",
       "reviewStatus": "not-required",
       "highFindings": 0,
-      "updatedAt": "2026-08-04T19:16:50.544Z",
+      "updatedAt": "2026-08-05T09:28:36.750Z",
       "track": "short",
       "stories": [
         {
           "slug": "dsds-s1-install-deps-before-seed-step",
           "id": "dsds-s1-install-deps-before-seed-step",
           "name": "Install dependencies before the staging-deploy seed step runs",
-          "stage": "definition-of-ready",
+          "stage": "review",
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-08-04T19:16:50.545Z",
+          "updatedAt": "2026-08-05T09:28:36.751Z",
           "testPlan": {
-            "status": "all-passing",
-            "totalTests": 1,
+            "status": "not-started",
+            "totalTests": 0,
             "passing": 0
           },
           "acTotal": 2,
@@ -15473,7 +15473,7 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-07-25-staging-deploy-seed-fix/dor/dsds-s1-dor.md",
-          "dorStatus": "signed-off",
+          "dorStatus": "not-started",
           "prStatus": "none"
         }
       ]
