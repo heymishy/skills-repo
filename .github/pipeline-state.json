@@ -18541,7 +18541,7 @@
     {
       "slug": "2026-08-06-multi-tenant-repo-resolution",
       "name": "Multi-Tenant Repo Resolution for SaaS Export + Repo-Connection UX",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
       "stories": [],
       "metrics": [
@@ -18576,14 +18576,44 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-05T21:20:07.050Z",
+      "updatedAt": "2026-08-05T21:29:56.263Z",
       "discoveryArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/discovery.md",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "benefitMetricArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/benefit-metric.md"
+      "benefitMetricArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/benefit-metric.md",
+      "slicingStrategy": "risk-first",
+      "epics": [
+        {
+          "slug": "mtrr-e1-multi-tenant-repo-resolution-and-ux",
+          "name": "Every operator's own connected repo resolves correctly, and connecting one is a picker, not a URL field",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "mtrr-s1",
+              "name": "Resolve each product's own repo for SaaS export, tenant-scoped",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "mtrr-s2",
+              "name": "Connect a repo by picking from your own accessible repos",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
+        }
+      ],
+      "guardrails": [
+        {
+          "id": "ADR-025",
+          "category": "adr",
+          "label": "Multi-tenancy enforced at the application layer",
+          "status": "not-assessed"
+        }
+      ]
     },
     {
       "slug": "2026-08-06-single-repo-assumption-audit",

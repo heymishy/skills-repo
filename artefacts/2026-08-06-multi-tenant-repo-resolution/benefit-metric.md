@@ -66,9 +66,9 @@ Confirmed aligned with an existing Horizon 1 priority (beta readiness / tenant i
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Metric 1 — Cross-tenant data isolation | *(populated at /definition)* | Gap — pending story definition |
-| Metric 2 — Distinct products supported | *(populated at /definition)* | Gap — pending story definition |
-| Metric 3 — Repo-connection setup experience | *(populated at /definition)* | Gap — pending story definition |
+| Metric 1 — Cross-tenant data isolation | mtrr-s1 | Covered |
+| Metric 2 — Distinct products supported | mtrr-s1 | Covered |
+| Metric 3 — Repo-connection setup experience | mtrr-s2 | Covered |
 
 ---
 
