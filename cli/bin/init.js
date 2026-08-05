@@ -10,12 +10,13 @@ async function main() {
   if (subcommand !== 'init') {
     process.stderr.write(
       '[skills-repo] Usage: skills-repo init <target-dir> [--force] [--from-saas <feature-slug>] [--with-outer-loop]\n' +
-      '[skills-repo]   --with-outer-loop  Also install every outer-loop skill (discovery through decisions).\n' +
-      '[skills-repo]                      Without it, only inner-loop and ancillary skills are installed.\n' +
+      '[skills-repo]   --with-outer-loop  Enable the outer loop (discovery through decisions) at session start.\n' +
+      '[skills-repo]                      Every skill file is always installed either way -- this only flips\n' +
+      '[skills-repo]                      outerLoop.enabled in context.yml and how the generated instruction\n' +
+      '[skills-repo]                      file presents outer-loop skills (active vs. installed-but-not-enabled).\n' +
       '[skills-repo]                      Add-on mode: re-run init later against the same directory with just\n' +
-      '[skills-repo]                      --with-outer-loop (no --force needed) to add the outer loop after the\n' +
-      '[skills-repo]                      fact -- this is the supported path and never discards or overwrites\n' +
-      '[skills-repo]                      anything already bootstrapped there.\n'
+      '[skills-repo]                      --with-outer-loop (no --force needed) to enable it after the fact --\n' +
+      '[skills-repo]                      this is the supported path and never touches any other bootstrapped file.\n'
     );
     process.exit(1);
   }

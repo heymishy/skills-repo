@@ -3,7 +3,7 @@
 const fs = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
-const { buildRegistry, copySkillsFromRegistry, installableSkills, writeRegistryFile } = require('./skills-registry');
+const { buildRegistry, copySkillsFromRegistry, writeRegistryFile } = require('./skills-registry');
 const { promptForCredential } = require('./credential-prompt');
 const { fetchFromSaas } = require('./saas-fetch');
 
@@ -52,6 +52,55 @@ function seedContextYml(resolvedTarget, platformRoot, force) {
   return 'copied';
 }
 
+// rb-s5 (revised 2026-08-06 -- see decisions.md): --with-outer-loop controls
+// an *enablement signal* in context.yml, not which skill files exist on disk.
+// rb-s2 AC1 ("the target directory contains the platform's complete current
+// skill set... not a subset or placeholder") is an unconditional, already-
+// shipped guarantee -- every skill file, outer-loop included, is always
+// present regardless of this flag. This function only ever flips
+// outerLoop.enabled from false to true; it never downgrades true back to
+// false (no removal mechanism is in scope), so a later bootstrap run without
+// the flag can never silently disable an outer loop a previous run enabled.
+// Runs on every init call, independent of context.yml's own file-level
+// skip-unless-force gate (seedContextYml) -- that gate protects the file's
+// existence/general content from being clobbered by a second run; this
+// function is the one, narrow, intentional exception that a second run is
+// expected to mutate, since flipping this one field on an add-on run (AC4)
+// is the entire point of the flag.
+function ensureOuterLoopSignal(resolvedTarget, withOuterLoop) {
+  const contextPath = path.join(resolvedTarget, 'context.yml');
+  if (!fs.existsSync(contextPath)) {
+    return { changed: false, enabled: !!withOuterLoop };
+  }
+
+  const original = fs.readFileSync(contextPath, 'utf8');
+  const blockRe = /^outerLoop:\r?\n(?:[ \t].*\r?\n?)*/m;
+  const match = original.match(blockRe);
+
+  let previousEnabled = false;
+  if (match) {
+    const enabledMatch = match[0].match(/^[ \t]+enabled:\s*(true|false)/m);
+    previousEnabled = enabledMatch ? enabledMatch[1] === 'true' : false;
+  }
+
+  const desired = !!withOuterLoop || previousEnabled;
+  const newBlock = `outerLoop:\n  enabled: ${desired}\n`;
+
+  let updated;
+  if (match) {
+    updated = original.slice(0, match.index) + newBlock + original.slice(match.index + match[0].length);
+  } else {
+    const sep = original.endsWith('\n') ? '' : '\n';
+    updated = `${original}${sep}\n${newBlock}`;
+  }
+
+  if (updated !== original) {
+    fs.writeFileSync(contextPath, updated, 'utf8');
+  }
+
+  return { changed: previousEnabled !== desired, enabled: desired };
+}
+
 function seedPipelineState(resolvedTarget, force) {
   const dest = path.join(resolvedTarget, '.github', 'pipeline-state.json');
   if (!force && fs.existsSync(dest)) return 'skipped';
@@ -70,21 +119,11 @@ function seedPipelineState(resolvedTarget, force) {
 // alongside it. Deliberately does not modify platform-init.js — see
 // artefacts/2026-08-05-repo-bootstrap-no-fork/plans/rb-s2-plan.md
 // "Pre-implementation finding".
-//
-// rb-s5: withOuterLoop gates which registry entries actually get copied —
-// by default (withOuterLoop falsy), outer-loop-categorized skills are
-// excluded; the flag restores them. The registry FILE written to disk always
-// lists every skill with its real category regardless of this filter (the
-// registry is the categorisation manifest, not an install log) — see
-// artefacts/2026-08-05-repo-bootstrap-no-fork/plans/rb-s5-plan.md
-// "Pre-implementation finding" for why the default narrowed from "install
-// everything, always" to this.
-function installFullSkillSetAndRegistry(resolvedTarget, platformRoot, force, withOuterLoop) {
+function installFullSkillSetAndRegistry(resolvedTarget, platformRoot, force) {
   const skillsSourceDir = path.join(platformRoot, 'skills');
   const skillsDestDir = path.join(resolvedTarget, '.github', 'skills');
   const registry = buildRegistry(skillsSourceDir);
-  const installRegistry = { ...registry, skills: installableSkills(registry, withOuterLoop) };
-  const copied = copySkillsFromRegistry(skillsSourceDir, skillsDestDir, installRegistry, force);
+  const copied = copySkillsFromRegistry(skillsSourceDir, skillsDestDir, registry, force);
   const registryDest = path.join(resolvedTarget, '.github', 'skills-registry.json');
   // Same skip-unless-force semantics as every other seeded file (context.yml,
   // pipeline-state.json, individual skill files) — a second init run must not
@@ -111,9 +150,15 @@ function installFullSkillSetAndRegistry(resolvedTarget, platformRoot, force, wit
 // init call, .github/copilot-instructions.md already exists (written moments
 // earlier by platform-init.js) but the other three do not, so this correctly
 // still runs and replaces that placeholder rather than skipping.
-function assembleHarnessInstructions(resolvedTarget, platformRoot, force) {
+//
+// rb-s5: forceRegen is a narrow, separate override from force -- it bypasses
+// the "all 4 already exist" skip specifically when ensureOuterLoopSignal()
+// just flipped outerLoop.enabled on an add-on run (AC4), so the session-start
+// section reflects the new signal, without pulling in --force's much broader
+// "overwrite every seeded file" semantics.
+function assembleHarnessInstructions(resolvedTarget, platformRoot, force, forceRegen) {
   const allExist = HARNESS_INSTRUCTION_FILES.every(rel => fs.existsSync(path.join(resolvedTarget, rel)));
-  if (!force && allExist) {
+  if (!force && !forceRegen && allExist) {
     return { ran: false, reason: 'all 4 harness instruction files already present' };
   }
 
@@ -178,8 +223,9 @@ async function runInit(targetDir, opts) {
   const withOuterLoop = !!opts.withOuterLoop;
   const contextResult = seedContextYml(resolvedTarget, platformRoot, force);
   const stateResult = seedPipelineState(resolvedTarget, force);
-  const skillSetResult = installFullSkillSetAndRegistry(resolvedTarget, platformRoot, force, withOuterLoop);
-  const harnessResult = assembleHarnessInstructions(resolvedTarget, platformRoot, force);
+  const skillSetResult = installFullSkillSetAndRegistry(resolvedTarget, platformRoot, force);
+  const signalResult = ensureOuterLoopSignal(resolvedTarget, withOuterLoop);
+  const harnessResult = assembleHarnessInstructions(resolvedTarget, platformRoot, force, signalResult.changed);
 
   const seeded = [];
   const skipped = [];
@@ -194,11 +240,7 @@ async function runInit(targetDir, opts) {
     console.log(`[skills-repo-init] Skipped ${skipped.length} existing file(s) (run \`npm run platform:fetch\` to pull updates, or pass --force to overwrite):`);
     for (const f of skipped) console.log(`  ~ ${f}`);
   }
-  const skillSetLabel = withOuterLoop ? 'full skill set, incl. outer loop' : 'inner-loop + ancillary skills only';
-  console.log(`[skills-repo-init] Installed ${skillSetResult.copiedCount} skill(s) (${skillSetLabel}) under .github/skills/`);
-  if (!withOuterLoop) {
-    console.log('[skills-repo-init] Outer-loop skills (discovery through decisions) were not installed. Re-run this same command later with --with-outer-loop (add-on mode) to add them on top -- it will not touch or remove anything already here.');
-  }
+  console.log(`[skills-repo-init] Installed ${skillSetResult.copiedCount} skill(s) (full skill set) under .github/skills/`);
   if (skillSetResult.registryWritten) {
     console.log(`[skills-repo-init] Wrote skills registry: ${path.relative(resolvedTarget, skillSetResult.registryPath)}`);
   } else {
@@ -209,7 +251,16 @@ async function runInit(targetDir, opts) {
   } else {
     console.log(`[skills-repo-init] Skipped harness-agnostic instruction assembly: ${harnessResult.reason} (pass --force to regenerate)`);
   }
+  console.log(`[skills-repo-init] Outer loop enablement signal: outerLoop.enabled=${signalResult.enabled} in context.yml`);
+  if (signalResult.enabled) {
+    console.log('[skills-repo-init] Outer-loop skills (discovery through decisions) are presented as active tooling at session start.');
+  } else {
+    console.log('[skills-repo-init] Outer-loop skills are installed but not enabled. Re-run this same command later with --with-outer-loop (add-on mode) to activate them at session start -- every skill file is already present either way.');
+  }
+  if (signalResult.changed) {
+    console.log('[skills-repo-init] outerLoop.enabled flipped to true -- regenerated the instruction file to reflect it.');
+  }
   console.log('[skills-repo-init] Done.');
 }
 
-module.exports = { resolvePlatformRoot, runInit, installFullSkillSetAndRegistry, assembleHarnessInstructions, HARNESS_INSTRUCTION_FILES };
+module.exports = { resolvePlatformRoot, runInit, installFullSkillSetAndRegistry, assembleHarnessInstructions, ensureOuterLoopSignal, HARNESS_INSTRUCTION_FILES };
