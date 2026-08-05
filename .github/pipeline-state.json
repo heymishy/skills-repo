@@ -18309,31 +18309,60 @@
         {
           "slug": "rb-e1-no-fork-bootstrap-core",
           "name": "A developer can start the inner loop in a real repo without forking or cloning the platform",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "rb-s1",
               "name": "Bootstrap a minimal fresh repo with one init command",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/review/rb-s1-review-2.md",
-              "updatedAt": "2026-08-05T08:27:31.567Z",
+              "updatedAt": "2026-08-05T09:15:00.951Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 9,
-                "passing": 0
+                "totalTests": 10,
+                "passing": 10
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 3,
               "testPlanArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/test-plans/rb-s1-test-plan.md",
               "verificationScriptArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/verification-scripts/rb-s1-verification.md",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s1-dor.md",
-              "dorContractArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s1-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s1-dor-contract.md",
+              "planArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/plans/rb-s1-plan.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "resolvePlatformRoot() bundled-root resolution",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-05-repo-bootstrap-no-fork/plans/rb-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "runInit() wraps platform-init.js via require + seeds context.yml/pipeline-state.json",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-05-repo-bootstrap-no-fork/plans/rb-s1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "cli/bin/init.js npx entry point",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-05-repo-bootstrap-no-fork/plans/rb-s1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "package.json bin + files fields",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-05-repo-bootstrap-no-fork/plans/rb-s1-plan.md"
+                }
+              ],
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/665"
             },
             {
               "slug": "rb-s2",
