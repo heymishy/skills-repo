@@ -2650,3 +2650,23 @@ audit:
 **Circumstance:** Story 6's AC4 required proving that a conversion transaction and a concurrent grant-creation call don't corrupt each other's data. The test built a "gated pool" wrapper whose `query()` calls are queued (not executed) and return an unresolved Promise; a test-controlled `releaseNext()` is the only thing that actually runs a queued query and resolves its caller. Both operations are started without awaiting, confirmed genuinely in-flight simultaneously (two pending queue entries) before either resolves, then released in both possible orders to assert the final state is non-corrupted either way.
 
 **Takeaway:** `await a(); await b();` never produces genuine concurrency — the two operations are never actually in flight at the same instant, no matter how the assertions afterward are worded. A real concurrency test needs a mechanism that can prove two operations are simultaneously pending before either completes, and needs to exercise both possible completion orders explicitly, not just one.
+
+---
+
+## Symlinks are the wrong mechanism for harness-agnostic instruction files in a Windows-primary repo
+
+### Observed — 2026-08-05 08:05 (/definition, repo-bootstrap-no-fork, rb-s3)
+
+**Circumstance:** Designing a mechanism to keep CLAUDE.md, AGENTS.md, .cursorrules, and .github/copilot-instructions.md identical across harnesses, an external reference (qm) uses one real file with the others as symlinks pointing at it. This repo's own dev environment is Windows, where git's symlink support is opt-in (core.symlinks) and inconsistent on checkout — a user without it enabled silently receives a plain-text file containing the link path instead of a working symlink, breaking the "one source of truth" guarantee with no error surfaced anywhere.
+
+**Takeaway:** A copy-based assembly step (generate each target file's content from one source, verified by a drift-check validator) is the safer choice than a symlink-based guarantee whenever a Windows-primary audience is in scope — the drift-check recovers the "impossible to diverge" property symlinks provide for free, without depending on a platform-specific filesystem feature that can silently fail. This repo already had the right pattern in place (scripts/assemble-copilot-instructions.sh, ADR-005) before this question came up; extending an existing mechanism beat introducing a second one.
+
+---
+
+## The /definition skill's guardrails-seeding instruction doesn't match actual practice — follow practice, not the literal text
+
+### Observed — 2026-08-05 08:05 (/definition, repo-bootstrap-no-fork)
+
+**Circumstance:** skills/definition/SKILL.md's mandatory state-update step instructs seeding a feature's guardrails array with every item from .github/architecture-guardrails.md's Guardrails Registry — 51 entries total, most of them specific to dashboards/pipeline-viz.html and unrelated to most features. Checking 3 existing features' actual guardrails arrays in pipeline-state.json found 0, 0, and 20 entries respectively — never all 51, and the 20-entry case was a curated, feature-relevant subset (3 ADRs plus 17 per-story NFR assessments added later at DoD), not a registry dump.
+
+**Takeaway:** When a SKILL.md's literal instruction and the repo's own established practice disagree, checking a few real examples before following the instruction verbatim catches this kind of drift — following this one literally would have flooded an unrelated feature's guardrails matrix with dozens of viz-tool-specific entries. The SKILL.md wording itself should be corrected (seed only registry items the Step 1.5 architecture-constraints scan actually surfaced as relevant) so the next agent doesn't have to independently rediscover the gap.
