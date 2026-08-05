@@ -18435,7 +18435,7 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/review/rb-s4-review-3.md",
-              "updatedAt": "2026-08-05T19:07:41.665Z",
+              "updatedAt": "2026-08-05T19:16:52.884Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 15,
@@ -18450,9 +18450,10 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s4-dor.md",
               "dorContractArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s4-dor-contract.md",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/668",
-              "planArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/plans/rb-s4-plan.md"
+              "planArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/plans/rb-s4-plan.md",
+              "mergeCommit": "bbbcb27d"
             },
             {
               "slug": "rb-s5",
