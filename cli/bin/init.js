@@ -8,10 +8,20 @@ async function main() {
   const args = process.argv.slice(2);
   const subcommand = args[0];
   if (subcommand !== 'init') {
-    process.stderr.write('[skills-repo] Usage: skills-repo init <target-dir> [--force] [--from-saas <feature-slug>]\n');
+    process.stderr.write(
+      '[skills-repo] Usage: skills-repo init <target-dir> [--force] [--from-saas <feature-slug>] [--with-outer-loop]\n' +
+      '[skills-repo]   --with-outer-loop  Enable the outer loop (discovery through decisions) at session start.\n' +
+      '[skills-repo]                      Every skill file is always installed either way -- this only flips\n' +
+      '[skills-repo]                      outerLoop.enabled in context.yml and how the generated instruction\n' +
+      '[skills-repo]                      file presents outer-loop skills (active vs. installed-but-not-enabled).\n' +
+      '[skills-repo]                      Add-on mode: re-run init later against the same directory with just\n' +
+      '[skills-repo]                      --with-outer-loop (no --force needed) to enable it after the fact --\n' +
+      '[skills-repo]                      this is the supported path and never touches any other bootstrapped file.\n'
+    );
     process.exit(1);
   }
   const force = args.includes('--force');
+  const withOuterLoop = args.includes('--with-outer-loop');
 
   // --from-saas takes a value (the feature slug) -- both the flag token and
   // its value must be excluded from positional-argument parsing below, so
@@ -31,7 +41,7 @@ async function main() {
     .map(({ value }) => value);
 
   const targetDir = positional[0] ? path.resolve(positional[0]) : process.cwd();
-  await runInit(targetDir, { force, fromSaas });
+  await runInit(targetDir, { force, fromSaas, withOuterLoop });
 }
 
 main().catch((err) => {

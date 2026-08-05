@@ -11,16 +11,16 @@
 
 | AC | Description | Unit | Integration | E2E | Manual | Gap type | Risk |
 |----|-------------|------|-------------|-----|--------|----------|------|
-| AC1 | --with-outer-loop installs outer-loop skills on fresh path | 1 test | 1 test | — | — | — | 🟢 |
-| AC2 | SaaS-connected without flag → inner-loop+ancillary only (default) | 1 test | — | — | — | — | 🟢 |
-| AC3 | SaaS-connected with flag → outer-loop also installed | 1 test | 1 test | — | — | — | 🟢 |
-| AC4 | Add-on mode documented for adding outer loop after initial bootstrap | 1 test | — | — | — | — | 🟡 (reconciliation with rb-s1 AC3 open, see decisions.md) |
+| AC1 | --with-outer-loop enables outerLoop.enabled signal on fresh path, all files still present | 1 test | 1 test | — | — | — | 🟢 |
+| AC2 | Without flag → signal disabled (default), all files still present | 1 test | — | — | — | — | 🟢 |
+| AC3 | SaaS-connected with flag → same signal behaviour as fresh path | 1 test | 1 test | — | — | — | 🟢 |
+| AC4 | Add-on mode flips signal without touching any other file | 1 test | — | — | — | — | 🟢 |
 
 ---
 
 ## Coverage gaps
 
-None — AC4's open reconciliation question (add-on mode vs. rb-s1 AC3's refusal behaviour) is a design question to resolve during implementation, not a testability gap; the test below asserts whichever resolution is chosen behaves consistently, not a specific unresolved behaviour.
+None. The design was revised at implementation time (2026-08-06, see `decisions.md`) from file-presence filtering to an enablement-signal mechanism, specifically to avoid conflicting with `rb-s2`'s already-shipped, unconditional AC1 guarantee that every skill file is always present. This removes the reconciliation question that previously existed against `rb-s1` AC3 — since no skill file's presence ever changes state, there's nothing to reconcile.
 
 ---
 
@@ -49,37 +49,37 @@ None.
 
 ## Unit Tests
 
-### freshRepoWithFlag_installsOuterLoopSkillsOnTop
+### freshRepoWithFlag_enablesOuterLoopSignal_allFilesStillPresent
 
 - **Verifies:** AC1
 - **Precondition:** Registry fixture with known outer/inner/ancillary categorization; fresh init run with `--with-outer-loop`
-- **Action:** Inspect installed skill set after init completes
-- **Expected result:** Every skill categorized `outer-loop` in the registry is present, in addition to the inner-loop and ancillary skills already installed by default
+- **Action:** Inspect `context.yml` and the generated instruction file's session-start section after init completes; separately confirm every skill file (outer-loop included) still exists on disk
+- **Expected result:** `context.yml` contains `outerLoop.enabled: true`; the instruction file lists outer-loop skills as active; every skill file is present regardless of the flag (rb-s2's AC1 unconditional guarantee is never touched by this story)
 - **Edge case:** No
 
-### saasConnectedWithoutFlag_installsOnlyInnerLoopAndAncillary
+### withoutFlag_outerLoopSignalDisabled_allFilesStillPresent
 
 - **Verifies:** AC2
-- **Precondition:** SaaS-connected bootstrap run without `--with-outer-loop`
-- **Action:** Inspect installed skill set
-- **Expected result:** No `outer-loop`-categorized skill is present; inner-loop and ancillary skills are present
+- **Precondition:** Either bootstrap path run without `--with-outer-loop`
+- **Action:** Inspect `context.yml` and the instruction file's session-start section; confirm every skill file (including outer-loop) still exists on disk
+- **Expected result:** `context.yml` contains `outerLoop.enabled: false` (or the field absent); the instruction file names outer-loop skills as installed-but-not-enabled with the exact flag to enable them; no skill file is missing
 - **Edge case:** No
 
-### saasConnectedWithFlag_installsOuterLoopToo
+### saasConnectedWithFlag_sameSignalBehaviourAsFreshRepo
 
 - **Verifies:** AC3
 - **Precondition:** SaaS-connected bootstrap run with `--with-outer-loop`
-- **Action:** Inspect installed skill set
-- **Expected result:** Outer-loop skills present, matching the fresh-repo-with-flag behaviour from AC1's test exactly (same registry-driven logic, same result set)
+- **Action:** Inspect `context.yml` and instruction file
+- **Expected result:** Identical `outerLoop.enabled: true` signal and instruction-file presentation as the fresh-repo path — the flag's effect does not depend on entry point
 - **Edge case:** No
 
-### addOnModeInstallsOuterLoopWithoutDiscardingExistingBootstrap
+### addOnModeFlipsSignalWithoutTouchingAnyOtherFile
 
 - **Verifies:** AC4
-- **Precondition:** A target directory already bootstrapped (inner-loop only, no flag used initially)
-- **Action:** Re-run init in add-on mode with `--with-outer-loop`
-- **Expected result:** Outer-loop skills are added; all pre-existing files (skills, registry, any fetched artefact content) remain unchanged (verified by checksum before/after) — the reconciliation with `rb-s1` AC3's refusal-to-overwrite behaviour must be explicit in the implementation: add-on mode adds new outer-loop files without touching anything `rb-s1` AC3 already protects
-- **Edge case:** Yes — this test doubles as the reconciliation check flagged as an open finding in `decisions.md`
+- **Precondition:** A target directory already bootstrapped without the flag (`outerLoop.enabled: false`)
+- **Action:** Re-run init with just `--with-outer-loop` (no `--force`)
+- **Expected result:** `context.yml`'s `outerLoop.enabled` flips to `true` and the instruction file regenerates its session-start section; every other file's content and mtime are unchanged (verified by checksum before/after) — no reconciliation with `rb-s1` AC3's refusal-to-overwrite logic is even needed, since no skill file ever changes state
+- **Edge case:** Yes — proves add-on mode touches only `context.yml` and the instruction file, nothing else
 
 ---
 
@@ -88,10 +88,10 @@ None.
 ### freshRepoFlagBehaviour_consistentAcrossBothEntryPoints
 
 - **Verifies:** AC1, AC3
-- **Components involved:** Fresh-repo init path (`rb-s1`), SaaS-connected path (`rb-s4`), registry (`rb-s2`)
+- **Components involved:** Fresh-repo init path (`rb-s1`), SaaS-connected path (`rb-s4`), registry (`rb-s2`), instruction assembly (`rb-s3`)
 - **Precondition:** Both entry points available, same registry fixture
 - **Action:** Run `--with-outer-loop` against both a fresh-repo bootstrap and a SaaS-connected bootstrap
-- **Expected result:** Both produce the identical outer-loop skill set — the flag's behaviour does not diverge based on which entry point it's combined with
+- **Expected result:** Both produce identical `context.yml` `outerLoop.enabled: true` and identical instruction-file session-start presentation — the flag's effect does not diverge based on entry point. Both also produce the identical, complete skill-file set on disk (unaffected by the flag either way).
 
 ---
 
@@ -115,6 +115,4 @@ None.
 
 ## Test Gaps and Risks
 
-| Gap | Reason | Mitigation |
-|-----|--------|------------|
-| Exact reconciliation semantics between add-on mode and `rb-s1` AC3's refusal behaviour | Not fully specified at story-writing time — flagged as an open design question in `decisions.md` | The `addOnModeInstallsOuterLoopWithoutDiscardingExistingBootstrap` test is written to assert the *outcome* (existing files untouched, new files added) regardless of which specific reconciliation mechanism the implementer chooses, so the test doesn't need to be rewritten once the design question resolves |
+None — the revised enablement-signal design (2026-08-06) removes the reconciliation risk that existed under the original file-presence-filtering design, since no skill file's on-disk presence ever changes across any of the four ACs.
