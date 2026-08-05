@@ -2,7 +2,25 @@
 
 const fs = require('fs');
 const path = require('path');
+const { spawnSync } = require('child_process');
 const { buildRegistry, copySkillsFromRegistry, writeRegistryFile } = require('./skills-registry');
+
+const HARNESS_INSTRUCTION_FILES = [
+  'CLAUDE.md',
+  'AGENTS.md',
+  '.cursorrules',
+  path.join('.github', 'copilot-instructions.md'),
+];
+
+// On Windows, WSL bash may be absent or broken; prefer Git Bash when
+// available. Mirrors the same resolution used by
+// .github/scripts/check-assembly.js and tests/check-rb-s3-*.js.
+function resolveBashBin() {
+  if (process.platform !== 'win32') return 'bash';
+  const gitBash = 'C:\\Program Files\\Git\\bin\\bash.exe';
+  if (fs.existsSync(gitBash)) return gitBash;
+  return 'bash';
+}
 
 function resolvePlatformRoot(callerDir) {
   return path.resolve(callerDir, '..', '..');
@@ -67,6 +85,59 @@ function installFullSkillSetAndRegistry(resolvedTarget, platformRoot, force) {
   return { copiedCount: copied.length, registryPath: registryDest, registryWritten };
 }
 
+// rb-s3: the story's Architecture Constraints assumed
+// scripts/assemble-copilot-instructions.sh already produced the single
+// instruction file rb-s1 seeds — it does not. rb-s1's single
+// .github/copilot-instructions.md is a hardcoded placeholder written
+// directly by platform-init.js, a separate code path from this script's
+// assemble() logic. This step wires the actual assembly script in as an
+// additive install step (same pattern as installFullSkillSetAndRegistry
+// above), run after the full skill set is in place so the assembled content
+// reflects the target's real .github/skills, not a placeholder. Skip-unless-
+// force semantics mirror every other seeded file: only skipped when ALL FOUR
+// harness files already exist (a genuine second run) — on the very first
+// init call, .github/copilot-instructions.md already exists (written moments
+// earlier by platform-init.js) but the other three do not, so this correctly
+// still runs and replaces that placeholder rather than skipping.
+function assembleHarnessInstructions(resolvedTarget, platformRoot, force) {
+  const allExist = HARNESS_INSTRUCTION_FILES.every(rel => fs.existsSync(path.join(resolvedTarget, rel)));
+  if (!force && allExist) {
+    return { ran: false, reason: 'all 4 harness instruction files already present' };
+  }
+
+  const assembleScript = path.join(platformRoot, 'scripts', 'assemble-copilot-instructions.sh');
+  const contextFile = path.join(resolvedTarget, 'context.yml');
+  const bashBin = resolveBashBin();
+
+  const assembleResult = spawnSync(bashBin, [
+    assembleScript,
+    '--skills-repo-path', resolvedTarget,
+    '--context', contextFile,
+    '--all-harnesses',
+  ], { cwd: resolvedTarget, encoding: 'utf8' });
+
+  if (assembleResult.status !== 0) {
+    throw new Error(
+      `[skills-repo-init] Failed to assemble harness-agnostic instruction files: ${assembleResult.stderr || assembleResult.stdout}`
+    );
+  }
+
+  // Immediately verify the four files this step just wrote are in sync —
+  // a freshly-bootstrapped repo must never be in a state where they could
+  // already have diverged. Uses the target's own copy of the drift-check
+  // validator (copied in by platform-init.js's COPY_DIRS moments earlier),
+  // not this platform repo's, so this proves what a real npx consumer gets.
+  const driftScript = path.join(resolvedTarget, 'scripts', 'check-instructions-drift.js');
+  const driftResult = spawnSync(process.execPath, [driftScript, '--dir', resolvedTarget], { encoding: 'utf8' });
+  if (driftResult.status !== 0) {
+    throw new Error(
+      `[skills-repo-init] Freshly-assembled harness instruction files failed drift-check: ${driftResult.stdout || driftResult.stderr}`
+    );
+  }
+
+  return { ran: true, files: HARNESS_INSTRUCTION_FILES };
+}
+
 function runInit(targetDir, opts) {
   opts = opts || {};
   const platformRoot = opts.platformRoot || resolvePlatformRoot(__dirname);
@@ -78,6 +149,7 @@ function runInit(targetDir, opts) {
   const contextResult = seedContextYml(resolvedTarget, platformRoot, force);
   const stateResult = seedPipelineState(resolvedTarget, force);
   const skillSetResult = installFullSkillSetAndRegistry(resolvedTarget, platformRoot, force);
+  const harnessResult = assembleHarnessInstructions(resolvedTarget, platformRoot, force);
 
   const seeded = [];
   const skipped = [];
@@ -98,7 +170,12 @@ function runInit(targetDir, opts) {
   } else {
     console.log(`[skills-repo-init] Skipped existing skills registry: ${path.relative(resolvedTarget, skillSetResult.registryPath)} (run \`npm run platform:fetch\` to pull updates, or pass --force to overwrite)`);
   }
+  if (harnessResult.ran) {
+    console.log(`[skills-repo-init] Assembled harness-agnostic instruction files (drift-checked clean): ${harnessResult.files.join(', ')}`);
+  } else {
+    console.log(`[skills-repo-init] Skipped harness-agnostic instruction assembly: ${harnessResult.reason} (pass --force to regenerate)`);
+  }
   console.log('[skills-repo-init] Done.');
 }
 
-module.exports = { resolvePlatformRoot, runInit, installFullSkillSetAndRegistry };
+module.exports = { resolvePlatformRoot, runInit, installFullSkillSetAndRegistry, assembleHarnessInstructions, HARNESS_INSTRUCTION_FILES };
