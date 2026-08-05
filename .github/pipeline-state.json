@@ -18541,17 +18541,49 @@
     {
       "slug": "2026-08-06-multi-tenant-repo-resolution",
       "name": "Multi-Tenant Repo Resolution for SaaS Export + Repo-Connection UX",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "stories": [],
-      "metrics": [],
-      "updatedAt": "2026-08-05T21:18:25.324Z",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Cross-tenant data isolation for the export feature",
+          "target": "Zero cross-tenant leaks, permanent CI-enforced",
+          "baseline": "Real risk today, no test guards it",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Number of distinct products that can successfully use --from-saas",
+          "target": "All products with connected repos work",
+          "baseline": "1 (hardcoded repo only)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Repo-connection setup experience",
+          "target": "Pick from accessible repos, no URL lookup needed",
+          "baseline": "Bare URL-entry form",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "updatedAt": "2026-08-05T21:20:07.050Z",
       "discoveryArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/discovery.md",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
-      "sensitiveDataCategories": []
+      "sensitiveDataCategories": [],
+      "benefitMetricArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/benefit-metric.md"
     },
     {
       "slug": "2026-08-06-single-repo-assumption-audit",
