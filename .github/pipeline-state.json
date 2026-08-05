@@ -18399,7 +18399,7 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/review/rb-s3-review-1.md",
-              "updatedAt": "2026-08-05T10:26:51.820Z",
+              "updatedAt": "2026-08-05T10:38:37.660Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
@@ -18415,9 +18415,10 @@
               "dorArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s3-dor.md",
               "dorContractArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s3-dor-contract.md",
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/667",
-              "planArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/plans/rb-s3-plan.md"
+              "planArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/plans/rb-s3-plan.md",
+              "mergeCommit": "7f509ec5"
             }
           ]
         },
