@@ -18373,21 +18373,23 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/review/rb-s2-review-2.md",
-              "updatedAt": "2026-08-05T08:28:27.252Z",
+              "updatedAt": "2026-08-05T10:00:51.755Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 6,
-                "passing": 0
+                "totalTests": 10,
+                "passing": 10
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "testPlanArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/test-plans/rb-s2-test-plan.md",
               "verificationScriptArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/verification-scripts/rb-s2-verification.md",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s2-dor.md",
-              "dorContractArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s2-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s2-dor-contract.md",
+              "prStatus": "merged",
+              "mergeCommit": "6397a0ec"
             },
             {
               "slug": "rb-s3",
