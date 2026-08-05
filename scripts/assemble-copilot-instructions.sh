@@ -32,6 +32,14 @@
 #   --context <path>           Path to context.yml for vcs.type / vcs.agent_instructions.format
 #                              resolution. (default: .github/context.yml if present)
 #   --dry-run                  Print the assembled content to stdout; do not write file.
+#   --all-harnesses            Harness-agnostic mode (rb-s3): write byte-identical copies of the
+#                              assembled content to all four known harness instruction paths —
+#                              CLAUDE.md, AGENTS.md, .cursorrules, .github/copilot-instructions.md
+#                              — instead of the single context.yml-resolved output path. Overrides
+#                              --output / context.yml-based path resolution when set. Additive: the
+#                              default (flag omitted) behaviour below is completely unchanged.
+#                              Decision: 2026-08-05 | ARCH | rb-s3 — see
+#                              artefacts/2026-08-05-repo-bootstrap-no-fork/decisions.md
 #
 # Layer composition order (fixed):
 #   1. core-platform  — from skills-repo at <ref>
@@ -53,6 +61,7 @@ OUTPUT=".github/copilot-instructions.md"
 OUTPUT_EXPLICIT=false
 CONTEXT_FILE=""
 DRY_RUN=false
+ALL_HARNESSES=false
 
 # ── Colour helpers ─────────────────────────────────────────────────────────────
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; RESET='\033[0m'
@@ -71,6 +80,7 @@ while [[ $# -gt 0 ]]; do
     --output)           OUTPUT="$2"; OUTPUT_EXPLICIT=true; shift 2 ;;
     --context)          CONTEXT_FILE="$2"; shift 2 ;;
     --dry-run)          DRY_RUN=true; shift ;;
+    --all-harnesses)    ALL_HARNESSES=true; shift ;;
     *) error "Unknown option: $1"; exit 1 ;;
   esac
 done
@@ -356,7 +366,9 @@ _vcs_format() {
 }
 
 # ── Determine output path from context.yml (ADR-005 / ADR-004) ───────────────
-# Only runs when --output was NOT explicitly provided by the caller.
+# Only runs when --output was NOT explicitly provided by the caller. Still
+# computed even when --all-harnesses is set (harmless / unused in that mode)
+# so this block never needs an --all-harnesses-aware branch of its own.
 if [[ "$OUTPUT_EXPLICIT" == false ]]; then
   # Auto-detect context file if not specified
   if [[ -z "$CONTEXT_FILE" && -f ".github/context.yml" ]]; then
@@ -389,20 +401,50 @@ if [[ "$OUTPUT_EXPLICIT" == false ]]; then
   fi
 fi
 
-info "Assembling ${OUTPUT}"
 info "Platform version: $REF"
 info "Skills repo: $SKILLS_REPO_PATH"
 info "Domain layer: ${DOMAIN_LAYER:-[absent]}"
 info "Squad layer:  ${SQUAD_LAYER:-[absent]}"
-info "Output path:  ${OUTPUT}"
 
-if [[ "$DRY_RUN" == true ]]; then
-  assemble
+if [[ "$ALL_HARNESSES" == true ]]; then
+  # ── Harness-agnostic mode (rb-s3) ────────────────────────────────────────
+  # One assembled source, byte-identical copies to every known harness path.
+  # --output / context.yml-based single-path resolution is intentionally not
+  # consulted here — this mode always targets all four canonical paths.
+  HARNESS_TARGETS=(
+    "CLAUDE.md"
+    "AGENTS.md"
+    ".cursorrules"
+    ".github/copilot-instructions.md"
+  )
+  info "Output mode:  all-harnesses (${HARNESS_TARGETS[*]})"
+
+  if [[ "$DRY_RUN" == true ]]; then
+    assemble
+  else
+    TMP_ASSEMBLED="$(mktemp)"
+    assemble > "$TMP_ASSEMBLED"
+    for target in "${HARNESS_TARGETS[@]}"; do
+      mkdir -p "$(dirname "$target")"
+      cp "$TMP_ASSEMBLED" "$target"
+    done
+    rm -f "$TMP_ASSEMBLED"
+    success "Assembled ${#HARNESS_TARGETS[@]} harness-agnostic instruction files: ${HARNESS_TARGETS[*]}"
+    success "Platform version recorded: $REF"
+    success "Distribution model: pull (regenerate any time with --all-harnesses)"
+  fi
 else
-  OUTPUT_DIR="$(dirname "$OUTPUT")"
-  mkdir -p "$OUTPUT_DIR"
-  assemble > "$OUTPUT"
-  success "Assembled: $OUTPUT"
-  success "Platform version recorded: $REF"
-  success "Distribution model: pull (regenerate any time by re-running this script)"
+  info "Assembling ${OUTPUT}"
+  info "Output path:  ${OUTPUT}"
+
+  if [[ "$DRY_RUN" == true ]]; then
+    assemble
+  else
+    OUTPUT_DIR="$(dirname "$OUTPUT")"
+    mkdir -p "$OUTPUT_DIR"
+    assemble > "$OUTPUT"
+    success "Assembled: $OUTPUT"
+    success "Platform version recorded: $REF"
+    success "Distribution model: pull (regenerate any time by re-running this script)"
+  fi
 fi
