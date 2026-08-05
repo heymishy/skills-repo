@@ -18594,12 +18594,12 @@
             {
               "slug": "mtrr-s1",
               "name": "Resolve each product's own repo for SaaS export, tenant-scoped",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/review/mtrr-s1-review-2.md",
-              "updatedAt": "2026-08-05T21:55:58.222Z",
+              "updatedAt": "2026-08-05T22:03:36.637Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -18610,17 +18610,18 @@
               "testPlanArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/test-plans/mtrr-s1-test-plan.md",
               "verificationScriptArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/verification-scripts/mtrr-s1-verification.md",
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "mtrr-s2",
               "name": "Connect a repo by picking from your own accessible repos",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/review/mtrr-s2-review-1.md",
-              "updatedAt": "2026-08-05T21:56:57.018Z",
+              "updatedAt": "2026-08-05T22:03:36.780Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -18631,7 +18632,8 @@
               "testPlanArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/test-plans/mtrr-s2-test-plan.md",
               "verificationScriptArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/verification-scripts/mtrr-s2-verification.md",
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             }
           ]
         }
