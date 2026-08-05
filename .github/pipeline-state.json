@@ -18537,6 +18537,31 @@
           "assessedAt": "2026-08-05T08:32:28.882Z"
         }
       ]
+    },
+    {
+      "slug": "2026-08-06-multi-tenant-repo-resolution",
+      "name": "Multi-Tenant Repo Resolution for SaaS Export + Repo-Connection UX",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [],
+      "metrics": [],
+      "updatedAt": "2026-08-05T21:18:25.324Z",
+      "discoveryArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/discovery.md",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": []
+    },
+    {
+      "slug": "2026-08-06-single-repo-assumption-audit",
+      "name": "Audit codebase for other single-repo/env-var assumptions (deferred from multi-tenant-repo-resolution discovery)",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [],
+      "metrics": [],
+      "updatedAt": "2026-08-05T21:19:06.862Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
