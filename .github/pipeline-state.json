@@ -18261,7 +18261,7 @@
     {
       "slug": "2026-08-05-repo-bootstrap-no-fork",
       "name": "No-Fork Repo Bootstrap for the Inner (and Optionally Outer) Loop",
-      "stage": "definition",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [],
       "metrics": [
@@ -18296,7 +18296,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-05T07:00:58.715Z",
+      "updatedAt": "2026-08-05T20:39:40.182Z",
       "discoveryArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/discovery.md",
       "regulated": false,
       "complianceProfile": "standard",
@@ -18309,7 +18309,7 @@
         {
           "slug": "rb-e1-no-fork-bootstrap-core",
           "name": "A developer can start the inner loop in a real repo without forking or cloning the platform",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "rb-s1",
@@ -18368,12 +18368,12 @@
             {
               "slug": "rb-s2",
               "name": "Install the full skill set with a lightweight outer/inner/ancillary registry",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/review/rb-s2-review-2.md",
-              "updatedAt": "2026-08-05T10:00:51.755Z",
+              "updatedAt": "2026-08-05T20:39:32.567Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
@@ -18425,7 +18425,7 @@
         {
           "slug": "rb-e2-saas-connected-bootstrap-and-outer-loop",
           "name": "A SaaS-only user can convert a DoR-approved artefact into a real, executing repo",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "rb-s4",
@@ -18458,26 +18458,28 @@
             {
               "slug": "rb-s5",
               "name": "Optionally install the full outer loop during bootstrap",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/review/rb-s5-review-1.md",
-              "updatedAt": "2026-08-05T08:31:55.244Z",
+              "updatedAt": "2026-08-05T20:39:32.696Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 6,
-                "passing": 0
+                "totalTests": 10,
+                "passing": 9
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "testPlanArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/test-plans/rb-s5-test-plan.md",
               "verificationScriptArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/verification-scripts/rb-s5-verification.md",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s5-dor.md",
-              "dorContractArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s5-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s5-dor-contract.md",
+              "prStatus": "merged",
+              "mergeCommit": "79b76c4b"
             }
           ]
         }
