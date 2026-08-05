@@ -19,22 +19,23 @@ So that **I can run future feature cycles entirely locally, not just the one inn
 ## Architecture Constraints
 
 - Reads the registry from `rb-s2` to determine which skills are `outer-loop` — no separate hardcoded list of outer-loop skills in this story's own logic (single source of truth, matching ADR-004's spirit).
+- **Revised at implementation time (2026-08-06), see `decisions.md`:** the flag controls an *enablement signal*, not file presence. `rb-s2`'s AC1 ("the target directory contains the platform's complete current skill set... not a subset or placeholder") is an unconditional, already-shipped guarantee — every skill file, outer-loop included, is always present on disk regardless of this flag. `--with-outer-loop` instead writes `outerLoop.enabled: true|false` to the bootstrapped `context.yml`, and the harness-agnostic instruction file's (`rb-s3`) session-start section reflects that flag when listing which skills are presented as active outer-loop tooling versus installed-but-not-yet-enabled. This avoids any conflict with `rb-s2`'s already-tested guarantee and does not require touching `rb-s2`'s or `rb-s3`'s already-shipped file-copy behaviour.
 - **None identified beyond the registry dependency** — checked against `.github/architecture-guardrails.md`.
 
 ## Dependencies
 
-- **Upstream:** rb-s2 (registry must exist to know what "outer loop" means); rb-s1 and rb-s4 (both entry points this flag applies to)
+- **Upstream:** rb-s2 (registry must exist to know what "outer loop" means); rb-s1 and rb-s4 (both entry points this flag applies to); rb-s3 (the instruction file this story's enablement signal is reflected in)
 - **Downstream:** None
 
 ## Acceptance Criteria
 
-**AC1:** Given a user runs the init command with an explicit outer-loop opt-in flag (e.g. `--with-outer-loop`) against a fresh directory, When the command completes, Then every skill the registry categorizes as `outer-loop` is present and runnable, in addition to the inner-loop and ancillary skills already installed by default.
+**AC1:** Given a user runs the init command with an explicit outer-loop opt-in flag (e.g. `--with-outer-loop`) against a fresh directory, When the command completes, Then `context.yml` contains `outerLoop.enabled: true`, and the generated instruction file's session-start section lists every `outer-loop`-categorized skill as active/available — in addition to the inner-loop and ancillary skills already presented by default. Every skill file (outer-loop included) is present on disk regardless of the flag, per `rb-s2`'s unconditional AC1.
 
-**AC2:** Given a user runs the SaaS-connected bootstrap (`rb-s4`) without the opt-in flag, When the command completes, Then only inner-loop and ancillary skills are installed — matching the default behaviour stated in discovery MVP scope (inner-loop-only is the default for the SaaS-connected path).
+**AC2:** Given a user runs either bootstrap path without the opt-in flag, When the command completes, Then `context.yml` contains `outerLoop.enabled: false` (or the field is absent, defaulting to false), and the generated instruction file's session-start section does not present outer-loop skills as active tooling — it names them as installed but not yet enabled, with the exact flag needed to enable them. All skill files, including outer-loop ones, remain present on disk (matching `rb-s2`'s AC1) — this AC concerns what's presented as *active*, not what's *installed*.
 
-**AC3:** Given a user runs the SaaS-connected bootstrap (`rb-s4`) *with* the opt-in flag, When the command completes, Then outer-loop skills are additionally installed on top of the fetched DoR-approved artefact — the flag behaves identically regardless of which entry point (fresh or SaaS-connected) it's combined with.
+**AC3:** Given a user runs the SaaS-connected bootstrap (`rb-s4`) *with* the opt-in flag, When the command completes, Then the same `outerLoop.enabled: true` signal and instruction-file presentation apply — the flag behaves identically regardless of which entry point (fresh or SaaS-connected) it's combined with.
 
-**AC4:** Given the opt-in flag was not used at initial bootstrap, When the user later wants the outer loop, Then the command documents that re-running init in "add-on" mode (not full re-bootstrap) is the supported path — it does not require discarding and redoing the entire bootstrap from scratch.
+**AC4:** Given the opt-in flag was not used at initial bootstrap, When the user later wants the outer loop enabled, Then re-running init with just `--with-outer-loop` (no `--force`, no full re-bootstrap) flips `outerLoop.enabled` to `true` in the existing `context.yml` and regenerates the instruction file's session-start section — it does not require discarding and redoing the entire bootstrap, and does not touch any already-bootstrapped file `rb-s1`'s AC3 already protects from overwriting.
 
 ## Out of Scope
 
