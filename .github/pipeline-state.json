@@ -18319,7 +18319,7 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/review/rb-s1-review-2.md",
-              "updatedAt": "2026-08-05T09:15:00.951Z",
+              "updatedAt": "2026-08-05T09:39:01.889Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
@@ -18361,8 +18361,9 @@
                   "file": "artefacts/2026-08-05-repo-bootstrap-no-fork/plans/rb-s1-plan.md"
                 }
               ],
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/665"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/665",
+              "mergeCommit": "e3e7a500"
             },
             {
               "slug": "rb-s2",
