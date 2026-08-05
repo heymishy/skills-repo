@@ -172,8 +172,18 @@ test('initCommand_wrapsPlatformInitJs_producesIdenticalOutputToDirectInvocation'
       .filter(f => f.endsWith('.md')).sort();
     const cliFiles = fs.readdirSync(path.join(cliTarget, '.github', 'skills'), { recursive: true })
       .filter(f => f.endsWith('.md')).sort();
-    assert.deepStrictEqual(directFiles, cliFiles,
-      'CLI wrapper should produce the same .github/skills file set as running platform-init.js directly');
+    // rb-s2 extends the CLI wrapper to additionally copy the platform's full
+    // top-level skills/ tree into .github/skills/, on top of what
+    // platform-init.js puts there directly (a 5-skill legacy set). The CLI's
+    // output is therefore now a superset of a bare platform-init.js
+    // invocation, not byte-for-byte identical. This assertion is amended
+    // accordingly — see
+    // artefacts/2026-08-05-repo-bootstrap-no-fork/plans/rb-s2-plan.md.
+    assert.ok(cliFiles.length >= directFiles.length,
+      'CLI output should be a superset of direct platform-init.js invocation, not smaller');
+    for (const f of directFiles) {
+      assert.ok(cliFiles.includes(f), `CLI output missing a file platform-init.js produces directly: ${f}`);
+    }
 
     const sampleFile = directFiles[0];
     const directContent = fs.readFileSync(path.join(directTarget, '.github', 'skills', sampleFile), 'utf8');
