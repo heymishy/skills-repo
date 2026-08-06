@@ -2680,3 +2680,43 @@ audit:
 **Circumstance:** Story das-s1 needed to commit a completed stage's artefact to a product's connected GitHub repo — the same underlying mechanic (fetch real user identity, base64-encode content, PUT to `/repos/{owner}/{repo}/contents/{path}` with `sha` for updates, handle 409 conflicts, fail closed when no repo is configured) as `src/web-ui/adapters/sign-off-writer.js`'s existing `commitSignOff` function, built for an unrelated earlier story (rb/ougl-era sign-off flow). A grep for `git/trees|git/blobs|git/commits|/contents/` across `src/web-ui/` surfaced it in under a minute.
 
 **Takeaway:** Before designing a new "write content back to the user's own repo via their OAuth token" mechanism, grep the codebase for the underlying HTTP verb/API shape (`method: 'PUT'`, `/contents/`) rather than assuming from the story's framing that no precedent exists. This repo has accumulated several of these adapters (`sign-off-writer.js`, `annotation-writer.js`, `repo-adapter.js`'s `realCreateRepo`) across different features; each one re-solves the same "real user identity as commit author, never a service account" requirement, and finding the closest existing one first turns a from-scratch design into a generalisation task, directly de-risking the story's complexity rating.
+
+---
+
+## Real CI's regression-baseline check catches exact-count security tripwires that a name-based local sweep misses
+
+### Observed — 2026-08-06 (inner coding loop, tpac-s1, tenant-plan-admin-control)
+
+**Circumstance:** `tpac-s1` added a new `requireAdmin`-gated route (`/api/admin/plan/set`). The coding agent's local regression sweep (11 files chosen by name proximity to `admin-credits`/`tenant-plan`/`journey-cap`) reported clean, but real CI's `scripts/ci-test-regression-check.js` flagged 2 genuinely new failures: `check-d2-banner-exit-permission-visibility.js` and `check-d4-nfr-security-review-and-hardening.js`. Both are deliberate tripwire tests that hardcode an exact count of `requireAdmin(` call sites in `server.js` (10 → 11), designed to force a manual security-review confirmation whenever a new admin route is added — exactly the same mechanism that fired when `amgt-s1`'s routes merged (8 → 10) per the test's own failure-message history.
+
+**Takeaway:** A local regression sweep chosen by filename/topic proximity will systematically miss security-review tripwire tests, because their names (`d2-banner`, `d4-nfr-security-review`) don't obviously relate to the feature area being changed — they're keyed to a cross-cutting invariant (an exhaustive enumeration of a security-sensitive pattern across the whole file), not a feature area. Any story that adds a new `requireAdmin`-gated (or similarly enumerated) route should grep for existing exact-count assertions on that pattern before considering the regression sweep complete, and real CI's full-suite regression-baseline check remains the actual safety net — a clean local sweep is a confidence signal, not a substitute for it.
+
+---
+
+## "Backend logic + one UI entry point, second necessary control silently omitted" is a recurring gap shape in this codebase
+
+### Observed — 2026-08-06 (side quest, tpac-s1)
+
+**Circumstance:** An admin (`heymishy`) topped up a tenant's credits via `/admin/credits`, reasonably expecting it to also lift the tenant's journey-creation cap — it didn't, because `checkJourneyCap()` only reads `tenant_plan` (set by a real Stripe webhook), never touched by the credits-adjustment path. `html-shell.js`'s own comments independently document the *same shape* of gap occurring at least twice before: `amgt-s1`'s mock-gateway toggle route shipped with no nav entry at all ("only ever reachable by typing the URL directly"), and admin-credits/the modules-taxonomy CRUD had the identical gap before their own fix-forward nav additions.
+
+**Takeaway:** When a story ships a capability as backend logic plus exactly one obvious UI/control surface, a second necessary control (an adjacent admin lever, a nav entry, a settings toggle) is a recurring, specifically-named risk in this codebase — not a one-off oversight. At `/definition` or `/review` time for any story introducing an admin-only or config-level capability, explicitly ask "is there a second control an operator would reasonably expect to exist alongside this one, and does it exist?" rather than treating the primary capability's own completeness as sufficient.
+
+---
+
+## An explicit "revisit trigger" in decisions.md is worth writing even when the deferred gap feels obvious in the moment
+
+### Observed — 2026-08-06 (side quest, npwe-s1, following up on pan-s1's 2026-07-30 decision)
+
+**Circumstance:** `pan-s1` deliberately wired the Products sidebar into only 3 of 65 `renderShell` call sites, and logged an explicit decision: "Revisit trigger: If operator feedback shows the missing Products section on unwired pages... is itself confusing, wire additional call sites as a follow-up story." One week later, the operator organically hit exactly this gap during unrelated staging testing, with no memory of the original scoping conversation. Because the trigger was written down with the specific condition and the recommended response, resolving it took a fresh audit plus a bounded follow-up story rather than a debate about whether the gap was intentional or an oversight.
+
+**Takeaway:** Writing a specific, actionable "revisit trigger" into `decisions.md` at scope-narrowing time is cheap and pays off even when — especially when — the deferred gap feels self-evidently temporary in the moment it's deferred. A future session (mine or the operator's) has no access to that in-the-moment context; the trigger condition is what turns "did we mean to do this?" into "yes, and here's what to do about it."
+
+---
+
+## Zero CI runs ever created for a PR, when every other PR this session triggered within seconds, is a platform-outage signal — check githubstatus.com before assuming a code problem
+
+### Observed — 2026-08-06/07 (inner coding loop, das-s1)
+
+**Circumstance:** PR #674 (`das-s1`) showed `gh pr checks` reporting "no checks reported" for over an hour, and `gh run list --workflow="PR Checks"` / `--workflow="Assurance Gate"` showed zero runs at all for that branch — a qualitatively different failure mode from a slow or failing check. Closing and reopening the PR (a legitimate way to force a fresh `pull_request` webhook) didn't help. Checking `gh run list` more broadly showed unrelated scheduled jobs (`Fleet Aggregation`) and master-push-triggered jobs also stuck in `queued`/`waiting` for 12–27+ minutes — a repo-wide pattern, not specific to one branch. `githubstatus.com` confirmed an active, acknowledged major outage affecting GitHub Actions workflow runs, hosted runners, and webhook deliveries, started earlier that day.
+
+**Takeaway:** This repo's own established baseline (every PR this session triggered CI within seconds of opening) makes "zero runs ever created" a strong, specific anomaly signal — distinguishable from ordinary CI flakiness or a slow queue. When that signal appears, check `githubstatus.com` before spending further effort on retriggers, workarounds, or assuming the PR/code itself is at fault; a platform-wide outage has no code-side fix, and the correct response is to wait and verify recovery, not to route around the missing signal by merging without it.
