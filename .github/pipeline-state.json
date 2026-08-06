@@ -18722,12 +18722,12 @@
             {
               "slug": "das-s1",
               "name": "Commit completed-stage artefacts to the product's connected repo, with git-fallback on Resume conversation",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-06-durable-artefact-storage/review/das-s1-review-2.md",
-              "updatedAt": "2026-08-06T18:00:17.259Z",
+              "updatedAt": "2026-08-06T18:03:00.585Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
@@ -18736,17 +18736,18 @@
               },
               "verificationScriptArtefact": "artefacts/2026-08-06-durable-artefact-storage/verification-scripts/das-s1-verification.md",
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "das-s2",
               "name": "Require a connected repo before a new product can start its first journey",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-06-durable-artefact-storage/review/das-s2-review-2.md",
-              "updatedAt": "2026-08-06T18:00:17.260Z",
+              "updatedAt": "2026-08-06T18:03:00.748Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -18755,7 +18756,8 @@
               },
               "verificationScriptArtefact": "artefacts/2026-08-06-durable-artefact-storage/verification-scripts/das-s2-verification.md",
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             }
           ]
         }

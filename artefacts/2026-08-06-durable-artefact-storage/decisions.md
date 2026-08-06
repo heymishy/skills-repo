@@ -49,6 +49,15 @@
 ---
 
 ---
+**2026-08-07 | RISK-ACCEPT | /definition-of-ready (das-s1, das-s2)**
+**Decision:** Proceed past `/definition-of-ready` for both stories without W4 (verification script reviewed by a domain expert) being resolved first.
+**Alternatives considered:** Pause DoR sign-off until a human reviewer works through each verification script.
+**Rationale:** Same rationale as every other story this session — the scripts were written directly from stories/test-plans already shaped by active operator direction; real first walkthrough happens as post-merge smoke test.
+**Made by:** Hamish King — Platform maintainer / Product owner
+**Revisit trigger:** If a post-merge smoke test reveals a verification script described the wrong expected behaviour, treat as a pattern signal.
+---
+
+---
 
 ## Architecture Decision Records
 
