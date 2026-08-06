@@ -105,6 +105,42 @@ function createMockGithubFetch(fixtures, opts) {
   return { calls, fetch: mockFetch };
 }
 
+/**
+ * mtrr-s1: realExportDataSource now resolves owner/repo via
+ * ownerRepoForFeature's tenant-scoped products-table lookup instead of the
+ * old single-repo env-var helper, so every call now requires a wired DB
+ * pool. This suite's own mocked GitHub fetch (createMockGithubFetch above)
+ * matches purely on URL path suffix and never inspects the owner/repo
+ * segment, so the exact values returned here are arbitrary -- they only need
+ * to be non-null so ownerRepoForFeature resolves successfully for each
+ * fixture's slug, preserving this suite's original intent (testing
+ * pipeline-state/artefact fetch mechanics, not tenant-scoping -- that is
+ * mtrr-s1's own dedicated test file's job).
+ */
+function createMockDbPoolForFixtures(fixtures) {
+  const rows = fixtures.map((fx, i) => ({
+    slug: fx.feature.slug,
+    productId: 'rb-s4-fixture-product-' + i,
+    tenantId: 'rb-s4-fixture-tenant-' + i,
+    repoOwner: 'rb-s4-fixture-owner-' + i,
+    repoName: 'rb-s4-fixture-repo-' + i
+  }));
+  return {
+    query: async (sql, params) => {
+      const s = String(sql).replace(/\s+/g, ' ').trim().toUpperCase();
+      if (s.startsWith('SELECT PRODUCT_ID, TENANT_ID FROM JOURNEYS WHERE FEATURE_SLUG')) {
+        const match = rows.find(r => r.slug === params[0]);
+        return { rows: match ? [{ product_id: match.productId, tenant_id: match.tenantId }] : [] };
+      }
+      if (s.startsWith('SELECT REPO_OWNER, REPO_NAME FROM PRODUCTS WHERE PRODUCT_ID')) {
+        const match = rows.find(r => r.productId === params[0] && r.tenantId === params[1]);
+        return { rows: match ? [{ repo_owner: match.repoOwner, repo_name: match.repoName }] : [] };
+      }
+      return { rows: [] };
+    }
+  };
+}
+
 function createMockSaasFetch(opts) {
   opts = opts || {};
   const calls = [];
@@ -152,7 +188,8 @@ test('stubExportDataSourceThrows_whenNotWired', () => {
 });
 
 test('wiredExportDataSource_returnsCorrectPayloadForCredential', async () => {
-  const { realExportDataSource } = require('../src/web-ui/adapters/export-data-source');
+  const { realExportDataSource, setDbPool } = require('../src/web-ui/adapters/export-data-source');
+  setDbPool(createMockDbPoolForFixtures([FIXTURE_A]));
   const mock = createMockGithubFetch([FIXTURE_A]);
   const originalFetch = global.fetch;
   global.fetch = mock.fetch;
@@ -172,7 +209,8 @@ test('wiredExportDataSource_returnsCorrectPayloadForCredential', async () => {
 test('exportEndpointReturns200WithMatchingContent_forValidRequest', async () => {
   delete require.cache[require.resolve('../src/web-ui/routes/export')];
   const { handleExportRoute, setExportDataSource } = require('../src/web-ui/routes/export');
-  const { realExportDataSource } = require('../src/web-ui/adapters/export-data-source');
+  const { realExportDataSource, setDbPool } = require('../src/web-ui/adapters/export-data-source');
+  setDbPool(createMockDbPoolForFixtures([FIXTURE_A]));
   setExportDataSource(realExportDataSource);
 
   const mock = createMockGithubFetch([FIXTURE_A]);
@@ -194,7 +232,7 @@ test('exportEndpointReturns200WithMatchingContent_forValidRequest', async () => 
 test('exportEndpointRejectsRequestForFeatureNotDorApproved', async () => {
   delete require.cache[require.resolve('../src/web-ui/routes/export')];
   const { handleExportRoute, setExportDataSource } = require('../src/web-ui/routes/export');
-  const { realExportDataSource } = require('../src/web-ui/adapters/export-data-source');
+  const { realExportDataSource, setDbPool } = require('../src/web-ui/adapters/export-data-source');
   setExportDataSource(realExportDataSource);
 
   const notReadyFeature = {
@@ -202,6 +240,7 @@ test('exportEndpointRejectsRequestForFeatureNotDorApproved', async () => {
     dorArtefact: null,
     artefactBody: null
   };
+  setDbPool(createMockDbPoolForFixtures([notReadyFeature]));
   const mock = createMockGithubFetch([notReadyFeature]);
   const originalFetch = global.fetch;
   global.fetch = mock.fetch;
@@ -218,7 +257,8 @@ test('exportEndpointRejectsRequestForFeatureNotDorApproved', async () => {
 test('exportEndpointAuditLogsEachFetch', async () => {
   delete require.cache[require.resolve('../src/web-ui/routes/export')];
   const { handleExportRoute, setExportDataSource, setLogger } = require('../src/web-ui/routes/export');
-  const { realExportDataSource } = require('../src/web-ui/adapters/export-data-source');
+  const { realExportDataSource, setDbPool } = require('../src/web-ui/adapters/export-data-source');
+  setDbPool(createMockDbPoolForFixtures([FIXTURE_A]));
   setExportDataSource(realExportDataSource);
 
   const logged = [];
@@ -250,7 +290,8 @@ test('exportEndpointAuditLogsEachFetch', async () => {
 // ---------------------------------------------------------------------------
 
 test('twoDifferentFeaturesResolveToTwoDifferentCorrectPayloads', async () => {
-  const { realExportDataSource } = require('../src/web-ui/adapters/export-data-source');
+  const { realExportDataSource, setDbPool } = require('../src/web-ui/adapters/export-data-source');
+  setDbPool(createMockDbPoolForFixtures([FIXTURE_A, FIXTURE_B]));
   const mock = createMockGithubFetch([FIXTURE_A, FIXTURE_B]);
   const originalFetch = global.fetch;
   global.fetch = mock.fetch;

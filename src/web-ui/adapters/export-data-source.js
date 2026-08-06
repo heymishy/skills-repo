@@ -1,6 +1,6 @@
 'use strict';
 
-// export-data-source.js — rb-s4 AC4/AC5
+// export-data-source.js — rb-s4 AC4/AC5, mtrr-s1 tenant-scoped resolution
 //
 // Real data-access implementation for the export endpoint
 // (routes/export.js). Reuses fetchArtefact() -- the exact function
@@ -13,9 +13,34 @@
 // routes/export.js (mirroring artefact.js's setFetcher location); this
 // module only exports the "real" implementation, wired in server.js —
 // same split already used by repo-adapter.js / pipeline-state-fetch-adapter.js.
+//
+// mtrr-s1: the old single-repo, env-var-sourced helper (shared across every
+// tenant) is replaced by ownerRepoForFeature(slug, credential) -- a
+// tenant-scoped products-table lookup (ADR-025). This is an
+// internal helper, not a swappable adapter in its own right (DoR H-ADAPTER:
+// N/A) -- it needs a DB pool, wired via setDbPool() below, mirroring the
+// non-throwing "pool handed in by server.js at startup" pattern
+// routes/auth.js already uses for setOrganisationsPool (no D37 stub-throw
+// pair, since a missing pool here is a startup configuration gap, not a
+// per-call adapter substitution point). realExportDataSource(slug,
+// credential)'s own signature is unchanged so routes/export.js's D37
+// adapter contract (_exportDataSource(slug, credential)) needs no changes.
 
 const { fetchArtefact, ArtefactNotFoundError } = require('./artefact-fetcher');
 const { realFetchPipelineState } = require('./pipeline-state-fetch-adapter');
+
+let _dbPool = null;
+
+/**
+ * Wire the Postgres pool used by ownerRepoForFeature's tenant-scoped
+ * products/journeys lookup (called once by server.js at startup, mirroring
+ * routes/auth.js's setOrganisationsPool -- see module header).
+ * @param {object} pool - pg-Pool-shaped object exposing query(sql, params)
+ */
+function setDbPool(pool) { _dbPool = pool; }
+
+/** Retrieve the currently wired pool (re-resolved per call so rewiring in tests always takes effect). */
+function getDbPool() { return _dbPool; }
 
 class ExportNotDorApprovedError extends Error {
   constructor(slug) {
@@ -64,10 +89,52 @@ function toArtefactType(dorArtefactPath, slug) {
     .replace(/\.md$/, '');
 }
 
-function ownerRepoFromEnv() {
-  const repoSpec = process.env.GITHUB_REPO || '';
-  const parts = repoSpec.split('/');
-  return { owner: parts[0], repo: parts[1] };
+/**
+ * mtrr-s1: resolve which product owns `slug`, then that product's own
+ * connected repo (owner/repo), scoped by tenant_id (ADR-025 application-layer
+ * multi-tenancy) -- replaces the old single-repo helper's single,
+ * deployment-wide env-var-sourced value. `credential` is accepted (matching the DoR-mandated
+ * signature) and flows through unchanged to the existing GitHub Contents API
+ * calls below -- GitHub's own repo-level access control remains the one,
+ * unchanged authorization boundary for this path (rb-s4's existing
+ * 403-vs-404 split), so this lookup does not introduce a second, parallel
+ * isolation mechanism; it only fixes which owner/repo that existing
+ * boundary is checked against.
+ *
+ * Every miss (no linked journey row for the slug, a null product_id/tenant_id
+ * on that row, no matching product row, a tenant_id mismatch between the
+ * journey and its resolved product, or a product with no repo connected yet)
+ * is surfaced as ExportNotFoundError(slug) -- matching rb-s4's existing
+ * not-found convention, which never includes owner/repo/tenant identifiers
+ * in its message (AC3).
+ * @param {string} slug
+ * @param {string} credential
+ * @returns {Promise<{ owner: string, repo: string }>}
+ */
+async function ownerRepoForFeature(slug, credential) { // eslint-disable-line no-unused-vars -- credential kept in signature per DoR mandate; flows through unchanged to the GitHub fetch below
+  if (!_dbPool) {
+    throw new Error('ownerRepoForFeature: database pool not wired. Call setDbPool() with a real Pool before use.');
+  }
+
+  const journeyResult = await _dbPool.query(
+    'SELECT product_id, tenant_id FROM journeys WHERE feature_slug = $1',
+    [slug]
+  );
+  const journeyRow = journeyResult.rows[0];
+  if (!journeyRow || !journeyRow.product_id || !journeyRow.tenant_id) {
+    throw new ExportNotFoundError(slug);
+  }
+
+  const productResult = await _dbPool.query(
+    'SELECT repo_owner, repo_name FROM products WHERE product_id = $1 AND tenant_id = $2',
+    [journeyRow.product_id, journeyRow.tenant_id]
+  );
+  const productRow = productResult.rows[0];
+  if (!productRow || !productRow.repo_owner || !productRow.repo_name) {
+    throw new ExportNotFoundError(slug);
+  }
+
+  return { owner: productRow.repo_owner, repo: productRow.repo_name };
 }
 
 /**
@@ -79,7 +146,7 @@ function ownerRepoFromEnv() {
  * @returns {Promise<{ artefactContent: string, pipelineStateEntry: object }>}
  */
 async function realExportDataSource(slug, credential) {
-  const { owner, repo } = ownerRepoFromEnv();
+  const { owner, repo } = await ownerRepoForFeature(slug, credential);
 
   let raw;
   try {
@@ -103,7 +170,7 @@ async function realExportDataSource(slug, credential) {
 
   let artefactContent;
   try {
-    artefactContent = await fetchArtefact(slug, artefactType, credential);
+    artefactContent = await fetchArtefact(slug, artefactType, credential, { owner, repo });
   } catch (err) {
     if (err instanceof ArtefactNotFoundError || err.name === 'ArtefactNotFoundError') {
       throw new ExportNotFoundError(slug);
@@ -116,6 +183,9 @@ async function realExportDataSource(slug, credential) {
 
 module.exports = {
   realExportDataSource,
+  ownerRepoForFeature,
+  setDbPool,
+  getDbPool,
   findDorApprovedStory,
   ExportNotDorApprovedError,
   ExportAccessDeniedError,

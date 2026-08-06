@@ -188,6 +188,22 @@ if (process.env.NODE_ENV !== 'test') {
   console.log('[rb-s4] export data source adapter wired');
 }
 
+// mtrr-s1 -- wire the DB pool ownerRepoForFeature needs for its tenant-scoped
+// products/journeys lookup (replaces the old single-repo env-var helper).
+// Not a D37 stub-throw pair (DoR H-ADAPTER: N/A -- this isn't a swappable
+// adapter, it's the pool export-data-source.js's own internal lookup needs),
+// mirroring routes/auth.js's setOrganisationsPool: pool handed in once at
+// startup via its own dedicated Pool instance, matching the repeated
+// if(DATABASE_URL){ new Pool(...); set...(pool) } pattern every other
+// Postgres-backed adapter in this file already follows (see credits/
+// session-turns/user-roles wiring above).
+if (process.env.DATABASE_URL) {
+  const { Pool: _ExportDataSourcePool } = require('pg');
+  const _exportDataSourcePool = new _ExportDataSourcePool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 10000 });
+  require('./adapters/export-data-source').setDbPool(_exportDataSourcePool);
+  console.log('[mtrr-s1] export data source DB pool wired');
+}
+
 // prc-s2.1 / D37 mandatory separate wiring task -- wire the real GitHub
 // repo-creation adapter (a distinct adapter from prc-s1.2's repo-access-check
 // adapter above -- setCreateRepoAdapter/getCreateRepoAdapter, not
