@@ -2670,3 +2670,13 @@ audit:
 **Circumstance:** skills/definition/SKILL.md's mandatory state-update step instructs seeding a feature's guardrails array with every item from .github/architecture-guardrails.md's Guardrails Registry — 51 entries total, most of them specific to dashboards/pipeline-viz.html and unrelated to most features. Checking 3 existing features' actual guardrails arrays in pipeline-state.json found 0, 0, and 20 entries respectively — never all 51, and the 20-entry case was a curated, feature-relevant subset (3 ADRs plus 17 per-story NFR assessments added later at DoD), not a registry dump.
 
 **Takeaway:** When a SKILL.md's literal instruction and the repo's own established practice disagree, checking a few real examples before following the instruction verbatim catches this kind of drift — following this one literally would have flooded an unrelated feature's guardrails matrix with dozens of viz-tool-specific entries. The SKILL.md wording itself should be corrected (seed only registry items the Step 1.5 architecture-constraints scan actually surfaced as relevant) so the next agent doesn't have to independently rediscover the gap.
+
+---
+
+## Search for an existing GitHub-commit-via-Contents-API pattern before designing a new one
+
+### Observed — 2026-08-06 (/definition, durable-artefact-storage, das-s1)
+
+**Circumstance:** Story das-s1 needed to commit a completed stage's artefact to a product's connected GitHub repo — the same underlying mechanic (fetch real user identity, base64-encode content, PUT to `/repos/{owner}/{repo}/contents/{path}` with `sha` for updates, handle 409 conflicts, fail closed when no repo is configured) as `src/web-ui/adapters/sign-off-writer.js`'s existing `commitSignOff` function, built for an unrelated earlier story (rb/ougl-era sign-off flow). A grep for `git/trees|git/blobs|git/commits|/contents/` across `src/web-ui/` surfaced it in under a minute.
+
+**Takeaway:** Before designing a new "write content back to the user's own repo via their OAuth token" mechanism, grep the codebase for the underlying HTTP verb/API shape (`method: 'PUT'`, `/contents/`) rather than assuming from the story's framing that no precedent exists. This repo has accumulated several of these adapters (`sign-off-writer.js`, `annotation-writer.js`, `repo-adapter.js`'s `realCreateRepo`) across different features; each one re-solves the same "real user identity as commit author, never a service account" requirement, and finding the closest existing one first turns a from-scratch design into a generalisation task, directly de-risking the story's complexity rating.

@@ -60,9 +60,9 @@ This is a straightforward reliability fix, not a tooling/process learning pilot.
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Cross-redeploy artefact durability | TBD at /definition | Pending |
-| Repo-connection-required coverage | TBD at /definition | Pending |
-| Orphaned-journey rate going forward | TBD at /definition | Pending |
+| Cross-redeploy artefact durability | das-s1 | Covered |
+| Repo-connection-required coverage | das-s2 | Covered |
+| Orphaned-journey rate going forward | das-s1, das-s2 (jointly close the mechanism producing orphans; health-check measures the outcome, not a separate story) | Covered |
 
 ---
 

@@ -18667,7 +18667,7 @@
     {
       "slug": "2026-08-06-durable-artefact-storage",
       "name": "Durable Artefact Storage for SaaS-Hosted Journeys",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
       "stories": [],
       "metrics": [
@@ -18702,7 +18702,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-06T06:54:43.311Z",
+      "updatedAt": "2026-08-06T08:18:49.023Z",
       "discoveryArtefact": "artefacts/2026-08-06-durable-artefact-storage/discovery.md",
       "track": "standard",
       "regulated": false,
@@ -18710,7 +18710,44 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "discoveryStatus": "approved",
-      "benefitMetricArtefact": "artefacts/2026-08-06-durable-artefact-storage/benefit-metric.md"
+      "benefitMetricArtefact": "artefacts/2026-08-06-durable-artefact-storage/benefit-metric.md",
+      "slicingStrategy": "risk-first",
+      "nfrProfileArtefact": "artefacts/2026-08-06-durable-artefact-storage/nfr-profile.md",
+      "epics": [
+        {
+          "slug": "das-e1-durable-artefact-storage",
+          "name": "Every completed stage's artefact survives a redeploy, for every repo-connected product",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "das-s1",
+              "name": "Commit completed-stage artefacts to the product's connected repo, with git-fallback on Resume conversation",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "das-s2",
+              "name": "Require a connected repo before a new product can start its first journey",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
+        }
+      ],
+      "guardrails": [
+        {
+          "id": "ADR-023",
+          "category": "adr",
+          "label": "Disk canonicity rule for cross-stage artefact handoff",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-025",
+          "category": "adr",
+          "label": "Multi-tenancy enforced at the application layer",
+          "status": "not-assessed"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
