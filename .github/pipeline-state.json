@@ -18762,6 +18762,74 @@
           "assessedAt": "2026-08-06T08:34:06.927Z"
         }
       ]
+    },
+    {
+      "slug": "2026-08-06-tenant-plan-admin-control",
+      "name": "Give admins a real control to lift a tenant's journey cap, separate from credits",
+      "stage": "test-plan",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "tpac-s1",
+          "name": "Give admins a real control to lift a tenant's journey cap, separate from credits",
+          "stage": "test-plan",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-06-tenant-plan-admin-control/review/tpac-s1-review-2.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-06-tenant-plan-admin-control/test-plans/tpac-s1-test-plan.md"
+          },
+          "verificationScriptArtefact": "artefacts/2026-08-06-tenant-plan-admin-control/verification-scripts/tpac-s1-verification.md",
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-06T09:00:01.954Z",
+          "id": "tpac-s1"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-06T09:00:01.956Z",
+      "track": "short",
+      "epics": []
+    },
+    {
+      "slug": "2026-08-06-nav-products-wiring-expansion",
+      "name": "Show the Products sidebar during skill chat sessions",
+      "stage": "test-plan",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "npwe-s1",
+          "name": "Show the Products sidebar during skill chat sessions",
+          "stage": "test-plan",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-06-nav-products-wiring-expansion/review/npwe-s1-review-2.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 10,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-06-nav-products-wiring-expansion/test-plans/npwe-s1-test-plan.md"
+          },
+          "verificationScriptArtefact": "artefacts/2026-08-06-nav-products-wiring-expansion/verification-scripts/npwe-s1-verification.md",
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-06T09:00:01.956Z",
+          "id": "npwe-s1"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-06T09:00:01.956Z",
+      "track": "short",
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
