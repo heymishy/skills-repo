@@ -18801,35 +18801,37 @@
     {
       "slug": "2026-08-06-nav-products-wiring-expansion",
       "name": "Show the Products sidebar during skill chat sessions",
-      "stage": "test-plan",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "slug": "npwe-s1",
           "name": "Show the Products sidebar during skill chat sessions",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-06-nav-products-wiring-expansion/review/npwe-s1-review-2.md",
           "testPlan": {
             "status": "written",
-            "totalTests": 10,
-            "passing": 0,
+            "totalTests": 21,
+            "passing": 21,
             "artefact": "artefacts/2026-08-06-nav-products-wiring-expansion/test-plans/npwe-s1-test-plan.md"
           },
           "verificationScriptArtefact": "artefacts/2026-08-06-nav-products-wiring-expansion/verification-scripts/npwe-s1-verification.md",
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-06T09:05:10.797Z",
+          "updatedAt": "2026-08-06T09:50:38.789Z",
           "id": "npwe-s1",
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "merged",
+          "mergeCommit": "394b455e"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-06T09:00:01.956Z",
+      "updatedAt": "2026-08-06T09:50:38.791Z",
       "track": "short",
       "epics": []
     }
