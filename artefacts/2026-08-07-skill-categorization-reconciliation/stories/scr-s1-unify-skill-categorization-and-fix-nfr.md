@@ -18,7 +18,7 @@ So that **adding a new skill to one categorization list can't silently diverge f
 
 ## Architecture Constraints
 
-- **Single source of truth:** `cli/lib/skills-registry.js`'s already-exported `SKILL_CATEGORIES` object becomes the one place a skill's outer-loop/inner-loop/ancillary category is declared. `check-assembly.js`'s `OUTER_LOOP_SKILLS`/`INNER_LOOP_SKILLS` arrays are replaced by deriving from `SKILL_CATEGORIES` (filtered by `category === 'outer-loop'` / `'inner-loop'`), not duplicated a third time.
+- **Single-source-of-truth constraint:** `cli/lib/skills-registry.js`'s already-exported `SKILL_CATEGORIES` object becomes the one place a skill's outer-loop/inner-loop/ancillary category is declared. `check-assembly.js`'s `OUTER_LOOP_SKILLS`/`INNER_LOOP_SKILLS` arrays are replaced by deriving from `SKILL_CATEGORIES` (filtered by `category === 'outer-loop'` / `'inner-loop'`), not duplicated a third time.
 - **No D37/adapter concern:** both `check-assembly.js` and `assemble-copilot-instructions.sh` are build-time/CI-time scripts with no runtime external service calls — this is a script-level refactor, not a new injectable adapter.
 - **Cross-directory require is a new but architecturally sound pattern:** `.github/scripts/check-assembly.js` currently has zero module dependencies beyond Node built-ins; requiring `cli/lib/skills-registry.js` from it is a plain relative `require()`, not a violation of any existing boundary.
 

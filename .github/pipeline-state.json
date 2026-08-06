@@ -18867,7 +18867,7 @@
           "slug": "emss-s1",
           "id": "emss-s1",
           "name": "Let a --from-saas export request specify which DoR-approved story to fetch",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -18883,7 +18883,8 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-06T19:39:22.909Z"
+          "updatedAt": "2026-08-06T19:41:28.968Z",
+          "dorStatus": "signed-off"
         }
       ],
       "metrics": [],
@@ -18901,7 +18902,7 @@
           "slug": "scr-s1",
           "id": "scr-s1",
           "name": "Unify skill-categorization into one source of truth and close the --with-outer-loop NFR gap",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -18917,7 +18918,8 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-06T19:39:22.910Z"
+          "updatedAt": "2026-08-06T19:41:29.111Z",
+          "dorStatus": "signed-off"
         }
       ],
       "metrics": [],

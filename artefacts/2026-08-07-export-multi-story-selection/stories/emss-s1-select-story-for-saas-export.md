@@ -18,7 +18,7 @@ So that **I can reliably fetch the specific story I actually need — increasing
 
 ## Architecture Constraints
 
-- **D37 (N/A):** `findDorApprovedStory` is an internal, pure data-lookup helper inside the already-D37-wired `setExportDataSource`/`realExportDataSource` adapter pair from `rb-s4` — it calls no external service and needs no adapter of its own, matching `mtrr-s1`'s own H-ADAPTER: N/A precedent for the same reason.
+- **D37 constraint (N/A — no new adapter required):** `findDorApprovedStory` is an internal, pure data-lookup helper inside the already-D37-wired `setExportDataSource`/`realExportDataSource` adapter pair from `rb-s4` — it calls no external service and needs no adapter of its own, matching `mtrr-s1`'s own H-ADAPTER: N/A precedent for the same reason.
 - **Lookup-scoping guard (not classic path traversal — the `story` parameter is resolved against an already-fetched in-memory JSON structure, never used to construct a filesystem path):** the new story-slug parameter must be resolved only against the target feature's own known story slugs, and rejected (not silently ignored, and never resolved against a different feature) if it doesn't match any story on that feature — matching the authorization-scoping spirit of this codebase's existing path-traversal guards (ougl.5/ougl.6) even though the underlying risk shape differs.
 - **Backward compatibility is mandatory, not aspirational:** the existing `GET /api/export/:slug` (no story parameter) call shape must continue to work identically — this story is additive, not a breaking change to the CLI's existing `--from-saas <slug>` invocations.
 
