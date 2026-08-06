@@ -18956,6 +18956,23 @@
       "sensitiveDataCategories": [],
       "discoveryStatus": "approved",
       "epics": []
+    },
+    {
+      "slug": "2026-08-07-cross-surface-state-sync",
+      "name": "Real, automatic, bidirectional sync between pipeline-state.json and web-UI journey state, correlated by feature slug",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [],
+      "metrics": [],
+      "updatedAt": "2026-08-06T21:13:04.575Z",
+      "discoveryArtefact": "artefacts/2026-08-07-cross-surface-state-sync/discovery.md",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "discoveryStatus": "approved",
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
