@@ -770,6 +770,34 @@ async function handleGetJourneyStageView(req, res) {
   var artefactAbsPath = path.resolve(path.join(repoRoot, artefactRelPath));
   try { artefactContent = fs.readFileSync(artefactAbsPath, 'utf8'); } catch (_) {}
 
+  // das-s1 (AC3/AC5): git-fallback when the local file is missing (e.g.
+  // post-redeploy on a SaaS deployment with no persistent volume) -- fetches
+  // the same content from the product's connected repo instead of showing
+  // "No artefact content found." A repo-less product (ExportNotFoundError --
+  // no linked product, or no repo connected) falls through unchanged to
+  // today's existing default message below (no regression for that case).
+  // When a repo IS connected but the git fetch also fails, _dasFetchFailed
+  // drives a distinct, honest "could not be retrieved" message (AC5) rather
+  // than the generic default -- so operators can tell "never had a repo"
+  // apart from "this specific fetch failed."
+  var _dasFetchFailed = false;
+  if (!artefactContent) {
+    try {
+      var _dasOwnerRepo = await require('../adapters/export-data-source').ownerRepoForFeature(journey.featureSlug, req.session.accessToken);
+      try {
+        artefactContent = await require('../adapters/artefact-fetcher').fetchArtefact(journey.featureSlug, stageName, req.session.accessToken, _dasOwnerRepo);
+      } catch (_dasFetchErr) {
+        _dasFetchFailed = true;
+      }
+    } catch (_dasResolveErr) {
+      // No connected repo (or no linked product) -- leave artefactContent
+      // empty; falls through to the existing default message untouched.
+    }
+  }
+  var _dasArtefactMissingMessage = _dasFetchFailed
+    ? 'Artefact content could not be retrieved from local storage or the connected repository.'
+    : 'No artefact content found.';
+
   // Parse ?edit from URL
   var url = req.url || '';
   var isEdit = url.indexOf('edit=true') !== -1 || (req.query && req.query.edit === 'true');
@@ -900,7 +928,7 @@ async function handleGetJourneyStageView(req, res) {
       readOnly: true,
       userInitial: (req.session.login || 'M').charAt(0).toUpperCase(),
       modelLabel: _stageModelShort || null,
-      artefactContent: artefactHtml || '<p style="margin:0;font-size:12px;color:var(--muted);padding:16px 20px">No artefact content found.</p>'
+      artefactContent: artefactHtml || '<p style="margin:0;font-size:12px;color:var(--muted);padding:16px 20px">' + escHtml(_dasArtefactMissingMessage) + '</p>'
     });
 
     body = [
@@ -1191,7 +1219,7 @@ async function handleGetJourneyStageView(req, res) {
   } else {
     mainPanel = [
       '<article class="sr-paper">',
-        artefactHtml || '<p class="sr-p" style="color:var(--muted)">No artefact content found.</p>',
+        artefactHtml || '<p class="sr-p" style="color:var(--muted)">' + escHtml(_dasArtefactMissingMessage) + '</p>',
       '</article>'
     ].join('');
   }
@@ -1979,13 +2007,52 @@ async function handlePostGateConfirm(req, res) {
   }
   // Call completeStage to record this stage (guard: auto-save may have already called this)
   if (!session._stageDone) {
-    session._stageDone = true;
     var _costUsd = null;
     try {
       var _computeCost = require('./skills').computeCostUsd;
       _costUsd = _computeCost(session.usage || null);
     } catch (_ce) {}
     var _usageSummary = session.usage ? Object.assign({ costUsd: _costUsd }, session.usage) : null;
+
+    // das-s1 (AC1/AC2/AC4): dual-write the artefact to the product's
+    // connected repo, alongside the existing local-disk write above (never a
+    // replacement) -- BEFORE completeStage() is called, per the
+    // write-then-verify sequencing this story's discovery flagged (ADR-023).
+    // Any failure to resolve an owner/repo (ExportNotFoundError -- no linked
+    // product or no repo connected -- but also e.g. no DB pool wired at all,
+    // the normal state for local/CLI/disk-only usage with no DATABASE_URL)
+    // is treated the same as "no connected repo" and skips the commit
+    // entirely (AC4) -- matching every other optional Postgres-backed
+    // feature in this codebase, which no-ops rather than fails when its pool
+    // was never wired. Only a failure of the actual commit itself, once an
+    // owner/repo WAS successfully resolved, blocks completion (AC2): session
+    // ._stageDone stays unset so a retry re-attempts the commit, and a
+    // clear, actionable error is returned WITHOUT calling completeStage() --
+    // never a silently "completed" stage with no durable backing.
+    var _dasOwnerRepo = null;
+    try {
+      _dasOwnerRepo = await require('../adapters/export-data-source').ownerRepoForFeature(journey.featureSlug, req.session.accessToken);
+    } catch (_dasResolveErr) {
+      _dasOwnerRepo = null; // no connected repo, no linked product, or resolution unavailable -- AC4: proceed unchanged
+    }
+    if (_dasOwnerRepo) {
+      try {
+        var _dasDiskContent = fs.readFileSync(absPath, 'utf8'); // ADR-023 disk canonicity -- read back what was just written, not session.artefactContent
+        await require('../adapters/artefact-commit-writer').commitArtefact(
+          artefactRelPath, _dasDiskContent, req.session.accessToken, _dasOwnerRepo.owner, _dasOwnerRepo.repo
+        );
+      } catch (_dasCommitErr) {
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          error: 'artefact-commit-failed',
+          message: 'Could not commit this stage\'s artefact to the connected repository. The stage has NOT been marked complete -- fix the underlying issue (re-authenticate, check repo access, or wait for a rate limit to clear) and try again.',
+          detail: _dasCommitErr && _dasCommitErr.message
+        }));
+        return;
+      }
+    }
+
+    session._stageDone = true;
     _journeyStore.completeStage(journeyId, session.skillName, artefactRelPath, _usageSummary, activeSessionId);
     _posthog.capture(req.session.login || journey.ownerId || journeyId, 'stage_completed', {
       skillName:    session.skillName,
