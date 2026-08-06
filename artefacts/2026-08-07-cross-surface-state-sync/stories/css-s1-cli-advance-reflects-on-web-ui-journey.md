@@ -18,9 +18,10 @@ So that **I see CLI-tracked progress reflected on the web UI without clicking th
 
 ## Architecture Constraints
 
-- **D37 (injectable adapter rule, CLAUDE.md):** the new adapter resolving a web-UI journey record from a `pipeline-state.json` feature slug (extending `mtrr-s1`'s `ownerRepoForFeature` correlation pattern in reverse) must have a stub that throws (not silently returns), an explicit DoR wiring AC, a separate wiring task in the implementation plan, and a wiring test asserting behavioral correctness (two different feature slugs resolve to two different, correct journey records — not just that a setter was called).
+- **D37 (injectable adapter rule, CLAUDE.md):** the new CLI-side adapter (an HTTP client calling the new internal web-UI endpoint to resolve/update a journey from a `pipeline-state.json` feature slug) must have a stub that throws (not silently returns), an explicit DoR wiring AC (AC5), a separate wiring task in the implementation plan, and a wiring test asserting behavioral correctness (two different feature slugs resolve to two different, correct journey records — not just that a setter was called).
 - **ADR-025 (multi-tenancy):** any write to the journey's Postgres record must remain `tenant_id`-scoped, consistent with the existing application-layer scoping model.
 - **No ADR-020 concern in this direction:** this story's write direction (CLI → web-UI/Postgres) is not a GitHub Contents API write and carries no authenticated-user-token requirement; ADR-020 applies to css-s2's reverse direction, not this story.
+- **CLI-to-database path (added at /definition-of-ready, ARCH decision 2026-08-07):** `bin/skills` has no direct network path or credential to the hosted product's Postgres instance. This story's journey lookup/update goes through a **new authenticated internal HTTP endpoint on the deployed web-UI server** (which already holds the Postgres connection) — not a direct `pg` client embedded in the CLI. The endpoint's authentication is a shared service-level credential, distinct from any user's OAuth token (this is a machine-to-machine CLI call, not an action on behalf of a specific signed-in person).
 
 ## Dependencies
 
@@ -37,6 +38,10 @@ So that **I see CLI-tracked progress reflected on the web UI without clicking th
 
 **AC4:** Given the `discovery-approved` gate is this story's explicit scope, When any other gate type (e.g. `test-plan-complete`) is advanced via `gate-advance`, Then no sync is attempted for that other gate type — this is deferred to css-s4's full-vocabulary coverage and is this story's stated boundary, not a gap.
 
+**AC5:** Given the new internal web-UI endpoint this story introduces, When the CLI calls it, Then it authenticates using a shared service-level credential read from an environment variable (never a hardcoded value in a committed file), and the endpoint rejects any request that does not present that credential — verified by a wiring test that asserts a request with a missing or incorrect credential is rejected, and a request with the correct credential succeeds.
+
+**AC6:** Given the CLI environment has no `INTERNAL_SYNC_URL` or `INTERNAL_SYNC_SECRET` configured at all (the common case for solo-CLI-only usage with no connected web-UI product), When `gate-advance` runs for `discovery-approved`, Then the command completes normally with no error — treated identically to AC2's "no connected journey" case, not as a configuration failure that breaks the command.
+
 ## Out of Scope
 
 - Any gate type other than `discovery-approved` — deferred to css-s4.
@@ -46,7 +51,7 @@ So that **I see CLI-tracked progress reflected on the web UI without clicking th
 ## NFRs
 
 - **Performance:** the synchronous journey update adds a bounded, small delay to the CLI command's completion — the exact budget is measured and reported at `/test-plan`, but must not turn a sub-second `gate-advance` call into a multi-second one.
-- **Security:** no credentials or tokens are exposed in the new adapter's logging; the write uses the existing service-level Postgres connection already used by other CLI-adjacent write paths, not a per-user token (this direction has no ADR-020 concern).
+- **Security:** the CLI authenticates to the new internal web-UI endpoint using a shared service-level credential (never a per-user OAuth token — no ADR-020 concern in this direction), stored per `product/constraints.md` #12 (credentials are structural — a secrets store or environment variable, never a literal value in a committed file); no credential or token value is exposed in any sync/mismatch log entry.
 - **Accessibility:** Not applicable — no UI surface change in this story.
 - **Audit:** every sync attempt (success or mismatch, per AC3) is logged.
 

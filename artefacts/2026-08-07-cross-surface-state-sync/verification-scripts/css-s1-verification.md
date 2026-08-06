@@ -71,6 +71,37 @@
 
 ---
 
+### Scenario 4: The internal sync endpoint refuses requests without the right credential
+
+**Covers:** AC5
+
+**Steps:**
+1. (Requires access to the deployed web-UI's internal endpoint URL and a deliberately wrong or missing credential value — a platform-maintainer-only check, not a customer-facing scenario.)
+2. Attempt to call the internal sync endpoint without the correct service credential.
+
+**Expected outcome:**
+> The request is refused — the endpoint does not process it or return any journey data.
+
+**Result:** [ ] Pass  [ ] Fail
+**Notes:**
+
+---
+
+### Scenario 5: Solo CLI-only usage with no web-UI product connected works exactly as before
+
+**Covers:** AC6
+
+**Steps:**
+1. In an environment with no `INTERNAL_SYNC_URL`/`INTERNAL_SYNC_SECRET` set (the normal case if you've never connected this repo to the hosted web UI), run `node bin/skills gate-advance [feature-slug] [story-id] discovery-approved artefacts/[feature-slug]/discovery.md`.
+
+**Expected outcome:**
+> The command works exactly as it always has — no error, no mention of sync, no behaviour change at all.
+
+**Result:** [ ] Pass  [ ] Fail
+**Notes:**
+
+---
+
 ### Edge case: Advancing a different gate type does not trigger this story's sync
 
 **Covers:** AC4
@@ -94,6 +125,8 @@
 | Scenario 1 | | |
 | Scenario 2 | | |
 | Scenario 3 | | |
+| Scenario 4 | | |
+| Scenario 5 | | |
 | Edge case | | |
 
 **Overall verdict:** [ ] All pass — ready to proceed

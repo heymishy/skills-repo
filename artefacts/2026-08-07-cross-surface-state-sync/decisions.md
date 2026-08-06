@@ -89,3 +89,30 @@
 **Made by:** Hamish King — Platform maintainer / Product owner (confirmed via /review Run 1 finding resolution, 2026-08-07)
 **Revisit trigger:** If the benefit-metric's own 4-week measurement (per `benefit-metric.md`'s Metric 1 feedback loop) shows the 90% minimum signal is missed, and reconciliation-log review attributes the shortfall to abandoned-feature gaps specifically (not other causes), reconsider a scheduled reconciliation approach with an explicit new security review for credential handling.
 ---
+
+---
+**2026-08-07 | ARCH | /definition-of-ready (css-s1 Contract Proposal)**
+**Decision:** css-s1's CLI-side sync (`bin/skills gate-advance`) reaches the journey's Postgres record via a new authenticated internal HTTP endpoint on the deployed web-UI server (which already holds the Postgres connection) — not via a direct Postgres client embedded in the CLI.
+**Alternatives considered:** Giving `bin/skills` its own `DATABASE_URL` and a direct `pg` client.
+**Rationale:** `bin/skills` is a local/CI process with no existing network path or credential to the hosted product's Postgres instance (Neon, reachable today only from the deployed `src/web-ui/server.js` process on Fly). A direct-connection approach would require every operator running `gate-advance` locally or in CI to be issued production/staging database credentials — a new, meaningful operational and security burden this feature's own solo-maintainer constraint (`nfr-profile.md`) argues against. Routing through a new internal HTTP endpoint on the already-connected web-UI server keeps the database credential in exactly one place (the deployed server), matching this repo's existing pattern of the CLI never holding infrastructure credentials directly.
+**Made by:** Hamish King — Platform maintainer / Product owner (confirmed at /definition-of-ready, 2026-08-07 — a gap not caught until Contract Proposal time, since /definition's own architecture-constraints scan focused on ADR-020/ADR-025, not on the CLI process's own network reachability)
+**Revisit trigger:** If this internal endpoint's own authentication mechanism (a shared service-level credential distinct from any user's OAuth token, since this is a machine-to-machine CLI call) needs hardening beyond what's specified in css-s1's revised Architecture Constraints, revisit before implementation begins.
+---
+
+---
+**2026-08-07 | SCOPE | /definition-of-ready (css-s1 Contract Proposal)**
+**Decision:** Added AC6 to css-s1: when `INTERNAL_SYNC_URL`/`INTERNAL_SYNC_SECRET` are not configured at all in the CLI environment (the common case for solo-CLI-only usage with no connected web-UI product), `gate-advance` treats this identically to AC2's "no connected journey" case — silent no-op, no error.
+**Alternatives considered:** Logging a one-time informational note the first time this configuration-absent case is hit, so an operator who did mean to connect a web-UI product notices the missing config.
+**Rationale:** The Contract Proposal step surfaced that the original 5 ACs never addressed the majority current-usage case (this repo's own solo CLI-only workflow, before any web-UI product connection exists) — without this AC, a coding agent could plausibly implement a hard failure or a confusing error for the single most common environment this command runs in today. Silent no-op keeps `gate-advance`'s existing behaviour completely unchanged for anyone not using the web-UI sync feature, matching the same "don't break the common case" principle behind AC2.
+**Made by:** Hamish King — Platform maintainer / Product owner (confirmed at /definition-of-ready, 2026-08-07)
+**Revisit trigger:** If operators report being confused about why their web-UI journeys never seem to sync (because they never noticed the missing env var config), reconsider the one-time informational note alternative.
+---
+
+---
+**2026-08-07 | RISK-ACCEPT | /definition-of-ready (W4, all 4 stories)**
+**Decision:** Accept W4 (verification script reviewed by a domain expert) as unreviewed-by-a-second-person before dispatch, for all 4 stories in this epic (css-s1 through css-s4).
+**Alternatives considered:** Blocking DoR sign-off until a second reviewer works through each verification script.
+**Rationale:** This is a solo-maintainer repo (Hamish King holds both the platform-maintainer and product-owner roles) — there is no second domain expert available to review the verification scripts independently before dispatch, matching the same accepted pattern used for every other feature this session (tpac-s1, npwe-s1, das-s1, das-s2, emss-s1, scr-s1). The verification scripts themselves were still written to the same plain-language, scenario-based standard as if a second reviewer existed.
+**Made by:** Hamish King — Platform maintainer / Product owner
+**Revisit trigger:** If a second team member with domain expertise joins this repo's delivery process, reinstate W4 as a real blocking review step rather than an accepted risk.
+---
