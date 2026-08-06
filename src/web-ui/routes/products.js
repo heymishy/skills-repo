@@ -6,6 +6,7 @@ var _htmlShell = require('../utils/html-shell');
 var _postHogFlags = require('../modules/posthog-flags'); // bri-s1.5 — shared isEnabled() (D37)
 var _flagKeys = require('../modules/flag-keys'); // bri-s1.5
 var _repoAdapter = require('../adapters/repo-adapter'); // prc-s2.1
+var _repoPicker = require('../modules/repo-picker'); // mtrr-s2 -- repo-connection picker data-fetch/cache/filter logic
 var _productRollup = require('../modules/product-rollup'); // pr-s3
 var _pipelineStateFetchAdapter = require('../adapters/pipeline-state-fetch-adapter'); // pr-s3
 var _syncFreshness = require('../modules/sync-freshness'); // pr-s3
@@ -594,7 +595,7 @@ function _unknownHealthCoverageLabel(item, artefactCountsByJourneyId) {
   return (item.stage || 'discovery') + ' · ' + countLabel;
 }
 
-function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navProducts, noProductJourneyCount) {
+function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navProducts, noProductJourneyCount, repoPickerResult) {
   modules = modules || [];
   csrfToken = csrfToken || '';
   featureModuleAssignments = featureModuleAssignments || {};
@@ -685,23 +686,66 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     '</div>';
   var repoHtml = '';
   if (!repoOwner || !repoName) {
+    // mtrr-s2: the picker (operator's own accessible repos, via GitHub
+    // OAuth) is the PRIMARY connect path (AC1) when it loaded successfully
+    // and returned at least one repo. The manual owner/repo URL-entry
+    // fields (rpc-s1's original "Connect existing" fields) always remain
+    // in the markup as the mandatory fallback (AC3) -- visible by default
+    // when the picker isn't available/failed, or reachable via a secondary
+    // "Enter a repo URL instead" link when the picker succeeded.
+    var pickerOk = !!(repoPickerResult && repoPickerResult.ok && Array.isArray(repoPickerResult.repos) && repoPickerResult.repos.length > 0);
+    var pickerFailed = !!(repoPickerResult && repoPickerResult.ok === false);
+
+    var repoListItemsHtml = pickerOk
+      ? repoPickerResult.repos.map(function(r) {
+          var owner = _escapeHtml(r.owner);
+          var name = _escapeHtml(r.name);
+          var fullName = _escapeHtml(r.fullName || (r.owner + '/' + r.name));
+          return '<li class="rpc-repo-item" data-fullname="' + fullName.toLowerCase() + '" style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--line)">' +
+            '<span style="font-size:13px">' + fullName + '</span>' +
+            '<button type="button" onclick="rpcSelectRepo(\'' + _escapeHtml(productId) + '\',\'' + owner + '\',\'' + name + '\')" style="padding:6px 10px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:4px;font-size:12px;cursor:pointer;white-space:nowrap">Select</button>' +
+          '</li>';
+        }).join('')
+      : '';
+
+    var fallbackMessageHtml = pickerFailed
+      ? '<p role="status" style="margin:0 0 10px;font-size:12px;color:var(--muted)">' + _escapeHtml(repoPickerResult.message) + '</p>'
+      : '';
+
+    var manualPanelHtml =
+      '<div id="rpc-connect-panel" style="display:' + (pickerOk ? 'none' : 'block') + '">' +
+        fallbackMessageHtml +
+        '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px">Repository owner<input id="rpc-connect-owner" type="text" placeholder="github-username" aria-label="Repository owner" style="padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:13px;background:var(--surface);color:var(--ink)"></label>' +
+        '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px">Repository name<input id="rpc-connect-repo" type="text" placeholder="repo-name" aria-label="Repository name" style="padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:13px;background:var(--surface);color:var(--ink)"></label>' +
+        '<button type="button" onclick="rpcSubmitConnect(\'' + _escapeHtml(productId) + '\')" style="padding:8px 12px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:4px;font-size:13px;cursor:pointer">Connect</button>' +
+      '</div>';
+
+    var pickerPanelHtml = pickerOk
+      ? '<div id="rpc-picker-panel">' +
+          '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px" for="rpc-picker-search">Search your repos' +
+            '<input id="rpc-picker-search" type="text" placeholder="Filter by owner or repo name..." aria-label="Search your GitHub repos" oninput="rpcFilterRepoPicker()" style="padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:13px;background:var(--surface);color:var(--ink)">' +
+          '</label>' +
+          '<ul id="rpc-picker-list" role="listbox" aria-label="Your accessible GitHub repositories" style="list-style:none;margin:10px 0 0;padding:0;max-height:260px;overflow-y:auto;border:1px solid var(--line);border-radius:4px">' +
+            repoListItemsHtml +
+          '</ul>' +
+          '<p id="rpc-picker-empty" role="status" style="display:none;margin:10px 0 0;font-size:12px;color:var(--muted)">No repos match your search.</p>' +
+          '<button type="button" onclick="rpcShowConnectForm()" style="margin-top:10px;padding:6px 10px;background:none;border:1px solid var(--line);border-radius:4px;font-size:12px;cursor:pointer;color:var(--ink)">Enter a repo URL instead</button>' +
+        '</div>'
+      : '';
+
     repoHtml =
       '<div style="margin-top:16px;padding:12px;background:var(--surface);border:1px solid var(--line);border-radius:6px">' +
         '<h3 style="margin:0 0 12px;font-size:14px">Connect GitHub repo</h3>' +
         '<form id="rpc-repo-form" style="display:flex;flex-direction:column;gap:12px">' +
           '<div style="display:flex;gap:10px">' +
             '<button type="button" id="rpc-btn-create" onclick="rpcShowCreateForm()" style="flex:1;padding:10px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Create new repo</button>' +
-            '<button type="button" id="rpc-btn-connect" onclick="rpcShowConnectForm()" style="flex:1;padding:10px;background:none;border:1px solid var(--line);border-radius:6px;font-size:13px;cursor:pointer">Connect existing</button>' +
           '</div>' +
           '<div id="rpc-create-panel" style="display:none">' +
-            '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px">New repo name<input id="rpc-create-name" type="text" placeholder="my-repo" style="padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:13px;background:var(--surface);color:var(--ink)"></label>' +
+            '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px">New repo name<input id="rpc-create-name" type="text" placeholder="my-repo" aria-label="New repo name" style="padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:13px;background:var(--surface);color:var(--ink)"></label>' +
             '<button type="button" onclick="rpcSubmitCreate(\'' + _escapeHtml(productId) + '\')" style="padding:8px 12px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:4px;font-size:13px;cursor:pointer">Create</button>' +
           '</div>' +
-          '<div id="rpc-connect-panel" style="display:none">' +
-            '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px">Repository owner<input id="rpc-connect-owner" type="text" placeholder="github-username" style="padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:13px;background:var(--surface);color:var(--ink)"></label>' +
-            '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px">Repository name<input id="rpc-connect-repo" type="text" placeholder="repo-name" style="padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:13px;background:var(--surface);color:var(--ink)"></label>' +
-            '<button type="button" onclick="rpcSubmitConnect(\'' + _escapeHtml(productId) + '\')" style="padding:8px 12px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:4px;font-size:13px;cursor:pointer">Connect</button>' +
-          '</div>' +
+          pickerPanelHtml +
+          manualPanelHtml +
         '</form>' +
       '</div>';
   } else {
@@ -777,10 +821,12 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
       'finally{btn.disabled=false;btn.textContent=\'Refresh\';}' +
     '}' +
     'function pshToggleNewFeaturePanel(){var p=document.getElementById("psh-new-feature-panel");p.style.display=(p.style.display==="none"||!p.style.display)?"block":"none";}' +
-    'function rpcShowCreateForm(){document.getElementById("rpc-create-panel").style.display="block";document.getElementById("rpc-connect-panel").style.display="none";}' +
+    'function rpcShowCreateForm(){document.getElementById("rpc-create-panel").style.display="block";document.getElementById("rpc-connect-panel").style.display="none";var pp=document.getElementById("rpc-picker-panel");if(pp){pp.style.display="none";}}' +
     'function rpcShowConnectForm(){document.getElementById("rpc-connect-panel").style.display="block";document.getElementById("rpc-create-panel").style.display="none";}' +
     'async function rpcSubmitCreate(productId){var name=document.getElementById("rpc-create-name").value.trim();if(!name){alert("Repo name required");return;}try{var r=await fetch("/products/"+productId+"/repo/create",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:name})});if(r.ok){window.location.reload();}else{var j=await r.json();alert("Error: "+(j.error||"Failed"));}}catch(e){alert("Error: "+e.message);}}' +
     'async function rpcSubmitConnect(productId){var owner=document.getElementById("rpc-connect-owner").value.trim();var repo=document.getElementById("rpc-connect-repo").value.trim();if(!owner||!repo){alert("Owner and repo required");return;}try{var r=await fetch("/products/"+productId,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({owner:owner,repo:repo})});if(r.ok){window.location.reload();}else{var j=await r.json();alert("Error: "+(j.error||"Failed"));}}catch(e){alert("Error: "+e.message);}}' +
+    'function rpcFilterRepoPicker(){var q=document.getElementById("rpc-picker-search").value.trim().toLowerCase();var items=document.querySelectorAll("#rpc-picker-list .rpc-repo-item");var anyVisible=false;items.forEach(function(li){var match=!q||li.getAttribute("data-fullname").indexOf(q)!==-1;li.style.display=match?"flex":"none";if(match){anyVisible=true;}});var empty=document.getElementById("rpc-picker-empty");if(empty){empty.style.display=anyVisible?"none":"block";}}' +
+    'async function rpcSelectRepo(productId,owner,repo){try{var r=await fetch("/products/"+productId,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({owner:owner,repo:repo})});if(r.ok){window.location.reload();}else{var j=await r.json();alert("Error: "+(j.error||"Failed"));}}catch(e){alert("Error: "+e.message);}}' +
     '<\/script>' +
   '</div>';
   return _htmlShell.renderShell({
@@ -1165,7 +1211,21 @@ async function handleGetProductView(req, res, _next, pool) {
       artefactCountsByJourneyId = {};
     }
     var navSummary = await getProductsNavSummary(_pool, tenantId);
-    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navSummary.products, navSummary.noProductJourneyCount);
+    // mtrr-s2 (AC1/AC3): only attempt the picker when there's no repo
+    // connected yet and the session actually has a GitHub accessToken --
+    // a session with no token (Google/email login) falls straight to the
+    // manual URL-entry fallback with no picker attempt at all (that's
+    // prc-s1.2 AC3's existing account-linking gap, not this story's
+    // concern). Any listing failure (rate limit, scope, network) resolves
+    // to {ok:false, message} rather than throwing, per repo-picker.js's
+    // contract -- the page render itself is never blocked by a GitHub API
+    // failure.
+    var repoPickerResult = null;
+    var accessTokenForPicker = req.session && req.session.accessToken;
+    if (!prodRow.repo_owner && !prodRow.repo_name && accessTokenForPicker) {
+      repoPickerResult = await _repoPicker.getAccessibleRepos(accessTokenForPicker, _repoAdapter.listRepos);
+    }
+    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navSummary.products, navSummary.noProductJourneyCount, repoPickerResult);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
