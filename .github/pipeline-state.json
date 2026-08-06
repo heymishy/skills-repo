@@ -18766,35 +18766,37 @@
     {
       "slug": "2026-08-06-tenant-plan-admin-control",
       "name": "Give admins a real control to lift a tenant's journey cap, separate from credits",
-      "stage": "test-plan",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "slug": "tpac-s1",
           "name": "Give admins a real control to lift a tenant's journey cap, separate from credits",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-06-tenant-plan-admin-control/review/tpac-s1-review-2.md",
           "testPlan": {
             "status": "written",
-            "totalTests": 6,
-            "passing": 0,
+            "totalTests": 7,
+            "passing": 7,
             "artefact": "artefacts/2026-08-06-tenant-plan-admin-control/test-plans/tpac-s1-test-plan.md"
           },
           "verificationScriptArtefact": "artefacts/2026-08-06-tenant-plan-admin-control/verification-scripts/tpac-s1-verification.md",
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-06T09:04:29.810Z",
+          "updatedAt": "2026-08-06T10:02:40.728Z",
           "id": "tpac-s1",
-          "dorStatus": "signed-off"
+          "dorStatus": "signed-off",
+          "prStatus": "merged",
+          "mergeCommit": "41368538"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-06T09:00:01.956Z",
+      "updatedAt": "2026-08-06T10:02:40.729Z",
       "track": "short",
       "epics": []
     },
