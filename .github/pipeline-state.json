@@ -18960,11 +18960,32 @@
     {
       "slug": "2026-08-07-cross-surface-state-sync",
       "name": "Real, automatic, bidirectional sync between pipeline-state.json and web-UI journey state, correlated by feature slug",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "stories": [],
-      "metrics": [],
-      "updatedAt": "2026-08-06T21:13:04.575Z",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Automatic cross-surface agreement rate",
+          "target": "100% of phase-boundary advances propagate automatically to the other surface",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Conflict-resolution correctness (no silent overwrites)",
+          "target": "100% of detected conflicts resolved to pipeline-state.json value and logged",
+          "baseline": "N/A - no conflict-resolution mechanism exists today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "updatedAt": "2026-08-06T21:48:58.485Z",
       "discoveryArtefact": "artefacts/2026-08-07-cross-surface-state-sync/discovery.md",
       "track": "standard",
       "regulated": false,
