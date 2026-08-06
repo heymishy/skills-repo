@@ -18926,6 +18926,36 @@
       "updatedAt": "2026-08-06T19:39:22.910Z",
       "track": "short",
       "epics": []
+    },
+    {
+      "slug": "2026-08-07-outer-loop-flag-reconsideration",
+      "name": "Outer-Loop Flag Reconsideration -- Maximize Real Context-Savings",
+      "stage": "definition",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "olfr-s1",
+          "id": "olfr-s1",
+          "name": "Collapse the disabled-state outer-loop listing into one line in both instruction-file sections",
+          "stage": "definition",
+          "health": "green",
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-06T19:46:30.765Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-06T19:46:30.766Z",
+      "discoveryArtefact": "artefacts/2026-08-07-outer-loop-flag-reconsideration/discovery.md",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "discoveryStatus": "approved",
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
