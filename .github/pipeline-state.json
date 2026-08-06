@@ -18856,6 +18856,74 @@
       "updatedAt": "2026-08-06T09:50:38.791Z",
       "track": "short",
       "epics": []
+    },
+    {
+      "slug": "2026-08-07-export-multi-story-selection",
+      "name": "Let a --from-saas export request specify which DoR-approved story to fetch",
+      "stage": "test-plan",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "emss-s1",
+          "id": "emss-s1",
+          "name": "Let a --from-saas export request specify which DoR-approved story to fetch",
+          "stage": "test-plan",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-07-export-multi-story-selection/review/emss-s1-review-2.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-07-export-multi-story-selection/test-plans/emss-s1-test-plan.md"
+          },
+          "verificationScriptArtefact": "artefacts/2026-08-07-export-multi-story-selection/verification-scripts/emss-s1-verification.md",
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-06T19:39:22.909Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-06T19:39:22.910Z",
+      "track": "short",
+      "epics": []
+    },
+    {
+      "slug": "2026-08-07-skill-categorization-reconciliation",
+      "name": "Unify skill-categorization into one source of truth and close the --with-outer-loop NFR gap",
+      "stage": "test-plan",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "scr-s1",
+          "id": "scr-s1",
+          "name": "Unify skill-categorization into one source of truth and close the --with-outer-loop NFR gap",
+          "stage": "test-plan",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-07-skill-categorization-reconciliation/review/scr-s1-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-07-skill-categorization-reconciliation/test-plans/scr-s1-test-plan.md"
+          },
+          "verificationScriptArtefact": "artefacts/2026-08-07-skill-categorization-reconciliation/verification-scripts/scr-s1-verification.md",
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-06T19:39:22.910Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-06T19:39:22.910Z",
+      "track": "short",
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
