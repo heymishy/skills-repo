@@ -18702,7 +18702,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-06T08:36:52.386Z",
+      "updatedAt": "2026-08-06T18:00:17.260Z",
       "discoveryArtefact": "artefacts/2026-08-06-durable-artefact-storage/discovery.md",
       "track": "standard",
       "regulated": false,
@@ -18722,22 +18722,40 @@
             {
               "slug": "das-s1",
               "name": "Commit completed-stage artefacts to the product's connected repo, with git-fallback on Resume conversation",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-06-durable-artefact-storage/review/das-s1-review-2.md",
-              "updatedAt": "2026-08-06T08:36:52.385Z"
+              "updatedAt": "2026-08-06T18:00:17.259Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 9,
+                "passing": 0,
+                "artefact": "artefacts/2026-08-06-durable-artefact-storage/test-plans/das-s1-test-plan.md"
+              },
+              "verificationScriptArtefact": "artefacts/2026-08-06-durable-artefact-storage/verification-scripts/das-s1-verification.md",
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "das-s2",
               "name": "Require a connected repo before a new product can start its first journey",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-06-durable-artefact-storage/review/das-s2-review-2.md",
-              "updatedAt": "2026-08-06T08:36:52.386Z"
+              "updatedAt": "2026-08-06T18:00:17.260Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0,
+                "artefact": "artefacts/2026-08-06-durable-artefact-storage/test-plans/das-s2-test-plan.md"
+              },
+              "verificationScriptArtefact": "artefacts/2026-08-06-durable-artefact-storage/verification-scripts/das-s2-verification.md",
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         }
