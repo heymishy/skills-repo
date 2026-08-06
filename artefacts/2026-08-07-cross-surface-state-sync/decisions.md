@@ -44,3 +44,30 @@
 **Made by:** Hamish King — Platform maintainer / Product owner (confirmed via direct comparison against `das-s1`'s already-shipped design during /clarify)
 **Revisit trigger:** If the async propagation's lag ever causes a real, observed reconciliation failure (e.g. an operator making a decision based on stale `pipeline-state.json` data within that lag window), reconsider whether the sync needs to be synchronous after all, or whether the lag window needs to be bounded more tightly.
 ---
+
+---
+**2026-08-07 | ARCH | /definition (Step 1.5 — architecture constraints scan)**
+**Decision:** The web-UI-to-pipeline-state.json async/best-effort sync direction (per the earlier ARCH decision above) is implemented as a bounded in-request retry only — a small, fixed number of retry attempts within the original authenticated request's lifetime, using the live session token already present. No token or credential is stored for later background retry. If retries are exhausted, the gap is logged for css-s4's reconciliation safety net to pick up on a future live request.
+**Alternatives considered:** Storing the session token (or a scoped derivative) so a background job could retry later without the original request being open.
+**Rationale:** ADR-020 requires the authenticated user's own OAuth token for any GitHub Contents API write to `pipeline-state.json` — a requirement naturally satisfied only within the original request's lifetime. Storing a token for later background use would satisfy the retry mechanism but introduces a new credential-storage/security surface that ADR-020 never anticipated and that conflicts with `product/constraints.md` #12's "credentials are structural, never persisted in the agent's environment" principle. Bounded in-request retry keeps the mechanism within ADR-020's existing compliance boundary.
+**Made by:** Hamish King — Platform maintainer / Product owner
+**Revisit trigger:** If in-request retry proves insufficient in practice (a high rate of exhausted retries reaching css-s4's reconciliation log), reconsider a token-storage approach with an explicit new security review, rather than silently degrading the reconciliation safety net's effectiveness.
+---
+
+---
+**2026-08-07 | DESIGN | /definition (Step 4 — story decomposition, ADR-026 reuse-check)**
+**Decision:** css-s2 and css-s3 share one new Postgres entity, `sync_log` (feature_slug, tenant_id, entry_type ['gap'|'conflict'], pipeline_state_value, journey_value, resolved_value, created_at), rather than two separate near-identical tables for reconciliation gaps and conflicts.
+**Alternatives considered:** Two separate tables (one for reconciliation gaps, one for conflicts); reusing the existing `journeys.data` JSONB column to append log entries instead of a new table.
+**Rationale:** No existing entity (`journeys`, `product_rollups`) covers an append-only audit-log concept — a new entity is genuinely needed, per the ADR-026 reuse-check. A single shared table with an `entry_type` discriminator avoids the anti-pattern this repo's own architecture-guardrails.md warns against (duplicating near-identical structures across files), since both gap and conflict entries record the same shape (feature slug, divergent values, resolution, timestamp).
+**Made by:** Hamish King — Platform maintainer / Product owner (confirmed via ADR-026 reuse-check prompt during /definition)
+**Revisit trigger:** If gap and conflict entries diverge significantly in shape as css-s2/css-s3 are implemented (e.g. conflict entries need fields gap entries never do), reconsider splitting into two tables rather than forcing an awkward shared shape.
+---
+
+---
+**2026-08-07 | SLICE | /definition (Step 2 — slicing strategy)**
+**Decision:** Walking skeleton slicing strategy — css-s1 establishes the thinnest end-to-end path (CLI→web-UI, one gate type), css-s2 completes bidirectionality, css-s3 adds conflict correctness, css-s4 extends to full gate-vocabulary coverage plus the reconciliation safety net. One epic (css-e1), not split across multiple epics, since total story count (4) is well under the ~8-story single-epic threshold.
+**Alternatives considered:** Vertical slice (one story per gate/stage type, each fully bidirectional); risk-first (tackle the ADR-020 in-request-retry mechanism first in isolation); user journey (sequence stories by a maintainer's chronological cross-surface workflow).
+**Rationale:** This is a new cross-surface integration with real unknowns going in (ADR-020 token-lifetime resolution, slug-correlation edge cases, conflict-detection logic) — walking skeleton proves the mechanism end-to-end for one gate type before committing to full-vocabulary coverage, which is the standard fit for "new architecture/integration needing proof before detail."
+**Made by:** Hamish King — Platform maintainer / Product owner
+**Revisit trigger:** None — slicing strategy is fixed once story decomposition begins per `/definition`'s own convention.
+---

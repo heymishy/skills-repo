@@ -45,8 +45,8 @@
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Automatic cross-surface agreement rate | *(populated at /definition once story slugs are known)* | Gap — pending /definition |
-| Conflict-resolution correctness | *(populated at /definition once story slugs are known)* | Gap — pending /definition |
+| Automatic cross-surface agreement rate | css-s1 (skeleton, CLI→web-UI), css-s2 (web-UI→CLI, ADR-020 compliant), css-s4 (full gate-vocabulary coverage + reconciliation safety net) | Covered |
+| Conflict-resolution correctness | css-s3 (detection, canonical resolution, logging) | Covered |
 
 ---
 

@@ -18960,7 +18960,7 @@
     {
       "slug": "2026-08-07-cross-surface-state-sync",
       "name": "Real, automatic, bidirectional sync between pipeline-state.json and web-UI journey state, correlated by feature slug",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
       "stories": [],
       "metrics": [
@@ -18985,7 +18985,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-06T21:48:58.485Z",
+      "updatedAt": "2026-08-06T22:14:11.691Z",
       "discoveryArtefact": "artefacts/2026-08-07-cross-surface-state-sync/discovery.md",
       "track": "standard",
       "regulated": false,
@@ -18993,7 +18993,41 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "discoveryStatus": "approved",
-      "epics": []
+      "epics": [
+        {
+          "slug": "css-e1-cross-surface-state-sync",
+          "name": "Pipeline-state.json and web-UI journeys stay in automatic agreement",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "css-s1",
+              "name": "Automatically reflect a CLI-side gate advance on the corresponding web-UI journey",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "css-s2",
+              "name": "Automatically reflect a web-UI journey stage completion in pipeline-state.json",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "css-s3",
+              "name": "Detect a genuine cross-surface conflict, resolve it to pipeline-state.json value, and log it",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "css-s4",
+              "name": "Extend automatic sync to the full gate/stage vocabulary and add the reconciliation safety net",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
+        }
+      ],
+      "slicingStrategy": "walking-skeleton",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
