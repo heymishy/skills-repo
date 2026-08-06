@@ -75,6 +75,7 @@ const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _han
 const { setModulesAdapter } = require('./adapters/modules-adapter'); // a1
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
+const { setListReposAdapter, realListRepos }                         = require('./adapters/repo-adapter');       // mtrr-s2
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
 const { setStandardsAdapter }                                        = require('./standards-adapter');             // psh-s10
 const { setPostHogFlagsAdapter }                                     = require('./modules/posthog-flags');          // bri-s1.1
@@ -213,6 +214,18 @@ if (process.env.DATABASE_URL) {
 if (process.env.NODE_ENV !== 'test') {
   setCreateRepoAdapter(realCreateRepo);
   console.log('[repo-adapter] createRepo wired');
+}
+
+// mtrr-s2 / D37 mandatory separate wiring task -- wire the real GitHub
+// list-accessible-repos adapter (a third, distinct adapter from prc-s1.2's
+// repo-access-check and prc-s2.1's repo-creation adapters above --
+// setListReposAdapter/getListReposAdapter, so none of the three stories'
+// wiring calls collide). Never wired in NODE_ENV=test (tests call
+// setListReposAdapter() themselves with a mock); the throwing stub stays
+// active there.
+if (process.env.NODE_ENV !== 'test') {
+  setListReposAdapter(realListRepos);
+  console.log('[repo-adapter] listRepos wired');
 }
 
 // bri-s1.2 — wire the real PostHog flags client into the bri-s1.1 adapter contract,
