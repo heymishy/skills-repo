@@ -960,3 +960,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: gap
   signal-text: "das-s2 (require a connected repo before a new product can start its first journey) implies 'brand-new product' means 'has zero journeys yet' via AC1/AC3 together, but never states this operational definition explicitly. A coding agent could plausibly implement the boundary using product created_at instead of journey count, which would misclassify a pre-existing repo-less product with zero journeys as subject to the new gate -- directly violating the /clarify Option A decision (existing repo-less products unaffected). Logged as review finding 1-M1, MEDIUM severity; the fix is a one-line AC tightening (state the check is journey-count-based, not date-based), not a design change."
   source: agent-auto
+
+- date: 2026-08-07
+  session-phase: /test-plan (cross-surface-state-sync, css-s1 through css-s4)
+  signal-type: pattern
+  signal-text: "Two of the four stories in this feature have a genuine External-dependency test gap that automated tests cannot close: css-s2 AC1 (verifying the real GitHub commit author identity requires a real OAuth token and a real repo -- not simulable in the mocked test suite) and css-s4 AC3 (the automatic agreement rate is a 4-week real-usage measurement by definition, per benefit-metric.md's own measurement method). Both gaps are handled the same way: automated tests cover the mockable mechanics (correct header/token passed, correct log entry shape), and a manual verification-script scenario covers the real-world confirmation post-merge/post-4-weeks. This is a reusable pattern for any future story whose AC's correctness depends on a real external identity provider or elapsed real-world time -- neither is a gap to apologize for or defer indefinitely, both have a concrete, scheduled manual check."
+  source: agent-auto
