@@ -18663,6 +18663,22 @@
       "metrics": [],
       "updatedAt": "2026-08-05T21:19:06.862Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-08-06-durable-artefact-storage",
+      "name": "Durable Artefact Storage for SaaS-Hosted Journeys",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [],
+      "metrics": [],
+      "updatedAt": "2026-08-06T03:08:26.172Z",
+      "discoveryArtefact": "artefacts/2026-08-06-durable-artefact-storage/discovery.md",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "discoveryStatus": "clarified"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
