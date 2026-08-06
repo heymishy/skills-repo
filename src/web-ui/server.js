@@ -27,7 +27,7 @@ const { handleGetAsBuiltDataModel }                                  = require('
 const { handleGetAsBuiltSystemArchitecture }                         = require('./routes/as-built-system-architecture'); // csd-s7
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
 const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
-const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCompletePage, handleGetChatHtml, handlePostTurnHtml, handlePostTurnStreamHtml, handlePostAssumptionConfirm, handlePostCanvasEditHtml } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25 / dsq.3 / mfc.1 / mfc.3 / iwu.4 / dic.5
+const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCompletePage, handleGetChatHtml, handlePostTurnHtml, handlePostTurnStreamHtml, handlePostAssumptionConfirm, handlePostCanvasEditHtml, setDbPool: setSkillsDbPool, _getSkillsNavContext } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25 / dsq.3 / mfc.1 / mfc.3 / iwu.4 / dic.5 / npwe-s1
 const { setLogger, setFetchOrgs, getFetchOrgs, setFetchOrgMembers, getOrgMembers } = require('./routes/auth'); // tir-s8: getOrgMembers/setFetchOrgMembers
 const { setProviderAdapter, gitHubProviderAdapter, setGoogleUserInfoAdapter, _realFetchGoogleUserInfo } = require('./auth/oauth-adapter');  // lab-s1.3 provider registry wiring (D37 separate task)
 const { setFetchPipelineState }                                      = require('./adapters/feature-list');
@@ -203,6 +203,24 @@ if (process.env.DATABASE_URL) {
   const _exportDataSourcePool = new _ExportDataSourcePool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 10000 });
   require('./adapters/export-data-source').setDbPool(_exportDataSourcePool);
   console.log('[mtrr-s1] export data source DB pool wired');
+}
+
+// npwe-s1 / D37 mandatory separate wiring task -- wire the real Postgres pool
+// routes/skills.js's own setDbPool/getDbPool needs for its Products-sidebar
+// nav-context resolution (13 skill-chat-session render call sites). Own
+// dedicated Pool instance, same if(DATABASE_URL){ new Pool(...); set...(pool) }
+// pattern as every other Postgres-backed adapter in this file (mtrr-s1's
+// export-data-source.js wiring immediately above is the exact precedent this
+// story's DoR names). Distinct from _pshPool (assigned further below): that
+// pool is threaded explicitly through server.js's own per-route dispatch
+// calls for journey.js/products.js; this story deliberately avoids adding a
+// 14th/15th such threaded parameter for skills.js's 13 call sites, per the
+// D37 module-level pattern decisions.md records for this story.
+if (process.env.DATABASE_URL) {
+  const { Pool: _SkillsNavPool } = require('pg');
+  const _skillsNavPool = new _SkillsNavPool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 10000 });
+  setSkillsDbPool(_skillsNavPool);
+  console.log('[npwe-s1] skills.js Products-nav DB pool wired');
 }
 
 // prc-s2.1 / D37 mandatory separate wiring task -- wire the real GitHub
@@ -2373,7 +2391,11 @@ async function router(req, res) {
     const skillName = decodeURIComponent(parts[2]);
     const sessionId = decodeURIComponent(parts[4]);
     authGuard(req, res, async () => {
-      const html = htmlGetCompletePage(skillName, sessionId);
+      // npwe-s1: htmlGetCompletePage itself stays synchronous (see its own
+      // doc comment) -- nav context is resolved here, where async is already
+      // available, and passed in as a plain object.
+      const _nav = await _getSkillsNavContext(req, sessionId);
+      const html = htmlGetCompletePage(skillName, sessionId, _nav);
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       res.end(html);
     });

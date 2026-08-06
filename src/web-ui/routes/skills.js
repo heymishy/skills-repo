@@ -46,6 +46,82 @@ const NO_LICENCE_MSG = 'No active Copilot licence found for this account. Please
 // Scoped to process lifetime; orphaned sessions cleaned up by session-manager on restart.
 const _sessionStore = new Map();
 
+// npwe-s1 -- shared sidebar products summary, same helper products.js's own
+// dashboard/product-view pages and journey.js's handleGetJourney already
+// call (pan-s1). Required at top level: products.js does not require this
+// module (skills.js) at its own top level (only lazily, inside function
+// bodies, e.g. its `require('./skills')._getHtmlSessionsBulk` seam) so this
+// does not introduce a circular require.
+var _getProductsNavSummary = require('./products').getProductsNavSummary;
+
+// npwe-s1 / D37 -- injectable Postgres pool for this module's own nav-
+// products resolution. skills.js's 13 target render call sites had zero
+// pool access before this story (confirmed by audit); rather than thread
+// `pool` through server.js's 13 per-route dispatch call sites (a second
+// file's signature change this story would otherwise leave unnamed), this
+// mirrors mtrr-s1's export-data-source.js precedent: a module-level pool
+// reference wired once at startup. Stub throws when unwired (D37 rule 1) --
+// see decisions.md ARCH entry (npwe-s1) for why every call site below wraps
+// this in try/catch rather than letting an unwired pool break the page
+// render: skills.js has ~13 call sites and hundreds of pre-existing tests
+// that render these pages with no pool wired at all, and Products-sidebar
+// enrichment is additive/optional (matches pan-s1's own AC5 contract --
+// renderProductsSection() already renders nothing when `products` is
+// undefined).
+let _npweDbPool = null;
+function setDbPool(pool) { _npweDbPool = pool; }
+function getDbPool() {
+  if (!_npweDbPool) {
+    throw new Error('Adapter not wired: database pool not wired. Call setDbPool() with a real Pool before use.');
+  }
+  return _npweDbPool;
+}
+
+/**
+ * npwe-s1 -- shared nav-products context for skill-chat-session pages.
+ * Calls getProductsNavSummary(pool, tenantId) exactly once (NFR: no N+1),
+ * then resolves activeProductId from the session's linked journey -- reusing
+ * _journeyStore.getJourney(journeyId).productId, the SAME field
+ * products.js's handlePostProductFeature already writes via
+ * setJourneyFields(journeyId, {..., productId}) and journey.js's own
+ * `/journey` handler already reads (`journeys.filter(j => j.productId ==
+ * null)`) -- no new Postgres query needed for this part, and no second
+ * products-list data-fetch pattern invented (see decisions.md ARCH entry).
+ * Degrades to `{}` (no sidebar rendered -- renderProductsSection() already
+ * treats `products: undefined` as "render nothing", pan-s1 AC5) on an
+ * unwired pool or any lookup failure -- this is read-only nav enrichment,
+ * never allowed to break the underlying page render.
+ * @param {object} req
+ * @param {string} [sessionId] - resolves activeProductId via this session's
+ *   linked journey (session.journeyId, the same field handleGetChatHtml/
+ *   _renderChatPage already read for the stage navigator). Omit for pages
+ *   with no session context (e.g. the Run a Skill list).
+ * @returns {Promise<{products?: Array, activeProductId?: (string|null), noProductJourneyCount?: number}>}
+ */
+async function _getSkillsNavContext(req, sessionId) {
+  try {
+    var pool = getDbPool();
+    var tenantId = req && req.session && req.session.tenantId;
+    var navSummary = await _getProductsNavSummary(pool, tenantId);
+    var activeProductId = null;
+    if (sessionId) {
+      var _navSession = _sessionStore.get(sessionId);
+      var journeyId = _navSession ? _navSession.journeyId : null;
+      if (journeyId) {
+        var journey = _journeyStore.getJourney(journeyId);
+        activeProductId = (journey && journey.productId != null) ? journey.productId : null;
+      }
+    }
+    return {
+      products: navSummary.products,
+      activeProductId: activeProductId,
+      noProductJourneyCount: navSummary.noProductJourneyCount
+    };
+  } catch (_) {
+    return {};
+  }
+}
+
 // wsm.1 — injectable disk session writer. Default stub throws so misconfiguration is visible.
 // Wire in server.js startup via setSessionStore(require('./adapters/session-store')).
 var _diskSessionWriter = {
@@ -795,9 +871,11 @@ function setSkillsAuditLogger(fn) { _htmlAuditLogger = fn; }
  * Render the skills list HTML using renderShell.
  * @param {Array<{name:string,description:string}>} skills
  * @param {object} user
+ * @param {object} [navContext] - npwe-s1: products/activeProductId/noProductJourneyCount, see _getSkillsNavContext
  * @returns {string}
  */
-function _renderSkillsList(skills, user) {
+function _renderSkillsList(skills, user, navContext) {
+  navContext = navContext || {};
   const items = skills.map(function(skill) {
     const safeName = escHtml(skill.name || '');
     const safeDesc = escHtml(skill.description || '');
@@ -818,7 +896,10 @@ function _renderSkillsList(skills, user) {
     ? '<div class="sw-empty"><div class="sw-empty-icon">❖</div><h1>No skills available</h1><p>No SKILL.md files were found in the repository.</p></div>'
     : '<p class="sw-section-title">Available skills</p><div style="display:flex;flex-direction:column;gap:12px">' + items + '</div>';
 
-  return renderShell({ title: 'Run a Skill', bodyContent: body, user: user, active: 'skills' });
+  return renderShell({
+    title: 'Run a Skill', bodyContent: body, user: user, active: 'skills',
+    products: navContext.products, activeProductId: navContext.activeProductId, noProductJourneyCount: navContext.noProductJourneyCount
+  });
 }
 
 /**
@@ -833,6 +914,10 @@ async function handleGetSkillsHtml(req, res) {
     res.end();
     return;
   }
+  // npwe-s1: this page has no session/journey context (it's the skill
+  // launcher, not tied to any one journey) -- resolved once, used in both
+  // the success and error branches below.
+  const _nav = await _getSkillsNavContext(req, null);
   try {
     const token  = req.session.accessToken;
     const user   = { login: req.session.login || '' };
@@ -844,7 +929,7 @@ async function handleGetSkillsHtml(req, res) {
       timestamp: new Date().toISOString()
     });
 
-    const html = _renderSkillsList(skills, user);
+    const html = _renderSkillsList(skills, user, _nav);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   } catch (err) {
@@ -853,7 +938,8 @@ async function handleGetSkillsHtml(req, res) {
       title:       'Error',
       bodyContent: '<p>An error occurred loading skills.</p>',
       user:        { login: (req.session && req.session.login) || '' },
-      active:      'skills'
+      active:      'skills',
+      products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
     });
     res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -882,11 +968,15 @@ async function handlePostSkillSessionHtml(req, res) {
     res.end();
   } catch (err) {
     _logger.error('handlePostSkillSessionHtml: ' + err.message);
+    // npwe-s1: session creation failed, so there's no sessionId to resolve a
+    // journey/product from -- same "no session context" case as the skills list.
+    const _nav = await _getSkillsNavContext(req, null);
     const html = renderShell({
       title:       'Error',
       bodyContent: '<p>Could not start skill session: ' + escHtml(err.message) + '</p>',
       user:        { login: (req.session && req.session.login) || '' },
-      active:      'skills'
+      active:      'skills',
+      products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
     });
     res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -977,6 +1067,7 @@ async function handleGetQuestionHtml(req, res) {
   const sessionId = (req.params && req.params.id)   || '';
   const token     = req.session.accessToken;
   const user      = { login: req.session.login || '' };
+  const _nav      = await _getSkillsNavContext(req, sessionId); // npwe-s1
 
   let result;
   try {
@@ -987,7 +1078,8 @@ async function handleGetQuestionHtml(req, res) {
       title:       status === 404 ? 'Session not found' : 'Error',
       bodyContent: '<p>' + escHtml(err.message || 'An error occurred') + '</p>',
       user,
-      active: 'skills'
+      active: 'skills',
+      products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
     });
     res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -1046,7 +1138,10 @@ async function handleGetQuestionHtml(req, res) {
     priorHtml
   ].join('\n');
 
-  const html = renderShell({ title: 'Question ' + qi + ' of ' + tq, bodyContent: bodyContent, user: user, active: 'skills' });
+  const html = renderShell({
+    title: 'Question ' + qi + ' of ' + tq, bodyContent: bodyContent, user: user, active: 'skills',
+    products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
+  });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -1079,11 +1174,13 @@ async function handlePostAnswerHtml(req, res) {
     result = await _submitAnswer(skillName, sessionId, answer, token);
   } catch (err) {
     const status = err.status || 500;
+    const _nav = await _getSkillsNavContext(req, sessionId); // npwe-s1
     const html = renderShell({
       title:       'Error',
       bodyContent: '<p>' + escHtml(err.message || 'An error occurred') + '</p>',
       user,
-      active: 'skills'
+      active: 'skills',
+      products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
     });
     res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -1209,6 +1306,7 @@ async function handleGetCommitPreviewHtml(req, res) {
   const sessionId = (req.params && req.params.id)   || '';
   const token     = req.session.accessToken;
   const user      = { login: req.session.login || '' };
+  const _nav      = await _getSkillsNavContext(req, sessionId); // npwe-s1
 
   let preview;
   try {
@@ -1218,7 +1316,8 @@ async function handleGetCommitPreviewHtml(req, res) {
     const html = renderShell({
       title:       'Error',
       bodyContent: '<p>' + escHtml(err.message || 'An error occurred') + '</p>',
-      user
+      user,
+      products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
     });
     res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -1234,7 +1333,10 @@ async function handleGetCommitPreviewHtml(req, res) {
     reviewers:         preview.reviewers       || []
   });
 
-  const html = renderShell({ title: 'Commit preview', bodyContent, user, active: 'skills' });
+  const html = renderShell({
+    title: 'Commit preview', bodyContent, user, active: 'skills',
+    products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
+  });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -1267,11 +1369,13 @@ async function handlePostCommitHtml(req, res) {
     const bodyContent = is409
       ? renderAlreadyCommitted({ artefactUrl: null })
       : '<p>' + escHtml(err.message || 'An error occurred') + '</p>';
+    const _nav = await _getSkillsNavContext(req, sessionId); // npwe-s1
     const html = renderShell({
       title:       is409 ? 'Already committed' : 'Error',
       bodyContent,
       user,
-      active: 'skills'
+      active: 'skills',
+      products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
     });
     res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -1308,6 +1412,7 @@ async function handleGetResultHtml(req, res) {
   const sessionId = (req.params && req.params.id)   || '';
   const token     = req.session.accessToken;
   const user      = { login: req.session.login || '' };
+  const _nav      = await _getSkillsNavContext(req, sessionId); // npwe-s1
 
   let result;
   try {
@@ -1317,7 +1422,8 @@ async function handleGetResultHtml(req, res) {
     const html = renderShell({
       title:       'Error',
       bodyContent: '<p>' + escHtml(err.message || 'An error occurred') + '</p>',
-      user
+      user,
+      products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
     });
     res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -1333,7 +1439,10 @@ async function handleGetResultHtml(req, res) {
     nextSkillLabel: result.nextSkillLabel || null
   });
 
-  const html = renderShell({ title: 'Commit complete', bodyContent, user, active: 'skills' });
+  const html = renderShell({
+    title: 'Commit complete', bodyContent, user, active: 'skills',
+    products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
+  });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -2441,7 +2550,8 @@ async function handlePostCanvasEditHtml(req, res) {
  * @param {object} session
  * @returns {string}
  */
-function _renderChatPage(skillName, sessionId, session, backUrl) {
+function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
+  navContext = navContext || {};
   var encodedSkill = encodeURIComponent(skillName);
   var encodedId    = encodeURIComponent(sessionId);
   var turnUrl      = '/api/skills/' + encodedSkill + '/sessions/' + encodedId + '/turn';
@@ -3962,7 +4072,10 @@ function _renderChatPage(skillName, sessionId, session, backUrl) {
     bodyContent = bodyContent + journeyPanel;
   }
 
-  return renderShell({ title: 'Skill session — ' + escHtml(skillName), bodyContent: bodyContent, user: { login: '' }, active: 'skills' });
+  return renderShell({
+    title: 'Skill session — ' + escHtml(skillName), bodyContent: bodyContent, user: { login: '' }, active: 'skills',
+    products: navContext.products, activeProductId: navContext.activeProductId, noProductJourneyCount: navContext.noProductJourneyCount
+  });
 }
 
 /**
@@ -4016,8 +4129,10 @@ async function handleGetChatHtml(req, res) {
   var _isSafeBoardBackLink = require('./journey')._isSafeBoardBackLink;
   var backUrl = _isSafeBoardBackLink(_rawFrom) ? _rawFrom : '';
 
+  // npwe-s1 -- resolved via the session we already have in hand (session.journeyId).
+  var _nav = await _getSkillsNavContext(req, sessionId);
   // Initial turn is fired client-side via SSE to avoid blocking page render on LLM call
-  var html = _renderChatPage(skillName, sessionId, session, backUrl);
+  var html = _renderChatPage(skillName, sessionId, session, backUrl, _nav);
   // Initialize PostHog on chat pages so $pageview fires and users are identified here too.
   // Without this, the entire active session is invisible to PostHog.
   var _phKey = process.env.POSTHOG_KEY || '';
@@ -4967,7 +5082,23 @@ async function htmlRecordAnswer(skillName, sessionId, rawAnswer, token) {
  * @param {string} sessionId
  * @returns {string} HTML
  */
-function htmlGetCompletePage(skillName, sessionId) {
+/**
+ * @param {string} skillName
+ * @param {string} sessionId
+ * @param {object} [navContext] - npwe-s1: pre-resolved products/activeProductId/
+ *   noProductJourneyCount (see _getSkillsNavContext). This function stays
+ *   synchronous -- deliberately unlike every other npwe-s1 call site --
+ *   because check-wusl-s1-session-redis-fallback.js's AC4 asserts it (and
+ *   htmlGetNextQuestion/htmlGetPreview) "remain synchronous", and dozens of
+ *   pre-existing callers (check-dsq3-post-session-clarify-gate.js etc.) use
+ *   its return value directly as a string, with no `await`. The caller
+ *   (server.js) resolves navContext itself via _getSkillsNavContext(req,
+ *   sessionId) before calling this -- omitted entirely, exactly as before,
+ *   by every pre-existing 2-arg caller.
+ * @returns {string}
+ */
+function htmlGetCompletePage(skillName, sessionId, navContext) {
+  navContext = navContext || {};
   var session = _sessionStore.get(sessionId);
   var isDone = session ? session.done : false;
   var commitPreviewUrl = '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(sessionId) + '/commit-preview';
@@ -4977,7 +5108,10 @@ function htmlGetCompletePage(skillName, sessionId) {
     (isDone ? '<p>Artefact is ready.</p>' : '<p>Session in progress.</p>') +
     '<p><a href="' + escHtml(commitPreviewUrl) + '">Commit artefact</a></p>' +
     '<p style="margin-top:1rem"><a href="/skills/clarify">Run /clarify first</a></p>';
-  return renderShell({ title: 'Draft complete', bodyContent: bodyContent, user: { login: '' } });
+  return renderShell({
+    title: 'Draft complete', bodyContent: bodyContent, user: { login: '' },
+    products: navContext.products, activeProductId: navContext.activeProductId, noProductJourneyCount: navContext.noProductJourneyCount
+  });
 }
 
 /**
@@ -5155,5 +5289,9 @@ module.exports = {
   handlePostCanvasEditHtml, setApplyCanvasEdits, realApplyCanvasEdits,
   buildCanvasAuditEntry, writeAuditEntry,
   // psh-s5 — product context injection
-  buildSystemPromptWithProductContext
+  buildSystemPromptWithProductContext,
+  // npwe-s1 — D37 Postgres pool for Products-sidebar nav enrichment + the
+  // shared nav-context resolver (server.js calls this directly for
+  // htmlGetCompletePage, which stays synchronous -- see its own doc comment)
+  setDbPool, getDbPool, _getSkillsNavContext
 };
