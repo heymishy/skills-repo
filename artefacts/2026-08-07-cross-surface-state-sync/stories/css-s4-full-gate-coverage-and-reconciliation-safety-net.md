@@ -28,7 +28,7 @@ So that **the 100% automatic-agreement target is actually met across real usage,
 
 ## Acceptance Criteria
 
-**AC1:** Given the 7 gated-stage values defined in `src/enforcement/gate-map.js`, When any of them is advanced on either surface, Then the sync mechanism proven in css-s1/css-s2 for `discovery-approved` alone now applies uniformly to all 7 — no gate type is left un-synced, verified by a test parameterized across all 7 values rather than one test per value.
+**AC1:** Given the 7 gated-stage values defined in `src/enforcement/gate-map.js`, When any of them is advanced on either surface, Then the sync mechanism proven in css-s1/css-s2 for `discovery-approved` alone now applies uniformly to all 7 — no gate type is left un-synced. `[Testability note: the test-plan for this AC should use a single test parameterized across all 7 values rather than 7 near-identical tests — implementation guidance for /test-plan, not part of the AC itself.]`
 
 **AC2:** Given a css-s2 in-request retry was exhausted and a reconciliation gap was logged (css-s2 AC3), When a subsequent live, authenticated request touches that same feature (e.g. the operator's next action on that journey), Then the reconciliation mechanism identifies the logged gap and re-attempts the `pipeline-state.json` sync using that new request's own live session token — never a stored credential from the original failed attempt.
 

@@ -18985,7 +18985,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-06T22:14:11.691Z",
+      "updatedAt": "2026-08-06T22:22:22.659Z",
       "discoveryArtefact": "artefacts/2026-08-07-cross-surface-state-sync/discovery.md",
       "track": "standard",
       "regulated": false,
@@ -19002,32 +19002,76 @@
             {
               "slug": "css-s1",
               "name": "Automatically reflect a CLI-side gate advance on the corresponding web-UI journey",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-08-06T22:22:22.659Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-07-cross-surface-state-sync/review/css-s1-review-2.md"
             },
             {
               "slug": "css-s2",
               "name": "Automatically reflect a web-UI journey stage completion in pipeline-state.json",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-08-06T22:22:22.659Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-07-cross-surface-state-sync/review/css-s2-review-2.md"
             },
             {
               "slug": "css-s3",
               "name": "Detect a genuine cross-surface conflict, resolve it to pipeline-state.json value, and log it",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-08-06T22:22:22.659Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-07-cross-surface-state-sync/review/css-s3-review-1.md"
             },
             {
               "slug": "css-s4",
               "name": "Extend automatic sync to the full gate/stage vocabulary and add the reconciliation safety net",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-08-06T22:22:22.659Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-07-cross-surface-state-sync/review/css-s4-review-2.md"
             }
           ]
         }
       ],
       "slicingStrategy": "walking-skeleton",
-      "guardrails": []
+      "guardrails": [
+        {
+          "id": "ADR-025",
+          "category": "adr",
+          "label": "Multi-tenancy enforced at the application layer",
+          "status": "met",
+          "evidence": "css-s1/css-s2/css-s3 Run-2 review: tenant_id scoping correctly referenced in Architecture Constraints; no violations found.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-08-06T22:22:22.659Z"
+        },
+        {
+          "id": "ADR-011",
+          "category": "adr",
+          "label": "Artefact-first: new src/ modules require a story artefact",
+          "status": "met",
+          "evidence": "This feature's discovery/benefit-metric/definition chain was written before any implementation; all 4 new modules named in the program-design diagram trace to css-s1..s4.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-08-06T22:22:22.659Z"
+        },
+        {
+          "id": "ADR-003",
+          "category": "adr",
+          "label": "Schema-first: fields defined before use",
+          "status": "met",
+          "evidence": "css-s3 Architecture Constraints correctly commits to adding any new pipeline-state.json field to pipeline-state.schema.json in the same commit; no violation identified at definition/review stage (schema changes not yet implemented).",
+          "assessedBy": "/review",
+          "assessedAt": "2026-08-06T22:22:22.659Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

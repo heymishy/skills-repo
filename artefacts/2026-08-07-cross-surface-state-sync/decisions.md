@@ -71,3 +71,21 @@
 **Made by:** Hamish King — Platform maintainer / Product owner
 **Revisit trigger:** None — slicing strategy is fixed once story decomposition begins per `/definition`'s own convention.
 ---
+
+---
+**2026-08-07 | DESIGN | /review Run 1, finding 1-M1 (css-s1)**
+**Decision:** The CLI→web-UI sync direction (css-s1) is synchronous — the journey's `completedStages` field is updated before the CLI `gate-advance` command exits, not as a background or deferred action. This is distinct from the reverse direction (css-s2), which is asynchronous/best-effort by explicit discovery-level decision.
+**Alternatives considered:** Making the CLI→web-UI direction asynchronous/best-effort as well, for symmetry with css-s2.
+**Rationale:** Discovery's MVP scope explicitly carved out only the web-UI→pipeline-state.json direction as asynchronous, reasoning specifically from ADR-020's live-token requirement — a constraint that does not apply to the CLI→web-UI direction (no GitHub Contents API write, no per-request token lifetime concern). A CLI process is not under the same request-latency pressure a web-UI request is; synchronous execution is simpler, has no correctness downside identified, and matches the "triggered automatically at the phase-boundary moment" language discovery uses for the general case (as opposed to the specific async carve-out named only for the reverse direction).
+**Made by:** Hamish King — Platform maintainer / Product owner (confirmed via /review Run 1 finding resolution, 2026-08-07)
+**Revisit trigger:** If Postgres write latency from within the CLI process becomes a measured, real friction point for operators (per css-s1's own NFR budget, set at `/test-plan`), reconsider making this direction asynchronous too.
+---
+
+---
+**2026-08-07 | RISK-ACCEPT | /review Run 1, finding 1-M1 (css-s4)**
+**Decision:** Accept that css-s4's reconciliation safety net has no eventual-consistency guarantee if no future live, authenticated web-UI request ever touches the same feature again after a css-s2 in-request retry is exhausted — the logged gap persists indefinitely in that scenario.
+**Alternatives considered:** A scheduled background reconciliation job that doesn't depend on a future live request (rejected — would require a stored credential or a service-account write, which conflicts with ADR-020 and the earlier resolved Step 1.5 decision against credential storage).
+**Rationale:** This is a direct, foreseeable consequence of the "bounded in-request retry only, no stored credentials" decision (Step 1.5, /definition) — a real limitation the operator should knowingly accept, not an oversight. The benefit-metric's own 90% minimum validation signal, measured over the first 4 weeks of real usage, is the mechanism that will surface whether this residual risk is actually costly in practice or merely theoretical.
+**Made by:** Hamish King — Platform maintainer / Product owner (confirmed via /review Run 1 finding resolution, 2026-08-07)
+**Revisit trigger:** If the benefit-metric's own 4-week measurement (per `benefit-metric.md`'s Metric 1 feedback loop) shows the 90% minimum signal is missed, and reconciliation-log review attributes the shortfall to abandoned-feature gaps specifically (not other causes), reconsider a scheduled reconciliation approach with an explicit new security review for credential handling.
+---
