@@ -15,6 +15,16 @@ const { generateCsrfToken, csrfField, csrfGuard } = require('../middleware/csrf'
 // pages and settings.js's Credits tab already use. adminCreditsPost, the CSRF
 // logic, and the underlying credits module are untouched by this story.
 const { renderShell } = require('../utils/html-shell');
+// tpac-s1: reuse tenant-plan.js's already-existing, already-tested
+// getPlanState/setPlanState directly -- no new plan-state logic, this story
+// only adds a new caller (an admin-facing UI + route) to a production-stable
+// module. Real bug found live on wuce-staging: admins had no way to lift a
+// tenant's journey cap short of a real Stripe checkout, because credits
+// top-ups (adjustBalanceWithAudit, below) never touch tenant_plan at all.
+const { getPlanState, setPlanState } = require('../modules/tenant-plan');
+
+const VALID_PLANS = ['trial', 'paid'];
+const VALID_STATUSES = ['active', 'past_due', 'canceled'];
 
 /**
  * Escape HTML special characters to prevent XSS.
@@ -56,17 +66,61 @@ async function adminCreditsGet(req, res) {
   // sec-perf-s3 AC1: session-scoped CSRF token, embedded in every adjust form below.
   const csrfToken = generateCsrfToken(req);
 
-  const tableRows = rows.map(function(r) {
+  // tpac-s1 AC1: fetch each tenant's plan state alongside its credits balance.
+  // getPlanState never throws (fails open to trial/active) -- see tenant-plan.js.
+  const planStates = await Promise.all(rows.map(function(r) {
+    return getPlanState(r.tenant_id);
+  }));
+
+  // tpac-s1: radio groups, not a <select> dropdown -- arl-s3's existing test suite
+  // (check-arl-s3-admin-credits.js T1) blanket-asserts no <select> element appears
+  // anywhere on this page (a leftover guard against a different, now-removed
+  // tenant-picker dropdown). Radio buttons avoid that collision while remaining
+  // fully WCAG 2.1 AA accessible with proper <label> association.
+  const planRadiosHtml = function(tenantId, selected) {
+    return VALID_PLANS.map(function(p) {
+      var id = 'tpac-plan-' + escapeHtml(tenantId) + '-' + p;
+      return '<label for="' + id + '"><input type="radio" id="' + id + '" name="plan" value="' + p + '"' +
+        (p === selected ? ' checked' : '') + '> ' + p + '</label>';
+    }).join(' ');
+  };
+  const statusRadiosHtml = function(tenantId, selected) {
+    return VALID_STATUSES.map(function(s) {
+      var id = 'tpac-status-' + escapeHtml(tenantId) + '-' + s;
+      return '<label for="' + id + '"><input type="radio" id="' + id + '" name="status" value="' + s + '"' +
+        (s === selected ? ' checked' : '') + '> ' + s + '</label>';
+    }).join(' ');
+  };
+
+  const tableRows = rows.map(function(r, i) {
+    const planState = planStates[i];
     return (
       '<tr>' +
       '<td>' + escapeHtml(r.tenant_id) + '</td>' +
-      '<td>' + escapeHtml(String(r.balance)) + '</td>' +
+      '<td class="tpac-credits-balance">' + escapeHtml(String(r.balance)) + '</td>' +
       '<td>' +
       '<form method="POST" action="/api/admin/credits/adjust">' +
       csrfField(csrfToken) +
       '<input type="hidden" name="tenantId" value="' + escapeHtml(r.tenant_id) + '">' +
       '<input type="number" name="amount" min="1" required>' +
       '<button type="submit">Adjust</button>' +
+      '</form>' +
+      '</td>' +
+      // tpac-s1 AC1: plan/status shown as a separate, distinctly-labelled field --
+      // never merged with the credits balance column above.
+      '<td class="tpac-plan-state" data-field="plan-status">' +
+      '<span class="tpac-plan">Plan: ' + escapeHtml(planState.plan) + '</span> ' +
+      '<span class="tpac-status">Status: ' + escapeHtml(planState.status) + '</span>' +
+      '</td>' +
+      // tpac-s1 AC2: admin-only plan-state control, additive to (not merged into)
+      // the existing credits-adjustment form above -- calls setPlanState directly.
+      '<td>' +
+      '<form method="POST" action="/api/admin/plan/set">' +
+      csrfField(csrfToken) +
+      '<input type="hidden" name="tenantId" value="' + escapeHtml(r.tenant_id) + '">' +
+      '<fieldset><legend>Plan</legend>' + planRadiosHtml(r.tenant_id, planState.plan) + '</fieldset>' +
+      '<fieldset><legend>Status</legend>' + statusRadiosHtml(r.tenant_id, planState.status) + '</fieldset>' +
+      '<button type="submit">Set plan</button>' +
       '</form>' +
       '</td>' +
       '</tr>'
@@ -76,7 +130,7 @@ async function adminCreditsGet(req, res) {
   const bodyContent = [
     '<h1 class="sw-page-h1">Admin: Credits</h1>',
     '<table>',
-    '<thead><tr><th>Tenant ID</th><th>Balance</th><th>Top-up</th></tr></thead>',
+    '<thead><tr><th>Tenant ID</th><th>Balance</th><th>Top-up</th><th>Plan / Status</th><th>Set plan</th></tr></thead>',
     '<tbody>',
     tableRows,
     '</tbody>',
@@ -137,4 +191,60 @@ async function adminCreditsPost(req, res) {
   res.end();
 }
 
-module.exports = { adminCreditsGet, adminCreditsPost };
+/**
+ * POST /api/admin/plan/set — tpac-s1: admin-only control to set a tenant's
+ * plan/status directly, distinct from (and additive to) the credits-adjustment
+ * flow above. Calls tenant-plan.js's already-existing, already-tested
+ * setPlanState(tenantId, plan, status) directly -- no new plan-state logic.
+ * Real bug this fixes: admins had no way to lift a tenant's journey-creation
+ * cap short of running a real Stripe checkout, because credits top-ups never
+ * touch the tenant_plan table checkJourneyCap() actually reads (AC2/AC3).
+ * Validates: tenantId must exist in the same allowlist adjust uses; plan must
+ * be one of 'trial'/'paid'; status must be one of 'active'/'past_due'/'canceled'.
+ * Redirects 302 to /admin/credits on success, matching adminCreditsPost's shape.
+ */
+async function adminSetPlanPost(req, res) {
+  // Same CSRF guard as adminCreditsPost -- no new authorization mechanism.
+  const csrfOk = await csrfGuard(req, res);
+  if (!csrfOk) return;
+
+  const body = await _readBody(req);
+  const tenantId = body && body.tenantId ? String(body.tenantId) : '';
+  const plan = body && body.plan ? String(body.plan) : '';
+  const status = body && body.status ? String(body.status) : '';
+
+  if (!VALID_PLANS.includes(plan)) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'plan must be one of: ' + VALID_PLANS.join(', ') }));
+    return;
+  }
+  if (!VALID_STATUSES.includes(status)) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'status must be one of: ' + VALID_STATUSES.join(', ') }));
+    return;
+  }
+
+  // Validate tenantId against the same allowlist adjust uses.
+  const validIds = await getValidTenantIds();
+  if (!validIds.includes(tenantId)) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'unknown tenantId' }));
+    return;
+  }
+
+  // Never req.session.accessToken -- matches arl-s5's established convention.
+  const adminId = String((req.session && (req.session.login || req.session.userId)) || 'unknown');
+
+  // NFR: Audit -- log the plan-state change with the admin's identity, mirroring
+  // adjustBalanceWithAudit's audit-trail intent for credit adjustments. This
+  // story reuses setPlanState as-is (no new adapter/table per the DoR contract),
+  // so the audit trail here is a structured log line rather than a new DB row.
+  console.log('[admin-plan-state] tenant=' + tenantId + ' plan=' + plan + ' status=' + status + ' setBy=' + adminId);
+
+  await setPlanState(tenantId, plan, status);
+
+  res.writeHead(302, { Location: '/admin/credits' });
+  res.end();
+}
+
+module.exports = { adminCreditsGet, adminCreditsPost, adminSetPlanPost };
