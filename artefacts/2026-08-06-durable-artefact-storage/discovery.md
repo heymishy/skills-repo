@@ -1,8 +1,8 @@
 # Discovery: Durable Artefact Storage for SaaS-Hosted Journeys
 
-**Status:** Clarified — awaiting approval
+**Status:** Approved
 **Created:** 2026-08-06
-**Approved by:** [Name + date — filled in after human review]
+**Approved by:** Hamish King — Platform maintainer / Product owner — 2026-08-06
 **Author:** Copilot (Claude Code)
 
 ---
@@ -69,11 +69,11 @@ All 3 originally-flagged assumptions were resolved via `/clarify` — see Clarif
 
 ## Reviewers
 
-- [Name — Role]
+- Hamish King — Platform maintainer / Product owner
 
 ## Approved By
 
-[Name — Role — Date]
+Hamish King — Platform maintainer / Product owner — 2026-08-06
 
 ---
 

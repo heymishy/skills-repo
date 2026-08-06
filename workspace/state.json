@@ -1,43 +1,35 @@
 {
-  "currentPhase": "idle",
-  "lastUpdated": "2026-08-05T07:15:22.990Z",
-  "activeFeature": null,
+  "currentPhase": "discovery",
+  "lastUpdated": "2026-08-06T01:55:00.000Z",
+  "activeFeature": "2026-08-06-durable-artefact-storage",
   "previousFeature": "2026-07-30-agency-client-organisations",
   "cycle": {
     "discovery": {
       "status": "approved",
-      "artefact": "artefacts/2026-07-30-agency-client-organisations/discovery.md",
-      "completedAt": "2026-07-30T00:00:00Z",
-      "note": "Last discovery this file tracked. That feature (agency-client-organisations) has since progressed all the way through DoD-complete for all 6 stories and deployed to production (2026-08-02) -- see .github/pipeline-state.json for its authoritative current state. No outer-loop feature is currently active; this block is retained only because the workspace-state governance check (tests/check-workspace-state.js) requires a populated cycle.discovery block at all times, not because a discovery phase is in progress."
+      "artefact": "artefacts/2026-08-06-durable-artefact-storage/discovery.md",
+      "completedAt": "2026-08-06T01:55:00.000Z",
+      "note": "Live staging bug investigation (wuce-staging journey/808781bb) -- stage artefacts are written only to local ephemeral disk, wiped on every redeploy, orphaning completed-stage artefacts even though journey metadata survives in Postgres. Discovery scopes a dual-write fix (git commit at stage-completion, alongside the existing local-disk write, plus a git-fallback on the Resume-conversation read path). Clarified and approved same-day; all 3 discovery-time assumptions resolved via /clarify and logged in decisions.md."
     }
   },
   "estimate": {
-    "e2": {
-      "date": "2026-08-05",
-      "storyCount": 5,
-      "byStory": {
-        "count": 5,
-        "complexity": {
-          "1": 1,
-          "2": 2,
-          "3": 2
-        },
-        "p75FocusHPerStory": 0.125
-      },
-      "expectedCalendarDays": 1,
+    "e1": {
+      "date": "2026-08-06",
+      "expectedCalendarDays": 0.5,
       "engagementFraction": 0.25,
-      "outerLoopFocusH": 0.5,
+      "outerLoopFocusH": 0.25,
       "innerLoopHuman": 0,
-      "confidence": "medium",
-      "notes": "No E1 recorded for this feature (discovery moved straight to benefit-metric) -- this is the first forecast.",
+      "expectedStoryCount": 2,
+      "confidence": "low",
+      "assumptions": "Small, contained scope post-/clarify -- dual-write fix + one required-gate change for new products; no new auth model needed (OAuth scope already confirmed sufficient).",
+      "gaugeAtStart": null,
       "premiumRequestsForecast": null
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-08-04",
-    "contextAtWrite": "No outer-loop feature active. Just completed: DoD for all 6 agency-client-organisations stories (deployed to production), DoD backlog closure for two short-track fixes (pfgd-s1, pfcb-s1) that had merged without DoD, a pipeline-state.json data-bug fix (story-1-organisation-entity prStatus was stuck at draft despite being merged), and a capture-log.md -> learnings.md promotion pass (13 entries).",
-    "resumeInstruction": "Run /workflow to see current pipeline state fresh, or /orient if picking this up cold. No specific next feature is queued as of this write.",
+    "writtenAt": "2026-08-06",
+    "contextAtWrite": "Just completed: discovery + /clarify + approval for durable-artefact-storage (dual-write artefact durability fix), following live root-cause investigation of the wuce-staging 'Resume conversation shows no content' bug the operator found during manual staging testing. Also earlier this session: shipped multi-tenant-repo-resolution (mtrr-s1/mtrr-s2, both merged and independently verified).",
+    "resumeInstruction": "Next step is /benefit-metric for 2026-08-06-durable-artefact-storage. Read artefacts/2026-08-06-durable-artefact-storage/discovery.md and decisions.md in full before proceeding -- do not rely on conversation history for the resolved assumptions or MVP boundary.",
     "pendingActions": []
   },
-  "supersededNote": "This file's prior contents (activeFeature: 2026-07-28-durable-session-history) went stale exactly the way workspace/learnings.md's own 2026-07-28 entry ('workspace/state.json silently fell days out of date mid-session') describes -- and it happened again, for the same structural reason: durable-session-history actually completed its full pipeline (all 6 stories dsh-s1 through dsh-s6 merged and DoD-complete, epic status=complete) within a day of that entry being written, but nothing then wrote a fresh checkpoint here as work moved on to short-track fixes and then the full agency-client-organisations epic. Real current state for any feature slug always lives in .github/pipeline-state.json -- kept correctly up to date throughout via node bin/skills advance at every phase boundary; this file was simply never touched. Replaced rather than carried forward, per this file's own established convention."
+  "supersededNote": "This file's prior contents (activeFeature: null, stale estimate.e2 for an already-completed different feature) were replaced rather than carried forward, per this file's own established convention -- real current state for any feature slug always lives in .github/pipeline-state.json, kept up to date via node bin/skills advance at every phase boundary."
 }
