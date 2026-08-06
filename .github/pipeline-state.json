@@ -18594,24 +18594,26 @@
             {
               "slug": "mtrr-s1",
               "name": "Resolve each product's own repo for SaaS export, tenant-scoped",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/review/mtrr-s1-review-2.md",
-              "updatedAt": "2026-08-05T22:03:36.637Z",
+              "updatedAt": "2026-08-06T00:25:08.720Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 7,
-                "passing": 0
+                "totalTests": 8,
+                "passing": 8
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "testPlanArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/test-plans/mtrr-s1-test-plan.md",
               "verificationScriptArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/verification-scripts/mtrr-s1-verification.md",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "prStatus": "merged",
+              "mergeCommit": "b8002e82"
             },
             {
               "slug": "mtrr-s2",
