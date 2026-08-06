@@ -18671,14 +18671,14 @@
       "health": "green",
       "stories": [],
       "metrics": [],
-      "updatedAt": "2026-08-06T03:08:26.172Z",
+      "updatedAt": "2026-08-06T03:14:30.976Z",
       "discoveryArtefact": "artefacts/2026-08-06-durable-artefact-storage/discovery.md",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "discoveryStatus": "clarified"
+      "discoveryStatus": "approved"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
