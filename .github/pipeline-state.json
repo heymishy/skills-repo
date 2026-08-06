@@ -18667,18 +18667,50 @@
     {
       "slug": "2026-08-06-durable-artefact-storage",
       "name": "Durable Artefact Storage for SaaS-Hosted Journeys",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "stories": [],
-      "metrics": [],
-      "updatedAt": "2026-08-06T03:14:30.976Z",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Cross-redeploy artefact durability",
+          "target": "100% -- every completed stage artefact renders after any number of subsequent redeploys",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Repo-connection-required coverage",
+          "target": "100% of new products blocked from starting a first journey without a connected repo",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Orphaned-journey rate going forward",
+          "target": "0% for journeys created after this fix ships",
+          "baseline": "[UNKNOWN BASELINE]",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "updatedAt": "2026-08-06T06:54:43.311Z",
       "discoveryArtefact": "artefacts/2026-08-06-durable-artefact-storage/discovery.md",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "discoveryStatus": "approved"
+      "discoveryStatus": "approved",
+      "benefitMetricArtefact": "artefacts/2026-08-06-durable-artefact-storage/benefit-metric.md"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
