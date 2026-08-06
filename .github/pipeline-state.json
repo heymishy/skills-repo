@@ -18702,7 +18702,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-06T08:18:49.023Z",
+      "updatedAt": "2026-08-06T08:36:52.386Z",
       "discoveryArtefact": "artefacts/2026-08-06-durable-artefact-storage/discovery.md",
       "track": "standard",
       "regulated": false,
@@ -18722,14 +18722,22 @@
             {
               "slug": "das-s1",
               "name": "Commit completed-stage artefacts to the product's connected repo, with git-fallback on Resume conversation",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-06-durable-artefact-storage/review/das-s1-review-2.md",
+              "updatedAt": "2026-08-06T08:36:52.385Z"
             },
             {
               "slug": "das-s2",
               "name": "Require a connected repo before a new product can start its first journey",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-06-durable-artefact-storage/review/das-s2-review-2.md",
+              "updatedAt": "2026-08-06T08:36:52.386Z"
             }
           ]
         }
@@ -18739,13 +18747,19 @@
           "id": "ADR-023",
           "category": "adr",
           "label": "Disk canonicity rule for cross-stage artefact handoff",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "das-s1/das-s2 Run 1 review: no violations found; both ADRs correctly referenced in Architecture Constraints.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-08-06T08:34:06.927Z"
         },
         {
           "id": "ADR-025",
           "category": "adr",
           "label": "Multi-tenancy enforced at the application layer",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "das-s1/das-s2 Run 1 review: no violations found; both ADRs correctly referenced in Architecture Constraints.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-08-06T08:34:06.927Z"
         }
       ]
     }

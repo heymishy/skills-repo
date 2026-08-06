@@ -29,11 +29,11 @@ So that **my completed stage artefacts are durable from day one, not silently ex
 
 ## Acceptance Criteria
 
-**AC1:** Given a brand-new product with no connected repo, When the operator attempts to start their first journey, Then the request is rejected with a clear, actionable message directing them to connect a repo first (via `mtrr-s2`'s picker) — not a silent failure or generic error.
+**AC1:** Given a product with zero journeys started and no connected repo ("brand-new" is defined operationally as journey count = 0, never by product creation date), When the operator attempts to start their first journey, Then the request is rejected with a message directing them to connect a repo via `mtrr-s2`'s picker before proceeding — not a silent failure or generic error.
 
 **AC2:** Given the operator connects a repo via the picker (or URL fallback) after being blocked, When they retry starting their first journey, Then it proceeds normally with no further restriction.
 
-**AC3:** Given an existing product that already has one or more journeys but no connected repo (created before this gate existed), When that product's operator starts a new journey, Then the request is NOT blocked — existing repo-less products are explicitly unaffected by this gate, matching the /clarify decision (Option A: new products only).
+**AC3:** Given a product that already has one or more journeys but no connected repo (regardless of whether it predates this gate or has zero connected repo for any other reason), When that product's operator starts a new journey, Then the request is NOT blocked — the gate check is journey-count-based (journeys ≥ 1 → never blocked), not a creation-date comparison, matching the /clarify decision (Option A: new products only) exactly.
 
 **AC4:** Given a brand-new product that already has a connected repo (connected during product creation), When the operator starts their first journey, Then it proceeds normally with no gate friction at all — the gate only fires for the actual gap case (no repo connected), never for an already-satisfied one.
 

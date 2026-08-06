@@ -20,7 +20,8 @@ So that **I can still resume and review my work via "Resume conversation" even a
 
 - **ADR-023** (Disk canonicity rule): `priorArtefacts.content` used for cross-stage handoff context must be read from disk via `fs.readFileSync`, never from `session.artefactContent`. This story's local-disk write is unchanged and continues satisfying that rule — the git commit is additive, not a replacement.
 - **ADR-025** (Multi-tenancy, application-layer `tenant_id` scoping): the git commit's owner/repo resolution must go through the same tenant_id-scoped `products` lookup `mtrr-s1`'s `ownerRepoForFeature` already built — no new isolation mechanism.
-- **Existing precedent to reuse, not reinvent:** `src/web-ui/adapters/sign-off-writer.js`'s `commitSignOff(artefactPath, payload, token, owner, repo)` already implements the exact GitHub Contents API PUT mechanics this story needs (real user identity as commit author — never a service account, base64 content encoding, `sha` handling for updates, 409 conflict handling, fail-closed when `owner`/`repo` are missing). Generalise or directly reuse this pattern rather than writing a second, parallel commit helper.
+- **Existing precedent to reuse, not reinvent:** `src/web-ui/adapters/sign-off-writer.js`'s `commitSignOff(artefactPath, payload, token, owner, repo)` already implements the exact GitHub Contents API PUT mechanics this story needs (real user identity as commit author — never a service account, base64 content encoding, `sha` handling for updates, 409 conflict handling, fail-closed when `owner`/`repo` are missing). Generalise or directly reuse the commit mechanics from this function.
+- **D37 (CLAUDE.md — mandatory, applies to this story):** the new artefact-commit function must be a proper injectable adapter — `let _commitArtefact = defaultFn; function setArtefactCommitAdapter(fn){...}` with a throw-on-unwired stub — following `mtrr-s2`'s `realListRepos`/`setListReposAdapter` convention (built this same session for a structurally similar "call GitHub on behalf of the user" case), not `sign-off-writer.js`'s older plain-function-with-global-fetch-mock convention. This resolves review finding 1-M1: two prior precedents in this codebase disagree, and this story explicitly follows the D37-compliant one. The DoR contract must include the wiring AC and a wiring test asserting behavioural correctness (two different products' commits resolve to two different, individually-correct repos), not just that a setter was called.
 
 ## Dependencies
 
@@ -37,7 +38,7 @@ So that **I can still resume and review my work via "Resume conversation" even a
 
 **AC4:** Given a product has no connected repo (an existing repo-less product, out of scope for the gate per Story 2), When a stage completes, Then the local-disk write proceeds exactly as it does today — no git commit attempted, no error surfaced, no regression for existing repo-less products.
 
-**AC5:** Given both the local artefact file is missing and the git fetch also fails (repo access revoked, network error), When an operator visits the stage-view route, Then the page shows a clear, honest "artefact not found" message — never a silent blank panel that looks like a working page.
+**AC5:** Given both the local artefact file is missing and the git fetch also fails (repo access revoked, network error), When an operator visits the stage-view route, Then the page displays an error message stating the artefact could not be retrieved, with no blank or broken-looking panel.
 
 ## Out of Scope
 
