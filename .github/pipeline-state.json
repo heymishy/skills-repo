@@ -18772,7 +18772,7 @@
         {
           "slug": "tpac-s1",
           "name": "Give admins a real control to lift a tenant's journey cap, separate from credits",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -18788,8 +18788,9 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-06T09:00:01.954Z",
-          "id": "tpac-s1"
+          "updatedAt": "2026-08-06T09:04:29.810Z",
+          "id": "tpac-s1",
+          "dorStatus": "signed-off"
         }
       ],
       "metrics": [],
@@ -18806,7 +18807,7 @@
         {
           "slug": "npwe-s1",
           "name": "Show the Products sidebar during skill chat sessions",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -18822,8 +18823,9 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-06T09:00:01.956Z",
-          "id": "npwe-s1"
+          "updatedAt": "2026-08-06T09:05:10.797Z",
+          "id": "npwe-s1",
+          "dorStatus": "signed-off"
         }
       ],
       "metrics": [],
