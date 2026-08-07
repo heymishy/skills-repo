@@ -38,7 +38,7 @@ So that **I can actually read a program-design or data-model diagram instead of 
 
 **AC4:** Given the ideate 3-panel layout's existing "Maximise canvas" button (`id="sw-expand-canvas"`, `onclick="swExpandCanvas()"`), When it is clicked, Then a real `swExpandCanvas()` function now exists and toggles that layout's canvas panel to fullscreen — fixing the pre-existing dead-button defect, using the same reusable toggle mechanism as AC3, not a second separate implementation.
 
-**AC5 (CSS-layout-dependent):** Given a long artefact draft is loaded in the design/definition pane on a real browser, When the page is rendered at a typical viewport height, Then the diagram panel is visually confirmed to occupy a usable, non-trivial portion of the vertical space (not squeezed to a sliver) — classified per this repo's CSS-layout-dependent AC policy at DoR time (Playwright visual check or RISK-ACCEPT + manual smoke script, decided at `/test-plan`).
+**AC5 (CSS-layout-dependent):** Given a long artefact draft is loaded in the design/definition pane on a real browser, When the page is rendered at a typical viewport height, Then the diagram panel's computed height is at least the minimum usable height established by AC2 — not squeezed to a sliver. `[Resolution: covered by a real Playwright test extending tests/e2e/design-definition-canvas-render.spec.js, confirmed at /test-plan — not deferred to manual verification.]`
 
 ## Out of Scope
 
