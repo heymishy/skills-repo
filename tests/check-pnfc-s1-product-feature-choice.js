@@ -66,7 +66,7 @@ function extractSidFromRedirect(res, skillName) {
       body: { startSkill: 'ideate' }
     };
     var res = makeRes();
-    var fakePool = { query: async function() { return { rows: [] }; } };
+    var fakePool = { query: async function(sql) { if (String(sql).toUpperCase().indexOf("SELECT REPO_OWNER, REPO_NAME") !== -1) { return { rows: [{ repo_owner: "acme", repo_name: "widgets" }] }; } return { rows: [] }; } };
     var fakePosthog = { capture: function() {} };
 
     await productsRoute.handlePostProductFeature(req, res, null, fakePool, fakePosthog);
@@ -101,7 +101,7 @@ function extractSidFromRedirect(res, skillName) {
       body: { startSkill: 'discovery' }
     };
     var res = makeRes();
-    var fakePool = { query: async function() { return { rows: [] }; } };
+    var fakePool = { query: async function(sql) { if (String(sql).toUpperCase().indexOf("SELECT REPO_OWNER, REPO_NAME") !== -1) { return { rows: [{ repo_owner: "acme", repo_name: "widgets" }] }; } return { rows: [] }; } };
     var fakePosthog = { capture: function() {} };
 
     await productsRoute.handlePostProductFeature(req, res, null, fakePool, fakePosthog);
@@ -133,7 +133,7 @@ function extractSidFromRedirect(res, skillName) {
       // check-psh-s4-navigation.js
     };
     var res = makeRes();
-    var fakePool = { query: async function() { return { rows: [] }; } };
+    var fakePool = { query: async function(sql) { if (String(sql).toUpperCase().indexOf("SELECT REPO_OWNER, REPO_NAME") !== -1) { return { rows: [{ repo_owner: "acme", repo_name: "widgets" }] }; } return { rows: [] }; } };
     var fakePosthog = { capture: function() {} };
 
     await productsRoute.handlePostProductFeature(req, res, null, fakePool, fakePosthog);
@@ -161,7 +161,7 @@ function extractSidFromRedirect(res, skillName) {
       body: { startSkill: 'ideate' }
     };
     var res = makeRes();
-    var fakePool = { query: async function() { return { rows: [] }; } };
+    var fakePool = { query: async function(sql) { if (String(sql).toUpperCase().indexOf("SELECT REPO_OWNER, REPO_NAME") !== -1) { return { rows: [{ repo_owner: "acme", repo_name: "widgets" }] }; } return { rows: [] }; } };
     var fakePosthog = { capture: function() {} };
 
     await productsRoute.handlePostProductFeature(req, res, null, fakePool, fakePosthog);

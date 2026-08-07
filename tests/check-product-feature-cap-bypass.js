@@ -84,6 +84,23 @@ function makeRes() {
     tenantPlan.setCapReader(null);
   });
 
+  // das-s2: handlePostProductFeature now also gates on "brand-new product
+  // (0 journeys) with no connected repo" (see
+  // tests/check-das-s2-require-connected-repo.js for that gate's own
+  // dedicated coverage). AC3/AC4/AC5 below test the billing-cap gate, not
+  // the repo gate, so their pool mock must report a connected repo for
+  // 'prod-1' -- otherwise every request here is a brand-new, repo-less
+  // product and das-s2's gate would block them before the cap logic is
+  // ever exercised, which is not what these tests are checking.
+  function poolWithConnectedRepo() {
+    return { query: async function(sql) {
+      if (String(sql).toUpperCase().indexOf('SELECT REPO_OWNER, REPO_NAME') !== -1) {
+        return { rows: [{ repo_owner: 'acme', repo_name: 'widgets' }] };
+      }
+      return { rows: [] };
+    } };
+  }
+
   await test('AC3: handlePostProductFeature still succeeds (real redirect, no 402) when under the cap', async function() {
     var journeyStore = freshRequire(JOURNEY_STORE_PATH);
     journeyStore._clearForTesting();
@@ -93,7 +110,7 @@ function makeRes() {
 
     var req = { params: { id: 'prod-1' }, session: { tenantId: 'e2e-cap-tenant-3', login: 'octocat' } };
     var res = makeRes();
-    await productsRoute.handlePostProductFeature(req, res, null, { query: async function() { return { rows: [] }; } }, { capture: function() {} });
+    await productsRoute.handlePostProductFeature(req, res, null, poolWithConnectedRepo(), { capture: function() {} });
 
     assert.notStrictEqual(res._status, 402, 'expected no 402 when well under cap');
     assert.ok(res._headers.Location, 'expected a real redirect to the new feature\'s chat session');
@@ -110,7 +127,7 @@ function makeRes() {
 
     var req = { params: { id: 'prod-1' }, session: { tenantId: 'e2e-cap-tenant-4', login: 'octocat' } };
     var res = makeRes();
-    await productsRoute.handlePostProductFeature(req, res, null, { query: async function() { return { rows: [] }; } }, { capture: function() {} });
+    await productsRoute.handlePostProductFeature(req, res, null, poolWithConnectedRepo(), { capture: function() {} });
 
     assert.notStrictEqual(res._status, 402, 'expected no 402 when no cap is configured at all (matches pre-existing behaviour)');
     assert.ok(res._headers.Location, 'expected a real redirect');
@@ -137,7 +154,7 @@ function makeRes() {
 
     var req = { params: { id: 'prod-1' }, session: { tenantId: 'e2e-cap-tenant-5', login: 'octocat' } };
     var res = makeRes();
-    await productsRoute.handlePostProductFeature(req, res, null, { query: async function() { return { rows: [] }; } }, { capture: function() {} });
+    await productsRoute.handlePostProductFeature(req, res, null, poolWithConnectedRepo(), { capture: function() {} });
 
     assert.notStrictEqual(res._status, 402, 'expected a paid+active tenant to bypass the cap entirely, same as the standalone /journey form');
     tenantPlan.setCapReader(null);

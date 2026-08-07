@@ -58,6 +58,15 @@
 ---
 
 ---
+**2026-08-07 | DESIGN | Inner coding loop (das-s2)**
+**Decision:** Implement das-s2's gate check in `handlePostProductFeature` (`src/web-ui/routes/products.js`, `POST /products/:id/features`) rather than in `handlePostJourney` (`src/web-ui/routes/journey.js`), as the DoR contract's "Estimated touch points" section named.
+**Alternatives considered:** Following the contract literally and adding the gate to `handlePostJourney`.
+**Rationale:** Direct inspection showed `handlePostJourney` has no concept of `productId` at all -- journeys it creates always have `productId == null` (see the existing filter at `journey.js:324`). The story's ACs are written in explicitly product-scoped terms ("a product with zero journeys", "the operator starts their first journey" for a given product), which only `handlePostProductFeature` (which already receives `productId` via `req.params.id` and already sets it on the created journey) can satisfy. Per CLAUDE.md's standing rule that a DoR contract conflicting with the ACs/test plan is the authoring defect, the contract is corrected here rather than the implementation being forced to match an inaccurate touch-point list.
+**Made by:** Coding agent (Claude Code), inner coding loop for das-s2
+**Revisit trigger:** If a future story needs `handlePostJourney`'s generic, product-less journey-creation path to also become product-aware, re-examine whether the two gate implementations (billing cap and this repo gate) should be consolidated into a shared helper rather than living only in `handlePostProductFeature`.
+---
+
+---
 
 ## Architecture Decision Records
 

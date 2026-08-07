@@ -50,6 +50,21 @@ function extractSidFromRedirect(res) {
   return m ? decodeURIComponent(m[1]) : null;
 }
 
+// das-s2: handlePostProductFeature now also gates on "brand-new product (0
+// journeys) with no connected repo" -- every product used in this file's
+// fixtures is brand-new (0 journeys), so its pool mock must report a
+// connected repo, otherwise das-s2's gate blocks the request before jrf-s2's
+// own behaviour (the thing this file actually tests) ever runs. See
+// tests/check-das-s2-require-connected-repo.js for the gate's own coverage.
+function poolWithConnectedRepo() {
+  return { query: async function(sql) {
+    if (String(sql).toUpperCase().indexOf('SELECT REPO_OWNER, REPO_NAME') !== -1) {
+      return { rows: [{ repo_owner: 'acme', repo_name: 'widgets' }] };
+    }
+    return { rows: [] };
+  } };
+}
+
 (async function() {
   // ===========================================================================
   // U1 -- journey-store-pg.js's saveJourney writes product_id into the real column (AC3)
@@ -88,7 +103,7 @@ function extractSidFromRedirect(res) {
     var req = { params: { id: 'prod-1' }, session: { tenantId: 'tenant-1', login: 'octocat' } };
     var res = makeRes();
     var fakePosthog = { capture: function() {} };
-    var fakePool = { query: async function() { return { rows: [] }; } };
+    var fakePool = poolWithConnectedRepo();
 
     await productsRoute.handlePostProductFeature(req, res, null, fakePool, fakePosthog);
 
@@ -114,7 +129,7 @@ function extractSidFromRedirect(res) {
 
     var req = { params: { id: 'prod-1' }, session: { tenantId: 'tenant-1', login: 'octocat' } };
     var res = makeRes();
-    await productsRoute.handlePostProductFeature(req, res, null, { query: async function() { return { rows: [] }; } }, { capture: function() {} });
+    await productsRoute.handlePostProductFeature(req, res, null, poolWithConnectedRepo(), { capture: function() {} });
 
     var sid = extractSidFromRedirect(res);
     var session = skillsRoute._getHtmlSession(sid);
@@ -135,7 +150,7 @@ function extractSidFromRedirect(res) {
 
     var req = { params: { id: 'real-product-id-123' }, session: { tenantId: 'tenant-1', login: 'octocat' } };
     var res = makeRes();
-    await productsRoute.handlePostProductFeature(req, res, null, { query: async function() { return { rows: [] }; } }, { capture: function() {} });
+    await productsRoute.handlePostProductFeature(req, res, null, poolWithConnectedRepo(), { capture: function() {} });
 
     var sid = extractSidFromRedirect(res);
     var session = skillsRoute._getHtmlSession(sid);
@@ -156,7 +171,7 @@ function extractSidFromRedirect(res) {
 
     var req1 = { params: { id: 'prod-1' }, session: { tenantId: 'tenant-1', login: 'octocat' } };
     var res1 = makeRes();
-    await productsRoute.handlePostProductFeature(req1, res1, null, { query: async function() { return { rows: [] }; } }, { capture: function() {} });
+    await productsRoute.handlePostProductFeature(req1, res1, null, poolWithConnectedRepo(), { capture: function() {} });
 
     var sid = extractSidFromRedirect(res1);
     var session = skillsRoute._getHtmlSession(sid);
@@ -191,7 +206,7 @@ function extractSidFromRedirect(res) {
 
     var req = { params: { id: 'listing-product-id' }, session: { tenantId: 'tenant-1', login: 'octocat' } };
     var res = makeRes();
-    await productsRoute.handlePostProductFeature(req, res, null, { query: async function() { return { rows: [] }; } }, { capture: function() {} });
+    await productsRoute.handlePostProductFeature(req, res, null, poolWithConnectedRepo(), { capture: function() {} });
 
     var sid = extractSidFromRedirect(res);
     var session = skillsRoute._getHtmlSession(sid);

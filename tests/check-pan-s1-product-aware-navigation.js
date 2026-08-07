@@ -238,7 +238,7 @@ async function runIntegrationTests() {
       // deliberately no `.on` / `.body` — _readBody() resolves to {} immediately for this shape
     };
     const res = mockRes();
-    await productsRoute.handlePostProductFeature(req, res, null, { query: async function() { return { rows: [] }; } }, { capture: function() {}, identify: function() {}, groupIdentify: function() {} });
+    await productsRoute.handlePostProductFeature(req, res, null, { query: async function(sql) { if (String(sql).toUpperCase().indexOf("SELECT REPO_OWNER, REPO_NAME") !== -1) { return { rows: [{ repo_owner: "acme", repo_name: "widgets" }] }; } return { rows: [] }; } }, { capture: function() {}, identify: function() {}, groupIdentify: function() {} });
     // Recover the created journey via the in-memory store to confirm productId was set.
     const all = journeyStore.listJourneys ? journeyStore.listJourneys() : [];
     const created = all.find(function(j) { return j.featureSlug && j.featureSlug.indexOf('new-feature-') === 0; });
