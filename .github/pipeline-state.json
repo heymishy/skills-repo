@@ -19279,12 +19279,13 @@
           "acVerified": 3,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-07T10:19:20.229Z",
-          "prStatus": "open"
+          "updatedAt": "2026-08-07T21:45:46.017Z",
+          "prStatus": "merged",
+          "mergeCommit": "ad41718437743c68c5d41662aa322e867756b45e"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-07T10:19:20.229Z",
+      "updatedAt": "2026-08-07T21:45:46.017Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
