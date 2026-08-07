@@ -199,7 +199,7 @@ withAuth('a real /definition session turn (via the real chat UI, streaming) rend
 // submitTurnViaRealChatUiAndWaitForStreamToFinish helpers rather than
 // duplicating them.
 
-withAuth('AC2 (cdpl-s1): #canvas-panel retains a real minimum usable computed height in the /design chat pane', async ({ page }) => {
+withAuth('AC2/AC5 (cdpl-s1): canvasPanel_realBrowserRender_hasComputedMinHeight -- #canvas-panel retains a real minimum usable computed height even with a long artefact draft loaded', async ({ page }) => {
   test.setTimeout(120000);
   await useIsolatedTenant(page, 'cdpl-s1-minheight-spec');
   const chatLocation = await driveJourneyToStage(page, 'CDPL S1 Min Height E2E Feature', 'design');
@@ -209,11 +209,51 @@ withAuth('AC2 (cdpl-s1): #canvas-panel retains a real minimum usable computed he
   const panel = page.locator('#canvas-panel');
   await expect(panel, '#canvas-panel must be present in the /design chat view').toBeAttached({ timeout: 20000 });
 
-  const box = await panel.boundingBox();
-  expect(box, 'expected a real computed bounding box for #canvas-panel').toBeTruthy();
+  // AC2 baseline: even before any long content is injected, the panel must
+  // already meet the minimum usable height.
+  const baseBox = await panel.boundingBox();
+  expect(baseBox, 'expected a real computed bounding box for #canvas-panel').toBeTruthy();
   expect(
-    box.height,
+    baseBox.height,
     '#canvas-panel must retain at least the AC2 minimum usable height (200px) -- not squeezed to a sliver by the artefact-panel sibling above it'
+  ).toBeGreaterThanOrEqual(200);
+
+  // AC5: per the test plan's Test Data Strategy, a genuinely long artefact
+  // draft is injected synthetically via page.evaluate() (decoupled from the
+  // mock-gateway fixture's own short canned text, which is too short to
+  // naturally reproduce the squeeze) -- this proves the real rendered CSS
+  // rules hold up against real, long content, not just the fixture's
+  // default-length draft.
+  const artefactPanel = page.locator('#artefact-panel');
+  await artefactPanel.evaluate((el) => {
+    const longParagraph = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. '.repeat(400);
+    const p = document.createElement('p');
+    p.textContent = longParagraph;
+    el.appendChild(p);
+  });
+
+  // #artefact-panel must respect its own AC1 max-height cap (become
+  // independently scrollable) rather than growing to consume the pane.
+  const artefactBox = await artefactPanel.boundingBox();
+  const paneBox = await page.locator('#sw-artefact-pane').boundingBox();
+  expect(
+    artefactBox.height,
+    '#artefact-panel must not exceed its AC1 max-height cap (55vh of the pane) even with a very long draft appended'
+  ).toBeLessThan(paneBox.height);
+  const scrollHeight = await artefactPanel.evaluate((el) => el.scrollHeight);
+  expect(
+    scrollHeight,
+    '#artefact-panel content must exceed its visible box height -- confirms the long content actually overflows and is scrollable, not just short enough to fit anyway'
+  ).toBeGreaterThan(artefactBox.height);
+
+  // AC5's actual assertion: #canvas-panel must STILL retain its minimum
+  // usable height after the sibling artefact-panel is loaded with a long
+  // draft -- proving the squeeze bug (long draft consuming the whole pane)
+  // is genuinely fixed, not just true in the short-content default case.
+  const afterBox = await panel.boundingBox();
+  expect(
+    afterBox.height,
+    'AC5: #canvas-panel must retain at least the minimum usable height (200px) even with a long artefact draft loaded in its sibling panel -- not squeezed to a sliver'
   ).toBeGreaterThanOrEqual(200);
 });
 
