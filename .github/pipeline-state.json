@@ -19186,7 +19186,7 @@
           "slug": "anvf-s1",
           "id": "anvf-s1",
           "name": "Distinguish artefact-not-found from fetch-failed",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -19194,7 +19194,7 @@
           "testPlan": {
             "status": "written",
             "totalTests": 2,
-            "passing": 0,
+            "passing": 2,
             "artefact": "artefacts/2026-08-07-artefact-not-found-vs-fetch-failed/test-plans/anvf-s1-test-plan.md"
           },
           "verificationScriptArtefact": "artefacts/2026-08-07-artefact-not-found-vs-fetch-failed/verification-scripts/anvf-s1-verification.md",
@@ -19202,14 +19202,15 @@
           "dorArtefact": "artefacts/2026-08-07-artefact-not-found-vs-fetch-failed/dor/anvf-s1-dor.md",
           "oversightLevel": "low",
           "acTotal": 3,
-          "acVerified": 0,
+          "acVerified": 3,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-07T04:02:23.734Z"
+          "updatedAt": "2026-08-07T04:16:35.291Z",
+          "prStatus": "open"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-07T04:02:23.734Z",
+      "updatedAt": "2026-08-07T04:16:35.291Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
