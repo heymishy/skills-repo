@@ -37,13 +37,26 @@ class SaasFetchError extends Error {
 
 const DEFAULT_BASE_URL = process.env.SKILLS_SAAS_BASE_URL || 'https://app.skills-repo.dev';
 
-function findDorApprovedStory(feature) {
+// emss-s1: optional storySlug parameter, mirroring the same addition to
+// src/web-ui/adapters/export-data-source.js's findDorApprovedStory. This
+// copy must also accept the selector -- fetchFromSaas below already threads
+// the caller's --story value into the request URL, and the server returns
+// that specific story's artefactContent, but this function still needs to
+// derive the *matching* story's dorArtefact path to write that content to.
+// Without threading the same selector here, this would keep re-deriving
+// story A's path (the no-selector default) while writing story B's actual
+// returned content under it -- a silent file-path/content mismatch.
+function findDorApprovedStory(feature, storySlug) {
   const flat = Array.isArray(feature.stories) ? feature.stories : [];
   const epicNested = Array.isArray(feature.epics)
     ? feature.epics.reduce((acc, epic) => acc.concat(Array.isArray(epic.stories) ? epic.stories : []), [])
     : [];
-  return flat.concat(epicNested).filter(s => typeof s === 'object' && s !== null)
-    .find(s => s.dorStatus === 'signed-off' && s.dorArtefact) || null;
+  const signedOff = flat.concat(epicNested).filter(s => typeof s === 'object' && s !== null)
+    .filter(s => s.dorStatus === 'signed-off' && s.dorArtefact);
+  if (storySlug) {
+    return signedOff.find(s => (s.slug || s.id) === storySlug) || null;
+  }
+  return signedOff[0] || null;
 }
 
 /**
@@ -53,14 +66,19 @@ function findDorApprovedStory(feature) {
  * @param {string} targetDir
  * @param {string} slug - feature slug
  * @param {string} credential - resolved via credential-prompt.js, never an env var or CLI arg
- * @param {{ baseUrl?: string, fetchImpl?: Function }} [opts]
+ * @param {{ baseUrl?: string, fetchImpl?: Function, story?: string }} [opts]
  * @returns {Promise<{ artefactPath: string, statePath: string }>}
  */
 async function fetchFromSaas(targetDir, slug, credential, opts) {
   opts = opts || {};
   const baseUrl = opts.baseUrl || DEFAULT_BASE_URL;
   const fetchImpl = opts.fetchImpl || fetch;
-  const url = `${baseUrl.replace(/\/$/, '')}/api/export/${encodeURIComponent(slug)}`;
+  // emss-s1: opts.story (from the CLI's --story companion flag) is appended
+  // as the same ?story= query parameter the route/adapter reads server-side.
+  // Omitted entirely when absent, so the no-selector request URL shape is
+  // byte-for-byte unchanged from before this story (AC1 backward compat).
+  const url = `${baseUrl.replace(/\/$/, '')}/api/export/${encodeURIComponent(slug)}` +
+    (opts.story ? `?story=${encodeURIComponent(opts.story)}` : '');
 
   let response;
   try {
@@ -85,7 +103,7 @@ async function fetchFromSaas(targetDir, slug, credential, opts) {
 
   const data = await response.json();
   const feature = data.pipelineStateEntry;
-  const story = feature && findDorApprovedStory(feature);
+  const story = feature && findDorApprovedStory(feature, opts.story);
   if (!story) {
     throw new SaasFetchError(`SaaS export response for ${slug} did not include a DoR-approved story's artefact path`);
   }

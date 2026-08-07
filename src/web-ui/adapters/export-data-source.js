@@ -72,9 +72,24 @@ function collectStories(feature) {
   return flat.concat(epicNested).filter(s => typeof s === 'object' && s !== null);
 }
 
-/** Returns the first story with dorStatus 'signed-off' and a recorded dorArtefact path, or null. */
-function findDorApprovedStory(feature) {
-  return collectStories(feature).find(s => s.dorStatus === 'signed-off' && s.dorArtefact) || null;
+/**
+ * Returns a DoR-signed-off story with a recorded dorArtefact path, or null.
+ * emss-s1: with no storySlug, preserves the original behaviour exactly
+ * (first signed-off story found -- AC1 backward compatibility). With a
+ * storySlug, filters to the signed-off story matching it and returns that
+ * one instead, or null if no signed-off story on this feature matches (AC3
+ * -- never falls back to the first story). Matches on `slug || id`, the same
+ * fallback already used for story identification elsewhere in this codebase
+ * (see src/web-ui/modules/product-rollup.js).
+ * @param {object} feature
+ * @param {string} [storySlug]
+ */
+function findDorApprovedStory(feature, storySlug) {
+  const signedOff = collectStories(feature).filter(s => s.dorStatus === 'signed-off' && s.dorArtefact);
+  if (storySlug) {
+    return signedOff.find(s => (s.slug || s.id) === storySlug) || null;
+  }
+  return signedOff[0] || null;
 }
 
 function escapeRegExp(s) {
@@ -141,11 +156,19 @@ async function ownerRepoForFeature(slug, credential) { // eslint-disable-line no
  * Real export data source: fetches pipeline-state.json + the DoR-approved
  * story's artefact for `slug`, using the caller's own credential (never a
  * service account, per product/constraints.md #12).
+ * emss-s1: optional third `storySlug` parameter selects a specific
+ * DoR-signed-off story instead of the first one found (AC2). When a
+ * storySlug is supplied and does not resolve to a signed-off story on this
+ * feature, ExportNotFoundError is thrown (AC3) -- distinct from the
+ * unchanged no-selector case below, which still throws
+ * ExportNotDorApprovedError when nothing on the feature is signed off at
+ * all (AC1 backward compatibility -- that branch's behaviour is untouched).
  * @param {string} slug
  * @param {string} credential
+ * @param {string} [storySlug]
  * @returns {Promise<{ artefactContent: string, pipelineStateEntry: object }>}
  */
-async function realExportDataSource(slug, credential) {
+async function realExportDataSource(slug, credential, storySlug) {
   const { owner, repo } = await ownerRepoForFeature(slug, credential);
 
   let raw;
@@ -163,8 +186,11 @@ async function realExportDataSource(slug, credential) {
 
   if (!feature) throw new ExportNotFoundError(slug);
 
-  const story = findDorApprovedStory(feature);
-  if (!story) throw new ExportNotDorApprovedError(slug);
+  const story = findDorApprovedStory(feature, storySlug);
+  if (!story) {
+    if (storySlug) throw new ExportNotFoundError(slug);
+    throw new ExportNotDorApprovedError(slug);
+  }
 
   const artefactType = toArtefactType(story.dorArtefact, slug);
 

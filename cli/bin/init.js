@@ -9,7 +9,10 @@ async function main() {
   const subcommand = args[0];
   if (subcommand !== 'init') {
     process.stderr.write(
-      '[skills-repo] Usage: skills-repo init <target-dir> [--force] [--from-saas <feature-slug>] [--with-outer-loop]\n' +
+      '[skills-repo] Usage: skills-repo init <target-dir> [--force] [--from-saas <feature-slug>] [--story <story-slug>] [--with-outer-loop]\n' +
+      '[skills-repo]   --story <story-slug>  Companion flag to --from-saas: fetch a specific DoR-signed-off\n' +
+      '[skills-repo]                         story instead of the default (first signed-off story). Has no\n' +
+      '[skills-repo]                         effect without --from-saas also being present.\n' +
       '[skills-repo]   --with-outer-loop  Enable the outer loop (discovery through decisions) at session start.\n' +
       '[skills-repo]                      Every skill file is always installed either way -- this only flips\n' +
       '[skills-repo]                      outerLoop.enabled in context.yml and how the generated instruction\n' +
@@ -32,7 +35,23 @@ async function main() {
     process.stderr.write('[skills-repo] --from-saas requires a feature slug argument\n');
     process.exit(1);
   }
-  const consumedIndices = new Set(fromSaasIdx !== -1 ? [fromSaasIdx, fromSaasIdx + 1] : []);
+
+  // --story is a companion flag to --from-saas (emss-s1) -- parsed the same
+  // way as --from-saas above so its value token is never mistaken for the
+  // target directory. It has no effect unless --from-saas is also present;
+  // that "no effect" behaviour is enforced downstream in runInit, which only
+  // ever reads opts.story inside its own `if (opts.fromSaas)` branch.
+  const storyIdx = args.indexOf('--story');
+  const story = storyIdx !== -1 ? args[storyIdx + 1] : undefined;
+  if (storyIdx !== -1 && !story) {
+    process.stderr.write('[skills-repo] --story requires a story slug argument\n');
+    process.exit(1);
+  }
+
+  const consumedIndices = new Set(
+    (fromSaasIdx !== -1 ? [fromSaasIdx, fromSaasIdx + 1] : [])
+      .concat(storyIdx !== -1 ? [storyIdx, storyIdx + 1] : [])
+  );
 
   const positional = args
     .slice(1)
@@ -41,7 +60,7 @@ async function main() {
     .map(({ value }) => value);
 
   const targetDir = positional[0] ? path.resolve(positional[0]) : process.cwd();
-  await runInit(targetDir, { force, fromSaas, withOuterLoop });
+  await runInit(targetDir, { force, fromSaas, story, withOuterLoop });
 }
 
 main().catch((err) => {
