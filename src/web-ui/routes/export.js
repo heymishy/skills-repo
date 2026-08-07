@@ -14,6 +14,13 @@
 // than silently returning empty data -- see rb-s4 AC5. The "real"
 // implementation lives in adapters/export-data-source.js and is wired here
 // via setExportDataSource() as a separate production-wiring task (D37 rule 3).
+//
+// emss-s1: the adapter's contract is now _exportDataSource(slug, credential,
+// storySlug) -- storySlug is read from the optional `?story=` query
+// parameter (already parsed into req.query by server.js's router() before
+// this handler is called) and threaded straight through, letting the
+// caller select a specific DoR-signed-off story instead of always getting
+// the first one (AC2). Omitting it preserves today's default exactly (AC1).
 
 let _exportDataSource = function () {
   throw new Error('Adapter not wired: exportDataSource. Call setExportDataSource() with a real implementation before use.');
@@ -48,6 +55,7 @@ const ERROR_STATUS = {
 async function handleExportRoute(req, res, slug) {
   const authHeader = (req.headers && req.headers.authorization) || '';
   const credential = authHeader.startsWith('Bearer ') ? authHeader.slice('Bearer '.length).trim() : null;
+  const storySlug = (req.query && req.query.story) || null;
 
   if (!credential) {
     res.writeHead(401, { 'Content-Type': 'application/json' });
@@ -56,11 +64,13 @@ async function handleExportRoute(req, res, slug) {
   }
 
   try {
-    const result = await _exportDataSource(slug, credential);
+    const result = await _exportDataSource(slug, credential, storySlug);
 
-    // Audit log: featureSlug + timestamp; never log the credential (NFR-Security).
+    // Audit log: featureSlug + timestamp + selected story slug (or null for
+    // default -- emss-s1); never log the credential (NFR-Security).
     _logger.info('export_fetch', {
       featureSlug: slug,
+      storySlug,
       timestamp: new Date().toISOString()
     });
 

@@ -213,7 +213,8 @@ async function runInit(targetDir, opts) {
     fs.mkdirSync(resolvedTarget, { recursive: true });
     await fetchFromSaas(resolvedTarget, opts.fromSaas, credential, {
       baseUrl: opts.saasBaseUrl,
-      fetchImpl: opts.fetchImpl
+      fetchImpl: opts.fetchImpl,
+      story: opts.story
     });
     console.log(`[skills-repo-init] Fetched DoR-approved feature '${opts.fromSaas}' from the SaaS and materialized it locally.`);
   }
