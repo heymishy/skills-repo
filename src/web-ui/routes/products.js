@@ -1374,10 +1374,24 @@ async function handlePostProductRepoCreate(req, res, _next, pool, posthog) {
   var owner = created && created.owner && created.owner.login;
   var repoName = created && created.name;
 
-  await _pool.query(
-    'UPDATE products SET repo_provider = $1, repo_owner = $2, repo_name = $3 WHERE product_id = $4',
-    ['github', owner, repoName, productId]
-  );
+  // das-s3: migrated from a duplicate raw UPDATE to the shared
+  // _applyRepoChange consolidation point (product-repo.js) -- the same code
+  // path handlePostConnectRepo and handlePutProductEdit already use (prc-s4.1
+  // precedent). This is what gives this brand-new-repo flow the das-s3
+  // backfill feature automatically, with no separate backfill call here.
+  // The repo was just created under this same token, so _applyRepoChange's
+  // own access-verification step is a real (if redundant-by-construction)
+  // GitHub check, not a special case -- one uniform path for all three
+  // callers, per the story's Architecture Constraints.
+  var productRepoModule = require('./product-repo');
+  var repoResult = await productRepoModule._applyRepoChange(_pool, productId, tenantId, owner, repoName, token);
+
+  if (!repoResult.success) {
+    var failBody = { error: repoResult.error };
+    if (res.status) { res.status(repoResult.statusCode).json(failBody); }
+    else { res.writeHead(repoResult.statusCode, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(failBody)); }
+    return;
+  }
 
   _ph.capture(tenantId, 'product_repo_created', {
     productId: productId,
@@ -1386,7 +1400,7 @@ async function handlePostProductRepoCreate(req, res, _next, pool, posthog) {
     repoName: repoName
   });
 
-  var okBody = { repo_provider: 'github', repo_owner: owner, repo_name: repoName };
+  var okBody = { repo_provider: 'github', repo_owner: owner, repo_name: repoName, backfill: repoResult.backfill };
   if (res.status) { res.status(201).json(okBody); }
   else { res.writeHead(201, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(okBody)); }
 }
@@ -1950,6 +1964,7 @@ async function handlePutProductEdit(req, res, _next, pool, posthog) {
   var description = (req.body && req.body.description) || undefined;
   var owner = (req.body && req.body.owner) || undefined;
   var repo = (req.body && req.body.repo) || undefined;
+  var _dasBackfill = undefined; // das-s3: set only when the repo branch below actually runs
 
   // Tenant-ownership check first
   var prodRow = (await _pool.query(
@@ -2036,13 +2051,17 @@ async function handlePutProductEdit(req, res, _next, pool, posthog) {
       repo: repo,
       changedBy: req.session && req.session.login
     });
+
+    _dasBackfill = repoResult.backfill; // das-s3 AC3
   }
 
+  var editedBody = { edited: true };
+  if (_dasBackfill !== undefined) editedBody.backfill = _dasBackfill;
   if (res.status) {
-    res.status(200).json({ edited: true });
+    res.status(200).json(editedBody);
   } else {
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ edited: true }));
+    res.end(JSON.stringify(editedBody));
   }
 }
 
