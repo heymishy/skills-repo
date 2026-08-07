@@ -18702,7 +18702,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-07T04:54:19.425Z",
+      "updatedAt": "2026-08-07T06:05:19.834Z",
       "discoveryArtefact": "artefacts/2026-08-06-durable-artefact-storage/discovery.md",
       "track": "standard",
       "regulated": false,
@@ -18749,18 +18749,19 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-06-durable-artefact-storage/review/das-s2-review-2.md",
-              "updatedAt": "2026-08-07T04:54:19.425Z",
+              "updatedAt": "2026-08-07T06:05:19.834Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 6,
-                "passing": 6,
+                "totalTests": 7,
+                "passing": 7,
                 "artefact": "artefacts/2026-08-06-durable-artefact-storage/test-plans/das-s2-test-plan.md"
               },
               "verificationScriptArtefact": "artefacts/2026-08-06-durable-artefact-storage/verification-scripts/das-s2-verification.md",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "prStatus": "open"
+              "prStatus": "merged",
+              "mergeCommit": "4207b2db7d4c9f069335c4ade6e8782f3b01af4f"
             }
           ]
         }
@@ -19152,7 +19153,7 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": true,
           "e2eToolingRequired": true,
-          "updatedAt": "2026-08-07T05:23:06.970Z",
+          "updatedAt": "2026-08-07T06:05:19.834Z",
           "testPlan": {
             "status": "written",
             "totalTests": 15,
@@ -19166,11 +19167,12 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-07-canvas-diagram-panel-layout-fix/dor/cdpl-s1-dor.md",
           "oversightLevel": "low",
-          "prStatus": "open"
+          "prStatus": "merged",
+          "mergeCommit": "450280e232e9fc0028980db2d021c3e002456e92"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-07T05:23:06.970Z",
+      "updatedAt": "2026-08-07T06:05:19.834Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
@@ -19207,12 +19209,13 @@
           "acVerified": 3,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-07T04:16:35.291Z",
-          "prStatus": "open"
+          "updatedAt": "2026-08-07T06:05:19.834Z",
+          "prStatus": "merged",
+          "mergeCommit": "67a4a1c5d1102e403caa86623f73aa2fa92ca4f9"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-07T04:16:35.291Z",
+      "updatedAt": "2026-08-07T06:05:19.834Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
