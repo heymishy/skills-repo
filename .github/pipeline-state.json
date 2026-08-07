@@ -18702,7 +18702,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-07T06:05:19.834Z",
+      "updatedAt": "2026-08-07T06:43:10.979Z",
       "discoveryArtefact": "artefacts/2026-08-06-durable-artefact-storage/discovery.md",
       "track": "standard",
       "regulated": false,
@@ -18762,6 +18762,17 @@
               "dorStatus": "signed-off",
               "prStatus": "merged",
               "mergeCommit": "4207b2db7d4c9f069335c4ade6e8782f3b01af4f"
+            },
+            {
+              "slug": "das-s3",
+              "name": "Backfill already-completed stage artefacts to a repo at the moment it is connected",
+              "stage": "definition",
+              "health": "green",
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false,
+              "updatedAt": "2026-08-07T06:43:10.979Z"
             }
           ]
         }

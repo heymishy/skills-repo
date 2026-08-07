@@ -68,6 +68,15 @@
 
 ---
 
+---
+**2026-08-07 | SCOPE | Live staging finding**
+**Decision:** Add `das-s3` (backfill already-completed stage artefacts to a repo at the moment it's connected) as a new story in this epic, distinct from the original discovery's "recovering already-orphaned journeys" out-of-scope item.
+**Alternatives considered:** Treating this as already covered/rejected by the original out-of-scope decision (line 36 of discovery.md, which named a different orphaned journey, `new-feature-808781bb`, as "not worth the effort").
+**Rationale:** The original decision was about one-time data *recovery* for already-orphaned pre-launch staging journeys — genuinely not worth the effort. `das-s3` is a different, forward-looking *mechanism*: committing still-present local-disk content to a repo at the moment it's connected, before a future redeploy can wipe it. This doesn't rescue `new-feature-5a4e59db` (its content is already gone, confirmed via GitHub API 404) but prevents the same class of loss for any future product — which starts to matter once real (non-staging) customers exist, per this repo's own commercialisation roadmap track.
+**Made by:** Hamish King — Platform maintainer / Product owner (confirmed via live investigation, 2026-08-07)
+**Revisit trigger:** None — this is additive scope to an already-approved epic, not a reversal of the original decision.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature — the write-then-verify sequencing hazard noted in discovery.md's Assumptions and Risks section is flagged for /definition to turn into an explicit AC, not yet a full ADR. -->
