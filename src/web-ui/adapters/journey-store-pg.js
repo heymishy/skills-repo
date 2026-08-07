@@ -148,6 +148,10 @@ async function getArtefactCountsForJourneys(journeyIds) {
 async function deleteJourney(journeyId) {
   const pool = _getPool();
   if (!pool) return { deleted: false };
+  // djfk-s1: session_turns.journey_id also has a plain FK to journeys
+  // (scripts/migrate-schema-pg.js) with no ON DELETE clause -- same
+  // constraint shape as artefacts above, so it must be deleted first too.
+  await pool.query('DELETE FROM session_turns WHERE journey_id = $1', [journeyId]);
   await pool.query('DELETE FROM artefacts WHERE journey_id = $1', [journeyId]);
   const result = await pool.query('DELETE FROM journeys WHERE journey_id = $1', [journeyId]);
   return { deleted: result.rowCount > 0 };
