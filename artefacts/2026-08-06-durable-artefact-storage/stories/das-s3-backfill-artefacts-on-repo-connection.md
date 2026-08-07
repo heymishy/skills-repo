@@ -20,6 +20,8 @@ So that **a later redeploy doesn't silently erase content that was written to lo
 ## Architecture Constraints
 
 - **Reuse `das-s1`'s existing commit mechanism** (`artefact-commit-writer.js`'s `commitArtefact`) — this story is a new call site (triggered on repo-connection), not a new commit mechanism.
+- **Three existing entry points set a product's repo fields — confirmed by direct code inspection, corrected from an earlier draft of this story that named the wrong file:** `handlePutProductEdit` (`src/web-ui/routes/products.js`, `PUT /products/:id`) and `handlePostConnectRepo` (`src/web-ui/routes/product-repo.js`, `POST /products/:id/repo` — connect/re-connect an *existing* repo) both already call the shared `_applyRepoChange(pool, productId, tenantId, owner, repo, accessToken)` in `src/web-ui/routes/product-repo.js` — a deliberate prior consolidation (per that function's own comment: "the same code path used by both handlePostConnectRepo and handlePutProductEdit, ensuring AC3 compliance", from story `prc-s4.1`). `handlePostProductRepoCreate` (`src/web-ui/routes/products.js`, `POST /products/:id/repo/create` — creates a *brand-new* repo) is the one outlier: it still runs its own separate raw `UPDATE products SET repo_provider=..., repo_owner=..., repo_name=...` instead of calling `_applyRepoChange`. The backfill trigger belongs inside `_applyRepoChange` (the already-established consolidation point) — and `handlePostProductRepoCreate` should be migrated to call `_applyRepoChange` too (removing its duplicate raw UPDATE), consistent with `prc-s4.1`'s own existing precedent, rather than becoming a fourth place with its own copy of the backfill logic.
+- **ADR-025 (multi-tenancy):** the backfill's own query for "already-completed stages with no repo backing" must remain `tenant_id`-scoped, consistent with every other query in this epic.
 - **D37 (injectable adapter rule):** if a new adapter function is introduced for "find already-completed stages needing backfill," it follows the same stub-throws convention as every other adapter in this epic.
 - **Time-boxed by design:** this only helps for content still present on local disk at the moment of repo connection — it explicitly does not attempt any form of data recovery for content already lost to a prior redeploy (that class of loss, for already-orphaned journeys, remains out of scope per the original discovery's own decision).
 
@@ -34,7 +36,7 @@ So that **a later redeploy doesn't silently erase content that was written to lo
 
 **AC2:** Given the backfill runs at repo-connection time, When a stage's local-disk artefact no longer exists (already wiped by a prior redeploy), Then that specific stage is skipped without failing the others — the backfill is best-effort per-stage, not all-or-nothing.
 
-**AC3:** Given the backfill completes (fully, partially, or finds nothing to backfill), When the operator views the product afterward, Then a clear indication exists of which stages were successfully backfilled and which (if any) could not be recovered — no silent partial success.
+**AC3:** Given the backfill runs as part of `_applyRepoChange`'s own operation, When it completes (fully, partially, or finds nothing to backfill), Then the JSON response returned by every entry point that calls `_applyRepoChange` (`handlePutProductEdit`, `handlePostConnectRepo`, and `handlePostProductRepoCreate` once migrated per this story's Architecture Constraints) includes a `backfill` field (e.g. `{ attempted: <n>, succeeded: <n>, skipped: [<stageName>, ...] }`) naming exactly which stages were backfilled and which were skipped because their local content no longer existed — never a silent partial success with no field reflecting it.
 
 **AC4:** Given a product connects a repo with zero completed stages yet (the common case — most products connect a repo before starting, per `das-s2`'s own gate), When the connection completes, Then no backfill work is attempted at all (nothing to backfill) — this story adds no overhead to the already-correct, already-tested common path.
 
@@ -48,7 +50,7 @@ So that **a later redeploy doesn't silently erase content that was written to lo
 
 - **Performance:** Backfill runs synchronously at repo-connection time (a rare, deliberate operator action, not a hot path) — a brief added delay is acceptable and should be reported honestly if measured.
 - **Security:** Uses the same authenticated-user-token Contents API pattern as `das-s1` — no new credential handling.
-- **Accessibility:** AC3's indication follows this repo's existing UI patterns for success/partial-success/failure states.
+- **Accessibility:** Not applicable — AC3 only adds a JSON response field; no new UI rendering of that field is required by these ACs.
 - **Audit:** Each backfill attempt (success or skip) is logged with the feature slug and stage name.
 
 ## Complexity Rating
