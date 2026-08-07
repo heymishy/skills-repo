@@ -33,3 +33,12 @@
 **Made by:** Hamish King — Platform maintainer / Product owner (confirmed via explicit choice when offered the alternative of queuing this for later)
 **Revisit trigger:** None — this is a one-off adaptation to the session-limit constraint, not a new standing practice.
 ---
+
+---
+**2026-08-07 | GAP | /verify-completion**
+**Decision:** Acknowledge `tests/check-npwe-s1-skills-nav-wiring.js`'s `IT2.1` test as an expected, non-blocking failure on this branch — not a regression this story introduced.
+**Alternatives considered:** Reverting the journey.js change to keep IT2.1 passing (not viable — journey.js is exactly the file this story's fix lives in); modifying IT2.1 itself as part of this story (rejected — out of scope, a separate concern belonging to `npwe-s1`'s own test).
+**Rationale:** `IT2.1` asserts 7 "excluded" route files (including `journey.js`) remain byte-for-byte identical to `origin/master` forever, as a regression guard for `npwe-s1`'s own nav-wiring change. This premise is structurally unsustainable: `journey.js` is an actively-changing file — `das-s1` already had to modify it (merged), and this story legitimately modifies it again. The test will fail for ANY future story that touches `journey.js`, regardless of whether that story is correct. This is the second time this exact test has surfaced a false alarm this session (first as a stale-base artifact on `emss-s1`'s branch, now as an inherent design limitation on a branch with a genuine, intentional change) — confirmed via direct diff inspection that the flagged content is exactly this story's own documented fix, nothing else.
+**Made by:** Hamish King — Platform maintainer / Product owner (confirmed via direct code inspection, not assumed)
+**Revisit trigger:** `npwe-s1`'s `IT2.1` test should be loosened in a future story — e.g. asserting only the specific nav-wiring-related lines/functions stay unchanged, not the entire file byte-for-byte — since the current form cannot coexist with legitimate future changes to any of its 7 "excluded" files. Worth scoping once agent-dispatch capacity is available again.
+---
