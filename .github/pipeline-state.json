@@ -18702,7 +18702,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-07T06:55:53.898Z",
+      "updatedAt": "2026-08-07T09:32:44.712Z",
       "discoveryArtefact": "artefacts/2026-08-06-durable-artefact-storage/discovery.md",
       "track": "standard",
       "regulated": false,
@@ -18766,27 +18766,29 @@
             {
               "slug": "das-s3",
               "name": "Backfill already-completed stage artefacts to a repo at the moment it is connected",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "updatedAt": "2026-08-07T06:55:53.898Z",
+              "updatedAt": "2026-08-07T09:32:44.712Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-06-durable-artefact-storage/review/das-s3-review-2.md",
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
-                "passing": 0,
+                "passing": 10,
                 "artefact": "artefacts/2026-08-06-durable-artefact-storage/test-plans/das-s3-test-plan.md"
               },
               "verificationScriptArtefact": "artefacts/2026-08-06-durable-artefact-storage/verification-scripts/das-s3-verification.md",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-06-durable-artefact-storage/dor/das-s3-dor.md",
               "oversightLevel": "high",
-              "dorApprover": "Hamish King"
+              "dorApprover": "Hamish King",
+              "prStatus": "merged",
+              "mergeCommit": "83033573e4bbfd771dfd8d509bc7bc9533e448d6"
             }
           ]
         }
