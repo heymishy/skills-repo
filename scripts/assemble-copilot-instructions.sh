@@ -303,7 +303,11 @@ CORE_HEADER
         echo "$desc" | sed 's/^ //'
         if [[ -n "$triggers" ]]; then
           echo ""
-          echo "Triggers: $(get_skill_triggers "$skill_file" | tr '\n' ',' | sed 's/, *$//' | sed 's/^    - //g' | sed 's/    - /, /g')"
+          # scr-s1 (2026-08-07): reuse the already-computed $triggers value
+          # instead of re-invoking get_skill_triggers (a second subprocess
+          # spawn per outer-loop skill) -- root cause of rb-s5's --with-outer-loop
+          # NFR overage. See artefacts/2026-08-07-skill-categorization-reconciliation/decisions.md.
+          echo "Triggers: $(echo "$triggers" | tr '\n' ',' | sed 's/, *$//' | sed 's/^    - //g' | sed 's/    - /, /g')"
         fi
         echo ""
       else
