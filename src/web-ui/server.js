@@ -76,6 +76,7 @@ const { setModulesAdapter } = require('./adapters/modules-adapter'); // a1
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
 const { setListReposAdapter, realListRepos }                         = require('./adapters/repo-adapter');       // mtrr-s2
+const { setArtefactCommitAdapter, realCommitArtefact }               = require('./adapters/artefact-commit-writer'); // das-s1
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
 const { setStandardsAdapter }                                        = require('./standards-adapter');             // psh-s10
 const { setPostHogFlagsAdapter }                                     = require('./modules/posthog-flags');          // bri-s1.1
@@ -244,6 +245,18 @@ if (process.env.NODE_ENV !== 'test') {
 if (process.env.NODE_ENV !== 'test') {
   setListReposAdapter(realListRepos);
   console.log('[repo-adapter] listRepos wired');
+}
+
+// das-s1 / D37 mandatory separate wiring task -- wire the real GitHub
+// artefact-commit adapter (a fourth, distinct adapter from prc-s1.2's
+// repo-access-check, prc-s2.1's repo-creation, and mtrr-s2's list-repos
+// adapters above -- setArtefactCommitAdapter/getArtefactCommitAdapter, so
+// none of the four stories' wiring calls collide). Never wired in
+// NODE_ENV=test (tests call setArtefactCommitAdapter() themselves with a
+// mock); the throwing stub stays active there.
+if (process.env.NODE_ENV !== 'test') {
+  setArtefactCommitAdapter(realCommitArtefact);
+  console.log('[artefact-commit-writer] commitArtefact wired');
 }
 
 // bri-s1.2 — wire the real PostHog flags client into the bri-s1.1 adapter contract,
