@@ -18702,7 +18702,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-06T18:00:17.260Z",
+      "updatedAt": "2026-08-07T00:34:21.154Z",
       "discoveryArtefact": "artefacts/2026-08-06-durable-artefact-storage/discovery.md",
       "track": "standard",
       "regulated": false,
@@ -18722,22 +18722,24 @@
             {
               "slug": "das-s1",
               "name": "Commit completed-stage artefacts to the product's connected repo, with git-fallback on Resume conversation",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-06-durable-artefact-storage/review/das-s1-review-2.md",
-              "updatedAt": "2026-08-06T18:03:00.585Z",
+              "updatedAt": "2026-08-07T00:34:21.152Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
-                "passing": 0,
+                "passing": 9,
                 "artefact": "artefacts/2026-08-06-durable-artefact-storage/test-plans/das-s1-test-plan.md"
               },
               "verificationScriptArtefact": "artefacts/2026-08-06-durable-artefact-storage/verification-scripts/das-s1-verification.md",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "prStatus": "merged",
+              "mergeCommit": "9312e335cafdb7b25198fc59a93fd7963d86ac87"
             },
             {
               "slug": "das-s2",
