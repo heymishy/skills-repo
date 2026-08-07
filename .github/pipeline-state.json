@@ -19130,6 +19130,34 @@
           "assessedAt": "2026-08-06T22:52:31.034Z"
         }
       ]
+    },
+    {
+      "slug": "2026-08-07-canvas-diagram-panel-layout-fix",
+      "name": "Fix the design/definition canvas pane: artefact panel squeezes the diagram panel to near-zero height with no resize control, plus a pre-existing dead maximise-canvas button",
+      "stage": "definition",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "cdpl-s1",
+          "id": "cdpl-s1",
+          "name": "Stop the artefact panel squeezing the diagram panel, and fix the dead maximise-canvas button",
+          "stage": "definition",
+          "health": "green",
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-07T01:22:55.503Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-07T01:22:55.503Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
