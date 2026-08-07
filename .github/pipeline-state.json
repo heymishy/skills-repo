@@ -19249,6 +19249,47 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "epics": []
+    },
+    {
+      "slug": "2026-08-07-delete-journey-session-turns-fk",
+      "name": "deleteJourney fails with a foreign key violation when a journey has session_turns rows",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "djfk-s1",
+          "id": "djfk-s1",
+          "name": "Delete a journey session_turns rows before the journey row, alongside artefacts",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-07-delete-journey-session-turns-fk/review/djfk-s1-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-07-delete-journey-session-turns-fk/test-plans/djfk-s1-test-plan.md"
+          },
+          "verificationScriptArtefact": "artefacts/2026-08-07-delete-journey-session-turns-fk/verification-scripts/djfk-s1-verification.md",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-07-delete-journey-session-turns-fk/dor/djfk-s1-dor.md",
+          "oversightLevel": "low",
+          "acTotal": 3,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-07T10:05:29.379Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-07T10:05:29.379Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
