@@ -3687,29 +3687,24 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
     '    el.style.display = hidden ? "" : "none";',
     '    if (btn) btn.textContent = hidden ? "▾" : "▸";',
     '  };',
-    '  var _canvasMaximised = false;',
-    '  window.swExpandCanvas = function() {',
-    '    var ci = document.getElementById("condition-items");',
-    '    var ac = document.getElementById("assumption-cards");',
-    '    var ciBtn = document.getElementById("sw-toggle-conditions");',
-    '    var acBtn = document.getElementById("sw-toggle-assumptions");',
-    '    var expBtn = document.getElementById("sw-expand-canvas");',
-    '    if (!_canvasMaximised) {',
-    '      if (ci) ci.style.display = "none";',
-    '      if (ac) ac.style.display = "none";',
-    '      if (ciBtn) ciBtn.textContent = "▸";',
-    '      if (acBtn) acBtn.textContent = "▸";',
-    '      if (expBtn) expBtn.title = "Restore panels";',
-    '      _canvasMaximised = true;',
-    '    } else {',
-    '      if (ci) ci.style.display = "";',
-    '      if (ac) ac.style.display = "";',
-    '      if (ciBtn) ciBtn.textContent = "▾";',
-    '      if (acBtn) acBtn.textContent = "▾";',
-    '      if (expBtn) expBtn.title = "Maximise canvas";',
-    '      _canvasMaximised = false;',
-    '    }',
-    '  };',
+    // cdpl-s1: this file's own window.swExpandCanvas definition (previously
+    // here) is REMOVED, not just left alongside the new one. It was a
+    // second, independent fullscreen mechanism (hiding the Conditions/
+    // Assumptions sibling panels rather than truly maximising the canvas)
+    // that silently overrode chat-view.js's own inline <script> definition
+    // of window.swExpandCanvas at runtime, because this script block loads
+    // after chat-view.js's inline script on the page -- confirmed via a
+    // real-browser repro: chat-view.js's version ran and returned
+    // correctly, but this later assignment then clobbered
+    // window.swExpandCanvas, so the real DOM never gained the .canvas-fs
+    // class the click was supposed to produce. The DoR's own root-cause
+    // note ("never defined anywhere in this file", referring only to
+    // chat-view.js) was scoped correctly to that file but did not discover
+    // this second, cross-file definition -- the architecture constraint
+    // ("not a second separate implementation") applies here too, so this
+    // duplicate is deleted rather than kept. chat-view.js's
+    // swToggleCanvasFs()/swExpandCanvas() (the shared classList.toggle
+    // mechanism) is now the single definition.
     '  // iwu.5 — nudge bar on lensComplete',
     '  function countUnconfirmedCards() {',
     '    var cards = document.querySelectorAll("#assumption-cards .assumption-card");',

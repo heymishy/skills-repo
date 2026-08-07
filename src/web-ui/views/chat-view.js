@@ -148,6 +148,22 @@ function renderChat(data) {
         'container.appendChild(cardEl);' +
       '}' +
       'function swToggleArtefactFs(){var p=document.getElementById("sw-artefact-pane");var b=document.getElementById("sw-artefact-fs-btn");if(!p)return;p.classList.toggle("ad-fs");b.textContent=p.classList.contains("ad-fs")?"⊡":"⊞";}' +
+      // cdpl-s1: shared canvas-maximise mechanism, mirroring
+      // swToggleArtefactFs()'s exact classList.toggle() + button-glyph-swap
+      // pattern (not a second, independently-invented fullscreen approach).
+      // #canvas-section (the wrapper around the header + #canvas-panel) has
+      // the same id in both the ideate 3-panel layout and the
+      // design/definition sw-artefact-pane layout, so one function covers
+      // both. Toggling the wrapper -- not #canvas-panel alone -- keeps the
+      // maximise button inside the fullscreen element so it stays clickable
+      // to restore the split view (a fixed #canvas-panel alone would paint
+      // over its own header/button, matching #sw-artefact-pane's own
+      // wrap-header-and-content shape). swExpandCanvas() (referenced via
+      // onclick in the ideate layout's pre-existing "Maximise canvas"
+      // button but never defined until now) is a thin alias delegating to
+      // the same shared toggle.
+      'function swToggleCanvasFs(){var p=document.getElementById("canvas-section");if(!p)return;p.classList.toggle("canvas-fs");var g=p.classList.contains("canvas-fs")?"⊡":"⊞";var b1=document.getElementById("sw-canvas-fs-btn");if(b1)b1.textContent=g;var b2=document.getElementById("sw-expand-canvas");if(b2)b2.textContent=g;}' +
+      'function swExpandCanvas(){swToggleCanvasFs();}' +
       '// SSE pump wires: appendConditionItem, appendCanvasBlock defined in the IIFE (skills.js)' +
       'document.addEventListener("keydown",function(e){' +
         'if((e.metaKey||e.ctrlKey)&&e.key==="Enter"){' +
@@ -275,6 +291,16 @@ function renderChat(data) {
       '#sw-artefact-pane.ad-fs { position:fixed;top:0;left:0;right:0;bottom:0;z-index:999;border-radius:0;max-height:100vh; }',
       '.ad-fs-btn { background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:4px;font-size:14px;line-height:1;transition:color 0.1s; }',
       '.ad-fs-btn:hover { color:var(--ink); }',
+      /* cdpl-s1 -- canvas-maximise fullscreen, mirroring .ad-fs's own
+         position:fixed rule exactly (same shared toggle mechanism, applied
+         to #canvas-section -- the wrapper around the Diagrams/Canvas header
+         and #canvas-panel -- instead of #sw-artefact-pane). #canvas-section
+         shares this id across both the ideate 3-panel layout and the
+         design/definition sw-artefact-pane layout, so one rule covers both
+         AC3 and AC4. Toggling the wrapper (not #canvas-panel alone) keeps
+         the maximise button itself inside the fullscreen element, exactly
+         like #sw-artefact-pane wraps its own header + #artefact-panel. */
+      '#canvas-section.canvas-fs { position:fixed;top:0;left:0;right:0;bottom:0;z-index:999;border-radius:0;max-height:100vh;background:var(--surface); }',
       /* artefact markdown */
       '.ad-h1 { font-size:1.2rem;font-weight:700;margin:18px 0 8px;line-height:1.3; }',
       '.ad-h2 { font-size:1rem;font-weight:600;margin:14px 0 5px;border-bottom:1px solid var(--line);padding-bottom:3px; }',
@@ -388,23 +414,32 @@ function renderChat(data) {
             '<div id="assumption-cards" role="region" aria-label="Assumption cards" style="flex:0 0 auto;max-height:42%;overflow-y:auto;padding:10px 12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px">',
               '<p style="margin:0;font-size:12px;color:var(--muted)">No assumptions identified yet</p>',
             '</div>',
-            '<div class="cv-section-head">',
-              '<span class="cv-section-label">Canvas</span>',
-              '<div style="display:flex;align-items:center;gap:6px">',
-                '<div class="cv-pips" id="cv-pips">',
-                  '<span class="cv-pip" data-lens="A" title="Lens A">A</span>',
-                  '<span class="cv-pip" data-lens="B" title="Lens B">B</span>',
-                  '<span class="cv-pip" data-lens="C" title="Lens C">C</span>',
-                  '<span class="cv-pip" data-lens="D" title="Lens D">D</span>',
-                  '<span class="cv-pip" data-lens="E" title="Lens E">E</span>',
+            // cdpl-s1: header + #canvas-panel wrapped together in
+            // #canvas-section so the shared fullscreen mechanism toggles a
+            // container that includes the maximise button itself (mirroring
+            // #sw-artefact-pane's own wrap of its header+content) -- a fixed
+            // element painted on top of the page would otherwise cover a
+            // sibling header/button left in normal flow, making the button
+            // unclickable once maximised.
+            '<div id="canvas-section" style="display:flex;flex-direction:column;flex:1 1 auto;min-height:0">',
+              '<div class="cv-section-head">',
+                '<span class="cv-section-label">Canvas</span>',
+                '<div style="display:flex;align-items:center;gap:6px">',
+                  '<div class="cv-pips" id="cv-pips">',
+                    '<span class="cv-pip" data-lens="A" title="Lens A">A</span>',
+                    '<span class="cv-pip" data-lens="B" title="Lens B">B</span>',
+                    '<span class="cv-pip" data-lens="C" title="Lens C">C</span>',
+                    '<span class="cv-pip" data-lens="D" title="Lens D">D</span>',
+                    '<span class="cv-pip" data-lens="E" title="Lens E">E</span>',
+                  '</div>',
+                  '<button id="sw-toggle-canvas" class="sw-section-toggle" onclick="swToggleSection(\'canvas-panel\',this)" title="Collapse/expand" aria-label="Toggle canvas">▾</button>',
+                  '<button id="sw-expand-canvas" class="sw-section-expand" onclick="swExpandCanvas()" title="Maximise canvas" aria-label="Maximise canvas">⊞</button>',
                 '</div>',
-                '<button id="sw-toggle-canvas" class="sw-section-toggle" onclick="swToggleSection(\'canvas-panel\',this)" title="Collapse/expand" aria-label="Toggle canvas">▾</button>',
-                '<button id="sw-expand-canvas" class="sw-section-expand" onclick="swExpandCanvas()" title="Maximise canvas" aria-label="Maximise canvas">⊞</button>',
               '</div>',
-            '</div>',
-            '<div id="canvas-panel" role="region" aria-label="Canvas" style="flex:1 1 auto;overflow-y:auto;padding:16px">',
-              '<p class="cv-empty">Lens output will appear here as the session progresses.</p>',
-              (draftSections || ''),
+              '<div id="canvas-panel" role="region" aria-label="Canvas" style="flex:1 1 auto;overflow-y:auto;padding:16px">',
+                '<p class="cv-empty">Lens output will appear here as the session progresses.</p>',
+                (draftSections || ''),
+              '</div>',
             '</div>',
           '</section>',
         ].join('')
@@ -414,7 +449,7 @@ function renderChat(data) {
               '<span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">' + (data.skillName === 'definition' ? 'Story Map' : 'Artefact Draft') + '</span>',
               '<button id="sw-artefact-fs-btn" class="ad-fs-btn" onclick="swToggleArtefactFs()" title="Toggle fullscreen" aria-label="Toggle fullscreen">⊞</button>',
             '</div>',
-            '<div id="artefact-panel" role="region" aria-label="' + (data.skillName === 'definition' ? 'Story map' : 'Artefact draft') + '" style="flex:0 1 auto;overflow-y:auto;padding:' + (data.skillName === 'definition' ? '0' : '16px 20px') + '">',
+            '<div id="artefact-panel" role="region" aria-label="' + (data.skillName === 'definition' ? 'Story map' : 'Artefact draft') + '" style="flex:0 1 auto;max-height:55vh;overflow-y:auto;padding:' + (data.skillName === 'definition' ? '0' : '16px 20px') + '">',
               // dsh-s3: when a caller supplies pre-rendered artefact HTML (the
               // read-only historical-stage view has no live SSE pump to
               // populate this pane client-side the way the live chat page
@@ -431,11 +466,18 @@ function renderChat(data) {
             // Added as an additional section below the artefact/story-map
             // panel above (which continues to work exactly as before) so
             // diagrams have somewhere real to render for these two skills.
-            '<div class="cv-section-head" style="flex-shrink:0">',
-              '<span class="cv-section-label">Diagrams</span>',
-            '</div>',
-            '<div id="canvas-panel" role="region" aria-label="Diagrams" style="flex:1 1 auto;overflow-y:auto;padding:16px">',
-              '<p class="cv-empty">Diagrams will appear here as the session progresses.</p>',
+            // cdpl-s1: header + #canvas-panel wrapped in #canvas-section --
+            // see the identical comment on the ideate layout's own
+            // #canvas-section above for why the wrapper (not #canvas-panel
+            // alone) is the element that toggles fullscreen.
+            '<div id="canvas-section" style="display:flex;flex-direction:column;flex:1 1 auto;min-height:0">',
+              '<div class="cv-section-head" style="flex-shrink:0">',
+                '<span class="cv-section-label">Diagrams</span>',
+                '<button id="sw-canvas-fs-btn" class="ad-fs-btn" onclick="swToggleCanvasFs()" title="Maximise diagrams" aria-label="Maximise diagrams">⊞</button>',
+              '</div>',
+              '<div id="canvas-panel" role="region" aria-label="Diagrams" style="flex:1 1 auto;min-height:200px;overflow-y:auto;padding:16px">',
+                '<p class="cv-empty">Diagrams will appear here as the session progresses.</p>',
+              '</div>',
             '</div>',
           '</section>',
         ].join('')
