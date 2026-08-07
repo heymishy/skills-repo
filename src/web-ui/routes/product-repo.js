@@ -14,6 +14,8 @@
 
 var _posthog = require('../modules/posthog-server');
 var _repoAdapterModule = require('../adapters/repo-adapter');
+var _repoRootAdapter = require('../adapters/repo-root'); // das-s3 -- tenant-scoped local disk root for resolving each stage's artefactPath
+var _artefactBackfill = require('../adapters/artefact-backfill'); // das-s3
 
 /**
  * Read + parse the request body. Mirrors routes/products.js's own
@@ -94,14 +96,50 @@ async function _applyRepoChange(pool, productId, tenantId, owner, repo, accessTo
 
   // A single UPDATE always wins (re-linking updates the existing row's
   // columns; there is no separate "already connected" path to short-circuit
-  // or branch on). This UPDATE is the same code path used by both
-  // handlePostConnectRepo and handlePutProductEdit, ensuring AC3 compliance.
+  // or branch on). This UPDATE is the same code path used by
+  // handlePostConnectRepo, handlePutProductEdit, and (das-s3)
+  // handlePostProductRepoCreate, ensuring AC3 compliance.
   await pool.query(
     'UPDATE products SET repo_provider = $1, repo_owner = $2, repo_name = $3 WHERE product_id = $4',
     ['github', owner, repo, productId]
   );
 
-  return { success: true, error: null, statusCode: 200 };
+  // das-s3 (AC1, AC2, AC3, AC4): backfill already-completed stages, still
+  // present on local disk, to the repo that was just connected -- this is
+  // the ONE consolidation point for this feature, added once here so all
+  // three entry points that call _applyRepoChange get it automatically
+  // (story Architecture Constraints). Best-effort and additive-only: a
+  // failure here must never undo the repo connection that already
+  // succeeded above, so it is wrapped in its own try/catch and always
+  // reported honestly via the `backfill` field rather than thrown.
+  var backfill = { attempted: 0, succeeded: 0, skipped: [] };
+  try {
+    // ADR-025 (multi-tenancy): tenant_id-scoped, consistent with every other
+    // query in this epic.
+    var journeysResult = await pool.query(
+      'SELECT feature_slug, data FROM journeys WHERE product_id = $1 AND tenant_id = $2',
+      [productId, tenantId]
+    );
+    var journeyRows = (journeysResult && journeysResult.rows) || [];
+    if (journeyRows.length > 0) {
+      var repoRoot = _repoRootAdapter.getRepoRoot({ session: { tenantId: tenantId } });
+      for (var i = 0; i < journeyRows.length; i++) {
+        var row = journeyRows[i];
+        var journeyData = (row && row.data) || {};
+        if (!journeyData.featureSlug) journeyData.featureSlug = row.feature_slug;
+        var stageResult = await _artefactBackfill.backfillCompletedStagesToRepo(
+          journeyData, owner, repo, accessToken, repoRoot
+        );
+        backfill.attempted += stageResult.attempted;
+        backfill.succeeded += stageResult.succeeded;
+        backfill.skipped = backfill.skipped.concat(stageResult.skipped);
+      }
+    }
+  } catch (_backfillErr) {
+    console.error('[das-s3] backfill-on-repo-connect failed:', _backfillErr && _backfillErr.message);
+  }
+
+  return { success: true, error: null, statusCode: 200, backfill: backfill };
 }
 
 /**
@@ -148,7 +186,7 @@ async function handlePostConnectRepo(req, res, _next, pool, posthog) {
     connectedBy: req.session && req.session.login
   });
 
-  _sendJson(res, 200, { connected: true, owner: owner, repo: repo });
+  _sendJson(res, 200, { connected: true, owner: owner, repo: repo, backfill: result.backfill });
 }
 
 module.exports = {

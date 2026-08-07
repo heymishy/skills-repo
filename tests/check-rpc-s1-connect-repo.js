@@ -55,10 +55,26 @@ async function testIT1() {
       assert.strictEqual(name, 'my-new-repo', 'createRepo not called with the name submitted via the new UI form');
       return { owner: { login: 'newowner' }, name: name };
     });
+    // das-s3: handlePostProductRepoCreate now goes through the shared
+    // _applyRepoChange consolidation point, which re-verifies repo access as
+    // part of its single path -- trivially true here since the repo was just
+    // created under this same token.
+    repoAdapter.setRepoAdapter(async function() { return { hasAccess: true, status: 200 }; });
 
     var updateCall = null;
     var mockPool = {
       query: async function(sql, params) {
+        // das-s3: _applyRepoChange's own tenant-ownership SELECT, issued
+        // before the UPDATE below.
+        if (/SELECT product_id, tenant_id FROM products WHERE product_id/i.test(sql)) {
+          return { rows: [{ product_id: 'prod-1', tenant_id: 'tenant-1' }] };
+        }
+        // das-s3: the backfill's own tenant-scoped journeys lookup -- no
+        // journeys fixture needed here, so an empty result keeps backfill a
+        // no-op.
+        if (/SELECT feature_slug, data FROM journeys WHERE product_id/i.test(sql)) {
+          return { rows: [] };
+        }
         if (/UPDATE products SET repo_provider/i.test(sql)) {
           updateCall = { sql: sql, params: params };
           return { rows: [{ product_id: 'prod-1' }] };

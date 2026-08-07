@@ -33,6 +33,21 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
       _queries: queries,
       query: async function(sql, params) {
         queries.push({ sql, params });
+        // das-s3: handlePostProductRepoCreate now goes through the shared
+        // _applyRepoChange consolidation point (product-repo.js), which
+        // issues its own tenant-ownership SELECT before the UPDATE -- this
+        // mock must answer it, mirroring check-prc-s4.1-edit-product.js's
+        // and check-prc-s1.2-connect-repo.js's own mock pool shape for the
+        // same query.
+        if (/SELECT product_id, tenant_id FROM products WHERE product_id/i.test(sql)) {
+          return { rows: [{ product_id: state.productId, tenant_id: state.tenantId || 'tx' }] };
+        }
+        // das-s3: the backfill's own journeys lookup (tenant-scoped, ADR-025)
+        // -- no journeys fixture is needed for these pre-existing tests, so
+        // an empty result keeps backfill a no-op (attempted: 0).
+        if (/SELECT feature_slug, data FROM journeys WHERE product_id/i.test(sql)) {
+          return { rows: [] };
+        }
         if (/UPDATE products SET repo_provider/i.test(sql)) {
           return { rows: [{ product_id: state.productId }] };
         }
@@ -47,7 +62,11 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
       assert.strictEqual(token, 'fake-token-abc', 'createRepo not called with the session accessToken');
       return { owner: { login: 'jane' }, name: name };
     });
-    const pool = makeMockPool({ productId: 'prod-1' });
+    // das-s3: _applyRepoChange re-verifies repo access as part of its single
+    // consolidated path -- trivially true here since the repo was just
+    // created under this same token, but the mock must still answer it.
+    repoAdapter.setRepoAdapter(async function() { return { hasAccess: true, status: 200 }; });
+    const pool = makeMockPool({ productId: 'prod-1', tenantId: 'tx' });
     const ph = { _caps: [], capture: function(id, ev, props) { this._caps.push({ id, ev, props }); } };
     const req = { session: { tenantId: 'tx', login: 'jane', accessToken: 'fake-token-abc' }, params: { id: 'prod-1' }, body: { name: 'my-product' } };
     const res = { json: function(b) { this._b = b; }, _b: null, status: function(c) { this._s = c; return this; } };
@@ -109,10 +128,18 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
       order.push('createRepo');
       return { owner: { login: 'jane' }, name: name };
     });
+    // das-s3: _applyRepoChange's own access re-verification step.
+    repoAdapter.setRepoAdapter(async function() { return { hasAccess: true, status: 200 }; });
     const pool = {
       _queries: [],
       query: async function(sql, params) {
         this._queries.push({ sql, params });
+        if (/SELECT product_id, tenant_id FROM products WHERE product_id/i.test(sql)) {
+          return { rows: [{ product_id: 'prod-4', tenant_id: 'tx' }] };
+        }
+        if (/SELECT feature_slug, data FROM journeys WHERE product_id/i.test(sql)) {
+          return { rows: [] };
+        }
         if (/UPDATE products SET repo_provider/i.test(sql)) { order.push('update'); }
         return { rows: [{ product_id: 'prod-4' }] };
       }

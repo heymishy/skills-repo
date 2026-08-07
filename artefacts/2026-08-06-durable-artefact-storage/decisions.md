@@ -77,6 +77,15 @@
 **Revisit trigger:** None — this is additive scope to an already-approved epic, not a reversal of the original decision.
 ---
 
+---
+**2026-08-07 | DESIGN | Inner coding loop (das-s3)**
+**Decision:** Migrate `handlePostProductRepoCreate` (`src/web-ui/routes/products.js`) to call `_applyRepoChange` (`src/web-ui/routes/product-repo.js`) literally -- accepting that this also pulls in `_applyRepoChange`'s tenant-ownership `SELECT` and its GitHub repo-access re-verification (`getRepoAdapter()`), neither of which the old standalone raw-`UPDATE`-only handler ever performed, rather than adding a special-cased "skip verification" branch for the just-created-a-repo-myself case.
+**Alternatives considered:** (B) add an optional parameter to `_applyRepoChange` (e.g. `skipAccessCheck`) so the create-repo call site could bypass the tenant check and access re-verification, preserving the old handler's exact query shape.
+**Rationale:** The story's own Architecture Constraints and DoR Coding Agent Instructions are explicit that the goal is true single-path consolidation -- "all three must go through `_applyRepoChange`" -- not a parameterised subset of it. A skip-flag would reintroduce exactly the kind of per-caller special-casing the consolidation exists to eliminate, and would mean two of the three callers are verified while one silently isn't. In production the extra access-check GET is a harmless no-op (the operator always has access to a repo their own token just created) and the extra tenant `SELECT` is the same ownership guard every other mutating product route already performs -- so the "cost" is one extra, always-passing DB read and one extra, always-passing GitHub GET, not a behavioural risk. The real consequence was two pre-existing test files (`tests/check-prc-s2.1-create-repo.js` T2/T5, `tests/check-rpc-s1-connect-repo.js` IT1) whose hand-rolled mock `pool.query` implementations only recognised the old raw `UPDATE` statement and never wired `repoAdapter.setRepoAdapter` -- both were updated mechanically (added the tenant-ownership and journeys-lookup query branches, wired the access-check adapter) to keep exercising the real, now-shared code path; no assertion in either file was weakened or removed.
+**Made by:** Coding agent (Claude Code), inner coding loop for das-s3
+**Revisit trigger:** If a future story finds the extra per-create-repo GitHub access-check GET is measurably costly (rate limiting, latency) rather than merely redundant, reconsider a scoped opt-out -- but only if that cost is real, not hypothetical.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet for this feature — the write-then-verify sequencing hazard noted in discovery.md's Assumptions and Risks section is flagged for /definition to turn into an explicit AC, not yet a full ADR. -->
