@@ -538,6 +538,86 @@ queue.push(function() {
 });
 
 // ---------------------------------------------------------------------------
+// anvf-s1 (unit) — a 404 (artefact genuinely doesn't exist yet) must show
+// the ordinary "No artefact content found" message, not "could not be
+// retrieved" -- artefact-fetcher.js already throws a distinct
+// ArtefactNotFoundError for exactly this case; this test proves the
+// call site actually distinguishes it, not just that fetchArtefact itself
+// distinguishes it (fetchArtefact was already correct before this fix).
+// ---------------------------------------------------------------------------
+queue.push(function() {
+  return test('artefactNotFound404_showsOrdinaryNotFoundMessage', async function() {
+    var journey = freshRequireJourney();
+    var store = getStore();
+    var eds = getExportDataSource();
+
+    var setup = setupStageSession(journey, store, {});
+    var pool = createMockPool(
+      [{ feature_slug: setup.featureSlug, product_id: 'p1', tenant_id: 't1' }],
+      [{ product_id: 'p1', tenant_id: 't1', repo_owner: 'acme', repo_name: 'widgets' }]
+    );
+    eds.setDbPool(pool);
+    store.completeStage(setup.journeyId, setup.skillName, setup.artefactRelPath, null, setup.sid);
+    fs.unlinkSync(path.join(tmpRoot, setup.artefactRelPath));
+
+    var originalFetch = global.fetch;
+    global.fetch = async function() {
+      return { ok: false, status: 404, json: async function() { return { message: 'Not Found' }; } };
+    };
+
+    try {
+      var req = authReq({ params: { journeyId: setup.journeyId, stageName: setup.skillName } });
+      var res = makeRes();
+      await journey.handleGetJourneyStageView(req, res);
+
+      assert.ok(res._body.includes('No artefact content found'), 'a 404 (artefact genuinely never existed) must show the ordinary not-found message. Got body snippet: ' + res._body.slice(0, 400));
+      assert.ok(!res._body.toLowerCase().includes('could not be retrieved'), 'a 404 must NOT show the "could not be retrieved" failure message -- nothing actually failed, the artefact simply does not exist yet');
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// anvf-s1 (unit, negative control) — a generic error whose message text
+// resembles "not found" but is NOT an instance of ArtefactNotFoundError
+// must still be treated as a real failure. Proves the fix checks the error
+// CLASS, not the message string.
+// ---------------------------------------------------------------------------
+queue.push(function() {
+  return test('genericErrorResemblingNotFoundText_stillTreatedAsRealFailure', async function() {
+    var journey = freshRequireJourney();
+    var store = getStore();
+    var eds = getExportDataSource();
+
+    var setup = setupStageSession(journey, store, {});
+    var pool = createMockPool(
+      [{ feature_slug: setup.featureSlug, product_id: 'p1', tenant_id: 't1' }],
+      [{ product_id: 'p1', tenant_id: 't1', repo_owner: 'acme', repo_name: 'widgets' }]
+    );
+    eds.setDbPool(pool);
+    store.completeStage(setup.journeyId, setup.skillName, setup.artefactRelPath, null, setup.sid);
+    fs.unlinkSync(path.join(tmpRoot, setup.artefactRelPath));
+
+    var artefactFetcherPath = path.resolve(__dirname, '../src/web-ui/adapters/artefact-fetcher.js');
+    var originalFetchArtefact = require(artefactFetcherPath).fetchArtefact;
+    require(artefactFetcherPath).fetchArtefact = async function() {
+      throw new Error('Artefact not found: some/thing'); // NOT an ArtefactNotFoundError instance
+    };
+
+    try {
+      var req = authReq({ params: { journeyId: setup.journeyId, stageName: setup.skillName } });
+      var res = makeRes();
+      await journey.handleGetJourneyStageView(req, res);
+
+      assert.ok(res._body.toLowerCase().includes('could not be retrieved'), 'a generic Error (not an ArtefactNotFoundError instance) must still be treated as a real failure, even if its message text resembles "not found" -- the distinction must be by class, not string-matching. Got body snippet: ' + res._body.slice(0, 400));
+    } finally {
+      require(artefactFetcherPath).fetchArtefact = originalFetchArtefact;
+    }
+  });
+});
+
+// ---------------------------------------------------------------------------
 // Run all tests
 // ---------------------------------------------------------------------------
 (async function() {

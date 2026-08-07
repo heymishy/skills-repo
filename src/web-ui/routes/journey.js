@@ -780,6 +780,14 @@ async function handleGetJourneyStageView(req, res) {
   // drives a distinct, honest "could not be retrieved" message (AC5) rather
   // than the generic default -- so operators can tell "never had a repo"
   // apart from "this specific fetch failed."
+  //
+  // anvf-s1: a 404 from fetchArtefact (ArtefactNotFoundError) means the
+  // artefact genuinely does not exist yet -- e.g. a brand-new feature with
+  // no stage ever completed -- which is expected, not a failure. Only a
+  // real problem (ArtefactFetchError -- network error or non-404 API
+  // response) should set _dasFetchFailed. Checked by class (instanceof),
+  // never by message text, so this can't be fooled by an unrelated error
+  // that happens to mention "not found".
   var _dasFetchFailed = false;
   if (!artefactContent) {
     try {
@@ -787,7 +795,9 @@ async function handleGetJourneyStageView(req, res) {
       try {
         artefactContent = await require('../adapters/artefact-fetcher').fetchArtefact(journey.featureSlug, stageName, req.session.accessToken, _dasOwnerRepo);
       } catch (_dasFetchErr) {
-        _dasFetchFailed = true;
+        if (!(_dasFetchErr instanceof require('../adapters/artefact-fetcher').ArtefactNotFoundError)) {
+          _dasFetchFailed = true;
+        }
       }
     } catch (_dasResolveErr) {
       // No connected repo (or no linked product) -- leave artefactContent
