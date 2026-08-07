@@ -67,7 +67,7 @@ function extractSidFromRedirect(res) {
       body: { startSkill: 'discovery', displayName: 'Checkout redesign' }
     };
     var res = makeRes();
-    await productsRoute.handlePostProductFeature(req, res, null, { query: async function() { return { rows: [] }; } }, { capture: function() {} });
+    await productsRoute.handlePostProductFeature(req, res, null, { query: async function(sql) { if (String(sql).toUpperCase().indexOf("SELECT REPO_OWNER, REPO_NAME") !== -1) { return { rows: [{ repo_owner: "acme", repo_name: "widgets" }] }; } return { rows: [] }; } }, { capture: function() {} });
 
     var sid = extractSidFromRedirect(res);
     var session = skillsRoute._getHtmlSession(sid);
@@ -88,7 +88,7 @@ function extractSidFromRedirect(res) {
       body: { startSkill: 'discovery' }
     };
     var res = makeRes();
-    await productsRoute.handlePostProductFeature(req, res, null, { query: async function() { return { rows: [] }; } }, { capture: function() {} });
+    await productsRoute.handlePostProductFeature(req, res, null, { query: async function(sql) { if (String(sql).toUpperCase().indexOf("SELECT REPO_OWNER, REPO_NAME") !== -1) { return { rows: [{ repo_owner: "acme", repo_name: "widgets" }] }; } return { rows: [] }; } }, { capture: function() {} });
 
     var sid = extractSidFromRedirect(res);
     var session = skillsRoute._getHtmlSession(sid);
@@ -109,7 +109,7 @@ function extractSidFromRedirect(res) {
       body: { startSkill: 'discovery', displayName: '   ' }
     };
     var res = makeRes();
-    await productsRoute.handlePostProductFeature(req, res, null, { query: async function() { return { rows: [] }; } }, { capture: function() {} });
+    await productsRoute.handlePostProductFeature(req, res, null, { query: async function(sql) { if (String(sql).toUpperCase().indexOf("SELECT REPO_OWNER, REPO_NAME") !== -1) { return { rows: [{ repo_owner: "acme", repo_name: "widgets" }] }; } return { rows: [] }; } }, { capture: function() {} });
 
     var sid = extractSidFromRedirect(res);
     var session = skillsRoute._getHtmlSession(sid);

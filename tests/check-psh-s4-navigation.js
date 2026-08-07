@@ -99,7 +99,17 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
   // inspecting the pool's raw SQL calls.
   try {
     const ph = { _captured: [], capture: function(id,ev,props) { this._captured.push({ev,props}); } };
-    const pool = { query: async function() { return { rows: [] }; } };
+    // das-s2: handlePostProductFeature now also gates on "brand-new product
+    // (0 journeys) with no connected repo" -- this fixture's product is
+    // brand-new, so the pool must report a connected repo, otherwise the
+    // gate blocks the request before this test's own concern (journey_created
+    // registration) is exercised. See tests/check-das-s2-require-connected-repo.js.
+    const pool = { query: async function(sql) {
+      if (String(sql).toUpperCase().indexOf('SELECT REPO_OWNER, REPO_NAME') !== -1) {
+        return { rows: [{ repo_owner: 'acme', repo_name: 'widgets' }] };
+      }
+      return { rows: [] };
+    } };
     const journeyStore = require('../src/web-ui/modules/journey-store');
     journeyStore._clearForTesting();
 

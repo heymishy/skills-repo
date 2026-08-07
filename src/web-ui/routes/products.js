@@ -1802,6 +1802,52 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
     }
   }
 
+  // das-s2: require a connected repo before a brand-new product (journey
+  // count = 0) can start its first journey, so Story 1's dual-write
+  // durability guarantee (das-s1) applies to it from the very first stage
+  // it completes. "Brand-new" is defined operationally as journey count =
+  // 0 for THIS product, never by creation date -- a product with >=1
+  // existing journey must never be blocked, regardless of when it was
+  // created or why it still has no repo (AC3, the exact boundary condition
+  // review caught and fixed as 1-M1). Out of scope: no retroactive
+  // migration/blocking of existing repo-less products (matches the
+  // /clarify Option A decision, decisions.md).
+  //
+  // Note (plans/das-s2-plan.md): the DoR contract named journey.js's
+  // handlePostJourney as the touch point, but that handler has no concept
+  // of productId at all (its journeys always have productId == null, see
+  // journey.js:324) -- this handler is the only journey-creation entry
+  // point with a real productId in scope, so the gate lives here instead.
+  if (tenantId) {
+    var _journeyStoreForRepoGate = _journeyStoreForCap;
+    var _allForRepoGate = [];
+    try { _allForRepoGate = _journeyStoreForRepoGate.listJourneys ? _journeyStoreForRepoGate.listJourneys() : []; } catch (_) {}
+    var _productJourneyCount = _allForRepoGate.filter(function(j) { return j.productId === productId; }).length;
+
+    if (_productJourneyCount === 0) {
+      var _repoRow = null;
+      try {
+        var _repoResult = await pool.query(
+          'SELECT repo_owner, repo_name FROM products WHERE product_id = $1 AND tenant_id = $2',
+          [productId, tenantId]
+        );
+        _repoRow = _repoResult && _repoResult.rows && _repoResult.rows[0];
+      } catch (err) {
+        console.error('[handlePostProductFeature] das-s2 repo-gate query failed:', err.message);
+      }
+
+      if (!_repoRow || (!_repoRow.repo_owner && !_repoRow.repo_name)) {
+        res.writeHead(409, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(_htmlShell.renderShell({
+          title: 'Connect a repo to get started',
+          bodyContent: '<div class="sw-page-content"><h1>Connect a repo to get started</h1><p>This product needs a connected GitHub repo before its first journey can start, so your completed work is durably saved from day one.</p><a href="/products/' + _escapeHtml(productId) + '">Connect a repo</a></div>',
+          user: { login: req.session && req.session.login || '' }
+        }));
+        return;
+      }
+    }
+  }
+
   // jrf-s2: FIX — register the journey through the shared journey-store
   // (createJourney + setJourneyFields), the SAME path handlePostJourney
   // (routes/journey.js) already uses correctly. The previous raw, direct
