@@ -19175,6 +19175,47 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "epics": []
+    },
+    {
+      "slug": "2026-08-07-artefact-not-found-vs-fetch-failed",
+      "name": "das-s1's git-fallback conflates ArtefactNotFoundError (expected, brand-new feature) with ArtefactFetchError (a real failure), showing a scary message when an artefact simply doesn't exist yet",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "anvf-s1",
+          "id": "anvf-s1",
+          "name": "Distinguish artefact-not-found from fetch-failed",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-07-artefact-not-found-vs-fetch-failed/review/anvf-s1-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 2,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-07-artefact-not-found-vs-fetch-failed/test-plans/anvf-s1-test-plan.md"
+          },
+          "verificationScriptArtefact": "artefacts/2026-08-07-artefact-not-found-vs-fetch-failed/verification-scripts/anvf-s1-verification.md",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-07-artefact-not-found-vs-fetch-failed/dor/anvf-s1-dor.md",
+          "oversightLevel": "low",
+          "acTotal": 3,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-07T04:02:23.734Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-07T04:02:23.734Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
