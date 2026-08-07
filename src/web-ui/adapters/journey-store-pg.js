@@ -3,12 +3,24 @@
 const { Pool } = require('pg');
 
 let _pool = null;
+let _poolForTesting = null;
+
+// dfr-s1: test-only override so a fake db double can exercise this module's
+// real functions (e.g. listJourneys()'s row-mapping logic) without a live
+// Postgres connection -- mirrors journey-store.js's own
+// setPgAdapterForTesting naming convention. Never used on the real
+// request path; production always resolves through _getPool() below.
+function _setPoolForTesting(pool) {
+  _poolForTesting = pool;
+}
 
 function _getPool() {
+  if (_poolForTesting) return _poolForTesting;
   if (!_pool && process.env.DATABASE_URL) {
     _pool = new Pool({
       connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false }
+      ssl: { rejectUnauthorized: false },
+      connectionTimeoutMillis: 10000
     });
   }
   return _pool;
@@ -26,7 +38,11 @@ function _sanitise(journey) {
     stories:           journey.stories            || [],
     storyList:         journey.storyList          || null,
     currentStoryIndex: journey.currentStoryIndex  || 0,
-    productProfile:    journey.productProfile     || 'default'
+    productProfile:    journey.productProfile     || 'default',
+    // fdn-s1: this allowlist is the only thing standing between a field
+    // working in-memory/on-disk and silently vanishing after a Postgres-
+    // backed restart -- must be added explicitly, not inferred.
+    displayName:       journey.displayName        || null
   };
   // Defensive: strip accessToken from any nested value (should never be there, but guard anyway)
   delete data.accessToken;
@@ -37,13 +53,19 @@ async function saveJourney(journey) {
   const pool = _getPool();
   if (!pool) return;
   const data = _sanitise(journey);
+  // jrf-s2: product_id written to its own real column (not just the JSONB
+  // data blob) since routes/products.js's handleGetProductView filters
+  // journeys directly by that column. Defaults to null for any existing
+  // caller (e.g. handlePostJourney) that never sets journey.productId --
+  // matches today's behaviour exactly, the column is already nullable.
   await pool.query(
-    `INSERT INTO journeys (journey_id, tenant_id, owner_id, feature_slug, data)
-     VALUES ($1, $2, $3, $4, $5)
+    `INSERT INTO journeys (journey_id, tenant_id, owner_id, feature_slug, product_id, data)
+     VALUES ($1, $2, $3, $4, $5, $6)
      ON CONFLICT (journey_id)
      DO UPDATE SET data = EXCLUDED.data, tenant_id = EXCLUDED.tenant_id,
-                   owner_id = EXCLUDED.owner_id, feature_slug = EXCLUDED.feature_slug`,
-    [journey.journeyId, journey.tenantId || null, journey.ownerId || null, journey.featureSlug, JSON.stringify(data)]
+                   owner_id = EXCLUDED.owner_id, feature_slug = EXCLUDED.feature_slug,
+                   product_id = EXCLUDED.product_id`,
+    [journey.journeyId, journey.tenantId || null, journey.ownerId || null, journey.featureSlug, journey.productId || null, JSON.stringify(data)]
   );
 }
 
@@ -97,11 +119,54 @@ async function getArtefactsForJourney(journeyId) {
   return result.rows;
 }
 
+// s2.2 -- AC4 investigation outcome (documented in decisions.md): a SINGLE
+// GROUP BY query across every journey ID on the board, not one
+// getArtefactsForJourney() call per card. Bounded to exactly one round-trip
+// per board render regardless of how many cards are on it (Performance NFR).
+async function getArtefactCountsForJourneys(journeyIds) {
+  const pool = _getPool();
+  if (!pool || !journeyIds || journeyIds.length === 0) return {};
+  const result = await pool.query(
+    'SELECT journey_id, COUNT(*)::int AS count FROM artefacts WHERE journey_id = ANY($1) GROUP BY journey_id',
+    [journeyIds]
+  );
+  const map = {};
+  result.rows.forEach(function(row) { map[row.journey_id] = row.count; });
+  return map;
+}
+
+/**
+ * alrf-s10 — hard-delete a journey and all its artefact rows. artefacts.journey_id
+ * has a plain FK to journeys(journey_id) with no ON DELETE clause (default
+ * RESTRICT), so artefacts MUST be deleted first or the journeys DELETE would
+ * fail the constraint. Explicit two-statement delete, not a cascade, matching
+ * this codebase's established "assertable DELETE, not cascade-reliance-alone"
+ * convention (see routes/products.js's handleDeleteProduct).
+ * @param {string} journeyId
+ * @returns {Promise<{deleted: boolean}>}
+ */
+async function deleteJourney(journeyId) {
+  const pool = _getPool();
+  if (!pool) return { deleted: false };
+  // djfk-s1: session_turns.journey_id also has a plain FK to journeys
+  // (scripts/migrate-schema-pg.js) with no ON DELETE clause -- same
+  // constraint shape as artefacts above, so it must be deleted first too.
+  await pool.query('DELETE FROM session_turns WHERE journey_id = $1', [journeyId]);
+  await pool.query('DELETE FROM artefacts WHERE journey_id = $1', [journeyId]);
+  const result = await pool.query('DELETE FROM journeys WHERE journey_id = $1', [journeyId]);
+  return { deleted: result.rowCount > 0 };
+}
+
 async function listJourneys() {
   const pool = _getPool();
   if (!pool) return [];
+  // dfr-s1: product_id is written on every saveJourney() call but was never
+  // selected back out here, so productId silently vanished from every
+  // journey rehydrated from Postgres after a server restart -- breaking
+  // any feature further downstream (like the delete-feature redirect) that
+  // depends on it.
   const result = await pool.query(
-    'SELECT journey_id, tenant_id, owner_id, feature_slug, created_at, data FROM journeys ORDER BY created_at ASC'
+    'SELECT journey_id, tenant_id, owner_id, feature_slug, product_id, created_at, data FROM journeys ORDER BY created_at ASC'
   );
   return result.rows.map(function(row) {
     const d = row.data || {};
@@ -110,9 +175,10 @@ async function listJourneys() {
       tenantId:   row.tenant_id,
       ownerId:    row.owner_id,
       featureSlug: row.feature_slug,
+      productId:  row.product_id,
       createdAt:  row.created_at
     });
   });
 }
 
-module.exports = { saveJourney, listJourneys, migrateSchema, saveArtefact, getArtefactsForJourney };
+module.exports = { saveJourney, listJourneys, migrateSchema, saveArtefact, getArtefactsForJourney, getArtefactCountsForJourneys, deleteJourney, _setPoolForTesting };

@@ -27,6 +27,7 @@ const fs   = require('fs');
 const path = require('path');
 const { spawnSync } = require('child_process');
 const os = require('os');
+const { SKILL_CATEGORIES } = require('../../cli/lib/skills-registry');
 
 const root         = path.join(__dirname, '..', '..');
 const fixtureFile  = path.join(root, 'tests', 'fixtures', 'assembled-copilot-instructions.md');
@@ -79,14 +80,14 @@ const benefitMetric = fs.readFileSync(benefitFile, 'utf8');
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const OUTER_LOOP_SKILLS = [
-  'discovery',
-  'benefit-metric',
-  'definition',
-  'review',
-  'test-plan',
-  'definition-of-ready',
-];
+// scr-s1 (2026-08-07): derived from cli/lib/skills-registry.js's
+// SKILL_CATEGORIES -- the single source of truth for a skill's outer-loop/
+// inner-loop/ancillary category -- instead of maintaining a second,
+// independent hardcoded copy that could silently diverge (see
+// .github/architecture-guardrails.md's anti-pattern on duplicating a fixed
+// sequence as two independent hardcoded arrays). Adding a new entry to
+// SKILL_CATEGORIES is automatically reflected here with zero code change.
+const OUTER_LOOP_SKILLS = Object.keys(SKILL_CATEGORIES).filter(name => SKILL_CATEGORIES[name] === 'outer-loop');
 
 // workflow and decisions are also outer loop but the test plan specifies these 6 for AC3
 const OUTER_LOOP_AC3 = [
@@ -98,14 +99,7 @@ const OUTER_LOOP_AC3 = [
   'definition-of-ready',
 ];
 
-const INNER_LOOP_SKILLS = [
-  'tdd',
-  'implementation-plan',
-  'subagent-execution',
-  'verify-completion',
-  'branch-setup',
-  'branch-complete',
-];
+const INNER_LOOP_SKILLS = Object.keys(SKILL_CATEGORIES).filter(name => SKILL_CATEGORIES[name] === 'inner-loop');
 
 const M1_REQUIRED_FIELDS = [
   'changeReference',

@@ -157,8 +157,26 @@ console.log('\n[ilc1-capture-schema] NFR — no new dependencies');
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
   const deps = Object.keys(pkg.dependencies || {});
   const devDeps = Object.keys(pkg.devDependencies || {}).length;
-  // ilc.1 adds zero deps. Baseline: only pino (added by obs-1 for server logging).
-  const ALLOWED_PROD_DEPS = ['pino'];
+  // ilc.1 itself adds zero deps -- this NFR only guards against ilc.1's own
+  // scope creep, not against the repo ever growing new dependencies via
+  // later, unrelated, separately-decided stories. tst-s1 (2026-07-16 baseline
+  // triage): refreshed this allowlist to the current, documented set --
+  // @upstash/redis (Redis session store), bcrypt (auth password hashing),
+  // pg (bri-s2.2 Neon/Postgres staging), posthog-node (bri-s1.2 ARCH decision,
+  // artefacts/2026-07-09-beta-readiness-infra/decisions.md), stripe (landing
+  // auth/billing) -- each a real, already-decided dependency from its own
+  // story, not scope creep introduced by ilc.1. csd-s1 (2026-07-25): added
+  // mermaid (client-side diagram rendering for the /ideate canvas's new
+  // `data-model` block type) -- an explicit ARCH decision deliberately
+  // relaxing this repo's usual zero-new-npm-dependency Web UI rule for this
+  // one feature only, see artefacts/2026-07-25-code-shape-diagrams/decisions.md.
+  // story-3-self-service-provisioning (2026-07-31): added passport +
+  // passport-magic-login (shared invitation/magic-link token issuance and
+  // verification, reused by Story 4's dual-path authentication) and resend
+  // (transactional invitation email delivery) -- an explicit ARCH decision,
+  // see artefacts/2026-07-30-agency-client-organisations/decisions.md
+  // (2026-07-31 entry).
+  const ALLOWED_PROD_DEPS = ['pino', '@upstash/redis', 'bcrypt', 'pg', 'posthog-node', 'stripe', 'mermaid', 'passport', 'passport-magic-login', 'resend'];
   const unexpected = deps.filter(d => !ALLOWED_PROD_DEPS.includes(d));
   assert(
     unexpected.length === 0,

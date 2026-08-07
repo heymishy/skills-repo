@@ -18,7 +18,7 @@ const { execSync } = require('child_process');
 
 const root        = path.join(__dirname, '..');
 const checkerPath = path.join(root, '.github', 'scripts', 'check-skill-contracts.js');
-const skillPath   = path.join(root, '.github', 'skills', 'modernisation-decompose', 'SKILL.md');
+const skillPath   = path.join(root, 'skills', 'modernisation-decompose', 'SKILL.md');
 
 let passed = 0;
 let failed = 0;
@@ -71,7 +71,7 @@ process.stdout.write('\n[md-2-skill-contracts] T2: removing State update section
     const originalContent = fs.readFileSync(skillPath, 'utf8');
     // Remove the State update section (everything from the heading to the end of its block)
     const stripped = originalContent.replace(/## State update[\s\S]*?(?=\n## |\n---|\n#[^#]|$)/, '');
-    const tmpPath = path.join(root, '.github', 'skills', 'modernisation-decompose', 'SKILL.md.tmp');
+    const tmpPath = path.join(root, 'skills', 'modernisation-decompose', 'SKILL.md.tmp');
     fs.writeFileSync(tmpPath, stripped, 'utf8');
     fs.renameSync(skillPath, skillPath + '.bak');
     fs.renameSync(tmpPath, skillPath);

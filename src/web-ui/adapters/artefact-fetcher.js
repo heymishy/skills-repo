@@ -33,13 +33,25 @@ class ArtefactFetchError extends Error {
  * @param {string} featureSlug  - e.g. '2026-01-01-example-feature'
  * @param {string} artefactType - e.g. 'discovery'
  * @param {string} token        - OAuth access token
+ * @param {{owner: string, repo: string}} [repoOverride] - mtrr-s1: when
+ *   supplied, fetches from this owner/repo instead of the single, deployment-
+ *   wide GITHUB_REPO env var. Used by export-data-source.js's
+ *   realExportDataSource, which resolves the correct per-tenant repo via
+ *   ownerRepoForFeature before calling this function -- without this,
+ *   realExportDataSource would correctly resolve pipeline-state.json per
+ *   product/tenant (via realFetchPipelineState) but still fetch the DoR
+ *   artefact content itself from the single hardcoded env-var repo, silently
+ *   reintroducing the exact cross-tenant defect mtrr-s1 exists to close.
+ *   Optional and additive: every other caller (e.g. handleArtefactRoute, the
+ *   in-app viewer) is unaffected and keeps using the env-var default.
  * @returns {Promise<string>} decoded markdown content
  * @throws {ArtefactNotFoundError} when the Contents API returns 404
  * @throws {ArtefactFetchError}    on non-404 error or network failure
  */
-async function fetchArtefact(featureSlug, artefactType, token) {
+async function fetchArtefact(featureSlug, artefactType, token, repoOverride) {
   const repoPath = `artefacts/${featureSlug}/${artefactType}.md`;
-  const url      = `${GITHUB_API_BASE}/repos/${GITHUB_REPO}/contents/${repoPath}`;
+  const targetRepo = repoOverride ? `${repoOverride.owner}/${repoOverride.repo}` : GITHUB_REPO;
+  const url      = `${GITHUB_API_BASE}/repos/${targetRepo}/contents/${repoPath}`;
 
   let response;
   try {

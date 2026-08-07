@@ -1,6 +1,6 @@
 'use strict';
 // check-pr.5.js — AC assertions for pr.5: output format, rationale enforcement, artefact save, extension point
-// Tests read .github/skills/prioritise/SKILL.md and .github/scripts/check-skill-contracts.js.
+// Tests read skills/prioritise/SKILL.md and .github/scripts/check-skill-contracts.js.
 // Exit 0 on pass, 1 on any failure.
 
 const fs = require('fs');
@@ -8,7 +8,7 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 const REPO_ROOT = path.join(__dirname, '..');
-const SKILL_PATH = path.join(REPO_ROOT, '.github', 'skills', 'prioritise', 'SKILL.md');
+const SKILL_PATH = path.join(REPO_ROOT, 'skills', 'prioritise', 'SKILL.md');
 const CONTRACTS_PATH = path.join(REPO_ROOT, '.github', 'scripts', 'check-skill-contracts.js');
 
 let passed = 0;

@@ -6,22 +6,28 @@
 
 const http = require('http');
 const https = require('https');
+const crypto = require('crypto');
 const { URL } = require('url');
 
 const { sessionMiddleware }                                          = require('./middleware/session');
 const { handleLanding }                                              = require('./routes/landing');     // bee.1
-const { handleRoot, handleWelcome }                                  = require('./routes/public');      // lab-s1.2 / lab-s2.3
+const { handleRoot, handleWelcome, handleMermaidAsset }              = require('./routes/public');      // lab-s1.2 / lab-s2.3 / csd-s1
 const { handleAuthGithub, handleAuthCallback, handleAuthGoogle, handleAuthGoogleCallback, handleLogout, authGuard } = require('./routes/auth');
 const { handleArtefactRoute }                                        = require('./routes/artefact');
+const { handleExportRoute, setExportDataSource }                     = require('./routes/export');    // rb-s4
+const { realExportDataSource }                                       = require('./adapters/export-data-source'); // rb-s4
 const { handleSignOff, handleArtefactRead }                             = require('./routes/sign-off');
 const { healthCheckHandler }                                         = require('./routes/health');
-const { validateRequiredEnvVars }                                    = require('./config/validate-env');
-const { handleGetActions, handleDashboard, handleGetActionsHtml }                          = require('./routes/dashboard');
-const { handleGetFeatures, handleGetFeatureArtefacts, handleGetIdeas, handlePostIdea, handleDeleteIdea } = require('./routes/features');
-const { handleGetStatus, handleGetStatusExport }                     = require('./routes/status');
+const { versionHandler }                                             = require('./routes/version');
+const { validateRequiredEnvVars, warnOnOptionalEnvVars }             = require('./config/validate-env');
+const { handleGetActions, handleDashboard }                          = require('./routes/dashboard');
+const { handleGetFeatureArtefacts, handleGetIdeas, handlePostIdea, handleDeleteIdea, setIdeasStore } = require('./routes/features');
+const _ideasStorePg = require('./adapters/ideas-store-pg'); // idp-s1
+const { handleGetAsBuiltDataModel }                                  = require('./routes/as-built-diagrams'); // csd-s5
+const { handleGetAsBuiltSystemArchitecture }                         = require('./routes/as-built-system-architecture'); // csd-s7
 const { handlePostAnnotation }                                       = require('./routes/annotation');   // wuce.8
 const { handleExecuteSkill }                                         = require('./routes/execute');        // wuce.9
-const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCompletePage, handleGetChatHtml, handlePostTurnHtml, handlePostTurnStreamHtml, handlePostAssumptionConfirm, handlePostCanvasEditHtml } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25 / dsq.3 / mfc.1 / mfc.3 / iwu.4 / dic.5
+const { handleGetSkills, handlePostSession, handlePostAnswer, handleGetSessionState, handleCommitArtefact, handleResumeSession, handleGetSkillsHtml, handlePostSkillSessionHtml, handleGetQuestionHtml, handlePostAnswerHtml, handleGetCommitPreviewHtml, handlePostCommitHtml, handleGetResultHtml, registerHtmlSession, htmlGetNextQuestion, htmlGetPreview, htmlCommitSession, htmlGetCompletePage, handleGetChatHtml, handlePostTurnHtml, handlePostTurnStreamHtml, handlePostAssumptionConfirm, handlePostCanvasEditHtml, setDbPool: setSkillsDbPool, _getSkillsNavContext } = require('./routes/skills'); // wuce.13 / wuce.23 / wuce.24 / wuce.25 / dsq.3 / mfc.1 / mfc.3 / iwu.4 / dic.5 / npwe-s1
 const { setLogger, setFetchOrgs, getFetchOrgs, setFetchOrgMembers, getOrgMembers } = require('./routes/auth'); // tir-s8: getOrgMembers/setFetchOrgMembers
 const { setProviderAdapter, gitHubProviderAdapter, setGoogleUserInfoAdapter, _realFetchGoogleUserInfo } = require('./auth/oauth-adapter');  // lab-s1.3 provider registry wiring (D37 separate task)
 const { setFetchPipelineState }                                      = require('./adapters/feature-list');
@@ -30,34 +36,56 @@ const skillsAdapter                                                  = require('
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
-const { handleGetJourney, handlePostJourney, handleGetJourneyResume, handleGetStageReview, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handleGetWizardBootstrapped, handlePostWizardSelection, handleJourneys, setListJourneys } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2 / bri-s1.5
+const { handleGetJourney, handlePostJourney, handleDeleteJourney, handleGetJourneyResume, handleGetJourneyById, handleGetStageReview, handleGetJourneyStageView, handlePostJourneyStageArtefact, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, handlePutJourneyDisplayName, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handleGetWizardBootstrapped, handlePostWizardSelection, handleJourneys, setListJourneys } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2 / bri-s1.5 / s3.4 / fdn-s1 / jsvr-s1
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
-const { setCreditsAdapter }                                          = require('./modules/credits');       // lab-s3.1
+const { setCreditsAdapter, getValidTenantIds }                       = require('./modules/credits');       // lab-s3.1 / story-1-organisation-entity
+const { migrateOrganisationsSchema, backfillStandaloneOrganisations } = require('./modules/organisations'); // story-1-organisation-entity
+const { setOrganisationsPool }                                       = require('./routes/auth');            // story-1-organisation-entity
+const { migrateAgencyClientGrantsSchema }                            = require('./modules/agency-client-grants'); // story-2-relationship-grants-enforcement
+const { migrateClientInvitationsSchema, redeemInvitation }           = require('./modules/client-invitations'); // story-3-self-service-provisioning
+const { setSendInvitationEmail }                                     = require('./modules/invitation-email'); // story-3-self-service-provisioning (D37, AC5)
+const { registerMagicLinkStrategy }                                  = require('./auth/magic-link-strategy'); // story-3-self-service-provisioning -- ONE shared strategy registration point (Story 4 extends via setVerifyCallback)
+const { createAgencyProvisioningHandlers }                           = require('./routes/agency-provisioning'); // story-3-self-service-provisioning
+const { setVerifyCallback }                                          = require('./auth/magic-link-strategy'); // story-4-dual-path-authentication -- extends Story 3's shared strategy, never re-registers
+const clientLoginModule                                              = require('./modules/client-login');  // story-4-dual-path-authentication
+const { createClientLoginHandlers }                                  = require('./routes/client-login');   // story-4-dual-path-authentication
+const { createOrgConversionHandlers }                                = require('./routes/org-conversion');   // story-6-conversion-to-independent
+const { setPlanStateAdapter }                                        = require('./modules/tenant-plan');   // jlc-s1
 const { migrateProductRepoColumns }                                  = require('./modules/product-repo');  // prc-s1.1
+const { registerSelfAsProduct }                                       = require('./modules/platform-self-registration'); // pr-s1
 const { setRepoAdapter, realCheckRepoAccess }                        = require('./adapters/repo-adapter'); // prc-s1.2 (D37 separate task)
+const { setPipelineStateFetchAdapter, realFetchPipelineState }        = require('./adapters/pipeline-state-fetch-adapter'); // pr-s2
 const { handlePostConnectRepo }                                      = require('./routes/product-repo');   // prc-s1.2
 const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter, handleGetBillingPortal, handleGetBillingPlanState } = require('./routes/billing'); // lab-s3.2 / lab-s3.4 / lab-s3.5 / bri-s3.5
 const { setStripeAdapter }                                           = require('./modules/stripe-client');  // lab-s3.2
 const { creditsGuard }                                               = require('./middleware/credits-guard'); // lab-s3.3
-const { handleEmailSignup, handleEmailLogin, setUserDb }             = require('./routes/auth-email');       // lab-s2.2
+const { handleEmailSignup, handleEmailLogin, setUserDb, setOrganisationsPool: setEmailOrganisationsPool } = require('./routes/auth-email'); // lab-s2.2 / story-1-organisation-entity follow-up
+const { handleAuthStubGithub, handleAuthStubAudit }                  = require('./routes/auth-stub');         // a1-staging-safe-auth-stub
 const { setPasswordAdapter }                                         = require('./modules/password');         // lab-s2.2
 const { setUserFlagsAdapter }                                        = require('./modules/user-flags');       // lab-s2.3
 const { setGetUserRole, setGetRoleForTenant, getRoleForTenant, migrateTeamSchema, resolveRoleForPerson } = require('./modules/user-roles'); // arl-s1 / tir-s1 / tir-s7 / sec-perf-s2
 const { migrateIdentityLinksSchema } = require('./modules/identity-links'); // tir-s2
-const { handleGetLinkSettings, handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers } = require('./routes/account-linking'); // tir-s2
+const { handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers } = require('./routes/account-linking'); // tir-s2
+const { createSettingsHandlers } = require('./routes/settings'); // c1
 const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
-const { adminCreditsGet, adminCreditsPost }                          = require('./routes/admin-credits');     // arl-s3
-const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handleDeleteProduct, handlePostProductRepoCreate } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1
+const { adminCreditsGet, adminCreditsPost, adminSetPlanPost }        = require('./routes/admin-credits');     // arl-s3 / tpac-s1
+const { adminMockGatewayGet, adminMockGatewayPost }                  = require('./routes/admin-mock-gateway'); // amgt-s1
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1
+const { setModulesAdapter } = require('./adapters/modules-adapter'); // a1
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
 const { setBootstrapAdapter, realBootstrapRepo }                     = require('./modules/repo-bootstrap');       // prc-s2.2
+const { setListReposAdapter, realListRepos }                         = require('./adapters/repo-adapter');       // mtrr-s2
+const { setArtefactCommitAdapter, realCommitArtefact }               = require('./adapters/artefact-commit-writer'); // das-s1
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
 const { setStandardsAdapter }                                        = require('./standards-adapter');             // psh-s10
 const { setPostHogFlagsAdapter }                                     = require('./modules/posthog-flags');          // bri-s1.1
 const { initPostHogFlagsClient }                                     = require('./modules/posthog-config');         // bri-s1.2
 const { createTeamManagementHandlers }                               = require('./routes/team-management');       // tir-s3
 const { createGithubOrgBulkAddHandlers }                             = require('./routes/github-org-bulk-add');   // tir-s5
+const { setImpersonationAuditAdapter }                               = require('./adapters/impersonation-audit-adapter'); // d1
+const { createImpersonationHandlers }                                = require('./routes/impersonation');         // d1
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -72,12 +100,44 @@ let _pshPool = null;
 let _handleGoogleLinkCallback = null;
 let _handleGithubLinkCallback = null;
 
+// c1: module-level handler reference for /settings (assigned inside the
+// DATABASE_URL block, same pattern as _handleGoogleLinkCallback above --
+// real-Postgres-only, no NODE_ENV=test fallback, matching tir-s2's own
+// wiring precedent).
+let _handleGetSettings = null;
+
 // tir-s3: module-level handler reference for /team/members + /api/team/members
 // (assigned inside the DATABASE_URL block, same pattern as
 // _handleGoogleLinkCallback above — real-Postgres-only, no NODE_ENV=test
 // fallback either, matching tir-s1/tir-s2's own wiring precedent).
 let _teamManagementHandlers = null;
 let _githubOrgBulkAddHandlers = null;
+
+// d1: module-level handler reference for /admin/impersonate + the reason-gated
+// start endpoint (assigned inside the DATABASE_URL block, same pattern as
+// _teamManagementHandlers above — real-Postgres-only, no NODE_ENV=test fallback).
+let _impersonationHandlers = null;
+
+// story-3-self-service-provisioning: module-level handler reference for the
+// agency/clients routes and /invite/redeem (assigned inside the
+// DATABASE_URL block, same pattern as _impersonationHandlers above --
+// real-Postgres-only, no NODE_ENV=test fallback).
+let _agencyProvisioningHandlers = null;
+
+// story-4-dual-path-authentication: module-level handler reference for the
+// /auth/magic-link routes (assigned inside the DATABASE_URL block, same
+// pattern as _agencyProvisioningHandlers above).
+let _clientLoginHandlers = null;
+
+// story-6-conversion-to-independent: module-level handler reference for
+// /organisations/convert (assigned inside the DATABASE_URL block, same
+// pattern as _agencyProvisioningHandlers above -- real-Postgres-only, no
+// NODE_ENV=test fallback). Wired as a real, reachable URL (not left unwired
+// like Story 2/5's own backend-enforcement handlers) because this is a
+// genuine self-service UI flow, mirroring Story 3's precedent, now that
+// Story 3 has resolved the Client-org session-shape ambiguity Story 2/5
+// flagged for their own handlers (see decisions.md).
+let _orgConversionHandlers = null;
 
 // Wire up console logger for auth events (login, logout, state_mismatch)
 const _ts = () => new Date().toISOString();
@@ -109,6 +169,62 @@ if (process.env.NODE_ENV !== 'test') {
   console.log('[products] repo adapter wired');
 }
 
+// pr-s2 / D37 mandatory separate wiring task -- wire the real GitHub
+// Contents API adapter for fetching a connected repo's pipeline-state.json.
+// Never wired in NODE_ENV=test (tests call setPipelineStateFetchAdapter()
+// themselves with a mock); the throwing stub stays active there, matching
+// the pattern already used by the prc-s1.2/prc-s2.1 adapters above.
+if (process.env.NODE_ENV !== 'test') {
+  setPipelineStateFetchAdapter(realFetchPipelineState);
+  console.log('[pr-s2] pipeline-state fetch adapter wired');
+}
+
+// rb-s4 / D37 mandatory separate wiring task -- wire the real export
+// data-source adapter (reuses fetchArtefact + realFetchPipelineState under
+// the hood, so it is byte-identical with handleArtefactRoute's own fetch
+// path -- AC4). Never wired in NODE_ENV=test (tests call
+// setExportDataSource() themselves with a mock or with realExportDataSource
+// directly against a mocked global.fetch); the throwing stub stays active
+// there, matching the pattern already used by the adapters above.
+if (process.env.NODE_ENV !== 'test') {
+  setExportDataSource(realExportDataSource);
+  console.log('[rb-s4] export data source adapter wired');
+}
+
+// mtrr-s1 -- wire the DB pool ownerRepoForFeature needs for its tenant-scoped
+// products/journeys lookup (replaces the old single-repo env-var helper).
+// Not a D37 stub-throw pair (DoR H-ADAPTER: N/A -- this isn't a swappable
+// adapter, it's the pool export-data-source.js's own internal lookup needs),
+// mirroring routes/auth.js's setOrganisationsPool: pool handed in once at
+// startup via its own dedicated Pool instance, matching the repeated
+// if(DATABASE_URL){ new Pool(...); set...(pool) } pattern every other
+// Postgres-backed adapter in this file already follows (see credits/
+// session-turns/user-roles wiring above).
+if (process.env.DATABASE_URL) {
+  const { Pool: _ExportDataSourcePool } = require('pg');
+  const _exportDataSourcePool = new _ExportDataSourcePool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 10000 });
+  require('./adapters/export-data-source').setDbPool(_exportDataSourcePool);
+  console.log('[mtrr-s1] export data source DB pool wired');
+}
+
+// npwe-s1 / D37 mandatory separate wiring task -- wire the real Postgres pool
+// routes/skills.js's own setDbPool/getDbPool needs for its Products-sidebar
+// nav-context resolution (13 skill-chat-session render call sites). Own
+// dedicated Pool instance, same if(DATABASE_URL){ new Pool(...); set...(pool) }
+// pattern as every other Postgres-backed adapter in this file (mtrr-s1's
+// export-data-source.js wiring immediately above is the exact precedent this
+// story's DoR names). Distinct from _pshPool (assigned further below): that
+// pool is threaded explicitly through server.js's own per-route dispatch
+// calls for journey.js/products.js; this story deliberately avoids adding a
+// 14th/15th such threaded parameter for skills.js's 13 call sites, per the
+// D37 module-level pattern decisions.md records for this story.
+if (process.env.DATABASE_URL) {
+  const { Pool: _SkillsNavPool } = require('pg');
+  const _skillsNavPool = new _SkillsNavPool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 10000 });
+  setSkillsDbPool(_skillsNavPool);
+  console.log('[npwe-s1] skills.js Products-nav DB pool wired');
+}
+
 // prc-s2.1 / D37 mandatory separate wiring task -- wire the real GitHub
 // repo-creation adapter (a distinct adapter from prc-s1.2's repo-access-check
 // adapter above -- setCreateRepoAdapter/getCreateRepoAdapter, not
@@ -131,6 +247,30 @@ if (process.env.NODE_ENV !== 'test') {
 if (process.env.NODE_ENV !== 'test') {
   setBootstrapAdapter(realBootstrapRepo);
   console.log('[repo-bootstrap] bootstrapRepo wired');
+}
+
+// mtrr-s2 / D37 mandatory separate wiring task -- wire the real GitHub
+// list-accessible-repos adapter (a third, distinct adapter from prc-s1.2's
+// repo-access-check and prc-s2.1's repo-creation adapters above --
+// setListReposAdapter/getListReposAdapter, so none of the three stories'
+// wiring calls collide). Never wired in NODE_ENV=test (tests call
+// setListReposAdapter() themselves with a mock); the throwing stub stays
+// active there.
+if (process.env.NODE_ENV !== 'test') {
+  setListReposAdapter(realListRepos);
+  console.log('[repo-adapter] listRepos wired');
+}
+
+// das-s1 / D37 mandatory separate wiring task -- wire the real GitHub
+// artefact-commit adapter (a fourth, distinct adapter from prc-s1.2's
+// repo-access-check, prc-s2.1's repo-creation, and mtrr-s2's list-repos
+// adapters above -- setArtefactCommitAdapter/getArtefactCommitAdapter, so
+// none of the four stories' wiring calls collide). Never wired in
+// NODE_ENV=test (tests call setArtefactCommitAdapter() themselves with a
+// mock); the throwing stub stays active there.
+if (process.env.NODE_ENV !== 'test') {
+  setArtefactCommitAdapter(realCommitArtefact);
+  console.log('[artefact-commit-writer] commitArtefact wired');
 }
 
 // bri-s1.2 — wire the real PostHog flags client into the bri-s1.1 adapter contract,
@@ -244,7 +384,7 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   // lab-s3.4 — Wire webhook DB adapter to same Postgres pool (stripe_events idempotency table)
   if (process.env.DATABASE_URL) {
     const { Pool } = require('pg');
-    const _creditsPool = new Pool({ connectionString: process.env.DATABASE_URL });
+    const _creditsPool = new Pool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 10000 });
     _pshPool = _creditsPool; // psh-s3: wire pool for product creation routes
     setCreditsAdapter(_creditsPool);
     console.log('Credits DB adapter wired');
@@ -265,6 +405,20 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       )
     `).then(function() { console.log('stripe_events table ready'); })
       .catch(function(err) { console.error('stripe_events table migration failed:', err.message); });
+    // jlc-s1 — Wire tenant plan-state DB adapter (D37 mandatory separate wiring task).
+    // Same pool as credits/stripe_events — persists bri-s3.5's paid-plan bypass so it
+    // survives a server restart instead of living only in an in-memory Map.
+    setPlanStateAdapter(_creditsPool);
+    console.log('Tenant plan-state DB adapter wired');
+    _creditsPool.query(`
+      CREATE TABLE IF NOT EXISTS tenant_plan (
+        tenant_id  VARCHAR PRIMARY KEY,
+        plan       VARCHAR NOT NULL DEFAULT 'trial',
+        status     VARCHAR NOT NULL DEFAULT 'active',
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+      )
+    `).then(function() { console.log('tenant_plan table ready'); })
+      .catch(function(err) { console.error('tenant_plan table migration failed:', err.message); });
     // arl-s5 — Auto-migrate credit_audit_log table (immutable audit trail for admin credit
     // adjustments). No new adapter wiring — queried through the same _creditsPool already
     // wired via setCreditsAdapter above.
@@ -281,7 +435,7 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     `).then(function() { console.log('credit_audit_log table ready'); })
       .catch(function(err) { console.error('credit_audit_log table migration failed:', err.message); });
     // arl-s1 — Wire user_roles DB adapter (D37 mandatory separate wiring task)
-    const _userRolesPool = new Pool({ connectionString: process.env.DATABASE_URL });
+    const _userRolesPool = new Pool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 10000 });
     setGetUserRole(async function(tenantId) {
       const result = await _userRolesPool.query(
         'SELECT role FROM user_roles WHERE tenant_id = $1',
@@ -375,6 +529,171 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       return migrateIdentityLinksSchema(_userRolesPool);
     }).catch(function(err) { console.error('[tir-s1] people/team_memberships migration failed:', err.message); });
 
+    // story-1-organisation-entity — Auto-migrate the organisations table (AC1),
+    // then run the one-time backfill (AC2) for every pre-existing tenant_id
+    // known to this codebase (reuses credits.getValidTenantIds() -- ADR-026:
+    // reuse before introducing a new "known tenants" query), then wire the
+    // pool into auth.js's OAuth-callback resolution step (AC3). Reuses
+    // _userRolesPool (same reuse pattern as tir-s2/c1 above) rather than
+    // opening a new Postgres connection.
+    migrateOrganisationsSchema(_userRolesPool).then(function() {
+      console.log('[story-1-organisation-entity] organisations table ready');
+      return getValidTenantIds();
+    }).then(function(tenantIds) {
+      return backfillStandaloneOrganisations(_userRolesPool, tenantIds);
+    }).then(function(createdCount) {
+      console.log('[story-1-organisation-entity] organisations backfill complete (' + createdCount + ' row(s) created)');
+      setOrganisationsPool(_userRolesPool);
+      console.log('[story-1-organisation-entity] organisations pool wired to auth.js OAuth-callback resolution step');
+      // Follow-up (2026-07-31): also wire auth-email.js's resolution step, closing
+      // the gap where brand-new email/password signups had no organisations row
+      // until the next server-restart backfill sweep (see decisions.md).
+      setEmailOrganisationsPool(_userRolesPool);
+      console.log('[story-1-organisation-entity] organisations pool wired to auth-email.js signup/login resolution step');
+    }).catch(function(err) {
+      console.error('[story-1-organisation-entity] organisations migration/backfill failed:', err.message);
+    });
+
+    // story-6-conversion-to-independent — wire the conversion route handlers
+    // (reuses the organisations table + user-roles.js's resolveRoleForPerson
+    // directly -- no new schema, no new D37 adapter). Reuses _userRolesPool,
+    // same reuse pattern as every other pool-closure wired in this block.
+    _orgConversionHandlers = createOrgConversionHandlers(_userRolesPool);
+    console.log('[story-6-conversion-to-independent] org-conversion handlers wired');
+
+    // story-2-relationship-grants-enforcement — Auto-migrate
+    // agency_client_relationships + shared_access_grants (AC1). Reuses
+    // _userRolesPool, same reuse pattern as story-1's organisations
+    // migration immediately above. No live URL dispatch wiring for the new
+    // route handlers yet (see products.js's own scope note and
+    // decisions.md) -- Story 3/4 own the real user-facing routes; this
+    // wiring only ensures the tables exist so the data model + grant-check
+    // adapter are usable once those stories land.
+    migrateAgencyClientGrantsSchema(_userRolesPool).then(function() {
+      console.log('[story-2-relationship-grants-enforcement] agency_client_relationships / shared_access_grants tables ready');
+    }).catch(function(err) {
+      console.error('[story-2-relationship-grants-enforcement] schema migration failed:', err.message);
+    });
+
+    // story-3-self-service-provisioning — Auto-migrate client_invitations
+    // (mirrors story-1/story-2's own migration-wiring precedent immediately
+    // above, reusing _userRolesPool). Then wire the 5 real user-facing routes
+    // (handlers factory) and register the ONE shared Passport.js +
+    // passport-magic-login strategy instance (AC3) -- Story 4 (dual-path
+    // authentication) reuses this SAME registered instance via
+    // setVerifyCallback() rather than calling registerMagicLinkStrategy()
+    // again (see decisions.md 2026-07-31 ARCH entry, and
+    // auth/magic-link-strategy.js's own module header for the full writeup).
+    migrateClientInvitationsSchema(_userRolesPool).then(function() {
+      console.log('[story-3-self-service-provisioning] client_invitations table ready');
+
+      _agencyProvisioningHandlers = createAgencyProvisioningHandlers(_userRolesPool);
+      console.log('[story-3-self-service-provisioning] agency-provisioning handlers wired');
+
+      // AC3: the registered verify() callback delegates to
+      // modules/client-invitations.js's redeemInvitation() -- the domain
+      // logic that resolves the invitationId carried inside the redeemed
+      // JWT payload, atomically marks the invitation redeemed (rejecting a
+      // second redemption of an already-used token -- AC3 edge case), and
+      // creates the Client-org user account + team_memberships(role='admin')
+      // row. Closed over _userRolesPool, same reuse pattern as every other
+      // pool-closure wired in this block.
+      async function _verifyInvitationRedemption(payload, callback) {
+        try {
+          var result = await redeemInvitation(_userRolesPool, payload);
+          if (!result.ok) {
+            callback(null, false, { message: result.reason });
+            return;
+          }
+          callback(null, result.user);
+        } catch (err) {
+          callback(err);
+        }
+      }
+
+      registerMagicLinkStrategy({
+        // Reuses the existing required SESSION_SECRET env var (ADR-026:
+        // reuse before introducing a new required env var) as the JWT
+        // signing secret for invitation/magic-link tokens.
+        secret: process.env.SESSION_SECRET || 'dev-only-insecure-magic-link-secret',
+        callbackUrl: '/invite/redeem',
+        sendMagicLink: function(destination, href, code) {
+          var _invitationEmail = require('./modules/invitation-email');
+          return _invitationEmail.sendInvitationEmail(destination, href, code);
+        },
+        verify: _verifyInvitationRedemption
+      });
+      console.log('[story-3-self-service-provisioning] shared Passport.js + passport-magic-login strategy registered (callbackUrl=/invite/redeem) -- Story 4 extends via setVerifyCallback(), never re-registers');
+
+      // AC5 (D37): wire sendInvitationEmail to the real Resend SDK. Only
+      // wired when RESEND_API_KEY is configured -- mirrors this codebase's
+      // existing "never blocks the caller's flow for an optional external
+      // service" convention (e.g. GOOGLE_CLIENT_ID-gated Google OAuth wiring
+      // above). If unwired, the D37 stub still throws (AC5) rather than
+      // silently no-opping -- the invite-send route will surface a real
+      // error instead of pretending an email was sent.
+      if (process.env.RESEND_API_KEY) {
+        var Resend = require('resend').Resend;
+        var _resendClient = new Resend(process.env.RESEND_API_KEY);
+        var _invitationEmailModule = require('./modules/invitation-email');
+        setSendInvitationEmail(_invitationEmailModule.createResendSendInvitationEmail(_resendClient, process.env.RESEND_FROM_EMAIL));
+        console.log('[story-3-self-service-provisioning] sendInvitationEmail wired to the real Resend SDK');
+      } else {
+        console.warn('[story-3-self-service-provisioning] RESEND_API_KEY not set -- sendInvitationEmail remains unwired (throws if the invite flow is used)');
+      }
+
+      // story-4-dual-path-authentication: extend the SAME shared strategy
+      // registered immediately above via registerMagicLinkStrategy() --
+      // NEVER call registerMagicLinkStrategy() a second time (see
+      // auth/magic-link-strategy.js's module header and decisions.md,
+      // 2026-07-31 ARCH entry, Stories 3+4). Placed in this SAME .then()
+      // callback, after registerMagicLinkStrategy() above, so ordering is
+      // guaranteed synchronously -- setVerifyCallback() throws if the
+      // strategy hasn't been registered yet.
+      //
+      // AC5 (D37): the send-side adapter (sendInvitationEmail, wired above)
+      // is reused unchanged for login links too -- Story 4 introduces no
+      // second send adapter, only a new verify() dispatcher.
+      //
+      // AC2/AC3/AC4: the registered verify() callback below dispatches by
+      // payload shape -- payload.invitationId present means Story 3's
+      // invitation redemption (_verifyInvitationRedemption, defined above,
+      // unchanged); its absence means Story 4's own Client-org login
+      // resolution (modules/client-login.js's resolveLoginToken).
+      async function _verifyClientLogin(payload, callback) {
+        try {
+          var result = await clientLoginModule.resolveLoginToken(_userRolesPool, payload);
+          if (!result.ok) {
+            callback(null, false, { message: result.reason });
+            return;
+          }
+          callback(null, result.user);
+        } catch (err) {
+          callback(err);
+        }
+      }
+
+      function _combinedMagicLinkVerify(payload, callback, req) {
+        if (payload && payload.invitationId) {
+          return _verifyInvitationRedemption(payload, callback, req);
+        }
+        return _verifyClientLogin(payload, callback, req);
+      }
+
+      setVerifyCallback(_combinedMagicLinkVerify);
+      console.log('[story-4-dual-path-authentication] combined verify() dispatcher wired via setVerifyCallback() (Story 3 invitation redemption + Story 4 Client-org login), extending the shared strategy -- never re-registering it');
+
+      clientLoginModule.migrateClientLoginTokensSchema(_userRolesPool).then(function() {
+        console.log('[story-4-dual-path-authentication] client_login_tokens table ready');
+        _clientLoginHandlers = createClientLoginHandlers(_userRolesPool);
+        console.log('[story-4-dual-path-authentication] client-login handlers wired');
+      }).catch(function(err) {
+        console.error('[story-4-dual-path-authentication] client_login_tokens migration/wiring failed:', err.message);
+      });
+    }).catch(function(err) {
+      console.error('[story-3-self-service-provisioning] client_invitations migration/wiring failed:', err.message);
+    });
+
     // tir-s2 — Wire the /settings/link-account callback handlers to the same
     // Postgres pool (same reuse pattern as arl-s1/tir-s1 above). No new D37
     // adapter (H-ADAPTER): createLinkCallbackHandlers is a plain factory, not
@@ -384,12 +703,30 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     _handleGithubLinkCallback = _linkCallbackHandlers.handleGithubLinkCallback;
     console.log('[tir-s2] account-linking callback handlers wired');
 
+    // c1 — Wire the /settings page handler to the same Postgres pool (same
+    // reuse pattern as tir-s2/tir-s3 above). No new D37 adapter (H-ADAPTER):
+    // createSettingsHandlers is a plain factory, not a throw-on-unwired
+    // setter/getter pair.
+    const _settingsHandlers = createSettingsHandlers(_userRolesPool);
+    _handleGetSettings = _settingsHandlers.handleGetSettings;
+    console.log('[c1] settings page handler wired');
+
     // tir-s3 — Wire the /team/members add-teammate handlers to the same
     // Postgres pool (same reuse pattern as tir-s1/tir-s2 above). No new D37
     // adapter (H-ADAPTER): createTeamManagementHandlers is a plain factory,
     // not a throw-on-unwired setter/getter pair.
     _teamManagementHandlers = createTeamManagementHandlers(_userRolesPool);
     console.log('[tir-s3] team-management handlers wired');
+
+    // d1 — Wire the /admin/impersonate search + start handlers to the same
+    // Postgres pool as team_memberships/person_identities (tir-s1/tir-s2),
+    // since listImpersonationCandidates reads from those tables. No new D37
+    // adapter for the handlers themselves (H-ADAPTER): createImpersonationHandlers
+    // is a plain factory, not a throw-on-unwired setter/getter pair -- the
+    // D37 adapter here is setImpersonationAuditAdapter (wired below, against
+    // _creditsPool, matching credit_audit_log's own precedent).
+    _impersonationHandlers = createImpersonationHandlers(_userRolesPool);
+    console.log('[d1] impersonation handlers wired');
 
     // tir-s5 — Wire the /api/team/bulk-add-github-org handler to the same
     // Postgres pool, reusing tir-s3's addOrUpdateTeammate as the write path.
@@ -428,6 +765,34 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.error('[prc-s1.1] products repo-column migration failed:', err.message);
     });
 
+    // idp-s1: wire the real Postgres-backed ideas store (D37 mandatory
+    // separate wiring task) -- replaces workspace/ideas.json, which was
+    // silently wiped on every redeploy (no Fly volume mounted). Reuses the
+    // already-open _creditsPool, same pattern as products/credits above.
+    _ideasStorePg.migrateIdeasSchema(_creditsPool).then(function() {
+      setIdeasStore({
+        listIdeas:  function()       { return _ideasStorePg.listIdeas(_creditsPool); },
+        createIdea: function(fields) { return _ideasStorePg.createIdea(_creditsPool, fields); },
+        deleteIdea: function(id)     { return _ideasStorePg.deleteIdea(_creditsPool, id); }
+      });
+      console.log('[idp-s1] ideas store wired to Postgres');
+    }).catch(function(err) {
+      console.error('[idp-s1] ideas schema migration failed:', err.message);
+    });
+
+    // pr-s1: register skills-framework itself as a product row for the
+    // dogfooding rollup case. Skips gracefully if PLATFORM_TENANT_ID or
+    // GITHUB_REPO_OWNER/GITHUB_REPO_NAME are not configured -- optional
+    // seed, not a hard startup requirement.
+    registerSelfAsProduct(_creditsPool, {
+      tenantId: process.env.PLATFORM_TENANT_ID,
+      repoOwner: process.env.GITHUB_REPO_OWNER,
+      repoName: process.env.GITHUB_REPO_NAME,
+      name: 'skills-framework'
+    }).catch(function(err) {
+      console.error('[pr-s1] platform self-registration failed:', err.message);
+    });
+
     // psh-s1: standards table
     _creditsPool.query(`CREATE TABLE IF NOT EXISTS standards (
       standard_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -456,12 +821,200 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.error('[psh-s9] standard_product_optouts migration failed:', err.message);
     });
 
+    // pr-s2: cache table for the computed product rollup (DoD-status counts
+    // today; Epic 2 stories add more columns for health/test-coverage/AC-
+    // coverage/taxonomy). One row per product_id -- ON CONFLICT (product_id)
+    // DO UPDATE keeps a sync idempotent and always reflects the latest fetch.
+    _creditsPool.query(`CREATE TABLE IF NOT EXISTS product_rollups (
+      product_id UUID PRIMARY KEY REFERENCES products(product_id) ON DELETE CASCADE,
+      dod_status_counts JSONB NOT NULL DEFAULT '{}',
+      synced_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`).then(function() {
+      console.log('[pr-s2] product_rollups table ready');
+    }).catch(function(err) {
+      console.error('[pr-s2] product_rollups migration failed:', err.message);
+    });
+
+    // pr-s4: add the health-count rollup column. Idempotent — safe to run on
+    // every server start, matching the products-table context-column migration
+    // pattern already used elsewhere in this file.
+    _creditsPool.query(`ALTER TABLE product_rollups ADD COLUMN IF NOT EXISTS health_counts JSONB NOT NULL DEFAULT '{}'`).then(function() {
+      console.log('[pr-s4] product_rollups.health_counts column ready');
+    }).catch(function(err) {
+      console.error('[pr-s4] health_counts migration failed:', err.message);
+    });
+
+    // pr-s5: add the blended test-coverage rollup column. Idempotent, same
+    // pattern as the health_counts migration above.
+    _creditsPool.query(`ALTER TABLE product_rollups ADD COLUMN IF NOT EXISTS test_coverage JSONB NOT NULL DEFAULT '{}'`).then(function() {
+      console.log('[pr-s5] product_rollups.test_coverage column ready');
+    }).catch(function(err) {
+      console.error('[pr-s5] test_coverage migration failed:', err.message);
+    });
+
+    // pr-s6: add the blended AC-coverage rollup column. Idempotent, same
+    // pattern as the health_counts/test_coverage migrations above.
+    _creditsPool.query(`ALTER TABLE product_rollups ADD COLUMN IF NOT EXISTS ac_coverage JSONB NOT NULL DEFAULT '{}'`).then(function() {
+      console.log('[pr-s6] product_rollups.ac_coverage column ready');
+    }).catch(function(err) {
+      console.error('[pr-s6] ac_coverage migration failed:', err.message);
+    });
+
+    // pr-s7: add the epic/feature taxonomy rollup column. Idempotent, same
+    // pattern as the other product_rollups column migrations.
+    _creditsPool.query(`ALTER TABLE product_rollups ADD COLUMN IF NOT EXISTS taxonomy JSONB NOT NULL DEFAULT '{}'`).then(function() {
+      console.log('[pr-s7] product_rollups.taxonomy column ready');
+    }).catch(function(err) {
+      console.error('[pr-s7] taxonomy migration failed:', err.message);
+    });
+
     // psh-s1: journeys.product_id FK column
     _creditsPool.query(`ALTER TABLE journeys ADD COLUMN IF NOT EXISTS product_id UUID REFERENCES products(product_id) ON DELETE SET NULL`).then(function() {
       console.log('[psh-s1] journeys.product_id column ready');
     }).catch(function(err) {
       console.error('[psh-s1] journeys product_id migration failed:', err.message);
     });
+
+    // a1: product_modules table -- curated, per-product Modules taxonomy
+    // layered above epics. Fully operator-curated, zero defaults (see
+    // decisions.md, discovery /clarify) -- every product starts with zero rows.
+    //
+    // journeys.module_id (below) has a REFERENCES product_modules(id) FK, so
+    // it MUST run only after this CREATE TABLE has actually completed -- it
+    // is chained inside this .then() rather than fired as a second,
+    // independent _creditsPool.query() call. pg.Pool checks out a separate
+    // client per query, so two unchained queries race for their own
+    // connection; on a genuinely fresh database (first boot, no pre-existing
+    // product_modules row/table from a prior deploy) the ALTER TABLE could
+    // reach Postgres before the CREATE TABLE's DDL committed, failing with
+    // "relation \"product_modules\" does not exist" -- confirmed live on a
+    // fresh wuce-staging deploy, fixed here (decisions.md, SEC/fix-forward entry).
+    _creditsPool.query(`CREATE TABLE IF NOT EXISTS product_modules (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      product_id UUID NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
+      tenant_id VARCHAR NOT NULL,
+      name VARCHAR NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`).then(function() {
+      console.log('[a1] product_modules table ready');
+
+      // a1: journeys.module_id -- originally the storage layer A2 (reassign
+      // epics between modules) wrote to directly. Superseded by tmc-s1's
+      // unification revision: reassignEpic now writes through
+      // feature_module_assignments (keyed by journeys.feature_slug) instead,
+      // and this column is backfilled once below then left inert -- kept in
+      // the DB for rollback safety, not dropped this story (see decisions.md
+      // REVISION entry). The ALTER stays IF NOT EXISTS/idempotent regardless.
+      return _creditsPool.query(`ALTER TABLE journeys ADD COLUMN IF NOT EXISTS module_id UUID REFERENCES product_modules(id) ON DELETE SET NULL`);
+    }).then(function() {
+      console.log('[a1] journeys.module_id column ready');
+
+      // tmc-s1: feature_module_assignments -- persists module classification
+      // for taxonomy-sourced features (identified by feature_slug, not
+      // journey_id -- taxonomy items are never rows in journeys, only
+      // ephemeral JSONB recomputed from pipeline-state.json on every
+      // /product-sync run; see decisions.md ARCH entry). Has a FK to
+      // product_modules(id), so it is chained here -- after product_modules
+      // is confirmed created -- rather than fired as an independent
+      // _creditsPool.query() call, per this epic's own already-documented
+      // migration-race incident (a1's product_modules/journeys.module_id
+      // migration, repeated at d2/d3's impersonation_audit_log.ended_at).
+      return _creditsPool.query(`CREATE TABLE IF NOT EXISTS feature_module_assignments (
+        product_id UUID NOT NULL REFERENCES products(product_id) ON DELETE CASCADE,
+        tenant_id VARCHAR NOT NULL,
+        feature_slug VARCHAR NOT NULL,
+        module_id UUID REFERENCES product_modules(id) ON DELETE SET NULL,
+        assigned_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        PRIMARY KEY (product_id, feature_slug)
+      )`);
+    }).then(function() {
+      console.log('[tmc-s1] feature_module_assignments table ready');
+
+      // tmc-s1 (AC8, unification revision): journeys.module_id and
+      // feature_module_assignments are now ONE mechanism -- journeys already
+      // carries a NOT NULL feature_slug (journey-store-pg.js), so any
+      // pre-existing journeys.module_id assignment is backfilled here, keyed
+      // by that same feature_slug, before reassignEpic/deleteModule stop
+      // writing to journeys.module_id directly. Idempotent (ON CONFLICT DO
+      // NOTHING -- never overwrites a feature_module_assignments row that
+      // already has its own value, e.g. from a re-run of this same startup
+      // migration on every deploy).
+      return _creditsPool.query(`
+        INSERT INTO feature_module_assignments (product_id, tenant_id, feature_slug, module_id, assigned_at)
+        SELECT product_id, tenant_id, feature_slug, module_id, NOW()
+        FROM journeys
+        WHERE module_id IS NOT NULL AND product_id IS NOT NULL
+        ON CONFLICT (product_id, feature_slug) DO NOTHING
+      `);
+    }).then(function() {
+      console.log('[tmc-s1] journeys.module_id backfilled into feature_module_assignments');
+    }).catch(function(err) {
+      console.error('[a1/tmc-s1] product_modules/journeys.module_id/feature_module_assignments migration failed:', err.message);
+    });
+
+    // a1 D37 wiring: wire the real Postgres modules adapter, reusing the same
+    // _creditsPool already wired for products/credits above -- a genuinely
+    // new data-access layer for a genuinely new table, not an existing
+    // adapter repurposed for a new query shape.
+    setModulesAdapter(_creditsPool);
+    console.log('[a1] modules adapter wired');
+
+    // d1: impersonation_audit_log table -- one immutable row per impersonation
+    // session start (AC3/AC4/AC6). No FK to team_memberships/people -- admin
+    // and target identities are captured as plain strings/ids at write time
+    // so the audit trail survives a person/tenant being later renamed or
+    // removed, matching credit_audit_log's own precedent above.
+    //
+    // d3's ended_at column (below) is chained inside this .then() rather than
+    // fired as a second, independent _creditsPool.query() call -- an earlier
+    // instance of exactly this unchained pattern (a1's product_modules /
+    // journeys.module_id migrations) caused a real, confirmed live failure on
+    // a fresh wuce-staging deploy ("relation ... does not exist", since
+    // pg.Pool checks out a separate client per query and unchained queries
+    // race for their own connection). Fixed here proactively before it could
+    // repeat (see decisions.md, a1 FIX-FORWARD entry for the original incident).
+    _creditsPool.query(`CREATE TABLE IF NOT EXISTS impersonation_audit_log (
+      id                UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      admin_id          VARCHAR,
+      admin_login       VARCHAR,
+      admin_tenant_id   VARCHAR NOT NULL,
+      target_id         VARCHAR,
+      target_login      VARCHAR NOT NULL,
+      target_tenant_id  VARCHAR NOT NULL,
+      reason            TEXT NOT NULL,
+      created_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    )`).then(function() {
+      console.log('[d1] impersonation_audit_log table ready');
+
+      // d3: impersonation_audit_log has no end-timestamp column in D1's
+      // original schema -- AC1/AC2 need one to distinguish completed vs
+      // in-progress sessions. Additive, idempotent, nullable -- D3 never
+      // writes to it (only reads); D2's exit flow is expected to write it on
+      // session exit (see decisions.md ARCH entry, "d3 implementation, Task
+      // 0 investigation").
+      return _creditsPool.query(`ALTER TABLE impersonation_audit_log ADD COLUMN IF NOT EXISTS ended_at TIMESTAMPTZ`);
+    }).then(function() {
+      console.log('[d3] impersonation_audit_log.ended_at column ready');
+    }).catch(function(err) {
+      console.error('[d1/d3] impersonation_audit_log migration failed:', err.message);
+    });
+
+    // d2: exit (AC4) sets ended_at on the SAME row d1 inserted at session
+    // start (never a new row), satisfying the story's Audit NFR. The column
+    // itself is added by d3's chained migration above (d2 originally added
+    // its own second, independent ALTER TABLE here, unchained from d1's
+    // CREATE TABLE -- found and removed during d4's NFR-security review: on a
+    // genuinely fresh database this independent query races the CREATE TABLE
+    // for its own pg.Pool connection, the exact anti-pattern already fixed
+    // twice in this feature (a1's product_modules/journeys.module_id; d3's
+    // own chaining fix). See decisions.md, d4 AC5 finding.)
+
+    // d1 D37 wiring: wire the real Postgres impersonation audit adapter,
+    // reusing the same _creditsPool already wired for products/credits/modules
+    // above -- a genuinely new data-access layer for a genuinely new table,
+    // not an existing adapter repurposed for a new query shape.
+    setImpersonationAuditAdapter(_creditsPool);
+    console.log('[d1] impersonation audit adapter wired');
 
     // psh-s5 D37 wiring: wire real Postgres product context adapter
     {
@@ -515,7 +1068,7 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   // lab-s2.2 — Wire users DB adapter (D37 mandatory separate wiring task)
   if (process.env.DATABASE_URL) {
     const { Pool: _UsersPool } = require('pg');
-    const _usersPool = new _UsersPool({ connectionString: process.env.DATABASE_URL });
+    const _usersPool = new _UsersPool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 10000 });
     setUserDb(_usersPool);
     console.log('[auth-email] users DB adapter wired');
     // lab-s2.2/s2.3 — Auto-migrate users table on startup (CREATE TABLE IF NOT EXISTS is idempotent).
@@ -545,7 +1098,7 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   // Falls back to a no-op adapter (everyone treated as returning user) when DATABASE_URL is absent.
   if (process.env.DATABASE_URL) {
     const { Pool: _FlagsPool } = require('pg');
-    const _flagsPool = new _FlagsPool({ connectionString: process.env.DATABASE_URL });
+    const _flagsPool = new _FlagsPool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 10000 });
     _flagsPool.query(`
       CREATE TABLE IF NOT EXISTS github_first_login (
         github_user_id VARCHAR PRIMARY KEY,
@@ -580,12 +1133,42 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     });
   }
 
+  // dsh-s1 D37 wiring: wire the durable session-turns adapter (separate task
+  // from the completion hook, per CLAUDE.md's Injectable adapter rule).
+  if (process.env.DATABASE_URL) {
+    const { Pool } = require('pg');
+    const _sessionTurnsPool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false }, connectionTimeoutMillis: 10000 });
+    require('./adapters/session-turns-pg').setSessionTurnsStore(_sessionTurnsPool);
+    console.log('Session-turns DB adapter wired');
+  }
+
   // psh-s3 D37 wiring: wire AI draft generator for product creation
   {
     setGenerateProductDraft(async function(fields) {
-      const apiKey = process.env.ANTHROPIC_API_KEY;
       const name = fields.name || 'this product';
       const description = fields.description || '';
+
+      // rlld-s2 fix-forward: this call previously checked only whether
+      // ANTHROPIC_API_KEY was set, never mockLlmGateway.isMockGatewayEnabled()
+      // -- unlike every skill-turn path in this codebase, which always checks
+      // the mock gateway first. On any environment where MOCK_LLM_GATEWAY=true
+      // AND a real ANTHROPIC_API_KEY happens to also be configured (true on
+      // wuce-staging), this made a genuine, unconditional real call to
+      // api.anthropic.com on every product creation -- discovered via rlld-s1's
+      // diagnostic logging, which traced the leak documented but never
+      // root-caused in rlcc-s1 (2026-07-25) directly to this call.
+      const _mockLlmGateway = require('./modules/mock-llm-gateway');
+      if (_mockLlmGateway.isMockGatewayEnabled()) {
+        return {
+          mission:                'Mock-generated mission for ' + name + '.',
+          roadmap:                '- Mock roadmap item 1\n- Mock roadmap item 2',
+          techStack:              'Mock tech stack for ' + name + '.',
+          constraints:            'Mock constraints.',
+          architectureGuardrails: 'Mock architecture guardrails.'
+        };
+      }
+
+      const apiKey = process.env.ANTHROPIC_API_KEY;
 
       if (!apiKey) {
         return { mission: '', roadmap: '', techStack: '', constraints: '', architectureGuardrails: '' };
@@ -811,6 +1394,73 @@ if (process.env.NODE_ENV !== 'test') {
   }
 }
 
+// mgfd-s1: bri-s3.1 built the mock LLM gateway as its own D37 adapter
+// (mock-llm-gateway.js's _mockGatewayClient), and isMockGatewayEnabled()'s own
+// documented contract is NODE_ENV=test OR MOCK_LLM_GATEWAY=true (hard-blocked
+// whenever NODE_ENV=production) — but the ONLY place that ever called
+// wireDefaultMockGatewayClient() was nested inside a NODE_ENV==='test'-only
+// block below, so a MOCK_LLM_GATEWAY=true staging process (NODE_ENV='staging',
+// per fly.staging.toml) never actually wired the adapter: isMockGatewayEnabled()
+// correctly returned true, but getMockResponse() still threw "Adapter not
+// wired: mockGatewayClient" for every turn, silently swallowed by
+// htmlSubmitTurn's try/catch into an empty {"done":false,"response":""}
+// response. This is the second, distinct root cause found while live-verifying
+// the Dockerfile/tests-directory fix in the same story — moving the wiring
+// call here (gated only on isMockGatewayEnabled(), not on NODE_ENV==='test'
+// specifically) makes it run whenever the adapter is actually meant to be
+// active, matching the module's own documented activation rule instead of a
+// narrower one. See artefacts/2026-07-23-mock-gateway-fixtures-deploy-fix/
+// decisions.md.
+{
+  const _mockLlmGateway = require('./modules/mock-llm-gateway');
+  if (_mockLlmGateway.isMockGatewayEnabled()) {
+    _mockLlmGateway.wireDefaultMockGatewayClient();
+  }
+}
+
+// ── dss-s1: narrow, staging-only bypass for the 4 /test/* routes the
+// @mocked smoke suite needs against real wuce-staging ───────────────────────
+// Reuses a1-staging-safe-auth-stub's own double-gate philosophy and its
+// established secret (E2E_STAGING_AUTH_STUB_SECRET, already a Fly secret on
+// wuce-staging AND a GitHub Actions repo secret) rather than minting a new
+// one -- see serlb-s1 (routes/auth-email.js) for the same reuse precedent.
+// A distinct header name per mechanism, matching that same precedent
+// (x-e2e-stub-secret for a1, x-e2e-rate-limit-bypass for serlb-s1, this one
+// for the 4 named /test/* routes only -- see decisions.md and the ADR-018
+// addendum in architecture-guardrails.md for the full rationale). Deliberately
+// self-contained here rather than a shared cross-module helper, matching
+// auth-email.js's own convention.
+const TEST_ENDPOINT_BYPASS_SECRET_ENV_VAR = 'E2E_STAGING_AUTH_STUB_SECRET';
+const TEST_ENDPOINT_BYPASS_HEADER_NAME = 'x-e2e-test-endpoint-bypass';
+
+function _testEndpointBypassSecretConfigured() {
+  return !!process.env[TEST_ENDPOINT_BYPASS_SECRET_ENV_VAR];
+}
+
+/** Constant-time comparison of the request-supplied header against the configured secret. */
+function _testEndpointBypassHeaderMatches(req) {
+  const expected = process.env[TEST_ENDPOINT_BYPASS_SECRET_ENV_VAR] || '';
+  const supplied = (req.headers && req.headers[TEST_ENDPOINT_BYPASS_HEADER_NAME]) || '';
+  const suppliedBuf = Buffer.from(String(supplied));
+  const expectedBuf = Buffer.from(expected);
+  if (suppliedBuf.length !== expectedBuf.length) return false;
+  return crypto.timingSafeEqual(suppliedBuf, expectedBuf);
+}
+
+/**
+ * True when either the existing NODE_ENV=test gate is satisfied (unchanged,
+ * local-harness behaviour), OR the staging-only secret is configured AND the
+ * request presents a matching bypass header. Used ONLY by the 4 named
+ * /test/* routes this story scopes -- every other /test/* route keeps its
+ * original, narrower NODE_ENV=test-only condition untouched (AC7).
+ * @param {object} req
+ * @returns {boolean}
+ */
+function _isTestEndpointAllowed(req) {
+  return process.env.NODE_ENV === 'test' ||
+    (_testEndpointBypassSecretConfigured() && _testEndpointBypassHeaderMatches(req));
+}
+
 // ── Test-mode infrastructure (NODE_ENV=test only) ─────────────────────────
 // Pre-seed a well-known test session and override the artefact fetcher with
 // fixture files so E2E tests can authenticate and render artefacts without
@@ -913,6 +1563,15 @@ if (process.env.NODE_ENV === 'test') {
     '',
     'Complexity: 1',
     '',
+    // csd-s3/csd-s4 (found post-DoD, see decisions.md): this stub is
+    // skill-agnostic (no skill name is passed to the adapter function
+    // below), so both diagram marker types are included -- whichever
+    // session (/design or /definition) drives a turn locally sees both,
+    // exercising the same canvas-rendering path either fixture would.
+    '---CANVAS-JSON: {"type":"system-architecture","title":"System Architecture","content":{"mermaid":"flowchart TD\\n    WEBUI[Web UI]\\n    STUBSVC[Stub Service]\\n    POSTGRES[(Postgres)]\\n    WEBUI --> STUBSVC\\n    STUBSVC --> POSTGRES"}}---',
+    '',
+    '---CANVAS-JSON: {"type":"program-design","title":"Program Design","content":{"mermaid":"flowchart LR\\n    ROUTE[routes/stub-feature.js]\\n    STORE[adapters/stub-feature-store.js]\\n    ROUTE --> STORE"}}---',
+    '',
     '---ARTEFACT-COMPLETE---',
   ].join('\n');
 
@@ -937,6 +1596,34 @@ if (process.env.NODE_ENV === 'test') {
   // lab-s3.4: no-op webhook DB in test mode — rowCount=1 so each event appears as new (not a duplicate)
   // The check-lab-s3.4-stripe-webhook.js unit tests inject their own mock directly via setWebhookDbAdapter().
   setWebhookDbAdapter({ query: async function() { return { rows: [], rowCount: 1 }; } });
+
+  // jlc-s1: fake, in-process Postgres-shaped adapter for tenant_plan in test mode. Unlike the
+  // credits stub above (stateless — always returns a fixed balance), this one must be stateful:
+  // the @mocked/@billing E2E spec (bri-s3.5-billing-journey.spec.js) drives real upgrade →
+  // payment-failure → cancellation transitions across multiple HTTP requests within the same
+  // server process and asserts the plan state actually changed between them. A Map-backed fake
+  // that understands the same INSERT/SELECT/DELETE shapes tenant-plan.js issues against a real
+  // Postgres pool preserves that behavior without needing a real DB in this test variant.
+  (function() {
+    var _testPlanRows = new Map();
+    setPlanStateAdapter({
+      query: async function(sql, params) {
+        if (sql.indexOf('INSERT INTO tenant_plan') !== -1) {
+          _testPlanRows.set(params[0], { plan: params[1], status: params[2] });
+          return { rows: [], rowCount: 1 };
+        }
+        if (sql.indexOf('SELECT plan, status FROM tenant_plan') !== -1) {
+          var row = _testPlanRows.get(params[0]);
+          return { rows: row ? [{ plan: row.plan, status: row.status }] : [] };
+        }
+        if (sql.indexOf('DELETE FROM tenant_plan') !== -1) {
+          _testPlanRows.clear();
+          return { rows: [], rowCount: 0 };
+        }
+        return { rows: [] };
+      }
+    });
+  })();
 
   // bri-s3.5: fake Stripe adapter in test mode so the @mocked/@billing E2E spec can
   // drive POST /webhook/stripe with synthetic event payloads. No real Stripe secret
@@ -990,6 +1677,15 @@ if (process.env.NODE_ENV === 'test') {
     }
   });
 
+  // bri-s3.3: wire org fetch for TENANT_ORG_ALLOWLIST mode in test
+  // (returns the allowlist orgs as if the user is a member of all of them).
+  // In production, this is wired above (NODE_ENV !== 'test').
+  setFetchOrgs(async function() {
+    const allowlist = process.env.TENANT_ORG_ALLOWLIST || '';
+    const orgs = allowlist.split(',').map(function(s) { return s.trim(); }).filter(Boolean).map(function(name) { return { login: name }; });
+    return { orgs: orgs, nextPage: null };
+  });
+
   // bri-s3.2: wire the real bcrypt password adapter and the real (non-streaming)
   // skill-turn executor even in NODE_ENV=test. Both blocks below normally live
   // behind the `WIRE_SKILL_ADAPTERS=true` gate (see the big conditional near
@@ -1006,19 +1702,6 @@ if (process.env.NODE_ENV === 'test') {
     const { setSkillTurnExecutorAdapter: _setRealTurnExecutor } = require('./routes/skills');
     const { skillTurnExecutor: _realTurnExecutorForTest } = require('../modules/skill-turn-executor');
     _setRealTurnExecutor(_realTurnExecutorForTest);
-  }
-  // bri-s3.2: bri-s3.1 built the mock LLM gateway as its own D37 adapter
-  // (mock-llm-gateway.js's _mockGatewayClient) but nothing in server.js ever
-  // called wireDefaultMockGatewayClient() — so isMockGatewayEnabled() being
-  // true was not sufficient on its own; getMockResponse() still threw
-  // "Adapter not wired: mockGatewayClient" for every chat turn. Wiring the
-  // built-in fixture-file-backed client here (test mode only) is what
-  // actually makes the @mocked gateway usable end-to-end.
-  {
-    const _mockLlmGatewayForTest = require('./modules/mock-llm-gateway');
-    if (_mockLlmGatewayForTest.isMockGatewayEnabled()) {
-      _mockLlmGatewayForTest.wireDefaultMockGatewayClient();
-    }
   }
   // bri-s3.2: wire the real generateProductDraft adapter too — it already
   // no-ops (returns a blank draft, zero network calls) when ANTHROPIC_API_KEY
@@ -1047,26 +1730,73 @@ if (process.env.NODE_ENV === 'test') {
     setUserDb(_fakeTestDb);
     _pshPool = _fakeTestDb;
     console.log('[bri-s3.2] fake in-memory users/products DB wired (NODE_ENV=test, no DATABASE_URL)');
+
+    // s1.1: bridge the in-memory journey-store's async write-through to this
+    // SAME fake db instance, test-mode only. Without this, real journeys
+    // (created via the real disk-backed journey-store) are invisible to the
+    // kanban board's own _pshPool-backed queries and to the new board-advance
+    // endpoint's tenant-ownership check -- the two stores would silently
+    // diverge in local E2E runs (a real advance would mutate the in-memory
+    // journey but never be reflected on the next board render). Wiring
+    // journey-store's existing setPgAdapter() extension point (the SAME one
+    // production uses for the real Postgres adapter above) at this fake db
+    // makes a real create -> real advance -> real board re-render loop
+    // testable end-to-end locally, without a live Postgres instance.
+    // NOTE: re-requires './modules/journey-store' rather than reusing the
+    // `_journeyStore` const from the WIRE_SKILL_ADAPTERS-guarded block above
+    // -- that const is block-scoped to an `if` this code path does not run
+    // under in the standard E2E webServer config (no WIRE_SKILL_ADAPTERS=true),
+    // so it would be out of scope here. require() returns the same cached
+    // singleton module either way.
+    require('./modules/journey-store').setPgAdapter({
+      saveJourney: function(journey) {
+        return _fakeTestDb._upsertJourney({
+          journey_id: journey.journeyId,
+          tenant_id: journey.tenantId || null,
+          product_id: journey.productId || null,
+          feature_slug: journey.featureSlug,
+          stage: journey.activeSkill || null,
+          active_session_id: journey.activeSessionId || null
+        });
+      }
+    });
+
+    // dsh-s3: bridge session-turns-pg.js's D37 injectable adapter to this SAME
+    // fake db instance, test-mode only. Without this, writeSessionTurns/
+    // getTurnsForStage (dsh-s1/dsh-s2) throw "Adapter not wired" in every
+    // local E2E run, since setSessionTurnsStore is otherwise only wired above
+    // when a real DATABASE_URL is configured. Mirrors the setPgAdapter bridge
+    // immediately above -- same fake db, a second narrow query surface
+    // (session_turns) added to fake-test-db.js's query() rather than a
+    // second, independently-drifting in-memory store.
+    require('./adapters/session-turns-pg').setSessionTurnsStore(_fakeTestDb);
   }
 
-  // bri-s3.2 AC5: real-LLM-call counter. Wraps https.request so an @mocked E2E
-  // spec can assert zero real calls were made to the Anthropic or Copilot
-  // Chat Completions APIs during the whole spec file's run, via
-  // GET /test/real-llm-call-count. Only counts calls whose hostname matches
-  // a real LLM provider — never affects the call itself (always forwards to
-  // the original https.request).
-  {
-    let _realLlmCallCount = 0;
-    const _origHttpsRequest = https.request;
-    https.request = function(options) {
-      const hostname = (options && (options.hostname || options.host)) || '';
-      if (hostname === 'api.anthropic.com' || String(hostname).indexOf('githubcopilot.com') !== -1) {
-        _realLlmCallCount++;
-      }
-      return _origHttpsRequest.apply(https, arguments);
-    };
-    global.__BRI_S3_2_REAL_LLM_CALL_COUNT__ = function() { return _realLlmCallCount; };
-  }
+}
+
+// dss-s1: moved outside the NODE_ENV=test block -- see decisions.md. This
+// instrumentation has no side effects on the underlying call (always
+// forwards to the original https.request unmodified) and is the only way
+// the widened GET /test/real-llm-call-count route (staging-safe below) can
+// report a true, non-trivial count rather than always reading 0 on staging.
+//
+// bri-s3.2 AC5: real-LLM-call counter. Wraps https.request so an @mocked E2E
+// spec can assert zero real calls were made to the Anthropic or Copilot
+// Chat Completions APIs during the whole spec file's run, via
+// GET /test/real-llm-call-count. Only counts calls whose hostname matches
+// a real LLM provider — never affects the call itself (always forwards to
+// the original https.request).
+{
+  let _realLlmCallCount = 0;
+  const _origHttpsRequest = https.request;
+  https.request = function(options) {
+    const hostname = (options && (options.hostname || options.host)) || '';
+    if (hostname === 'api.anthropic.com' || String(hostname).indexOf('githubcopilot.com') !== -1) {
+      _realLlmCallCount++;
+    }
+    return _origHttpsRequest.apply(https, arguments);
+  };
+  global.__BRI_S3_2_REAL_LLM_CALL_COUNT__ = function() { return _realLlmCallCount; };
 }
 
 /** Parse query parameters from a URL into a plain object. */
@@ -1089,11 +1819,18 @@ async function router(req, res) {
 
   req.query = parseQuery(parsed.searchParams);
 
-  // ── Test-mode session-seed endpoint (NODE_ENV=test only) ─────────────────
+  // ── Test-mode session-seed endpoint ───────────────────────────────────────
   // Must be handled BEFORE sessionMiddleware to avoid a double Set-Cookie.
   // Playwright's withAuth fixture calls this to re-seed the test session
   // (handles cases where a prior test consumed/mutated it, e.g. via logout).
-  if (pathname === '/test/session' && req.method === 'GET' && process.env.NODE_ENV === 'test') {
+  // bjs-s1: widened from NODE_ENV=test-only to _isTestEndpointAllowed(req) --
+  // dss-s1's existing staging-safe gate -- since bri-s3.5 depends on this
+  // route and was otherwise unreachable on real wuce-staging. Unlike the 4
+  // routes dss-s1 already covers, this one MINTS a fully-authenticated
+  // session for a caller-chosen tenantId, so a stricter guard applies below:
+  // any explicitly-supplied tenantId must be unmistakably synthetic (e2e-
+  // prefixed), so a leaked secret can never mint a session for a real tenant.
+  if (pathname === '/test/session' && req.method === 'GET' && _isTestEndpointAllowed(req)) {
     const { seedTestSession } = require('./middleware/session');
     // bri-s3.5: optional ?sessionId=&tenantId= overrides let a spec seed an isolated
     // session (its own cookie, its own tenant) instead of the shared default — used
@@ -1102,12 +1839,23 @@ async function router(req, res) {
     // Callers that omit both query params get the original, unchanged default session.
     const sessionId = (req.query && req.query.sessionId) || ('e2e' + '0'.repeat(60) + '1');
     const tenantId  = (req.query && req.query.tenantId) || 'e2e-tester';
+    if (!/^e2e-/i.test(tenantId)) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'tenantId must start with "e2e-"' }));
+      return;
+    }
+    // fix-forward (post-launch): this route's own gate (_isTestEndpointAllowed
+    // above) already validates the staging-safe bypass secret+header, but
+    // seedTestSession() had its own separate, unconditional NODE_ENV=test
+    // check that always threw on real staging regardless -- allowOutsideTest
+    // asserts that this specific call site has already passed an equivalent
+    // gate, so it is safe to bypass seedTestSession's own internal check here.
     seedTestSession(sessionId, {
       accessToken: 'e2e-test-access-token',
       userId:      9999,
       login:       'e2e-tester',
       tenantId:    tenantId,
-    });
+    }, { allowOutsideTest: true });
     // Return Set-Cookie so Playwright's APIRequestContext (page.request) stores
     // the session cookie in its own cookie jar. Without this, page.request.post()
     // doesn't send the cookie because APIRequestContext has a separate cookie store
@@ -1118,6 +1866,36 @@ async function router(req, res) {
       'Set-Cookie': `session_id=${sessionId}; HttpOnly; SameSite=Lax; Path=/`,
     });
     res.end(JSON.stringify({ sessionId: sessionId, login: 'e2e-tester' }));
+    return;
+  }
+
+  // fix-forward (post-launch): staging-safe remote tenant-cap override,
+  // replacing bri-s3.5's own local tenant-caps.json file write. A CI test
+  // runner's local filesystem write has zero effect on a real deployed
+  // server's own filesystem (a different process, a different container) --
+  // this route lets a test set/clear a per-tenant cap on the ACTUAL server
+  // process being tested against, in memory, taking effect immediately.
+  if (pathname === '/test/tenant-cap' && req.method === 'POST' && _isTestEndpointAllowed(req)) {
+    let raw = '';
+    for await (const chunk of req) { raw += chunk; }
+    let body = {};
+    try { body = raw ? JSON.parse(raw) : {}; } catch (_) { body = {}; }
+
+    const tenantId = body.tenantId;
+    if (!tenantId || !/^e2e-/i.test(tenantId)) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'tenantId must start with "e2e-"' }));
+      return;
+    }
+
+    const _tenantPlanForCap = require('./modules/tenant-plan');
+    if (body.cap == null) {
+      _tenantPlanForCap.clearTenantCapOverride(tenantId);
+    } else {
+      _tenantPlanForCap.setTenantCapOverride(tenantId, Number(body.cap));
+    }
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ tenantId: tenantId, cap: body.cap == null ? null : Number(body.cap) }));
     return;
   }
 
@@ -1160,6 +1938,40 @@ async function router(req, res) {
     });
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ sessionId: _sessionId }));
+    return;
+  }
+
+  // csd-s1 E2E (AC2): seed an /ideate session with a hand-authored data-model
+  // diagram block pre-populated in session.canvasBlocks, so the Playwright
+  // spec can drive the real GET /skills/ideate/sessions/:id/chat render path
+  // (canvasBlocksInitScript's initial-hydration appendCanvasBlock() calls,
+  // a4's own mechanism) without needing a real/mocked model turn at all —
+  // the fixture content is hand-authored, not agent-generated (out of scope
+  // per the story), so no LLM round trip is needed to prove rendering works.
+  if (pathname === '/test/seed-ideate-canvas-session' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    const { _setHtmlSession } = require('./routes/skills');
+    let _body = '';
+    req.on('data', chunk => { _body += chunk; });
+    req.on('end', () => {
+      let _parsed = {};
+      try { _parsed = JSON.parse(_body || '{}'); } catch (_) { _parsed = {}; }
+      const _uid = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+      const _sessionId = 'ideate-e2e-' + _uid;
+      _setHtmlSession(_sessionId, {
+        skillName:      'ideate',
+        sessionPath:    null,
+        systemPrompt:   'test',
+        turns:          [],
+        artefactContent: null,
+        artefactPath:   null,
+        done:           false,
+        journeyId:      null,
+        assumptionCardsEnabled: true,
+        canvasBlocks:   Array.isArray(_parsed.canvasBlocks) ? _parsed.canvasBlocks : []
+      });
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ sessionId: _sessionId }));
+    });
     return;
   }
 
@@ -1230,7 +2042,7 @@ async function router(req, res) {
   // bri-s3.5 AC5 — test-only Stripe call-count spy read. Lets the @mocked/@billing
   // E2E spec assert zero real Stripe API calls happened during the billing journey
   // (NODE_ENV=test guard mirrors every other /test/* endpoint above).
-  if (pathname === '/test/stripe-call-count' && req.method === 'GET' && process.env.NODE_ENV === 'test') {
+  if (pathname === '/test/stripe-call-count' && req.method === 'GET' && _isTestEndpointAllowed(req)) {
     const { getCheckoutCallCount } = require('./modules/stripe-client');
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ count: getCheckoutCallCount() }));
@@ -1238,7 +2050,7 @@ async function router(req, res) {
   }
 
   // Attach session before routing
-  sessionMiddleware(req, res);
+  await sessionMiddleware(req, res);
 
   // bri-s3.2 AC1: test-only onboarding-gate bypass (NODE_ENV=test only).
   // The real plan-selection step at /welcome requires a live Stripe Checkout
@@ -1248,22 +2060,240 @@ async function router(req, res) {
   // just-created session without touching Stripe. Mirrors the existing
   // /test/session and /test/seed-definition-session test-infrastructure
   // pattern above — gated identically, never reachable outside NODE_ENV=test.
-  if (pathname === '/test/complete-onboarding' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+  if (pathname === '/test/complete-onboarding' && req.method === 'POST' && _isTestEndpointAllowed(req)) {
     if (req.session) { req.session.firstLogin = false; }
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true }));
     return;
   }
 
+  // s1.1: seed a real, board-visible journey with a controllable session
+  // `done` state, for the board-advance E2E specs. Bypasses the slow real
+  // chat-turn flow (mirrors /test/seed-definition-session's precedent above)
+  // -- creates a REAL in-memory journey via journey-store.js (the same store
+  // handlePostGateConfirm/handlePostBoardAdvance operate on), links a REAL
+  // HTML session to it, and (via the setPgAdapter bridge wired above) the
+  // journey becomes visible to the kanban board's own product-scoped queries
+  // and to the board-advance endpoint's tenant-ownership check.
+  // Body: { featureSlug, productId, tenantId, stage, done }. tenantId/productId
+  // default to the caller's own session tenant / a fixed test product id so a
+  // spec can omit them for the common case.
+  if (pathname === '/test/seed-board-journey' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    let raw = '';
+    for await (const chunk of req) { raw += chunk; }
+    let body = {};
+    try { body = raw ? JSON.parse(raw) : {}; } catch (_) { body = {}; }
+
+    const _journeyStoreForSeed = require('./modules/journey-store');
+    const _skillsForSeed = require('./routes/skills');
+
+    const featureSlug = body.featureSlug || ('s1-1-e2e-feature-' + Date.now());
+    const tenantId = body.tenantId || (req.session && req.session.tenantId) || 'e2e-tester';
+    const productId = body.productId || 'e2e-board-product';
+    const stage = body.stage || 'discovery';
+    const done = body.done !== false; // default ready (done: true) unless explicitly false
+
+    const journeyObj = _journeyStoreForSeed.createJourney(featureSlug, 'default');
+    const journeyId = journeyObj.journeyId;
+    _journeyStoreForSeed.setStoryList(journeyId, [featureSlug + '-story']);
+    _journeyStoreForSeed.setJourneyFields(journeyId, { tenantId: tenantId, productId: productId, ownerId: 'e2e-tester' });
+
+    const sessionId = 'seed-sid-' + journeyId;
+    _skillsForSeed._setHtmlSession(sessionId, {
+      skillName: stage,
+      sessionPath: null,
+      systemPrompt: 'test',
+      turns: [],
+      artefactContent: '# seeded artefact for ' + featureSlug,
+      artefactPath: null,
+      done: done,
+      journeyId: journeyId
+    });
+    _journeyStoreForSeed.setActiveSession(journeyId, sessionId, stage);
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ journeyId: journeyId, sessionId: sessionId, productId: productId, tenantId: tenantId, stage: stage }));
+    return;
+  }
+
+  // dsh-s3: seed a journey with a completed stage whose conversation turns
+  // exist ONLY in the durable session_turns store (via writeSessionTurns),
+  // with NO in-memory HTML session ever created -- genuinely simulating
+  // "server restarted, memory is gone" without an actual restart. Lets the
+  // breadcrumb split-view E2E spec (Task 4) navigate straight to
+  // GET /journey/:journeyId/stage/:stageName and exercise the durable-read
+  // path (getTurnsForStage) exclusively. Mirrors /test/seed-board-journey's
+  // inline NODE_ENV=test guard exactly above -- NOT _isTestEndpointAllowed(),
+  // a different, wider convention used by a different subset of routes.
+  // Body: { featureSlug, tenantId, ownerId, stageName, artefactContent, turns }
+  if (pathname === '/test/seed-durable-stage' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    let rawDurable = '';
+    for await (const chunk of req) { rawDurable += chunk; }
+    let durableBody = {};
+    try { durableBody = rawDurable ? JSON.parse(rawDurable) : {}; } catch (_) { durableBody = {}; }
+
+    const _journeyStoreForDurable = require('./modules/journey-store');
+    const _sessionTurnsForDurable = require('./adapters/session-turns-pg');
+    const _fsForDurable = require('fs');
+    const { getRepoRoot: _getRepoRootForDurable } = require('./adapters/repo-root');
+
+    const durableFeatureSlug = durableBody.featureSlug || ('dsh-s3-e2e-feature-' + Date.now());
+    const durableTenantId = durableBody.tenantId || 'e2e-test-tenant';
+    const durableOwnerId = durableBody.ownerId || 'e2e-tester';
+    const durableStageName = durableBody.stageName || 'discovery';
+    const durableArtefactContent = durableBody.artefactContent ||
+      ('# Seeded artefact for ' + durableFeatureSlug + '\n\nSeeded by /test/seed-durable-stage.\n');
+    const durableTurns = Array.isArray(durableBody.turns) ? durableBody.turns : [
+      { role: 'user', content: 'Seeded question for ' + durableStageName },
+      { role: 'assistant', content: 'Seeded answer for ' + durableStageName }
+    ];
+    // dsh-s6: when true, seed the turns via the archive tier
+    // (session_turns_archive) instead of the hot tier (session_turns), so an
+    // E2E spec can prove dsh-s2's read function actually falls back to and
+    // rehydrates from archive storage -- not just that a hot-table row was
+    // findable. The seeded row must NOT also exist in the hot table in this
+    // case, which is why this is an either/or branch below, not "also write
+    // to the hot table".
+    const durableArchived = durableBody.archived === true;
+
+    const durableJourney = _journeyStoreForDurable.createJourney(durableFeatureSlug, 'default');
+    const durableJourneyId = durableJourney.journeyId;
+    _journeyStoreForDurable.setJourneyFields(durableJourneyId, { tenantId: durableTenantId, ownerId: durableOwnerId });
+
+    const durableArtefactRelPath = 'artefacts/' + durableFeatureSlug + '/' + durableStageName + '-seeded.md';
+    const durableRepoRoot = _getRepoRootForDurable(req);
+    const durableArtefactAbsPath = _path.resolve(_path.join(durableRepoRoot, durableArtefactRelPath));
+    _fsForDurable.mkdirSync(_path.dirname(durableArtefactAbsPath), { recursive: true });
+    _fsForDurable.writeFileSync(durableArtefactAbsPath, durableArtefactContent);
+
+    _journeyStoreForDurable.completeStage(durableJourneyId, durableStageName, durableArtefactRelPath, null, null);
+
+    // Deliberately no _setHtmlSession/setActiveSession call here -- the whole
+    // point of this endpoint is that the seeded stage's turns exist ONLY via
+    // the durable-read path (session-turns-pg.js's getTurnsForStage), with
+    // zero in-memory backing.
+    if (durableArchived) {
+      // dsh-s6 AC4: write ONLY to session_turns_archive -- never also to
+      // session_turns -- so the rendered page can only succeed if
+      // getTurnsForStage's archive-tier fallback (dsh-s6) is what actually
+      // served the read, proving the fallback rather than assuming it.
+      await _sessionTurnsForDurable.writeSessionTurnsArchive({
+        journeyId: durableJourneyId,
+        tenantId: durableTenantId,
+        skillName: durableStageName,
+        turns: durableTurns
+      });
+    } else {
+      await _sessionTurnsForDurable.writeSessionTurns({
+        journeyId: durableJourneyId,
+        tenantId: durableTenantId,
+        skillName: durableStageName,
+        turns: durableTurns
+      });
+    }
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ journeyId: durableJourneyId, stageName: durableStageName, artefactPath: durableArtefactRelPath }));
+    return;
+  }
+
   // bri-s3.2 AC5: exposes the real-LLM-call counter (wired above) so an
   // @mocked E2E spec can assert zero real calls were made to the Anthropic or
   // Copilot Chat Completions APIs across its whole run.
-  if (pathname === '/test/real-llm-call-count' && req.method === 'GET' && process.env.NODE_ENV === 'test') {
+  if (pathname === '/test/real-llm-call-count' && req.method === 'GET' && _isTestEndpointAllowed(req)) {
     const count = typeof global.__BRI_S3_2_REAL_LLM_CALL_COUNT__ === 'function'
       ? global.__BRI_S3_2_REAL_LLM_CALL_COUNT__()
       : 0;
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ count: count }));
+    return;
+  }
+
+  // bri-s3.3: Seed person_identities and team_memberships for multi-user testing
+  // Allows E2E tests to set up alice/bob with different roles before they log in
+  if (pathname === '/test/seed-multi-user-roles' && req.method === 'POST' && _isTestEndpointAllowed(req)) {
+    try {
+      var body = '';
+      req.on('data', chunk => { body += chunk; });
+      req.on('end', async function() {
+        try {
+          var seedData = JSON.parse(body || '{}');
+          var sharedOrg = seedData.sharedOrg || 'e2e-shared-org';
+
+          // nis-s1: sharedOrg becomes a real team_memberships.tenant_id value below
+          // (a write, gated only by the same staging-only secret as every other
+          // /test/* route here). Without this guard, a caller holding that secret
+          // could target ANY tenant_id string, including a real customer's real
+          // GitHub org name, and write a team_memberships row for it. Requiring
+          // the e2e- prefix means this endpoint can only ever write to an
+          // unmistakably-synthetic tenant, matching the same guard nis-s1 adds to
+          // handleAuthCallback's named-identity stub (routes/auth.js).
+          if (!/^e2e-/i.test(sharedOrg)) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: 'sharedOrg must start with "e2e-"' }));
+            return;
+          }
+
+          // Use _pshPool if available (both real and fake-test-db implement the same query interface)
+          // _pshPool is set by both the real Pool and by fake-test-db wiring
+          if (_pshPool) {
+            // e2e-alice: admin role in shared org
+            await _pshPool.query('INSERT INTO person_identities (identity_key, person_id, provider) VALUES ($1, $2, $3)', ['e2e-alice', 101, 'github']).catch(function() {});
+            await _pshPool.query('INSERT INTO team_memberships (person_id, tenant_id, role) VALUES ($1, $2, $3)', [101, sharedOrg, 'admin']).catch(function() {});
+
+            // e2e-bob: engineer role in shared org
+            await _pshPool.query('INSERT INTO person_identities (identity_key, person_id, provider) VALUES ($1, $2, $3)', ['e2e-bob', 102, 'github']).catch(function() {});
+            await _pshPool.query('INSERT INTO team_memberships (person_id, tenant_id, role) VALUES ($1, $2, $3)', [102, sharedOrg, 'engineer']).catch(function() {});
+
+            // e2e-viewer: viewer role in shared org
+            await _pshPool.query('INSERT INTO person_identities (identity_key, person_id, provider) VALUES ($1, $2, $3)', ['e2e-viewer', 103, 'github']).catch(function() {});
+            await _pshPool.query('INSERT INTO team_memberships (person_id, tenant_id, role) VALUES ($1, $2, $3)', [103, sharedOrg, 'viewer']).catch(function() {});
+          }
+
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ seeded: true, sharedOrg: sharedOrg }));
+        } catch (e) {
+          console.error('[bri-s3.3] seed-multi-user-roles error:', e);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: e.message }));
+        }
+      });
+    } catch (e) {
+      console.error('[bri-s3.3] seed-multi-user-roles setup error:', e);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: e.message }));
+    }
+    return;
+  }
+
+  // dsh-s4: evict a session from the in-memory _sessionStore only -- simulates
+  // "this session is gone from memory" (the real post-restart condition)
+  // without a disruptive full restart. NEVER touches Redis or Postgres.
+  // Gated by _isTestEndpointAllowed(req) (not the plain NODE_ENV=test inline
+  // check some other seed endpoints use) because dsh-s4's own Playwright E2E
+  // spec runs against real deployed staging, not the local ephemeral server.
+  if (pathname === '/test/evict-skill-session' && req.method === 'POST' && _isTestEndpointAllowed(req)) {
+    try {
+      var evictBody = '';
+      req.on('data', chunk => { evictBody += chunk; });
+      req.on('end', function() {
+        try {
+          var evictData = JSON.parse(evictBody || '{}');
+          var { _evictHtmlSession } = require('./routes/skills');
+          var evicted = _evictHtmlSession(evictData.sessionId);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ evicted: evicted }));
+        } catch (e) {
+          console.error('[dsh-s4] evict-skill-session error:', e);
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          res.end(JSON.stringify({ error: e.message }));
+        }
+      });
+    } catch (e) {
+      console.error('[dsh-s4] evict-skill-session setup error:', e);
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: e.message }));
+    }
     return;
   }
 
@@ -1284,22 +2314,20 @@ async function router(req, res) {
   } else if (pathname === '/auth/logout' && req.method === 'GET') {
     await handleLogout(req, res);
 
+  } else if (pathname === '/auth/e2e-stub/github' && req.method === 'POST') {
+    // a1-staging-safe-auth-stub: staging-only, gated by E2E_STAGING_AUTH_STUB_SECRET
+    // (never set on production). See routes/auth-stub.js for the full gate.
+    await handleAuthStubGithub(req, res);
+
+  } else if (pathname === '/auth/e2e-stub/audit' && req.method === 'GET') {
+    // a1-staging-safe-auth-stub: NFR-Audit read endpoint, same gate as above.
+    await handleAuthStubAudit(req, res);
+
   } else if (pathname === '/sign-off' && req.method === 'POST') {
     authGuard(req, res, () => handleSignOff(req, res));
 
   } else if (pathname === '/api/actions' && req.method === 'GET') {
     await handleGetActions(req, res);
-
-  } else if (pathname === '/status/export' && req.method === 'GET') {
-    await handleGetStatusExport(req, res);
-
-  } else if (pathname === '/status' && req.method === 'GET') {
-    await handleGetStatus(req, res);
-
-  } else if (pathname === '/actions' && req.method === 'GET') {
-    authGuard(req, res, async () => {
-      await handleGetActionsHtml(req, res);
-    });
 
   } else if (pathname === '/dashboard') {
     if (_pshPool) {
@@ -1314,8 +2342,39 @@ async function router(req, res) {
     const artefactType = parts[2];
     await handleArtefactRoute(req, res, slug, artefactType);
 
+  } else if (pathname.match(/^\/api\/export\/[^/]+$/) && req.method === 'GET') {
+    // rb-s4: machine-to-machine export for the bootstrap CLI's --from-saas
+    // flow -- gated by a per-request Bearer credential, never req.session.
+    const parts = pathname.split('/').filter(Boolean);
+    const slug  = parts[2];
+    await handleExportRoute(req, res, slug);
+
   } else if (pathname === '/health') {
     healthCheckHandler(req, res);
+
+  } else if (pathname === '/version') {
+    versionHandler(req, res);
+
+  } else if (pathname === '/vendor/mermaid.min.js' && req.method === 'GET') {
+    // csd-s1: unauthenticated static asset (mermaid client bundle) — same
+    // trust level as any other client-side JS shipped with the page, no
+    // session/tenant data involved.
+    handleMermaidAsset(req, res);
+
+  } else if (pathname === '/api/as-built-diagrams/data-model' && req.method === 'GET') {
+    // csd-s5: as-built Data Model diagram, statically parsed from this
+    // repo's real scripts/migrate-schema-*.js files (ADR-027 — ordinary
+    // application code, not a skill; ADR-026 — reuses the existing canvas
+    // content-block shape, no parallel rendering path).
+    authGuard(req, res, () => handleGetAsBuiltDataModel(req, res));
+
+  } else if (pathname === '/api/as-built-diagrams/system-architecture' && req.method === 'GET') {
+    // csd-s7: as-built System Architecture diagram, statically detected via
+    // a fixed require()-allowlist scan of this repo's real src/ tree
+    // (decisions.md 2026-07-26 ARCH entry; ADR-027 — ordinary application
+    // code, not a skill; ADR-026 — reuses the existing canvas content-block
+    // shape, no parallel rendering path).
+    authGuard(req, res, () => handleGetAsBuiltSystemArchitecture(req, res));
 
   } else if (pathname === '/api/ideas' && req.method === 'GET') {
     authGuard(req, res, () => handleGetIdeas(req, res));
@@ -1326,11 +2385,6 @@ async function router(req, res) {
   } else if (pathname.match(/^\/api\/ideas\/[^/]+$/) && req.method === 'DELETE') {
     const ideaId = decodeURIComponent(pathname.slice('/api/ideas/'.length));
     authGuard(req, res, () => handleDeleteIdea(req, res, ideaId));
-
-  } else if (pathname === '/features' && req.method === 'GET') {
-    authGuard(req, res, async () => {
-      await handleGetFeatures(req, res);
-    });
 
   } else if (pathname.startsWith('/features/') && req.method === 'GET') {
     const featureSlug = pathname.slice('/features/'.length);
@@ -1364,7 +2418,11 @@ async function router(req, res) {
     const skillName = decodeURIComponent(parts[2]);
     const sessionId = decodeURIComponent(parts[4]);
     authGuard(req, res, async () => {
-      const html = htmlGetCompletePage(skillName, sessionId);
+      // npwe-s1: htmlGetCompletePage itself stays synchronous (see its own
+      // doc comment) -- nav context is resolved here, where async is already
+      // available, and passed in as a plain object.
+      const _nav = await _getSkillsNavContext(req, sessionId);
+      const html = htmlGetCompletePage(skillName, sessionId, _nav);
       res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
       res.end(html);
     });
@@ -1501,8 +2559,23 @@ async function router(req, res) {
   } else if (pathname === '/journey' && req.method === 'GET') {
     // jdsk.1 — journey home screen (replaces old wizard-first routing)
     {
-      handleGetJourney(req, res);
+      await handleGetJourney(req, res, null, _pshPool);
     }
+
+  } else if (pathname.match(/^\/journey\/[^/]+$/) && req.method === 'GET') {
+    // s3.4 — shareable/detail journey URL; newly wired as the confirmed
+    // destination for kanban card navigation (handleGetJourneyById existed
+    // but had no live route registration before this story — see
+    // decisions.md). Must be registered after the /journey and /journey/wizard
+    // exact-match branches above (both are single-segment paths that would
+    // otherwise also satisfy this regex) and before any /journey/:id/xxx
+    // sub-route below (those require 2+ segments so order doesn't affect them,
+    // but this keeps the single-segment routes grouped together).
+    // No authGuard wrapper -- handleGetJourneyById does its own session check
+    // and 302-redirects to /auth/github itself (same convention as the other
+    // /journey/:id/* handlers below, none of which are authGuard-wrapped).
+    req.params = { journeyId: pathname.split('/')[2] };
+    handleGetJourneyById(req, res);
 
   } else if (pathname.match(/^\/journey\/[^/]+\/resume$/) && req.method === 'GET') {
     // step4 — resume journey: create new session for current stage
@@ -1513,6 +2586,25 @@ async function router(req, res) {
     // step5 — artefact review panel before gate-confirm
     req.params = { journeyId: pathname.split('/')[2] };
     await handleGetStageReview(req, res);
+
+  } else if (pathname.match(/^\/journey\/[^/]+\/stage\/[^/]+$/) && req.method === 'GET') {
+    // jsvr-s1 — step6 — read-only view of a completed stage's artefact.
+    // handleGetJourneyStageView already existed (built alongside step4/step5
+    // in the original p0.1/p0.2 commit) and is already unit-tested by
+    // check-p0.2-journey-guard-wiring.js, but this route was never
+    // registered here -- every breadcrumb "view a completed stage" link in
+    // the app (skills.js's chat-page nav strip, and this handler's own nav
+    // strip) pointed at a URL the server could not actually answer, so it
+    // silently fell through to the final else branch's sign-in page instead
+    // of the artefact view. See decisions.md.
+    req.params = { journeyId: pathname.split('/')[2], stageName: decodeURIComponent(pathname.split('/')[4]) };
+    await handleGetJourneyStageView(req, res);
+
+  } else if (pathname.match(/^\/api\/journey\/[^/]+\/stage\/[^/]+\/artefact$/) && req.method === 'POST') {
+    // jsvr-s1 — save inline-edited artefact content from the stage-view page
+    // above. Same wiring gap as handleGetJourneyStageView.
+    req.params = { journeyId: pathname.split('/')[3], stageName: decodeURIComponent(pathname.split('/')[5]) };
+    await handlePostJourneyStageArtefact(req, res);
 
   } else if (pathname.match(/^\/journey\/[^/]+\/reference$/) && req.method === 'GET') {
     // step7 — reference docs list + upload form
@@ -1620,11 +2712,24 @@ async function router(req, res) {
     req.params = { journeyId: journeyIdPart };
     authGuard(req, res, async () => await handleDeleteSideTrip(req, res));
 
+  } else if (pathname.match(/^\/api\/journey\/[^/]+$/) && req.method === 'DELETE') {
+    // alrf-s10 — hard-delete a journey (operator request: clean up stale/
+    // corrupted staging data)
+    const journeyIdPart = pathname.split('/')[3];
+    req.params = { journeyId: journeyIdPart };
+    authGuard(req, res, async () => await handleDeleteJourney(req, res));
+
   } else if (pathname.match(/^\/api\/journey\/[^/]+$/) && req.method === 'GET') {
     // owle.1 — journey state (excludes sideTripSessionId)
     const journeyIdPart = pathname.split('/')[3];
     req.params = { journeyId: journeyIdPart };
     authGuard(req, res, () => handleGetJourneyState(req, res));
+
+  } else if (pathname.match(/^\/api\/journey\/[^/]+\/display-name$/) && req.method === 'PUT') {
+    // fdn-s1 — rename a feature's operator-facing label (never featureSlug)
+    const journeyIdPart = pathname.split('/')[3];
+    req.params = { journeyId: journeyIdPart };
+    authGuard(req, res, async () => await handlePutJourneyDisplayName(req, res));
 
   } else if (pathname === '/webhook/stripe' && req.method === 'POST') {
     // lab-s3.4 — Stripe webhook: credit provisioning + idempotency
@@ -1650,9 +2755,25 @@ async function router(req, res) {
     // bri-s3.5 — tenant plan-state read (paid/trial, active/past_due/canceled)
     authGuard(req, res, () => handleGetBillingPlanState(req, res));
 
+  } else if (pathname === '/settings' && req.method === 'GET') {
+    // c1 — Settings page shell + Profile tab (identity + linked sign-in methods)
+    if (_handleGetSettings) {
+      authGuard(req, res, () => _handleGetSettings(req, res));
+    } else {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Settings unavailable');
+    }
+
   } else if (pathname === '/settings/link-account' && req.method === 'GET') {
-    // tir-s2 — account-linking settings page (AC2: unauthenticated -> redirect via authGuard)
-    authGuard(req, res, () => handleGetLinkSettings(req, res));
+    // c1 — the old bare link-settings page now redirects into the unified
+    // Settings shell (AC1), preserving any query string (e.g. ?linked=1
+    // after a successful OAuth round-trip -- AC3). The account-linking.js
+    // callback handlers below are unmodified and still redirect here.
+    authGuard(req, res, () => {
+      const qs = req.url.indexOf('?') !== -1 ? req.url.slice(req.url.indexOf('?')) : '';
+      res.writeHead(302, { Location: '/settings' + qs });
+      res.end();
+    });
 
   } else if (pathname === '/settings/link-account/google/start' && req.method === 'GET') {
     authGuard(req, res, () => handleStartGoogleLink(req, res));
@@ -1713,6 +2834,29 @@ async function router(req, res) {
     if (!_raOk) return;
     await adminCreditsPost(req, res);
 
+  } else if (pathname === '/api/admin/plan/set' && req.method === 'POST') {
+    // tpac-s1 — admin-only tenant plan-state control (requireAdmin gate, same
+    // pattern as the credits adjust route immediately above). Additive to the
+    // credits system, not a replacement -- see routes/admin-credits.js.
+    let _raOk = false;
+    await requireAdmin(req, res, () => { _raOk = true; });
+    if (!_raOk) return;
+    await adminSetPlanPost(req, res);
+
+  } else if (pathname === '/admin/mock-gateway' && req.method === 'GET') {
+    // amgt-s1 — admin mock LLM gateway toggle view (requireAdmin gate)
+    let _raOk = false;
+    await requireAdmin(req, res, () => { _raOk = true; });
+    if (!_raOk) return;
+    await adminMockGatewayGet(req, res);
+
+  } else if (pathname === '/api/admin/mock-gateway/toggle' && req.method === 'POST') {
+    // amgt-s1 — admin mock LLM gateway toggle flip (requireAdmin gate)
+    let _raOk = false;
+    await requireAdmin(req, res, () => { _raOk = true; });
+    if (!_raOk) return;
+    await adminMockGatewayPost(req, res);
+
   } else if (pathname === '/team/members' && req.method === 'GET') {
     // tir-s3 — team management page (requireAdmin gate)
     if (!_teamManagementHandlers) {
@@ -1750,6 +2894,58 @@ async function router(req, res) {
       await _githubOrgBulkAddHandlers.handleBulkAddFromGithubOrg(req, res);
     }
 
+  } else if (pathname === '/admin/impersonate' && req.method === 'GET') {
+    // d1 — admin impersonation search page (requireAdmin gate)
+    if (!_impersonationHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Impersonation unavailable');
+    } else {
+      let _raOk = false;
+      await requireAdmin(req, res, () => { _raOk = true; });
+      if (!_raOk) return;
+      await _impersonationHandlers.handleGetImpersonatePage(req, res);
+    }
+
+  } else if (pathname === '/api/admin/impersonate/start' && req.method === 'POST') {
+    // d1 — reason-gated impersonation session start (requireAdmin gate + CSRF)
+    if (!_impersonationHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Impersonation unavailable');
+    } else {
+      let _raOk = false;
+      await requireAdmin(req, res, () => { _raOk = true; });
+      if (!_raOk) return;
+      await _impersonationHandlers.handlePostImpersonateStart(req, res);
+    }
+
+  } else if (pathname === '/api/admin/impersonate/exit' && req.method === 'POST') {
+    // d2 (AC4) — end an active impersonation session and restore the real
+    // admin's identity. Deliberately NOT gated by requireAdmin: requireAdmin
+    // checks the CURRENT EFFECTIVE role, which while impersonating a
+    // non-admin target is 'user' -- gating exit behind it would make it
+    // impossible for the real admin to exit out of a non-admin target's
+    // session. The real authorization check (req.session.impersonation.active)
+    // lives inside handlePostImpersonateExit itself.
+    if (!_impersonationHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Impersonation unavailable');
+    } else {
+      await _impersonationHandlers.handlePostImpersonateExit(req, res);
+    }
+
+  } else if (pathname === '/api/admin/impersonate/audit' && req.method === 'GET') {
+    // d3 — read-only impersonation audit list (requireAdmin gate; AC3: rejected
+    // at the API layer directly, not just hidden by the Settings UI tab)
+    if (!_impersonationHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Impersonation unavailable');
+    } else {
+      let _raOk = false;
+      await requireAdmin(req, res, () => { _raOk = true; });
+      if (!_raOk) return;
+      await _impersonationHandlers.handleGetImpersonationAuditList(req, res);
+    }
+
   } else if (pathname === '/products/new' && req.method === 'GET') {
     // psh-s3 — product creation form
     authGuard(req, res, async () => { handleGetProductNew(req, res); });
@@ -1767,6 +2963,11 @@ async function router(req, res) {
     req.params = { id: pathname.split('/')[2] };
     authGuard(req, res, async () => { await handleGetProductView(req, res, null, _pshPool); });
 
+  } else if (pathname.match(/^\/products\/[^/]+\/sync$/) && req.method === 'POST') {
+    // pr-s3 -- trigger a new sync of the product's connected repo
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handlePostProductSync(req, res, null, _pshPool, null); });
+
   } else if (pathname.match(/^\/products\/[^/]+\/repo$/) && req.method === 'POST') {
     // prc-s1.2 — connect (or re-connect) an existing GitHub repo to a product
     req.params = { id: pathname.split('/')[2] };
@@ -1777,6 +2978,13 @@ async function router(req, res) {
     // standards-cache rows; never touches the underlying GitHub repo
     req.params = { id: pathname.split('/')[2] };
     authGuard(req, res, async () => { await handleDeleteProduct(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/products\/[^/]+$/) && req.method === 'PUT') {
+    // prc-s4.1 — edit a product's name, description, and/or repo association
+    // Reuses the repo-access-verification logic from prc-s1.2 via _applyRepoChange
+    // to ensure the edit flow and first-time-configuration flow never drift (AC3)
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handlePutProductEdit(req, res, null, _pshPool, null); });
 
   } else if (pathname.match(/^\/products\/[^/]+\/features$/) && req.method === 'POST') {
     // psh-s4 — create new journey with product_id FK, emits journey_created PostHog event
@@ -1792,6 +3000,47 @@ async function router(req, res) {
     // psh-s6 — per-product kanban board with 8 stage columns and health indicators
     req.params = { id: pathname.split('/')[2] };
     authGuard(req, res, async () => { await handleGetProductKanban(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/api\/board\/journey\/[^/]+\/advance$/) && req.method === 'POST') {
+    // s1.1 — board-driven "Advance" action: a new caller of the existing,
+    // already-proven POST /api/journey/:journeyId/gate-confirm route.
+    req.params = { journeyId: pathname.split('/')[4] };
+    authGuard(req, res, async () => { await handlePostBoardAdvance(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/roadmap$/) && req.method === 'GET') {
+    // a5 -- Roadmap tab: discovery-only/ideate-only work with no pipeline-state.json entry
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handleGetProductRoadmap(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/modules$/) && req.method === 'GET') {
+    // a1 (AC1) — list modules curated for a product
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handleGetProductModules(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/modules$/) && req.method === 'POST') {
+    // a1 (AC1, AC4) — create a new module for a product
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handlePostProductModule(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/modules\/[^/]+$/) && req.method === 'PUT') {
+    // a1 (AC2) — rename a module, preserving its id and existing references
+    req.params = { id: pathname.split('/')[2], moduleId: pathname.split('/')[4] };
+    authGuard(req, res, async () => { await handlePutProductModule(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/modules\/[^/]+$/) && req.method === 'DELETE') {
+    // a1 (AC3) — delete a module, reassigning its journeys/epics to Unassigned
+    req.params = { id: pathname.split('/')[2], moduleId: pathname.split('/')[4] };
+    authGuard(req, res, async () => { await handleDeleteProductModule(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/epics\/[^/]+\/module$/) && req.method === 'PUT') {
+    // a2 -- reassign an epic (journey) to a different module within the same product
+    req.params = { id: pathname.split('/')[2], epicId: pathname.split('/')[4] };
+    authGuard(req, res, async () => { await handlePutEpicModule(req, res, null, _pshPool, null); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/modules\/bulk-assign$/) && req.method === 'POST') {
+    // tmc-s1 (AC3, AC4, AC7) -- bulk-assign taxonomy feature slugs to a module
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handlePostBulkAssignFeatureModules(req, res, null, _pshPool, null); });
 
   } else if (pathname === '/org/kanban' && req.method === 'GET') {
     // psh-s7 — org-level kanban: all products and their features grouped by product
@@ -1833,6 +3082,100 @@ async function router(req, res) {
     const _standardsRoutes = require('./routes/standards');
     authGuard(req, res, async () => { await _standardsRoutes.optoutDelete(req, res, null, _pshPool, null); });
 
+  } else if (pathname === '/agency/clients/new' && req.method === 'GET') {
+    // story-3-self-service-provisioning — Create Client form (Agency-only, AC2)
+    if (!_agencyProvisioningHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Agency provisioning unavailable');
+    } else {
+      authGuard(req, res, async () => { await _agencyProvisioningHandlers.handleGetCreateClient(req, res); });
+    }
+
+  } else if (pathname === '/agency/clients/new' && req.method === 'POST') {
+    // story-3-self-service-provisioning — create the Client org + relationship (AC1/AC2/AC4)
+    if (!_agencyProvisioningHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Agency provisioning unavailable');
+    } else {
+      authGuard(req, res, async () => { await _agencyProvisioningHandlers.handlePostCreateClient(req, res); });
+    }
+
+  } else if (pathname.match(/^\/agency\/clients\/[^/]+\/invite$/) && req.method === 'GET') {
+    // story-3-self-service-provisioning — invite-first-user form (Agency-only)
+    req.params = { id: pathname.split('/')[3] };
+    if (!_agencyProvisioningHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Agency provisioning unavailable');
+    } else {
+      authGuard(req, res, async () => { await _agencyProvisioningHandlers.handleGetInviteUser(req, res); });
+    }
+
+  } else if (pathname.match(/^\/agency\/clients\/[^/]+\/invite$/) && req.method === 'POST') {
+    // story-3-self-service-provisioning — issue the invitation (AC3, AC5)
+    req.params = { id: pathname.split('/')[3] };
+    if (!_agencyProvisioningHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Agency provisioning unavailable');
+    } else {
+      authGuard(req, res, async () => { await _agencyProvisioningHandlers.handlePostInviteUser(req, res); });
+    }
+
+  } else if (pathname === '/organisations/convert' && req.method === 'GET') {
+    // story-6-conversion-to-independent — confirmation form (NFR-Accessibility)
+    if (!_orgConversionHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Organisation conversion unavailable');
+    } else {
+      authGuard(req, res, async () => { await _orgConversionHandlers.handleGetConvertForm(req, res); });
+    }
+
+  } else if (pathname === '/organisations/convert' && req.method === 'POST') {
+    // story-6-conversion-to-independent — perform the conversion (AC1), then
+    // redirect into the existing createCheckoutSession Stripe flow (AC2)
+    if (!_orgConversionHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Organisation conversion unavailable');
+    } else {
+      authGuard(req, res, async () => { await _orgConversionHandlers.handlePostConvertOrganisation(req, res); });
+    }
+
+  } else if (pathname === '/invite/redeem' && req.method === 'GET') {
+    // story-3-self-service-provisioning — redeem an invitation link (AC3).
+    // Deliberately NOT behind authGuard -- this is the unauthenticated entry
+    // point that CREATES a brand-new session for the invited user, mirroring
+    // /auth/github/callback and /auth/google/callback above.
+    if (!_agencyProvisioningHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Agency provisioning unavailable');
+    } else {
+      await _agencyProvisioningHandlers.handleGetInviteRedeem(req, res);
+    }
+
+  } else if (pathname === '/auth/magic-link' && req.method === 'GET') {
+    // story-4-dual-path-authentication — sign-in-with-email request form.
+    // Deliberately NOT behind authGuard -- this IS a sign-in entry point,
+    // mirroring /auth/github and /auth/google above.
+    if (!_clientLoginHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Client login unavailable');
+    } else {
+      await _clientLoginHandlers.handleGetMagicLinkRequestForm(req, res);
+    }
+
+  } else if (pathname === '/auth/magic-link/request' && req.method === 'POST') {
+    // story-4-dual-path-authentication — issue a Client-org login magic-link
+    // (AC2/AC3). Deliberately NOT behind authGuard, same reasoning as above.
+    // Redemption reuses the EXISTING /invite/redeem GET route above -- the
+    // shared strategy's callbackUrl is a single, construction-time-fixed
+    // value shared by both Story 3's invitation links and this story's
+    // login links (see auth/magic-link-strategy.js's module header).
+    if (!_clientLoginHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Client login unavailable');
+    } else {
+      await _clientLoginHandlers.handlePostMagicLinkRequest(req, res);
+    }
+
   } else if (pathname === '/' && req.method === 'GET') {
     // lab-s1.2 — public landing page with PostHog event + auth redirect to /dashboard
     await handleRoot(req, res);
@@ -1870,6 +3213,8 @@ if (require.main === module) {
     console.error('[startup] ' + err.message);
     process.exit(1);
   }
+  // ebv-s1 — never throws, only logs; runs alongside the hard-fail check above.
+  warnOnOptionalEnvVars(process.env, console);
   const server = createApp();
   server.listen(PORT, () => {
     const gheMode = !!process.env.GITHUB_API_BASE_URL;
@@ -1883,4 +3228,12 @@ if (require.main === module) {
   });
 }
 
-module.exports = { createApp, router };
+module.exports = {
+  createApp,
+  router,
+  // dss-s1: exported for direct unit testing of the gate logic itself
+  _isTestEndpointAllowed,
+  _testEndpointBypassSecretConfigured,
+  _testEndpointBypassHeaderMatches,
+  TEST_ENDPOINT_BYPASS_HEADER_NAME
+};

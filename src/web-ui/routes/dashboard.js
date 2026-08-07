@@ -8,7 +8,8 @@
 
 const { getPendingActions: defaultGetPendingActions } = require('../adapters/action-queue');
 const { renderShell, escHtml }                        = require('../utils/html-shell');
-const { renderActions }                               = require('../views/actions-view');
+const { isEffectivelyAdmin }                          = require('../modules/impersonation'); // d2
+const csrf                                            = require('../middleware/csrf'); // d2 -- impersonation exit banner CSRF token
 
 // Audit logger — replaced via setLogger() in tests and production bootstrap
 let _logger = {
@@ -85,6 +86,22 @@ function handleDashboard(req, res) {
 
   const userId = req.session.userId;
   const login  = req.session.login || '';
+  // b2/d2: gates the Admin credits nav entry -- d2 replaces the inline
+  // req.session.role check with the named, testable isEffectivelyAdmin()
+  // helper (modules/impersonation.js), which keys off the EFFECTIVE role
+  // (the impersonation target's role while impersonating, never the real
+  // admin's own role) -- the exact security property AC2/AC3 name. The
+  // underlying boolean value is unchanged for a non-impersonating session
+  // (still req.session.role === 'admin', kept self-healed by requireAdmin's
+  // own live role-check, sec-perf-s2).
+  const isAdmin = isEffectivelyAdmin(req.session);
+  // d2 (AC1): forward the active impersonation state (if any) so renderShell
+  // can surface the persistent banner -- the shell decides whether to render
+  // it; this route only supplies the data.
+  const imp = req.session.impersonation;
+  const impersonation = (imp && imp.active && imp.target)
+    ? { active: true, targetLogin: imp.target.login, targetTenantId: imp.target.tenantId, csrfToken: csrf.generateCsrfToken(req) }
+    : null;
 
   // Audit log (per Coding Agent Instructions requirement)
   _logger.info('dashboard_accessed', {
@@ -98,58 +115,11 @@ function handleDashboard(req, res) {
     title:       'Dashboard',
     bodyContent,
     user:        { login },
-    active:      'dashboard'
+    active:      'dashboard',
+    isAdmin,
+    impersonation
   });
 
-  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-  res.end(html);
-}
-
-/**
- * GET /actions — render the HTML action queue view for authenticated users.
- * Returns the pending action queue as a complete HTML page via renderShell.
- * GET /api/actions (JSON) remains unchanged — this handler is separate (ADR-009).
- *
- * @param {object} req
- * @param {object} res
- */
-async function handleGetActionsHtml(req, res) {
-  // Auth check — redirect to /auth/github for HTML consumers (AC5)
-  if (!req.session || !req.session.accessToken) {
-    res.writeHead(302, { Location: '/auth/github' });
-    res.end();
-    return;
-  }
-
-  const userId = req.session.userId;
-  const login  = req.session.login || '';
-
-  // Audit log (AC NFR audit)
-  _logger.info('actions_view_accessed', {
-    userId,
-    route:     '/actions',
-    timestamp: new Date().toISOString()
-  });
-
-  const userIdentity = { id: userId, login };
-  const token        = req.session.accessToken;
-
-  let result;
-  try {
-    result = await _getPendingActions(userIdentity, token);
-  } catch (err) {
-    _logger.warn('action_queue_error', { userId, reason: err.message });
-    res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(renderShell({ title: 'Actions', bodyContent: '<p>Error loading actions.</p>', user: { login }, active: 'actions' }));
-    return;
-  }
-
-  // Support both { items, bannerMessage } shape and flat array
-  const items = Array.isArray(result) ? result : (result.items || []);
-
-  const bodyContent = renderActions({ items });
-
-  const html = renderShell({ title: 'Actions', bodyContent, user: { login }, active: 'actions' });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -157,7 +127,6 @@ async function handleGetActionsHtml(req, res) {
 module.exports = {
   handleGetActions,
   handleDashboard,
-  handleGetActionsHtml,
   setLogger,
   setGetPendingActions
 };

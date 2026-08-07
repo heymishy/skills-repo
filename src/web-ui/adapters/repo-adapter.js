@@ -166,6 +166,89 @@ async function realCreateRepo(token, name) {
   return res.json();
 }
 
+// ── mtrr-s2: list accessible repos (repo-connection picker) ─────────────
+
+// Injectable adapter listing the repos accessible to the authenticated
+// user's own GitHub OAuth token, via GET /user/repos — never a service
+// account (ADR-020), matching the two adapters above. Default stub throws
+// (D37 / CLAUDE.md): a silent stub would mask misconfiguration and let the
+// repo-connection picker render an empty list indistinguishable from "the
+// operator genuinely has zero repos," rather than surfacing a real wiring
+// gap. Production wiring happens in server.js, kept as a separate task from
+// both this module and the caller (modules/repo-picker.js) that invokes it
+// (D37 rule 3).
+let _listReposAdapter = function() {
+  throw new Error('Adapter not wired: listReposAdapter. Call setListReposAdapter() with a real implementation before use.');
+};
+
+/**
+ * Replace the list-repos adapter (used in tests and production startup).
+ * @param {(accessToken: string) => Promise<Array<{owner: string, name: string, fullName: string}>>} impl
+ */
+function setListReposAdapter(impl) {
+  _listReposAdapter = impl;
+}
+
+/**
+ * Retrieve the currently wired list-repos adapter function. Callers invoke
+ * getListReposAdapter()(accessToken) rather than holding a captured
+ * reference, so rewiring (e.g. setListReposAdapter() in a test) always
+ * takes effect for the next call. Mirrors getRepoAdapter()/
+ * getCreateRepoAdapter()'s own convention above.
+ * @returns {Function}
+ */
+function getListReposAdapter() {
+  return _listReposAdapter;
+}
+
+/**
+ * List the repos accessible to the authenticated user's own OAuth token.
+ * Route/module code calls this -- NOT realListRepos directly -- so the
+ * implementation can be swapped in tests without touching call sites.
+ * @param {string} accessToken - user's OAuth access token from req.session.accessToken
+ * @returns {Promise<Array<{owner: string, name: string, fullName: string}>>}
+ */
+async function listRepos(accessToken) {
+  return getListReposAdapter()(accessToken);
+}
+
+/**
+ * Real production implementation -- GET /user/repos using the authenticated
+ * user's own OAuth token (ADR-020). Wire via setListReposAdapter in
+ * server.js. Normalises GitHub's raw repo objects down to the {owner, name,
+ * fullName} shape the picker UI and filterRepoList() consume, rather than
+ * leaking GitHub's full response shape into the UI layer.
+ * @param {string} accessToken - user's OAuth access token
+ * @returns {Promise<Array<{owner: string, name: string, fullName: string}>>}
+ * @throws {Error & {status: number}} on a non-2xx response (e.g. 403 rate
+ *   limit, 401 needs re-auth) -- callers (modules/repo-picker.js) translate
+ *   this into the AC3 URL-entry fallback rather than letting it propagate.
+ */
+async function realListRepos(accessToken) {
+  const apiBase = (process.env.GITHUB_API_BASE_URL || 'https://api.github.com').replace(/\/$/, '');
+
+  const res = await fetch(apiBase + '/user/repos?per_page=100&sort=full_name', {
+    headers: {
+      Authorization: 'Bearer ' + accessToken,
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'skills-pipeline-web-ui'
+    }
+  });
+
+  if (!res.ok) {
+    const err = new Error('Failed to list accessible repos: ' + res.status);
+    err.status = res.status;
+    throw err;
+  }
+
+  const data = await res.json();
+  return (data || []).map(function(r) {
+    const owner = (r.owner && r.owner.login) || '';
+    const name = r.name || '';
+    return { owner: owner, name: name, fullName: r.full_name || (owner + '/' + name) };
+  });
+}
+
 module.exports = {
   // prc-s1.2 — repo-access verification
   setRepoAdapter,
@@ -176,5 +259,10 @@ module.exports = {
   getCreateRepoAdapter,
   createRepo,
   realCreateRepo,
-  RepoNameTakenError
+  RepoNameTakenError,
+  // mtrr-s2 — list accessible repos
+  setListReposAdapter,
+  getListReposAdapter,
+  listRepos,
+  realListRepos
 };

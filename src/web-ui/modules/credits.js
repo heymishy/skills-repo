@@ -41,7 +41,17 @@ async function getBalance(tenantId) {
 /**
  * Atomically adjust the credit balance for a tenant by delta.
  * Use a negative delta to decrement (e.g. -1 per turn).
- * Uses UPDATE ... SET balance = balance + $1 to avoid read-modify-write race conditions.
+ * cuf-s1: Uses INSERT ... ON CONFLICT (tenant_id) DO UPDATE (atomic upsert) rather than a
+ * plain UPDATE, so a tenant with no existing `credits` row gets one created with
+ * balance = delta instead of the adjustment silently no-op'ing (zero rows affected).
+ * ON CONFLICT DO UPDATE SET balance = credits.balance + EXCLUDED.balance still adds to
+ * an existing balance rather than overwriting it — same race-free, single-round-trip
+ * atomicity as the UPDATE it replaces. Params stay [delta, tenantId] (unchanged order)
+ * so existing callers/mocks relying on that order are unaffected. See decisions.md
+ * ("credits upsert fix") and story cuf-s1 for the production defect this fixes: the
+ * real Stripe checkout.session.completed webhook (routes/billing.js) calls this exact
+ * function with no prior row-existence check, so a brand-new paying customer's first
+ * checkout previously provisioned zero credits.
  * @param {string} tenantId
  * @param {number} delta  — positive to add credits, negative to deduct
  * @returns {Promise<void>}
@@ -49,9 +59,41 @@ async function getBalance(tenantId) {
 async function adjustBalance(tenantId, delta) {
   const db = requireAdapter();
   await db.query(
-    'UPDATE credits SET balance = balance + $1, updated_at = now() WHERE tenant_id = $2',
+    'INSERT INTO credits (tenant_id, balance) VALUES ($2, $1) ' +
+    'ON CONFLICT (tenant_id) DO UPDATE SET balance = credits.balance + EXCLUDED.balance, updated_at = now()',
     [delta, tenantId]
   );
+}
+
+/**
+ * ftcg-s1: Grant a one-time free-tier credit balance to a tenant, IF (and only
+ * if) they have no existing credits row yet. Atomic and race-free -- uses
+ * ON CONFLICT DO NOTHING rather than a check-then-write, so this is safe to
+ * call unconditionally on every login/signup for every auth method, without
+ * needing to first determine "is this genuinely a first login" (GitHub has
+ * its own isFirstLogin mechanism; Google and email/password do not). Two
+ * concurrent calls for the same brand-new tenant still result in exactly one
+ * grant (whichever wins the INSERT; the other's ON CONFLICT fires and is a
+ * no-op), never a double-grant.
+ *
+ * Deliberately distinct from adjustBalance(): that function ADDS delta to an
+ * existing balance on conflict (used for turn deductions and paid top-ups,
+ * where "already has a row" must still apply the change). This function must
+ * do the opposite -- do NOTHING on conflict -- since re-granting an existing
+ * tenant (including one who has already spent their free credits down to
+ * exactly 0) would silently give unlimited free credits on every login.
+ *
+ * @param {string} tenantId
+ * @param {number} amount — the free-tier grant amount (e.g. CREDITS_FREE_TIER_GRANT)
+ * @returns {Promise<boolean>} true if a grant was actually applied (tenant was new), false if the tenant already had a row
+ */
+async function grantFreeTierIfNew(tenantId, amount) {
+  const db = requireAdapter();
+  const result = await db.query(
+    'INSERT INTO credits (tenant_id, balance) VALUES ($1, $2) ON CONFLICT (tenant_id) DO NOTHING RETURNING balance',
+    [tenantId, amount]
+  );
+  return result.rows.length > 0;
 }
 
 /**
@@ -67,22 +109,52 @@ async function getAllTenantBalances() {
 }
 
 /**
- * Return all known tenant IDs from the credits table (allowlist for admin adjustments).
+ * Return all known tenant/account identifiers (allowlist for admin adjustments).
+ * catc-s1: Previously queried `credits` alone -- circular with the exact bug
+ * cuf-s1 fixed, since it excluded every tenant who does not yet have a
+ * `credits` row by definition (the population a first-time top-up most needs
+ * to reach). Now returns the de-duplicated union of `users.email` (every
+ * email/password tenant -- tenantId === email for that login type, see
+ * auth-email.js), `team_memberships.tenant_id` (any tenant ever assigned a
+ * role, including GitHub/Google-OAuth tenants added via admin bulk-add or a
+ * legacy user_roles backfill), and `credits.tenant_id` (kept for backward
+ * compatibility with any tenant whose only record today is a credits row).
+ * This is a strict superset of the old allowlist -- nothing it used to accept
+ * stops being accepted. All three tables live in the same DATABASE_URL
+ * Postgres instance and are migrated unconditionally at server startup, so
+ * querying them via the same adapter wired by setCreditsAdapter is safe. See
+ * decisions.md ("credits admin top-up tenant check fix") and story catc-s1
+ * for the residual gap this does not close: a GitHub/Google-OAuth-only
+ * tenant with no team_memberships row and no credits row has no persisted
+ * record anywhere in this codebase, so remains rejected (unchanged from
+ * before this fix -- not a regression for that population).
  * @returns {Promise<string[]>}
  */
 async function getValidTenantIds() {
   const db = requireAdapter();
-  const result = await db.query('SELECT tenant_id FROM credits');
-  return result.rows.map(function(r) { return r.tenant_id; });
+  const [usersResult, membershipsResult, creditsResult] = await Promise.all([
+    db.query('SELECT email FROM users'),
+    db.query('SELECT tenant_id FROM team_memberships'),
+    db.query('SELECT tenant_id FROM credits')
+  ]);
+  const ids = new Set();
+  usersResult.rows.forEach(function(r) { if (r.email) ids.add(r.email); });
+  membershipsResult.rows.forEach(function(r) { if (r.tenant_id) ids.add(r.tenant_id); });
+  creditsResult.rows.forEach(function(r) { if (r.tenant_id) ids.add(r.tenant_id); });
+  return Array.from(ids);
 }
 
 /**
  * arl-s5 — Atomically adjust a tenant's credit balance AND write an immutable audit row
  * recording who made the change, the delta applied, and the before/after balance.
- * Uses UPDATE ... RETURNING balance on the same statement that adjusts the balance so
- * balance_before/balance_after are captured atomically (no separate read-then-write race).
- * No new D37 adapter — reuses the existing _db wired by setCreditsAdapter (same precedent
- * as getAllTenantBalances/getValidTenantIds).
+ * cuf-s1: Uses INSERT ... ON CONFLICT (tenant_id) DO UPDATE ... RETURNING balance (atomic
+ * upsert) rather than a plain UPDATE, so a tenant with no existing `credits` row gets one
+ * created with balance = delta instead of RETURNING yielding zero rows (which previously
+ * produced balanceBefore/balanceAfter = null and a nonsensical audit row while the credits
+ * table itself never gained a row). balanceBefore/balanceAfter are still captured atomically
+ * on the same round trip (no separate read-then-write race). No new D37 adapter — reuses
+ * the existing _db wired by setCreditsAdapter (same precedent as
+ * getAllTenantBalances/getValidTenantIds).
  * @param {string} tenantId
  * @param {number} delta — positive to add credits (top-up)
  * @param {string} adminId — the admin's identity (req.session.login, never req.session.accessToken)
@@ -91,7 +163,9 @@ async function getValidTenantIds() {
 async function adjustBalanceWithAudit(tenantId, delta, adminId) {
   const db = requireAdapter();
   const result = await db.query(
-    'UPDATE credits SET balance = balance + $1, updated_at = now() WHERE tenant_id = $2 RETURNING balance',
+    'INSERT INTO credits (tenant_id, balance) VALUES ($2, $1) ' +
+    'ON CONFLICT (tenant_id) DO UPDATE SET balance = credits.balance + EXCLUDED.balance, updated_at = now() ' +
+    'RETURNING balance',
     [delta, tenantId]
   );
   const balanceAfter = result.rows.length ? result.rows[0].balance : null;
@@ -124,5 +198,6 @@ module.exports = {
   getAllTenantBalances,
   getValidTenantIds,
   adjustBalanceWithAudit,
-  getAuditLog
+  getAuditLog,
+  grantFreeTierIfNew
 };

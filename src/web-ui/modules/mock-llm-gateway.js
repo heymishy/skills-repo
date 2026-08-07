@@ -48,6 +48,49 @@ const STAGES = Object.freeze([
 
 let _mockGatewayClient = null;
 
+// amgt-s1: in-memory runtime override for isMockGatewayEnabled(), settable from
+// the admin toggle page (routes/admin-mock-gateway.js) without a redeploy.
+// `null` = unset (defer to the existing env-var logic below). This is
+// deliberately NOT a D37 adapter (no throwing default) -- it is a plain
+// tri-state flag (null/true/false), not an injectable external dependency.
+// Consulted AFTER the NODE_ENV === 'production' hard override in
+// isMockGatewayEnabled() -- see that function -- so it can never force the
+// mock gateway on in production.
+let _runtimeOverride = null;
+
+/**
+ * Set the runtime override (amgt-s1). Takes effect immediately for every
+ * subsequent isMockGatewayEnabled() call in this process -- no restart
+ * required. Has NO effect when NODE_ENV === 'production' (see
+ * isMockGatewayEnabled()'s hard override, evaluated first).
+ * @param {boolean} value
+ */
+function setRuntimeMockGatewayOverride(value) {
+  _runtimeOverride = !!value;
+}
+
+/**
+ * Reset the runtime override back to unset (amgt-s1). Simulates a process
+ * restart / redeploy for tests, and is also the actual behaviour on a real
+ * restart since this value only ever lives in memory (AC3) -- once the
+ * process exits, this state is gone; a fresh process starts with
+ * _runtimeOverride === null again with no code path needed to explicitly
+ * call this at startup.
+ */
+function resetRuntimeMockGatewayOverride() {
+  _runtimeOverride = null;
+}
+
+/**
+ * Current runtime override value (amgt-s1) -- null (unset), true, or false.
+ * Used by the admin toggle page to render the current state without
+ * duplicating this module's own tri-state logic.
+ * @returns {boolean|null}
+ */
+function getRuntimeMockGatewayOverride() {
+  return _runtimeOverride;
+}
+
 /**
  * D37 mandatory: default stub throws if called without wiring.
  */
@@ -77,12 +120,22 @@ function resetMockGatewayClient() {
 /**
  * True when the mock gateway is permitted to activate in the current process.
  * NODE_ENV=production is a hard override — never activates regardless of
- * MOCK_LLM_GATEWAY, so a stray MOCK_LLM_GATEWAY=true in a real environment
- * cannot silently route production traffic through canned fixtures.
+ * MOCK_LLM_GATEWAY or the amgt-s1 runtime override, so a stray
+ * MOCK_LLM_GATEWAY=true (or an admin flipping the runtime toggle on) in a
+ * real environment cannot silently route production traffic through canned
+ * fixtures.
+ *
+ * amgt-s1: after the production hard override, the runtime override (set via
+ * setRuntimeMockGatewayOverride(), e.g. from the admin toggle page) is
+ * consulted next, when set. This is a genuinely runtime-settable value —
+ * no redeploy or restart required — layered ON TOP of (not replacing) the
+ * pre-existing env-var logic below, which remains the fallback when the
+ * runtime override is unset (null).
  * @returns {boolean}
  */
 function isMockGatewayEnabled() {
   if (process.env.NODE_ENV === 'production') return false;
+  if (_runtimeOverride !== null) return _runtimeOverride;
   return process.env.NODE_ENV === 'test' || process.env.MOCK_LLM_GATEWAY === 'true';
 }
 
@@ -187,5 +240,9 @@ module.exports = {
   wireDefaultMockGatewayClient,
   isMockGatewayEnabled,
   getMockResponse,
-  inventoryFixtures
+  inventoryFixtures,
+  // amgt-s1
+  setRuntimeMockGatewayOverride,
+  resetRuntimeMockGatewayOverride,
+  getRuntimeMockGatewayOverride
 };

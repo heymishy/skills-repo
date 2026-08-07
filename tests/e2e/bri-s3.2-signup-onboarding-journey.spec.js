@@ -36,9 +36,20 @@
 'use strict';
 
 const { test, expect } = require('@playwright/test');
+// dss-s1: only meaningful against real wuce-staging -- empty {} locally, so
+// this changes nothing about how this spec runs against the local harness.
+// fix-forward (post-launch): this spec's own signup call previously used a
+// non-"e2e-test-"-prefixed email and never sent the rate-limit-bypass header,
+// so it did not qualify for the serlb-s1 bypass carve-out (routes/auth-email.js)
+// -- every real run against wuce-staging's persistent per-IP counter eventually
+// tripped the genuine 10-attempt/5-minute limiter once enough runs had signed up
+// from the same CI runner IP. Aligning with fixtures/staging-auth.js's own
+// uniqueEmail()/signUpEmail() convention fixes this without weakening the
+// limiter itself.
+const { testEndpointBypassHeaders, hasStubSecret, RATE_LIMIT_BYPASS_HEADER, STUB_SECRET } = require('./fixtures/staging-auth');
 
 function uniqueEmail() {
-  return 'bri-s3-2-' + Date.now() + '-' + Math.floor(Math.random() * 1e6) + '@example.test';
+  return 'e2e-test-bri-s3-2-' + Date.now() + '-' + Math.floor(Math.random() * 1e6) + '@example.test';
 }
 
 const PASSWORD = 'Bri-S3-2-Test-Password-1!';
@@ -73,8 +84,12 @@ async function signUpAndCompleteOnboarding(request) {
   const csrfToken = csrfMatch ? csrfMatch[1] : null;
   expect(csrfToken, 'landing page must embed a _csrf token in the signup form').toBeTruthy();
 
+  const signupHeaders = {};
+  if (hasStubSecret()) signupHeaders[RATE_LIMIT_BYPASS_HEADER] = STUB_SECRET;
+
   const signupRes = await request.post('/auth/email/signup', {
     form: { email: email, password: PASSWORD, _csrf: csrfToken },
+    headers: signupHeaders,
     maxRedirects: 0
   });
   expect(signupRes.status(), 'signup should redirect to /welcome').toBe(302);
@@ -85,7 +100,7 @@ async function signUpAndCompleteOnboarding(request) {
 
   // bri-s3.2 AC1: complete the (mocked) onboarding gate — see server.js's
   // /test/complete-onboarding for why this bypasses a real Stripe checkout.
-  const completeRes = await request.post('/test/complete-onboarding');
+  const completeRes = await request.post('/test/complete-onboarding', { headers: testEndpointBypassHeaders() });
   expect(completeRes.status()).toBe(200);
 
   return email;
@@ -176,16 +191,19 @@ async function driveJourneyToDefinitionOfReady(request, featureName, e2eForceFai
   expect(definitionTurn.done, 'definition stage should complete via the mock gateway').toBe(true);
   const afterDefinitionGate = await request.post(`/api/journey/${journeyId}/gate-confirm`, { maxRedirects: 0 });
   expect(afterDefinitionGate.status()).toBe(303);
-  expect(afterDefinitionGate.headers()['location']).toBe('/journey/' + journeyId + '/stories');
+  // fix-forward (post-launch): definition.success.json's mock artefact carries
+  // an H1 "# Story mock-fixture.1 -- Mock story" heading (added for dtra-s1/
+  // dsda-s1's own fixture fix), which extractStoryIdsFromDefinitionArtefact
+  // now recognises -- so this journey auto-extracts a single story
+  // ("mock-fixture.1") and switches straight into that story's review session,
+  // skipping the manual /journey/:id/stories confirm page entirely (dtra-s1
+  // AC1/AC2). This spec previously still expected the old manual-confirm
+  // redirect and then POSTed its own story list, which the app no longer
+  // reaches -- updated to assert the actual (correct) auto-skip destination.
+  const afterDefinitionLocation = afterDefinitionGate.headers()['location'];
+  expect(afterDefinitionLocation, 'definition gate-confirm should auto-skip straight into a review session').toMatch(/^\/skills\/review\/sessions\/[0-9a-f-]+\/chat$/);
 
-  // Enter a single-story list so the per-story sequence (review -> test-plan
-  // -> definition-of-ready) has exactly one story to complete.
-  const storiesRes = await request.post(`/api/journey/${journeyId}/stories`, {
-    form: { stories: 'bri-s3-2-e2e-story.1' },
-    maxRedirects: 0
-  });
-  expect(storiesRes.status(), 'story list submission').toBe(303);
-  let perStoryLocation = storiesRes.headers()['location'];
+  let perStoryLocation = afterDefinitionLocation;
   let perStoryStage = 'review';
   let perStorySessionId = sessionIdFromChatPath(perStoryLocation);
 
@@ -221,7 +239,7 @@ async function driveJourneyToDefinitionOfReady(request, featureName, e2eForceFai
 test.describe('bri-s3.2 signup -> onboarding -> first feature journey @mocked', () => {
 
   test('AC5 baseline: real-LLM-call counter is available and starts at a stable value', async ({ request }) => {
-    const res = await request.get('/test/real-llm-call-count');
+    const res = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     expect(res.status()).toBe(200);
     const body = await res.json();
     expect(typeof body.count).toBe('number');
@@ -241,7 +259,7 @@ test.describe('bri-s3.2 signup -> onboarding -> first feature journey @mocked', 
   test('AC2/AC3/AC5: full outer loop from a first product through a passing definition-of-ready reaches a visible gate-pass state, with zero real LLM calls', async ({ request }) => {
     test.setTimeout(60000);
 
-    const beforeCountRes = await request.get('/test/real-llm-call-count');
+    const beforeCountRes = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     const beforeCount = (await beforeCountRes.json()).count;
 
     await signUpAndCompleteOnboarding(request);
@@ -273,7 +291,7 @@ test.describe('bri-s3.2 signup -> onboarding -> first feature journey @mocked', 
     expect(completeHtml).toContain('start the inner coding loop');
 
     // AC5: zero real LLM calls were made across this whole pass-path run.
-    const afterCountRes = await request.get('/test/real-llm-call-count');
+    const afterCountRes = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     const afterCount = (await afterCountRes.json()).count;
     expect(afterCount, 'no real Anthropic/Copilot API calls during the mocked run').toBe(beforeCount);
   });
@@ -281,7 +299,7 @@ test.describe('bri-s3.2 signup -> onboarding -> first feature journey @mocked', 
   test('AC4: a deliberately incomplete definition-of-ready run shows a gate-fail result, distinct from the AC3 pass case, with zero real LLM calls', async ({ request }) => {
     test.setTimeout(60000);
 
-    const beforeCountRes = await request.get('/test/real-llm-call-count');
+    const beforeCountRes = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     const beforeCount = (await beforeCountRes.json()).count;
 
     await signUpAndCompleteOnboarding(request);
@@ -307,7 +325,7 @@ test.describe('bri-s3.2 signup -> onboarding -> first feature journey @mocked', 
     expect(dorTurnResult.response).not.toContain('✅ READY');
 
     // AC5: zero real LLM calls were made across this whole fail-path run either.
-    const afterCountRes = await request.get('/test/real-llm-call-count');
+    const afterCountRes = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     const afterCount = (await afterCountRes.json()).count;
     expect(afterCount, 'no real Anthropic/Copilot API calls during the mocked run').toBe(beforeCount);
   });

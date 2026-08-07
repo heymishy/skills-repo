@@ -149,7 +149,14 @@ test('T4: [env] key set has no unexplained divergence from fly.toml', () => {
   // test plan Test Gaps row for T4), so the [env] key sets must match
   // exactly. If a genuinely staging-only key is introduced later, add it
   // to this allowlist rather than loosening the assertion.
-  const ALLOWED_STAGING_ONLY_ENV_KEYS = [];
+  //
+  // MOCK_LLM_GATEWAY (b1-formed-idea-outer-loop-story-map, 2026-07-23 ARCH
+  // decision, decisions.md): staging E2E specs that drive a skill turn must
+  // run against the mock LLM gateway, never the real model, to avoid real
+  // Anthropic API cost on every CI run -- a genuinely staging-only flag with
+  // no equivalent in production fly.toml, per src/web-ui/modules/
+  // mock-llm-gateway.js's own hard NODE_ENV=production override.
+  const ALLOWED_STAGING_ONLY_ENV_KEYS = ['MOCK_LLM_GATEWAY'];
 
   const prodEnv = prod.sections.env || {};
   const stagingEnv = staging.sections.env || {};

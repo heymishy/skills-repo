@@ -7,12 +7,140 @@ var _postHogFlags = require('../modules/posthog-flags'); // bri-s1.5 — shared 
 var _flagKeys = require('../modules/flag-keys'); // bri-s1.5
 var _repoAdapter = require('../adapters/repo-adapter'); // prc-s2.1
 var _repoBootstrap = require('../modules/repo-bootstrap'); // prc-s2.2
+var _repoPicker = require('../modules/repo-picker'); // mtrr-s2 -- repo-connection picker data-fetch/cache/filter logic
+var _productRollup = require('../modules/product-rollup'); // pr-s3
+var _pipelineStateFetchAdapter = require('../adapters/pipeline-state-fetch-adapter'); // pr-s3
+var _syncFreshness = require('../modules/sync-freshness'); // pr-s3
+var _kanbanView = require('../views/kanban-view'); // kbc-s1 -- shared renderer for product/org/tenant boards
+var _roadmapScan = require('../modules/roadmap-scan'); // a5 -- read-only artefacts/ scan for discovery-only/ideate-only work
+var _repoRootAdapter = require('../adapters/repo-root'); // a5 -- reuses the existing local-disk repo-root pattern (already used by handlePostProductFeature)
+var _modulesAdapter = require('../adapters/modules-adapter'); // a1 -- curated per-product Modules taxonomy CRUD
+var _csrf = require('../middleware/csrf'); // fix-forward (post-a1) -- module CRUD forms need CSRF like every other mutating form in this app
+var _agencyClientGrants = require('../modules/agency-client-grants'); // story-2-relationship-grants-enforcement -- the ONE dedicated grant-check adapter (story Guardrail)
+var _journeyAccess = require('../middleware/journey-access'); // story-2-relationship-grants-enforcement -- reuses requireGrantAccess/asHttpResponse/POLICY (ADR-025 guard extension)
+var _agencyClientComments = require('../modules/agency-client-comments'); // story-5-client-agency-comments -- append-only comments adapter
+
+// s1.1 -- injectable bulk session-store reader. Defaults to a lazy require of
+// skills.js's real _getHtmlSessionsBulk (mirrors the same lazy-getter shape
+// routes/journey.js already uses for this exact dependency -- getGetHtmlSession()
+// etc.) so a normal server boot needs no explicit wiring; tests override via
+// setGetHtmlSessionsBulk to spy on call count (AC3) without loading the full
+// skills.js module chain.
+var _getHtmlSessionsBulkFn = null;
+function _getHtmlSessionsBulk(sessionIds) {
+  var fn = _getHtmlSessionsBulkFn || require('./skills')._getHtmlSessionsBulk;
+  return fn(sessionIds);
+}
+function setGetHtmlSessionsBulk(fn) { _getHtmlSessionsBulkFn = fn; }
+
+// s2.2 -- injectable bulk artefact-count reader, mirroring s1.1's
+// _getHtmlSessionsBulk seam immediately above. Defaults to a lazy require of
+// journey-store-pg.js's real getArtefactCountsForJourneys -- ONE batched
+// GROUP BY query for the whole board render, never one call per card. This is
+// the outcome of this story's own Architecture Constraints investigation
+// (documented in decisions.md): a batched query extending the existing
+// journeys query is feasible without unbounded per-card cost, so AC4 is
+// implemented via this path rather than N parallel getArtefactsForJourney()
+// calls. Tests override via setGetArtefactCountsBulk to spy on call count
+// without needing a real DATABASE_URL/pg pool wired.
+var _getArtefactCountsBulkFn = null;
+async function _getArtefactCountsBulk(journeyIds) {
+  var fn = _getArtefactCountsBulkFn || require('../adapters/journey-store-pg').getArtefactCountsForJourneys;
+  return fn(journeyIds);
+}
+function setGetArtefactCountsBulk(fn) { _getArtefactCountsBulkFn = fn; }
+
+/**
+ * s2.2 (AC4, AC5) -- enrich already-built STAGE_COLUMNS-shaped columns with
+ * each card's artefact count, via exactly ONE bulk read for the whole board
+ * render (never per-card). Mutates and returns `columns` so callers can
+ * `await` it as a post-processing step after the existing synchronous
+ * column-builders (buildProductKanbanColumns/buildOrgKanbanColumns), which
+ * stay unchanged and still return plain arrays synchronously for their
+ * existing callers/tests.
+ *
+ * AC5: if the bulk read throws (adapter not wired, DB error, etc.) the whole
+ * board render must NOT fail -- title truncation (AC1-AC3) still ships. On
+ * failure, cards are simply left without an artefactCount, so
+ * kanban-view.js's _renderKanbanColumns renders no badge at all (identical
+ * to how a caller that never supplies artefactCount behaves today).
+ * @param {Array} columns
+ * @returns {Promise<Array>}
+ */
+async function _enrichColumnsWithArtefactCounts(columns) {
+  var journeyIds = [];
+  (columns || []).forEach(function(col) {
+    (col.cards || []).forEach(function(c) { journeyIds.push(c.id); });
+  });
+  if (journeyIds.length === 0) return columns;
+
+  var counts;
+  try {
+    counts = await _getArtefactCountsBulk(journeyIds);
+  } catch (e) {
+    return columns; // AC5 -- degrade gracefully, never break the board render
+  }
+
+  (columns || []).forEach(function(col) {
+    (col.cards || []).forEach(function(c) {
+      c.artefactCount = (counts && Object.prototype.hasOwnProperty.call(counts, c.id)) ? counts[c.id] : 0;
+    });
+  });
+  return columns;
+}
 
 function _escapeHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function _renderProductDashboard(products, login) {
+// JSONB columns (health_counts, test_coverage, ac_coverage, taxonomy, dod_status_counts)
+// come back from `pg` already parsed into objects -- only parse if we actually got a string.
+function _parseJsonbField(value, fallback) {
+  if (value == null) { return fallback; }
+  return (typeof value === 'string') ? JSON.parse(value) : value;
+}
+
+// Renders a test/AC-coverage breakdown grouped by parent epic (mirroring the
+// Epics/Other-features layout used for taxonomy below it), instead of one
+// flat list of every story code -- found unreadable at 100+ stories during
+// live staging verification (F4). Falls back to the flat perFeature list for
+// any pre-existing cached rollup row synced before groups/ungrouped existed.
+function _renderGroupedCoverageBreakdown(coverage) {
+  if (!Array.isArray(coverage.groups) || !Array.isArray(coverage.ungrouped)) {
+    return '<ul style="margin:6px 0 0;padding-left:18px">' +
+      coverage.perFeature.map(function(f) {
+        return '<li style="font-size:12px;color:var(--muted)">' + _escapeHtml(f.slug) + ': ' + _escapeHtml(String(f.percentage)) + '%</li>';
+      }).join('') +
+    '</ul>';
+  }
+
+  var epicsSectionHtml = coverage.groups.length > 0
+    ? '<h4 style="font-size:13px;margin:12px 0 4px">Epics</h4>' +
+      coverage.groups.map(function(g) {
+        return '<div style="margin-bottom:8px">' +
+          '<div style="font-size:12px;font-weight:600;color:var(--muted)">' + _escapeHtml(g.epicName || g.epicSlug) + '</div>' +
+          '<ul style="margin:2px 0 0;padding-left:18px">' +
+            g.items.map(function(item) {
+              return '<li style="font-size:12px;color:var(--muted)">' + _escapeHtml(item.slug) + ': ' + _escapeHtml(String(item.percentage)) + '%</li>';
+            }).join('') +
+          '</ul>' +
+        '</div>';
+      }).join('')
+    : '';
+
+  var ungroupedSectionHtml = coverage.ungrouped.length > 0
+    ? '<h4 style="font-size:13px;margin:12px 0 4px">Other features</h4>' +
+      '<ul style="margin:2px 0 0;padding-left:18px">' +
+        coverage.ungrouped.map(function(f) {
+          return '<li style="font-size:12px;color:var(--muted)">' + _escapeHtml(f.slug) + ': ' + _escapeHtml(String(f.percentage)) + '%</li>';
+        }).join('') +
+      '</ul>'
+    : '';
+
+  return epicsSectionHtml + ungroupedSectionHtml;
+}
+
+function _renderProductDashboard(products, login, navProducts, activeProductId, noProductJourneyCount) {
   var cardsHtml = products.length === 0
     ? '<div style="padding:48px 0;text-align:center;color:var(--muted)">' +
         '<p style="font-size:18px;margin:0 0 16px">No products yet</p>' +
@@ -37,7 +165,15 @@ function _renderProductDashboard(products, login) {
       '<a href="/org/kanban" style="font-size:14px;color:var(--muted);text-decoration:none">View org kanban →</a>' +
     '</div>' +
   '</div>';
-  return _htmlShell.renderShell({ title: 'Products', bodyContent: body, user: { login: login }, active: 'dashboard' });
+  return _htmlShell.renderShell({
+    title: 'Products',
+    bodyContent: body,
+    user: { login: login },
+    active: 'dashboard',
+    products: navProducts,
+    activeProductId: activeProductId,
+    noProductJourneyCount: noProductJourneyCount
+  });
 }
 
 function _renderProductNew(login, error) {
@@ -99,22 +235,527 @@ function _renderProductNew(login, error) {
   return _htmlShell.renderShell({ title: 'New product', bodyContent: body, user: { login: login }, active: 'dashboard', crumbs: ['Products', 'New'] });
 }
 
-function _renderProductView(productName, productId, features, login) {
-  var featuresHtml = features.length === 0
-    ? '<p style="color:var(--muted);font-size:14px">No features yet.</p>'
-    : '<ul style="list-style:none;padding:0;margin:0">' +
-        features.map(function(f) {
-          return '<li style="padding:14px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center">' +
-            '<div>' +
-              '<div style="font-size:14px;font-weight:500">' + _escapeHtml(f.featureSlug || f.journey_id) + '</div>' +
-              '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + _escapeHtml(f.stage || '') + '</div>' +
-            '</div>' +
-            '<span style="font-size:12px;color:' + (f.health === 'red' ? '#ef4444' : f.health === 'amber' ? '#f59e0b' : '#22c55e') + '">' +
-              (f.health === 'red' ? '⚠ Blocked' : f.health === 'amber' ? '⚠ Warning' : '✓ Healthy') +
-            '</span>' +
-          '</li>';
+// a4 -- renders one epic (journey) row with two visually distinct
+// indicators: a health pill and a separate test-coverage label. Never
+// combined into one value/color (AC2). Accessibility: every colour-coded
+// health value carries its own text label (HEALTH_LABELS), never colour
+// alone.
+function _renderEpicRow(f) {
+  var color = f.health === 'red' ? '#ef4444' : f.health === 'amber' ? '#f59e0b' : f.health === 'unknown' ? 'var(--muted)' : '#22c55e';
+  var label = f.health === 'red' ? '✕ Blocked' : f.health === 'amber' ? '⚠ Warning' : f.health === 'unknown' ? '? Unknown' : '✓ Healthy';
+  return '<li style="padding:14px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center">' +
+    '<div>' +
+      '<div style="font-size:14px;font-weight:500">' + _escapeHtml(f.displayName || f.featureSlug || f.journey_id) + '</div>' +
+      '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + _escapeHtml(f.stage || '') + '</div>' +
+    '</div>' +
+    '<div style="display:flex;align-items:center;gap:12px">' +
+      '<span data-a4-health style="font-size:12px;color:' + color + '">' + label + '</span>' +
+      '<span data-a4-coverage style="font-size:12px;color:var(--muted)">' + _escapeHtml(f.coverageLabel || 'No test data yet') + '</span>' +
+    '</div>' +
+  '</li>';
+}
+
+// a4 -- one collapsible module section (or the "Unassigned" bucket). Uses a
+// real CSS grid-template-rows 0fr<->1fr transition (AC5) toggled by a class,
+// not an instant show/hide -- see the .a4-module-body rules emitted once
+// alongside the sections below.
+//
+// pvc-s1: accepts an optional renderRowFn (defaults to _renderEpicRow) so the
+// consolidated features section (which renders merged taxonomy+journeys
+// items, not raw journeys) can reuse this exact markup/collapse mechanism
+// rather than duplicating it.
+function _renderModuleSection(name, id, groupFeatures, renderRowFn) {
+  renderRowFn = renderRowFn || _renderEpicRow;
+  var sectionId = 'a4-mod-' + _escapeHtml(String(id));
+  return '<div class="a4-module-section" style="margin-bottom:10px;border:1px solid var(--line);border-radius:8px">' +
+    '<button type="button" class="a4-module-header" aria-expanded="true" aria-controls="' + sectionId + '" ' +
+      'onclick="a4ToggleModule(this)" ' +
+      'style="width:100%;text-align:left;padding:12px 16px;background:none;border:none;cursor:pointer;font-size:14px;font-weight:600;color:var(--ink);display:flex;justify-content:space-between;align-items:center">' +
+      '<span>' + _escapeHtml(name) + ' <span style="color:var(--muted);font-weight:400">(' + groupFeatures.length + ')</span></span>' +
+      '<span aria-hidden="true">▾</span>' +
+    '</button>' +
+    '<div id="' + sectionId + '" class="a4-module-body a4-module-body--expanded">' +
+      '<div class="a4-module-body-inner">' +
+        '<ul style="list-style:none;padding:0 16px 12px;margin:0">' +
+          groupFeatures.map(renderRowFn).join('') +
+        '</ul>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+}
+
+// pvc-s1 -- renders one row for a merged (taxonomy + journeys) item, in the
+// same visual shape as a4's _renderEpicRow (health pill + coverage label,
+// AC2's dual-indicator convention preserved), plus data-health/data-search
+// attributes the client-side filter script reads (AC7, AC8).
+// frsr-s1 (AC1) -- the card itself is now a real, keyboard-activatable
+// <a href="/features/:slug"> (not a plain, non-interactive <div>), taking
+// the operator to that feature's artefact-index page (stage-by-stage
+// artefacts, each linked through to its real persisted conversation --
+// see features.js's renderArtefactIndexHtml). The discoveryArtefact
+// suffix link stays a separate, sibling <a> (nested anchors are invalid
+// HTML), pointing at its own more specific raw-markdown viewer.
+function _renderPvcItemRow(item) {
+  var color = item.health === 'red' ? '#ef4444' : item.health === 'amber' ? '#f59e0b' : item.health === 'unknown' ? 'var(--muted)' : '#22c55e';
+  var label = item.health === 'red' ? '✕ Blocked' : item.health === 'amber' ? '⚠ Warning' : item.health === 'unknown' ? '? Unknown' : '✓ Healthy';
+  var healthAttr = item.health === 'red' ? 'red' : item.health === 'amber' ? 'amber' : item.health === 'unknown' ? 'unknown' : 'green';
+  var searchText = ((item.name || '') + ' ' + item.slug).toLowerCase();
+  var displayName = item.name || item.slug;
+  var subLabel = item.stage || item.epicName || '';
+  var discoveryLink = item.discoveryArtefact
+    ? ' — <a href="/artefact/' + _escapeHtml(item.slug) + '/discovery" tabindex="0">' + _escapeHtml(item.discoveryArtefact) + '</a>'
+    : '';
+  // fdn-s1 (AC4): rename affordance, a sibling <a>/<button> after the row's
+  // own link (nested interactive elements are invalid HTML -- same reason
+  // discoveryLink above is a sibling, not nested). Only offered when a
+  // journeyId is resolvable -- the rename route mutates a journey, so a
+  // pure-taxonomy item with no journey has nothing to rename yet.
+  var renameLink = item.journeyId
+    ? ' <button type="button" class="pvc-rename-btn" onclick="pshRenameFeature(\'' + _escapeHtml(item.journeyId) + '\',\'' + _escapeHtml(displayName).replace(/'/g, '&#39;') + '\')" ' +
+        'aria-label="Rename ' + _escapeHtml(displayName) + '" ' +
+        'style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0 4px">✎ Rename</button>'
+    : '';
+  return '<li class="pvc-item" data-health="' + healthAttr + '" data-search="' + _escapeHtml(searchText) + '" ' +
+    'style="padding:14px 0;border-bottom:1px solid var(--line)">' +
+    '<a class="pvc-item-link" href="/features/' + _escapeHtml(item.slug) + '" ' +
+      'aria-label="' + _escapeHtml(displayName) + ' — view artefacts and conversation history" ' +
+      'style="display:flex;justify-content:space-between;align-items:center;text-decoration:none;color:inherit">' +
+      '<div>' +
+        '<div style="font-size:14px;font-weight:500">' + _escapeHtml(displayName) + '</div>' +
+        (subLabel ? '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + _escapeHtml(subLabel) + '</div>' : '') +
+      '</div>' +
+      '<div style="display:flex;align-items:center;gap:12px">' +
+        '<span data-a4-health style="font-size:12px;color:' + color + '">' + label + '</span>' +
+        '<span data-a4-coverage style="font-size:12px;color:var(--muted)">' + _escapeHtml(item.coverageLabel || 'No test data yet') + '</span>' +
+      '</div>' +
+    '</a>' +
+    (discoveryLink || renameLink ? '<div style="font-size:12px;margin-top:2px">' + discoveryLink + renameLink + '</div>' : '') +
+  '</li>';
+}
+
+// pvc-s1 (AC1, AC4-AC9) -- the single consolidated features section,
+// replacing both the old a4 journeys-module section and the tmc-s1
+// taxonomy-module section. Zero modules (AC9) renders the pre-existing
+// simple flat fallback, byte-shape-identical to what a4 established --
+// no tabs, no filter bar introduced. With modules present, renders 3 tabs
+// (By Module / By Phase / All) plus health-filter chips and a search input,
+// all operating client-side over the same rendered item rows (data-health/
+// data-search attributes read by one small vanilla-JS filter function).
+function _renderConsolidatedFeaturesSection(items, modules, taxonomy) {
+  if (modules.length === 0) {
+    return items.length === 0
+      ? '<p style="color:var(--muted);font-size:14px">No features yet.</p>'
+      : '<ul style="list-style:none;padding:0;margin:0">' + items.map(_renderPvcItemRow).join('') + '</ul>';
+  }
+
+  var byModule = _productRollup.groupItemsByModule(items, _pvcAssignmentMapFromItems(items), modules);
+  var byPhase = _productRollup.groupItemsByPhase(items);
+
+  var byModuleHtml =
+    '<div id="pvc-tab-panel-module" class="pvc-tab-panel pvc-tab-panel--active" role="tabpanel" aria-labelledby="pvc-tab-module">' +
+      byModule.byModule.map(function(bucket) { return _renderModuleSection(bucket.moduleName, bucket.moduleId, bucket.items, _renderPvcItemRow); }).join('') +
+      (byModule.unclassified.length > 0 ? _renderModuleSection('Unclassified', 'unclassified', byModule.unclassified, _renderPvcItemRow) : '') +
+    '</div>';
+
+  var byPhaseHtml =
+    '<div id="pvc-tab-panel-phase" class="pvc-tab-panel" role="tabpanel" aria-labelledby="pvc-tab-phase">' +
+      byPhase.byPhase.map(function(p) { return _renderModuleSection(p.epicName, 'phase-' + _escapeHtml(p.epicName), p.items, _renderPvcItemRow); }).join('') +
+      (byPhase.other.length > 0 ? _renderModuleSection('Other features', 'phase-other', byPhase.other, _renderPvcItemRow) : '') +
+    '</div>';
+
+  var allHtml =
+    '<div id="pvc-tab-panel-all" class="pvc-tab-panel" role="tabpanel" aria-labelledby="pvc-tab-all">' +
+      '<ul style="list-style:none;padding:0;margin:0">' + items.map(_renderPvcItemRow).join('') + '</ul>' +
+    '</div>';
+
+  var healthChips = ['all', 'green', 'amber', 'red', 'unknown'].map(function(h) {
+    var label = h === 'all' ? 'All' : h === 'green' ? 'Healthy' : h === 'amber' ? 'Warning' : h === 'red' ? 'Blocked' : 'Unknown';
+    return '<button type="button" class="pvc-health-chip' + (h === 'all' ? ' pvc-health-chip--active' : '') + '" data-health-filter="' + h + '" onclick="pvcFilterByHealth(this)">' + _escapeHtml(label) + '</button>';
+  }).join('');
+
+  return (
+    '<style>' +
+      '.a4-module-body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.25s ease; overflow: hidden; }' +
+      '.a4-module-body--collapsed { grid-template-rows: 0fr; }' +
+      '.a4-module-body-inner { min-height: 0; overflow: hidden; }' +
+      '.pvc-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px}' +
+      '.pvc-tab{padding:8px 14px;font-family:inherit;font-size:13.5px;font-weight:500;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer}' +
+      '.pvc-tab:hover{color:var(--ink)}' +
+      '.pvc-tab:focus-visible{outline:2px solid var(--accent);outline-offset:2px}' +
+      '.pvc-tab--active{color:var(--ink);border-bottom-color:var(--ink)}' +
+      '.pvc-tab-panel{display:none}' +
+      '.pvc-tab-panel--active{display:block}' +
+      '.pvc-filter-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:16px}' +
+      '.pvc-health-chip{padding:5px 12px;font-family:inherit;font-size:12.5px;background:none;border:1px solid var(--line);border-radius:999px;color:var(--muted);cursor:pointer}' +
+      '.pvc-health-chip--active{color:var(--ink);border-color:var(--ink)}' +
+      '.pvc-search{flex:1;min-width:160px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-size:13px;background:var(--surface);color:var(--ink)}' +
+      '.pvc-item[hidden]{display:none}' +
+    '</style>' +
+    '<div class="pvc-tabs" role="tablist" aria-label="Features view">' +
+      '<button type="button" class="pvc-tab pvc-tab--active" id="pvc-tab-module" role="tab" aria-selected="true" onclick="pvcShowTab(\'module\')">By Module</button>' +
+      '<button type="button" class="pvc-tab" id="pvc-tab-phase" role="tab" aria-selected="false" onclick="pvcShowTab(\'phase\')">By Phase</button>' +
+      '<button type="button" class="pvc-tab" id="pvc-tab-all" role="tab" aria-selected="false" onclick="pvcShowTab(\'all\')">All</button>' +
+    '</div>' +
+    '<div class="pvc-filter-bar">' +
+      healthChips +
+      '<input type="text" class="pvc-search" placeholder="Search features…" oninput="pvcFilterBySearch(this.value)">' +
+    '</div>' +
+    byModuleHtml + byPhaseHtml + allHtml +
+    '<script>' +
+      'function a4ToggleModule(btn){' +
+        'var body=document.getElementById(btn.getAttribute("aria-controls"));' +
+        'var collapsed=body.classList.toggle("a4-module-body--collapsed");' +
+        'btn.setAttribute("aria-expanded", collapsed ? "false" : "true");' +
+      '}' +
+      'function pvcShowTab(name){' +
+        'document.querySelectorAll(".pvc-tab-panel").forEach(function(el){el.classList.remove("pvc-tab-panel--active");});' +
+        'document.querySelectorAll(".pvc-tab").forEach(function(el){el.classList.remove("pvc-tab--active");el.setAttribute("aria-selected","false");});' +
+        'var panel=document.getElementById("pvc-tab-panel-"+name);' +
+        'if(panel)panel.classList.add("pvc-tab-panel--active");' +
+        'var tab=document.getElementById("pvc-tab-"+name);' +
+        'if(tab){tab.classList.add("pvc-tab--active");tab.setAttribute("aria-selected","true");}' +
+      '}' +
+      'var pvcCurrentHealth="all";' +
+      'var pvcCurrentSearch="";' +
+      'function pvcApplyFilters(){' +
+        'document.querySelectorAll(".pvc-item").forEach(function(el){' +
+          'var healthOk = pvcCurrentHealth==="all" || el.getAttribute("data-health")===pvcCurrentHealth;' +
+          'var searchOk = pvcCurrentSearch==="" || el.getAttribute("data-search").indexOf(pvcCurrentSearch)!==-1;' +
+          'if(healthOk && searchOk){el.removeAttribute("hidden");}else{el.setAttribute("hidden","");}' +
+        '});' +
+      '}' +
+      'function pvcFilterByHealth(btn){' +
+        'pvcCurrentHealth=btn.getAttribute("data-health-filter");' +
+        'document.querySelectorAll(".pvc-health-chip").forEach(function(el){el.classList.remove("pvc-health-chip--active");});' +
+        'btn.classList.add("pvc-health-chip--active");' +
+        'pvcApplyFilters();' +
+      '}' +
+      'function pvcFilterBySearch(value){' +
+        'pvcCurrentSearch=value.toLowerCase();' +
+        'pvcApplyFilters();' +
+      '}' +
+    '<\/script>'
+  );
+}
+
+// pvc-s1 -- builds a slug -> module_id map from the already-enriched merged
+// items (each item carries its own moduleId), matching groupItemsByModule's
+// expected assignmentMap shape without a second lookup of the raw assignment
+// map.
+function _pvcAssignmentMapFromItems(items) {
+  var map = {};
+  items.forEach(function(item) { if (item.moduleId) { map[item.slug] = item.moduleId; } });
+  return map;
+}
+
+// a4 (AC3) -- scale gauge: total epic/story counts plus a distribution
+// strip proportional to how many epics (journeys) fall under each module.
+// Epic count = features.length (the same real, module-assignable entities
+// AC1 groups); story count = taxonomy.totalCount, the one authoritative
+// "how many stories does this synced product have" figure already computed
+// by computeTaxonomyRollup (see decisions.md a4 Task 0 finding 5). Never
+// divides by zero when there are no epics yet (AC3/AC4 overlap).
+function _renderScaleGauge(features, modules, taxonomy) {
+  var epicCount = features.length;
+  var storyCount = (taxonomy && typeof taxonomy.totalCount === 'number') ? taxonomy.totalCount : 0;
+  var summaryHtml = '<div style="font-size:13px;color:var(--ink)"><strong>' + epicCount + '</strong> epic' + (epicCount === 1 ? '' : 's') + ' &middot; <strong>' + storyCount + '</strong> stor' + (storyCount === 1 ? 'y' : 'ies') + '</div>';
+  // No epics yet, or no modules curated at all -- nothing meaningful to
+  // distribute across, so show the plain count summary only (no
+  // "Unassigned" segment implying a module concept that doesn't apply yet).
+  if (epicCount === 0 || modules.length === 0) {
+    return '<div style="margin-top:16px">' + summaryHtml + '</div>';
+  }
+  var counts = {};
+  var unassignedCount = 0;
+  features.forEach(function(f) {
+    if (f.moduleId) { counts[f.moduleId] = (counts[f.moduleId] || 0) + 1; }
+    else { unassignedCount++; }
+  });
+  var segments = modules
+    .filter(function(m) { return counts[m.id] > 0; })
+    .map(function(m) { return { name: m.name, count: counts[m.id] }; });
+  if (unassignedCount > 0) { segments.push({ name: 'Unassigned', count: unassignedCount }); }
+  var stripHtml = segments.map(function(s) {
+    var widthPct = (s.count / epicCount) * 100;
+    return '<div data-a4-dist-segment title="' + _escapeHtml(s.name) + ': ' + s.count + '" ' +
+      'style="width:' + widthPct + '%;background:var(--accent);opacity:' + (0.5 + (0.5 * widthPct / 100)) + ';height:100%"></div>';
+  }).join('');
+  return '<div style="margin-top:16px">' +
+    summaryHtml +
+    '<div style="margin-top:6px;height:10px;border-radius:5px;overflow:hidden;display:flex;background:var(--line)">' + stripHtml + '</div>' +
+  '</div>';
+}
+
+/**
+ * fix-forward (post-a1): a real "Add module" form plus rename/delete
+ * controls for existing modules -- A1's own API (POST/PUT/DELETE
+ * /products/:id/modules[/:moduleId]) shipped with no client-facing UI at
+ * all to reach it, meaning the module-grouped rendering above (A4) was
+ * unreachable through the browser (every product starts with zero modules,
+ * per discovery's own /clarify decision, and nothing could ever create the
+ * first one). Fetch-based submit, matching this app's established pattern
+ * (settings.js's renderCreditsTab) -- reload on success, inline error on
+ * failure. CSRF-protected, matching every other mutating form in this app.
+ * @param {string} productId
+ * @param {Array<{id:string, name:string}>} modules
+ * @param {string} csrfToken
+ * @returns {string}
+ */
+function _renderModulesManagement(productId, modules, csrfToken) {
+  var pid = _escapeHtml(productId);
+  var csrf = _escapeHtml(csrfToken);
+
+  var rowsHtml = modules.map(function(m) {
+    var mid = _escapeHtml(m.id);
+    return (
+      '<li class="a1-module-row" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--line)">' +
+        '<form class="a1-rename-form" data-module-id="' + mid + '" style="display:flex;gap:8px;flex:1;margin:0">' +
+          '<input type="hidden" name="_csrf" value="' + csrf + '">' +
+          '<input type="text" name="name" value="' + _escapeHtml(m.name) + '" required ' +
+            'style="flex:1;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:13px">' +
+          '<button type="submit" style="padding:6px 12px;border:1px solid var(--line);border-radius:6px;background:none;font-size:12px;cursor:pointer">Rename</button>' +
+        '</form>' +
+        '<button type="button" class="a1-delete-btn" data-module-id="' + mid + '" data-module-name="' + _escapeHtml(m.name) + '" ' +
+          'style="padding:6px 12px;border:1px solid #ef4444;border-radius:6px;background:none;color:#ef4444;font-size:12px;cursor:pointer">Delete</button>' +
+      '</li>'
+    );
+  }).join('');
+
+  return (
+    '<div style="margin-top:20px;border:1px solid var(--line);border-radius:8px;padding:16px">' +
+      '<div style="font-size:14px;font-weight:600;margin-bottom:10px">Modules</div>' +
+      '<div id="a1-modules-error" role="alert" style="display:none;color:#ef4444;font-size:13px;margin-bottom:8px"></div>' +
+      '<ul style="list-style:none;padding:0;margin:0 0 12px">' + rowsHtml + '</ul>' +
+      '<form id="a1-create-form" style="display:flex;gap:8px;margin:0">' +
+        '<input type="hidden" name="_csrf" value="' + csrf + '">' +
+        '<input type="text" name="name" placeholder="New module name" required ' +
+          'style="flex:1;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:13px">' +
+        '<button type="submit" style="padding:6px 14px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Add module</button>' +
+      '</form>' +
+    '</div>' +
+    '<script>(function(){' +
+      'var pid=' + JSON.stringify(productId) + ';' +
+      'var csrfToken=' + JSON.stringify(csrfToken) + ';' +
+      'var errEl=document.getElementById("a1-modules-error");' +
+      'function showErr(msg){if(errEl){errEl.textContent=msg;errEl.style.display="block";}}' +
+      'function submitJson(url,method,payload){' +
+        'return fetch(url,{method:method,headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)})' +
+          '.then(function(r){' +
+            'if(!r.ok){return r.json().then(function(j){throw new Error((j&&j.error)||("Request failed ("+r.status+")"));});}' +
+            'return r.json();' +
+          '});' +
+      '}' +
+      'var createForm=document.getElementById("a1-create-form");' +
+      'if(createForm){' +
+        'createForm.addEventListener("submit",function(ev){' +
+          'ev.preventDefault();' +
+          'var fd=new FormData(createForm);' +
+          'submitJson("/products/"+pid+"/modules","POST",{name:fd.get("name"),_csrf:fd.get("_csrf")})' +
+            '.then(function(){window.location.reload();})' +
+            '.catch(function(e){showErr(e.message);});' +
+        '});' +
+      '}' +
+      'document.querySelectorAll(".a1-rename-form").forEach(function(f){' +
+        'f.addEventListener("submit",function(ev){' +
+          'ev.preventDefault();' +
+          'var fd=new FormData(f);' +
+          'var moduleId=f.getAttribute("data-module-id");' +
+          'submitJson("/products/"+pid+"/modules/"+moduleId,"PUT",{name:fd.get("name"),_csrf:fd.get("_csrf")})' +
+            '.then(function(){window.location.reload();})' +
+            '.catch(function(e){showErr(e.message);});' +
+        '});' +
+      '});' +
+      'document.querySelectorAll(".a1-delete-btn").forEach(function(btn){' +
+        'btn.addEventListener("click",function(){' +
+          'var moduleId=btn.getAttribute("data-module-id");' +
+          'var name=btn.getAttribute("data-module-name");' +
+          'if(!confirm("Delete module \\"" + name + "\\"? Its epics will be moved out of this module, not deleted."))return;' +
+          'submitJson("/products/"+pid+"/modules/"+moduleId,"DELETE",{_csrf:csrfToken})' +
+            '.then(function(){window.location.reload();})' +
+            '.catch(function(e){showErr(e.message);});' +
+        '});' +
+      '});' +
+    '})()<\/script>'
+  );
+}
+
+// fps-s1 -- for a feature with no real test/DoD signal yet (health ===
+// 'unknown', which is every feature before /test-plan), show its actual
+// pipeline progress instead of a bare "No test data yet". Reuses
+// kanban-view.js's exact artefact-count wording (lines ~46, 316-317) rather
+// than inventing new copy for the same concept in a different view.
+// Falls back to the plain text (unchanged) when there's no resolvable
+// journeyId (e.g. a pure-taxonomy item) or no count data at all (e.g. the
+// bulk read failed -- AC4).
+function _unknownHealthCoverageLabel(item, artefactCountsByJourneyId) {
+  if (!item.journeyId || !artefactCountsByJourneyId.hasOwnProperty(item.journeyId)) {
+    return 'No test data yet';
+  }
+  var count = artefactCountsByJourneyId[item.journeyId];
+  var countLabel = count === 0 ? 'no artefacts yet' : (count + ' artefact' + (count === 1 ? '' : 's'));
+  return (item.stage || 'discovery') + ' · ' + countLabel;
+}
+
+function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navProducts, noProductJourneyCount, repoPickerResult) {
+  modules = modules || [];
+  csrfToken = csrfToken || '';
+  featureModuleAssignments = featureModuleAssignments || {};
+  artefactCountsByJourneyId = artefactCountsByJourneyId || {};
+  var HEALTH_LABELS = { green: '✓ Healthy', amber: '⚠ Warning', red: '✕ Blocked', unknown: '? Unknown' };
+  var HEALTH_COLORS = { green: '#22c55e', amber: '#f59e0b', red: '#ef4444', unknown: 'var(--muted)' };
+  var healthCounts = (rollupRow && rollupRow.health_counts) ? _parseJsonbField(rollupRow.health_counts, null) : null;
+  var overallSignal = healthCounts ? _productRollup.computeOverallHealthSignal(healthCounts) : null;
+  var healthHtml = healthCounts
+    ? '<div style="margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;font-size:13px">' +
+        '<span style="font-weight:600;color:' + HEALTH_COLORS[overallSignal] + '">Overall: ' + _escapeHtml(HEALTH_LABELS[overallSignal]) + '</span>' +
+        ['green', 'amber', 'red', 'unknown'].map(function(status) {
+          return '<span style="color:' + HEALTH_COLORS[status] + '">' + _escapeHtml(HEALTH_LABELS[status]) + ': ' + _escapeHtml(String(healthCounts[status] || 0)) + '</span>';
         }).join('') +
-      '</ul>';
+      '</div>'
+    : '';
+  var testCoverage = (rollupRow && rollupRow.test_coverage) ? _parseJsonbField(rollupRow.test_coverage, null) : null;
+  var coverageHtml;
+  if (!testCoverage || testCoverage.noData || !Array.isArray(testCoverage.perFeature)) {
+    coverageHtml = '<div style="margin-top:12px;font-size:13px;color:var(--muted)">Test coverage: No test data yet</div>';
+  } else {
+    coverageHtml =
+      '<div style="margin-top:12px;font-size:13px">' +
+        '<div>Test coverage: <strong>' + _escapeHtml(String(testCoverage.blendedPercentage)) + '%</strong></div>' +
+        _renderGroupedCoverageBreakdown(testCoverage) +
+      '</div>';
+  }
+  var acCoverage = (rollupRow && rollupRow.ac_coverage) ? _parseJsonbField(rollupRow.ac_coverage, null) : null;
+  var acCoverageHtml;
+  if (!acCoverage || acCoverage.noData) {
+    acCoverageHtml = '<div style="margin-top:8px;font-size:13px;color:var(--muted)">AC coverage: No AC data yet</div>';
+  } else {
+    acCoverageHtml = '<div style="margin-top:8px;font-size:13px">AC coverage: <strong>' + _escapeHtml(String(acCoverage.blendedPercentage)) + '%</strong></div>';
+  }
+  var taxonomy = (rollupRow && rollupRow.taxonomy) ? _parseJsonbField(rollupRow.taxonomy, null) : null;
+
+  // a4 (AC2) -- match each item to a real per-feature health value (A3's
+  // healthCounts.perFeature, keyed by feature.slug) and a real per-story
+  // test-coverage percentage (testCoverage.perFeature, keyed by story slug).
+  // No match falls back to 'unknown' health / an honest "No test data yet"
+  // label -- never a fabricated value.
+  var healthBySlug = {};
+  if (healthCounts && Array.isArray(healthCounts.perFeature)) {
+    healthCounts.perFeature.forEach(function(hf) { healthBySlug[hf.slug] = hf.health; });
+  }
+  var coverageBySlug = {};
+  if (testCoverage && Array.isArray(testCoverage.perFeature)) {
+    testCoverage.perFeature.forEach(function(cf) { coverageBySlug[cf.slug] = cf.percentage; });
+  }
+
+  // pvc-s1 (AC1-AC3) -- merge taxonomy (real, GitHub-synced features) and
+  // journeys (in-flight features, possibly not yet synced) into ONE item
+  // list, deduplicated by feature_slug, then enrich every item with real
+  // health/coverage/module-assignment -- replacing the two separate
+  // "grouped by module" sections tmc-s1 and a4 each rendered independently.
+  var mergedItems = _productRollup.mergeFeatureSources(taxonomy, features).map(function(item) {
+    var realHealth = healthBySlug.hasOwnProperty(item.slug) ? healthBySlug[item.slug] : 'unknown';
+    var pct = coverageBySlug.hasOwnProperty(item.slug) ? coverageBySlug[item.slug] : null;
+    // fps-s1: only the 'unknown' case (no real test/DoD signal at all) gets
+    // a stage/artefact-count progress proxy instead of the bare "No test
+    // data yet" -- a real health value with no pct is left completely
+    // unchanged (AC5).
+    var coverageLabel = (pct === null || pct === undefined)
+      ? (realHealth === 'unknown' ? _unknownHealthCoverageLabel(item, artefactCountsByJourneyId) : 'No test data yet')
+      : (pct + '%');
+    return Object.assign({}, item, {
+      health: realHealth,
+      coverageLabel: coverageLabel,
+      moduleId: featureModuleAssignments.hasOwnProperty(item.slug) ? featureModuleAssignments[item.slug] : null
+    });
+  });
+
+  var featuresSectionHtml = _renderConsolidatedFeaturesSection(mergedItems, modules, taxonomy);
+  var scaleGaugeHtml = _renderScaleGauge(features, modules, taxonomy);
+
+  var syncedAtLabel = rollupRow ? _syncFreshness.formatSyncedAt(rollupRow.synced_at) : _syncFreshness.formatSyncedAt(null);
+  var dodCountsHtml = rollupRow
+    ? Object.entries(_parseJsonbField(rollupRow.dod_status_counts, {})).map(function(entry) {
+        return _escapeHtml(entry[0]) + ': ' + _escapeHtml(String(entry[1]));
+      }).join(' &middot; ')
+    : '';
+  var refreshLabel = isSyncing ? 'Syncing…' : 'Refresh';
+  var refreshDisabledAttr = isSyncing ? ' disabled' : '';
+  var freshnessHtml =
+    '<div style="margin-top:12px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted)">' +
+      '<span id="psh-sync-label">' + _escapeHtml(syncedAtLabel) + (dodCountsHtml ? ' &middot; ' + dodCountsHtml : '') + '</span>' +
+      '<button type="button" id="psh-refresh-btn" onclick="pshTriggerSync(\'' + _escapeHtml(productId) + '\')"' + refreshDisabledAttr + ' style="padding:4px 10px;border:1px solid var(--line);border-radius:5px;background:none;font-size:12px;cursor:pointer;color:var(--ink)">' + _escapeHtml(refreshLabel) + '</button>' +
+    '</div>';
+  var repoHtml = '';
+  if (!repoOwner || !repoName) {
+    // mtrr-s2: the picker (operator's own accessible repos, via GitHub
+    // OAuth) is the PRIMARY connect path (AC1) when it loaded successfully
+    // and returned at least one repo. The manual owner/repo URL-entry
+    // fields (rpc-s1's original "Connect existing" fields) always remain
+    // in the markup as the mandatory fallback (AC3) -- visible by default
+    // when the picker isn't available/failed, or reachable via a secondary
+    // "Enter a repo URL instead" link when the picker succeeded.
+    var pickerOk = !!(repoPickerResult && repoPickerResult.ok && Array.isArray(repoPickerResult.repos) && repoPickerResult.repos.length > 0);
+    var pickerFailed = !!(repoPickerResult && repoPickerResult.ok === false);
+
+    var repoListItemsHtml = pickerOk
+      ? repoPickerResult.repos.map(function(r) {
+          var owner = _escapeHtml(r.owner);
+          var name = _escapeHtml(r.name);
+          var fullName = _escapeHtml(r.fullName || (r.owner + '/' + r.name));
+          return '<li class="rpc-repo-item" data-fullname="' + fullName.toLowerCase() + '" style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--line)">' +
+            '<span style="font-size:13px">' + fullName + '</span>' +
+            '<button type="button" onclick="rpcSelectRepo(\'' + _escapeHtml(productId) + '\',\'' + owner + '\',\'' + name + '\')" style="padding:6px 10px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:4px;font-size:12px;cursor:pointer;white-space:nowrap">Select</button>' +
+          '</li>';
+        }).join('')
+      : '';
+
+    var fallbackMessageHtml = pickerFailed
+      ? '<p role="status" style="margin:0 0 10px;font-size:12px;color:var(--muted)">' + _escapeHtml(repoPickerResult.message) + '</p>'
+      : '';
+
+    var manualPanelHtml =
+      '<div id="rpc-connect-panel" style="display:' + (pickerOk ? 'none' : 'block') + '">' +
+        fallbackMessageHtml +
+        '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px">Repository owner<input id="rpc-connect-owner" type="text" placeholder="github-username" aria-label="Repository owner" style="padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:13px;background:var(--surface);color:var(--ink)"></label>' +
+        '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px">Repository name<input id="rpc-connect-repo" type="text" placeholder="repo-name" aria-label="Repository name" style="padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:13px;background:var(--surface);color:var(--ink)"></label>' +
+        '<button type="button" onclick="rpcSubmitConnect(\'' + _escapeHtml(productId) + '\')" style="padding:8px 12px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:4px;font-size:13px;cursor:pointer">Connect</button>' +
+      '</div>';
+
+    var pickerPanelHtml = pickerOk
+      ? '<div id="rpc-picker-panel">' +
+          '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px" for="rpc-picker-search">Search your repos' +
+            '<input id="rpc-picker-search" type="text" placeholder="Filter by owner or repo name..." aria-label="Search your GitHub repos" oninput="rpcFilterRepoPicker()" style="padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:13px;background:var(--surface);color:var(--ink)">' +
+          '</label>' +
+          '<ul id="rpc-picker-list" role="listbox" aria-label="Your accessible GitHub repositories" style="list-style:none;margin:10px 0 0;padding:0;max-height:260px;overflow-y:auto;border:1px solid var(--line);border-radius:4px">' +
+            repoListItemsHtml +
+          '</ul>' +
+          '<p id="rpc-picker-empty" role="status" style="display:none;margin:10px 0 0;font-size:12px;color:var(--muted)">No repos match your search.</p>' +
+          '<button type="button" onclick="rpcShowConnectForm()" style="margin-top:10px;padding:6px 10px;background:none;border:1px solid var(--line);border-radius:4px;font-size:12px;cursor:pointer;color:var(--ink)">Enter a repo URL instead</button>' +
+        '</div>'
+      : '';
+
+    repoHtml =
+      '<div style="margin-top:16px;padding:12px;background:var(--surface);border:1px solid var(--line);border-radius:6px">' +
+        '<h3 style="margin:0 0 12px;font-size:14px">Connect GitHub repo</h3>' +
+        '<form id="rpc-repo-form" style="display:flex;flex-direction:column;gap:12px">' +
+          '<div style="display:flex;gap:10px">' +
+            '<button type="button" id="rpc-btn-create" onclick="rpcShowCreateForm()" style="flex:1;padding:10px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Create new repo</button>' +
+          '</div>' +
+          '<div id="rpc-create-panel" style="display:none">' +
+            '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px">New repo name<input id="rpc-create-name" type="text" placeholder="my-repo" aria-label="New repo name" style="padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:13px;background:var(--surface);color:var(--ink)"></label>' +
+            '<button type="button" onclick="rpcSubmitCreate(\'' + _escapeHtml(productId) + '\')" style="padding:8px 12px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:4px;font-size:13px;cursor:pointer">Create</button>' +
+          '</div>' +
+          pickerPanelHtml +
+          manualPanelHtml +
+        '</form>' +
+      '</div>';
+  } else {
+    repoHtml =
+      '<div style="margin-top:16px;padding:12px;background:var(--surface);border:1px solid var(--line);border-radius:6px">' +
+        '<div style="font-size:13px;color:var(--muted)">GitHub repository</div>' +
+        '<div style="margin-top:4px;font-size:14px;font-weight:500">' + _escapeHtml(repoOwner) + ' / ' + _escapeHtml(repoName) + '</div>' +
+      '</div>';
+  }
   var body = '<div style="max-width:720px">' +
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">' +
       '<div>' +
@@ -124,12 +765,33 @@ function _renderProductView(productName, productId, features, login) {
       '<div style="display:flex;gap:10px">' +
         '<button type="button" onclick="pshConfirmDeleteProduct(\'' + _escapeHtml(productId) + '\')" style="padding:8px 14px;border:1px solid #ef4444;border-radius:6px;background:none;color:#ef4444;font-size:13px;cursor:pointer">Delete product</button>' +
         '<a href="/products/' + _escapeHtml(productId) + '/kanban" style="padding:8px 14px;border:1px solid var(--line);border-radius:6px;text-decoration:none;font-size:13px;color:var(--ink)">Kanban</a>' +
-        '<form method="POST" action="/products/' + _escapeHtml(productId) + '/features" style="margin:0">' +
-          '<button type="submit" style="padding:8px 16px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">New feature</button>' +
-        '</form>' +
+        '<a href="/products/' + _escapeHtml(productId) + '/roadmap" style="padding:8px 14px;border:1px solid var(--line);border-radius:6px;text-decoration:none;font-size:13px;color:var(--ink)">Roadmap</a>' +
+        '<div style="position:relative">' +
+          '<button type="button" id="psh-new-feature-btn" onclick="pshToggleNewFeaturePanel()" style="padding:8px 16px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">New feature</button>' +
+          '<div id="psh-new-feature-panel" style="display:none;position:absolute;right:0;top:calc(100% + 6px);z-index:20;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;min-width:290px;box-shadow:0 4px 14px rgba(0,0,0,.12)">' +
+            '<form method="POST" action="/products/' + _escapeHtml(productId) + '/features" style="margin:0">' +
+              // fdn-s1: optional at creation -- the "Rough idea" path is
+              // explicitly for exploring before anything is named; renaming
+              // stays available anytime afterward (see decisions.md).
+              '<label style="display:block;font-size:13px;font-weight:600;margin-bottom:6px" for="psh-new-feature-name">Name (optional)</label>' +
+              '<input type="text" id="psh-new-feature-name" name="displayName" placeholder="e.g. Checkout redesign" style="width:100%;box-sizing:border-box;padding:7px 10px;border:1px solid var(--line);border-radius:6px;font-size:13px;margin-bottom:14px;background:var(--surface);color:var(--ink)">' +
+              '<div style="font-size:13px;font-weight:600;margin-bottom:10px">Where are you starting from?</div>' +
+              '<label style="display:flex;align-items:baseline;gap:8px;font-size:13px;margin-bottom:8px;cursor:pointer;line-height:1.5"><input type="radio" name="startSkill" value="ideate"> Rough idea — explore the opportunity space first</label>' +
+              '<label style="display:flex;align-items:baseline;gap:8px;font-size:13px;margin-bottom:14px;cursor:pointer;line-height:1.5"><input type="radio" name="startSkill" value="discovery" checked> Formed idea — jump straight to discovery</label>' +
+              '<button type="submit" style="width:100%;padding:8px 12px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Start &#8594;</button>' +
+            '</form>' +
+          '</div>' +
+        '</div>' +
       '</div>' +
     '</div>' +
-    featuresHtml +
+    freshnessHtml +
+    repoHtml +
+    healthHtml +
+    coverageHtml +
+    acCoverageHtml +
+    scaleGaugeHtml +
+    _renderModulesManagement(productId, modules, csrfToken) +
+    featuresSectionHtml +
     '<script>' +
     'function pshConfirmDeleteProduct(id){' +
       'var ok=confirm("Delete this product? This permanently removes it from wuce, including its journeys and standards cache. Your GitHub repository will NOT be deleted — this only removes the product from wuce, the repo and its history are untouched.");' +
@@ -139,9 +801,122 @@ function _renderProductView(productName, productId, features, login) {
         'else{alert(\'Failed to delete product\');}' +
       '}).catch(function(e){alert(\'Failed to delete product: \'+e.message);});' +
     '}' +
+    'async function pshRenameFeature(journeyId,currentName){' +
+      'var name=prompt(\'Rename feature:\',currentName||\'\');' +
+      'if(name===null)return;' +
+      'try{' +
+        'var r=await fetch(\'/api/journey/\'+journeyId+\'/display-name\',{method:\'PUT\',headers:{\'Content-Type\':\'application/json\'},body:JSON.stringify({displayName:name.trim()})});' +
+        'if(r.ok){window.location.reload();}' +
+        'else{alert(\'Failed to rename feature\');}' +
+      '}catch(e){alert(\'Failed to rename feature: \'+e.message);}' +
+    '}' +
+    'async function pshTriggerSync(id){' +
+      'var btn=document.getElementById(\'psh-refresh-btn\');' +
+      'var label=document.getElementById(\'psh-sync-label\');' +
+      'btn.disabled=true;btn.textContent=\'Syncing…\';' +
+      'try{' +
+        'var r=await fetch(\'/products/\'+id+\'/sync\',{method:\'POST\'});' +
+        'if(r.ok){window.location.reload();}' +
+        'else{var j=await r.json();alert(j.error||\'Sync failed\');}' +
+      '}catch(e){alert(\'Sync failed: \'+e.message);}' +
+      'finally{btn.disabled=false;btn.textContent=\'Refresh\';}' +
+    '}' +
+    'function pshToggleNewFeaturePanel(){var p=document.getElementById("psh-new-feature-panel");p.style.display=(p.style.display==="none"||!p.style.display)?"block":"none";}' +
+    'function rpcShowCreateForm(){document.getElementById("rpc-create-panel").style.display="block";document.getElementById("rpc-connect-panel").style.display="none";var pp=document.getElementById("rpc-picker-panel");if(pp){pp.style.display="none";}}' +
+    'function rpcShowConnectForm(){document.getElementById("rpc-connect-panel").style.display="block";document.getElementById("rpc-create-panel").style.display="none";}' +
+    'async function rpcSubmitCreate(productId){var name=document.getElementById("rpc-create-name").value.trim();if(!name){alert("Repo name required");return;}try{var r=await fetch("/products/"+productId+"/repo/create",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({name:name})});if(r.ok){window.location.reload();}else{var j=await r.json();alert("Error: "+(j.error||"Failed"));}}catch(e){alert("Error: "+e.message);}}' +
+    'async function rpcSubmitConnect(productId){var owner=document.getElementById("rpc-connect-owner").value.trim();var repo=document.getElementById("rpc-connect-repo").value.trim();if(!owner||!repo){alert("Owner and repo required");return;}try{var r=await fetch("/products/"+productId,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({owner:owner,repo:repo})});if(r.ok){window.location.reload();}else{var j=await r.json();alert("Error: "+(j.error||"Failed"));}}catch(e){alert("Error: "+e.message);}}' +
+    'function rpcFilterRepoPicker(){var q=document.getElementById("rpc-picker-search").value.trim().toLowerCase();var items=document.querySelectorAll("#rpc-picker-list .rpc-repo-item");var anyVisible=false;items.forEach(function(li){var match=!q||li.getAttribute("data-fullname").indexOf(q)!==-1;li.style.display=match?"flex":"none";if(match){anyVisible=true;}});var empty=document.getElementById("rpc-picker-empty");if(empty){empty.style.display=anyVisible?"none":"block";}}' +
+    'async function rpcSelectRepo(productId,owner,repo){try{var r=await fetch("/products/"+productId,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({owner:owner,repo:repo})});if(r.ok){window.location.reload();}else{var j=await r.json();alert("Error: "+(j.error||"Failed"));}}catch(e){alert("Error: "+e.message);}}' +
     '<\/script>' +
   '</div>';
-  return _htmlShell.renderShell({ title: productName, bodyContent: body, user: { login: login }, active: 'dashboard' });
+  return _htmlShell.renderShell({
+    title: productName,
+    bodyContent: body,
+    user: { login: login },
+    active: 'dashboard',
+    products: navProducts,
+    activeProductId: productId,
+    noProductJourneyCount: noProductJourneyCount
+  });
+}
+
+/**
+ * a5 -- renders the Roadmap tab: discovery-only and ideate-only feature
+ * folders with no pipeline-state.json entry yet. Stage pills always carry a
+ * text label alongside their colour class (NFR-Accessibility -- never
+ * colour-only), reusing the existing sw-pill classes from html-shell.js.
+ */
+function _renderRoadmapTab(productName, productId, login, roadmapEntries) {
+  var listHtml = roadmapEntries.length === 0
+    ? '<p style="color:var(--muted);font-size:14px">Nothing in early-stage discovery right now</p>'
+    : '<ul class="sw-list">' +
+        roadmapEntries.map(function(e) {
+          var pillClass = e.stage === 'Ideate only' ? 'sw-pill sw-pill--neutral' : 'sw-pill sw-pill--accent';
+          return '<li>' +
+            '<div style="flex:1">' +
+              '<div style="font-size:14px;font-weight:500">' + _escapeHtml(e.title) + '</div>' +
+              (e.date ? '<div style="font-size:12px;color:var(--muted);margin-top:2px">' + _escapeHtml(e.date) + '</div>' : '') +
+            '</div>' +
+            '<span class="' + pillClass + '">' + _escapeHtml(e.stage) + '</span>' +
+          '</li>';
+        }).join('') +
+      '</ul>';
+  var body = '<div style="max-width:720px">' +
+    '<div style="margin-bottom:24px">' +
+      '<div style="font-size:12px;color:var(--muted);margin-bottom:4px"><a href="/products/' + _escapeHtml(productId) + '" style="color:var(--muted);text-decoration:none">' + _escapeHtml(productName) + '</a> &rsaquo;</div>' +
+      '<h1 style="margin:0;font-size:24px">Roadmap</h1>' +
+    '</div>' +
+    listHtml +
+  '</div>';
+  return _htmlShell.renderShell({ title: 'Roadmap', bodyContent: body, user: { login: login }, active: 'dashboard', crumbs: [productName, 'Roadmap'] });
+}
+
+/**
+ * a5 -- GET /products/:id/roadmap: read-only scan of artefacts/ for
+ * discovery-only and ideate-only work with no pipeline-state.json entry
+ * yet. Reads the connected repo's local disk directly at render time (same
+ * local-disk pattern as handlePostProductFeature's repoRoot usage) -- this
+ * does NOT build the sync/cache pipeline (a new product_rollups column via
+ * an extended /product-sync), which is explicitly deferred per discovery's
+ * Out of Scope and this story's Architecture Constraints. Never writes to
+ * any artefact file.
+ */
+async function handleGetProductRoadmap(req, res, _next, pool) {
+  var _pool = pool;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+  var login = req.session && req.session.login;
+
+  var prodRow = (await _pool.query(
+    'SELECT name, tenant_id FROM products WHERE product_id = $1',
+    [productId]
+  )).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+
+  var repoRoot = _repoRootAdapter.getRepoRoot(req);
+  var artefactsDir = require('path').join(repoRoot, 'artefacts');
+  var pipelineStatePath = require('path').join(repoRoot, '.github', 'pipeline-state.json');
+  var pipelineState;
+  try {
+    pipelineState = JSON.parse(require('fs').readFileSync(pipelineStatePath, 'utf8'));
+  } catch (_) {
+    pipelineState = { features: [] };
+  }
+
+  var roadmapEntries = _roadmapScan.scanRoadmapArtefacts(artefactsDir, pipelineState);
+
+  if (res.json) {
+    res.json({ roadmap: roadmapEntries });
+  } else {
+    var html = _renderRoadmapTab(prodRow.name, productId, login, roadmapEntries);
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+  }
 }
 
 function _isTeamPlan(session) {
@@ -164,6 +939,18 @@ function _isTeamPlan(session) {
  */
 function _readBody(req) {
   if (req.body !== undefined) return Promise.resolve(req.body);
+  // pnfc-s1: pre-existing test req objects (constructed as plain
+  // `{ params, session }` literals, no EventEmitter stream) have neither
+  // `body` set nor a real `.on`. Previously no handler needing a body was
+  // ever called with such an object, so this case never triggered — but
+  // handlePostProductFeature is now extended to read a `startSkill` field via
+  // this same helper while several existing test files
+  // (check-jrf-s2-register-product-feature-journeys.js,
+  // check-psh-s4-navigation.js) call it with exactly that plain-object shape.
+  // Returning {} here (rather than throwing on the missing req.on) keeps
+  // those pre-existing tests passing unmodified and matches _readFormBody's
+  // own safe-default behaviour on parse failure.
+  if (typeof req.on !== 'function') return Promise.resolve({});
   return new Promise(function(resolve) {
     var raw = '';
     req.on('data', function(c) { raw += c; });
@@ -259,16 +1046,23 @@ async function handlePostProductConfirm(req, res, _next, pool, posthog) {
   }
 }
 
-async function handleGetDashboard(req, res, _next, pool) {
-  var _pool = pool;
-  var tenantId = req.session && req.session.tenantId;
-  var login = req.session && req.session.login;
-  var products = (await _pool.query(
+/**
+ * pan-s1: shared products-for-sidebar summary, extracted out of
+ * handleGetDashboard's own inline query (which previously computed the same
+ * per-product journey count only for its own card rendering). Returns
+ * [{productId, name, journeyCount}] plus the tenant's no-product journey
+ * count -- both feed the sidebar's Products section on every wired page
+ * (handleGetDashboard, handleGetProductView, handleGetJourney), so the
+ * count shown in the sidebar always matches the same journeys table these
+ * pages already query, regardless of which page's body is rendering.
+ */
+async function getProductsNavSummary(pool, tenantId) {
+  var products = (await pool.query(
     'SELECT product_id, name, created_at FROM products WHERE tenant_id = $1 ORDER BY created_at DESC',
     [tenantId]
   )).rows;
-  var cards = await Promise.all(products.map(async function(p) {
-    var journeyRows = (await _pool.query(
+  var withStats = await Promise.all(products.map(async function(p) {
+    var journeyRows = (await pool.query(
       'SELECT journey_id, created_at AS updated_at FROM journeys WHERE product_id = $1',
       [p.product_id]
     )).rows;
@@ -276,16 +1070,49 @@ async function handleGetDashboard(req, res, _next, pool) {
       return (!mx || j.updated_at > mx) ? j.updated_at : mx;
     }, null);
     return {
-      product_id: p.product_id,
-      name: _escapeHtml(p.name),
-      featureCount: journeyRows.length,
+      productId: p.product_id,
+      name: p.name,
+      journeyCount: journeyRows.length,
       lastUpdated: lastUpdated
     };
   }));
+  var noProductRows = (await pool.query(
+    'SELECT journey_id FROM journeys WHERE tenant_id = $1 AND product_id IS NULL',
+    [tenantId]
+  )).rows;
+  return { products: withStats, noProductJourneyCount: noProductRows.length };
+}
+
+async function handleGetDashboard(req, res, _next, pool) {
+  var _pool = pool;
+  var tenantId = req.session && req.session.tenantId;
+  var login = req.session && req.session.login;
+
+  // kbc-s1 (AC4): GET /dashboard?view=board -- tenant-scope kanban board,
+  // aggregating every journey across every product this tenant owns onto
+  // one set of stage columns, via the same shared renderer used by product
+  // and org scope. Mirrors the exact ?view=board convention the removed
+  // /features route used, per the story's Architecture Constraints.
+  if (req.query && req.query.view === 'board') {
+    var tenantColumns = await buildTenantKanbanColumns(_pool, tenantId);
+    var tenantHtml = _kanbanView.renderKanban({ columns: tenantColumns });
+    _sendKanbanHtml(res, tenantHtml);
+    return;
+  }
+
+  var navSummary = await getProductsNavSummary(_pool, tenantId);
+  var cards = navSummary.products.map(function(p) {
+    return {
+      product_id: p.productId,
+      name: _escapeHtml(p.name),
+      featureCount: p.journeyCount,
+      lastUpdated: p.lastUpdated
+    };
+  });
   if (res.json) {
     res.json({ products: cards, showCta: cards.length === 0 });
   } else {
-    var html = _renderProductDashboard(cards, login);
+    var html = _renderProductDashboard(cards, login, navSummary.products, null, navSummary.noProductJourneyCount);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
@@ -311,7 +1138,7 @@ async function handleGetProductView(req, res, _next, pool) {
   // for a missing/mismatched tenant, consistent with the existing
   // FORBIDDEN-vs-NOT_FOUND policy in middleware/journey-access.js.
   var prodRow = (await _pool.query(
-    'SELECT name, tenant_id FROM products WHERE product_id = $1',
+    'SELECT name, tenant_id, repo_owner, repo_name FROM products WHERE product_id = $1',
     [productId]
   )).rows[0];
   if (!prodRow || prodRow.tenant_id !== tenantId) {
@@ -320,24 +1147,141 @@ async function handleGetProductView(req, res, _next, pool) {
     return;
   }
   var productName = prodRow.name;
+  var rollupRow = (await _pool.query(
+    'SELECT dod_status_counts, health_counts, test_coverage, ac_coverage, taxonomy, synced_at FROM product_rollups WHERE product_id = $1',
+    [productId]
+  )).rows[0] || null;
+  var isSyncing = _productRollup.isSyncInProgress(productId);
+  // tmc-s1 (AC8, unification revision): module assignment for journeys is no
+  // longer read from journeys.module_id directly -- that column is inert
+  // (see decisions.md REVISION entry). featureModuleAssignments (fetched
+  // below, keyed by feature_slug) is consulted instead, the same map the
+  // taxonomy section uses -- one read path for both sections.
   var rows = (await _pool.query(
-    "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage FROM journeys WHERE product_id = $1",
+    "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage, data->>'displayName' AS display_name FROM journeys WHERE product_id = $1",
     [productId]
   )).rows;
+  // a4 -- fetch the product's curated modules (A1) for module-grouped
+  // rendering (AC1). The adapter's stub default throws (D37) when unwired;
+  // production server.js always wires it unconditionally (a1), so this only
+  // ever falls back to [] in test doubles that don't exercise modules at
+  // all -- matching AC4's own "zero modules" flat-fallback spirit rather
+  // than masking a real production misconfiguration.
+  var modules = [];
+  try {
+    modules = await _modulesAdapter.listModules(productId, tenantId);
+  } catch (_) {
+    modules = [];
+  }
+  // tmc-s1 (AC2) -- single query, regardless of taxonomy feature count, to
+  // fetch every feature-slug -> module_id assignment for this product. This
+  // is the join that lets a product's real GitHub-synced taxonomy (not just
+  // placeholder journeys) be classified and rendered by module, and (AC8)
+  // the same map journeys-sourced epics now use instead of journeys.module_id.
+  var featureModuleAssignments = {};
+  try {
+    featureModuleAssignments = await _modulesAdapter.getFeatureModuleAssignments(productId, tenantId);
+  } catch (_) {
+    featureModuleAssignments = {};
+  }
   var features = rows.map(function(j) {
     return {
       journey_id: j.journey_id,
       stage: j.stage || 'discovery',
       health: 'green',
-      featureSlug: j.feature_slug
+      featureSlug: j.feature_slug,
+      displayName: j.display_name || null,
+      moduleId: featureModuleAssignments.hasOwnProperty(j.feature_slug) ? featureModuleAssignments[j.feature_slug] : null
     };
   });
   if (res.json) {
     res.json({ features: features });
   } else {
-    var html = _renderProductView(productName, productId, features, login);
+    // fix-forward (post-a1): the module-management form needs a CSRF token
+    // to submit create/rename/delete, matching every other mutating form in
+    // this app (settings.js's Credits/Billing tabs, etc.).
+    var csrfToken = _csrf.generateCsrfToken(req);
+    // fps-s1 (AC6): ONE batched artefact-count read for the whole render,
+    // reusing s2.2's existing seam (same pattern already used for the
+    // kanban board) -- never a per-row query. AC4: a failed/unavailable
+    // read degrades to {} (every row's own fallback handles that).
+    var artefactCountsByJourneyId = {};
+    try {
+      artefactCountsByJourneyId = await _getArtefactCountsBulk(rows.map(function(j) { return j.journey_id; }));
+    } catch (_) {
+      artefactCountsByJourneyId = {};
+    }
+    var navSummary = await getProductsNavSummary(_pool, tenantId);
+    // mtrr-s2 (AC1/AC3): only attempt the picker when there's no repo
+    // connected yet and the session actually has a GitHub accessToken --
+    // a session with no token (Google/email login) falls straight to the
+    // manual URL-entry fallback with no picker attempt at all (that's
+    // prc-s1.2 AC3's existing account-linking gap, not this story's
+    // concern). Any listing failure (rate limit, scope, network) resolves
+    // to {ok:false, message} rather than throwing, per repo-picker.js's
+    // contract -- the page render itself is never blocked by a GitHub API
+    // failure.
+    var repoPickerResult = null;
+    var accessTokenForPicker = req.session && req.session.accessToken;
+    if (!prodRow.repo_owner && !prodRow.repo_name && accessTokenForPicker) {
+      repoPickerResult = await _repoPicker.getAccessibleRepos(accessTokenForPicker, _repoAdapter.listRepos);
+    }
+    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navSummary.products, navSummary.noProductJourneyCount, repoPickerResult);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
+  }
+}
+
+/**
+ * pr-s3 AC2/AC4 -- POST /products/:id/sync: triggers a new sync of the
+ * product's connected repo's pipeline-state.json, writing a fresh rollup to
+ * the cache table. Rejects with 409 if a sync for this product is already
+ * in flight (AC4) rather than starting a second concurrent fetch.
+ */
+async function handlePostProductSync(req, res, _next, pool, posthog) {
+  var _pool = pool;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+  var accessToken = req.session && req.session.accessToken;
+
+  var prodRow = (await _pool.query(
+    'SELECT product_id, tenant_id FROM products WHERE product_id = $1',
+    [productId]
+  )).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+
+  if (_productRollup.isSyncInProgress(productId)) {
+    if (res.status) { res.status(409).json({ error: 'A sync for this product is already in progress' }); }
+    else { res.writeHead(409, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'A sync for this product is already in progress' })); }
+    return;
+  }
+
+  var repoRow = (await _pool.query(
+    'SELECT repo_owner, repo_name FROM products WHERE product_id = $1',
+    [productId]
+  )).rows[0];
+  if (!repoRow || !repoRow.repo_owner || !repoRow.repo_name) {
+    if (res.status) { res.status(400).json({ error: 'This product has no GitHub repo configured.' }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'This product has no GitHub repo configured.' })); }
+    return;
+  }
+
+  try {
+    var rollup = await _productRollup.triggerProductSync(_pool, _pipelineStateFetchAdapter, {
+      productId: productId,
+      repoOwner: repoRow.repo_owner,
+      repoName: repoRow.repo_name,
+      accessToken: accessToken
+    });
+    if (res.status) { res.status(200).json({ synced: true, rollup: rollup }); }
+    else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ synced: true, rollup: rollup })); }
+  } catch (err) {
+    if (res.status) { res.status(502).json({ error: err.message }); }
+    else { res.writeHead(502, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: err.message })); }
   }
 }
 
@@ -431,10 +1375,24 @@ async function handlePostProductRepoCreate(req, res, _next, pool, posthog) {
   var owner = created && created.owner && created.owner.login;
   var repoName = created && created.name;
 
-  await _pool.query(
-    'UPDATE products SET repo_provider = $1, repo_owner = $2, repo_name = $3 WHERE product_id = $4',
-    ['github', owner, repoName, productId]
-  );
+  // das-s3: migrated from a duplicate raw UPDATE to the shared
+  // _applyRepoChange consolidation point (product-repo.js) -- the same code
+  // path handlePostConnectRepo and handlePutProductEdit already use (prc-s4.1
+  // precedent). This is what gives this brand-new-repo flow the das-s3
+  // backfill feature automatically, with no separate backfill call here.
+  // The repo was just created under this same token, so _applyRepoChange's
+  // own access-verification step is a real (if redundant-by-construction)
+  // GitHub check, not a special case -- one uniform path for all three
+  // callers, per the story's Architecture Constraints.
+  var productRepoModule = require('./product-repo');
+  var repoResult = await productRepoModule._applyRepoChange(_pool, productId, tenantId, owner, repoName, token);
+
+  if (!repoResult.success) {
+    var failBody = { error: repoResult.error };
+    if (res.status) { res.status(repoResult.statusCode).json(failBody); }
+    else { res.writeHead(repoResult.statusCode, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(failBody)); }
+    return;
+  }
 
   _ph.capture(tenantId, 'product_repo_created', {
     productId: productId,
@@ -459,7 +1417,13 @@ async function handlePostProductRepoCreate(req, res, _next, pool, posthog) {
     bootstrapError = (err && err.message) || 'Bootstrap failed';
   }
 
-  var okBody = { repo_provider: 'github', repo_owner: owner, repo_name: repoName };
+  // das-s3: repoResult.backfill (from _applyRepoChange) is always present
+  // alongside prc-s2.2's own bootstrap fields -- a brand-new repo just
+  // created here has nothing to backfill (AC4, zero completed stages), so
+  // backfill will always report {attempted:0, succeeded:0, skipped:[]} on
+  // this path, but the field is included for response-shape consistency
+  // with the other two entry points that call _applyRepoChange.
+  var okBody = { repo_provider: 'github', repo_owner: owner, repo_name: repoName, backfill: repoResult.backfill };
   if (bootstrapResult) {
     okBody.bootstrap = { commitSha: bootstrapResult.commitSha, fileCount: bootstrapResult.files.length };
   } else if (bootstrapError) {
@@ -489,6 +1453,130 @@ function _respondFlagDisabled(res) {
   }
 }
 
+function _sendKanbanHtml(res, html) {
+  if (res.contentType) {
+    res.contentType('text/html');
+    res.send(html);
+  } else {
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+  }
+}
+
+/**
+ * kbc-s1 (AC1) -- single shared column-building function used by product,
+ * org, AND tenant scope. Takes a list of "product journey groups" —
+ * [{ productId, productName, journeys: [{ journey_id, feature_slug, stage, health }] }]
+ * — flattens every journey across every group, and buckets them onto
+ * STAGE_COLUMNS. Product scope calls this with exactly one group and no
+ * productName prefix; org and tenant scope call it with N groups (one per
+ * product) and prefix each card's title with its product name so cards from
+ * different products remain distinguishable on one shared board.
+ * @param {Array} productJourneyGroups
+ * @returns {Array} STAGE_COLUMNS-shaped columns: [{ stage, cards: [{id, title, health, healthLabel, ready}] }]
+ */
+function _aggregateJourneysByStage(productJourneyGroups) {
+  var allCards = [];
+  var sessionIdsToCheck = [];
+  (productJourneyGroups || []).forEach(function(group) {
+    (group.journeys || []).forEach(function(j) {
+      var health = j.health || 'green';
+      // fdn-s1: prefer the operator-set displayName over the raw slug,
+      // matching every other feature-identity render site.
+      var cardLabel = j.display_name || j.feature_slug || j.journey_id;
+      var title = group.productName
+        ? (group.productName + ': ' + cardLabel)
+        : cardLabel;
+      var activeSessionId = j.active_session_id || null;
+      if (activeSessionId) sessionIdsToCheck.push(activeSessionId);
+      allCards.push({
+        id: j.journey_id,
+        title: title,
+        stage: j.stage || 'discovery',
+        health: health,
+        healthLabel: _healthLabel(health),
+        activeSessionId: activeSessionId
+      });
+    });
+  });
+
+  // s1.1 (AC2, AC3): resolve every card's advance-readiness via ONE batched
+  // session-store read for the whole board render, keyed by activeSessionId
+  // -- never one _getHtmlSession() call per card. A card with no active
+  // session (e.g. already complete, or none registered yet) is never ready.
+  var sessionsById = _getHtmlSessionsBulk(sessionIdsToCheck);
+  allCards.forEach(function(c) {
+    var session = c.activeSessionId ? sessionsById[c.activeSessionId] : null;
+    c.ready = !!(session && session.done === true);
+  });
+
+  return STAGE_COLUMNS.map(function(stage) {
+    return {
+      stage: stage,
+      cards: allCards
+        .filter(function(c) { return c.stage === stage; })
+        .map(function(c) { return { id: c.id, title: c.title, health: c.health, healthLabel: c.healthLabel, ready: c.ready }; })
+    };
+  });
+}
+
+/**
+ * kbc-s1 (AC2) -- product-scope column builder: wraps a single product's
+ * journey rows as one group (no product-name prefix, since every card on a
+ * product board is already scoped to that one product) and delegates to the
+ * shared _aggregateJourneysByStage function (AC1: no duplicated column-
+ * building logic across scopes).
+ * @param {Array} rows -- journeys rows: [{ journey_id, feature_slug, stage, health }]
+ * @returns {Array} STAGE_COLUMNS-shaped columns
+ */
+function buildProductKanbanColumns(rows) {
+  return _aggregateJourneysByStage([{ productId: null, productName: null, journeys: rows || [] }]);
+}
+
+/**
+ * kbc-s1 (AC3) -- org-scope column builder: takes the per-product journey
+ * groups already fetched for an org (each with its productName) and
+ * delegates to the shared _aggregateJourneysByStage function.
+ * @param {Array} productJourneyGroups -- [{ productId, productName, journeys }]
+ * @returns {Array} STAGE_COLUMNS-shaped columns
+ */
+function buildOrgKanbanColumns(productJourneyGroups) {
+  return _aggregateJourneysByStage(productJourneyGroups);
+}
+
+/**
+ * kbc-s1 (AC4) -- tenant-scope column builder: fetches every product this
+ * tenant owns, then fetches each product's journeys IN PARALLEL via
+ * Promise.all (reusing the exact parallelisation pattern handleGetDashboard
+ * already uses below, per the DoR assumption and the Performance NFR), then
+ * delegates to the same shared _aggregateJourneysByStage function used by
+ * product/org scope. This is what makes AC4 a genuine cross-product
+ * aggregate rather than accidentally scoped to only the first product found
+ * (U4's specific concern).
+ * @param {object} pool -- pg Pool (or equivalent .query()-capable client)
+ * @param {string} tenantId
+ * @returns {Promise<Array>} STAGE_COLUMNS-shaped columns
+ */
+async function buildTenantKanbanColumns(pool, tenantId) {
+  var products = (await pool.query(
+    'SELECT product_id, name, created_at FROM products WHERE tenant_id = $1 ORDER BY created_at DESC',
+    [tenantId]
+  )).rows;
+
+  var productJourneyGroups = await Promise.all(products.map(async function(p) {
+    var jRows = (await pool.query(
+      "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage, data->>'activeSessionId' AS active_session_id, data->>'displayName' AS display_name FROM journeys WHERE product_id = $1",
+      [p.product_id]
+    )).rows;
+    return { productId: p.product_id, productName: p.name, journeys: jRows };
+  }));
+
+  var tenantColumns = _aggregateJourneysByStage(productJourneyGroups);
+  // s2.2 (AC4) -- enrich with artefact counts via one batched read, not per-card.
+  await _enrichColumnsWithArtefactCounts(tenantColumns);
+  return tenantColumns;
+}
+
 async function handleGetProductKanban(req, res, _next, pool, posthog) {
   var _pool = pool;
   var _ph = posthog || _posthog;
@@ -497,7 +1585,7 @@ async function handleGetProductKanban(req, res, _next, pool, posthog) {
 
   // bri-s1.5 AC2 — gate before the DB call; D37: only the shared isEnabled() helper,
   // no bespoke per-flag evaluation logic.
-  var _productKanbanOn = await _postHogFlags.isEnabled(_flagKeys.PRODUCT_KANBAN_VIEW, { tenantId: tenantId });
+  var _productKanbanOn = await _postHogFlags.isEnabledOrDefault(_flagKeys.PRODUCT_KANBAN_VIEW, { tenantId: tenantId });
   if (!_productKanbanOn) {
     _respondFlagDisabled(res);
     return;
@@ -518,29 +1606,17 @@ async function handleGetProductKanban(req, res, _next, pool, posthog) {
   }
 
   var rows = (await _pool.query(
-    "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage FROM journeys WHERE product_id = $1",
+    "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage, data->>'activeSessionId' AS active_session_id, data->>'displayName' AS display_name FROM journeys WHERE product_id = $1",
     [productId]
   )).rows;
 
-  var columns = STAGE_COLUMNS.map(function(stage) {
-    var features = rows
-      .filter(function(j) { return (j.stage || 'discovery') === stage; })
-      .map(function(j) {
-        var health = j.health || 'green';
-        return {
-          journey_id: j.journey_id,
-          name: _escapeHtml(j.feature_slug || j.journey_id),
-          health: health,
-          healthLabel: _healthLabel(health),
-          healthIcon: health === 'red' ? '⚠' : (health === 'amber' ? '⚠' : '✓')
-        };
-      });
-    return {
-      stage: stage,
-      features: features,
-      emptyLabel: features.length === 0 ? 'No features at this stage' : null
-    };
-  });
+  // kbc-s1 (AC1, AC2): shared column-builder + shared renderer, real HTML
+  // response instead of raw JSON. Data-shaping logic (STAGE_COLUMNS,
+  // health labels) is unchanged from before this story -- only the "return
+  // raw JSON, no rendering" behaviour is replaced, per the DoR contract.
+  var columns = buildProductKanbanColumns(rows);
+  // s2.2 (AC4) -- enrich with artefact counts via one batched read, not per-card.
+  await _enrichColumnsWithArtefactCounts(columns);
 
   _ph.capture(tenantId || (req.session && req.session.login), 'kanban_viewed', {
     view: 'product',
@@ -549,8 +1625,8 @@ async function handleGetProductKanban(req, res, _next, pool, posthog) {
     featureCount: rows.length
   });
 
-  if (res.json) { res.json({ columns: columns }); }
-  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ columns: columns })); }
+  var html = _kanbanView.renderKanban({ columns: columns });
+  _sendKanbanHtml(res, html);
 }
 
 async function handleGetOrgKanban(req, res, _next, pool, posthog) {
@@ -563,7 +1639,7 @@ async function handleGetOrgKanban(req, res, _next, pool, posthog) {
   // group targeting (bri-s1.4) applies. Not-found/disabled for a non-targeted tenant
   // never touches the products/journeys query below, so no other tenant's board
   // data can leak even transiently (Security NFR, ADR-025).
-  var _orgKanbanOn = await _postHogFlags.isEnabled(_flagKeys.ORG_KANBAN_VIEW, { tenantId: tenantId });
+  var _orgKanbanOn = await _postHogFlags.isEnabledOrDefault(_flagKeys.ORG_KANBAN_VIEW, { tenantId: tenantId });
   if (!_orgKanbanOn) {
     _respondFlagDisabled(res);
     return;
@@ -579,75 +1655,1105 @@ async function handleGetOrgKanban(req, res, _next, pool, posthog) {
     : prodRows;
 
   var allJourneyCount = 0;
-  var groups = [];
+  var productJourneyGroups = [];
   for (var i = 0; i < filteredProds.length; i++) {
     var p = filteredProds[i];
     var jRows = (await _pool.query(
-      "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage FROM journeys WHERE product_id = $1 AND tenant_id = $2",
+      "SELECT journey_id, feature_slug, data->>'activeSkill' AS stage, data->>'activeSessionId' AS active_session_id, data->>'displayName' AS display_name FROM journeys WHERE product_id = $1 AND tenant_id = $2",
       [p.product_id, tenantId]
     )).rows;
     allJourneyCount += jRows.length;
-    var features = jRows.map(function(j) {
-      var stage = j.stage || 'discovery';
-      return {
-        journey_id: j.journey_id,
-        name: _escapeHtml(j.feature_slug || j.journey_id),
-        stage: stage,
-        health: 'green',
-        healthLabel: 'Healthy',
-        stageLink: '/journeys/' + j.journey_id + '/' + stage
-      };
-    });
-    groups.push({
-      product_id: p.product_id,
-      productName: _escapeHtml(p.name),
-      features: features
-    });
+    productJourneyGroups.push({ productId: p.product_id, productName: p.name, journeys: jRows });
   }
+
+  // kbc-s1 (AC1, AC3): same shared column-builder + shared renderer used by
+  // product scope -- not a second, independently-styled implementation.
+  var columns = buildOrgKanbanColumns(productJourneyGroups);
+  // s2.2 (AC4) -- enrich with artefact counts via one batched read, not per-card.
+  await _enrichColumnsWithArtefactCounts(columns);
 
   _ph.capture(tenantId || (req.session && req.session.login), 'kanban_viewed', {
     view: 'org',
     tenantId: tenantId,
-    productCount: groups.length,
+    productCount: productJourneyGroups.length,
     featureCount: allJourneyCount
   });
 
-  if (res.json) { res.json({ groups: groups }); }
-  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ groups: groups })); }
+  var html = _kanbanView.renderKanban({ columns: columns });
+  _sendKanbanHtml(res, html);
+}
+
+/**
+ * s1.1 -- POST /api/board/journey/:journeyId/advance: the new board-driven
+ * "Advance" action. This is a NEW CALLER of the existing, already-proven
+ * gate-confirm route (handlePostGateConfirm, routes/journey.js) -- it does
+ * NOT reimplement artefact validation, persistence, or stage-advance logic.
+ *
+ * Flow:
+ *   1. Tenant-ownership check (AC4) -- same 404-not-403 policy already used
+ *      by handleGetProductKanban (bri-s3.4), applied directly against the
+ *      journeys table's own tenant_id column (a journey belongs to exactly
+ *      one tenant; no product-table indirection needed for this check).
+ *   2. Readiness precondition (AC1/AC2 architecture constraint) -- re-checked
+ *      here via the SAME batched bulk-session-read function the board render
+ *      uses (AC3), not a second lookup mechanism. A crafted request against a
+ *      not-ready journey is rejected even if a client bypassed the board's
+ *      own disabled-action UI.
+ *   3. Delegates the actual advance to handlePostGateConfirm by invoking it
+ *      directly with the real req (same session/journeyId) and a captured
+ *      mock res -- this reuses the exact validation/persistence/state-write
+ *      code path the chat-session UI's own gate-confirm button already runs,
+ *      byte-for-byte (per the story's "no parallel mechanism" constraint).
+ *   4. Translates handlePostGateConfirm's raw-HTTP-style outcome (redirect on
+ *      success, 422 on validation failure, etc.) into a small JSON response
+ *      the board's fetch-based "Advance" button can act on (AC5: the real
+ *      failure reason is surfaced, not a generic message).
+ *
+ * @param {object} req -- must have req.session.tenantId, req.params.journeyId
+ * @param {object} res
+ * @param {*} _next -- unused, kept for handler-signature parity with sibling handlers
+ * @param {object} pool -- pg Pool
+ * @param {object} [posthog]
+ */
+async function handlePostBoardAdvance(req, res, _next, pool, posthog) {
+  var _pool = pool;
+  var journeyId = req.params && req.params.journeyId;
+  var tenantId = req.session && req.session.tenantId;
+
+  function respond(status, body) {
+    if (res.status) { res.status(status).json(body); }
+    else { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(body)); }
+  }
+
+  // AC4: tenant-ownership check -- 404 (not 403) on a missing/mismatched
+  // journey, matching the FORBIDDEN-vs-NOT_FOUND policy already used by
+  // handleGetProductKanban/handleGetProductView (bri-s3.4).
+  var _journeyOwnerRow = (await _pool.query(
+    'SELECT tenant_id FROM journeys WHERE journey_id = $1',
+    [journeyId]
+  )).rows[0];
+  if (!_journeyOwnerRow || _journeyOwnerRow.tenant_id !== tenantId) {
+    respond(404, { error: 'not found' });
+    return;
+  }
+
+  // Readiness precondition, re-checked server-side (architecture constraint:
+  // "the board action's endpoint must check this same precondition before
+  // even attempting gate-confirm").
+  var _journeyStoreMod = require('../modules/journey-store');
+  var journey = _journeyStoreMod.getJourney(journeyId);
+  if (!journey) {
+    respond(404, { error: 'not found' });
+    return;
+  }
+  var activeSessionId = journey.activeSessionId || null;
+  var sessionsById = _getHtmlSessionsBulk(activeSessionId ? [activeSessionId] : []);
+  var activeSession = activeSessionId ? sessionsById[activeSessionId] : null;
+  if (!activeSession || activeSession.done !== true) {
+    respond(400, { error: 'not-ready', reason: 'Session not complete yet.' });
+    return;
+  }
+
+  // Delegate to the REAL gate-confirm route. handlePostGateConfirm is
+  // raw-HTTP-style (writeHead/end, including 303 redirects on success) --
+  // capture its output rather than reimplementing any part of its logic.
+  var _journeyRoutes = require('./journey');
+  var captured = { statusCode: null, headers: {}, body: '' };
+  var mockRes = {
+    writeHead: function(code, headers) { captured.statusCode = code; Object.assign(captured.headers, headers || {}); },
+    setHeader: function(k, v) { captured.headers[k] = v; },
+    end: function(body) { captured.body += (body || ''); }
+  };
+  await _journeyRoutes.handlePostGateConfirm(req, mockRes);
+
+  if (captured.statusCode === 422) {
+    // AC5: surface the real validation-failure reason, not a generic message.
+    var errBody;
+    try { errBody = JSON.parse(captured.body); } catch (_e) { errBody = { error: 'validation-failed' }; }
+    respond(422, errBody);
+    return;
+  }
+  if (captured.statusCode === 400) {
+    respond(400, { error: 'not-ready', reason: 'Session not complete yet.' });
+    return;
+  }
+  if (captured.statusCode === 404) {
+    respond(404, { error: 'not found' });
+    return;
+  }
+  if (captured.statusCode && captured.statusCode >= 500) {
+    respond(captured.statusCode, { error: 'advance-failed', detail: captured.body || null });
+    return;
+  }
+
+  // Success (gate-confirm redirected, typically 303, to the next
+  // session/stories/complete route). Re-read the journey's now-updated
+  // stage so the board can reflect the move without a full page reload.
+  var updatedJourney = _journeyStoreMod.getJourney(journeyId);
+  respond(200, { advanced: true, stage: (updatedJourney && updatedJourney.activeSkill) || null });
 }
 
 async function handlePostProductFeature(req, res, _next, pool, posthog) {
+  var _ph = posthog || _posthog;
+  var tenantId = req.session && req.session.tenantId;
+  var productId = req.params && req.params.id;
+
+  // pnfc-s1: branch on the submitted startSkill exactly as handlePostJourney
+  // (routes/journey.js, POST /api/journey) already does -- 'ideate' for the
+  // rough-idea path, 'discovery' (the pre-existing default) for everything
+  // else, including omission. This is a deliberate duplication of
+  // handlePostJourney's one-line ternary rather than a call into that
+  // function -- see decisions.md for why extending handlePostJourney to also
+  // accept productId was rejected in favour of this smaller, lower-risk
+  // change confined to this file.
+  req.body = await _readBody(req);
+  var startSkill = (req.body && req.body.startSkill === 'ideate') ? 'ideate' : 'discovery';
+  // fdn-s1: optional -- omission (or a blank/whitespace-only value) leaves
+  // displayName null, matching today's behaviour (raw slug shown).
+  var displayName = (req.body && typeof req.body.displayName === 'string' && req.body.displayName.trim())
+    ? req.body.displayName.trim()
+    : null;
+
+  // fix-forward (post-launch): pre-flight billing gate, ported from
+  // handlePostJourney (routes/journey.js, POST /api/journey, s2.1). This
+  // handler (the "add feature" flow from within a product's own page) is a
+  // SEPARATE journey-creation entry point that had never been wired to the
+  // usage-cap check at all -- a trial tenant could create unlimited
+  // features here regardless of MAX_JOURNEYS_PER_TENANT, bypassing the same
+  // gate the standalone /journey form has always correctly enforced. Found
+  // live in production: a signup that never completed Stripe checkout could
+  // still create products and features with no restriction via this path.
+  var _journeyStoreForCap = require('../modules/journey-store');
+  var _tenantPlanForCap = require('../modules/tenant-plan');
+  var _repoRootAdapterForCap = require('../adapters/repo-root');
+  if (tenantId) {
+    var _repoRootForCap = _repoRootAdapterForCap.getRepoRoot(req);
+    var _allForCap = [];
+    try { _allForCap = _journeyStoreForCap.listJourneys ? _journeyStoreForCap.listJourneys(_repoRootForCap) : []; } catch (_) {}
+    var _tenantCountForCap = _allForCap.filter(function(j) { return j.tenantId === tenantId; }).length;
+    var _capResult = await _tenantPlanForCap.checkJourneyCap(tenantId, _tenantCountForCap, _repoRootForCap);
+    if (!_capResult.allowed) {
+      console.error('[handlePostProductFeature] Journey limit reached for tenant ' + tenantId + ' (cap=' + _capResult.cap + ')');
+      res.writeHead(402, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(_htmlShell.renderShell({
+        title: 'Journey limit reached',
+        bodyContent: '<div class="sw-page-content"><h1>Journey limit reached</h1><p>You have reached the maximum of ' + _capResult.cap + ' journey' + (_capResult.cap === 1 ? '' : 's') + ' for your account. This limit is tied to your plan, not your credits balance &mdash; contact the operator to increase it.</p><a href="/dashboard">Back to dashboard</a></div>',
+        user: { login: req.session && req.session.login || '' }
+      }));
+      return;
+    }
+  }
+
+  // das-s2: require a connected repo before a brand-new product (journey
+  // count = 0) can start its first journey, so Story 1's dual-write
+  // durability guarantee (das-s1) applies to it from the very first stage
+  // it completes. "Brand-new" is defined operationally as journey count =
+  // 0 for THIS product, never by creation date -- a product with >=1
+  // existing journey must never be blocked, regardless of when it was
+  // created or why it still has no repo (AC3, the exact boundary condition
+  // review caught and fixed as 1-M1). Out of scope: no retroactive
+  // migration/blocking of existing repo-less products (matches the
+  // /clarify Option A decision, decisions.md).
+  //
+  // Note (plans/das-s2-plan.md): the DoR contract named journey.js's
+  // handlePostJourney as the touch point, but that handler has no concept
+  // of productId at all (its journeys always have productId == null, see
+  // journey.js:324) -- this handler is the only journey-creation entry
+  // point with a real productId in scope, so the gate lives here instead.
+  if (tenantId) {
+    var _journeyStoreForRepoGate = _journeyStoreForCap;
+    var _allForRepoGate = [];
+    try { _allForRepoGate = _journeyStoreForRepoGate.listJourneys ? _journeyStoreForRepoGate.listJourneys() : []; } catch (_) {}
+    var _productJourneyCount = _allForRepoGate.filter(function(j) { return j.productId === productId; }).length;
+
+    if (_productJourneyCount === 0) {
+      var _repoRow = null;
+      try {
+        var _repoResult = await pool.query(
+          'SELECT repo_owner, repo_name FROM products WHERE product_id = $1 AND tenant_id = $2',
+          [productId, tenantId]
+        );
+        _repoRow = _repoResult && _repoResult.rows && _repoResult.rows[0];
+      } catch (err) {
+        console.error('[handlePostProductFeature] das-s2 repo-gate query failed:', err.message);
+      }
+
+      if (!_repoRow || (!_repoRow.repo_owner && !_repoRow.repo_name)) {
+        res.writeHead(409, { 'Content-Type': 'text/html; charset=utf-8' });
+        res.end(_htmlShell.renderShell({
+          title: 'Connect a repo to get started',
+          bodyContent: '<div class="sw-page-content"><h1>Connect a repo to get started</h1><p>This product needs a connected GitHub repo before its first journey can start, so your completed work is durably saved from day one.</p><a href="/products/' + _escapeHtml(productId) + '">Connect a repo</a></div>',
+          user: { login: req.session && req.session.login || '' }
+        }));
+        return;
+      }
+    }
+  }
+
+  // jrf-s2: FIX — register the journey through the shared journey-store
+  // (createJourney + setJourneyFields), the SAME path handlePostJourney
+  // (routes/journey.js) already uses correctly. The previous raw, direct
+  // `INSERT INTO journeys` here bypassed the in-memory _journeys Map
+  // entirely -- every journey created via this handler was invisible to
+  // getJourney/setActiveSession/completeStage, so it silently no-op'd past
+  // discovery and 404'd at gate-confirm ("Journey not found"). See
+  // decisions.md FIX entry -- confirmed live via direct DB inspection.
+  var _journeyStore = require('../modules/journey-store');
+  var created = _journeyStore.createJourney('pending', 'default');
+  var journeyId = created.journeyId;
+  var featureSlug = 'new-feature-' + journeyId.slice(0, 8);
+  _journeyStore.setJourneyFields(journeyId, {
+    featureSlug: featureSlug,
+    displayName: displayName,
+    ownerId:     (req.session && req.session.login) || null,
+    tenantId:    tenantId,
+    productId:   productId
+  });
+
+  _ph.capture(tenantId, 'journey_created', {
+    journeyId: journeyId,
+    productId: productId,
+    tenantId: tenantId,
+    startSkill: startSkill
+  });
+
+  // jrf-s1: FIX — Create a skill session and redirect to discovery chat (not broken /journeys/ route)
+  // Following the same pattern as handlePostJourney in journey.js (which works correctly)
+  var crypto = require('crypto');
+  var path = require('path');
+  var _skillsRoute = require('./skills');
+  var _journeyDisk = require('../../modules/journey-disk');
+  var _repoRootAdapter = require('../adapters/repo-root');
+
+  try {
+    var repoRoot = _repoRootAdapter.getRepoRoot(req);
+
+    // Create skill session (following handlePostJourney pattern at line 408-420)
+    var sid = crypto.randomUUID();
+    var sessionPath = path.join(repoRoot, 'artefacts', featureSlug, 'sessions', sid);
+
+    // Register the session under the chosen skill (pnfc-s1: was hardcoded 'discovery')
+    _skillsRoute.registerHtmlSession(sid, sessionPath, startSkill, {
+      productProfile: 'default',
+      featureSlug: featureSlug
+    });
+
+    // Link session to journey
+    _skillsRoute.linkSessionToJourney(sid, journeyId);
+
+    // Mark active session on journey (if store supports it)
+    if (_journeyStore.setActiveSession) {
+      _journeyStore.setActiveSession(journeyId, sid, startSkill);
+    }
+
+    // Mark stage as active on disk
+    try {
+      _journeyDisk.updateStage(featureSlug, startSkill, { status: 'active', sessionId: sid }, repoRoot);
+    } catch (_) {
+      // Disk update is best-effort; don't fail if it doesn't work
+    }
+
+    // Redirect to the skill chat (FIXED: /skills/ not /journeys/)
+    var _target = '/skills/' + encodeURIComponent(startSkill) + '/sessions/' + encodeURIComponent(sid) + '/chat';
+    if (res.redirect) {
+      res.redirect(_target); // test mock path
+    } else {
+      res.writeHead(303, { 'Location': _target });
+      res.end();
+    }
+  } catch (err) {
+    // Fallback: if session creation fails, still redirect but log the error
+    console.error('[handlePostProductFeature] Failed to create skill session:', err);
+    var _fallbackTarget = '/skills/' + encodeURIComponent(startSkill) + '/sessions/fallback/chat';
+    if (res.redirect) {
+      res.redirect(_fallbackTarget); // test mock path
+    } else {
+      res.writeHead(303, { 'Location': _fallbackTarget });
+      res.end();
+    }
+  }
+}
+
+/**
+ * prc-s4.1 — PUT /products/:id — edit a product's name, description, and/or
+ * repo association. Name/description are simple UPDATEs (AC1). Repo changes
+ * reuse the repo-access-verification logic from prc-s1.2 via the shared
+ * _applyRepoChange helper in product-repo.js, ensuring the edit and
+ * first-time-configuration flows never drift (AC3).
+ */
+async function handlePutProductEdit(req, res, _next, pool, posthog) {
+  req.body = await _readBody(req);
   var _pool = pool;
   var _ph = posthog || _posthog;
   var tenantId = req.session && req.session.tenantId;
   var productId = req.params && req.params.id;
-  var journeyId = require('crypto').randomUUID();
-  await _pool.query(
-    `INSERT INTO journeys (journey_id, feature_slug, tenant_id, product_id, data) VALUES ($1, $2, $3, $4, '{}'::jsonb) ON CONFLICT DO NOTHING`,
-    [journeyId, 'new-feature-' + journeyId.slice(0, 8), tenantId, productId]
-  );
-  _ph.capture(tenantId, 'journey_created', {
-    journeyId: journeyId,
-    productId: productId,
-    tenantId: tenantId
-  });
-  if (res.redirect) {
-    res.redirect('/journeys/' + journeyId + '/discovery'); // test mock path
+  var accessToken = req.session && req.session.accessToken;
+  var name = (req.body && req.body.name) || undefined;
+  var description = (req.body && req.body.description) || undefined;
+  var owner = (req.body && req.body.owner) || undefined;
+  var repo = (req.body && req.body.repo) || undefined;
+  var _dasBackfill = undefined; // das-s3: set only when the repo branch below actually runs
+
+  // Tenant-ownership check first
+  var prodRow = (await _pool.query(
+    'SELECT product_id, tenant_id FROM products WHERE product_id = $1',
+    [productId]
+  )).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) {
+      res.status(404).json({ error: 'not found' });
+    } else {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'not found' }));
+    }
+    return;
+  }
+
+  // AC1: Update name/description if provided
+  if (name !== undefined || description !== undefined) {
+    var setClause = [];
+    var params = [];
+    var paramIndex = 1;
+
+    if (name !== undefined) {
+      setClause.push('name = $' + paramIndex);
+      params.push(name);
+      paramIndex++;
+    }
+    if (description !== undefined) {
+      setClause.push('description = $' + paramIndex);
+      params.push(description);
+      paramIndex++;
+    }
+
+    params.push(productId);
+    await _pool.query(
+      'UPDATE products SET ' + setClause.join(', ') + ' WHERE product_id = $' + paramIndex,
+      params
+    );
+
+    _ph.capture(tenantId, 'product_edited', {
+      productId: productId,
+      tenantId: tenantId,
+      name: name,
+      description: description,
+      changedBy: req.session && req.session.login
+    });
+  }
+
+  // AC2/AC3: Update repo if provided (reuse shared logic from product-repo.js)
+  if (owner !== undefined && repo !== undefined) {
+    if (!accessToken) {
+      if (res.status) {
+        res.status(200).json({
+          error: 'Link your GitHub account first to connect a repo.',
+          linkUrl: '/settings/link-account/github/start'
+        });
+      } else {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          error: 'Link your GitHub account first to connect a repo.',
+          linkUrl: '/settings/link-account/github/start'
+        }));
+      }
+      return;
+    }
+
+    var productRepoModule = require('./product-repo');
+    var repoResult = await productRepoModule._applyRepoChange(_pool, productId, tenantId, owner, repo, accessToken);
+
+    if (!repoResult.success) {
+      if (res.status) {
+        res.status(repoResult.statusCode).json({ error: repoResult.error });
+      } else {
+        res.writeHead(repoResult.statusCode, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: repoResult.error }));
+      }
+      return;
+    }
+
+    _ph.capture(tenantId, 'product_repo_connected', {
+      productId: productId,
+      tenantId: tenantId,
+      owner: owner,
+      repo: repo,
+      changedBy: req.session && req.session.login
+    });
+
+    _dasBackfill = repoResult.backfill; // das-s3 AC3
+  }
+
+  var editedBody = { edited: true };
+  if (_dasBackfill !== undefined) editedBody.backfill = _dasBackfill;
+  if (res.status) {
+    res.status(200).json(editedBody);
   } else {
-    res.writeHead(302, { 'Location': '/journeys/' + journeyId + '/discovery' });
-    res.end();
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(editedBody));
   }
 }
 
+/**
+ * a1 (AC5) -- GET /products/:id/modules: list every module curated for this
+ * product, scoped by tenant (404 for a missing/mismatched tenant, matching
+ * the FORBIDDEN-vs-NOT_FOUND policy used elsewhere in this file). Added
+ * because AC1 ("appears in the product's module list on next page load")
+ * and the test plan's own AC1 integration test both require a GET endpoint,
+ * even though the DoR contract's "What will be built" section named only
+ * POST/PUT/DELETE (see decisions.md, /implementation-plan SCOPE entry).
+ */
+async function handleGetProductModules(req, res, _next, pool) {
+  var _pool = pool;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+
+  var prodRow = (await _pool.query('SELECT tenant_id FROM products WHERE product_id = $1', [productId])).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+
+  var modules = await _modulesAdapter.listModules(productId, tenantId);
+  if (res.status) { res.status(200).json({ modules: modules }); }
+  else if (res.json) { res.json({ modules: modules }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ modules: modules })); }
+}
+
+/**
+ * a1 (AC1, AC4) -- POST /products/:id/modules: create a new module for a
+ * product. Tenant-scoped (404 for a missing/mismatched tenant). Rejects an
+ * empty name (400) and a duplicate name within the same product (409, with
+ * a clear message) -- no duplicate module record is ever created.
+ */
+async function handlePostProductModule(req, res, _next, pool, posthog) {
+  // fix-forward (post-a1) -- this mutating form-submitted route had no CSRF
+  // check at all until the operator-facing UI was added; csrfGuard reads and
+  // caches the body itself, so the _readBody call below (unchanged) picks it
+  // up via its own req.body !== undefined short-circuit.
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+  req.body = await _readBody(req);
+  var _pool = pool;
+  var _ph = posthog || _posthog;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+  var name = ((req.body && req.body.name) || '').trim();
+
+  var prodRow = (await _pool.query('SELECT tenant_id FROM products WHERE product_id = $1', [productId])).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+  if (!name) {
+    if (res.status) { res.status(400).json({ error: 'Module name is required.' }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'Module name is required.' })); }
+    return;
+  }
+
+  var moduleRow;
+  try {
+    moduleRow = await _modulesAdapter.createModule(productId, tenantId, name);
+  } catch (err) {
+    if (err && err.code === 'DUPLICATE_MODULE') {
+      if (res.status) { res.status(409).json({ error: err.message }); }
+      else { res.writeHead(409, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: err.message })); }
+      return;
+    }
+    throw err;
+  }
+
+  _ph.capture(tenantId, 'module_created', { productId: productId, tenantId: tenantId, moduleId: moduleRow.id });
+
+  if (res.status) { res.status(201).json({ module: moduleRow }); }
+  else { res.writeHead(201, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ module: moduleRow })); }
+}
+
+/**
+ * a1 (AC2) -- PUT /products/:id/modules/:moduleId: rename an existing
+ * module. The module's id never changes, so every existing reference to it
+ * (e.g. a journey/epic assigned to it) survives the rename. Tenant-scoped;
+ * 404 for an unknown/foreign module id, 409 for a rename that collides with
+ * a different existing module's name.
+ */
+async function handlePutProductModule(req, res, _next, pool, posthog) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+  req.body = await _readBody(req);
+  var _pool = pool;
+  var productId = req.params && req.params.id;
+  var moduleId = req.params && req.params.moduleId;
+  var tenantId = req.session && req.session.tenantId;
+  var name = ((req.body && req.body.name) || '').trim();
+
+  var prodRow = (await _pool.query('SELECT tenant_id FROM products WHERE product_id = $1', [productId])).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+  if (!name) {
+    if (res.status) { res.status(400).json({ error: 'Module name is required.' }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'Module name is required.' })); }
+    return;
+  }
+
+  var moduleRow;
+  try {
+    moduleRow = await _modulesAdapter.renameModule(productId, tenantId, moduleId, name);
+  } catch (err) {
+    if (err && err.code === 'NOT_FOUND') {
+      if (res.status) { res.status(404).json({ error: 'not found' }); }
+      else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+      return;
+    }
+    if (err && err.code === 'DUPLICATE_MODULE') {
+      if (res.status) { res.status(409).json({ error: err.message }); }
+      else { res.writeHead(409, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: err.message })); }
+      return;
+    }
+    throw err;
+  }
+
+  if (res.status) { res.status(200).json({ module: moduleRow }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ module: moduleRow })); }
+}
+
+/**
+ * a1 (AC3) -- DELETE /products/:id/modules/:moduleId: delete a module.
+ * Every journey/epic previously assigned to it is reassigned to Unassigned
+ * (module_id = NULL) by modules-adapter.js's deleteModule -- no epic
+ * silently disappears from the product view. Tenant-scoped; 404 for an
+ * unknown/foreign module id, with zero rows affected.
+ */
+async function handleDeleteProductModule(req, res, _next, pool, posthog) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+  var _pool = pool;
+  var productId = req.params && req.params.id;
+  var moduleId = req.params && req.params.moduleId;
+  var tenantId = req.session && req.session.tenantId;
+
+  var prodRow = (await _pool.query('SELECT tenant_id FROM products WHERE product_id = $1', [productId])).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+
+  try {
+    await _modulesAdapter.deleteModule(productId, tenantId, moduleId);
+  } catch (err) {
+    if (err && err.code === 'NOT_FOUND') {
+      if (res.status) { res.status(404).json({ error: 'not found' }); }
+      else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+      return;
+    }
+    throw err;
+  }
+
+  if (res.status) { res.status(200).json({ deleted: true, module_id: moduleId }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ deleted: true, module_id: moduleId })); }
+}
+
+/**
+ * a2 (AC1-AC4) -- PUT /products/:id/epics/:epicId/module: reassign an epic
+ * (a `journeys` row) to a different module within the same product.
+ * Tenant-scoped (404 for a missing/mismatched tenant, matching the
+ * FORBIDDEN-vs-NOT_FOUND policy used elsewhere in this file). Rejects an
+ * unknown epic or a module belonging to a different product (AC4) with 404
+ * and zero rows changed. Reuses A1's modules-adapter.js -- no new adapter
+ * (see DoR H-ADAPTER check, decisions.md).
+ */
+async function handlePutEpicModule(req, res, _next, pool, posthog) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+  req.body = await _readBody(req);
+  var _pool = pool;
+  var _ph = posthog || _posthog;
+  var productId = req.params && req.params.id;
+  var epicId = req.params && req.params.epicId;
+  var tenantId = req.session && req.session.tenantId;
+  var moduleId = (req.body && req.body.moduleId) || '';
+  if (typeof moduleId === 'string') { moduleId = moduleId.trim(); }
+
+  var prodRow = (await _pool.query('SELECT tenant_id FROM products WHERE product_id = $1', [productId])).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+  if (!moduleId) {
+    if (res.status) { res.status(400).json({ error: 'moduleId is required.' }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'moduleId is required.' })); }
+    return;
+  }
+
+  var result;
+  try {
+    result = await _modulesAdapter.reassignEpic(productId, tenantId, epicId, moduleId);
+  } catch (err) {
+    if (err && (err.code === 'EPIC_NOT_FOUND' || err.code === 'MODULE_NOT_FOUND')) {
+      if (res.status) { res.status(404).json({ error: 'not found' }); }
+      else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+      return;
+    }
+    throw err;
+  }
+
+  _ph.capture(tenantId, 'epic_reassigned', { productId: productId, tenantId: tenantId, epicId: epicId, moduleId: moduleId, changed: result.changed });
+
+  if (res.status) { res.status(200).json({ reassigned: true, journey_id: result.journey_id, module_id: result.module_id, changed: result.changed }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ reassigned: true, journey_id: result.journey_id, module_id: result.module_id, changed: result.changed })); }
+}
+
+/**
+ * tmc-s1 (AC3, AC4, AC7) -- POST /products/:id/modules/bulk-assign: assign a
+ * batch of taxonomy feature slugs (identified by feature_slug, not
+ * journey_id -- see decisions.md ARCH entry) to one target module in a
+ * single round-trip, so classifying a product's real 100s-of-features
+ * history doesn't require one request per feature. CSRF-guarded like every
+ * other module-mutating route. Tenant-scoped; rejects a target module
+ * belonging to a different product with 404 and zero rows written.
+ */
+async function handlePostBulkAssignFeatureModules(req, res, _next, pool, posthog) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+  req.body = await _readBody(req);
+  var _pool = pool;
+  var _ph = posthog || _posthog;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+  var featureSlugs = (req.body && req.body.featureSlugs) || [];
+  var moduleId = (req.body && req.body.moduleId) || '';
+  if (typeof moduleId === 'string') { moduleId = moduleId.trim(); }
+
+  var prodRow = (await _pool.query('SELECT tenant_id FROM products WHERE product_id = $1', [productId])).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+  if (!moduleId || !Array.isArray(featureSlugs) || featureSlugs.length === 0) {
+    if (res.status) { res.status(400).json({ error: 'moduleId and a non-empty featureSlugs array are required.' }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'moduleId and a non-empty featureSlugs array are required.' })); }
+    return;
+  }
+
+  var result;
+  try {
+    result = await _modulesAdapter.bulkAssignFeaturesToModule(productId, tenantId, featureSlugs, moduleId);
+  } catch (err) {
+    if (err && err.code === 'MODULE_NOT_FOUND') {
+      if (res.status) { res.status(404).json({ error: 'not found' }); }
+      else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+      return;
+    }
+    throw err;
+  }
+
+  _ph.capture(tenantId, 'features_bulk_assigned', { productId: productId, tenantId: tenantId, moduleId: moduleId, count: result.assigned });
+
+  if (res.status) { res.status(200).json({ assigned: result.assigned, module_id: moduleId }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ assigned: result.assigned, module_id: moduleId })); }
+}
+
+// ===========================================================================
+// story-2-relationship-grants-enforcement (artefacts/2026-07-30-agency-client-organisations)
+//
+// Agency-Client relationships, shared-access grants, and read-only
+// enforcement. Every read path below calls ONLY
+// modules/agency-client-grants.js's dedicated grant-check adapter (or its
+// sibling relationship/grant-CRUD functions) -- never an ad hoc query
+// against agency_client_relationships/shared_access_grants directly in this
+// file (story Guardrail; verified by this story's own
+// everyNewReadPathGoesThroughGrantCheckGuard NFR source-scan test).
+//
+// Scope note (flagged in decisions.md and the PR description): this story's
+// own DoR contract states "What will NOT be built: the Agency-side UI/flow
+// ... this story is the data model and enforcement guard only." These
+// handlers are implemented and fully tested (calling them directly with
+// mock req/res + a fake pool, mirroring tests/check-bri-s3.4-cross-tenant-
+// isolation.js's established pattern) but are NOT registered in server.js's
+// live URL dispatch table -- Story 3 (self-service provisioning) and Story 4
+// (dual-path authentication) are what determine the real user-facing URLs
+// and the Client-org session/identity shape these handlers will be reached
+// through. Wiring them into server.js's router now, ahead of those stories,
+// would risk guessing at a URL/session contract only they can define.
+// ===========================================================================
+
+var _sharedAccessLoggerFn = null;
+function _sharedAccessLogger() {
+  return _sharedAccessLoggerFn || { info: function(msg) { console.log(msg); } };
+}
+function setSharedAccessLogger(logger) { _sharedAccessLoggerFn = logger; }
+
+function _sendJson(res, status, body) {
+  if (res.status) { res.status(status).json(body); }
+  else { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(body)); }
+}
+
+/**
+ * AC1: Agency admin shares a specific resource with a Client org, through a
+ * specific already-established relationship. The grant is created scoped to
+ * that relationship_id -- never to the Client org broadly. The caller's own
+ * org must be the relationship's agency_org_id: a Client org (or an
+ * unrelated org) cannot create a grant for a relationship it is not the
+ * Agency party of. Full authorisation of "is this session actually an
+ * Agency admin" is Story 3's job (self-service provisioning owns that UI/
+ * flow) -- this check is the minimal relationship-ownership guard this
+ * story's own data model requires.
+ */
+async function handleCreateGrant(req, res, pool) {
+  var body = req.body || {};
+  var relationshipId = body.relationshipId;
+  var resourceType = body.resourceType;
+  var resourceId = body.resourceId;
+  var callerOrgId = req.session && req.session.tenantId;
+
+  if (!relationshipId || !resourceType || !resourceId) {
+    _sendJson(res, 400, { error: 'relationshipId, resourceType, and resourceId are required' });
+    return;
+  }
+
+  var relationship = await _agencyClientGrants.getRelationshipById(pool, relationshipId);
+  if (!relationship || relationship.agency_org_id !== callerOrgId) {
+    _sendJson(res, 404, { error: 'not found' });
+    return;
+  }
+
+  var grant = await _agencyClientGrants.createGrant(pool, relationshipId, resourceType, resourceId, _sharedAccessLogger());
+  _sendJson(res, 200, { success: true, grant: grant });
+}
+
+/**
+ * AC2: Client-org user's list of resources visible to them -- every active
+ * grant reachable through ANY of their relationships (however many
+ * Agencies), scoped per-relationship so a grant on one relationship never
+ * surfaces via a different one.
+ */
+async function handleListSharedProducts(req, res, pool) {
+  var clientOrgId = req.session && req.session.tenantId;
+  var rows = await _agencyClientGrants.listGrantedResourcesForClient(pool, clientOrgId, 'product');
+  _sendJson(res, 200, {
+    resources: rows.map(function(r) {
+      return { resourceId: r.resource_id, resourceType: r.resource_type, grantedAt: r.granted_at };
+    })
+  });
+}
+
+/**
+ * AC4/AC5: Client-org user requests a specific shared product by ID. No
+ * grant (never shared, shared only via a different relationship, or
+ * revoked) -> 404, identical in shape to a genuinely non-existent resource
+ * -- never a 403 that would confirm the resource's existence to an
+ * unauthorised viewer. Every denial is audit-logged (relationship_id,
+ * org_id, resource_id, timestamp).
+ */
+async function handleGetSharedProduct(req, res, pool) {
+  var clientOrgId = req.session && req.session.tenantId;
+  var resourceId = req.params && req.params.id;
+
+  var grant = await _agencyClientGrants.checkGrantAccess(pool, clientOrgId, 'product', resourceId);
+  try {
+    _journeyAccess.requireGrantAccess(grant);
+  } catch (e) {
+    _agencyClientGrants.logDeniedAccess(_sharedAccessLogger(), clientOrgId, 'product', resourceId);
+    var status = _journeyAccess.asHttpResponse(e, _journeyAccess.POLICY.TENANT);
+    _sendJson(res, status, { error: 'not found' });
+    return;
+  }
+
+  _sendJson(res, 200, { resourceId: resourceId, resourceType: 'product', grantedAt: grant.granted_at });
+}
+
+/**
+ * AC3: a shared-access grant conveys READ-ONLY access, never write/edit
+ * access to the underlying shared resource. This route rejects EVERY
+ * Client-org caller with 403, regardless of whether they hold a valid read
+ * grant for the resource -- write capability is never conferred by this
+ * grant model, so the grant is never even consulted here, and no mutation
+ * is ever attempted against the pool.
+ */
+function handleMutateSharedProduct(req, res, pool) { // eslint-disable-line no-unused-vars
+  _sendJson(res, 403, { error: 'forbidden -- shared-access grants are read-only' });
+}
+
+/**
+ * AC5: Agency revokes a previously-granted resource. Because
+ * checkGrantAccess (used by handleGetSharedProduct above) always queries
+ * live with no caching layer, the very next read for this resource sees the
+ * revocation immediately -- no delay, no stale-read window.
+ */
+async function handleRevokeGrant(req, res, pool) {
+  var grantId = req.params && req.params.grantId;
+  var revoked = await _agencyClientGrants.revokeGrant(pool, grantId, _sharedAccessLogger());
+  if (!revoked) {
+    _sendJson(res, 404, { error: 'not found' });
+    return;
+  }
+  _sendJson(res, 200, { success: true });
+}
+
+// ===========================================================================
+// story-5-client-agency-comments (artefacts/2026-07-30-agency-client-organisations)
+//
+// Client-org lightweight collaboration -- comments only. Append-only comment
+// thread on a shared product/feature.
+//
+// AC1/AC2: the CLIENT-side routes below (handleCreateSharedComment,
+// handleListSharedComments) go through the EXACT SAME grant-check guard as
+// Story 2's handleGetSharedProduct above -- _agencyClientGrants.checkGrantAccess
+// then _journeyAccess.requireGrantAccess/asHttpResponse -- never a
+// parallel/duplicate access-control path (NFR-security,
+// commentEndpointsGoThroughSameGrantCheckGuardAsStory2). A Client-org caller
+// with no grant gets the identical 404 (never 403) Story 2's own AC4 policy
+// established.
+//
+// AC3: the AGENCY-side routes below (handleCreateAgencyComment,
+// handleListAgencyComments) act on a resource the Agency org already owns --
+// exactly like every other existing route in this file that renders an
+// Agency's own product, they do not call checkGrantAccess at all (that guard
+// exists to gate a Client org's access to something ELSE'S resource, not an
+// Agency's access to its own). Agency replies persist through the same
+// _agencyClientComments.createComment path as the Client side, so they are
+// immediately visible in the next listCommentsForResource read -- there is
+// only one comments table and one write path, not two.
+//
+// AC4: every comment creation (both sides) fires client_agency_comment_created
+// via _createCommentAndFireEvent below, with a freshly computed (never
+// hardcoded) thread_has_both_org_types boolean -- see
+// modules/agency-client-comments.js's getThreadOrgTypes/threadHasBothOrgTypes.
+//
+// Out of scope (story's own "What will NOT be built"): no edit/delete route
+// exists anywhere in this section, on purpose.
+//
+// Scope note (mirrors Story 2's own scope note immediately above): these
+// handlers are implemented and fully tested (mock req/res + fake pool,
+// mirroring tests/check-story2-relationship-grants-enforcement.js's
+// established pattern) but are NOT registered in server.js's live URL
+// dispatch table, for the same reason Story 2's handlers aren't -- Story 3
+// (self-service provisioning) and Story 4 (dual-path authentication) own the
+// real user-facing URL/session shape these would be reached through. Wiring
+// them ahead of those stories would risk guessing at a contract only they
+// can define.
+// ===========================================================================
+
+/**
+ * Fires client_agency_comment_created (AC4) after a comment is persisted.
+ * thread_has_both_org_types is computed AFTER the insert, so the
+ * just-created comment's own org_type is already reflected -- false on the
+ * first comment in a thread, true from the moment a second org_type joins.
+ * @param {object} pool
+ * @param {string} resourceType
+ * @param {string} resourceId
+ * @param {string} orgId
+ * @param {string} userId
+ * @param {string} commentBody
+ * @returns {Promise<object>} the persisted comment row
+ */
+async function _createCommentAndFireEvent(pool, resourceType, resourceId, orgId, userId, commentBody) {
+  var comment = await _agencyClientComments.createComment(pool, resourceType, resourceId, orgId, userId, commentBody, _sharedAccessLogger());
+  var orgTypes = await _agencyClientComments.getThreadOrgTypes(pool, resourceType, resourceId);
+  var bothTypes = _agencyClientComments.threadHasBothOrgTypes(orgTypes);
+  _posthog.capture(userId || orgId, 'client_agency_comment_created', {
+    org_id: orgId,
+    resource_type: resourceType,
+    resource_id: resourceId,
+    thread_has_both_org_types: bothTypes
+  });
+  return comment;
+}
+
+function _serializeComment(row) {
+  return {
+    commentId: row.comment_id,
+    resourceType: row.resource_type,
+    resourceId: row.resource_id,
+    orgId: row.org_id,
+    userId: row.user_id,
+    body: row.body,
+    createdAt: row.created_at
+  };
+}
+
+/**
+ * AC1: a Client-org user with a valid grant submits a comment. AC2: with no
+ * grant, rejected with the same 404 (not 403) as Story 2's AC4 -- via the
+ * identical checkGrantAccess/requireGrantAccess/asHttpResponse call sequence
+ * as handleGetSharedProduct above (same function references, not a copy).
+ */
+async function handleCreateSharedComment(req, res, pool) {
+  var body = req.body || {};
+  var resourceType = body.resourceType || 'product';
+  var resourceId = body.resourceId;
+  var clientOrgId = req.session && req.session.tenantId;
+  var userId = (req.session && req.session.login) || clientOrgId;
+  var commentBody = body.body;
+
+  if (!resourceId || !commentBody) {
+    _sendJson(res, 400, { error: 'resourceId and body are required' });
+    return;
+  }
+
+  var grant = await _agencyClientGrants.checkGrantAccess(pool, clientOrgId, resourceType, resourceId);
+  try {
+    _journeyAccess.requireGrantAccess(grant);
+  } catch (e) {
+    _agencyClientGrants.logDeniedAccess(_sharedAccessLogger(), clientOrgId, resourceType, resourceId);
+    var status = _journeyAccess.asHttpResponse(e, _journeyAccess.POLICY.TENANT);
+    _sendJson(res, status, { error: 'not found' });
+    return;
+  }
+
+  var comment = await _createCommentAndFireEvent(pool, resourceType, resourceId, clientOrgId, userId, commentBody);
+  _sendJson(res, 200, { success: true, comment: _serializeComment(comment) });
+}
+
+/**
+ * AC1/AC3: list every comment on a resource shared with this Client-org
+ * user -- gated by the same checkGrantAccess/requireGrantAccess guard as
+ * comment creation and as Story 2's own read route.
+ */
+async function handleListSharedComments(req, res, pool) {
+  var resourceType = (req.query && req.query.resourceType) || 'product';
+  var resourceId = req.params && req.params.id;
+  var clientOrgId = req.session && req.session.tenantId;
+
+  var grant = await _agencyClientGrants.checkGrantAccess(pool, clientOrgId, resourceType, resourceId);
+  try {
+    _journeyAccess.requireGrantAccess(grant);
+  } catch (e) {
+    _agencyClientGrants.logDeniedAccess(_sharedAccessLogger(), clientOrgId, resourceType, resourceId);
+    var status = _journeyAccess.asHttpResponse(e, _journeyAccess.POLICY.TENANT);
+    _sendJson(res, status, { error: 'not found' });
+    return;
+  }
+
+  var comments = await _agencyClientComments.listCommentsForResource(pool, resourceType, resourceId);
+  _sendJson(res, 200, { comments: comments.map(_serializeComment) });
+}
+
+/**
+ * AC3: an Agency-org user replies on a product/feature it already owns --
+ * no grant check (that guard exists for a Client org's access to something
+ * else's resource, not an Agency's access to its own). Persists through the
+ * same write path as the Client side, so the reply itself is immediately
+ * visible via handleListAgencyComments / handleListSharedComments.
+ */
+async function handleCreateAgencyComment(req, res, pool) {
+  var body = req.body || {};
+  var resourceType = body.resourceType || 'product';
+  var resourceId = body.resourceId;
+  var agencyOrgId = req.session && req.session.tenantId;
+  var userId = (req.session && req.session.login) || agencyOrgId;
+  var commentBody = body.body;
+
+  if (!resourceId || !commentBody) {
+    _sendJson(res, 400, { error: 'resourceId and body are required' });
+    return;
+  }
+
+  var comment = await _createCommentAndFireEvent(pool, resourceType, resourceId, agencyOrgId, userId, commentBody);
+  _sendJson(res, 200, { success: true, comment: _serializeComment(comment) });
+}
+
+/**
+ * AC3: an Agency-org user reads the comment thread on its own resource
+ * (including any Client-org comments on it) -- no grant check, same reason
+ * as handleCreateAgencyComment above.
+ */
+async function handleListAgencyComments(req, res, pool) {
+  var resourceType = (req.query && req.query.resourceType) || 'product';
+  var resourceId = req.params && req.params.id;
+  var comments = await _agencyClientComments.listCommentsForResource(pool, resourceType, resourceId);
+  _sendJson(res, 200, { comments: comments.map(_serializeComment) });
+}
+
+/**
+ * Accessibility NFR (commentFormIsKeyboardNavigable): real
+ * <form>/<textarea>/semantic list markup for the comment thread + posting
+ * form, keyboard-navigable by construction (native form controls, no
+ * custom-widget-only interaction).
+ * @param {Array<object>} comments - rows shaped like _serializeComment's output
+ * @param {string} resourceType
+ * @param {string} resourceId
+ * @returns {string} HTML
+ */
+function renderCommentThreadHtml(comments, resourceType, resourceId) {
+  var items = (comments || []).map(function(c) {
+    return '<li class="sw-comment">' +
+      '<span class="sw-comment-author">' + _escapeHtml(c.orgId) + '</span> ' +
+      '<span class="sw-comment-time">' + _escapeHtml(c.createdAt) + '</span>' +
+      '<p class="sw-comment-body">' + _escapeHtml(c.body) + '</p>' +
+      '</li>';
+  }).join('');
+
+  return '<section class="sw-comment-thread" aria-label="Comments">' +
+    '<ul class="sw-comment-list">' + items + '</ul>' +
+    '<form method="POST" action="/shared/comments" class="sw-comment-form">' +
+      '<input type="hidden" name="resourceType" value="' + _escapeHtml(resourceType) + '">' +
+      '<input type="hidden" name="resourceId" value="' + _escapeHtml(resourceId) + '">' +
+      '<label for="sw-comment-body">Add a comment</label>' +
+      '<textarea id="sw-comment-body" name="body" required></textarea>' +
+      '<button type="submit">Post comment</button>' +
+    '</form>' +
+  '</section>';
+}
+
 module.exports = {
+  _renderProductView,
   handlePostProductNew,
   handlePostProductConfirm,
   handleGetDashboard,
+  // pan-s1: shared products-for-sidebar summary, also consumed by routes/journey.js
+  getProductsNavSummary,
   handleGetProductNew,
   handleGetProductView,
+  handleGetProductRoadmap,
+  handlePostProductSync,
   handlePostProductFeature,
   handleGetProductKanban,
   handleGetOrgKanban,
+  // s1.1: board-driven "Advance" action (new caller of the real gate-confirm route)
+  handlePostBoardAdvance,
+  setGetHtmlSessionsBulk,
+  // s2.2: injectable bulk artefact-count reader, exported for test spying (AC4 NFR)
+  setGetArtefactCountsBulk,
   handleDeleteProduct,
-  handlePostProductRepoCreate
+  handlePostProductRepoCreate,
+  handlePutProductEdit,
+  // a1: curated per-product Modules taxonomy CRUD
+  handleGetProductModules,
+  handlePostProductModule,
+  handlePutProductModule,
+  handleDeleteProductModule,
+  // a2: reassign an epic (journey) to a different module
+  handlePutEpicModule,
+  // tmc-s1: bulk-assign taxonomy feature slugs to a module
+  handlePostBulkAssignFeatureModules,
+  // kbc-s1: shared column-building functions, exported for direct unit testing (U1-U5)
+  buildProductKanbanColumns,
+  buildOrgKanbanColumns,
+  buildTenantKanbanColumns,
+  STAGE_COLUMNS,
+  // frsr-s1: exported for direct unit testing (AC1), same convention as kbc-s1's column builders
+  _renderPvcItemRow,
+  // fdn-s1: exported for direct unit testing, same convention as _renderPvcItemRow
+  _renderEpicRow,
+  _aggregateJourneysByStage,
+  // story-2-relationship-grants-enforcement: Agency-Client relationships, shared-access grants, read-only enforcement
+  setSharedAccessLogger,
+  handleCreateGrant,
+  handleListSharedProducts,
+  handleGetSharedProduct,
+  handleMutateSharedProduct,
+  handleRevokeGrant,
+  // story-5-client-agency-comments: append-only Client<->Agency comment thread
+  handleCreateSharedComment,
+  handleListSharedComments,
+  handleCreateAgencyComment,
+  handleListAgencyComments,
+  renderCommentThreadHtml
 };

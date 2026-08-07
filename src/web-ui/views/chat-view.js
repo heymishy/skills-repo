@@ -28,6 +28,16 @@ function lightMarkdown(text) {
  * @param {Array<{question, answer, modelResponse}>} data.priorQA
  * @param {Array<{title, body, state}>} data.draftSections   state ∈ 'drafted'|'pending'|'empty'
  * @param {boolean} data.pendingConfirmation
+ * @param {boolean} [data.readOnly]              dsh-s3: when truthy, suppresses the
+ *   input-form footer (no <input>/<textarea>/submit button) and the client-side
+ *   <script> tag — used for viewing a completed/durable stage with no live
+ *   interactivity. Default (falsy/absent) is unchanged live-chat behaviour.
+ * @param {string} [data.artefactContent]        dsh-s3: pre-rendered HTML for the
+ *   non-ideate right-pane artefact panel. The live chat page populates this pane
+ *   client-side via SSE (no value passed here, ever, from that call site) — this
+ *   field exists for callers with no live session driving that pump (the
+ *   read-only historical-stage view). Falsy/absent preserves the original
+ *   static placeholder text unchanged.
  */
 function renderChat(data) {
   const messages = [];
@@ -99,6 +109,69 @@ function renderChat(data) {
 
   const formAction = '/api/skills/' + escHtml(data.skillName) + '/sessions/' +
     escHtml(data.sessionId) + '/answer';
+
+  // dsh-s3: read-only mode (breadcrumb "view a completed stage" split view)
+  // suppresses the input-form footer and the client-side <script> tag —
+  // there is nothing to submit and no live SSE pump to wire up when
+  // rendering a durable, already-completed stage. Default (readOnly
+  // falsy/absent) is unchanged from before this option existed.
+  const footerHtml = data.readOnly ? '' : (
+    '<footer class="sw-chat-foot">' +
+      confirmBanner +
+      '<form method="POST" action="' + formAction + '" id="chat-form">' +
+        '<div class="sw-chat-input">' +
+          '<textarea id="chat-input" name="answer" placeholder="Type your answer…" autofocus></textarea>' +
+          '<div class="sw-chat-input-row">' +
+            '<span style="font-size:12px;color:var(--muted)">Press ⌘↵ or Ctrl+↵ to send</span>' +
+            btn('primary', 'Send →', { type: 'submit' }) +
+          '</div>' +
+        '</div>' +
+      '</form>' +
+    '</footer>'
+  );
+
+  const scriptHtml = data.readOnly ? '' : (
+    '<script>' +
+      'function escHtmlClient(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}' +
+      'function appendConditionItem(item){' +
+        'var container=document.getElementById("condition-items");' +
+        'if(!container)return;' +
+        'var p=container.querySelector("p");if(p)p.remove();' +
+        'var typeKey=(item.type||"").toLowerCase().replace(/[^a-z]/g,"");' +
+        'var typeClass=["constraint","dependency","outcome"].indexOf(typeKey)>=0?typeKey:"constraint";' +
+        'var cardEl=document.createElement("div");' +
+        'cardEl.className="condition-card";' +
+        'cardEl.innerHTML=\'<div class="condition-card-meta">\'+' +
+          '\'<span class="ci-type-tag ci-type-\'+typeClass+\'">\'+escHtmlClient(item.type||"constraint")+\'</span>\'+' +
+          '\'<span class="ci-source">\'+escHtmlClient(item.source||"model")+\'</span>\'+' +
+          '\'</div><div class="condition-card-text">\'+escHtmlClient(item.text||"")+\'</div>\';' +
+        'container.appendChild(cardEl);' +
+      '}' +
+      'function swToggleArtefactFs(){var p=document.getElementById("sw-artefact-pane");var b=document.getElementById("sw-artefact-fs-btn");if(!p)return;p.classList.toggle("ad-fs");b.textContent=p.classList.contains("ad-fs")?"⊡":"⊞";}' +
+      // cdpl-s1: shared canvas-maximise mechanism, mirroring
+      // swToggleArtefactFs()'s exact classList.toggle() + button-glyph-swap
+      // pattern (not a second, independently-invented fullscreen approach).
+      // #canvas-section (the wrapper around the header + #canvas-panel) has
+      // the same id in both the ideate 3-panel layout and the
+      // design/definition sw-artefact-pane layout, so one function covers
+      // both. Toggling the wrapper -- not #canvas-panel alone -- keeps the
+      // maximise button inside the fullscreen element so it stays clickable
+      // to restore the split view (a fixed #canvas-panel alone would paint
+      // over its own header/button, matching #sw-artefact-pane's own
+      // wrap-header-and-content shape). swExpandCanvas() (referenced via
+      // onclick in the ideate layout's pre-existing "Maximise canvas"
+      // button but never defined until now) is a thin alias delegating to
+      // the same shared toggle.
+      'function swToggleCanvasFs(){var p=document.getElementById("canvas-section");if(!p)return;p.classList.toggle("canvas-fs");var g=p.classList.contains("canvas-fs")?"⊡":"⊞";var b1=document.getElementById("sw-canvas-fs-btn");if(b1)b1.textContent=g;var b2=document.getElementById("sw-expand-canvas");if(b2)b2.textContent=g;}' +
+      'function swExpandCanvas(){swToggleCanvasFs();}' +
+      '// SSE pump wires: appendConditionItem, appendCanvasBlock defined in the IIFE (skills.js)' +
+      'document.addEventListener("keydown",function(e){' +
+        'if((e.metaKey||e.ctrlKey)&&e.key==="Enter"){' +
+          'var f=document.getElementById("chat-form");if(f)f.submit();' +
+        '}' +
+      '});' +
+    '</script>'
+  );
 
   return [
     '<style>',
@@ -218,6 +291,16 @@ function renderChat(data) {
       '#sw-artefact-pane.ad-fs { position:fixed;top:0;left:0;right:0;bottom:0;z-index:999;border-radius:0;max-height:100vh; }',
       '.ad-fs-btn { background:none;border:none;cursor:pointer;color:var(--muted);padding:2px 6px;border-radius:4px;font-size:14px;line-height:1;transition:color 0.1s; }',
       '.ad-fs-btn:hover { color:var(--ink); }',
+      /* cdpl-s1 -- canvas-maximise fullscreen, mirroring .ad-fs's own
+         position:fixed rule exactly (same shared toggle mechanism, applied
+         to #canvas-section -- the wrapper around the Diagrams/Canvas header
+         and #canvas-panel -- instead of #sw-artefact-pane). #canvas-section
+         shares this id across both the ideate 3-panel layout and the
+         design/definition sw-artefact-pane layout, so one rule covers both
+         AC3 and AC4. Toggling the wrapper (not #canvas-panel alone) keeps
+         the maximise button itself inside the fullscreen element, exactly
+         like #sw-artefact-pane wraps its own header + #artefact-panel. */
+      '#canvas-section.canvas-fs { position:fixed;top:0;left:0;right:0;bottom:0;z-index:999;border-radius:0;max-height:100vh;background:var(--surface); }',
       /* artefact markdown */
       '.ad-h1 { font-size:1.2rem;font-weight:700;margin:18px 0 8px;line-height:1.3; }',
       '.ad-h2 { font-size:1rem;font-weight:600;margin:14px 0 5px;border-bottom:1px solid var(--line);padding-bottom:3px; }',
@@ -246,6 +329,20 @@ function renderChat(data) {
       '.cv-table th { background:var(--line-2);font-weight:600;color:var(--ink); }',
       '.cv-table td { color:var(--ink-2); }',
       '.cv-text p { font-size:13px;color:var(--ink);line-height:1.6;margin:4px 0; }',
+      /* csd-s1 -- data-model diagram (mermaid); csd-s2 -- system-architecture,
+         program-design (same mechanism), type label, and error state */
+      '.cv-diagram-wrap { padding:2px; }',
+      '.cv-diagram-type-label { font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted);margin:2px 0 6px; }',
+      '.cv-diagram-wrap .mermaid { display:flex;justify-content:center;overflow-x:auto; }',
+      '.cv-diagram-wrap .mermaid svg { max-width:100%;height:auto; }',
+      '.cv-diagram-alt { margin-top:8px; }',
+      '.cv-diagram-alt summary { font-size:11px;color:var(--muted);cursor:pointer;user-select:none; }',
+      '.cv-diagram-src { margin-top:6px;padding:8px 10px;background:var(--line-2);border-radius:6px;font-family:var(--mono);font-size:11px;line-height:1.5;white-space:pre-wrap;color:var(--ink-2,var(--ink));overflow-x:auto; }',
+      /* csd-s2 (AC2) -- labelled error state, visually distinct from a
+         successfully-rendered diagram: red-toned border/background/text,
+         never a blank space and never mermaid's own raw error output. */
+      '.cv-diagram-wrap .mermaid.cv-diagram-error { display:block;justify-content:initial; }',
+      '.cv-diagram-error-box { display:flex;align-items:center;gap:8px;padding:10px 14px;border:1.5px solid var(--red,#DC2626);border-radius:6px;background:var(--red-soft,#FEE2E2);color:var(--red,#991B1B);font-size:12px;font-weight:600; }',
       /* definition story map */
       '.dm-canvas{padding:12px 16px}',
       '.dm-hdr{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}',
@@ -290,18 +387,7 @@ function renderChat(data) {
           (data.modelLabel ? '<span style="font-size:11px;color:var(--muted);background:var(--line-2);padding:2px 8px;border-radius:10px;font-family:var(--mono)">' + escHtml(data.modelLabel) + '</span>' : ''),
         '</header>',
         '<div class="sw-chat-thread" id="chat-messages">' + messages.join('') + '</div>',
-        '<footer class="sw-chat-foot">',
-          confirmBanner,
-          '<form method="POST" action="' + formAction + '" id="chat-form">',
-            '<div class="sw-chat-input">',
-              '<textarea id="chat-input" name="answer" placeholder="Type your answer…" autofocus></textarea>',
-              '<div class="sw-chat-input-row">',
-                '<span style="font-size:12px;color:var(--muted)">Press ⌘↵ or Ctrl+↵ to send</span>',
-                btn('primary', 'Send →', { type: 'submit' }),
-              '</div>',
-            '</div>',
-          '</form>',
-        '</footer>',
+        footerHtml,
       '</section>',
 
       // RIGHT: ideate → 3-panel; all other skills → artefact draft panel
@@ -328,23 +414,32 @@ function renderChat(data) {
             '<div id="assumption-cards" role="region" aria-label="Assumption cards" style="flex:0 0 auto;max-height:42%;overflow-y:auto;padding:10px 12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px">',
               '<p style="margin:0;font-size:12px;color:var(--muted)">No assumptions identified yet</p>',
             '</div>',
-            '<div class="cv-section-head">',
-              '<span class="cv-section-label">Canvas</span>',
-              '<div style="display:flex;align-items:center;gap:6px">',
-                '<div class="cv-pips" id="cv-pips">',
-                  '<span class="cv-pip" data-lens="A" title="Lens A">A</span>',
-                  '<span class="cv-pip" data-lens="B" title="Lens B">B</span>',
-                  '<span class="cv-pip" data-lens="C" title="Lens C">C</span>',
-                  '<span class="cv-pip" data-lens="D" title="Lens D">D</span>',
-                  '<span class="cv-pip" data-lens="E" title="Lens E">E</span>',
+            // cdpl-s1: header + #canvas-panel wrapped together in
+            // #canvas-section so the shared fullscreen mechanism toggles a
+            // container that includes the maximise button itself (mirroring
+            // #sw-artefact-pane's own wrap of its header+content) -- a fixed
+            // element painted on top of the page would otherwise cover a
+            // sibling header/button left in normal flow, making the button
+            // unclickable once maximised.
+            '<div id="canvas-section" style="display:flex;flex-direction:column;flex:1 1 auto;min-height:0">',
+              '<div class="cv-section-head">',
+                '<span class="cv-section-label">Canvas</span>',
+                '<div style="display:flex;align-items:center;gap:6px">',
+                  '<div class="cv-pips" id="cv-pips">',
+                    '<span class="cv-pip" data-lens="A" title="Lens A">A</span>',
+                    '<span class="cv-pip" data-lens="B" title="Lens B">B</span>',
+                    '<span class="cv-pip" data-lens="C" title="Lens C">C</span>',
+                    '<span class="cv-pip" data-lens="D" title="Lens D">D</span>',
+                    '<span class="cv-pip" data-lens="E" title="Lens E">E</span>',
+                  '</div>',
+                  '<button id="sw-toggle-canvas" class="sw-section-toggle" onclick="swToggleSection(\'canvas-panel\',this)" title="Collapse/expand" aria-label="Toggle canvas">▾</button>',
+                  '<button id="sw-expand-canvas" class="sw-section-expand" onclick="swExpandCanvas()" title="Maximise canvas" aria-label="Maximise canvas">⊞</button>',
                 '</div>',
-                '<button id="sw-toggle-canvas" class="sw-section-toggle" onclick="swToggleSection(\'canvas-panel\',this)" title="Collapse/expand" aria-label="Toggle canvas">▾</button>',
-                '<button id="sw-expand-canvas" class="sw-section-expand" onclick="swExpandCanvas()" title="Maximise canvas" aria-label="Maximise canvas">⊞</button>',
               '</div>',
-            '</div>',
-            '<div id="canvas-panel" role="region" aria-label="Canvas" style="flex:1 1 auto;overflow-y:auto;padding:16px">',
-              '<p class="cv-empty">Lens output will appear here as the session progresses.</p>',
-              (draftSections || ''),
+              '<div id="canvas-panel" role="region" aria-label="Canvas" style="flex:1 1 auto;overflow-y:auto;padding:16px">',
+                '<p class="cv-empty">Lens output will appear here as the session progresses.</p>',
+                (draftSections || ''),
+              '</div>',
             '</div>',
           '</section>',
         ].join('')
@@ -354,8 +449,35 @@ function renderChat(data) {
               '<span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">' + (data.skillName === 'definition' ? 'Story Map' : 'Artefact Draft') + '</span>',
               '<button id="sw-artefact-fs-btn" class="ad-fs-btn" onclick="swToggleArtefactFs()" title="Toggle fullscreen" aria-label="Toggle fullscreen">⊞</button>',
             '</div>',
-            '<div id="artefact-panel" role="region" aria-label="' + (data.skillName === 'definition' ? 'Story map' : 'Artefact draft') + '" style="flex:1 1 auto;overflow-y:auto;padding:' + (data.skillName === 'definition' ? '0' : '16px 20px') + '">',
-              '<p style="margin:0;font-size:12px;color:var(--muted);padding:16px 20px">' + (data.skillName === 'definition' ? 'Story map will appear here as epics and stories are generated.' : 'Artefact will appear here as the session progresses.') + '</p>',
+            '<div id="artefact-panel" role="region" aria-label="' + (data.skillName === 'definition' ? 'Story map' : 'Artefact draft') + '" style="flex:0 1 auto;max-height:55vh;overflow-y:auto;padding:' + (data.skillName === 'definition' ? '0' : '16px 20px') + '">',
+              // dsh-s3: when a caller supplies pre-rendered artefact HTML (the
+              // read-only historical-stage view has no live SSE pump to
+              // populate this pane client-side the way the live chat page
+              // does), render it directly. Absent/falsy (every existing
+              // live-session call site) preserves the exact placeholder
+              // text that was here before this option existed.
+              (data.artefactContent ||
+                '<p style="margin:0;font-size:12px;color:var(--muted);padding:16px 20px">' + (data.skillName === 'definition' ? 'Story map will appear here as epics and stories are generated.' : 'Artefact will appear here as the session progresses.') + '</p>'),
+            '</div>',
+            // csd-s3/csd-s4 (found post-DoD, see decisions.md): /design and
+            // /definition emit CANVAS-JSON diagram markers, but until this
+            // fix, this pane had no element for appendCanvasBlock() to
+            // attach to -- only the /ideate skill's 3-panel layout had one.
+            // Added as an additional section below the artefact/story-map
+            // panel above (which continues to work exactly as before) so
+            // diagrams have somewhere real to render for these two skills.
+            // cdpl-s1: header + #canvas-panel wrapped in #canvas-section --
+            // see the identical comment on the ideate layout's own
+            // #canvas-section above for why the wrapper (not #canvas-panel
+            // alone) is the element that toggles fullscreen.
+            '<div id="canvas-section" style="display:flex;flex-direction:column;flex:1 1 auto;min-height:0">',
+              '<div class="cv-section-head" style="flex-shrink:0">',
+                '<span class="cv-section-label">Diagrams</span>',
+                '<button id="sw-canvas-fs-btn" class="ad-fs-btn" onclick="swToggleCanvasFs()" title="Maximise diagrams" aria-label="Maximise diagrams">⊞</button>',
+              '</div>',
+              '<div id="canvas-panel" role="region" aria-label="Diagrams" style="flex:1 1 auto;min-height:200px;overflow-y:auto;padding:16px">',
+                '<p class="cv-empty">Diagrams will appear here as the session progresses.</p>',
+              '</div>',
             '</div>',
           '</section>',
         ].join('')
@@ -363,30 +485,7 @@ function renderChat(data) {
 
     '</div>',
     // Cmd/Ctrl+Enter to submit + inc2.1 condition-item client rendering
-    '<script>',
-      'function escHtmlClient(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}',
-      'function appendConditionItem(item){',
-        'var container=document.getElementById("condition-items");',
-        'if(!container)return;',
-        'var p=container.querySelector("p");if(p)p.remove();',
-        'var typeKey=(item.type||"").toLowerCase().replace(/[^a-z]/g,"");',
-        'var typeClass=["constraint","dependency","outcome"].indexOf(typeKey)>=0?typeKey:"constraint";',
-        'var cardEl=document.createElement("div");',
-        'cardEl.className="condition-card";',
-        'cardEl.innerHTML=\'<div class="condition-card-meta">\'+',
-          '\'<span class="ci-type-tag ci-type-\'+typeClass+\'">\'+escHtmlClient(item.type||"constraint")+\'</span>\'+',
-          '\'<span class="ci-source">\'+escHtmlClient(item.source||"model")+\'</span>\'+',
-          '\'</div><div class="condition-card-text">\'+escHtmlClient(item.text||"")+\'</div>\';',
-        'container.appendChild(cardEl);',
-      '}',
-      'function swToggleArtefactFs(){var p=document.getElementById("sw-artefact-pane");var b=document.getElementById("sw-artefact-fs-btn");if(!p)return;p.classList.toggle("ad-fs");b.textContent=p.classList.contains("ad-fs")?"⊡":"⊞";}',
-      '// SSE pump wires: appendConditionItem, appendCanvasBlock defined in the IIFE (skills.js)',
-      'document.addEventListener("keydown",function(e){',
-        'if((e.metaKey||e.ctrlKey)&&e.key==="Enter"){',
-          'var f=document.getElementById("chat-form");if(f)f.submit();',
-        '}',
-      '});',
-    '</script>'
+    scriptHtml
   ].join('');
 }
 

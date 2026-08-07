@@ -1,0 +1,22 @@
+# Decisions — storage-drift-audit
+
+## Context
+
+Following the same-day canvas-render / artefact-listing fixes (`2026-07-26-canvas-render-and-story-extraction-fix`), the operator asked for a comprehensive audit of the codebase for other instances of the same bug class: a feature backed by multiple independent, silently-diverging storage implementations, or a write path relying on local disk in a way that's ephemeral on the deployed (volumeless, image-excludes-non-runtime-paths) web-ui surface.
+
+## Audit findings (2026-07-26)
+
+Ranked by severity, based on direct code inspection (not exhaustive — see Out of Scope):
+
+1. **`.github/pipeline-state.json` web-ui writer — CRITICAL, confirmed live.** `src/web-ui/adapters/pipeline-state-writer.js`, invoked from `routes/journey.js`'s gate-confirm handler on every stage completion (discovery, DoR sign-off, any stage advance) reached via the web UI. Wrote directly to local disk with no git commit. `.github/` is excluded from the built Docker image (`.dockerignore`), so on staging the file never exists; the writer's original `catch` silently fell back to `{schemaVersion:'1', features:[]}` and wrote *that* back — a fresh, near-empty file containing only the one feature/story just touched, never committed to git, wiped on the next redeploy. Every real gate-confirm on staging was silently fabricating throwaway governance state.
+2. **`workspace/ideas.json` — HIGH, likely broken today.** `routes/features.js`'s `POST /api/ideas` writes here with no directory creation and no error handling; `workspace/` is not copied into the Docker image at all. Write almost certainly throws (uncaught) on staging; read gracefully but silently falls back to an always-empty backlog.
+3. **`workspace/estimation-norms.md` — MEDIUM.** `routes/journey.js`'s estimate-submission handler appends a row per estimate, local-disk-only, same ephemeral-on-redeploy problem. Breaks the "3+ features → calibrated defaults" promise in `CLAUDE.md`'s estimation model for anything submitted via the web UI.
+4. **HTML skill-session dual write (disk + Redis) — LOW, already self-healed.** `adapters/session-store.js` (disk) and `adapters/skill-session-redis.js` (Upstash Redis) both write on every turn. Someone already identified this exact class of problem for sessions specifically (`wsm.2`'s own comment: "turns survive Fly.io deploys") and wired Redis as the real durable layer; disk write is now inert dead weight, not an active bug — read paths correctly prefer/merge Redis data.
+5. **Artefact content itself** — covered separately by decision D3 in `2026-07-26-canvas-render-and-story-extraction-fix/decisions.md` (git/GitHub recommended as canonical store, Postgres as read-through cache). Not yet implemented.
+
+## D1 — ship a fast protective guard on pipeline-state-writer.js now, defer the unified fix
+
+**Date:** 2026-07-26
+**Decision:** rather than building the full unified durable-store adapter (git-commit + Postgres-cache, per D3) in the same pass as this audit, ship a small, immediate guard first: `pipeline-state-writer.js` now throws a clear error instead of silently fabricating a fresh `{features: []}` state when `.github/pipeline-state.json` doesn't already exist at the resolved repo root. The call site (`journey.js`'s gate-confirm handler) already wraps this call in a try/catch and already gates trace emission on `stateWriteSucceeded` — so a thrown error degrades correctly today (gate-confirm still completes; the write is just correctly reported as failed instead of silently "succeeding" with corrupted data) with no additional wiring needed.
+**Rationale:** this is the highest-severity, currently-live finding (pipeline governance state, not just a display page) and the fix is small, low-risk, and immediately verifiable — worth shipping in minutes rather than waiting on the larger unification work. Verified via `tests/check-cdg7-gate-advance.js`'s new T-alrf-s3a/b/c cases (guard throws, doesn't create a bogus file, and the normal file-exists path is completely unaffected) plus the full pre-existing `check-cdg7-gate-advance.js` (40/40) and `check-owle6-pipeline-state-auto-write.js` (20/20) suites passing unchanged.
+**What's deferred:** items 2–5 above, and the actual durable-store fix that would let pipeline-state writes (and ideas, estimation-norms, artefact content) succeed on staging rather than merely fail loudly instead of silently. That is the subject of the follow-on unified-store work (see `2026-07-26-canvas-render-and-story-extraction-fix/decisions.md` D3).

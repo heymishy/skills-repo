@@ -1,0 +1,25 @@
+# Implementation Plan: rb-s5 (Optionally install the full outer loop during bootstrap)
+
+**Story:** artefacts/2026-08-05-repo-bootstrap-no-fork/stories/rb-s5-optional-outer-loop-install.md
+**DoR:** artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s5-dor.md
+
+## Pre-implementation finding (read before touching code)
+
+Checked the real current behaviour of `installFullSkillSetAndRegistry` (`cli/lib/init.js`) and `copySkillsFromRegistry` (`cli/lib/skills-registry.js`) before writing any tests. Today, on **both** the fresh-repo path (`rb-s1`) and the SaaS-connected path (`rb-s4`), `runInit()` calls `installFullSkillSetAndRegistry` unconditionally with **zero category filtering** — every one of the 46 skills under `skills/` (outer-loop, inner-loop, and ancillary alike) is copied into `.github/skills/` every time, confirmed by running the existing rb-s1/rb-s2/rb-s3/rb-s4 test suites (`[skills-repo-init] Installed 46 skill(s) (full skill set)` on every run, flag or no flag).
+
+This directly contradicts AC2 ("SaaS-connected without the flag -> only inner-loop and ancillary installed") as the code exists today, and it also means the discovery.md MVP Scope line ("copies the full skill set uniformly every time... rather than conditional file-copying logic") has already been superseded by this story's own epic (`rb-e2`), whose Goal statement says "Optionally, either bootstrap path... can **also** install the full outer loop" -- i.e. outer-loop is additive/opt-in on **both** entry points, not installed by default on either.
+
+Given AC3's own wording ("the flag behaves identically regardless of which entry point it's combined with") only makes sense if the flag has a real, non-redundant effect on both paths, the implementation below narrows the **default** (no flag) skill set to inner-loop + ancillary only on both the fresh and SaaS-connected paths, and the flag restores outer-loop skills on top, on both paths identically. This is a real behavioural change versus what rb-s1/rb-s2/rb-s4 shipped (all three currently install everything, always) -- logged as a `decisions.md` ARCH entry, and it requires updating one existing rb-s2 regression assertion (`fullSkillSetAndRegistry_buildOnRbS1Output`) that hard-coded the old "installs literally everything, no flag" default. See decisions.md entry dated this session for the full rationale.
+
+## Tasks
+
+1. **Write failing tests first** (`tests/check-rb-s5-optional-outer-loop-install.js`) covering AC1-AC4 + the cross-entry-point integration test + the NFR timing test, per the test plan. Confirm they fail against current code (no `withOuterLoop` support exists yet).
+2. **`cli/lib/skills-registry.js`**: add a new, separate `installableSkills(registry, withOuterLoop)` helper that filters registry entries by category. Do **not** modify `copySkillsFromRegistry` itself -- it must stay category-agnostic per its own docstring and rb-s2 AC3 (a new category must work with zero change to that function).
+3. **`cli/lib/init.js`**: thread a `withOuterLoop` option through `runInit` -> `installFullSkillSetAndRegistry`, which now builds the full registry (unfiltered -- always written to `skills-registry.json` in full, since the registry is the categorisation manifest, not an install log) but only passes the filtered `installableSkills(...)` subset to `copySkillsFromRegistry`.
+4. **`cli/bin/init.js`**: parse `--with-outer-loop`, pass it through, update the usage string to mention it and to state that re-running init later with just this flag (no `--force` needed) is the supported way to add the outer loop after the fact (AC4's "documents add-on mode" requirement).
+5. **Add-on mode reconciliation (AC4):** verify (via test) that re-running with `--with-outer-loop` against an already-bootstrapped directory needs zero special-case code -- `copySkillsFromRegistry`'s existing per-file skip-unless-force logic already means previously-excluded outer-loop skill directories (which don't exist in the target yet) get copied fresh, while every already-present file is left untouched. This is the reconciliation with rb-s1 AC3.
+6. **Update `tests/check-rb-s2-full-skill-set-and-registry.js`**: `fullSkillSetAndRegistry_buildOnRbS1Output` currently asserts the default install contains literally every real skill name. Split it: default install (no flag) contains only non-outer-loop skills, but the written registry still lists every real skill with its correct category; a new companion assertion (`withOuterLoop: true`) confirms the full set is still reachable in one call.
+7. **`decisions.md`**: add an ARCH entry recording the discovery-vs-epic-Goal reconciliation and the default-narrowing decision.
+8. **Run full regression**: `node tests/check-rb-s1-cli-init.js`, `check-rb-s2-...`, `check-rb-s3-...`, `check-rb-s4-...`, `check-rb-s5-...`, then `node scripts/run-all-tests.js` for the full-suite baseline comparison.
+9. **Verification script walkthrough** (`rb-s5-verification.md`) — all 4 scenarios.
+10. **branch-complete**: push, open draft PR, document the default-narrowing finding prominently in the PR body.

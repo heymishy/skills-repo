@@ -60,7 +60,7 @@ function fail(name, reason) {
   failures.push(name + ': ' + reason);
 }
 
-const revEngSkill = path.join(root, '.github', 'skills', 'reverse-engineer', 'SKILL.md');
+const revEngSkill = path.join(root, 'skills', 'reverse-engineer', 'SKILL.md');
 
 function getContent() {
   if (!fs.existsSync(revEngSkill)) return null;
@@ -73,7 +73,7 @@ console.log('\n[rrc.2] /reverse-engineer Output 10 — constraint-index.md\n');
 (function test_output_10_present() {
   const name = 'rrc2-output-10-instruction-present';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reverse-engineer/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reverse-engineer/SKILL.md not found'); return; }
   if (/Output 10/i.test(content)) {
     pass(name);
   } else {
@@ -85,7 +85,7 @@ console.log('\n[rrc.2] /reverse-engineer Output 10 — constraint-index.md\n');
 (function test_constraint_index_filename() {
   const name = 'rrc2-constraint-index-filename-specified';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reverse-engineer/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reverse-engineer/SKILL.md not found'); return; }
   if (/constraint-index\.md/i.test(content)) {
     pass(name);
   } else {
@@ -97,7 +97,7 @@ console.log('\n[rrc.2] /reverse-engineer Output 10 — constraint-index.md\n');
 (function test_rule_id_column() {
   const name = 'rrc2-constraint-index-has-rule-id-column';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reverse-engineer/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reverse-engineer/SKILL.md not found'); return; }
   const idx = content.indexOf('constraint-index');
   if (idx === -1) { fail(name, 'SKILL.md has no constraint-index section'); return; }
   const region = content.slice(Math.max(0, idx - 100), idx + 600);
@@ -112,7 +112,7 @@ console.log('\n[rrc.2] /reverse-engineer Output 10 — constraint-index.md\n');
 (function test_source_file_column() {
   const name = 'rrc2-constraint-index-has-source-file-column';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reverse-engineer/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reverse-engineer/SKILL.md not found'); return; }
   const idx = content.indexOf('constraint-index');
   if (idx === -1) { fail(name, 'SKILL.md has no constraint-index section'); return; }
   const region = content.slice(Math.max(0, idx - 100), idx + 600);
@@ -127,7 +127,7 @@ console.log('\n[rrc.2] /reverse-engineer Output 10 — constraint-index.md\n');
 (function test_confidence_column() {
   const name = 'rrc2-constraint-index-has-confidence-column';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reverse-engineer/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reverse-engineer/SKILL.md not found'); return; }
   const idx = content.indexOf('constraint-index');
   if (idx === -1) { fail(name, 'SKILL.md has no constraint-index section'); return; }
   const region = content.slice(Math.max(0, idx - 100), idx + 600);
@@ -142,7 +142,7 @@ console.log('\n[rrc.2] /reverse-engineer Output 10 — constraint-index.md\n');
 (function test_disposition_column() {
   const name = 'rrc2-constraint-index-has-disposition-column';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reverse-engineer/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reverse-engineer/SKILL.md not found'); return; }
   const idx = content.indexOf('constraint-index');
   if (idx === -1) { fail(name, 'SKILL.md has no constraint-index section'); return; }
   const region = content.slice(Math.max(0, idx - 100), idx + 600);
@@ -157,7 +157,7 @@ console.log('\n[rrc.2] /reverse-engineer Output 10 — constraint-index.md\n');
 (function test_summary_column() {
   const name = 'rrc2-constraint-index-has-summary-column';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reverse-engineer/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reverse-engineer/SKILL.md not found'); return; }
   const idx = content.indexOf('constraint-index');
   if (idx === -1) { fail(name, 'SKILL.md has no constraint-index section'); return; }
   const region = content.slice(Math.max(0, idx - 100), idx + 600);
@@ -172,7 +172,7 @@ console.log('\n[rrc.2] /reverse-engineer Output 10 — constraint-index.md\n');
 (function test_change_risk_notation() {
   const name = 'rrc2-change-risk-notation-in-constraint-index';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reverse-engineer/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reverse-engineer/SKILL.md not found'); return; }
   const idx = content.indexOf('constraint-index');
   if (idx === -1) { fail(name, 'SKILL.md has no constraint-index section'); return; }
   // CHANGE-RISK must appear near the constraint-index section
@@ -188,7 +188,7 @@ console.log('\n[rrc.2] /reverse-engineer Output 10 — constraint-index.md\n');
 (function test_verify_updates_constraint_index() {
   const name = 'rrc2-verify-updates-constraint-index';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reverse-engineer/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reverse-engineer/SKILL.md not found'); return; }
   const verifyIdx = content.search(/VERIFY pass|## VERIFY|### VERIFY/i);
   if (verifyIdx === -1) { fail(name, 'SKILL.md has no VERIFY pass section'); return; }
   const verifyRegion = content.slice(verifyIdx, verifyIdx + 1000);
@@ -203,7 +203,7 @@ console.log('\n[rrc.2] /reverse-engineer Output 10 — constraint-index.md\n');
 (function test_output_10_not_for_defer() {
   const name = 'rrc2-output-10-gated-not-for-defer';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reverse-engineer/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reverse-engineer/SKILL.md not found'); return; }
   const deferIdx = content.search(/DEFER|Q0.*C\b/i);
   if (deferIdx === -1) { fail(name, 'SKILL.md has no DEFER section'); return; }
   const deferRegion = content.slice(deferIdx, deferIdx + 500);
@@ -218,7 +218,7 @@ console.log('\n[rrc.2] /reverse-engineer Output 10 — constraint-index.md\n');
 (function test_rule_id_format() {
   const name = 'rrc2-rule-id-format-layer-sequence';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reverse-engineer/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reverse-engineer/SKILL.md not found'); return; }
   // DEC-001: rule-id format is <layer>-<sequence> e.g. L1-001
   // Accept: "L1-001", "layer-sequence", "<layer>-<seq>", "L\d+-\d+"
   if (/L\d+-\d{3}|<layer>|layer.?sequence|layer.?number.*sequence/i.test(content)) {
@@ -232,7 +232,7 @@ console.log('\n[rrc.2] /reverse-engineer Output 10 — constraint-index.md\n');
 (function test_contract_markers() {
   const name = 'rrc2-skill-contract-markers-present';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reverse-engineer/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reverse-engineer/SKILL.md not found'); return; }
   const missing = [];
   if (!/^name:/m.test(content)) missing.push('name:');
   if (!/^description:/m.test(content)) missing.push('description:');
@@ -249,7 +249,7 @@ console.log('\n[rrc.2] /reverse-engineer Output 10 — constraint-index.md\n');
 (function test_line_count_nfr() {
   const name = 'rrc2-skill-line-count-within-nfr';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reverse-engineer/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reverse-engineer/SKILL.md not found'); return; }
   const lineCount = content.split('\n').length;
   if (lineCount <= 650) {
     pass(name);

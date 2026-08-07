@@ -11,8 +11,64 @@ const { hashPassword, verifyPassword } = require('../modules/password');
 const _session = require('../middleware/session');
 // arl-s1: user-roles module (injectable adapter — D37). Loads role after tenantId is set.
 const _userRoles = require('../modules/user-roles');
+const _credits = require('../modules/credits'); // ftcg-s1
+const _organisations = require('../modules/organisations'); // story-1-organisation-entity
 // sec-perf-s3: session-scoped CSRF (Cross-Site Request Forgery) protection.
 const csrf = require('../middleware/csrf');
+
+/**
+ * ftcg-s1: grant a one-time free-tier credit balance to a brand-new tenant.
+ * Safe to call unconditionally (see credits.js's grantFreeTierIfNew — atomic,
+ * ON CONFLICT DO NOTHING). Never blocks or fails signup itself — a grant
+ * failure is logged and swallowed (AC8).
+ * @param {string} tenantId
+ */
+async function _grantFreeTierCredits(tenantId) {
+  try {
+    const amount = parseInt(process.env.CREDITS_FREE_TIER_GRANT || '10', 10);
+    const granted = await _credits.grantFreeTierIfNew(tenantId, amount);
+    if (granted) {
+      console.info('free_tier_credits_granted', { tenantId, amount });
+    }
+  } catch (err) {
+    console.warn('free_tier_credits_grant_failed', { tenantId, reason: err.message });
+  }
+}
+
+// story-1-organisation-entity (follow-up, 2026-07-31): pool handed in by
+// server.js at startup, mirroring auth.js's setOrganisationsPool. A missing
+// pool must never break signup/login, it should simply skip organisation
+// resolution (mirrors _grantFreeTierCredits's own "never blocks the caller's
+// flow" rule).
+let _organisationsPool = null;
+
+/**
+ * Replace the pool used for organisation resolution (called once by server.js at startup).
+ * @param {object} pool - pg-Pool-shaped object exposing query(sql, params)
+ */
+function setOrganisationsPool(pool) {
+  _organisationsPool = pool;
+}
+
+/**
+ * story-1-organisation-entity (follow-up, 2026-07-31): resolve or create the
+ * `organisations` row for this tenantId at email/password signup/login --
+ * purely additive, never blocks or fails the caller's own login/signup flow.
+ * Mirrors auth.js's _resolveOrganisation and _grantFreeTierCredits's
+ * fire-and-forget, try/catch-wrapped shape. Closes the gap flagged in
+ * decisions.md where this story's OAuth-only wiring left brand-new
+ * email/password signups without an organisations row until the next
+ * server-restart backfill sweep.
+ * @param {string} tenantId
+ */
+async function _resolveOrganisation(tenantId) {
+  if (!_organisationsPool) return; // not wired (e.g. no DATABASE_URL) -- safe no-op
+  try {
+    await _organisations.resolveOrganisationForTenant(_organisationsPool, tenantId);
+  } catch (err) {
+    console.warn('organisation_resolution_failed', { tenantId, reason: err.message });
+  }
+}
 
 // ── D37: injectable user DB adapter ──────────────────────────────────────────
 // Default stub throws — call setUserDb(pgPool) before use.
@@ -52,27 +108,115 @@ const _rateLimits = new Map();
 const RATE_MAX    = process.env.E2E_RATE_LIMIT_BYPASS === 'true' ? 100000 : 10;
 const RATE_WIN_MS = 5 * 60 * 1000; // 5 minutes
 
+// ── story-4-dual-path-authentication: reusable sliding-window rate-limiter
+// primitive ─────────────────────────────────────────────────────────────────
+// Extracted from _checkRateLimit's own inline Map logic below so that
+// routes/client-login.js's magic-link request endpoint can reuse this SAME
+// mechanism and threshold for its own per-IP AND per-target-email checks
+// (NFR, resolves review run 1's [1-M1]) instead of building a new, bespoke
+// limiter. Pure extraction -- _checkRateLimit's own behaviour/threshold for
+// the existing signup/login callers below is unchanged: it still uses the
+// same _rateLimits Map, RATE_MAX, and RATE_WIN_MS it always has.
+/**
+ * Sliding-window rate-limit check. Filters `store`'s timestamps for `key` to
+ * the current window, records this attempt, and returns whether the count is
+ * still within `max`. Caller decides what to do when this returns false
+ * (e.g. write a 429).
+ * @param {Map<string, number[]>} store - a Map the caller owns (one Map per limiter)
+ * @param {string} key - e.g. an IP address or an email address
+ * @param {number} max - max attempts allowed within windowMs
+ * @param {number} windowMs - sliding window size in milliseconds
+ * @returns {boolean} true if this attempt is within the limit
+ */
+function checkSlidingWindowRateLimit(store, key, max, windowMs) {
+  const now = Date.now();
+  const cutoff = now - windowMs;
+  const timestamps = (store.get(key) || []).filter(function(t) { return t > cutoff; });
+  timestamps.push(now);
+  store.set(key, timestamps);
+  return timestamps.length <= max;
+}
+
+// ── serlb-s1: narrow, staging-only, triple-gated rate-limit bypass ───────────
+// Fix-forward for PR #563 (story a5-ci-gate-scenario-a-blocking): the newly-wired
+// "Scenario A E2E (staging)" CI job signs up a fresh e2e-test--tagged tenant in
+// nearly every spec (a1-a4), tripping this real 10-attempt/5-minute per-IP limiter
+// on real wuce-staging (which has no NODE_ENV=test guard, unlike the local harness's
+// E2E_RATE_LIMIT_BYPASS=true above).
+//
+// The naive fix -- raising RATE_MAX globally when a staging flag is set -- would
+// remove signup/login rate-limiting for ALL traffic to staging, a real abuse-surface
+// regression. Instead this reuses a1-staging-safe-auth-stub's own double-gate
+// philosophy (src/web-ui/routes/auth-stub.js) and adds a third, narrower gate:
+//   1. process.env.E2E_STAGING_AUTH_STUB_SECRET is configured on this server --
+//      the SAME staging-only secret a1 already established (never set on the
+//      production wuce.fly.dev app; production isolation is covered by the
+//      existing tests/check-a1-fly-config-isolation.js guardrail with zero new
+//      config-isolation test needed, since no new env var name is introduced).
+//   2. The request carries a matching `x-e2e-rate-limit-bypass` header (constant-
+//      time compared) -- a bare env var leak alone is not enough, mirroring
+//      auth-stub.js's own header-gate reasoning.
+//   3. The SPECIFIC signup/login attempt's own email is itself `e2e-test-`-tagged
+//      (tests/e2e/fixtures/staging-auth.js's uniqueEmail() convention) -- this is
+//      the gate a1's simpler two-gate scheme does not need (its stub creates its
+//      own synthetic identity from scratch rather than accepting caller-supplied
+//      email input), and is what keeps a REAL user's signup fully rate-limited
+//      even if gates 1+2 both happen to be true (defense in depth).
+// All three gates are only even evaluated once the normal RATE_MAX threshold is
+// already exceeded -- a normal, in-limit request never reads the request body
+// early and behaves exactly as before this story.
+const BYPASS_SECRET_ENV_VAR = 'E2E_STAGING_AUTH_STUB_SECRET';
+const BYPASS_HEADER_NAME    = 'x-e2e-rate-limit-bypass';
+const E2E_TEST_EMAIL_PREFIX = 'e2e-test-';
+
+function _stagingBypassSecretConfigured() {
+  return !!process.env[BYPASS_SECRET_ENV_VAR];
+}
+
+/** Constant-time comparison of the request-supplied header against the configured secret. */
+function _stagingBypassHeaderMatches(req) {
+  const expected = process.env[BYPASS_SECRET_ENV_VAR] || '';
+  const supplied = (req.headers && req.headers[BYPASS_HEADER_NAME]) || '';
+  const suppliedBuf = Buffer.from(String(supplied));
+  const expectedBuf = Buffer.from(expected);
+  if (suppliedBuf.length !== expectedBuf.length) return false;
+  return crypto.timingSafeEqual(suppliedBuf, expectedBuf);
+}
+
+function _isE2eTaggedEmail(email) {
+  return typeof email === 'string' && email.toLowerCase().indexOf(E2E_TEST_EMAIL_PREFIX) === 0;
+}
+
 function _getIP(req) {
   return req.ip || (req.connection && req.connection.remoteAddress) || 'unknown';
 }
 
 /**
- * Enforce per-IP rate limit (sliding window).
+ * Enforce per-IP rate limit (sliding window), honouring the narrow serlb-s1
+ * staging-only bypass carve-out documented above.
  * Returns true if the request is allowed, false (and writes 429) if blocked.
+ * When the bypass is granted, req.body is populated with the already-read parsed
+ * body so the caller's subsequent _readBody(req)/csrfGuard(req) calls reuse it
+ * instead of re-reading the already-consumed request stream.
  */
-function _checkRateLimit(req, res) {
-  const ip     = _getIP(req);
-  const now    = Date.now();
-  const cutoff = now - RATE_WIN_MS;
-  const timestamps = (_rateLimits.get(ip) || []).filter(function(t) { return t > cutoff; });
-  timestamps.push(now);
-  _rateLimits.set(ip, timestamps);
-  if (timestamps.length > RATE_MAX) {
-    res.writeHead(429, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Too many attempts' }));
-    return false;
+async function _checkRateLimit(req, res) {
+  const ip = _getIP(req);
+
+  if (checkSlidingWindowRateLimit(_rateLimits, ip, RATE_MAX, RATE_WIN_MS)) return true;
+
+  // Over the normal limit -- only now check the narrow staging E2E bypass.
+  if (_stagingBypassSecretConfigured() && _stagingBypassHeaderMatches(req)) {
+    const body  = await _readBody(req);
+    req.body    = body;
+    const email = (body && body.email ? String(body.email).toLowerCase().trim() : '');
+    if (_isE2eTaggedEmail(email)) {
+      return true;
+    }
   }
-  return true;
+
+  res.writeHead(429, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ error: 'Too many attempts' }));
+  return false;
 }
 
 /**
@@ -114,7 +258,7 @@ function _readBody(req) {
  * 409 — email already registered (duplicate constraint from DB)
  */
 async function handleEmailSignup(req, res) {
-  if (!_checkRateLimit(req, res)) return;
+  if (!(await _checkRateLimit(req, res))) return;
 
   // sec-perf-s3 AC4: reject a POST that does not carry a valid session-scoped CSRF token.
   const csrfOk = await csrf.csrfGuard(req, res);
@@ -161,6 +305,16 @@ async function handleEmailSignup(req, res) {
   // Set BEFORE session rotation so it is carried into the rotated (persisted) session.
   req.session.firstLogin  = true;
 
+  // ftcg-s1: this handler only ever reaches here for a genuinely new `users`
+  // row (the 23505 duplicate-email branch above already returned), so this
+  // is unconditionally a brand-new tenant -- but the grant call is still the
+  // same idempotent, no-op-on-conflict function as the other 2 auth paths.
+  await _grantFreeTierCredits(email);
+
+  // story-1-organisation-entity (follow-up, 2026-07-31): resolve/create the
+  // organisations row for this tenant -- see _resolveOrganisation above.
+  await _resolveOrganisation(email);
+
   // tir-s1: load role via the person/team-scoped lookup (AC3). Falls back to
   // 'user' on error.
   try {
@@ -190,7 +344,7 @@ async function handleEmailSignup(req, res) {
  *   (same message; no distinction to prevent user enumeration).
  */
 async function handleEmailLogin(req, res) {
-  if (!_checkRateLimit(req, res)) return;
+  if (!(await _checkRateLimit(req, res))) return;
 
   // sec-perf-s3 AC4: reject a POST that does not carry a valid session-scoped CSRF token.
   const csrfOk = await csrf.csrfGuard(req, res);
@@ -226,6 +380,12 @@ async function handleEmailLogin(req, res) {
   req.session.tenantId    = email;
   req.session.login       = email;
 
+  // story-1-organisation-entity (follow-up, 2026-07-31): no-op for a
+  // returning tenant (resolve-or-create, ON CONFLICT DO NOTHING) -- safe to
+  // call on every login, mirroring auth.js's OAuth-path placement (called on
+  // every login there too, not gated to first-login).
+  await _resolveOrganisation(email);
+
   // tir-s1: load role via the person/team-scoped lookup (AC3). Falls back to
   // 'user' on error.
   try {
@@ -249,5 +409,11 @@ module.exports = {
   handleEmailLogin,
   setUserDb,
   setRotateSessionId,
-  _clearRateLimits
+  setOrganisationsPool,
+  _clearRateLimits,
+  // story-4-dual-path-authentication: reused directly by routes/client-login.js
+  // for its own per-IP AND per-target-email rate limiting (NFR).
+  checkSlidingWindowRateLimit,
+  RATE_MAX,
+  RATE_WIN_MS
 };

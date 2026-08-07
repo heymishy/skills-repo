@@ -38,6 +38,18 @@ agent:
   #   Claude Code     → AGENTS.md
   #   Cursor          → .cursorrules
 
+outerLoop:
+  # rb-s5: enablement signal for the bootstrap CLI's --with-outer-loop flag.
+  # Every skill file (outer-loop included) is always present under
+  # .github/skills/ regardless of this value (see rb-s2 AC1) — this field only
+  # controls whether the generated instruction file's session-start section
+  # presents outer-loop skills (discovery through decisions) as active tooling
+  # (true) or as installed-but-not-yet-enabled (false, the default). Set to
+  # true automatically when the bootstrap CLI runs with --with-outer-loop; can
+  # also be flipped by re-running the CLI later with just that flag (add-on
+  # mode) — never auto-disabled once enabled (no removal mechanism, MVP scope).
+  enabled: false
+
 architecture:
   ea_registry_repo: "https://github.com/heymishy/ea-registry"
   ea_registry_local_path: "C:/Users/Hamis/code/ea-registry-repo"

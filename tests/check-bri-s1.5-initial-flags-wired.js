@@ -61,8 +61,8 @@ async function main() {
   // ── AC4 (unit, code-side) — flag key constants match the exact 3 names ──────
 
   queue.push(function() {
-    console.log('\n[bri-s1.5] U1 -- flag-keys.js exports the exact 3 flag name strings (AC4 code-side)');
-    return test('U1: flag-keys module equals { WIZARD_UI, PRODUCT_KANBAN_VIEW, ORG_KANBAN_VIEW }', function() {
+    console.log('\n[bri-s1.5] U1 -- flag-keys.js exports this story\'s original 3 flag name strings unmodified (AC4 code-side)');
+    return test('U1: flag-keys module includes { WIZARD_UI, PRODUCT_KANBAN_VIEW, ORG_KANBAN_VIEW } with their original values', function() {
       assert.strictEqual(flagKeys.WIZARD_UI, 'wizard-ui');
       assert.strictEqual(flagKeys.PRODUCT_KANBAN_VIEW, 'product-kanban-view');
       assert.strictEqual(flagKeys.ORG_KANBAN_VIEW, 'org-kanban-view');
@@ -70,7 +70,14 @@ async function main() {
       var values = Object.keys(flagKeys).map(function(k) { return flagKeys[k]; });
       assert.ok(values.indexOf('model-routing-glm52') === -1, 'stale placeholder model-routing-glm52 must not appear');
       assert.ok(values.indexOf('billing-v2') === -1, 'stale placeholder billing-v2 must not appear');
-      assert.strictEqual(Object.keys(flagKeys).length, 3, 'exactly 3 flag keys expected');
+      // d4 (2026-07-22): flag-keys.js is a shared, ever-growing registry across
+      // stories (see ADMIN_IMPERSONATION, added by d4) -- asserting an exact
+      // key count here would make this AC4 test fail every time any later
+      // story adds its own flag, which is not a real regression of THIS
+      // story's own 3 keys. Assert at-least-3 with the exact values above
+      // (which does still catch a typo/drift in this story's own 3 keys)
+      // rather than an exact total count.
+      assert.ok(Object.keys(flagKeys).length >= 3, 'expected at least this story\'s original 3 flag keys to still be present');
     });
   });
 
@@ -142,8 +149,14 @@ async function main() {
       var req = { session: { tenantId: 'acme' }, params: { id: 'prod-1' } };
       var res = mockRes();
       await handleGetProductKanban(req, res, null, pool, mockPosthog);
-      assert.ok(res._b && Array.isArray(res._b.columns), 'expected the normal { columns } payload when the flag is on');
-      assert.strictEqual(res._b.columns.length, 8, 'expected 8 stage columns, unchanged from pre-flag behaviour');
+      // kbc-s1: handleGetProductKanban now renders real HTML via the shared
+      // renderer (AC2) instead of res.json({ columns }) -- assert on the
+      // rendered board content instead of the old JSON payload shape. The "8
+      // stage columns, unchanged from pre-flag behaviour" guarantee still
+      // holds; it is now verified via STAGE_COLUMNS directly (kbc-s1's own
+      // test suite, check-kanban-consolidation.js, covers the column count).
+      assert.ok(res._raw && typeof res._raw === 'string' && res._raw.includes('<div'), 'expected the normal rendered HTML board when the flag is on');
+      assert.ok(res._raw.includes('f1'), 'expected the fixture feature to appear in the rendered board');
     });
   });
 
@@ -162,8 +175,11 @@ async function main() {
       var req = { session: { tenantId: 'tenant-x' }, query: {} };
       var res = mockRes();
       await handleGetOrgKanban(req, res, null, pool, mockPosthog);
-      assert.ok(res._b && Array.isArray(res._b.groups), 'expected the normal { groups } payload for the targeted tenant');
-      assert.strictEqual(res._b.groups.length, 1, 'expected 1 product group');
+      // kbc-s1: handleGetOrgKanban now renders real HTML via the shared
+      // renderer (AC3) instead of res.json({ groups }) -- assert on the
+      // rendered board content instead of the old JSON payload shape.
+      assert.ok(res._raw && typeof res._raw === 'string' && res._raw.includes('<div'), 'expected the normal rendered HTML board for the targeted tenant');
+      assert.ok(res._raw.includes('Product A') || res._raw.includes('f1'), 'expected the fixture product/feature to appear in the rendered board');
     });
   });
 

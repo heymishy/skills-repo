@@ -1,0 +1,85 @@
+# Decision Log: 2026-07-16-product-rollup
+
+**Feature:** Product Rollup & Aggregation Layer
+**Discovery reference:** artefacts/2026-07-16-product-rollup/discovery.md
+**Last updated:** 2026-07-17
+
+---
+
+## Decision categories
+
+| Code | Meaning |
+|------|---------|
+| `SCOPE` | MVP scope added, removed, or deferred |
+| `SLICE` | Decomposition and sequencing choices |
+| `ARCH` | Architecture or significant technical design (full ADR if complex) |
+| `DESIGN` | UX, product, or lightweight technical design choices |
+| `ASSUMPTION` | Assumption validated, invalidated, or overridden |
+| `RISK-ACCEPT` | Known gap or finding accepted rather than resolved |
+
+---
+
+## Log entries
+
+---
+**2026-07-17 | ARCH | discovery**
+**Decision:** "Product" is unified with the existing SaaS `products` table rather than introduced as a new, separately-named primitive.
+**Alternatives considered:** A net-new Product manifest entity referencing feature slugs, entirely separate from the `products` table.
+**Rationale:** The `products` table already carries repo-association columns (`prc-s1.1`) and standards-hierarchy columns (`psh-s3`) mirroring this platform's own `product/*.md` files — a tenant's "product" already is a repo, and this platform's own dogfooding case is the degenerate case of that same entity.
+**Made by:** Hamish King (operator correction of an earlier draft's naming-collision framing)
+**Revisit trigger:** Never, unless a second, materially different "product" concept emerges that genuinely cannot share the same table.
+---
+**2026-07-17 | ARCH | discovery**
+**Decision:** The rollup sync mechanism is ordinary application code in `src/web-ui/` (a route handler using GitHub's Contents API), not a governed SKILL.md skill.
+**Alternatives considered:** A new `/product-sync` SKILL.md skill reading a locally-checked-out `pipeline-state.json`.
+**Rationale:** A tenant viewing their own product's rollup is a live SaaS feature for any authenticated browser user, not an agent workflow invoked in a pipeline session. `sign-off.js`'s `handleArtefactRead` already proves the exact mechanism needed (Contents API + user's own OAuth token), and the `standards` table already shows the per-product DB-caching convention to follow.
+**Made by:** Hamish King (operator review questioned the skill framing given the platform's real Postgres persistence layer)
+**Revisit trigger:** If a future need arises for an agent-invoked, conversational rollup-authoring flow distinct from the live web UI view.
+---
+**2026-07-17 | SCOPE | discovery**
+**Decision:** Aggregate health and aggregate AC coverage are added as explicit MVP rollup dimensions (discovery MVP scope item 4).
+**Alternatives considered:** Leaving health and AC coverage as fetched-but-unused fields, deferring both to a fast-follow.
+**Rationale:** Health was already named as an operator need in the Problem Statement/Who It Affects sections but never actually specified as a rollup dimension — a real gap found on review, not a new ask. `acTotal`/`acVerified` were already listed as fetched fields for the same reason. Closing both now avoids re-opening this discovery a third time for a gap that was already partially visible.
+**Made by:** Hamish King
+**Revisit trigger:** Never — these are core to what "product shape" means for this feature.
+---
+**2026-07-17 | DESIGN | definition**
+**Decision:** Slicing strategy is vertical slice — each story is an independently demo-able complete slice through all layers.
+**Alternatives considered:** Walking skeleton (thinnest end-to-end path first, then flesh out); user journey; risk-first.
+**Rationale:** Operator's explicit choice. Walking skeleton was flagged as the recommended default given this is new integration territory, but the operator chose vertical slice — each rollup dimension (health, test coverage, AC coverage, taxonomy) is independently valuable and demoable once the Epic 1 sync mechanism exists, without requiring every dimension to ship together.
+**Made by:** Hamish King
+**Revisit trigger:** If Epic 2's stories turn out to share more implementation surface than expected, such that "independent" slices in practice require coordinated changes — reconsider whether walking-skeleton sequencing would have reduced rework.
+---
+**2026-07-17 | SCOPE | definition**
+**Decision:** Meta Metric 1 (dogfooding validates the mechanism against a small product) has no story that directly moves it — it is validated post-ship by testing the shipped mechanism against a smaller synthetic/early-tenant product fixture, not by any individual story's ACs.
+**Alternatives considered:** (1) Write a synthetic story whose sole purpose is running this validation; (2) descope the meta-metric entirely; (3) mark it post-MVP.
+**Rationale:** All 7 stories collectively enable this validation (there's nothing to validate the mechanism against until the rollup exists) — forcing a synthetic story into existence just to show coverage would be artefact theatre, not real work. This mirrors the `2026-07-14-product-repo-config` feature's own precedent for exactly this shape of metric-gap (see that feature's `benefit-metric.md`, Meta Metric 1 resolution note).
+**Made by:** Hamish King (agent-proposed resolution, consistent with prior precedent, accepted)
+**Revisit trigger:** If beta launch approaches and this validation still hasn't happened informally, convert it into an explicit story rather than letting it remain an assumed side-effect.
+---
+**2026-07-17 | RISK-ACCEPT | definition-of-ready**
+**Decision:** W4 (verification script reviewed by a domain expert) is acknowledged, not resolved, for all 7 stories (pr-s1 through pr-s7) at DoR sign-off time.
+**Alternatives considered:** Pause DoR sign-off until each of the 7 verification scripts has been walked through and confirmed correct before assigning any story to the coding agent.
+**Rationale:** The verification scripts were written in this same session, immediately after their corresponding test plans, closely mirroring the story ACs they derive from. The operator (who is also the sole domain expert in this solo-operator context) chose to proceed now and walk through each script before or during implementation rather than front-loading the review before any coding starts — consistent with continuous-flow delivery in a solo-operator posture (`.github/architecture-guardrails.md`'s W4 posture).
+**Made by:** Hamish King — Founder/Operator — 2026-07-17
+**Revisit trigger:** If a verification script's described behaviour turns out to be wrong once actually walked through (pre-code or post-merge smoke test), treat it as a normal AC/test-plan revision — this RISK-ACCEPT does not exempt any story from eventually being checked against its script.
+---
+
+## Architecture Decision Records
+
+Both ARCH entries above were promoted to repo-level ADRs via `/improve` on 2026-07-17, after DoD completed for all 7 stories: **ADR-026** (Product/`products`-table unification, generalised to "reuse an existing entity when its shape already covers a new concept") and **ADR-027** (rollup-as-app-code-not-skill, generalised to "live SaaS-user-facing mechanisms are ordinary application code, not governed skills"). See `.github/architecture-guardrails.md`.
+
+---
+**2026-07-17 | GAP | definition-of-done / improve**
+**Decision (not yet resolved — logged as a gap requiring a follow-up story):** `src/enforcement/cli-outer-loop.js`'s `validate()` function only implements `SUPPORTED_GATES = ['definition-of-ready']`, despite `src/enforcement/gate-map.js` listing all 7 gated stage values (including `definition-of-done`, which this feature needed). Calling `skills gate-advance <feature> <story> definition-of-done <artefact>` fails with `UNSUPPORTED_GATE` rather than validating the DoD artefact.
+**Impact on this feature:** Worked around by using direct `skills advance` calls for all 7 stories' DoD field writes instead of the gate-enforced path, per CLAUDE.md's cdg.6 exception for cases where the intended tool is unavailable.
+**Alternatives considered:** None — this is a platform infra gap discovered mid-DoD, not a design choice for this feature to make.
+**Made by:** Claude (agent), surfaced during `/definition-of-done` execution.
+**Revisit trigger:** A follow-up story should extend `validate()` to cover the remaining 6 gate names (or `gate-map.js`'s list should be trimmed to only the gates `validate()` actually supports) before `/definition-of-done` and other non-DoR gates can be considered fully gate-enforced. `/improve` does not create stories itself — this needs a `/discovery` or `/definition` pass to become an actioned story.
+---
+**2026-07-17 | GAP | improve**
+**Decision (not yet resolved — logged as a gap requiring a follow-up decision):** The `domain` field on story artefacts — the mechanism `.github/standards/index.yml` and `/definition-of-ready` use to inject matching standards into coding-agent instructions — has never been set on any story artefact across this repo's entire history (checked: 0 of 184 story files across every feature use `domain:`). All 7 of this feature's DoR runs silently skipped standards injection for this reason ("Story has no `domain` field — skipped silently").
+**Impact on this feature:** None directly — DoR still passed via its other hard blocks — but the standards-injection mechanism has effectively never activated since it was built.
+**Alternatives considered:** None — this is a repo-wide observation, not a design choice specific to product-rollup.
+**Made by:** Claude (agent), surfaced during `/improve` while checking DoR standards-injection sections across this feature's 7 stories.
+**Revisit trigger:** Either wire `domain` tagging into story authoring going forward (so the mechanism actually activates), or remove it as unused scaffolding — a real decision the operator should make deliberately rather than leave the mechanism silently inert. Needs a `/discovery` or `/definition` pass to become an actioned story, since `/improve` does not create stories itself.

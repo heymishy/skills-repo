@@ -32,6 +32,14 @@
 #   --context <path>           Path to context.yml for vcs.type / vcs.agent_instructions.format
 #                              resolution. (default: .github/context.yml if present)
 #   --dry-run                  Print the assembled content to stdout; do not write file.
+#   --all-harnesses            Harness-agnostic mode (rb-s3): write byte-identical copies of the
+#                              assembled content to all four known harness instruction paths —
+#                              CLAUDE.md, AGENTS.md, .cursorrules, .github/copilot-instructions.md
+#                              — instead of the single context.yml-resolved output path. Overrides
+#                              --output / context.yml-based path resolution when set. Additive: the
+#                              default (flag omitted) behaviour below is completely unchanged.
+#                              Decision: 2026-08-05 | ARCH | rb-s3 — see
+#                              artefacts/2026-08-05-repo-bootstrap-no-fork/decisions.md
 #
 # Layer composition order (fixed):
 #   1. core-platform  — from skills-repo at <ref>
@@ -53,6 +61,7 @@ OUTPUT=".github/copilot-instructions.md"
 OUTPUT_EXPLICIT=false
 CONTEXT_FILE=""
 DRY_RUN=false
+ALL_HARNESSES=false
 
 # ── Colour helpers ─────────────────────────────────────────────────────────────
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; RESET='\033[0m'
@@ -71,6 +80,7 @@ while [[ $# -gt 0 ]]; do
     --output)           OUTPUT="$2"; OUTPUT_EXPLICIT=true; shift 2 ;;
     --context)          CONTEXT_FILE="$2"; shift 2 ;;
     --dry-run)          DRY_RUN=true; shift ;;
+    --all-harnesses)    ALL_HARNESSES=true; shift ;;
     *) error "Unknown option: $1"; exit 1 ;;
   esac
 done
@@ -192,25 +202,49 @@ assemble() {
 HEADER
 
   # ── Progressive disclosure section ─────────────────────────────────────────
-  cat <<'DISCLOSURE'
-# Copilot Instructions
-
-## Progressive Skill Disclosure
-
+  # rb-s5 (2026-08-06): every skill file is always present on disk regardless
+  # of --with-outer-loop (rb-s2 AC1, unconditional) -- OUTER_LOOP_ENABLED only
+  # controls whether this section presents outer-loop skills as active
+  # session-start tooling or names them as installed-but-not-yet-enabled.
+  echo "# Copilot Instructions"
+  echo ""
+  echo "## Progressive Skill Disclosure"
+  echo ""
+  if [[ "$OUTER_LOOP_ENABLED" == true ]]; then
+    cat <<'DISCLOSURE_ENABLED'
 Skills are loaded in two phases to keep the session-start context within the
 token budget (≤ 8,000 tokens). Outer loop skills are available immediately.
 Inner loop skills are available on demand via `/load [skill-name]`.
 
 ### Outer loop — loaded at session start
 
-DISCLOSURE
+DISCLOSURE_ENABLED
+    for skill in "${OUTER_LOOP_SKILLS[@]}"; do
+      local skill_file="$SKILLS_DIR/$skill/SKILL.md"
+      local desc
+      desc="$(get_skill_description "$skill_file")"
+      echo "- **/$skill** — $desc"
+    done
+  else
+    cat <<'DISCLOSURE_DISABLED'
+Skills are loaded in two phases to keep the session-start context within the
+token budget (≤ 8,000 tokens). Outer loop skills (discovery through decisions)
+are installed but not yet enabled for this session. Inner loop skills are
+available on demand via `/load [skill-name]`.
 
-  for skill in "${OUTER_LOOP_SKILLS[@]}"; do
-    local skill_file="$SKILLS_DIR/$skill/SKILL.md"
-    local desc
-    desc="$(get_skill_description "$skill_file")"
-    echo "- **/$skill** — $desc"
-  done
+### Outer loop — installed, not enabled
+
+Every outer-loop skill file below is already installed under
+`.github/skills/`. To activate them at session start, re-run the bootstrap
+command with `--with-outer-loop` (add-on mode -- no `--force` needed, and it
+does not touch any other file already bootstrapped here), then regenerate
+this instruction file.
+
+DISCLOSURE_DISABLED
+    for skill in "${OUTER_LOOP_SKILLS[@]}"; do
+      echo "- /$skill (installed, not enabled)"
+    done
+  fi
 
   echo ""
   cat <<'DEFERRED'
@@ -251,30 +285,44 @@ LOAD_HANDLER
 
 *Source: core-platform — see composition header for version reference.*
 
-The following outer loop skills are active at session start.
-Use `/load [skill-name]` for any skill (including inner loop) to get full instructions.
-
 CORE_HEADER
 
-  for skill in "${OUTER_LOOP_SKILLS[@]}"; do
-    local skill_file="$SKILLS_DIR/$skill/SKILL.md"
-    if [[ -f "$skill_file" ]]; then
-      local desc
-      desc="$(get_skill_description "$skill_file")"
-      local triggers
-      triggers="$(get_skill_triggers "$skill_file")"
-      echo "#### /$skill"
-      echo ""
-      echo "$desc" | sed 's/^ //'
-      if [[ -n "$triggers" ]]; then
+  if [[ "$OUTER_LOOP_ENABLED" == true ]]; then
+    echo "The following outer loop skills are active at session start."
+    echo 'Use `/load [skill-name]` for any skill (including inner loop) to get full instructions.'
+    echo ""
+    for skill in "${OUTER_LOOP_SKILLS[@]}"; do
+      local skill_file="$SKILLS_DIR/$skill/SKILL.md"
+      if [[ -f "$skill_file" ]]; then
+        local desc
+        desc="$(get_skill_description "$skill_file")"
+        local triggers
+        triggers="$(get_skill_triggers "$skill_file")"
+        echo "#### /$skill"
         echo ""
-        echo "Triggers: $(get_skill_triggers "$skill_file" | tr '\n' ',' | sed 's/, *$//' | sed 's/^    - //g' | sed 's/    - /, /g')"
+        echo "$desc" | sed 's/^ //'
+        if [[ -n "$triggers" ]]; then
+          echo ""
+          # scr-s1 (2026-08-07): reuse the already-computed $triggers value
+          # instead of re-invoking get_skill_triggers (a second subprocess
+          # spawn per outer-loop skill) -- root cause of rb-s5's --with-outer-loop
+          # NFR overage. See artefacts/2026-08-07-skill-categorization-reconciliation/decisions.md.
+          echo "Triggers: $(echo "$triggers" | tr '\n' ',' | sed 's/, *$//' | sed 's/^    - //g' | sed 's/    - /, /g')"
+        fi
+        echo ""
+      else
+        warn "Skill file not found: $skill_file"
       fi
-      echo ""
-    else
-      warn "Skill file not found: $skill_file"
-    fi
-  done
+    done
+  else
+    echo "The following outer loop skills are installed under \`.github/skills/\` but not enabled for this session."
+    echo 'Run the bootstrap command again with `--with-outer-loop` (no `--force` needed, add-on mode) to activate them here.'
+    echo ""
+    for skill in "${OUTER_LOOP_SKILLS[@]}"; do
+      echo "- /$skill (installed, not enabled)"
+    done
+    echo ""
+  fi
 
   # ── Domain layer ────────────────────────────────────────────────────────────
   cat <<'DOMAIN_HEADER'
@@ -355,8 +403,26 @@ _vcs_format() {
   ' "$1"
 }
 
+# rb-s5 (2026-08-06): _outer_loop_enabled <file> — print the outerLoop.enabled
+# value ("true"/"false"), or empty string if the block/field is absent (the
+# caller treats absent the same as "false", matching context.yml's own
+# documented default in contexts/personal.yml). Not a credential field
+# (MC-SEC-02) -- same reasoning as _vcs_type/_vcs_format above.
+_outer_loop_enabled() {
+  awk '
+    BEGIN{v=0}
+    /^outerLoop:/{v=1;next}
+    v && /^[^ ]/{v=0}
+    v && /^  enabled:/{
+      sub(/^  enabled: */,""); sub(/ *#.*/,""); sub(/ *$/,""); print; exit
+    }
+  ' "$1"
+}
+
 # ── Determine output path from context.yml (ADR-005 / ADR-004) ───────────────
-# Only runs when --output was NOT explicitly provided by the caller.
+# Only runs when --output was NOT explicitly provided by the caller. Still
+# computed even when --all-harnesses is set (harmless / unused in that mode)
+# so this block never needs an --all-harnesses-aware branch of its own.
 if [[ "$OUTPUT_EXPLICIT" == false ]]; then
   # Auto-detect context file if not specified
   if [[ -z "$CONTEXT_FILE" && -f ".github/context.yml" ]]; then
@@ -389,20 +455,73 @@ if [[ "$OUTPUT_EXPLICIT" == false ]]; then
   fi
 fi
 
-info "Assembling ${OUTPUT}"
+# ── Resolve outer-loop enablement signal (rb-s5, 2026-08-06) ─────────────────
+# Independent of the --output resolution block above (which only runs when
+# --output was not explicit) -- the signal must be read in every invocation
+# mode, including --all-harnesses. Falls back to checking a root-level
+# context.yml if $CONTEXT_FILE is still unset at this point (the CLI's own
+# --context flag is always explicit in the real bootstrap path, so this
+# fallback only matters for a manual/dry-run invocation of this script).
+_OUTER_LOOP_CONTEXT_FILE="$CONTEXT_FILE"
+if [[ -z "$_OUTER_LOOP_CONTEXT_FILE" && -f ".github/context.yml" ]]; then
+  _OUTER_LOOP_CONTEXT_FILE=".github/context.yml"
+elif [[ -z "$_OUTER_LOOP_CONTEXT_FILE" && -f "context.yml" ]]; then
+  _OUTER_LOOP_CONTEXT_FILE="context.yml"
+fi
+
+OUTER_LOOP_ENABLED=false
+if [[ -n "$_OUTER_LOOP_CONTEXT_FILE" && -f "$_OUTER_LOOP_CONTEXT_FILE" ]]; then
+  _outer_loop_val="$(_outer_loop_enabled "$_OUTER_LOOP_CONTEXT_FILE")"
+  if [[ "$_outer_loop_val" == "true" ]]; then
+    OUTER_LOOP_ENABLED=true
+  fi
+fi
+
 info "Platform version: $REF"
 info "Skills repo: $SKILLS_REPO_PATH"
 info "Domain layer: ${DOMAIN_LAYER:-[absent]}"
 info "Squad layer:  ${SQUAD_LAYER:-[absent]}"
-info "Output path:  ${OUTPUT}"
+info "Outer loop enabled: $OUTER_LOOP_ENABLED"
 
-if [[ "$DRY_RUN" == true ]]; then
-  assemble
+if [[ "$ALL_HARNESSES" == true ]]; then
+  # ── Harness-agnostic mode (rb-s3) ────────────────────────────────────────
+  # One assembled source, byte-identical copies to every known harness path.
+  # --output / context.yml-based single-path resolution is intentionally not
+  # consulted here — this mode always targets all four canonical paths.
+  HARNESS_TARGETS=(
+    "CLAUDE.md"
+    "AGENTS.md"
+    ".cursorrules"
+    ".github/copilot-instructions.md"
+  )
+  info "Output mode:  all-harnesses (${HARNESS_TARGETS[*]})"
+
+  if [[ "$DRY_RUN" == true ]]; then
+    assemble
+  else
+    TMP_ASSEMBLED="$(mktemp)"
+    assemble > "$TMP_ASSEMBLED"
+    for target in "${HARNESS_TARGETS[@]}"; do
+      mkdir -p "$(dirname "$target")"
+      cp "$TMP_ASSEMBLED" "$target"
+    done
+    rm -f "$TMP_ASSEMBLED"
+    success "Assembled ${#HARNESS_TARGETS[@]} harness-agnostic instruction files: ${HARNESS_TARGETS[*]}"
+    success "Platform version recorded: $REF"
+    success "Distribution model: pull (regenerate any time with --all-harnesses)"
+  fi
 else
-  OUTPUT_DIR="$(dirname "$OUTPUT")"
-  mkdir -p "$OUTPUT_DIR"
-  assemble > "$OUTPUT"
-  success "Assembled: $OUTPUT"
-  success "Platform version recorded: $REF"
-  success "Distribution model: pull (regenerate any time by re-running this script)"
+  info "Assembling ${OUTPUT}"
+  info "Output path:  ${OUTPUT}"
+
+  if [[ "$DRY_RUN" == true ]]; then
+    assemble
+  else
+    OUTPUT_DIR="$(dirname "$OUTPUT")"
+    mkdir -p "$OUTPUT_DIR"
+    assemble > "$OUTPUT"
+    success "Assembled: $OUTPUT"
+    success "Platform version recorded: $REF"
+    success "Distribution model: pull (regenerate any time by re-running this script)"
+  fi
 fi

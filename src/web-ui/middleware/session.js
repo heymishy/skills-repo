@@ -1,8 +1,19 @@
 'use strict';
 
 // session.js — session middleware configuration (ADR-009)
-// Session tokens use HttpOnly Secure SameSite=Strict cookies.
+// Session tokens use HttpOnly Secure SameSite=Lax cookies.
 // Tokens stored server-side — never in browser-accessible storage.
+//
+// scsf-s1 (2026-07-23, fix-forward): SameSite=Strict caused the browser to
+// withhold the session cookie on cross-site top-level GET redirects back into
+// this app -- Stripe's hosted-Checkout redirect and both GitHub/Google OAuth
+// callbacks are exactly this shape. Lax still blocks the cookie on cross-site
+// subrequests/AJAX/iframes/POSTs (the actual CSRF surface); it only
+// additionally allows attachment on cross-site top-level GET navigation. This
+// identical defect was found and fixed once before for the OAuth callback
+// (commit ab99f366) but that fix never reached master; see decisions.md at
+// artefacts/2026-07-23-session-cookie-samesite-fix/decisions.md for the full
+// history and rationale.
 
 const crypto = require('crypto');
 
@@ -52,12 +63,15 @@ function _clearForTesting() {
 /**
  * Session cookie security configuration.
  * Exported for inspection in tests (NFR1).
- * SameSite=Strict: cookies are not sent in cross-site contexts.
+ * SameSite=Lax: cookies are not sent on cross-site subrequests/AJAX/iframes/
+ * POSTs (the CSRF-relevant surface), but ARE sent on cross-site top-level GET
+ * navigations -- required for Stripe Checkout's and OAuth providers' redirect
+ * back into this app to keep the session (scsf-s1, 2026-07-23).
  */
 const SESSION_COOKIE_CONFIG = {
   httpOnly: true,
   secure:   true,
-  sameSite: 'strict',
+  sameSite: 'lax',
   path:     '/'
 };
 
@@ -66,7 +80,7 @@ function _buildCookieHeader(sessionId) {
   const parts = [
     `session_id=${sessionId}`,
     'HttpOnly',
-    'SameSite=Strict',
+    'SameSite=Lax',
     'Path=/'
   ];
   // Enforce Secure flag in production; allow HTTP in development for local testing
@@ -135,22 +149,50 @@ function _parseSessionId(cookieHeader) {
 /**
  * Session middleware — attaches req.session and req.sessionId.
  * Sets Set-Cookie header for new sessions.
+ *
+ * srf-s1: on an in-memory cache miss (e.g. a redeploy replaced the process
+ * since this session's cookie was issued), falls back to a Redis read
+ * before giving up and creating a brand-new session. This recovers fields
+ * like oauthState (the pre-login CSRF value) that were already persisted
+ * via persistSession() but never reloaded per-request -- previously only
+ * loadSessionsFromRedis() at server startup did that. accessToken is
+ * deliberately never restored this way (see _sanitise/_sanitiseForRedis) --
+ * an operator-confirmed scope boundary, not an oversight (see decisions.md).
+ *
  * @param {object} req
  * @param {object} res
+ * @returns {Promise<void>}
  */
-function sessionMiddleware(req, res) {
+async function sessionMiddleware(req, res) {
   const sessionId = _parseSessionId(req.headers && req.headers.cookie);
 
   if (sessionId && _sessions.has(sessionId)) {
     req.sessionId = sessionId;
     req.session   = _sessions.get(sessionId);
-  } else {
-    const { id, session } = createSession();
-    req.sessionId = id;
-    req.session   = session;
-    if (res.setHeader) {
-      res.setHeader('Set-Cookie', _buildCookieHeader(id));
+    return;
+  }
+
+  if (sessionId) {
+    const adapter = _activeRedis();
+    if (adapter) {
+      let rehydrated = null;
+      try { rehydrated = await adapter.readSession(sessionId); } catch (err) {
+        console.error('[session] Redis readSession error:', err.message);
+      }
+      if (rehydrated) {
+        _sessions.set(sessionId, rehydrated);
+        req.sessionId = sessionId;
+        req.session   = rehydrated;
+        return;
+      }
     }
+  }
+
+  const { id, session } = createSession();
+  req.sessionId = id;
+  req.session   = session;
+  if (res.setHeader) {
+    res.setHeader('Set-Cookie', _buildCookieHeader(id));
   }
 }
 
@@ -190,17 +232,31 @@ function rotateSessionId(oldId, res, existingData) {
 }
 
 /**
- * Seed a test session with a known ID and data (NODE_ENV=test only).
+ * Seed a test session with a known ID and data (NODE_ENV=test only, unless
+ * the caller explicitly asserts it has already gated this call some other
+ * way -- see options.allowOutsideTest below).
  * Used by the E2E test infrastructure so Playwright tests can inject an
  * authenticated session without completing the real GitHub OAuth flow.
  *
- * Security: throws if called outside NODE_ENV=test.
+ * Security: throws if called outside NODE_ENV=test, unless
+ * options.allowOutsideTest is true. This function has no access to the
+ * incoming request, so it cannot independently verify a staging-safe
+ * bypass itself -- options.allowOutsideTest must only ever be set true by
+ * a caller that has ALREADY validated the request through an equivalent
+ * gate (e.g. server.js's _isTestEndpointAllowed(req), which checks
+ * NODE_ENV==='test' OR a staging-only bypass secret + header). Bug fix
+ * (post-launch): this function previously had no such escape hatch at all,
+ * so /test/session's own route-level staging bypass (dss-s1) was
+ * effectively dead on real staging -- the route's gate passed, but this
+ * function's own hardcoded NODE_ENV check always threw anyway.
  *
  * @param {string} id   - hex session ID (must match /^[a-f0-9]+$/)
  * @param {object} data - session data (e.g. { accessToken, userId, login })
+ * @param {{allowOutsideTest?: boolean}} [options]
  */
-function seedTestSession(id, data) {
-  if (process.env.NODE_ENV !== 'test') {
+function seedTestSession(id, data, options) {
+  const allowOutsideTest = !!(options && options.allowOutsideTest);
+  if (process.env.NODE_ENV !== 'test' && !allowOutsideTest) {
     throw new Error('seedTestSession is only available in NODE_ENV=test');
   }
   _sessions.set(id, Object.assign({}, data));

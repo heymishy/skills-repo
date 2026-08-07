@@ -1,5 +1,7 @@
 'use strict';
 
+const { getVersionInfo } = require('./version-info');
+
 // html-shell.js — shared HTML shell renderer and canonical XSS-escaping utility.
 // Notion-calm design system inlined; consumed by every server-rendered route.
 //
@@ -10,9 +12,24 @@
 // Responsive: sidebar collapses to a fixed drawer at ≤768px, revealed by a
 //   hamburger button added to the topbar. Overlay closes it on tap.
 //
-// Public API unchanged:
-//   renderShell({ title, bodyContent, user, active, crumbs, headerActions })
+// Public API:
+//   renderShell({ title, bodyContent, user, active, crumbs, headerActions, isAdmin, impersonation })
 //   escHtml(str)
+//
+// d2: renderShell gained `impersonation` ({ active, targetLogin, targetTenantId,
+// csrfToken }) -- when active, renders a persistent, undismissable banner as the
+// FIRST element inside <body> (above the sidebar/main content), with an Exit
+// impersonation control that POSTs to /api/admin/impersonate/exit. Rendered
+// only here (never per-route) so a route handler that forwards this opt gets
+// the banner "for free" -- see renderImpersonationBanner below.
+//
+// b2: renderShell/renderSidebar gained `isAdmin` (boolean, default false) to gate
+// the account-level nav section's `adminOnly` entries (Admin credits). The account
+// section (Settings, always; Admin credits, admin-only) relies on `.sw-nav-account`
+// having `margin-top: auto` to sit pinned at the sidebar bottom next to the identity
+// block -- this assumes at least one account-level NAV_ITEMS entry (Settings) is
+// always present and unfiltered; if a future change ever makes the account section
+// empty, `.sw-user`'s own bottom-pinning would need restoring alongside it.
 
 function escHtml(str) {
   return String(str)
@@ -23,26 +40,144 @@ function escHtml(str) {
     .replace(/'/g, '&#x27;');
 }
 
+// pan-s1: 'dashboard' (Home), 'journey' (Journeys), and 'skills' (Run a
+// Skill) all removed as NAV_ITEMS rows. Products are now listed directly in
+// the sidebar (renderSidebar's `products` param, rendered above this
+// product-section loop) instead of behind a generic Home landing page --
+// "See all products" (linking to /dashboard, unchanged) replaces Home's old
+// role. Journeys duplicated each product's own List/Board view; Run a Skill
+// let an operator launch any skill standalone, bypassing the journey/
+// product structure entirely. None of the underlying routes (/dashboard,
+// /journey, /skills) are deleted -- only these NAV_ITEMS entries. See
+// artefacts/2026-07-30-product-aware-navigation/decisions.md.
 const NAV_ITEMS = [
-  { id: 'dashboard', label: 'Home',        href: '/dashboard', icon: '⌂' },
-  { id: 'journey',   label: 'Journeys',    href: '/journey',   icon: '◎' },
-  { id: 'skills',    label: 'Run a Skill', href: '/skills',    icon: '✦' },
-  { id: 'features',  label: 'Features',   href: '/features',  icon: '◫' },
-  { id: 'actions',   label: 'Actions',    href: '/actions',   icon: '✓' },
-  { id: 'status',    label: 'Status',     href: '/status',    icon: '◐' }
+  { id: 'org-kanban', label: 'Org board',   href: '/org/kanban', icon: '▦' },
+  // b2: account-level items, rendered in a visually distinct bottom section by
+  // renderSidebar (not the main product <nav> loop above) -- kept in this SAME
+  // array, tagged `section: 'account'`, rather than a second untested array, so
+  // AC3's dangling-link regression test automatically covers these hrefs too.
+  // `adminOnly` items are additionally filtered by the caller-supplied `isAdmin`
+  // flag at render time (see renderSidebar) -- gated the same way the /admin/credits
+  // route itself is gated (requireAdmin's live role check), not a visual-only toggle.
+  { id: 'settings',           label: 'Settings',           href: '/settings',            icon: '⚙', section: 'account' },
+  { id: 'admin-credits',      label: 'Admin credits',      href: '/admin/credits',        icon: '◈', section: 'account', adminOnly: true },
+  // alrf-s7: amgt-s1's mock-gateway toggle route (GET /admin/mock-gateway,
+  // requireAdmin-gated) shipped with no nav entry at all, so it was only ever
+  // reachable by typing the URL directly -- same "API shipped, UI never
+  // wired" gap as admin-credits/the modules taxonomy CRUD had before their
+  // own fix-forward nav additions.
+  { id: 'admin-mock-gateway', label: 'Mock LLM gateway',  href: '/admin/mock-gateway',  icon: '◧', section: 'account', adminOnly: true }
 ];
 
-function renderSidebar(active, login) {
-  const items = NAV_ITEMS.map(function(item) {
-    const isActive = item.id === active;
-    return [
-      '<a href="' + escHtml(item.href) + '"',
-      ' class="sw-nav-item' + (isActive ? ' sw-nav-item--active' : '') + '">',
-      '<span class="sw-nav-icon">' + item.icon + '</span>',
-      '<span>' + escHtml(item.label) + '</span>',
-      '</a>'
-    ].join('');
-  }).join('');
+// pan-s1: replaces the old renderHomeViewToggle (previously attached to a
+// "Home" NAV_ITEMS row that no longer exists). /dashboard?view=board is
+// still a query-param variant of /dashboard, not a separate route -- the
+// List/Board toggle now lives next to "See all products" instead, which is
+// the only remaining route into /dashboard. Preserves the pre-existing
+// ability to reach the tenant-wide kanban board via the UI (previously the
+// sidebar's Home toggle was the ONLY way to reach it -- confirmed
+// _renderProductDashboard's own page body has no such toggle).
+function renderSeeAllProductsRow() {
+  return [
+    '<a href="/dashboard" class="sw-see-all-products">See all products →</a>',
+    '<div class="sw-nav-subrow" role="group" aria-label="All-products view">',
+      '<a href="/dashboard" class="sw-nav-subitem">List</a>',
+      '<a href="/dashboard?view=board" class="sw-nav-subitem">Board</a>',
+    '</div>'
+  ].join('');
+}
+
+/**
+ * pan-s1: renders one product row in the sidebar's live Products list.
+ * @param {{productId: string, name: string, journeyCount: number}} product
+ * @param {string} [activeProductId]
+ */
+function _renderProductNavItem(product, activeProductId) {
+  const isActive = product.productId === activeProductId;
+  return [
+    '<a href="/products/' + encodeURIComponent(product.productId) + '"',
+    ' class="sw-product-nav-item' + (isActive ? ' sw-product-nav-item--active' : '') + '">',
+    '<span class="sw-product-dot"></span>',
+    '<span class="sw-product-name">' + escHtml(product.name) + '</span>',
+    '<span class="sw-product-count">' + escHtml(String(product.journeyCount != null ? product.journeyCount : 0)) + '</span>',
+    '</a>'
+  ].join('');
+}
+
+/**
+ * pan-s1: renders the sidebar's Products section -- the live list plus a
+ * pinned "No product" entry and the "See all products" link. Renders
+ * nothing at all when `products` is omitted (undefined), which is the
+ * default for every renderShell call site that doesn't opt in -- this is
+ * what keeps the other ~60 unwired pages byte-for-byte unchanged (AC5).
+ * @param {Array<{productId: string, name: string, journeyCount: number}>} [products]
+ * @param {string} [activeProductId]
+ * @param {number} [noProductJourneyCount]
+ */
+function renderProductsSection(products, activeProductId, noProductJourneyCount) {
+  if (!products) return '';
+  const rows = products.map(function(p) { return _renderProductNavItem(p, activeProductId); }).join('');
+  const noProductActive = activeProductId == null && noProductJourneyCount != null;
+  const noProductRow = (noProductJourneyCount != null)
+    ? [
+        '<a href="/journey" class="sw-product-nav-item sw-product-nav-item--no-product' + (noProductActive ? ' sw-product-nav-item--active' : '') + '">',
+          '<span class="sw-product-dot sw-product-dot--none"></span>',
+          '<span class="sw-product-name">No product</span>',
+          '<span class="sw-product-count">' + escHtml(String(noProductJourneyCount)) + '</span>',
+        '</a>'
+      ].join('')
+    : '';
+  return [
+    '<div class="sw-nav-eyebrow-row">',
+      '<span class="sw-nav-eyebrow">Products</span>',
+      '<a href="/products/new" class="sw-add-product" title="New product">+</a>',
+    '</div>',
+    '<nav class="sw-product-nav-list" aria-label="Products">' + rows + noProductRow + '</nav>',
+    renderSeeAllProductsRow(),
+  ].join('');
+}
+
+function _renderNavLink(item, active) {
+  const isActive = item.id === active;
+  return [
+    '<a href="' + escHtml(item.href) + '"',
+    ' class="sw-nav-item' + (isActive ? ' sw-nav-item--active' : '') + '">',
+    '<span class="sw-nav-icon">' + item.icon + '</span>',
+    '<span>' + escHtml(item.label) + '</span>',
+    '</a>'
+  ].join('');
+}
+
+/**
+ * @param {string} active - id of the currently active NAV_ITEMS entry
+ * @param {string} login - signed-in user's login, shown in the identity block
+ * @param {boolean} [isAdmin] - b2: gates the `adminOnly` account-level nav entries
+ *   (currently just Admin credits). Must reflect the SAME live role check
+ *   requireAdmin already performs on the route itself (not a stale cached role) --
+ *   see html-shell.js's callers (dashboard.js, settings.js) for how this is computed.
+ *   This flag is a UX convenience only; requireAdmin on the real route is the
+ *   actual security boundary regardless of what this renders.
+ * @param {Array<{productId: string, name: string, journeyCount: number}>} [products] -
+ *   pan-s1: the tenant's products, rendered live in the sidebar. Omitted (undefined)
+ *   by every call site except handleGetDashboard/handleGetProductView/handleGetJourney
+ *   -- see decisions.md for why only these 3 are wired in this story.
+ * @param {string} [activeProductId] - pan-s1: marks one product row as active
+ * @param {number} [noProductJourneyCount] - pan-s1: count shown on the pinned "No product" row
+ */
+function renderSidebar(active, login, isAdmin, products, activeProductId, noProductJourneyCount) {
+  const productItems = NAV_ITEMS.filter(function(item) { return item.section !== 'account'; });
+  const accountItems  = NAV_ITEMS.filter(function(item) {
+    return item.section === 'account' && (!item.adminOnly || isAdmin);
+  });
+
+  const productsSection = renderProductsSection(products, activeProductId, noProductJourneyCount);
+  const items = productItems.map(function(item) { return _renderNavLink(item, active); }).join('');
+  const accountNav = accountItems.length
+    ? '<nav class="sw-nav-account" aria-label="Account navigation">' +
+        accountItems.map(function(item) { return _renderNavLink(item, active); }).join('') +
+      '</nav>'
+    : '';
+
   const initial = (login || '?').charAt(0).toUpperCase();
   return [
     '<aside class="sw-sidebar" id="sw-sidebar">',
@@ -50,15 +185,68 @@ function renderSidebar(active, login) {
         '<div class="sw-brand-mark">S</div>',
         '<span class="sw-brand-name">Skills</span>',
       '</div>',
+      productsSection,
       '<nav aria-label="Main navigation">' + items + '</nav>',
       '<button class="sw-nav-collapse-btn" id="sw-nav-collapse-btn" onclick="swCollapseNav()" title="Collapse navigation">◂</button>',
+      accountNav,
       '<div class="sw-user">',
         '<div class="sw-avatar">' + escHtml(initial) + '</div>',
         '<span>' + escHtml(login || 'signed in') + '</span>',
         '<a class="sw-signout" href="/auth/logout" title="Sign out">↗</a>',
       '</div>',
+      renderVersionStamp(),
     '</aside>'
   ].join('');
+}
+
+/**
+ * alrf-s2 — build-identity footer stamp (commit SHA + originating PR #),
+ * added after the same-day artefact-listing mismatch made "did my fix
+ * actually deploy?" impossible to answer from the UI alone. Reads the
+ * version.json written by scripts/write-version-file.js before deploy;
+ * falls back to a "dev" label with no link when unset (local development).
+ * @returns {string}
+ */
+function renderVersionStamp() {
+  const info = getVersionInfo();
+  const shaLabel = escHtml(info.shortSha || 'dev');
+  const prLabel = info.prNumber ? ' · #' + info.prNumber : '';
+  const shaLink = info.sha
+    ? '<a class="sw-version-stamp-link" href="https://github.com/heymishy/skills-repo/commit/' + escHtml(info.sha) + '" title="' + escHtml(info.commitSubject || '') + '" target="_blank" rel="noopener">' + shaLabel + prLabel + '</a>'
+    : '<span class="sw-version-stamp-link">' + shaLabel + '</span>';
+  return '<div class="sw-version-stamp" title="Build identity">' + shaLink + '</div>';
+}
+
+/**
+ * d2 (AC1) — Persistent, undismissable "viewing as" banner. Rendered ONLY by
+ * renderShell itself (never duplicated per-route) so a route handler that
+ * forgets to check impersonation state cannot accidentally render a page
+ * without it -- the ONLY thing a route handler must remember is to forward
+ * `impersonation` through to renderShell; the banner markup/behaviour itself
+ * lives in exactly one place.
+ *
+ * Accessibility NFR: never colour-only -- always paired with the ⚠ icon and
+ * explicit "Viewing as ..." text. The only interactive control inside the
+ * banner is the Exit form -- there is no dismiss/close affordance, matching
+ * AC1's "cannot be dismissed or hidden by any user action other than exiting
+ * impersonation."
+ * @param {{targetLogin:string, targetTenantId:string, csrfToken:string}} impersonation
+ * @returns {string}
+ */
+function renderImpersonationBanner(impersonation) {
+  var targetLogin = escHtml(impersonation.targetLogin || '');
+  var targetTenantId = escHtml(impersonation.targetTenantId || '');
+  var csrfToken = escHtml(impersonation.csrfToken || '');
+  return (
+    '<div class="sw-imp-banner" role="alert" aria-live="polite">' +
+      '<span class="sw-imp-banner-icon" aria-hidden="true">⚠</span>' +
+      '<span class="sw-imp-banner-text">Viewing as <strong>' + targetLogin + '</strong> (tenant: ' + targetTenantId + ')</span>' +
+      '<form method="POST" action="/api/admin/impersonate/exit" class="sw-imp-banner-form" onsubmit="return swExitImpersonation(event)">' +
+        '<input type="hidden" name="_csrf" value="' + csrfToken + '">' +
+        '<button type="submit" class="sw-imp-banner-exit">Exit impersonation</button>' +
+      '</form>' +
+    '</div>'
+  );
 }
 
 function renderCrumbs(crumbs) {
@@ -129,6 +317,21 @@ const SHELL_JS =
         'if(btn)btn.textContent=\'▸\';' +
       '}' +
     '})();' +
+    // d2 (AC4): Exit impersonation -- intercepts the banner form's submit so a
+    // successful exit can force a full page reload (reflecting the restored
+    // real-admin permissions/nav everywhere, not just this one page).
+    'window.swExitImpersonation=function(ev){' +
+      'ev.preventDefault();' +
+      'var form=ev.target;' +
+      'var fd=new URLSearchParams(new FormData(form));' +
+      'fetch(form.action,{method:"POST",body:fd,headers:{"Content-Type":"application/x-www-form-urlencoded"}})' +
+        '.then(function(r){' +
+          'if(r.ok){window.location.href="/dashboard";}' +
+          'else{alert("Failed to exit impersonation");}' +
+        '})' +
+        '.catch(function(){alert("Failed to exit impersonation");});' +
+      'return false;' +
+    '};' +
     // OS preference change listener (only when no manual override in localStorage)
     'if(window.matchMedia){' +
       'window.matchMedia(\'(prefers-color-scheme: dark)\').addEventListener(\'change\',function(e){' +
@@ -147,6 +350,17 @@ function renderShell(opts) {
   const crumbs       = opts.crumbs || [];
   const headerActions= opts.headerActions || '';
   const bodyContent  = opts.bodyContent || '';
+  const isAdmin      = !!opts.isAdmin;
+  // d2 (AC1): banner rendered only when a caller-supplied impersonation opt
+  // is actually active -- absent/false renders no banner at all.
+  const impersonation = (opts.impersonation && opts.impersonation.active) ? opts.impersonation : null;
+  const bannerHtml   = impersonation ? renderImpersonationBanner(impersonation) : '';
+  // pan-s1: all three undefined by default -- renderProductsSection() renders
+  // nothing at all when `products` is undefined, keeping every unwired call
+  // site byte-for-byte unchanged (AC5).
+  const products              = opts.products;
+  const activeProductId       = opts.activeProductId;
+  const noProductJourneyCount = opts.noProductJourneyCount;
 
   const themeToggle =
     '<button class="sw-theme-toggle" onclick="swToggleTheme()" aria-label="Toggle dark mode" title="Toggle dark/light mode">◑</button>';
@@ -163,9 +377,10 @@ function renderShell(opts) {
     '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">\n' +
     '<style>' + DESIGN_SYSTEM_CSS + '</style>\n' +
     '</head>\n<body>\n' +
+    bannerHtml +
     '<div class="sw-app">' +
       '<div class="sw-overlay" id="sw-overlay" onclick="swCloseSidebar()"></div>' +
-      renderSidebar(active, login) +
+      renderSidebar(active, login, isAdmin, products, activeProductId, noProductJourneyCount) +
       '<div class="sw-main">' +
         '<header>' +
           hamburger +
@@ -252,8 +467,45 @@ a { color: inherit; }
   font-weight: 500;
 }
 .sw-nav-icon { width: 16px; color: var(--muted-2); font-size: 13px; }
+.sw-nav-subrow { display: flex; gap: 4px; padding: 0 10px 4px 34px; }
+.sw-nav-subitem {
+  font-size: 12px; color: var(--muted); text-decoration: none;
+  padding: 2px 6px; border-radius: 4px;
+}
+.sw-nav-subitem:hover { background: var(--line-2); color: var(--ink-2); }
+.sw-nav-subitem:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+/* pan-s1: Products section -- live product list rendered directly in the
+   sidebar, replacing the old Home/Journeys nav rows. */
+.sw-nav-eyebrow-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 10px 4px; }
+.sw-nav-eyebrow { font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-2); font-weight: 700; }
+.sw-add-product { font-size: 14px; color: var(--muted-2); text-decoration: none; line-height: 1; }
+.sw-add-product:hover { color: var(--accent); }
+.sw-product-nav-list { display: flex; flex-direction: column; gap: 2px; max-height: 240px; overflow-y: auto; }
+.sw-product-nav-item {
+  display: flex; align-items: center; gap: 9px; padding: 6px 10px; border-radius: 6px;
+  text-decoration: none; color: var(--ink-2); font-size: 13.5px;
+}
+.sw-product-nav-item:hover { background: var(--line-2); }
+.sw-product-nav-item--active {
+  color: var(--ink); background: var(--surface);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 0 0 1px var(--line);
+  font-weight: 500;
+}
+.sw-product-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
+.sw-product-dot--none { background: none; border: 1.5px dashed var(--muted-2); }
+.sw-product-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sw-product-count { font-size: 11px; color: var(--muted-2); font-variant-numeric: tabular-nums; }
+.sw-see-all-products { display: block; font-size: 12px; color: var(--accent); text-decoration: none; font-weight: 500; padding: 6px 10px 0; }
+.sw-see-all-products:hover { text-decoration: underline; }
+/* b2: account-level nav section (Settings + the admin-only entry) -- visually
+   distinct from the product nav above via a top divider, pushed to the sidebar
+   bottom (margin-top: auto) directly above the identity block. */
+.sw-nav-account {
+  margin-top: auto; display: flex; flex-direction: column; gap: 2px;
+  padding-top: 12px; border-top: 1px solid var(--line);
+}
 .sw-user {
-  margin-top: auto; display: flex; align-items: center; gap: 8px;
+  display: flex; align-items: center; gap: 8px;
   padding: 0 8px; font-size: 13px; color: var(--muted);
 }
 .sw-avatar {
@@ -263,6 +515,36 @@ a { color: inherit; }
 }
 .sw-signout { margin-left: auto; color: var(--muted-2); text-decoration: none; }
 .sw-signout:hover { color: var(--ink-2); }
+.sw-version-stamp {
+  padding: 4px 8px 0; font-family: var(--mono); font-size: 10px;
+  color: var(--muted-2); letter-spacing: 0.02em;
+}
+.sw-version-stamp-link { color: inherit; text-decoration: none; }
+.sw-version-stamp-link:hover { color: var(--muted); text-decoration: underline; }
+
+/* ── d2: impersonation banner ───────────────────────────────────────────────
+   Persistent, sticky, at the very top of the viewport -- above the sidebar's
+   own mobile drawer (z-index 200) and overlay (199). Striped background +
+   icon + explicit text (never colour alone, per the Accessibility NFR). The
+   only control inside it is the Exit form -- no dismiss/close affordance. */
+.sw-imp-banner {
+  position: sticky; top: 0; z-index: 500;
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 20px;
+  background: var(--amber-soft);
+  background-image: repeating-linear-gradient(135deg, transparent, transparent 12px, var(--amber-soft) 12px, var(--amber-soft) 12px);
+  border-bottom: 2px solid var(--amber);
+  color: var(--ink); font-size: 13.5px; font-weight: 600;
+}
+.sw-imp-banner-icon { font-size: 15px; flex-shrink: 0; }
+.sw-imp-banner-text { flex: 1; min-width: 0; }
+.sw-imp-banner-form { margin: 0; flex-shrink: 0; }
+.sw-imp-banner-exit {
+  padding: 5px 12px; border-radius: 6px; border: 1px solid var(--ink);
+  background: var(--ink); color: var(--bg);
+  font-family: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer;
+}
+.sw-imp-banner-exit:hover { opacity: 0.85; }
 
 /* ── Overlay (mobile sidebar backdrop) ─────────────────────────────────────── */
 .sw-overlay {
@@ -296,12 +578,15 @@ a { color: inherit; }
 .sw-sidebar--collapsed .sw-brand-name,
 .sw-sidebar--collapsed nav .sw-nav-item > span:not(.sw-nav-icon),
 .sw-sidebar--collapsed .sw-user > span,
-.sw-sidebar--collapsed .sw-signout { display:none; }
+.sw-sidebar--collapsed .sw-signout,
+.sw-sidebar--collapsed .sw-version-stamp { display:none; }
 .sw-sidebar--collapsed .sw-brand { justify-content:center; padding:0; }
 .sw-sidebar--collapsed .sw-nav-item { justify-content:center; padding:8px 0; }
 .sw-sidebar--collapsed .sw-nav-icon { width:auto; color:var(--muted); }
 .sw-sidebar--collapsed .sw-user { justify-content:center; padding:0; }
 .sw-sidebar--collapsed .sw-nav-collapse-btn { border-color:transparent; }
+.sw-sidebar--collapsed .sw-nav-subrow { display:none; }
+.sw-sidebar--collapsed .sw-nav-account { border-top-color:transparent; padding-top:8px; }
 
 /* ── Hamburger (mobile only — hidden by default) ────────────────────────────── */
 .sw-hamburger {
@@ -596,4 +881,4 @@ function renderLoginPage() {
     '</body>\n</html>';
 }
 
-module.exports = { renderShell, renderLoginPage, escHtml };
+module.exports = { renderShell, renderLoginPage, escHtml, NAV_ITEMS };

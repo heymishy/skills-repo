@@ -98,3 +98,65 @@ git push origin master
 **Diagnosis check:** If stories show `stage: definition-of-ready, prStatus: none` after their PRs have merged, run the above procedure. The DoD observation for this pattern: "Epic-nested story state persistence gap — advance on branch, reverted at merge."
 
 **See also:** `copilot-instructions.md` cdg.6 rule; the `bin/skills advance` harness searches epic-nested stories correctly — the failure is in the timing of when the advance is applied, not in the harness itself.
+
+---
+
+## Diff-Before-Resolve Merge Verification (D40 companion)
+
+**Context:** Resolving merge conflicts across sibling branches stacked on one shared foundation branch, where master has advanced with a prior sibling's merge.
+
+**Pattern:** Before resolving a conflicted file, diff the current branch's version against master's version. If master contains a strict superset of the branch's lines (zero lines exist only in the branch), the conflict is a pure fast-path — safe to resolve with `git checkout --ours <file>`. If master is missing lines the branch has, this is a genuine two-sided merge: the same functions/columns/render-blocks/tests from BOTH sides must be preserved and combined (reordered into consistent numbering, shared resource lists like SQL column sets or `module.exports` updated to include all dimensions, not just one side).
+
+**Why it matters:** Early rounds in a stacked-sibling merge sequence (fewer merged siblings so far) tend to be pure supersets; later rounds (more siblings already merged) are much more likely to require genuine combination. Treating every round the same way — either always taking `--ours` or always hand-merging — produces either silently dropped code or unnecessary rework.
+
+**Verification gate:** After any resolution, run a conflict-marker scan (`grep -c "<<<<<<<\|=======\|>>>>>>>"`, must return 0 — see D40) before staging, then rerun the affected story's test suite before pushing.
+
+**Source:** product-rollup epic (2026-07-16-product-rollup), pr-s6/pr-s7 merge-conflict resolution across PRs #498–#500.
+
+---
+
+## Stacked-PR Base-Deletion Auto-Close Gotcha (GitHub platform behaviour)
+
+**The gotcha:** Merging a PR that deletes its head branch (via GitHub's "delete branch on merge") auto-CLOSES — not retargets — every other open PR whose base is that same branch. `gh pr reopen` and `gh pr edit --base` both fail afterward with "Cannot change the base branch of a closed pull request" — there is no API recovery path for the original PR object.
+
+**Recovery:** Open a fresh PR from the surviving head branch (only the shared base was deleted, the sibling's own branch and commits still exist), retargeted directly at the new final base (e.g. master).
+
+**Prevention for future stacked epics:** Either (a) merge the foundation PR only after ALL its siblings have merged into it first (fully linearise the stack before deletion), or (b) if siblings must stay open independently, retarget every sibling PR's base to the final target BEFORE merging/deleting the shared foundation branch.
+
+**Source:** product-rollup epic, PRs #495/#496/#497 auto-closed when PR #490 merged; recovered as #498/#499/#500.
+
+---
+
+## Confirm CI-Flake Root Cause Before Patching (anti-pattern)
+
+**Anti-pattern:** Patching a plausible-looking cause for an intermittent CI failure (e.g. bumping a timeout) without first confirming the hypothesis against a clean-diff baseline.
+
+**What went wrong:** A CI job repeatedly failed on unrelated PRs pairing `check-md-3-adr.js` (flips to passing) with `check-p3.5-validate-trace.js` (fails) — the first hypothesis (growing test suite crowding a fixed 15s timeout) was patched by doubling the timeout (15s → 30s) before confirming it against a trivial-diff PR. The patch PR's own CI showed the identical failure, disproving the hypothesis and costing a full CI cycle. The real root cause was resource contention: `check-md-3-adr.js`'s T4 check spawns a nested full `npm test` recursion that, when it happens to finish inside its own timeout window, starves `check-p3.5-validate-trace.js`'s `pwsh` subprocess spawn of CPU at the critical moment.
+
+**Correct approach:** Before patching a suspected timing/resource cause, open a throwaway PR with a trivial diff against the current baseline and confirm the failure reproduces identically. If it does, the cause isn't the diff — investigate resource contention or environment factors instead of iterating on values in the suspected file.
+
+**Source:** product-rollup epic, PRs #489/#490/#492 (`tests/known-baseline-failures.json`'s own note documents the full mechanism).
+
+---
+
+## Deferred Review-Finding Splits Must Name an Owner
+
+**The gap:** A review finding split an AC into a self-contained story-level AC (kept and tested) plus a cross-story consistency check explicitly "deferred to the epic level" — but no artefact (epic file, a specific story, or a named test) was ever assigned ownership of actually performing that deferred check. It silently never happened across the whole epic.
+
+**Rule:** Whenever a review finding splits an AC and defers part of it to "the epic level" (or any level beyond the current story), the review or DoR artefact must name the specific mechanism that will perform the deferred check — a dedicated test, a manual verification step, or an explicit epic-level story. An implicit expectation with no assigned owner is equivalent to the check never happening.
+
+**Source:** product-rollup epic, pr-s7 review finding 7-M1 (AC4 split), surfaced at `/definition-of-done`.
+
+---
+
+## New-Endpoint Same-PR Real-Staging E2E Bootstrapping Gap (D44)
+
+**The gap:** A PR that both introduces a new staging-safe endpoint AND adds a real-staging E2E test of that same endpoint in the same PR cannot pass that check on its own pre-merge CI run. `staging-deploy.yml` only deploys to `wuce-staging` on push to master — there is no PR-preview deploy mechanism anywhere in `.github/workflows/` — so the new endpoint genuinely is not live on staging until after the PR merges.
+
+**How to recognise it in CI output:** the failure does not look like a real assertion failure. Typical symptoms: a JSON-parse error where the test expected a JSON response but got the generic sign-in page HTML back, or a 404/redirect where the test expected the new route. If the endpoint's own dedicated unit test already passes (proving the logic is correct in isolation) but the same-PR real-staging E2E test of that endpoint fails with one of these shapes, this is almost certainly the bootstrapping gap, not a real defect.
+
+**The manual workaround (for the window between merge and the automated confirmation below):** merge the PR with the one known-red check — do not hold the merge hostage to a check that structurally cannot pass yet. After merge, confirm the endpoint's real behaviour via a direct local run of the spec file from a worktree/checkout, targeting the real deployed `wuce-staging` URL directly (with any required secret retrieved via `flyctl ssh console --app wuce-staging -C "printenv <VAR>"`, piped to a job-scoped temp file, used inline, then deleted — never printed or committed). **Do not use `gh run rerun` for this** — once GitHub deletes the merged PR's source branch (its default post-merge behaviour), `gh run rerun` fails at the checkout step trying to fetch the now-nonexistent branch ref, which looks like a fast failure but is unrelated to the code under test.
+
+**The automated confirmation (primary mechanism going forward):** `staging-deploy.yml`'s `post-deploy-e2e-confirm` job (pmec-s1) re-runs the exact same Scenario A/B real-staging spec files, behind the exact same `audit.staging_e2e_scenario_a`/`audit.staging_e2e_scenario_b` flags, immediately after every real deploy (`needs: deploy-staging`). This closes the gap automatically — a newly-merged endpoint's spec gets its first genuine confirmation the same day, without depending on a human remembering to do the manual re-run above. The job is deliberately non-blocking (not a dependency of `promote-to-prod`, which continues to depend on `smoke-test` alone) — a failure here is a same-day investigation signal, not an automatic release block.
+
+**Source:** durable-session-history epic, dsh-s4 (`workspace/capture-log.md`, 2026-07-28, two entries: the pattern itself and the `gh run rerun` gap); closed by `post-merge-e2e-confirmation` (pmec-s1, 2026-07-29).

@@ -47,7 +47,6 @@ const {
 const {
   renderFeatureList,
   renderArtefactItem,
-  handleGetFeatures,
   handleGetFeatureArtefacts,
   setAuditLogger
 } = require('../src/web-ui/routes/features');
@@ -272,25 +271,11 @@ test('T5.2 renderArtefactItem renders plain-language label and does not contain 
 // Integration tests
 // ══════════════════════════════════════════════════════════════════════════════
 
-test('IT1 GET /features returns 200 with feature list containing required shape', async () => {
-  setConfiguredRepositories(() => ['test-owner/test-repo']);
-  setValidateRepositoryAccess(async () => true);
-  setFetchPipelineState(async () => ({ features: [pipelineStateFeature] }));
-
-  const req = mockReq();
-  const res = mockRes();
-  await handleGetFeatures(req, res);
-
-  assert(res.statusCode === 200, 'IT1: status 200');
-  const body = JSON.parse(res.body);
-  assert(Array.isArray(body), 'IT1: body is array');
-  assert(body.length > 0, 'IT1: at least one feature');
-  const f = body[0];
-  assert(typeof f.slug  === 'string', 'IT1: slug field');
-  assert(typeof f.stage === 'string', 'IT1: stage field');
-  assert(typeof f.lastUpdated === 'string', 'IT1: lastUpdated field');
-  assert(typeof f.artefactIndexUrl === 'string', 'IT1: artefactIndexUrl field');
-});
+// kbc-s1 (AC5, U9): IT1 (GET /features route-level test) removed -- the
+// /features route and its handleGetFeatures handler were deleted outright by
+// kbc-s1 in favour of product/org/tenant kanban boards. The underlying
+// listFeatures adapter this route wrapped is still exercised directly by
+// NFR2 below, unaffected by the route's removal.
 
 test('IT2 GET /features/:slug returns artefact index with display labels', async () => {
   setArtefactRepos(() => ['test-owner/test-repo']);
@@ -332,40 +317,14 @@ test('IT3 GET /features/:slug for repo with no artefacts directory returns "No a
   assert(body.message === 'No artefacts found', 'IT3: "No artefacts found" in response');
 });
 
-test('IT4 GET /features returns 401 without authentication', async () => {
-  const req = mockReq({ session: {} });  // no accessToken
-  const res = mockRes();
-  await handleGetFeatures(req, res);
-
-  assert(res.statusCode === 401, 'IT4: status 401 for unauthenticated request');
-});
+// kbc-s1 (AC5, U9): IT4 (GET /features unauthenticated -> 401) and NFR1
+// (audit log on feature list access via handleGetFeatures) removed along
+// with the /features route and handleGetFeatures -- both were route-level
+// tests of a handler that no longer exists.
 
 // ══════════════════════════════════════════════════════════════════════════════
 // NFR tests
 // ══════════════════════════════════════════════════════════════════════════════
-
-test('NFR1 audit log on feature list access: userId, featureCount, timestamp logged; no token', async () => {
-  const logCalls = [];
-  setAuditLogger({ info: (event, data) => logCalls.push({ event, data }) });
-
-  setConfiguredRepositories(() => ['test-owner/test-repo']);
-  setValidateRepositoryAccess(async () => true);
-  setFetchPipelineState(async () => ({ features: [pipelineStateFeature] }));
-
-  const req = mockReq({ session: { accessToken: 'secret-token-abc', userId: 'user-99' } });
-  const res = mockRes();
-  await handleGetFeatures(req, res);
-
-  // Flatten all log call data to a single string for token check
-  const logStr = JSON.stringify(logCalls);
-  assert(logStr.includes('user-99'),           'NFR1: userId in audit log');
-  assert(!logStr.includes('secret-token-abc'), 'NFR1: access token NOT in audit log');
-
-  const accessLog = logCalls.find((c) => c.event === 'feature_list_accessed');
-  assert(accessLog !== undefined, 'NFR1: feature_list_accessed event logged');
-  assert(typeof accessLog.data.featureCount === 'number', 'NFR1: featureCount in log');
-  assert(typeof accessLog.data.timestamp    === 'string', 'NFR1: timestamp in log');
-});
 
 test('NFR2 private repo not enumerated for unauthorised user', async () => {
   setConfiguredRepositories(() => ['test-owner/private-repo', 'test-owner/public-repo']);

@@ -91,6 +91,9 @@ Skill files and templates are content, not code — they are governed by pipelin
 - **`git commit --allow-empty` to force required check re-run:** When a required check shows "Waiting for status" after a push (because GitHub did not generate a new `synchronize` event, or a bot commit moved the HEAD SHA without re-triggering the gate), use `git commit --allow-empty -m "ci: trigger <gate> on <sha>"` to create a minimal new SHA that produces a clean `synchronize` event. Never use "Re-run jobs" when a workflow YAML has itself been modified between the failure and the retry — re-running uses the old YAML.
 - **Routing priority chain in `/orient` and routing skills:** Any routing state or brownfield entry point (Entry A, B, C, or future variants) added to `/orient` or any routing skill must: (a) declare its priority-chain position explicitly in the SKILL.md instruction text (e.g. "Entry A is evaluated before Entry B — if story artefacts exist, Entry A fires regardless of code presence"), and (b) have a dedicated test asserting chain priority (e.g. `orient-entry-c-is-fallback-after-a-and-b-in-priority-chain`). Implicit ordering is not sufficient — the chain must survive future states being added above or below it.
 - **Supersede-don't-deliver when architecture changes under a signed-off story set:** If an architectural replacement makes a set of DoR-signed-off stories obsolete before they are implemented, mark each story `status: superseded` in `pipeline-state.json` with a `supersededBy` note, and do not dispatch them. Attempting to deliver stories against a foundation that no longer exists wastes implementation time and produces tests that verify incorrect behaviour. The superseding story's DoR contract must include a note on which stories it replaces and why.
+- **Bulk per-board-render lookup seam:** When a board/list render needs per-item data not present in the item's own base query (e.g. session-readiness, artefact counts), add a single injectable `_getXBulk`/`setGetXBulk` seam that reads all needed items in one batched query keyed by the full set of IDs for that render — never N per-item lookups. Confirmed via `kanban-view.js`'s `_getHtmlSessionsBulk` (S1.1, board-advance readiness) and `_getArtefactCountsBulk` (S2.2, artefact-count badges) — the same shape used twice independently. A future third use should reuse this named pattern rather than reinventing it.
+- **Shared-mechanism proof via source assertion, for failure modes NODE_ENV=test can't produce:** When two entry points (e.g. a click handler and a drag handler) are meant to trigger identical backend behaviour, but a real failure-mode test (e.g. a genuine validation rejection) can't be produced through the E2E harness because `NODE_ENV=test` hardcodes success server-side, prove the reuse with a source-level test asserting both entry points call the exact same underlying function — combined with one existing passing integration test of that shared function's own failure-handling. Confirmed via S3.1's `dragAndClickShareTheSameAdvanceAndErrorFunctions` test, reusing S1.1's own AC5 integration coverage rather than needing a second, impossible E2E case.
+- **E2E drag-and-drop: never simulate a drop at the exact geometric center of the target when the implementation makes a positional (before/after, above/below) decision from the drop coordinate.** The center is the one point where sub-pixel/integer mouse-coordinate rounding can resolve to either side of the decision boundary non-deterministically — this is a test-design ambiguity, not a product defect. Aim for ~15-20% in from whichever edge determines the outcome instead. Confirmed via S3.2's within-column-reorder E2E spec, which initially flaked at the exact center and was fixed by dropping at 85% of the target's height.
 
 ---
 
@@ -115,6 +118,9 @@ Skill files and templates are content, not code — they are governed by pipelin
 | Trusting a coding agent's self-reported task completion instead of verifying git/PR state directly | An agent reporting "done" or "waiting for X" does not mean `git commit`/`push`/PR-create actually happened — in the `team-identity-roles` epic, 4 of 8 coding-agent dispatches reported completion or a wait state while the actual worktree was either fully-done-but-uncommitted or still mid-implementation. Proceeding on the narrative alone risks either losing real completed work (assuming it failed) or reporting a story as shipped when it isn't. | After any dispatch reports completion, independently run `git status`/`git log` in the worktree and `gh pr list`/`gh pr view` before relying on the report. See CLAUDE.md session conventions. |
 | A D37 wiring test that only asserts a function reference was assigned | Passes even when the wired implementation itself is behaviourally wrong — proves wiring occurred, not that the wired behaviour is correct. Evidenced by `team-identity-roles` tir-s1: a wiring test of this shape passed while the underlying role-resolution query ignored which person was logging in (fixed in tir-s7). | Assert an observable, differentiating outcome from the wired implementation (e.g. two different inputs produce two different, correct outputs), not just that a setter was called. See CLAUDE.md's Injectable adapter rule (D37). |
 | Mocking a reused adapter's new call site with a convenient shape instead of its real response shape | A mock that returns what the *new* call site needs, rather than what the adapter's real production wiring actually returns, lets every test pass on a feature that is a complete no-op in production. Evidenced by `team-identity-roles` tir-s5: bulk-add reused an org-listing adapter as if it listed org members; the mock was person-shaped, but the real GitHub endpoint returns organization objects (fixed in tir-s8). | Before trusting a new mock for a reused adapter, read the adapter's actual production wiring code and confirm the mock's shape matches what that real call returns. See CLAUDE.md's Injectable adapter rule (D37). |
+| Duplicating the same fixed sequence (e.g. pipeline stage order) as two independent hardcoded arrays in different files | The two copies can silently drift out of sync with no test catching it until the divergence causes a real bug. Evidenced 2026-07-24: `journey.js`'s local `STAGE_ORDER` (used to order resumed-session `priorArtefacts`) lists `test-plan` before `review`, while `journey-store.js`'s `STAGE_SEQUENCE` and the real per-story sequence run `review` before `test-plan` — found independently twice (dtra-s1, dspw-s1) without being scheduled as its own fix. | Define the sequence once, in one exported constant, and import it everywhere it's needed — never re-type the same ordered list in a second file. |
+| Using a Bash heredoc (`cat > file << 'EOF' ... EOF`) to write content containing markdown backticks | Even with a quoted delimiter (which should disable all shell expansion), this produced garbled, cross-contaminated output in a Windows Git Bash environment and appears to have also triggered a stray `git stash` and a stray zero-byte file from a misparsed redirection — undetected until a routine `git status` check. Evidenced 2026-07-24 during kanban-epic delivery. | Use the Write tool for any file content containing backticks or other shell-special characters, regardless of heredoc delimiter quoting. If a heredoc is used anyway, verify actual file/git state immediately after. |
+| Creating a new branch (`git checkout -b`) without first verifying which branch is currently checked out | An earlier `git checkout master` several tool calls back is not guaranteed to still be the current branch, especially across an interrupting message or a long detour — a new branch can silently stack on top of a different, unmerged feature branch, bundling its unmerged commits into the new branch's own PR. Evidenced 2026-07-24: `fix-forward-dspw-s1-design-skill-doc` was created while HEAD was still on `fix-forward-dtra-s1-...`, caught only via `git merge-base` after the PR's diff looked wrong. | Run `git branch --show-current` (or equivalent) immediately before every `git checkout -b`, not just before commits. |
 
 ---
 
@@ -1251,6 +1257,35 @@ A browser E2E framework is needed. The decision is: which one, and what structur
 - CI must run `npm run test:e2e` separately from `npm test`; E2E failures may be non-fatal in v1 (gated by `audit.e2e_tests: true` in `context.yml`) but must be visible in the PR status panel
 - Contributors installing a new browser E2E framework alongside Playwright must first raise an ADR — adding a second framework requires a decision record and approval
 
+#### Addendum — 2026-07-23 (a1-staging-safe-auth-stub)
+
+**Context:** The original ADR-018 decision (above) scoped the auth bypass to a **test-fixture-layer** mechanism gated by `NODE_ENV=test` (`tests/e2e/fixtures/auth.js`), because it was written for the existing local-mocked harness, where the E2E web server itself is started with `NODE_ENV=test` (see `playwright.config.js`'s `webServer.env`). `wuce-staging` (the real deployed Fly app used for staging E2E coverage under the `2026-07-23-e2e-core-journey-coverage` feature) runs in production mode — no `NODE_ENV=test` guard exists there, and adding one would weaken production-mode auth for **all** traffic to that app, not just E2E traffic. A second, staging-only mechanism was needed.
+
+**Decision:** A staging-only auth-stub mechanism (`src/web-ui/routes/auth-stub.js`, story a1-staging-safe-auth-stub) is added alongside the original `NODE_ENV=test` fixture-layer bypass, as a distinct and independently-gated mechanism:
+
+- Two new routes, `POST /auth/e2e-stub/github` and `GET /auth/e2e-stub/audit`, exist in every environment's code but are a complete no-op (404) unless `process.env.E2E_STAGING_AUTH_STUB_SECRET` is set on the running server.
+- Even when set, the routes require the request to also present a matching `x-e2e-stub-secret` header (compared with `crypto.timingSafeEqual`) — a double gate, so a single mistaken env var leak does not by itself allow the bypass to fire.
+- `E2E_STAGING_AUTH_STUB_SECRET` is set **only** as a Fly secret on the `wuce-staging` app (`flyctl secrets set E2E_STAGING_AUTH_STUB_SECRET=<value> --app wuce-staging`) — it is never written to `fly.toml`, `fly.staging.toml`, or any other committed file, and never set on the production (`wuce.fly.dev`) Fly app. `tests/check-a1-fly-config-isolation.js` enforces its absence from `fly.toml` as an automated repo-level guardrail, run on every `npm test`.
+- The stub only replaces the external GitHub OAuth round-trip (the part that would otherwise require a real third-party GitHub test account, explicitly out of scope per this story) — it does not bypass or shortcut session/tenant creation. A successful stub call populates the same session field shape (`userId`, `login`, `tenantId`, `authProvider`, `role`, session-ID rotation) that the real `GET /auth/github/callback` handler (`routes/auth.js`) populates, for a freshly generated, uniquely `e2e-test-`-tagged synthetic identity per call.
+
+**Why this does not weaken production auth:** the mechanism is inert everywhere `E2E_STAGING_AUTH_STUB_SECRET` is unset — which is every environment except `wuce-staging` once an operator deliberately sets that one Fly secret. Production (`wuce.fly.dev`, `fly.toml`) has no code path, configuration file, or CI secret that could ever set this variable, so the 404 branch is the only reachable branch there. This is a staging-only addition, additive to the original ADR-018 decision — the original `NODE_ENV=test` fixture-layer bypass is unchanged and continues to gate the existing local-harness specs exactly as before.
+
+#### Addendum — 2026-07-25 (dss-s1: staging-safe test endpoint gate)
+
+**Context:** The `Staging smoke test (@mocked)` job (`.github/workflows/staging-deploy.yml`) runs `@mocked`-tagged Playwright specs against real `wuce-staging` (`E2E_BASE_URL: https://wuce-staging.fly.dev`). Several of these specs depend on `/test/*` support routes (a real-LLM-call counter, a Stripe-call counter, an onboarding-completion bypass, multi-user-role seeding) that sit inside the same `NODE_ENV === 'test'`-only block the original ADR-018 decision (above) scoped for the local harness — `wuce-staging` runs `NODE_ENV=staging`, so this whole block, and every specific route in it, has never been reachable there. Discovered while root-causing the `Staging smoke test (@mocked)` job's failures on 2026-07-25.
+
+**Decision:** Exactly 4 of the 8 routes in that block — the ones actually called by `@mocked`-tagged specs (`GET /test/real-llm-call-count`, `POST /test/complete-onboarding`, `POST /test/seed-multi-user-roles`, `GET /test/stripe-call-count`) — get a second, independent admission path in `server.js`, following the exact same double-gate shape as this ADR's own a1 addendum and `serlb-s1` (`routes/auth-email.js`):
+
+- Each named route's condition becomes `NODE_ENV === 'test' || (E2E_STAGING_AUTH_STUB_SECRET configured AND a matching x-e2e-test-endpoint-bypass header, constant-time compared)`.
+- The secret is **reused**, not newly minted — the same `E2E_STAGING_AUTH_STUB_SECRET` already provisioned as both a Fly secret on `wuce-staging` and a GitHub Actions repo secret for a1's own use.
+- A **new, distinctly-named header** (`x-e2e-test-endpoint-bypass`) for this mechanism specifically — matching the established one-secret/many-headers convention (`x-e2e-stub-secret` for a1, `x-e2e-rate-limit-bypass` for `serlb-s1`).
+- The other 4 `/test/*` routes (`/test/session`, `/test/seed-definition-session`, `/test/canvas`, `/test/seed-board-journey`) are **not** touched — they remain `NODE_ENV=test`-only, since no `@mocked` spec run against staging calls them.
+- The real-LLM-call counter's `https.request`-wrapping instrumentation (previously also nested inside the `NODE_ENV=test`-only block, so it was never actually wired on staging even before this fix) now runs unconditionally in every environment — it has no side effects on the underlying call (always forwards to the original `https.request`), so this is safe, and is the only way the widened read-route can report a true count on staging rather than always reading 0.
+
+**Why this does not weaken production auth:** identical reasoning to the a1 addendum above — no code path, configuration file, or CI secret on production (`wuce.fly.dev`, `fly.toml`) can ever set `E2E_STAGING_AUTH_STUB_SECRET`, so all 4 widened routes remain exactly as unreachable there as they always were. `tests/check-a1-fly-config-isolation.js`'s existing guardrail already covers this secret's production-isolation; no new isolation test was needed since no new env var name was introduced.
+
+**Why NOT a blanket `NODE_ENV === 'staging'` widening of the whole block instead:** that same block also seeds a fully authenticated session using a fixed, publicly-known token (see the `SECURITY` comment directly above the block in `server.js`) — widening the entire block would have fixed the smoke tests but also reopened that auth-bypass mechanism, and the other seeding routes' direct DB writes, on a real, internet-reachable server. Scoping to exactly the 4 routes actually needed keeps that exposure at zero.
+
 ---
 
 ### ADR-025: Multi-tenancy enforced at the application layer — tenant_id scoping, not schema/DB-per-tenant
@@ -1287,3 +1322,69 @@ Application-layer tenant_id scoping was chosen and implemented across six sequen
 #### Revisit trigger
 
 If a customer's compliance/security requirements demand infrastructure-level tenant isolation (not just application-code enforcement) — e.g. a regulated customer requiring physically separate data stores — revisit toward schema-per-tenant or database-per-tenant for that customer's data, layered on top of (not replacing) the existing application-layer guard.
+
+---
+
+### ADR-026: Reuse an existing entity/primitive when its shape already covers a new concept, rather than introducing a new one
+
+**Status:** Active
+**Date:** 2026-07-17
+**Story:** 2026-07-16-product-rollup, discovery/decisions phase
+**Decided by:** Hamish King, via /improve promotion of a feature-scoped ARCH decision — original decision made 2026-07-17 during product-rollup discovery
+
+#### Context
+
+The product-rollup discovery initially framed "Product" as a candidate new named primitive alongside Skill, Surface adapter, Pipeline state, Eval suite, Learnings log, and Context graph — a manifest entity referencing feature slugs and owning no independent content of its own. But the SaaS web UI already has a `products` table carrying repo-association columns (`prc-s1.1`) and standards-hierarchy columns (`psh-s3`) that already covers the exact shape a "Product" primitive would need — a tenant's "product" already is a repo-associated entity, and this platform's own dogfooding case (skills-framework registering itself as a product) is the degenerate case of that same entity, not a distinct concept requiring a new table or manifest.
+
+#### Options considered
+
+| Option | Pros | Cons |
+|--------|------|------|
+| **Unify with the existing entity (chosen)** — designate "Product" as the eighth primitive, documented as an existing entity (the `products` table + its web UI), not new schema | No new table, no new sync/consistency mechanism between two representations of the same thing, immediately compatible with every tenant's existing product row | Requires recognising, at discovery time, that an apparently-new concept is actually already modelled — easy to miss if discovery doesn't ground itself in current repo state first |
+| Net-new manifest entity referencing feature slugs, separate from `products` | Conceptually clean if "Product" were genuinely distinct from a SaaS tenant's product | Reopens the exact traceability/consistency gap the unification avoids — two representations of "product" that must be kept in sync, for zero actual benefit since the shapes coincide |
+
+#### Decision
+
+Designate the existing `products` table + its web UI as the "Product" primitive outright, rather than building a parallel manifest entity. Applies beyond this feature: before introducing a new named primitive, manifest entity, or top-level concept anywhere in this platform, first check whether an existing entity's shape already covers it — grounding discovery in actual current repo state (schema, tables, existing UI) rather than the proposing document's own framing.
+
+#### Consequences
+
+- **Easier:** any future "is X a new primitive?" question has a concrete first check — does an existing table/entity already have this shape? — before any new schema or manifest is designed.
+- **Harder / more constrained:** discovery must actually inspect current repo state (not just reason from the feature request's own framing) before proposing a new entity — a discovery that skips this grounding step risks proposing genuine duplication.
+
+#### Revisit trigger
+
+If a future concept is proposed that is superficially similar to an existing entity but has a materially different consistency/ownership model (e.g. cross-repo aggregation, a different tenancy boundary), revisit whether unification still applies or whether a genuinely new entity is warranted.
+
+---
+
+### ADR-027: Live SaaS-user-facing mechanisms are ordinary application code, not governed SKILL.md skills
+
+**Status:** Active
+**Date:** 2026-07-17
+**Story:** 2026-07-16-product-rollup, discovery/decisions phase
+**Decided by:** Hamish King, via /improve promotion of a feature-scoped ARCH decision — original decision made 2026-07-17 during product-rollup discovery
+
+#### Context
+
+The product-rollup discovery initially considered a new `/product-sync` SKILL.md skill, reading a locally-checked-out `pipeline-state.json` to regenerate rollup views. But a tenant viewing their own product's rollup is a live feature for any authenticated browser user — it happens on every page load of `/products/:id`, not inside an agent-driven pipeline session. `sign-off.js`'s `handleArtefactRead` already proves the exact mechanism needed (GitHub Contents API + the requesting user's own OAuth token), and the `standards` table already establishes the per-product-row Postgres-caching convention to follow.
+
+#### Options considered
+
+| Option | Pros | Cons |
+|--------|------|------|
+| **Ordinary application code in `src/web-ui/` (chosen)** — a route handler using the existing Contents API + OAuth pattern, cached in Postgres per `product_id` | Matches how every other live, user-triggered SaaS feature in this platform is built; no artificial split between "agent workflow" and "web feature" for something that is unambiguously the latter | None identified — this is the same shape as every other `src/web-ui/routes/*.js` handler already in the codebase |
+| A new `/product-sync` SKILL.md skill | Would fit the pattern used by other governed pipeline mechanisms (DoD, trace, improve) | Wrong mental model — a skill is invoked in an agent-driven pipeline session by an operator running the delivery pipeline, not by an arbitrary authenticated tenant loading a page in a browser; would require an agent session to exist for something that must work for any logged-in user at any time |
+
+#### Decision
+
+Any mechanism that a live, authenticated SaaS user triggers directly through the web UI (not through an agent-driven pipeline session) is ordinary application code under `src/web-ui/`, using the platform's existing adapter/session/caching conventions — never a governed SKILL.md skill. SKILL.md skills remain reserved for agent-invoked pipeline workflows (discovery, definition, DoD, trace, improve, etc.), where a human operator or CI process runs a session against a specific feature slug.
+
+#### Consequences
+
+- **Easier:** a clear test for any future "should this be a skill or app code?" question — does this run inside an operator's pipeline session against a specific feature slug (skill), or does any authenticated tenant trigger it directly through the live product (app code)?
+- **Harder / more constrained:** app-code mechanisms don't get the hash-verification/governance machinery that skills get — they're governed by ordinary code review, tests, and NFRs instead. This is intentional (ADR-003's hash-verification bar applies to governed, agent-produced artefacts, not live SaaS features computed from already-governed input), not an oversight.
+
+#### Revisit trigger
+
+If a future mechanism is ambiguous between the two (e.g. triggered by both an operator's pipeline session AND a live tenant action), revisit whether a shared underlying module invoked from both a skill and a route handler is the right shape, rather than forcing the whole mechanism into one category.

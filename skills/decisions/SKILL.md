@@ -23,7 +23,7 @@ triggers:
 ## Entry condition
 
 None. Runs at any pipeline stage. If `decisions.md` does not exist for this feature,
-create it from `.github/templates/decision-log.md` before appending.
+create it from `templates/decision-log.md` before appending.
 
 **Two ADR scopes - understand which applies:**
 - **Feature-level decisions** (most common): made during this feature's pipeline.

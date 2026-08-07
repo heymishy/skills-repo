@@ -50,6 +50,10 @@ function createJourney(featureSlug, productProfile) {
   var journey = {
     journeyId:      journeyId,
     featureSlug:    featureSlug,
+    // fdn-s1: an optional, editable human-readable label -- featureSlug
+    // itself stays the durable identifier (disk paths, pipeline-state keys)
+    // and is never mutated by renaming this.
+    displayName:    null,
     productProfile: productProfile || 'default',
     activeSkill:    null,
     activeSessionId: null,
@@ -106,16 +110,92 @@ function getJourneyBySession(sessionId) {
 }
 
 /**
+ * frsr-s1 — find a journey by its featureSlug, for resolving which session
+ * produced a given completed stage's conversation (see completeStage's
+ * sessionId field). If more than one journey shares a featureSlug (e.g. a
+ * re-run), the most recently created one wins (later Map insertions are
+ * visited last).
+ * @param {string} featureSlug
+ * @returns {object|null}
+ */
+/**
+ * alrf-s4 — read a journey's durably-saved artefact content back from
+ * Postgres (populated by adapters/journey-store-pg.js's saveArtefact() on
+ * every stage completion when DATABASE_URL is set -- see routes/skills.js's
+ * "Persist artefact content to Postgres so cross-device / post-deploy
+ * resume works" comment, wsm.1-era). Local disk is NOT durable across a
+ * redeploy on this deployment topology (see decisions.md D3/D4); Postgres
+ * already is, and was already being written to -- nothing was reading it
+ * back for the feature-index page until this. Returns [] when no pg
+ * adapter is wired (local dev, disk-only mode) rather than throwing --
+ * callers already treat [] as "nothing found here, keep looking."
+ * @param {string} journeyId
+ * @returns {Promise<Array<{skill_name: string, artefact_path: string, content: string}>>}
+ */
+async function getArtefactsForJourney(journeyId) {
+  var adapter = _activePgAdapter();
+  if (!adapter || !journeyId) return [];
+  return adapter.getArtefactsForJourney(journeyId);
+}
+
+/**
+ * alrf-s10 — hard-delete a journey: removes it from the in-memory store, the
+ * durable store (Postgres, when wired -- journey rows + all its artefact
+ * rows), and the disk adapter's on-disk record (local-dev-only). Never
+ * touches artefacts/<slug>/ on local disk deliberately -- that path is not a
+ * durable store on any deployed surface (see decisions.md D3/D4,
+ * 2026-07-26-canvas-render-and-story-extraction-fix), so there is nothing
+ * real to clean up there beyond what a future redeploy already wipes.
+ * @param {string} journeyId
+ * @returns {Promise<{deleted: boolean}>}
+ */
+async function deleteJourney(journeyId) {
+  var journey = _journeys.get(journeyId);
+  var featureSlug = journey ? journey.featureSlug : null;
+  _journeys.delete(journeyId);
+
+  var pgDeleted = false;
+  var adapter = _activePgAdapter();
+  if (adapter && adapter.deleteJourney) {
+    var pgResult = await adapter.deleteJourney(journeyId);
+    pgDeleted = !!(pgResult && pgResult.deleted);
+  }
+
+  var diskDeleted = false;
+  if (_diskAdapter && featureSlug && _diskAdapter.deleteJourney) {
+    try {
+      var diskResult = _diskAdapter.deleteJourney(featureSlug);
+      diskDeleted = !!(diskResult && diskResult.deleted);
+    } catch (_) {}
+  }
+
+  return { deleted: !!journey || pgDeleted || diskDeleted };
+}
+
+function getJourneyByFeatureSlug(featureSlug) {
+  var match = null;
+  for (var journey of _journeys.values()) {
+    if (journey.featureSlug === featureSlug) match = journey;
+  }
+  return match;
+}
+
+/**
  * Record a completed stage on the journey.
  * @param {string} journeyId
  * @param {string} skillName
  * @param {string} artefactPath
  * @param {{ costUsd?: number, model?: string, input_tokens?: number, output_tokens?: number }} [usageSummary]
+ * @param {string} [sessionId] — frsr-s1: the session that produced this stage's
+ *   conversation, so a later "resume conversation" link can resolve which
+ *   /skills/:skillName/sessions/:sessionId/chat to point at. Optional so
+ *   existing callers that don't have a sessionId in scope are unaffected.
  */
-function completeStage(journeyId, skillName, artefactPath, usageSummary) {
+function completeStage(journeyId, skillName, artefactPath, usageSummary, sessionId) {
   var journey = _journeys.get(journeyId);
   if (!journey) return;
   var entry = { skillName: skillName, artefactPath: artefactPath, completedAt: new Date().toISOString() };
+  if (sessionId) entry.sessionId = sessionId;
   if (usageSummary && usageSummary.costUsd != null) {
     entry.costUsd  = usageSummary.costUsd;
     entry.model    = usageSummary.model    || null;
@@ -332,6 +412,9 @@ module.exports = {
   getJourney,
   setActiveSession,
   getJourneyBySession,
+  getJourneyByFeatureSlug,
+  getArtefactsForJourney,
+  deleteJourney,
   completeStage,
   getNextStage,
   getJourneyStories,

@@ -2,12 +2,19 @@
 
 // public.js — GET / handler for the public landing page (lab-s1.2)
 //             GET /welcome handler for first-login plan selection (lab-s2.3)
+//             GET /vendor/mermaid.min.js handler for the mermaid client
+//             bundle (csd-s1) — ADR-027: this is ordinary application code,
+//             not a governed skill, since it's a plain static-asset serve
+//             triggered by any authenticated browser loading the /ideate
+//             canvas, mirroring the existing landing/welcome HTML pattern
+//             below rather than adding a generic static-file middleware.
 // Serves the Skills Platform landing page to unauthenticated visitors.
 // Authenticated users (req.session.accessToken) are redirected to /dashboard.
 // PostHog server-side event is fired fire-and-forget on each unauthenticated visit.
 
 var fs   = require('fs');
 var path = require('path');
+var zlib = require('zlib');
 var csrf = require('../middleware/csrf'); // sec-perf-s3
 
 // HTML loaded once at module init — path uses __dirname, never request data (path traversal safe).
@@ -165,4 +172,48 @@ async function handleWelcome(req, res) {
   res.end(html);
 }
 
-module.exports = { handleRoot, handleWelcome };
+// csd-s1: mermaid client bundle, read once and gzip-compressed once, then
+// served from an in-memory cache for every subsequent request. Path resolves
+// from this file's own __dirname (never request data) up to the repo root's
+// node_modules — no path-traversal surface since no part of it is
+// request-derived.
+var _mermaidAssetCache = null;
+function _loadMermaidAsset() {
+  if (_mermaidAssetCache) { return _mermaidAssetCache; }
+  var assetPath = path.join(__dirname, '..', '..', '..', 'node_modules', 'mermaid', 'dist', 'mermaid.min.js');
+  var raw = fs.readFileSync(assetPath);
+  var gzip = zlib.gzipSync(raw);
+  _mermaidAssetCache = { raw: raw, gzip: gzip };
+  return _mermaidAssetCache;
+}
+
+/**
+ * Handle GET /vendor/mermaid.min.js — serves the mermaid rendering library's
+ * pre-built client bundle so the /ideate canvas can render `data-model`
+ * diagram blocks (csd-s1). Gzip-compressed when the requester advertises
+ * support (virtually all real browsers); cached in memory after first read
+ * so the (~3.5MB uncompressed) asset is never re-read from disk per request.
+ * @param {object} req
+ * @param {object} res
+ */
+function handleMermaidAsset(req, res) {
+  var asset = _loadMermaidAsset();
+  var acceptEncoding = (req.headers && req.headers['accept-encoding']) || '';
+  var useGzip = acceptEncoding.indexOf('gzip') !== -1;
+  var headers = {
+    'Content-Type':  'application/javascript; charset=utf-8',
+    // Immutable-ish: pinned mermaid version in package.json, safe to cache
+    // for a full day in the browser between deploys.
+    'Cache-Control': 'public, max-age=86400'
+  };
+  if (useGzip) {
+    headers['Content-Encoding'] = 'gzip';
+    res.writeHead(200, headers);
+    res.end(asset.gzip);
+  } else {
+    res.writeHead(200, headers);
+    res.end(asset.raw);
+  }
+}
+
+module.exports = { handleRoot, handleWelcome, handleMermaidAsset };

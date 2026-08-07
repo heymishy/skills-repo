@@ -82,7 +82,7 @@ Recommend concrete controls in repo config:
 
 ## Output artefact
 
-Use template: `.github/templates/token-optimization.md`
+Use template: `templates/token-optimization.md`
 
 Save to:
 - `artefacts/[feature-slug]/token-optimization.md`

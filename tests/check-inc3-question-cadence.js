@@ -20,7 +20,7 @@ function assert(label, condition) {
   }
 }
 
-const skillMdPath = path.join(__dirname, '../.github/skills/ideate/SKILL.md');
+const skillMdPath = path.join(__dirname, '../skills/ideate/SKILL.md');
 const skillMd = fs.readFileSync(skillMdPath, 'utf8');
 
 // ---------------------------------------------------------------------------

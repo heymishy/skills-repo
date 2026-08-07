@@ -1,0 +1,19 @@
+# Decisions: Product View Consolidation
+
+## FIX-FORWARD — Consolidate duplicate module-grouped sections; add tabs and filtering (2026-07-22)
+
+**Context:** After tmc-s1 merged and was deployed to staging, the operator observed the real product view showing two separate "grouped by module" sections back to back — tmc-s1's taxonomy-based section (real, GitHub-synced ~115 features) and a4's original journeys-based section (2 placeholder rows). Both correctly rendered their own data, but the duplication read as a bug, and the tabbed/filtered UI from the original design exploration (an Artifact mockup, never implemented as real code) was still missing.
+
+**Decision:** Merge taxonomy and journeys data at the render layer into one item list (deduplicated by `feature_slug`, taxonomy metadata taking precedence on overlap), replacing both prior sections with a single consolidated features section offering By Module / By Phase / All tabs and client-side health/search filtering.
+
+**Rationale:**
+- `journeys.feature_slug` (already `NOT NULL`, confirmed during tmc-s1's own unification revision) is the same identity taxonomy items carry — merging by that key requires no new persistence, only a render-layer join.
+- Tabs reuse `settings.js`'s exact, already-proven `sw-settings-tab*` pattern (namespaced `pvc-tab*` to avoid collision) rather than inventing a fourth tab mechanism in this codebase.
+- The By Module tab's bucketing logic is a direct generalization of tmc-s1's `groupTaxonomyByModule` (now `groupItemsByModule`, operating on any flat item list) — `groupTaxonomyByModule` itself is kept as a thin backward-compatible wrapper so no existing caller/test needed to change its own contract.
+- The zero-modules fallback intentionally reverts to a4's original simple flat list (not tmc-s1's own fallback-to-taxonomy-Epics behavior) — this is a deliberate supersession of one clause of tmc-s1's own AC5, recorded here and in the updated test (`check-tmc-s1-...js`) rather than left as an unexplained behavior change.
+
+**Scope note:** This directly modifies rendering behavior shipped by a4 (already merged/deployed) and supersedes part of tmc-s1's own AC5 (also already merged/deployed). Per this repo's Artefact-first rule, this is captured as its own short-track story (`pvc-s1`) with full story/review/test-plan/DoR artefacts rather than an undocumented fix-forward, given the size of the change (new render functions, new client-side JS, markup restructuring across two previously-independent code paths).
+
+**Implementation result:** `mergeFeatureSources`, `groupItemsByPhase` added to `product-rollup.js`; `groupTaxonomyByModule`'s internals extracted into the new, more general `groupItemsByModule`. `_renderProductView` (`products.js`) rewritten: `_renderConsolidatedFeaturesSection` replaces the old `taxonomyHtml`/`featuresHtml` dual rendering with one tabbed section; `_renderPvcItemRow` reuses a4's dual health-pill/coverage-label convention (`data-a4-health`/`data-a4-coverage` attributes preserved) plus new `data-health`/`data-search` attributes for client-side filtering; `_renderModuleSection` generalized to accept an optional row-renderer so both the old journeys-only path and the new merged-item path share the same collapsible-section markup/JS.
+
+**Test result:** New test file `tests/check-pvc-s1-consolidate-and-tab-features-view.js` — 14/14 passing, covering AC1-AC9. Existing a1 (26/26), a2 (11/11), a4 (11/11, one row-attribute fix needed — `_renderPvcItemRow` was missing the `data-a4-health`/`data-a4-coverage` attributes a4's own AC2 test asserted, added to match), tmc-s1 (29/29, one test's assertion updated to reflect the intentional zero-modules fallback change), pr-s2 (37/37) all re-verified passing. Full 360-file suite re-run: 37 failed, identical to the established baseline — zero regressions.

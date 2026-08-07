@@ -164,7 +164,7 @@ Read the discovery artefact directly from the file system (`artefacts/[feature]/
 
 > ❌ **H-GOV FAIL — Approved By section is missing**
 > The discovery artefact does not contain an `## Approved By` section.
-> Resolution: update the discovery artefact using the `.github/templates/discovery.md` template, which includes the required `## Approved By` section.
+> Resolution: update the discovery artefact using the `templates/discovery.md` template, which includes the required `## Approved By` section.
 
 **AC4 (FAIL — engineer-only entries):** All entries in `## Approved By` are engineering-role names (e.g. "Lead Engineer", "Tech Lead", "Developer"):
 
@@ -295,18 +295,31 @@ Surface as:
 ## Standards injection
 
 After warnings are acknowledged, check whether the story carries domain tags that
-trigger coding standards:
+trigger coding standards. This step is implemented by
+`src/enforcement/standards-injection.js` — apply the same algorithm it implements
+(described below) so the human-readable instructions and the tested code share
+one source of truth; do not improvise a different matching rule.
 
 1. Read the story's `domain` field (e.g. `domain: [api, auth]`)
-2. Open `.github/standards/index.yml`
-3. For each tag that matches a key in `standards:`, read the listed standards files
-4. Include the full text of matching standards files in the Coding Agent Instructions block
-   under a `## Applicable standards` section
+2. Normalise each tag (trim whitespace, lowercase) before matching — `Web-UI` and
+   `web-ui` are the same domain
+3. Open `.github/standards/index.yml` and match each normalised tag against its
+   (also normalised) `standards:` keys
+4. For each match, include the full text of that domain's listed standards files
+   in the Coding Agent Instructions block under a `## Applicable standards`
+   section, each file clearly attributed to its source path and matched domain
+5. For each tag that does NOT match any key, surface a distinct warning naming
+   that specific tag — never silently drop it, and never conflate it with the
+   "no domain field at all" case below
 
 If `.github/standards/index.yml` does not exist — skip silently. Standards injection
 is optional enhancement, not a hard requirement.
 
-If the story has no `domain` field — skip silently.
+If the story has no `domain` field at all — skip silently. This is a genuinely
+different case from an unmatched tag: no domain field means the author didn't opt
+in; an unmatched tag means the author opted in with a value that doesn't resolve,
+which is worth a distinct warning precisely because it's more likely to be a typo
+than a deliberate choice.
 
 Surface what was found:
 
@@ -317,8 +330,11 @@ Surface what was found:
 > [If files found:]
 > These will be appended to the coding agent instructions block.
 >
-> [If no files found for a tag:]
-> Tag `[tag]` was not found in index.yml — no standards injected for that domain.
+> [If a tag has no match:]
+> ⚠️ Tag `[tag]` was not found in index.yml — no standards injected for that domain.
+>
+> [If the story has no domain field at all:]
+> Story has no `domain` field — skipped silently.
 
 ---
 
@@ -331,7 +347,7 @@ Produced when all hard blocks pass. Written into the DoR artefact.
 Conforms to the `## Coding Agent Instructions` section of `templates/definition-of-ready-checklist.md`.
 
 Save DoR artefact to `artefacts/[feature]/dor/[story-slug]-dor.md`
-conforming to `.github/templates/definition-of-ready-checklist.md`.
+conforming to `templates/definition-of-ready-checklist.md`.
 
 Save the approved Contract Proposal to `artefacts/[feature]/dor/[story-slug]-dor-contract.md`.
 

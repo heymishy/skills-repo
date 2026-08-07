@@ -5,6 +5,15 @@ primary_region = 'syd'
 
 [env]
   PORT = "3000"
+  # b1-formed-idea-outer-loop-story-map (2026-07-23 ARCH decision, decisions.md):
+  # staging E2E specs that drive a skill turn must run against the mock LLM gateway,
+  # never the real model, to avoid real Anthropic API cost on every CI run. This is a
+  # plain boolean flag (not a secret value), so it belongs in this committed [env]
+  # block rather than `flyctl secrets set` -- see src/web-ui/modules/mock-llm-gateway.js's
+  # isMockGatewayEnabled(), which hard-blocks activation whenever NODE_ENV=production
+  # regardless of this flag, so it cannot leak into real production traffic even if
+  # this file were ever reused for a production app by mistake.
+  MOCK_LLM_GATEWAY = "true"
 
 [http_service]
   internal_port = 3000

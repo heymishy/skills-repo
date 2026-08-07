@@ -44,14 +44,14 @@ function fail(name, reason) {
   failures.push(name + ': ' + reason);
 }
 
-const issueDispatchSkill = path.join(root, '.github', 'skills', 'issue-dispatch', 'SKILL.md');
-const dorSkill           = path.join(root, '.github', 'skills', 'definition-of-ready', 'SKILL.md');
+const issueDispatchSkill = path.join(root, 'skills', 'issue-dispatch', 'SKILL.md');
+const dorSkill           = path.join(root, 'skills', 'definition-of-ready', 'SKILL.md');
 
 // ── Test: Closes keyword in issue-dispatch SKILL.md (AC1) ────────────────────
 (function test_closes_keyword_in_issue_dispatch() {
   const name = 'closes-keyword-present-in-issue-dispatch-skill';
   if (!fs.existsSync(issueDispatchSkill)) {
-    fail(name, '.github/skills/issue-dispatch/SKILL.md not found');
+    fail(name, 'skills/issue-dispatch/SKILL.md not found');
     return;
   }
   const content = fs.readFileSync(issueDispatchSkill, 'utf8');
@@ -66,7 +66,7 @@ const dorSkill           = path.join(root, '.github', 'skills', 'definition-of-r
 (function test_auto_close_documented() {
   const name = 'issue-dispatch-skill-documents-auto-close-behaviour';
   if (!fs.existsSync(issueDispatchSkill)) {
-    fail(name, '.github/skills/issue-dispatch/SKILL.md not found');
+    fail(name, 'skills/issue-dispatch/SKILL.md not found');
     return;
   }
   const content = fs.readFileSync(issueDispatchSkill, 'utf8');
@@ -83,7 +83,7 @@ const dorSkill           = path.join(root, '.github', 'skills', 'definition-of-r
 (function test_dor_has_forward_pointer() {
   const name = 'dor-skill-has-forward-pointer-to-issue-dispatch';
   if (!fs.existsSync(dorSkill)) {
-    fail(name, '.github/skills/definition-of-ready/SKILL.md not found');
+    fail(name, 'skills/definition-of-ready/SKILL.md not found');
     return;
   }
   const content = fs.readFileSync(dorSkill, 'utf8');
@@ -98,7 +98,7 @@ const dorSkill           = path.join(root, '.github', 'skills', 'definition-of-r
 (function test_dor_says_closes_automatic() {
   const name = 'dor-skill-says-closes-added-automatically';
   if (!fs.existsSync(dorSkill)) {
-    fail(name, '.github/skills/definition-of-ready/SKILL.md not found');
+    fail(name, 'skills/definition-of-ready/SKILL.md not found');
     return;
   }
   const content = fs.readFileSync(dorSkill, 'utf8');

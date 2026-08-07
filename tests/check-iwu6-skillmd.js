@@ -28,7 +28,7 @@ function assert(label, condition) {
 // AC1: SKILL.md contains ADR-018 marker format instruction
 // ---------------------------------------------------------------------------
 
-const SKILL_PATH = path.join(__dirname, '..', '.github', 'skills', 'ideate', 'SKILL.md');
+const SKILL_PATH = path.join(__dirname, '..', 'skills', 'ideate', 'SKILL.md');
 const skillContent = fs.readFileSync(SKILL_PATH, 'utf8');
 
 assert('AC1: SKILL.md contains ADR-018 marker format start delimiter', skillContent.includes('---ASSUMPTION-JSON:'));

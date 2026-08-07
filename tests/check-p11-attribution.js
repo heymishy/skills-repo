@@ -10,10 +10,10 @@ const fs   = require('fs');
 const path = require('path');
 
 const ROOT              = path.join(__dirname, '..');
-const DISCOVERY_TPL     = path.join(ROOT, '.github', 'templates', 'discovery.md');
-const DISCOVERY_SKILL   = path.join(ROOT, '.github', 'skills', 'discovery', 'SKILL.md');
-const BM_TPL            = path.join(ROOT, '.github', 'templates', 'benefit-metric.md');
-const BM_SKILL          = path.join(ROOT, '.github', 'skills', 'benefit-metric', 'SKILL.md');
+const DISCOVERY_TPL     = path.join(ROOT, 'templates', 'discovery.md');
+const DISCOVERY_SKILL   = path.join(ROOT, 'skills', 'discovery', 'SKILL.md');
+const BM_TPL            = path.join(ROOT, 'templates', 'benefit-metric.md');
+const BM_SKILL          = path.join(ROOT, 'skills', 'benefit-metric', 'SKILL.md');
 const CONTRACTS_SCRIPT  = path.join(ROOT, '.github', 'scripts', 'check-skill-contracts.js');
 
 let passed = 0;

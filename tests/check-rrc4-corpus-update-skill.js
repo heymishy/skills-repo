@@ -66,7 +66,7 @@ function fail(name, reason) {
   failures.push(name + ': ' + reason);
 }
 
-const skillFile = path.join(root, '.github', 'skills', 'reference-corpus-update', 'SKILL.md');
+const skillFile = path.join(root, 'skills', 'reference-corpus-update', 'SKILL.md');
 
 function getContent() {
   if (!fs.existsSync(skillFile)) return null;
@@ -81,7 +81,7 @@ console.log('\n[rrc.4] /reference-corpus-update SKILL.md\n');
   if (fs.existsSync(skillFile)) {
     pass(name);
   } else {
-    fail(name, '.github/skills/reference-corpus-update/SKILL.md not found — rrc.4 implementation required');
+    fail(name, 'skills/reference-corpus-update/SKILL.md not found — rrc.4 implementation required');
   }
 })();
 
@@ -89,7 +89,7 @@ console.log('\n[rrc.4] /reference-corpus-update SKILL.md\n');
 (function test_contract_markers() {
   const name = 'rrc4-skill-contract-markers-present';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reference-corpus-update/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reference-corpus-update/SKILL.md not found'); return; }
   const missing = [];
   if (!/^name:/m.test(content)) missing.push('name:');
   if (!/^description:/m.test(content)) missing.push('description:');
@@ -106,7 +106,7 @@ console.log('\n[rrc.4] /reference-corpus-update SKILL.md\n');
 (function test_name_matches_directory() {
   const name = 'rrc4-skill-name-matches-directory';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reference-corpus-update/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reference-corpus-update/SKILL.md not found'); return; }
   const nameMatch = content.match(/^name:\s*(.+)$/m);
   if (!nameMatch) { fail(name, 'SKILL.md has no name: field'); return; }
   const nameValue = nameMatch[1].trim().toLowerCase();
@@ -121,7 +121,7 @@ console.log('\n[rrc.4] /reference-corpus-update SKILL.md\n');
 (function test_asks_for_corpus_state() {
   const name = 'rrc4-asks-for-corpus-state-path';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reference-corpus-update/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reference-corpus-update/SKILL.md not found'); return; }
   if (/corpus-state/i.test(content)) {
     pass(name);
   } else {
@@ -133,7 +133,7 @@ console.log('\n[rrc.4] /reference-corpus-update SKILL.md\n');
 (function test_asks_for_changed_files() {
   const name = 'rrc4-asks-for-changed-file-list';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reference-corpus-update/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reference-corpus-update/SKILL.md not found'); return; }
   if (/changed.?files|modified.?files|files.*changed|diff|changed.*source/i.test(content)) {
     pass(name);
   } else {
@@ -145,7 +145,7 @@ console.log('\n[rrc.4] /reference-corpus-update SKILL.md\n');
 (function test_deepen_scope() {
   const name = 'rrc4-deepen-scope-for-matching-rules';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reference-corpus-update/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reference-corpus-update/SKILL.md not found'); return; }
   if (/DEEPEN/i.test(content)) {
     pass(name);
   } else {
@@ -157,7 +157,7 @@ console.log('\n[rrc.4] /reference-corpus-update SKILL.md\n');
 (function test_rule_ids_in_deepen() {
   const name = 'rrc4-rule-ids-in-deepen-scope';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reference-corpus-update/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reference-corpus-update/SKILL.md not found'); return; }
   const deepenIdx = content.search(/DEEPEN/i);
   if (deepenIdx === -1) { fail(name, 'SKILL.md has no DEEPEN reference'); return; }
   const region = content.slice(Math.max(0, deepenIdx - 300), deepenIdx + 600).toLowerCase();
@@ -172,7 +172,7 @@ console.log('\n[rrc.4] /reference-corpus-update SKILL.md\n');
 (function test_no_match_message() {
   const name = 'rrc4-no-match-message';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reference-corpus-update/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reference-corpus-update/SKILL.md not found'); return; }
   if (/no.*corpus.*rules.*affected|no.*rules.*affected|no.*match|not.*affect/i.test(content)) {
     pass(name);
   } else {
@@ -184,7 +184,7 @@ console.log('\n[rrc.4] /reference-corpus-update SKILL.md\n');
 (function test_last_run_at() {
   const name = 'rrc4-corpus-state-last-run-at';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reference-corpus-update/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reference-corpus-update/SKILL.md not found'); return; }
   if (/lastRunAt|last.?run.?at/i.test(content)) {
     pass(name);
   } else {
@@ -196,7 +196,7 @@ console.log('\n[rrc.4] /reference-corpus-update SKILL.md\n');
 (function test_change_note() {
   const name = 'rrc4-corpus-state-change-note';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reference-corpus-update/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reference-corpus-update/SKILL.md not found'); return; }
   if (/changeNote|change.?note/i.test(content)) {
     pass(name);
   } else {
@@ -208,7 +208,7 @@ console.log('\n[rrc.4] /reference-corpus-update SKILL.md\n');
 (function test_trigger_update_corpus() {
   const name = 'rrc4-triggers-include-update-corpus';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reference-corpus-update/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reference-corpus-update/SKILL.md not found'); return; }
   const triggersMatch = content.match(/^triggers:([\s\S]*?)(?=^[a-z]|\n---|\n##)/m);
   const triggersBlock = triggersMatch ? triggersMatch[0] : content;
   if (/update corpus|update the corpus/i.test(triggersBlock)) {
@@ -222,7 +222,7 @@ console.log('\n[rrc.4] /reference-corpus-update SKILL.md\n');
 (function test_trigger_corpus_refresh() {
   const name = 'rrc4-triggers-include-corpus-refresh';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reference-corpus-update/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reference-corpus-update/SKILL.md not found'); return; }
   if (/corpus refresh/i.test(content)) {
     pass(name);
   } else {
@@ -234,7 +234,7 @@ console.log('\n[rrc.4] /reference-corpus-update SKILL.md\n');
 (function test_trigger_legacy_rules() {
   const name = 'rrc4-triggers-include-legacy-rules';
   const content = getContent();
-  if (!content) { fail(name, '.github/skills/reference-corpus-update/SKILL.md not found'); return; }
+  if (!content) { fail(name, 'skills/reference-corpus-update/SKILL.md not found'); return; }
   if (/legacy rules/i.test(content)) {
     pass(name);
   } else {

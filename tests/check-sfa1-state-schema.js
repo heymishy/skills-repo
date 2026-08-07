@@ -23,7 +23,7 @@ function test(name, fn) {
 const schemaPath = path.join(root, 'workspace', 'state.schema.json');
 const statePath  = path.join(root, 'workspace', 'state.json');
 const guardrailsPath = path.join(root, '.github', 'architecture-guardrails.md');
-const checkpointSkillPath = path.join(root, '.github', 'skills', 'checkpoint', 'SKILL.md');
+const checkpointSkillPath = path.join(root, 'skills', 'checkpoint', 'SKILL.md');
 
 console.log('\n[sfa1-state-schema]');
 

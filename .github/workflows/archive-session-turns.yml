@@ -1,0 +1,67 @@
+name: Archive Session Turns
+
+# dsh-s5 -- moves session_turns rows older than 60 days into
+# session_turns_archive on a daily schedule, keeping the hot table's storage
+# bounded without ever permanently losing conversation history.
+# artefacts/2026-07-28-durable-session-history/stories/dsh-s5-archive-job.md
+#
+# product/constraints.md #11 (no persistent agent runtime dependency): this
+# job must run on standard CI/cron infrastructure, not a bespoke long-running
+# service -- a scheduled GitHub Actions workflow that runs to completion and
+# exits satisfies that constraint regardless of which specific scheduler
+# triggers it (AC3). scripts/archive-session-turns.js's own CLI entrypoint
+# never leaves a lingering process: it always calls process.exit() in a
+# finally block, whether the run succeeds or hits an internal error.
+#
+# ADR-009 (matching trace-aggregation.yml's own precedent): separate trigger
+# (schedule + workflow_dispatch only -- not pull_request or push), and a
+# repository-scoped read-only token (permissions: contents: read) since this
+# job only reads/writes rows in the application database, never the repo.
+#
+# This is pure hygiene, not a correctness gate (see the script's own
+# comment) -- a failure here must be visible in the log but must never be
+# able to fail the scheduled run itself. The script always exits 0 on its
+# own, so no continue-on-error is needed on the run step.
+
+on:
+  schedule:
+    # Run once a day at 03:17 UTC -- a daily-hygiene-style job moving 60-day-
+    # old rows needs nothing more frequent than daily. Deliberately not the
+    # top of the hour (GitHub's own scheduling guidance notes the top of the
+    # hour is the highest-congestion, least-reliable time for scheduled runs
+    # to actually fire close to on-time), matching trace-aggregation.yml's
+    # own off-the-hour convention (02:00 UTC) at a different offset so the
+    # two daily jobs don't contend for the same runner-queue minute.
+    - cron: '17 3 * * *'
+  workflow_dispatch:
+    # Allow manual trigger for on-demand testing or a one-off backfill run.
+
+permissions:
+  contents: read   # read-only token -- this job never writes to the repo
+
+jobs:
+  archive-session-turns:
+    name: Archive session_turns rows older than 60 days
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run archive-session-turns
+        run: node scripts/archive-session-turns.js
+        env:
+          # Same staging/production database purge-e2e-tenants.js's own CI
+          # wiring (.github/workflows/e2e.yml) already uses -- this archival
+          # job operates on the same real session_turns table.
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}

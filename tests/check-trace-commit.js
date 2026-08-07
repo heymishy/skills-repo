@@ -350,7 +350,7 @@ process.stdout.write('\n  Unit: AC5 \u2014 verify-completion/SKILL.md contains t
 // verify-completion-skill-contains-trace-diagnostic-commands (AC5)
 (function () {
   var testName = 'verify-completion-skill-contains-trace-diagnostic-commands';
-  var skillPath = path.join(root, '.github', 'skills', 'verify-completion', 'SKILL.md');
+  var skillPath = path.join(root, 'skills', 'verify-completion', 'SKILL.md');
   try {
     var content = fs.readFileSync(skillPath, 'utf8');
     if (content.indexOf('git log origin/traces') === -1) {
@@ -368,7 +368,7 @@ process.stdout.write('\n  Unit: AC6 \u2014 trace/SKILL.md contains branch health
 // trace-skill-contains-branch-health-section (AC6)
 (function () {
   var testName  = 'trace-skill-contains-branch-health-section';
-  var skillPath = path.join(root, '.github', 'skills', 'trace', 'SKILL.md');
+  var skillPath = path.join(root, 'skills', 'trace', 'SKILL.md');
   try {
     var content = fs.readFileSync(skillPath, 'utf8');
     var hasBranchHealth = content.toLowerCase().indexOf('branch health') !== -1;

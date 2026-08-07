@@ -157,7 +157,7 @@ LOW: edge cases in sub-bullets
 
 ### Category D: Completeness
 
-For each field against `.github/templates/story.md`:
+For each field against `templates/story.md`:
 - User story in As/Want/So format ✓/✗
 - Named persona — not "a user" ✓/✗
 - Benefit linkage populated ✓/✗
@@ -191,7 +191,7 @@ Requires `.github/architecture-guardrails.md`. If the file is not found:
 
 > ⚠️ No `architecture-guardrails.md` found — Category E skipped.
 > Create `.github/architecture-guardrails.md` to enable this check.
-> Run `/bootstrap` or copy from `.github/templates/architecture-guardrails.md`.
+> Run `/bootstrap` or copy from `templates/architecture-guardrails.md`.
 
 For each story:
 - Architecture Constraints field is populated (not blank) ✓/✗
@@ -208,7 +208,7 @@ LOW: pattern library or style guide component preferred but not specified in Arc
 
 ## Full report output format
 
-Conforms to `.github/templates/review-report.md`.
+Conforms to `templates/review-report.md`.
 Save to `artefacts/[feature]/review/[story-slug]-review-[N].md`.
 
 **Write timing — mandatory:** Write each story's artefact to disk immediately after completing that story's review — before loading or reading the next story. Do not hold findings in memory and batch-write at session end. If the session ends mid-review, all reviewed stories must already have persisted artefacts on disk.
@@ -234,7 +234,7 @@ This creates a searchable history: "finding 1-H1 was opened in run 1, resolved i
 ## Diff output (re-runs only)
 
 For re-runs (N > 1): prepend the Review Diff section defined in
-`.github/templates/review-report.md` before the finding sections,
+`templates/review-report.md` before the finding sections,
 comparing this run's findings to the previous run.
 
 ---

@@ -32,6 +32,34 @@ function createFakeTestDb() {
   var nextProductSeq = 1;
   var standards = [];    // { standard_id, product_id, org_id, name, content, visibility, created_at }
   var nextStandardSeq = 1;
+  var people = [];       // { id, created_at } — tir-s1/bri-s3.3
+  var nextPersonId = 1;
+  var teamMemberships = [];    // { person_id, tenant_id, role, created_at } — tir-s1/bri-s3.3
+  var personIdentities = [];   // { identity_key, person_id, provider, created_at } — tir-s2/bri-s3.3
+  // s1.1: real journeys backing, so board-driven "Advance" E2E specs can seed
+  // a journey that is actually visible to the kanban board's own product/org-
+  // scoped queries AND to the new tenant-ownership check the board-advance
+  // endpoint issues. Kept in sync with the real in-memory journey-store via a
+  // saveJourney-shaped adapter wired only in NODE_ENV=test (server.js), so a
+  // real gate-confirm advance updates the SAME row this fake queries against
+  // -- not a second, independently-drifting copy of journey state.
+  var journeys = [];     // { journey_id, tenant_id, product_id, feature_slug, stage, active_session_id }
+  // dsh-s3: in-memory backing for session_turns, so writeSessionTurns/
+  // getTurnsForStage (adapters/session-turns-pg.js) are wired and usable in
+  // NODE_ENV=test with no DATABASE_URL -- without this, the durable-read path
+  // exercised by /test/seed-durable-stage's E2E spec would throw "Adapter not
+  // wired" locally. Keyed by (journey_id, skill_name), upsert on conflict,
+  // mirroring the journeys/_upsertJourney pattern above rather than a generic
+  // SQL engine.
+  var sessionTurns = []; // { journey_id, tenant_id, skill_name, turns }
+  // dsh-s6: in-memory backing for session_turns_archive, so the local
+  // /test/seed-durable-stage `archived: true` seed path and getTurnsForStage's
+  // archive-tier fallback (adapters/session-turns-pg.js) are both usable in
+  // NODE_ENV=test with no DATABASE_URL. Kept as a separate array (not reusing
+  // sessionTurns above) since the whole point of dsh-s6's E2E scenario is
+  // proving the row is NOT in the hot table -- a shared array would make that
+  // distinction untestable.
+  var sessionTurnsArchive = []; // { id, journey_id, tenant_id, skill_name, turns, created_at }
 
   function query(sql, params) {
     var s = _normalise(sql);
@@ -96,6 +124,17 @@ function createFakeTestDb() {
     // bri-s3.4: added alongside the tenant-ownership fix in routes/products.js
     // (handleGetProductView) — narrow branches, mirroring the file's existing
     // extension pattern, not a general SQL engine.
+    // rpc-s1: handleGetProductView's query now also selects repo_owner/
+    // repo_name (Connect-repo UI affordance) — matched here first, before the
+    // older/narrower NAME, TENANT_ID-only branch below, since exact-prefix
+    // matching means the longer column list must be checked first.
+    if (s.indexOf('SELECT NAME, TENANT_ID, REPO_OWNER, REPO_NAME FROM PRODUCTS WHERE PRODUCT_ID') === 0) {
+      var pidRepo = p[0];
+      var matchRepo = products.filter(function(r) { return r.product_id === pidRepo; }).map(function(r) {
+        return { name: r.name, tenant_id: r.tenant_id, repo_owner: r.repo_owner || null, repo_name: r.repo_name || null };
+      });
+      return Promise.resolve({ rows: matchRepo });
+    }
     if (s.indexOf('SELECT NAME, TENANT_ID FROM PRODUCTS WHERE PRODUCT_ID') === 0) {
       var pid2 = p[0];
       var match2 = products.filter(function(r) { return r.product_id === pid2; }).map(function(r) { return { name: r.name, tenant_id: r.tenant_id }; });
@@ -108,11 +147,54 @@ function createFakeTestDb() {
       var match3 = products.filter(function(r) { return r.product_id === pid3; }).map(function(r) { return { tenant_id: r.tenant_id }; });
       return Promise.resolve({ rows: match3 });
     }
+    // rpc-s1: handlePostProductRepoCreate / handlePutProductEdit's shared
+    // repo-association UPDATE — persists repo_provider/repo_owner/repo_name
+    // onto the in-memory row so a subsequent GET (via the branch above)
+    // reflects the connected repo, matching real Postgres's UPDATE semantics.
+    if (s.indexOf('UPDATE PRODUCTS SET REPO_PROVIDER') === 0) {
+      var updProvider = p[0];
+      var updOwner = p[1];
+      var updRepoName = p[2];
+      var updProductId = p[3];
+      var updTarget = products.find(function(r) { return r.product_id === updProductId; });
+      if (updTarget) {
+        updTarget.repo_provider = updProvider;
+        updTarget.repo_owner = updOwner;
+        updTarget.repo_name = updRepoName;
+      }
+      return Promise.resolve({ rows: [], rowCount: updTarget ? 1 : 0 });
+    }
 
-    // ── journeys (product_id-scoped lookups — bri-s3.2 keeps journeys on the
-    // existing disk adapter, so this fake always reports zero linked journeys) ─
+    // ── journeys ─────────────────────────────────────────────────────────
+    // s1.1: real, narrow support for the exact query shapes the kanban board
+    // (products.js) and the board-advance endpoint's tenant-ownership check
+    // issue. Rows are populated via _upsertJourney (called by the
+    // saveJourney-shaped adapter server.js wires journey-store.js to, in
+    // NODE_ENV=test only) -- so a real gate-confirm advance is reflected here
+    // too, not just at journey-creation time.
+    if (s.indexOf('SELECT TENANT_ID FROM JOURNEYS WHERE JOURNEY_ID') === 0) {
+      var lookupJourneyId = p[0];
+      var jOwnerMatch = journeys.filter(function(r) { return r.journey_id === lookupJourneyId; }).map(function(r) { return { tenant_id: r.tenant_id }; });
+      return Promise.resolve({ rows: jOwnerMatch });
+    }
     if (s.indexOf('FROM JOURNEYS WHERE PRODUCT_ID') !== -1) {
-      return Promise.resolve({ rows: [] });
+      var jProductId = p[0];
+      // Org-scope's variant also filters by tenant_id ($2) -- detected via the
+      // literal "AND TENANT_ID" clause rather than a second exact-prefix branch,
+      // since both product- and org-scope share this same substring match.
+      var jTenantFilter = (s.indexOf('AND TENANT_ID') !== -1 && p.length > 1) ? p[1] : null;
+      var jRows = journeys
+        .filter(function(r) { return r.product_id === jProductId; })
+        .filter(function(r) { return jTenantFilter === null || r.tenant_id === jTenantFilter; })
+        .map(function(r) {
+          return {
+            journey_id: r.journey_id,
+            feature_slug: r.feature_slug,
+            stage: r.stage,
+            active_session_id: r.active_session_id
+          };
+        });
+      return Promise.resolve({ rows: jRows });
     }
 
     // ── standards (bri-s3.4) ─────────────────────────────────────────────
@@ -161,15 +243,172 @@ function createFakeTestDb() {
       return Promise.resolve({ rows: [] });
     }
 
+    // ── people, team_memberships, person_identities (tir-s1/tir-s2/bri-s3.3) ─
+    // tir-s1: people table bootstrap (idempotent)
+    if (s.indexOf('CREATE TABLE IF NOT EXISTS PEOPLE') === 0) {
+      return Promise.resolve({ rows: [] });
+    }
+
+    // tir-s1: team_memberships table bootstrap (idempotent)
+    if (s.indexOf('CREATE TABLE IF NOT EXISTS TEAM_MEMBERSHIPS') === 0) {
+      return Promise.resolve({ rows: [] });
+    }
+
+    // tir-s2: person_identities table bootstrap (idempotent)
+    if (s.indexOf('CREATE TABLE IF NOT EXISTS PERSON_IDENTITIES') === 0) {
+      return Promise.resolve({ rows: [] });
+    }
+
+    // tir-s1: INSERT INTO people (used by migrateTeamSchema backfill)
+    if (s.indexOf('INSERT INTO PEOPLE DEFAULT VALUES') === 0) {
+      var person = { id: nextPersonId++, created_at: new Date().toISOString() };
+      people.push(person);
+      return Promise.resolve({ rows: [{ id: person.id }] });
+    }
+
+    // tir-s1: INSERT INTO team_memberships (used by migrateTeamSchema backfill)
+    if (s.indexOf('INSERT INTO TEAM_MEMBERSHIPS') === 0) {
+      var personId = p[0];
+      var tenantId = p[1];
+      var role = p[2];
+      var tm = { person_id: personId, tenant_id: tenantId, role: role, created_at: new Date().toISOString() };
+      teamMemberships.push(tm);
+      return Promise.resolve({ rows: [] });
+    }
+
+    // tir-s2: INSERT INTO person_identities (used by account-linking routes)
+    if (s.indexOf('INSERT INTO PERSON_IDENTITIES') === 0) {
+      var identityKey = p[0];
+      var personIdForLink = p[1];
+      var provider = p[2];
+      var pi = { identity_key: identityKey, person_id: personIdForLink, provider: provider, created_at: new Date().toISOString() };
+      personIdentities.push(pi);
+      return Promise.resolve({ rows: [] });
+    }
+
+    // tir-s2: SELECT PERSON_ID FROM person_identities (resolvePersonForIdentity lookup)
+    if (s.indexOf('SELECT PERSON_ID FROM PERSON_IDENTITIES WHERE IDENTITY_KEY') === 0) {
+      var lookupIdentityKey = p[0];
+      var piMatch = personIdentities.filter(function(r) { return r.identity_key === lookupIdentityKey; });
+      return Promise.resolve({ rows: piMatch.length ? [{ person_id: piMatch[0].person_id }] : [] });
+    }
+
+    // tir-s1 / tir-s2: SELECT PERSON_ID FROM team_memberships (resolvePersonForIdentity fallback)
+    if (s.indexOf('SELECT PERSON_ID FROM TEAM_MEMBERSHIPS WHERE TENANT_ID') === 0 && s.indexOf('AND PERSON_ID') === -1 && s.indexOf('AND TENANT_ID') === -1) {
+      var fallbackTenantId = p[0];
+      var tmFallback = teamMemberships.filter(function(r) { return r.tenant_id === fallbackTenantId; });
+      return Promise.resolve({ rows: tmFallback.length ? [{ person_id: tmFallback[0].person_id }] : [] });
+    }
+
+    // tir-s7: SELECT ROLE FROM team_memberships (resolveRoleForPerson, person-scoped)
+    if (s.indexOf('SELECT ROLE FROM TEAM_MEMBERSHIPS WHERE PERSON_ID') === 0 && s.indexOf('AND TENANT_ID') !== -1) {
+      var scopedPersonId = p[0];
+      var scopedTenantId = p[1];
+      var tmScoped = teamMemberships.filter(function(r) { return r.person_id === scopedPersonId && r.tenant_id === scopedTenantId; });
+      return Promise.resolve({ rows: tmScoped.length ? [{ role: tmScoped[0].role }] : [] });
+    }
+
+    // tir-s1: SELECT ROLE FROM team_memberships (resolveRoleForTenant, legacy tenant-only lookup)
+    if (s.indexOf('SELECT ROLE FROM TEAM_MEMBERSHIPS WHERE TENANT_ID') === 0 && s.indexOf('AND PERSON_ID') === -1) {
+      var legacyTenantId = p[0];
+      var tmLegacy = teamMemberships.filter(function(r) { return r.tenant_id === legacyTenantId; });
+      return Promise.resolve({ rows: tmLegacy.length ? [{ role: tmLegacy[0].role }] : [] });
+    }
+
+    // tir-s1: SELECT 1 FROM team_memberships (migration check in migrateTeamSchema)
+    if (s.indexOf('SELECT 1 FROM TEAM_MEMBERSHIPS WHERE TENANT_ID') === 0) {
+      var checkTenantId = p[0];
+      var tmExists = teamMemberships.some(function(r) { return r.tenant_id === checkTenantId; });
+      return Promise.resolve({ rows: tmExists ? [{ '?column?': 1 }] : [] });
+    }
+
+    // ── session_turns_archive (dsh-s6) ──────────────────────────────────
+    // Checked BEFORE the session_turns branches below: "INSERT INTO
+    // SESSION_TURNS_ARCHIVE ..." / "SELECT TURNS FROM SESSION_TURNS_ARCHIVE
+    // ..." both have "...SESSION_TURNS..." as a literal prefix, so the
+    // shorter session_turns checks would otherwise match first and
+    // mis-route archive rows into the hot-table array. Same exact-prefix
+    // ordering concern already documented above for the products table.
+    if (s.indexOf('INSERT INTO SESSION_TURNS_ARCHIVE') === 0) {
+      var staId = p[0];
+      var staJourneyId = p[1];
+      var staTenantId = p[2];
+      var staSkillName = p[3];
+      var staTurns = JSON.parse(p[4]);
+      var staCreatedAt = p[5];
+      sessionTurnsArchive.push({
+        id: staId, journey_id: staJourneyId, tenant_id: staTenantId,
+        skill_name: staSkillName, turns: staTurns, created_at: staCreatedAt
+      });
+      return Promise.resolve({ rows: [], rowCount: 1 });
+    }
+    if (s.indexOf('SELECT TURNS FROM SESSION_TURNS_ARCHIVE') === 0) {
+      var lookupStaJourneyId = p[0];
+      var lookupStaSkillName = p[1];
+      var staMatch = sessionTurnsArchive.find(function(r) { return r.journey_id === lookupStaJourneyId && r.skill_name === lookupStaSkillName; });
+      return Promise.resolve({ rows: staMatch ? [{ turns: staMatch.turns }] : [] });
+    }
+
+    // ── session_turns (dsh-s3) ───────────────────────────────────────────
+    // Upsert on (journey_id, skill_name). turns arrives as a JSON STRING
+    // (matching the real INSERT session-turns-pg.js issues); stored and
+    // returned already-parsed, matching how the real `pg` driver auto-parses
+    // a jsonb column on read.
+    if (s.indexOf('INSERT INTO SESSION_TURNS') === 0) {
+      var stJourneyId = p[0];
+      var stTenantId = p[1];
+      var stSkillName = p[2];
+      var stTurns = JSON.parse(p[3]);
+      var stExisting = sessionTurns.find(function(r) { return r.journey_id === stJourneyId && r.skill_name === stSkillName; });
+      if (stExisting) {
+        stExisting.turns = stTurns;
+        stExisting.tenant_id = stTenantId;
+      } else {
+        sessionTurns.push({ journey_id: stJourneyId, tenant_id: stTenantId, skill_name: stSkillName, turns: stTurns });
+      }
+      return Promise.resolve({ rows: [], rowCount: 1 });
+    }
+    if (s.indexOf('SELECT TURNS FROM SESSION_TURNS') === 0) {
+      var lookupStJourneyId = p[0];
+      var lookupStSkillName = p[1];
+      var stMatch = sessionTurns.find(function(r) { return r.journey_id === lookupStJourneyId && r.skill_name === lookupStSkillName; });
+      return Promise.resolve({ rows: stMatch ? [{ turns: stMatch.turns }] : [] });
+    }
+
     // Unknown statement — resolve empty rather than throw, so an unanticipated
     // startup-time query never crashes the test server. Logged for visibility.
     console.warn('[fake-test-db] unhandled query (returning empty rows): ' + s.slice(0, 120));
     return Promise.resolve({ rows: [] });
   }
 
+  /**
+   * s1.1 -- upsert a journey row (by journey_id), used by the saveJourney-shaped
+   * adapter server.js wires journey-store.js to in NODE_ENV=test. Not a SQL
+   * statement -- a direct method call, mirroring the same "narrow, explicit
+   * support" philosophy as the SQL branches above, without needing to emulate
+   * journey-store-pg.js's real INSERT/JSONB shape here.
+   * @param {{journey_id:string, tenant_id:?string, product_id:?string, feature_slug:?string, stage:?string, active_session_id:?string}} row
+   */
+  function _upsertJourney(row) {
+    var existing = journeys.find(function(j) { return j.journey_id === row.journey_id; });
+    if (existing) { Object.assign(existing, row); } else { journeys.push(Object.assign({}, row)); }
+    return Promise.resolve();
+  }
+
   return {
     query: query,
-    _reset: function() { users = []; nextUserId = 1; products = []; nextProductSeq = 1; standards = []; nextStandardSeq = 1; }
+    _upsertJourney: _upsertJourney,
+    _reset: function() {
+      users = []; nextUserId = 1;
+      products = []; nextProductSeq = 1;
+      standards = []; nextStandardSeq = 1;
+      people = []; nextPersonId = 1;
+      teamMemberships = [];
+      personIdentities = [];
+      journeys = [];
+      sessionTurns = [];
+      sessionTurnsArchive = [];
+    }
   };
 }
 

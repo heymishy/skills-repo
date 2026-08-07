@@ -167,7 +167,7 @@ If `.github/architecture-guardrails.md` does not exist:
 
 ## Output format
 
-Conforms to `.github/templates/trace-report.md`.
+Conforms to `templates/trace-report.md`.
 Save to `artefacts/[feature]/trace/[date]-trace.md`.
 
 ---

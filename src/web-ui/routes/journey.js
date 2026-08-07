@@ -5,8 +5,12 @@ var os = require('os');
 var fs = require('fs');
 var { renderShell, escHtml } = require('../utils/html-shell');
 var { requireJourneyAccess, asHttpResponse, POLICY } = require('../middleware/journey-access');
+var { renderChat } = require('../views/chat-view'); // dsh-s3
+var { isEffectivelyAdmin } = require('../modules/impersonation'); // d2
+var _csrf = require('../middleware/csrf'); // d2 -- impersonation exit banner CSRF token
 var { updateJourneyReferenceFiles } = require('../modules/journey-state-persistence');
 var _flagBootstrap = require('../modules/flag-bootstrap'); // bri-s1.3
+var _getProductsNavSummary = require('./products').getProductsNavSummary; // pan-s1 -- shared sidebar products summary
 
 // Injectable adapters — defaults wire to real implementations
 var _journeyStore = require('../modules/journey-store');
@@ -18,6 +22,10 @@ var _readSessionFromRedisFn = null;
 var _mergeRedisSessionDataFn = null;
 var _repoRoot = null;
 var _repoRootAdapter = require('../adapters/repo-root');
+// dsh-s3: injectable so tests can stub the durable-turns read without a real
+// Postgres pool wired up; defaults to the real dsh-s2 read function.
+var _getTurnsForStageFn = require('../adapters/session-turns-pg').getTurnsForStage;
+function setGetTurnsForStage(fn) { _getTurnsForStageFn = fn; }
 
 function getRegisterHtmlSession() {
   if (_registerHtmlSession) return _registerHtmlSession;
@@ -275,7 +283,7 @@ function _renderJourneyHome(data) {
 /**
  * GET /journey — journey home screen: list features, start new.
  */
-function handleGetJourney(req, res) {
+async function handleGetJourney(req, res, _next, pool) {
   if (!req.session || !req.session.accessToken) {
     res.writeHead(302, { Location: '/auth/github' });
     res.end();
@@ -309,10 +317,46 @@ function handleGetJourney(req, res) {
       return false;
     });
   }
+  // pan-s1 (AC4): /journey is now the "no product" bucket -- products get
+  // their own journeys list via their own page (/products/:id). Journeys
+  // without a product remain a fully supported, non-error case (e.g.
+  // solo/personal-project use), not disallowed by this filter.
+  journeys = journeys.filter(function(j) { return j.productId == null; });
   journeys.sort(function(a, b) { return (b.createdAt ? new Date(b.createdAt).toISOString() : '').localeCompare(a.createdAt ? new Date(a.createdAt).toISOString() : ''); });
   var showNewForm = !!(req.query && req.query.new === '1');
   var body = _renderJourneyHome({ profiles: profiles, activeProfile: activeProfile, journeys: journeys, showNewForm: showNewForm });
-  var html = renderShell({ title: 'Journeys', active: 'journey', bodyContent: body, user: { login: login } });
+  // d2: this page previously never computed/passed isAdmin at all (defaulted
+  // to false even for a genuine, non-impersonating admin) -- wired here using
+  // the same isEffectivelyAdmin() helper as dashboard.js/settings.js so the
+  // Admin credits nav entry and the impersonation banner (AC1/AC2/AC3) are
+  // consistent across this page too, not just the two pages b2 originally wired.
+  var isAdmin = isEffectivelyAdmin(req.session);
+  var imp = req.session.impersonation;
+  var impersonation = (imp && imp.active && imp.target)
+    ? { active: true, targetLogin: imp.target.login, targetTenantId: imp.target.tenantId, csrfToken: _csrf.generateCsrfToken(req) }
+    : null;
+  // pan-s1: sidebar Products section, populated via the shared helper when a
+  // pool is available (production wiring). Test callers that invoke this
+  // handler without a pool (the vast majority of this file's existing test
+  // coverage) skip this entirely -- no await is reached on that path, so the
+  // handler still completes synchronously for them, matching prior behaviour.
+  var navProducts, noProductJourneyCount;
+  if (pool) {
+    var navSummary = await _getProductsNavSummary(pool, _tid);
+    navProducts = navSummary.products;
+    noProductJourneyCount = navSummary.noProductJourneyCount;
+  }
+  var html = renderShell({
+    title: 'Journeys',
+    active: 'journey',
+    bodyContent: body,
+    user: { login: login },
+    isAdmin: isAdmin,
+    impersonation: impersonation,
+    products: navProducts,
+    activeProductId: null,
+    noProductJourneyCount: noProductJourneyCount
+  });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -357,13 +401,13 @@ async function handlePostJourney(req, res) {
       var _allForCap  = [];
       try { _allForCap = _journeyStore.listJourneys ? _journeyStore.listJourneys(repoRoot) : []; } catch (_) {}
       var _tenantCount = _allForCap.filter(function(j) { return j.tenantId === _gateTenantId; }).length;
-      var _capResult   = _tenantPlan.checkJourneyCap(_gateTenantId, _tenantCount, repoRoot);
+      var _capResult   = await _tenantPlan.checkJourneyCap(_gateTenantId, _tenantCount, repoRoot);
       if (!_capResult.allowed) {
         console.error('[journey-store] Journey limit reached for tenant ' + _gateTenantId + ' (cap=' + _capResult.cap + ')');
         res.writeHead(402, { 'Content-Type': 'text/html; charset=utf-8' });
         res.end(renderShell({
           title: 'Journey limit reached',
-          bodyContent: '<div class="sw-page-content"><h1>Journey limit reached</h1><p>You have reached the maximum of ' + _capResult.cap + ' journey' + (_capResult.cap === 1 ? '' : 's') + ' for your account. Please contact the operator to increase your limit.</p><a href="/journey">Back to journeys</a></div>',
+          bodyContent: '<div class="sw-page-content"><h1>Journey limit reached</h1><p>You have reached the maximum of ' + _capResult.cap + ' journey' + (_capResult.cap === 1 ? '' : 's') + ' for your account. This limit is tied to your plan, not your credits balance &mdash; contact the operator to increase it.</p><a href="/journey">Back to journeys</a></div>',
           user: { login: req.session.login || '' }
         }));
         return;
@@ -430,6 +474,53 @@ async function handlePostJourney(req, res) {
     res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(renderShell({ title: 'Error', bodyContent: errBody }));
   }
+}
+
+/**
+ * alrf-s10 — DELETE /api/journey/:journeyId: hard-delete a journey (and all
+ * its artefact rows) entirely. Requested by the operator specifically to
+ * clean up stale/corrupted staging data (e.g. features whose artefacts were
+ * mis-recorded under the mock-fixture-feature slug before alrf-s8's fix).
+ * Tenant-scoped: a journey belonging to a different tenant, or a journey
+ * that doesn't exist at all, both return 404 -- never 403 -- matching the
+ * existing FORBIDDEN-vs-NOT_FOUND policy used elsewhere in this codebase
+ * (routes/products.js's handleDeleteProduct), so a cross-tenant probe can't
+ * distinguish "not yours" from "doesn't exist." Hard delete, wuce-side data
+ * only -- never a GitHub API call, never touches a connected repo.
+ * @param {object} req
+ * @param {object} res
+ */
+async function handleDeleteJourney(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
+    return;
+  }
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
+  var journeyId = req.params && req.params.journeyId;
+  var journey = journeyId ? _journeyStore.getJourney(journeyId) : null;
+  var tenantId = req.session.tenantId;
+  if (!journey || (journey.tenantId && journey.tenantId !== tenantId)) {
+    res.writeHead(404, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'not found' }));
+    return;
+  }
+
+  var result = await _journeyStore.deleteJourney(journeyId);
+
+  console.info(JSON.stringify({
+    event: 'journey_deleted',
+    journeyId: journeyId,
+    featureSlug: journey.featureSlug || null,
+    tenantId: tenantId || null,
+    deletedBy: req.session.login || null,
+    timestamp: new Date().toISOString()
+  }));
+
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ deleted: !!(result && result.deleted) }));
 }
 
 // ---------------------------------------------------------------------------
@@ -679,9 +770,62 @@ async function handleGetJourneyStageView(req, res) {
   var artefactAbsPath = path.resolve(path.join(repoRoot, artefactRelPath));
   try { artefactContent = fs.readFileSync(artefactAbsPath, 'utf8'); } catch (_) {}
 
+  // das-s1 (AC3/AC5): git-fallback when the local file is missing (e.g.
+  // post-redeploy on a SaaS deployment with no persistent volume) -- fetches
+  // the same content from the product's connected repo instead of showing
+  // "No artefact content found." A repo-less product (ExportNotFoundError --
+  // no linked product, or no repo connected) falls through unchanged to
+  // today's existing default message below (no regression for that case).
+  // When a repo IS connected but the git fetch also fails, _dasFetchFailed
+  // drives a distinct, honest "could not be retrieved" message (AC5) rather
+  // than the generic default -- so operators can tell "never had a repo"
+  // apart from "this specific fetch failed."
+  //
+  // anvf-s1: a 404 from fetchArtefact (ArtefactNotFoundError) means the
+  // artefact genuinely does not exist yet -- e.g. a brand-new feature with
+  // no stage ever completed -- which is expected, not a failure. Only a
+  // real problem (ArtefactFetchError -- network error or non-404 API
+  // response) should set _dasFetchFailed. Checked by class (instanceof),
+  // never by message text, so this can't be fooled by an unrelated error
+  // that happens to mention "not found".
+  var _dasFetchFailed = false;
+  if (!artefactContent) {
+    try {
+      var _dasOwnerRepo = await require('../adapters/export-data-source').ownerRepoForFeature(journey.featureSlug, req.session.accessToken);
+      try {
+        artefactContent = await require('../adapters/artefact-fetcher').fetchArtefact(journey.featureSlug, stageName, req.session.accessToken, _dasOwnerRepo);
+      } catch (_dasFetchErr) {
+        if (!(_dasFetchErr instanceof require('../adapters/artefact-fetcher').ArtefactNotFoundError)) {
+          _dasFetchFailed = true;
+        }
+      }
+    } catch (_dasResolveErr) {
+      // No connected repo (or no linked product) -- leave artefactContent
+      // empty; falls through to the existing default message untouched.
+    }
+  }
+  var _dasArtefactMissingMessage = _dasFetchFailed
+    ? 'Artefact content could not be retrieved from local storage or the connected repository.'
+    : 'No artefact content found.';
+
   // Parse ?edit from URL
   var url = req.url || '';
   var isEdit = url.indexOf('edit=true') !== -1 || (req.query && req.query.edit === 'true');
+
+  // dsh-s3 (AC1/AC2): fetch this stage's durable conversation turns, via
+  // dsh-s2's shared tenant-scoped read function. Skipped entirely in edit
+  // mode -- AC3's existing inline edit flow never needs them, so skipping
+  // keeps that path at today's exact latency (no added ~200ms read).
+  var _dshTurns = null;
+  if (!isEdit) {
+    try { _dshTurns = await _getTurnsForStageFn(journeyId, stageName, req.session); }
+    catch (_) { _dshTurns = null; }
+  }
+  // AC1 fires only when turns are a genuinely non-empty array and we are not
+  // editing; AC2 (null, or an empty array -- e.g. a stage completed before
+  // this feature shipped) and the isEdit case both fall through unchanged
+  // to today's existing artefact-only rendering below.
+  var _useChatSplit = !isEdit && Array.isArray(_dshTurns) && _dshTurns.length > 0;
 
   var stageMeta = STAGE_META.find(function(s) { return s.id === stageName; });
   var stageLabel = stageMeta ? (stageMeta.num + '. ' + stageMeta.label) : stageName;
@@ -743,6 +887,82 @@ async function handleGetJourneyStageView(req, res) {
     ? '/skills/' + encodeURIComponent(_activeSkill || 'discovery') + '/sessions/' + encodeURIComponent(_activeSid) + '/chat'
     : '/journey';
 
+  var body;
+  if (_useChatSplit) {
+    // AC1 (dsh-s3): historical chat-left / artefact-right split view.
+    // Reuses the exact turns->priorQA pairing convention from
+    // routes/skills.js's _renderChatPage (lines ~2380-2395): consume
+    // assistant+user pairs together; a lone user turn (no preceding
+    // assistant) falls back to an empty-question answer; a trailing
+    // unanswered assistant turn is intentionally dropped rather than
+    // surfaced as data.currentQuestion -- AC5 requires no live
+    // "current question" affordance in this read-only view.
+    var _priorQA = [];
+    for (var _dshI = 0; _dshI < _dshTurns.length; _dshI++) {
+      var _dshTurn = _dshTurns[_dshI];
+      if (_dshTurn.role === 'assistant') {
+        var _dshNext = _dshTurns[_dshI + 1];
+        if (_dshNext && _dshNext.role === 'user') {
+          _priorQA.push({ question: _dshTurn.content, answer: _dshNext.content, modelResponse: '' });
+          _dshI++;
+        }
+        // else: last unanswered assistant turn -- dropped, per AC5 above.
+      } else if (_dshTurn.role === 'user') {
+        _priorQA.push({ question: '', answer: _dshTurn.content, modelResponse: '' });
+      }
+    }
+
+    // renderChat's non-ideate right pane never reads an artefact field on
+    // its own -- on the live chat page it's populated client-side via an
+    // SSE pump this read-only view has no equivalent of. Pass the same
+    // pre-rendered artefactHtml the artefact-only view already computes
+    // below so the right pane shows real content, not the "will appear
+    // here" placeholder (see chat-view.js's data.artefactContent doc).
+    // A completed 'ideate' stage is deliberately NOT passed through as
+    // skillName: renderChat's right pane branches to a 3-panel
+    // Conditions/Assumptions/Canvas layout when skillName === 'ideate',
+    // which needs live lens/assumption state this durable-turns view does
+    // not have -- renaming forces the single-artefact-pane branch this
+    // story's AC1 actually asks for.
+    var _chatBodyHtml = renderChat({
+      skillName: stageName === 'ideate' ? 'ideate-history' : stageName,
+      skillLabel: stageMeta ? stageMeta.label : stageName,
+      featureSlug: journey.featureSlug || '',
+      sessionId: '',
+      questionIndex: _priorQA.length,
+      totalQuestions: _priorQA.length,
+      currentQuestion: '',
+      priorQA: _priorQA,
+      draftSections: [],
+      pendingConfirmation: false,
+      readOnly: true,
+      userInitial: (req.session.login || 'M').charAt(0).toUpperCase(),
+      modelLabel: _stageModelShort || null,
+      artefactContent: artefactHtml || '<p style="margin:0;font-size:12px;color:var(--muted);padding:16px 20px">' + escHtml(_dasArtefactMissingMessage) + '</p>'
+    });
+
+    body = [
+      '<style>',
+      '.sv-split-wrap{padding:16px 16px 24px}',
+      '.sv-split-eyebrow{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px}',
+      '.sv-split-title{font-size:18px;font-weight:700;margin:0}',
+      '</style>',
+      navigatorHtml,
+      '<div class="sv-split-wrap">',
+        '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px">',
+          '<div>',
+            '<p class="sv-split-eyebrow">' + escHtml(stageLabel) + ' — historical conversation</p>',
+            '<h1 class="sv-split-title">' + featureName + '</h1>',
+          '</div>',
+          '<div style="display:flex;gap:8px;flex-shrink:0">',
+            '<a href="' + escHtml(currentChatUrl) + '" class="sw-btn" style="border:1px solid var(--line);font-size:13px">← Current stage</a>',
+            '<a href="/journey/' + safeJourneyId + '/stage/' + encodeURIComponent(stageName) + '?edit=true" class="sw-btn sw-btn--primary" style="font-size:13px">Edit artefact</a>',
+          '</div>',
+        '</div>',
+        _chatBodyHtml,
+      '</div>'
+    ].join('');
+  } else {
   var mainPanel;
   if (isEdit) {
     mainPanel = [
@@ -1009,12 +1229,12 @@ async function handleGetJourneyStageView(req, res) {
   } else {
     mainPanel = [
       '<article class="sr-paper">',
-        artefactHtml || '<p class="sr-p" style="color:var(--muted)">No artefact content found.</p>',
+        artefactHtml || '<p class="sr-p" style="color:var(--muted)">' + escHtml(_dasArtefactMissingMessage) + '</p>',
       '</article>'
     ].join('');
   }
 
-  var body = [
+  body = [
     '<style>',
     '.sv-page{max-width:740px;margin:0 auto;padding:24px 24px 100px}',
     '.sv-eyebrow{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 6px}',
@@ -1053,6 +1273,7 @@ async function handleGetJourneyStageView(req, res) {
       '</div>'
     ].join('') : ''
   ].join('');
+  }
 
   var html = renderShell({ title: stageLabel + ' — ' + featureName, bodyContent: body, user: { login: req.session.login || '' }, active: 'journey' });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
@@ -1188,13 +1409,30 @@ async function handleGetJourneyResume(req, res) {
   var currentStage = diskJourney.currentStage || 'discovery';
   var productProfile = diskJourney.productProfile || 'default';
 
+  // kcrs-s1 (AC4) -- propagate a safe ?from= board-return value through every
+  // redirect exit point in this function, so a kanban-card-originated resume
+  // (which passes ?from=<board-url>) preserves a "Back to board" link on the
+  // eventual chat page. Reuses the same allowlist check as S3.4's own
+  // detail-page back-link, not a new/looser validator.
+  var _resumeFrom = (req.query && req.query.from) || '';
+  var _resumeFromSuffix = _isSafeBoardBackLink(_resumeFrom) ? ('?from=' + encodeURIComponent(_resumeFrom)) : '';
+
   // Fast path: active session already in memory — redirect without any Postgres/disk I/O.
   // sec-perf AC4: artefact reads are deferred to only when actually needed.
+  // s0.2/sec4 (established, deliberate, twice-independently-tested contract):
+  // a `done` session is NOT resumed here -- this function always starts a
+  // fresh session for a done predecessor. kcrs-s1 needed a "resume to the
+  // exact done session with its draft artefact" behaviour for the kanban-card
+  // click case specifically, which would have conflicted with this existing
+  // contract if added here -- handled instead as its own early check in
+  // handleGetJourneyById, before this function is ever reached. Do not
+  // reintroduce a done-session fast path here without re-checking
+  // check-s0.2-resume-existing-session.js and check-sec4-early-return.js.
   var _existingActiveId = memJourney && memJourney.activeSessionId;
   if (_existingActiveId) {
     var _memSession = getGetHtmlSession()(_existingActiveId);
     if (_memSession && !_memSession.done) {
-      res.writeHead(303, { Location: '/skills/' + encodeURIComponent(_memSession.skillName || currentStage) + '/sessions/' + _existingActiveId + '/chat' });
+      res.writeHead(303, { Location: '/skills/' + encodeURIComponent(_memSession.skillName || currentStage) + '/sessions/' + _existingActiveId + '/chat' + _resumeFromSuffix });
       res.end();
       return;
     }
@@ -1237,7 +1475,7 @@ async function handleGetJourneyResume(req, res) {
       getMergeRedisSessionData()(_existingActiveId, _redisData);
       var _restoredSession = getGetHtmlSession()(_existingActiveId);
       if (_restoredSession && !_restoredSession.done) {
-        res.writeHead(303, { Location: '/skills/' + encodeURIComponent(_restoredSession.skillName || currentStage) + '/sessions/' + _existingActiveId + '/chat' });
+        res.writeHead(303, { Location: '/skills/' + encodeURIComponent(_restoredSession.skillName || currentStage) + '/sessions/' + _existingActiveId + '/chat' + _resumeFromSuffix });
         res.end();
         return;
       }
@@ -1267,7 +1505,7 @@ async function handleGetJourneyResume(req, res) {
   // Mark stage active on disk with new sessionId
   try { _journeyDisk.updateStage(featureSlug, currentStage, { status: 'active', sessionId: sid }, repoRoot); } catch (_) {}
 
-  res.writeHead(303, { Location: '/skills/' + encodeURIComponent(currentStage) + '/sessions/' + sid + '/chat' });
+  res.writeHead(303, { Location: '/skills/' + encodeURIComponent(currentStage) + '/sessions/' + sid + '/chat' + _resumeFromSuffix });
   res.end();
 }
 
@@ -1392,7 +1630,13 @@ async function handleGetReferenceModalStart(req, res) {
   var sid         = crypto.randomUUID();
   var sessionPath = path.join(repoRoot, 'artefacts', featureSlug, 'sessions', sid);
 
-  getRegisterHtmlSession()(sid, sessionPath, startSkill, { productProfile: profileName, featureSlug: featureSlug });
+  // sdg.4: pass the journey's uploaded reference files (sdg.1/sdg.2) through
+  // to the system prompt builder, so /ideate (or /discovery) can inject them.
+  getRegisterHtmlSession()(sid, sessionPath, startSkill, {
+    productProfile: profileName,
+    featureSlug: featureSlug,
+    referenceFiles: journey.referenceFiles && journey.referenceFiles.length ? journey.referenceFiles : undefined
+  });
   getLinkSessionToJourney()(sid, journeyId);
   if (_journeyStore.setActiveSession) {
     _journeyStore.setActiveSession(journeyId, sid, startSkill);
@@ -1747,16 +1991,79 @@ async function handlePostGateConfirm(req, res) {
       console.error('[artefact] Postgres save failed:', _pgArtErr.message);
     }
   }
+  // sdg.6: post-completion metrics hook, /ideate and /discovery only (per
+  // that story's scope). Disk write above precedes this, per ougl disk
+  // canonicity — read the artefact back from disk rather than trusting
+  // session.artefactContent directly.
+  if (session.skillName === 'ideate' || session.skillName === 'discovery') {
+    try {
+      var _strategyMetrics = require('../modules/strategy-metrics');
+      var _diskArtefactContent = fs.readFileSync(absPath, 'utf8');
+      var _refFiles = journey.referenceFiles || [];
+      var _calloutResult = _strategyMetrics.detectCalloutMarkers(_diskArtefactContent);
+      var _workspaceDir = path.join(repoRoot, 'workspace');
+      _strategyMetrics.recordMetrics(_workspaceDir, {
+        featureSlug:        journey.featureSlug,
+        stage:               session.skillName,
+        hasReferenceFiles:   _refFiles.length > 0,
+        referenceFileCount:  _refFiles.length,
+        referenceFileNames:  _refFiles.map(function(rf) { return path.basename(rf.path); }),
+        calloutCount:        _calloutResult.count,
+        totalSections:       _strategyMetrics.countSections(_diskArtefactContent)
+      });
+    } catch (_metricsErr) {
+      console.error('[strategy-metrics] recordMetrics failed:', _metricsErr.message);
+    }
+  }
   // Call completeStage to record this stage (guard: auto-save may have already called this)
   if (!session._stageDone) {
-    session._stageDone = true;
     var _costUsd = null;
     try {
       var _computeCost = require('./skills').computeCostUsd;
       _costUsd = _computeCost(session.usage || null);
     } catch (_ce) {}
     var _usageSummary = session.usage ? Object.assign({ costUsd: _costUsd }, session.usage) : null;
-    _journeyStore.completeStage(journeyId, session.skillName, artefactRelPath, _usageSummary);
+
+    // das-s1 (AC1/AC2/AC4): dual-write the artefact to the product's
+    // connected repo, alongside the existing local-disk write above (never a
+    // replacement) -- BEFORE completeStage() is called, per the
+    // write-then-verify sequencing this story's discovery flagged (ADR-023).
+    // Any failure to resolve an owner/repo (ExportNotFoundError -- no linked
+    // product or no repo connected -- but also e.g. no DB pool wired at all,
+    // the normal state for local/CLI/disk-only usage with no DATABASE_URL)
+    // is treated the same as "no connected repo" and skips the commit
+    // entirely (AC4) -- matching every other optional Postgres-backed
+    // feature in this codebase, which no-ops rather than fails when its pool
+    // was never wired. Only a failure of the actual commit itself, once an
+    // owner/repo WAS successfully resolved, blocks completion (AC2): session
+    // ._stageDone stays unset so a retry re-attempts the commit, and a
+    // clear, actionable error is returned WITHOUT calling completeStage() --
+    // never a silently "completed" stage with no durable backing.
+    var _dasOwnerRepo = null;
+    try {
+      _dasOwnerRepo = await require('../adapters/export-data-source').ownerRepoForFeature(journey.featureSlug, req.session.accessToken);
+    } catch (_dasResolveErr) {
+      _dasOwnerRepo = null; // no connected repo, no linked product, or resolution unavailable -- AC4: proceed unchanged
+    }
+    if (_dasOwnerRepo) {
+      try {
+        var _dasDiskContent = fs.readFileSync(absPath, 'utf8'); // ADR-023 disk canonicity -- read back what was just written, not session.artefactContent
+        await require('../adapters/artefact-commit-writer').commitArtefact(
+          artefactRelPath, _dasDiskContent, req.session.accessToken, _dasOwnerRepo.owner, _dasOwnerRepo.repo
+        );
+      } catch (_dasCommitErr) {
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          error: 'artefact-commit-failed',
+          message: 'Could not commit this stage\'s artefact to the connected repository. The stage has NOT been marked complete -- fix the underlying issue (re-authenticate, check repo access, or wait for a rate limit to clear) and try again.',
+          detail: _dasCommitErr && _dasCommitErr.message
+        }));
+        return;
+      }
+    }
+
+    session._stageDone = true;
+    _journeyStore.completeStage(journeyId, session.skillName, artefactRelPath, _usageSummary, activeSessionId);
     _posthog.capture(req.session.login || journey.ownerId || journeyId, 'stage_completed', {
       skillName:    session.skillName,
       featureSlug:  journey.featureSlug,
@@ -1914,15 +2221,7 @@ async function handlePostGateConfirm(req, res) {
     var nextStory = _journeyStore.advanceToNextStory(journeyId);
     if (nextStory) {
       // More stories: create review session for next story (review → test-plan → DoR per story)
-      newSid = crypto.randomUUID();
-      newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-review.md');
-      getRegisterHtmlSession()(newSid, newSessionPath, 'review', { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug, mockScenarioName: _mockScenarioForStage(journey, 'review') });
-      getLinkSessionToJourney()(newSid, journeyId);
-      if (_journeyStore.setActiveSession) {
-        _journeyStore.setActiveSession(journeyId, newSid, 'review');
-      }
-      res.writeHead(303, { Location: '/skills/review/sessions/' + newSid + '/chat' });
-      res.end();
+      _startReviewSessionForJourney(res, journeyId, journey, priorArtefacts);
     } else {
       // No more stories (or feature-mode): complete journey
       _journeyStore.markJourneyComplete(journeyId);
@@ -1963,13 +2262,35 @@ async function handlePostGateConfirm(req, res) {
   } else if (nextStage === 'review') {
     // Feature-level: switch to per-story routing (ougl.6)
     // review is the first per-story stage (review → test-plan → definition-of-ready per story)
-    res.writeHead(303, { Location: '/journey/' + journeyId + '/stories' });
-    res.end();
+    // dtra-s1 (AC1, AC2) -- when the definition artefact's story list can be
+    // auto-extracted, skip the manual /journey/:id/stories confirm page
+    // entirely and start review directly, per the operator's own stated
+    // expectation. AC3: an artefact this extractor can't parse still falls
+    // back to the manual page, unchanged -- the only real safety net for a
+    // format extractStoryIdsFromDefinitionArtefact doesn't recognise.
+    var definitionStage = (updatedJourney.completedStages || []).filter(function(s) { return s.skillName === 'definition'; }).pop();
+    var autoStoryIds = [];
+    if (definitionStage) {
+      try {
+        var defAbsPath = path.resolve(path.join(repoRoot, definitionStage.artefactPath));
+        autoStoryIds = extractStoryIdsFromDefinitionArtefact(fs.readFileSync(defAbsPath, 'utf8'));
+      } catch (_) { autoStoryIds = []; }
+    }
+    if (autoStoryIds.length > 0) {
+      _journeyStore.setStoryList(journeyId, autoStoryIds);
+      _startReviewSessionForJourney(res, journeyId, journey, priorArtefacts);
+    } else {
+      res.writeHead(303, { Location: '/journey/' + journeyId + '/stories' });
+      res.end();
+    }
   } else {
     // Feature-level: create session for next stage
     newSid = crypto.randomUUID();
     newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-' + nextStage + '.md');
-    getRegisterHtmlSession()(newSid, newSessionPath, nextStage, { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug, mockScenarioName: _mockScenarioForStage(journey, nextStage) });
+    // sdg.5: thread the journey's uploaded reference files through to the
+    // next stage's system prompt too (e.g. ideate -> discovery) -- same
+    // mechanism sdg.4 wired for the very first session in the journey.
+    getRegisterHtmlSession()(newSid, newSessionPath, nextStage, { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug, mockScenarioName: _mockScenarioForStage(journey, nextStage), referenceFiles: journey.referenceFiles && journey.referenceFiles.length ? journey.referenceFiles : undefined });
     getLinkSessionToJourney()(newSid, journeyId);
     if (_journeyStore.setActiveSession) {
       _journeyStore.setActiveSession(journeyId, newSid, nextStage);
@@ -1977,6 +2298,59 @@ async function handlePostGateConfirm(req, res) {
     res.writeHead(303, { Location: '/skills/' + nextStage + '/sessions/' + newSid + '/chat' });
     res.end();
   }
+}
+
+/**
+ * dtra-s1 — shared review-session-start step, used by every path that begins
+ * per-story review (definition-of-ready's "more stories" branch, the
+ * auto-start-after-definition branch, and the manual /stories submit path)
+ * so there is exactly one place that creates/links/activates a review session.
+ */
+function _startReviewSessionForJourney(res, journeyId, journey, priorArtefacts) {
+  var newSid = crypto.randomUUID();
+  var newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-review.md');
+  getRegisterHtmlSession()(newSid, newSessionPath, 'review', { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug, mockScenarioName: _mockScenarioForStage(journey, 'review') });
+  getLinkSessionToJourney()(newSid, journeyId);
+  if (_journeyStore.setActiveSession) {
+    _journeyStore.setActiveSession(journeyId, newSid, 'review');
+  }
+  res.writeHead(303, { Location: '/skills/review/sessions/' + newSid + '/chat' });
+  res.end();
+}
+
+/**
+ * dsda-s1 — server-side twin of the client-side parseDefinitionArtefact's
+ * story-ID extraction (see the inline <script> in handleGetStageReview,
+ * "function parseDefinitionArtefact(md){" — the H1 and flat-story regex
+ * patterns below MUST mirror that function's story-ID regexes exactly;
+ * if one is updated for a new definition-artefact format, update the other.
+ * Returns an array of lowercase story IDs, or an empty array on parse
+ * failure/unrecognised format (never throws) — the caller falls back to
+ * an empty manual-entry textarea in that case (AC4).
+ */
+function extractStoryIdsFromDefinitionArtefact(md) {
+  var ids = [];
+  if (!md) return ids;
+  var hasH1Epics = /^# Epic \d+/m.test(md);
+  var hasH1Stories = /^# Story [a-z][a-z0-9.-]*\.\d+/im.test(md);
+  if (hasH1Epics || hasH1Stories) {
+    md.split(/^(?=# Story [a-z][a-z0-9.-]*\.\d+)/im).slice(1).forEach(function(sb) {
+      var sfl = sb.split('\n')[0];
+      var sM = sfl.match(/^# Story ([a-z][a-z0-9.-]*\.\d+)\s*[—-]\s*(.+)$/i);
+      if (sM) ids.push(sM[1].toLowerCase());
+    });
+    return ids;
+  }
+  var hasFlatStories = /\n## [a-z][a-z0-9.-]*\.\d+\s*[—-]/i.test(md);
+  if (hasFlatStories) {
+    md.split(/\n## /).slice(1).forEach(function(sblk) {
+      var sfl = sblk.split('\n')[0].trim();
+      var sM = sfl.match(/^([a-z][a-z0-9.-]*\.\d+)\s*[—-]\s*(.+)$/i);
+      if (sM) ids.push(sM[1].toLowerCase());
+    });
+    return ids;
+  }
+  return ids;
 }
 
 /**
@@ -1996,12 +2370,29 @@ async function handleGetStories(req, res) {
     return;
   }
   var safeId = escHtml(journeyId);
+  // dsda-s1 (AC1/AC4): auto-populate from the definition artefact instead of
+  // asking the operator to retype story slugs it already wrote. Falls back
+  // to an empty textarea (today's behaviour) when there's no definition
+  // stage recorded yet or the artefact can't be parsed.
+  var autoIds = [];
+  var definitionStage = (journey.completedStages || []).filter(function(s) { return s.skillName === 'definition'; }).pop();
+  if (definitionStage) {
+    try {
+      var repoRoot = getRepoRoot(req);
+      var artefactAbsPath = path.resolve(path.join(repoRoot, definitionStage.artefactPath));
+      var artefactContent = fs.readFileSync(artefactAbsPath, 'utf8');
+      autoIds = extractStoryIdsFromDefinitionArtefact(artefactContent);
+    } catch (_) { autoIds = []; }
+  }
+  var textareaValue = escHtml(autoIds.join('\n'));
   var body = [
     '<div class="sw-page-content">',
     '<h1>Story list for journey</h1>',
-    '<p>Enter one story slug per line. These will be processed through review, test-plan, and definition-of-ready.</p>',
+    autoIds.length
+      ? '<p>Every story found in the definition artefact is pre-filled below. Edit the list if you want to add, remove, or reorder before starting review.</p>'
+      : '<p>Enter one story slug per line. These will be processed through review, test-plan, and definition-of-ready.</p>',
     '<form method="POST" action="/api/journey/' + safeId + '/stories">',
-    '<textarea name="stories" rows="10" cols="50" placeholder="e.g. wgol.1&#10;wgol.2&#10;wgol.3"></textarea>',
+    '<textarea name="stories" rows="10" cols="50" placeholder="e.g. wgol.1&#10;wgol.2&#10;wgol.3">' + textareaValue + '</textarea>',
     '<br><button type="submit" class="sw-btn sw-btn--primary">Start per-story stages</button>',
     '</form>',
     '</div>'
@@ -2059,15 +2450,7 @@ async function handlePostStories(req, res) {
     return { path: stage.artefactPath, content: content };
   });
   // Create review session for first story (review → test-plan → DoR per story)
-  var newSid = crypto.randomUUID();
-  var newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-review.md');
-  getRegisterHtmlSession()(newSid, newSessionPath, 'review', { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug, mockScenarioName: _mockScenarioForStage(updatedJourney, 'review') });
-  getLinkSessionToJourney()(newSid, journeyId);
-  if (_journeyStore.setActiveSession) {
-    _journeyStore.setActiveSession(journeyId, newSid, 'review');
-  }
-  res.writeHead(303, { Location: '/skills/review/sessions/' + newSid + '/chat' });
-  res.end();
+  _startReviewSessionForJourney(res, journeyId, updatedJourney, priorArtefacts);
 }
 
 /**
@@ -2294,9 +2677,36 @@ function _getActiveViewerCount(journeyId, inactivityMs) {
 }
 
 /**
- * GET /journey/:journeyId — shareable journey URL.
- * Unauthenticated → 302 /auth/github (AC2).
- * Authenticated → renders journey overview HTML or 404 if not found.
+ * s3.4 -- allowlist check for the "back to board" link's ?from= value.
+ * Must be a bare relative path (never a full URL, protocol, or protocol-
+ * relative "//host" form) pointing at one of the three known board scopes --
+ * this prevents a crafted ?from= query value from turning the new detail-page
+ * navigation entry point into an open-redirect vector.
+ * @param {string} url
+ * @returns {boolean}
+ */
+function _isSafeBoardBackLink(url) {
+  if (typeof url !== 'string' || !url) return false;
+  if (url.charAt(0) !== '/' || url.charAt(1) === '/') return false;
+  if (/^\/products\/[^/]+\/kanban(\?.*)?$/.test(url)) return true;
+  if (/^\/org\/kanban(\?.*)?$/.test(url)) return true;
+  if (/^\/dashboard(\?.*)?$/.test(url)) return true;
+  return false;
+}
+
+/**
+ * GET /journey/:journeyId — kanban card's detail-view destination (S3.4's
+ * route/identifier investigation confirmed card.id already IS journeyId,
+ * and this route already implements the same tenant-ownership 404 pattern
+ * AC4 requires, unlike /features/:slug which has no tenant check at all).
+ * Unauthenticated → 302 /auth/github.
+ * Authenticated → redirects into the journey's actual current activity
+ * (kcrs-s1): the live session if one is resolvable (reusing
+ * handleGetJourneyResume's existing resolution, via featureSlug), or the
+ * artefact index if the journey is fully complete (AC3) or has no
+ * featureSlug at all (defensive fallback -- not expected in practice).
+ * Registers the viewer/active-user count (S3.4/wsm.2) before redirecting,
+ * so "who's looking at this" tracking survives the destination change.
  */
 function handleGetJourneyById(req, res) {
   if (!req.session || !req.session.accessToken) {
@@ -2314,12 +2724,53 @@ function handleGetJourneyById(req, res) {
   }
   var login = req.session.login || '';
   _registerViewer(journeyId, login);
-  var activeUsers = _getActiveViewerCount(journeyId);
+
+  var rawFrom = (req.query && req.query.from) || '';
+  var backUrl = _isSafeBoardBackLink(rawFrom) ? rawFrom : '/dashboard?view=board';
+
+  // kcrs-s1 (AC3): a fully-complete journey has no further session to
+  // resume -- land on the artefact index instead of a dead-end.
+  if (journey.complete && journey.featureSlug) {
+    res.writeHead(303, { Location: '/features/' + encodeURIComponent(journey.featureSlug) });
+    res.end();
+    return;
+  }
+  // kcrs-s1 (AC2) -- a `done` session (a turn produced a draft artefact, not
+  // yet gate-confirmed) is resumed to that EXACT session here, deliberately
+  // NOT by delegating to handleGetJourneyResume: that function has its own
+  // separate, established, twice-independently-tested contract (s0.2, sec4)
+  // that a `done` predecessor always starts a fresh session, never resumes
+  // the old one -- reusing it for this kanban-card case would have silently
+  // broken that existing contract system-wide. This check only ever applies
+  // to a session still in memory; if it's not (e.g. post-deploy), falls
+  // through to the resume flow below, matching that flow's own existing
+  // Redis-restore/disk fallback behaviour for a not-yet-confirmed stage.
+  if (journey.activeSessionId) {
+    var _kcrsSession = getGetHtmlSession()(journey.activeSessionId);
+    if (_kcrsSession && _kcrsSession.done) {
+      res.writeHead(303, { Location: '/skills/' + encodeURIComponent(_kcrsSession.skillName || journey.activeSkill || 'discovery') + '/sessions/' + journey.activeSessionId + '/chat?from=' + encodeURIComponent(backUrl) });
+      res.end();
+      return;
+    }
+  }
+  // kcrs-s1 (AC1): reuse the existing, proven resume mechanism rather than
+  // duplicating its resolution logic -- passes the same safe ?from= value
+  // through so the eventual chat page can render "Back to board" (AC4).
+  if (journey.featureSlug) {
+    res.writeHead(303, { Location: '/journey/' + encodeURIComponent(journey.featureSlug) + '/resume?from=' + encodeURIComponent(backUrl) });
+    res.end();
+    return;
+  }
+
+  // Defensive fallback -- not expected in practice (every journey created via
+  // this app's own flows has a featureSlug); keeps the old static summary
+  // page reachable rather than a hard error if one somehow doesn't.
   var body = [
     '<div class="sw-page-content">',
+    '<p class="kb-detail-back"><a href="' + escHtml(backUrl) + '">&larr; Back to board</a></p>',
     '<h1>Journey: ' + escHtml(journey.featureSlug || journeyId) + '</h1>',
     '<p>Stage: <strong>' + escHtml(journey.activeSkill || 'not started') + '</strong></p>',
-    '<p>Active viewers: ' + activeUsers + '</p>',
+    '<p>Active viewers: ' + _getActiveViewerCount(journeyId) + '</p>',
     '</div>'
   ].join('');
   var html = renderShell({ title: 'Journey', bodyContent: body, user: { login: login } });
@@ -2401,6 +2852,37 @@ async function handleGetJourneyViewers(req, res) {
   var activeUsers = _getActiveViewerCount(journeyId);
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ count: activeUsers }));
+}
+
+/**
+ * PUT /api/journey/:journeyId/display-name — fdn-s1: rename a feature's
+ * operator-facing label. Never touches featureSlug (the durable identifier
+ * behind disk artefact paths and pipeline-state.json keys) -- see
+ * ../../artefacts/2026-07-25-feature-display-name-and-progress/decisions.md.
+ * Requires authentication + tenant ownership (same guard as every other
+ * journey-scoped mutation route).
+ */
+async function handlePutJourneyDisplayName(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
+    return;
+  }
+  var body = await _readJsonBody(req);
+  var displayName = (body && typeof body.displayName === 'string' && body.displayName.trim())
+    ? body.displayName.trim()
+    : null;
+  _journeyStore.setJourneyFields(journeyId, { displayName: displayName });
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ displayName: displayName }));
 }
 
 /**
@@ -3556,6 +4038,7 @@ async function handleGetWizardBootstrapped(req, res, deps) {
 module.exports = {
   handleGetJourney,
   handlePostJourney,
+  handleDeleteJourney,
   handleGetJourneyResume,
   handleGetStageReview,
   handleGetReference,
@@ -3567,6 +4050,7 @@ module.exports = {
   handlePostGateConfirm,
   handleGetStories,
   handlePostStories,
+  extractStoryIdsFromDefinitionArtefact,
   handleGetJourneyComplete,
   handleGetStageControls,
   handlePostEstimate,
@@ -3578,8 +4062,10 @@ module.exports = {
   handleDeleteSideTrip,
   // wsm.2 — collaborative journey sharing
   handleGetJourneyById,
+  _isSafeBoardBackLink,
   handleGetJourneyState,
   handleGetJourneyViewers,
+  handlePutJourneyDisplayName,
   checkJourneyIdle,
   setNow,
   // wsm.3 — stage back-navigation and needs-review
@@ -3603,6 +4089,7 @@ module.exports = {
   setPipelineStateWriter,
   setValidate,
   setWriteTrace,
+  setGetTurnsForStage, // dsh-s3
   // wucp.2 — slash command router
   SLASH_CAPABILITY_MAP,
   getAvailableSkills,

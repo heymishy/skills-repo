@@ -48,18 +48,29 @@ console.log('\n── STRIPE_WEBHOOK_SECRET is not a live-mode value (if configu
 }
 
 // ── 3. No committed file contains a live-mode Stripe key pattern ───────────
+// cfg-s1: scoped to runtime-relevant paths only (src/, tests/e2e/fixtures/,
+// playwright.config.js, .env.example), excluding *.md docs and this test
+// file's own source -- the unscoped '-- .' search previously matched
+// documentation and this file's own comments that legitimately discuss the
+// pattern name, producing a false-positive failure on any shell that
+// actually executes the grep (e.g. real CI). See decisions.md for the
+// full root-cause writeup.
 console.log('\n── No live-mode Stripe key pattern committed to the repo ──');
 {
   var patterns = ['sk_live_', 'rk_live_'];
+  var scopedPaths = 'src/ tests/e2e/fixtures/ playwright.config.js .env.example';
   var found = [];
   patterns.forEach(function(p) {
     var grepResult = '';
     try {
-      grepResult = execSync('git grep -n "' + p + '" -- . 2>/dev/null || true', { cwd: ROOT, encoding: 'utf8' });
+      grepResult = execSync(
+        'git grep -n "' + p + '" -- ' + scopedPaths + ' 2>/dev/null || true',
+        { cwd: ROOT, encoding: 'utf8' }
+      );
     } catch (_) { grepResult = ''; }
     if (grepResult.trim() !== '') found.push({ pattern: p, matches: grepResult.trim() });
   });
-  check('no sk_live_/rk_live_ pattern in any committed file', found.length === 0);
+  check('no sk_live_/rk_live_ pattern in any committed runtime-relevant file', found.length === 0);
   if (found.length) {
     found.forEach(function(f) { console.error('  found "' + f.pattern + '" in:\n' + f.matches); });
   }

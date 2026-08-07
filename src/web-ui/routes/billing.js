@@ -4,6 +4,7 @@
 // Uses D37-injectable stripe-client and credits adapter.
 // POST /webhook/stripe: raw body required — registered in server.js BEFORE any JSON body parser.
 
+var crypto        = require('crypto');
 var stripeClient  = require('../modules/stripe-client');
 var creditsModule = require('../modules/credits');
 var tenantPlan    = require('../modules/tenant-plan'); // bri-s3.5
@@ -11,6 +12,52 @@ var csrf          = require('../middleware/csrf'); // sec-perf-s3
 
 // Placeholder sentinel used in .env.example — treat as unconfigured.
 var PLACEHOLDER = 'STRIPE_PLAN_PRICE_ID_PLACEHOLDER';
+
+// bjs-s1: staging-safe webhook-signature stub. Real Stripe signature
+// verification (stripeClient.verifyWebhookSignature) only gets faked out
+// locally, inside server.js's NODE_ENV=test block -- real wuce-staging has a
+// real STRIPE_SECRET_KEY wired, so bri-s3.5's synthetic webhook POSTs would
+// otherwise always fail with a real signature-mismatch 400 there. Gated by
+// the same E2E_STAGING_AUTH_STUB_SECRET every other staging-only mechanism
+// in this codebase uses, with its own distinct header (never set on
+// production). See decisions.md for the full threat-model writeup -- the
+// e2e- prefix guard below is the load-bearing security property: without it,
+// a leaked secret could POST an arbitrary "webhook event" marking a REAL
+// tenant as paid/credited, bypassing real payment entirely.
+var WEBHOOK_STUB_HEADER = 'x-e2e-webhook-stub';
+
+function _webhookStubEnabled() {
+  return !!process.env.E2E_STAGING_AUTH_STUB_SECRET;
+}
+
+function _webhookStubHeaderMatches(req) {
+  var expected = process.env.E2E_STAGING_AUTH_STUB_SECRET || '';
+  var supplied = (req.headers && req.headers[WEBHOOK_STUB_HEADER]) || '';
+  var suppliedBuf = Buffer.from(String(supplied));
+  var expectedBuf = Buffer.from(expected);
+  if (suppliedBuf.length !== expectedBuf.length) return false;
+  return crypto.timingSafeEqual(suppliedBuf, expectedBuf);
+}
+
+/**
+ * Collect every tenantId-shaped value a synthetic webhook event could carry,
+ * across the field paths the real dispatch switch below already reads from
+ * (client_reference_id, metadata.tenant_id, subscription_details.metadata.tenant_id).
+ * Used ONLY by the staging-safe stub gate to enforce the e2e- prefix guard --
+ * the real dispatch logic's own field-reading is untouched.
+ * @param {object} event
+ * @returns {string[]}
+ */
+function _collectCandidateTenantIds(event) {
+  var obj = (event && event.data && event.data.object) || {};
+  var ids = [];
+  if (obj.client_reference_id) ids.push(obj.client_reference_id);
+  if (obj.metadata && obj.metadata.tenant_id) ids.push(obj.metadata.tenant_id);
+  if (obj.subscription_details && obj.subscription_details.metadata && obj.subscription_details.metadata.tenant_id) {
+    ids.push(obj.subscription_details.metadata.tenant_id);
+  }
+  return ids;
+}
 
 // ── lab-s3.4: Injectable DB adapter for webhook idempotency (stripe_events table) ──────────────
 // Default stub throws — call setWebhookDbAdapter() with a real pg Pool before use in production.
@@ -91,6 +138,20 @@ async function handlePostCheckout(req, res) {
 
   // AC3: missing or placeholder price ID → 500
   if (!priceId || priceId === PLACEHOLDER) {
+    res.writeHead(500, { 'Content-Type': 'text/plain' });
+    res.end('Billing not configured');
+    return;
+  }
+
+  // spv-s1: catches a real incident's root cause -- a Stripe Product ID
+  // (prefix "prod_") pasted in place of a Price ID (prefix "price_"), which
+  // otherwise reaches Stripe's API and fails with an unhandled "No such
+  // price" exception, surfacing to the operator as a bare, undiagnosable
+  // 500 (see decisions.md). The client response stays exactly as generic as
+  // the check above -- only the server log is specific, so this is fixable
+  // from the log line alone, without needing a live log-tail session.
+  if (!/^price_/.test(priceId)) {
+    console.error('[billing] ' + priceEnvKey + ' is not a valid Stripe Price ID (expected a value starting with "price_" -- got a value that does not match, possibly a Product ID or other Stripe object ID pasted by mistake). Checkout cannot proceed until this env var is corrected.');
     res.writeHead(500, { 'Content-Type': 'text/plain' });
     res.end('Billing not configured');
     return;
@@ -199,13 +260,34 @@ async function handlePostStripeWebhook(req, res) {
   var webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
   // AC1 step 2: verify signature — invalid/missing → 400
+  // bjs-s1: staging-safe stub bypass, gated by secret+header (see the
+  // WEBHOOK_STUB_HEADER comment block above). Falls through to the real,
+  // unmodified signature-verification path whenever the gate doesn't match.
   var event;
-  try {
-    event = stripeClient.verifyWebhookSignature(rawBody, sig, webhookSecret);
-  } catch (err) {
-    res.writeHead(400, { 'Content-Type': 'text/plain' });
-    res.end('Webhook signature invalid');
-    return;
+  var _webhookStubActive = _webhookStubEnabled() && _webhookStubHeaderMatches(req);
+  if (_webhookStubActive) {
+    try {
+      event = JSON.parse(rawBody.toString());
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'text/plain' });
+      res.end('Webhook payload invalid');
+      return;
+    }
+    var _candidateTenantIds = _collectCandidateTenantIds(event);
+    var _hasNonE2ETenantId = _candidateTenantIds.some(function(id) { return !/^e2e-/i.test(String(id)); });
+    if (_hasNonE2ETenantId) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'stub webhook events may only target e2e- tenants' }));
+      return;
+    }
+  } else {
+    try {
+      event = stripeClient.verifyWebhookSignature(rawBody, sig, webhookSecret);
+    } catch (err) {
+      res.writeHead(400, { 'Content-Type': 'text/plain' });
+      res.end('Webhook signature invalid');
+      return;
+    }
   }
 
   // AC5: idempotency — INSERT ON CONFLICT DO NOTHING (check-then-insert is unsafe under concurrent delivery)
@@ -234,7 +316,8 @@ async function handlePostStripeWebhook(req, res) {
       await creditsModule.adjustBalance(tenantId1, amount1);
       console.log(JSON.stringify({ event: 'credits_provisioned', tenantId: tenantId1, amount: amount1, stripeEventId: stripeEventId }));
       // bri-s3.5 AC1: tenant/session reflects the paid plan immediately after this webhook
-      if (tenantId1) tenantPlan.setPlanState(tenantId1, 'paid', 'active');
+      // jlc-s1: setPlanState is now async (persists to Postgres) — must be awaited.
+      if (tenantId1) await tenantPlan.setPlanState(tenantId1, 'paid', 'active');
       break;
     }
 
@@ -246,7 +329,7 @@ async function handlePostStripeWebhook(req, res) {
       var tenantIdFail = (objFail.metadata && objFail.metadata.tenant_id) ||
                          (objFail.subscription_details && objFail.subscription_details.metadata && objFail.subscription_details.metadata.tenant_id) ||
                          objFail.client_reference_id;
-      if (tenantIdFail) tenantPlan.setPlanState(tenantIdFail, 'trial', 'past_due');
+      if (tenantIdFail) await tenantPlan.setPlanState(tenantIdFail, 'trial', 'past_due');
       console.log(JSON.stringify({ event: 'payment_failed', tenantId: tenantIdFail, stripeEventId: stripeEventId }));
       break;
     }
@@ -256,7 +339,7 @@ async function handlePostStripeWebhook(req, res) {
       // usage gates (checkJourneyCap) restrict access per the new plan immediately.
       var objCancel = event.data.object;
       var tenantIdCancel = (objCancel.metadata && objCancel.metadata.tenant_id) || objCancel.client_reference_id;
-      if (tenantIdCancel) tenantPlan.setPlanState(tenantIdCancel, 'trial', 'canceled');
+      if (tenantIdCancel) await tenantPlan.setPlanState(tenantIdCancel, 'trial', 'canceled');
       console.log(JSON.stringify({ event: 'subscription_canceled', tenantId: tenantIdCancel, stripeEventId: stripeEventId }));
       break;
     }
@@ -328,13 +411,13 @@ async function handleGetBillingPortal(req, res) {
  * that lets a UI (or the E2E spec) confirm "the tenant/session reflects the
  * paid plan" after a mocked checkout/failure/cancellation webhook has run.
  */
-function handleGetBillingPlanState(req, res) {
+async function handleGetBillingPlanState(req, res) {
   if (!req.session || !req.session.accessToken) {
     res.writeHead(401, { 'Content-Type': 'text/plain' });
     res.end('Unauthorized');
     return;
   }
-  var planState = tenantPlan.getPlanState(req.session.tenantId);
+  var planState = await tenantPlan.getPlanState(req.session.tenantId);
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(planState));
 }
@@ -345,5 +428,9 @@ module.exports = {
   handlePostStripeWebhook,
   setWebhookDbAdapter,
   handleGetBillingPortal,
-  handleGetBillingPlanState
+  handleGetBillingPlanState,
+  WEBHOOK_STUB_HEADER,
+  _webhookStubEnabled,
+  _webhookStubHeaderMatches,
+  _collectCandidateTenantIds
 };

@@ -122,7 +122,7 @@ If no reference folder exists, proceed directly to the conversational process.
 > **Tip for large or multi-team initiatives:** Drop scoping documents, business
 > cases, or other source materials into
 > `artefacts/[feature-slug]/reference/` and create a
-> `reference-index.md` there (template at `.github/templates/reference-index.md`).
+> `reference-index.md` there (template at `templates/reference-index.md`).
 > Discovery, /benefit-metric, and /definition will read them automatically.
 
 If no input has been provided, ask this first:
@@ -234,6 +234,11 @@ the section, then move to the next. Never present the full structure as a form.
 When you have enough to write a section confidently, write it and confirm:
 > "I've written the [section] section as: [summary]. Does that capture it?
 > Reply: yes - or correct me"
+
+**Callout markers (sdg.5):** When a section of your output cites or is grounded in
+uploaded reference content, include the marker `[Grounded in: <filename>]` at the
+end of that section. Use the exact filename from the reference material. Do not
+use this marker if no reference files were uploaded.
 
 ### Section 1 - Problem statement
 
@@ -398,7 +403,7 @@ Every discovery artefact must contain all of the following sections, regardless 
 
 ## Output artefact
 
-Conforms to `.github/templates/discovery.md`.
+Conforms to `templates/discovery.md`.
 
 **Before saving, establish the timestamped feature slug:**
 

@@ -12,7 +12,6 @@ const fs   = require('fs');
 const path = require('path');
 
 const {
-  listFeatures,
   setAuditLogger: setFeatureListLogger
 } = require('../adapters/feature-list');
 
@@ -20,15 +19,24 @@ const {
   listArtefacts: _listArtefactsDefault
 } = require('../adapters/artefact-list');
 
+const { getRepoRoot } = require('../adapters/repo-root');
+
 const { renderShell, escHtml } = require('../utils/html-shell');
+const { generateCsrfToken, csrfField } = require('../middleware/csrf');
 const shellEscHtml = escHtml; // internal alias used by artefact-index handlers
 const { getLabel } = require('../utils/artefact-labels');
-const { renderFeaturesList } = require('../views/features-view');
-const { renderKanban } = require('../views/kanban-view');
+
+// frsr-s1 — journey store, for resolving which session (if any) produced
+// each completed stage's artefact, so the artefact-index page can offer a
+// "Resume conversation" link alongside the existing "View" link. Real
+// require by default (same pattern as routes/journey.js's _journeyStore);
+// overridable in tests via setJourneyStoreModule().
+let _journeyStore = require('../modules/journey-store');
+function setJourneyStoreModule(mod) { _journeyStore = mod; }
 
 const IDEAS_PATH = path.join(__dirname, '..', '..', '..', 'workspace', 'ideas.json');
 
-function _readIdeas() {
+function _readIdeasFile() {
   try {
     return JSON.parse(fs.readFileSync(IDEAS_PATH, 'utf8'));
   } catch (_) {
@@ -36,9 +44,42 @@ function _readIdeas() {
   }
 }
 
-function _writeIdeas(data) {
+function _writeIdeasFile(data) {
   fs.writeFileSync(IDEAS_PATH, JSON.stringify(data, null, 2) + '\n', 'utf8');
 }
+
+// idp-s1 — injectable ideas store (D37). Unlike the usual D37 pattern, the
+// DEFAULT here is the existing, already-working file-based implementation
+// (not a throw-stub) -- see artefacts/2026-07-29-ideas-postgres-persistence/
+// decisions.md for why: this default is a legitimate, already-correct
+// fallback for any environment without DATABASE_URL, not a stub masking a
+// real problem. setIdeasStore() overrides it with the real Postgres-backed
+// implementation once DATABASE_URL is set (server.js).
+let _ideasStore = {
+  listIdeas: async function () { return _readIdeasFile(); },
+  createIdea: async function (fields) {
+    const data = _readIdeasFile();
+    const idea = {
+      id:        'idea-' + Date.now(),
+      title:     fields.title,
+      notes:     fields.notes || '',
+      createdAt: new Date().toISOString(),
+    };
+    data.ideas.push(idea);
+    _writeIdeasFile(data);
+    return idea;
+  },
+  deleteIdea: async function (id) {
+    const data   = _readIdeasFile();
+    const before = data.ideas.length;
+    data.ideas   = data.ideas.filter(function (i) { return i.id !== id; });
+    if (data.ideas.length === before) return { deleted: false };
+    _writeIdeasFile(data);
+    return { deleted: true };
+  },
+};
+
+function setIdeasStore(store) { _ideasStore = store; }
 
 // listArtefacts dependency — replaceable in tests via setListArtefacts()
 let _listArtefacts = _listArtefactsDefault;
@@ -96,87 +137,31 @@ function renderArtefactItem(artefact) {
 }
 
 /**
- * GET /features — return feature list for configured repositories.
- * Content-type negotiation: Accept: text/html → HTML shell; otherwise → JSON.
- * Requires authentication — unauthenticated requests redirect to /auth/github.
+ * frsr-s1 (AC2/AC3) — resolve which session (if any) produced each of a
+ * feature's completed stages, keyed by the stage's artefactPath (the same
+ * repo-relative path _listArtefacts returns as a.path, since both trace
+ * back to the same real artefact file on disk). Called once per
+ * /features/:slug render, not once per artefact row (NFR-Performance).
+ * fdn-s1: takes the already-fetched journey object (not a featureSlug),
+ * so the caller's own single getJourneyByFeatureSlug lookup (also needed
+ * for displayName) isn't duplicated -- see NFR-Performance test.
+ * dsh-s4 (AC1): also carries the journey's own journeyId in each entry, so
+ * renderArtefactIndexHtml can build the "Resume conversation" link's href
+ * as /journey/:journeyId/stage/:stageName (dsh-s3's rebuilt route) instead
+ * of the old /skills/:skillName/sessions/:sessionId/chat, which 404s once
+ * a session is gone from both memory and Redis.
+ * @param {object|null} journey
+ * @returns {Object<string, {skillName: string, sessionId: string, journeyId: string}>}
  */
-async function handleGetFeatures(req, res) {
-  const token  = req.session && req.session.accessToken;
-  const userId = req.session && req.session.userId;
-  const login  = req.session && req.session.login;
-
-  const accept  = (req.headers && req.headers['accept']) || '';
-  const wantsHtml = accept.includes('text/html');
-
-  if (!token) {
-    if (wantsHtml) {
-      res.writeHead(302, { Location: '/auth/github' });
-      res.end();
-    } else {
-      res.writeHead(401, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
+function _resolveResumeLinksForFeature(journey) {
+  const lookup = {};
+  if (!journey) return lookup;
+  (journey.completedStages || []).forEach((stage) => {
+    if (stage.sessionId && stage.artefactPath) {
+      lookup[stage.artefactPath] = { skillName: stage.skillName, sessionId: stage.sessionId, journeyId: journey.journeyId };
     }
-    return;
-  }
-
-  const features = await listFeatures(token);
-
-  // Audit log: userId, route, featureCount, timestamp — no token (NFR1)
-  _logger.info('feature_list_accessed', {
-    userId,
-    route:        '/features',
-    featureCount: features.length,
-    timestamp:    new Date().toISOString()
   });
-
-  if (accept.includes('text/html')) {
-    const viewFeatures = features.map(function(f) {
-      return {
-        slug:          f.slug,
-        title:         f.title || f.slug,
-        stage:         f.stage || '',
-        updated:       f.lastUpdated || '',
-        health:        f.health || '',
-        owner:         f.owner || '',
-        artefactCount: f.artefactCount || 0
-      };
-    });
-
-    const view = (req.query && req.query.view) || '';
-    let bodyContent;
-    if (view === 'board') {
-      const counts = await Promise.all(
-        features.map(function(f) {
-          return _listArtefacts(f.slug, token)
-            .then(function(r) { return r && !r.noArtefacts ? r.artefacts.length : 0; })
-            .catch(function() { return 0; });
-        })
-      );
-      const boardFeatures = features.map(function(f, i) {
-        return {
-          slug:          f.slug,
-          title:         f.title || f.name || f.slug,
-          stage:         f.stage || '',
-          updated:       f.lastUpdated || f.updatedAt || '',
-          health:        f.health || '',
-          owner:         f.owner || '',
-          artefactCount: counts[i]
-        };
-      });
-      const { ideas } = _readIdeas();
-      bodyContent = renderKanban({ features: boardFeatures, ideas });
-    } else {
-      bodyContent = renderFeaturesList({ features: viewFeatures, repoCount: 0 });
-    }
-    const html = renderShell({ title: 'Features', bodyContent, user: { login }, active: 'features' });
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(html);
-    return;
-  }
-
-  // JSON path: backward-compatible, shape unchanged
-  res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify(features));
+  return lookup;
 }
 
 /**
@@ -185,12 +170,21 @@ async function handleGetFeatures(req, res) {
  * Returns empty-state message if artefacts array is empty.
  * @param {Array} artefacts  e.g. [{ type, createdAt, path }, ...]
  * @param {string} featureSlug
+ * @param {Object<string, {skillName: string, sessionId: string, journeyId: string}>} [resumeLookup]
+ *   frsr-s1 (AC3) — from _resolveResumeLinksForFeature; when an artefact's
+ *   path has a resolvable session, a second "Resume conversation" link is
+ *   added alongside the existing "View" link. dsh-s4: the link now points
+ *   at dsh-s3's durable /journey/:journeyId/stage/:stageName route rather
+ *   than the raw /skills/.../sessions/.../chat route, using journeyId
+ *   (also carried in each lookup entry) and the stage's skillName as the
+ *   stageName the destination route expects.
  * @returns {string} HTML string
  */
-function renderArtefactIndexHtml(artefacts, featureSlug) {
+function renderArtefactIndexHtml(artefacts, featureSlug, resumeLookup) {
   if (!artefacts || artefacts.length === 0) {
     return '<p class="artefact-list__empty">No artefacts found for this feature</p>';
   }
+  resumeLookup = resumeLookup || {};
 
   // Group artefacts by plain-language label
   const groups = {};
@@ -207,7 +201,11 @@ function renderArtefactIndexHtml(artefacts, featureSlug) {
       const viewUrl  = `/artefact/${featureSlug}/${fileSlug}`;
       const base     = renderArtefactItem({ type: label, name: a.path || '', viewUrl });
       const date     = shellEscHtml(a.createdAt || '');
-      return base.slice(0, -5) + `<time class="artefact-list__date">${date}</time></li>`;
+      const resumable = resumeLookup[a.path || ''];
+      const resumeLink = resumable
+        ? ` <a class="artefact-list__resume-link" href="/journey/${encodeURIComponent(resumable.journeyId)}/stage/${encodeURIComponent(resumable.skillName)}">Resume conversation</a>`
+        : '';
+      return base.slice(0, -5) + `<time class="artefact-list__date">${date}</time>${resumeLink}</li>`;
     }).join('');
     return `<div class="sw-card"><h2 class="sw-section-title">${shellEscHtml(label)}</h2><ul class="artefact-list">${items}</ul></div>`;
   }).join('');
@@ -240,7 +238,19 @@ async function handleGetFeatureArtefacts(req, res, featureSlug) {
     ? req.headers.accept.includes('text/html')
     : false;
 
-  const { artefacts, grouped, noArtefacts } = await _listArtefacts(featureSlug, token);
+  const repoRoot = getRepoRoot(req);
+  // frsr-s1 (NFR-Performance): one lookup per page render, not per artefact
+  // row. fdn-s1: the same single lookup also supplies displayName, so it
+  // isn't fetched a second time. alrf-s4: also feeds the Postgres artefact-
+  // content fallback below, so this stays a single lookup for that too.
+  const journeyForPage = _journeyStore.getJourneyByFeatureSlug(featureSlug);
+  let pgArtefactRows = [];
+  if (journeyForPage && journeyForPage.journeyId) {
+    try {
+      pgArtefactRows = await _journeyStore.getArtefactsForJourney(journeyForPage.journeyId);
+    } catch (_) { pgArtefactRows = []; }
+  }
+  const { artefacts, grouped, noArtefacts } = await _listArtefacts(featureSlug, token, repoRoot, pgArtefactRows);
 
   // Audit log: userId, route, featureSlug, timestamp — no token
   _logger.info('feature_artefacts_accessed', {
@@ -251,12 +261,46 @@ async function handleGetFeatureArtefacts(req, res, featureSlug) {
   });
 
   if (acceptsHtml) {
+    const resumeLookup = noArtefacts ? {} : _resolveResumeLinksForFeature(journeyForPage);
     const listHtml = noArtefacts
       ? '<p class="artefact-list__empty">No artefacts found for this feature</p>'
-      : renderArtefactIndexHtml(artefacts, featureSlug);
-    const bodyContent = `<h1>${shellEscHtml(featureSlug)}</h1>\n${listHtml}`;
+      : renderArtefactIndexHtml(artefacts, featureSlug, resumeLookup);
+    const displayTitle = (journeyForPage && journeyForPage.displayName) || featureSlug;
+    // alrf-s10 — operator-requested: a real "Delete this feature" action, for
+    // cleaning up stale/corrupted staging data (e.g. a feature whose
+    // artefacts were mis-recorded under another feature's slug before
+    // alrf-s8's fix). Only rendered when a real journey was resolved for
+    // this slug -- nothing to delete otherwise. Hard delete, wuce-side data
+    // only; confirm() before the destructive fetch, same pattern as
+    // products.js's module-delete button.
+    // dfr-s1: redirect back to the feature's own product page after a
+    // successful delete, not the generic /journey list -- falls back to
+    // /journey only when productId is genuinely unresolvable (AC3), never
+    // to /products/undefined.
+    const deletePostRedirect = (journeyForPage && journeyForPage.productId)
+      ? '/products/' + journeyForPage.productId
+      : '/journey';
+    const deleteSectionHtml = (journeyForPage && journeyForPage.journeyId) ? [
+      '<div style="margin:12px 0">',
+        '<button type="button" id="alrf-s10-delete-feature-btn" style="padding:6px 14px;background:var(--red-soft);color:var(--red);border:1px solid var(--red);border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Delete this feature</button>',
+        '<span id="alrf-s10-delete-error" style="color:var(--red);font-size:13px;margin-left:8px;display:none"></span>',
+      '</div>',
+      '<script>(function(){',
+        'var btn=document.getElementById("alrf-s10-delete-feature-btn");',
+        'var errEl=document.getElementById("alrf-s10-delete-error");',
+        'if(!btn)return;',
+        'btn.addEventListener("click",function(){',
+          'if(!confirm(' + JSON.stringify('Delete "' + displayTitle + '"? This permanently removes its artefacts and journey record. This cannot be undone.') + '))return;',
+          'fetch(' + JSON.stringify('/api/journey/' + journeyForPage.journeyId) + ',{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({_csrf:' + JSON.stringify(generateCsrfToken(req)) + '})})',
+            '.then(function(r){if(!r.ok){return r.json().then(function(j){throw new Error((j&&j.error)||("Request failed ("+r.status+")"));});}return r.json();})',
+            '.then(function(){window.location.href=' + JSON.stringify(deletePostRedirect) + ';})',
+            '.catch(function(e){if(errEl){errEl.textContent=e.message;errEl.style.display="inline";}});',
+        '});',
+      '})()<\/script>'
+    ].join('') : '';
+    const bodyContent = `<h1>${shellEscHtml(displayTitle)}</h1>\n${deleteSectionHtml}\n${listHtml}`;
     const html = renderShell({
-      title:       `Artefacts — ${shellEscHtml(featureSlug)}`,
+      title:       `Artefacts — ${shellEscHtml(displayTitle)}`,
       bodyContent,
       user:        { login: req.session.login || '' }
     });
@@ -278,8 +322,8 @@ async function handleGetFeatureArtefacts(req, res, featureSlug) {
 /**
  * GET /api/ideas — return the ideas backlog as JSON.
  */
-function handleGetIdeas(req, res) {
-  const data = _readIdeas();
+async function handleGetIdeas(req, res) {
+  const data = await _ideasStore.listIdeas();
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(data));
 }
@@ -302,15 +346,10 @@ async function handlePostIdea(req, res) {
     res.end(JSON.stringify({ error: 'title is required' }));
     return;
   }
-  const data = _readIdeas();
-  const idea = {
-    id:        'idea-' + Date.now(),
+  const idea = await _ideasStore.createIdea({
     title,
-    notes:     (parsed.notes || '').toString().slice(0, 500).trim(),
-    createdAt: new Date().toISOString()
-  };
-  data.ideas.push(idea);
-  _writeIdeas(data);
+    notes: (parsed.notes || '').toString().slice(0, 500).trim(),
+  });
   res.writeHead(201, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify(idea));
 }
@@ -318,28 +357,26 @@ async function handlePostIdea(req, res) {
 /**
  * DELETE /api/ideas/:id — remove an idea by id.
  */
-function handleDeleteIdea(req, res, ideaId) {
-  const data  = _readIdeas();
-  const before = data.ideas.length;
-  data.ideas   = data.ideas.filter(function(i) { return i.id !== ideaId; });
-  if (data.ideas.length === before) {
+async function handleDeleteIdea(req, res, ideaId) {
+  const result = await _ideasStore.deleteIdea(ideaId);
+  if (!result.deleted) {
     res.writeHead(404, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'not found' }));
     return;
   }
-  _writeIdeas(data);
   res.writeHead(204);
   res.end();
 }
 
 module.exports = {
-  handleGetFeatures,
   handleGetFeatureArtefacts,
   handleGetIdeas,
   handlePostIdea,
   handleDeleteIdea,
+  setIdeasStore,
   setAuditLogger,
   setListArtefacts,
+  setJourneyStoreModule,
   renderFeatureList,
   renderArtefactItem,
   renderArtefactIndexHtml,

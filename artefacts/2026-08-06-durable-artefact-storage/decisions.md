@@ -1,0 +1,91 @@
+# Decision Log: durable-artefact-storage
+
+**Feature:** Durable Artefact Storage for SaaS-Hosted Journeys
+**Discovery reference:** artefacts/2026-08-06-durable-artefact-storage/discovery.md
+**Last updated:** 2026-08-06
+
+---
+
+## Decision categories
+
+| Code | Meaning |
+|------|---------|
+| `SCOPE` | MVP scope added, removed, or deferred |
+| `SLICE` | Decomposition and sequencing choices |
+| `ARCH` | Architecture or significant technical design (full ADR if complex) |
+| `DESIGN` | UX, product, or lightweight technical design choices |
+| `ASSUMPTION` | Assumption validated, invalidated, or overridden |
+| `RISK-ACCEPT` | Known gap or finding accepted rather than resolved |
+
+---
+
+## Log entries
+
+---
+**2026-08-06 | ASSUMPTION | /clarify**
+**Decision:** The existing GitHub OAuth token (already used by `mtrr-s2`'s repo-listing) carries sufficient write/push scope to commit artefact files via the Contents API — validated TRUE.
+**Alternatives considered:** A platform-level bot/app installation token, if the user's own OAuth token had turned out read-only.
+**Rationale:** Confirmed directly in `src/web-ui/auth/oauth-adapter.js:51` — the authorize URL requests `scope=repo,read:user[,read:org]`. GitHub's `repo` scope is full read/write, not read-only. No new auth model is needed; this resolves the single biggest scope risk identified at discovery.
+**Made by:** Hamish King — Platform maintainer / Product owner (confirmed via direct code inspection during /clarify)
+**Revisit trigger:** If the OAuth scope request is ever narrowed (e.g. to `public_repo` or removed entirely) for an unrelated reason, re-verify this assumption before relying on it.
+---
+
+---
+**2026-08-06 | ASSUMPTION | /clarify**
+**Decision:** The "repo required before first journey" gate applies to new products only. Existing repo-less products are explicitly out of scope for retroactive migration or blocking — they continue working exactly as today.
+**Alternatives considered:** (B) apply to all products immediately, blocking existing repo-less products from journey progress; (C) new products required, existing products nudged but not blocked.
+**Rationale:** Smallest, least disruptive MVP boundary. Avoids forcing a migration decision onto existing (possibly in-progress) products as a side effect of a durability fix. Revisit once real usage data shows whether existing-product orphaning is a live problem worth a follow-on story.
+**Made by:** Hamish King — Platform maintainer / Product owner
+**Revisit trigger:** If an existing repo-less product's journey gets orphaned by a future redeploy and this becomes a repeated real complaint, reconsider extending the gate to existing products (Option B or C).
+---
+
+---
+**2026-08-06 | ASSUMPTION | /clarify**
+**Decision:** Other code paths that read artefacts via local `fs.readFileSync` (13 call sites found in `journey.js` alone) can safely tolerate this change, because the fix is a **dual-write** (git commit added alongside the existing local-disk write, not a replacement of it) rather than a wholesale migration off local disk.
+**Alternatives considered:** Replacing local disk entirely with git as the sole read/write source — rejected because it would require touching or providing git-backed equivalents for all 13 internal same-request read call sites in `journey.js`'s stage-transition logic, a much larger and riskier change than the durability problem actually requires.
+**Rationale:** All 13 existing call sites read artefact content synchronously within the same request/session that wrote it — always within the same deploy's lifetime, never at risk from the redeploy-wipe problem this feature exists to fix. Only the cross-redeploy "Resume conversation" read path needs a git-fallback. This narrows the actual MVP engineering scope considerably compared to the originally-drafted "read from git as source of truth" framing.
+**Made by:** Hamish King — Platform maintainer / Product owner (confirmed via direct grep audit of `journey.js` during /clarify)
+**Revisit trigger:** If a future story needs to remove local disk writes entirely (e.g. for a stateless/multi-region deployment model), revisit whether the 13 internal read call sites still hold under that new constraint.
+---
+
+---
+**2026-08-07 | RISK-ACCEPT | /definition-of-ready (das-s1, das-s2)**
+**Decision:** Proceed past `/definition-of-ready` for both stories without W4 (verification script reviewed by a domain expert) being resolved first.
+**Alternatives considered:** Pause DoR sign-off until a human reviewer works through each verification script.
+**Rationale:** Same rationale as every other story this session — the scripts were written directly from stories/test-plans already shaped by active operator direction; real first walkthrough happens as post-merge smoke test.
+**Made by:** Hamish King — Platform maintainer / Product owner
+**Revisit trigger:** If a post-merge smoke test reveals a verification script described the wrong expected behaviour, treat as a pattern signal.
+---
+
+---
+**2026-08-07 | DESIGN | Inner coding loop (das-s2)**
+**Decision:** Implement das-s2's gate check in `handlePostProductFeature` (`src/web-ui/routes/products.js`, `POST /products/:id/features`) rather than in `handlePostJourney` (`src/web-ui/routes/journey.js`), as the DoR contract's "Estimated touch points" section named.
+**Alternatives considered:** Following the contract literally and adding the gate to `handlePostJourney`.
+**Rationale:** Direct inspection showed `handlePostJourney` has no concept of `productId` at all -- journeys it creates always have `productId == null` (see the existing filter at `journey.js:324`). The story's ACs are written in explicitly product-scoped terms ("a product with zero journeys", "the operator starts their first journey" for a given product), which only `handlePostProductFeature` (which already receives `productId` via `req.params.id` and already sets it on the created journey) can satisfy. Per CLAUDE.md's standing rule that a DoR contract conflicting with the ACs/test plan is the authoring defect, the contract is corrected here rather than the implementation being forced to match an inaccurate touch-point list.
+**Made by:** Coding agent (Claude Code), inner coding loop for das-s2
+**Revisit trigger:** If a future story needs `handlePostJourney`'s generic, product-less journey-creation path to also become product-aware, re-examine whether the two gate implementations (billing cap and this repo gate) should be consolidated into a shared helper rather than living only in `handlePostProductFeature`.
+---
+
+---
+
+---
+**2026-08-07 | SCOPE | Live staging finding**
+**Decision:** Add `das-s3` (backfill already-completed stage artefacts to a repo at the moment it's connected) as a new story in this epic, distinct from the original discovery's "recovering already-orphaned journeys" out-of-scope item.
+**Alternatives considered:** Treating this as already covered/rejected by the original out-of-scope decision (line 36 of discovery.md, which named a different orphaned journey, `new-feature-808781bb`, as "not worth the effort").
+**Rationale:** The original decision was about one-time data *recovery* for already-orphaned pre-launch staging journeys — genuinely not worth the effort. `das-s3` is a different, forward-looking *mechanism*: committing still-present local-disk content to a repo at the moment it's connected, before a future redeploy can wipe it. This doesn't rescue `new-feature-5a4e59db` (its content is already gone, confirmed via GitHub API 404) but prevents the same class of loss for any future product — which starts to matter once real (non-staging) customers exist, per this repo's own commercialisation roadmap track.
+**Made by:** Hamish King — Platform maintainer / Product owner (confirmed via live investigation, 2026-08-07)
+**Revisit trigger:** None — this is additive scope to an already-approved epic, not a reversal of the original decision.
+---
+
+---
+**2026-08-07 | DESIGN | Inner coding loop (das-s3)**
+**Decision:** Migrate `handlePostProductRepoCreate` (`src/web-ui/routes/products.js`) to call `_applyRepoChange` (`src/web-ui/routes/product-repo.js`) literally -- accepting that this also pulls in `_applyRepoChange`'s tenant-ownership `SELECT` and its GitHub repo-access re-verification (`getRepoAdapter()`), neither of which the old standalone raw-`UPDATE`-only handler ever performed, rather than adding a special-cased "skip verification" branch for the just-created-a-repo-myself case.
+**Alternatives considered:** (B) add an optional parameter to `_applyRepoChange` (e.g. `skipAccessCheck`) so the create-repo call site could bypass the tenant check and access re-verification, preserving the old handler's exact query shape.
+**Rationale:** The story's own Architecture Constraints and DoR Coding Agent Instructions are explicit that the goal is true single-path consolidation -- "all three must go through `_applyRepoChange`" -- not a parameterised subset of it. A skip-flag would reintroduce exactly the kind of per-caller special-casing the consolidation exists to eliminate, and would mean two of the three callers are verified while one silently isn't. In production the extra access-check GET is a harmless no-op (the operator always has access to a repo their own token just created) and the extra tenant `SELECT` is the same ownership guard every other mutating product route already performs -- so the "cost" is one extra, always-passing DB read and one extra, always-passing GitHub GET, not a behavioural risk. The real consequence was two pre-existing test files (`tests/check-prc-s2.1-create-repo.js` T2/T5, `tests/check-rpc-s1-connect-repo.js` IT1) whose hand-rolled mock `pool.query` implementations only recognised the old raw `UPDATE` statement and never wired `repoAdapter.setRepoAdapter` -- both were updated mechanically (added the tenant-ownership and journeys-lookup query branches, wired the access-check adapter) to keep exercising the real, now-shared code path; no assertion in either file was weakened or removed.
+**Made by:** Coding agent (Claude Code), inner coding loop for das-s3
+**Revisit trigger:** If a future story finds the extra per-create-repo GitHub access-check GET is measurably costly (rate limiting, latency) rather than merely redundant, reconsider a scoped opt-out -- but only if that cost is real, not hypothetical.
+---
+
+## Architecture Decision Records
+
+<!-- None yet for this feature — the write-then-verify sequencing hazard noted in discovery.md's Assumptions and Risks section is flagged for /definition to turn into an explicit AC, not yet a full ADR. -->

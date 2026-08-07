@@ -183,11 +183,11 @@ the outcome artefact with DEFER and an honest accounting of what remains unknown
 
 ## Outcome artefact
 
-Conforms to `.github/templates/spike-outcome.md`.
+Conforms to `templates/spike-outcome.md`.
 Save to `artefacts/[feature]/spikes/[spike-slug]-outcome.md`.
 
 After the discovery handoff step (below), also save the structured output to
-`artefacts/[feature]/spikes/[spike-slug]-output.md` using `.github/templates/spike-output.md`.
+`artefacts/[feature]/spikes/[spike-slug]-output.md` using `templates/spike-output.md`.
 
 ---
 
@@ -250,7 +250,7 @@ After the outcome is produced, map findings back to the parent discovery artefac
 > Reply: confirm the table — or correct any row
 
 Save the completed output to `artefacts/[feature]/spikes/[spike-slug]-output.md`
-using `.github/templates/spike-output.md`.
+using `templates/spike-output.md`.
 
 **If any discovery field changed:**
 

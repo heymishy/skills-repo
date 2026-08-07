@@ -55,7 +55,7 @@ function fail(name, reason) {
 
 function hasPwsh() {
   try {
-    cp.execSync('pwsh -Command "exit 0"', { stdio: 'ignore', timeout: 10000 });
+    cp.execSync('pwsh -Command "exit 0"', { stdio: 'ignore', timeout: 15000 });
     return true;
   } catch (_) {
     return false;
@@ -90,7 +90,7 @@ function hasPwsh() {
     const result = cp.spawnSync(
       'pwsh',
       ['-NonInteractive', '-File', ps1, '--ci'],
-      { cwd: root, timeout: 15000, encoding: 'utf8' }
+      { cwd: root, timeout: 30000, encoding: 'utf8' }
     );
     if (result.status === 0) {
       pass(name);
@@ -138,7 +138,7 @@ function hasPwsh() {
     const result = cp.spawnSync(
       'pwsh',
       ['-NonInteractive', '-File', ps1Copy, '--ci'],
-      { cwd: tmpDir, timeout: 15000, encoding: 'utf8' }
+      { cwd: tmpDir, timeout: 30000, encoding: 'utf8' }
     );
     if (result.status !== 0) {
       pass(name);

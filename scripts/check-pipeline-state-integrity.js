@@ -111,6 +111,9 @@ const VALID_FEATURE_STAGES = [
   'spike', 'stalled',
 ];
 
+const VALID_DOD_STATUS = ['not-started', 'complete'];
+const VALID_PR_STATUS  = ['none', 'draft', 'open', 'merged'];
+
 function checkFeature(feature) {
   const findings = [];
   const slug = feature.slug || '(unknown)';
@@ -135,6 +138,18 @@ function checkFeature(feature) {
       });
     }
   }
+  // C11: feature missing required "track" field (pss-s1) — schema-required, but
+  // easy to omit when hand-copying an existing entry's shape (D-series incidents
+  // dtra-s1/dspw-s1/tdc-s1: surfaced only as a CI "Validate traceability chain"
+  // failure, never locally).
+  if (!('track' in feature)) {
+    findings.push({
+      level: 'fail',
+      code:  'C11',
+      message: `Feature ${slug}: missing required field "track" (schema requires one of ` +
+               `short | standard | programme-workstream | library).`,
+    });
+  }
   return findings;
 }
 
@@ -151,6 +166,53 @@ function checkStory(featureSlug, story, isEpicNested) {
       code:  'C8',
       message: `${featureSlug} / ${id}: epic-nested story is missing required "slug" field. ` +
                `Add slug (same value as id), or use a flat feature.stories[] array instead.`,
+    });
+  }
+
+  // C10: flat story missing required "id" field (pss-s1) — the schema requires
+  // "id" on feature.stories[] items (unlike epic-nested items, which require
+  // "slug" instead — see C8). Missing it surfaced only as a CI-only
+  // "Validate traceability chain" failure in the tst-s1/jlc-s1 incidents.
+  if (!isEpicNested && !story.id) {
+    findings.push({
+      level: 'fail',
+      code:  'C10',
+      message: `${featureSlug} / ${id}: flat story is missing required "id" field.`,
+    });
+  }
+
+  // C12: invalid dodStatus — null or any value outside the schema enum
+  // (not-started | complete). A null value is a common mistake when the field
+  // is omitted at story-creation time and later explicitly set to null.
+  if ('dodStatus' in story && !VALID_DOD_STATUS.includes(story.dodStatus)) {
+    findings.push({
+      level: 'fail',
+      code:  'C12',
+      message: `${featureSlug} / ${id}: dodStatus=${JSON.stringify(story.dodStatus)} is not valid. ` +
+               `Must be one of: ${VALID_DOD_STATUS.join(' | ')}`,
+    });
+  }
+
+  // C13: invalid prStatus enum value — absent is fine (defaults elsewhere);
+  // present-but-wrong (e.g. 'not-started' instead of 'none') is not.
+  if ('prStatus' in story && story.prStatus != null && !VALID_PR_STATUS.includes(story.prStatus)) {
+    findings.push({
+      level: 'fail',
+      code:  'C13',
+      message: `${featureSlug} / ${id}: prStatus="${story.prStatus}" is not valid. ` +
+               `Must be one of: ${VALID_PR_STATUS.join(' | ')}`,
+    });
+  }
+
+  // C14: acVerified present but not an integer — e.g. written as the string
+  // "true" by a dispatched agent with no runtime type check against the
+  // schema (PR #483 incident).
+  if ('acVerified' in story && story.acVerified != null && !Number.isInteger(story.acVerified)) {
+    findings.push({
+      level: 'fail',
+      code:  'C14',
+      message: `${featureSlug} / ${id}: acVerified=${JSON.stringify(story.acVerified)} is not an integer ` +
+               `(found type "${typeof story.acVerified}").`,
     });
   }
 
@@ -491,6 +553,146 @@ selfAssert(checkStory('f', { id: 's1', prStatus: 'open', testPlan: { totalTests:
 {
   const f = checkStory('f', { id: 's1' }, true);
   selfAssert(f.some(x => x.code === 'C8' && x.level === 'fail'), 'C8 level is fail');
+}
+
+// C10: flat story missing id → fail
+{
+  const f = checkStory('f', { slug: 's1', name: 'Story' });
+  selfAssert(f.some(x => x.code === 'C10'), 'C10: flat story + no id → fail');
+}
+
+// C10: flat story with id → no C10
+{
+  const f = checkStory('f', { id: 's1', slug: 's1', name: 'Story' });
+  selfAssert(f.every(x => x.code !== 'C10'), 'C10: flat story + id present → no C10');
+}
+
+// C10: epic-nested story missing id → no C10 (schema requires slug there, see C8)
+{
+  const f = checkStory('f', { slug: 's1', name: 'Story', stage: 'branch-complete', health: 'green' }, true);
+  selfAssert(f.every(x => x.code !== 'C10'), 'C10: epic-nested + no id → no C10 (C8 covers this shape instead)');
+}
+
+// C10 level is fail
+{
+  const f = checkStory('f', { slug: 's1' });
+  selfAssert(f.some(x => x.code === 'C10' && x.level === 'fail'), 'C10 level is fail');
+}
+
+// C11: feature missing track → fail
+{
+  const f = checkFeature({ slug: 'feat1', stage: 'branch-complete' });
+  selfAssert(f.some(x => x.code === 'C11'), 'C11: feature missing track → fail');
+}
+
+// C11: feature with track → no C11
+{
+  const f = checkFeature({ slug: 'feat1', stage: 'branch-complete', track: 'short' });
+  selfAssert(f.every(x => x.code !== 'C11'), 'C11: feature with track → no C11');
+}
+
+// C11 level is fail
+{
+  const f = checkFeature({ slug: 'feat1' });
+  selfAssert(f.some(x => x.code === 'C11' && x.level === 'fail'), 'C11 level is fail');
+}
+
+// C12: dodStatus null → fail
+{
+  const f = checkStory('f', { id: 's1', dodStatus: null });
+  selfAssert(f.some(x => x.code === 'C12'), 'C12: dodStatus=null → fail');
+}
+
+// C12: dodStatus invalid string → fail
+{
+  const f = checkStory('f', { id: 's1', dodStatus: 'done' });
+  selfAssert(f.some(x => x.code === 'C12'), 'C12: dodStatus="done" → fail');
+}
+
+// C12: dodStatus valid values → no C12
+{
+  const f1 = checkStory('f', { id: 's1', dodStatus: 'not-started' });
+  const f2 = checkStory('f', { id: 's1', dodStatus: 'complete' });
+  selfAssert(f1.every(x => x.code !== 'C12'), 'C12: dodStatus="not-started" → no C12');
+  selfAssert(f2.every(x => x.code !== 'C12'), 'C12: dodStatus="complete" → no C12');
+}
+
+// C12: dodStatus absent → no C12
+{
+  const f = checkStory('f', { id: 's1' });
+  selfAssert(f.every(x => x.code !== 'C12'), 'C12: dodStatus absent → no C12');
+}
+
+// C12 level is fail
+{
+  const f = checkStory('f', { id: 's1', dodStatus: null });
+  selfAssert(f.some(x => x.code === 'C12' && x.level === 'fail'), 'C12 level is fail');
+}
+
+// C13: prStatus invalid enum → fail
+{
+  const f = checkStory('f', { id: 's1', prStatus: 'not-started' });
+  selfAssert(f.some(x => x.code === 'C13'), 'C13: prStatus="not-started" → fail');
+}
+
+// C13: prStatus valid values → no C13
+{
+  ['none', 'draft', 'open', 'merged'].forEach(function(v) {
+    const f = checkStory('f', { id: 's1', prStatus: v });
+    selfAssert(f.every(x => x.code !== 'C13'), `C13: prStatus="${v}" → no C13`);
+  });
+}
+
+// C13: prStatus absent → no C13
+{
+  const f = checkStory('f', { id: 's1' });
+  selfAssert(f.every(x => x.code !== 'C13'), 'C13: prStatus absent → no C13');
+}
+
+// C13 level is fail
+{
+  const f = checkStory('f', { id: 's1', prStatus: 'not-started' });
+  selfAssert(f.some(x => x.code === 'C13' && x.level === 'fail'), 'C13 level is fail');
+}
+
+// C14: acVerified string → fail
+{
+  const f = checkStory('f', { id: 's1', acVerified: 'true' });
+  selfAssert(f.some(x => x.code === 'C14'), 'C14: acVerified="true" (string) → fail');
+}
+
+// C14: acVerified integer → no C14
+{
+  const f = checkStory('f', { id: 's1', acVerified: 3 });
+  selfAssert(f.every(x => x.code !== 'C14'), 'C14: acVerified=3 (integer) → no C14');
+}
+
+// C14: acVerified absent → no C14
+{
+  const f = checkStory('f', { id: 's1' });
+  selfAssert(f.every(x => x.code !== 'C14'), 'C14: acVerified absent → no C14');
+}
+
+// C14 level is fail
+{
+  const f = checkStory('f', { id: 's1', acVerified: 'true' });
+  selfAssert(f.some(x => x.code === 'C14' && x.level === 'fail'), 'C14 level is fail');
+}
+
+// AC6: fully-valid fixture → none of C10-C14 fire
+{
+  const feature = { slug: 'feat1', stage: 'branch-complete', track: 'short' };
+  const story = {
+    id: 's1', slug: 's1', name: 'Story',
+    dodStatus: 'not-started', prStatus: 'open', acVerified: 4,
+  };
+  const ff = checkFeature(feature);
+  const sf = checkStory(feature.slug, story, false);
+  const newCodes = ['C10', 'C11', 'C12', 'C13', 'C14'];
+  selfAssert(
+    ff.every(x => !newCodes.includes(x.code)) && sf.every(x => !newCodes.includes(x.code)),
+    'AC6: fully-valid fixture → none of C10-C14 fire'
+  );
 }
 
 // shr.1: optional infra/migration track fields — present or absent, no C-check fires

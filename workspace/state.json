@@ -1,120 +1,35 @@
 {
-  "currentPhase": "definition-of-done",
-  "lastUpdated": "2026-07-05T12:00:00Z",
-  "activeFeature": "2026-07-05-product-stds-hierarchy",
-  "previousFeature": "2026-07-03-admin-role-panel",
+  "currentPhase": "discovery",
+  "lastUpdated": "2026-08-06T01:55:00.000Z",
+  "activeFeature": "2026-08-06-durable-artefact-storage",
+  "previousFeature": "2026-07-30-agency-client-organisations",
   "cycle": {
     "discovery": {
-      "status": "complete",
-      "artefact": "artefacts/2026-07-05-product-stds-hierarchy/discovery.md",
-      "completedAt": "2026-07-05"
-    },
-    "benefit-metric": {
-      "status": "complete",
-      "artefact": "artefacts/2026-07-05-product-stds-hierarchy/benefit-metric.md",
-      "completedAt": "2026-07-05"
-    },
-    "definition": {
-      "status": "complete",
-      "completedAt": "2026-07-05"
-    },
-    "review": {
-      "status": "complete",
-      "completedAt": "2026-07-05"
-    },
-    "test-plan": {
-      "status": "complete",
-      "completedAt": "2026-07-05",
-      "totalTests": 76
-    },
-    "definition-of-ready": {
-      "status": "complete",
-      "completedAt": "2026-07-05",
-      "storiesSigned": 10,
-      "hardBlocksPassed": "19/19 per story",
-      "warningsAcknowledged": 0,
-      "mediumFindingsResolved": 3,
-      "oversightLevel": "medium-all",
-      "adr018Resolved": "playwright-e2e",
-      "dorArtefactsPath": "artefacts/2026-07-05-product-stds-hierarchy/dor/"
-    },
-    "branch-setup": {
-      "status": "complete",
-      "completedAt": "2026-07-05",
-      "worktree": ".worktrees/psh",
-      "branch": "fix/rate-limiter-scope"
-    },
-    "implementation-plan": {
-      "status": "complete",
-      "completedAt": "2026-07-05",
-      "plansPath": "artefacts/2026-07-05-product-stds-hierarchy/plans/"
-    },
-    "subagent-execution": {
-      "status": "complete",
-      "completedAt": "2026-07-05",
-      "storiesCompleted": 10
-    },
-    "verify-completion": {
-      "status": "complete",
-      "completedAt": "2026-07-05",
-      "acsVerified": 58,
-      "acsTotal": 58,
-      "testsPassing": 76,
-      "testsTotal": 76
-    },
-    "branch-complete": {
-      "status": "complete",
-      "completedAt": "2026-07-05",
-      "prUrl": "https://github.com/heymishy/skills-repo/pull/441",
-      "prStatus": "merged",
-      "mergedAt": "2026-07-05"
-    },
-    "definition-of-done": {
-      "status": "complete",
-      "completedAt": "2026-07-05",
-      "storiesComplete": 7,
-      "storiesCompleteWithDeviations": 3,
-      "deviationStories": [
-        "psh-s4",
-        "psh-s6",
-        "psh-s7"
-      ],
-      "deviationReason": "Playwright E2E specs written and committed but pending live server execution for CSS-layout ACs (psh-s4: dashboard layout, psh-s6: product kanban columns, psh-s7: org kanban columns/filter)",
-      "dodArtefactsPath": "artefacts/2026-07-05-product-stds-hierarchy/dod/"
+      "status": "approved",
+      "artefact": "artefacts/2026-08-06-durable-artefact-storage/discovery.md",
+      "completedAt": "2026-08-06T01:55:00.000Z",
+      "note": "Live staging bug investigation (wuce-staging journey/808781bb) -- stage artefacts are written only to local ephemeral disk, wiped on every redeploy, orphaning completed-stage artefacts even though journey metadata survives in Postgres. Discovery scopes a dual-write fix (git commit at stage-completion, alongside the existing local-disk write, plus a git-fallback on the Resume-conversation read path). Clarified and approved same-day; all 3 discovery-time assumptions resolved via /clarify and logged in decisions.md."
+    }
+  },
+  "estimate": {
+    "e1": {
+      "date": "2026-08-06",
+      "expectedCalendarDays": 0.5,
+      "engagementFraction": 0.25,
+      "outerLoopFocusH": 0.25,
+      "innerLoopHuman": 0,
+      "expectedStoryCount": 2,
+      "confidence": "low",
+      "assumptions": "Small, contained scope post-/clarify -- dual-write fix + one required-gate change for new products; no new auth model needed (OAuth scope already confirmed sufficient).",
+      "gaugeAtStart": null,
+      "premiumRequestsForecast": null
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-07-05",
-    "contextAtWrite": "Definition-of-done complete for all 10 psh stories. PR #441 merged. 58 ACs verified, 76 tests passing CI. Outcome: 7 COMPLETE, 3 COMPLETE WITH DEVIATIONS (psh-s4/s6/s7 Playwright E2E pending live server). decisions.md created retroactively (6 architectural decisions). All pipeline-state.json story fields: stage=definition-of-done, dodStatus=complete, prStatus=merged. Commit cddbb101 on master, pushed to origin. Inner loop fully complete.",
-    "resumeInstruction": "Feature 2026-07-05-product-stds-hierarchy is at definition-of-done (COMPLETE WITH DEVIATIONS). The feature is fully delivered and merged. Three remaining post-deploy actions exist for Playwright E2E tests. Start the next feature discovery or run /improve to analyse the psh delivery signal.",
-    "pendingActions": [
-      "Post-deploy smoke test: run 'npx playwright test tests/e2e/psh-s4-dashboard-layout.spec.js' against live server — Owner: Hamish King",
-      "Post-deploy smoke test: run 'npx playwright test tests/e2e/psh-s6-product-kanban.spec.js' against live server — Owner: Hamish King",
-      "Post-deploy smoke test: run 'npx playwright test tests/e2e/psh-s7-org-kanban.spec.js' against live server — Owner: Hamish King",
-      "M4a review: check PostHog standard_created events at 60 days post-launch and set forward target — Owner: Hamish King",
-      "Previous feature (2026-07-03-admin-role-panel): deploy to Fly.io pending; AC7 manual smoke test pending; M1/M2 measurement pending deploy"
-    ]
+    "writtenAt": "2026-08-06",
+    "contextAtWrite": "Just completed: discovery + /clarify + approval for durable-artefact-storage (dual-write artefact durability fix), following live root-cause investigation of the wuce-staging 'Resume conversation shows no content' bug the operator found during manual staging testing. Also earlier this session: shipped multi-tenant-repo-resolution (mtrr-s1/mtrr-s2, both merged and independently verified).",
+    "resumeInstruction": "Next step is /benefit-metric for 2026-08-06-durable-artefact-storage. Read artefacts/2026-08-06-durable-artefact-storage/discovery.md and decisions.md in full before proceeding -- do not rely on conversation history for the resolved assumptions or MVP boundary.",
+    "pendingActions": []
   },
-  "estimate": {
-    "e2": {
-      "date": "2026-07-09",
-      "storyCount": 17,
-      "byStory": {
-        "count": 17,
-        "complexity": {
-          "1": 2,
-          "2": 12,
-          "3": 3
-        },
-        "p75FocusHPerStory": 0.037
-      },
-      "expectedCalendarDays": 1,
-      "engagementFraction": 0.25,
-      "outerLoopFocusH": 0.5,
-      "innerLoopHuman": null,
-      "confidence": "medium",
-      "notes": "no E1 to compare -- E1 prompt was skipped at discovery time this session; this is the first forecast for 2026-07-09-beta-readiness-infra",
-      "premiumRequestsForecast": null
-    }
-  }
+  "supersededNote": "This file's prior contents (activeFeature: null, stale estimate.e2 for an already-completed different feature) were replaced rather than carried forward, per this file's own established convention -- real current state for any feature slug always lives in .github/pipeline-state.json, kept up to date via node bin/skills advance at every phase boundary."
 }

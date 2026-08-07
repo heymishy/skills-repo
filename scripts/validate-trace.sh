@@ -349,8 +349,19 @@ for feature in state.get('features', []):
                 file_slug = story.get('slug') or story.get('id', 'unknown')
             test_plan_path = os.path.join('artefacts', feature_slug, 'test-plans', f'{file_slug}-test-plan.md')
         if not os.path.exists(test_plan_path):
-            print(f'MISSING: {test_plan_path}')
-            missing.append(test_plan_path)
+            # Completed features get moved to artefacts/archived/<slug>/ over time
+            # (see the 2026-05-14 archive commit); pipeline-state.json keeps the
+            # pre-archive path, so check there before declaring the plan missing.
+            # Normalize to '/' first -- direct_artefact strings from JSON always use
+            # '/', while the os.path.join fallback above uses the OS-native separator.
+            normalized = test_plan_path.replace(os.sep, '/')
+            if normalized.startswith('artefacts/'):
+                archived_path = 'artefacts/archived/' + normalized[len('artefacts/'):]
+            else:
+                archived_path = normalized
+            if not os.path.exists(archived_path):
+                print(f'MISSING: {test_plan_path}')
+                missing.append(test_plan_path)
 sys.exit(1 if missing else 0)
 PYTHON
     then

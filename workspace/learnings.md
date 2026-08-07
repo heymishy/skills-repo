@@ -2219,3 +2219,514 @@ audit:
 **Proposed check:** Add a 4th resolution option to both METRIC GAP and STORY GAP prompts: "Accept as a structural exception — log the reasoning in `decisions.md` rather than forcing a synthetic connection," with the coverage matrix marking it explicitly as "Covered (exception, see decisions.md)" so it's visibly resolved rather than looking like an outstanding gap or a silently-fudged one.
 
 **Proposed check:** A session-start guard (or a check in the skill's own entry condition) that warns loudly — not just proceeds silently in eval-mode — whenever `evaluation.mode: true` is detected outside of an actual eval-harness invocation context (e.g. no `caseId`/corpus context set). A misconfigured flag that silently degrades output quality is worse than one that errors.
+
+---
+
+## /definition should verify a referenced feature/system exists before writing an AC against it
+
+### Observed — 2026-07-09 (2026-07-09-beta-readiness-infra, review)
+
+**Circumstance:** bri-s1.5 (Epic 1, feature flags) wrote ACs gating two product features (GLM-5.2 model routing, a v2 billing flow) named in the operator's original brief as if they already existed. A repo-wide search confirmed zero implementation of either anywhere in src/ — the story silently required building substantial unscoped product functionality under a "feature flags infrastructure" story.
+
+**Root cause:** /definition took the operator's brief's feature names at face value without verifying they exist in the codebase before writing ACs against them.
+
+**Proposed check:** /definition should verify any named feature/system referenced in an AC actually exists in the codebase (a quick grep) before finalizing the AC, not just before finalizing architecture constraints.
+
+---
+
+## AC language naming a specific tool/framework should auto-suggest the governing ADR
+
+### Observed — 2026-07-09 (2026-07-09-beta-readiness-infra, review)
+
+**Circumstance:** ADR-018 (Playwright is the sole E2E framework) was invoked by an AC's own language ("a Playwright test") in 3 of 17 stories (bri-s1.2, bri-s1.3, bri-s2.6) without being cited in that story's Architecture Constraints field. This was a recurring pattern across the feature, not an isolated miss.
+
+**Proposed check:** Whenever an AC's text names a specific tool/framework/mechanism ("a Playwright test", "via fetch()", etc.), the corresponding ADR/guardrail governing that tool should be auto-suggested for the Architecture Constraints field at /definition time.
+
+---
+
+## ACs must be cross-checked against a feature's own discovery-stated sequencing constraints
+
+### Observed — 2026-07-09 (2026-07-09-beta-readiness-infra, review)
+
+**Circumstance:** bri-s1.2 embedded an AC (AC3) that depends on a live staging environment and Playwright suite, neither of which exist yet within the same epic — a direct violation of this repo's own Approved Pattern PAT-06 ("Execution pre-condition gate on runtime artefact existence... express as a DoR PROCEED-BLOCKED condition, not an AC caveat").
+
+**Root cause:** /definition wrote the AC without checking PAT-06 against the discovery's own explicit hard-sequencing constraint (sub-feature 1 ships before 2 and 3 exist).
+
+**Proposed check:** /definition Step 4 should cross-check each AC against the feature's own discovery-stated sequencing before finalizing, specifically flagging ACs that reference infrastructure/artefacts from a later-sequenced sub-feature/epic.
+
+---
+
+## Replacing a named entity throughout a story artefact requires a whole-file grep, not just an AC-level fix
+
+### Observed — 2026-07-09 (2026-07-09-beta-readiness-infra, test-plan)
+
+**Circumstance:** When fixing a story to remove a fabricated/placeholder feature name (bri-s1.5's GLM-5.2/billing-v2 to real routes), the fix touched the User Story and ACs but missed an NFR line still referencing the old name ("billing-v2 gating must not expose billing data...") — caught only when a downstream /test-plan subagent, working from the story fresh, flagged the inconsistency.
+
+**Proposed check:** When replacing a named entity (flag name, feature name, route) throughout a story artefact, grep the whole file for the old name before considering the edit complete — a targeted AC-only fix can leave stale references in NFRs, Out of Scope, or Architecture Constraints sections that don't get re-read in the same pass.
+
+---
+
+## Formalizing a cross-story dependency as a structural decisions.md gate lets downstream skills honor it without re-litigation
+
+### Observed — 2026-07-09 (2026-07-09-beta-readiness-infra, test-plan)
+
+**Circumstance:** A RISK-ACCEPT/PROCEED-BLOCKED gate logged in decisions.md at /review time (bri-s3.3's cross-feature dependency on team-identity-roles) propagated cleanly into /test-plan without re-litigation — the test-plan subagent read the gate, declared the 3 blocked ACs as External-dependency gaps with manual scenarios, and wrote the spec as "written now, cannot pass until the dependency clears" rather than either skipping the story or pretending it was testable.
+
+**Takeaway:** This is the intended behaviour of formalizing a dependency as a structural decisions.md entry rather than leaving it as prose: each downstream skill can read and honor it without re-deriving the judgment call. Confirms the pattern is worth continuing/reinforcing, not just a one-off success.
+
+---
+
+## A story can correctly be BLOCKED at DoR even when every individual hard block technically passes
+
+### Observed — 2026-07-10 (2026-07-09-beta-readiness-infra, Epic 3, definition-of-ready)
+
+**Circumstance:** bri-s3.3's DoR determination was BLOCKED, not READY, even though every individual H1-H9/H-E2E/H-NFR/H-GOV hard block technically passed (the story/test-plan/verification-script all correctly acknowledged the gap). The BLOCKED status was driven by the story's own Dependencies field and the formal RISK-ACCEPT/PROCEED-BLOCKED gate in decisions.md — 3 of 4 ACs depended on the unbuilt team-identity-roles role model.
+
+**What was missing:** pipeline-state.json was set to dorStatus=not-started because cli-advance.js's ENUM_FIELDS.dorStatus guard only accepts not-started/in-progress/signed-off, even though the schema also permits "blocked" — a schema-vs-CLI enum mismatch.
+
+**Proposed check:** Align cli-advance.js's ENUM_FIELDS.dorStatus allowed values with the full schema-permitted set (including "blocked"), so a genuinely blocked DoR determination can be recorded accurately rather than approximated as not-started.
+
+---
+
+## MEDIUM review findings carried into DoR need an explicit decisions.md nudge, not just a DoR warning
+
+### Observed — 2026-07-10 (2026-07-09-beta-readiness-infra, Epic 3, definition-of-ready)
+
+**Circumstance:** Two MEDIUM review findings carried forward unresolved into DoR without a decisions.md entry: bri-s3.1's [1-M1] (AC4 phrasing describes an investigative activity rather than observable behaviour) and bri-s3.3's [1-M2] (ADR-025 citation is a stretch for within-tenant RBAC — the real governing spec is the unbuilt team-identity-roles feature). Both were flagged as outstanding W3 warnings in the DoR run rather than logged to /decisions automatically, since W3 is report-only by design ("evaluate, do not resolve").
+
+**Proposed check:** Consider whether W3 warnings that reference a specific finding ID should prompt the operator to run /decisions before or alongside DoR sign-off, rather than relying on the operator to notice and initiate it separately.
+
+---
+
+## H8-ext's literal trigger condition (any named upstream story) diverges from its intent (schema-field gating)
+
+### Observed — 2026-07-10 (2026-07-09-beta-readiness-infra, Epic 3, definition-of-ready)
+
+**Circumstance:** H8-ext (cross-story schema dependency check) fires whenever a story's Dependencies block names an upstream story, regardless of whether the dependency is a pipeline-state.json field read or a code/module/fixture consumption dependency. For bri-s3.2/s3.4/s3.5/s3.6 (all depend on bri-s3.1's mock LLM gateway as a code-level import, not a state-field read) and bri-s3.3 (cross-feature dependency on team-identity-roles reaching a gated stage), the judgment call made was to declare schemaDepends: ["dorStatus"] anyway — keyed on the upstream story's/feature's dorStatus field reaching signed-off, as the closest real schema-backed gating condition, even though the substantive dependency is functional/code-level.
+
+**Proposed check:** A definition-of-ready/SKILL.md clarification distinguishing H8-ext's intent (schema-field gating) from its literal trigger condition (any named upstream story), so future DoR runs don't have to re-derive this same judgment call for code-consumption dependencies.
+
+---
+
+## Three shared-file merge-conflict hotspots identified and fixed (test chain, pipeline-state updatedAt, decisions.md)
+
+### Observed — 2026-07-11 (2026-07-09-beta-readiness-infra, Wave 2-3, ~13 stories in flight) — resolved by pcr-s1 (PR #455)
+
+**Circumstance:** Every parallel-wave story in this feature hit the same 3 merge-conflict hotspots against master, requiring manual/agent conflict resolution on nearly every single PR.
+
+**Root causes and fixes:**
+1. package.json's scripts.test was one giant &&-chained string, so any two stories both appending a new test file to the end of it produced a textual conflict every time (this also independently caused the Windows cmd.exe command-line-length-limit failures already RISK-ACCEPTed across bri-s1.2/s1.3/s1.4/s2.2/s2.3/s2.4). Fixed by scripts/run-all-tests.js, which globs tests/check-*.js and executes them programmatically — package.json needs zero edits per new test file, and the length-limit problem disappeared in the same change.
+2. .github/pipeline-state.json bumped a shared per-feature updatedAt timestamp on every single per-story field write, so two stories in the same feature advancing concurrently collided on that one line even though their actual story-level field changes never overlapped. Fixed by only bumping the feature-level updatedAt at genuine feature-level milestones.
+3. decisions.md was a shared append-only log where two stories appending a new entry near the same point in the file produced a conflict even though both entries were independent and order-independent. Fixed via `artefacts/**/decisions.md merge=union` in .gitattributes — git's built-in union merge strategy auto-resolves exactly this shape of conflict with no custom driver needed.
+
+**Resolution:** All 3 shipped as pcr-s1 (PR #455, merged 2026-07-11). See artefacts/2026-07-11-pipeline-conflict-reduction/dod/pcr-s1-dod.md for full verification evidence.
+
+---
+
+## H-GOV's discovery-artefact assumption is false for short-track stories by design
+
+### Observed — 2026-07-11 (2026-07-11-pipeline-conflict-reduction, short-track, definition-of-ready)
+
+**Circumstance:** H-GOV (governance approval hard block in skills/definition-of-ready/SKILL.md) reads a discovery artefact's Approved By section, assuming every story reaching DoR has been through /discovery. This assumption is false for short-track stories by design — this repo's own short-track routing is /test-plan to /definition-of-ready to coding agent, explicitly skipping /discovery. For pcr-s1 (a short-track story), H-GOV was treated as satisfied via the operator's direct in-session instruction to proceed with short-track, logged as a GAP entry rather than silently bypassed — the same workaround was needed again for every subsequent short-track story this session (stis-s1, tst-s1, jlc-s1, cfg-s1).
+
+**Proposed check:** Add an explicit short-track exception clause to H-GOV in definition-of-ready/SKILL.md, keyed on the same short-track marker the DoR artefact records, so future short-track stories don't need to re-derive this same reasoning ad hoc. Still open as of 2026-07-16 — recurred 5 times without being fixed at the source.
+
+---
+
+## Root cause of recurring junk-commit contamination found and fixed: an unguarded git-commit call in the skill-turn-stream handler
+
+### Observed — 2026-07-12 (2026-07-12-skill-turn-test-isolation, short-track) — resolved by stis-s1 (PR #460)
+
+**Circumstance:** A recurring pattern (first flagged 2026-07-11, recurred 6+ times across bri-s3.1, pcr-s1, bri-s1.5, bri-s3.4, bri-s2.5, and leaked into merged master once via PR #454) of junk artefact-commit contamination in coding-agent worktrees was root-caused: src/web-ui/routes/skills.js's skill-turn-stream handler fires a real, unconditional child_process.execSync git add/git commit whenever a completed artefact turn is auto-saved to disk, with a comment stating this is safe because git is not installed in Fly.io production containers. Locally, git IS installed, so any test exercising a completed skill-turn artefact commits real synthetic content into whatever worktree the test runs in.
+
+**Resolution:** Fixed via stis-s1 (PR #460, merged) — the git-commit call wrapped in a D37-style injectable adapter so tests stub it while production behaviour is fully preserved. See artefacts/2026-07-12-skill-turn-test-isolation/dod/stis-s1-dod.md.
+
+---
+
+## "Upstream feature reached DoD" is not sufficient evidence a downstream blocking assumption is resolved
+
+### Observed — 2026-07-13 (2026-07-09-beta-readiness-infra, bri-s3.3 re-run) — assumption invalidated, then resolved 2026-07-16
+
+**Circumstance:** team-identity-roles (TIR) reaching DoD-complete (all 8 stories merged) did NOT actually unblock bri-s3.3's AC1-AC3, contrary to the assumption baked into the original 2026-07-09 RISK-ACCEPT gate. Re-tracing the real login/session code (not trusting TIR's own passing tests) found: (1) only GitHub-org-allowlist mode produces a shared tenantId across two distinct people — Google and email/password always give each person their own unique tenantId; (2) TIR's own decisions.md explicitly declined to make GitHub-org-membership the underlying team model; (3) even in org-allowlist mode, server.js's setGetRoleForTenant wiring passed tenantId as BOTH the identityKey and tenantId arguments to resolveRoleForPerson, reproducing the exact tir-s7 bug one layer removed. tir-s7's own wiring test only string-matched that server.js calls resolveRoleForPerson, never asserting a person-distinguishing argument is passed.
+
+**Takeaway:** "Upstream feature reached DoD" is not sufficient evidence that a downstream story's blocking assumption is resolved — the actual code path the downstream story needs must be traced end-to-end, matching this repo's own documented D37/mock-shape-verification standards.
+
+**Resolution (2026-07-16):** tir-s9 shipped the fix, independently re-verified by directly reading the merged code rather than trusting tir-s9's own tests. bri-s3.3 was re-scoped to GitHub-org-allowlist mode only (the sole production mechanism creating a shared tenant today) and unblocked. The Google/email-added-teammate gap tir-s9 deliberately deferred remains open and out of scope. Full analysis: artefacts/2026-07-09-beta-readiness-infra/dor/bri-s3.3-multi-user-tenant-journey-dor.md.
+
+---
+
+## No runtime validation exists between bin/skills advance and the pipeline-state schema's declared field types
+
+### Observed — 2026-07-16 (2026-07-09-beta-readiness-infra, bri-s3.3, subagent-execution)
+
+**Circumstance:** A dispatched coding agent's pipeline-state checkpoint commit wrote acVerified as the string "true" instead of an integer, failing pipeline-state.schema.json's schema validation on PR #483's Trace Validation check — a real CI failure, not a false positive.
+
+**Root cause:** No runtime validation exists between an agent's bin/skills advance call and the field's declared JSON schema type — an agent can pass any string value for a field the schema expects to be numeric/boolean and the CLI writes it without complaint.
+
+**Proposed check:** bin/skills advance/gate-advance should validate each field's value against pipeline-state.schema.json's declared type before writing, rejecting (or coercing, where safe) a type mismatch at write time rather than only catching it later via scripts/validate-trace.sh's schema check on CI.
+
+**Related, separately confirmed as a non-issue:** the same PR run flagged tests/check-p4-enf-second-line.js as a "new regression" — confirmed via standalone run (22/22 passing) and zero diff-overlap that this is a pre-existing suite-order flake, unrelated to bri-s3.3, matching the class of flake tst-s1 was already dispatched to triage the same day.
+
+---
+
+## Always verify against a fresh origin/master checkout before diagnosing a live defect, especially when a local checkout is known-stale
+
+### Observed — 2026-07-16 (2026-07-16-journey-limit-credits, jlc-s1, definition-of-ready)
+
+**Circumstance:** Initial diagnosis of the operator's live "Journey limit reached" report (a real account with 6 in-flight features blocked at a 5-journey cap) was wrong: it assumed no credit/plan-aware bypass existed for the flat MAX_JOURNEYS_PER_TENANT count cap. That diagnosis was made by reading tenant-plan.js from the main checkout's working directory, which was ~14 commits behind origin/master (a known, pre-existing divergence from uncommitted unrelated work blocking a clean pull). The dispatched coding agent caught the discrepancy itself mid-implementation by noticing the real, current file (checked out fresh from origin/master) already had a working paid-plan bypass shipped by bri-s3.5, driven by real Stripe webhooks. The real defect was narrower and more serious: that bypass's state lived in a plain in-memory Map with zero persistence, so any server restart silently reverted every tenant to the trial cap.
+
+**Takeaway:** Always verify the actual current file from a fresh checkout of origin/master before diagnosing a live defect, especially when a local working-directory checkout is known to be stale for unrelated reasons. A stale local checkout can produce a confidently-wrong root cause that looks fully investigated.
+
+---
+
+## pipeline-state.json's schema-required 'id' field on new stories is easy to omit and only surfaces on real CI
+
+### Observed — 2026-07-16 (tst-s1 and jlc-s1, subagent-execution)
+
+**Circumstance:** Two independent pipeline-state.json initial-story-creation writes in one session (tst-s1, jlc-s1) both omitted the schema-required id field on the story object (only slug was set), each only surfacing as a real Trace Validation CI failure on the resulting PR — not locally, since scripts/check-pipeline-state-integrity.js does not check for this specific field; only the schema validator invoked by scripts/validate-trace.sh does.
+
+**Proposed check:** Add an explicit id-presence check to scripts/check-pipeline-state-integrity.js, or update this repo's own initial-story-creation guidance (CLAUDE.md's cdg.6 exception for initial story creation) to show the required id field explicitly in its example, so this doesn't recur a third time.
+
+---
+
+## Root cause of 3 local-vs-CI test divergences found and fixed: an unscoped git-grep silently no-ops on Windows, executes-and-false-positives on real CI
+
+### Observed — 2026-07-16 (2026-07-16-ci-flake-grep-fix, cfg-s1) — resolved by cfg-s1 (PR #486)
+
+**Circumstance:** 3 of 5 files tst-s1 found passing-locally-but-failing-in-real-CI (check-bri-s3.5-nfr-stripe-keys.js, check-lab-s3.2-stripe-checkout.js, check-lab-s3.4-stripe-webhook.js) share one root cause: each runs an unscoped git grep -n "pattern" -- . via Node's execSync with no explicit shell option. On Windows, execSync defaults to cmd.exe, which cannot parse the POSIX 2>/dev/null redirect in the command string — the command errors, is silently swallowed by a try/catch, and the check trivially passes without the grep ever actually running. On real CI (Ubuntu, a POSIX shell), the command runs correctly and finds real (but harmless) matches against documentation and the checking scripts' own source, which legitimately discuss these exact pattern strings as examples — a genuine false-positive, not a platform difference in the security property itself.
+
+**Resolution:** Fixed by scoping the grep to runtime-relevant paths only (src/, tests/e2e/fixtures/, playwright.config.js, .env.example), confirmed via a real POSIX shell (Git Bash's bash.exe, forced via execSync's shell option) that the narrowed scope both passes cleanly and still correctly detects a real violation (verified with a temporary fixture). Shipped as cfg-s1 (PR #486, merged).
+
+**Still open:** run-gpa-tests.js and check-gpa-sc06-source-path-guard.js show no similar defect on inspection; leading unconfirmed hypothesis is a Node version mismatch (CI pins Node 20 exactly, local dev machine runs Node 22) — installing Node 20 locally via nvm to confirm was blocked by an unresponsive prompt and not pursued further.
+
+---
+
+## Session-end housekeeping (checkpoint, short-track DoD) had silently never been happening
+
+### Observed — 2026-07-16 (outer-loop review, session-end) — resolved same day
+
+**Circumstance:** Reviewing this session's own outer-loop discipline found two standing gaps, neither unique to this session: (1) workspace/state.json was last updated 2026-07-05, predating this entire session — the mandatory end-of-session /checkpoint write had never been performed, in this session or evidently several prior ones. (2) No short-track story in this repo's history (pcr-s1, stis-s1, and this session's tst-s1/jlc-s1/cfg-s1) had ever reached /definition-of-done — all sat permanently at stage=branch-complete with prStatus=merged.
+
+**Resolution:** Per the operator's 2026-07-16 decision: (1) all 13 outstanding capture-log entries (plus this session's own) promoted to this file; a proper /checkpoint write followed. (2) DoD required retroactively for all 5 short-track stories — see each story's own dod/ artefact (pcr-s1-dod.md, stis-s1-dod.md, tst-s1-dod.md, jlc-s1-dod.md, cfg-s1-dod.md). CLAUDE.md's short-track routing line updated to state explicitly that Step 8 (/definition-of-done) still applies after merge, closing the ambiguity that let this go unnoticed across 5 stories and 2+ months.
+
+---
+
+## JSONB columns come back from `pg` already parsed — a naive JSON.parse() on them ships silently until the first real sync
+
+### Observed — 2026-07-19/20 (product-rollup epic, pr-s2 through pr-s7; live staging verification) — resolved by hotfix PR #511
+
+**Circumstance:** `_renderProductView` in `products.js` called `JSON.parse()` unconditionally on 5 `product_rollups` columns (`health_counts`, `test_coverage`, `ac_coverage`, `taxonomy`, `dod_status_counts`), all declared `JSONB` in the schema. Node's `pg` driver auto-parses `JSONB` columns into native objects on `SELECT` — it never returns them as strings. The bug shipped undetected through 6 stories (pr-s2–pr-s7) because every unit test's mock `pool.query()` returned these fields as JSON-string literals (e.g. `health_counts: '{"green":0,...}'`), which never matched pg's real response shape. It only surfaced live, on `wuce-staging`, the first time any product completed a genuine sync-then-read round trip against a real Postgres database — crashing with `SyntaxError: "[object Object]" is not valid JSON` and leaving the browser with a blank page and no visible server error.
+
+**Resolution:** Added `_parseJsonbField(value, fallback)` — parses only if the value is actually a string, passes objects through untouched. Added a regression test using object-shaped (real pg) mock values end-to-end through `handleGetProductView`; confirmed it reproduces the exact crash on the pre-fix code and passes on the fix.
+
+**Takeaway — extends the existing "mock-shape verification" rule (CLAUDE.md, tir-s5):** that rule was written for adapter reuse across different *purposes*. This is the same failure mode from a different angle — an adapter (here, the `pg` driver itself) whose *auto-parsing behaviour for a specific column type* was never matched by any mock, for the entire life of a 6-story epic. When a column is `JSONB` (or any driver-auto-converted type), verify the mock's shape against the driver's actual behaviour for that type, not just against "the API returns JSON so a JSON string is a reasonable stand-in." A local `node -e` smoke test against a fixture with real objects (not stringified JSON) would have caught this in five minutes, on story one.
+
+---
+
+## Silently-optional env vars with no startup warning are a recurring class of staging gaps
+
+### Observed — 2026-07-19/20 (wuce-staging live verification, multiple sessions)
+
+**Circumstance:** Three separate features this session were fully implemented and shipped, then silently did nothing on staging because an env var they depend on was never set — with no startup log, warning, or error surfacing the gap: `PLATFORM_TENANT_ID` (skipped `registerSelfAsProduct()` entirely, returning `null`, no log), `ADMIN_GITHUB_LOGINS` (left every operator including the account owner unable to reach `/admin/credits`, a plain 403 with no hint why), and earlier in the same infra effort, `POSTHOG_KEY_STAGING`/`POSTHOG_KEY_PROD` (posthog-config.js hard-refuses to fall back between them). Each was diagnosed only by reading the source to find the exact env var name, then confirming via `flyctl secrets list` that it was absent.
+
+**Takeaway:** This pattern will keep recurring on every new staging environment stand-up. Worth considering, next time `/discovery` or `/definition` touches server startup: a single, explicit startup-time check that logs which of the known-important-but-optional env vars are unset (not a hard failure — many are legitimately optional in some deployments — just a visible `console.warn` at boot), so a missing var shows up in `flyctl logs` on the very first request instead of requiring a source-reading investigation each time.
+
+---
+
+## Live staging walkthrough of the product-rollup UI surfaced 5 more findings, only 2 root-caused so far — session paused mid-triage for account/context-limit handoff
+
+### Observed — 2026-07-20 (live staging verification, wuce-staging, skills-framework self-registered product)
+
+**Circumstance:** After PR #511 (JSONB fix) merged and deployed, continued live-clicking the skills-framework product view (registered against this repo's own real, ~115-story `pipeline-state.json`) surfaced 5 more findings in one pass. Two were root-caused with a fix ready to apply: (1) `computeTestCoverageRollup`/`computeAcCoverageRollup` in `product-rollup.js` key each per-feature row on `story.slug` only, with no fallback — 17 real stories in this repo's own pipeline-state.json (e.g. `ougl.1`–`ougl.9`) have an `id` but no `slug`, rendering as blank `: 100%` lines; fix is a one-line `story.slug || story.id` fallback, not yet applied. (2) `/admin/credits` 403s for the account owner — same "silently-optional env var" class as above, `ADMIN_GITHUB_LOGINS` unset on wuce-staging; fix is a `flyctl secrets set`, not yet applied (pending user confirmation, since granting admin credit-control access is slightly more consequential than the read-only `PLATFORM_TENANT_ID` fix). Three more need further input before any fix: (3) garbled/mojibake epic names (e.g. "Governance extractability ÃƒÂ¢...") traced to double-encoded UTF-8 baked directly into this repo's own `pipeline-state.json` source data (not a rendering bug — confirmed via direct grep of the file) — cosmetic, low priority, needs a data cleanup pass rather than a code fix. (4) The flat per-feature test-coverage list is unreadable at 115+ stories, unlike the properly-grouped Epics section below it — flagged as design debt needing a short design pass, not a hotfix. (5) "New feature" still gives a generic "Model error — please try again" — traced to the exact SSE error handler in `skills.js` (fires on any exception during the real LLM streaming call, logs a structured `sse_error` line with the real `error_message`) but the pasted log excerpt didn't include that specific line, so the actual underlying cause (zero credit balance, bad API key, or something else) is still unconfirmed.
+
+**Takeaway:** None yet — this is a live, in-progress investigation, not a resolved pattern. Recorded here (rather than only in `state.json`) so the finding list and root-cause status survives even if the next session starts from a completely different account and doesn't inherit this conversation's context at all.
+
+---
+
+## Resolution: F1 and F2 fixed and confirmed live; F5's real root cause was an explicitly-wrong env var, not a missing one
+
+### Observed — 2026-07-20 (live staging verification, wuce-staging, continued)
+
+**Circumstance:** F1 (blank slug labels) shipped as PR #513 with 3 regression tests, confirmed against the real pipeline-state.json (0 blank entries, was 17); the fix hit an unrelated snag first — its initial CI run failed on `check-workspace-state.js` because an earlier state.json rewrite in this same session (for the prior checkpoint, PR #512) had restructured the top-level `cycle` block and accidentally dropped the schema-required `cycle.discovery.{status,artefact,completedAt}` keys that test validates; fixed by restoring that block alongside the new narrative content. F2 (`ADMIN_GITHUB_LOGINS`) was applied via `flyctl secrets set` and confirmed via boot log. Both were then confirmed FIXED LIVE by the user after a `flyctl deploy`. The user then retried "New feature" and got the model error again — but this time pasted the actual `sse_error` fly log line, giving the real root cause for the first time: `"Copilot API HTTP 403: unauthorized: not licensed to use Copilot"`. `src/modules/skill-turn-executor.js` routes every skill turn through either the Anthropic Messages API or the GitHub Copilot Chat Completions API based on `SKILL_EXECUTOR_PROVIDER` (default `'anthropic'` if unset) — `wuce-staging` had this var explicitly set to a non-default value (confirmed present, though `flyctl secrets list` never reveals the actual value), forcing every turn through Copilot with a token that has no Copilot license.
+
+**Resolution:** User chose the fast option (fix the staging config) over the larger one (remove Copilot support from the codebase entirely, which would need its own short-track story). Fixed via `flyctl secrets unset SKILL_EXECUTOR_PROVIDER --app wuce-staging`, confirmed removed from the secrets list, confirmed `ANTHROPIC_API_KEY` still present and the app redeploying and serving cleanly. Not yet re-tested by the user as of this entry.
+
+**Takeaway — this is the 4th silently-misconfigured-env-var incident in this session, but a different shape than the first 3:** `PLATFORM_TENANT_ID`, `ADMIN_GITHUB_LOGINS`, and `POSTHOG_KEY_STAGING`/`PROD` were all *missing* values that should have been set. `SKILL_EXECUTOR_PROVIDER` was the inverse — an *explicitly set* value that was wrong for this environment, with no startup validation catching the mismatch (no check that a Copilot-scoped token actually exists when the provider is set to `'copilot'`). A useful startup-time sanity check for this class of bug needs to cover both directions: warn on missing-but-expected vars, AND warn when a provider/mode selector is set to a value whose required companion config (a scoped token, a matching key) isn't present. Neither direction currently produces any log line until the first real request fails deep in a request handler.
+
+---
+
+## GitHub Actions' check-suite auto-trigger can silently stop firing for the built-in Actions app, with no user-held credential able to fix it
+
+### Observed — 2026-07-21 (2026-07-21-web-ui-experience-redesign, wave 1 inner-loop dispatch, PRs #520–#523)
+
+**Circumstance:** Partway through a burst of near-simultaneous draft-PR opens (4 subagents finishing within a few minutes of each other), GitHub Actions (app_id 15368) stopped creating check suites entirely for new commits on 3 of the 4 PRs, while one PR opened slightly earlier (#519) had a normal, complete run. Third-party GitHub Apps (Cursor, Vercel) kept getting check suites created on the same affected commits, permanently stuck at `status: queued`. This was invisible via the normal `gh pr checks`/`statusCheckRollup` views (they just showed empty) — only visible via the dedicated `GET /repos/:owner/:repo/commits/:sha/check-suites` endpoint, which lists every app's check suite per commit including apps that never ran anything.
+
+**What did NOT fix it, exhaustively tried:** closing/reopening the PR; an empty commit push; a real content-change push; deleting and recreating the remote branch (which also auto-closed the original PR, requiring a manual reopen); opening a brand-new PR from a brand-new branch name (definitive proof it wasn't tied to any specific PR/branch object); removing the Cursor/Vercel app integrations from the account entirely, both before and after further pushes; editing a workflow YAML file itself (in case re-parsing/re-registering the workflow definition on push would help — it didn't). A PAT-authenticated `PATCH /repos/:owner/:repo/check-suites/preferences` call attempting to explicitly re-enable `auto_trigger_checks` for app 15368 returned a hard `403: check suite can only be modified by the GitHub App that created it` — confirming no PAT, OAuth token, or org-admin credential can fix this from the outside; only GitHub's own systems or the Actions app's own re-registration logic can.
+
+**Resolution (correlation, not confirmed causation):** marking each affected PR ready-for-review (undraft) and pushing a fresh merge-commit (bringing in `origin/master`) onto each branch preceded CI resuming normally on all of them. Whether it was the undraft, the merge-commit push, elapsed time, or something entirely server-side that actually cleared it is unknown — no single isolated variable was tested since the priority at the time was unblocking merges, not root-causing GitHub's internals.
+
+**Takeaway:** If this recurs — burst of parallel subagent-opened PRs, one or more silently getting zero CI runs despite normal-looking pushes — don't sink time into PAT/API-based fixes (confirmed dead end). Try undraft + a fresh merge-commit push first; if that doesn't clear it within a few pushes, this needs a GitHub Support ticket, not further local troubleshooting. Capture the `check-suites` endpoint output (not just `statusCheckRollup`) as the evidence artefact if filing one.
+
+---
+
+## Parallel-dispatched stories in the same epic reliably conflict on shared files — treat it as expected, not exceptional
+
+### Observed — 2026-07-21 (2026-07-21-web-ui-experience-redesign, waves 1 and 2, 9 stories dispatched across two batches)
+
+**Circumstance:** Dispatching multiple stories from the same epic as parallel subagents (A1+A5 both adding route branches to `server.js`/`products.js`; C2+C3 both adding tab panels to a shared `settings.js` shell built by a third story, C1) produced real code-level merge conflicts every time the second story of a pair rebased onto the first's already-merged result — on top of the already-known `.github/pipeline-state.json` bookkeeping conflict (per the existing Epic-Nested Story State Bookkeeping convention) that fired on literally every parallel pair regardless of whether their code overlapped at all.
+
+**Resolution pattern, applied identically each time:** `.github/pipeline-state.json` and any artefact "add/add" conflicts (a third, already-merged story's own `stories/`/`test-plans/`/`verification-scripts/` files, which the still-open branch's stale base also happened to be adding for the first time) were resolved by taking the incoming/already-merged side wholesale (`git checkout --theirs`) — these are never hand-mergeable JSON diffs worth reconciling line-by-line, the "theirs" copy is simply more current. The real code conflicts (duplicate `else if` route branches in `server.js`, duplicate tab-panel markup and `require` lists in `settings.js`) were resolved additively — both sides' distinct additions were kept in sequence, and where both stories independently needed the same shared value (e.g. two stories each generating their own CSRF token), the code was collapsed to compute it once and reuse it for both, rather than arbitrarily picking one side and discarding the other's real logic. After every resolution, both affected stories' own test files (not just the one being merged) were re-run before pushing, to catch a merge silently breaking the other story.
+
+**Takeaway:** When wave-dispatching parallel stories that an epic's own Architecture Constraints already flag as touching the same file (a shared shell, a shared route-registration file), budget a short manual conflict-resolution pass after each wave as the expected, normal outcome — not a signal that something went wrong. The fix is mechanical and fast once you know the shape (bookkeeping/artefact conflicts → take theirs; real code conflicts → merge additively, re-test both stories) — the risk is only in not expecting it and either force-pushing over one side's real work or spending too long trying to prevent the conflict rather than just resolving it quickly when it happens.
+
+---
+
+## A handler can be fully built and unit-tested, yet still be completely unreachable — router-dispatch tests are the only test that catches it
+
+### Observed — 2026-07-27 (jsvr-s1, wire-stage-view-route)
+
+**Circumstance:** `handleGetJourneyStageView` (`GET /journey/:id/stage/:name` — the destination of every "view a completed stage" breadcrumb link) was fully implemented and already covered by `check-p0.2-journey-guard-wiring.js` — but that test calls the handler function directly, never through `server.js`'s actual router. The route had simply never been registered in the router's dispatch chain, so every real request to it fell through to the final `else` branch and silently served the sign-in page. This is the same shape as an earlier finding this session (the `/admin/mock-gateway` toggle: fully wired API, zero `NAV_ITEMS` entry) — "fully built and tested in isolation, but nothing connects it to the real request path."
+
+**Takeaway:** A handler-level unit test proves the handler is *correct*; it says nothing about whether the handler is *reachable*. The fix (added in jsvr-s1's own regression test) is to dispatch the real pathname through the actual exported `router`/`createApp()` entry point, not call the handler directly — that's the only test shape that would have caught the original gap, and it's cheap to add alongside the existing handler-level test rather than instead of it. Worth a standing check when reviewing any new route handler: does at least one test exercise it through the real router, not just the function signature?
+
+---
+
+## `.dockerignore` excludes `scripts/` from the deployed image — SSH-ing into a running Fly container to run an operational script will always fail
+
+### Observed — 2026-07-27 (alrf-s11/s12, purge-e2e-tenants.js retroactive purge attempt)
+
+**Circumstance:** Tried to run the newly-built `purge-e2e-tenants.js` against real staging data via `flyctl ssh console --app wuce-staging -C "node scripts/purge-e2e-tenants.js"` — failed with `Cannot find module '/app/scripts/purge-e2e-tenants.js'`. `.dockerignore` deliberately excludes the entire `scripts/` directory from the production image ("Scripts — governance scripts only needed for CI"), by design — the running container genuinely has no `scripts/` at all. This is unrelated to (and was initially confused with) a separate, real Windows `cmd.exe` quoting problem that mangled a different attempted command in the same session.
+
+**Takeaway:** Any operational script meant to run against real staging data cannot be invoked by SSH-ing into the app container and pointing at `scripts/` — that path is structurally absent by design, not a deploy gap to fix. The working pattern: pull the real `DATABASE_URL` value out of the running container (`flyctl ssh console -C "printenv DATABASE_URL"`, which *is* available as an env var even though the script isn't) and run the script from a local checkout instead, where `scripts/` genuinely exists.
+
+---
+
+## `workspace/state.json` silently fell days out of date mid-session despite `pipeline-state.json` being kept current throughout
+
+### Observed — 2026-07-28 (durable-session-history, /estimate E1)
+
+**Circumstance:** Running `/estimate` surfaced that `workspace/state.json`'s `cycle`/`estimate` blocks still described `2026-07-25-code-shape-diagrams` — a feature that had, per `.github/pipeline-state.json` (updated directly and correctly throughout this session), already progressed to `definition-of-ready` days earlier. Nothing in the several features worked on in between (jsvr-s1, alrf-s10/s11/s12) had touched `state.json` at all, because each skill only writes the state block for its *own* active feature — nothing forces a check that `state.json`'s `activeFeature` still matches whatever is actually being worked on when a long session jumps between many short-track fixes and full outer-loop features in sequence.
+
+**Takeaway:** `pipeline-state.json` (per-feature, written by every skill) is the authoritative source of *where a specific feature actually is*; `workspace/state.json` (singular, global "current work" pointer) is only as fresh as the last skill that explicitly wrote to it — and in a long multi-feature session, that can silently lag by days. Worth a cheap habit: before trusting `state.json`'s `activeFeature`/`currentPhase` for anything (especially `/estimate`'s E1/E2 mode-detection logic, which reads `currentPhase` to decide which mode to run), cross-check it against `pipeline-state.json`'s actual current stage for that slug rather than assuming it's been kept in sync.
+
+---
+
+## Local `.env` database credentials silently rotate stale — Fly secrets are the living source of truth, not the checked-out `.env`
+
+### Observed — 2026-07-28 (dsh-s1 Task 6, real-Postgres integration test)
+
+**Circumstance:** A subagent implementing dsh-s1's final task (wiring a real Postgres round-trip test) hit a genuine blocker: the repo root's `.env` file's `DATABASE_URL` — dated 2026-07-09 — failed with `password authentication failed for user 'neondb_owner'` against the Neon dev database, confirmed independently (not a subagent bug; the same error occurred running the pre-existing, unmodified `scripts/migrate-schema-pg.js` directly). The operator's own instinct was correct: the actual current credential lives in `wuce-staging`'s Fly secrets (already proven reachable this session via `flyctl ssh console -C "printenv DATABASE_URL"`), not the local `.env` file, which has no mechanism keeping it in sync with whatever the Fly app's secret currently is.
+
+**Resolution:** Retrieved the real, current `DATABASE_URL` directly from the running `wuce-staging` Fly machine via `flyctl ssh console --app wuce-staging -C "printenv DATABASE_URL"`, piped straight into a job-scoped temp file (never printed to visible output), then used it as an inline env var for the one-off `node scripts/migrate-schema-pg.js` / test-file invocations that needed a real Postgres connection — never written into `.env`, never logged, never pasted into a subagent's prompt text.
+
+**Takeaway:** A local `.env` file is a point-in-time snapshot of a credential that Fly's own secrets store may have rotated since — there is no automatic sync between the two, so `.env` going stale (password rotated, `flyctl secrets set` run since the file was last touched, etc.) is a real, recurring failure mode, not a one-off fluke. When a local dev-DB connection fails with an auth error, don't assume the credential itself is wrong or needs fixing — check whether the corresponding Fly app's secret has simply moved on without `.env` and pull the current value from there (`flyctl ssh console -C "printenv <VAR>"`) rather than trying to guess or reconstruct a new one.
+
+---
+
+## Left-hand nav has a redundant entry and /journey needs to become product-aware
+
+### Observed — 2026-07-29 (cif-s1 branch-complete / dfr-s1 PR #631 CI review)
+
+**Circumstance:** Operator-reported gap during an unrelated CI review: the left-hand nav's "Run a Skill" entry (`/skills`) is now redundant, and there's overlap with `/journey`, which today shows a flat list of all features regardless of product. It should instead be scoped per product and surfaced via a list or board view, matching how kanban/board views already work per-product elsewhere in the app (e.g. `/products/:id/kanban`).
+
+**Takeaway:** Not yet scoped or scheduled — logged here as a nav/routing redesign candidate covering both the `/skills` redundancy and the `/journey` product-aware rework, so it isn't lost between sessions.
+
+---
+
+## A story's Complexity rating can silently understate risk when it assumes infrastructure exists that was never named
+
+### Observed — 2026-07-30 (/review — agency-client-organisations, stories 3, 4, 6)
+
+**Circumstance:** Stories 3 and 4 both required sending real transactional email (invitation link, magic-link), but no email-sending mechanism existed anywhere in the codebase — confirmed by checking for a `nodemailer`/`sendgrid`/`mailgun`-equivalent dependency and a `sendEmail`-shaped function, finding neither. Neither story's Architecture Constraints or NFRs named a provider or acknowledged new infrastructure was needed, and both rated Complexity as 2 ("well understood") — a rating that doesn't hold if email delivery has to be built from scratch. Separately, Story 6 required a Client-org user with "appropriate permissions, not just any read-only viewer" to trigger conversion, but Story 3 (the only story provisioning Client-org users) only ever created users with a read-only role — no story anywhere created the more-privileged role Story 6 depended on.
+
+**Takeaway:** A story's Complexity rating is only as accurate as the assumptions baked into its Architecture Constraints. When a story silently assumes infrastructure exists (a mail provider, a permission tier) without naming it, that assumption is invisible to the Complexity score until `/review` catches it as a HIGH finding. Worth checking at `/definition` time, not just `/review`: does every "well understood" story actually name every piece of infrastructure its ACs depend on?
+
+---
+
+## Auth-library selection: prefer libraries that extend an existing session model over ones that want to own it
+
+### Observed — 2026-07-31 (review follow-up, Stories 3/4, agency-client-organisations)
+
+**Circumstance:** Resolving the email-infrastructure HIGH finding required choosing a magic-link mechanism. Considered Better Auth and Auth.js (both want to own the full session lifecycle — cookies, session table — which would require bridging two session systems against this codebase's already-hardened custom session model for no clear security payoff) versus Passport.js + `passport-magic-login` (does not own sessions at all — it only writes identity into the app's existing `req.session`, matching this codebase's established hand-rolled GitHub/Google OAuth convention exactly).
+
+**Takeaway:** When choosing a third-party auth library to add a *new* auth path onto an *already-hardened* custom session system, the deciding factor isn't feature completeness — it's whether the library wants to own the session or just contribute identity into an existing one. A library that tries to own sessions forces a bridge between two systems; a library that only sets fields on whatever session object you hand it slots in as a peer to your existing hand-rolled paths instead of a competitor to them.
+
+---
+
+## Cross-story role-model gaps often come from conflating "org-level privilege" with "resource-level access restriction"
+
+### Observed — 2026-07-31 (review follow-up, Stories 3/6, agency-client-organisations)
+
+**Circumstance:** Story 3's original AC3 wording said the invited user's account was created "with a read-only role" — but Story 6 needed a Client-org user with "appropriate permissions, not just any read-only viewer" to trigger org conversion, and no story anywhere created that more-privileged role. The fix was reusing the existing `team_memberships` role model (already built in an earlier epic) rather than inventing a new Client-org-specific role field. The real unblocking insight: Story 3's "read-only role" wording had conflated two independent axes — a person's own org-level privilege (`team_memberships.role`, e.g. admin vs viewer) and a *separate* story's unconditional read-only enforcement on Agency-shared resources, which applies to every Client-org user regardless of their own role.
+
+**Takeaway:** When a story's AC describes a user as having "a read-only role," check whether that's actually describing the person's own privilege level within their org, or a resource-level access restriction imposed by a different mechanism entirely. Conflating the two can make a downstream story's stated precondition literally unsatisfiable by anything the upstream story builds — and the fix is usually "reuse the existing per-person role model," not "invent a new role field."
+
+---
+
+## External-dependency test gaps (Resend, Stripe) are a named, legitimate gap type — not a failure to route around
+
+### Observed — 2026-07-31 (test-plan, agency-client-organisations, all 6 stories)
+
+**Circumstance:** Story 3/4's invitation and magic-link emails mock the Resend adapter call in automated tests; actual delivery is deferred to a manual verification scenario, since a third-party email pipeline is outside the unit-test boundary. This is the same `External-dependency` gap type this codebase already uses for Stripe checkout tests.
+
+**Takeaway:** Not every "the test doesn't cover the real third-party call" observation is a coverage gap to close — some are the correct, permanent shape for that class of test. When a gap fits an established `External-dependency` pattern already used elsewhere in the same codebase (Stripe, and now Resend), name it as that pattern explicitly rather than treating it as unresolved. The manual verification scenario is the actual coverage for that half, not a compromise.
+
+---
+
+## Add D37 wiring ACs proactively, before the DoR H-ADAPTER check would block on their absence
+
+### Observed — 2026-07-31 (definition-of-ready, agency-client-organisations, all 6 stories)
+
+**Circumstance:** Stories 3 and 4 each introduced a genuinely new external-service adapter (Resend send, `passport-magic-login` verify/send callbacks) partway through test-plan/DoR prep. Rather than waiting for DoR's H-ADAPTER check to fail on the missing wiring AC, explicit D37 adapter-wiring ACs (stub-throws-when-unwired, wiring test asserts a differentiating outcome) were added to both stories' AC lists before running DoR.
+
+**Takeaway:** As soon as a story is found to introduce a new external-service adapter (not just an internal one), add its D37 wiring AC immediately — don't wait for the DoR gate to catch the omission. The check exists to catch a gap that's cheaper to fix at the moment it's discovered than after a formal gate has already failed on it.
+
+---
+
+## A story's own self-declared risk level can (and should) override its epic's default oversight tier
+
+### Observed — 2026-07-31 (definition-of-ready, agency-client-organisations, Story 2)
+
+**Circumstance:** The epic's default oversight was Medium, but Story 2 (relationship-grants-enforcement) had explicitly self-escalated in both its own Architecture Constraints and the NFR profile's Gaps table, naming itself the highest-risk story in the epic. It was flagged for — and received — a named human sign-off at DoR despite the epic default.
+
+**Takeaway:** An epic-level oversight tier is a floor, not a ceiling. When a story's own artefacts explicitly call out elevated risk (a security-critical guard, a novel relationship shape, a direct analog to a past real incident), treat that self-escalation as binding at DoR even if the epic default would otherwise waive named sign-off.
+
+---
+
+## A story's AC wording can literally undershoot what a sibling story actually needs — check downstream assumptions before merging
+
+### Observed — 2026-07-31 (inner coding loop, story-1-organisation-entity, agency-client-organisations)
+
+**Circumstance:** Story 1's AC3 said organisation resolution should happen "at OAuth callback" — implemented literally, wiring only into `routes/auth.js`'s GitHub/Google callbacks, not `routes/auth-email.js`'s email/password signup/login. A sibling story from an earlier epic (`ftcg-s1`) had wired its equivalent hook into all three login paths. The gap was caught and fixed before merge, once flagged rather than silently resolved either way.
+
+**Takeaway:** When a story's AC names one specific entry point ("OAuth callback") for a cross-cutting resolution step, check whether any *other* login/entry path in the same codebase already established a "wire into all N paths" precedent for the equivalent hook. A literal reading of one story's AC can undershoot a downstream story's actual requirement even when the code exactly matches what was written.
+
+---
+
+## "Data model and enforcement guard only" stories should leave their routes unwired for the next story to claim
+
+### Observed — 2026-07-31 (inner coding loop, story-2-relationship-grants-enforcement, agency-client-organisations)
+
+**Circumstance:** Story 2 built and fully tested 5 new route handlers by direct invocation, but deliberately did not wire them into `server.js`'s live URL dispatch table — because the DoR contract's own text scoped this story as "the data model and enforcement guard only," with the real user-facing URLs and session/identity shape belonging to Stories 3/4. The same pattern repeated for Story 5.
+
+**Takeaway:** When a story's DoR contract explicitly scopes it as a backend-only layer ("data model and X only"), leaving its new routes unwired from live dispatch is the correct behavior, not an incomplete implementation — wiring them prematurely would guess at a session/URL contract that a later, more-informed story is responsible for defining. Flag the deferred wiring explicitly in `decisions.md` so the handoff is traceable, but don't try to guess ahead of the story that owns the decision.
+
+---
+
+## A literal `/*` inside a new code comment can silently corrupt an unrelated test's naive comment-stripping regex
+
+### Observed — 2026-07-31 (inner coding loop, story-3-self-service-provisioning, agency-client-organisations)
+
+**Circumstance:** A new code comment describing the `/agency/clients/*` URL pattern contained the literal substring `/*`, which corrupted `check-csd-s7-as-built-system-architecture-diagram.js`'s naive regex-based comment-stripping logic — silently swallowing real code between the accidental comment-open and the next genuine `*/` elsewhere in the file. Fixed by rewording the comment, not by touching the test.
+
+**Takeaway:** Any codebase with a regex-based (not AST-based) comment-stripping static-analysis test is vulnerable to this exact failure mode: a perfectly ordinary code comment containing the literal characters `/*` (e.g. describing a glob pattern) can be misread as a real comment-open token and corrupt the tool's parse of everything after it. When a full-suite run surfaces an unrelated static-analysis test failure right after adding a comment describing any wildcard/glob pattern, check the comment's literal text for `/*` or `*/` substrings before assuming the test itself broke.
+
+---
+
+## Prove a "computed, not hardcoded" claim with an edge case that would fail if it were actually hardcoded
+
+### Observed — 2026-07-31 (inner coding loop, story-5-client-agency-comments, agency-client-organisations)
+
+**Circumstance:** Story 5's `thread_has_both_org_types` boolean (used in a PostHog event) is computed via a live JOIN from `comments.org_id` to `organisations.org_type` after each insert. An explicit edge-case test confirms it's `false` after the first (single-org-type) comment and flips to `true` only once both org types have commented on the same thread — not a static or memoized value.
+
+**Takeaway:** "Confirmed as a real, flipping computation, not hardcoded" is only a meaningful claim if there's a test that would actually fail if the value *were* hardcoded to `true`. A single happy-path test where the qualifying condition is already true by the time it's checked can pass identically whether the computation is real or a stub — the flip-state edge case is what actually proves it.
+
+---
+
+## Read the actual third-party library source before assuming an extension point exists in the shape you need
+
+### Observed — 2026-08-01 (inner coding loop, story-4-dual-path-authentication, agency-client-organisations)
+
+**Circumstance:** Story 4 needed to extend Story 3's shared `passport-magic-login` strategy instance for a second purpose (ongoing login, not just invitation redemption) without re-registering a second, conflicting instance. Reading `node_modules/passport-magic-login/src/index.ts` directly confirmed that `sendMagicLink`/`callbackUrl` are fixed at construction time, while `verify` is not — informing the correct extension mechanism (`setVerifyCallback`) and the correct, deliberate consequence (both invitation and login links necessarily redirect through the same fixed callback URL, since only `verify` can be swapped after construction).
+
+**Takeaway:** When extending shared third-party-backed infrastructure that a sibling story already registered, read the actual library source for the extension surface rather than assuming a mutable indirection exists wherever you need one. What's fixed at construction time versus swappable afterward is often not obvious from the library's own public API docs alone, and guessing wrong produces either a silent behavioral gap or a duplicated, conflicting registration.
+
+---
+
+## Genuine concurrency tests need a controlled-interleaving test double, not two sequential awaits in disguise
+
+### Observed — 2026-08-01 (inner coding loop, story-6-conversion-to-independent, agency-client-organisations)
+
+**Circumstance:** Story 6's AC4 required proving that a conversion transaction and a concurrent grant-creation call don't corrupt each other's data. The test built a "gated pool" wrapper whose `query()` calls are queued (not executed) and return an unresolved Promise; a test-controlled `releaseNext()` is the only thing that actually runs a queued query and resolves its caller. Both operations are started without awaiting, confirmed genuinely in-flight simultaneously (two pending queue entries) before either resolves, then released in both possible orders to assert the final state is non-corrupted either way.
+
+**Takeaway:** `await a(); await b();` never produces genuine concurrency — the two operations are never actually in flight at the same instant, no matter how the assertions afterward are worded. A real concurrency test needs a mechanism that can prove two operations are simultaneously pending before either completes, and needs to exercise both possible completion orders explicitly, not just one.
+
+---
+
+## Symlinks are the wrong mechanism for harness-agnostic instruction files in a Windows-primary repo
+
+### Observed — 2026-08-05 08:05 (/definition, repo-bootstrap-no-fork, rb-s3)
+
+**Circumstance:** Designing a mechanism to keep CLAUDE.md, AGENTS.md, .cursorrules, and .github/copilot-instructions.md identical across harnesses, an external reference (qm) uses one real file with the others as symlinks pointing at it. This repo's own dev environment is Windows, where git's symlink support is opt-in (core.symlinks) and inconsistent on checkout — a user without it enabled silently receives a plain-text file containing the link path instead of a working symlink, breaking the "one source of truth" guarantee with no error surfaced anywhere.
+
+**Takeaway:** A copy-based assembly step (generate each target file's content from one source, verified by a drift-check validator) is the safer choice than a symlink-based guarantee whenever a Windows-primary audience is in scope — the drift-check recovers the "impossible to diverge" property symlinks provide for free, without depending on a platform-specific filesystem feature that can silently fail. This repo already had the right pattern in place (scripts/assemble-copilot-instructions.sh, ADR-005) before this question came up; extending an existing mechanism beat introducing a second one.
+
+---
+
+## The /definition skill's guardrails-seeding instruction doesn't match actual practice — follow practice, not the literal text
+
+### Observed — 2026-08-05 08:05 (/definition, repo-bootstrap-no-fork)
+
+**Circumstance:** skills/definition/SKILL.md's mandatory state-update step instructs seeding a feature's guardrails array with every item from .github/architecture-guardrails.md's Guardrails Registry — 51 entries total, most of them specific to dashboards/pipeline-viz.html and unrelated to most features. Checking 3 existing features' actual guardrails arrays in pipeline-state.json found 0, 0, and 20 entries respectively — never all 51, and the 20-entry case was a curated, feature-relevant subset (3 ADRs plus 17 per-story NFR assessments added later at DoD), not a registry dump.
+
+**Takeaway:** When a SKILL.md's literal instruction and the repo's own established practice disagree, checking a few real examples before following the instruction verbatim catches this kind of drift — following this one literally would have flooded an unrelated feature's guardrails matrix with dozens of viz-tool-specific entries. The SKILL.md wording itself should be corrected (seed only registry items the Step 1.5 architecture-constraints scan actually surfaced as relevant) so the next agent doesn't have to independently rediscover the gap.
+
+---
+
+## Search for an existing GitHub-commit-via-Contents-API pattern before designing a new one
+
+### Observed — 2026-08-06 (/definition, durable-artefact-storage, das-s1)
+
+**Circumstance:** Story das-s1 needed to commit a completed stage's artefact to a product's connected GitHub repo — the same underlying mechanic (fetch real user identity, base64-encode content, PUT to `/repos/{owner}/{repo}/contents/{path}` with `sha` for updates, handle 409 conflicts, fail closed when no repo is configured) as `src/web-ui/adapters/sign-off-writer.js`'s existing `commitSignOff` function, built for an unrelated earlier story (rb/ougl-era sign-off flow). A grep for `git/trees|git/blobs|git/commits|/contents/` across `src/web-ui/` surfaced it in under a minute.
+
+**Takeaway:** Before designing a new "write content back to the user's own repo via their OAuth token" mechanism, grep the codebase for the underlying HTTP verb/API shape (`method: 'PUT'`, `/contents/`) rather than assuming from the story's framing that no precedent exists. This repo has accumulated several of these adapters (`sign-off-writer.js`, `annotation-writer.js`, `repo-adapter.js`'s `realCreateRepo`) across different features; each one re-solves the same "real user identity as commit author, never a service account" requirement, and finding the closest existing one first turns a from-scratch design into a generalisation task, directly de-risking the story's complexity rating.
+
+---
+
+## Real CI's regression-baseline check catches exact-count security tripwires that a name-based local sweep misses
+
+### Observed — 2026-08-06 (inner coding loop, tpac-s1, tenant-plan-admin-control)
+
+**Circumstance:** `tpac-s1` added a new `requireAdmin`-gated route (`/api/admin/plan/set`). The coding agent's local regression sweep (11 files chosen by name proximity to `admin-credits`/`tenant-plan`/`journey-cap`) reported clean, but real CI's `scripts/ci-test-regression-check.js` flagged 2 genuinely new failures: `check-d2-banner-exit-permission-visibility.js` and `check-d4-nfr-security-review-and-hardening.js`. Both are deliberate tripwire tests that hardcode an exact count of `requireAdmin(` call sites in `server.js` (10 → 11), designed to force a manual security-review confirmation whenever a new admin route is added — exactly the same mechanism that fired when `amgt-s1`'s routes merged (8 → 10) per the test's own failure-message history.
+
+**Takeaway:** A local regression sweep chosen by filename/topic proximity will systematically miss security-review tripwire tests, because their names (`d2-banner`, `d4-nfr-security-review`) don't obviously relate to the feature area being changed — they're keyed to a cross-cutting invariant (an exhaustive enumeration of a security-sensitive pattern across the whole file), not a feature area. Any story that adds a new `requireAdmin`-gated (or similarly enumerated) route should grep for existing exact-count assertions on that pattern before considering the regression sweep complete, and real CI's full-suite regression-baseline check remains the actual safety net — a clean local sweep is a confidence signal, not a substitute for it.
+
+---
+
+## "Backend logic + one UI entry point, second necessary control silently omitted" is a recurring gap shape in this codebase
+
+### Observed — 2026-08-06 (side quest, tpac-s1)
+
+**Circumstance:** An admin (`heymishy`) topped up a tenant's credits via `/admin/credits`, reasonably expecting it to also lift the tenant's journey-creation cap — it didn't, because `checkJourneyCap()` only reads `tenant_plan` (set by a real Stripe webhook), never touched by the credits-adjustment path. `html-shell.js`'s own comments independently document the *same shape* of gap occurring at least twice before: `amgt-s1`'s mock-gateway toggle route shipped with no nav entry at all ("only ever reachable by typing the URL directly"), and admin-credits/the modules-taxonomy CRUD had the identical gap before their own fix-forward nav additions.
+
+**Takeaway:** When a story ships a capability as backend logic plus exactly one obvious UI/control surface, a second necessary control (an adjacent admin lever, a nav entry, a settings toggle) is a recurring, specifically-named risk in this codebase — not a one-off oversight. At `/definition` or `/review` time for any story introducing an admin-only or config-level capability, explicitly ask "is there a second control an operator would reasonably expect to exist alongside this one, and does it exist?" rather than treating the primary capability's own completeness as sufficient.
+
+---
+
+## An explicit "revisit trigger" in decisions.md is worth writing even when the deferred gap feels obvious in the moment
+
+### Observed — 2026-08-06 (side quest, npwe-s1, following up on pan-s1's 2026-07-30 decision)
+
+**Circumstance:** `pan-s1` deliberately wired the Products sidebar into only 3 of 65 `renderShell` call sites, and logged an explicit decision: "Revisit trigger: If operator feedback shows the missing Products section on unwired pages... is itself confusing, wire additional call sites as a follow-up story." One week later, the operator organically hit exactly this gap during unrelated staging testing, with no memory of the original scoping conversation. Because the trigger was written down with the specific condition and the recommended response, resolving it took a fresh audit plus a bounded follow-up story rather than a debate about whether the gap was intentional or an oversight.
+
+**Takeaway:** Writing a specific, actionable "revisit trigger" into `decisions.md` at scope-narrowing time is cheap and pays off even when — especially when — the deferred gap feels self-evidently temporary in the moment it's deferred. A future session (mine or the operator's) has no access to that in-the-moment context; the trigger condition is what turns "did we mean to do this?" into "yes, and here's what to do about it."
+
+---
+
+## Zero CI runs ever created for a PR, when every other PR this session triggered within seconds, is a platform-outage signal — check githubstatus.com before assuming a code problem
+
+### Observed — 2026-08-06/07 (inner coding loop, das-s1)
+
+**Circumstance:** PR #674 (`das-s1`) showed `gh pr checks` reporting "no checks reported" for over an hour, and `gh run list --workflow="PR Checks"` / `--workflow="Assurance Gate"` showed zero runs at all for that branch — a qualitatively different failure mode from a slow or failing check. Closing and reopening the PR (a legitimate way to force a fresh `pull_request` webhook) didn't help. Checking `gh run list` more broadly showed unrelated scheduled jobs (`Fleet Aggregation`) and master-push-triggered jobs also stuck in `queued`/`waiting` for 12–27+ minutes — a repo-wide pattern, not specific to one branch. `githubstatus.com` confirmed an active, acknowledged major outage affecting GitHub Actions workflow runs, hosted runners, and webhook deliveries, started earlier that day.
+
+**Takeaway:** This repo's own established baseline (every PR this session triggered CI within seconds of opening) makes "zero runs ever created" a strong, specific anomaly signal — distinguishable from ordinary CI flakiness or a slow queue. When that signal appears, check `githubstatus.com` before spending further effort on retriggers, workarounds, or assuming the PR/code itself is at fault; a platform-wide outage has no code-side fix, and the correct response is to wait and verify recovery, not to route around the missing signal by merging without it.
+
+---
+
+## An async/background sync design can silently collide with an ADR that requires a live authenticated token — check for the collision at architecture-constraints-scan time, not implementation time
+
+### Observed — 2026-08-07 (/definition, cross-surface-state-sync)
+
+**Circumstance:** `cross-surface-state-sync`'s discovery had already committed the web-UI-to-`pipeline-state.json` sync direction to being "asynchronous/best-effort with a retry/reconciliation safety net" — a reasonable-sounding design choice made to avoid doubling the web UI's request latency. Running the Step 1.5 architecture-constraints scan at `/definition` surfaced a real conflict this framing had missed: ADR-020 requires any GitHub Contents API write to use the *authenticated user's own OAuth token* (`req.session.accessToken`), which only exists for the lifetime of the original HTTP request — a background job retrying "later" would have no live token to act with, forcing either a token-storage mechanism (a new credential-persistence surface ADR-020 never anticipated, and one `product/constraints.md` #12 explicitly argues against) or a redesign.
+
+**Takeaway:** A discovery-time design decision framed only in terms of latency/UX tradeoffs ("should this block the request or not?") can silently assume a technical property — a live credential, a still-open connection, an in-memory session — that a background/async execution model doesn't actually have. The fix here was cheap (bounded in-request retry only, resolved before any story was written) specifically because the collision was caught during the Step 1.5 architecture-constraints scan, before story ACs were drafted around the unexamined "async/background" framing. Any future feature proposing async or background write-back to a system gated by a token-scoped-to-a-live-request ADR (ADR-020 here, but the pattern generalizes to any per-request credential) should explicitly check that collision at the architecture-constraints-scan step, not discover it once implementation is underway.

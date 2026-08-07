@@ -46,6 +46,82 @@ const NO_LICENCE_MSG = 'No active Copilot licence found for this account. Please
 // Scoped to process lifetime; orphaned sessions cleaned up by session-manager on restart.
 const _sessionStore = new Map();
 
+// npwe-s1 -- shared sidebar products summary, same helper products.js's own
+// dashboard/product-view pages and journey.js's handleGetJourney already
+// call (pan-s1). Required at top level: products.js does not require this
+// module (skills.js) at its own top level (only lazily, inside function
+// bodies, e.g. its `require('./skills')._getHtmlSessionsBulk` seam) so this
+// does not introduce a circular require.
+var _getProductsNavSummary = require('./products').getProductsNavSummary;
+
+// npwe-s1 / D37 -- injectable Postgres pool for this module's own nav-
+// products resolution. skills.js's 13 target render call sites had zero
+// pool access before this story (confirmed by audit); rather than thread
+// `pool` through server.js's 13 per-route dispatch call sites (a second
+// file's signature change this story would otherwise leave unnamed), this
+// mirrors mtrr-s1's export-data-source.js precedent: a module-level pool
+// reference wired once at startup. Stub throws when unwired (D37 rule 1) --
+// see decisions.md ARCH entry (npwe-s1) for why every call site below wraps
+// this in try/catch rather than letting an unwired pool break the page
+// render: skills.js has ~13 call sites and hundreds of pre-existing tests
+// that render these pages with no pool wired at all, and Products-sidebar
+// enrichment is additive/optional (matches pan-s1's own AC5 contract --
+// renderProductsSection() already renders nothing when `products` is
+// undefined).
+let _npweDbPool = null;
+function setDbPool(pool) { _npweDbPool = pool; }
+function getDbPool() {
+  if (!_npweDbPool) {
+    throw new Error('Adapter not wired: database pool not wired. Call setDbPool() with a real Pool before use.');
+  }
+  return _npweDbPool;
+}
+
+/**
+ * npwe-s1 -- shared nav-products context for skill-chat-session pages.
+ * Calls getProductsNavSummary(pool, tenantId) exactly once (NFR: no N+1),
+ * then resolves activeProductId from the session's linked journey -- reusing
+ * _journeyStore.getJourney(journeyId).productId, the SAME field
+ * products.js's handlePostProductFeature already writes via
+ * setJourneyFields(journeyId, {..., productId}) and journey.js's own
+ * `/journey` handler already reads (`journeys.filter(j => j.productId ==
+ * null)`) -- no new Postgres query needed for this part, and no second
+ * products-list data-fetch pattern invented (see decisions.md ARCH entry).
+ * Degrades to `{}` (no sidebar rendered -- renderProductsSection() already
+ * treats `products: undefined` as "render nothing", pan-s1 AC5) on an
+ * unwired pool or any lookup failure -- this is read-only nav enrichment,
+ * never allowed to break the underlying page render.
+ * @param {object} req
+ * @param {string} [sessionId] - resolves activeProductId via this session's
+ *   linked journey (session.journeyId, the same field handleGetChatHtml/
+ *   _renderChatPage already read for the stage navigator). Omit for pages
+ *   with no session context (e.g. the Run a Skill list).
+ * @returns {Promise<{products?: Array, activeProductId?: (string|null), noProductJourneyCount?: number}>}
+ */
+async function _getSkillsNavContext(req, sessionId) {
+  try {
+    var pool = getDbPool();
+    var tenantId = req && req.session && req.session.tenantId;
+    var navSummary = await _getProductsNavSummary(pool, tenantId);
+    var activeProductId = null;
+    if (sessionId) {
+      var _navSession = _sessionStore.get(sessionId);
+      var journeyId = _navSession ? _navSession.journeyId : null;
+      if (journeyId) {
+        var journey = _journeyStore.getJourney(journeyId);
+        activeProductId = (journey && journey.productId != null) ? journey.productId : null;
+      }
+    }
+    return {
+      products: navSummary.products,
+      activeProductId: activeProductId,
+      noProductJourneyCount: navSummary.noProductJourneyCount
+    };
+  } catch (_) {
+    return {};
+  }
+}
+
 // wsm.1 — injectable disk session writer. Default stub throws so misconfiguration is visible.
 // Wire in server.js startup via setSessionStore(require('./adapters/session-store')).
 var _diskSessionWriter = {
@@ -82,10 +158,34 @@ async function readSessionFromRedis(sessionId) {
   return data;
 }
 
+// wusl-s2: fields deliberately excluded from the Redis restore merge below.
+// systemPrompt/contextFiles/precomputedStep1 are never actually present in
+// redisData in real usage (skill-session-redis.js's own _sanitise() strips
+// them before every write -- they're large and cheaply rebuilt fresh by
+// registerHtmlSession instead of round-tripped), so excluding them here is
+// belt-and-suspenders, not load-bearing. accessToken is excluded
+// defensively -- it should never be present on a skill session at all.
+var _REDIS_RESTORE_DENYLIST = ['accessToken', 'systemPrompt', 'contextFiles', 'precomputedStep1'];
+
 /**
- * Merge turns + runtime state from Redis compact data onto an already-registered session.
- * Call after registerHtmlSession so the session has a fresh systemPrompt, then call this
- * to restore the conversation history and any mid-artefact state.
+ * Merge ALL runtime state from Redis compact data onto an already-registered
+ * session. Call after registerHtmlSession so the session has a fresh
+ * systemPrompt, then call this to restore the conversation history and
+ * every other piece of accumulated state (canvas markers, condition items,
+ * story-map/section-confirmation progress, etc.).
+ *
+ * wusl-s2: previously copied only a hardcoded 8-field allowlist
+ * (artefactContent/artefactPath/done/usage/_artefactBuffer/
+ * _artefactInProgress/_slugBuffer/assumptionCards), silently dropping every
+ * other stateful session field on restore -- canvasBlocks (ideate canvas),
+ * conditionItems (conditions sidebar), dynamicQuestions/sectionDrafts/
+ * pendingConfirmation/pendingSectionDraft/currentSectionIndex (definition
+ * story-map flow), modelResponses, auditLog were all silently lost on a
+ * restore even though the write side (skill-session-redis.js) already
+ * persisted them correctly. This denylist-based approach restores
+ * everything Redis actually has, so any future story's new session field
+ * is restored automatically -- no allowlist to remember to update.
+ *
  * @param {string} sessionId
  * @param {object} redisData
  * @returns {boolean} true if merge succeeded
@@ -93,13 +193,34 @@ async function readSessionFromRedis(sessionId) {
 function mergeRedisSessionData(sessionId, redisData) {
   var session = _sessionStore.get(sessionId);
   if (!session || !redisData) return false;
-  if (Array.isArray(redisData.turns)) session.turns = redisData.turns;
-  var stateFields = ['artefactContent', 'artefactPath', 'done', 'usage',
-    '_artefactBuffer', '_artefactInProgress', '_slugBuffer', 'assumptionCards'];
-  stateFields.forEach(function(k) {
+  Object.keys(redisData).forEach(function(k) {
+    if (_REDIS_RESTORE_DENYLIST.indexOf(k) !== -1) return;
     if (redisData[k] !== undefined) session[k] = redisData[k];
   });
   return true;
+}
+
+/**
+ * wusl-s1 -- Look up a skill session, falling back to Redis on an in-memory
+ * cache miss (e.g. a redeploy replaced the process since this session was
+ * last written). Extracted from handleGetChatHtml's own inline logic (the
+ * one place this restore sequence was already correctly built) so every
+ * other handler that reads a skill session gets the same resilience,
+ * instead of only the initial chat-page load.
+ * @param {string} sessionId
+ * @returns {Promise<object|null>}
+ */
+async function _getSessionOrRestore(sessionId) {
+  var session = _sessionStore.get(sessionId);
+  if (session) return session;
+  var _redisData = await readSessionFromRedis(sessionId);
+  if (!_redisData) return null;
+  registerHtmlSession(sessionId, _redisData.sessionPath, _redisData.skillName, { featureSlug: _redisData.featureSlug });
+  mergeRedisSessionData(sessionId, _redisData);
+  // journeyId is not in mergeRedisSessionData's stateFields -- restore explicitly
+  var _restored = _sessionStore.get(sessionId);
+  if (_restored && _redisData.journeyId) _restored.journeyId = _redisData.journeyId;
+  return _restored;
 }
 
 /**
@@ -335,7 +456,7 @@ async function handlePostAnswer(req, res) {
     // Sanitise BEFORE any use — raw content is never forwarded or logged.
     var clean = sanitiseAnswer(raw);
 
-    var state = _sessionStore.get(sessionId);
+    var state = await _getSessionOrRestore(sessionId);
     if (!state) {
       _json(res, 404, { error: 'SESSION_NOT_FOUND' });
       return;
@@ -366,7 +487,7 @@ async function handleGetSessionState(req, res) {
   if (!_checkAuth(req, res)) { return; }
   try {
     var id      = req.params && req.params.id;
-    var session = _sessionStore.get(id);
+    var session = await _getSessionOrRestore(id);
     if (!session) {
       _json(res, 404, { error: 'SESSION_NOT_FOUND' });
       return;
@@ -403,7 +524,7 @@ async function handleCommitArtefact(req, res) {
   if (!_checkAuth(req, res)) { return; }
   try {
     var id      = req.params && req.params.id;
-    var session = _sessionStore.get(id);
+    var session = await _getSessionOrRestore(id);
     if (!session) {
       _json(res, 404, { error: 'SESSION_NOT_FOUND' });
       return;
@@ -692,7 +813,11 @@ function parseCanvasBlock(text) {
   var MARKER_RE = /---CANVAS-JSON:\s*(\{[\s\S]*?\})\s*---/;
   var match = String(text).match(MARKER_RE);
   if (!match) { return null; }
-  var TYPE_ALLOW = ['cluster-tree', 'table', 'text'];
+  // csd-s1 introduced 'data-model' as the first of the `diagram`
+  // content-block family. csd-s2 completes the family (ADR-026 -- shared
+  // dispatch, no parallel path). csd-s6 adds 'drift-signal' (see
+  // src/modules/drift-comparator.js) the same way.
+  var TYPE_ALLOW = ['cluster-tree', 'table', 'text', 'data-model', 'system-architecture', 'program-design', 'drift-signal'];
   try {
     var parsed = JSON.parse(match[1]);
     if (TYPE_ALLOW.indexOf(String(parsed.type || '')) === -1) { return null; }
@@ -746,9 +871,11 @@ function setSkillsAuditLogger(fn) { _htmlAuditLogger = fn; }
  * Render the skills list HTML using renderShell.
  * @param {Array<{name:string,description:string}>} skills
  * @param {object} user
+ * @param {object} [navContext] - npwe-s1: products/activeProductId/noProductJourneyCount, see _getSkillsNavContext
  * @returns {string}
  */
-function _renderSkillsList(skills, user) {
+function _renderSkillsList(skills, user, navContext) {
+  navContext = navContext || {};
   const items = skills.map(function(skill) {
     const safeName = escHtml(skill.name || '');
     const safeDesc = escHtml(skill.description || '');
@@ -769,7 +896,10 @@ function _renderSkillsList(skills, user) {
     ? '<div class="sw-empty"><div class="sw-empty-icon">❖</div><h1>No skills available</h1><p>No SKILL.md files were found in the repository.</p></div>'
     : '<p class="sw-section-title">Available skills</p><div style="display:flex;flex-direction:column;gap:12px">' + items + '</div>';
 
-  return renderShell({ title: 'Run a Skill', bodyContent: body, user: user, active: 'skills' });
+  return renderShell({
+    title: 'Run a Skill', bodyContent: body, user: user, active: 'skills',
+    products: navContext.products, activeProductId: navContext.activeProductId, noProductJourneyCount: navContext.noProductJourneyCount
+  });
 }
 
 /**
@@ -784,6 +914,10 @@ async function handleGetSkillsHtml(req, res) {
     res.end();
     return;
   }
+  // npwe-s1: this page has no session/journey context (it's the skill
+  // launcher, not tied to any one journey) -- resolved once, used in both
+  // the success and error branches below.
+  const _nav = await _getSkillsNavContext(req, null);
   try {
     const token  = req.session.accessToken;
     const user   = { login: req.session.login || '' };
@@ -795,7 +929,7 @@ async function handleGetSkillsHtml(req, res) {
       timestamp: new Date().toISOString()
     });
 
-    const html = _renderSkillsList(skills, user);
+    const html = _renderSkillsList(skills, user, _nav);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   } catch (err) {
@@ -804,7 +938,8 @@ async function handleGetSkillsHtml(req, res) {
       title:       'Error',
       bodyContent: '<p>An error occurred loading skills.</p>',
       user:        { login: (req.session && req.session.login) || '' },
-      active:      'skills'
+      active:      'skills',
+      products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
     });
     res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -833,11 +968,15 @@ async function handlePostSkillSessionHtml(req, res) {
     res.end();
   } catch (err) {
     _logger.error('handlePostSkillSessionHtml: ' + err.message);
+    // npwe-s1: session creation failed, so there's no sessionId to resolve a
+    // journey/product from -- same "no session context" case as the skills list.
+    const _nav = await _getSkillsNavContext(req, null);
     const html = renderShell({
       title:       'Error',
       bodyContent: '<p>Could not start skill session: ' + escHtml(err.message) + '</p>',
       user:        { login: (req.session && req.session.login) || '' },
-      active:      'skills'
+      active:      'skills',
+      products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
     });
     res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -928,6 +1067,7 @@ async function handleGetQuestionHtml(req, res) {
   const sessionId = (req.params && req.params.id)   || '';
   const token     = req.session.accessToken;
   const user      = { login: req.session.login || '' };
+  const _nav      = await _getSkillsNavContext(req, sessionId); // npwe-s1
 
   let result;
   try {
@@ -938,7 +1078,8 @@ async function handleGetQuestionHtml(req, res) {
       title:       status === 404 ? 'Session not found' : 'Error',
       bodyContent: '<p>' + escHtml(err.message || 'An error occurred') + '</p>',
       user,
-      active: 'skills'
+      active: 'skills',
+      products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
     });
     res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -997,7 +1138,10 @@ async function handleGetQuestionHtml(req, res) {
     priorHtml
   ].join('\n');
 
-  const html = renderShell({ title: 'Question ' + qi + ' of ' + tq, bodyContent: bodyContent, user: user, active: 'skills' });
+  const html = renderShell({
+    title: 'Question ' + qi + ' of ' + tq, bodyContent: bodyContent, user: user, active: 'skills',
+    products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
+  });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -1030,11 +1174,13 @@ async function handlePostAnswerHtml(req, res) {
     result = await _submitAnswer(skillName, sessionId, answer, token);
   } catch (err) {
     const status = err.status || 500;
+    const _nav = await _getSkillsNavContext(req, sessionId); // npwe-s1
     const html = renderShell({
       title:       'Error',
       bodyContent: '<p>' + escHtml(err.message || 'An error occurred') + '</p>',
       user,
-      active: 'skills'
+      active: 'skills',
+      products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
     });
     res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -1160,6 +1306,7 @@ async function handleGetCommitPreviewHtml(req, res) {
   const sessionId = (req.params && req.params.id)   || '';
   const token     = req.session.accessToken;
   const user      = { login: req.session.login || '' };
+  const _nav      = await _getSkillsNavContext(req, sessionId); // npwe-s1
 
   let preview;
   try {
@@ -1169,7 +1316,8 @@ async function handleGetCommitPreviewHtml(req, res) {
     const html = renderShell({
       title:       'Error',
       bodyContent: '<p>' + escHtml(err.message || 'An error occurred') + '</p>',
-      user
+      user,
+      products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
     });
     res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -1185,7 +1333,10 @@ async function handleGetCommitPreviewHtml(req, res) {
     reviewers:         preview.reviewers       || []
   });
 
-  const html = renderShell({ title: 'Commit preview', bodyContent, user, active: 'skills' });
+  const html = renderShell({
+    title: 'Commit preview', bodyContent, user, active: 'skills',
+    products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
+  });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -1218,11 +1369,13 @@ async function handlePostCommitHtml(req, res) {
     const bodyContent = is409
       ? renderAlreadyCommitted({ artefactUrl: null })
       : '<p>' + escHtml(err.message || 'An error occurred') + '</p>';
+    const _nav = await _getSkillsNavContext(req, sessionId); // npwe-s1
     const html = renderShell({
       title:       is409 ? 'Already committed' : 'Error',
       bodyContent,
       user,
-      active: 'skills'
+      active: 'skills',
+      products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
     });
     res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -1259,6 +1412,7 @@ async function handleGetResultHtml(req, res) {
   const sessionId = (req.params && req.params.id)   || '';
   const token     = req.session.accessToken;
   const user      = { login: req.session.login || '' };
+  const _nav      = await _getSkillsNavContext(req, sessionId); // npwe-s1
 
   let result;
   try {
@@ -1268,7 +1422,8 @@ async function handleGetResultHtml(req, res) {
     const html = renderShell({
       title:       'Error',
       bodyContent: '<p>' + escHtml(err.message || 'An error occurred') + '</p>',
-      user
+      user,
+      products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
     });
     res.writeHead(status, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -1284,7 +1439,10 @@ async function handleGetResultHtml(req, res) {
     nextSkillLabel: result.nextSkillLabel || null
   });
 
-  const html = renderShell({ title: 'Commit complete', bodyContent, user, active: 'skills' });
+  const html = renderShell({
+    title: 'Commit complete', bodyContent, user, active: 'skills',
+    products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
+  });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -1304,6 +1462,17 @@ async function handleGetResultHtml(req, res) {
  * @returns {string}
  */
 function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, sessionContext, _outContextFiles) {
+  // sdg.4: the 4th param stays backward-compatible with the legacy bare-array
+  // calling convention (priorArtefacts array directly) -- but when called with
+  // an options object shape { priorArtefacts, referenceFiles }, unwrap both
+  // fields here so every existing `priorArtefacts.forEach`/`.length` reference
+  // below keeps working unchanged, and referenceFiles becomes available for
+  // the strategic-context injection at the end of this function.
+  var referenceFiles = null;
+  if (priorArtefacts && !Array.isArray(priorArtefacts) && typeof priorArtefacts === 'object') {
+    referenceFiles = priorArtefacts.referenceFiles || null;
+    priorArtefacts = priorArtefacts.priorArtefacts || null;
+  }
   var root = repoRoot || _getRepoPath();
   var ctx = sessionContext || {};
   var parts = [];
@@ -1387,6 +1556,42 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
       parts.push('--- ARCHITECTURE GUARDRAILS ---\n\n' + fs.readFileSync(_repoGuardrailsPath, 'utf8'));
       if (_cf) _cf.push({ path: '.github/architecture-guardrails.md', status: 'ok' });
     }
+  }
+
+  // 3.6. As-built Data Model / System Architecture snapshot — /design only (alrf-s9).
+  // skills/design/SKILL.md's Data Model diagram markers section already requires
+  // "existing entities the feature touches, even with no schema change" to appear
+  // in the as-designed diagram -- but /design is conversational, with nothing
+  // grounding it in the product's REAL current schema/architecture before it
+  // draws. Without this, the model can only rely on the operator's own recall,
+  // exactly the "describe from memory what already exists" anti-pattern the
+  // as-built generators (csd-s5/csd-s7) were built to reject. Both generators
+  // already solve "cumulative across every prior feature run" correctly on
+  // their own (they re-scan the WHOLE product's real files every time, not
+  // scoped to one feature) -- this closes the one-directional gap by feeding
+  // that already-correct snapshot into /design's own context. Read-only: never
+  // calls writeAsBuiltDiagramArtefact, so starting a /design session never
+  // creates a new versioned artefact file as a side effect. Best-effort -- a
+  // brand-new product with no migrations/services yet is not an error, it
+  // just has nothing to show; any generation failure is silently skipped
+  // rather than blocking session creation.
+  if (skillName === 'design') {
+    try {
+      var _asBuiltDataModel = require('../../modules/migration-schema-parser')
+        .generateAsBuiltDataModelDiagram({ repoRoot: root, featureSlug: ctx.activeFeatureSlug || null });
+      if (_asBuiltDataModel && _asBuiltDataModel.canvasBlock && _asBuiltDataModel.canvasBlock.content) {
+        parts.push('--- EXISTING PRODUCT DATA MODEL (as-built, from real migration files) ---\n\n' +
+          _asBuiltDataModel.canvasBlock.content.mermaid);
+      }
+    } catch (_) { /* no migrations yet, or unparseable -- not this session's concern, skip */ }
+    try {
+      var _asBuiltSystemArch = require('../../modules/service-call-detector')
+        .generateAsBuiltSystemArchitectureDiagram({ repoRoot: root, featureSlug: ctx.activeFeatureSlug || null });
+      if (_asBuiltSystemArch && _asBuiltSystemArch.canvasBlock && _asBuiltSystemArch.canvasBlock.content) {
+        parts.push('--- EXISTING PRODUCT SYSTEM ARCHITECTURE (as-built, from real service-call scan) ---\n\n' +
+          _asBuiltSystemArch.canvasBlock.content.mermaid);
+      }
+    } catch (_) { /* skip -- see above */ }
   }
 
   // 4. Reference materials from artefacts/[feature-slug]/reference/ (if present)
@@ -1710,6 +1915,56 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
     ].join('\n'));
   }
 
+  // sdg.4: inject uploaded reference files (sdg.1/sdg.2) as a new system
+  // prompt section, read via sdg.3's reference-reader.js (fs.readFileSync,
+  // no third-party deps — same NFR this whole feature has followed). Omitted
+  // entirely when referenceFiles is absent or empty (AC6) — no section, no
+  // error, no change to existing behaviour for callers not opted in.
+  if (referenceFiles && referenceFiles.length > 0) {
+    var _refReader = require('../modules/reference-reader');
+    var _refAbsPaths = referenceFiles.map(function(rf) {
+      return path.isAbsolute(rf.path) ? rf.path : path.join(root, rf.path);
+    });
+    var _refResults = _refReader.readReferenceFiles(_refAbsPaths);
+    if (_refResults.length > 0) {
+      // Token budget (soft, 4-chars-per-token heuristic, per NFR): SKILL/product
+      // context assembled so far in `parts`, minus priorArtefacts' own content
+      // (tracked separately so it isn't double-counted), plus reference content.
+      var _priorCharLen = 0;
+      (priorArtefacts || []).forEach(function(pa) { _priorCharLen += (pa && pa.content ? pa.content.length : 0); });
+      var _assembledCharLen = parts.reduce(function(sum, p) { return sum + p.length; }, 0);
+      var _skillCharLen = Math.max(0, _assembledCharLen - _priorCharLen);
+
+      var _refContents = _refResults.map(function(r) { return r.content; });
+      var _refCharLen = _refContents.reduce(function(sum, c) { return sum + c.length; }, 0);
+
+      var _skillTokens     = Math.ceil(_skillCharLen / 4);
+      var _priorTokens     = Math.ceil(_priorCharLen / 4);
+      var _referenceTokens = Math.ceil(_refCharLen / 4);
+      var _totalTokens     = _skillTokens + _priorTokens + _referenceTokens;
+
+      // AC3: if the total exceeds the soft budget, truncate the LARGEST
+      // reference file to fit rather than dropping any file entirely —
+      // truncation preserves a leading portion of semantic content instead
+      // of losing it altogether.
+      if (_totalTokens > 12000) {
+        var _largestIdx = 0;
+        _refContents.forEach(function(c, i) { if (c.length > _refContents[_largestIdx].length) { _largestIdx = i; } });
+        var _overageChars = (_totalTokens - 12000) * 4;
+        var _keepChars = Math.max(0, _refContents[_largestIdx].length - _overageChars);
+        _refContents[_largestIdx] = _refContents[_largestIdx].slice(0, _keepChars) + '\n\n[TRUNCATED — remaining content exceeds token budget]';
+        console.warn('[WARN] Reference file truncated to fit token budget');
+      }
+
+      // AC2: logs the [INFO] breakdown always, and its own [WARN] exceeds-budget
+      // line (using the pre-truncation reference token estimate, matching the
+      // trigger condition that decided whether to truncate above) when over budget.
+      _refReader.logTokenBudget({ skillTokens: _skillTokens, referenceTokens: _referenceTokens, priorTokens: _priorTokens });
+
+      parts.push('## Strategic context and reference material\n\n' + _refContents.join('\n\n'));
+    }
+  }
+
   // Gate 2: Haiku format enforcement — EXP-002a/EXP-021 findings.
   // Haiku produces consulting-style advisory notes instead of template-format artefacts,
   // always ends with an open question, and never terminates cleanly.
@@ -1844,9 +2099,17 @@ function registerHtmlSession(sessionId, sessionPath, skillName, opts) {
   var options = Array.isArray(opts) ? { priorArtefacts: opts } : (opts || {});
   var contextFiles = [];
   var resolvedModel = getModelForSkill(skillName);
+  // sdg.4: thread referenceFiles through to buildSystemPrompt whenever the
+  // caller supplied any (e.g. handleGetReferenceModalStart passing
+  // journey.referenceFiles) -- otherwise fall back to the legacy bare-array
+  // priorArtefacts shape unchanged, so every existing caller that never opts
+  // into reference files keeps behaving exactly as before.
+  var _priorArtefactsArg = options.referenceFiles
+    ? { priorArtefacts: options.priorArtefacts || [], referenceFiles: options.referenceFiles }
+    : (options.priorArtefacts || undefined);
   var systemPrompt = buildSystemPrompt(
     skillName, sessionPath, undefined,
-    options.priorArtefacts || undefined,
+    _priorArtefactsArg,
     { productProfile: options.productProfile || undefined, activeFeatureSlug: options.featureSlug || undefined, modelId: resolvedModel },
     contextFiles
   );
@@ -1908,6 +2171,19 @@ function _setHtmlSession(sessionId, data) {
 }
 
 /**
+ * dsh-s4 -- delete exactly one entry from _sessionStore by key. Used by the
+ * staging-safe POST /test/evict-skill-session endpoint (server.js) to
+ * simulate "this session is gone from the current process's memory" (the
+ * real post-restart condition) without an actual restart. Never touches
+ * Redis or Postgres -- in-memory eviction only.
+ * @param {string} sessionId
+ * @returns {boolean} true if the key existed and was deleted, false otherwise
+ */
+function _evictHtmlSession(sessionId) {
+  return _sessionStore.delete(sessionId);
+}
+
+/**
  * List all entries in the session store — used by pmf.3 orientation wizard Step 3.
  * @returns {Array<{sessionId: string, session: object}>}
  */
@@ -1915,6 +2191,26 @@ function _listHtmlSessions() {
   var result = [];
   _sessionStore.forEach(function(session, id) {
     result.push({ sessionId: id, session: session });
+  });
+  return result;
+}
+
+/**
+ * s1.1 -- bulk session-store read: given a list of session IDs, returns a
+ * map of sessionId -> session object using a SINGLE pass over the session
+ * store, regardless of how many IDs are requested. Exists so kanban board
+ * rendering (which needs advance-readiness for every card on the board at
+ * once) never performs one _getHtmlSession() call per card -- the N+1 risk
+ * explicitly called out in s1.1's DoR contract (AC3).
+ * @param {string[]} sessionIds
+ * @returns {object} map of sessionId -> session (only ids that were found)
+ */
+function _getHtmlSessionsBulk(sessionIds) {
+  var idSet = new Set(sessionIds || []);
+  var result = {};
+  if (idSet.size === 0) return result;
+  _sessionStore.forEach(function(session, id) {
+    if (idSet.has(id)) result[id] = session;
   });
   return result;
 }
@@ -1932,7 +2228,7 @@ function _listHtmlSessions() {
  * @returns {Promise<{done:boolean, response:string, artefactContent?:string}|null>}
  */
 async function htmlSubmitTurn(skillName, sessionId, rawAnswer, token, tenantId) {
-  var session = _sessionStore.get(sessionId);
+  var session = await _getSessionOrRestore(sessionId);
   if (!session) { return null; }
 
   var userContent = sanitiseAnswer(rawAnswer);
@@ -1979,7 +2275,10 @@ async function htmlSubmitTurn(skillName, sessionId, rawAnswer, token, tenantId) 
 
   if (artefactMatch) {
     session.artefactContent = artefactMatch[1].trim();
-    var slug = slugMatch ? slugMatch[1].trim() : new Date().toISOString().slice(0, 10) + '-' + skillName;
+    // alrf-s8: same fix as the streaming turn handler below -- a journey-linked
+    // session's real featureSlug must always win over the response's own
+    // ---SLUG--- marker (see that comment for the full rationale).
+    var slug = session.featureSlug || (slugMatch ? slugMatch[1].trim() : new Date().toISOString().slice(0, 10) + '-' + skillName);
     session.artefactPath = 'artefacts/' + slug + '/' + session.skillName + '.md';
     session.done = true;
   }
@@ -2160,7 +2459,7 @@ async function handlePostCanvasEditHtml(req, res) {
   }
   const skillName = (req.params && req.params.name) || '';
   const sessionId = (req.params && req.params.id) || '';
-  const session = _sessionStore.get(sessionId);
+  const session = await _getSessionOrRestore(sessionId);
   if (!session) {
     _json(res, 404, { error: 'Session not found' });
     return;
@@ -2251,10 +2550,18 @@ async function handlePostCanvasEditHtml(req, res) {
  * @param {object} session
  * @returns {string}
  */
-function _renderChatPage(skillName, sessionId, session) {
+function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
+  navContext = navContext || {};
   var encodedSkill = encodeURIComponent(skillName);
   var encodedId    = encodeURIComponent(sessionId);
   var turnUrl      = '/api/skills/' + encodedSkill + '/sessions/' + encodedId + '/turn';
+  // kcrs-s1 (AC4) -- only rendered when a safe ?from= board-return value was
+  // passed through (kanban-card-originated resume); absent for every other
+  // way this page is reached (direct nav, "Continue" from the journey list
+  // with no board context, etc.), matching S3.4's own opt-in back-link.
+  var backLinkHtml = backUrl
+    ? '<p class="sw-chat-back"><a href="' + escHtml(backUrl) + '">&larr; Back to board</a></p>'
+    : '';
 
   // Build priorQA pairs from the turns array (mfc.1 structure).
   // Each pair: one assistant turn followed by one user turn.
@@ -2281,6 +2588,13 @@ function _renderChatPage(skillName, sessionId, session) {
 
   var isIdeate = skillName === 'ideate';
 
+  // csd-s3/csd-s4 (found post-DoD, see decisions.md): /design and /definition
+  // now emit CANVAS-JSON diagram markers too, not just /ideate's own lens
+  // output. This flag gates the (now non-ideate-exclusive) canvas-hydration
+  // and mermaid-asset-loading logic below -- chat-view.js's artefact-pane
+  // branch gained its own #canvas-panel element to match.
+  var supportsCanvas = isIdeate || skillName === 'design' || skillName === 'definition';
+
   // For ideate: pass draftSections to populate the canvas panel on initial load.
   // For non-ideate: the artefact panel is populated via a JS init block below.
   var draftSections = [];
@@ -2295,6 +2609,31 @@ function _renderChatPage(skillName, sessionId, session) {
       .replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
     artefactInitScript = '<script>window.__SW_INITIAL_ARTEFACT__=' + safeArtefact + ';</script>';
   }
+
+  // a4 (ideate canvas resume hydration fix): the ideate canvas's .canvas-block
+  // elements (rendered by the inline script's renderCanvasBlock/appendCanvasBlock
+  // functions) are otherwise only ever created reactively, in response to live
+  // SSE `canvasBlock` events during an in-progress turn (see handlePostTurnStreamHtml
+  // below). A page reload/session-resume is not a live SSE stream, so without this
+  // init script the canvas silently renders empty on resume even though
+  // mergeRedisSessionData() has already correctly restored session.canvasBlocks
+  // from Redis (proven by tests/check-a4-session-store-state.js) -- the restored
+  // data was simply never being read here to seed the initial HTML. Mirrors the
+  // existing __SW_INITIAL_ARTEFACT__ pattern above.
+  var canvasBlocksInitScript = '';
+  if (supportsCanvas && Array.isArray(session.canvasBlocks) && session.canvasBlocks.length) {
+    var safeCanvasBlocks = JSON.stringify(session.canvasBlocks)
+      .replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+    canvasBlocksInitScript = '<script>window.__SW_INITIAL_CANVAS_BLOCKS__=' + safeCanvasBlocks + ';</script>';
+  }
+
+  // csd-s1/csd-s3/csd-s4: mermaid client bundle — loaded on any page whose
+  // skill can emit a diagram content-block (/ideate, /design, /definition).
+  // Loaded via a plain <script src> (ADR-027: ordinary application code, no
+  // bundler) so renderCanvasBlock's diagram branches (in `script` below)
+  // can call window.mermaid.run() once the browser has fetched and
+  // executed it.
+  var mermaidAssetScript = supportsCanvas ? '<script src="/vendor/mermaid.min.js"></script>' : '';
 
   // dic.2: Phase model init script for definition sessions
   var phaseModelInitScript = '';
@@ -2318,6 +2657,7 @@ function _renderChatPage(skillName, sessionId, session) {
     '  var TURN_URL   = "' + escHtml(turnUrl) + '";',
     '  var STREAM_URL = TURN_URL + "-stream";',
     '  var IS_IDEATE      = ' + (isIdeate ? 'true' : 'false') + ';',
+    '  var SUPPORTS_CANVAS = ' + (supportsCanvas ? 'true' : 'false') + ';',
     '  var IS_DEFINITION  = ' + (skillName === 'definition' ? 'true' : 'false') + ';',
     // Pre-compute gate-confirm URL server-side — avoids embedding /api/journey/ literal when no journey
     '  var GATE_CONFIRM_URL = "' + (session.journeyId ? escHtml('/api/journey/' + session.journeyId + '/gate-confirm') : '') + '";',
@@ -3022,7 +3362,17 @@ function _renderChatPage(skillName, sessionId, session) {
     '                    if(_postText) { appendBubble("assistant", lightMd(_postText)); }',
     '                  }',
     '                  showCommitLink();',
-    '                } else if(streamText && streamText.indexOf("?") === -1) {',
+    '                } else if(!IS_IDEATE && streamText && streamText.indexOf("?") === -1) {',
+    '                  // a10b32a3\'s auto-continue-when-no-"?" nudge exists for artefact-',
+    '                  // generating skills (discovery/definition/etc.) whose system prompt',
+    '                  // guarantees every turn ends in either an ARTEFACT block or a literal',
+    '                  // question -- see buildSystemPrompt\'s "ARTEFACT GENERATION" instruction.',
+    '                  // /ideate has neither guarantee: it is a standalone, conversational,',
+    '                  // per-turn exchange that never emits ARTEFACT-START/END and can end a',
+    '                  // turn with a suggestion/statement instead of a literal "?". Applying',
+    '                  // this heuristic to ideate fired an unbounded chain of hidden "continue"',
+    '                  // turns against the same static turn content, duplicating canvas blocks',
+    '                  // without limit and leaving the input disabled indefinitely (icv-s1).',
     '                  _continuationPending = true;',
     '                  setTimeout(function(){ _continuationPending = false; sendTurn("continue", true); }, 100);',
     '                } else {',
@@ -3169,6 +3519,50 @@ function _renderChatPage(skillName, sessionId, session) {
     '    container.appendChild(cardEl);',
     '  }',
     '  // inc4 — canvas block renderer + append (inside IIFE so escHtmlClient is in scope)',
+    // csd-s2: ONE shared body-builder for the whole `diagram` content-block
+    // family (data-model, system-architecture, program-design) -- ADR-026
+    // forbids a parallel rendering path per diagram type, so all three call
+    // this single helper rather than each duplicating the mermaid-wrap markup.
+    // Mermaid syntax is placed as the .mermaid element's own text content --
+    // this is mermaid's documented convention for what mermaid.run() looks
+    // for and replaces with rendered SVG once the client bundle has loaded
+    // (see appendCanvasBlock below). A collapsed <details> text alternative
+    // keeps the raw source available to screen readers (NFR: accessibility /
+    // MC-SEC-01's sibling accessibility requirement) even before/without JS.
+    // A visible ".cv-diagram-type-label" (AC1) names the diagram type in
+    // human-readable form ("Data Model" / "System Architecture" /
+    // "Program Design") so the three types are distinguishable at a glance,
+    // not just via the generic uppercase canvas-type-tag.
+    '  function buildDiagramBodyHtml(diagramLabel, content) {',
+    '    var mermaidSrc = String(content.mermaid || content.source || "");',
+    '    var diagId = "cv-diagram-" + Math.random().toString(36).slice(2, 10);',
+    // Deliberately NOT interpolating mermaidSrc into an attribute (e.g.
+    // aria-label) here -- escHtmlClient only escapes &/</> for safe TEXT-NODE
+    // interpolation, not the double-quote character an attribute value is
+    // delimited by. Mermaid ER-diagram/flowchart syntax routinely contains
+    // quoted attribute-comment text (e.g. `string name PK "primary key"`), so
+    // an unescaped `"` inside an attribute would break out of it -- exactly
+    // the injection MC-SEC-01 forbids. diagramLabel is one of 3 fixed,
+    // internally-supplied strings (never user/model content), so it is safe
+    // to place directly in an attribute. The accessible text alternative
+    // below places the raw mermaid source only as element TEXT CONTENT
+    // (<pre>), which escHtmlClient safely escapes for that context.
+    '    return \'<div class="cv-diagram-wrap">\' +',
+    '      \'<div class="cv-diagram-type-label">\' + escHtmlClient(diagramLabel) + "</div>" +',
+    '      \'<div class="mermaid" id="\' + diagId + \'" data-diagram-label="\' + diagramLabel + \'" role="img" aria-label="\' + diagramLabel + \' diagram">\' + escHtmlClient(mermaidSrc) + \'</div>\' +',
+    '      \'<details class="cv-diagram-alt"><summary>View diagram source (text alternative)</summary><pre class="cv-diagram-src">\' + escHtmlClient(mermaidSrc) + \'</pre></details>\' +',
+    '    "</div>";',
+    '  }',
+    // csd-s2 (AC2): on a mermaid render failure (malformed/invalid syntax),
+    // replace the .mermaid node's content with a labelled, non-blank error
+    // box -- never mermaid's own default error output (which can include
+    // parser stack-trace-shaped text) and never the raw JS error message.
+    '  function markDiagramRenderError(node) {',
+    '    var label = node.getAttribute("data-diagram-label") || "Diagram";',
+    '    node.classList.add("cv-diagram-error");',
+    '    node.setAttribute("aria-label", label + " diagram failed to render");',
+    '    node.innerHTML = \'<div class="cv-diagram-error-box" role="alert">\' + escHtmlClient(label) + " diagram failed to render</div>";',
+    '  }',
     '  function renderCanvasBlock(block) {',
     '    var type = block.type || "";',
     '    var title = escHtmlClient(block.title || "");',
@@ -3200,9 +3594,44 @@ function _renderChatPage(skillName, sessionId, session) {
     '    } else if (type === "text") {',
     '      var paras = (content.paragraphs || [String(content.text || "")]).map(function(p) { return "<p>" + escHtmlClient(String(p)) + "</p>"; }).join("");',
     '      bodyHtml = \'<div class="cv-text">\' + paras + "</div>";',
+    '    } else if (type === "data-model") {',
+    '      bodyHtml = buildDiagramBodyHtml("Data Model", content);',
+    '    } else if (type === "system-architecture") {',
+    // csd-s2: the second of the `diagram` content-block family, wired
+    // through the SAME buildDiagramBodyHtml() helper as data-model above --
+    // no parallel rendering function (ADR-026).
+    '      bodyHtml = buildDiagramBodyHtml("System Architecture", content);',
+    '    } else if (type === "program-design") {',
+    // csd-s2: the third and last of the `diagram` content-block family.
+    '      bodyHtml = buildDiagramBodyHtml("Program Design", content);',
+    '    } else if (type === "drift-signal") {',
+    // csd-s6: the match/diverged drift signal. Conveyed by an aria-hidden
+    // icon PLUS an explicit text label ("Matches"/"Diverged") -- never
+    // colour alone (NFR: accessibility, WCAG 2.1 AA) -- and, when diverged,
+    // a bullet list naming the specific difference(s) (AC5), never a bare
+    // "diverged" label with no detail. A diagram type with no drift still
+    // renders its own explicit "Matches" item (AC4) -- this branch never
+    // produces empty/blank output for a MATCHED item.
+    '      var driftItems = content.items || [];',
+    '      var driftItemsHtml = driftItems.map(function(it) {',
+    '        var isDiverged = it.status === "DIVERGED";',
+    '        var statusClass = isDiverged ? "cv-drift-diverged" : "cv-drift-matched";',
+    '        var icon = isDiverged ? "\\u26A0" : "\\u2713";',
+    '        var diffs = it.differences || [];',
+    '        var diffsHtml = diffs.length ? (\'<ul class="cv-drift-diffs">\' + diffs.map(function(d) {',
+    '          return "<li>" + escHtmlClient(String(d)) + "</li>";',
+    '        }).join("") + "</ul>") : "";',
+    '        return \'<div class="cv-drift-item \' + statusClass + \'" data-diagram-type="\' + escHtmlClient(String(it.diagramType || "")) + \'" data-drift-status="\' + escHtmlClient(String(it.status || "")) + \'">\' +',
+    '          \'<span class="cv-drift-icon" aria-hidden="true">\' + icon + "</span>" +',
+    '          \'<span class="cv-drift-type-label">\' + escHtmlClient(String(it.diagramLabel || it.diagramType || "")) + "</span>" +',
+    '          \'<span class="cv-drift-status-label">\' + escHtmlClient(String(it.label || it.status || "")) + "</span>" +',
+    '          diffsHtml +',
+    '        "</div>";',
+    '      }).join("");',
+    '      bodyHtml = \'<div class="cv-drift-wrap">\' + driftItemsHtml + "</div>";',
     '    }',
     '    var typeTag = \'<span class="canvas-type-tag">\' + escHtmlClient(type) + "</span>";',
-    '    return \'<div class="canvas-block"><div class="canvas-block-head">\' + typeTag + \' <span class="canvas-block-title">\' + title + \'</span></div><div class="canvas-block-body">\' + bodyHtml + "</div></div>";',
+    '    return \'<div class="canvas-block" data-block-type="\' + escHtmlClient(type) + \'"><div class="canvas-block-head">\' + typeTag + \' <span class="canvas-block-title">\' + title + \'</span></div><div class="canvas-block-body">\' + bodyHtml + "</div></div>";',
     '  }',
     '  function appendCanvasBlock(block) {',
     '    var container = document.getElementById("canvas-panel");',
@@ -3210,9 +3639,45 @@ function _renderChatPage(skillName, sessionId, session) {
     '    var p = container.querySelector("p.cv-empty"); if (p) p.remove();',
     '    var wrapper = document.createElement("div");',
     '    wrapper.innerHTML = renderCanvasBlock(block);',
-    '    container.appendChild(wrapper.firstChild || wrapper);',
+    '    var appendedEl = wrapper.firstChild || wrapper;',
+    '    container.appendChild(appendedEl);',
+    // csd-s1/csd-s2 (MC-SEC-01): render mermaid diagram content client-side
+    // only through mermaid's own securityLevel:"strict" configuration (set
+    // once, below) -- never via raw innerHTML of unsanitised diagram text.
+    // csd-s2 extends this guard to all three diagram types and runs
+    // mermaid.run() per-node (rather than batched across every .mermaid node
+    // in the block) so that one malformed diagram's render failure is caught
+    // and shown as its own labelled error box (AC2) without ever blocking or
+    // masking a sibling diagram's successful render.
+    '    var isDiagramBlock = block && (block.type === "data-model" || block.type === "system-architecture" || block.type === "program-design");',
+    '    if (isDiagramBlock && window.mermaid && typeof window.mermaid.run === "function" && appendedEl.querySelectorAll) {',
+    '      var mermaidNodes = appendedEl.querySelectorAll(".mermaid");',
+    '      Array.prototype.forEach.call(mermaidNodes, function(node) {',
+    '        try {',
+    '          var runResult = window.mermaid.run({ nodes: [node] });',
+    '          if (runResult && typeof runResult.catch === "function") {',
+    '            runResult.catch(function() { markDiagramRenderError(node); });',
+    '          }',
+    '        } catch (e) {',
+    '          markDiagramRenderError(node);',
+    '        }',
+    '      });',
+    '    }',
     '    var pip = document.querySelector(".cv-pip[data-lens=\\"" + (block._lens || "") + "\\"]");',
     '    if (pip) pip.classList.add("active");',
+    '  }',
+    // csd-s1 (MC-SEC-01, NFR-security): configure mermaid's security level
+    // explicitly once per page, before any diagram content is ever rendered.
+    // "strict" is mermaid\'s own documented safe default -- it escapes raw
+    // HTML in diagram text/labels and disables click-triggered script
+    // bindings, so diagram content (effectively agent/skill-authored text
+    // rendered client-side) can never inject markup or scripts, matching
+    // this repo\'s "no user-supplied content in innerHTML without
+    // sanitisation" mandatory constraint. Guarded by window.mermaid so pages
+    // that never load /vendor/mermaid.min.js (every skill except ideate) are
+    // unaffected.
+    '  if (window.mermaid && typeof window.mermaid.initialize === "function") {',
+    '    window.mermaid.initialize({ startOnLoad: false, securityLevel: "strict" });',
     '  }',
     '  // Section collapse/expand (expose as globals for onclick attrs)',
     '  window.swToggleSection = function(contentId, btn) {',
@@ -3222,29 +3687,24 @@ function _renderChatPage(skillName, sessionId, session) {
     '    el.style.display = hidden ? "" : "none";',
     '    if (btn) btn.textContent = hidden ? "▾" : "▸";',
     '  };',
-    '  var _canvasMaximised = false;',
-    '  window.swExpandCanvas = function() {',
-    '    var ci = document.getElementById("condition-items");',
-    '    var ac = document.getElementById("assumption-cards");',
-    '    var ciBtn = document.getElementById("sw-toggle-conditions");',
-    '    var acBtn = document.getElementById("sw-toggle-assumptions");',
-    '    var expBtn = document.getElementById("sw-expand-canvas");',
-    '    if (!_canvasMaximised) {',
-    '      if (ci) ci.style.display = "none";',
-    '      if (ac) ac.style.display = "none";',
-    '      if (ciBtn) ciBtn.textContent = "▸";',
-    '      if (acBtn) acBtn.textContent = "▸";',
-    '      if (expBtn) expBtn.title = "Restore panels";',
-    '      _canvasMaximised = true;',
-    '    } else {',
-    '      if (ci) ci.style.display = "";',
-    '      if (ac) ac.style.display = "";',
-    '      if (ciBtn) ciBtn.textContent = "▾";',
-    '      if (acBtn) acBtn.textContent = "▾";',
-    '      if (expBtn) expBtn.title = "Maximise canvas";',
-    '      _canvasMaximised = false;',
-    '    }',
-    '  };',
+    // cdpl-s1: this file's own window.swExpandCanvas definition (previously
+    // here) is REMOVED, not just left alongside the new one. It was a
+    // second, independent fullscreen mechanism (hiding the Conditions/
+    // Assumptions sibling panels rather than truly maximising the canvas)
+    // that silently overrode chat-view.js's own inline <script> definition
+    // of window.swExpandCanvas at runtime, because this script block loads
+    // after chat-view.js's inline script on the page -- confirmed via a
+    // real-browser repro: chat-view.js's version ran and returned
+    // correctly, but this later assignment then clobbered
+    // window.swExpandCanvas, so the real DOM never gained the .canvas-fs
+    // class the click was supposed to produce. The DoR's own root-cause
+    // note ("never defined anywhere in this file", referring only to
+    // chat-view.js) was scoped correctly to that file but did not discover
+    // this second, cross-file definition -- the architecture constraint
+    // ("not a second separate implementation") applies here too, so this
+    // duplicate is deleted rather than kept. chat-view.js's
+    // swToggleCanvasFs()/swExpandCanvas() (the shared classList.toggle
+    // mechanism) is now the single definition.
     '  // iwu.5 — nudge bar on lensComplete',
     '  function countUnconfirmedCards() {',
     '    var cards = document.querySelectorAll("#assumption-cards .assumption-card");',
@@ -3318,6 +3778,13 @@ function _renderChatPage(skillName, sessionId, session) {
     '  // Initialize artefact panel from server-rendered session (non-ideate, done on page load)',
     '  if(!IS_IDEATE && typeof __SW_INITIAL_ARTEFACT__ !== "undefined" && __SW_INITIAL_ARTEFACT__) {',
     '    updateDraftPanel(__SW_INITIAL_ARTEFACT__);',
+    '  }',
+    '  // a4 (ideate canvas resume hydration fix): rehydrate the ideate canvas from',
+    '  // restored session.canvasBlocks on page load/session-resume, since these',
+    '  // .canvas-block elements are otherwise only ever created reactively via live',
+    '  // SSE canvasBlock events and would render empty on a cold reload.',
+    '  if(SUPPORTS_CANVAS && typeof __SW_INITIAL_CANVAS_BLOCKS__ !== "undefined" && __SW_INITIAL_CANVAS_BLOCKS__ && __SW_INITIAL_CANVAS_BLOCKS__.length) {',
+    '    __SW_INITIAL_CANVAS_BLOCKS__.forEach(function(block) { appendCanvasBlock(block); });',
     '  }',
     '  // dic.5: Apply-changes dispatch ─────────────────────────────────────────',
     '  function applyChanges() {',
@@ -3463,7 +3930,7 @@ function _renderChatPage(skillName, sessionId, session) {
     }
   }
 
-  var bodyContent = navigatorHtml + artefactInitScript + phaseModelInitScript + _renderChatView({
+  var bodyContent = backLinkHtml + navigatorHtml + artefactInitScript + phaseModelInitScript + canvasBlocksInitScript + mermaidAssetScript + _renderChatView({
     skillName:         skillName,
     skillLabel:        skillName,
     isIdeate:          isIdeate,
@@ -3600,7 +4067,10 @@ function _renderChatPage(skillName, sessionId, session) {
     bodyContent = bodyContent + journeyPanel;
   }
 
-  return renderShell({ title: 'Skill session — ' + escHtml(skillName), bodyContent: bodyContent, user: { login: '' }, active: 'skills' });
+  return renderShell({
+    title: 'Skill session — ' + escHtml(skillName), bodyContent: bodyContent, user: { login: '' }, active: 'skills',
+    products: navContext.products, activeProductId: navContext.activeProductId, noProductJourneyCount: navContext.noProductJourneyCount
+  });
 }
 
 /**
@@ -3617,19 +4087,7 @@ async function handleGetChatHtml(req, res) {
   }
   var skillName = (req.params && req.params.name) || '';
   var sessionId = (req.params && req.params.id) || '';
-  var session = _sessionStore.get(sessionId);
-
-  if (!session) {
-    var _redisData = await readSessionFromRedis(sessionId);
-    if (_redisData) {
-      registerHtmlSession(sessionId, _redisData.sessionPath, _redisData.skillName, { featureSlug: _redisData.featureSlug });
-      mergeRedisSessionData(sessionId, _redisData);
-      // journeyId is not in mergeRedisSessionData stateFields — restore explicitly
-      var _restored = _sessionStore.get(sessionId);
-      if (_restored && _redisData.journeyId) _restored.journeyId = _redisData.journeyId;
-      session = _restored;
-    }
-  }
+  var session = await _getSessionOrRestore(sessionId);
 
   if (!session) {
     var notFoundHtml = renderShell({ title: 'Not Found', bodyContent: '<p>Session not found.</p>', user: { login: '' } });
@@ -3637,8 +4095,39 @@ async function handleGetChatHtml(req, res) {
     res.end(notFoundHtml);
     return;
   }
+  // a4 (NFR-Security): ownership guard so a resumed session is only reachable
+  // by the same authenticated user who created it (ADR-025 tenant/ownership
+  // scoping). Mirrors the exact check already established on the POST turn
+  // endpoint (handlePostTurnHtml, above) -- server-side session login only,
+  // never trusting client-supplied ownerId. Previously this GET route (the
+  // one a user's browser reloads/reopens to resume a session) had no
+  // ownership check at all: any authenticated user could view any other
+  // tenant's /ideate (or any skill's) session content just by knowing/
+  // guessing the session ID in the URL. When no linked journey is found
+  // (e.g. a session created outside the journey flow), this check is a
+  // no-op, matching handlePostTurnHtml's existing permissive fallback.
+  if (session.journeyId) {
+    var _linkedJourneyForChat = _journeyStore.getJourney(session.journeyId);
+    if (_linkedJourneyForChat && _linkedJourneyForChat.ownerId && _linkedJourneyForChat.ownerId !== (req.session && req.session.login)) {
+      var forbiddenHtml = renderShell({ title: 'Not Found', bodyContent: '<p>Session not found.</p>', user: { login: req.session.login || '' } });
+      res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+      res.end(forbiddenHtml);
+      return;
+    }
+  }
+  // kcrs-s1 (AC4) -- when a kanban-card-originated resume passes a safe
+  // ?from= board-return value through, render a "Back to board" link here.
+  // Lazy require (matches journey.js's own existing pattern for requiring
+  // skills.js) avoids a circular top-level dependency between these two
+  // route modules.
+  var _rawFrom = (req.query && req.query.from) || '';
+  var _isSafeBoardBackLink = require('./journey')._isSafeBoardBackLink;
+  var backUrl = _isSafeBoardBackLink(_rawFrom) ? _rawFrom : '';
+
+  // npwe-s1 -- resolved via the session we already have in hand (session.journeyId).
+  var _nav = await _getSkillsNavContext(req, sessionId);
   // Initial turn is fired client-side via SSE to avoid blocking page render on LLM call
-  var html = _renderChatPage(skillName, sessionId, session);
+  var html = _renderChatPage(skillName, sessionId, session, backUrl, _nav);
   // Initialize PostHog on chat pages so $pageview fires and users are identified here too.
   // Without this, the entire active session is invisible to PostHog.
   var _phKey = process.env.POSTHOG_KEY || '';
@@ -3680,7 +4169,7 @@ async function handlePostTurnHtml(req, res) {
   }
   var skillName = (req.params && req.params.name) || '';
   var sessionId = (req.params && req.params.id) || '';
-  var session = _sessionStore.get(sessionId);
+  var session = await _getSessionOrRestore(sessionId);
 
   // wsm.2: journey ownership + concurrent turn protection
   var _linkedJourney = null;
@@ -3782,7 +4271,7 @@ async function handlePostTurnStreamHtml(req, res) {
   var body = await _readBody(req);
   var rawAnswer = (body && typeof body.answer === 'string') ? body.answer : '';
 
-  var session = _sessionStore.get(sessionId);
+  var session = await _getSessionOrRestore(sessionId);
   if (!session) {
     res.writeHead(404, { 'Content-Type': 'text/plain' });
     res.end('Session not found');
@@ -3920,6 +4409,16 @@ async function handlePostTurnStreamHtml(req, res) {
     // matching the non-streaming path (htmlSubmitTurn, above).
     _turnOptions.tenantId = (req.session && req.session.tenantId) || null;
     _turnOptions.sessionId = sessionId;
+    // srmw-s1: wire {stage, scenarioName} into the executor options exactly as
+    // htmlSubmitTurn's _turnMeta already does (see _turnMeta above), so
+    // MOCK_LLM_GATEWAY=true genuinely takes effect for the real chat UI's
+    // streaming turn endpoint — previously the ONLY endpoint the actual browser
+    // chat UI calls never wired these fields, so every real turn fell through
+    // to the real model regardless of the flag. Omitting these when the mock
+    // gateway is disabled is a no-op — skillTurnExecutorStream() only routes to
+    // the mock gateway when options.stage is truthy AND isMockGatewayEnabled().
+    _turnOptions.stage = session.skillName;
+    _turnOptions.scenarioName = session.mockScenarioName || 'success';
 
     var _llmResult = await _skillTurnExecutorStream(
       session.systemPrompt,
@@ -4192,7 +4691,19 @@ async function handlePostTurnStreamHtml(req, res) {
   if (done && _artefactText) {
     session.artefactContent = _artefactText;
     var skillName = (req.params && req.params.name) || '';
-    var slug = slugMatch ? slugMatch[1].trim() : new Date().toISOString().slice(0, 10) + '-' + skillName;
+    // alrf-s8: a journey-linked session already has a real, meaningful
+    // featureSlug assigned at journey-creation time (linkSessionToJourney,
+    // above) -- that must always win over whatever slug the model's own
+    // ---SLUG--- marker announces. Previously the marker always won, which
+    // was invisible with a real model (which has no reason to invent a
+    // different slug than the one it's told) but became a real, active bug
+    // under MOCK_LLM_GATEWAY=true: every fixture hardcodes the same
+    // ---SLUG---, so every real feature's artefacts collapsed onto the
+    // fixture's slug instead of the feature's own. The marker remains
+    // authoritative only for sessions with no journey (standalone /skills
+    // or CLI usage), where session.featureSlug is never set and the model
+    // deciding the slug is the intended, only mechanism.
+    var slug = session.featureSlug || (slugMatch ? slugMatch[1].trim() : new Date().toISOString().slice(0, 10) + '-' + skillName);
     session.artefactPath = 'artefacts/' + slug + '/' + (session.skillName || skillName) + '.md';
     session.done = true;
 
@@ -4216,10 +4727,33 @@ async function handlePostTurnStreamHtml(req, res) {
         : 'feat: ' + (session.skillName || skillName) + ' artefact';
       _skillTurnGitCommit(session.artefactPath, _commitMsg, _autoRepoRoot);
     } catch (_gitErr) { /* git unavailable in production — disk write above is the durable record */ }
+    // sdg.6: post-completion metrics hook, /ideate and /discovery only. Disk
+    // write above precedes this (ougl disk canonicity) -- read the artefact
+    // back from disk rather than trusting session.artefactContent directly.
+    if ((session.skillName === 'ideate' || session.skillName === 'discovery') && session.journeyId) {
+      try {
+        var _strategyMetricsAuto = require('../modules/strategy-metrics');
+        var _diskArtefactContentAuto = fs.readFileSync(_autoAbsPath, 'utf8');
+        var _autoJourney = _journeyStore.getJourney(session.journeyId);
+        var _autoRefFiles = (_autoJourney && _autoJourney.referenceFiles) || [];
+        var _autoCalloutResult = _strategyMetricsAuto.detectCalloutMarkers(_diskArtefactContentAuto);
+        _strategyMetricsAuto.recordMetrics(path.join(_autoRepoRoot, 'workspace'), {
+          featureSlug:        (_autoJourney && _autoJourney.featureSlug) || slug,
+          stage:              session.skillName,
+          hasReferenceFiles:  _autoRefFiles.length > 0,
+          referenceFileCount: _autoRefFiles.length,
+          referenceFileNames: _autoRefFiles.map(function(rf) { return path.basename(rf.path); }),
+          calloutCount:       _autoCalloutResult.count,
+          totalSections:      _strategyMetricsAuto.countSections(_diskArtefactContentAuto)
+        });
+      } catch (_autoMetricsErr) {
+        console.error('[strategy-metrics] recordMetrics failed:', _autoMetricsErr.message);
+      }
+    }
     // Mark stage complete in journey so resume can load it as a prior artefact
     if (session.journeyId && !session._stageDone) {
       session._stageDone = true;
-      try { _journeyStore.completeStage(session.journeyId, session.skillName, session.artefactPath); } catch (_) {}
+      try { _journeyStore.completeStage(session.journeyId, session.skillName, session.artefactPath, null, sessionId); } catch (_) {}
       // Persist artefact content to Postgres so cross-device / post-deploy resume works.
       // (completeStage only writes the artefact path; content must be saved separately.)
       if (process.env.DATABASE_URL && session.artefactContent) {
@@ -4227,6 +4761,26 @@ async function handlePostTurnStreamHtml(req, res) {
           session.journeyId, session.skillName, session.artefactPath, session.artefactContent
         ).catch(function(e) {
           console.warn(JSON.stringify({ event: 'artefact_pg_save_failed', sessionId: sessionId, error: e.message }));
+        });
+      }
+      // dsh-s1: durably persist this stage's conversation turns — separate
+      // from the artefact-content save above, so the conversation survives a
+      // restart even though it's stored in a different table (session_turns,
+      // not artefacts). Non-fatal: a failure here must never block the rest
+      // of the completion flow (artefact save, Redis delete, response).
+      if (process.env.DATABASE_URL) {
+        var _turnsJourney = _journeyStore.getJourney(session.journeyId);
+        // AC1 fix: session.turns doesn't yet include the completing assistant
+        // turn at this point in the flow (it's pushed below, after this
+        // block) — append it explicitly so the persisted row is complete.
+        var _finalTurns = (session.turns || []).concat([{ role: 'assistant', content: fullText }]);
+        require('../adapters/session-turns-pg').writeSessionTurns({
+          journeyId: session.journeyId,
+          tenantId: _turnsJourney ? _turnsJourney.tenantId : null,
+          skillName: session.skillName,
+          turns: _finalTurns
+        }).catch(function(e) {
+          console.warn(JSON.stringify({ event: 'session_turns_pg_save_failed', sessionId: sessionId, error: e.message }));
         });
       }
     }
@@ -4354,7 +4908,7 @@ function htmlGetNextQuestion(skillName, sessionId) {
  * @returns {Promise<{nextUrl:string}|null>}  null when session not found
  */
 async function htmlRecordAnswer(skillName, sessionId, rawAnswer, token) {
-  var session = _sessionStore.get(sessionId);
+  var session = await _getSessionOrRestore(sessionId);
   if (!session) { return null; }
 
   // dsq.2: if a section draft is pending confirmation, handle the confirm/edit before normal processing
@@ -4523,7 +5077,23 @@ async function htmlRecordAnswer(skillName, sessionId, rawAnswer, token) {
  * @param {string} sessionId
  * @returns {string} HTML
  */
-function htmlGetCompletePage(skillName, sessionId) {
+/**
+ * @param {string} skillName
+ * @param {string} sessionId
+ * @param {object} [navContext] - npwe-s1: pre-resolved products/activeProductId/
+ *   noProductJourneyCount (see _getSkillsNavContext). This function stays
+ *   synchronous -- deliberately unlike every other npwe-s1 call site --
+ *   because check-wusl-s1-session-redis-fallback.js's AC4 asserts it (and
+ *   htmlGetNextQuestion/htmlGetPreview) "remain synchronous", and dozens of
+ *   pre-existing callers (check-dsq3-post-session-clarify-gate.js etc.) use
+ *   its return value directly as a string, with no `await`. The caller
+ *   (server.js) resolves navContext itself via _getSkillsNavContext(req,
+ *   sessionId) before calling this -- omitted entirely, exactly as before,
+ *   by every pre-existing 2-arg caller.
+ * @returns {string}
+ */
+function htmlGetCompletePage(skillName, sessionId, navContext) {
+  navContext = navContext || {};
   var session = _sessionStore.get(sessionId);
   var isDone = session ? session.done : false;
   var commitPreviewUrl = '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(sessionId) + '/commit-preview';
@@ -4533,7 +5103,10 @@ function htmlGetCompletePage(skillName, sessionId) {
     (isDone ? '<p>Artefact is ready.</p>' : '<p>Session in progress.</p>') +
     '<p><a href="' + escHtml(commitPreviewUrl) + '">Commit artefact</a></p>' +
     '<p style="margin-top:1rem"><a href="/skills/clarify">Run /clarify first</a></p>';
-  return renderShell({ title: 'Draft complete', bodyContent: bodyContent, user: { login: '' } });
+  return renderShell({
+    title: 'Draft complete', bodyContent: bodyContent, user: { login: '' },
+    products: navContext.products, activeProductId: navContext.activeProductId, noProductJourneyCount: navContext.noProductJourneyCount
+  });
 }
 
 /**
@@ -4591,7 +5164,7 @@ async function handlePostAssumptionConfirm(req, res) {
     return;
   }
 
-  var session = _sessionStore.get(sessionId);
+  var session = await _getSessionOrRestore(sessionId);
   if (!session) {
     _json(res, 404, { error: 'SESSION_NOT_FOUND' });
     return;
@@ -4666,7 +5239,9 @@ module.exports = {
   handleGetChatHtml, handlePostTurnHtml,
   htmlSubmitTurn, buildSystemPrompt,
   // wuce.26 — test helpers + skill-turn executor adapter setter
-  _getHtmlSession, _setHtmlSession, _listHtmlSessions, setSkillTurnExecutorAdapter,
+  _getHtmlSession, _setHtmlSession, _listHtmlSessions, _getHtmlSessionsBulk, setSkillTurnExecutorAdapter,
+  // dsh-s4 — in-memory-only session eviction test helper (POST /test/evict-skill-session)
+  _evictHtmlSession,
   // wsm.1 — disk session writer injectable
   setSessionStore,
   // wsm.2 — Redis skill session injectable, compact read/merge, eviction
@@ -4709,5 +5284,9 @@ module.exports = {
   handlePostCanvasEditHtml, setApplyCanvasEdits, realApplyCanvasEdits,
   buildCanvasAuditEntry, writeAuditEntry,
   // psh-s5 — product context injection
-  buildSystemPromptWithProductContext
+  buildSystemPromptWithProductContext,
+  // npwe-s1 — D37 Postgres pool for Products-sidebar nav enrichment + the
+  // shared nav-context resolver (server.js calls this directly for
+  // htmlGetCompletePage, which stays synchronous -- see its own doc comment)
+  setDbPool, getDbPool, _getSkillsNavContext
 };

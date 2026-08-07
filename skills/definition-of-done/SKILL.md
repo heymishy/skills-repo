@@ -205,7 +205,7 @@ This section does not claim success - it records what is now observable.
 
 ## Output
 
-Conforms to `.github/templates/definition-of-done.md`.
+Conforms to `templates/definition-of-done.md`.
 Save to `artefacts/[feature]/dod/[story-slug]-dod.md`.
 
 ---

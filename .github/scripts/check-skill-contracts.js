@@ -349,7 +349,7 @@ const CONTRACTS = [
     required: [
       'swappable inner loop',
       'Setup slot',
-      '.github/templates/loop-design.md',
+      'templates/loop-design.md',
       'inner loop contract',
     ],
   },
@@ -360,7 +360,7 @@ const CONTRACTS = [
       'Stage-by-stage model routing',
       'Token budget policy',
       'artefacts/[feature-slug]/token-optimization.md',
-      '.github/templates/token-optimization.md',
+      'templates/token-optimization.md',
     ],
   },
   {
@@ -369,7 +369,7 @@ const CONTRACTS = [
     required: [
       'translation matrix',
       'artefacts/[programme-slug]/org-mapping.md',
-      '.github/templates/org-mapping.md',
+      'templates/org-mapping.md',
       'Governance hooks',
     ],
   },
@@ -379,7 +379,7 @@ const CONTRACTS = [
     required: [
       'artefacts/[programme-slug]/scale-pipeline.md',
       '1-2 teams to 20-30 teams',
-      '.github/templates/scale-pipeline.md',
+      'templates/scale-pipeline.md',
       'Control plane design',
     ],
   },

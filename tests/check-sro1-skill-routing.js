@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // check-sro1-skill-routing.js — governance tests for src.1 (skill routing CLI tools integration)
 // Covers T1–T8 (AC1–AC4) and T-NFR1a, T-NFR1b (AC5)
-// Tests FAIL until .github/skills/workflow/SKILL.md and .github/skills/improve/SKILL.md
+// Tests FAIL until skills/workflow/SKILL.md and skills/improve/SKILL.md
 // are updated to include the CLI observability routing hooks — TDD baseline.
 // No external dependencies — Node.js built-ins only.
 
@@ -11,8 +11,8 @@ const fs   = require('fs');
 const path = require('path');
 
 const ROOT          = path.join(__dirname, '..');
-const WORKFLOW_SKILL = path.join(ROOT, '.github', 'skills', 'workflow', 'SKILL.md');
-const IMPROVE_SKILL  = path.join(ROOT, '.github', 'skills', 'improve', 'SKILL.md');
+const WORKFLOW_SKILL = path.join(ROOT, 'skills', 'workflow', 'SKILL.md');
+const IMPROVE_SKILL  = path.join(ROOT, 'skills', 'improve', 'SKILL.md');
 
 let passed = 0;
 let failed = 0;
@@ -31,7 +31,7 @@ function readFile(filePath) {
 console.log('\n[sro1] T1 — workflow SKILL.md references generate-status-report.js');
 {
   const text = readFile(WORKFLOW_SKILL);
-  assert(text !== null, 'T1a: .github/skills/workflow/SKILL.md exists');
+  assert(text !== null, 'T1a: skills/workflow/SKILL.md exists');
   assert(text !== null && text.includes('generate-status-report.js'),
     'T1b: workflow SKILL.md contains "generate-status-report.js"');
 }
@@ -82,7 +82,7 @@ console.log('\n[sro1] T4 — workflow SKILL.md includes status report trigger ro
 console.log('\n[sro1] T5 — improve SKILL.md references record-benefit-comparison.js');
 {
   const text = readFile(IMPROVE_SKILL);
-  assert(text !== null, 'T5a: .github/skills/improve/SKILL.md exists');
+  assert(text !== null, 'T5a: skills/improve/SKILL.md exists');
   assert(text !== null && text.includes('record-benefit-comparison.js'),
     'T5b: improve SKILL.md contains "record-benefit-comparison.js"');
 }

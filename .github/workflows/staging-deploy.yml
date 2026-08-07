@@ -47,10 +47,52 @@ jobs:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
+      # dsn-s1: the deploy-staging.js wrapper below has zero external
+      # (node_modules) dependencies -- only Node built-ins -- so only Node
+      # itself needs to be set up before it runs; npm ci is deferred until
+      # right before the later database-seeding step, the only step in this
+      # job that actually needs a node_modules install.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # alrf-s2: stamp the build with its commit SHA + originating PR # before
+      # the image is built, so the running app can answer "which build is
+      # this?" from its own footer/GET /version -- see
+      # scripts/write-version-file.js and workspace/capture-log.md (2026-07-26)
+      # for the incident this closes (a deploy landed but its overall CI run
+      # showed red from an unrelated smoke-test failure, making "did my fix
+      # actually deploy?" impossible to answer from the UI alone).
+      - name: Write version stamp
+        run: node scripts/write-version-file.js
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+
+      # dsn-s1: a single wrapper script (never a raw inline flyctl deploy)
+      # so CI and any manual deploy share one code path, with a post-deploy
+      # check that fails loudly if fly.staging.toml's config didn't actually
+      # apply -- see scripts/deploy-staging.js and workspace/capture-log.md
+      # for the recurring incident this fixes.
       - name: Deploy to wuce-staging
-        run: flyctl deploy --remote-only --config fly.staging.toml --app wuce-staging
+        # bri-s2.5's own governance check (T4/IT1) statically verifies this
+        # exact "--app wuce-staging" text is visible in this job's run: line,
+        # to prove push-to-master never deploys to production by accident --
+        # kept visible here even though deploy-staging.js also defaults to
+        # the same value, so that static check keeps working unmodified.
+        run: node scripts/deploy-staging.js --app wuce-staging
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+
+      # dsds-s1: this job never installed dependencies before, so
+      # scripts/seed-staging.js's own require('pg') always failed with
+      # "Cannot find module 'pg'" -- masked until now because every merge's
+      # auto-deploy was already failing earlier, at the FLY_API_TOKEN step
+      # (see workspace/capture-log.md), so this step's own failure was never
+      # actually reached in CI until that was fixed.
+      - name: Install dependencies
+        run: npm ci
 
       - name: Seed staging database (bri-s2.4)
         run: node scripts/seed-staging.js
@@ -78,10 +120,28 @@ jobs:
         run: npx playwright install --with-deps chromium
 
       - name: Run @mocked suite against staging
-        run: npx playwright test --grep "@mocked"
+        # rlcc-s1: --workers=1 is a deliberate, narrowly-scoped-to-this-job fix,
+        # not a global playwright.config.js change -- same precedented pattern
+        # as e2e.yml's a2ccf-s1 fix for a structurally similar problem. Root
+        # cause: src/web-ui/server.js's real-LLM-call counter
+        # (global.__BRI_S3_2_REAL_LLM_CALL_COUNT__) is one process-wide number
+        # with no per-request attribution, shared by every spec against the
+        # single, real wuce-staging server. With the default 2-worker
+        # concurrency this job previously ran with, one spec's concurrently-
+        # running request could increment the counter inside a different
+        # spec's own before/after window, failing that spec's "zero real LLM
+        # calls" assertion for a reason unrelated to its own correctness
+        # (observed live: bri-s3.4 captured beforeCount=1, then afterCount=4).
+        # Serializing this job's specs removes the race entirely; it does not
+        # touch playwright.config.js, so local/dev parallelism is unaffected.
+        run: npx playwright test --grep "@mocked" --workers=1
         env:
           CI: 'true'
           E2E_BASE_URL: https://wuce-staging.fly.dev
+          # dss-s1: lets the 4 named /test/* routes these specs depend on
+          # work against real staging (which has no NODE_ENV=test guard),
+          # matching e2e.yml's existing pattern for Scenario A/B.
+          E2E_STAGING_AUTH_STUB_SECRET: ${{ secrets.E2E_STAGING_AUTH_STUB_SECRET }}
 
       - name: Upload Playwright traces and screenshots on failure
         if: failure()
@@ -93,6 +153,132 @@ jobs:
             playwright-report/
           retention-days: 7
           if-no-files-found: ignore
+
+      # alrf-s11: purge every e2e-test- tagged tenant this run created,
+      # regardless of pass/fail -- this job's @mocked suite also creates real
+      # e2e-test- tenants on staging, and this deploy fires on every push to
+      # master, so it was contributing to the same accumulation as e2e.yml's
+      # Scenario A/B jobs.
+      - name: Purge e2e-test- tenants created by this run
+        # Fix-forward (2026-07-26, PR #622): see e2e.yml's identical comment --
+        # a hung DB connection previously consumed this job's whole timeout
+        # budget. This is pure post-run hygiene, never a correctness gate.
+        # Deliberately no error-tolerance flag on this step --
+        # check-bri-s2.6-smoke-test-promote-gate.js asserts this job (which
+        # gates promote-to-prod) has none anywhere in its block; the script
+        # itself is written to never exit non-zero regardless.
+        if: always()
+        timeout-minutes: 2
+        run: node scripts/purge-e2e-tenants.js
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
+  # pmec-s1: closes the "new staging-safe endpoint + same-PR real-staging
+  # E2E test" bootstrapping gap (workspace/capture-log.md, 2026-07-28,
+  # dsh-s4 subagent-execution entry; D44 in standards/governance/delivery-patterns.md).
+  # staging-deploy.yml only deploys on push to master -- there is no
+  # PR-preview deploy mechanism -- so a PR that introduces both a new
+  # staging-safe endpoint AND a real-staging E2E test of that same endpoint
+  # cannot pass that check on its own pre-merge CI run; the endpoint
+  # genuinely isn't live yet. This job re-runs the exact same Scenario A/B
+  # spec files (behind the exact same audit.staging_e2e_scenario_a/b flags
+  # as e2e.yml) immediately after every real deploy, so that confirmation
+  # happens automatically the same day instead of depending on a human
+  # remembering to do a manual local re-run. Deliberately NOT a dependency
+  # of promote-to-prod (see decisions.md, 2026-07-29) -- smoke-test alone
+  # continues to gate promotion; this job is same-day visibility, not a
+  # release gate.
+  post-deploy-e2e-confirm:
+    name: Post-deploy real-staging E2E confirmation
+    needs: deploy-staging
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check opt-in flags (audit.staging_e2e_scenario_a / _b in context.yml)
+        id: pmec-config
+        run: |
+          # ADR-004: context.yml is the single config source of truth -- same
+          # flags e2e.yml's scenario-a-staging-e2e/scenario-b-staging-e2e jobs
+          # already read; no new flag introduced by this job.
+          SCENARIO_A_ENABLED="false"
+          SCENARIO_B_ENABLED="false"
+          if [ -f ".github/context.yml" ]; then
+            if command -v yq >/dev/null 2>&1; then
+              SCENARIO_A_ENABLED=$(yq e '.audit.staging_e2e_scenario_a // false' .github/context.yml)
+              SCENARIO_B_ENABLED=$(yq e '.audit.staging_e2e_scenario_b // false' .github/context.yml)
+            else
+              if grep -q 'staging_e2e_scenario_a: true' .github/context.yml; then
+                SCENARIO_A_ENABLED="true"
+              fi
+              if grep -q 'staging_e2e_scenario_b: true' .github/context.yml; then
+                SCENARIO_B_ENABLED="true"
+              fi
+            fi
+          fi
+          echo "scenario_a_enabled=${SCENARIO_A_ENABLED}" >> "$GITHUB_OUTPUT"
+          echo "scenario_b_enabled=${SCENARIO_B_ENABLED}" >> "$GITHUB_OUTPUT"
+          echo "Post-deploy confirmation flags: A=${SCENARIO_A_ENABLED} B=${SCENARIO_B_ENABLED}"
+
+      - name: Set up Node.js
+        if: steps.pmec-config.outputs.scenario_a_enabled == 'true' || steps.pmec-config.outputs.scenario_b_enabled == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        if: steps.pmec-config.outputs.scenario_a_enabled == 'true' || steps.pmec-config.outputs.scenario_b_enabled == 'true'
+        run: npm ci
+
+      - name: Install Playwright browsers (Chromium only)
+        if: steps.pmec-config.outputs.scenario_a_enabled == 'true' || steps.pmec-config.outputs.scenario_b_enabled == 'true'
+        run: npx playwright install --with-deps chromium
+
+      - name: Re-run Scenario A spec files against the freshly-deployed app
+        # Same spec file list as e2e.yml's scenario-a-staging-e2e job --
+        # kept in sync manually (see delivery-patterns.md D44); this is a
+        # re-run of existing pre-merge coverage against confirmed-live code,
+        # not new test coverage.
+        if: steps.pmec-config.outputs.scenario_a_enabled == 'true'
+        id: pmec-scenario-a-run
+        run: npx playwright test tests/e2e/a1-staging-auth-stub.spec.js tests/e2e/a2-stripe-test-mode-plan-selection.spec.js tests/e2e/a3-product-feature-ideate-canvas.spec.js tests/e2e/a4-ideate-session-resume.spec.js tests/e2e/dsh-s4-resume-conversation-survives-restart.spec.js --workers=1
+        env:
+          CI: 'true'
+          E2E_STAGING_BASE_URL: ${{ secrets.E2E_STAGING_BASE_URL }}
+          E2E_STAGING_AUTH_STUB_SECRET: ${{ secrets.E2E_STAGING_AUTH_STUB_SECRET }}
+          E2E_STAGING_ADMIN_PASSWORD: ${{ secrets.E2E_STAGING_ADMIN_PASSWORD }}
+
+      - name: Re-run Scenario B spec file against the freshly-deployed app
+        # Same spec file as e2e.yml's scenario-b-staging-e2e job.
+        if: steps.pmec-config.outputs.scenario_b_enabled == 'true'
+        id: pmec-scenario-b-run
+        run: npx playwright test tests/e2e/b1-formed-idea-outer-loop-story-map.spec.js --workers=1
+        env:
+          CI: 'true'
+          E2E_STAGING_BASE_URL: ${{ secrets.E2E_STAGING_BASE_URL }}
+          E2E_STAGING_AUTH_STUB_SECRET: ${{ secrets.E2E_STAGING_AUTH_STUB_SECRET }}
+          E2E_STAGING_ADMIN_PASSWORD: ${{ secrets.E2E_STAGING_ADMIN_PASSWORD }}
+
+      - name: Upload Playwright traces and screenshots on failure
+        if: always() && (steps.pmec-scenario-a-run.outcome == 'failure' || steps.pmec-scenario-b-run.outcome == 'failure')
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-deploy-e2e-confirm-traces-${{ github.run_id }}
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      # Same cleanup convention as e2e.yml's Scenario A/B jobs (alrf-s11) --
+      # this job's specs also create real e2e-test- tagged tenants.
+      - name: Purge e2e-test- tenants created by this run
+        if: always() && (steps.pmec-config.outputs.scenario_a_enabled == 'true' || steps.pmec-config.outputs.scenario_b_enabled == 'true')
+        timeout-minutes: 2
+        run: node scripts/purge-e2e-tenants.js
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
 
   promote-to-prod:
     name: Promote to production (manual approval required)

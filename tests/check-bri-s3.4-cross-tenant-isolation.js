@@ -110,10 +110,10 @@ function fail(name, err) { console.error('  [FAIL] ' + name + ': ' + (err && err
     return {
       query: async function (sql, params) {
         const s = String(sql).replace(/\s+/g, ' ').trim();
-        if (/SELECT name, tenant_id FROM products WHERE product_id/i.test(s)) {
+        if (/SELECT name, tenant_id.*FROM products WHERE product_id/i.test(s)) {
           const pid = params[0];
           const row = (products || []).find(function (p) { return p.product_id === pid; });
-          return { rows: row ? [{ name: row.name, tenant_id: row.tenant_id }] : [] };
+          return { rows: row ? [{ name: row.name, tenant_id: row.tenant_id, repo_owner: row.repo_owner || null, repo_name: row.repo_name || null }] : [] };
         }
         if (/SELECT tenant_id FROM products WHERE product_id/i.test(s)) {
           const pid = params[0];
@@ -282,8 +282,11 @@ function fail(name, err) { console.error('  [FAIL] ' + name + ': ' + (err && err
         if (/SELECT balance FROM credits/i.test(s)) {
           return { rows: [{ balance: balances[params[0]] }] };
         }
-        if (/UPDATE credits SET balance/i.test(s)) {
-          balances[params[1]] += params[0];
+        // cuf-s1: adjustBalance now issues an atomic upsert (INSERT INTO credits ...
+        // ON CONFLICT ... DO UPDATE SET balance = credits.balance + EXCLUDED.balance)
+        // rather than a plain UPDATE. Params remain [delta, tenantId] (unchanged order).
+        if (/INSERT INTO credits/i.test(s) && /ON CONFLICT/i.test(s)) {
+          balances[params[1]] = (balances[params[1]] || 0) + params[0];
           return { rows: [] };
         }
         return { rows: [] };

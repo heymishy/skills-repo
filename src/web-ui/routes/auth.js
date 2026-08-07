@@ -6,6 +6,8 @@
 // lab-s1.3: uses provider registry (providerExchangeCode / providerGetUserIdentity) so
 // future providers (Google, etc.) can be swapped in via setProviderAdapter() in server.js.
 
+const crypto = require('crypto');
+
 // Use module reference (not destructuring) so tests can monkeypatch individual exports.
 const _oauthAdapter = require('../auth/oauth-adapter');
 const { persistSession, rotateSessionId, getSession } = require('../middleware/session');
@@ -13,6 +15,11 @@ const { persistSession, rotateSessionId, getSession } = require('../middleware/s
 const _userFlags = require('../modules/user-flags');
 // arl-s1: user-roles module (injectable adapter — D37). Loads role after tenantId is set.
 const _userRoles = require('../modules/user-roles');
+const _credits = require('../modules/credits'); // ftcg-s1
+// story-1-organisation-entity: organisations module (D37 not needed here --
+// resolveOrganisationForTenant takes `pool` as an explicit argument, see
+// modules/organisations.js header comment and DoR H-ADAPTER).
+const _organisations = require('../modules/organisations');
 
 // Wire the real GitHub provider adapter on module load.
 // This ensures handleAuthCallback works when auth.js is required without server.js
@@ -32,6 +39,59 @@ let _logger = {
  */
 function setLogger(logger) {
   _logger = logger;
+}
+
+/**
+ * ftcg-s1: grant a one-time free-tier credit balance to a brand-new tenant.
+ * Safe to call unconditionally on every login/signup (see credits.js's
+ * grantFreeTierIfNew — atomic, ON CONFLICT DO NOTHING) regardless of whether
+ * this specific auth path has its own first-login detection. Never blocks or
+ * fails the caller's own signup flow — a grant failure is logged and
+ * swallowed (AC8), matching this codebase's existing fire-and-forget
+ * pattern for non-critical post-signup side effects.
+ * @param {string} tenantId
+ */
+async function _grantFreeTierCredits(tenantId) {
+  try {
+    const amount = parseInt(process.env.CREDITS_FREE_TIER_GRANT || '10', 10);
+    const granted = await _credits.grantFreeTierIfNew(tenantId, amount);
+    if (granted) {
+      _logger.info('free_tier_credits_granted', { tenantId, amount });
+    }
+  } catch (err) {
+    _logger.warn('free_tier_credits_grant_failed', { tenantId, reason: err.message });
+  }
+}
+
+// story-1-organisation-entity: pool handed in by server.js at startup (AC2/AC3).
+// No D37 stub-throw here -- a missing pool (e.g. no DATABASE_URL configured)
+// must never break login, it should simply skip organisation resolution
+// (mirrors _grantFreeTierCredits's own "never blocks the caller's flow" rule).
+let _organisationsPool = null;
+
+/**
+ * Replace the pool used for organisation resolution (called once by server.js at startup).
+ * @param {object} pool - pg-Pool-shaped object exposing query(sql, params)
+ */
+function setOrganisationsPool(pool) {
+  _organisationsPool = pool;
+}
+
+/**
+ * story-1-organisation-entity (AC2/AC3): resolve or create the `organisations`
+ * row for this tenantId at OAuth callback -- purely additive (AC4), never
+ * blocks or fails the caller's own login/signup flow. Mirrors
+ * _grantFreeTierCredits's fire-and-forget, try/catch-wrapped shape and
+ * placement immediately after req.session.tenantId is set.
+ * @param {string} tenantId
+ */
+async function _resolveOrganisation(tenantId) {
+  if (!_organisationsPool) return; // not wired (e.g. no DATABASE_URL) -- safe no-op
+  try {
+    await _organisations.resolveOrganisationForTenant(_organisationsPool, tenantId);
+  } catch (err) {
+    _logger.warn('organisation_resolution_failed', { tenantId, reason: err.message });
+  }
 }
 
 // Injectable org-fetch adapter (D37: stub throws; production wiring in server.js via setFetchOrgs)
@@ -146,6 +206,47 @@ async function handleAuthGithub(req, res) {
   res.end();
 }
 
+// nis-s1: staging-safe named-identity stub. Lets bri-s3.3 (multi-user,
+// shared-tenant RBAC) and bri-s3.6 (first-login vs returning-login) drive
+// the real /auth/github/callback route against real wuce-staging, the same
+// way they already do locally under NODE_ENV=test -- see decisions.md for
+// the full threat-model writeup. Gated by the same E2E_STAGING_AUTH_STUB_SECRET
+// as a1/dss-s1/serlb-s1, with its own distinct header (never set on
+// production). Swaps ONLY the OAuth-provider-exchange step below; every
+// downstream line (credit grant, role lookup, first-login, session
+// rotation, redirect) is the exact same, unmodified code a real login runs.
+const NAMED_IDENTITY_STUB_HEADER = 'x-e2e-named-identity-stub';
+
+/** True only when the staging-only gate secret is configured on this server. */
+function _namedIdentityStubEnabled() {
+  return !!process.env.E2E_STAGING_AUTH_STUB_SECRET;
+}
+
+/** Constant-time comparison of the request-supplied header value against the configured secret. */
+function _namedIdentityStubHeaderMatches(req) {
+  const expected = process.env.E2E_STAGING_AUTH_STUB_SECRET || '';
+  const candidate = (req.headers && req.headers[NAMED_IDENTITY_STUB_HEADER]) || '';
+  const candidateBuf = Buffer.from(String(candidate));
+  const expectedBuf  = Buffer.from(expected);
+  if (candidateBuf.length !== expectedBuf.length) return false;
+  return crypto.timingSafeEqual(candidateBuf, expectedBuf);
+}
+
+/**
+ * Deterministic synthetic GitHub-style numeric id from a login string --
+ * identical formula to server.js's own NODE_ENV=test provider stub
+ * (bri-s3.6), reused here rather than re-invented, so both paths produce
+ * self-consistent ids for the same login.
+ * @param {string} login
+ * @returns {number}
+ */
+function _deterministicIdFromLogin(login) {
+  let id = 0;
+  const str = String(login);
+  for (let i = 0; i < str.length; i++) { id = (id * 31 + str.charCodeAt(i)) % 900000; }
+  return 900000000 + id;
+}
+
 /**
  * GET /auth/github/callback — receive OAuth code + state from GitHub.
  * Validates CSRF state, exchanges code for token via provider registry, stores token in session.
@@ -166,33 +267,78 @@ async function handleAuthCallback(req, res) {
     return;
   }
 
-  try {
-    // lab-s1.3: call through provider registry (not the direct standalone functions) so
-    // the adapter can be swapped in tests and for future non-GitHub providers.
-    const token = await _oauthAdapter.providerExchangeCode(code);
-    _oauthAdapter.storeTokenInSession(req, token);
+  // nis-s1: named-identity staging stub -- only ever activates when the
+  // secret is configured (never on production), the header matches, AND the
+  // code itself is unmistakably synthetic (e2e- prefix). Any one of those
+  // failing falls through to the real provider-adapter path unchanged.
+  const _namedStubActive = _namedIdentityStubEnabled() &&
+    _namedIdentityStubHeaderMatches(req) &&
+    typeof code === 'string' && /^e2e-/i.test(code);
 
-    const user = await _oauthAdapter.providerGetUserIdentity(token);
+  if (_namedStubActive && query.stubTenant != null && !/^e2e-/i.test(String(query.stubTenant))) {
+    // AC4: a stubTenant that isn't unmistakably synthetic is rejected outright
+    // -- this is the guard that prevents a leaked secret from being used to
+    // point a session at a real customer's real tenant.
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'stubTenant must start with "e2e-"' }));
+    return;
+  }
+
+  try {
+    let token, user;
+    if (_namedStubActive) {
+      token = 'e2e-named-stub-token-' + code;
+      user  = { id: _deterministicIdFromLogin(code), login: code };
+      _oauthAdapter.storeTokenInSession(req, token);
+    } else {
+      // lab-s1.3: call through provider registry (not the direct standalone functions) so
+      // the adapter can be swapped in tests and for future non-GitHub providers.
+      token = await _oauthAdapter.providerExchangeCode(code);
+      _oauthAdapter.storeTokenInSession(req, token);
+      user = await _oauthAdapter.providerGetUserIdentity(token);
+    }
     req.session.userId = user.id;
     req.session.login  = user.login;
+    // c1: bookkeeping only (not new auth logic) -- records which provider this
+    // session originally signed in via, so the Settings/Profile tab can show
+    // it as "Linked" even though the original signup never appears in
+    // identity-links.js's person_identities table (see getLinkedProviders).
+    req.session.authProvider = 'github';
 
-    // Tenant resolution (AC2–AC6) — only when TENANT_ORG_ALLOWLIST is configured
-    const _allowlist = process.env.TENANT_ORG_ALLOWLIST || '';
-    if (_allowlist.trim()) {
-      const tenantId = await resolveTenant(token, _allowlist);
-      if (!tenantId) {
-        // Zero-match rejection (AC4): message must NOT expose TENANT_ORG_ALLOWLIST contents (NFR-sec-allowlist-disclosure)
-        _logger.warn('tenant_mismatch', { userId: user.id, timestamp: new Date().toISOString() });
-        res.writeHead(403, { 'Content-Type': 'text/plain' });
-        res.end('You are not a member of an authorised organisation.');
-        return;
-      }
-      req.session.tenantId = tenantId;
+    if (_namedStubActive) {
+      // nis-s1 (AC3/AC5): stubTenant, when supplied, IS the tenant directly --
+      // no TENANT_ORG_ALLOWLIST org-membership lookup runs for this path, since
+      // its whole purpose is letting 2+ synthetic identities share a tenant
+      // without staging needing org-allowlist mode configured at all.
+      req.session.tenantId = (query.stubTenant != null) ? String(query.stubTenant) : user.login;
     } else {
-      // No TENANT_ORG_ALLOWLIST: each GitHub user is their own isolated tenant.
-      // Org-based tenantId (when TENANT_ORG_ALLOWLIST is set) is unaffected by this branch.
-      req.session.tenantId = user.login;
+      // Tenant resolution (AC2–AC6) — only when TENANT_ORG_ALLOWLIST is configured
+      const _allowlist = process.env.TENANT_ORG_ALLOWLIST || '';
+      if (_allowlist.trim()) {
+        const tenantId = await resolveTenant(token, _allowlist);
+        if (!tenantId) {
+          // Zero-match rejection (AC4): message must NOT expose TENANT_ORG_ALLOWLIST contents (NFR-sec-allowlist-disclosure)
+          _logger.warn('tenant_mismatch', { userId: user.id, timestamp: new Date().toISOString() });
+          res.writeHead(403, { 'Content-Type': 'text/plain' });
+          res.end('You are not a member of an authorised organisation.');
+          return;
+        }
+        req.session.tenantId = tenantId;
+      } else {
+        // No TENANT_ORG_ALLOWLIST: each GitHub user is their own isolated tenant.
+        // Org-based tenantId (when TENANT_ORG_ALLOWLIST is set) is unaffected by this branch.
+        req.session.tenantId = user.login;
+      }
     }
+
+    // ftcg-s1: no-op for a returning tenant (ON CONFLICT DO NOTHING) — safe to
+    // call on every login, not gated on isFirstLogin below.
+    await _grantFreeTierCredits(req.session.tenantId);
+
+    // story-1-organisation-entity (AC3): resolve or create the standalone
+    // organisations row for this tenantId -- additive only (AC4), never
+    // blocks this login/signup flow (see _resolveOrganisation).
+    await _resolveOrganisation(req.session.tenantId);
 
     // tir-s1: load role via the person/team-scoped lookup (replaces the arl-s1
     // legacy getUserRole(tenantId) tenant-wide lookup — AC3). Falls back to
@@ -304,6 +450,18 @@ async function handleAuthGoogleCallback(req, res) {
     req.session.userId      = userInfo.sub;
     req.session.tenantId    = userInfo.sub;
     req.session.login       = userInfo.email;
+    // c1: bookkeeping only (not new auth logic) -- see the matching comment in
+    // handleAuthCallback above.
+    req.session.authProvider = 'google';
+
+    // ftcg-s1: this auth path has no isFirstLogin/first-login detection at
+    // all, unlike the GitHub callback -- the atomic grant (no-op for a
+    // returning tenant) is this path's ONLY mechanism for granting anything.
+    await _grantFreeTierCredits(req.session.tenantId);
+
+    // story-1-organisation-entity (AC3): resolve or create the standalone
+    // organisations row for this tenantId -- additive only (AC4).
+    await _resolveOrganisation(req.session.tenantId);
 
     // tir-s1: load role via the person/team-scoped lookup (AC3). Falls back to
     // 'user' on error.
@@ -361,6 +519,14 @@ async function handleLogout(req, res) {
  * Auth guard middleware — protects routes requiring an authenticated session.
  * Reads req.session.accessToken (canonical field — CLAUDE.md).
  * NEVER reads req.session.token — sessions using the legacy field are rejected (ARCH-003).
+ *
+ * next() may be sync or async across ~55 call sites in server.js. Previously
+ * this called next() unawaited and uncaught, so any rejection inside an async
+ * handler (e.g. a DB error) became a process-level unhandled rejection with no
+ * HTTP response ever sent -- the browser hung forever with no error shown.
+ * Both the sync-throw and async-reject paths now send a 500 instead, unless
+ * the handler already sent its own response.
+ *
  * @param {object} req
  * @param {object} res
  * @param {Function} next
@@ -372,7 +538,21 @@ function authGuard(req, res, next) {
     res.end();
     return;
   }
-  next();
+  function handleGuardedError(err) {
+    console.error('[authGuard] unhandled error in protected route handler:', err && err.stack ? err.stack : err);
+    if (!res.headersSent) {
+      res.writeHead(500, { 'Content-Type': 'text/plain' });
+      res.end('Internal Server Error');
+    }
+  }
+  try {
+    const result = next();
+    if (result && typeof result.then === 'function') {
+      result.catch(handleGuardedError);
+    }
+  } catch (err) {
+    handleGuardedError(err);
+  }
 }
 
 module.exports = {
@@ -387,5 +567,10 @@ module.exports = {
   getFetchOrgs,
   setFetchOrgMembers,
   getOrgMembers,
-  resolveTenant
+  resolveTenant,
+  setOrganisationsPool,
+  NAMED_IDENTITY_STUB_HEADER,
+  _namedIdentityStubEnabled,
+  _namedIdentityStubHeaderMatches,
+  _deterministicIdFromLogin
 };

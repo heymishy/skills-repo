@@ -80,7 +80,7 @@ If not found:
 
 > ⚠️ No `architecture-guardrails.md` found - proceeding without guardrail check.
 > Consider running `/bootstrap` or creating `.github/architecture-guardrails.md`
-> from the template at `.github/templates/architecture-guardrails.md` to enable
+> from the template at `templates/architecture-guardrails.md` to enable
 > this check in future.
 
 Record whether guardrails were available or absent in the epic artefact.
@@ -131,13 +131,13 @@ Present the proposed epic grouping before writing:
 > Reply: looks good — or describe how to reorganise
 
 Save each epic to `artefacts/[feature]/epics/[epic-slug].md`
-conforming to `.github/templates/epic.md`.
+conforming to `templates/epic.md`.
 
 ---
 
 ## Step 4 — Story decomposition
 
-For each epic, write stories conforming to `.github/templates/story.md`.
+For each epic, write stories conforming to `templates/story.md`.
 
 **Discipline:**
 - Every story names a persona from the benefit-metric artefact — not "a user"
@@ -196,13 +196,79 @@ migration story (not user-facing, driven by data rules or traffic switching):
 > Reply: 1 or 2
 
 If migration story template confirmed: write the story using
-`.github/templates/migration-story.md`.
+`templates/migration-story.md`.
 > 2. Defer to post-MVP
 > 3. Replace an existing MVP scope item — which one?
 >
 > Reply: 1, 2, or 3
 
+**Domain tag check (dta-s1 — applied before saving each story):**
+Read `.github/standards/index.yml`'s domain keys dynamically (do not hardcode a
+copy of the current key list here — it drifts as domains are added or removed).
+If the story's scope clearly touches one or more of those domains (e.g. a story
+whose ACs describe `src/web-ui/routes/*.js` changes matches `web-ui`; auth-flow
+changes match `auth`), prompt:
+
+> This story appears to touch the **[domain]** domain. Set `domain: [<domain>]`
+> on the story so `/definition-of-ready` injects the matching standards into
+> the coding agent instructions?
+> Reply: yes — or specify a different domain / none
+
+This is advisory, not a hard block — proceed with the story either way. Setting
+`domain` is never mandatory; omit it entirely when no listed domain clearly
+applies.
+
 Save each story to `artefacts/[feature]/stories/[story-slug].md`
+
+**Data Model diagram markers (csd-s4):**
+
+When a story's ACs touch persisted data shape — new tables, new columns, new
+relationships, or reuse of an existing table/column without a schema
+change — emit a `data-model` diagram content-block as part of that story's
+write-up, so the canvas panel renders an as-designed Data Model diagram the
+operator can compare against the as-built diagram later (csd-s5/csd-s6 — the
+drift-check this feeds).
+
+Use the same `---CANVAS-JSON: {...}---` marker convention `/ideate` already
+established (see `skills/ideate/SKILL.md`, "Canvas markers (inc5)") and that
+the canvas rendering already consumes (`type: "data-model"`,
+`content: { mermaid: "<erDiagram syntax>" }`) — per ADR-026, do not invent a
+new marker shape when an existing one already covers this:
+
+```
+---CANVAS-JSON: {"type":"data-model","title":"<string>","content":{"mermaid":"<erDiagram syntax>"}}---
+```
+
+- **Include existing entities the story touches, even with no schema
+  change** (AC2) — e.g. a story that reuses the existing `credits` table
+  without altering it must still show `credits` in the diagram, not just
+  new tables. Do not include unrelated existing tables that this story does
+  not touch.
+- **Entity/column names must exactly match this repo's real migration
+  files** (`scripts/migrate-schema-*.js`) (AC3) — never a generic
+  placeholder name and never a paraphrase of the real column name.
+- **Reuse-check prompt before finalising a new entity** (AC4, ADR-026) —
+  before finalising the diagram for a story that proposes a genuinely NEW
+  entity, surface an explicit prompt: "Does an existing entity's shape
+  already cover this concept? [new entity] looks like it could
+  extend/reference [closest existing entity], per ADR-026. Reply: yes,
+  extend/reference — or no, this is genuinely new, proceed as designed."
+  This does not block story-writing — if the operator confirms no existing
+  entity covers the concept, the new entity proceeds and the diagram is
+  finalised with it included. Do not surface this prompt for a story that
+  only reuses existing entities with no new entity proposed.
+- **Structure only, never row-level or tenant-specific data** in the
+  diagram content — table/column/relationship names only.
+
+Worked example — a story adding a new `feature_flags` table and reusing the
+existing `credits` table with no schema change:
+
+```
+---CANVAS-JSON: {"type":"data-model","title":"Data model","content":{"mermaid":"erDiagram\n    CREDITS {\n        text tenant_id PK\n        integer balance\n        timestamptz updated_at\n    }\n    FEATURE_FLAGS {\n        uuid id PK\n        text tenant_id FK\n        text flag_key\n        boolean enabled\n    }\n    FEATURE_FLAGS }o--|| CREDITS : \"scoped by tenant_id\""}}---
+```
+
+`CREDITS`'s columns (`tenant_id`, `balance`, `updated_at`) match
+`scripts/migrate-schema-credits.js` exactly.
 
 **Dependency chain validation (D1 — run after saving each story):**
 
@@ -226,6 +292,52 @@ If any check fails: surface to the operator with a dependency chain gap summary 
 > "Prerequisite story [slug] failed D1-prereq check: [which check failed and why]. Do not write this story until the operator confirms the dependency chain is valid."
 
 Do not write the story on the assumption that the discovery artefact's named prerequisites are fully validated.
+
+---
+
+## Canvas markers — Program Design diagram (csd-s3)
+
+After all stories across all epics for this feature are decomposed and saved
+(end of Step 4), emit exactly one `program-design` canvas marker summarising
+the file-tree/call-stack shape of the planned implementation — the epic/story
+sequencing above translated into which modules/files will be touched and how
+they call into one another. Emit it on its own line, using this format:
+
+```
+---CANVAS-JSON: {"type":"program-design","title":"<string>","content":{"mermaid":"<mermaid source>"}}---
+```
+
+Fields:
+- `type`: always `program-design` for this marker
+- `title`: short human-readable title (e.g. "Program Design")
+- `content.mermaid`: Mermaid `flowchart` source showing the file-tree/call-stack
+  shape implied by the epic/story sequencing above. Reuse csd-s2's existing
+  rendering mechanism — do not introduce a new diagram format or a second
+  rendering path (ADR-026).
+
+Worked example:
+
+```
+---CANVAS-JSON: {"type":"program-design","title":"Program Design","content":{"mermaid":"flowchart LR\n    ROUTE[routes/feature.js]\n    ADAPTER[adapters/feature-store.js]\n    ROUTE --> ADAPTER"}}---
+```
+
+Feature granularity (AC3): like the System Architecture diagram, this is
+generated at **feature granularity by default** — one Program Design diagram
+set per feature, not one per story, and not duplicated per epic. Save the
+marker inside the **first epic** written for this feature in Step 3's
+ordering (`epics/[first-epic-slug].md`'s Goal section) — this is the
+canonical location for the feature's Program Design diagram, even when the
+feature has multiple epics. If a `program-design` marker already exists
+there — this is not the first time /definition has run for this feature,
+e.g. a second or third story is being added to an existing epic — **refresh
+the existing marker in place**, replacing its `content.mermaid` value with
+the current, complete file-tree/call-stack shape, rather than appending a
+second, duplicate marker into that file or any other epic file. Per-story
+granularity is used only if the operator explicitly decides so for this
+specific feature at /definition time — record that decision in
+`decisions.md` (a `DESIGN` or `SCOPE` entry) if taken.
+
+Do not emit more than one `program-design` marker per /definition session.
 
 ---
 
@@ -397,7 +509,7 @@ Consolidate into a feature-level NFR profile:
 > Reply: confirm — or update [field] to [value]
 
 Save to `artefacts/[feature]/nfr-profile.md` conforming to
-`.github/templates/nfr-profile.md`.
+`templates/nfr-profile.md`.
 
 If no NFRs are identified, state this explicitly in the profile:
 `Status: Active — No NFRs identified at definition. Reviewed at [date].`

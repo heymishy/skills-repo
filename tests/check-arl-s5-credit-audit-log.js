@@ -88,7 +88,10 @@ function makeSpyMockDb(opts) {
       if (sql.includes('SELECT tenant_id FROM')) {
         return { rows: allowlist.map(function(t) { return { tenant_id: t }; }) };
       }
-      if (sql.includes('UPDATE credits') && sql.includes('RETURNING')) {
+      // cuf-s1: adjustBalanceWithAudit now issues an atomic upsert
+      // (INSERT INTO credits ... ON CONFLICT ... DO UPDATE ... RETURNING balance)
+      // rather than a plain UPDATE ... RETURNING.
+      if (sql.includes('INSERT INTO credits') && sql.includes('ON CONFLICT') && sql.includes('RETURNING')) {
         updateCalls++;
         var delta = params[0];
         return { rows: [{ balance: startBalance + delta }] };
@@ -112,7 +115,8 @@ function makeStatefulMockDb(initialBalances) {
   var auditLog = [];
   return {
     query: async function(sql, params) {
-      if (sql.includes('UPDATE credits') && sql.includes('RETURNING')) {
+      // cuf-s1: see mock comment above — adjustBalanceWithAudit now upserts.
+      if (sql.includes('INSERT INTO credits') && sql.includes('ON CONFLICT') && sql.includes('RETURNING')) {
         var delta = params[0];
         var tenantId = params[1];
         balances[tenantId] = (balances[tenantId] || 0) + delta;

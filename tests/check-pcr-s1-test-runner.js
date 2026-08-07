@@ -19,7 +19,6 @@
 const fs   = require('fs');
 const path = require('path');
 const os   = require('os');
-const { execSync } = require('child_process');
 
 const root = path.join(__dirname, '..');
 
@@ -164,15 +163,27 @@ const { discoverTestFiles, GRANDFATHER_LIST, getAllTestFiles } = runner;
 }
 
 // ── IT3 — adding a new tests/check-*.js file requires zero package.json edits ─
-
+// csd-s1 (2026-07-25): rewritten to compare package.json's own content
+// before vs. after the dummy test file is created, rather than asserting a
+// clean `git diff -- package.json` against HEAD. The original `git diff`
+// form conflated "did adding a test file require a package.json edit"
+// (this test's actual intent) with "does package.json have ANY pending
+// diff at all" -- which breaks for any unrelated, legitimate, already-
+// decided package.json change in flight (e.g. csd-s1 adding the `mermaid`
+// dependency per its own decisions.md ARCH decision). The rewritten check
+// isolates exactly what IT3 means to prove: creating a new tests/check-*.js
+// file causes zero bytes of package.json change, independent of whatever
+// else package.json may legitimately already contain.
 {
   const T = 'IT3-new-test-file-zero-package-json-diff';
   const dummyPath = path.join(root, 'tests', 'check-pcr-s1-zzz-dummy.js');
+  const pkgPath = path.join(root, 'package.json');
   const alreadyExisted = fs.existsSync(dummyPath);
+  const beforeContent = fs.readFileSync(pkgPath, 'utf8');
   try {
     fs.writeFileSync(dummyPath, '#!/usr/bin/env node\nconsole.log("[pcr-s1-zzz-dummy] 1 check(s) OK ✓");\nprocess.exit(0);\n', 'utf8');
-    const diff = execSync('git diff -- package.json', { cwd: root, encoding: 'utf8' });
-    assert(T, diff.trim() === '', `Expected empty git diff for package.json after adding a new test file, got: ${diff.slice(0, 300)}`);
+    const afterContent = fs.readFileSync(pkgPath, 'utf8');
+    assert(T, afterContent === beforeContent, 'Expected package.json to be byte-identical before and after adding a new test file, but it changed');
   } finally {
     if (!alreadyExisted) { try { fs.unlinkSync(dummyPath); } catch (_) {} }
   }

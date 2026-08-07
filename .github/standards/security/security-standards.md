@@ -2,6 +2,10 @@
 
 <!-- Fill in your security rules. Examples below — replace with your own. -->
 
+## Known gaps (tracked, not yet fixed)
+
+- **`GET /features/:slug` has no tenant-ownership check.** Confirmed via direct code read during S3.4's route-investigation (2026-07-24) — unlike other journey/feature routes in this repo (e.g. `GET /journey/:id`), this route does not verify the requesting session's tenant owns the target feature before rendering it. Not exploited by S3.4 itself (S3.4 deliberately chose `/journey/:id`, which already had the guard, as its own destination specifically because of this gap) — but the route remains reachable directly by anyone who knows or guesses a `feature_slug`. Needs a follow-up story adding the same `requireJourneyAccess`/`POLICY.TENANT`-equivalent guard used elsewhere in this codebase.
+
 ## OWASP Top 10 mitigations
 
 - **Injection:** Parameterised queries only. No string concatenation in queries.
