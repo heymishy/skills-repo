@@ -19145,17 +19145,24 @@
           "slug": "cdpl-s1",
           "id": "cdpl-s1",
           "name": "Stop the artefact panel squeezing the diagram panel, and fix the dead maximise-canvas button",
-          "stage": "definition",
+          "stage": "test-plan",
           "health": "green",
           "acTotal": 5,
           "acVerified": 0,
-          "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false,
-          "updatedAt": "2026-08-07T01:22:55.503Z"
+          "hasLayoutDependentGaps": true,
+          "e2eToolingRequired": true,
+          "updatedAt": "2026-08-07T02:38:33.289Z",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 8,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-07-canvas-diagram-panel-layout-fix/test-plans/cdpl-s1-test-plan.md"
+          },
+          "verificationScriptArtefact": "artefacts/2026-08-07-canvas-diagram-panel-layout-fix/verification-scripts/cdpl-s1-verification.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-07T01:22:55.503Z",
+      "updatedAt": "2026-08-07T02:38:33.289Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
