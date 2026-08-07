@@ -18702,7 +18702,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-07T00:34:21.154Z",
+      "updatedAt": "2026-08-07T04:54:19.425Z",
       "discoveryArtefact": "artefacts/2026-08-06-durable-artefact-storage/discovery.md",
       "track": "standard",
       "regulated": false,
@@ -18744,22 +18744,23 @@
             {
               "slug": "das-s2",
               "name": "Require a connected repo before a new product can start its first journey",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-06-durable-artefact-storage/review/das-s2-review-2.md",
-              "updatedAt": "2026-08-06T18:03:00.748Z",
+              "updatedAt": "2026-08-07T04:54:19.425Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 0,
+                "passing": 6,
                 "artefact": "artefacts/2026-08-06-durable-artefact-storage/test-plans/das-s2-test-plan.md"
               },
               "verificationScriptArtefact": "artefacts/2026-08-06-durable-artefact-storage/verification-scripts/das-s2-verification.md",
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "prStatus": "open"
             }
           ]
         }
@@ -19145,17 +19146,17 @@
           "slug": "cdpl-s1",
           "id": "cdpl-s1",
           "name": "Stop the artefact panel squeezing the diagram panel, and fix the dead maximise-canvas button",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 3,
           "hasLayoutDependentGaps": true,
           "e2eToolingRequired": true,
-          "updatedAt": "2026-08-07T02:40:56.062Z",
+          "updatedAt": "2026-08-07T05:12:10.623Z",
           "testPlan": {
             "status": "written",
-            "totalTests": 8,
-            "passing": 0,
+            "totalTests": 15,
+            "passing": 15,
             "artefact": "artefacts/2026-08-07-canvas-diagram-panel-layout-fix/test-plans/cdpl-s1-test-plan.md"
           },
           "verificationScriptArtefact": "artefacts/2026-08-07-canvas-diagram-panel-layout-fix/verification-scripts/cdpl-s1-verification.md",
@@ -19164,11 +19165,12 @@
           "reviewArtefact": "artefacts/2026-08-07-canvas-diagram-panel-layout-fix/review/cdpl-s1-review-2.md",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-07-canvas-diagram-panel-layout-fix/dor/cdpl-s1-dor.md",
-          "oversightLevel": "low"
+          "oversightLevel": "low",
+          "prStatus": "open"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-07T02:40:56.062Z",
+      "updatedAt": "2026-08-07T05:12:10.623Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
