@@ -19260,7 +19260,7 @@
           "slug": "djfk-s1",
           "id": "djfk-s1",
           "name": "Delete a journey session_turns rows before the journey row, alongside artefacts",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -19268,7 +19268,7 @@
           "testPlan": {
             "status": "written",
             "totalTests": 4,
-            "passing": 0,
+            "passing": 4,
             "artefact": "artefacts/2026-08-07-delete-journey-session-turns-fk/test-plans/djfk-s1-test-plan.md"
           },
           "verificationScriptArtefact": "artefacts/2026-08-07-delete-journey-session-turns-fk/verification-scripts/djfk-s1-verification.md",
@@ -19276,14 +19276,15 @@
           "dorArtefact": "artefacts/2026-08-07-delete-journey-session-turns-fk/dor/djfk-s1-dor.md",
           "oversightLevel": "low",
           "acTotal": 3,
-          "acVerified": 0,
+          "acVerified": 3,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-07T10:05:29.379Z"
+          "updatedAt": "2026-08-07T10:19:20.229Z",
+          "prStatus": "open"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-07T10:05:29.379Z",
+      "updatedAt": "2026-08-07T10:19:20.229Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
