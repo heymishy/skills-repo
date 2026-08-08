@@ -19731,12 +19731,12 @@
             {
               "slug": "lphf-s1",
               "name": "Golden trace demo (4-frame narrative, swappable candidate content)",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s1-review-1.md",
-              "updatedAt": "2026-08-08T04:01:07.959Z",
+              "updatedAt": "2026-08-08T04:22:46.370Z",
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
@@ -19748,7 +19748,45 @@
                 "artefact": "artefacts/2026-08-08-landing-page-hero-features/test-plans/lphf-s1-test-plan.md"
               },
               "verificationScriptArtefact": "artefacts/2026-08-08-landing-page-hero-features/verification-scripts/lphf-s1-verification.md",
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Golden-trace content module (both candidates, real content) -- AC1",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-08-landing-page-hero-features/plans/lphf-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Candidate-switching tests -- AC2",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-08-landing-page-hero-features/plans/lphf-s1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Content-matches-real-file regression guard -- AC4",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-08-landing-page-hero-features/plans/lphf-s1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Wire content module into landing.html and public.js -- AC1, AC2",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-08-landing-page-hero-features/plans/lphf-s1-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "NFR -- no credentials/PII regression guard",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-08-landing-page-hero-features/plans/lphf-s1-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "NFR -- keyboard accessibility E2E test",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-08-landing-page-hero-features/plans/lphf-s1-plan.md"
+                }
+              ]
             },
             {
               "slug": "lphf-s2",
