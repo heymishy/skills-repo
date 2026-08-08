@@ -19325,10 +19325,11 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": true,
-          "updatedAt": "2026-08-08T02:42:28.740Z",
-          "prStatus": "draft",
+          "updatedAt": "2026-08-08T03:02:53.106Z",
+          "prStatus": "merged",
           "prNumber": 682,
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/682"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/682",
+          "mergeCommit": "641d57ac84a4bf26c8240da1aa77732908f186da"
         }
       ],
       "metrics": [],
