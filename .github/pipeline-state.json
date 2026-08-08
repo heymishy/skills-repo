@@ -19344,11 +19344,32 @@
     {
       "slug": "2026-08-08-landing-page-hero-features",
       "name": "Landing page hero features (golden trace + 3 others)",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "stories": [],
-      "metrics": [],
-      "updatedAt": "2026-08-08T02:35:02.063Z",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Landing page -> signup conversion rate",
+          "target": "+20% relative to pre-redesign baseline",
+          "baseline": "Not yet pulled (existing PostHog funnel data since 2026-07-05)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Time-on-page for unauthenticated visitors",
+          "target": "+30% relative to baseline (once instrumentation ships)",
+          "baseline": "Not yet established -- depends on follow-on instrumentation story",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "updatedAt": "2026-08-08T03:12:30.028Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
