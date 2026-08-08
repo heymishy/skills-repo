@@ -19344,8 +19344,8 @@
     {
       "slug": "2026-08-08-landing-page-hero-features",
       "name": "Landing page hero features (golden trace + 3 others)",
-      "stage": "definition",
-      "health": "green",
+      "stage": "definition-of-done",
+      "health": "amber",
       "stories": [],
       "metrics": [
         {
@@ -19355,7 +19355,7 @@
           "baseline": "Not yet pulled (existing PostHog funnel data since 2026-07-05)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "No real-visitor traffic data reviewed yet since launch (2026-08-08); baseline pull and 4-week review not yet due.",
           "contributingStories": []
         },
         {
@@ -19365,7 +19365,7 @@
           "baseline": "Not yet established -- depends on follow-on instrumentation story",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "No real-visitor traffic data reviewed yet since launch (2026-08-08); baseline pull and 4-week review not yet due.",
           "contributingStories": []
         }
       ],
@@ -19731,12 +19731,12 @@
             {
               "slug": "lphf-s1",
               "name": "Golden trace demo (4-frame narrative, swappable candidate content)",
-              "stage": "branch-complete",
-              "health": "green",
+              "stage": "definition-of-done",
+              "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s1-review-1.md",
-              "updatedAt": "2026-08-08T05:38:13.361Z",
+              "updatedAt": "2026-08-08T21:29:08.395Z",
               "acTotal": 4,
               "acVerified": 3,
               "hasLayoutDependentGaps": false,
@@ -19791,17 +19791,20 @@
               "prStatus": "merged",
               "prNumber": 683,
               "prUrl": "https://github.com/heymishy/skills-repo/pull/683",
-              "mergeCommit": "aff659f2e51aa325319a8f54b696230337147933"
+              "mergeCommit": "aff659f2e51aa325319a8f54b696230337147933",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "AC3 not satisfied: losing golden-trace candidate never deleted before merge. Follow-up story to be created."
             },
             {
               "slug": "lphf-s2",
               "name": "Scope-contract enforcement hero card",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s2-review-1.md",
-              "updatedAt": "2026-08-08T06:21:47.906Z",
+              "updatedAt": "2026-08-08T21:29:08.554Z",
               "acTotal": 3,
               "acVerified": 3,
               "hasLayoutDependentGaps": true,
@@ -19838,17 +19841,19 @@
               "prStatus": "merged",
               "prNumber": 684,
               "prUrl": "https://github.com/heymishy/skills-repo/pull/684",
-              "mergeCommit": "9436d1d4fd4e55b0effd4f4025821d666b995729"
+              "mergeCommit": "9436d1d4fd4e55b0effd4f4025821d666b995729",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "lphf-s3",
               "name": "Cryptographic instruction-set verification hero card",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s3-review-1.md",
-              "updatedAt": "2026-08-08T06:49:36.219Z",
+              "updatedAt": "2026-08-08T21:29:08.699Z",
               "acTotal": 3,
               "acVerified": 3,
               "hasLayoutDependentGaps": true,
@@ -19885,17 +19890,19 @@
               "prStatus": "merged",
               "prNumber": 685,
               "prUrl": "https://github.com/heymishy/skills-repo/pull/685",
-              "mergeCommit": "5477ae25fc4593c182ec358703a50d878b71c2ca"
+              "mergeCommit": "5477ae25fc4593c182ec358703a50d878b71c2ca",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "lphf-s4",
               "name": "Self-improving harness hero card",
-              "stage": "branch-complete",
-              "health": "green",
+              "stage": "definition-of-done",
+              "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s4-review-1.md",
-              "updatedAt": "2026-08-08T07:45:00.189Z",
+              "updatedAt": "2026-08-08T21:29:08.844Z",
               "acTotal": 4,
               "acVerified": 4,
               "hasLayoutDependentGaps": true,
@@ -19932,17 +19939,20 @@
               "prStatus": "merged",
               "prNumber": 686,
               "prUrl": "https://github.com/heymishy/skills-repo/pull/686",
-              "mergeCommit": "87e5e9ca49fc3bb3f407fdcdd5affcd7ce60a64f"
+              "mergeCommit": "87e5e9ca49fc3bb3f407fdcdd5affcd7ce60a64f",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "AC1 not satisfied: production shows 0 and counting (fail-open fallback), not a real count. Follow-up story to be created."
             },
             {
               "slug": "lphf-s5",
               "name": "Restyle the existing auth panel as the page's closing CTA",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s5-review-1.md",
-              "updatedAt": "2026-08-08T09:51:12.112Z",
+              "updatedAt": "2026-08-08T21:29:08.993Z",
               "acTotal": 3,
               "acVerified": 3,
               "hasLayoutDependentGaps": true,
@@ -19979,7 +19989,9 @@
               "prStatus": "merged",
               "prNumber": 687,
               "prUrl": "https://github.com/heymishy/skills-repo/pull/687",
-              "mergeCommit": "0a83d12235b90edc5681b7361be9b7b2645b5abc"
+              "mergeCommit": "0a83d12235b90edc5681b7361be9b7b2645b5abc",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         }
