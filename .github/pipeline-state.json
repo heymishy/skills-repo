@@ -20002,20 +20002,21 @@
           "testPlan": {
             "status": "written",
             "totalTests": 4,
-            "passing": 0,
+            "passing": 4,
             "artefact": "artefacts/2026-08-08-learnings-count-crash-fix/test-plans/lccf-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-08-learnings-count-crash-fix/dor/lccf-s1-dor.md",
           "oversightLevel": "low",
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-08T08:25:54.531Z",
+          "updatedAt": "2026-08-08T09:13:13.486Z",
           "prStatus": "draft",
           "prNumber": 688,
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/688"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/688",
+          "blocker": "wuce-staging down (crash-loop) since PR #686 merged; fix is PR #688, awaiting merge"
         }
       ],
       "metrics": [],
