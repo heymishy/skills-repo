@@ -19895,7 +19895,7 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s4-review-1.md",
-              "updatedAt": "2026-08-08T07:01:17.823Z",
+              "updatedAt": "2026-08-08T07:45:00.189Z",
               "acTotal": 4,
               "acVerified": 4,
               "hasLayoutDependentGaps": true,
@@ -19929,9 +19929,10 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prNumber": 686,
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/686"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/686",
+              "mergeCommit": "87e5e9ca49fc3bb3f407fdcdd5affcd7ce60a64f"
             },
             {
               "slug": "lphf-s5",
