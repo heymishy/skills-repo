@@ -20048,18 +20048,20 @@
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0,
+            "passing": 8,
             "artefact": "artefacts/2026-08-08-validate-trace-perf/test-plans/vtp-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-08-validate-trace-perf/dor/vtp-s1-dor.md",
           "oversightLevel": "low",
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-08T09:00:20.499Z",
-          "prStatus": "none"
+          "updatedAt": "2026-08-08T10:09:52.614Z",
+          "prStatus": "draft",
+          "prNumber": 689,
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/689"
         }
       ],
       "metrics": [],
