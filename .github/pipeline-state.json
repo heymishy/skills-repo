@@ -19704,52 +19704,107 @@
             {
               "slug": "lphf-s1",
               "name": "Golden trace demo (4-frame narrative, swappable candidate content)",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s1-review-1.md",
-              "updatedAt": "2026-08-08T03:37:28.713Z"
+              "updatedAt": "2026-08-08T03:49:04.480Z",
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "false",
+              "e2eToolingRequired": "true",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0,
+                "artefact": "artefacts/2026-08-08-landing-page-hero-features/test-plans/lphf-s1-test-plan.md"
+              },
+              "verificationScriptArtefact": "artefacts/2026-08-08-landing-page-hero-features/verification-scripts/lphf-s1-verification.md"
             },
             {
               "slug": "lphf-s2",
               "name": "Scope-contract enforcement hero card",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s2-review-1.md",
-              "updatedAt": "2026-08-08T03:37:48.414Z"
+              "updatedAt": "2026-08-08T03:49:52.212Z",
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "true",
+              "e2eToolingRequired": "true",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 3,
+                "passing": 0,
+                "artefact": "artefacts/2026-08-08-landing-page-hero-features/test-plans/lphf-s2-test-plan.md"
+              },
+              "verificationScriptArtefact": "artefacts/2026-08-08-landing-page-hero-features/verification-scripts/lphf-s2-verification.md"
             },
             {
               "slug": "lphf-s3",
               "name": "Cryptographic instruction-set verification hero card",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s3-review-1.md",
-              "updatedAt": "2026-08-08T03:40:12.370Z"
+              "updatedAt": "2026-08-08T03:50:32.863Z",
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "true",
+              "e2eToolingRequired": "true",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 3,
+                "passing": 0,
+                "artefact": "artefacts/2026-08-08-landing-page-hero-features/test-plans/lphf-s3-test-plan.md"
+              },
+              "verificationScriptArtefact": "artefacts/2026-08-08-landing-page-hero-features/verification-scripts/lphf-s3-verification.md"
             },
             {
               "slug": "lphf-s4",
               "name": "Self-improving harness hero card",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s4-review-1.md",
-              "updatedAt": "2026-08-08T03:40:12.511Z"
+              "updatedAt": "2026-08-08T03:51:17.103Z",
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "true",
+              "e2eToolingRequired": "true",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 0,
+                "artefact": "artefacts/2026-08-08-landing-page-hero-features/test-plans/lphf-s4-test-plan.md"
+              },
+              "verificationScriptArtefact": "artefacts/2026-08-08-landing-page-hero-features/verification-scripts/lphf-s4-verification.md"
             },
             {
               "slug": "lphf-s5",
               "name": "Restyle the existing auth panel as the page's closing CTA",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s5-review-1.md",
-              "updatedAt": "2026-08-08T03:40:12.639Z"
+              "updatedAt": "2026-08-08T03:52:11.292Z",
+              "acTotal": 3,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "true",
+              "e2eToolingRequired": "true",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "passing": 0,
+                "artefact": "artefacts/2026-08-08-landing-page-hero-features/test-plans/lphf-s5-test-plan.md"
+              },
+              "verificationScriptArtefact": "artefacts/2026-08-08-landing-page-hero-features/verification-scripts/lphf-s5-verification.md"
             }
           ]
         }
