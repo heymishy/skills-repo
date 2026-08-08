@@ -10366,17 +10366,17 @@
               "name": "Bootstrap a newly created repo with the skills framework",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-07-14T10:27:25.197Z",
+              "updatedAt": "2026-08-08T01:10:19.018Z",
               "reviewStatus": "has-findings",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s2.2-review-1.md",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0
+                "passing": 5
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "testPlanArtefact": "artefacts/2026-07-14-product-repo-config/test-plans/prc-s2.2-test-plan.md",
@@ -10384,7 +10384,10 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s2.2-dor.md",
               "dorContractArtefact": "artefacts/2026-07-14-product-repo-config/dor/prc-s2.2-dor-contract.md",
-              "dorSignedOffAt": "2026-07-14T10:27:25.197Z"
+              "dorSignedOffAt": "2026-07-14T10:27:25.197Z",
+              "prStatus": "merged",
+              "prNumber": 664,
+              "mergeCommit": "f57a6289374c442ca36914b512dcfd1192894274"
             },
             {
               "slug": "prc-s2.3",
