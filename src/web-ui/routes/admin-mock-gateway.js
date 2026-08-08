@@ -61,9 +61,26 @@ function _readBody(req) {
  */
 async function adminMockGatewayGet(req, res) {
   // AC1: live call, not a cached value -- read at render time, every request.
+  // mgar-s1: this call may itself auto-revert a stale "off" override as a
+  // side effect (see isMockGatewayEnabled()'s TTL check) -- so the TTL/
+  // remaining-time read below always reflects the post-revert-check state.
   const currentlyEnabled = mockLlmGateway.isMockGatewayEnabled();
   const nextState = !currentlyEnabled;
   const isProduction = process.env.NODE_ENV === 'production';
+
+  // mgar-s1 AC4: honest remaining-time copy -- only present when the OFF
+  // state comes from an active, expiring runtime override (not e.g. an
+  // OFF state purely from MOCK_LLM_GATEWAY being unset, which has no TTL).
+  const expiresAt = mockLlmGateway.getRuntimeOverrideExpiresAt();
+  let ttlNotice = '';
+  if (!currentlyEnabled && expiresAt !== null) {
+    const remainingMs = Math.max(0, expiresAt - Date.now());
+    const remainingMin = Math.ceil(remainingMs / 60000);
+    ttlNotice = '<p>This override auto-reverts to the safe default ' +
+      '(so a forgotten toggle can never keep burning real API token cost indefinitely) ' +
+      'after 30 minutes of being set to OFF. Approximately <strong>' + remainingMin +
+      ' minute' + (remainingMin === 1 ? '' : 's') + ' remaining</strong> before auto-revert.</p>';
+  }
 
   // sec-perf-s3 pattern: session-scoped CSRF token, embedded in the toggle form.
   const csrfToken = generateCsrfToken(req);
@@ -77,6 +94,7 @@ async function adminMockGatewayGet(req, res) {
     // imply durable persistence the implementation doesn't have.
     '<p>This toggle is in-memory only and resets to the configured default ' +
       '(the <code>MOCK_LLM_GATEWAY</code> environment variable) on the next server restart or redeploy.</p>',
+    ttlNotice,
     isProduction
       ? '<p><strong>Note:</strong> this environment has <code>NODE_ENV=production</code> — ' +
         'the mock gateway is hard-disabled here regardless of this toggle.</p>'

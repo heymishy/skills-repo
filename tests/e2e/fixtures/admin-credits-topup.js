@@ -182,4 +182,12 @@ async function topUpTestTenantCredits(targetTenantId, amount) {
   }
 }
 
-module.exports = { topUpTestTenantCredits, ADMIN_EMAIL };
+module.exports = {
+  topUpTestTenantCredits,
+  ADMIN_EMAIL,
+  // mgar-s1: exported for reuse by other E2E fixtures that need the same
+  // e2e-test-admin@example.test session (e.g. ensure-mock-gateway-on.js) --
+  // no behaviour change to either function, purely additive exports.
+  _adminLogin,
+  _adminSignupOnce
+};
