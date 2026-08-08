@@ -20165,14 +20165,14 @@
     {
       "slug": "2026-08-09-mock-gateway-auto-revert",
       "name": "Staging mock LLM gateway toggle has no auto-revert -- a manual off can leak into later sessions/CI and burn real API token cost",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "slug": "mgar-s1",
           "id": "mgar-s1",
           "name": "Auto-revert the staging mock LLM gateway override, and force it on before CI staging E2E runs",
-          "stage": "dor-signed-off",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -20190,10 +20190,11 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": true,
-          "updatedAt": "2026-08-08T20:02:07.707Z",
-          "prStatus": "draft",
+          "updatedAt": "2026-08-08T20:58:07.298Z",
+          "prStatus": "merged",
           "prNumber": 692,
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/692"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/692",
+          "mergeCommit": "8d48ab1f1b59f308fe740cf839fd2fe7e84d593b"
         }
       ],
       "metrics": [],
