@@ -19843,12 +19843,12 @@
             {
               "slug": "lphf-s3",
               "name": "Cryptographic instruction-set verification hero card",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s3-review-1.md",
-              "updatedAt": "2026-08-08T06:32:25.044Z",
+              "updatedAt": "2026-08-08T06:34:17.171Z",
               "acTotal": 3,
               "acVerified": 3,
               "hasLayoutDependentGaps": true,
@@ -19881,7 +19881,10 @@
                   "file": "artefacts/2026-08-08-landing-page-hero-features/plans/lphf-s3-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prNumber": 685,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/685"
             },
             {
               "slug": "lphf-s4",
