@@ -20033,21 +20033,21 @@
     {
       "slug": "2026-08-08-validate-trace-perf",
       "name": "validate-trace.sh runtime degrades linearly with artefact count -- redundant python3 re-parsing and a subprocess-per-directory loop in check_discovery_approved",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "slug": "vtp-s1",
           "id": "vtp-s1",
           "name": "Consolidate validate-trace.sh checks into a single Python pass",
-          "stage": "dor-signed-off",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-08-validate-trace-perf/review/vtp-s1-review-1.md",
           "testPlan": {
             "status": "written",
-            "totalTests": 9,
+            "totalTests": 8,
             "passing": 8,
             "artefact": "artefacts/2026-08-08-validate-trace-perf/test-plans/vtp-s1-test-plan.md"
           },
@@ -20058,10 +20058,11 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-08T10:09:52.614Z",
-          "prStatus": "draft",
+          "updatedAt": "2026-08-08T19:35:28.660Z",
+          "prStatus": "merged",
           "prNumber": 689,
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/689"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/689",
+          "mergeCommit": "9810e9c9efb33815e387697989fba215842f8dff"
         }
       ],
       "metrics": [],
@@ -20091,18 +20092,20 @@
           "testPlan": {
             "status": "written",
             "totalTests": 3,
-            "passing": 0,
+            "passing": 3,
             "artefact": "artefacts/2026-08-08-check-md-3-adr-recursion-fix/test-plans/mar-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-08-check-md-3-adr-recursion-fix/dor/mar-s1-dor.md",
           "oversightLevel": "low",
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-08T10:12:47.379Z",
-          "prStatus": "none"
+          "updatedAt": "2026-08-08T10:35:23.652Z",
+          "prStatus": "draft",
+          "prNumber": 691,
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/691"
         }
       ],
       "metrics": [],
@@ -20132,18 +20135,20 @@
           "testPlan": {
             "status": "written",
             "totalTests": 4,
-            "passing": 0,
+            "passing": 4,
             "artefact": "artefacts/2026-08-08-clean-artefacts-scan-perf/test-plans/cas-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-08-clean-artefacts-scan-perf/dor/cas-s1-dor.md",
           "oversightLevel": "low",
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-08T10:12:47.379Z",
-          "prStatus": "none"
+          "updatedAt": "2026-08-08T10:18:22.087Z",
+          "prStatus": "draft",
+          "prNumber": 690,
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/690"
         }
       ],
       "metrics": [],
