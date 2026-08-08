@@ -1,6 +1,6 @@
 {
-  "currentPhase": "review",
-  "lastUpdated": "2026-08-08T03:34:00.000Z",
+  "currentPhase": "definition-of-ready",
+  "lastUpdated": "2026-08-08T04:05:00.000Z",
   "activeFeature": "2026-08-08-landing-page-hero-features",
   "previousFeature": "2026-08-08-kanban-board-unstyled-shell-fix",
   "cycle": {
@@ -19,12 +19,22 @@
       "status": "complete",
       "artefact": "artefacts/2026-08-08-landing-page-hero-features/epics/epic-1-landing-page-hero-features.md",
       "completedAt": "2026-08-08T02:55:00.000Z",
-      "note": "1 epic, 5 stories (lphf-s1..s5), vertical slice, scope ratio 1.0 clean. decisions.md created retroactively for 3 architectural choices (self-contained page identity preserved, swappable-candidate build mechanism, static-not-live demo)."
+      "note": "1 epic, 5 stories (lphf-s1..s5), vertical slice, scope ratio 1.0 clean."
     },
     "review": {
       "status": "complete",
       "completedAt": "2026-08-08T03:34:00.000Z",
-      "note": "All 5 stories PASS, run 1. 3 MEDIUM findings found and fixed directly (wrong handler reference in lphf-s5, stale hardcoded number in lphf-s4, subjective AC wording in lphf-s3) rather than deferred via RISK-ACCEPT. 5 LOW findings (benefit-linkage circularity pattern) left as retrospective notes, non-blocking."
+      "note": "All 5 stories PASS, run 1. 3 MEDIUM findings fixed directly (wrong handler reference in lphf-s5, stale hardcoded number in lphf-s4, subjective AC wording in lphf-s3)."
+    },
+    "testPlan": {
+      "status": "complete",
+      "completedAt": "2026-08-08T03:50:00.000Z",
+      "note": "21 tests across 5 stories. All 4 CSS-layout-dependent ACs covered by real Playwright E2E tests (tooling already configured), not manual-only."
+    },
+    "definitionOfReady": {
+      "status": "complete",
+      "completedAt": "2026-08-08T04:05:00.000Z",
+      "note": "All 5 stories PROCEED, 18/18 hard blocks each, Low oversight (no sign-off required). Hit 4 real gate-validator gotchas during this run (heading name mismatch, missing Review artefact header, Architecture Constraints missing a literal guardrail/constraint/ADR keyword, string-vs-boolean field bug) -- all fixed, logged as a learning."
     }
   },
   "estimate": {
@@ -36,17 +46,18 @@
       "innerLoopHuman": 0,
       "expectedStoryCount": 4,
       "confidence": "low",
-      "assumptions": "~4 stories: hero-section content/layout, golden-trace swappable demo build (2 candidates, one deleted pre-merge), auth-panel restyle, and possibly a follow-on PostHog time-on-page instrumentation story. Small, well-bounded scope post-/clarify -- no new backend surface, no live LLM calls, no CMS.",
+      "assumptions": "~4 stories: hero-section content/layout, golden-trace swappable demo build (2 candidates, one deleted pre-merge), auth-panel restyle, and possibly a follow-on PostHog time-on-page instrumentation story. Small, well-bounded scope post-/clarify -- no new backend surface, no live LLM calls, no CMS. Actual: 5 stories, all complexity 1.",
       "gaugeAtStart": null,
       "premiumRequestsForecast": null
     }
   },
   "checkpoint": {
     "writtenAt": "2026-08-08",
-    "contextAtWrite": "Completed for landing-page-hero-features this session: discovery, /clarify, benefit-metric, definition (1 epic, 5 stories), and review (all 5 PASS, run 1). Separately this session: PR #664 (prc-s2.2) and PR #682 (kbsf-s1, kanban shell-wrapping fix) both merged and independently verified.",
-    "resumeInstruction": "Next step is /test-plan for the 5 lphf stories. Read artefacts/2026-08-08-landing-page-hero-features/{discovery,benefit-metric,decisions}.md and the 5 story files in full before proceeding -- do not rely on conversation history for ACs or the review fixes already applied directly to the story files (lphf-s3 AC2, lphf-s4 AC1, lphf-s5 AC2 were all edited post-review, run 1 review reports note the fixes inline).",
+    "contextAtWrite": "landing-page-hero-features has completed the full outer loop: discovery through definition-of-ready. All 5 stories (lphf-s1..s5) signed off, Low oversight, ready for the inner coding loop. Separately this session: PR #664 (prc-s2.2) and PR #682 (kbsf-s1) both merged and independently verified.",
+    "resumeInstruction": "Next step is the inner coding loop for the 5 lphf stories: /branch-setup -> /implementation-plan -> /subagent-execution (or /tdd) -> /verify-completion -> /branch-complete, per story. Read each story's DoR file (artefacts/2026-08-08-landing-page-hero-features/dor/lphf-sN-dor.md) in full before starting -- it contains the Coding Agent Instructions block with file-scope constraints. Warning W4 (verification script reviewed by a domain expert) was left unacknowledged for all 5 stories -- recommend a human review the verification scripts before assigning to a coding agent, or explicitly acknowledge via /decisions.",
     "pendingActions": [
-      "Run /test-plan for lphf-s1 through lphf-s5"
+      "Decide inner-loop dispatch order/approach for lphf-s1 through lphf-s5",
+      "Consider addressing W4 (verification script domain-expert review) before dispatch"
     ]
   }
 }
