@@ -19987,15 +19987,15 @@
     {
       "slug": "2026-08-08-learnings-count-crash-fix",
       "name": "Learnings counter crashes the server on startup in every deployed environment -- fs.readFileSync on workspace/learnings.md at module load time, but workspace/ is never copied into the Docker image",
-      "stage": "definition-of-ready",
-      "health": "red",
+      "stage": "branch-complete",
+      "health": "green",
       "stories": [
         {
           "slug": "lccf-s1",
           "id": "lccf-s1",
           "name": "Make the landing page learnings counter fail open instead of crashing the server",
-          "stage": "dor-signed-off",
-          "health": "red",
+          "stage": "branch-complete",
+          "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-08-learnings-count-crash-fix/review/lccf-s1-review-1.md",
@@ -20012,11 +20012,12 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-08T09:13:13.486Z",
-          "prStatus": "draft",
+          "updatedAt": "2026-08-08T09:45:31.996Z",
+          "prStatus": "merged",
           "prNumber": 688,
           "prUrl": "https://github.com/heymishy/skills-repo/pull/688",
-          "blocker": "wuce-staging down (crash-loop) since PR #686 merged; fix is PR #688, awaiting merge"
+          "blocker": "",
+          "mergeCommit": "c65c046285439aad0fafb0880f3425687170728b"
         }
       ],
       "metrics": [],
@@ -20026,8 +20027,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "epics": [],
-      "blocker": "wuce-staging down (crash-loop) since PR #686 merged; fix is PR #688, awaiting merge"
+      "epics": []
     },
     {
       "slug": "2026-08-08-validate-trace-perf",
