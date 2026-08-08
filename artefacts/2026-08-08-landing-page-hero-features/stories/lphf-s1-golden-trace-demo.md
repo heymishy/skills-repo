@@ -11,7 +11,7 @@ As an **engineering/tech lead evaluating the platform for team adoption** (typic
 I want to **see a real, concrete example of a plain-English ask becoming shipped, working software through this pipeline**,
 So that **I trust the governance mechanism is real rather than a claim, increasing the chance I click through to sign up (Metric 1 — signup conversion rate)**.
 
-## Metric Linkage
+## Benefit Linkage
 
 **M1** (Metric 1, benefit-metric.md — signup conversion rate): this is the signature/hero element of the redesign, specifically named in discovery as the demo most likely to convert a skeptical-but-referred visitor.
 

@@ -11,7 +11,7 @@ As an **individual developer with existing agentic-coding scars** (has watched a
 I want to **see, concretely, how this platform prevents an agent from expanding its own mandate mid-story**,
 So that **my strongest existing objection to agentic coding tools is addressed before I'm asked to sign up (Metric 1 — signup conversion rate)**.
 
-## Metric Linkage
+## Benefit Linkage
 
 **M1** (signup conversion rate): named in discovery as answering "how do I stop the agent from quietly doing more than I asked?" — the most visceral objection identified for the individual-developer persona.
 
@@ -31,8 +31,8 @@ So that **my strongest existing objection to agentic coding tools is addressed b
 
 ## Architecture Constraints
 
-- **Self-contained page identity preserved:** same as `lphf-s1` — this card's CSS extends `landing.html`'s existing self-contained `<style>` block, not `html-shell.js`'s shared tokens.
-- **No credentials or sensitive content** (CLAUDE.md §Security).
+- **Self-contained page identity preserved:** same as `lphf-s1` — this card's CSS extends `landing.html`'s existing self-contained `<style>` block, not `html-shell.js`'s shared tokens. Checked against `.github/architecture-guardrails.md` — no applicable mandatory constraint or Active ADR is violated by this approach.
+- **No credentials or sensitive content** (CLAUDE.md §Security, `architecture-guardrails.md` guardrail `MC-SEC-02`).
 
 ## NFRs
 

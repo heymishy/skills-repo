@@ -11,7 +11,7 @@ As an **engineering/tech lead with compliance or risk-review responsibility as p
 I want to **see that every governed action commits an independently recomputable hash of the exact instruction set that governed it**,
 So that **I can trust the governance claim is provable, not just attested — before I'm asked to sign up (Metric 1 — signup conversion rate)**.
 
-## Metric Linkage
+## Benefit Linkage
 
 **M1** (signup conversion rate): named in discovery as answering "prove which standard was actually in context when this was written" — the compliance/risk-lead objection.
 
@@ -30,8 +30,8 @@ So that **I can trust the governance claim is provable, not just attested — be
 
 ## Architecture Constraints
 
-- **Self-contained page identity preserved:** same as `lphf-s1`/`lphf-s2`.
-- **No credentials or sensitive content** (CLAUDE.md §Security) — the illustrative hash example must be a real, non-sensitive value (e.g. an actual instruction-set hash from this repo's own trace history) or clearly marked illustrative, not a fabricated-looking placeholder that undermines the "provable, not claimed" pitch this card exists to make.
+- **Self-contained page identity preserved:** same as `lphf-s1`/`lphf-s2`. Checked against `.github/architecture-guardrails.md` — no applicable mandatory constraint or Active ADR is violated.
+- **No credentials or sensitive content** (CLAUDE.md §Security, `architecture-guardrails.md` guardrail `MC-SEC-02`) — the illustrative hash example must be a real, non-sensitive value (e.g. an actual instruction-set hash from this repo's own trace history) or clearly marked illustrative, not a fabricated-looking placeholder that undermines the "provable, not claimed" pitch this card exists to make.
 
 ## NFRs
 

@@ -19369,7 +19369,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-08T03:40:36.887Z",
+      "updatedAt": "2026-08-08T04:05:08.912Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -19693,6 +19693,33 @@
           "category": "adr",
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
           "status": "not-assessed"
+        },
+        {
+          "id": "NFR-perf-page-render",
+          "category": "nfr",
+          "label": "Page render: no server-side computation added, static content only",
+          "status": "met",
+          "evidence": "All 5 stories (lphf-s1..s5) confirmed static-content-only at /definition-of-ready",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-08T04:05:08.912Z"
+        },
+        {
+          "id": "NFR-sec-secrets-management",
+          "category": "nfr",
+          "label": "No credentials, tokens, or PII in hero-card copy or demo content",
+          "status": "met",
+          "evidence": "Confirmed via discovery /clarify content read-through and review run 1 across all 5 stories",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-08T04:05:08.912Z"
+        },
+        {
+          "id": "NFR-sec-session-exposure",
+          "category": "nfr",
+          "label": "No accessToken/session values rendered in HTML",
+          "status": "met",
+          "evidence": "lphf-s5 confirms lab-s1.2 AC6 guarantee unchanged",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-08T04:05:08.912Z"
         }
       ],
       "epics": [
@@ -19704,107 +19731,112 @@
             {
               "slug": "lphf-s1",
               "name": "Golden trace demo (4-frame narrative, swappable candidate content)",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s1-review-1.md",
-              "updatedAt": "2026-08-08T03:49:04.480Z",
+              "updatedAt": "2026-08-08T04:01:07.959Z",
               "acTotal": 4,
               "acVerified": 0,
-              "hasLayoutDependentGaps": "false",
-              "e2eToolingRequired": "true",
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": true,
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
                 "passing": 0,
                 "artefact": "artefacts/2026-08-08-landing-page-hero-features/test-plans/lphf-s1-test-plan.md"
               },
-              "verificationScriptArtefact": "artefacts/2026-08-08-landing-page-hero-features/verification-scripts/lphf-s1-verification.md"
+              "verificationScriptArtefact": "artefacts/2026-08-08-landing-page-hero-features/verification-scripts/lphf-s1-verification.md",
+              "dorStatus": "signed-off"
             },
             {
               "slug": "lphf-s2",
               "name": "Scope-contract enforcement hero card",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s2-review-1.md",
-              "updatedAt": "2026-08-08T03:49:52.212Z",
+              "updatedAt": "2026-08-08T04:04:38.958Z",
               "acTotal": 3,
               "acVerified": 0,
-              "hasLayoutDependentGaps": "true",
-              "e2eToolingRequired": "true",
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": true,
               "testPlan": {
                 "status": "written",
                 "totalTests": 3,
                 "passing": 0,
                 "artefact": "artefacts/2026-08-08-landing-page-hero-features/test-plans/lphf-s2-test-plan.md"
               },
-              "verificationScriptArtefact": "artefacts/2026-08-08-landing-page-hero-features/verification-scripts/lphf-s2-verification.md"
+              "verificationScriptArtefact": "artefacts/2026-08-08-landing-page-hero-features/verification-scripts/lphf-s2-verification.md",
+              "dorStatus": "signed-off"
             },
             {
               "slug": "lphf-s3",
               "name": "Cryptographic instruction-set verification hero card",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s3-review-1.md",
-              "updatedAt": "2026-08-08T03:50:32.863Z",
+              "updatedAt": "2026-08-08T04:04:39.085Z",
               "acTotal": 3,
               "acVerified": 0,
-              "hasLayoutDependentGaps": "true",
-              "e2eToolingRequired": "true",
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": true,
               "testPlan": {
                 "status": "written",
                 "totalTests": 3,
                 "passing": 0,
                 "artefact": "artefacts/2026-08-08-landing-page-hero-features/test-plans/lphf-s3-test-plan.md"
               },
-              "verificationScriptArtefact": "artefacts/2026-08-08-landing-page-hero-features/verification-scripts/lphf-s3-verification.md"
+              "verificationScriptArtefact": "artefacts/2026-08-08-landing-page-hero-features/verification-scripts/lphf-s3-verification.md",
+              "dorStatus": "signed-off"
             },
             {
               "slug": "lphf-s4",
               "name": "Self-improving harness hero card",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s4-review-1.md",
-              "updatedAt": "2026-08-08T03:51:17.103Z",
+              "updatedAt": "2026-08-08T04:04:39.228Z",
               "acTotal": 4,
               "acVerified": 0,
-              "hasLayoutDependentGaps": "true",
-              "e2eToolingRequired": "true",
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": true,
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
                 "passing": 0,
                 "artefact": "artefacts/2026-08-08-landing-page-hero-features/test-plans/lphf-s4-test-plan.md"
               },
-              "verificationScriptArtefact": "artefacts/2026-08-08-landing-page-hero-features/verification-scripts/lphf-s4-verification.md"
+              "verificationScriptArtefact": "artefacts/2026-08-08-landing-page-hero-features/verification-scripts/lphf-s4-verification.md",
+              "dorStatus": "signed-off"
             },
             {
               "slug": "lphf-s5",
               "name": "Restyle the existing auth panel as the page's closing CTA",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s5-review-1.md",
-              "updatedAt": "2026-08-08T03:52:11.292Z",
+              "updatedAt": "2026-08-08T04:04:39.371Z",
               "acTotal": 3,
               "acVerified": 0,
-              "hasLayoutDependentGaps": "true",
-              "e2eToolingRequired": "true",
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": true,
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
                 "passing": 0,
                 "artefact": "artefacts/2026-08-08-landing-page-hero-features/test-plans/lphf-s5-test-plan.md"
               },
-              "verificationScriptArtefact": "artefacts/2026-08-08-landing-page-hero-features/verification-scripts/lphf-s5-verification.md"
+              "verificationScriptArtefact": "artefacts/2026-08-08-landing-page-hero-features/verification-scripts/lphf-s5-verification.md",
+              "dorStatus": "signed-off"
             }
           ]
         }

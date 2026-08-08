@@ -11,7 +11,7 @@ As **any visitor who has now read through four hero features and reached the bot
 I want **the sign-in panel to feel like the natural, proportionate next step in a page that already made its case**,
 So that **the CTA doesn't read as a visually mismatched leftover from a much shorter page, undermining conversion at the final step (Metric 1 — signup conversion rate)**.
 
-## Metric Linkage
+## Benefit Linkage
 
 **M1** (signup conversion rate): the CTA is the conversion event itself — if it feels disproportionate or out of place after the new hero content, it risks suppressing exactly the outcome the rest of this epic is trying to improve.
 
@@ -31,9 +31,9 @@ So that **the CTA doesn't read as a visually mismatched leftover from a much sho
 
 ## Architecture Constraints
 
-- **Self-contained page identity preserved:** same as other stories in this epic — CSS changes extend `landing.html`'s existing self-contained `<style>` block.
+- **Self-contained page identity preserved:** same as other stories in this epic — CSS changes extend `landing.html`'s existing self-contained `<style>` block. Checked against `.github/architecture-guardrails.md` — no applicable mandatory constraint or Active ADR is violated.
 - **`req.session.accessToken` canonical field** (CLAUDE.md): not touched by this story (no session-reading logic changes), but noted since this story is adjacent to the auth surface.
-- **No credentials or sensitive content** (CLAUDE.md §Security) — unchanged from today's panel, which already satisfies this (no `accessToken` or session values rendered in HTML).
+- **No credentials or sensitive content** (CLAUDE.md §Security, `architecture-guardrails.md` guardrail `MC-SEC-02`) — unchanged from today's panel, which already satisfies this (no `accessToken` or session values rendered in HTML).
 
 ## NFRs
 

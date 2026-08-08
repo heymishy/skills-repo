@@ -11,7 +11,7 @@ As an **individual developer or tech lead deciding whether this is a one-time to
 I want to **see quantified evidence that the harness improves itself from real delivery failures, gated by human review**,
 So that **I trust it gets better with use rather than being static tooling I have to maintain myself (Metric 1 — signup conversion rate)**.
 
-## Metric Linkage
+## Benefit Linkage
 
 **M1** (signup conversion rate): named in discovery as answering "does this get better, or is it static tooling I have to maintain myself?"
 
@@ -32,8 +32,8 @@ So that **I trust it gets better with use rather than being static tooling I hav
 
 ## Architecture Constraints
 
-- **Self-contained page identity preserved:** same as other hero cards in this epic.
-- **No credentials or sensitive content** (CLAUDE.md §Security).
+- **Self-contained page identity preserved:** same as other hero cards in this epic. Checked against `.github/architecture-guardrails.md` — no applicable mandatory constraint or Active ADR is violated.
+- **No credentials or sensitive content** (CLAUDE.md §Security, `architecture-guardrails.md` guardrail `MC-SEC-02`).
 
 ## NFRs
 
