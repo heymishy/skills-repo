@@ -20132,18 +20132,20 @@
           "testPlan": {
             "status": "written",
             "totalTests": 4,
-            "passing": 0,
+            "passing": 4,
             "artefact": "artefacts/2026-08-08-clean-artefacts-scan-perf/test-plans/cas-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-08-clean-artefacts-scan-perf/dor/cas-s1-dor.md",
           "oversightLevel": "low",
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-08T10:12:47.379Z",
-          "prStatus": "none"
+          "updatedAt": "2026-08-08T10:18:22.087Z",
+          "prStatus": "draft",
+          "prNumber": 690,
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/690"
         }
       ],
       "metrics": [],
