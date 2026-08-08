@@ -124,6 +124,14 @@ const CFG_S1_FIXED_FILES = [
   'tests/check-lab-s3.4-stripe-webhook.js',
 ];
 
+// UPDATE (2026-08-08, mar-s1): the paragraph below described check-md-3-adr.js
+// as permanently unfixable. That has since been resolved -- T4 (the nested
+// npm test recursion) was removed entirely rather than timeout-tuned, so the
+// file now passes deterministically and standalone, with no per-file timeout
+// race at all. It has been removed from tests/known-baseline-failures.json
+// accordingly. See artefacts/2026-08-08-check-md-3-adr-recursion-fix/. The
+// original (now-historical) reasoning is preserved below for context:
+//
 // tests/check-md-3-adr.js is NOT in FIXED_FILES: its T4 logic was genuinely
 // corrected (verified 9/9 passing standalone with no imposed time limit),
 // but scripts/run-all-tests.js's own 120s per-file spawnSync timeout always

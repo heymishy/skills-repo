@@ -6,7 +6,6 @@
 
 const fs = require('fs');
 const path = require('path');
-const { execSync } = require('child_process');
 
 const ROOT = path.resolve(__dirname, '..');
 const FILE = path.join(ROOT, '.github', 'architecture-guardrails.md');
@@ -90,45 +89,17 @@ assert(
   /\*\*Decided:\*\*\s*\d{4}-\d{2}-\d{2}/.test(adr015Section),
 );
 
-// ── T4: Integration — npm test passes ────────────────────────────────────────
-// Note: T4 is skipped when invoked from within npm test itself to prevent infinite
-// recursion (npm test → check-md-3-adr.js → npm test → ...).
-console.log('\n[md-3-adr] T4: Integration \u2014 npm test passes after file update');
-
-if (process.env.npm_lifecycle_event === 'test') {
-  // Running inside npm test chain — skip the recursive npm test call
-  console.log('  - T4.1: skipped (running inside npm test chain — validated by the outer npm test run)');
-  passed++;
-} else {
-  // tst-s1 (2026-07-16 baseline triage): this previously compared the nested
-  // npm test run's output against a small hardcoded KNOWN_FAILURE_PATTERNS
-  // list (4 patterns) written before pcr-s1's test runner (PR #455) unmasked
-  // this repo's real ~69-file pre-existing baseline. That made T4 fail
-  // whenever invoked outside the npm_lifecycle_event guard above (e.g.
-  // directly via `node scripts/run-all-tests.js`, the exact method tst-s1's
-  // own canonical baseline verification uses) purely because the 69 known,
-  // already-accepted baseline failures didn't match the stale 4-pattern
-  // list -- a false "new regression" signal, not a real one. Reuse the
-  // same baseline scripts/ci-test-regression-check.js already treats as
-  // the source of truth, so T4 only flags a genuine new regression.
-  const { extractFailedFiles, loadBaseline } = require(path.join(ROOT, 'scripts', 'ci-test-regression-check.js'));
-
-  try {
-    execSync('npm test', { cwd: ROOT, stdio: 'pipe' });
-    assert('T4.1 \u2014 npm test exits 0 (no regressions introduced)', true);
-  } catch (e) {
-    const combined = (e.stdout ? e.stdout.toString() : '') + (e.stderr ? e.stderr.toString() : '');
-    const currentFailures = extractFailedFiles(combined);
-    const baseline = loadBaseline();
-    const baselineSet = new Set(baseline.files || []);
-    const newFailures = currentFailures.filter((f) => !baselineSet.has(f));
-    assert(
-      'T4.1 \u2014 npm test exits 0 relative to the known baseline (no NEW regressions introduced)',
-      newFailures.length === 0,
-      newFailures.length > 0 ? `New failures not in tests/known-baseline-failures.json: ${newFailures.join(', ')}` : undefined,
-    );
-  }
-}
+// T4 (nested `npm test` recursion) removed (mar-s1, 2026-08-08): this file
+// re-ran the ENTIRE, ever-growing check-*.js suite as a subprocess from
+// inside a single test file that scripts/run-all-tests.js itself discovers
+// and runs as part of that same suite -- structurally redundant with the
+// enclosing CI job, which already runs `npm test` once and gates the PR on
+// its exit code. Confirmed as the cause of CPU-contention-driven flakiness
+// in a different file (check-p3.5-validate-trace.js) across 3 past PRs, and
+// separately documented (tests/check-tst-s1-baseline-triage.js) as a
+// permanent, un-fixable baseline entry because run-all-tests.js's own 120s
+// per-file timeout always killed the nested run before it could complete.
+// See artefacts/2026-08-08-check-md-3-adr-recursion-fix/.
 
 // ── Results ───────────────────────────────────────────────────────────────────
 console.log(`\n[md-3-adr] Results: ${passed} passed, ${failed} failed`);
