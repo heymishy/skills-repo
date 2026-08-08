@@ -19726,7 +19726,7 @@
         {
           "slug": "epic-1-landing-page-hero-features",
           "name": "A first-time visitor understands what governed AI delivery actually does before being asked to sign up",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "lphf-s1",
@@ -19942,7 +19942,7 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s5-review-1.md",
-              "updatedAt": "2026-08-08T07:55:36.616Z",
+              "updatedAt": "2026-08-08T09:51:12.112Z",
               "acTotal": 3,
               "acVerified": 3,
               "hasLayoutDependentGaps": true,
@@ -19976,9 +19976,10 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prNumber": 687,
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/687"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/687",
+              "mergeCommit": "0a83d12235b90edc5681b7361be9b7b2645b5abc"
             }
           ]
         }
