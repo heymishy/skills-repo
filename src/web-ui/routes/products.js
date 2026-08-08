@@ -1096,7 +1096,16 @@ async function handleGetDashboard(req, res, _next, pool) {
   if (req.query && req.query.view === 'board') {
     var tenantColumns = await buildTenantKanbanColumns(_pool, tenantId);
     var tenantHtml = _kanbanView.renderKanban({ columns: tenantColumns });
-    _sendKanbanHtml(res, tenantHtml);
+    // kbsf-s1: renderKanban()'s <style> block references shared design-token
+    // custom properties (var(--surface) etc.) that are only defined inside
+    // renderShell()'s :root block -- must wrap here or every token resolves
+    // to nothing and the board renders unstyled.
+    _sendKanbanHtml(res, _htmlShell.renderShell({
+      title: 'Kanban board',
+      bodyContent: tenantHtml,
+      user: { login: req.session && req.session.login },
+      active: 'dashboard'
+    }));
     return;
   }
 
@@ -1626,7 +1635,15 @@ async function handleGetProductKanban(req, res, _next, pool, posthog) {
   });
 
   var html = _kanbanView.renderKanban({ columns: columns });
-  _sendKanbanHtml(res, html);
+  // kbsf-s1: wrap via renderShell so the shared design-token :root block
+  // (defined in html-shell.js, not kanban-view.js) is present -- see tenant
+  // scope's identical comment above for the full root-cause explanation.
+  _sendKanbanHtml(res, _htmlShell.renderShell({
+    title: 'Kanban board',
+    bodyContent: html,
+    user: { login: req.session && req.session.login },
+    active: 'dashboard'
+  }));
 }
 
 async function handleGetOrgKanban(req, res, _next, pool, posthog) {
@@ -1680,7 +1697,14 @@ async function handleGetOrgKanban(req, res, _next, pool, posthog) {
   });
 
   var html = _kanbanView.renderKanban({ columns: columns });
-  _sendKanbanHtml(res, html);
+  // kbsf-s1: wrap via renderShell -- see product/tenant scope's identical
+  // comment for the full root-cause explanation.
+  _sendKanbanHtml(res, _htmlShell.renderShell({
+    title: 'Kanban board',
+    bodyContent: html,
+    user: { login: req.session && req.session.login },
+    active: 'dashboard'
+  }));
 }
 
 /**
