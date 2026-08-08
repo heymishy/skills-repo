@@ -19983,6 +19983,47 @@
           ]
         }
       ]
+    },
+    {
+      "slug": "2026-08-08-learnings-count-crash-fix",
+      "name": "Learnings counter crashes the server on startup in every deployed environment -- fs.readFileSync on workspace/learnings.md at module load time, but workspace/ is never copied into the Docker image",
+      "stage": "definition-of-ready",
+      "health": "red",
+      "stories": [
+        {
+          "slug": "lccf-s1",
+          "id": "lccf-s1",
+          "name": "Make the landing page learnings counter fail open instead of crashing the server",
+          "stage": "dor-signed-off",
+          "health": "red",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-08-learnings-count-crash-fix/review/lccf-s1-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-08-learnings-count-crash-fix/test-plans/lccf-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-08-learnings-count-crash-fix/dor/lccf-s1-dor.md",
+          "oversightLevel": "low",
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-08T08:22:19.852Z",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-08T08:22:19.852Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
