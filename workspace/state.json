@@ -1,35 +1,37 @@
 {
   "currentPhase": "discovery",
-  "lastUpdated": "2026-08-06T01:55:00.000Z",
-  "activeFeature": "2026-08-06-durable-artefact-storage",
-  "previousFeature": "2026-07-30-agency-client-organisations",
+  "lastUpdated": "2026-08-08T00:00:00.000Z",
+  "activeFeature": "2026-08-08-landing-page-hero-features",
+  "previousFeature": "2026-08-06-durable-artefact-storage",
   "cycle": {
     "discovery": {
       "status": "approved",
-      "artefact": "artefacts/2026-08-06-durable-artefact-storage/discovery.md",
-      "completedAt": "2026-08-06T01:55:00.000Z",
-      "note": "Live staging bug investigation (wuce-staging journey/808781bb) -- stage artefacts are written only to local ephemeral disk, wiped on every redeploy, orphaning completed-stage artefacts even though journey metadata survives in Postgres. Discovery scopes a dual-write fix (git commit at stage-completion, alongside the existing local-disk write, plus a git-fallback on the Resume-conversation read path). Clarified and approved same-day; all 3 discovery-time assumptions resolved via /clarify and logged in decisions.md."
+      "artefact": "artefacts/2026-08-08-landing-page-hero-features/discovery.md",
+      "completedAt": "2026-08-08T00:00:00.000Z",
+      "note": "Landing page redesign scoping four hero features (golden trace + scope-contract enforcement + cryptographic verification + self-improving harness), plus a restyle (not redesign) of the existing auth-panel CTA. Golden trace's demo content will be built swappable between two real, already-shipped candidates (interactive-kanban-boards/s3.1 and code-shape-diagrams/csd-s2) for a pre-launch side-by-side comparison, not a live A/B test. Clarified and approved same-day; all 4 discovery-time questions resolved via /clarify and logged directly in discovery.md (no separate decisions.md entries needed -- resolutions were folded into the relevant sections). A separate, unrelated short-track defect (kbsf-s1 -- kanban board rendering unstyled in production) was found while evaluating the kanban demo candidate and fixed independently (PR #682, not yet merged)."
     }
   },
   "estimate": {
     "e1": {
-      "date": "2026-08-06",
+      "date": "2026-08-08",
       "expectedCalendarDays": 0.5,
       "engagementFraction": 0.25,
       "outerLoopFocusH": 0.25,
       "innerLoopHuman": 0,
-      "expectedStoryCount": 2,
+      "expectedStoryCount": 4,
       "confidence": "low",
-      "assumptions": "Small, contained scope post-/clarify -- dual-write fix + one required-gate change for new products; no new auth model needed (OAuth scope already confirmed sufficient).",
+      "assumptions": "~4 stories: hero-section content/layout, golden-trace swappable demo build (2 candidates, one deleted pre-merge), auth-panel restyle, and possibly a follow-on PostHog time-on-page instrumentation story. Small, well-bounded scope post-/clarify -- no new backend surface, no live LLM calls, no CMS.",
       "gaugeAtStart": null,
       "premiumRequestsForecast": null
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-08-06",
-    "contextAtWrite": "Just completed: discovery + /clarify + approval for durable-artefact-storage (dual-write artefact durability fix), following live root-cause investigation of the wuce-staging 'Resume conversation shows no content' bug the operator found during manual staging testing. Also earlier this session: shipped multi-tenant-repo-resolution (mtrr-s1/mtrr-s2, both merged and independently verified).",
-    "resumeInstruction": "Next step is /benefit-metric for 2026-08-06-durable-artefact-storage. Read artefacts/2026-08-06-durable-artefact-storage/discovery.md and decisions.md in full before proceeding -- do not rely on conversation history for the resolved assumptions or MVP boundary.",
-    "pendingActions": []
-  },
-  "supersededNote": "This file's prior contents (activeFeature: null, stale estimate.e2 for an already-completed different feature) were replaced rather than carried forward, per this file's own established convention -- real current state for any feature slug always lives in .github/pipeline-state.json, kept up to date via node bin/skills advance at every phase boundary."
+    "writtenAt": "2026-08-08",
+    "contextAtWrite": "Just completed: discovery + /clarify + approval for landing-page-hero-features. Also this session: PR #664 (prc-s2.2) merged after resolving a merge-commit-message anomaly; PR #682 (kbsf-s1, kanban shell-wrapping fix) opened as draft, not yet merged.",
+    "resumeInstruction": "Next step is /benefit-metric for 2026-08-08-landing-page-hero-features. Read artefacts/2026-08-08-landing-page-hero-features/discovery.md in full before proceeding -- do not rely on conversation history for the resolved /clarify questions or MVP boundary. Separately, PR #682 (kbsf-s1) is still open as a draft and awaiting merge decision.",
+    "pendingActions": [
+      "Decide whether to merge PR #682 (kbsf-s1 kanban shell-wrapping fix)",
+      "Run /benefit-metric for 2026-08-08-landing-page-hero-features"
+    ]
+  }
 }
