@@ -75,6 +75,7 @@ const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _han
 const { setModulesAdapter } = require('./adapters/modules-adapter'); // a1
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
+const { setBootstrapAdapter, realBootstrapRepo }                     = require('./modules/repo-bootstrap');       // prc-s2.2
 const { setListReposAdapter, realListRepos }                         = require('./adapters/repo-adapter');       // mtrr-s2
 const { setArtefactCommitAdapter, realCommitArtefact }               = require('./adapters/artefact-commit-writer'); // das-s1
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
@@ -233,6 +234,19 @@ if (process.env.DATABASE_URL) {
 if (process.env.NODE_ENV !== 'test') {
   setCreateRepoAdapter(realCreateRepo);
   console.log('[repo-adapter] createRepo wired');
+}
+
+// prc-s2.2 / D37 mandatory separate wiring task -- wire the real GitHub
+// bootstrap adapter (Git Data API tree/blob/commit orchestration), a
+// distinct adapter from prc-s2.1's repo-creation adapter above --
+// setBootstrapAdapter/getBootstrapAdapter, not
+// setCreateRepoAdapter/getCreateRepoAdapter, so the two stories' wiring
+// calls never collide. Never wired in NODE_ENV=test (tests call
+// setBootstrapAdapter() themselves with a mock); the throwing stub stays
+// active there.
+if (process.env.NODE_ENV !== 'test') {
+  setBootstrapAdapter(realBootstrapRepo);
+  console.log('[repo-bootstrap] bootstrapRepo wired');
 }
 
 // mtrr-s2 / D37 mandatory separate wiring task -- wire the real GitHub
