@@ -34,6 +34,19 @@ function fail(name, err) { console.error(`  FAIL: ${name}: ${err.message || err}
     pass('goldenTraceDemo_switchesToDiagramContent_whenConfigSetToDiagram');
   } catch (e) { fail('goldenTraceDemo_switchesToDiagramContent_whenConfigSetToDiagram', e); }
 
+  // AC4
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const { ACTIVE_CANDIDATE, CANDIDATES } = require('../src/web-ui/content/golden-trace-content');
+    const realDiscoveryPath = path.join(__dirname, '..', 'artefacts', '2026-07-24-interactive-kanban-boards', 'discovery.md');
+    const realDiscovery = fs.readFileSync(realDiscoveryPath, 'utf8');
+    const excerptCore = 'an operator can see which stage a feature/story is in, but cannot act on that view';
+    assert(realDiscovery.includes(excerptCore), 'test setup error: the real discovery.md no longer contains the expected excerpt');
+    assert(CANDIDATES[ACTIVE_CANDIDATE].discovery.includes(excerptCore), 'frame content does not match the real discovery.md excerpt verbatim');
+    pass('goldenTraceDemo_frameContentMatchesRealArtefactFile_notFabricated');
+  } catch (e) { fail('goldenTraceDemo_frameContentMatchesRealArtefactFile_notFabricated', e); }
+
   console.log(`\n${passed} passed, ${failed} failed`);
   process.exit(failed > 0 ? 1 : 0);
 })();
