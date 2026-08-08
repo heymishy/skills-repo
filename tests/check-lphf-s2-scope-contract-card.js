@@ -17,6 +17,17 @@ function fail(name, err) { console.error(`  FAIL: ${name}: ${err.message || err}
     pass('scopeContractCard_rendersHeadlineSentenceAndExample');
   } catch (e) { fail('scopeContractCard_rendersHeadlineSentenceAndExample', e); }
 
+  // AC2
+  try {
+    const cardMatch = html.match(/<section class="hero-card" data-hero="scope-contract"[\s\S]*?<\/section>/);
+    assert(cardMatch, 'expected to locate the scope-contract hero card section');
+    const cardHtml = cardMatch[0].toLowerCase();
+    assert(cardHtml.includes('dor') || cardHtml.includes('definition of ready'), 'expected the copy to name the real mechanism (DoR)');
+    assert(cardHtml.includes('assurance gate'), 'expected the copy to name the assurance gate');
+    assert(!/\bsafe ai\b/.test(cardHtml), 'copy should not use generic "safe AI" marketing language');
+    pass('scopeContractCard_copyNamesRealMechanism_notGenericClaim');
+  } catch (e) { fail('scopeContractCard_copyNamesRealMechanism_notGenericClaim', e); }
+
   console.log(`\n${passed} passed, ${failed} failed`);
   process.exit(failed > 0 ? 1 : 0);
 })();
