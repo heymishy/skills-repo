@@ -19796,20 +19796,20 @@
             {
               "slug": "lphf-s2",
               "name": "Scope-contract enforcement hero card",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s2-review-1.md",
-              "updatedAt": "2026-08-08T05:51:30.042Z",
+              "updatedAt": "2026-08-08T06:06:08.601Z",
               "acTotal": 3,
-              "acVerified": 0,
+              "acVerified": 3,
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
               "testPlan": {
                 "status": "written",
                 "totalTests": 3,
-                "passing": 0,
+                "passing": 3,
                 "artefact": "artefacts/2026-08-08-landing-page-hero-features/test-plans/lphf-s2-test-plan.md"
               },
               "verificationScriptArtefact": "artefacts/2026-08-08-landing-page-hero-features/verification-scripts/lphf-s2-verification.md",
@@ -19833,7 +19833,8 @@
                   "tddState": "not-started",
                   "file": "artefacts/2026-08-08-landing-page-hero-features/plans/lphf-s2-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "lphf-s3",
