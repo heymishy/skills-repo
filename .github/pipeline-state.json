@@ -20160,6 +20160,47 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "epics": []
+    },
+    {
+      "slug": "2026-08-09-mock-gateway-auto-revert",
+      "name": "Staging mock LLM gateway toggle has no auto-revert -- a manual off can leak into later sessions/CI and burn real API token cost",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "mgar-s1",
+          "id": "mgar-s1",
+          "name": "Auto-revert the staging mock LLM gateway override, and force it on before CI staging E2E runs",
+          "stage": "dor-signed-off",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-09-mock-gateway-auto-revert/review/mgar-s1-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-09-mock-gateway-auto-revert/test-plans/mgar-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-09-mock-gateway-auto-revert/dor/mgar-s1-dor.md",
+          "oversightLevel": "medium",
+          "acTotal": 6,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": true,
+          "updatedAt": "2026-08-08T19:53:09.792Z",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-08T19:53:09.792Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
