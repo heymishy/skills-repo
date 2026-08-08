@@ -20026,7 +20026,8 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "epics": []
+      "epics": [],
+      "blocker": "wuce-staging down (crash-loop) since PR #686 merged; fix is PR #688, awaiting merge"
     },
     {
       "slug": "2026-08-08-validate-trace-perf",
