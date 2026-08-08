@@ -9,10 +9,17 @@ var fs = require('fs');
 var path = require('path');
 
 function getLearningsCount() {
-  var filePath = path.join(__dirname, '..', '..', '..', 'workspace', 'learnings.md');
-  var raw = fs.readFileSync(filePath, 'utf8');
-  var matches = raw.match(/^## /gm) || [];
-  return matches.length;
+  try {
+    var filePath = path.join(__dirname, '..', '..', '..', 'workspace', 'learnings.md');
+    var raw = fs.readFileSync(filePath, 'utf8');
+    var matches = raw.match(/^## /gm) || [];
+    return matches.length;
+  } catch (e) {
+    // workspace/learnings.md is a repo-management file, not part of the deployed
+    // application bundle -- it will never exist in production. Fail open rather
+    // than crash the whole process at module load time.
+    return 0;
+  }
 }
 
 module.exports = { getLearningsCount: getLearningsCount };
