@@ -19890,12 +19890,12 @@
             {
               "slug": "lphf-s4",
               "name": "Self-improving harness hero card",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s4-review-1.md",
-              "updatedAt": "2026-08-08T06:59:24.512Z",
+              "updatedAt": "2026-08-08T07:01:17.823Z",
               "acTotal": 4,
               "acVerified": 4,
               "hasLayoutDependentGaps": true,
@@ -19928,7 +19928,10 @@
                   "file": "artefacts/2026-08-08-landing-page-hero-features/plans/lphf-s4-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prNumber": 686,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/686"
             },
             {
               "slug": "lphf-s5",
