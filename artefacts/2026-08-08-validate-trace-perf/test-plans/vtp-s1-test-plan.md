@@ -63,3 +63,8 @@
 - **Verifies:** AC4
 - **Action:** Re-run `tests/check-p4-enf-second-line.js` after this change lands; note the observed `validate-trace.sh` wall-clock time in the PR description relative to T6's 60-second timeout
 - **Expected result:** T6 passes; the PR description states the new margin (e.g. "now completes in ~Xs against a 60s timeout")
+
+## Implementation note (addendum, 2026-08-08)
+
+The actual test suite lives in `tests/check-vtp-s1-validate-trace-consolidation.js` — one integration test file covering AC1 (git-based golden-diff against the parent commit's script, with a graceful skip on platforms where the pre-change script's direct-bash-interpolation `python3` calls can't run at all — a pre-existing, unrelated Windows/git-bash limitation, not something this story introduces), AC2 (a counting `python3` shim on `PATH` asserting exactly one shared-state invocation), and AC3 (all 6 `--check <name>` modes run cleanly). `no_eval_mode_artefacts` was folded into the same consolidated pass mid-implementation (see the story's addendum) after being measured at 2m31s standalone — it is covered by the same AC1/AC2/AC3 tests as the other five checks, not a separate test.
+

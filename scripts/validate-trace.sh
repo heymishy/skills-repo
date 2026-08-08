@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # validate-trace.sh
 # Validates the traceability chain across all artefacts and pipeline-state.json
-# 
+#
 # Usage:
 #   bash scripts/validate-trace.sh            # interactive output
 #   bash scripts/validate-trace.sh --ci       # machine-readable JSON report + exit code
@@ -70,41 +70,332 @@ sys.exit(0 if hard_fail else 1)
 PYTHON
 }
 
+# ── Consolidated check runner (vtp-s1) ─────────────────────────────────────────
+# Every check below used to spawn its own python3 process to independently
+# re-read and re-parse pipeline-state.json / trace-validation.yml / list
+# artefacts/, and check_discovery_approved additionally spawned up to 2 `grep`
+# subprocesses per artefact directory. As artefacts/ has grown (149+ feature
+# directories), that unscaled cost started intermittently timing out callers
+# (see tests/check-p4-enf-second-line.js's T6 sub-check).
+#
+# This single Python invocation loads pipeline-state.json, trace-validation.yml,
+# and the artefacts/ listing exactly once, computes every check's inputs from
+# that shared in-memory state, and prints one section per check delimited by
+# ===<NAME>_START===/===<NAME>_END=== markers. Each check_* function below
+# extracts its own section and runs the SAME bash-side parsing loop the
+# original per-check python invocation fed into — only how that input is
+# obtained changed, not how it's interpreted. See
+# artefacts/2026-08-08-validate-trace-perf/ for the story, review, and test
+# plan this refactor is scoped against (in particular AC1's requirement that
+# every check's pass/fail semantics stay byte-identical to before).
+CONSOLIDATED_OUTPUT=""
+CONSOLIDATED_RUN=false
+
+run_consolidated_checks() {
+    if [[ "$CONSOLIDATED_RUN" == "true" ]]; then return; fi
+    CONSOLIDATED_RUN=true
+    CONSOLIDATED_OUTPUT=$(ARTEFACTS_DIR="$ARTEFACTS" STATE_FILE="$STATE_FILE" SCHEMA_FILE="$SCHEMA_FILE" CONFIG_FILE="$CONFIG_FILE" python3 - <<'PYTHON'
+import os, sys, re, json
+
+artefacts   = os.environ.get('ARTEFACTS_DIR', 'artefacts')
+state_file  = os.environ.get('STATE_FILE', '')
+schema_file = os.environ.get('SCHEMA_FILE', '')
+config_file = os.environ.get('CONFIG_FILE', '')
+
+try:
+    import yaml
+    has_yaml = True
+except ImportError:
+    has_yaml = False
+
+# ── Load shared inputs exactly once ────────────────────────────────────────
+state = None
+if state_file and os.path.exists(state_file):
+    try:
+        with open(state_file, encoding='utf-8') as f:
+            state = json.load(f)
+    except Exception:
+        state = None
+
+# Raw config, loaded once. Each check below applies its OWN original default
+# fallback behaviour on top of this shared value -- the two checks that read
+# tracks_without_discovery historically defaulted differently when the key
+# (or the file) was absent, and that distinction is preserved deliberately.
+config = None
+if config_file and os.path.exists(config_file) and has_yaml:
+    try:
+        with open(config_file) as f:
+            config = yaml.safe_load(f) or {}
+    except Exception:
+        config = None
+
+artefacts_isdir = os.path.isdir(artefacts)
+entries = []
+entries_error = None
+if artefacts_isdir:
+    try:
+        entries = sorted(os.listdir(artefacts))
+    except Exception as ex:
+        entries_error = str(ex)
+
+track_map = {}
+stage_map = {}
+if state:
+    for feature in state.get('features', []):
+        slug = feature.get('slug', '')
+        if slug:
+            track_map[slug] = feature.get('track', 'standard')
+            stage_map[slug] = feature.get('stage', '')
+
+# ═══════════════════════════════════════════════════════════════════════════
+print('===SCHEMA_VALID_START===')
+if not state_file or not os.path.exists(state_file):
+    print('EXIT:1')
+    print('MISSING_STATE_FILE:' + state_file)
+elif schema_file and os.path.exists(schema_file):
+    try:
+        import jsonschema
+        with open(state_file, encoding='utf-8') as f:
+            raw_state = f.read()
+        with open(schema_file, encoding='utf-8') as f:
+            schema = json.load(f)
+        try:
+            parsed_state = json.loads(raw_state)
+        except Exception:
+            parsed_state = None
+        if parsed_state is None:
+            print('EXIT:1')
+            print('INVALID_JSON:1')
+        else:
+            v = jsonschema.Draft7Validator(schema)
+            errs = list(v.iter_errors(parsed_state))
+            if not errs:
+                print('EXIT:0')
+                print('Valid')
+            else:
+                print('EXIT:1')
+                print(str(len(errs)) + ' violation(s) found:')
+                for e in sorted(errs, key=lambda x: list(x.absolute_path))[:10]:
+                    path_str = ' > '.join(str(p) for p in e.absolute_path) or '(root)'
+                    print('  ' + path_str + ': ' + e.message[:120])
+                if len(errs) > 10:
+                    print('  ... and ' + str(len(errs) - 10) + ' more — run validate-trace.sh locally to see all')
+    except Exception:
+        print('EXIT:1')
+        print('SCHEMA_CHECK_ERROR:1')
+else:
+    if state is not None:
+        print('EXIT:0')
+        print('pipeline-state.json is valid JSON (no schema file to validate against)')
+    else:
+        print('EXIT:1')
+        print('INVALID_JSON:1')
+print('===SCHEMA_VALID_END===')
+
+# ═══════════════════════════════════════════════════════════════════════════
+print('===DISCOVERY_EXISTS_START===')
+if not artefacts_isdir:
+    print('EMPTY:1')
+else:
+    reference_dirs = set()
+    tracks_without_discovery = {'short', 'defect', 'library', 'spike'}
+    if config is not None:
+        reference_dirs = set(config.get('reference_dirs', []))
+        if 'tracks_without_discovery' in config:
+            tracks_without_discovery = set(config['tracks_without_discovery'])
+
+    if entries_error is not None:
+        print('ERROR:' + entries_error)
+    else:
+        for entry in entries:
+            feature_dir = os.path.join(artefacts, entry)
+            if not os.path.isdir(feature_dir) or entry.startswith('.'):
+                continue
+            if entry in reference_dirs:
+                print('SKIP_REF:' + entry)
+                continue
+            feature_track = track_map.get(entry, '')
+            if feature_track in tracks_without_discovery:
+                print('SKIP_TRACK:' + entry + ':' + feature_track)
+                continue
+            if not os.path.exists(os.path.join(feature_dir, 'discovery.md')):
+                track_hint = ('track: ' + feature_track) if feature_track else 'not registered in pipeline-state — add to reference_dirs or pipeline-state with correct track'
+                print('MISSING:' + entry + ':' + track_hint)
+print('===DISCOVERY_EXISTS_END===')
+
+# ═══════════════════════════════════════════════════════════════════════════
+# discovery_approved needs: (1) "slug|stage|track" lines for the grep -m1
+# lookup the bash side used to do against a python3-computed feature_meta
+# blob, (2) the exempt-tracks list (its OWN original default, which included
+# 'programme' whenever the config key was absent OR the file didn't load --
+# not the same default check_discovery_exists used), and (3) each candidate
+# feature directory's discovery.md content so the bash side's `grep -qi
+# 'status.*approved'` / `'status.*draft'` calls can be replaced with an
+# equivalent in-process per-line regex search (same case-insensitive,
+# single-line semantics grep -i provides; no DOTALL).
+print('===DISCOVERY_APPROVED_FEATURE_META_START===')
+if state:
+    for feature in state.get('features', []):
+        slug = feature.get('slug', '')
+        stage = feature.get('stage', '')
+        track = feature.get('track', 'standard')
+        if slug:
+            print(slug + '|' + stage + '|' + track)
+print('===DISCOVERY_APPROVED_FEATURE_META_END===')
+
+print('===DISCOVERY_APPROVED_EXEMPT_TRACKS_START===')
+_approved_default = ['short', 'defect', 'library', 'spike', 'programme']
+if config is not None:
+    print(' '.join(config.get('tracks_without_discovery', _approved_default)))
+else:
+    print(' '.join(_approved_default))
+print('===DISCOVERY_APPROVED_EXEMPT_TRACKS_END===')
+
+print('===DISCOVERY_APPROVED_STATUS_START===')
+if artefacts_isdir:
+    for entry in entries:
+        feature_dir = os.path.join(artefacts, entry)
+        if not os.path.isdir(feature_dir):
+            continue
+        discovery = os.path.join(feature_dir, 'discovery.md')
+        if not os.path.exists(discovery):
+            continue
+        try:
+            with open(discovery, encoding='utf-8', errors='ignore') as f:
+                lines = f.readlines()
+        except Exception:
+            lines = []
+        approved = any(re.search(r'status.*approved', l, re.IGNORECASE) for l in lines)
+        draft    = any(re.search(r'status.*draft', l, re.IGNORECASE) for l in lines)
+        print(entry + '|' + ('1' if approved else '0') + '|' + ('1' if draft else '0'))
+print('===DISCOVERY_APPROVED_STATUS_END===')
+
+# ═══════════════════════════════════════════════════════════════════════════
+print('===TEST_PLAN_COVERAGE_START===')
+if state is None:
+    print('EXIT:0')
+else:
+    test_plan_exempt = set()
+    if config is not None:
+        test_plan_exempt = set(config.get('test_plan_exempt_features', []))
+
+    stages_needing_test_plan = {'test-plan','definition-of-ready','implementation','done','definition-of-done'}
+    missing = []
+    for feature in state.get('features', []):
+        feature_slug = feature.get('slug', 'unknown')
+        if feature_slug in test_plan_exempt:
+            continue
+        stories = [s for s in feature.get('stories', []) if isinstance(s, dict)]
+        if not stories:
+            for epic in feature.get('epics', []):
+                stories += [s for s in epic.get('stories', []) if isinstance(s, dict)]
+        for story in stories:
+            stage = story.get('stage', '')
+            if stage not in stages_needing_test_plan:
+                continue
+            direct_artefact = story.get('testPlan', {}).get('artefact', '')
+            if direct_artefact:
+                test_plan_path = direct_artefact
+            else:
+                artefact = story.get('artefact', '')
+                if artefact:
+                    file_slug = os.path.basename(artefact).replace('.md', '')
+                else:
+                    file_slug = story.get('slug') or story.get('id', 'unknown')
+                test_plan_path = os.path.join('artefacts', feature_slug, 'test-plans', f'{file_slug}-test-plan.md')
+            if not os.path.exists(test_plan_path):
+                normalized = test_plan_path.replace(os.sep, '/')
+                if normalized.startswith('artefacts/'):
+                    archived_path = 'artefacts/archived/' + normalized[len('artefacts/'):]
+                else:
+                    archived_path = normalized
+                if not os.path.exists(archived_path):
+                    print(f'MISSING: {test_plan_path}')
+                    missing.append(test_plan_path)
+    print('EXIT:' + ('1' if missing else '0'))
+print('===TEST_PLAN_COVERAGE_END===')
+
+# ═══════════════════════════════════════════════════════════════════════════
+print('===UNRESOLVED_BLOCKERS_START===')
+if state is None:
+    print('EXIT:0')
+else:
+    found = False
+    for feature in state.get('features', []):
+        feature_slug = feature.get('slug', 'unknown')
+        if feature.get('health') == 'red' and not feature.get('blocker'):
+            print(f'UNRESOLVED BLOCKER: feature {feature_slug} has health=red but no blocker recorded')
+            found = True
+        all_stories = [s for s in feature.get('stories', []) if isinstance(s, dict)]
+        for epic in feature.get('epics', []):
+            all_stories += [s for s in epic.get('stories', []) if isinstance(s, dict)]
+        for story in all_stories:
+            story_slug = story.get('slug') or story.get('id', 'unknown')
+            if story.get('health') == 'red' and not story.get('blocker'):
+                print(f'UNRESOLVED BLOCKER: {feature_slug}/{story_slug} has health=red but no blocker recorded')
+                found = True
+    print('EXIT:' + ('1' if found else '0'))
+print('===UNRESOLVED_BLOCKERS_END===')
+
+# ═══════════════════════════════════════════════════════════════════════════
+# no_eval_mode_artefacts originally spawned one `grep -qF` subprocess PER
+# markdown file found by `find` -- 3,691 files under artefacts/ as of this
+# date, the single worst instance of the subprocess-per-item pattern this
+# story exists to fix (worse than discovery_approved's ~300). Same marker
+# string, same recursive scope, checked in-process instead.
+print('===NO_EVAL_MODE_ARTEFACTS_START===')
+if artefacts_isdir:
+    for dirpath, dirnames, filenames in os.walk(artefacts):
+        for fn in filenames:
+            if not fn.endswith('.md'):
+                continue
+            fp = os.path.join(dirpath, fn)
+            try:
+                with open(fp, encoding='utf-8', errors='ignore') as f:
+                    content = f.read()
+            except Exception:
+                continue
+            if '<!-- eval-mode: true -->' in content:
+                print('FOUND:' + fp)
+print('===NO_EVAL_MODE_ARTEFACTS_END===')
+PYTHON
+    )
+}
+
 # ── Check: pipeline-state.json exists and is valid JSON ──────────────────────
 check_schema_valid() {
     info "Checking: pipeline-state.json is schema-valid"
-    if [[ ! -f "$STATE_FILE" ]]; then
+    run_consolidated_checks
+    local section exit_code
+    section=$(sed -n '/===SCHEMA_VALID_START===/,/===SCHEMA_VALID_END===/p' <<< "$CONSOLIDATED_OUTPUT" | sed '1d;$d')
+    exit_code=$(grep -m1 '^EXIT:' <<< "$section" | cut -d: -f2)
+    if [[ -z "$exit_code" ]]; then
         record_fail "schema_valid" "pipeline-state.json not found at $STATE_FILE"
         return
     fi
-    if [[ -f "$SCHEMA_FILE" ]]; then
-        if python3 -c "
-import json, jsonschema, sys
-with open('$STATE_FILE', encoding='utf-8') as f: state = json.load(f)
-with open('$SCHEMA_FILE', encoding='utf-8') as f: schema = json.load(f)
-v = jsonschema.Draft7Validator(schema)
-errs = list(v.iter_errors(state))
-if not errs:
-    print('Valid')
-    sys.exit(0)
-print(str(len(errs)) + ' violation(s) found:')
-for e in sorted(errs, key=lambda x: list(x.absolute_path))[:10]:
-    path_str = ' > '.join(str(p) for p in e.absolute_path) or '(root)'
-    print('  ' + path_str + ': ' + e.message[:120])
-if len(errs) > 10:
-    print('  ... and ' + str(len(errs) - 10) + ' more — run validate-trace.sh locally to see all')
-sys.exit(1)"; then
-            record_pass "schema_valid"
-            ok "pipeline-state.json is schema-valid"
-        else
-            record_fail "schema_valid" "pipeline-state.json failed schema validation — see violations above"
-        fi
-    else
-        if python3 -c "import json; json.load(open('$STATE_FILE', encoding='utf-8'))" 2>/dev/null; then
+    if grep -q '^MISSING_STATE_FILE:' <<< "$section"; then
+        record_fail "schema_valid" "pipeline-state.json not found at $STATE_FILE"
+        return
+    fi
+    # Print any non-marker detail lines (violations / status text) exactly as
+    # the original per-check python invocation printed them to stdout.
+    while IFS= read -r line; do
+        [[ "$line" == EXIT:* ]] && continue
+        [[ -n "$line" ]] && echo "$line"
+    done <<< "$section"
+    if [[ "$exit_code" == "0" ]]; then
+        if grep -q 'no schema file to validate against' <<< "$section"; then
             record_pass "schema_valid"
             ok "pipeline-state.json is valid JSON (no schema file to validate against)"
         else
+            record_pass "schema_valid"
+            ok "pipeline-state.json is schema-valid"
+        fi
+    else
+        if grep -q '^INVALID_JSON:' <<< "$section"; then
             record_fail "schema_valid" "pipeline-state.json is not valid JSON"
+        else
+            record_fail "schema_valid" "pipeline-state.json failed schema validation — see violations above"
         fi
     fi
 }
@@ -117,74 +408,10 @@ check_discovery_exists() {
         ok "artefacts/ is empty — no features to check"
         return
     fi
-    # Delegate entirely to Python so we can read pipeline-state.json for track-based
-    # auto-exemption and emit structured diagnostic lines for each feature.
+    run_consolidated_checks
     local check_output missing_count
     missing_count=0
-    check_output=$(ARTEFACTS_DIR="$ARTEFACTS" STATE_FILE="$STATE_FILE" CONFIG_FILE="$CONFIG_FILE" python3 - <<'PYTHON' 2>&1
-import os, json, sys
-try:
-    import yaml
-    has_yaml = True
-except ImportError:
-    has_yaml = False
-
-artefacts  = os.environ.get('ARTEFACTS_DIR', 'artefacts')
-state_file = os.environ.get('STATE_FILE', '')
-config_file = os.environ.get('CONFIG_FILE', '')
-
-# Load reference_dirs and tracks_without_discovery from trace-validation.yml
-reference_dirs = set()
-tracks_without_discovery = {'short', 'defect', 'library', 'spike'}
-if config_file and os.path.exists(config_file) and has_yaml:
-    with open(config_file) as f:
-        config = yaml.safe_load(f) or {}
-    reference_dirs = set(config.get('reference_dirs', []))
-    if 'tracks_without_discovery' in config:
-        tracks_without_discovery = set(config['tracks_without_discovery'])
-
-# Build feature slug → track map from pipeline-state.json
-track_map = {}
-if state_file and os.path.exists(state_file):
-    try:
-        with open(state_file, encoding='utf-8') as f:
-            state = json.load(f)
-        for feature in state.get('features', []):
-            slug  = feature.get('slug', '')
-            track = feature.get('track', 'standard')
-            if slug:
-                track_map[slug] = track
-    except Exception:
-        pass  # if state is unreadable, proceed without track info
-
-missing = 0
-try:
-    entries = sorted(os.listdir(artefacts))
-except Exception as ex:
-    print('ERROR:' + str(ex))
-    sys.exit(2)
-
-for entry in entries:
-    feature_dir = os.path.join(artefacts, entry)
-    if not os.path.isdir(feature_dir) or entry.startswith('.'):
-        continue
-    # reference_dirs: manual skip-list for directories that are not pipeline features
-    if entry in reference_dirs:
-        print('SKIP_REF:' + entry)
-        continue
-    # track-based auto-exemption: features on non-standard tracks do not require discovery.md
-    feature_track = track_map.get(entry, '')
-    if feature_track in tracks_without_discovery:
-        print('SKIP_TRACK:' + entry + ':' + feature_track)
-        continue
-    if not os.path.exists(os.path.join(feature_dir, 'discovery.md')):
-        track_hint = ('track: ' + feature_track) if feature_track else 'not registered in pipeline-state — add to reference_dirs or pipeline-state with correct track'
-        print('MISSING:' + entry + ':' + track_hint)
-        missing += 1
-
-sys.exit(1 if missing else 0)
-PYTHON
-    )
+    check_output=$(sed -n '/===DISCOVERY_EXISTS_START===/,/===DISCOVERY_EXISTS_END===/p' <<< "$CONSOLIDATED_OUTPUT" | sed '1d;$d')
     while IFS= read -r line; do
         case "$line" in
             SKIP_REF:*)
@@ -221,66 +448,39 @@ check_discovery_approved() {
         ok "artefacts/ is empty — nothing to check"
         return
     fi
-    # Build slug → stage+track map from pipeline-state.json so we can skip features
-    # that are still in discovery stage (Draft is expected pre-approval) or on a track
-    # that does not require a discovery artefact at all.
-    local feature_meta
-    feature_meta=$(python3 -c "
-import json, sys
-try:
-    with open('$STATE_FILE') as f:
-        state = json.load(f)
-    for feat in state.get('features', []):
-        slug  = feat.get('slug', '')
-        stage = feat.get('stage', '')
-        track = feat.get('track', 'standard')
-        if slug:
-            print(slug + '|' + stage + '|' + track)
-except Exception:
-    pass
-" 2>/dev/null)
-    # Load tracks_without_discovery from config
-    local exempt_tracks
-    exempt_tracks=$(python3 -c "
-import sys
-try:
-    import yaml
-    with open('$CONFIG_FILE') as f:
-        cfg = yaml.safe_load(f) or {}
-    print(' '.join(cfg.get('tracks_without_discovery', ['short','defect','library','spike','programme'])))
-except Exception:
-    print('short defect library spike programme')
-" 2>/dev/null)
+    run_consolidated_checks
+    local feature_meta exempt_tracks status_lines
+    feature_meta=$(sed -n '/===DISCOVERY_APPROVED_FEATURE_META_START===/,/===DISCOVERY_APPROVED_FEATURE_META_END===/p' <<< "$CONSOLIDATED_OUTPUT" | sed '1d;$d')
+    exempt_tracks=$(sed -n '/===DISCOVERY_APPROVED_EXEMPT_TRACKS_START===/,/===DISCOVERY_APPROVED_EXEMPT_TRACKS_END===/p' <<< "$CONSOLIDATED_OUTPUT" | sed '1d;$d')
+    status_lines=$(sed -n '/===DISCOVERY_APPROVED_STATUS_START===/,/===DISCOVERY_APPROVED_STATUS_END===/p' <<< "$CONSOLIDATED_OUTPUT" | sed '1d;$d')
     local unapproved=0
-    for feature_dir in "$ARTEFACTS"/*/; do
-        [[ -d "$feature_dir" ]] || continue
-        local feature
-        feature="$(basename "$feature_dir")"
-        local discovery="$feature_dir/discovery.md"
-        [[ -f "$discovery" ]] || continue
-        # Extract stage and track for this feature
+    while IFS= read -r sline; do
+        [[ -z "$sline" ]] && continue
+        local feature approved_flag draft_flag
+        feature="${sline%%|*}"
+        local rest="${sline#*|}"
+        approved_flag="${rest%%|*}"
+        draft_flag="${rest#*|}"
         local feat_line feat_stage feat_track
         feat_line=$(echo "$feature_meta" | grep -m1 "^${feature}|" || true)
         feat_stage=$(echo "$feat_line" | cut -d'|' -f2)
         feat_track=$(echo "$feat_line" | cut -d'|' -f3)
-        # Skip features still in discovery stage — Draft is expected pre-approval
         if [[ "$feat_stage" == "discovery" ]]; then
             ok "Skipping: $feature (stage: discovery — approval pending)"
             continue
         fi
-        # Skip features on tracks that don't require a discovery artefact
         if echo " $exempt_tracks " | grep -qw "$feat_track"; then
             ok "Skipping: $feature (track: $feat_track — discovery not required on this track)"
             continue
         fi
-        if ! grep -qi 'status.*approved' "$discovery" 2>/dev/null; then
-            if grep -qi 'status.*draft' "$discovery" 2>/dev/null; then
+        if [[ "$approved_flag" != "1" ]]; then
+            if [[ "$draft_flag" == "1" ]]; then
                 record_fail "discovery_approved" "$feature: discovery.md status is still Draft"
                 fail "$feature: discovery.md is still Draft"
                 ((unapproved++)) || true
             fi
         fi
-    done
+    done <<< "$status_lines"
     if [[ $unapproved -eq 0 ]]; then
         record_pass "discovery_approved"
         ok "All discoveries are Approved (or not yet at approval stage)"
@@ -295,76 +495,15 @@ check_test_plan_coverage() {
         ok "No pipeline-state.json — skipping"
         return
     fi
-    if CONFIG_FILE="$CONFIG_FILE" python3 - <<PYTHON
-import json, os, sys
-try:
-    import yaml
-    has_yaml = True
-except ImportError:
-    has_yaml = False
-
-config_file = os.environ.get('CONFIG_FILE', '')
-test_plan_exempt = set()
-if config_file and os.path.exists(config_file) and has_yaml:
-    with open(config_file) as f:
-        config = yaml.safe_load(f) or {}
-    test_plan_exempt = set(config.get('test_plan_exempt_features', []))
-
-with open('$STATE_FILE') as f:
-    state = json.load(f)
-
-stages_needing_test_plan = {'test-plan','definition-of-ready','implementation','done','definition-of-done'}
-missing = []
-for feature in state.get('features', []):
-    feature_slug = feature.get('slug', 'unknown')
-    if feature_slug in test_plan_exempt:
-        continue
-
-    # Collect all story objects. Phase 3+ stores full objects in feature.stories[];
-    # Phase 1/2 stores full objects nested inside epic.stories[].
-    # Epic.stories[] may also contain plain string slugs (Phase 3) — skip those.
-    stories = [s for s in feature.get('stories', []) if isinstance(s, dict)]
-    if not stories:
-        for epic in feature.get('epics', []):
-            stories += [s for s in epic.get('stories', []) if isinstance(s, dict)]
-
-    for story in stories:
-        stage = story.get('stage', '')
-        if stage not in stages_needing_test_plan:
-            continue
-        # Use testPlan.artefact directly when the pipeline-state records it explicitly.
-        # This handles cases where the test plan filename uses a short slug (e.g. spc.1-test-plan.md)
-        # rather than the full story slug (spc.1-context-yml-instrumentation-config-test-plan.md).
-        direct_artefact = story.get('testPlan', {}).get('artefact', '')
-        if direct_artefact:
-            test_plan_path = direct_artefact
-        else:
-            # Fallback: derive the file slug from the story artefact path basename,
-            # so that both short slugs (e.g. "p3.1a") and full slugs resolve correctly.
-            artefact = story.get('artefact', '')
-            if artefact:
-                file_slug = os.path.basename(artefact).replace('.md', '')
-            else:
-                # Phase 3+ stories use 'id' key; Phase 1/2 stories use 'slug' key
-                file_slug = story.get('slug') or story.get('id', 'unknown')
-            test_plan_path = os.path.join('artefacts', feature_slug, 'test-plans', f'{file_slug}-test-plan.md')
-        if not os.path.exists(test_plan_path):
-            # Completed features get moved to artefacts/archived/<slug>/ over time
-            # (see the 2026-05-14 archive commit); pipeline-state.json keeps the
-            # pre-archive path, so check there before declaring the plan missing.
-            # Normalize to '/' first -- direct_artefact strings from JSON always use
-            # '/', while the os.path.join fallback above uses the OS-native separator.
-            normalized = test_plan_path.replace(os.sep, '/')
-            if normalized.startswith('artefacts/'):
-                archived_path = 'artefacts/archived/' + normalized[len('artefacts/'):]
-            else:
-                archived_path = normalized
-            if not os.path.exists(archived_path):
-                print(f'MISSING: {test_plan_path}')
-                missing.append(test_plan_path)
-sys.exit(1 if missing else 0)
-PYTHON
-    then
+    run_consolidated_checks
+    local section exit_code
+    section=$(sed -n '/===TEST_PLAN_COVERAGE_START===/,/===TEST_PLAN_COVERAGE_END===/p' <<< "$CONSOLIDATED_OUTPUT" | sed '1d;$d')
+    exit_code=$(grep -m1 '^EXIT:' <<< "$section" | cut -d: -f2)
+    while IFS= read -r line; do
+        [[ "$line" == EXIT:* ]] && continue
+        [[ -n "$line" ]] && echo "$line"
+    done <<< "$section"
+    if [[ "$exit_code" == "0" ]]; then
         record_pass "test_plan_coverage"
         ok "All in-flight stories have test plans"
     else
@@ -380,31 +519,15 @@ check_unresolved_blockers() {
         ok "No pipeline-state.json — skipping"
         return
     fi
-    python3 - <<PYTHON
-import json, sys
-
-with open('$STATE_FILE') as f:
-    state = json.load(f)
-
-found = False
-for feature in state.get('features', []):
-    feature_slug = feature.get('slug', 'unknown')
-    # Check feature-level health
-    if feature.get('health') == 'red' and not feature.get('blocker'):
-        print(f'UNRESOLVED BLOCKER: feature {feature_slug} has health=red but no blocker recorded')
-        found = True
-    # Collect all stories: flat feature.stories[] (Phase 3+) and epic.stories[] (Phase 1/2)
-    all_stories = [s for s in feature.get('stories', []) if isinstance(s, dict)]
-    for epic in feature.get('epics', []):
-        all_stories += [s for s in epic.get('stories', []) if isinstance(s, dict)]
-    for story in all_stories:
-        story_slug = story.get('slug') or story.get('id', 'unknown')
-        if story.get('health') == 'red' and not story.get('blocker'):
-            print(f'UNRESOLVED BLOCKER: {feature_slug}/{story_slug} has health=red but no blocker recorded')
-            found = True
-sys.exit(1 if found else 0)
-PYTHON
-    if [[ $? -eq 0 ]]; then
+    run_consolidated_checks
+    local section exit_code
+    section=$(sed -n '/===UNRESOLVED_BLOCKERS_START===/,/===UNRESOLVED_BLOCKERS_END===/p' <<< "$CONSOLIDATED_OUTPUT" | sed '1d;$d')
+    exit_code=$(grep -m1 '^EXIT:' <<< "$section" | cut -d: -f2)
+    while IFS= read -r line; do
+        [[ "$line" == EXIT:* ]] && continue
+        [[ -n "$line" ]] && echo "$line"
+    done <<< "$section"
+    if [[ "$exit_code" == "0" ]]; then
         record_pass "unresolved_blockers"
         ok "No unresolved blockers found"
     else
@@ -420,14 +543,20 @@ check_no_eval_mode_artefacts() {
         ok "artefacts/ is empty — nothing to check"
         return
     fi
-    local found=0
-    while IFS= read -r -d '' file; do
-        if grep -qF '<!-- eval-mode: true -->' "$file" 2>/dev/null; then
-            record_fail "no_eval_mode_artefacts" "$(basename "$file"): contains eval-mode marker — eval artefacts must not be committed to artefacts/"
-            fail "Eval-mode artefact in production path: $file"
-            ((found++)) || true
-        fi
-    done < <(find "$ARTEFACTS" -name '*.md' -print0 2>/dev/null)
+    run_consolidated_checks
+    local section found
+    section=$(sed -n '/===NO_EVAL_MODE_ARTEFACTS_START===/,/===NO_EVAL_MODE_ARTEFACTS_END===/p' <<< "$CONSOLIDATED_OUTPUT" | sed '1d;$d')
+    found=0
+    while IFS= read -r line; do
+        case "$line" in
+            FOUND:*)
+                local file="${line#FOUND:}"
+                record_fail "no_eval_mode_artefacts" "$(basename "$file"): contains eval-mode marker — eval artefacts must not be committed to artefacts/"
+                fail "Eval-mode artefact in production path: $file"
+                ((found++)) || true
+                ;;
+        esac
+    done <<< "$section"
     if [[ $found -eq 0 ]]; then
         record_pass "no_eval_mode_artefacts"
         ok "No eval-mode artefacts found in artefacts/"
