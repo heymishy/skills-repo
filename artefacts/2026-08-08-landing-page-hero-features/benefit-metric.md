@@ -49,8 +49,8 @@ Not applicable. Discovery's Constraints and NFR sections identify no regulatory,
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Metric 1 — Signup conversion rate | *(populated at /definition)* | Gap — pending story creation |
-| Metric 2 — Time-on-page | *(populated at /definition)* | Gap — pending story creation |
+| Metric 1 — Signup conversion rate | lphf-s1, lphf-s2, lphf-s3, lphf-s4, lphf-s5 | Covered |
+| Metric 2 — Time-on-page | None in this epic | Post-MVP — depends on a follow-on PostHog instrumentation story not in this epic's scope (explicit, accepted tradeoff per this artefact's own Metric 2 feedback loop) |
 
 ---
 
