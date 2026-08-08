@@ -19297,6 +19297,50 @@
       "epics": []
     },
     {
+      "slug": "2026-08-08-kanban-board-unstyled-shell-fix",
+      "name": "Kanban board renders unstyled in production -- renderKanban() output never wrapped in the shared shell that defines its design-token CSS custom properties",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "kbsf-s1",
+          "id": "kbsf-s1",
+          "name": "Wrap kanban board HTML in the shared page shell so design tokens resolve",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-08-kanban-board-unstyled-shell-fix/review/kbsf-s1-review-1.md",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 4,
+            "passing": 4,
+            "artefact": "artefacts/2026-08-08-kanban-board-unstyled-shell-fix/test-plans/kbsf-s1-test-plan.md"
+          },
+          "verificationScriptArtefact": "artefacts/2026-08-08-kanban-board-unstyled-shell-fix/verification-scripts/kbsf-s1-verification.md",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-08-kanban-board-unstyled-shell-fix/dor/kbsf-s1-dor.md",
+          "oversightLevel": "low",
+          "acTotal": 4,
+          "acVerified": 4,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": true,
+          "updatedAt": "2026-08-08T02:42:28.740Z",
+          "prStatus": "draft",
+          "prNumber": 682,
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/682"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-08T02:42:28.741Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
+    },
+    {
       "slug": "2026-08-08-landing-page-hero-features",
       "name": "Landing page hero features (golden trace + 3 others)",
       "stage": "discovery",
