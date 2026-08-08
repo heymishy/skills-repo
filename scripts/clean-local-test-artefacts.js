@@ -47,12 +47,59 @@ function findBareDiscoveryDirs(repoRoot) {
   entries.forEach(function(entry) {
     if (!entry.isDirectory()) return;
     var dirPath = path.join(artefactsRoot, entry.name);
-    var files = listFilesRecursive(dirPath);
-    if (files.length === 1 && path.basename(files[0]) === 'discovery.md' && !isTracked(repoRoot, dirPath)) {
+    var onlyFile = soleFileOrNull(dirPath);
+    if (onlyFile && path.basename(onlyFile) === 'discovery.md' && !isTracked(repoRoot, dirPath)) {
       candidates.push(dirPath);
     }
   });
   return candidates;
+}
+
+// Returns the path of the directory's sole file if it contains EXACTLY one
+// file across its whole subtree, or null otherwise -- stopping as soon as a
+// second file is found instead of building the complete recursive listing
+// first (cas-s1: the prior implementation always walked the full subtree
+// via listFilesRecursive even when a second top-level file already
+// disqualified the directory, an unbounded cost that grows with every file
+// under every feature's stories/epics/test-plans/etc. subdirectories).
+function soleFileOrNull(dirPath) {
+  var entries;
+  try { entries = fs.readdirSync(dirPath, { withFileTypes: true }); } catch (_) { return null; }
+
+  // Check direct file entries first, regardless of filesystem readdir
+  // order -- 2+ files at this level alone disqualifies the directory
+  // without ever needing to look inside any subdirectory.
+  var fileEntries = entries.filter(function(e) { return !e.isDirectory(); });
+  if (fileEntries.length > 1) return null;
+
+  var dirEntries = entries.filter(function(e) { return e.isDirectory(); });
+  var found = fileEntries.length === 1 ? path.join(dirPath, fileEntries[0].name) : null;
+
+  for (var i = 0; i < dirEntries.length; i++) {
+    var full = path.join(dirPath, dirEntries[i].name);
+    var nested = soleFileOrNull(full);
+    if (nested === null) {
+      if (hasAnyFile(full)) return null;
+      // subdirectory is empty -- fine, keep looking
+    } else {
+      if (found !== null) return null;
+      found = nested;
+    }
+  }
+  return found;
+}
+
+function hasAnyFile(dirPath) {
+  var entries;
+  try { entries = fs.readdirSync(dirPath, { withFileTypes: true }); } catch (_) { return false; }
+  for (var i = 0; i < entries.length; i++) {
+    if (entries[i].isDirectory()) {
+      if (hasAnyFile(path.join(dirPath, entries[i].name))) return true;
+    } else {
+      return true;
+    }
+  }
+  return false;
 }
 
 function findTestTmpDirs(repoRoot) {
