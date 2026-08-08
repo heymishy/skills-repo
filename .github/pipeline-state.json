@@ -19937,12 +19937,12 @@
             {
               "slug": "lphf-s5",
               "name": "Restyle the existing auth panel as the page's closing CTA",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s5-review-1.md",
-              "updatedAt": "2026-08-08T07:53:44.310Z",
+              "updatedAt": "2026-08-08T07:55:36.616Z",
               "acTotal": 3,
               "acVerified": 3,
               "hasLayoutDependentGaps": true,
@@ -19975,7 +19975,10 @@
                   "file": "artefacts/2026-08-08-landing-page-hero-features/plans/lphf-s5-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prNumber": 687,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/687"
             }
           ]
         }
