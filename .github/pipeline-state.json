@@ -20091,18 +20091,20 @@
           "testPlan": {
             "status": "written",
             "totalTests": 3,
-            "passing": 0,
+            "passing": 3,
             "artefact": "artefacts/2026-08-08-check-md-3-adr-recursion-fix/test-plans/mar-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-08-check-md-3-adr-recursion-fix/dor/mar-s1-dor.md",
           "oversightLevel": "low",
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-08T10:12:47.379Z",
-          "prStatus": "none"
+          "updatedAt": "2026-08-08T10:35:23.652Z",
+          "prStatus": "draft",
+          "prNumber": 691,
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/691"
         }
       ],
       "metrics": [],
