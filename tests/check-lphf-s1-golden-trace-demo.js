@@ -64,6 +64,17 @@ function fail(name, err) { console.error(`  FAIL: ${name}: ${err.message || err}
     pass('handleRoot_includesGoldenTraceSection_inServedHtml');
   } catch (e) { fail('handleRoot_includesGoldenTraceSection_inServedHtml', e); }
 
+  // NFR — Security
+  try {
+    const { renderGoldenTraceHtml } = require('../src/web-ui/content/golden-trace-content');
+    const html = renderGoldenTraceHtml();
+    assert(!/Bearer\s+[A-Za-z0-9\-._~+/]+=*/.test(html), 'Bearer token pattern found');
+    assert(!/password\s*[:=]/i.test(html), 'password assignment found');
+    assert(!/secret\s*[:=]/i.test(html), 'secret assignment found');
+    assert(!/api[_-]?key\s*[:=]/i.test(html), 'API key pattern found');
+    pass('goldenTraceDemo_containsNoCredentialsOrPII');
+  } catch (e) { fail('goldenTraceDemo_containsNoCredentialsOrPII', e); }
+
   console.log(`\n${passed} passed, ${failed} failed`);
   process.exit(failed > 0 ? 1 : 0);
 })();
