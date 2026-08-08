@@ -20180,18 +20180,20 @@
           "testPlan": {
             "status": "written",
             "totalTests": 6,
-            "passing": 0,
+            "passing": 6,
             "artefact": "artefacts/2026-08-09-mock-gateway-auto-revert/test-plans/mgar-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-09-mock-gateway-auto-revert/dor/mgar-s1-dor.md",
           "oversightLevel": "medium",
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": true,
-          "updatedAt": "2026-08-08T19:53:09.792Z",
-          "prStatus": "none"
+          "updatedAt": "2026-08-08T20:02:07.707Z",
+          "prStatus": "draft",
+          "prNumber": 692,
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/692"
         }
       ],
       "metrics": [],
