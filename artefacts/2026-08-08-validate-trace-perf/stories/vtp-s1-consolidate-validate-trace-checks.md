@@ -72,3 +72,8 @@ Neither pattern is a bug in the sense of wrong output — every check's logic is
 - [x] No dependency on an incomplete upstream story
 - [x] NFRs identified (or explicitly "None")
 - [x] Human oversight level confirmed from parent epic (short-track, no parent epic — set directly in DoR)
+
+## Addendum (2026-08-08, during implementation)
+
+While implementing, `check_no_eval_mode_artefacts` was measured standalone at **2m31s** on the implementation machine — it spawns one `grep -qF` subprocess per markdown file found by `find` across `artefacts/`, and this repo now has **3,691** such files. That is the single worst instance of the subprocess-per-item pattern this story exists to fix, worse than `discovery_approved`'s ~300 spawns. The DoR's own coding instructions already said the consolidated Python pass should "compute all 6 checks' verdicts," so this was folded into the same shared pass rather than deferred to a separate story: the marker-string scan now runs in-process via `os.walk` inside the existing consolidated Python invocation, with zero additional subprocess spawns. Measured result: 2m31s → 2.4s standalone, ~63x faster on the same machine, same repo state, same correct verdict ("No eval-mode artefacts found"). AC1/AC2/AC3 above cover this check the same as the other five — no new ACs were needed, since it was already in scope as one of the "6 checks," just not separately called out by name in the original AC text.
+
