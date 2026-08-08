@@ -19796,12 +19796,12 @@
             {
               "slug": "lphf-s2",
               "name": "Scope-contract enforcement hero card",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s2-review-1.md",
-              "updatedAt": "2026-08-08T06:06:08.601Z",
+              "updatedAt": "2026-08-08T06:08:03.847Z",
               "acTotal": 3,
               "acVerified": 3,
               "hasLayoutDependentGaps": true,
@@ -19834,7 +19834,10 @@
                   "file": "artefacts/2026-08-08-landing-page-hero-features/plans/lphf-s2-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prNumber": 684,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/684"
             },
             {
               "slug": "lphf-s3",
