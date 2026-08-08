@@ -28,12 +28,12 @@ No new architectural decision beyond what's already stated in the story (TTL app
 
 ### Human oversight
 
-**Medium** — touches CI workflow YAML (real staging behaviour) and a safety-relevant default (auto-revert timing choice, 60 minutes). Recommend the operator confirm the TTL value before merge; everything else (TTL mechanics, admin-session reuse, page copy) is low-risk and well-precedented.
+**Medium** — touches CI workflow YAML (real staging behaviour) and a safety-relevant default (auto-revert timing choice). TTL confirmed at 30 minutes by the operator before implementation began; everything else (TTL mechanics, admin-session reuse, page copy) is low-risk and well-precedented.
 
 ### Coding Agent Instructions
 
 1. In `mock-llm-gateway.js`, add a module-level `_runtimeOverrideSetAt` (timestamp, `null` when unset) alongside `_runtimeOverride`. `setRuntimeMockGatewayOverride(value)` sets both `_runtimeOverride = !!value` and, only when `value` is falsy, `_runtimeOverrideSetAt = Date.now()` (or an injectable `_now()` for tests) — when `value` is truthy, clear `_runtimeOverrideSetAt` to `null` (AC2: the "on" direction never expires, so it has nothing to track).
-2. Define `const OVERRIDE_TTL_MS = 60 * 60 * 1000;` (60 minutes) near the top of the file with a comment explaining the token-cost-safety rationale.
+2. Define `const OVERRIDE_TTL_MS = 30 * 60 * 1000;` (30 minutes) near the top of the file with a comment explaining the token-cost-safety rationale.
 3. In `isMockGatewayEnabled()`, after the production hard-override check and before returning `_runtimeOverride` for the non-null case: if `_runtimeOverride === false` and `_runtimeOverrideSetAt !== null` and `(Date.now() - _runtimeOverrideSetAt) > OVERRIDE_TTL_MS`, treat the override as expired — reset it to `null`/`null` (calling the equivalent of `resetRuntimeMockGatewayOverride()`) and fall through to the env-var fallback logic instead of returning `false`. Log the auto-revert event via the same `console.info(JSON.stringify({event: ...}))` pattern already used by the admin toggle route.
 4. `resetRuntimeMockGatewayOverride()` also clears `_runtimeOverrideSetAt`.
 5. In `admin-mock-gateway.js`'s `adminMockGatewayGet`, when the current effective state is `false` (real calls) AND the runtime override is the reason (not just the env-var default), compute and render the approximate remaining time before auto-revert using a new small getter exposed from `mock-llm-gateway.js` (e.g. `getRuntimeOverrideExpiresAt()`).

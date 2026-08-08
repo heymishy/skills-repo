@@ -32,7 +32,7 @@ So that **a manual debugging toggle can never cause a later, unrelated session o
 
 ## Acceptance Criteria
 
-**AC1:** Given the runtime override is set to `false` (real calls) via `setRuntimeMockGatewayOverride(false)`, When more than a defined TTL (60 minutes) elapses without the override being explicitly refreshed, Then `isMockGatewayEnabled()` automatically stops honouring the stale override and falls back to the env-var default (`NODE_ENV === 'test' || MOCK_LLM_GATEWAY === 'true'`) on the next call — without requiring a process restart.
+**AC1:** Given the runtime override is set to `false` (real calls) via `setRuntimeMockGatewayOverride(false)`, When more than a defined TTL (30 minutes) elapses without the override being explicitly refreshed, Then `isMockGatewayEnabled()` automatically stops honouring the stale override and falls back to the env-var default (`NODE_ENV === 'test' || MOCK_LLM_GATEWAY === 'true'`) on the next call — without requiring a process restart.
 
 **AC2:** Given the runtime override is set to `true` (mock) at any point, When any amount of time elapses, Then it is never auto-reverted by the TTL mechanism — only the "off" direction expires.
 
