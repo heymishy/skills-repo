@@ -19890,12 +19890,12 @@
             {
               "slug": "lphf-s4",
               "name": "Self-improving harness hero card",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s4-review-1.md",
-              "updatedAt": "2026-08-08T04:04:39.228Z",
+              "updatedAt": "2026-08-08T06:53:09.047Z",
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": true,
@@ -19907,7 +19907,27 @@
                 "artefact": "artefacts/2026-08-08-landing-page-hero-features/test-plans/lphf-s4-test-plan.md"
               },
               "verificationScriptArtefact": "artefacts/2026-08-08-landing-page-hero-features/verification-scripts/lphf-s4-verification.md",
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Real learnings-count module, no hardcoded number -- AC1",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-08-landing-page-hero-features/plans/lphf-s4-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Hero card wired to real count -- AC1, AC2, AC3",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-08-landing-page-hero-features/plans/lphf-s4-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Responsive layout E2E test -- AC4",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-08-landing-page-hero-features/plans/lphf-s4-plan.md"
+                }
+              ]
             },
             {
               "slug": "lphf-s5",
