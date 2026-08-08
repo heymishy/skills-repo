@@ -19369,7 +19369,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-08T03:32:30.595Z",
+      "updatedAt": "2026-08-08T03:40:36.887Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -19392,7 +19392,10 @@
           "id": "MC-SEC-02",
           "category": "mandatory-constraint",
           "label": "No credentials, tokens, or personal data in committed files",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "Evaluated across all 5 stories (lphf-s1..s5) in review run 1 -- no violations found; confirmed via discovery /clarify content read-through of both golden-trace demo candidates",
+          "assessedBy": "/review",
+          "assessedAt": "2026-08-08T03:40:36.887Z"
         },
         {
           "id": "MC-SEC-03",
@@ -19446,7 +19449,10 @@
           "id": "MC-A11Y-01",
           "category": "mandatory-constraint",
           "label": "Interactive elements keyboard-accessible",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "Evaluated for lphf-s1 (golden trace demo frames) in review run 1 -- keyboard-reachability is a stated NFR, no violation found",
+          "assessedBy": "/review",
+          "assessedAt": "2026-08-08T03:40:36.887Z"
         },
         {
           "id": "MC-A11Y-02",
@@ -19698,32 +19704,52 @@
             {
               "slug": "lphf-s1",
               "name": "Golden trace demo (4-frame narrative, swappable candidate content)",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s1-review-1.md",
+              "updatedAt": "2026-08-08T03:37:28.713Z"
             },
             {
               "slug": "lphf-s2",
               "name": "Scope-contract enforcement hero card",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s2-review-1.md",
+              "updatedAt": "2026-08-08T03:37:48.414Z"
             },
             {
               "slug": "lphf-s3",
               "name": "Cryptographic instruction-set verification hero card",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s3-review-1.md",
+              "updatedAt": "2026-08-08T03:40:12.370Z"
             },
             {
               "slug": "lphf-s4",
               "name": "Self-improving harness hero card",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s4-review-1.md",
+              "updatedAt": "2026-08-08T03:40:12.511Z"
             },
             {
               "slug": "lphf-s5",
               "name": "Restyle the existing auth panel as the page's closing CTA",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s5-review-1.md",
+              "updatedAt": "2026-08-08T03:40:12.639Z"
             }
           ]
         }

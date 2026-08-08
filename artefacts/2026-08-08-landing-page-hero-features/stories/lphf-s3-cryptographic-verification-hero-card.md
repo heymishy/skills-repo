@@ -19,7 +19,7 @@ So that **I can trust the governance claim is provable, not just attested — be
 
 **AC1:** Given the landing page is rendered, When the cryptographic-verification hero card loads, Then it displays a headline, one supporting sentence, and a concrete example (e.g. an illustrative hash value alongside the instruction-set file it corresponds to) grounded in the real mechanism described in `README.md`'s "Core principles" ("Governance by demonstration").
 
-**AC2:** Given the hero card makes a provability claim, When the copy is reviewed, Then it distinguishes "recomputable/independently verifiable" from "we say we did this" — the specific distinction discovery identifies as this feature's value, not a generic security-marketing claim.
+**AC2:** Given the hero card makes a provability claim, When the copy is reviewed, Then it contains the word "recomputable" or "independently verifiable," and does not contain "trust us" or an equivalent unfalsifiable claim — the specific, checkable distinction discovery identifies as this feature's value, not a generic security-marketing claim. [Fixed 2026-08-08 per review finding 1-M1 — original wording ("distinguishes X from Y") was interpretive, not independently checkable by two reviewers.]
 
 **AC3:** Given the page is viewed at 320px and 1280px widths, When the hero card renders, Then its content remains fully readable without horizontal scrolling at both widths. [CSS-layout-dependent — classification deferred to `/definition-of-ready` per CLAUDE.md's B2 rule.]
 

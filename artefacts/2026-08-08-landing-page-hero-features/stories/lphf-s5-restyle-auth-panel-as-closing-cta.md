@@ -19,7 +19,7 @@ So that **the CTA doesn't read as a visually mismatched leftover from a much sho
 
 **AC1:** Given the redesigned page with four hero cards above it, When the auth panel renders, Then its visual weight (size, spacing, prominence) is reduced relative to today's version, appropriate to being the page's closing CTA among several sections rather than the only content on the page.
 
-**AC2:** Given the auth panel's existing mechanics, When a visitor clicks GitHub sign-in, Google sign-in, or submits the email sign-in/sign-up form, Then exactly the same routes and backend behaviour as today's panel are triggered — `handleGetLinkSettings`-style mechanics are unchanged, this story is visual/layout only.
+**AC2:** Given the auth panel's existing mechanics, When a visitor clicks GitHub sign-in, Google sign-in, or submits the email sign-in/sign-up form, Then exactly the same routes and backend behaviour as today's panel are triggered — `/auth/github`, `/auth/google`, `/auth/email/login`, `/auth/email/signup` (all in `routes/auth.js`) are unchanged, this story is visual/layout only. [Fixed 2026-08-08 per review finding 1-M1 — original wording named `handleGetLinkSettings`, the wrong handler (that's the account-linking settings page, unrelated to landing-page auth).]
 
 **AC3:** Given the page is viewed at 320px and 1280px widths, When the auth panel renders, Then it remains fully functional (all buttons tappable/clickable, form fields usable) and readable at both widths. [CSS-layout-dependent — classification deferred to `/definition-of-ready` per CLAUDE.md's B2 rule; this AC overlaps with the existing landing page's own AC5 from `lab-s1.2`, which already has a RISK-ACCEPT precedent to reference.]
 

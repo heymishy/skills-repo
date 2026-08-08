@@ -17,7 +17,7 @@ So that **I trust it gets better with use rather than being static tooling I hav
 
 ## Acceptance Criteria
 
-**AC1:** Given the landing page is rendered, When the self-improving-harness hero card loads, Then it displays a headline, one supporting sentence, and a real, current-as-of-launch count of entries in `workspace/learnings.md` (246 as of 2026-08-08) — not a rounded or invented figure.
+**AC1:** Given the landing page is rendered, When the self-improving-harness hero card loads, Then it displays a headline, one supporting sentence, and a real count of entries in `workspace/learnings.md`, pulled at implementation time — not a rounded or invented figure. (Illustrative only: the count was 246 as of 2026-08-08; the real count at implementation time should be used, not this value.) [Fixed 2026-08-08 per review finding 1-M1 — original wording hardcoded a point-in-time number as if it were the literal AC target, which would go stale immediately.]
 
 **AC2:** Given the count is a snapshot authored at build/deploy time (per discovery's "no CMS/editable content" boundary), When the card is reviewed, Then the copy does not imply the number is live-updating in real time — it is accurate as of the most recent content update, consistent with the rest of this page's static-content convention.
 
