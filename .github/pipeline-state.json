@@ -20012,8 +20012,10 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-08T08:22:19.852Z",
-          "prStatus": "none"
+          "updatedAt": "2026-08-08T08:25:54.531Z",
+          "prStatus": "draft",
+          "prNumber": 688,
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/688"
         }
       ],
       "metrics": [],
