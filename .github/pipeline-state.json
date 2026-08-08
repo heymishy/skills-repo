@@ -19988,14 +19988,14 @@
     {
       "slug": "2026-08-08-learnings-count-crash-fix",
       "name": "Learnings counter crashes the server on startup in every deployed environment -- fs.readFileSync on workspace/learnings.md at module load time, but workspace/ is never copied into the Docker image",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "slug": "lccf-s1",
           "id": "lccf-s1",
           "name": "Make the landing page learnings counter fail open instead of crashing the server",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -20013,12 +20013,14 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-08T09:45:31.996Z",
+          "updatedAt": "2026-08-08T21:02:38.070Z",
           "prStatus": "merged",
           "prNumber": 688,
           "prUrl": "https://github.com/heymishy/skills-repo/pull/688",
           "blocker": "",
-          "mergeCommit": "c65c046285439aad0fafb0880f3425687170728b"
+          "mergeCommit": "c65c046285439aad0fafb0880f3425687170728b",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
@@ -20033,14 +20035,14 @@
     {
       "slug": "2026-08-08-validate-trace-perf",
       "name": "validate-trace.sh runtime degrades linearly with artefact count -- redundant python3 re-parsing and a subprocess-per-directory loop in check_discovery_approved",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "slug": "vtp-s1",
           "id": "vtp-s1",
           "name": "Consolidate validate-trace.sh checks into a single Python pass",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -20058,11 +20060,13 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-08T19:35:28.660Z",
+          "updatedAt": "2026-08-08T21:03:15.585Z",
           "prStatus": "merged",
           "prNumber": 689,
           "prUrl": "https://github.com/heymishy/skills-repo/pull/689",
-          "mergeCommit": "9810e9c9efb33815e387697989fba215842f8dff"
+          "mergeCommit": "9810e9c9efb33815e387697989fba215842f8dff",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
@@ -20077,14 +20081,14 @@
     {
       "slug": "2026-08-08-check-md-3-adr-recursion-fix",
       "name": "check-md-3-adr.js recursively re-runs the entire npm test suite from inside itself, a confirmed cause of CI resource contention across past PRs",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "slug": "mar-s1",
           "id": "mar-s1",
           "name": "Remove check-md-3-adr.js nested full-suite npm test recursion",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -20102,11 +20106,13 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-08T19:55:04.780Z",
+          "updatedAt": "2026-08-08T21:04:19.966Z",
           "prStatus": "merged",
           "prNumber": 691,
           "prUrl": "https://github.com/heymishy/skills-repo/pull/691",
-          "mergeCommit": "d23537528a65f8561a5d8049108e546a62a95615"
+          "mergeCommit": "d23537528a65f8561a5d8049108e546a62a95615",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
@@ -20121,14 +20127,14 @@
     {
       "slug": "2026-08-08-clean-artefacts-scan-perf",
       "name": "clean-local-test-artefacts.js builds a full recursive file list per directory just to check if it has exactly one file",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "slug": "cas-s1",
           "id": "cas-s1",
           "name": "Early-exit the bare-discovery.md scan instead of building a full file list",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -20146,11 +20152,13 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-08T19:47:21.057Z",
+          "updatedAt": "2026-08-08T21:03:44.164Z",
           "prStatus": "merged",
           "prNumber": 690,
           "prUrl": "https://github.com/heymishy/skills-repo/pull/690",
-          "mergeCommit": "d2dc4d1ca207b8be1bc4ac72c12e07fb86a1225d"
+          "mergeCommit": "d2dc4d1ca207b8be1bc4ac72c12e07fb86a1225d",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
@@ -20165,15 +20173,15 @@
     {
       "slug": "2026-08-09-mock-gateway-auto-revert",
       "name": "Staging mock LLM gateway toggle has no auto-revert -- a manual off can leak into later sessions/CI and burn real API token cost",
-      "stage": "branch-complete",
-      "health": "green",
+      "stage": "definition-of-done",
+      "health": "amber",
       "stories": [
         {
           "slug": "mgar-s1",
           "id": "mgar-s1",
           "name": "Auto-revert the staging mock LLM gateway override, and force it on before CI staging E2E runs",
-          "stage": "branch-complete",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-09-mock-gateway-auto-revert/review/mgar-s1-review-1.md",
@@ -20190,11 +20198,14 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": true,
-          "updatedAt": "2026-08-08T20:58:07.298Z",
+          "updatedAt": "2026-08-08T21:05:04.485Z",
           "prStatus": "merged",
           "prNumber": 692,
           "prUrl": "https://github.com/heymishy/skills-repo/pull/692",
-          "mergeCommit": "8d48ab1f1b59f308fe740cf839fd2fe7e84d593b"
+          "mergeCommit": "8d48ab1f1b59f308fe740cf839fd2fe7e84d593b",
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "blocker": "AC5 manual post-merge verification not yet run: confirm the new CI force-on step's log line against a real scenario-a-staging-e2e run"
         }
       ],
       "metrics": [],
