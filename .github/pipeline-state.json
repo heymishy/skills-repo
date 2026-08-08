@@ -20077,14 +20077,14 @@
     {
       "slug": "2026-08-08-check-md-3-adr-recursion-fix",
       "name": "check-md-3-adr.js recursively re-runs the entire npm test suite from inside itself, a confirmed cause of CI resource contention across past PRs",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "slug": "mar-s1",
           "id": "mar-s1",
           "name": "Remove check-md-3-adr.js nested full-suite npm test recursion",
-          "stage": "dor-signed-off",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -20102,10 +20102,11 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-08T10:35:23.652Z",
-          "prStatus": "draft",
+          "updatedAt": "2026-08-08T19:55:04.780Z",
+          "prStatus": "merged",
           "prNumber": 691,
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/691"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/691",
+          "mergeCommit": "d23537528a65f8561a5d8049108e546a62a95615"
         }
       ],
       "metrics": [],
