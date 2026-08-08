@@ -20120,14 +20120,14 @@
     {
       "slug": "2026-08-08-clean-artefacts-scan-perf",
       "name": "clean-local-test-artefacts.js builds a full recursive file list per directory just to check if it has exactly one file",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "slug": "cas-s1",
           "id": "cas-s1",
           "name": "Early-exit the bare-discovery.md scan instead of building a full file list",
-          "stage": "dor-signed-off",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -20145,10 +20145,11 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-08T10:18:22.087Z",
-          "prStatus": "draft",
+          "updatedAt": "2026-08-08T19:47:21.057Z",
+          "prStatus": "merged",
           "prNumber": 690,
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/690"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/690",
+          "mergeCommit": "d2dc4d1ca207b8be1bc4ac72c12e07fb86a1225d"
         }
       ],
       "metrics": [],
