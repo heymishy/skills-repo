@@ -19337,7 +19337,27 @@
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
-      "sensitiveDataCategories": []
+      "sensitiveDataCategories": [],
+      "epics": []
+    },
+    {
+      "slug": "2026-08-08-landing-page-hero-features",
+      "name": "Landing page hero features (golden trace + 3 others)",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [],
+      "metrics": [],
+      "updatedAt": "2026-08-08T02:35:02.063Z",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "discovery": {
+        "status": "approved",
+        "artefact": "artefacts/2026-08-08-landing-page-hero-features/discovery.md",
+        "approvedAt": "2026-08-08"
+      },
+      "track": "standard"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
