@@ -5,7 +5,7 @@ let passed = 0; let failed = 0;
 function pass(name) { console.log(`  PASS: ${name}`); passed++; }
 function fail(name, err) { console.error(`  FAIL: ${name}: ${err.message || err}`); failed++; }
 
-(function() {
+(async function() {
   const { renderGoldenTraceHtml, CANDIDATES, ACTIVE_CANDIDATE } = require('../src/web-ui/content/golden-trace-content');
 
   // AC1
@@ -46,6 +46,23 @@ function fail(name, err) { console.error(`  FAIL: ${name}: ${err.message || err}
     assert(CANDIDATES[ACTIVE_CANDIDATE].discovery.includes(excerptCore), 'frame content does not match the real discovery.md excerpt verbatim');
     pass('goldenTraceDemo_frameContentMatchesRealArtefactFile_notFabricated');
   } catch (e) { fail('goldenTraceDemo_frameContentMatchesRealArtefactFile_notFabricated', e); }
+
+  // Integration: the placeholder is actually replaced in the served page
+  try {
+    delete require.cache[require.resolve('../src/web-ui/routes/public')];
+    const { handleRoot } = require('../src/web-ui/routes/public');
+    const req = { session: {} };
+    let body = null;
+    const res = {
+      setHeader: function() {},
+      writeHead: function() {},
+      end: function(data) { body = data; }
+    };
+    await handleRoot(req, res);
+    assert(body.includes('gt-section'), 'expected the golden-trace section to be present in the served landing page HTML');
+    assert(!body.includes('<!--GOLDEN_TRACE_SECTION-->'), 'expected the placeholder to be replaced, not left literal');
+    pass('handleRoot_includesGoldenTraceSection_inServedHtml');
+  } catch (e) { fail('handleRoot_includesGoldenTraceSection_inServedHtml', e); }
 
   console.log(`\n${passed} passed, ${failed} failed`);
   process.exit(failed > 0 ? 1 : 0);

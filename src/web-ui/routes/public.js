@@ -16,12 +16,16 @@ var fs   = require('fs');
 var path = require('path');
 var zlib = require('zlib');
 var csrf = require('../middleware/csrf'); // sec-perf-s3
+var _goldenTrace = require('../content/golden-trace-content'); // lphf-s1
 
 // HTML loaded once at module init — path uses __dirname, never request data (path traversal safe).
+// lphf-s1: the golden-trace section is spliced in here too, once at module
+// init, alongside the static-file read -- only the per-request CSRF token
+// substitution (below, in handleRoot) needs to happen per request.
 var _LANDING_HTML = fs.readFileSync(
   path.join(__dirname, '..', 'templates', 'landing.html'),
   'utf8'
-);
+).split('<!--GOLDEN_TRACE_SECTION-->').join(_goldenTrace.renderGoldenTraceHtml());
 
 // Welcome page HTML loaded once at module init (lab-s2.3).
 var _WELCOME_HTML = fs.readFileSync(
