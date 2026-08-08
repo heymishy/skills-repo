@@ -164,6 +164,21 @@ jobs:
         if: steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
         run: npx playwright install --with-deps chromium
 
+      # mgar-s1: defensively force the mock gateway back on before running
+      # real specs against wuce-staging -- a manual admin toggle-off during a
+      # prior debugging session persists in that server process's memory
+      # until a human flips it back or the process restarts, so this run
+      # cannot simply trust whatever state it inherits. Never fails the job
+      # itself (see the script's own header comment) -- the real test step
+      # below is what should fail/pass on its own merits.
+      - name: Ensure mock gateway is ON before running against real wuce-staging
+        if: steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
+        run: node scripts/ensure-mock-gateway-on-ci.js
+        env:
+          E2E_STAGING_BASE_URL: ${{ secrets.E2E_STAGING_BASE_URL }}
+          E2E_STAGING_AUTH_STUB_SECRET: ${{ secrets.E2E_STAGING_AUTH_STUB_SECRET }}
+          E2E_STAGING_ADMIN_PASSWORD: ${{ secrets.E2E_STAGING_ADMIN_PASSWORD }}
+
       - name: Run Scenario A E2E (A1-A4 spec files; A1/A3/A4 CI-blocking, A2 manual-only) against real wuce-staging
         if: steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
         id: scenario-a-run
@@ -364,6 +379,16 @@ jobs:
       - name: Install Playwright browsers (Chromium only)
         if: steps.scenario-b-config.outputs.scenario_b_enabled == 'true'
         run: npx playwright install --with-deps chromium
+
+      # mgar-s1: same defensive force-on step as scenario-a-staging-e2e above
+      # -- see that job's comment for the full rationale. Never fails the job.
+      - name: Ensure mock gateway is ON before running against real wuce-staging
+        if: steps.scenario-b-config.outputs.scenario_b_enabled == 'true'
+        run: node scripts/ensure-mock-gateway-on-ci.js
+        env:
+          E2E_STAGING_BASE_URL: ${{ secrets.E2E_STAGING_BASE_URL }}
+          E2E_STAGING_AUTH_STUB_SECRET: ${{ secrets.E2E_STAGING_AUTH_STUB_SECRET }}
+          E2E_STAGING_ADMIN_PASSWORD: ${{ secrets.E2E_STAGING_ADMIN_PASSWORD }}
 
       - name: Run Scenario B E2E (B1's spec file; AC1-AC3 + NFR-Security all CI-blocking since catc-s1 fixed the admin-credits-top-up sub-blocker) against real wuce-staging
         if: steps.scenario-b-config.outputs.scenario_b_enabled == 'true'

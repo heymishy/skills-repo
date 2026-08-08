@@ -58,15 +58,49 @@ let _mockGatewayClient = null;
 // mock gateway on in production.
 let _runtimeOverride = null;
 
+// mgar-s1: timestamp (ms) the runtime override was last set to `false`
+// (real calls), or null when not applicable. Only the "off" direction is
+// tracked -- leaving the mock gateway "on" too long is a staleness concern,
+// not a token-cost-safety one, so it is deliberately never expired (AC2).
+let _runtimeOverrideSetAt = null;
+
+// mgar-s1: how long a manual "off" override is honoured before it is
+// automatically treated as expired and reverted to the env-var default.
+// Exists specifically so a human debugging session that flips this to real
+// calls can never silently leak into a later, unrelated session or CI run
+// and burn real LLM API token cost if the operator forgets to flip it back.
+// 30 minutes, confirmed with the operator (2026-08-09).
+const OVERRIDE_OFF_TTL_MS = 30 * 60 * 1000;
+
+// mgar-s1: injectable clock, test-only. null means "use the real Date.now()".
+let _clockForTest = null;
+function _now() {
+  return _clockForTest ? _clockForTest() : Date.now();
+}
+/**
+ * Test-only hook to inject a fake clock so TTL tests don't need real sleeps.
+ * @param {(() => number)|null} fn
+ */
+function _setClockForTest(fn) {
+  _clockForTest = fn;
+}
+
 /**
  * Set the runtime override (amgt-s1). Takes effect immediately for every
  * subsequent isMockGatewayEnabled() call in this process -- no restart
  * required. Has NO effect when NODE_ENV === 'production' (see
  * isMockGatewayEnabled()'s hard override, evaluated first).
+ *
+ * mgar-s1: setting `false` (re-)starts the OVERRIDE_OFF_TTL_MS expiry window
+ * from this call, not from whenever it was first set -- a still-in-use
+ * debugging session that re-confirms "off" is not prematurely reverted
+ * mid-use (AC3). Setting `true` clears any tracked expiry, since the "on"
+ * direction never expires.
  * @param {boolean} value
  */
 function setRuntimeMockGatewayOverride(value) {
   _runtimeOverride = !!value;
+  _runtimeOverrideSetAt = _runtimeOverride ? null : _now();
 }
 
 /**
@@ -79,6 +113,7 @@ function setRuntimeMockGatewayOverride(value) {
  */
 function resetRuntimeMockGatewayOverride() {
   _runtimeOverride = null;
+  _runtimeOverrideSetAt = null;
 }
 
 /**
@@ -89,6 +124,18 @@ function resetRuntimeMockGatewayOverride() {
  */
 function getRuntimeMockGatewayOverride() {
   return _runtimeOverride;
+}
+
+/**
+ * mgar-s1: epoch ms this "off" override will auto-revert at, or null if
+ * there is no active, expiring "off" override (either unset, or set to
+ * `true`, which never expires). Used by the admin page to render an honest
+ * remaining-time figure (AC4) without duplicating this module's own TTL math.
+ * @returns {number|null}
+ */
+function getRuntimeOverrideExpiresAt() {
+  if (_runtimeOverride !== false || _runtimeOverrideSetAt === null) return null;
+  return _runtimeOverrideSetAt + OVERRIDE_OFF_TTL_MS;
 }
 
 /**
@@ -131,10 +178,23 @@ function resetMockGatewayClient() {
  * no redeploy or restart required — layered ON TOP of (not replacing) the
  * pre-existing env-var logic below, which remains the fallback when the
  * runtime override is unset (null).
+ *
+ * mgar-s1: a `false` (real-calls) override that has been active longer than
+ * OVERRIDE_OFF_TTL_MS is treated as stale and reset before this function
+ * returns -- see that constant's own comment for the token-cost-safety
+ * rationale. A `true` (mock) override never expires (AC2).
  * @returns {boolean}
  */
 function isMockGatewayEnabled() {
   if (process.env.NODE_ENV === 'production') return false;
+  if (_runtimeOverride === false && _runtimeOverrideSetAt !== null && (_now() - _runtimeOverrideSetAt) > OVERRIDE_OFF_TTL_MS) {
+    console.info(JSON.stringify({
+      event: 'mock_gateway_override_auto_reverted',
+      reason: 'stale off-override exceeded ' + OVERRIDE_OFF_TTL_MS + 'ms TTL',
+      timestamp: new Date().toISOString()
+    }));
+    resetRuntimeMockGatewayOverride();
+  }
   if (_runtimeOverride !== null) return _runtimeOverride;
   return process.env.NODE_ENV === 'test' || process.env.MOCK_LLM_GATEWAY === 'true';
 }
@@ -244,5 +304,9 @@ module.exports = {
   // amgt-s1
   setRuntimeMockGatewayOverride,
   resetRuntimeMockGatewayOverride,
-  getRuntimeMockGatewayOverride
+  getRuntimeMockGatewayOverride,
+  // mgar-s1
+  getRuntimeOverrideExpiresAt,
+  OVERRIDE_OFF_TTL_MS,
+  _setClockForTest
 };
