@@ -19843,12 +19843,12 @@
             {
               "slug": "lphf-s3",
               "name": "Cryptographic instruction-set verification hero card",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-08-landing-page-hero-features/review/lphf-s3-review-1.md",
-              "updatedAt": "2026-08-08T04:04:39.085Z",
+              "updatedAt": "2026-08-08T06:26:34.305Z",
               "acTotal": 3,
               "acVerified": 0,
               "hasLayoutDependentGaps": true,
@@ -19860,7 +19860,27 @@
                 "artefact": "artefacts/2026-08-08-landing-page-hero-features/test-plans/lphf-s3-test-plan.md"
               },
               "verificationScriptArtefact": "artefacts/2026-08-08-landing-page-hero-features/verification-scripts/lphf-s3-verification.md",
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Hero card markup + copy -- AC1",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-08-landing-page-hero-features/plans/lphf-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Provability copy regression guard -- AC2",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-08-landing-page-hero-features/plans/lphf-s3-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Responsive layout E2E test -- AC3",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-08-landing-page-hero-features/plans/lphf-s3-plan.md"
+                }
+              ]
             },
             {
               "slug": "lphf-s4",
