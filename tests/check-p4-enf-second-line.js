@@ -120,9 +120,14 @@ console.log('\n[p4-enf-second-line] T6 — validate-trace.sh accepts trace witho
     let exitCode = -1;
     let stderr   = '';
     try {
+      // validate-trace.sh scans the full artefacts/ tree and shells out to python3
+      // multiple times; as the repo's artefact count has grown (149 feature dirs as
+      // of 2026-08-08), its real runtime has grown past the original 15s margin on
+      // CI, causing this test to intermittently time out and fail unrelated PRs.
+      // 60s matches run-all-tests.js's own 120s per-file budget with headroom.
       const result = child_process.spawnSync('bash', [VALIDATE_TRACE, '--ci', tmpFile], {
         encoding: 'utf8',
-        timeout:  15000,
+        timeout:  60000,
       });
       exitCode = result.status;
       stderr   = result.stderr || '';

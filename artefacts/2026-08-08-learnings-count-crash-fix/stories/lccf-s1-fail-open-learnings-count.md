@@ -67,3 +67,7 @@ So that **a missing non-essential data file never takes down the entire applicat
 - [x] No dependency on an incomplete upstream story
 - [x] NFRs identified (or explicitly "None")
 - [x] Human oversight level confirmed from parent epic (short-track, no parent epic — set directly in DoR)
+
+## Addendum (2026-08-08, during PR #688's CI run)
+
+While getting this hotfix's own PR green, `tests/check-p4-enf-second-line.js` failed CI twice in a row (T6 sub-check). Confirmed via standalone run (22/22 passing, zero file overlap with this story's diff) that the fix itself introduces no regression. Root cause investigation found this is not random flakiness: T6 shells out to `scripts/validate-trace.sh`, which scans the full `artefacts/` tree (149 feature directories as of this date, up from far fewer when T6's hardcoded 15-second `spawnSync` timeout was originally set) and invokes `python3` nine separate times. As the repo's artefact count has grown, `validate-trace.sh`'s real runtime has grown past that fixed margin, so this test now intermittently times out under CI load, independent of any specific PR's content — it will keep blocking unrelated PRs until fixed. Bumped the timeout to 60000ms (matching `run-all-tests.js`'s own 120s per-file budget with headroom) in the same commit as this story's fix, since it was directly blocking this active-outage hotfix from merging. Confirmed still passing (22/22) after the change. This is a test-infrastructure correction, not a scope change to this story's own ACs.
