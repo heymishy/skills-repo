@@ -20257,11 +20257,13 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-09T02:22:10.154Z",
+          "updatedAt": "2026-08-09T02:29:45.827Z",
           "prStatus": "merged",
           "prNumber": 694,
           "prUrl": "https://github.com/heymishy/skills-repo/pull/694",
-          "mergeCommit": "4f27117d562b95a5de7321e390d657a109db9169"
+          "mergeCommit": "4f27117d562b95a5de7321e390d657a109db9169",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
@@ -20301,12 +20303,13 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-09T02:22:10.156Z",
+          "updatedAt": "2026-08-09T02:29:45.828Z",
           "prStatus": "merged",
           "prNumber": 695,
           "prUrl": "https://github.com/heymishy/skills-repo/pull/695",
-          "blocker": "AC5 (real deployed page shows the real count) requires a manual post-deploy check against https://wuce-staging.fly.dev/ -- run after merge.",
-          "mergeCommit": "54897f9361953356a2ca64f667dcdae936cff049"
+          "mergeCommit": "54897f9361953356a2ca64f667dcdae936cff049",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
