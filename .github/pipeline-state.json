@@ -21192,14 +21192,14 @@
     {
       "slug": "2026-08-09-settings-profile-tab-fix",
       "name": "Settings page Profile tab (the default landing tab) renders completely blank",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "slug": "spft-s1",
           "id": "spft-s1",
           "name": "Fix the Settings page Profile tab so it actually renders instead of showing blank",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -21217,12 +21217,14 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-09T07:28:28.317Z",
-          "prStatus": "none"
+          "updatedAt": "2026-08-09T08:51:50.401Z",
+          "prStatus": "merged",
+          "mergeCommit": "084700a1eb19af954336ac1a6c92854172ab2bae",
+          "dodArtefact": "artefacts/2026-08-09-settings-profile-tab-fix/dod/spft-s1-dod.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-09T07:28:28.317Z",
+      "updatedAt": "2026-08-09T08:51:50.681Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
@@ -21233,14 +21235,14 @@
     {
       "slug": "2026-08-09-journey-legacy-filter-cutoff",
       "name": "The No product journey list surfaces ~1000 tenant-less automated-test artifacts instead of the real 7",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "slug": "jlfc-s1",
           "id": "jlfc-s1",
           "name": "Time-bound the journey list pre-tenancy migration-grace filter",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -21258,12 +21260,14 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-09T07:44:40.768Z",
-          "prStatus": "none"
+          "updatedAt": "2026-08-09T08:51:50.541Z",
+          "prStatus": "merged",
+          "mergeCommit": "1344596d762bafcc24e6604c96b92d6aaf3e6ca3",
+          "dodArtefact": "artefacts/2026-08-09-journey-legacy-filter-cutoff/dod/jlfc-s1-dod.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-09T07:44:40.768Z",
+      "updatedAt": "2026-08-09T08:51:50.683Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
@@ -21333,5 +21337,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-08-09T07:44:40.768Z"
+  "updatedAt": "2026-08-09T08:51:50.683Z"
 }
