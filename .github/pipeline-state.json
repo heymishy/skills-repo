@@ -21059,14 +21059,14 @@
     {
       "slug": "2026-08-09-crypto-card-real-hash-fix",
       "name": "Landing page crypto-verification hero card shows a fabricated hash (SHA-256 of empty string) instead of a real one",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "slug": "ccrh-s1",
           "id": "ccrh-s1",
           "name": "Replace the landing page's fake illustrative hash with a real, live-computed one",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -21074,21 +21074,24 @@
           "testPlan": {
             "status": "written",
             "totalTests": 4,
-            "passing": 0,
+            "passing": 3,
             "artefact": "artefacts/2026-08-09-crypto-card-real-hash-fix/test-plans/ccrh-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-09-crypto-card-real-hash-fix/dor/ccrh-s1-dor.md",
           "oversightLevel": "low",
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-09T04:23:59.300Z"
+          "updatedAt": "2026-08-09T04:36:38.157Z",
+          "prStatus": "open",
+          "prNumber": 696,
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/696"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-09T04:23:59.301Z",
+      "updatedAt": "2026-08-09T04:36:22.396Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
