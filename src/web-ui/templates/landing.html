@@ -29,6 +29,8 @@
     .hero-card-example-row + .hero-card-example-row { border-top: 1px solid #30363d; }
     .hero-card-example-label { color: #58a6ff; font-weight: 600; flex-shrink: 0; }
     .hero-card-example code { color: #8b949e; font-family: ui-monospace, monospace; font-size: 0.75rem; text-align: right; }
+    .hero-card-example-note { font-size: 0.75rem; color: #8b949e; margin-top: 0.5rem; }
+    .hero-card-example-note code { font-family: ui-monospace, monospace; }
     /* Auth panel */
     .auth-panel { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.25rem; }
     .auth-btn { display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.6rem 1rem; border-radius: 6px; font-size: 0.875rem; font-weight: 600; font-family: inherit; cursor: pointer; text-decoration: none; border: 1px solid #30363d; transition: background 0.15s, border-color 0.15s; }
@@ -72,8 +74,9 @@
       <p class="hero-card-text">Every governed action commits a recomputable hash of the exact instruction set that governed it. Independently verifiable, not "trust us."</p>
       <div class="hero-card-example">
         <div class="hero-card-example-row"><span class="hero-card-example-label">Instruction set</span><code>skills/review/SKILL.md</code></div>
-        <div class="hero-card-example-row"><span class="hero-card-example-label">Recomputed hash</span><code>sha256:e3b0c4... ✓ matches trace</code></div>
+        <div class="hero-card-example-row"><span class="hero-card-example-label">Live SHA-256</span><code><!--INSTRUCTION_HASH--></code></div>
       </div>
+      <p class="hero-card-example-note">Recompute it yourself: <code>sha256sum skills/review/SKILL.md</code></p>
     </section>
 
     <section class="hero-card" data-hero="self-improving" aria-label="Self-improving harness">
