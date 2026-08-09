@@ -2231,6 +2231,15 @@ async function htmlSubmitTurn(skillName, sessionId, rawAnswer, token, tenantId) 
   var session = await _getSessionOrRestore(sessionId);
   if (!session) { return null; }
 
+  // sdrg-s1: same no-op guard as the streaming handler -- __init__ against an
+  // already-done session must not call the executor or mutate turns/artefact
+  // state. See the matching comment in handlePostTurnStreamHtml for the full
+  // rationale (a done session with an empty/unrestored turns array is
+  // otherwise indistinguishable from a genuinely fresh one).
+  if (rawAnswer === '__init__' && session.done) {
+    return { done: true, response: '', artefactContent: session.artefactContent, usage: null };
+  }
+
   var userContent = sanitiseAnswer(rawAnswer);
   // Snapshot history BEFORE appending the new user turn (so executor receives it as history)
   var historySnapshot = session.turns.slice();
@@ -2659,6 +2668,13 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
     '  var IS_IDEATE      = ' + (isIdeate ? 'true' : 'false') + ';',
     '  var SUPPORTS_CANVAS = ' + (supportsCanvas ? 'true' : 'false') + ';',
     '  var IS_DEFINITION  = ' + (skillName === 'definition' ? 'true' : 'false') + ';',
+    // sdrg-s1: server-authoritative "is this session already complete" flag.
+    // The auto-fire-on-load check below previously relied solely on the DOM
+    // (thread.children.length === 0) to decide "is this fresh" -- which is
+    // wrong whenever a done session renders zero messages (empty/unrestored
+    // turns array). This flag lets the client refuse to auto-fire regardless
+    // of what got rendered into #chat-messages.
+    '  var SESSION_DONE   = ' + (session.done ? 'true' : 'false') + ';',
     // Pre-compute gate-confirm URL server-side — avoids embedding /api/journey/ literal when no journey
     '  var GATE_CONFIRM_URL = "' + (session.journeyId ? escHtml('/api/journey/' + session.journeyId + '/gate-confirm') : '') + '";',
     '  var NEXT_STAGE_LABEL = "' + escHtml(session.journeyId ? ('Continue to ' + (_journeyStore.getNextStage(skillName) || 'next stage') + ' →') : '') + '";',
@@ -2672,7 +2688,10 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
     '  scrollToBottom();',
     '  // Auto-fire initial turn client-side when chat is empty (non-blocking, via SSE).',
     '  // sendTurn is defined below — defer slightly so the function is ready.',
-    '  if(thread.children.length === 0) { setTimeout(function(){ sendTurn("__init__"); }, 0); }',
+    '  // sdrg-s1: never auto-fire for an already-done session, even if the',
+    '  // server happened to render zero messages (SESSION_DONE is the source',
+    '  // of truth here, not the DOM child count).',
+    '  if(!SESSION_DONE && thread.children.length === 0) { setTimeout(function(){ sendTurn("__init__"); }, 0); }',
     '',
     '  function escHtmlClient(s) {',
     '    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");',
@@ -4290,6 +4309,26 @@ async function handlePostTurnStreamHtml(req, res) {
   var _keepaliveInterval = setInterval(function() {
     try { res.write(':\n\n'); } catch (_) {}
   }, 15000);
+
+  // sdrg-s1: __init__ arriving for a session that is ALREADY done (artefact
+  // already produced) must be a true no-op -- not just "skip the model call
+  // silently" but "return the session's real existing state and touch
+  // nothing." Without this guard, a session seeded (or restored) with
+  // done:true but an empty turns array -- a canned/mock fixture, or any
+  // resume path that fails to restore turns while done/artefactContent
+  // restore fine -- looks indistinguishable from a genuinely fresh session
+  // to the checks below (session.turns.length === 0), so a client's
+  // auto-fire-on-load (or a direct API call) would re-run the opening
+  // prompt against an already-completed session and could re-trigger the
+  // artefact-extraction logic that sets session.done/artefactContent again.
+  // Found live: viewing (GET only) a done session's chat page silently
+  // flipped its kanban card from "no artefacts yet" to "1 artefact."
+  if (rawAnswer === '__init__' && session.done) {
+    res.write('data: ' + JSON.stringify({ done: true, artefactContent: session.artefactContent }) + '\n\n');
+    clearInterval(_keepaliveInterval);
+    res.end();
+    return;
+  }
 
   // ssp.1: If __init__ arrives and the session has a pre-computed Step 1 summary,
   // stream it directly without a model call. This eliminates the thinking-overflow
