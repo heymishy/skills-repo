@@ -20275,14 +20275,14 @@
     {
       "slug": "2026-08-09-learnings-count-deploy-fix",
       "name": "Landing page learnings-count hero card shows 0 in production -- lphf-s4 AC1 never actually satisfied in the deployed environment",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "slug": "lcdf-s1",
           "id": "lcdf-s1",
           "name": "Compute the learnings count at build/deploy time instead of reading a file absent from the deployed image",
-          "stage": "dor-signed-off",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -20290,22 +20290,25 @@
           "testPlan": {
             "status": "written",
             "totalTests": 5,
-            "passing": 0,
+            "passing": 5,
             "artefact": "artefacts/2026-08-09-learnings-count-deploy-fix/test-plans/lcdf-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-09-learnings-count-deploy-fix/dor/lcdf-s1-dor.md",
           "oversightLevel": "low",
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-08T21:34:13.979Z",
-          "prStatus": "none"
+          "updatedAt": "2026-08-09T02:15:14.096Z",
+          "prStatus": "open",
+          "prNumber": 695,
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/695",
+          "blocker": "AC5 (real deployed page shows the real count) requires a manual post-deploy check against https://wuce-staging.fly.dev/ -- run after merge."
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-08T21:34:13.979Z",
+      "updatedAt": "2026-08-09T02:15:14.098Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
