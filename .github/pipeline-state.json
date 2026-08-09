@@ -21098,6 +21098,46 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "epics": []
+    },
+    {
+      "slug": "2026-08-09-billing-success-confirmation",
+      "name": "Checkout success silently redirects with zero confirmation, and the checkout_completed analytics event has always fired with an empty planName",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "bsc-s1",
+          "id": "bsc-s1",
+          "name": "Show a real, visible confirmation after a successful checkout instead of a silent redirect",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-09-billing-success-confirmation/review/bsc-s1-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 8,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-09-billing-success-confirmation/test-plans/bsc-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-09-billing-success-confirmation/dor/bsc-s1-dor.md",
+          "oversightLevel": "low",
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-09T04:59:07.089Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-09T04:59:07.090Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
