@@ -21147,14 +21147,14 @@
     {
       "slug": "2026-08-09-session-done-reexecution-guard",
       "name": "Viewing an already-completed skill session can silently re-execute the initial turn and mutate its state",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "slug": "sdrg-s1",
           "id": "sdrg-s1",
           "name": "Guard the initial-turn auto-fire so viewing an already-completed session can never re-execute or re-mutate it",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -21172,14 +21172,16 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-09T06:23:47.354Z",
-          "prStatus": "open",
+          "updatedAt": "2026-08-09T06:32:21.345Z",
+          "prStatus": "merged",
           "prNumber": 698,
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/698"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/698",
+          "mergeCommit": "3f7ece6ac632494bb61abb158de63a5bedd5db5e",
+          "dodArtefact": "artefacts/2026-08-09-session-done-reexecution-guard/dod/sdrg-s1-dod.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-09T06:14:57.109Z",
+      "updatedAt": "2026-08-09T06:32:34.442Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",

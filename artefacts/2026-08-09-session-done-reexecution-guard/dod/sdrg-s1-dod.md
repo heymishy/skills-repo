@@ -1,6 +1,6 @@
 # Definition of Done: Guard the initial-turn auto-fire so viewing an already-completed session can never re-execute or re-mutate it
 
-**PR:** https://github.com/heymishy/skills-repo/pull/698 | **Status:** Open (draft), CI green — not yet merged
+**PR:** https://github.com/heymishy/skills-repo/pull/698 | **Merged:** 2026-08-09 (merge commit `3f7ece6ac632494bb61abb158de63a5bedd5db5e`)
 **Story:** artefacts/2026-08-09-session-done-reexecution-guard/stories/sdrg-s1-session-done-reexecution-guard.md
 **Test plan:** artefacts/2026-08-09-session-done-reexecution-guard/test-plans/sdrg-s1-test-plan.md
 **DoR artefact:** artefacts/2026-08-09-session-done-reexecution-guard/dor/sdrg-s1-dor.md
@@ -9,19 +9,17 @@
 
 ---
 
-**Note on timing:** per this repo's own pipeline (`CLAUDE.md`, Step 8), `/definition-of-done` runs after a PR merges. This assessment is written pre-merge, at the operator's explicit request, to confirm merge-readiness — all evidence below is real (CI has actually run, tests actually pass), but the **Outcome** is recorded as `READY TO MERGE`, not `COMPLETE`, until the PR is actually merged. `pipeline-state.json` reflects this honestly as `branch-complete` with `prStatus: open`, not `definition-of-done`.
-
----
-
 ## AC Coverage
+
+AC1: streaming endpoint — `__init__` on a done session is a true no-op. AC2: non-streaming endpoint — `__init__` on a done session is a true no-op. AC3: fresh-session `__init__` behaviour unchanged (regression guard). AC4: client `SESSION_DONE` flag suppresses auto-fire on a done session. AC5: auto-fire still fires for a genuinely fresh session (regression guard). Full text: `artefacts/2026-08-09-session-done-reexecution-guard/stories/sdrg-s1-session-done-reexecution-guard.md`.
 
 | AC | Satisfied? | Evidence | Verification method | Deviation |
 |----|-----------|----------|---------------------|-----------|
-| AC1 (streaming endpoint: `__init__` on a done session is a true no-op) | ✅ | `streamTurn_initOnDoneSession_isNoOp_executorNeverCalled` + `streamTurn_initOnDoneSession_emitsValidTerminalDoneEvent` — executor spy never called, `session.turns`/`artefactContent` unchanged, one valid terminal `{done:true, artefactContent}` SSE event written, response ended cleanly | automated test | None |
-| AC2 (non-streaming endpoint: `__init__` on a done session is a true no-op) | ✅ | `submitTurn_initOnDoneSession_isNoOp_executorNeverCalled` + `submitTurn_initOnDoneSession_returnsExistingCompletionState` — executor spy never called, state unchanged, `{done:true, artefactContent}` returned | automated test | None |
-| AC3 (fresh-session `__init__` behaviour unchanged — regression guard) | ✅ | `streamTurn_initOnFreshSession_behaviourUnchanged` + `submitTurn_initOnFreshSession_behaviourUnchanged` — executor IS called, assistant turn IS pushed, exactly as before this fix | automated test | None |
-| AC4 (client `SESSION_DONE` flag suppresses auto-fire on a done session) | ✅ | `renderChatPage_doneSession_emitsSessionDoneTrueAndSuppressesAutoFire` — emitted HTML contains `var SESSION_DONE = true;` and the auto-fire condition is gated `if(!SESSION_DONE && thread.children.length === 0)` | automated test (static script-string assertion, per the test plan's stated lower-fidelity substitute for real-browser execution) | None |
-| AC5 (auto-fire still fires for a genuinely fresh session — regression guard) | ✅ | `renderChatPage_freshEmptySession_autoFireStillPresent` — `SESSION_DONE = false` and `sendTurn("__init__")` call site still present in the emitted script | automated test | None |
+| AC1 | ✅ | `streamTurn_initOnDoneSession_isNoOp_executorNeverCalled` + `streamTurn_initOnDoneSession_emitsValidTerminalDoneEvent` — executor spy never called, `session.turns`/`artefactContent` unchanged, one valid terminal `{done:true, artefactContent}` SSE event written, response ended cleanly | automated test | None |
+| AC2 | ✅ | `submitTurn_initOnDoneSession_isNoOp_executorNeverCalled` + `submitTurn_initOnDoneSession_returnsExistingCompletionState` — executor spy never called, state unchanged, `{done:true, artefactContent}` returned | automated test | None |
+| AC3 | ✅ | `streamTurn_initOnFreshSession_behaviourUnchanged` + `submitTurn_initOnFreshSession_behaviourUnchanged` — executor IS called, assistant turn IS pushed, exactly as before this fix | automated test | None |
+| AC4 | ✅ | `renderChatPage_doneSession_emitsSessionDoneTrueAndSuppressesAutoFire` — emitted HTML contains `var SESSION_DONE = true;` and the auto-fire condition is gated `if(!SESSION_DONE && thread.children.length === 0)` | automated test (static script-string assertion, per the test plan's stated lower-fidelity substitute for real-browser execution) | None |
+| AC5 | ✅ | `renderChatPage_freshEmptySession_autoFireStillPresent` — `SESSION_DONE = false` and `sendTurn("__init__")` call site still present in the emitted script | automated test | None |
 
 **A deviation is any difference between implemented behaviour and the AC**, even if minor. None found — this story delivered exactly as scoped.
 
@@ -75,12 +73,11 @@ No metrics array — short-track story. Not applicable.
 
 ## Outcome
 
-**READY TO MERGE** (not yet `COMPLETE` — PR #698 is open with all 8 CI checks green; outcome will be finalized to `COMPLETE` once merged).
+**COMPLETE** — PR #698 merged 2026-08-09.
 
 **Follow-up actions:**
-1. Merge PR #698 (pending operator decision).
-2. Post-merge: one-off manual live-browser recheck of `new-feature-f3765c1a`'s chat page on `wuce-staging.fly.dev` to directly confirm the originally-observed symptom (view-triggered artefact/state change) no longer reproduces.
-3. Not opened as a follow-up story: the separately-reported "SSE doesn't load after resume" signal remains unconfirmed as fixed by this change (explicitly out of scope, per the story) — recheck it live post-merge before assuming it's resolved.
+1. One-off manual live-browser recheck of `new-feature-f3765c1a`'s chat page on `wuce-staging.fly.dev` to directly confirm the originally-observed symptom (view-triggered artefact/state change) no longer reproduces.
+2. Not opened as a follow-up story: the separately-reported "SSE doesn't load after resume" signal remains unconfirmed as fixed by this change (explicitly out of scope, per the story) — recheck it live before assuming it's resolved.
 
 ---
 
