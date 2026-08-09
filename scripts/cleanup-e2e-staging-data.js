@@ -67,7 +67,12 @@ function _requireStripe(adapter) {
 
 /**
  * AC2 — the ONLY place eligibility is decided. A strict, anchored,
- * case-sensitive positive-allowlist match on the exact `e2e-test-` prefix.
+ * case-sensitive positive-allowlist match on EITHER of two conventions this
+ * codebase's own E2E fixtures actually use:
+ *   - the `e2e-test-` prefix (story A3's standardised convention)
+ *   - the `@example.test` suffix (older fixtures predating A3, e.g.
+ *     bri-s3.2's own tenant-email tagging -- the reserved .test TLD per
+ *     RFC 2606 means no real customer tenant ID could ever match this)
  * Never a substring/contains check, never case-insensitive, never a regex
  * that could false-positive on real data that merely resembles test data
  * (e.g. "faketest-e2e-test-lookalike" does NOT start with the prefix and is
@@ -76,7 +81,8 @@ function _requireStripe(adapter) {
  * @returns {boolean}
  */
 function isTaggedForE2E(value) {
-  return typeof value === 'string' && value.indexOf(TAG_PREFIX) === 0;
+  if (typeof value !== 'string') return false;
+  return value.indexOf(TAG_PREFIX) === 0 || /@example\.test$/.test(value);
 }
 
 function _cutoffDate(retentionDays) {
@@ -93,6 +99,64 @@ async function findEligibleUsers(db, cutoff) {
     [cutoff]
   );
   return result.rows.filter(function(row) { return isTaggedForE2E(row.email); });
+}
+
+// ---------------------------------------------------------------------------
+// b3x-s1 — journeys, direct by tenant_id (not just via a matched product's
+// cascade). Closes the gap that let ~1000 tenant-less E2E journeys
+// accumulate: the original script only ever reached a journeys row through
+// deleteProduct's cascade, so a journey with no product_id at all (or whose
+// product doesn't itself match the tag) was never reachable. Age-gated by
+// created_at, consistent with users/products. artefacts.journey_id
+// REFERENCES journeys(journey_id) with no ON DELETE CASCADE, so artefacts
+// must be deleted first.
+// ---------------------------------------------------------------------------
+async function findEligibleJourneys(db, cutoff) {
+  const result = await db.query(
+    'SELECT journey_id, tenant_id, created_at FROM journeys WHERE created_at < $1',
+    [cutoff]
+  );
+  return result.rows.filter(function(row) { return isTaggedForE2E(row.tenant_id); });
+}
+
+async function deleteJourneyRow(db, journey) {
+  await db.query('DELETE FROM artefacts WHERE journey_id = $1', [journey.journey_id]);
+  await db.query('DELETE FROM journeys WHERE journey_id = $1', [journey.journey_id]);
+}
+
+// ---------------------------------------------------------------------------
+// b3x-s1 — credits / tenant_plan / user_roles. Closes the gap behind the
+// 1833/1838-row admin Credits page pollution this session found. These
+// three tables have no created_at column and are one-row-per-tenant
+// (tenant_id is their PRIMARY KEY) -- there is no meaningful per-row "age"
+// to gate on, so eligibility here is the tenant_id pattern match alone,
+// same signal already used for findEligibleProducts.
+// ---------------------------------------------------------------------------
+async function findEligibleCreditsRows(db) {
+  const result = await db.query('SELECT tenant_id, updated_at FROM credits', []);
+  return result.rows.filter(function(row) { return isTaggedForE2E(row.tenant_id); });
+}
+
+async function deleteCreditsRow(db, row) {
+  await db.query('DELETE FROM credits WHERE tenant_id = $1', [row.tenant_id]);
+}
+
+async function findEligibleTenantPlanRows(db) {
+  const result = await db.query('SELECT tenant_id, updated_at FROM tenant_plan', []);
+  return result.rows.filter(function(row) { return isTaggedForE2E(row.tenant_id); });
+}
+
+async function deleteTenantPlanRow(db, row) {
+  await db.query('DELETE FROM tenant_plan WHERE tenant_id = $1', [row.tenant_id]);
+}
+
+async function findEligibleUserRolesRows(db) {
+  const result = await db.query('SELECT tenant_id, role FROM user_roles', []);
+  return result.rows.filter(function(row) { return isTaggedForE2E(row.tenant_id); });
+}
+
+async function deleteUserRolesRow(db, row) {
+  await db.query('DELETE FROM user_roles WHERE tenant_id = $1', [row.tenant_id]);
 }
 
 async function deleteUser(db, user) {
@@ -187,6 +251,12 @@ async function run(options) {
 
   const eligibleUsers = await findEligibleUsers(db, cutoff);
   const eligibleProducts = await findEligibleProducts(db, cutoff);
+  // b3x-s1 — the new, directly-reachable tables (see their own comment
+  // blocks above for why each is/isn't age-gated).
+  const eligibleJourneys = await findEligibleJourneys(db, cutoff);
+  const eligibleCreditsRows = await findEligibleCreditsRows(db);
+  const eligibleTenantPlanRows = await findEligibleTenantPlanRows(db);
+  const eligibleUserRolesRows = await findEligibleUserRolesRows(db);
 
   let eligibleStripeCustomers = [];
   if (!options.skipStripe) {
@@ -197,6 +267,10 @@ async function run(options) {
   const deletedUsers = [];
   const deletedProducts = [];
   const deletedStripeCustomers = [];
+  const deletedJourneys = [];
+  const deletedCreditsRows = [];
+  const deletedTenantPlanRows = [];
+  const deletedUserRolesRows = [];
 
   if (!dryRun) {
     for (const user of eligibleUsers) {
@@ -206,6 +280,26 @@ async function run(options) {
     for (const product of eligibleProducts) {
       await deleteProduct(db, product);
       deletedProducts.push(_logDeletion('product', product.product_id, product.created_at));
+    }
+    // b3x-s1 — deliberately runs even for journeys already removed by a
+    // matched product's cascade above: a DELETE on an already-gone row
+    // affects 0 rows, not an error, and this is the only path that reaches
+    // a tenant-less journey (no product_id at all).
+    for (const journey of eligibleJourneys) {
+      await deleteJourneyRow(db, journey);
+      deletedJourneys.push(_logDeletion('journey', journey.journey_id, journey.created_at));
+    }
+    for (const row of eligibleCreditsRows) {
+      await deleteCreditsRow(db, row);
+      deletedCreditsRows.push(_logDeletion('creditsRow', row.tenant_id, row.updated_at));
+    }
+    for (const row of eligibleTenantPlanRows) {
+      await deleteTenantPlanRow(db, row);
+      deletedTenantPlanRows.push(_logDeletion('tenantPlanRow', row.tenant_id, row.updated_at));
+    }
+    for (const row of eligibleUserRolesRows) {
+      await deleteUserRolesRow(db, row);
+      deletedUserRolesRows.push(_logDeletion('userRolesRow', row.tenant_id, null));
     }
     if (!options.skipStripe) {
       const stripe = _requireStripe(options.stripe);
@@ -223,12 +317,20 @@ async function run(options) {
     eligible: {
       users: eligibleUsers,
       products: eligibleProducts,
-      stripeCustomers: eligibleStripeCustomers
+      stripeCustomers: eligibleStripeCustomers,
+      journeys: eligibleJourneys,
+      creditsRows: eligibleCreditsRows,
+      tenantPlanRows: eligibleTenantPlanRows,
+      userRolesRows: eligibleUserRolesRows
     },
     deleted: {
       users: deletedUsers,
       products: deletedProducts,
-      stripeCustomers: deletedStripeCustomers
+      stripeCustomers: deletedStripeCustomers,
+      journeys: deletedJourneys,
+      creditsRows: deletedCreditsRows,
+      tenantPlanRows: deletedTenantPlanRows,
+      userRolesRows: deletedUserRolesRows
     }
   };
 }
@@ -239,9 +341,17 @@ module.exports = {
   findEligibleUsers,
   findEligibleProducts,
   findEligibleStripeCustomers,
+  findEligibleJourneys,
+  findEligibleCreditsRows,
+  findEligibleTenantPlanRows,
+  findEligibleUserRolesRows,
   deleteUser,
   deleteProduct,
   deleteStripeCustomer,
+  deleteJourneyRow,
+  deleteCreditsRow,
+  deleteTenantPlanRow,
+  deleteUserRolesRow,
   setDbConnection,
   setStripeAdapter,
   TAG_PREFIX,
@@ -289,12 +399,20 @@ if (require.main === module) {
         eligible: {
           users: summary.eligible.users.length,
           products: summary.eligible.products.length,
-          stripeCustomers: summary.eligible.stripeCustomers.length
+          stripeCustomers: summary.eligible.stripeCustomers.length,
+          journeys: summary.eligible.journeys.length,
+          creditsRows: summary.eligible.creditsRows.length,
+          tenantPlanRows: summary.eligible.tenantPlanRows.length,
+          userRolesRows: summary.eligible.userRolesRows.length
         },
         deleted: {
           users: summary.deleted.users.length,
           products: summary.deleted.products.length,
-          stripeCustomers: summary.deleted.stripeCustomers.length
+          stripeCustomers: summary.deleted.stripeCustomers.length,
+          journeys: summary.deleted.journeys.length,
+          creditsRows: summary.deleted.creditsRows.length,
+          tenantPlanRows: summary.deleted.tenantPlanRows.length,
+          userRolesRows: summary.deleted.userRolesRows.length
         }
       };
       console.log(JSON.stringify(counts, null, 2));

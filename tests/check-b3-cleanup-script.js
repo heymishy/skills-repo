@@ -50,6 +50,10 @@ const {
   findEligibleUsers,
   findEligibleProducts,
   findEligibleStripeCustomers,
+  findEligibleJourneys,
+  findEligibleCreditsRows,
+  findEligibleTenantPlanRows,
+  findEligibleUserRolesRows,
   TAG_PREFIX
 } = require(path.join(__dirname, '..', 'scripts', 'cleanup-e2e-staging-data.js'));
 
@@ -62,8 +66,12 @@ function createMockDb(seed) {
     users: (seed.users || []).map(function(u) { return Object.assign({}, u); }),
     products: (seed.products || []).map(function(p) { return Object.assign({}, p); }),
     journeys: (seed.journeys || []).map(function(j) { return Object.assign({}, j); }),
+    artefacts: (seed.artefacts || []).map(function(a) { return Object.assign({}, a); }),
     standards: (seed.standards || []).map(function(s) { return Object.assign({}, s); }),
-    standard_product_optouts: (seed.standard_product_optouts || []).map(function(s) { return Object.assign({}, s); })
+    standard_product_optouts: (seed.standard_product_optouts || []).map(function(s) { return Object.assign({}, s); }),
+    credits: (seed.credits || []).map(function(c) { return Object.assign({}, c); }),
+    tenant_plan: (seed.tenant_plan || []).map(function(t) { return Object.assign({}, t); }),
+    user_roles: (seed.user_roles || []).map(function(u) { return Object.assign({}, u); })
   };
   const deletions = [];
 
@@ -78,6 +86,21 @@ function createMockDb(seed) {
       const cutoff = new Date(params[0]);
       return { rows: tables.products.filter(function(p) { return new Date(p.created_at) < cutoff; }) };
     }
+    // b3x-s1 — journeys, direct by tenant_id (not just via a matched product's cascade)
+    if (/^SELECT journey_id, tenant_id, created_at FROM journeys WHERE created_at < \$1$/i.test(s)) {
+      const cutoff = new Date(params[0]);
+      return { rows: tables.journeys.filter(function(j) { return new Date(j.created_at) < cutoff; }) };
+    }
+    // b3x-s1 — credits/tenant_plan/user_roles: no created_at, no age filter in the SQL itself
+    if (/^SELECT tenant_id, updated_at FROM credits$/i.test(s)) {
+      return { rows: tables.credits.slice() };
+    }
+    if (/^SELECT tenant_id, updated_at FROM tenant_plan$/i.test(s)) {
+      return { rows: tables.tenant_plan.slice() };
+    }
+    if (/^SELECT tenant_id, role FROM user_roles$/i.test(s)) {
+      return { rows: tables.user_roles.slice() };
+    }
     if (/^DELETE FROM users WHERE id = \$1$/i.test(s)) {
       deletions.push({ table: 'users', id: params[0] });
       tables.users = tables.users.filter(function(u) { return u.id !== params[0]; });
@@ -91,6 +114,32 @@ function createMockDb(seed) {
     if (/^DELETE FROM journeys WHERE product_id = \$1$/i.test(s)) {
       deletions.push({ table: 'journeys', productId: params[0] });
       tables.journeys = tables.journeys.filter(function(j) { return j.product_id !== params[0]; });
+      return { rowCount: 0 };
+    }
+    // b3x-s1 — the new direct-by-journey_id deletion path (artefacts before journeys)
+    if (/^DELETE FROM artefacts WHERE journey_id = \$1$/i.test(s)) {
+      deletions.push({ table: 'artefacts', journeyId: params[0] });
+      tables.artefacts = tables.artefacts.filter(function(a) { return a.journey_id !== params[0]; });
+      return { rowCount: 0 };
+    }
+    if (/^DELETE FROM journeys WHERE journey_id = \$1$/i.test(s)) {
+      deletions.push({ table: 'journeys', journeyId: params[0] });
+      tables.journeys = tables.journeys.filter(function(j) { return j.journey_id !== params[0]; });
+      return { rowCount: 0 };
+    }
+    if (/^DELETE FROM credits WHERE tenant_id = \$1$/i.test(s)) {
+      deletions.push({ table: 'credits', tenantId: params[0] });
+      tables.credits = tables.credits.filter(function(c) { return c.tenant_id !== params[0]; });
+      return { rowCount: 0 };
+    }
+    if (/^DELETE FROM tenant_plan WHERE tenant_id = \$1$/i.test(s)) {
+      deletions.push({ table: 'tenant_plan', tenantId: params[0] });
+      tables.tenant_plan = tables.tenant_plan.filter(function(t) { return t.tenant_id !== params[0]; });
+      return { rowCount: 0 };
+    }
+    if (/^DELETE FROM user_roles WHERE tenant_id = \$1$/i.test(s)) {
+      deletions.push({ table: 'user_roles', tenantId: params[0] });
+      tables.user_roles = tables.user_roles.filter(function(u) { return u.tenant_id !== params[0]; });
       return { rowCount: 0 };
     }
     if (/^DELETE FROM standard_product_optouts WHERE product_id = \$1$/i.test(s)) {
@@ -352,6 +401,125 @@ async function runTests() {
       section.indexOf('scripts/cleanup-e2e-staging-data.js') !== -1,
       'expected the entry to name the actual script file that implements the mechanism'
     );
+  });
+
+  // -------------------------------------------------------------------------
+  // b3x-s1 — AC1: new @example.test suffix pattern matches
+  // -------------------------------------------------------------------------
+  test('AC1 (b3x-s1): isTaggedForE2E matches the @example.test suffix alongside the existing prefix', () => {
+    assert.strictEqual(isTaggedForE2E('bri-s3-2-1784957724823-344530@example.test'), true);
+  });
+
+  // -------------------------------------------------------------------------
+  // b3x-s1 — AC3: tenant-less journey (+ its artefacts) deleted
+  // -------------------------------------------------------------------------
+  await testAsync('AC3 (b3x-s1): run() deletes an old tagged tenant-less journey and its artefacts', async () => {
+    const seedDb = {
+      journeys: [
+        { journey_id: 'j-old-tagged', tenant_id: 'e2e-test-old@wuce-staging.test', created_at: daysAgoIso(10) }
+      ],
+      artefacts: [
+        { artefact_id: 'a1', journey_id: 'j-old-tagged' }
+      ]
+    };
+    const db = createMockDb(seedDb);
+    await run({ db, skipStripe: true, dryRun: false, retentionDays: 7 });
+
+    assert.strictEqual(db.remaining.journeys.length, 0, 'expected the tenant-less journey to be deleted');
+    assert.strictEqual(db.remaining.artefacts.length, 0, 'expected the journey\'s artefacts row to be deleted');
+
+    const artefactDeleteIdx = db.deletions.findIndex(function(d) { return d.table === 'artefacts'; });
+    const journeyDeleteIdx = db.deletions.findIndex(function(d) { return d.table === 'journeys' && d.journeyId === 'j-old-tagged'; });
+    assert.ok(artefactDeleteIdx !== -1 && journeyDeleteIdx !== -1, 'expected both an artefacts and a journeys delete to be recorded');
+    assert.ok(artefactDeleteIdx < journeyDeleteIdx, 'expected artefacts to be deleted before the journey (FK ordering)');
+  });
+
+  // -------------------------------------------------------------------------
+  // b3x-s1 — AC4: credits/tenant_plan/user_roles rows deleted
+  // -------------------------------------------------------------------------
+  await testAsync('AC4 (b3x-s1): run() deletes old tagged credits/tenant_plan/user_roles rows', async () => {
+    const seedDb = {
+      credits: [{ tenant_id: 'e2e-test-old@wuce-staging.test', updated_at: daysAgoIso(10) }],
+      tenant_plan: [{ tenant_id: 'e2e-test-old@wuce-staging.test', updated_at: daysAgoIso(10) }],
+      user_roles: [{ tenant_id: 'e2e-test-old@wuce-staging.test', role: 'owner' }]
+    };
+    const db = createMockDb(seedDb);
+    await run({ db, skipStripe: true, dryRun: false, retentionDays: 7 });
+
+    assert.strictEqual(db.remaining.credits.length, 0, 'expected the tagged credits row to be deleted');
+    assert.strictEqual(db.remaining.tenant_plan.length, 0, 'expected the tagged tenant_plan row to be deleted');
+    assert.strictEqual(db.remaining.user_roles.length, 0, 'expected the tagged user_roles row to be deleted');
+  });
+
+  // -------------------------------------------------------------------------
+  // b3x-s1 — AC5: real (non-tagged) rows never touched, any new table
+  // -------------------------------------------------------------------------
+  await testAsync('AC5 (b3x-s1): run() never deletes real, non-tagged rows in any newly-covered table', async () => {
+    const seedDb = {
+      journeys: [
+        { journey_id: 'j-old-tagged', tenant_id: 'e2e-test-old@wuce-staging.test', created_at: daysAgoIso(10) },
+        { journey_id: 'j-real', tenant_id: 'hamish@example.com', created_at: daysAgoIso(10) }
+      ],
+      credits: [
+        { tenant_id: 'e2e-test-old@wuce-staging.test', updated_at: daysAgoIso(10) },
+        { tenant_id: 'hamish@example.com', updated_at: daysAgoIso(10) }
+      ],
+      tenant_plan: [
+        { tenant_id: 'e2e-test-old@wuce-staging.test', updated_at: daysAgoIso(10) },
+        { tenant_id: 'hamish@example.com', updated_at: daysAgoIso(10) }
+      ],
+      user_roles: [
+        { tenant_id: 'e2e-test-old@wuce-staging.test', role: 'owner' },
+        { tenant_id: 'hamish@example.com', role: 'owner' }
+      ]
+    };
+    const db = createMockDb(seedDb);
+    await run({ db, skipStripe: true, dryRun: false, retentionDays: 7 });
+
+    const remainingJourneyTenants = db.remaining.journeys.map(function(j) { return j.tenant_id; });
+    assert.deepStrictEqual(remainingJourneyTenants, ['hamish@example.com']);
+    const remainingCreditsTenants = db.remaining.credits.map(function(c) { return c.tenant_id; });
+    assert.deepStrictEqual(remainingCreditsTenants, ['hamish@example.com']);
+    const remainingTenantPlanTenants = db.remaining.tenant_plan.map(function(t) { return t.tenant_id; });
+    assert.deepStrictEqual(remainingTenantPlanTenants, ['hamish@example.com']);
+    const remainingUserRolesTenants = db.remaining.user_roles.map(function(u) { return u.tenant_id; });
+    assert.deepStrictEqual(remainingUserRolesTenants, ['hamish@example.com']);
+  });
+
+  // -------------------------------------------------------------------------
+  // b3x-s1 — AC6: dry-run reports new tables, makes zero new-table writes
+  // -------------------------------------------------------------------------
+  await testAsync('AC6 (b3x-s1): dry-run reports eligible rows in new tables but writes nothing to them', async () => {
+    const seedDb = {
+      journeys: [
+        { journey_id: 'j-old-tagged', tenant_id: 'e2e-test-old@wuce-staging.test', created_at: daysAgoIso(10) }
+      ],
+      artefacts: [
+        { artefact_id: 'a1', journey_id: 'j-old-tagged' }
+      ],
+      credits: [{ tenant_id: 'e2e-test-old@wuce-staging.test', updated_at: daysAgoIso(10) }],
+      tenant_plan: [{ tenant_id: 'e2e-test-old@wuce-staging.test', updated_at: daysAgoIso(10) }],
+      user_roles: [{ tenant_id: 'e2e-test-old@wuce-staging.test', role: 'owner' }]
+    };
+    const db = createMockDb(seedDb);
+    const summary = await run({ db, skipStripe: true, retentionDays: 7 });
+
+    assert.strictEqual(summary.dryRun, true);
+    assert.strictEqual(summary.eligible.journeys.length, 1, 'expected the tagged journey reported as eligible');
+    assert.strictEqual(summary.eligible.creditsRows.length, 1, 'expected the tagged credits row reported as eligible');
+    assert.strictEqual(summary.eligible.tenantPlanRows.length, 1, 'expected the tagged tenant_plan row reported as eligible');
+    assert.strictEqual(summary.eligible.userRolesRows.length, 1, 'expected the tagged user_roles row reported as eligible');
+
+    assert.strictEqual(db.remaining.journeys.length, 1, 'dry-run must not delete the journey');
+    assert.strictEqual(db.remaining.artefacts.length, 1, 'dry-run must not delete the artefacts row');
+    assert.strictEqual(db.remaining.credits.length, 1, 'dry-run must not delete the credits row');
+    assert.strictEqual(db.remaining.tenant_plan.length, 1, 'dry-run must not delete the tenant_plan row');
+    assert.strictEqual(db.remaining.user_roles.length, 1, 'dry-run must not delete the user_roles row');
+
+    const newTableDeletes = db.deletions.filter(function(d) {
+      return ['journeys', 'artefacts', 'credits', 'tenant_plan', 'user_roles'].indexOf(d.table) !== -1;
+    });
+    assert.strictEqual(newTableDeletes.length, 0, 'dry-run must issue zero DELETE statements against any newly-covered table');
   });
 
   console.log(`\n[check-b3-cleanup-script] Results: ${passed} passed, ${failed} failed`);

@@ -21276,6 +21276,47 @@
       "epics": []
     },
     {
+      "slug": "2026-08-09-e2e-cleanup-script-coverage-extension",
+      "name": "Extend the existing staging-cleanup script (scripts/cleanup-e2e-staging-data.js) to close three real coverage gaps found via live staging investigation",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "b3x-s1",
+          "id": "b3x-s1",
+          "name": "Extend the existing staging-cleanup script matching pattern and table coverage",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-09-e2e-cleanup-script-coverage-extension/review/b3x-s1-review-1.md",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 16,
+            "passing": 16,
+            "artefact": "artefacts/2026-08-09-e2e-cleanup-script-coverage-extension/test-plans/b3x-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-09-e2e-cleanup-script-coverage-extension/dor/b3x-s1-dor.md",
+          "oversightLevel": "medium",
+          "acTotal": 6,
+          "acVerified": 6,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-09T17:53:50.250Z",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-09T17:53:50.250Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
+    },
+    {
       "slug": "2026-08-09-journey-pg-write-serialization",
       "name": "Two independent unawaited Postgres writes per journey creation can commit out of order, silently reverting tenantId to null",
       "stage": "branch-complete",
@@ -21419,5 +21460,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-08-09T09:56:29.324Z"
+  "updatedAt": "2026-08-09T17:53:50.250Z"
 }
