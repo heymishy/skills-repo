@@ -18,6 +18,7 @@ var zlib = require('zlib');
 var csrf = require('../middleware/csrf'); // sec-perf-s3
 var _goldenTrace = require('../content/golden-trace-content'); // lphf-s1
 var _learningsCount = require('../content/learnings-count'); // lphf-s4
+var _instructionHash = require('../content/instruction-hash'); // ccrh-s1
 
 // HTML loaded once at module init — path uses __dirname, never request data (path traversal safe).
 // lphf-s1/lphf-s4: the golden-trace section and the real learnings count are
@@ -28,7 +29,11 @@ var _LANDING_HTML = fs.readFileSync(
   path.join(__dirname, '..', 'templates', 'landing.html'),
   'utf8'
 ).split('<!--GOLDEN_TRACE_SECTION-->').join(_goldenTrace.renderGoldenTraceHtml())
- .split('<!--LEARNINGS_COUNT-->').join(String(_learningsCount.getLearningsCount()));
+ .split('<!--LEARNINGS_COUNT-->').join(String(_learningsCount.getLearningsCount()))
+ .split('<!--INSTRUCTION_HASH-->').join((function() {
+    var hash = _instructionHash.getInstructionHash();
+    return hash ? 'sha256:' + hash.slice(0, 12) + '...' : 'sha256:unavailable';
+  })());
 
 // Welcome page HTML loaded once at module init (lab-s2.3).
 var _WELCOME_HTML = fs.readFileSync(
