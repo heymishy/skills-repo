@@ -41,9 +41,11 @@ function requireAdapter() {
  * @param {string} params.tenantId     - tenant ID set as client_reference_id (used by webhook in lab-s3.4)
  * @param {string} params.successUrl   - must include {CHECKOUT_SESSION_ID} Stripe template literal
  * @param {string} params.cancelUrl    - cancel redirect URL
+ * @param {string} [params.planId]     - bsc-s1: stashed in session metadata so GET /billing/success
+ *   can read back which plan was actually purchased, without trusting a client-suppliable query param.
  * @returns {Promise<object>} Stripe Checkout Session object (contains session.url)
  */
-async function createCheckoutSession({ priceId, tenantId, successUrl, cancelUrl }) {
+async function createCheckoutSession({ priceId, tenantId, successUrl, cancelUrl, planId }) {
   var stripe = requireAdapter();
   _checkoutCallCount++; // bri-s3.5 AC5 spy — counts every real Stripe Checkout session creation call
   return stripe.checkout.sessions.create({
@@ -52,7 +54,20 @@ async function createCheckoutSession({ priceId, tenantId, successUrl, cancelUrl 
     client_reference_id: tenantId,
     success_url:         successUrl,
     cancel_url:          cancelUrl,
+    metadata:            planId ? { planId: planId } : undefined,
   });
+}
+
+/**
+ * Retrieve a previously-created Stripe Checkout session (bsc-s1).
+ * Used by GET /billing/success to read back the real purchased plan from
+ * the session's own metadata — never from a client-suppliable query param.
+ * @param {string} sessionId
+ * @returns {Promise<object>} Stripe Checkout Session object
+ */
+async function retrieveCheckoutSession(sessionId) {
+  var stripe = requireAdapter();
+  return stripe.checkout.sessions.retrieve(sessionId);
 }
 
 /**
@@ -89,6 +104,7 @@ function verifyWebhookSignature(rawBody, sig, secret) {
 module.exports = {
   setStripeAdapter,
   createCheckoutSession,
+  retrieveCheckoutSession,
   createPortalSession,
   verifyWebhookSignature,
   getCheckoutCallCount,

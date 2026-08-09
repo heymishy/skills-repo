@@ -9,6 +9,17 @@ var stripeClient  = require('../modules/stripe-client');
 var creditsModule = require('../modules/credits');
 var tenantPlan    = require('../modules/tenant-plan'); // bri-s3.5
 var csrf          = require('../middleware/csrf'); // sec-perf-s3
+var { renderShell, escHtml } = require('../utils/html-shell'); // bsc-s1
+
+// bsc-s1: human-readable label for a plan ID -- falls back to the raw ID
+// (title-cased) for any plan not explicitly listed here, so a newly-added
+// plan never renders blank.
+var PLAN_LABELS = { STARTER: 'Starter', PRO: 'Pro', ENTERPRISE: 'Enterprise', FREE: 'Free' };
+function _planLabel(planId) {
+  if (!planId) return null;
+  if (PLAN_LABELS[planId]) return PLAN_LABELS[planId];
+  return String(planId).charAt(0) + String(planId).slice(1).toLowerCase();
+}
 
 // Placeholder sentinel used in .env.example — treat as unconfigured.
 var PLACEHOLDER = 'STRIPE_PLAN_PRICE_ID_PLACEHOLDER';
@@ -167,11 +178,14 @@ async function handlePostCheckout(req, res) {
   var cancelUrl  = host + '/welcome';
 
   // AC1: create Stripe Checkout session with mode:subscription + client_reference_id
+  // bsc-s1: planId is stashed in session metadata so /billing/success can read back
+  // the real purchased plan later, without trusting a client-suppliable query param.
   var session = await stripeClient.createCheckoutSession({
     priceId:    priceId,
     tenantId:   req.session.tenantId,
     successUrl: successUrl,
     cancelUrl:  cancelUrl,
+    planId:     planId,
   });
 
   // AC1: redirect to Stripe Checkout
@@ -194,19 +208,58 @@ async function handleGetBillingSuccess(req, res) {
     return;
   }
 
-  // AC6: fire checkout_completed event fire-and-forget — do NOT await
+  // bsc-s1 (AC1, AC5): the real purchased plan comes from Stripe's own
+  // checkout session metadata (set at creation in handlePostCheckout) --
+  // never from a client-suppliable query parameter, which req.query.plan_name
+  // was previously (and always emptily, since it was never actually set on
+  // the redirect URL). Any failure here (missing session_id, invalid session,
+  // Stripe API error) falls open to the original silent-redirect behaviour.
+  var planId = null;
   try {
-    var planName = (req.query && req.query.plan_name) || '';
+    var sessionId = req.query && req.query.session_id;
+    if (sessionId) {
+      var session = await stripeClient.retrieveCheckoutSession(sessionId);
+      planId = (session && session.metadata && session.metadata.planId) || null;
+    }
+  } catch (_stripeErr) {
+    planId = null;
+  }
+
+  if (!planId) {
+    // AC5: fail open -- no confirmation to show without a real, verified plan.
+    res.writeHead(302, { Location: '/dashboard' });
+    res.end();
+    return;
+  }
+
+  var planLabel = _planLabel(planId);
+
+  // AC4: fire checkout_completed event fire-and-forget — do NOT await.
+  // planName is now the real value read back from Stripe, not an always-empty
+  // client-suppliable query param.
+  try {
     _getPosthog().capture(
       req.session.tenantId || req.session.login || 'anonymous',
       'checkout_completed',
-      { planName: planName }
+      { planName: planId }
     );
   } catch (_) {}
 
-  // AC6: redirect to dashboard
-  res.writeHead(302, { Location: '/dashboard' });
-  res.end();
+  // AC2, AC3: a real, visible confirmation naming the plan, with a single
+  // clear link onward to the dashboard -- not an invisible 302.
+  var bodyContent =
+    '<div class="sw-page-content">' +
+      '<h1>Payment successful</h1>' +
+      '<p>You’re now on the ' + escHtml(planLabel) + ' plan.</p>' +
+      '<p><a href="/dashboard" class="sw-btn sw-btn--primary">Continue to dashboard</a></p>' +
+    '</div>';
+  var html = renderShell({
+    title:       'Payment successful',
+    bodyContent: bodyContent,
+    user:        { login: req.session.login || '' }
+  });
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
 }
 
 /**
