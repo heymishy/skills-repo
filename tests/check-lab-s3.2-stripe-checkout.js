@@ -120,6 +120,13 @@ setImmediate(function() {
           create: async function(params) {
             stripeCalls.push(params);
             return { id: 'cs_test_123', url: 'https://checkout.stripe.com/pay/cs_test_123' };
+          },
+          // bsc-s1: GET /billing/success retrieves the session back to read
+          // its real purchased plan from metadata -- echo back whatever the
+          // most recent create() call was given, so the round trip is real.
+          retrieve: async function(sessionId) {
+            var lastCall = stripeCalls[stripeCalls.length - 1] || {};
+            return { id: sessionId, metadata: lastCall.metadata || {} };
           }
         }
       }
@@ -306,24 +313,32 @@ setImmediate(function() {
     // Wire stripe adapter again for the reloaded module
     stripeClient.setStripeAdapter(mockStripe);
 
-    // T6.1 — redirects to /dashboard
+    // T6.1 — bsc-s1: renders a real confirmation page naming the real plan
+    // (read back from the Stripe session's own metadata), not a bare 302 —
+    // the query string's plan_name is a leftover, never-populated-in-
+    // production value and must not be trusted (bsc-s1 AC1/AC2).
     var req6 = mockReq({ query: { session_id: 'cs_test_123', plan_name: 'starter' } });
     var res6 = mockRes();
     await billing2.handleGetBillingSuccess(req6, res6);
     check(
-      'billing-success-redirects-to-dashboard',
-      res6._statusCode === 302 && res6._headers['Location'] === '/dashboard'
+      'billing-success-renders-confirmation-page-naming-real-plan',
+      res6._statusCode === 200 &&
+      typeof res6._body === 'string' &&
+      /starter/i.test(res6._body) &&
+      /href="\/dashboard"/i.test(res6._body)
     );
 
-    // T6.2 — fires checkout_completed PostHog event with planName
+    // T6.2 — fires checkout_completed PostHog event with the real planName
+    // (bsc-s1: previously always empty, since plan_name was never actually
+    // set on the redirect URL — now sourced from Stripe session metadata)
     // Give a tick for any async fire-and-forget
     await new Promise(function(r) { setTimeout(r, 10); });
     var phCall = posthogCalls.find(function(c) { return c.event === 'checkout_completed'; });
     check(
-      'billing-success-fires-posthog-checkout-completed',
+      'billing-success-fires-posthog-checkout-completed-with-real-plan',
       !!phCall &&
       phCall.props !== undefined &&
-      'planName' in phCall.props
+      phCall.props.planName === 'STARTER'
     );
 
     // Restore posthog
