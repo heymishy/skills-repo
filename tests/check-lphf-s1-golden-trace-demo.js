@@ -1,12 +1,14 @@
 'use strict';
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 
 let passed = 0; let failed = 0;
 function pass(name) { console.log(`  PASS: ${name}`); passed++; }
 function fail(name, err) { console.error(`  FAIL: ${name}: ${err.message || err}`); failed++; }
 
 (async function() {
-  const { renderGoldenTraceHtml, CANDIDATES, ACTIVE_CANDIDATE } = require('../src/web-ui/content/golden-trace-content');
+  const { renderGoldenTraceHtml, CONTENT } = require('../src/web-ui/content/golden-trace-content');
 
   // AC1
   try {
@@ -16,34 +18,50 @@ function fail(name, err) { console.error(`  FAIL: ${name}: ${err.message || err}
     pass('goldenTraceDemo_rendersExactly4Frames_forConfiguredCandidate');
   } catch (e) { fail('goldenTraceDemo_rendersExactly4Frames_forConfiguredCandidate', e); }
 
-  // AC2 — kanban candidate
+  // gtcl-s1 AC4 — regression guard for the single locked-in kanban content
+  // (retires the old "flip a config value between the two candidates" AC2,
+  // since the mechanism it tested no longer exists)
   try {
-    const contentModule = require('../src/web-ui/content/golden-trace-content');
-    assert.strictEqual(contentModule.ACTIVE_CANDIDATE, 'kanban');
-    const html = contentModule.renderGoldenTraceHtml();
+    const html = renderGoldenTraceHtml();
     assert(html.includes('drag') && html.includes('advance'), 'expected kanban-specific content in rendered HTML');
-    pass('goldenTraceDemo_switchesToKanbanContent_whenConfigSetToKanban');
-  } catch (e) { fail('goldenTraceDemo_switchesToKanbanContent_whenConfigSetToKanban', e); }
+    pass('goldenTraceDemo_rendersKanbanContent_asTheOnlyLockedInCandidate');
+  } catch (e) { fail('goldenTraceDemo_rendersKanbanContent_asTheOnlyLockedInCandidate', e); }
 
-  // AC2 — diagram candidate (simulate the flip by re-reading CANDIDATES directly,
-  // since ACTIVE_CANDIDATE is a module-level constant, not a runtime parameter)
+  // gtcl-s1 AC2 — losing candidate's content fully removed
   try {
-    const { CANDIDATES } = require('../src/web-ui/content/golden-trace-content');
-    const diagramHtml = CANDIDATES.diagram.shipped;
-    assert(diagramHtml.includes('Mermaid') || diagramHtml.includes('System Architecture'), 'expected diagram-specific content available in CANDIDATES.diagram');
-    pass('goldenTraceDemo_switchesToDiagramContent_whenConfigSetToDiagram');
-  } catch (e) { fail('goldenTraceDemo_switchesToDiagramContent_whenConfigSetToDiagram', e); }
+    const sourcePath = path.join(__dirname, '..', 'src', 'web-ui', 'content', 'golden-trace-content.js');
+    const source = fs.readFileSync(sourcePath, 'utf8');
+    ['code-shape-diagrams', 'System Architecture', 'Mermaid SVG', 'csd-s2', 'ADR-026'].forEach(function(distinguishingString) {
+      assert(!source.includes(distinguishingString), `expected diagram candidate's content ("${distinguishingString}") to be fully removed, but found it`);
+    });
+    pass('goldenTraceContent_losingCandidateContentFullyRemoved');
+  } catch (e) { fail('goldenTraceContent_losingCandidateContentFullyRemoved', e); }
 
-  // AC4
+  // gtcl-s1 AC3 — no ACTIVE_CANDIDATE/CANDIDATES selector mechanism remains
   try {
-    const fs = require('fs');
-    const path = require('path');
-    const { ACTIVE_CANDIDATE, CANDIDATES } = require('../src/web-ui/content/golden-trace-content');
+    const sourcePath = path.join(__dirname, '..', 'src', 'web-ui', 'content', 'golden-trace-content.js');
+    const source = fs.readFileSync(sourcePath, 'utf8');
+    assert(!source.includes('ACTIVE_CANDIDATE'), 'expected no ACTIVE_CANDIDATE selector to remain in source');
+    assert(!source.includes('CANDIDATES'), 'expected no CANDIDATES lookup object to remain in source');
+    pass('goldenTraceContent_noActiveCandidateSelectorRemains');
+  } catch (e) { fail('goldenTraceContent_noActiveCandidateSelectorRemains', e); }
+
+  // gtcl-s1 AC5 — rendered output byte-identical to before this change
+  try {
+    const fixturePath = path.join(__dirname, 'fixtures', 'golden-trace-pre-gtcl-s1.html');
+    const preChangeHtml = fs.readFileSync(fixturePath, 'utf8');
+    const postChangeHtml = renderGoldenTraceHtml();
+    assert.strictEqual(postChangeHtml, preChangeHtml, 'rendered golden-trace HTML must be byte-identical before and after this cleanup');
+    pass('renderGoldenTraceHtml_outputByteIdenticalToPreChange');
+  } catch (e) { fail('renderGoldenTraceHtml_outputByteIdenticalToPreChange', e); }
+
+  // AC4 (lphf-s1) — frame content matches the real artefact file, not fabricated
+  try {
     const realDiscoveryPath = path.join(__dirname, '..', 'artefacts', '2026-07-24-interactive-kanban-boards', 'discovery.md');
     const realDiscovery = fs.readFileSync(realDiscoveryPath, 'utf8');
     const excerptCore = 'an operator can see which stage a feature/story is in, but cannot act on that view';
     assert(realDiscovery.includes(excerptCore), 'test setup error: the real discovery.md no longer contains the expected excerpt');
-    assert(CANDIDATES[ACTIVE_CANDIDATE].discovery.includes(excerptCore), 'frame content does not match the real discovery.md excerpt verbatim');
+    assert(CONTENT.discovery.includes(excerptCore), 'frame content does not match the real discovery.md excerpt verbatim');
     pass('goldenTraceDemo_frameContentMatchesRealArtefactFile_notFabricated');
   } catch (e) { fail('goldenTraceDemo_frameContentMatchesRealArtefactFile_notFabricated', e); }
 
@@ -66,7 +84,6 @@ function fail(name, err) { console.error(`  FAIL: ${name}: ${err.message || err}
 
   // NFR — Security
   try {
-    const { renderGoldenTraceHtml } = require('../src/web-ui/content/golden-trace-content');
     const html = renderGoldenTraceHtml();
     assert(!/Bearer\s+[A-Za-z0-9\-._~+/]+=*/.test(html), 'Bearer token pattern found');
     assert(!/password\s*[:=]/i.test(html), 'password assignment found');

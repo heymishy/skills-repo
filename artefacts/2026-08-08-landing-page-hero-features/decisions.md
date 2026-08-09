@@ -31,3 +31,13 @@ Architectural and scope decisions for `2026-08-08-landing-page-hero-features`, l
 **Decision:** Static, curated snapshot only (option a). Options (b) and (c) are explicitly out of scope.
 **Rationale:** Live querying (b) requires new public read-only endpoints, rate-limiting, and cache-invalidation concerns not needed to prove the concept. Live generation (c) means unauthenticated visitors triggering real LLM calls — a materially different, much larger feature with cost and abuse-vector exposure that doesn't belong in a landing-page redesign. Confirmed via `/clarify` (2026-08-08) and logged in discovery's Out of Scope section.
 **Revisit trigger:** If real usage data later shows visitors specifically asking "can I try this myself right now," a live-trial/sandbox mode would be its own separate discovery — not a retrofit of this static demo.
+
+---
+
+## D4 — Golden-trace demo candidate locked to `kanban` (`interactive-kanban-boards`/`s3.1`); `diagram` deleted
+
+**Date:** 2026-08-09 (gtcl-s1, closing D2's revisit trigger)
+**Context:** D2 set up a build-time comparison mechanism between two real candidates (`kanban` and `diagram`) with an explicit commitment to delete the loser before merge, tracked via `lphf-s1` AC3. That deletion never happened — both candidates and the `ACTIVE_CANDIDATE` selector shipped to production and were still present as of this story's own DoD-triggered discovery of the gap.
+**Decision:** `kanban` (`interactive-kanban-boards`/`s3.1`) is the winner. `diagram`'s content and the `CANDIDATES`/`ACTIVE_CANDIDATE` selector mechanism are deleted entirely from `golden-trace-content.js`.
+**Rationale:** `kanban` has been the live, deployed candidate since merge with zero negative signal. More importantly, against discovery's original framing (a skeptical outside visitor asking "does this actually work, or is it a claim?"), `kanban`'s "shipped" frame describes a directly interactive mechanism — dragging a card calls the real `/api/board/journey/:id/advance` endpoint — which reads more concretely as working software than `diagram`'s static-artefact framing (a rendered Mermaid SVG). `kanban` more directly answers the objection Tier 1 Metric 1 (signup conversion) depends on visitors resolving. `diagram` remains a real, separately-shipped feature (`code-shape-diagrams`/`csd-s2`) — this decision only concerns which one is used as the landing-page demo content, not either feature's own standing.
+**Revisit trigger:** None expected — this is a one-time, now-closed selection. If the landing page's demo content is revisited in a future redesign, that is a new discovery, not a reopening of this comparison.
