@@ -17,7 +17,7 @@ So that **I don't have to remember to reach for the tool on the exact stories wh
 
 ## Architecture Constraints
 
-None identified — checked against `.github/architecture-guardrails.md`. This story extends an existing skill's output (e.g. `/definition-of-done`'s completion output, or `/branch-complete`'s) with an additional suggestion line — it does not introduce a new pipeline gate or modify DoD's pass/fail logic (per discovery's explicit "not a mandatory gate" clarification).
+This story modifies an existing SKILL.md file's completion-output text (`/definition-of-done` or `/branch-complete`) — CLAUDE.md's Platform change policy (Phase 2+) requires such changes to go through the standard PR-review inner loop, not a direct commit; this story's own artefact satisfies ADR-011's artefact-first prerequisite for that change. It does not introduce a new pipeline gate or modify DoD's pass/fail logic (per discovery's explicit "not a mandatory gate" clarification). (Added 2026-08-09, review run 1, finding 1-M1.)
 
 ## Dependencies
 

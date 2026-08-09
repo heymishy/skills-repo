@@ -17,7 +17,7 @@ So that **I can actually use the mechanism validated in Story 1 as part of my no
 
 ## Architecture Constraints
 
-None identified — checked against `.github/architecture-guardrails.md`. Follows this repo's existing skill-file convention (a new `.github/skills/rubber-duck-review/SKILL.md`-style invocation, or an equivalent script under `scripts/`) rather than inventing a new tooling category.
+None identified — checked against `.github/architecture-guardrails.md`. Follows this repo's existing skill-file convention (a new `skills/rubber-duck-review/SKILL.md`-style invocation, or an equivalent script under `scripts/`) rather than inventing a new tooling category. (Corrected 2026-08-09, review run 1, finding 1-M1: the actual skill-file location in this repo is top-level `skills/`, not `.github/skills/` — the latter holds only two unrelated legacy entries.)
 
 ## Dependencies
 
