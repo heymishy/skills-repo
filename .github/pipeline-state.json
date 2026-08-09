@@ -20232,14 +20232,14 @@
     {
       "slug": "2026-08-09-golden-trace-candidate-lockin",
       "name": "Golden-trace demo still ships both candidates (kanban + diagram) with a live toggle -- lphf-s1 AC3 never closed",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "slug": "gtcl-s1",
           "id": "gtcl-s1",
           "name": "Lock the golden-trace demo to one candidate and delete the other",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -20257,14 +20257,15 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-09T02:09:39.119Z",
-          "prStatus": "open",
+          "updatedAt": "2026-08-09T02:22:10.154Z",
+          "prStatus": "merged",
           "prNumber": 694,
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/694"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/694",
+          "mergeCommit": "4f27117d562b95a5de7321e390d657a109db9169"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-09T02:09:24.759Z",
+      "updatedAt": "2026-08-09T02:22:10.156Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
@@ -20275,14 +20276,14 @@
     {
       "slug": "2026-08-09-learnings-count-deploy-fix",
       "name": "Landing page learnings-count hero card shows 0 in production -- lphf-s4 AC1 never actually satisfied in the deployed environment",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "slug": "lcdf-s1",
           "id": "lcdf-s1",
           "name": "Compute the learnings count at build/deploy time instead of reading a file absent from the deployed image",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -20300,15 +20301,16 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-09T02:15:14.096Z",
-          "prStatus": "open",
+          "updatedAt": "2026-08-09T02:22:10.156Z",
+          "prStatus": "merged",
           "prNumber": 695,
           "prUrl": "https://github.com/heymishy/skills-repo/pull/695",
-          "blocker": "AC5 (real deployed page shows the real count) requires a manual post-deploy check against https://wuce-staging.fly.dev/ -- run after merge."
+          "blocker": "AC5 (real deployed page shows the real count) requires a manual post-deploy check against https://wuce-staging.fly.dev/ -- run after merge.",
+          "mergeCommit": "54897f9361953356a2ca64f667dcdae936cff049"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-09T02:15:14.098Z",
+      "updatedAt": "2026-08-09T02:22:10.156Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
