@@ -282,7 +282,12 @@ function computeTaxonomyRollup(pipelineState) {
       feature.epics.forEach(function(epic) {
         var items = (epic.stories || []).map(function(story) {
           totalCount++;
-          return { slug: story.slug || story.id };
+          // shb-s1: carry the parent feature's slug onto each epic-nested
+          // story item so health can be inherited from it downstream --
+          // computeHealthCounts only ever computes health at feature
+          // granularity (see that function's own doc comment), so a story
+          // item's own .slug never has a matching healthBySlug entry.
+          return { slug: story.slug || story.id, featureSlug: feature.slug };
         });
         groups.push({ epicSlug: epic.slug, epicName: epic.name, items: items });
       });
@@ -395,6 +400,7 @@ function mergeFeatureSources(taxonomy, journeyFeatures) {
       name: item.name,
       epicName: item.epicName,
       discoveryArtefact: item.discoveryArtefact,
+      featureSlug: item.featureSlug,
       source: 'taxonomy'
     };
     order.push(item.slug);

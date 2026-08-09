@@ -21415,6 +21415,47 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "epics": []
+    },
+    {
+      "slug": "2026-08-10-story-health-badge-fix",
+      "name": "Epic-nested story rows always show Unknown health instead of their real health",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "shb-s1",
+          "id": "shb-s1",
+          "name": "Epic-nested story rows always show Unknown health instead of their real health",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-10-story-health-badge-fix/review/shb-s1-review-1.md",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 5,
+            "passing": 5,
+            "artefact": "artefacts/2026-08-10-story-health-badge-fix/test-plans/shb-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-10-story-health-badge-fix/dor/shb-s1-dor.md",
+          "oversightLevel": "low",
+          "acTotal": 4,
+          "acVerified": 4,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-09T21:37:30.639Z",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-09T21:37:30.639Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -21478,5 +21519,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-08-09T19:06:52.021Z"
+  "updatedAt": "2026-08-09T21:37:30.639Z"
 }
