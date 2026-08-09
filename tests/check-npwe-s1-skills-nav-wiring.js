@@ -274,9 +274,15 @@ console.log('\nU1 — skillsListPage_showsProductsSidebar (AC1: Run a Skill list
     // a stronger guarantee than sampling rendered HTML from a subset of
     // routes, since it proves every one of their renderShell call sites --
     // not just a sampled few -- is provably untouched.
+    //
+    // avpf-s1: this was a point-in-time scope-proof for npwe-s1's own PR,
+    // not a permanent freeze on these files. routes/artefact.js was
+    // legitimately modified by avpf-s1 for an unrelated bug fix (a Postgres
+    // fallback for the artefact viewer) with no connection to nav/Products
+    // wiring -- removed from this list rather than left to trip on every
+    // future unrelated change to that file.
     const EXCLUDED_FILES = [
       'src/web-ui/routes/journey.js',
-      'src/web-ui/routes/artefact.js',
       'src/web-ui/routes/features.js',
       'src/web-ui/routes/dashboard.js',
       'src/web-ui/routes/admin-credits.js',

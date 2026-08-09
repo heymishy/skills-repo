@@ -20723,6 +20723,46 @@
           "status": "not-assessed"
         }
       ]
+    },
+    {
+      "slug": "2026-08-09-artefact-viewer-postgres-fallback",
+      "name": "Artefact viewer 404s on a completed stage whose GitHub commit never happened, even though the real content is durably saved in Postgres",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "avpf-s1",
+          "id": "avpf-s1",
+          "name": "Fall back to Postgres-durable content when the artefact viewer's GitHub fetch 404s",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-09-artefact-viewer-postgres-fallback/review/avpf-s1-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 5,
+            "artefact": "artefacts/2026-08-09-artefact-viewer-postgres-fallback/test-plans/avpf-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-09-artefact-viewer-postgres-fallback/dor/avpf-s1-dor.md",
+          "oversightLevel": "low",
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-09T01:05:09.490Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-09T01:05:09.492Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
