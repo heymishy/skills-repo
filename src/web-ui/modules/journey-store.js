@@ -31,12 +31,30 @@ function setPgAdapterForTesting(adapter) { _pgAdapterForTesting = adapter; }
 
 function _activePgAdapter() { return _pgAdapterForTesting || _pgAdapter; }
 
+// jpws-s1: per-journeyId write-order chain. createJourney and
+// setJourneyFields (and completeStage, setActiveSession) each fire an
+// independent, unawaited _pgWrite call for the same journeyId in quick
+// succession -- without this chain, two concurrent pool.query() calls to
+// the same row have no ordering guarantee, and an earlier, incomplete write
+// (e.g. createJourney's own initial write, before tenantId/ownerId are set)
+// can commit AFTER a later, correct one, silently reverting fields like
+// tenantId back to null. Chaining onto a per-journeyId promise ensures each
+// write for a given journey only begins once the previous one for that same
+// journey has settled -- writes for DIFFERENT journeys remain fully
+// concurrent (a Map entry per journeyId, not one global chain).
+var _pgWriteChains = new Map(); // journeyId -> Promise
+
 function _pgWrite(journey) {
   var pg = _activePgAdapter();
   if (!pg) return;
-  pg.saveJourney(journey).catch(function(err) {
+  var journeyId = journey.journeyId;
+  var prev = _pgWriteChains.get(journeyId) || Promise.resolve();
+  var next = prev.then(function() {
+    return pg.saveJourney(journey);
+  }).catch(function(err) {
     console.error('[journey-store] PG write error:', err.message);
   });
+  _pgWriteChains.set(journeyId, next);
 }
 
 /**
@@ -405,6 +423,7 @@ function _clear() {
 /** Clear in-memory map (test helper, preserves adapter wiring). */
 function _clearForTesting() {
   _journeys.clear();
+  _pgWriteChains.clear();
 }
 
 module.exports = {
