@@ -21274,6 +21274,47 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "epics": []
+    },
+    {
+      "slug": "2026-08-09-roadmap-product-scoping",
+      "name": "Roadmap tab shows identical global artefact scan for every product, not scoped to the product being viewed",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "rps-s1",
+          "id": "rps-s1",
+          "name": "Scope the Roadmap tab early-stage artefact scan to the product actually being viewed",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-09-roadmap-product-scoping/review/rps-s1-review-1.md",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 3,
+            "passing": 3,
+            "artefact": "artefacts/2026-08-09-roadmap-product-scoping/test-plans/rps-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-09-roadmap-product-scoping/dor/rps-s1-dor.md",
+          "oversightLevel": "low",
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-09T09:50:27.685Z",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-09T09:50:27.685Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -21337,5 +21378,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-08-09T08:51:50.683Z"
+  "updatedAt": "2026-08-09T09:50:27.685Z"
 }
