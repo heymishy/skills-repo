@@ -85,7 +85,7 @@ function renderProfileTab(user, linkedSet) {
     : null;
 
   return (
-    '<div id="tab-panel-profile" class="sw-tab-panel" role="tabpanel" aria-labelledby="tab-profile">' +
+    '<div id="tab-panel-profile" class="sw-tab-panel sw-tab-panel--active" role="tabpanel" aria-labelledby="tab-profile">' +
       '<div class="sw-card sw-card--lg" style="display:flex; align-items:center; gap:14px; margin-bottom:20px">' +
         '<div class="sw-avatar" style="width:44px;height:44px;font-size:18px">' + _escapeHtml(initial) + '</div>' +
         '<div>' +
@@ -402,9 +402,7 @@ function renderSettingsPage(opts) {
     '<p class="sw-page-sub">Manage your identity, sign-in methods' + (isAdmin ? ', billing, and platform credits' : ' and billing') + '.</p>' +
     _TAB_CSS +
     _renderTabNav(isAdmin) +
-    '<div class="sw-tab-panel sw-tab-panel--active" id="tab-panel-profile-wrap">' +
-      renderProfileTab(user, linkedSet) +
-    '</div>' +
+    renderProfileTab(user, linkedSet) +
     '<div id="tab-panel-billing" class="sw-tab-panel" role="tabpanel" aria-labelledby="tab-billing">' +
       renderBillingTab(planState, csrfToken) +
     '</div>' +
