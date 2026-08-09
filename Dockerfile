@@ -52,6 +52,15 @@ COPY --chown=node:node product/ ./product/
 # takes over at runtime.
 COPY --chown=node:node version.jso[n] ./
 
+# Real "learnings captured" count (lcdf-s1), written by
+# scripts/write-learnings-count-file.js immediately before `flyctl deploy` in
+# the staging-deploy workflow -- see src/web-ui/content/learnings-count.js.
+# Same optional-copy trick as version.json above: a local `docker build` run
+# without that script having run first (learnings-count.json absent) matches
+# nothing here rather than failing, and getLearningsCount()'s existing
+# fail-open fallback (lccf-s1) takes over at runtime.
+COPY --chown=node:node learnings-count.jso[n] ./
+
 # Copy the mock-LLM-gateway fixture set only (not the whole tests/ tree —
 # see .dockerignore and artefacts/2026-07-23-mock-gateway-fixtures-deploy-fix/
 # decisions.md). mock-llm-gateway.js's FIXTURE_DIR resolves to this exact

@@ -70,6 +70,14 @@ jobs:
         env:
           GITHUB_SHA: ${{ github.sha }}
 
+      # lcdf-s1: bake the real "learnings captured" count into the image the
+      # same way -- workspace/learnings.md is never copied into the deployed
+      # image (see Dockerfile), so this must be computed at build time. See
+      # scripts/write-learnings-count-file.js and
+      # src/web-ui/content/learnings-count.js's fallback tier.
+      - name: Write learnings count
+        run: node scripts/write-learnings-count-file.js
+
       # dsn-s1: a single wrapper script (never a raw inline flyctl deploy)
       # so CI and any manual deploy share one code path, with a post-deploy
       # check that fails loudly if fly.staging.toml's config didn't actually
