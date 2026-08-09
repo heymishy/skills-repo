@@ -21143,6 +21143,49 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "epics": []
+    },
+    {
+      "slug": "2026-08-09-session-done-reexecution-guard",
+      "name": "Viewing an already-completed skill session can silently re-execute the initial turn and mutate its state",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "sdrg-s1",
+          "id": "sdrg-s1",
+          "name": "Guard the initial-turn auto-fire so viewing an already-completed session can never re-execute or re-mutate it",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-09-session-done-reexecution-guard/review/sdrg-s1-review-1.md",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 8,
+            "passing": 8,
+            "artefact": "artefacts/2026-08-09-session-done-reexecution-guard/test-plans/sdrg-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-09-session-done-reexecution-guard/dor/sdrg-s1-dor.md",
+          "oversightLevel": "low",
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-09T06:23:47.354Z",
+          "prStatus": "open",
+          "prNumber": 698,
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/698"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-09T06:14:57.109Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -21206,5 +21249,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-07-23T18:09:19.306Z"
+  "updatedAt": "2026-08-09T06:14:57.109Z"
 }
