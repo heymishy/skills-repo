@@ -1,8 +1,8 @@
 # Discovery: Rubber-Duck Review Capture
 
-**Status:** Clarified — awaiting approval
+**Status:** Approved
 **Created:** 2026-08-09
-**Approved by:** Pending
+**Approved by:** Hamish King — Operator — 2026-08-09
 **Author:** Copilot
 
 ---
@@ -76,7 +76,7 @@ Both modes feed the same downstream mechanism: structured findings written into 
 
 ## Approved By
 
-Pending
+Hamish King — Operator — 2026-08-09
 
 ---
 

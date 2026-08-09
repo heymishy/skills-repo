@@ -20314,11 +20314,52 @@
     {
       "slug": "2026-08-09-rubber-duck-review-capture",
       "name": "Rubber-Duck Review Capture",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "stories": [],
-      "metrics": [],
-      "updatedAt": "2026-08-09T00:17:03.673Z",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Where real gaps get first detected, by pipeline stage",
+          "target": "At least 50% of newly-confirmed real gaps first detected via rubber-duck-review within 90 days",
+          "baseline": "Not yet established (0 rubber-duck-review detections exist; tool does not exist yet)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Findings signal quality (not noise)",
+          "target": ">=70% of produced findings confirmed real/actionable by operator",
+          "baseline": "Not yet established (no findings produced yet)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Agent-driven mode issue-finding reliability",
+          "target": ">=80% detection rate on seeded validation set",
+          "baseline": "Not yet established (no agent-driven runs exist yet)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m4",
+          "name": "Workflow adoption / clunkiness",
+          "target": "Used on >=80% of eligible hero/customer-facing stories within 90 days",
+          "baseline": "0% (tool does not exist yet)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "updatedAt": "2026-08-09T00:20:59.365Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
