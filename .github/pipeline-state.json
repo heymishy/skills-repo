@@ -20232,14 +20232,14 @@
     {
       "slug": "2026-08-09-golden-trace-candidate-lockin",
       "name": "Golden-trace demo still ships both candidates (kanban + diagram) with a live toggle -- lphf-s1 AC3 never closed",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "slug": "gtcl-s1",
           "id": "gtcl-s1",
           "name": "Lock the golden-trace demo to one candidate and delete the other",
-          "stage": "dor-signed-off",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -20247,22 +20247,24 @@
           "testPlan": {
             "status": "written",
             "totalTests": 4,
-            "passing": 0,
+            "passing": 4,
             "artefact": "artefacts/2026-08-09-golden-trace-candidate-lockin/test-plans/gtcl-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-09-golden-trace-candidate-lockin/dor/gtcl-s1-dor.md",
           "oversightLevel": "low",
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-08T21:34:13.979Z",
-          "prStatus": "none"
+          "updatedAt": "2026-08-09T02:09:39.119Z",
+          "prStatus": "open",
+          "prNumber": 694,
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/694"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-08T21:34:13.979Z",
+      "updatedAt": "2026-08-09T02:09:24.759Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
