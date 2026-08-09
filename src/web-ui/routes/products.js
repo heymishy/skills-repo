@@ -908,7 +908,27 @@ async function handleGetProductRoadmap(req, res, _next, pool) {
     pipelineState = { features: [] };
   }
 
-  var roadmapEntries = _roadmapScan.scanRoadmapArtefacts(artefactsDir, pipelineState);
+  // rps-s1: scanRoadmapArtefacts scans the whole repo-wide artefacts/
+  // directory with no product awareness -- cross-reference each candidate
+  // slug against the journeys table's own product_id column (already
+  // correctly populated by jrf-s2's fix) so a roadmap only ever shows
+  // entries that actually belong to the product being viewed. Fails closed:
+  // on any lookup error, slugsForThisProduct stays empty and the roadmap
+  // renders its existing empty state, never falling back to the old
+  // unscoped "show everything" behaviour.
+  var slugsForThisProduct = {};
+  try {
+    var journeySlugRows = (await _pool.query(
+      'SELECT feature_slug FROM journeys WHERE product_id = $1',
+      [productId]
+    )).rows;
+    journeySlugRows.forEach(function(r) { slugsForThisProduct[r.feature_slug] = true; });
+  } catch (_) {
+    // fail closed -- see comment above
+  }
+
+  var roadmapEntries = _roadmapScan.scanRoadmapArtefacts(artefactsDir, pipelineState)
+    .filter(function(e) { return !!slugsForThisProduct[e.slug]; });
 
   if (res.json) {
     res.json({ roadmap: roadmapEntries });

@@ -167,6 +167,10 @@ test('server.js references handleGetProductRoadmap and the /roadmap route patter
       fs.writeFileSync(path.join(featureDir, 'discovery.md'), '# Discovery: Real Thing\n**Created:** 2026-05-04\n');
       var mockPool = { query: async function(sql) {
         if (/SELECT name, tenant_id FROM products/i.test(sql)) return { rows: [{ name: 'Acme', tenant_id: 't1' }] };
+        // rps-s1: the roadmap now cross-references the journeys table to
+        // scope entries to the product being viewed -- this artefact's
+        // matching journey must be present for it to render.
+        if (/SELECT feature_slug FROM journeys/i.test(sql)) return { rows: [{ feature_slug: '2026-05-04-real-thing' }] };
         return { rows: [] };
       } };
       repoRootAdapter.setRepoRoot(dir);
