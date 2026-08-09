@@ -77,10 +77,10 @@ Not applicable. Discovery's Constraints section names data-handling hygiene conc
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Metric 1 — Where gaps are first detected | *(populated at /definition)* | Pending |
-| Meta Metric 1 — Findings signal quality | *(populated at /definition)* | Pending |
-| Meta Metric 2 — Agent-driven detection reliability | *(populated at /definition)* | Pending |
-| Meta Metric 3 — Workflow adoption | *(populated at /definition)* | Pending |
+| Metric 1 — Where gaps are first detected | rdrc-s2, rdrc-s4 | Covered |
+| Meta Metric 1 — Findings signal quality | rdrc-s1 | Covered |
+| Meta Metric 2 — Agent-driven detection reliability | rdrc-s3 | Covered |
+| Meta Metric 3 — Workflow adoption | rdrc-s5 | Covered |
 
 ---
 
