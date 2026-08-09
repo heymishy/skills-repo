@@ -20324,7 +20324,7 @@
     {
       "slug": "2026-08-09-rubber-duck-review-capture",
       "name": "Rubber-Duck Review Capture",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "health": "green",
       "stories": [],
       "metrics": [
@@ -20378,7 +20378,7 @@
           ]
         }
       ],
-      "updatedAt": "2026-08-09T02:47:42.896Z",
+      "updatedAt": "2026-08-09T03:25:58.256Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -20392,12 +20392,12 @@
             {
               "slug": "rdrc-s1-validate-extraction-signal-quality",
               "name": "Validate findings-extraction signal quality on a real human-narrated recording",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-09-rubber-duck-review-capture/review/rdrc-s1-validate-extraction-signal-quality-review-1.md",
-              "updatedAt": "2026-08-09T02:44:06.369Z",
+              "updatedAt": "2026-08-09T03:25:58.256Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -20407,17 +20407,20 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-09-rubber-duck-review-capture/dor/rdrc-s1-dor.md",
+              "oversightLevel": "medium"
             },
             {
               "slug": "rdrc-s2-human-narrated-operator-tool",
               "name": "Wire the human-narrated mode as an on-demand operator tool",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-09-rubber-duck-review-capture/review/rdrc-s2-human-narrated-operator-tool-review-1.md",
-              "updatedAt": "2026-08-09T02:45:55.338Z",
+              "updatedAt": "2026-08-09T03:25:58.256Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -20427,17 +20430,20 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-09-rubber-duck-review-capture/dor/rdrc-s2-dor.md",
+              "oversightLevel": "medium"
             },
             {
               "slug": "rdrc-s3-agent-driven-review-validation-set",
               "name": "Build the agent-driven Playwright review and validate it against a seeded issue set",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-09-rubber-duck-review-capture/review/rdrc-s3-agent-driven-review-validation-set-review-1.md",
-              "updatedAt": "2026-08-09T02:45:03.754Z",
+              "updatedAt": "2026-08-09T03:25:58.256Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -20447,17 +20453,20 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-09-rubber-duck-review-capture/dor/rdrc-s3-dor.md",
+              "oversightLevel": "medium"
             },
             {
               "slug": "rdrc-s4-agent-driven-ci-wiring",
               "name": "Wire the agent-driven mode into CI against real staging",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-09-rubber-duck-review-capture/review/rdrc-s4-agent-driven-ci-wiring-review-1.md",
-              "updatedAt": "2026-08-09T02:46:53.473Z",
+              "updatedAt": "2026-08-09T03:25:58.256Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -20467,17 +20476,20 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-09-rubber-duck-review-capture/dor/rdrc-s4-dor.md",
+              "oversightLevel": "medium"
             },
             {
               "slug": "rdrc-s5-suggest-review-for-eligible-stories",
               "name": "Suggest rubber-duck review for eligible hero/customer-facing stories",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-09-rubber-duck-review-capture/review/rdrc-s5-suggest-review-for-eligible-stories-review-1.md",
-              "updatedAt": "2026-08-09T02:47:42.895Z",
+              "updatedAt": "2026-08-09T03:25:58.256Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -20487,7 +20499,10 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-09-rubber-duck-review-capture/dor/rdrc-s5-dor.md",
+              "oversightLevel": "medium"
             }
           ]
         }
@@ -20954,6 +20969,46 @@
           "evidence": "Feature scope (5 stories building a review-capture capability) does not touch dashboards/pipeline-viz.html, pipeline-state.schema.json, or .github/scripts/ -- this guardrail item is not applicable",
           "assessedBy": "/review",
           "assessedAt": "2026-08-09T01:09:44.712Z"
+        },
+        {
+          "id": "NFR-rdrc-perf-ci-job-time-budget",
+          "category": "nfr",
+          "label": "CI job time budget matches scenario-a/b-staging-e2e precedent (rdrc-s4)",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-09T03:25:58.256Z"
+        },
+        {
+          "id": "NFR-rdrc-sec-secrets-management",
+          "category": "nfr",
+          "label": "No credential hardcoded or handled in agent/tool own context (product/constraints.md #12)",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-09T03:25:58.256Z"
+        },
+        {
+          "id": "NFR-rdrc-sec-transient-data-handling",
+          "category": "nfr",
+          "label": "Raw recordings/transcripts processed then discarded, never persisted (rdrc-s1, rdrc-s2)",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-09T03:25:58.256Z"
+        },
+        {
+          "id": "NFR-rdrc-sec-real-token-cost-guard",
+          "category": "nfr",
+          "label": "Real LLM calls guarded by mgar-s1 mock-gateway safety net (rdrc-s3, rdrc-s4)",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-09T03:25:58.256Z"
+        },
+        {
+          "id": "NFR-rdrc-sec-credential-mechanism-reuse",
+          "category": "nfr",
+          "label": "No new credential mechanism -- reuses e2e-test-admin/E2E_STAGING_* pattern (rdrc-s4)",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-09T03:25:58.256Z"
         }
       ]
     },
