@@ -21190,6 +21190,47 @@
       "epics": []
     },
     {
+      "slug": "2026-08-09-settings-profile-tab-fix",
+      "name": "Settings page Profile tab (the default landing tab) renders completely blank",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "spft-s1",
+          "id": "spft-s1",
+          "name": "Fix the Settings page Profile tab so it actually renders instead of showing blank",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-09-settings-profile-tab-fix/review/spft-s1-review-1.md",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 5,
+            "passing": 5,
+            "artefact": "artefacts/2026-08-09-settings-profile-tab-fix/test-plans/spft-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-09-settings-profile-tab-fix/dor/spft-s1-dor.md",
+          "oversightLevel": "low",
+          "acTotal": 4,
+          "acVerified": 4,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-09T07:28:28.317Z",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-09T07:28:28.317Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
+    },
+    {
       "slug": "2026-08-09-journey-legacy-filter-cutoff",
       "name": "The No product journey list surfaces ~1000 tenant-less automated-test artifacts instead of the real 7",
       "stage": "branch-complete",
