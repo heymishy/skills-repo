@@ -308,12 +308,22 @@ async function handleGetJourney(req, res, _next, pool) {
   // Filter to current tenant when tenantId is set (all sessions after s0.2 deploy).
   // Migration grace: pre-s0.1 journeys have no tenantId on disk — include those whose
   // ownerId matches the current login (or no ownerId at all, for solo-mode history).
+  // jlfc-s1: the grace clause below is time-bound to journeys created BEFORE
+  // real tenancy support existed (commit 2c0fb7ca, 2026-06-29 -- this exact
+  // filter's own introduction). A tenant-less journey created after that
+  // point reflects a creation-path defect (e.g. a session that never
+  // established a tenantId, such as automated test/CI activity), not
+  // genuine pre-tenancy history, and must not be granted grace visibility
+  // just because its ownerId happens to match the current user.
   var _tid   = req.session.tenantId;
   var _login = req.session.login;
+  var _TENANCY_ROLLOUT_CUTOFF_MS = Date.parse('2026-06-29T00:00:00Z');
   if (_tid) {
     journeys = journeys.filter(function(j) {
       if (j.tenantId === _tid) return true;
-      if (j.tenantId == null && (j.ownerId == null || j.ownerId === _login)) return true;
+      var _createdMs = j.createdAt ? Date.parse(j.createdAt) : NaN;
+      var _isPreTenancyLegacy = j.tenantId == null && (isNaN(_createdMs) || _createdMs < _TENANCY_ROLLOUT_CUTOFF_MS);
+      if (_isPreTenancyLegacy && (j.ownerId == null || j.ownerId === _login)) return true;
       return false;
     });
   }
