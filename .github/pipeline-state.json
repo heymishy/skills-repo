@@ -20900,14 +20900,14 @@
     {
       "slug": "2026-08-09-artefact-viewer-postgres-fallback",
       "name": "Artefact viewer 404s on a completed stage whose GitHub commit never happened, even though the real content is durably saved in Postgres",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "slug": "avpf-s1",
           "id": "avpf-s1",
           "name": "Fall back to Postgres-durable content when the artefact viewer's GitHub fetch 404s",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -20925,11 +20925,14 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-09T01:02:35.693Z"
+          "updatedAt": "2026-08-09T01:19:29.775Z",
+          "prStatus": "open",
+          "prNumber": 693,
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/693"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-09T01:02:35.695Z",
+      "updatedAt": "2026-08-09T01:19:29.776Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
