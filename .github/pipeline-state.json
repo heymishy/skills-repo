@@ -20900,14 +20900,14 @@
     {
       "slug": "2026-08-09-artefact-viewer-postgres-fallback",
       "name": "Artefact viewer 404s on a completed stage whose GitHub commit never happened, even though the real content is durably saved in Postgres",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "slug": "avpf-s1",
           "id": "avpf-s1",
           "name": "Fall back to Postgres-durable content when the artefact viewer's GitHub fetch 404s",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -20915,24 +20915,25 @@
           "testPlan": {
             "status": "written",
             "totalTests": 5,
-            "passing": 0,
+            "passing": 5,
             "artefact": "artefacts/2026-08-09-artefact-viewer-postgres-fallback/test-plans/avpf-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-09-artefact-viewer-postgres-fallback/dor/avpf-s1-dor.md",
           "oversightLevel": "low",
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-09T01:19:29.775Z",
-          "prStatus": "open",
+          "updatedAt": "2026-08-09T01:35:18.791Z",
+          "prStatus": "merged",
           "prNumber": 693,
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/693"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/693",
+          "mergeCommit": "35ea2f23edc593c8adb04b0e34b58fc0a3f44a64"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-09T01:19:29.776Z",
+      "updatedAt": "2026-08-09T01:35:18.792Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
