@@ -21278,14 +21278,14 @@
     {
       "slug": "2026-08-09-e2e-cleanup-script-coverage-extension",
       "name": "Extend the existing staging-cleanup script (scripts/cleanup-e2e-staging-data.js) to close three real coverage gaps found via live staging investigation",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "slug": "b3x-s1",
           "id": "b3x-s1",
           "name": "Extend the existing staging-cleanup script matching pattern and table coverage",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -21303,12 +21303,18 @@
           "acVerified": 6,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-09T17:53:50.250Z",
-          "prStatus": "none"
+          "updatedAt": "2026-08-09T19:06:52.021Z",
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "prNumber": 703,
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/703",
+          "mergeCommit": "8540fa1f92e3b3d5f09d4bb2ae7113cebb25bb2f",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-09-e2e-cleanup-script-coverage-extension/dod/b3x-s1-dod.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-09T17:53:50.250Z",
+      "updatedAt": "2026-08-09T19:06:52.021Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
@@ -21319,14 +21325,14 @@
     {
       "slug": "2026-08-09-journey-pg-write-serialization",
       "name": "Two independent unawaited Postgres writes per journey creation can commit out of order, silently reverting tenantId to null",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "slug": "jpws-s1",
           "id": "jpws-s1",
           "name": "Serialize a journey Postgres writes so an earlier incomplete write can never overwrite a later correct one",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -21344,12 +21350,18 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-09T09:56:29.324Z",
-          "prStatus": "none"
+          "updatedAt": "2026-08-09T19:06:52.021Z",
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "prNumber": 702,
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/702",
+          "mergeCommit": "10039e18ec460d62be330680a92a2a1b9478f17c",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-09-journey-pg-write-serialization/dod/jpws-s1-dod.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-09T09:56:29.324Z",
+      "updatedAt": "2026-08-09T19:06:52.021Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
@@ -21360,14 +21372,14 @@
     {
       "slug": "2026-08-09-roadmap-product-scoping",
       "name": "Roadmap tab shows identical global artefact scan for every product, not scoped to the product being viewed",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "slug": "rps-s1",
           "id": "rps-s1",
           "name": "Scope the Roadmap tab early-stage artefact scan to the product actually being viewed",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -21385,12 +21397,18 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-09T09:50:27.685Z",
-          "prStatus": "none"
+          "updatedAt": "2026-08-09T19:06:52.021Z",
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "prNumber": 701,
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/701",
+          "mergeCommit": "1368d610e12c31cf528ee811ee106512b65adf9b",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-09-roadmap-product-scoping/dod/rps-s1-dod.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-09T09:50:27.685Z",
+      "updatedAt": "2026-08-09T19:06:52.021Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
@@ -21460,5 +21478,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-08-09T17:53:50.250Z"
+  "updatedAt": "2026-08-09T19:06:52.021Z"
 }
