@@ -6545,13 +6545,13 @@
               "reviewArtefact": "artefacts/2026-06-28-definition-canvas/review/dic.1-review-1.md",
               "acTotal": 6,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-06-28-definition-canvas/test-plans/dic.1-test-plan.md",
-                "totalTests": 15,
-                "passing": 0
+                "totalTests": 34,
+                "passing": 34
               },
-              "tddState": "red",
-              "updatedAt": "2026-06-28",
+              "tddState": "green",
+              "updatedAt": "2026-08-10T02:00:41.025Z",
               "prStatus": "merged"
             },
             {
@@ -6569,13 +6569,13 @@
               "reviewArtefact": "artefacts/2026-06-28-definition-canvas/review/dic.2-review-1.md",
               "acTotal": 7,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-06-28-definition-canvas/test-plans/dic.2-test-plan.md",
-                "totalTests": 15,
-                "passing": 0
+                "totalTests": 37,
+                "passing": 37
               },
-              "tddState": "red",
-              "updatedAt": "2026-06-28",
+              "tddState": "green",
+              "updatedAt": "2026-08-10T02:00:41.183Z",
               "prStatus": "merged"
             },
             {
@@ -6593,13 +6593,13 @@
               "reviewArtefact": "artefacts/2026-06-28-definition-canvas/review/dic.3-review-1.md",
               "acTotal": 7,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-06-28-definition-canvas/test-plans/dic.3-test-plan.md",
-                "totalTests": 18,
-                "passing": 0
+                "totalTests": 37,
+                "passing": 37
               },
-              "tddState": "red",
-              "updatedAt": "2026-06-28",
+              "tddState": "green",
+              "updatedAt": "2026-08-10T02:00:41.342Z",
               "prStatus": "merged"
             },
             {
@@ -6617,13 +6617,13 @@
               "reviewArtefact": "artefacts/2026-06-28-definition-canvas/review/dic.4-review-1.md",
               "acTotal": 8,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-06-28-definition-canvas/test-plans/dic.4-test-plan.md",
-                "totalTests": 19,
-                "passing": 0
+                "totalTests": 32,
+                "passing": 32
               },
-              "tddState": "red",
-              "updatedAt": "2026-06-28",
+              "tddState": "green",
+              "updatedAt": "2026-08-10T02:00:41.484Z",
               "prStatus": "merged"
             },
             {
@@ -6641,13 +6641,13 @@
               "reviewArtefact": "artefacts/2026-06-28-definition-canvas/review/dic.5-review-1.md",
               "acTotal": 9,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-06-28-definition-canvas/test-plans/dic.5-test-plan.md",
-                "totalTests": 25,
-                "passing": 0
+                "totalTests": 75,
+                "passing": 75
               },
-              "tddState": "red",
-              "updatedAt": "2026-06-28",
+              "tddState": "green",
+              "updatedAt": "2026-08-10T02:00:41.626Z",
               "prStatus": "merged"
             }
           ]
@@ -6992,12 +6992,12 @@
               "highFindings": 0,
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-07-02T09:00:00Z",
+              "updatedAt": "2026-08-10T02:08:25.287Z",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s1.1-test-plan.md",
-                "totalTests": 9,
-                "passing": 0
+                "totalTests": 8,
+                "passing": 8
               },
               "acTotal": 5,
               "acVerified": 0,
@@ -7018,12 +7018,12 @@
               "highFindings": 0,
               "health": "amber",
               "complexity": 1,
-              "updatedAt": "2026-07-02T09:00:00Z",
+              "updatedAt": "2026-08-10T02:08:25.451Z",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s1.2-test-plan.md",
-                "totalTests": 9,
-                "passing": 0
+                "totalTests": 10,
+                "passing": 10
               },
               "acTotal": 6,
               "acVerified": 0,
@@ -7044,12 +7044,12 @@
               "highFindings": 0,
               "health": "green",
               "complexity": 3,
-              "updatedAt": "2026-07-02T09:00:00Z",
+              "updatedAt": "2026-08-10T02:08:25.596Z",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s1.3-test-plan.md",
-                "totalTests": 11,
-                "passing": 0
+                "totalTests": 29,
+                "passing": 29
               },
               "acTotal": 7,
               "acVerified": 0,
@@ -7076,12 +7076,12 @@
               "highFindings": 0,
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-07-02T09:00:00Z",
+              "updatedAt": "2026-08-10T02:08:25.736Z",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s2.1-test-plan.md",
-                "totalTests": 12,
-                "passing": 0
+                "totalTests": 35,
+                "passing": 35
               },
               "acTotal": 7,
               "acVerified": 0,
@@ -7102,12 +7102,12 @@
               "highFindings": 0,
               "health": "amber",
               "complexity": 3,
-              "updatedAt": "2026-07-02T09:00:00Z",
+              "updatedAt": "2026-08-10T02:08:25.875Z",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s2.2-test-plan.md",
-                "totalTests": 13,
-                "passing": 0
+                "totalTests": 36,
+                "passing": 36
               },
               "acTotal": 7,
               "acVerified": 0,
@@ -7128,12 +7128,12 @@
               "highFindings": 0,
               "health": "amber",
               "complexity": 2,
-              "updatedAt": "2026-07-02T09:00:00Z",
+              "updatedAt": "2026-08-10T02:08:26.015Z",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s2.3-test-plan.md",
-                "totalTests": 11,
-                "passing": 0
+                "totalTests": 12,
+                "passing": 12
               },
               "acTotal": 7,
               "acVerified": 0,
@@ -7160,7 +7160,7 @@
               "highFindings": 0,
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-07-02T09:00:00Z",
+              "updatedAt": "2026-08-10T02:08:44.317Z",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s3.1-test-plan.md",
@@ -7186,12 +7186,12 @@
               "highFindings": 0,
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-07-02T09:00:00Z",
+              "updatedAt": "2026-08-10T02:08:32.952Z",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s3.2-test-plan.md",
-                "totalTests": 10,
-                "passing": 0
+                "totalTests": 18,
+                "passing": 18
               },
               "acTotal": 7,
               "acVerified": 0,
@@ -7212,12 +7212,12 @@
               "highFindings": 0,
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-07-02T09:00:00Z",
+              "updatedAt": "2026-08-10T02:08:33.095Z",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s3.3-test-plan.md",
-                "totalTests": 9,
-                "passing": 0
+                "totalTests": 36,
+                "passing": 36
               },
               "acTotal": 7,
               "acVerified": 0,
@@ -7238,12 +7238,12 @@
               "highFindings": 0,
               "health": "green",
               "complexity": 2,
-              "updatedAt": "2026-07-02T09:00:00Z",
+              "updatedAt": "2026-08-10T02:08:33.238Z",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s3.4-test-plan.md",
-                "totalTests": 10,
-                "passing": 0
+                "totalTests": 26,
+                "passing": 26
               },
               "acTotal": 7,
               "acVerified": 0,
@@ -7264,12 +7264,12 @@
               "highFindings": 0,
               "health": "amber",
               "complexity": 1,
-              "updatedAt": "2026-07-02T09:00:00Z",
+              "updatedAt": "2026-08-10T02:08:33.365Z",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s3.5-test-plan.md",
-                "totalTests": 8,
-                "passing": 0
+                "totalTests": 12,
+                "passing": 12
               },
               "acTotal": 6,
               "acVerified": 0,
@@ -7432,9 +7432,9 @@
               "health": "green",
               "reviewArtefact": "artefacts/2026-07-03-admin-role-panel/review/arl-s1-review-1.md",
               "testPlan": {
-                "status": "written",
-                "totalTests": 10,
-                "passing": 0
+                "status": "all-passing",
+                "totalTests": 6,
+                "passing": 6
               },
               "acTotal": 7,
               "acVerified": 0,
@@ -7447,7 +7447,8 @@
               "dodStatus": "complete",
               "releaseReady": true,
               "layoutGapsAtMerge": false,
-              "layoutGapsRiskAccepted": false
+              "layoutGapsRiskAccepted": false,
+              "updatedAt": "2026-08-10T02:08:53.044Z"
             },
             {
               "id": "arl-s2",
@@ -7470,9 +7471,9 @@
               "health": "green",
               "reviewArtefact": "artefacts/2026-07-03-admin-role-panel/review/arl-s2-review-1.md",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 8,
-                "passing": 0
+                "passing": 8
               },
               "acTotal": 6,
               "acVerified": 0,
@@ -7485,7 +7486,8 @@
               "dodStatus": "complete",
               "releaseReady": true,
               "layoutGapsAtMerge": false,
-              "layoutGapsRiskAccepted": false
+              "layoutGapsRiskAccepted": false,
+              "updatedAt": "2026-08-10T02:08:53.187Z"
             },
             {
               "id": "arl-s3",
@@ -7507,9 +7509,9 @@
               "health": "amber",
               "reviewArtefact": "artefacts/2026-07-03-admin-role-panel/review/arl-s3-review-1.md",
               "testPlan": {
-                "status": "written",
-                "totalTests": 13,
-                "passing": 0
+                "status": "all-passing",
+                "totalTests": 12,
+                "passing": 12
               },
               "acTotal": 9,
               "acVerified": 0,
@@ -7522,7 +7524,8 @@
               "dodStatus": "complete",
               "releaseReady": false,
               "layoutGapsAtMerge": true,
-              "layoutGapsRiskAccepted": true
+              "layoutGapsRiskAccepted": true,
+              "updatedAt": "2026-08-10T02:08:53.314Z"
             },
             {
               "id": "arl-s5",
@@ -9322,13 +9325,13 @@
               "name": "Provision a Neon staging branch for Postgres",
               "stage": "definition-of-done",
               "health": "amber",
-              "updatedAt": "2026-07-13T18:27:17.074Z",
+              "updatedAt": "2026-08-10T02:08:53.458Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 5,
-                "passing": 4,
+                "passing": 5,
                 "artefact": "artefacts/2026-07-09-beta-readiness-infra/test-plans/bri-s2.2-neon-staging-branch-test-plan.md"
               },
               "acTotal": 3,

@@ -73,13 +73,36 @@ test('T1: server.js has no environment-conditional schema-forking branch', () =>
   // the anti-pattern this guard protects against, not the ordinary
   // `if (process.env.DATABASE_URL)` presence check that already exists
   // unconditionally for both staging and prod.
-  const stagingForkPattern = /NODE_ENV\s*===?\s*['"]staging['"]|STAGING_SCHEMA|staging-schema|schema[-_]staging/i;
-  const match = content.match(stagingForkPattern);
+  //
+  // bri-s2.2 (fix-forward): the original bare pattern matched ANY
+  // `NODE_ENV === 'staging'` string anywhere in this 168K-character file,
+  // regardless of what it actually gates -- it started false-failing once
+  // bri-s1.2 added an unrelated staging-vs-production PostHog project-key
+  // check that happens to use the identical env-comparison idiom for
+  // analytics config, not schema. The guard now requires the staging
+  // marker to co-occur (within a nearby window) with an actual
+  // schema/table/migration keyword, matching the anti-pattern this test
+  // was written to catch rather than the bare env-comparison idiom, which
+  // is legitimate and common outside schema-forking contexts.
+  const stagingMarkerPattern = /NODE_ENV\s*===?\s*['"]staging['"]|STAGING_SCHEMA|staging-schema|schema[-_]staging/gi;
+  const schemaContextPattern = /CREATE TABLE|migrateTeamSchema|migrateIdentityLinksSchema|schema-staging\.|StagingSchema/i;
+  const WINDOW = 300;
+
+  let offendingMatch = null;
+  let m;
+  while ((m = stagingMarkerPattern.exec(content)) !== null) {
+    const start = Math.max(0, m.index - WINDOW);
+    const end = Math.min(content.length, m.index + m[0].length + WINDOW);
+    if (schemaContextPattern.test(content.slice(start, end))) {
+      offendingMatch = m[0];
+      break;
+    }
+  }
 
   assert.strictEqual(
-    match,
+    offendingMatch,
     null,
-    `server.js appears to contain an environment-conditional schema fork: "${match && match[0]}"`
+    `server.js appears to contain an environment-conditional schema fork near: "${offendingMatch}"`
   );
 });
 
