@@ -136,21 +136,31 @@ check('AC3: getMockResponse_definitionDiagramShowcase_hasTwoValidMarkers', () =>
 
 // ── AC4: existing success/failure fixtures byte-identical, unchanged ──
 // Checksums of the actually-existing pre-story fixture files for these three
-// stages. Note: ideate.failure.json and design.failure.json do not exist in
-// this repo (only success + this story's new diagram-showcase) -- the DoR's
-// scope contract listed ideate.failure.json, but that file was never real;
-// the checksum set below reflects the genuinely-existing files.
+// stages, taken over LINE-ENDING-NORMALIZED content (CRLF -> LF) so the
+// checksum is stable regardless of the local checkout's core.autocrlf
+// setting -- git stores these files with LF line endings, but a Windows
+// checkout with autocrlf=true normalizes them to CRLF on disk, which would
+// otherwise make this assertion platform-dependent (passes on the platform
+// the checksum was captured on, fails on any other). Note: ideate.failure.json
+// and design.failure.json do not exist in this repo (only success + this
+// story's new diagram-showcase) -- the DoR's scope contract listed
+// ideate.failure.json, but that file was never real; the checksum set below
+// reflects the genuinely-existing files.
 var EXISTING_FIXTURE_CHECKSUMS = {
-  'ideate.success.json':     '6bb83dee65188d01a47dd26dffdd802319a267fd6a35e9e9a1c8c8964f4bf8e5',
-  'design.success.json':     '7b19cb56fdb1ed68b35d8abd14209546648f2f3c99968d966a01bc8f48899907',
-  'definition.success.json': '95a06f4bcb3e83c0c5868c4ca66baa22f78937e2aabe2de117c3d62bf909fb59',
-  'definition.failure.json': '6be214967d9c1acbb275773611d9c9b6dfb40c5c35754013c90c72ec83b69642'
+  'ideate.success.json':     '9b3276ca87e888f3f84bb6718efc049c27dbf486a8a33be84385353ba2db6f7d',
+  'design.success.json':     'e494b44565094f2c83d8ceaf60abd59fb2e586b4500ddd98cf26005d88e7d240',
+  'definition.success.json': '91bbb3bc524a7426ddb69cca6d0cc80839624e7a447cbca113dd1532395c7a54',
+  'definition.failure.json': '4172254ac147cf45a3cf280546ca35a13f692abe303415b40192a9e1e6d475c9'
 };
+
+function normalizeLineEndings(buffer) {
+  return Buffer.from(buffer.toString('utf8').replace(/\r\n/g, '\n'));
+}
 
 check('AC4: existingFixtures_byteIdentical_afterNewFixturesAdded', () => {
   Object.keys(EXISTING_FIXTURE_CHECKSUMS).forEach(function(fileName) {
     var filePath = path.join(mockGateway.FIXTURE_DIR, fileName);
-    var content = fs.readFileSync(filePath);
+    var content = normalizeLineEndings(fs.readFileSync(filePath));
     var hash = crypto.createHash('sha256').update(content).digest('hex');
     assert.strictEqual(hash, EXISTING_FIXTURE_CHECKSUMS[fileName], fileName + ' checksum mismatch -- pre-existing fixture was modified');
   });
