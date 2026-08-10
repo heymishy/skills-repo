@@ -215,13 +215,29 @@ function createFakeTestDb() {
       standards.push(stdRow);
       return Promise.resolve({ rows: [{ standard_id: standardId }] });
     }
-    if (s.indexOf('SELECT STANDARD_ID, NAME, VISIBILITY, CREATED_AT FROM STANDARDS WHERE PRODUCT_ID') === 0) {
+    // smug-s1: standardsList's real query was fixed to match
+    // setStandardsAdapter's promoted/opted-out-aware shape (own-product
+    // standards OR org-promoted standards from a different product, minus
+    // opted-out ones) -- see routes/standards.js's fetchStandardsForProduct
+    // for the exact SQL text this branch's normalized-prefix match is keyed
+    // to. No E2E spec creates opt-out rows via this fake DB today (no
+    // standard_product_optouts backing array exists here), so the NOT IN
+    // subquery in the real SQL text is a correctness no-op for every
+    // scenario this fake currently needs to support -- if a future spec
+    // exercises opt-out, add a standard_product_optouts array here (mirroring
+    // journeys/people/etc. above) and filter it out below, rather than
+    // silently returning wrong results.
+    if (s.indexOf('SELECT STANDARD_ID, PRODUCT_ID, NAME, VISIBILITY, CREATED_AT FROM STANDARDS WHERE') === 0) {
       var stdProductId = p[0];
       var stdOrgId = p[1];
       var stdRows = standards
-        .filter(function(r) { return r.product_id === stdProductId && r.org_id === stdOrgId; })
+        .filter(function(r) {
+          var ownedByProduct = r.product_id === stdProductId && r.org_id === stdOrgId;
+          var orgPromoted = r.visibility === 'org' && r.org_id === stdOrgId;
+          return ownedByProduct || orgPromoted;
+        })
         .sort(function(a, b) { return b.created_at.localeCompare(a.created_at); })
-        .map(function(r) { return { standard_id: r.standard_id, name: r.name, visibility: r.visibility, created_at: r.created_at }; });
+        .map(function(r) { return { standard_id: r.standard_id, product_id: r.product_id, name: r.name, visibility: r.visibility, created_at: r.created_at }; });
       return Promise.resolve({ rows: stdRows });
     }
     if (s.indexOf('SELECT ORG_ID FROM STANDARDS WHERE STANDARD_ID') === 0) {
