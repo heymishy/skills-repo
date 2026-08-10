@@ -150,7 +150,7 @@ function _requireAdapter() {
 
 /**
  * Wire a mock gateway client implementation. Must implement:
- *   getMockResponse(stage, model, scenarioName) -> { text, usage, ... }
+ *   getMockResponse(stage, model, scenarioName, turnIndex) -> { text, usage, ... }
  * @param {{getMockResponse: Function}} impl
  */
 function setMockGatewayClient(impl) {
@@ -224,23 +224,39 @@ function _loadFixtureFile(stage, scenarioName) {
 /**
  * Built-in mock gateway client — reads canned fixture JSON files from
  * tests/e2e/fixtures/llm-gateway/. Deterministic: identical
- * (stage, model, scenarioName) always returns an equal response object (AC1).
+ * (stage, model, scenarioName, turnIndex) always returns an equal response
+ * object (AC1).
+ *
+ * mgtc-s1: a fixture may optionally carry a `responses` array (each entry
+ * shaped like the fixture root: {response, usage, model}) instead of a
+ * single `response` field, letting a scenario script a different reply per
+ * turn -- e.g. /ideate cycling through its 4 lens types across a real
+ * multi-turn mock session, which a single static response can never do
+ * regardless of how rich its content is. `turnIndex` selects into that
+ * array, clamped to the last entry once the scripted sequence is exhausted
+ * (never throws, never returns undefined for a turn beyond what was
+ * scripted). A fixture with no `responses` array ignores `turnIndex`
+ * entirely and behaves exactly as it did before this parameter existed --
+ * every existing fixture file needs zero modification.
  */
 const _defaultMockGatewayClient = {
-  getMockResponse: function(stage, model, scenarioName) {
+  getMockResponse: function(stage, model, scenarioName, turnIndex) {
     const fixture = _loadFixtureFile(stage, scenarioName);
+    const source = Array.isArray(fixture.responses)
+      ? fixture.responses[Math.min(Math.max(turnIndex || 0, 0), fixture.responses.length - 1)]
+      : fixture;
     return {
-      text: fixture.response,
+      text: source.response,
       usage: {
-        input_tokens:          (fixture.usage && fixture.usage.input_tokens) || 0,
-        output_tokens:         (fixture.usage && fixture.usage.output_tokens) || 0,
+        input_tokens:          (source.usage && source.usage.input_tokens) || 0,
+        output_tokens:         (source.usage && source.usage.output_tokens) || 0,
         cache_read_tokens:     0,
         cache_creation_tokens: 0,
-        model:                 model || fixture.model || 'mock'
+        model:                 model || source.model || fixture.model || 'mock'
       },
       stage:        stage,
       scenarioName: scenarioName,
-      fixtureModel: fixture.model
+      fixtureModel: source.model || fixture.model
     };
   }
 };
@@ -260,10 +276,14 @@ function wireDefaultMockGatewayClient() {
  * @param {string} stage
  * @param {string} model
  * @param {string} scenarioName
+ * @param {number} [turnIndex] — mgtc-s1: selects into a fixture's optional
+ *   `responses` array (0-based, clamped to the last entry). Omitted/0 for
+ *   every existing caller and every existing single-response fixture is a
+ *   no-op, preserving today's behaviour exactly.
  * @returns {{text:string, usage:object, stage:string, scenarioName:string}}
  */
-function getMockResponse(stage, model, scenarioName) {
-  return _requireAdapter().getMockResponse(stage, model, scenarioName);
+function getMockResponse(stage, model, scenarioName, turnIndex) {
+  return _requireAdapter().getMockResponse(stage, model, scenarioName, turnIndex);
 }
 
 /**
