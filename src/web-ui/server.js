@@ -1731,6 +1731,15 @@ if (process.env.NODE_ENV === 'test') {
     _pshPool = _fakeTestDb;
     console.log('[bri-s3.2] fake in-memory users/products DB wired (NODE_ENV=test, no DATABASE_URL)');
 
+    // bmau-s1: modulesAdapter was previously only ever wired inside the
+    // `if (process.env.DATABASE_URL)` block above (a1's own gap, predating
+    // this story) -- every module/bulk-assign call in the standard local/CI
+    // harness (NODE_ENV=test, no DATABASE_URL) threw "Adapter not wired"
+    // with no fake-test-db fallback at all. Wired here, same fake db
+    // instance already backing products/users above.
+    setModulesAdapter(_fakeTestDb);
+    console.log('[bmau-s1] fake in-memory modules adapter wired (NODE_ENV=test, no DATABASE_URL)');
+
     // s1.1: bridge the in-memory journey-store's async write-through to this
     // SAME fake db instance, test-mode only. Without this, real journeys
     // (created via the real disk-backed journey-store) are invisible to the
@@ -2113,6 +2122,42 @@ async function router(req, res) {
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ journeyId: journeyId, sessionId: sessionId, productId: productId, tenantId: tenantId, stage: stage }));
+    return;
+  }
+
+  // bmau-s1: E2E fixture-seeding shortcut -- creating a product's first
+  // real feature (POST /products/:id/features) requires a connected GitHub
+  // repo (das-s2's gate), and connecting one for real
+  // (POST /products/:id/repo/create or PUT /products/:id with owner/repo)
+  // both require a real GitHub accessToken, which the synthetic withAuth
+  // test session never has. Mirrors /test/seed-board-journey's own
+  // inline NODE_ENV=test guard exactly above -- sets repo_owner/repo_name
+  // directly via the exact same UPDATE query product-repo.js's
+  // _applyRepoChange issues, so this is not a second, parallel repo-
+  // connection mechanism, just a test-only way to reach the same end state
+  // without a real GitHub token.
+  if (pathname === '/test/seed-product-repo' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    let raw = '';
+    for await (const chunk of req) { raw += chunk; }
+    let body = {};
+    try { body = raw ? JSON.parse(raw) : {}; } catch (_) { body = {}; }
+
+    const productId = body.productId;
+    const owner = body.owner || 'e2e-test-owner';
+    const repo = body.repo || 'e2e-test-repo';
+    if (!productId) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'productId is required' }));
+      return;
+    }
+
+    await _pshPool.query(
+      'UPDATE products SET repo_provider = $1, repo_owner = $2, repo_name = $3 WHERE product_id = $4',
+      ['github', owner, repo, productId]
+    );
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ productId: productId, owner: owner, repo: repo }));
     return;
   }
 

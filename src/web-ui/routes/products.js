@@ -272,13 +272,19 @@ function _renderModuleSection(name, id, groupFeatures, renderRowFn) {
     '<button type="button" class="a4-module-header" aria-expanded="true" aria-controls="' + sectionId + '" ' +
       'onclick="a4ToggleModule(this)" ' +
       'style="width:100%;text-align:left;padding:12px 16px;background:none;border:none;cursor:pointer;font-size:14px;font-weight:600;color:var(--ink);display:flex;justify-content:space-between;align-items:center">' +
-      '<span>' + _escapeHtml(name) + ' <span style="color:var(--muted);font-weight:400">(' + groupFeatures.length + ')</span></span>' +
+      '<span>' + _escapeHtml(name) + ' <span class="a4-module-count" style="color:var(--muted);font-weight:400">(' + groupFeatures.length + ')</span></span>' +
       '<span aria-hidden="true">▾</span>' +
     '</button>' +
     '<div id="' + sectionId + '" class="a4-module-body a4-module-body--expanded">' +
       '<div class="a4-module-body-inner">' +
         '<ul style="list-style:none;padding:0 16px 12px;margin:0">' +
-          groupFeatures.map(renderRowFn).join('') +
+          // bmau-s1: call with exactly 1 argument, not the raw renderRowFn
+          // reference -- Array.map() invokes its callback as
+          // (item, index, array); passing renderRowFn directly would leak
+          // the array index into _renderPvcItemRow's now-2-argument
+          // signature as includeCheckbox, incorrectly truthy for every
+          // item at index >= 1.
+          groupFeatures.map(function(item) { return renderRowFn(item); }).join('') +
         '</ul>' +
       '</div>' +
     '</div>' +
@@ -296,7 +302,7 @@ function _renderModuleSection(name, id, groupFeatures, renderRowFn) {
 // see features.js's renderArtefactIndexHtml). The discoveryArtefact
 // suffix link stays a separate, sibling <a> (nested anchors are invalid
 // HTML), pointing at its own more specific raw-markdown viewer.
-function _renderPvcItemRow(item) {
+function _renderPvcItemRow(item, includeCheckbox) {
   var color = item.health === 'red' ? '#ef4444' : item.health === 'amber' ? '#f59e0b' : item.health === 'unknown' ? 'var(--muted)' : '#22c55e';
   var label = item.health === 'red' ? '✕ Blocked' : item.health === 'amber' ? '⚠ Warning' : item.health === 'unknown' ? '? Unknown' : '✓ Healthy';
   var healthAttr = item.health === 'red' ? 'red' : item.health === 'amber' ? 'amber' : item.health === 'unknown' ? 'unknown' : 'green';
@@ -316,8 +322,7 @@ function _renderPvcItemRow(item) {
         'aria-label="Rename ' + _escapeHtml(displayName) + '" ' +
         'style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0 4px">✎ Rename</button>'
     : '';
-  return '<li class="pvc-item" data-health="' + healthAttr + '" data-search="' + _escapeHtml(searchText) + '" ' +
-    'style="padding:14px 0;border-bottom:1px solid var(--line)">' +
+  var innerHtml =
     '<a class="pvc-item-link" href="/features/' + _escapeHtml(item.slug) + '" ' +
       'aria-label="' + _escapeHtml(displayName) + ' — view artefacts and conversation history" ' +
       'style="display:flex;justify-content:space-between;align-items:center;text-decoration:none;color:inherit">' +
@@ -330,7 +335,29 @@ function _renderPvcItemRow(item) {
         '<span data-a4-coverage style="font-size:12px;color:var(--muted)">' + _escapeHtml(item.coverageLabel || 'No test data yet') + '</span>' +
       '</div>' +
     '</a>' +
-    (discoveryLink || renameLink ? '<div style="font-size:12px;margin-top:2px">' + discoveryLink + renameLink + '</div>' : '') +
+    (discoveryLink || renameLink ? '<div style="font-size:12px;margin-top:2px">' + discoveryLink + renameLink + '</div>' : '');
+
+  // bmau-s1: when includeCheckbox is truthy (the By Module tab's own row
+  // renderer only -- see _renderConsolidatedFeaturesSection), add a
+  // bulk-select checkbox as a sibling BEFORE the <a> (checkboxes cannot
+  // nest inside an <a>, same reason discoveryLink/renameLink above are
+  // already siblings, not nested) plus a data-slug attribute on the <li>
+  // itself so the selection bar's client JS can locate/move this exact row
+  // after a successful assign. Every other caller (zero-modules fallback,
+  // By Phase tab, All tab) omits the 2nd argument entirely, producing
+  // byte-identical output to before this story.
+  if (includeCheckbox) {
+    return '<li class="pvc-item" data-health="' + healthAttr + '" data-search="' + _escapeHtml(searchText) + '" data-slug="' + _escapeHtml(item.slug) + '" ' +
+      'style="padding:14px 0;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:10px">' +
+      '<input type="checkbox" class="bmau-item-checkbox" data-slug="' + _escapeHtml(item.slug) + '" onchange="bmauUpdateSelection()" ' +
+        'aria-label="Select ' + _escapeHtml(displayName) + ' for bulk module assignment" style="margin-top:16px;flex-shrink:0">' +
+      '<div style="flex:1;min-width:0">' + innerHtml + '</div>' +
+    '</li>';
+  }
+
+  return '<li class="pvc-item" data-health="' + healthAttr + '" data-search="' + _escapeHtml(searchText) + '" ' +
+    'style="padding:14px 0;border-bottom:1px solid var(--line)">' +
+    innerHtml +
   '</li>';
 }
 
@@ -342,20 +369,45 @@ function _renderPvcItemRow(item) {
 // (By Module / By Phase / All) plus health-filter chips and a search input,
 // all operating client-side over the same rendered item rows (data-health/
 // data-search attributes read by one small vanilla-JS filter function).
-function _renderConsolidatedFeaturesSection(items, modules, taxonomy) {
+function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId, csrfToken) {
   if (modules.length === 0) {
+    // bmau-s1: explicit single-arg wrapper, not the bare _renderPvcItemRow
+    // reference -- see _renderModuleSection's identical fix/comment for why
+    // Array.map() would otherwise leak the index into includeCheckbox.
     return items.length === 0
       ? '<p style="color:var(--muted);font-size:14px">No features yet.</p>'
-      : '<ul style="list-style:none;padding:0;margin:0">' + items.map(_renderPvcItemRow).join('') + '</ul>';
+      : '<ul style="list-style:none;padding:0;margin:0">' + items.map(function(item) { return _renderPvcItemRow(item); }).join('') + '</ul>';
   }
 
   var byModule = _productRollup.groupItemsByModule(items, _pvcAssignmentMapFromItems(items), modules);
   var byPhase = _productRollup.groupItemsByPhase(items);
 
+  // bmau-s1: bulk-assign checkboxes only render in the By Module tab --
+  // it's the only view where "move into a new module's section" (AC3) is a
+  // meaningful visual effect; By Phase and All keep their existing,
+  // unmodified row renderer.
+  var _renderPvcItemRowWithCheckbox = function(item) { return _renderPvcItemRow(item, true); };
+
+  var moduleOptionsHtml = modules.map(function(m) {
+    return '<option value="' + _escapeHtml(m.id) + '">' + _escapeHtml(m.name) + '</option>';
+  }).join('');
+  // AC4: disabled by default -- bmauUpdateSelection() only enables it once
+  // >=1 checkbox is checked.
+  var bulkAssignBarHtml =
+    '<div class="bmau-bar" style="display:flex;align-items:center;gap:8px;margin-bottom:16px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:8px">' +
+      '<span id="bmau-selected-count" style="font-size:12.5px;color:var(--muted)">0 selected</span>' +
+      '<select id="bmau-module-select" style="padding:5px 8px;border:1px solid var(--line);border-radius:6px;font-size:13px;background:var(--surface);color:var(--ink)">' +
+        moduleOptionsHtml +
+      '</select>' +
+      '<button type="button" id="bmau-assign-btn" disabled onclick="bmauAssignToModule(\'' + _escapeHtml(productId || '') + '\',\'' + _escapeHtml(csrfToken || '') + '\')" ' +
+        'style="padding:6px 12px;border:1px solid var(--accent,#2563eb);border-radius:6px;background:none;color:var(--accent,#2563eb);font-size:12.5px;cursor:pointer">Assign to module</button>' +
+    '</div>';
+
   var byModuleHtml =
     '<div id="pvc-tab-panel-module" class="pvc-tab-panel pvc-tab-panel--active" role="tabpanel" aria-labelledby="pvc-tab-module">' +
-      byModule.byModule.map(function(bucket) { return _renderModuleSection(bucket.moduleName, bucket.moduleId, bucket.items, _renderPvcItemRow); }).join('') +
-      (byModule.unclassified.length > 0 ? _renderModuleSection('Unclassified', 'unclassified', byModule.unclassified, _renderPvcItemRow) : '') +
+      bulkAssignBarHtml +
+      byModule.byModule.map(function(bucket) { return _renderModuleSection(bucket.moduleName, bucket.moduleId, bucket.items, _renderPvcItemRowWithCheckbox); }).join('') +
+      (byModule.unclassified.length > 0 ? _renderModuleSection('Unclassified', 'unclassified', byModule.unclassified, _renderPvcItemRowWithCheckbox) : '') +
     '</div>';
 
   var byPhaseHtml =
@@ -366,7 +418,9 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy) {
 
   var allHtml =
     '<div id="pvc-tab-panel-all" class="pvc-tab-panel" role="tabpanel" aria-labelledby="pvc-tab-all">' +
-      '<ul style="list-style:none;padding:0;margin:0">' + items.map(_renderPvcItemRow).join('') + '</ul>' +
+      // bmau-s1: explicit single-arg wrapper -- same Array.map() index-leak
+      // fix as the zero-modules fallback above.
+      '<ul style="list-style:none;padding:0;margin:0">' + items.map(function(item) { return _renderPvcItemRow(item); }).join('') + '</ul>' +
     '</div>';
 
   var healthChips = ['all', 'green', 'amber', 'red', 'unknown'].map(function(h) {
@@ -390,7 +444,12 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy) {
       '.pvc-health-chip{padding:5px 12px;font-family:inherit;font-size:12.5px;background:none;border:1px solid var(--line);border-radius:999px;color:var(--muted);cursor:pointer}' +
       '.pvc-health-chip--active{color:var(--ink);border-color:var(--ink)}' +
       '.pvc-search{flex:1;min-width:160px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-size:13px;background:var(--surface);color:var(--ink)}' +
-      '.pvc-item[hidden]{display:none}' +
+      // !important: bmau-s1's checkbox-enabled rows set an inline
+      // display:flex on the <li> itself (higher specificity than a plain
+      // class+attribute selector) -- without !important here, a filtered-
+      // out row in the By Module tab would keep its [hidden] attribute set
+      // but remain visually visible, since the inline style would win.
+      '.pvc-item[hidden]{display:none!important}' +
     '</style>' +
     '<div class="pvc-tabs" role="tablist" aria-label="Features view">' +
       '<button type="button" class="pvc-tab pvc-tab--active" id="pvc-tab-module" role="tab" aria-selected="true" onclick="pvcShowTab(\'module\')">By Module</button>' +
@@ -434,6 +493,68 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy) {
       'function pvcFilterBySearch(value){' +
         'pvcCurrentSearch=value.toLowerCase();' +
         'pvcApplyFilters();' +
+      '}' +
+      // bmau-s1 -- AC2/AC4: track checked slugs, enable/disable the
+      // "Assign to module" button and update its selected-count label.
+      'function bmauUpdateSelection(){' +
+        'var checked=document.querySelectorAll(".bmau-item-checkbox:checked");' +
+        'var countEl=document.getElementById("bmau-selected-count");' +
+        'var btn=document.getElementById("bmau-assign-btn");' +
+        'if(countEl){countEl.textContent=checked.length+" selected";}' +
+        'if(btn){btn.disabled=checked.length===0;}' +
+      '}' +
+      // bmau-s1 -- AC2/AC3: POST the checked slugs + selected module to the
+      // existing, unmodified bulk-assign endpoint; on success, move each
+      // affected row's real DOM node (not a re-render) into its new
+      // module's <ul> and update both the source and target module
+      // headers' item-count badges -- no full page reload (AC3).
+      'function bmauAssignToModule(productId,csrfToken){' +
+        'var checked=Array.prototype.slice.call(document.querySelectorAll(".bmau-item-checkbox:checked"));' +
+        'var slugs=checked.map(function(el){return el.getAttribute("data-slug");});' +
+        'if(slugs.length===0)return;' +
+        'var select=document.getElementById("bmau-module-select");' +
+        'var moduleId=select.value;' +
+        'if(!moduleId)return;' +
+        'var btn=document.getElementById("bmau-assign-btn");' +
+        'btn.disabled=true;' +
+        'var origText=btn.textContent;' +
+        'btn.textContent="Assigning…";' +
+        'fetch("/products/"+productId+"/modules/bulk-assign",{' +
+          'method:"POST",' +
+          'headers:{"Content-Type":"application/json"},' +
+          'body:JSON.stringify({featureSlugs:slugs,moduleId:moduleId,_csrf:csrfToken})' +
+        '}).then(function(r){if(!r.ok)throw new Error("failed");return r.json();})' +
+          '.then(function(){' +
+            'var targetUl=document.querySelector("#a4-mod-"+moduleId+" ul");' +
+            'var sourceDeltas={};' +
+            'slugs.forEach(function(slug){' +
+              'var row=document.querySelector("#pvc-tab-panel-module li[data-slug=\\""+slug+"\\"]");' +
+              'if(!row)return;' +
+              'var sourceBody=row.closest(".a4-module-body");' +
+              'if(sourceBody){' +
+                'var sourceModuleId=sourceBody.id.replace("a4-mod-","");' +
+                'sourceDeltas[sourceModuleId]=(sourceDeltas[sourceModuleId]||0)-1;' +
+              '}' +
+              'var cb=row.querySelector(".bmau-item-checkbox");' +
+              'if(cb)cb.checked=false;' +
+              'if(targetUl)targetUl.appendChild(row);' +
+            '});' +
+            'sourceDeltas[moduleId]=(sourceDeltas[moduleId]||0)+slugs.length;' +
+            'Object.keys(sourceDeltas).forEach(function(mid){' +
+              'var body=document.getElementById("a4-mod-"+mid);' +
+              'var header=body&&body.previousElementSibling;' +
+              'var countEl=header&&header.querySelector(".a4-module-count");' +
+              'if(countEl){' +
+                'var current=parseInt(countEl.textContent.replace(/[()]/g,""),10)||0;' +
+                'countEl.textContent="("+(current+sourceDeltas[mid])+")";' +
+              '}' +
+            '});' +
+            'bmauUpdateSelection();' +
+          '})' +
+          '.catch(function(){' +
+            'btn.disabled=false;btn.textContent=origText;' +
+            'alert("Failed to assign the selected features to that module. Please try again.");' +
+          '});' +
       '}' +
     '<\/script>'
   );
@@ -677,7 +798,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     });
   });
 
-  var featuresSectionHtml = _renderConsolidatedFeaturesSection(mergedItems, modules, taxonomy);
+  var featuresSectionHtml = _renderConsolidatedFeaturesSection(mergedItems, modules, taxonomy, productId, csrfToken);
   var scaleGaugeHtml = _renderScaleGauge(features, modules, taxonomy);
 
   var syncedAtLabel = rollupRow ? _syncFreshness.formatSyncedAt(rollupRow.synced_at) : _syncFreshness.formatSyncedAt(null);
