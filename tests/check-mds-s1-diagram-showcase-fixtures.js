@@ -146,8 +146,15 @@ check('AC3: getMockResponse_definitionDiagramShowcase_hasTwoValidMarkers', () =>
 // story's new diagram-showcase) -- the DoR's scope contract listed
 // ideate.failure.json, but that file was never real; the checksum set below
 // reflects the genuinely-existing files.
+//
+// isc-s1 (2026-08-10): ideate.success.json intentionally removed from this
+// set. mds-s1's own AC4 guaranteed IT never touched that file -- true at the
+// time. isc-s1 is a separate, later, deliberate story that migrates
+// ideate.success.json to mgtc-s1's `responses` array format so a mock
+// /ideate session can actually cycle through lenses instead of repeating
+// turn 0 forever; see check-isc-s1-ideate-success-lens-cycling.js for that
+// file's own non-regression coverage.
 var EXISTING_FIXTURE_CHECKSUMS = {
-  'ideate.success.json':     '9b3276ca87e888f3f84bb6718efc049c27dbf486a8a33be84385353ba2db6f7d',
   'design.success.json':     'e494b44565094f2c83d8ceaf60abd59fb2e586b4500ddd98cf26005d88e7d240',
   'definition.success.json': '91bbb3bc524a7426ddb69cca6d0cc80839624e7a447cbca113dd1532395c7a54',
   'definition.failure.json': '4172254ac147cf45a3cf280546ca35a13f692abe303415b40192a9e1e6d475c9'

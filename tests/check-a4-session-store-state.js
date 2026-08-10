@@ -83,7 +83,10 @@ function extractMarkerTexts(text) {
 (async function() {
 
   var fixture = JSON.parse(fs.readFileSync(FIXTURE_PATH, 'utf8'));
-  var markerTexts = extractMarkerTexts(fixture.response);
+  // isc-s1: ideate.success.json moved to mgtc-s1's `responses` array format --
+  // this test exercises turn 0's content (Lens A / Opportunity map), the same
+  // content the fixture always had at its single top-level `response` field.
+  var markerTexts = extractMarkerTexts(fixture.responses[0].response);
 
   // ===========================================================================
   // AC1 -- an interrupted mid-stream turn's in-progress marker survives a
