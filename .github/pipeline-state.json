@@ -21787,6 +21787,47 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "epics": []
+    },
+    {
+      "slug": "2026-08-10-resume-diagrams-artefact-conversation-e2e",
+      "name": "Lock in resuming a completed stage shows diagrams, artefact, and conversation together with a real browser E2E test",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "rdac-s1",
+          "id": "rdac-s1",
+          "name": "Playwright E2E coverage for the combined resume scenario",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-10-resume-diagrams-artefact-conversation-e2e/review/rdac-s1-review-1.md",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 1,
+            "passing": 1,
+            "artefact": "artefacts/2026-08-10-resume-diagrams-artefact-conversation-e2e/test-plans/rdac-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-10-resume-diagrams-artefact-conversation-e2e/dor/rdac-s1-dor.md",
+          "oversightLevel": "low",
+          "acTotal": 4,
+          "acVerified": 4,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": true,
+          "updatedAt": "2026-08-10T07:07:00.114Z",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-10T07:07:00.114Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -21850,5 +21891,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-08-10T06:53:18.618Z"
+  "updatedAt": "2026-08-10T07:07:00.114Z"
 }
