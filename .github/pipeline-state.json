@@ -21419,7 +21419,7 @@
     {
       "slug": "2026-08-10-standards-management-ui-gap",
       "name": "Standards management has a fully-built backend but no way to reach it by clicking anything",
-      "stage": "dor-signed-off",
+      "stage": "definition-of-ready",
       "health": "green",
       "stories": [
         {
@@ -21449,7 +21449,7 @@
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-09T21:42:29.825Z",
+      "updatedAt": "2026-08-10T00:29:43.010Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
@@ -21460,7 +21460,7 @@
     {
       "slug": "2026-08-10-bulk-module-assignment-ui-gap",
       "name": "Bulk-assign-to-module has a working, tested backend but no UI trigger anywhere",
-      "stage": "dor-signed-off",
+      "stage": "definition-of-ready",
       "health": "green",
       "stories": [
         {
@@ -21490,7 +21490,7 @@
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-09T21:42:29.825Z",
+      "updatedAt": "2026-08-10T00:29:43.010Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
@@ -21560,5 +21560,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-08-09T21:42:29.825Z"
+  "updatedAt": "2026-08-10T00:29:43.010Z"
 }
