@@ -21488,12 +21488,12 @@
           "acVerified": 6,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-10T05:15:34.565Z",
-          "prStatus": "none"
+          "updatedAt": "2026-08-10T05:36:15.195Z",
+          "prStatus": "merged"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-10T05:15:34.707Z",
+      "updatedAt": "2026-08-10T05:36:15.197Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
@@ -21809,5 +21809,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-08-10T05:15:34.708Z"
+  "updatedAt": "2026-08-10T05:36:15.197Z"
 }
