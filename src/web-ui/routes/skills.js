@@ -828,6 +828,200 @@ function parseCanvasBlock(text) {
 }
 
 /**
+ * drh-s1 -- scan a durable turns array (session.turns shape, {role, content})
+ * for every CANVAS-JSON marker across every turn's raw content and parse each
+ * one via parseCanvasBlock's existing type-allowlist/validation. Turns are
+ * saved with unstripped fullText (see the assistant-turn push sites in this
+ * file), so markers emitted during a live /ideate, /design, or /definition
+ * session are genuinely present here to recover -- this is what lets a
+ * resumed/historical stage view re-render diagrams the live page already
+ * shows, without inventing new persisted state.
+ * @param {Array<{role: string, content: string}>} turns
+ * @returns {Array<object>} parsed canvas blocks, in the order they appeared
+ */
+function extractCanvasBlocksFromTurns(turns) {
+  // Literal-delimiter scan (start marker, then the next literal "---"),
+  // matching the exact same convention as the live-streaming scanner in
+  // handlePostTurnStreamHtml -- NOT a JSON-brace-counting regex. A brace-
+  // counting approach lets one malformed marker (missing a closing brace)
+  // swallow a subsequent, otherwise-valid marker via regex backtracking
+  // across the boundary between them; this scan instead treats each
+  // "---CANVAS-JSON: ... ---" span independently by construction, so a
+  // malformed marker only ever corrupts itself (AC3).
+  var CANVAS_START = '---CANVAS-JSON:';
+  var CANVAS_END = '---';
+  var blocks = [];
+  (turns || []).forEach(function(t) {
+    var text = String((t && t.content) || '');
+    var searchFrom = 0;
+    while (true) {
+      var startIdx = text.indexOf(CANVAS_START, searchFrom);
+      if (startIdx === -1) { break; }
+      var endIdx = text.indexOf(CANVAS_END, startIdx + CANVAS_START.length);
+      if (endIdx === -1) { break; }
+      var markerFull = text.slice(startIdx, endIdx + CANVAS_END.length);
+      var parsed = parseCanvasBlock(markerFull);
+      if (parsed) { blocks.push(parsed); }
+      searchFrom = endIdx + CANVAS_END.length;
+    }
+  });
+  return blocks;
+}
+
+// csd-s1/csd-s2 (ADR-026): the ONE shared client-side rendering
+// implementation for every canvas-block type (cluster-tree/table/text/
+// data-model/system-architecture/program-design/drift-signal) -- no
+// per-type or per-caller parallel rendering path. Both the interactive
+// live-session script (built inline further below, in the big scriptHtml
+// array) and drh-s1's read-only history script splice this SAME array of
+// source lines into their own IIFE, rather than each defining their own
+// copy -- check-csd-s2-canvas-diagram-rendering.js enforces this (ADR-026
+// compliance: buildDiagramBodyHtml must be defined exactly once across the
+// whole file's script-building code, called from exactly the 3
+// diagram-type branches -- 4 occurrences total, not 8).
+var _CANVAS_RENDER_FN_LINES = [
+  '  function buildDiagramBodyHtml(diagramLabel, content) {',
+  '    var mermaidSrc = String(content.mermaid || content.source || "");',
+  '    var diagId = "cv-diagram-" + Math.random().toString(36).slice(2, 10);',
+  '    return \'<div class="cv-diagram-wrap">\' +',
+  '      \'<div class="cv-diagram-type-label">\' + escHtmlClient(diagramLabel) + "</div>" +',
+  '      \'<div class="mermaid" id="\' + diagId + \'" data-diagram-label="\' + diagramLabel + \'" role="img" aria-label="\' + diagramLabel + \' diagram">\' + escHtmlClient(mermaidSrc) + \'</div>\' +',
+  '      \'<details class="cv-diagram-alt"><summary>View diagram source (text alternative)</summary><pre class="cv-diagram-src">\' + escHtmlClient(mermaidSrc) + \'</pre></details>\' +',
+  '    "</div>";',
+  '  }',
+  '  function markDiagramRenderError(node) {',
+  '    var label = node.getAttribute("data-diagram-label") || "Diagram";',
+  '    node.classList.add("cv-diagram-error");',
+  '    node.setAttribute("aria-label", label + " diagram failed to render");',
+  '    node.innerHTML = \'<div class="cv-diagram-error-box" role="alert">\' + escHtmlClient(label) + " diagram failed to render</div>";',
+  '  }',
+  '  function renderCanvasBlock(block) {',
+  '    var type = block.type || "";',
+  '    var title = escHtmlClient(block.title || "");',
+  '    var content = block.content || {};',
+  '    var bodyHtml = "";',
+  '    if (type === "cluster-tree") {',
+  '      var clusters = content.clusters || [];',
+  '      var items = clusters.map(function(c, i) {',
+  '        var isLast = i === clusters.length - 1;',
+  '        var name = escHtmlClient(String(c && c.name ? c.name : c));',
+  '        var children = (c && c.children) || [];',
+  '        var childHtml = "";',
+  '        if (children.length) {',
+  '          childHtml = \'<ul class="cv-tree-sub">\' + children.map(function(ch, j) {',
+  '            return \'<li class="cv-tree-item\' + (j === children.length-1 ? \' cv-tree-item--last\' : \'\') + \'"><span class="cv-tree-node-box">\' + escHtmlClient(String(ch)) + \'</span></li>\';',
+  '          }).join("") + "</ul>";',
+  '        }',
+  '        return \'<li class="cv-tree-item\' + (isLast ? \' cv-tree-item--last\' : \'\') + \'">\' +',
+  '          \'<span class="cv-tree-node-box">\' + name + \'</span>\' + childHtml + \'</li>\';',
+  '      }).join("");',
+  '      bodyHtml = \'<div class="cv-tree-wrap"><div class="cv-tree-root-node">\' + title + \'</div><ul class="cv-tree-list">\' + items + "</ul></div>";',
+  '    } else if (type === "table") {',
+  '      var headers = (content.headers || []).map(function(h) { return "<th>" + escHtmlClient(String(h)) + "</th>"; }).join("");',
+  '      var rows = (content.rows || []).map(function(row) {',
+  '        var cells = (Array.isArray(row) ? row : Object.values(row)).map(function(c) { return "<td>" + escHtmlClient(String(c)) + "</td>"; }).join("");',
+  '        return "<tr>" + cells + "</tr>";',
+  '      }).join("");',
+  '      bodyHtml = \'<table class="cv-table"><thead><tr>\' + headers + "</tr></thead><tbody>" + rows + "</tbody></table>";',
+  '    } else if (type === "text") {',
+  '      var paras = (content.paragraphs || [String(content.text || "")]).map(function(p) { return "<p>" + escHtmlClient(String(p)) + "</p>"; }).join("");',
+  '      bodyHtml = \'<div class="cv-text">\' + paras + "</div>";',
+  '    } else if (type === "data-model") {',
+  '      bodyHtml = buildDiagramBodyHtml("Data Model", content);',
+  '    } else if (type === "system-architecture") {',
+  '      bodyHtml = buildDiagramBodyHtml("System Architecture", content);',
+  '    } else if (type === "program-design") {',
+  '      bodyHtml = buildDiagramBodyHtml("Program Design", content);',
+  '    } else if (type === "drift-signal") {',
+  '      var driftItems = content.items || [];',
+  '      var driftItemsHtml = driftItems.map(function(it) {',
+  '        var isDiverged = it.status === "DIVERGED";',
+  '        var statusClass = isDiverged ? "cv-drift-diverged" : "cv-drift-matched";',
+  '        var icon = isDiverged ? "\\u26A0" : "\\u2713";',
+  '        var diffs = it.differences || [];',
+  '        var diffsHtml = diffs.length ? (\'<ul class="cv-drift-diffs">\' + diffs.map(function(d) {',
+  '          return "<li>" + escHtmlClient(String(d)) + "</li>";',
+  '        }).join("") + "</ul>") : "";',
+  '        return \'<div class="cv-drift-item \' + statusClass + \'" data-diagram-type="\' + escHtmlClient(String(it.diagramType || "")) + \'" data-drift-status="\' + escHtmlClient(String(it.status || "")) + \'">\' +',
+  '          \'<span class="cv-drift-icon" aria-hidden="true">\' + icon + "</span>" +',
+  '          \'<span class="cv-drift-type-label">\' + escHtmlClient(String(it.diagramLabel || it.diagramType || "")) + "</span>" +',
+  '          \'<span class="cv-drift-status-label">\' + escHtmlClient(String(it.label || it.status || "")) + "</span>" +',
+  '          diffsHtml +',
+  '        "</div>";',
+  '      }).join("");',
+  '      bodyHtml = \'<div class="cv-drift-wrap">\' + driftItemsHtml + "</div>";',
+  '    }',
+  '    var typeTag = \'<span class="canvas-type-tag">\' + escHtmlClient(type) + "</span>";',
+  '    return \'<div class="canvas-block" data-block-type="\' + escHtmlClient(type) + \'"><div class="canvas-block-head">\' + typeTag + \' <span class="canvas-block-title">\' + title + \'</span></div><div class="canvas-block-body">\' + bodyHtml + "</div></div>";',
+  '  }'
+];
+
+/**
+ * drh-s1 -- a self-contained, read-only-safe <script> that renders a fixed
+ * set of already-known canvas blocks (recovered from durable turn history
+ * by extractCanvasBlocksFromTurns) into #canvas-panel and triggers
+ * mermaid.run() once on load. Shares the SAME buildDiagramBodyHtml/
+ * markDiagramRenderError/renderCanvasBlock implementation as the
+ * interactive live-session script, via the single _CANVAS_RENDER_FN_LINES
+ * array (ADR-026: no parallel rendering path) -- only the driver around it
+ * is separate and narrower: no SSE pump, no lens navigation, no
+ * confirm/flag affordances, just "append these already-known blocks once
+ * on load," since this view has none of the live/incremental concerns the
+ * interactive script's own appendCanvasBlock (with its lens-pip
+ * highlighting side effect) was built for.
+ * Renders the exact same diagram-type family (cluster-tree/table/text/
+ * data-model/system-architecture/program-design/drift-signal) with the
+ * exact same CSS classes/markup shape as the live page, so the existing
+ * chat-view.js <style> block (always present, not readOnly-gated) styles
+ * it identically.
+ * @param {Array<object>} blocks - parsed canvas blocks (parseCanvasBlock shape)
+ * @returns {string} a complete <script>...</script> string, or '' if blocks is empty
+ */
+function buildReadOnlyCanvasScript(blocks) {
+  if (!Array.isArray(blocks) || !blocks.length) { return ''; }
+  var safeBlocks = JSON.stringify(blocks)
+    .replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+  var lines = [
+    '<script>',
+    '(function() {',
+    '  var BLOCKS = ' + safeBlocks + ';',
+    '  function escHtmlClient(s) {',
+    '    return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");',
+    '  }'
+  ].concat(_CANVAS_RENDER_FN_LINES).concat([
+    '  var container = document.getElementById("canvas-panel");',
+    '  if (container) {',
+    '    var p = container.querySelector("p.cv-empty"); if (p) p.remove();',
+    '    BLOCKS.forEach(function(block) {',
+    '      var wrapper = document.createElement("div");',
+    '      wrapper.innerHTML = renderCanvasBlock(block);',
+    '      var appendedEl = wrapper.firstChild || wrapper;',
+    '      container.appendChild(appendedEl);',
+    '    });',
+    '  }',
+    '  if (window.mermaid && typeof window.mermaid.initialize === "function") {',
+    '    window.mermaid.initialize({ startOnLoad: false, securityLevel: "strict" });',
+    '  }',
+    '  if (window.mermaid && typeof window.mermaid.run === "function" && container) {',
+    '    var mermaidNodes = container.querySelectorAll(".mermaid");',
+    '    Array.prototype.forEach.call(mermaidNodes, function(node) {',
+    '      try {',
+    '        var runResult = window.mermaid.run({ nodes: [node] });',
+    '        if (runResult && typeof runResult.catch === "function") {',
+    '          runResult.catch(function() { markDiagramRenderError(node); });',
+    '        }',
+    '      } catch (e) {',
+    '        markDiagramRenderError(node);',
+    '      }',
+    '    });',
+    '  }',
+    '})();',
+    '</script>'
+  ]);
+  return lines.join('');
+}
+
+/**
  * Derive an 8-character hex cardId from sessionId + emittedText (SHA-256, first 8 hex chars).
  * @param {string} sessionId
  * @param {string} markerText — the full marker text (used for uniqueness per card)
@@ -3552,106 +3746,15 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
     // human-readable form ("Data Model" / "System Architecture" /
     // "Program Design") so the three types are distinguishable at a glance,
     // not just via the generic uppercase canvas-type-tag.
-    '  function buildDiagramBodyHtml(diagramLabel, content) {',
-    '    var mermaidSrc = String(content.mermaid || content.source || "");',
-    '    var diagId = "cv-diagram-" + Math.random().toString(36).slice(2, 10);',
-    // Deliberately NOT interpolating mermaidSrc into an attribute (e.g.
-    // aria-label) here -- escHtmlClient only escapes &/</> for safe TEXT-NODE
-    // interpolation, not the double-quote character an attribute value is
-    // delimited by. Mermaid ER-diagram/flowchart syntax routinely contains
-    // quoted attribute-comment text (e.g. `string name PK "primary key"`), so
-    // an unescaped `"` inside an attribute would break out of it -- exactly
-    // the injection MC-SEC-01 forbids. diagramLabel is one of 3 fixed,
-    // internally-supplied strings (never user/model content), so it is safe
-    // to place directly in an attribute. The accessible text alternative
-    // below places the raw mermaid source only as element TEXT CONTENT
-    // (<pre>), which escHtmlClient safely escapes for that context.
-    '    return \'<div class="cv-diagram-wrap">\' +',
-    '      \'<div class="cv-diagram-type-label">\' + escHtmlClient(diagramLabel) + "</div>" +',
-    '      \'<div class="mermaid" id="\' + diagId + \'" data-diagram-label="\' + diagramLabel + \'" role="img" aria-label="\' + diagramLabel + \' diagram">\' + escHtmlClient(mermaidSrc) + \'</div>\' +',
-    '      \'<details class="cv-diagram-alt"><summary>View diagram source (text alternative)</summary><pre class="cv-diagram-src">\' + escHtmlClient(mermaidSrc) + \'</pre></details>\' +',
-    '    "</div>";',
-    '  }',
-    // csd-s2 (AC2): on a mermaid render failure (malformed/invalid syntax),
-    // replace the .mermaid node's content with a labelled, non-blank error
-    // box -- never mermaid's own default error output (which can include
-    // parser stack-trace-shaped text) and never the raw JS error message.
-    '  function markDiagramRenderError(node) {',
-    '    var label = node.getAttribute("data-diagram-label") || "Diagram";',
-    '    node.classList.add("cv-diagram-error");',
-    '    node.setAttribute("aria-label", label + " diagram failed to render");',
-    '    node.innerHTML = \'<div class="cv-diagram-error-box" role="alert">\' + escHtmlClient(label) + " diagram failed to render</div>";',
-    '  }',
-    '  function renderCanvasBlock(block) {',
-    '    var type = block.type || "";',
-    '    var title = escHtmlClient(block.title || "");',
-    '    var content = block.content || {};',
-    '    var bodyHtml = "";',
-    '    if (type === "cluster-tree") {',
-    '      var clusters = content.clusters || [];',
-    '      var items = clusters.map(function(c, i) {',
-    '        var isLast = i === clusters.length - 1;',
-    '        var name = escHtmlClient(String(c && c.name ? c.name : c));',
-    '        var children = (c && c.children) || [];',
-    '        var childHtml = "";',
-    '        if (children.length) {',
-    '          childHtml = \'<ul class="cv-tree-sub">\' + children.map(function(ch, j) {',
-    '            return \'<li class="cv-tree-item\' + (j === children.length-1 ? \' cv-tree-item--last\' : \'\') + \'"><span class="cv-tree-node-box">\' + escHtmlClient(String(ch)) + \'</span></li>\';',
-    '          }).join("") + "</ul>";',
-    '        }',
-    '        return \'<li class="cv-tree-item\' + (isLast ? \' cv-tree-item--last\' : \'\') + \'">\' +',
-    '          \'<span class="cv-tree-node-box">\' + name + \'</span>\' + childHtml + \'</li>\';',
-    '      }).join("");',
-    '      bodyHtml = \'<div class="cv-tree-wrap"><div class="cv-tree-root-node">\' + title + \'</div><ul class="cv-tree-list">\' + items + "</ul></div>";',
-    '    } else if (type === "table") {',
-    '      var headers = (content.headers || []).map(function(h) { return "<th>" + escHtmlClient(String(h)) + "</th>"; }).join("");',
-    '      var rows = (content.rows || []).map(function(row) {',
-    '        var cells = (Array.isArray(row) ? row : Object.values(row)).map(function(c) { return "<td>" + escHtmlClient(String(c)) + "</td>"; }).join("");',
-    '        return "<tr>" + cells + "</tr>";',
-    '      }).join("");',
-    '      bodyHtml = \'<table class="cv-table"><thead><tr>\' + headers + "</tr></thead><tbody>" + rows + "</tbody></table>";',
-    '    } else if (type === "text") {',
-    '      var paras = (content.paragraphs || [String(content.text || "")]).map(function(p) { return "<p>" + escHtmlClient(String(p)) + "</p>"; }).join("");',
-    '      bodyHtml = \'<div class="cv-text">\' + paras + "</div>";',
-    '    } else if (type === "data-model") {',
-    '      bodyHtml = buildDiagramBodyHtml("Data Model", content);',
-    '    } else if (type === "system-architecture") {',
-    // csd-s2: the second of the `diagram` content-block family, wired
-    // through the SAME buildDiagramBodyHtml() helper as data-model above --
-    // no parallel rendering function (ADR-026).
-    '      bodyHtml = buildDiagramBodyHtml("System Architecture", content);',
-    '    } else if (type === "program-design") {',
-    // csd-s2: the third and last of the `diagram` content-block family.
-    '      bodyHtml = buildDiagramBodyHtml("Program Design", content);',
-    '    } else if (type === "drift-signal") {',
-    // csd-s6: the match/diverged drift signal. Conveyed by an aria-hidden
-    // icon PLUS an explicit text label ("Matches"/"Diverged") -- never
-    // colour alone (NFR: accessibility, WCAG 2.1 AA) -- and, when diverged,
-    // a bullet list naming the specific difference(s) (AC5), never a bare
-    // "diverged" label with no detail. A diagram type with no drift still
-    // renders its own explicit "Matches" item (AC4) -- this branch never
-    // produces empty/blank output for a MATCHED item.
-    '      var driftItems = content.items || [];',
-    '      var driftItemsHtml = driftItems.map(function(it) {',
-    '        var isDiverged = it.status === "DIVERGED";',
-    '        var statusClass = isDiverged ? "cv-drift-diverged" : "cv-drift-matched";',
-    '        var icon = isDiverged ? "\\u26A0" : "\\u2713";',
-    '        var diffs = it.differences || [];',
-    '        var diffsHtml = diffs.length ? (\'<ul class="cv-drift-diffs">\' + diffs.map(function(d) {',
-    '          return "<li>" + escHtmlClient(String(d)) + "</li>";',
-    '        }).join("") + "</ul>") : "";',
-    '        return \'<div class="cv-drift-item \' + statusClass + \'" data-diagram-type="\' + escHtmlClient(String(it.diagramType || "")) + \'" data-drift-status="\' + escHtmlClient(String(it.status || "")) + \'">\' +',
-    '          \'<span class="cv-drift-icon" aria-hidden="true">\' + icon + "</span>" +',
-    '          \'<span class="cv-drift-type-label">\' + escHtmlClient(String(it.diagramLabel || it.diagramType || "")) + "</span>" +',
-    '          \'<span class="cv-drift-status-label">\' + escHtmlClient(String(it.label || it.status || "")) + "</span>" +',
-    '          diffsHtml +',
-    '        "</div>";',
-    '      }).join("");',
-    '      bodyHtml = \'<div class="cv-drift-wrap">\' + driftItemsHtml + "</div>";',
-    '    }',
-    '    var typeTag = \'<span class="canvas-type-tag">\' + escHtmlClient(type) + "</span>";',
-    '    return \'<div class="canvas-block" data-block-type="\' + escHtmlClient(type) + \'"><div class="canvas-block-head">\' + typeTag + \' <span class="canvas-block-title">\' + title + \'</span></div><div class="canvas-block-body">\' + bodyHtml + "</div></div>";',
-    '  }',
+    // drh-s1: buildDiagramBodyHtml/markDiagramRenderError/renderCanvasBlock
+    // now live in the single shared _CANVAS_RENDER_FN_LINES array (defined
+    // near parseCanvasBlock, above) so the read-only stage-history script
+    // (buildReadOnlyCanvasScript) can splice the exact same implementation
+    // in without a parallel copy -- ADR-026 (checked by
+    // check-csd-s2-canvas-diagram-rendering.js's "shared dispatch, no
+    // parallel path" assertion) applies across files/callers, not just
+    // across the three diagram types within one script.
+    _CANVAS_RENDER_FN_LINES.join('\n'),
     '  function appendCanvasBlock(block) {',
     '    var container = document.getElementById("canvas-panel");',
     '    if (!container) return;',
@@ -5305,6 +5408,10 @@ module.exports = {
   parseConditionMarker,
   // inc4 — canvas output panel
   parseCanvasBlock,
+  // drh-s1 — recover diagram blocks from durable turn history for the
+  // read-only stage-history view, and render them without the interactive
+  // script's SSE/lens/confirm machinery
+  extractCanvasBlocksFromTurns, buildReadOnlyCanvasScript,
   // iwu.4 — confirm/flag endpoint
   handlePostAssumptionConfirm,
   // ssp.1 — server-side Step 1 pre-computation (exported for testing)
