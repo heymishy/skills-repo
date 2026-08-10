@@ -262,6 +262,33 @@ function _notReadyDetail(stage) {
   return 'This feature’s ' + stageName + ' turn is still in progress — it has not produced a finished artefact yet.';
 }
 
+// okf-s1: renders a product-filter dropdown for org-kanban's real,
+// already-tested `?product=<id>` server-side filter (products.js's
+// handleGetOrgKanban), which had no UI control anywhere to trigger it.
+// Reused-as-is for every other {columns} caller (product/tenant scope
+// kanban) -- they never pass data.products, so this returns '' for them,
+// zero change to their existing output. AC4: with 0 or 1 products there is
+// nothing meaningful to choose between, so no dropdown renders at all --
+// matching bmau-s1's own zero-modules-no-checkboxes convention.
+function _renderProductFilter(data) {
+  var products = data.products;
+  if (!Array.isArray(products) || products.length < 2) { return ''; }
+
+  var selectedId = data.selectedProductId || '';
+  var options = ['<option value=""' + (!selectedId ? ' selected' : '') + '>All products</option>']
+    .concat(products.map(function(p) {
+      var sel = (p.id === selectedId) ? ' selected' : '';
+      return '<option value="' + escHtml(p.id) + '"' + sel + '>' + escHtml(p.name) + '</option>';
+    }));
+
+  return '<form method="GET" action="/org/kanban" class="kb-filter-form">' +
+    '<label class="kb-filter-label" for="kb-product-filter">Product</label>' +
+    '<select name="product" id="kb-product-filter" onchange="this.form.submit()">' +
+      options.join('') +
+    '</select>' +
+  '</form>';
+}
+
 function _renderKanbanColumns(data) {
   var columns = data.columns || [];
   // s3.3 (AC4) -- same wipLimits convention applied consistently across all
@@ -469,7 +496,13 @@ function _renderKanbanColumns(data) {
       '.kb-card--validation-failed { border-left-color: var(--red) !important; }',
       '.kb-validation-failed { margin-top: 8px; display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 500; color: var(--red); border: 1px solid var(--red); background: var(--red-soft); border-radius: 5px; padding: 3px 8px; cursor: default; }',
       '.kb-validation-failed:focus-visible { outline: 2px solid var(--red); outline-offset: 2px; }',
+      // okf-s1 -- product filter, org-kanban only (callers that never pass
+      // data.products render nothing here, zero change to their output).
+      '.kb-filter-form { display: flex; align-items: center; gap: 8px; padding: 0 16px 12px; }',
+      '.kb-filter-label { font-size: 12px; font-weight: 600; color: var(--muted); }',
+      '.kb-filter-form select { font: inherit; font-size: 13px; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); }',
     '</style>',
+    _renderProductFilter(data),
     '<div class="kb-board">',
       columnHtml,
     '</div>',
