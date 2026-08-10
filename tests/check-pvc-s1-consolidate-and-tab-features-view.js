@@ -148,7 +148,10 @@ function freshRequire(p) {
     // old a4 journeys-section, one from tmc-s1's taxonomy-section) -- so the
     // section-heading pattern specifically must appear exactly once.
     ['Alpha Module', 'Beta Module'].forEach(function(name) {
-      var headerPattern = new RegExp('<span>' + name + ' <span style="color:var\\(--muted\\);font-weight:400">\\(', 'g');
+      // bmau-s1: the count span now carries class="a4-module-count" (used by
+      // the bulk-assign client JS to update the badge after a move) --
+      // matches on that class rather than the bare inline-style attribute.
+      var headerPattern = new RegExp('<span>' + name + ' <span class="a4-module-count" style="color:var\\(--muted\\);font-weight:400">\\(', 'g');
       var count = (html.match(headerPattern) || []).length;
       assert.strictEqual(count, 1, 'expected "' + name + '" to appear exactly once as a module bucket section heading, got ' + count);
     });

@@ -31,6 +31,9 @@ function createFakeTestDb() {
   var products = [];     // { product_id, tenant_id, name, ...}
   var nextProductSeq = 1;
   var standards = [];    // { standard_id, product_id, org_id, name, content, visibility, created_at }
+  var productModules = [];          // { id, product_id, tenant_id, name, created_at } -- bmau-s1
+  var nextModuleSeq = 1;
+  var featureModuleAssignments = []; // { product_id, tenant_id, feature_slug, module_id } -- bmau-s1
   var nextStandardSeq = 1;
   var people = [];       // { id, created_at } — tir-s1/bri-s3.3
   var nextPersonId = 1;
@@ -139,6 +142,20 @@ function createFakeTestDb() {
       var pid2 = p[0];
       var match2 = products.filter(function(r) { return r.product_id === pid2; }).map(function(r) { return { name: r.name, tenant_id: r.tenant_id }; });
       return Promise.resolve({ rows: match2 });
+    }
+    // bmau-s1: handlePostProductFeature's das-s2 repo-connection gate issues
+    // this exact, separate query shape (product_id AND tenant_id, no name
+    // column) -- previously unmatched here, so the gate always saw an empty
+    // _repoRow and 409'd every first-feature-creation attempt in the
+    // standard local/CI harness, even after a repo was seeded via
+    // /test/seed-product-repo (server.js).
+    if (s.indexOf('SELECT REPO_OWNER, REPO_NAME FROM PRODUCTS WHERE PRODUCT_ID') === 0) {
+      var pidRepoGate = p[0];
+      var tenantIdRepoGate = p[1];
+      var matchRepoGate = products
+        .filter(function(r) { return r.product_id === pidRepoGate && r.tenant_id === tenantIdRepoGate; })
+        .map(function(r) { return { repo_owner: r.repo_owner || null, repo_name: r.repo_name || null }; });
+      return Promise.resolve({ rows: matchRepoGate });
     }
     // bri-s3.4: added alongside handleGetProductKanban / standardsPost's
     // tenant-ownership check.
@@ -252,6 +269,53 @@ function createFakeTestDb() {
       var target = standards.find(function(r) { return r.standard_id === updStdId; });
       if (target) { target.name = updName; target.content = updContent; }
       return Promise.resolve({ rows: target ? [{ standard_id: target.standard_id }] : [], rowCount: target ? 1 : 0 });
+    }
+
+    // ── product_modules / feature_module_assignments (bmau-s1) ───────────
+    // Narrow support for the exact query shapes routes/adapters/modules-
+    // adapter.js issues, matching this file's own stated convention. Only
+    // the branches this story's own E2E spec exercises are implemented
+    // (list, create, bulk-assign, get-assignments) -- renameModule/
+    // deleteModule/reassignEpic are NOT yet supported here and will fall
+    // through to the generic "unhandled query" logged warning + empty rows
+    // below if a future spec calls them; add narrow branches then, mirroring
+    // these, rather than leaving them to silently return wrong results.
+    if (s.indexOf('SELECT ID, NAME, CREATED_AT FROM PRODUCT_MODULES WHERE PRODUCT_ID') === 0) {
+      var lmPid = p[0], lmTid = p[1];
+      var lmRows = productModules
+        .filter(function(m) { return m.product_id === lmPid && m.tenant_id === lmTid; })
+        .sort(function(a, b) { return a.created_at.localeCompare(b.created_at); })
+        .map(function(m) { return { id: m.id, name: m.name, created_at: m.created_at }; });
+      return Promise.resolve({ rows: lmRows });
+    }
+    if (s.indexOf('SELECT ID FROM PRODUCT_MODULES WHERE PRODUCT_ID') === 0) {
+      var cmPid = p[0], cmTid = p[1], cmName = p[2];
+      var cmDup = productModules.filter(function(m) { return m.product_id === cmPid && m.tenant_id === cmTid && m.name === cmName; });
+      return Promise.resolve({ rows: cmDup.map(function(m) { return { id: m.id }; }) });
+    }
+    if (s.indexOf('INSERT INTO PRODUCT_MODULES') === 0) {
+      var newModuleId = 'fake-module-' + (nextModuleSeq++);
+      var newModuleRow = { id: newModuleId, product_id: p[0], tenant_id: p[1], name: p[2], created_at: new Date().toISOString() };
+      productModules.push(newModuleRow);
+      return Promise.resolve({ rows: [{ id: newModuleId, name: newModuleRow.name, created_at: newModuleRow.created_at }] });
+    }
+    if (s.indexOf('SELECT FEATURE_SLUG, MODULE_ID FROM FEATURE_MODULE_ASSIGNMENTS WHERE PRODUCT_ID') === 0) {
+      var gfaPid = p[0], gfaTid = p[1];
+      var gfaRows = featureModuleAssignments.filter(function(r) { return r.product_id === gfaPid && r.tenant_id === gfaTid; });
+      return Promise.resolve({ rows: gfaRows.map(function(r) { return { feature_slug: r.feature_slug, module_id: r.module_id }; }) });
+    }
+    if (s.indexOf('INSERT INTO FEATURE_MODULE_ASSIGNMENTS') === 0) {
+      var baProductId = p[0], baTenantId = p[1], baModuleId = p[2], baSlugs = p[3];
+      var baModuleExists = productModules.some(function(m) { return m.id === baModuleId && m.product_id === baProductId && m.tenant_id === baTenantId; });
+      if (!baModuleExists) { return Promise.resolve({ rows: [] }); }
+      var baReturned = [];
+      (baSlugs || []).forEach(function(slug) {
+        var existing = featureModuleAssignments.find(function(r) { return r.product_id === baProductId && r.feature_slug === slug; });
+        if (existing) { existing.module_id = baModuleId; }
+        else { featureModuleAssignments.push({ product_id: baProductId, tenant_id: baTenantId, feature_slug: slug, module_id: baModuleId }); }
+        baReturned.push({ feature_slug: slug });
+      });
+      return Promise.resolve({ rows: baReturned });
     }
 
     // ── startup migrations (CREATE TABLE / ALTER TABLE) — idempotent no-op ──
