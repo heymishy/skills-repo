@@ -11,7 +11,7 @@
 
 **Before you start:**
 1. This is a scheduled background job with no page of its own. Confirm it via the automated test output.
-2. Ask an engineer to run `node tests/check-dsh-s5-archive-job.js` and share the output.
+2. Ask an engineer to run `node tests/check-dsh-s5-archive-session-turns.js` and share the output.
 
 **Reset between scenarios:** No reset needed.
 
