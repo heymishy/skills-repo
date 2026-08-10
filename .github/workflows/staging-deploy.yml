@@ -198,7 +198,26 @@ jobs:
   # release gate.
   post-deploy-e2e-confirm:
     name: Post-deploy real-staging E2E confirmation
-    needs: deploy-staging
+    # sedf-s1: was `needs: deploy-staging` only, which let this job start
+    # within 0-1s of smoke-test (both depend only on deploy-staging, no
+    # dependency on each other) -- confirmed via job timestamps across 3
+    # independent CI runs, always racing. Both suites then hit the same
+    # freshly-restarted wuce-staging app AND the same Postgres DB (via their
+    # own concurrent purge-e2e-tenants.js calls) at once, right when the app
+    # is coldest. Under that combined load, a different timing-sensitive test
+    # failed each time (auth-stub <5s round-trip, a 60s product-creation
+    # form-interactive wait, a journey-turn endpoint returning an HTML error
+    # page instead of JSON) -- a load-contention signature, not a real
+    # regression. Sequencing after smoke-test removes the race; smoke-test
+    # already gates promote-to-prod, so this ordering doesn't change when
+    # promotion becomes available, only removes the concurrent hit.
+    needs: [deploy-staging, smoke-test]
+    # Run after smoke-test completes regardless of its outcome (pass or
+    # fail) -- this job's own purpose (same-day post-deploy confirmation,
+    # not a release gate) is independent of smoke-test's result; only the
+    # ordering changed, not the "always attempt after a successful deploy"
+    # behaviour the original `needs: deploy-staging` alone provided.
+    if: ${{ always() && needs.deploy-staging.result == 'success' }}
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

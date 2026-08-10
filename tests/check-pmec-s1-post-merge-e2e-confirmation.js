@@ -100,11 +100,17 @@ const scenarioBJob = jobById(e2eJobs, 'scenario-b-staging-e2e');
     return;
   }
   const text = jobText(newJob);
-  const needsDeployStaging = /needs:\s*deploy-staging\s*($|\n)/.test(text);
-  if (needsDeployStaging) {
-    pass('U1', 'post-deploy-e2e-confirm job exists and declares needs: deploy-staging');
+  // sedf-s1: needs: deploy-staging (single-value) OR needs: [deploy-staging, ...]
+  // (array form, listing at least deploy-staging among its entries) -- the
+  // original single-value form is no longer the only valid shape once this
+  // job was sequenced after smoke-test to remove the concurrent post-deploy
+  // load race (see sedf-s1's comment in staging-deploy.yml itself).
+  const needsDeployStagingSingle = /needs:\s*deploy-staging\s*($|\n)/.test(text);
+  const needsDeployStagingArray = /needs:\s*\[[^\]]*\bdeploy-staging\b[^\]]*\]/.test(text);
+  if (needsDeployStagingSingle || needsDeployStagingArray) {
+    pass('U1', 'post-deploy-e2e-confirm job exists and declares deploy-staging among its needs:');
   } else {
-    fail('U1', 'post-deploy-e2e-confirm job does not declare needs: deploy-staging');
+    fail('U1', 'post-deploy-e2e-confirm job does not declare deploy-staging among its needs:');
   }
 })();
 
