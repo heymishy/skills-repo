@@ -18,9 +18,39 @@
 // change to the swap mechanism that stops mutating session.role directly
 // would otherwise silently reintroduce a privilege leak here with no test to
 // catch it. See decisions.md (d4 AC1/AC5 finding).
-
+//
+// rapp-s1 (fix-forward, found via this story's own PR deploy): fjcv-s1's
+// ideate-first E2E path needs 12 real /turn submissions (5 ideate lens turns
+// + 7 pipeline stages) from a single fresh signup, but ftcg-s1's free-tier
+// grant is only 10 credits (CREDITS_FREE_TIER_GRANT) at 1 credit/turn
+// (TURN_CREDIT_COST) -- the 11th turn (test-plan) got a real 402 on real
+// staging, failing the smoke-test job that gates promote-to-prod. The
+// bypass below mirrors the exact double-gate pattern every other staging-
+// only test bypass in this codebase already uses (dss-s1's
+// _isTestEndpointAllowed, serlb-s1's rate-limit bypass, nis-s1's named-
+// identity stub, bjs-s1's webhook stub): a caller-chosen tenantId alone
+// grants nothing -- it must ALSO be unmistakably synthetic (e2e- prefixed)
+// AND the request must carry the matching E2E_STAGING_AUTH_STUB_SECRET
+// header, a staging CI secret never set on production and never known to a
+// real signup. A real user signing up with an e2e--prefixed email gets no
+// benefit from this alone.
+const crypto = require('crypto');
 const { getBalance } = require('../modules/credits');
 const { isEffectivelyAdmin } = require('../modules/impersonation');
+
+const _BYPASS_SECRET_ENV_VAR = 'E2E_STAGING_AUTH_STUB_SECRET';
+const _BYPASS_HEADER_NAME    = 'x-e2e-test-endpoint-bypass';
+
+function _creditsGuardBypassRequested(req, tenantId) {
+  if (!tenantId || !/^e2e-/i.test(tenantId)) return false;
+  const secret = process.env[_BYPASS_SECRET_ENV_VAR] || '';
+  if (!secret) return false;
+  const supplied = (req.headers && req.headers[_BYPASS_HEADER_NAME]) || '';
+  const suppliedBuf = Buffer.from(String(supplied));
+  const secretBuf    = Buffer.from(secret);
+  if (suppliedBuf.length !== secretBuf.length) return false;
+  return crypto.timingSafeEqual(suppliedBuf, secretBuf);
+}
 
 /**
  * creditsGuard — check tenant credit balance before the turn handler runs.
@@ -40,6 +70,9 @@ async function creditsGuard(req, res, next) {
     return next();
   }
   const tenantId = req.session && req.session.tenantId;
+  if (_creditsGuardBypassRequested(req, tenantId)) {
+    return next();
+  }
   const balance = await getBalance(tenantId);
   if (balance <= 0) {
     console.info('credits_balance_check', { tenantId, balance, result: 'blocked' });

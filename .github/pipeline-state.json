@@ -21763,12 +21763,34 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": true,
-          "updatedAt": "2026-08-10T19:30:00.000Z",
+          "updatedAt": "2026-08-10T19:47:27.000Z",
+          "prStatus": "merged"
+        },
+        {
+          "slug": "fjcv-s2",
+          "id": "fjcv-s2",
+          "name": "Credits-guard e2e bypass (fix-forward)",
+          "stage": "branch-complete",
+          "health": "green",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 11,
+            "passing": 11,
+            "artefact": "artefacts/2026-08-10-full-journey-core-flow-e2e/test-plans/fjcv-s2-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-10-full-journey-core-flow-e2e/dor/fjcv-s2-dor.md",
+          "oversightLevel": "medium",
+          "acTotal": 7,
+          "acVerified": 7,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-10T21:00:00.000Z",
           "prStatus": "open"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-10T19:30:00.000Z",
+      "updatedAt": "2026-08-10T21:00:00.000Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",

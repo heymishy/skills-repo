@@ -114,8 +114,17 @@ async function createFirstProduct(request, name) {
  * return the parsed JSON result ({ done, response, artefactContent?, usage }).
  */
 async function submitTurn(request, skillName, sessionId, answer) {
+  // rapp-s1 (fix-forward): this spec's own journeys need up to 12 real turns
+  // from one fresh signup, more than ftcg-s1's 10-credit free-tier grant
+  // covers -- the credits-guard bypass header lets the real staging-only
+  // credits-guard skip its balance check for this e2e--prefixed tenant,
+  // exactly the same double-gate pattern (secret header + e2e- prefix) every
+  // other staging-only test bypass in this codebase already uses. Empty
+  // object when the secret isn't configured (a normal contributor run) --
+  // the guard then falls back to its real balance check, unchanged.
   const res = await request.post(`/api/skills/${skillName}/sessions/${sessionId}/turn`, {
-    data: { answer: answer || 'Begin the session.' }
+    data: { answer: answer || 'Begin the session.' },
+    headers: testEndpointBypassHeaders()
   });
   expect(res.status(), `turn submission for ${skillName}`).toBe(200);
   return res.json();
