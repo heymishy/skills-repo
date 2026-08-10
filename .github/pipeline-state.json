@@ -21456,6 +21456,88 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "epics": []
+    },
+    {
+      "slug": "2026-08-10-standards-management-ui-gap",
+      "name": "Standards management has a fully-built backend but no way to reach it by clicking anything",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "smug-s1",
+          "id": "smug-s1",
+          "name": "Standards tab and standardsList query fix",
+          "stage": "dor-signed-off",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-10-standards-management-ui-gap/review/smug-s1-review-1.md",
+          "testPlan": {
+            "status": "not-started",
+            "totalTests": 6,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-10-standards-management-ui-gap/test-plans/smug-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-10-standards-management-ui-gap/dor/smug-s1-dor.md",
+          "oversightLevel": "medium",
+          "acTotal": 6,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-09T21:42:29.825Z",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-10T00:29:43.010Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
+    },
+    {
+      "slug": "2026-08-10-bulk-module-assignment-ui-gap",
+      "name": "Bulk-assign-to-module has a working, tested backend but no UI trigger anywhere",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "bmau-s1",
+          "id": "bmau-s1",
+          "name": "Bulk-assign checkbox UI",
+          "stage": "dor-signed-off",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-10-bulk-module-assignment-ui-gap/review/bmau-s1-review-1.md",
+          "testPlan": {
+            "status": "not-started",
+            "totalTests": 5,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-10-bulk-module-assignment-ui-gap/test-plans/bmau-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-10-bulk-module-assignment-ui-gap/dor/bmau-s1-dor.md",
+          "oversightLevel": "medium",
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": true,
+          "e2eToolingRequired": true,
+          "updatedAt": "2026-08-09T21:42:29.825Z",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-10T00:29:43.010Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -21519,5 +21601,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-08-09T21:37:30.639Z"
+  "updatedAt": "2026-08-10T00:29:43.010Z"
 }
