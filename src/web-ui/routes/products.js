@@ -1723,7 +1723,15 @@ async function handleGetOrgKanban(req, res, _next, pool, posthog) {
     featureCount: allJourneyCount
   });
 
-  var html = _kanbanView.renderKanban({ columns: columns });
+  // okf-s1: thread the full, unfiltered product list + current filter value
+  // through to renderKanban so it can render a product-filter dropdown --
+  // productFilter/prodRows.filter above already did the real filtering
+  // correctly; this only adds the UI trigger that was missing.
+  var html = _kanbanView.renderKanban({
+    columns: columns,
+    products: prodRows.map(function(p) { return { id: p.product_id, name: p.name }; }),
+    selectedProductId: productFilter || null
+  });
   // kbsf-s1: wrap via renderShell -- see product/tenant scope's identical
   // comment for the full root-cause explanation.
   _sendKanbanHtml(res, _htmlShell.renderShell({

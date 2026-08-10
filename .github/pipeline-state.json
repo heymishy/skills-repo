@@ -21668,37 +21668,37 @@
     {
       "slug": "2026-08-10-org-kanban-filter-ui-gap",
       "name": "Org kanban has a working, tested product filter on the backend but no UI control to trigger it",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "slug": "okf-s1",
           "id": "okf-s1",
           "name": "Product filter dropdown for org kanban",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-10-org-kanban-filter-ui-gap/review/okf-s1-review-1.md",
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "totalTests": 5,
-            "passing": 0,
+            "passing": 5,
             "artefact": "artefacts/2026-08-10-org-kanban-filter-ui-gap/test-plans/okf-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-10-org-kanban-filter-ui-gap/dor/okf-s1-dor.md",
           "oversightLevel": "low",
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-10T01:49:46.321Z",
+          "updatedAt": "2026-08-10T04:44:11.576Z",
           "prStatus": "none"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-10T01:49:46.321Z",
+      "updatedAt": "2026-08-10T04:44:11.702Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
@@ -21809,5 +21809,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-08-10T04:19:07.335Z"
+  "updatedAt": "2026-08-10T04:44:11.704Z"
 }

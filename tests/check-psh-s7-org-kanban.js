@@ -86,8 +86,14 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     const req = { session: { tenantId: 'tx', login: 'u' }, query: { product: 'pA' } };
     const res = makeMockRes();
     await handleGetOrgKanban(req, res, null, pool, ph);
-    assert(res._raw && res._raw.includes('Product A'), 'Expected Product A in filtered rendered board');
-    assert(!res._raw.includes('Product B'), 'Expected Product B excluded from filtered rendered board');
+    // okf-s1: card titles are "ProductName: cardLabel" (_aggregateJourneysByStage),
+    // a bounded shape distinct from the product-filter dropdown's own plain
+    // "Product B" option text -- okf-s1 added a dropdown that legitimately
+    // lists every product regardless of which one is currently filtered, so a
+    // bare `!includes('Product B')` check now false-fails on that dropdown
+    // text even though Product B's own journey CARD is correctly excluded.
+    assert(res._raw && res._raw.includes('Product A: f1'), 'Expected Product A\'s journey card in filtered rendered board');
+    assert(!res._raw.includes('Product B: f4') && !res._raw.includes('Product B: f5'), 'Expected Product B\'s journey cards excluded from filtered rendered board');
     pass('GET org kanban with product filter shows only the filtered product');
   } catch(e) { fail('GET org kanban with product filter shows only the filtered product', e); }
 
