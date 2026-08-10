@@ -170,7 +170,7 @@ console.log('\n[cli-outer-loop] NFR2 — Portability: bin/skills first line is #
 // ── NFR3 — no new deps in package.json ───────────────────────────────────────
 console.log('\n[cli-outer-loop] NFR3 — No new deps: package.json deps unchanged from baseline');
 {
-  const BASELINE_DEPS     = ['pino']; // pino added by obs-1 for server logging
+  const BASELINE_DEPS     = ['pino', '@upstash/redis', 'bcrypt', 'mermaid', 'passport', 'passport-magic-login', 'pg', 'posthog-node', 'resend', 'stripe']; // pino added by obs-1 for server logging; the rest are real, already-shipped deps from later features (srf-s1 Redis session fallback, lab-s2.2/lab-s3.2 password auth, mermaid diagram rendering, tir-s2-era passport auth, psh-s1-era Postgres, pla-s1 analytics, email, and lab-s3.2 billing) -- this NFR was scoped to catch THIS feature (cdg.1) sneaking in unneeded deps, not to freeze the whole repo's dependency set forever
   const BASELINE_DEV_DEPS = ['@playwright/test', 'jsdom'];
   let pkg = null;
   try { pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8')); } catch (_) {}
