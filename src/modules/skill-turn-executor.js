@@ -565,9 +565,11 @@ function _callCopilot(systemPrompt, history, currentInput, token, maxTokens, tim
 /**
  * bri-s3.1: resolve a mock-gateway response into the same shape _callAnthropic
  * resolves with ({ text, usage }), so callers don't need to branch on source.
+ * mgtc-s1: turnIndex lets a scripted, multi-response fixture return a
+ * different reply per turn instead of the same static response forever.
  */
-function _resolveMockGatewayResponse(stage, model, scenarioName) {
-  const mockResult = mockLlmGateway.getMockResponse(stage, model || getActiveModel(), scenarioName || 'success');
+function _resolveMockGatewayResponse(stage, model, scenarioName, turnIndex) {
+  const mockResult = mockLlmGateway.getMockResponse(stage, model || getActiveModel(), scenarioName || 'success', turnIndex);
   return Promise.resolve({
     text: mockResult.text,
     usage: mockResult.usage || { model: model || 'mock', input_tokens: 0, output_tokens: 0, cache_read_tokens: 0, cache_creation_tokens: 0 }
@@ -577,9 +579,10 @@ function _resolveMockGatewayResponse(stage, model, scenarioName) {
 /**
  * bri-s3.1: stream a mock-gateway response through the same onChunk/onFirstChunk
  * contract as the real streaming callers, with no real network round-trip.
+ * mgtc-s1: turnIndex, same as _resolveMockGatewayResponse above.
  */
-function _streamMockGatewayResponse(stage, model, scenarioName, onChunk, onFirstChunk) {
-  const mockResult = mockLlmGateway.getMockResponse(stage, model || getActiveModel(), scenarioName || 'success');
+function _streamMockGatewayResponse(stage, model, scenarioName, onChunk, onFirstChunk, turnIndex) {
+  const mockResult = mockLlmGateway.getMockResponse(stage, model || getActiveModel(), scenarioName || 'success', turnIndex);
   const text = mockResult.text || '';
   if (typeof onFirstChunk === 'function') { onFirstChunk(0); }
   if (typeof onChunk === 'function' && text) { onChunk(text); }
@@ -601,6 +604,12 @@ function _streamMockGatewayResponse(stage, model, scenarioName, onChunk, onFirst
  * network call is made. Omitting `meta` (all existing callers) leaves behaviour
  * unchanged; a caller must explicitly opt in with a stage name to be mocked.
  *
+ * mgtc-s1: the mock-routing branch passes `history.length` as the turn index,
+ * letting a scripted fixture (see mock-llm-gateway.js's `responses` array)
+ * return a different reply for turn 0, 1, 2, ... instead of the same static
+ * response on every turn. `history` was already a parameter of this function
+ * before this change — no new plumbing was needed above this layer.
+ *
  * @param {string}  systemPrompt   — full system prompt (SKILL.md + product context + web UI framing)
  * @param {Array}   history        — array of { role: 'user'|'assistant', content: string }
  * @param {string}  currentInput   — current user input (or 'Begin the session.' for the first turn)
@@ -610,7 +619,7 @@ function _streamMockGatewayResponse(stage, model, scenarioName, onChunk, onFirst
  */
 function skillTurnExecutor(systemPrompt, history, currentInput, token, meta) {
   if (meta && meta.stage && mockLlmGateway.isMockGatewayEnabled()) {
-    return _resolveMockGatewayResponse(meta.stage, meta.model, meta.scenarioName);
+    return _resolveMockGatewayResponse(meta.stage, meta.model, meta.scenarioName, (history || []).length);
   }
 
   const provider  = (process.env.SKILL_EXECUTOR_PROVIDER || 'anthropic').toLowerCase();
@@ -639,6 +648,10 @@ function skillTurnExecutor(systemPrompt, history, currentInput, token, meta) {
  * round-trip) instead of any real provider. Omitting `options.stage` (all existing
  * callers) leaves behaviour unchanged.
  *
+ * mgtc-s1: same turnIndex threading as skillTurnExecutor() above — passes
+ * `history.length` into the mock resolver so a scripted fixture can vary its
+ * response per turn.
+ *
  * @param {string}   systemPrompt
  * @param {Array}    history
  * @param {string}   currentInput
@@ -653,7 +666,7 @@ function skillTurnExecutorStream(systemPrompt, history, currentInput, token, onC
   const modelOverride  = options && options.model;
 
   if (options && options.stage && mockLlmGateway.isMockGatewayEnabled()) {
-    return _streamMockGatewayResponse(options.stage, modelOverride, options.scenarioName, onChunk, onFirstChunk);
+    return _streamMockGatewayResponse(options.stage, modelOverride, options.scenarioName, onChunk, onFirstChunk, (history || []).length);
   }
 
   const provider       = (process.env.SKILL_EXECUTOR_PROVIDER || 'anthropic').toLowerCase();

@@ -21709,37 +21709,37 @@
     {
       "slug": "2026-08-10-mock-gateway-turn-index-cycling",
       "name": "The mock LLM gateway returns the identical response on every turn, blocking multi-turn skill progression in mock mode",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "slug": "mgtc-s1",
           "id": "mgtc-s1",
           "name": "Turn-index-aware mock responses",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-10-mock-gateway-turn-index-cycling/review/mgtc-s1-review-1.md",
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "totalTests": 6,
-            "passing": 0,
+            "passing": 6,
             "artefact": "artefacts/2026-08-10-mock-gateway-turn-index-cycling/test-plans/mgtc-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-10-mock-gateway-turn-index-cycling/dor/mgtc-s1-dor.md",
           "oversightLevel": "medium",
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-10T02:20:59.755Z",
+          "updatedAt": "2026-08-10T02:36:19.910Z",
           "prStatus": "none"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-10T02:20:59.755Z",
+      "updatedAt": "2026-08-10T02:37:01.430Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
@@ -21809,5 +21809,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-08-10T02:20:59.755Z"
+  "updatedAt": "2026-08-10T02:37:01.432Z"
 }
