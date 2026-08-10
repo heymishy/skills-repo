@@ -21538,6 +21538,47 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "epics": []
+    },
+    {
+      "slug": "2026-08-10-resume-diagram-history-fix",
+      "name": "Diagrams generated during a live /ideate session never appear when resuming/viewing that stage history",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "drh-s1",
+          "id": "drh-s1",
+          "name": "Resume history diagram rendering fix",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-10-resume-diagram-history-fix/review/drh-s1-review-1.md",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 7,
+            "passing": 7,
+            "artefact": "artefacts/2026-08-10-resume-diagram-history-fix/test-plans/drh-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-10-resume-diagram-history-fix/dor/drh-s1-dor.md",
+          "oversightLevel": "medium",
+          "acTotal": 6,
+          "acVerified": 6,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-10T00:22:00.694Z",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-10T00:22:00.694Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
