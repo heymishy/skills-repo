@@ -22002,6 +22002,44 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "epics": []
+    },
+    {
+      "slug": "2026-08-11-standards-tab-nav-and-breadcrumb-fix",
+      "name": "Fix the Standards tab missing sidebar nav and duplicate breadcrumb",
+      "stage": "branch-complete",
+      "health": "green",
+      "metrics": [],
+      "updatedAt": "2026-08-10T21:24:25.736Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": [],
+      "stories": [
+        {
+          "slug": "rapp-s2",
+          "id": "rapp-s2",
+          "name": "Standards tab nav and breadcrumb fix",
+          "stage": "branch-complete",
+          "health": "green",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 7,
+            "passing": 7,
+            "artefact": "artefacts/2026-08-11-standards-tab-nav-and-breadcrumb-fix/test-plans/rapp-s2-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-11-standards-tab-nav-and-breadcrumb-fix/dor/rapp-s2-dor.md",
+          "oversightLevel": "low",
+          "acTotal": 7,
+          "acVerified": 7,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-10T21:24:25.736Z",
+          "prStatus": "none"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
