@@ -21701,6 +21701,44 @@
       "epics": []
     },
     {
+      "slug": "2026-08-10-ideate-resume-panels-and-wrap-up",
+      "name": "Fix three /ideate UX gaps found via live Chrome staging review — resume panel loss, no way to signal completion, cramped canvas layout",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "rapp-s1",
+          "id": "rapp-s1",
+          "name": "Ideate resume panels and wrap-up button",
+          "stage": "branch-complete",
+          "health": "green",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 9,
+            "passing": 9,
+            "artefact": "artefacts/2026-08-10-ideate-resume-panels-and-wrap-up/test-plans/rapp-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-10-ideate-resume-panels-and-wrap-up/dor/rapp-s1-dor.md",
+          "oversightLevel": "medium",
+          "acTotal": 9,
+          "acVerified": 9,
+          "hasLayoutDependentGaps": true,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-10T20:30:00.000Z",
+          "prStatus": "open"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-10T20:30:00.000Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
+    },
+    {
       "slug": "2026-08-10-full-journey-core-flow-e2e",
       "name": "E2E coverage confirming both journey entry points reach definition-of-ready complete and every major stage resumes correctly",
       "stage": "branch-complete",

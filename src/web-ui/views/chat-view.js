@@ -122,6 +122,21 @@ function renderChat(data) {
   // there is nothing to submit and no live SSE pump to wire up when
   // rendering a durable, already-completed stage. Default (readOnly
   // falsy/absent) is unchanged from before this option existed.
+  // rapp-s1: /ideate has no fixed turn count before the model decides to
+  // write up the artefact -- an operator who has read through several
+  // lenses and sees no explicit "I'm ready to finish" control has no way to
+  // signal that other than guessing they should keep replying. This button
+  // submits a canned "ready to finish" turn through the same sendTurn() path
+  // a typed reply uses (see the client-side handler in skills.js), so the
+  // model (real or mocked) decides how to respond exactly as it would to a
+  // typed equivalent -- this button doesn't force completion, it just makes
+  // the "I'm done, wrap it up" signal discoverable. Hidden once the stage is
+  // done (session.done) since the journey-gate panel below then already
+  // shows the next-step affordance.
+  const wrapUpBtn = (data.isIdeate && !data.done)
+    ? '<button type="button" id="sw-wrap-ideation-btn" class="sw-btn" style="margin-left:8px">Ready to finish? Wrap up ideation →</button>'
+    : '';
+
   const footerHtml = data.readOnly ? '' : (
     '<footer class="sw-chat-foot">' +
       confirmBanner +
@@ -131,6 +146,7 @@ function renderChat(data) {
           '<div class="sw-chat-input-row">' +
             '<span style="font-size:12px;color:var(--muted)">Press ⌘↵ or Ctrl+↵ to send</span>' +
             btn('primary', 'Send →', { type: 'submit' }) +
+            wrapUpBtn +
           '</div>' +
         '</div>' +
       '</form>' +
@@ -428,7 +444,19 @@ function renderChat(data) {
             // element painted on top of the page would otherwise cover a
             // sibling header/button left in normal flow, making the button
             // unclickable once maximised.
-            '<div id="canvas-section" style="display:flex;flex-direction:column;flex:1 1 auto;min-height:0">',
+            // rapp-s1: min-height was 0 (deliberately, to let it shrink) --
+            // fine while conditions/assumptions were always empty (before
+            // rapp-s1's own resume-hydration fix and isc-s1's mock-content
+            // fix), since flex:0 0 auto siblings with real content up to
+            // max-height:28%/42% barely took any space. With real content
+            // now populating those siblings, canvas-section could shrink to
+            // a sliver with several lens turns' worth of assumptions/
+            // conditions above it. A min-height floor (matching the
+            // non-ideate branch's own #canvas-panel min-height:200px
+            // convention just below) keeps the canvas usable regardless of
+            // how tall the two panels above it grow, while flex:1 1 auto
+            // still lets it grow larger when there's room.
+            '<div id="canvas-section" style="display:flex;flex-direction:column;flex:1 1 auto;min-height:240px">',
               '<div class="cv-section-head">',
                 '<span class="cv-section-label">Canvas</span>',
                 '<div style="display:flex;align-items:center;gap:6px">',

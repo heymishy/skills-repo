@@ -2830,6 +2830,33 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
     canvasBlocksInitScript = '<script>window.__SW_INITIAL_CANVAS_BLOCKS__=' + safeCanvasBlocks + ';</script>';
   }
 
+  // rapp-s1 (resume assumption/condition panels): session.assumptionCards and
+  // session.conditionItems are objects keyed by id (set during live streaming --
+  // see handlePostTurnStreamHtml's assumption/condition marker scan below) and
+  // ARE already correctly restored on resume by mergeRedisSessionData (it's
+  // denylist-based, restores everything except accessToken/systemPrompt/
+  // contextFiles/precomputedStep1). But exactly like canvasBlocks before the a4
+  // fix above, that restored data was never being read here to seed the initial
+  // HTML -- the CONDITIONS/ASSUMPTIONS panels are otherwise only ever populated
+  // reactively via live SSE assumptionCard/conditionItem events, so a page
+  // reload/session-resume silently rendered them empty even with real markers
+  // present in the resumed conversation text. Mirrors canvasBlocksInitScript
+  // above exactly, converting the id-keyed objects to arrays for the client's
+  // appendAssumptionCard/appendConditionItem functions (same shape live SSE
+  // events already pass them).
+  var assumptionCardsInitScript = '';
+  if (isIdeate && session.assumptionCards && Object.keys(session.assumptionCards).length) {
+    var safeAssumptionCards = JSON.stringify(Object.values(session.assumptionCards))
+      .replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+    assumptionCardsInitScript = '<script>window.__SW_INITIAL_ASSUMPTION_CARDS__=' + safeAssumptionCards + ';</script>';
+  }
+  var conditionItemsInitScript = '';
+  if (isIdeate && session.conditionItems && Object.keys(session.conditionItems).length) {
+    var safeConditionItems = JSON.stringify(Object.values(session.conditionItems))
+      .replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026');
+    conditionItemsInitScript = '<script>window.__SW_INITIAL_CONDITION_ITEMS__=' + safeConditionItems + ';</script>';
+  }
+
   // csd-s1/csd-s3/csd-s4: mermaid client bundle — loaded on any page whose
   // skill can emit a diagram content-block (/ideate, /design, /definition).
   // Loaded via a plain <script src> (ADR-027: ordinary application code, no
@@ -3897,6 +3924,20 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
     '    if(ta) ta.value = "";',
     '    sendTurn(answer);',
     '  });',
+    '  // rapp-s1: "Wrap up ideation" quick action -- submits a canned',
+    '  // ready-to-finish reply through the same sendTurn() path a typed',
+    '  // reply uses, so the operator has an explicit, discoverable way to',
+    '  // signal readiness instead of having to intuit it from the model\'s',
+    '  // own conversational phrasing.',
+    '  var wrapIdeationBtn = document.getElementById("sw-wrap-ideation-btn");',
+    '  if(wrapIdeationBtn) {',
+    '    wrapIdeationBtn.addEventListener("click", function(){',
+    '      wrapIdeationBtn.style.display = "none";',
+    '      var msg = "Yes, please write up the ideation artefact now.";',
+    '      appendBubble("user", lightMd(msg));',
+    '      sendTurn(msg);',
+    '    });',
+    '  }',
     '  // Initialize artefact panel from server-rendered session (non-ideate, done on page load)',
     '  if(!IS_IDEATE && typeof __SW_INITIAL_ARTEFACT__ !== "undefined" && __SW_INITIAL_ARTEFACT__) {',
     '    updateDraftPanel(__SW_INITIAL_ARTEFACT__);',
@@ -3907,6 +3948,15 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
     '  // SSE canvasBlock events and would render empty on a cold reload.',
     '  if(SUPPORTS_CANVAS && typeof __SW_INITIAL_CANVAS_BLOCKS__ !== "undefined" && __SW_INITIAL_CANVAS_BLOCKS__ && __SW_INITIAL_CANVAS_BLOCKS__.length) {',
     '    __SW_INITIAL_CANVAS_BLOCKS__.forEach(function(block) { appendCanvasBlock(block); });',
+    '  }',
+    '  // rapp-s1 (resume assumption/condition panels): same rehydration pattern',
+    '  // as the canvas block above -- these cards are otherwise only ever',
+    '  // created reactively via live SSE assumptionCard/conditionItem events.',
+    '  if(IS_IDEATE && typeof __SW_INITIAL_ASSUMPTION_CARDS__ !== "undefined" && __SW_INITIAL_ASSUMPTION_CARDS__ && __SW_INITIAL_ASSUMPTION_CARDS__.length) {',
+    '    __SW_INITIAL_ASSUMPTION_CARDS__.forEach(function(card) { appendAssumptionCard(card); });',
+    '  }',
+    '  if(IS_IDEATE && typeof __SW_INITIAL_CONDITION_ITEMS__ !== "undefined" && __SW_INITIAL_CONDITION_ITEMS__ && __SW_INITIAL_CONDITION_ITEMS__.length) {',
+    '    __SW_INITIAL_CONDITION_ITEMS__.forEach(function(item) { appendConditionItem(item); });',
     '  }',
     '  // dic.5: Apply-changes dispatch ─────────────────────────────────────────',
     '  function applyChanges() {',
@@ -4052,10 +4102,11 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
     }
   }
 
-  var bodyContent = backLinkHtml + navigatorHtml + artefactInitScript + phaseModelInitScript + canvasBlocksInitScript + mermaidAssetScript + _renderChatView({
+  var bodyContent = backLinkHtml + navigatorHtml + artefactInitScript + phaseModelInitScript + canvasBlocksInitScript + assumptionCardsInitScript + conditionItemsInitScript + mermaidAssetScript + _renderChatView({
     skillName:         skillName,
     skillLabel:        skillName,
     isIdeate:          isIdeate,
+    done:              !!session.done,
     featureSlug:       session.featureSlug || '',
     sessionId:         sessionId,
     questionIndex:     priorQA.length + 1,
