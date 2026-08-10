@@ -26,6 +26,11 @@ function lightMarkdown(text) {
  * @param {number} data.totalQuestions
  * @param {string} data.currentQuestion         text of next question
  * @param {Array<{question, answer, modelResponse}>} data.priorQA
+ *   rht-s1: `question` (rendered under "Skill") and `answer` (rendered under
+ *   "You") are each independently optional -- an empty string suppresses
+ *   that bubble entirely rather than rendering blank. A lone trailing
+ *   assistant turn uses `{question: content, answer: ''}`; a lone leading
+ *   user turn uses `{question: '', answer: content}`.
  * @param {Array<{title, body, state}>} data.draftSections   state ∈ 'drafted'|'pending'|'empty'
  * @param {boolean} data.pendingConfirmation
  * @param {boolean} [data.readOnly]              dsh-s3: when truthy, suppresses the
@@ -52,13 +57,15 @@ function renderChat(data) {
         '</div>'
       );
     }
-    messages.push(
-      '<div class="sw-chat-msg msg--user">' +
-        '<div class="sw-avatar">' + escHtml((data.userInitial || 'M')) + '</div>' +
-        '<div class="sw-chat-body"><div class="sw-chat-from">You</div>' +
-        '<div class="sw-chat-text">' + lightMarkdown(qa.answer) + '</div></div>' +
-      '</div>'
-    );
+    if (qa.answer) {
+      messages.push(
+        '<div class="sw-chat-msg msg--user">' +
+          '<div class="sw-avatar">' + escHtml((data.userInitial || 'M')) + '</div>' +
+          '<div class="sw-chat-body"><div class="sw-chat-from">You</div>' +
+          '<div class="sw-chat-text">' + lightMarkdown(qa.answer) + '</div></div>' +
+        '</div>'
+      );
+    }
     if (qa.modelResponse) {
       messages.push(
         '<div class="sw-chat-insight">' +
