@@ -917,10 +917,19 @@ async function handleGetJourneyStageView(req, res) {
     // Reuses the exact turns->priorQA pairing convention from
     // routes/skills.js's _renderChatPage (lines ~2380-2395): consume
     // assistant+user pairs together; a lone user turn (no preceding
-    // assistant) falls back to an empty-question answer; a trailing
-    // unanswered assistant turn is intentionally dropped rather than
-    // surfaced as data.currentQuestion -- AC5 requires no live
-    // "current question" affordance in this read-only view.
+    // assistant) falls back to an empty-question answer. rht-s1: a
+    // trailing assistant turn with no following reply is NOT dropped --
+    // this route is only ever reached for an already-completed stage (see
+    // the !artefactRelPath redirect above), so a lone trailing assistant
+    // turn is the skill's genuine final recorded message, not a "still
+    // awaiting an answer" state. readOnly:true (passed to renderChat
+    // below) already fully suppresses any interactive "type your answer"
+    // affordance regardless of turn content, so displaying this turn's
+    // content here is safe and shows the real historical record instead
+    // of silently discarding it. Placed in `question` (not `answer`) so
+    // chat-view.js's renderChat attributes it to the Skill avatar, not
+    // "You" -- putting assistant content in `answer` would misattribute
+    // the skill's own message to the operator.
     var _priorQA = [];
     for (var _dshI = 0; _dshI < _dshTurns.length; _dshI++) {
       var _dshTurn = _dshTurns[_dshI];
@@ -929,8 +938,9 @@ async function handleGetJourneyStageView(req, res) {
         if (_dshNext && _dshNext.role === 'user') {
           _priorQA.push({ question: _dshTurn.content, answer: _dshNext.content, modelResponse: '' });
           _dshI++;
+        } else {
+          _priorQA.push({ question: _dshTurn.content, answer: '', modelResponse: '' });
         }
-        // else: last unanswered assistant turn -- dropped, per AC5 above.
       } else if (_dshTurn.role === 'user') {
         _priorQA.push({ question: '', answer: _dshTurn.content, modelResponse: '' });
       }

@@ -21620,6 +21620,47 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "epics": []
+    },
+    {
+      "slug": "2026-08-10-resume-history-trailing-turn-fix",
+      "name": "A completed stage resumed history silently drops its final assistant message when nothing followed it",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "rht-s1",
+          "id": "rht-s1",
+          "name": "Trailing assistant turn shown in resumed history",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-10-resume-history-trailing-turn-fix/review/rht-s1-review-1.md",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 5,
+            "passing": 5,
+            "artefact": "artefacts/2026-08-10-resume-history-trailing-turn-fix/test-plans/rht-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-10-resume-history-trailing-turn-fix/dor/rht-s1-dor.md",
+          "oversightLevel": "low",
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-10T01:45:02.839Z",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-10T01:45:02.839Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -21683,5 +21724,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-08-10T01:04:14.924Z"
+  "updatedAt": "2026-08-10T01:45:02.839Z"
 }
