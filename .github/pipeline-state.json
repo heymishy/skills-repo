@@ -21705,6 +21705,47 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "epics": []
+    },
+    {
+      "slug": "2026-08-10-mock-gateway-turn-index-cycling",
+      "name": "The mock LLM gateway returns the identical response on every turn, blocking multi-turn skill progression in mock mode",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "mgtc-s1",
+          "id": "mgtc-s1",
+          "name": "Turn-index-aware mock responses",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-10-mock-gateway-turn-index-cycling/review/mgtc-s1-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-10-mock-gateway-turn-index-cycling/test-plans/mgtc-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-10-mock-gateway-turn-index-cycling/dor/mgtc-s1-dor.md",
+          "oversightLevel": "medium",
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-10T02:20:59.755Z",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-10T02:20:59.755Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -21768,5 +21809,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-08-10T01:58:37.651Z"
+  "updatedAt": "2026-08-10T02:20:59.755Z"
 }

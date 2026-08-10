@@ -29,7 +29,7 @@ So that **I can confirm diagram rendering (live and resumed/historical) works en
 
 ## Dependencies
 
-- **Upstream:** None — extends already-shipped mock-gateway infrastructure (`bri-s3.1`) and diagram-emission instructions (`csd-s1`–`csd-s4`).
+- **Upstream:** `mgtc-s1` (mock-gateway turn-index-aware response cycling, DoR-ready, not yet implemented) — added 2026-08-10 after operator live-staging validation found that a static per-scenario fixture (this story's original scope) cannot actually be exercised end-to-end through a real multi-turn `/ideate` session: the mock gateway returns the identical response on every turn regardless of fixture richness, so a session gets stuck on lens 1 of 4 with "no way to proceed" before ever reaching this story's later diagram markers. `mgtc-s1` ships the turn-index mechanism this story's `responses`-array fixture content depends on. Also still extends already-shipped mock-gateway infrastructure (`bri-s3.1`) and diagram-emission instructions (`csd-s1`–`csd-s4`).
 - **Downstream:** None known. Does not block or require `drh-s1` (already merged) — this is a follow-up validation-coverage improvement, not a fix to it.
 
 ## Acceptance Criteria
