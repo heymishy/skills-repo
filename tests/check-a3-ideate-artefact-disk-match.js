@@ -62,7 +62,13 @@ function extractMarkerTexts(text) {
 (async function() {
 
   var fixture = JSON.parse(fs.readFileSync(FIXTURE_PATH, 'utf8'));
-  var markerTexts = extractMarkerTexts(fixture.response);
+  // isc-s1: ideate.success.json moved to mgtc-s1's `responses` array format
+  // (one entry per real conversational turn) so a mock /ideate session can
+  // actually cycle through lenses instead of repeating turn 0 forever.
+  // This test exercises turn 0's content specifically (Lens A / Opportunity
+  // map) -- the same content the fixture always had at its single top-level
+  // `response` field before this change.
+  var markerTexts = extractMarkerTexts(fixture.responses[0].response);
 
   // ===========================================================================
   // AC4 precondition -- the E2E spec's own mock fixture really does contain a
@@ -120,7 +126,7 @@ function extractMarkerTexts(text) {
     skills.registerHtmlSession(sid, '/tmp/a3-ideate-2', 'ideate', {});
 
     var block1 = skills.parseCanvasBlock(markerTexts[0]);
-    var block2 = skills.parseCanvasBlock(markerTexts[0]); // same deterministic fixture, reused on turn 2 (mock gateway is stateless per session)
+    var block2 = skills.parseCanvasBlock(markerTexts[0]); // same turn-0 marker reused for this synthetic two-block accumulation check -- this test asserts canvasBlocks array persistence, not cross-turn content variation (see check-isc-s1 for that)
     var session = skills._getHtmlSession(sid);
     session.canvasBlocks = [block1];
     session.canvasBlocks.push(block2); // turn 2 appends -- new element, matching AC3's "not a static/frozen canvas"

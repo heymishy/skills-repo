@@ -1,10 +1,79 @@
 {
   "stage": "ideate",
   "scenarioName": "success",
-  "model": "claude-sonnet-4.6",
-  "response": "Let's map out the opportunity space for your idea.\n\n**Lens A -- Opportunity map**\n\nHere's an initial breakdown of where the biggest opportunities look to be, based on what you've shared.\n\n---CANVAS-JSON: {\"type\":\"cluster-tree\",\"title\":\"Opportunity map\",\"content\":{\"clusters\":[\"Capture problem: context lost after conversations\",\"Handoff problem: no structured artefact for downstream steps\",\"Discovery problem: no fast path from raw idea to definition\"]}}---\n\nLet me know if any of these resonate, or if there's a different angle you would like to explore next.",
-  "usage": {
-    "input_tokens": 380,
-    "output_tokens": 150
-  }
+  "model": "mock",
+  "responses": [
+    {
+      "response": "Let's map out the opportunity space for your idea.\n\n**Lens A -- Opportunity map**\n\nHere's an initial breakdown of where the biggest opportunities look to be, based on what you've shared.\n\n---CANVAS-JSON: {\"type\":\"cluster-tree\",\"title\":\"Opportunity map\",\"content\":{\"clusters\":[\"Capture problem: context lost after conversations\",\"Handoff problem: no structured artefact for downstream steps\",\"Discovery problem: no fast path from raw idea to definition\"]}}---\n\nOne planning assumption underlies this framing: teams currently start from a blank page at /discovery because nothing upstream captures the raw idea in a structured way.\n\n---ASSUMPTION-JSON: {\"id\":\"blank-page-discovery\",\"text\":\"Teams currently start /discovery from a blank page because no upstream step captures the raw idea in a structured, reusable form.\",\"type\":\"desirability\",\"risk\":\"medium\",\"knowness\":\"known-unknown\"}---\n\nLet me know if any of these resonate, or if there's a different angle you would like to explore next.",
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 248
+      },
+      "model": "mock"
+    },
+    {
+      "response": "Let's map out the opportunity space for your idea.\n\n**Lens A -- Opportunity map**\n\nHere's an initial breakdown of where the biggest opportunities look to be, based on what you've shared.\n\n---CANVAS-JSON: {\"type\":\"cluster-tree\",\"title\":\"Opportunity map\",\"content\":{\"clusters\":[\"Capture problem: context lost after conversations\",\"Handoff problem: no structured artefact for downstream steps\",\"Discovery problem: no fast path from raw idea to definition\"]}}---\n\nOne planning assumption underlies this framing: teams currently start from a blank page at /discovery because nothing upstream captures the raw idea in a structured way.\n\n---ASSUMPTION-JSON: {\"id\":\"blank-page-discovery\",\"text\":\"Teams currently start /discovery from a blank page because no upstream step captures the raw idea in a structured, reusable form.\",\"type\":\"desirability\",\"risk\":\"medium\",\"knowness\":\"known-unknown\"}---\n\nLet me know if any of these resonate, or if there's a different angle you would like to explore next.",
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 248
+      },
+      "model": "mock"
+    },
+    {
+      "response": "Good -- let's stress-test that with an assumption inventory.\n\n**Lens B -- Assumption inventory**\n\nHere are the assumptions this opportunity rests on, ranked by risk:\n\n---ASSUMPTION-JSON: {\"id\":\"structured-handoff-value\",\"text\":\"A structured, machine-readable handoff artefact from ideation is more valuable to downstream stages than free-text notes.\",\"type\":\"viability\",\"risk\":\"medium\",\"knowness\":\"known-unknown\"}---\n\n---ASSUMPTION-JSON: {\"id\":\"single-session-sufficient\",\"text\":\"A single ideation session is sufficient to surface the top opportunities without a second pass.\",\"type\":\"feasibility\",\"risk\":\"low\",\"knowness\":\"unknown-unknown\"}---\n\nThere's also a hard constraint worth naming now: this artefact must stay within the existing feature-slug folder structure, since that's what every downstream skill already reads from.\n\n---CONDITION-JSON: {\"id\":\"artefact-path-convention\",\"text\":\"The ideation artefact must be saved under the same artefacts/[feature-slug]/ folder structure every downstream skill already reads from.\",\"type\":\"constraint\",\"source\":\"model\"}---\n\n---CANVAS-JSON: {\"type\":\"text\",\"title\":\"Assumption inventory\",\"content\":{\"paragraphs\":[\"Structured handoff value and single-session sufficiency are the two highest-leverage assumptions to test before committing further scope.\",\"Both are testable cheaply -- a single follow-up interview or a dry run through /discovery would surface disconfirming evidence quickly.\"]}}---\n\nWhich of these would you like to test first, or shall we move on to the market scan?",
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 382
+      },
+      "model": "mock"
+    },
+    {
+      "response": "Good -- let's stress-test that with an assumption inventory.\n\n**Lens B -- Assumption inventory**\n\nHere are the assumptions this opportunity rests on, ranked by risk:\n\n---ASSUMPTION-JSON: {\"id\":\"structured-handoff-value\",\"text\":\"A structured, machine-readable handoff artefact from ideation is more valuable to downstream stages than free-text notes.\",\"type\":\"viability\",\"risk\":\"medium\",\"knowness\":\"known-unknown\"}---\n\n---ASSUMPTION-JSON: {\"id\":\"single-session-sufficient\",\"text\":\"A single ideation session is sufficient to surface the top opportunities without a second pass.\",\"type\":\"feasibility\",\"risk\":\"low\",\"knowness\":\"unknown-unknown\"}---\n\nThere's also a hard constraint worth naming now: this artefact must stay within the existing feature-slug folder structure, since that's what every downstream skill already reads from.\n\n---CONDITION-JSON: {\"id\":\"artefact-path-convention\",\"text\":\"The ideation artefact must be saved under the same artefacts/[feature-slug]/ folder structure every downstream skill already reads from.\",\"type\":\"constraint\",\"source\":\"model\"}---\n\n---CANVAS-JSON: {\"type\":\"text\",\"title\":\"Assumption inventory\",\"content\":{\"paragraphs\":[\"Structured handoff value and single-session sufficiency are the two highest-leverage assumptions to test before committing further scope.\",\"Both are testable cheaply -- a single follow-up interview or a dry run through /discovery would surface disconfirming evidence quickly.\"]}}---\n\nWhich of these would you like to test first, or shall we move on to the market scan?",
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 382
+      },
+      "model": "mock"
+    },
+    {
+      "response": "Let's bring in the outside view.\n\n**Lens C -- Market and competitive scan**\n\nA quick synthesis of how similar problems are solved today:\n\n---CANVAS-JSON: {\"type\":\"text\",\"title\":\"Market and competitive scan\",\"content\":{\"paragraphs\":[\"Most delivery tools treat idea capture and formal discovery as two disconnected steps -- notes live in a doc or a Slack thread and get manually retyped into the first real artefact.\",\"No competitor surveyed offers a structured handoff that both a human and a downstream AI agent can consume directly.\",\"This is a genuine, currently-underserved gap rather than a crowded space.\"]}}---\n\nDoes this match your own read of the landscape, or is there a specific competitor you want me to weigh in on?",
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 182
+      },
+      "model": "mock"
+    },
+    {
+      "response": "Let's bring in the outside view.\n\n**Lens C -- Market and competitive scan**\n\nA quick synthesis of how similar problems are solved today:\n\n---CANVAS-JSON: {\"type\":\"text\",\"title\":\"Market and competitive scan\",\"content\":{\"paragraphs\":[\"Most delivery tools treat idea capture and formal discovery as two disconnected steps -- notes live in a doc or a Slack thread and get manually retyped into the first real artefact.\",\"No competitor surveyed offers a structured handoff that both a human and a downstream AI agent can consume directly.\",\"This is a genuine, currently-underserved gap rather than a crowded space.\"]}}---\n\nDoes this match your own read of the landscape, or is there a specific competitor you want me to weigh in on?",
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 182
+      },
+      "model": "mock"
+    },
+    {
+      "response": "Let's frame this as a product opportunity.\n\n**Lens D -- Product strategy framing**\n\n---CANVAS-JSON: {\"type\":\"table\",\"title\":\"Strategy assessment\",\"content\":{\"headers\":[\"Question\",\"Answer\"],\"rows\":[[\"What problem will this solve?\",\"Context lost between a raw idea and the first formal artefact\"],[\"For whom?\",\"Operators and teams starting a new feature from an unformed idea\"],[\"How will we measure success?\",\"Fewer /discovery sessions restarted from scratch due to missing context\"],[\"Why now?\",\"The pipeline already has a structured artefact chain downstream -- ideation is the one remaining unstructured step\"]]}}---\n\n**Recommendation:** PROCEED -- rationale: the gap is real, cheaply testable, and directly extends an artefact chain that already exists end-to-end.\n\nThat covers the core lenses. Ready for me to write this up as the ideation artefact, or is there anything you'd like to revisit first?",
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 226
+      },
+      "model": "mock"
+    },
+    {
+      "response": "Let's frame this as a product opportunity.\n\n**Lens D -- Product strategy framing**\n\n---CANVAS-JSON: {\"type\":\"table\",\"title\":\"Strategy assessment\",\"content\":{\"headers\":[\"Question\",\"Answer\"],\"rows\":[[\"What problem will this solve?\",\"Context lost between a raw idea and the first formal artefact\"],[\"For whom?\",\"Operators and teams starting a new feature from an unformed idea\"],[\"How will we measure success?\",\"Fewer /discovery sessions restarted from scratch due to missing context\"],[\"Why now?\",\"The pipeline already has a structured artefact chain downstream -- ideation is the one remaining unstructured step\"]]}}---\n\n**Recommendation:** PROCEED -- rationale: the gap is real, cheaply testable, and directly extends an artefact chain that already exists end-to-end.\n\nThat covers the core lenses. Ready for me to write this up as the ideation artefact, or is there anything you'd like to revisit first?",
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 226
+      },
+      "model": "mock"
+    },
+    {
+      "response": "Here's the ideation artefact, ready to hand off to /discovery.\n\n---ARTEFACT-START---\n# Ideation Artefact\n\n**Feature:** ideate-lens-review-chrome-test\n**Date:** 2026-08-10\n**Artefact path:** `artefacts/ideate-lens-review-chrome-test/research/ideation.md`\n**Lenses run:** A / B / C / D\n**Pipeline state signal:** proceed\n\n---\n\n## Lens A -- Opportunity map\n\n### Desired outcome\n\n> Fewer /discovery sessions restarted from scratch due to missing upstream context.\n\n### Opportunity tree\n\n```\nOutcome: structured context survives from raw idea to first formal artefact\n\n+-- Cluster 1: Capture problem\n|   +-- Context lost after conversations\n|\n+-- Cluster 2: Handoff problem\n|   +-- No structured artefact for downstream steps\n|\n+-- Cluster 3: Discovery problem\n    +-- No fast path from raw idea to definition\n```\n\n## Lens B -- Assumption inventory\n\n| Assumption | Type | Risk if wrong | Known-ness | Priority |\n|-----------|------|--------------|------------|----------|\n| Structured handoff is more valuable than free-text notes | Viability | Medium | Inference | Test before build |\n| A single ideation session is sufficient | Feasibility | Low | Guess | Accept |\n\n## Lens C -- Market and competitive scan\n\n### Key insight\n\n> No competitor surveyed offers a structured handoff both a human and a downstream AI agent can consume directly -- a genuine, underserved gap.\n\n## Lens D -- Product strategy framing\n\n### Recommendation\n\n> **PROCEED** -- the gap is real, cheaply testable, and directly extends an artefact chain that already exists end-to-end.\n\n## Open questions\n\n| Question | Blocking? | Owner | How to resolve |\n|----------|-----------|-------|---------------|\n| Should structured handoff value be tested before or during /discovery? | No | human | Decide at /discovery kickoff |\n---ARTEFACT-END---\n\nThis is ready to proceed to /discovery whenever you are.",
+      "usage": {
+        "input_tokens": 420,
+        "output_tokens": 466
+      },
+      "model": "mock"
+    }
+  ]
 }
