@@ -1,0 +1,7 @@
+{
+  "stage": "ideate",
+  "scenarioName": "diagram-showcase",
+  "model": "mock",
+  "response": "Let's map out the opportunity space, then look at how competitors compare, then summarise what we've found.\n\n**Lens A -- Opportunity map**\n\n---CANVAS-JSON: {\"type\":\"cluster-tree\",\"title\":\"Opportunity map\",\"content\":{\"clusters\":[\"Speed problem: manual QA takes 3 days per release\",\"Visibility problem: no single dashboard for release health\",\"Trust problem: stakeholders don't see test coverage until launch day\"]}}---\n\n**Lens B -- Competitor feature comparison**\n\n---CANVAS-JSON: {\"type\":\"table\",\"title\":\"Competitor feature comparison\",\"content\":{\"headers\":[\"Feature\",\"Us\",\"Competitor A\",\"Competitor B\"],\"rows\":[[\"Automated QA gate\",\"No\",\"Yes\",\"No\"],[\"Release dashboard\",\"No\",\"No\",\"Yes\"],[\"Coverage visibility\",\"No\",\"Partial\",\"Yes\"]]}}---\n\n**Lens C -- Summary**\n\n---CANVAS-JSON: {\"type\":\"text\",\"title\":\"Market scan summary\",\"content\":{\"paragraphs\":[\"No competitor offers all three capabilities together -- automated QA gating, a release dashboard, and coverage visibility.\",\"This is a real, validated gap: two of three competitors surveyed have at most one of these three capabilities.\"]}}---\n\nLet me know if any of these resonate, or if there's a different angle you'd like to explore next.",
+  "usage": { "input_tokens": 420, "output_tokens": 310 }
+}
