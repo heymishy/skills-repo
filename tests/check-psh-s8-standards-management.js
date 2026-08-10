@@ -6,7 +6,14 @@ const assert = require('assert');
 // mock product/standard for this test scenario -- pass the same value as the
 // test's req.session.tenantId so the (same-tenant, legitimate) existing
 // coverage keeps passing.
-function makeMockPool(standards, tenantId) {
+// smug-s1: standardsList's SELECT now matches setStandardsAdapter's
+// promoted/opted-out-aware shape -- (product_id = $1 OR (visibility='org'
+// AND org_id=$2)) AND standard_id NOT IN (opt-outs for $1) -- so this mock's
+// list branch mirrors that same semantics instead of a bare product_id
+// filter. `optouts` (default []) is a new, optional 3rd param -- existing
+// callers that never pass it get identical behaviour to before this story
+// (no standard was ever opted out).
+function makeMockPool(standards, tenantId, optouts) {
   return {
     _ops: [],
     query: async function(sql, params) {
@@ -19,10 +26,16 @@ function makeMockPool(standards, tenantId) {
         const row = (standards || []).find(s => s.standard_id === sid);
         return { rows: row ? [{ org_id: row.org_id }] : (tenantId ? [{ org_id: tenantId }] : []) };
       }
-      if (/FROM standards WHERE product_id/i.test(sql)) {
+      if (/SELECT standard_id, product_id, name, visibility, created_at FROM standards/i.test(sql)) {
         const pid = params && params[0];
         const orgId = params && params[1];
-        const rows = (standards || []).filter(s => s.product_id === pid && (orgId === undefined || s.org_id === orgId));
+        const rows = (standards || []).filter(function(s) {
+          const ownedByProduct = s.product_id === pid;
+          const orgPromoted = s.visibility === 'org' && s.org_id === orgId;
+          if (!ownedByProduct && !orgPromoted) { return false; }
+          const optedOut = (optouts || []).some(function(o) { return o.standard_id === s.standard_id && o.product_id === pid; });
+          return !optedOut;
+        });
         rows.sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
         return { rows };
       }
@@ -100,7 +113,7 @@ setTimeout(function() {
         { standard_id: 's2', product_id: 'prod-1', org_id: 'org-1', name: 'S2', visibility: 'product', created_at: new Date(+now - 30000) },
         { standard_id: 's3', product_id: 'prod-1', org_id: 'org-1', name: 'S3', visibility: 'product', created_at: now }
       ];
-      const pool = makeMockPool(standards);
+      const pool = makeMockPool(standards, 'org-1');
       const req = { session: { tenantId: 'org-1' }, params: { id: 'prod-1' } };
       const res = { json: function(b) { this._b=b; }, _b:null, status: function(c) { this._s=c; return this; } };
       await standardsList(req, res, null, pool);
@@ -142,7 +155,7 @@ setTimeout(function() {
     // T-NFR1 — HTML escape in list response
     try {
       const standards = [{ standard_id: 'xss', product_id: 'p', org_id: 'org', name: '<script>xss</script>', visibility: 'product', created_at: new Date() }];
-      const pool = makeMockPool(standards);
+      const pool = makeMockPool(standards, 'org');
       const req = { session: { tenantId: 'org' }, params: { id: 'p' } };
       const res = { json: function(b) { this._b=b; }, _b:null, status: function(c) { this._s=c; return this; } };
       await standardsList(req, res, null, pool);

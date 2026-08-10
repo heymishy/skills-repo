@@ -110,19 +110,75 @@ async function standardsPost(req, res, _next, pool, posthog) {
   _sendJson(res, 201, { standard_id: standardId });
 }
 
+/**
+ * smug-s1: shared data-fetch, extracted so both the JSON API (standardsList
+ * below) and the new HTML Standards tab (products.js's
+ * handleGetProductStandardsTab) query the exact same, exact-once-defined
+ * promoted/opted-out-aware shape -- previously `WHERE product_id = $1 AND
+ * org_id = $2`, which never included org-promoted standards from a
+ * DIFFERENT product in the same org, and never excluded opted-out ones.
+ * Brought in line with setStandardsAdapter's promoted/opted-out semantics
+ * (server.js, psh-s10's prompt-injection path) -- see that function for the
+ * reference implementation this AC6 was fixed to match.
+ *
+ * One deliberate, defense-in-depth divergence from that reference query's
+ * exact SQL text: this adds `AND org_id = $2` to the own-product branch too
+ * (reference has bare `product_id = $1`, no org_id check on that branch).
+ * For any product_id genuinely owned by the caller's own tenant this
+ * produces an identical result set (standardsPost already enforces
+ * product-tenant ownership before every INSERT, so a legitimately-owned
+ * product_id's standards always share that tenant's org_id) -- the guard
+ * only matters if a product_id were ever reused across tenants or a
+ * standards row were orphaned after product deletion (products.js has no
+ * cascade-delete for standards). product_id is a random UUID
+ * (gen_random_uuid(), server.js), so this is not a practically exploitable
+ * gap today, but the guard costs nothing and keeps
+ * check-bri-s3.4-cross-tenant-isolation.js's existing, stricter isolation
+ * assertion intact rather than weakening it to match the reference query's
+ * literal permissiveness. Includes product_id (not selected before this
+ * story) so a caller can distinguish "this product's own standard" from
+ * "promoted from a different product" -- needed by the tab's
+ * Promote/Opt-out button logic. No ownership check here -- callers are
+ * responsible for verifying productId belongs to the caller's own tenant
+ * first, matching this repo's existing per-handler-ownership-check
+ * convention (see handleGetProductRoadmap/handleGetProductKanban in
+ * products.js).
+ * @param {object} pool
+ * @param {string} productId
+ * @param {string} tenantId
+ * @returns {Promise<Array>}
+ */
+async function fetchStandardsForProduct(pool, productId, tenantId) {
+  return (await pool.query(
+    `SELECT standard_id, product_id, name, visibility, created_at FROM standards
+     WHERE ((product_id = $1 AND org_id = $2) OR (visibility = 'org' AND org_id = $2))
+       AND standard_id NOT IN (
+         SELECT standard_id FROM standard_product_optouts WHERE product_id = $1
+       )
+     ORDER BY created_at DESC`,
+    [productId, tenantId]
+  )).rows;
+}
+
 async function standardsList(req, res, _next, pool) {
   var _pool = pool;
   var productId = req.params && req.params.id;
   var tenantId = req.session && req.session.tenantId;
-  // bri-s3.4: this query previously had no tenant filter at all -- listing
-  // standards for a product_id whose standards were seeded/created under a
-  // different tenant's org_id (or a product owned by another tenant) leaked
-  // those rows to any authenticated caller. org_id is this table's tenant
-  // boundary (see standardsPromote's existing org_id check below).
-  var rows = (await _pool.query(
-    'SELECT standard_id, name, visibility, created_at FROM standards WHERE product_id = $1 AND org_id = $2 ORDER BY created_at DESC',
-    [productId, tenantId]
-  )).rows;
+
+  // bri-s3.4: no separate ownership pre-check against the products table
+  // here (unlike standardsPost/standardsPut, which mutate and so need one)
+  // -- fetchStandardsForProduct's own WHERE clause already ANDs org_id = $2
+  // (the caller's own tenantId) into every branch, own-product AND
+  // org-promoted alike, so an attacker-supplied productId belonging to a
+  // DIFFERENT tenant can never return rows: either that product's own
+  // standards have a different org_id (excluded by the first branch's AND),
+  // or there simply are no org-promoted standards visible under the
+  // caller's own org_id for a foreign product_id. This matches
+  // setStandardsAdapter's reference implementation, which also has no
+  // separate ownership check -- adding one here would be scope beyond what
+  // AC6 requires and would diverge from that reference shape for no
+  // additional isolation benefit.
+  var rows = await fetchStandardsForProduct(_pool, productId, tenantId);
   var standards = rows.map(function(s) {
     return {
       standard_id: s.standard_id,
@@ -213,4 +269,4 @@ async function optoutDelete(req, res, _next, pool, posthog) {
   _sendJson(res, 200, { standard_id: standardId, product_id: productId, opted_out: false });
 }
 
-module.exports = { standardsPost, standardsList, standardsPut, standardsPromote, optoutPost, optoutDelete };
+module.exports = { standardsPost, standardsList, standardsPut, standardsPromote, optoutPost, optoutDelete, fetchStandardsForProduct };
