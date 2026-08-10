@@ -21701,6 +21701,44 @@
       "epics": []
     },
     {
+      "slug": "2026-08-10-full-journey-core-flow-e2e",
+      "name": "E2E coverage confirming both journey entry points reach definition-of-ready complete and every major stage resumes correctly",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "fjcv-s1",
+          "id": "fjcv-s1",
+          "name": "Full journey core flow and resume E2E coverage",
+          "stage": "branch-complete",
+          "health": "green",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 3,
+            "passing": 3,
+            "artefact": "artefacts/2026-08-10-full-journey-core-flow-e2e/test-plans/fjcv-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-10-full-journey-core-flow-e2e/dor/fjcv-s1-dor.md",
+          "oversightLevel": "medium",
+          "acTotal": 4,
+          "acVerified": 4,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": true,
+          "updatedAt": "2026-08-10T19:30:00.000Z",
+          "prStatus": "open"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-10T19:30:00.000Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
+    },
+    {
       "slug": "2026-08-10-resume-history-trailing-turn-fix",
       "name": "A completed stage resumed history silently drops its final assistant message when nothing followed it",
       "stage": "branch-complete",
