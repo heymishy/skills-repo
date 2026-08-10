@@ -21529,12 +21529,12 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": true,
           "e2eToolingRequired": true,
-          "updatedAt": "2026-08-10T06:06:24.426Z",
-          "prStatus": "none"
+          "updatedAt": "2026-08-10T06:28:43.459Z",
+          "prStatus": "merged"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-10T06:06:24.573Z",
+      "updatedAt": "2026-08-10T06:28:43.460Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
@@ -21809,5 +21809,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-08-10T06:06:24.574Z"
+  "updatedAt": "2026-08-10T06:28:43.460Z"
 }
