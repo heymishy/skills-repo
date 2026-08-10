@@ -250,32 +250,39 @@ queue.push(function() {
     await routes.handleGetChatHtml(req, res);
 
     // The JS should NOT remove thinkingDiv immediately when r resolves:
-    // Pattern we do NOT want: "if(thinkingDiv) { thinkingDiv.remove()..." right after "if(!r.ok..."
-    // Pattern we DO want: thinkingDiv.remove() inside the if(evt.chunk) block.
+    // Pattern we do NOT want: a "thinkingDiv.remove()" call inside the fetch().then(function(r){...})
+    // header-arrival block, before the pump()/read loop that processes evt.chunk/evt.reasoningChunk.
     //
-    // Heuristic: the string "thinkingDiv.remove()" should appear inside or after
-    // "if(evt.chunk)" in the script, not in the fetch().then() before the pump loop starts.
-    //
-    // We assert: the first occurrence of "thinkingDiv.remove()" appears AFTER
-    // the first occurrence of "evt.chunk" in the script.
+    // We assert this directly against the header-arrival block's own content, rather than by
+    // comparing the textual position of the FIRST "thinkingDiv.remove()" in the whole script against
+    // "evt.chunk" -- that whole-script-order heuristic false-positives whenever a later, unrelated,
+    // harmless removal (e.g. a defensive cleanup on stream-fully-closed with zero chunks received)
+    // happens to sit earlier in the file than the evt.chunk/evt.reasoningChunk removal calls.
     const scriptStart = capturedHtml.indexOf('<script>');
     assert.ok(scriptStart !== -1, 'HTML must contain <script> block');
     const scriptContent = capturedHtml.slice(scriptStart);
 
-    const removeIdx       = scriptContent.indexOf('thinkingDiv.remove()');
-    const chunkIdx        = scriptContent.indexOf('evt.chunk');
-    const reasoningIdx    = scriptContent.indexOf('evt.reasoningChunk');
+    const thenIdx    = scriptContent.indexOf('.then(function(r)');
+    const pumpDefIdx = scriptContent.indexOf('function pump()');
+    const chunkIdx     = scriptContent.indexOf('evt.chunk');
+    const reasoningIdx = scriptContent.indexOf('evt.reasoningChunk');
 
-    assert.ok(removeIdx !== -1, 'thinkingDiv.remove() must appear in script');
-    assert.ok(chunkIdx !== -1,  'evt.chunk must appear in script');
-    // thinkingDiv is removed on the first model signal — either a content chunk or a
-    // reasoning chunk. The removal must NOT happen immediately when response headers
-    // arrive (before the pump loop). We assert it appears after either signal check.
-    const firstSignalIdx = reasoningIdx !== -1 ? Math.min(chunkIdx, reasoningIdx) : chunkIdx;
+    assert.ok(thenIdx !== -1,    'fetch().then(function(r)...) header-arrival block must appear in script');
+    assert.ok(pumpDefIdx !== -1, 'pump() function must appear in script');
+    assert.ok(chunkIdx !== -1,   'evt.chunk must appear in script');
+
+    const headerArrivalBlock = scriptContent.slice(thenIdx, pumpDefIdx);
     assert.ok(
-      removeIdx > firstSignalIdx,
-      'thinkingDiv.remove() must appear after evt.chunk or evt.reasoningChunk check (remove on first model signal, not on response start). ' +
-      'removeIdx=' + removeIdx + ' firstSignalIdx=' + firstSignalIdx
+      headerArrivalBlock.indexOf('thinkingDiv.remove()') === -1,
+      'thinkingDiv.remove() must NOT appear in the fetch().then(function(r)...) header-arrival block ' +
+      '(thinkingDiv must survive until the first model signal, not be cleared as soon as response headers arrive)'
+    );
+    // thinkingDiv is removed on the first model signal -- either a content chunk or a reasoning chunk.
+    const firstSignalIdx = reasoningIdx !== -1 ? Math.min(chunkIdx, reasoningIdx) : chunkIdx;
+    const removeAfterSignalIdx = scriptContent.indexOf('thinkingDiv.remove()', firstSignalIdx);
+    assert.ok(
+      removeAfterSignalIdx !== -1,
+      'thinkingDiv.remove() must appear at or after the evt.chunk/evt.reasoningChunk check (removed on first model signal)'
     );
   });
 });
