@@ -21586,37 +21586,37 @@
     {
       "slug": "2026-08-10-mock-diagram-showcase-fixtures",
       "name": "Add a richer mock-gateway scenario covering every diagram type a skill session can legitimately emit",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "slug": "mds-s1",
           "id": "mds-s1",
           "name": "Diagram-showcase mock scenario for ideate/design/definition",
-          "stage": "dor-signed-off",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-10-mock-diagram-showcase-fixtures/review/mds-s1-review-1.md",
           "testPlan": {
-            "status": "not-started",
-            "totalTests": 9,
-            "passing": 0,
+            "status": "all-passing",
+            "totalTests": 8,
+            "passing": 8,
             "artefact": "artefacts/2026-08-10-mock-diagram-showcase-fixtures/test-plans/mds-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-10-mock-diagram-showcase-fixtures/dor/mds-s1-dor.md",
           "oversightLevel": "low",
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 6,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-10T01:04:14.924Z",
+          "updatedAt": "2026-08-10T03:53:20.558Z",
           "prStatus": "none"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-10T01:04:14.924Z",
+      "updatedAt": "2026-08-10T03:53:20.696Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
@@ -21809,5 +21809,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-08-10T02:55:10.763Z"
+  "updatedAt": "2026-08-10T03:53:20.698Z"
 }
