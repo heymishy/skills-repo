@@ -21734,12 +21734,12 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-10T02:36:19.910Z",
-          "prStatus": "none"
+          "updatedAt": "2026-08-10T02:55:10.762Z",
+          "prStatus": "merged"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-10T02:37:01.430Z",
+      "updatedAt": "2026-08-10T02:55:10.763Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
@@ -21809,5 +21809,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-08-10T02:37:01.432Z"
+  "updatedAt": "2026-08-10T02:55:10.763Z"
 }
