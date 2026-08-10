@@ -233,7 +233,15 @@ function runPrelaunchTests() {
 
   check(
     'handleGetBillingPortal-imported-from-billing',
-    serverSrc.includes("handleGetBillingPortal } = require('./routes/billing')")
+    // Order-independent: the original literal-suffix match assumed
+    // handleGetBillingPortal was the last destructured name before "}",
+    // which broke the moment a later story (bri-s3.5) appended
+    // handleGetBillingPlanState after it in the same require() destructure.
+    // handleGetBillingPortal is genuinely wired and called (server.js
+    // calls it directly at its /settings/billing route handler) --
+    // this was a stale assertion, not a live wiring gap.
+    /require\(['"]\.\/routes\/billing['"]\)/.test(serverSrc) &&
+    /\{[^}]*\bhandleGetBillingPortal\b[^}]*\}\s*=\s*require\(['"]\.\/routes\/billing['"]\)/.test(serverSrc)
   );
 
   // ── Results ───────────────────────────────────────────────────────────────
