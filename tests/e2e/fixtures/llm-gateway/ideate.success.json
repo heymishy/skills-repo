@@ -12,14 +12,6 @@
       "model": "mock"
     },
     {
-      "response": "Let's map out the opportunity space for your idea.\n\n**Lens A -- Opportunity map**\n\nHere's an initial breakdown of where the biggest opportunities look to be, based on what you've shared.\n\n---CANVAS-JSON: {\"type\":\"cluster-tree\",\"title\":\"Opportunity map\",\"content\":{\"clusters\":[\"Capture problem: context lost after conversations\",\"Handoff problem: no structured artefact for downstream steps\",\"Discovery problem: no fast path from raw idea to definition\"]}}---\n\nOne planning assumption underlies this framing: teams currently start from a blank page at /discovery because nothing upstream captures the raw idea in a structured way.\n\n---ASSUMPTION-JSON: {\"id\":\"blank-page-discovery\",\"text\":\"Teams currently start /discovery from a blank page because no upstream step captures the raw idea in a structured, reusable form.\",\"type\":\"desirability\",\"risk\":\"medium\",\"knowness\":\"known-unknown\"}---\n\nLet me know if any of these resonate, or if there's a different angle you would like to explore next.",
-      "usage": {
-        "input_tokens": 420,
-        "output_tokens": 248
-      },
-      "model": "mock"
-    },
-    {
       "response": "Good -- let's stress-test that with an assumption inventory.\n\n**Lens B -- Assumption inventory**\n\nHere are the assumptions this opportunity rests on, ranked by risk:\n\n---ASSUMPTION-JSON: {\"id\":\"structured-handoff-value\",\"text\":\"A structured, machine-readable handoff artefact from ideation is more valuable to downstream stages than free-text notes.\",\"type\":\"viability\",\"risk\":\"medium\",\"knowness\":\"known-unknown\"}---\n\n---ASSUMPTION-JSON: {\"id\":\"single-session-sufficient\",\"text\":\"A single ideation session is sufficient to surface the top opportunities without a second pass.\",\"type\":\"feasibility\",\"risk\":\"low\",\"knowness\":\"unknown-unknown\"}---\n\nThere's also a hard constraint worth naming now: this artefact must stay within the existing feature-slug folder structure, since that's what every downstream skill already reads from.\n\n---CONDITION-JSON: {\"id\":\"artefact-path-convention\",\"text\":\"The ideation artefact must be saved under the same artefacts/[feature-slug]/ folder structure every downstream skill already reads from.\",\"type\":\"constraint\",\"source\":\"model\"}---\n\n---CANVAS-JSON: {\"type\":\"text\",\"title\":\"Assumption inventory\",\"content\":{\"paragraphs\":[\"Structured handoff value and single-session sufficiency are the two highest-leverage assumptions to test before committing further scope.\",\"Both are testable cheaply -- a single follow-up interview or a dry run through /discovery would surface disconfirming evidence quickly.\"]}}---\n\nWhich of these would you like to test first, or shall we move on to the market scan?",
       "usage": {
         "input_tokens": 420,

@@ -4,6 +4,10 @@
 **Discovery reference:** None — short-track skips discovery; scope is the code-derived gap below
 **Benefit-metric reference:** None — short-track skips benefit-metric; benefit linkage stated directly below
 
+### Fix-forward addendum (same-day, post-merge live verification)
+
+Live-verifying isc-s1 on staging after deploy surfaced a genuine off-by-one in the `responses` array's index mapping: this story's original build assumed real `/ideate` turns land on even `turnIndex` values (0, 2, 4, 6, 8), matching `history.length` growing by 2 per real turn. In fact, `skills.js`'s `handlePostTurnStreamHtml` only pushes the auto-fired first turn's synthetic "Begin the session" prompt to `session.turns` when `!_isInitialTurn` — the auto turn's own user content is never pushed. So after the auto turn (turnIndex 0), `session.turns.length` is 1 (assistant only), making the operator's actual first real reply turnIndex 1, not 2. The real reachable sequence is 0, 1, 3, 5, 7, 9(clamped), ... — confirmed live: the operator's first reply repeated Lens A verbatim instead of progressing to Lens B. Fixed by remapping the `responses` array to the corrected sequence (`[0, 1, 3, 5, 7]` for the five meaningful entries, with 2/4/6 as genuinely-unreachable padding). AC2 in the test file rewritten to explicitly guard against this exact regression. Pending: re-verification live on staging after this fix deploys.
+
 ## User Story
 
 As an **operator validating /ideate end-to-end on staging without spending real LLM tokens**,
