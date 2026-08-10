@@ -837,6 +837,20 @@ async function handleGetJourneyStageView(req, res) {
   // to today's existing artefact-only rendering below.
   var _useChatSplit = !isEdit && Array.isArray(_dshTurns) && _dshTurns.length > 0;
 
+  // drh-s1: recover any diagrams the live session generated (emitted as
+  // ---CANVAS-JSON:...--- markers during the conversation itself, saved
+  // unstripped in durable turn content) so they render here too, not just
+  // on the live chat page. #canvas-panel already exists unconditionally in
+  // this view's artefact-pane layout (chat-view.js's non-ideate branch,
+  // which every stage -- including a renamed 'ideate-history' -- routes
+  // through); the gap was purely that nothing loaded mermaid.js or
+  // populated it for this read-only view.
+  var _drhSkills = require('./skills');
+  var _historyCanvasBlocks = _useChatSplit ? _drhSkills.extractCanvasBlocksFromTurns(_dshTurns) : [];
+  var _historyDiagramScriptsHtml = _historyCanvasBlocks.length
+    ? '<script src="/vendor/mermaid.min.js"></script>' + _drhSkills.buildReadOnlyCanvasScript(_historyCanvasBlocks)
+    : '';
+
   var stageMeta = STAGE_META.find(function(s) { return s.id === stageName; });
   var stageLabel = stageMeta ? (stageMeta.num + '. ' + stageMeta.label) : stageName;
   var safeJourneyId = escHtml(journeyId);
@@ -970,7 +984,8 @@ async function handleGetJourneyStageView(req, res) {
           '</div>',
         '</div>',
         _chatBodyHtml,
-      '</div>'
+      '</div>',
+      _historyDiagramScriptsHtml
     ].join('');
   } else {
   var mainPanel;
