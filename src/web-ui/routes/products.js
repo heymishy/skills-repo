@@ -19,6 +19,7 @@ var _csrf = require('../middleware/csrf'); // fix-forward (post-a1) -- module CR
 var _agencyClientGrants = require('../modules/agency-client-grants'); // story-2-relationship-grants-enforcement -- the ONE dedicated grant-check adapter (story Guardrail)
 var _journeyAccess = require('../middleware/journey-access'); // story-2-relationship-grants-enforcement -- reuses requireGrantAccess/asHttpResponse/POLICY (ADR-025 guard extension)
 var _agencyClientComments = require('../modules/agency-client-comments'); // story-5-client-agency-comments -- append-only comments adapter
+var _standardsRoutes = require('./standards'); // smug-s1 -- fetchStandardsForProduct, shared with the JSON standards API
 
 // s1.1 -- injectable bulk session-store reader. Defaults to a lazy require of
 // skills.js's real _getHtmlSessionsBulk (mirrors the same lazy-getter shape
@@ -773,6 +774,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
         '<button type="button" onclick="pshConfirmDeleteProduct(\'' + _escapeHtml(productId) + '\')" style="padding:8px 14px;border:1px solid #ef4444;border-radius:6px;background:none;color:#ef4444;font-size:13px;cursor:pointer">Delete product</button>' +
         '<a href="/products/' + _escapeHtml(productId) + '/kanban" style="padding:8px 14px;border:1px solid var(--line);border-radius:6px;text-decoration:none;font-size:13px;color:var(--ink)">Kanban</a>' +
         '<a href="/products/' + _escapeHtml(productId) + '/roadmap" style="padding:8px 14px;border:1px solid var(--line);border-radius:6px;text-decoration:none;font-size:13px;color:var(--ink)">Roadmap</a>' +
+        '<a href="/products/' + _escapeHtml(productId) + '/standards-tab" style="padding:8px 14px;border:1px solid var(--line);border-radius:6px;text-decoration:none;font-size:13px;color:var(--ink)">Standards</a>' +
         '<div style="position:relative">' +
           '<button type="button" id="psh-new-feature-btn" onclick="pshToggleNewFeaturePanel()" style="padding:8px 16px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">New feature</button>' +
           '<div id="psh-new-feature-panel" style="display:none;position:absolute;right:0;top:calc(100% + 6px);z-index:20;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;min-width:290px;box-shadow:0 4px 14px rgba(0,0,0,.12)">' +
@@ -941,6 +943,113 @@ async function handleGetProductRoadmap(req, res, _next, pool) {
     res.json({ roadmap: roadmapEntries });
   } else {
     var html = _renderRoadmapTab(prodRow.name, productId, login, roadmapEntries);
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+  }
+}
+
+/**
+ * smug-s1: Standards tab -- lists this product's own standards plus any
+ * org-promoted standards from other products in the same org (opted-out
+ * ones excluded), with a "Promote to org" action on own-not-yet-promoted
+ * standards and an "Opt out" action on standards promoted from elsewhere.
+ * Reuses standards.js's fetchStandardsForProduct (same query
+ * setStandardsAdapter's prompt-injection path already uses) rather than a
+ * second, divergent query -- see that function for the full rationale.
+ */
+function _renderStandardsTab(productName, productId, login, standards) {
+  var rowsHtml = standards.length === 0
+    ? '<p style="color:var(--muted);font-size:14px">No standards yet — create one via the API, or promote one from another product.</p>'
+    : '<ul class="sw-list">' +
+        standards.map(function(s) {
+          var isOwn = s.product_id === productId;
+          var isOrgVisible = s.visibility === 'org';
+          var visibilityLabel = isOrgVisible ? 'Org-promoted' : 'Product';
+          var actionHtml = '';
+          if (isOwn && !isOrgVisible) {
+            // AC4 -- own, not yet promoted.
+            actionHtml = '<button type="button" onclick="ssPromote(this,\'' + _escapeHtml(s.standard_id) + '\')" style="padding:5px 10px;border:1px solid var(--accent);border-radius:5px;background:none;color:var(--accent);font-size:12px;cursor:pointer">Promote to org</button>';
+          } else if (!isOwn && isOrgVisible) {
+            // AC5 -- promoted from a different product in the same org.
+            actionHtml = '<button type="button" onclick="ssOptOut(this,\'' + _escapeHtml(s.standard_id) + '\',\'' + _escapeHtml(productId) + '\')" style="padding:5px 10px;border:1px solid var(--line);border-radius:5px;background:none;color:var(--ink);font-size:12px;cursor:pointer">Opt out</button>';
+          }
+          // own + already-promoted: no action -- nothing left to do from here.
+          return '<li id="std-row-' + _escapeHtml(s.standard_id) + '" style="display:flex;align-items:center;justify-content:space-between;gap:12px">' +
+            '<div style="flex:1">' +
+              '<div style="font-size:14px;font-weight:500">' + _escapeHtml(s.name) + '</div>' +
+              '<span class="ss-visibility-label sw-pill ' + (isOrgVisible ? 'sw-pill--accent' : 'sw-pill--neutral') + '" style="margin-top:4px;display:inline-block">' + visibilityLabel + '</span>' +
+            '</div>' +
+            actionHtml +
+          '</li>';
+        }).join('') +
+      '</ul>';
+
+  var body = '<div style="max-width:720px">' +
+    '<div style="margin-bottom:24px">' +
+      '<div style="font-size:12px;color:var(--muted);margin-bottom:4px"><a href="/products/' + _escapeHtml(productId) + '" style="color:var(--muted);text-decoration:none">' + _escapeHtml(productName) + '</a> &rsaquo;</div>' +
+      '<h1 style="margin:0;font-size:24px">Standards</h1>' +
+    '</div>' +
+    rowsHtml +
+    '<script>' +
+      'function ssPromote(btn, id) {' +
+        'btn.disabled = true;' +
+        'fetch("/standards/" + id + "/promote", { method: "PUT" })' +
+          '.then(function(r) { if (!r.ok) throw new Error("failed"); return r.json(); })' +
+          '.then(function() {' +
+            'var row = document.getElementById("std-row-" + id);' +
+            'if (row) {' +
+              'var label = row.querySelector(".ss-visibility-label");' +
+              'if (label) { label.textContent = "Org-promoted"; label.className = "ss-visibility-label sw-pill sw-pill--accent"; }' +
+              'btn.remove();' +
+            '}' +
+          '})' +
+          '.catch(function() { btn.disabled = false; alert("Failed to promote this standard. Please try again."); });' +
+      '}' +
+      'function ssOptOut(btn, id, productId) {' +
+        'btn.disabled = true;' +
+        'fetch("/standards/" + id + "/optout", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ productId: productId }) })' +
+          '.then(function(r) { if (!r.ok) throw new Error("failed"); return r.json(); })' +
+          '.then(function() {' +
+            'var row = document.getElementById("std-row-" + id);' +
+            'if (row) { row.remove(); }' +
+          '})' +
+          '.catch(function() { btn.disabled = false; alert("Failed to opt out of this standard. Please try again."); });' +
+      '}' +
+    '</script>' +
+  '</div>';
+  return _htmlShell.renderShell({ title: 'Standards', bodyContent: body, user: { login: login }, active: 'dashboard', crumbs: [productName, 'Standards'] });
+}
+
+/**
+ * smug-s1 -- GET /products/:id/standards-tab: the Standards tab, reachable
+ * from the product page nav alongside Kanban/Roadmap. A distinct path from
+ * the existing JSON `GET /products/:id/standards` API (standards.js's
+ * standardsList) rather than a dual-response-type reuse of that same path,
+ * keeping the JSON API and this HTML tab as two clearly separate concerns
+ * per this story's own scope contract.
+ */
+async function handleGetProductStandardsTab(req, res, _next, pool) {
+  var _pool = pool;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+  var login = req.session && req.session.login;
+
+  var prodRow = (await _pool.query(
+    'SELECT name, tenant_id FROM products WHERE product_id = $1',
+    [productId]
+  )).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+
+  var standards = await _standardsRoutes.fetchStandardsForProduct(_pool, productId, tenantId);
+
+  if (res.json) {
+    res.json({ standards: standards });
+  } else {
+    var html = _renderStandardsTab(prodRow.name, productId, login, standards);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
@@ -2771,6 +2880,7 @@ module.exports = {
   handleGetProductNew,
   handleGetProductView,
   handleGetProductRoadmap,
+  handleGetProductStandardsTab,
   handlePostProductSync,
   handlePostProductFeature,
   handleGetProductKanban,

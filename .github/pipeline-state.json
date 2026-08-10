@@ -21463,37 +21463,37 @@
     {
       "slug": "2026-08-10-standards-management-ui-gap",
       "name": "Standards management has a fully-built backend but no way to reach it by clicking anything",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "slug": "smug-s1",
           "id": "smug-s1",
           "name": "Standards tab and standardsList query fix",
-          "stage": "dor-signed-off",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-10-standards-management-ui-gap/review/smug-s1-review-1.md",
           "testPlan": {
-            "status": "not-started",
+            "status": "all-passing",
             "totalTests": 6,
-            "passing": 0,
+            "passing": 6,
             "artefact": "artefacts/2026-08-10-standards-management-ui-gap/test-plans/smug-s1-test-plan.md"
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-10-standards-management-ui-gap/dor/smug-s1-dor.md",
           "oversightLevel": "medium",
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 6,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-09T21:42:29.825Z",
+          "updatedAt": "2026-08-10T05:15:34.565Z",
           "prStatus": "none"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-10T00:29:43.010Z",
+      "updatedAt": "2026-08-10T05:15:34.707Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
@@ -21809,5 +21809,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-08-10T04:53:35.808Z"
+  "updatedAt": "2026-08-10T05:15:34.708Z"
 }

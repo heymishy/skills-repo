@@ -185,11 +185,20 @@ function fail(name, err) { console.error('  [FAIL] ' + name + ': ' + (err && err
           const id = 'new-std-' + ((standards || []).length + 1);
           return { rows: [{ standard_id: id }] };
         }
-        if (/FROM standards WHERE product_id/i.test(s)) {
+        if (/SELECT standard_id, product_id, name, visibility, created_at FROM standards/i.test(s)) {
+          // smug-s1: standardsList's list query now matches
+          // setStandardsAdapter's promoted/opted-out-aware shape, with a
+          // defense-in-depth org_id check on BOTH the own-product and the
+          // org-promoted branch (see standards.js's fetchStandardsForProduct
+          // for the full rationale) -- own standards must match org_id too,
+          // which is exactly the tenant-isolation property this AC2 test
+          // asserts.
           const pid = params[0];
           const orgId = params[1];
           const rows = (standards || []).filter(function (st) {
-            return st.product_id === pid && (orgId === undefined || st.org_id === orgId);
+            const ownedByProduct = st.product_id === pid && st.org_id === orgId;
+            const orgPromoted = st.visibility === 'org' && st.org_id === orgId;
+            return ownedByProduct || orgPromoted;
           });
           return { rows: rows };
         }
