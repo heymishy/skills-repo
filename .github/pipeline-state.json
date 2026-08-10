@@ -21649,12 +21649,12 @@
           "acVerified": 6,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-10T08:00:00.000Z",
-          "prStatus": "open"
+          "updatedAt": "2026-08-10T08:23:51.000Z",
+          "prStatus": "merged"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-10T08:00:00.000Z",
+      "updatedAt": "2026-08-10T08:23:51.000Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
