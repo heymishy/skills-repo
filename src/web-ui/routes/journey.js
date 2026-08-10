@@ -724,7 +724,7 @@ async function handleGetStageReview(req, res) {
  * Supports ?edit=true to switch to inline edit mode.
  * POST /api/journey/:journeyId/stage/:stageName/artefact — save edited artefact content to disk.
  */
-async function handleGetJourneyStageView(req, res) {
+async function handleGetJourneyStageView(req, res, pool) {
   if (!req.session || !req.session.accessToken) {
     res.writeHead(302, { Location: '/auth/github' });
     res.end();
@@ -1310,7 +1310,27 @@ async function handleGetJourneyStageView(req, res) {
   ].join('');
   }
 
-  var html = renderShell({ title: stageLabel + ' — ' + featureName, bodyContent: body, user: { login: req.session.login || '' }, active: 'journey' });
+  // jcn-s1: this page previously rendered with no way back to /dashboard --
+  // pan-s1 removed the standalone "Home" nav item in favour of the sidebar's
+  // own Products section (product list + "See all products" link), but this
+  // handler never adopted that wiring. Mirrors handleGetJourney's own
+  // pattern exactly -- see that function for the pattern this was fixed to
+  // match.
+  var navProducts, noProductJourneyCount;
+  if (pool) {
+    var navSummary = await _getProductsNavSummary(pool, req.session.tenantId);
+    navProducts = navSummary.products;
+    noProductJourneyCount = navSummary.noProductJourneyCount;
+  }
+  var html = renderShell({
+    title: stageLabel + ' — ' + featureName,
+    bodyContent: body,
+    user: { login: req.session.login || '' },
+    active: 'journey',
+    products: navProducts,
+    activeProductId: null,
+    noProductJourneyCount: noProductJourneyCount
+  });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -2491,7 +2511,7 @@ async function handlePostStories(req, res) {
 /**
  * GET /journey/:journeyId/complete — render the journey completion screen.
  */
-async function handleGetJourneyComplete(req, res) {
+async function handleGetJourneyComplete(req, res, pool) {
   if (!req.session || !req.session.accessToken) {
     res.writeHead(302, { Location: '/auth/github' });
     res.end();
@@ -2666,7 +2686,23 @@ async function handleGetJourneyComplete(req, res) {
     '</div>'
   ].join('');
 
-  var html = renderShell({ title: 'Journey Complete — ' + escHtml(featureSlug), bodyContent: body, user: { login: req.session.login || '' } });
+  // jcn-s1: same "no way back to /dashboard" gap and fix as
+  // handleGetJourneyStageView above -- see that handler's identical comment
+  // for the full rationale.
+  var navProducts, noProductJourneyCount;
+  if (pool) {
+    var navSummary = await _getProductsNavSummary(pool, req.session.tenantId);
+    navProducts = navSummary.products;
+    noProductJourneyCount = navSummary.noProductJourneyCount;
+  }
+  var html = renderShell({
+    title: 'Journey Complete — ' + escHtml(featureSlug),
+    bodyContent: body,
+    user: { login: req.session.login || '' },
+    products: navProducts,
+    activeProductId: null,
+    noProductJourneyCount: noProductJourneyCount
+  });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }

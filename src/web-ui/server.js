@@ -2643,7 +2643,7 @@ async function router(req, res) {
     // silently fell through to the final else branch's sign-in page instead
     // of the artefact view. See decisions.md.
     req.params = { journeyId: pathname.split('/')[2], stageName: decodeURIComponent(pathname.split('/')[4]) };
-    await handleGetJourneyStageView(req, res);
+    await handleGetJourneyStageView(req, res, _pshPool);
 
   } else if (pathname.match(/^\/api\/journey\/[^/]+\/stage\/[^/]+\/artefact$/) && req.method === 'POST') {
     // jsvr-s1 — save inline-edited artefact content from the stage-view page
@@ -2707,7 +2707,7 @@ async function router(req, res) {
     // ougl.7 — journey completion screen
     const journeyIdPart = pathname.split('/')[2];
     req.params = { journeyId: journeyIdPart };
-    await handleGetJourneyComplete(req, res);
+    await handleGetJourneyComplete(req, res, _pshPool);
 
   } else if (pathname.match(/^\/api\/journey\/[^/]+\/stage-controls$/) && req.method === 'GET') {
     // owle.1 — stage control flags (clarifyAvailable)

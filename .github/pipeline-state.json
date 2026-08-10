@@ -21746,6 +21746,47 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "epics": []
+    },
+    {
+      "slug": "2026-08-10-journey-page-nav-products-gap",
+      "name": "Resuming a stage history and viewing a completed journey both strand the operator with no way back to the dashboard",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "jcn-s1",
+          "id": "jcn-s1",
+          "name": "Thread Products nav into the stage-history and journey-complete pages",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-10-journey-page-nav-products-gap/review/jcn-s1-review-1.md",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 5,
+            "passing": 5,
+            "artefact": "artefacts/2026-08-10-journey-page-nav-products-gap/test-plans/jcn-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-10-journey-page-nav-products-gap/dor/jcn-s1-dor.md",
+          "oversightLevel": "low",
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-10T06:42:02.570Z",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-10T06:42:02.570Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -21809,5 +21850,5 @@
     ],
     "lastUpdated": "2026-07-17"
   },
-  "updatedAt": "2026-08-10T06:28:43.460Z"
+  "updatedAt": "2026-08-10T06:42:02.570Z"
 }
