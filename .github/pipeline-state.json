@@ -21625,6 +21625,44 @@
       "epics": []
     },
     {
+      "slug": "2026-08-10-ideate-success-lens-cycling",
+      "name": "Make the default mock-gateway /ideate scenario actually cycle through lenses, assumptions, conditions, and completion",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "isc-s1",
+          "id": "isc-s1",
+          "name": "Ideate success-scenario lens cycling",
+          "stage": "branch-complete",
+          "health": "green",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 5,
+            "passing": 5,
+            "artefact": "artefacts/2026-08-10-ideate-success-lens-cycling/test-plans/isc-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-10-ideate-success-lens-cycling/dor/isc-s1-dor.md",
+          "oversightLevel": "low",
+          "acTotal": 6,
+          "acVerified": 6,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-10T08:00:00.000Z",
+          "prStatus": "open"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-10T08:00:00.000Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": []
+    },
+    {
       "slug": "2026-08-10-resume-history-trailing-turn-fix",
       "name": "A completed stage resumed history silently drops its final assistant message when nothing followed it",
       "stage": "branch-complete",
