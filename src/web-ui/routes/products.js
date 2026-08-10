@@ -653,7 +653,14 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
   // health/coverage/module-assignment -- replacing the two separate
   // "grouped by module" sections tmc-s1 and a4 each rendered independently.
   var mergedItems = _productRollup.mergeFeatureSources(taxonomy, features).map(function(item) {
-    var realHealth = healthBySlug.hasOwnProperty(item.slug) ? healthBySlug[item.slug] : 'unknown';
+    // shb-s1: healthBySlug is keyed by feature-slug (computeHealthCounts is
+    // feature-granularity only). An epic-nested story item's own .slug is a
+    // story slug, not a feature slug -- it never matches directly, so look
+    // up via the parent feature's slug (item.featureSlug) first, falling
+    // back to item.slug for items that ARE already feature-level (the
+    // ungrouped-taxonomy and journey-sourced cases, unchanged from before).
+    var healthLookupKey = item.featureSlug || item.slug;
+    var realHealth = healthBySlug.hasOwnProperty(healthLookupKey) ? healthBySlug[healthLookupKey] : 'unknown';
     var pct = coverageBySlug.hasOwnProperty(item.slug) ? coverageBySlug[item.slug] : null;
     // fps-s1: only the 'unknown' case (no real test/DoD signal at all) gets
     // a stage/artefact-count progress proxy instead of the bare "No test
