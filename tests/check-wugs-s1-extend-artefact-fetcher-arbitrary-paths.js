@@ -1,4 +1,12 @@
 'use strict';
+// check-wugs-s1-extend-artefact-fetcher-arbitrary-paths.js -- wugs-s1
+//
+// Tests the new fetchRepoPath adapter added to artefact-fetcher.js, which
+// generalises the existing fetchArtefact() single-path fetch into an
+// arbitrary file/folder read (needed by the guardrails/standards feature to
+// read .github/architecture-guardrails.md and standards/ from a connected
+// repo). This file grows task-by-task across wugs-s1's implementation plan:
+// Task 1 covers only AC5 (unwired stub throws); later tasks add AC1-AC4/AC6.
 const assert = require('assert');
 let passed = 0, failed = 0;
 function check(name, fn) {

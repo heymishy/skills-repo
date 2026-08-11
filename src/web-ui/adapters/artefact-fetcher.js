@@ -84,19 +84,44 @@ async function fetchArtefact(featureSlug, artefactType, token, repoOverride) {
 }
 
 // ── wugs-s1: arbitrary repo-path fetch adapter (D37 injectable) ────────────
+//
+// Generalises fetchArtefact()'s fixed artefacts/<slug>/<type>.md path to any
+// file or folder path, so the guardrails/standards feature can read
+// .github/architecture-guardrails.md and standards/ from a connected repo.
+// Mirrors pipeline-state-fetch-adapter.js's exact pattern (throw-on-unwired
+// stub default, set/get pair, a separate "real" implementation wired in
+// server.js as its own D37 task).
 
 let _fetchRepoPath = function() {
   throw new Error('Adapter not wired: fetchRepoPath. Call setFetchRepoPath() with a real implementation before use.');
 };
 
+/**
+ * Fetch an arbitrary file or folder from a repo (used in tests and production).
+ * @param {string} owner
+ * @param {string} repo
+ * @param {string} path
+ * @param {string} token
+ * @returns {Promise<string|Array<{name: string, path: string, type: string}>>} decoded file content, or a directory entry array
+ */
 function fetchRepoPath(owner, repo, path, token) {
-  return _fetchRepoPath(owner, repo, path, token);
+  return getFetchRepoPath()(owner, repo, path, token);
 }
 
+/**
+ * Replace the repo-path fetch adapter (used in tests and production startup).
+ * @param {(owner: string, repo: string, path: string, token: string) => Promise<string|Array>} impl
+ */
 function setFetchRepoPath(impl) {
   _fetchRepoPath = impl;
 }
 
+/**
+ * Retrieve the currently wired adapter function. Callers invoke
+ * getFetchRepoPath()(owner, repo, path, token) rather than holding a
+ * captured reference, so rewiring always takes effect for the next call.
+ * @returns {Function}
+ */
 function getFetchRepoPath() {
   return _fetchRepoPath;
 }
