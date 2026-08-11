@@ -22083,12 +22083,12 @@
           "id": "wugs-s1",
           "slug": "wugs-s1-extend-artefact-fetcher-arbitrary-paths",
           "name": "Extend the artefact-fetcher adapter to read arbitrary repo files and folders",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s1-extend-artefact-fetcher-arbitrary-paths.md",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "notes": "Epic 1 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-11T18:35:48.323Z",
+          "updatedAt": "2026-08-11T18:49:43.449Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
@@ -22145,7 +22145,11 @@
             }
           ],
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/723"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/723",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dod/wugs-s1-dod.md",
+          "layoutGapsAtMerge": false
         },
         {
           "id": "wugs-s2",
@@ -22471,7 +22475,10 @@
           "id": "MC-SEC-02",
           "category": "mandatory-constraint",
           "label": "No credentials, tokens, or personal data in committed files",
-          "status": "not-assessed"
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-11T18:49:43.449Z",
+          "evidence": "No credentials/tokens logged or persisted: wugs-s1 code review confirms token passed only via Authorization Bearer header in artefact-fetcher.js, never logged."
         },
         {
           "id": "MC-SEC-03",
