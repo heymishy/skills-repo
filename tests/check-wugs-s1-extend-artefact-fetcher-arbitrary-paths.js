@@ -60,6 +60,31 @@ function freshModule() {
     }
   });
 
+  await check('AC2: realFetchRepoPath_folder_returnsEntryArray', async () => {
+    const mod = freshModule();
+    const originalFetch = global.fetch;
+    global.fetch = async (url) => {
+      assert.ok(url.includes('/repos/acme/widget/contents/standards'));
+      return {
+        status: 200,
+        ok: true,
+        json: async () => ([
+          { name: 'data', path: 'standards/data', type: 'dir', sha: 'abc' },
+          { name: 'devops', path: 'standards/devops', type: 'dir', sha: 'def' }
+        ])
+      };
+    };
+    try {
+      const result = await mod.realFetchRepoPath('acme', 'widget', 'standards', 'tok123');
+      assert.ok(Array.isArray(result), 'expected an array for a folder path');
+      assert.strictEqual(result.length, 2);
+      assert.strictEqual(result[0].name, 'data');
+      assert.strictEqual(result[0].type, 'dir');
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
   console.log('\n' + passed + ' passed, ' + failed + ' failed');
   if (failed > 0) process.exit(1);
 })();
