@@ -1078,7 +1078,7 @@ async function handleGetProductRoadmap(req, res, _next, pool) {
  * setStandardsAdapter's prompt-injection path already uses) rather than a
  * second, divergent query -- see that function for the full rationale.
  */
-function _renderStandardsTab(productName, productId, login, standards) {
+function _renderStandardsTab(productName, productId, login, standards, navProducts, noProductJourneyCount) {
   var rowsHtml = standards.length === 0
     ? '<p style="color:var(--muted);font-size:14px">No standards yet — create one via the API, or promote one from another product.</p>'
     : '<ul class="sw-list">' +
@@ -1105,9 +1105,13 @@ function _renderStandardsTab(productName, productId, login, standards) {
         }).join('') +
       '</ul>';
 
+  // rapp-s2 (fix-forward): the manual "productName ›" line here duplicated
+  // renderShell's own crumbs bar (crumbs: [productName, 'Standards'] below)
+  // -- both rendered the exact same breadcrumb text, one right above the
+  // other. Removed; the H1 alone is enough page-title context now that the
+  // real navigation breadcrumb (renderShell's crumbs) is present.
   var body = '<div style="max-width:720px">' +
     '<div style="margin-bottom:24px">' +
-      '<div style="font-size:12px;color:var(--muted);margin-bottom:4px"><a href="/products/' + _escapeHtml(productId) + '" style="color:var(--muted);text-decoration:none">' + _escapeHtml(productName) + '</a> &rsaquo;</div>' +
       '<h1 style="margin:0;font-size:24px">Standards</h1>' +
     '</div>' +
     rowsHtml +
@@ -1138,7 +1142,16 @@ function _renderStandardsTab(productName, productId, login, standards) {
       '}' +
     '</script>' +
   '</div>';
-  return _htmlShell.renderShell({ title: 'Standards', bodyContent: body, user: { login: login }, active: 'dashboard', crumbs: [productName, 'Standards'] });
+  return _htmlShell.renderShell({
+    title: 'Standards',
+    bodyContent: body,
+    user: { login: login },
+    active: 'dashboard',
+    crumbs: [productName, 'Standards'],
+    products: navProducts,
+    activeProductId: productId,
+    noProductJourneyCount: noProductJourneyCount
+  });
 }
 
 /**
@@ -1170,7 +1183,14 @@ async function handleGetProductStandardsTab(req, res, _next, pool) {
   if (res.json) {
     res.json({ standards: standards });
   } else {
-    var html = _renderStandardsTab(prodRow.name, productId, login, standards);
+    // rapp-s2 (fix-forward): this handler never adopted pan-s1's products-nav
+    // wiring -- passing no `products` to renderShell renders the whole
+    // Products/Journeys/Run-a-Skill sidebar section empty (renderProductsSection()
+    // treats `products: undefined` as "render nothing"). Same root cause, same
+    // fix as jcn-s1's journey-page nav gap -- see that story for the pattern
+    // this was fixed to match.
+    var navSummary = await getProductsNavSummary(_pool, tenantId);
+    var html = _renderStandardsTab(prodRow.name, productId, login, standards, navSummary.products, navSummary.noProductJourneyCount);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
