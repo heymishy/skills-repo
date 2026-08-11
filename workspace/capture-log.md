@@ -1176,3 +1176,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: gap
   signal-text: "Operator feedback while reviewing the web UI live: the feature/journey summary page's artefact listing (end-of-flow view showing produced artefacts) is currently a flat, alphabetically-sorted list of links to raw markdown files plus a single resume link -- no categorisation, no visual structure. Operator wants it to instead follow the actual pipeline stages flow (discovery -> benefit-metric -> definition -> review -> test-plan -> DoR -> ... -> DoD) with better UX -- e.g. grouped/ordered by stage rather than alphabetical, so the artefact trail reads as a story of what happened in order, not an unordered file listing. Exact page/route not yet confirmed with the operator (likely a journey-complete or product-view summary render in src/web-ui) -- needs scoping before a story can be written; logged for a future short-track or standard-track UX pass."
   source: operator-manual
+
+- date: 2026-08-11
+  session-phase: post-merge (rapp-s2)
+  signal-type: gap
+  signal-text: "The 'Trace Commit' workflow's 'Skip if trace-only commit' step fails whenever a merge commit message has a multi-line/multi-paragraph body (observed on rapp-s2's own merge, run 31446574166): the commit message is interpolated unquoted into a bash run: step, so each newline in the body gets interpreted as a separate shell command/argument, producing 'File name too long' and exit code 1. This is a pre-existing workflow bug (unescaped multi-line variable in a GH Actions run: block), not caused by rapp-s2's changes -- likely fails on every merge with a multi-paragraph commit body, which is the norm for most PRs merged this session. Needs the msg variable read via env: + a heredoc or python/node string check instead of inline bash interpolation. Not yet fixed -- logged for a future short-track CI fix."
+  source: agent-auto

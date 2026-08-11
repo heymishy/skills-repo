@@ -22009,7 +22009,7 @@
       "stage": "branch-complete",
       "health": "green",
       "metrics": [],
-      "updatedAt": "2026-08-10T21:24:25.736Z",
+      "updatedAt": "2026-08-11T08:42:00.178Z",
       "track": "short",
       "regulated": false,
       "complianceProfile": "standard",
@@ -22021,7 +22021,7 @@
           "slug": "rapp-s2",
           "id": "rapp-s2",
           "name": "Standards tab nav and breadcrumb fix",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "testPlan": {
             "status": "all-passing",
@@ -22036,8 +22036,702 @@
           "acVerified": 7,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-10T21:24:25.736Z",
-          "prStatus": "none"
+          "updatedAt": "2026-08-11T08:42:00.178Z",
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true
+        }
+      ]
+    },
+    {
+      "slug": "2026-08-11-web-ui-guardrails-standards-surface",
+      "name": "Web UI Guardrails & Standards Surface",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Guardrail/standard visibility in the web UI",
+          "target": "100% of active products with a connected repo render a populated, correctly-delineated org/product view",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Product-to-org promotion-approval workflow usage",
+          "target": "At least 1 real promotion request submitted and resolved within 4 weeks of release",
+          "baseline": "0",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "updatedAt": "2026-08-11T08:38:42.453Z",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "discoveryStatus": "approved",
+      "epics": [],
+      "stories": [
+        {
+          "id": "wugs-s1",
+          "slug": "wugs-s1-extend-artefact-fetcher-arbitrary-paths",
+          "name": "Extend the artefact-fetcher adapter to read arbitrary repo files and folders",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s1-extend-artefact-fetcher-arbitrary-paths.md",
+          "prStatus": "none",
+          "notes": "Epic 1 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
+          "updatedAt": "2026-08-11T08:38:42.453Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "mediumFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 7,
+            "passing": 0
+          },
+          "acTotal": 6,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-08-11T08:38:42.453Z"
+        },
+        {
+          "id": "wugs-s2",
+          "slug": "wugs-s2-product-level-guardrails-view",
+          "name": "Product-level guardrails/standards view from the connected repo",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s2-product-level-guardrails-view.md",
+          "prStatus": "none",
+          "notes": "Epic 1 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
+          "updatedAt": "2026-08-11T08:38:42.453Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "mediumFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 7,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s2-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s2-dor-contract.md",
+          "dorSignedOffAt": "2026-08-11T08:38:42.453Z"
+        },
+        {
+          "id": "wugs-s3",
+          "slug": "wugs-s3-org-level-guardrails-view-with-seeding",
+          "name": "Org-level guardrails/standards view from the tenant's designated org repo, with seeding",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s3-org-level-guardrails-view-with-seeding.md",
+          "prStatus": "none",
+          "notes": "Epic 1 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
+          "updatedAt": "2026-08-11T08:38:42.453Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "mediumFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 7,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s3-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s3-dor-contract.md",
+          "dorSignedOffAt": "2026-08-11T08:38:42.453Z"
+        },
+        {
+          "id": "wugs-s4",
+          "slug": "wugs-s4-no-connected-repo-fallback",
+          "name": "No-connected-repo fallback: org-level only, with a connect-repo prompt",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s4-no-connected-repo-fallback.md",
+          "prStatus": "none",
+          "notes": "Epic 1 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
+          "updatedAt": "2026-08-11T08:38:42.453Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "mediumFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s4-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s4-dor-contract.md",
+          "dorSignedOffAt": "2026-08-11T08:38:42.453Z"
+        },
+        {
+          "id": "wugs-s5",
+          "slug": "wugs-s5-create-edit-form",
+          "name": "Create/edit form for a guardrail or standard",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s5-create-edit-form.md",
+          "prStatus": "none",
+          "notes": "Epic 2 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
+          "updatedAt": "2026-08-11T08:38:42.453Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "mediumFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s5-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s5-dor-contract.md",
+          "dorSignedOffAt": "2026-08-11T08:38:42.453Z"
+        },
+        {
+          "id": "wugs-s6",
+          "slug": "wugs-s6-branch-pr-creation-adapter",
+          "name": "Branch + PR creation adapter against the tenant's repo",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s6-branch-pr-creation-adapter.md",
+          "prStatus": "none",
+          "notes": "Epic 2 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
+          "updatedAt": "2026-08-11T08:38:42.453Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "mediumFindings": 1,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 8,
+            "passing": 0
+          },
+          "acTotal": 6,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s6-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s6-dor-contract.md",
+          "dorSignedOffAt": "2026-08-11T08:38:42.453Z"
+        },
+        {
+          "id": "wugs-s7",
+          "slug": "wugs-s7-surface-pr-state-in-view",
+          "name": "Surface pending/merged PR state in the guardrails/standards view",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s7-surface-pr-state-in-view.md",
+          "prStatus": "none",
+          "notes": "Epic 2 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
+          "updatedAt": "2026-08-11T08:38:42.453Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "mediumFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s7-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s7-dor-contract.md",
+          "dorSignedOffAt": "2026-08-11T08:38:42.453Z"
+        },
+        {
+          "id": "wugs-s8",
+          "slug": "wugs-s8-request-promotion",
+          "name": "Request a product-level entry be promoted to org level",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s8-request-promotion.md",
+          "prStatus": "none",
+          "notes": "Epic 3 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
+          "updatedAt": "2026-08-11T08:38:42.453Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "mediumFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s8-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s8-dor-contract.md",
+          "dorSignedOffAt": "2026-08-11T08:38:42.453Z"
+        },
+        {
+          "id": "wugs-s9",
+          "slug": "wugs-s9-approve-reject-promotion",
+          "name": "Admin approves or rejects a promotion request",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s9-approve-reject-promotion.md",
+          "prStatus": "none",
+          "notes": "Epic 3 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
+          "updatedAt": "2026-08-11T08:38:42.453Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "mediumFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s9-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s9-dor-contract.md",
+          "dorSignedOffAt": "2026-08-11T08:38:42.453Z"
+        },
+        {
+          "id": "wugs-s10",
+          "slug": "wugs-s10-audit-log-promotion-events",
+          "name": "Audit-log promotion request/approval/rejection events",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s10-audit-log-promotion-events.md",
+          "prStatus": "none",
+          "notes": "Epic 3 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
+          "updatedAt": "2026-08-11T08:38:42.453Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "mediumFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s10-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s10-dor-contract.md",
+          "dorSignedOffAt": "2026-08-11T08:38:42.453Z"
+        },
+        {
+          "id": "wugs-s11",
+          "slug": "wugs-s11-remove-smug-s1-routes-and-tab",
+          "name": "Remove smug-s1 promote/opt-out routes and Standards tab rendering",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s11-remove-smug-s1-routes-and-tab.md",
+          "prStatus": "none",
+          "notes": "Epic 4 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
+          "updatedAt": "2026-08-11T08:38:42.453Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "mediumFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 3,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s11-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s11-dor-contract.md",
+          "dorSignedOffAt": "2026-08-11T08:38:42.453Z"
+        },
+        {
+          "id": "wugs-s12",
+          "slug": "wugs-s12-remove-db-tables",
+          "name": "Remove the standards/standard_product_optouts DB tables and their references",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s12-remove-db-tables.md",
+          "prStatus": "none",
+          "notes": "Epic 4 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
+          "updatedAt": "2026-08-11T08:38:42.453Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "mediumFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 3,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s12-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s12-dor-contract.md",
+          "dorSignedOffAt": "2026-08-11T08:38:42.453Z"
+        }
+      ],
+      "slicingStrategy": "walking-skeleton",
+      "guardrails": [
+        {
+          "id": "MC-SEC-01",
+          "category": "mandatory-constraint",
+          "label": "No user-supplied content in innerHTML without sanitisation",
+          "status": "met",
+          "evidence": "No unsanitised innerHTML: wugs-s2/wugs-s3/wugs-s5 all cite this for rendering untrusted repo content and pre-filled edit-form content.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-11T08:38:42.453Z"
+        },
+        {
+          "id": "MC-SEC-02",
+          "category": "mandatory-constraint",
+          "label": "No credentials, tokens, or personal data in committed files",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-SEC-03",
+          "category": "mandatory-constraint",
+          "label": "Viz reads local JSON only — no external fetch calls",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CORRECT-01",
+          "category": "mandatory-constraint",
+          "label": "Gate logic reads evidence fields from pipeline-state.json (not stage alone)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CORRECT-02",
+          "category": "mandatory-constraint",
+          "label": "Fields written to pipeline-state.json must exist in schema",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CORRECT-03",
+          "category": "mandatory-constraint",
+          "label": "Fields read by viz from pipeline-state.json must exist in schema",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-SELF-01",
+          "category": "mandatory-constraint",
+          "label": "dashboards/pipeline-viz.html renders without build step, server, or network",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-SELF-02",
+          "category": "mandatory-constraint",
+          "label": "No npm devDependencies in dashboards/pipeline-viz.html runtime",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CONSIST-01",
+          "category": "mandatory-constraint",
+          "label": "Stage enum in schema updated when skill adds/removes stage",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-CONSIST-02",
+          "category": "mandatory-constraint",
+          "label": "Gate add/remove synced with SKILL.md criteria",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-A11Y-01",
+          "category": "mandatory-constraint",
+          "label": "Interactive elements keyboard-accessible",
+          "status": "not-assessed"
+        },
+        {
+          "id": "MC-A11Y-02",
+          "category": "mandatory-constraint",
+          "label": "Colour not sole indicator of gate status (icons/labels present)",
+          "status": "met",
+          "evidence": "Colour not sole indicator: wugs-s2/wugs-s3/wugs-s7 NFRs require text/label indicators alongside any colour-coded state.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-11T08:38:42.453Z"
+        },
+        {
+          "id": "ADR-001",
+          "category": "adr",
+          "label": "Single-file viz, no build step",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-002",
+          "category": "adr",
+          "label": "Gates must use evidence fields, not stage-proxy",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-003",
+          "category": "adr",
+          "label": "Schema-first: fields defined before use",
+          "status": "met",
+          "evidence": "Schema-first: wugs-s3/wugs-s8 new tables + wugs-s12 removal both correctly sequence schema changes with the code that reads/writes them.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-11T08:38:42.453Z"
+        },
+        {
+          "id": "ADR-004",
+          "category": "adr",
+          "label": "context.yml is the single config source of truth",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-005",
+          "category": "adr",
+          "label": "Agent instructions format driven by vcs.type (surface adapter concern)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-006",
+          "category": "adr",
+          "label": "Approval-channel adapter pattern for DoR sign-off",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-007",
+          "category": "adr",
+          "label": "EA registry surface-type mapping table (technology.hosting → platform surface type)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-008",
+          "category": "adr",
+          "label": "DoR touch-point contract is binding at pre-merge",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-01",
+          "category": "pattern",
+          "label": "Single-file HTML viz architecture",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-02",
+          "category": "pattern",
+          "label": "State access via parsed pipelineState global",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-03",
+          "category": "pattern",
+          "label": "Gate pass/fail by evidence fields",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-04",
+          "category": "pattern",
+          "label": "Schema evolution: add fields simultaneously",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-05",
+          "category": "pattern",
+          "label": "Config reading via context.yml",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-06",
+          "category": "pattern",
+          "label": "Execution pre-condition gate on runtime artefact existence (DoR PROCEED-BLOCKED)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-07",
+          "category": "pattern",
+          "label": "Group instruction-text-only changes at the same SKILL.md exit point into one story",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-01",
+          "category": "anti-pattern",
+          "label": "Gate logic checking feature.stage only",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-02",
+          "category": "anti-pattern",
+          "label": "Hardcoded org/tool names in skill files",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-03",
+          "category": "anti-pattern",
+          "label": "External CDN dependencies in viz at runtime",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-04",
+          "category": "anti-pattern",
+          "label": "Fields used by viz/skills but not in schema",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-05",
+          "category": "anti-pattern",
+          "label": "Committing viz changes without passing check-viz-syntax.js",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-06",
+          "category": "anti-pattern",
+          "label": "Directly mutating pipeline-state.json outside skills",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-07",
+          "category": "anti-pattern",
+          "label": "Bundling changes from story B into story A's PR (multi-story contamination)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-08",
+          "category": "anti-pattern",
+          "label": "Committing runtime artefact churn (traces, validation reports) in story branches",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-009",
+          "category": "adr",
+          "label": "Evaluation and write-back workflows must be separate triggers with separate permission scopes",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-010",
+          "category": "adr",
+          "label": "CI audit records must be persisted to main post-merge, not to feature branches",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-08",
+          "category": "pattern",
+          "label": "Two-workflow CI audit pattern: evaluate on pull_request (contents:read) + persist post-merge to main (contents:write)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "PAT-09",
+          "category": "pattern",
+          "label": "git commit --allow-empty to force synchronize event when required check has not re-run",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-09",
+          "category": "anti-pattern",
+          "label": "Required-check workflow committing back to the branch it evaluates (synchronize loop)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-10",
+          "category": "anti-pattern",
+          "label": "[ci skip] on a branch with required checks (suppresses status reporting)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "AP-11",
+          "category": "anti-pattern",
+          "label": "Committing a new SKILL.md, src/ module, governance check script, dashboard behavioural change, copilot-instructions behavioural change, or structural pipeline-state change without a story artefact (artefact-first violation)",
+          "status": "met",
+          "evidence": "Artefact-first anti-pattern: satisfied -- this feature has a full story artefact chain before any src/ change.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-11T08:38:42.453Z"
+        },
+        {
+          "id": "ADR-011",
+          "category": "adr",
+          "label": "Artefact-first: new SKILL.md files, src/ modules, governance check scripts, dashboard behavioural changes, copilot-instructions behavioural changes, and structural pipeline-state.json changes require a story artefact before or alongside the commit",
+          "status": "met",
+          "evidence": "Artefact-first: full discovery -> benefit-metric -> decisions -> epics -> stories chain exists for this feature before any implementation.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-08-11T07:46:12.731Z"
+        },
+        {
+          "id": "ADR-012",
+          "category": "adr",
+          "label": "Platform-agnostic architecture: prefer portable multi-VCS implementations over vendor-specific optimisations; adapters enable platform adaptation without fragmentation",
+          "status": "met",
+          "evidence": "Platform-agnostic adapters: wugs-s1 correctly extends the existing artefact-fetcher.js adapter rather than duplicating; wugs-s6 flagged (1-M1) for missing an explicit ADR-012 citation despite being adapter-shaped work.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-11T08:38:42.453Z"
+        },
+        {
+          "id": "ADR-013",
+          "category": "adr",
+          "label": "Phase 4 enforcement architecture: shared 3-operation governance package is the contract all surface adapters call — no surface adapter reimplements governance logic independently",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-phase4-enforcement",
+          "category": "adr",
+          "label": "Mechanism selection: which enforcement mechanism (MCP, CLI, or deferred) applies to each Phase 4 surface class",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-015",
+          "category": "adr",
+          "label": "Two-tier artefact scope model: system corpus vs feature delivery — /modernisation-decompose is the canonical bridge; ad-hoc cross-scope sharing not permitted",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-016",
+          "category": "adr",
+          "label": "Two-file state authority model: pipeline-state.json is delivery evidence (viz source of truth); workspace/state.json is operator session state — skills must not conflate the two",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-017",
+          "category": "adr",
+          "label": "Story nesting dual-structure: all new features use flat features[].stories[]; Phase 1/2 epics-nested shape is legacy and not migrated",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-018",
+          "category": "adr",
+          "label": "Playwright is the E2E testing framework; specs in tests/e2e/; devDependency only; unit test chain (npm test) must not invoke Playwright; auth bypass is test-fixture-layer only (NODE_ENV=test guard)",
+          "status": "not-assessed"
+        },
+        {
+          "id": "ADR-025",
+          "category": "adr",
+          "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
+          "status": "met",
+          "evidence": "Multi-tenancy: wugs-s2/wugs-s3/wugs-s8 all cite tenant_id scoping consistent with the application-layer pattern; wugs-s3 AC5 has an explicit cross-tenant isolation test.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-11T08:38:42.453Z"
         }
       ]
     }
