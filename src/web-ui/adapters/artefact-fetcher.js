@@ -83,6 +83,57 @@ async function fetchArtefact(featureSlug, artefactType, token, repoOverride) {
   return decoded;
 }
 
+/**
+ * Fetch an arbitrary file or folder from a repo via GitHub Contents API.
+ * Unlike fetchArtefact(), this accepts any path, not just the fixed
+ * artefacts/<slug>/<type>.md convention, and branches on response shape:
+ * a single file returns a decoded string; a directory returns an array
+ * of entries (wugs-s1 AC1/AC2).
+ * @param {string} owner
+ * @param {string} repo
+ * @param {string} path
+ * @param {string} token
+ * @returns {Promise<string|Array>} decoded file content, or a directory entry array
+ * @throws {ArtefactNotFoundError} on 404
+ * @throws {ArtefactFetchError}    on other errors
+ */
+async function realFetchRepoPath(owner, repo, path, token) {
+  const url = `${GITHUB_API_BASE}/repos/${owner}/${repo}/contents/${path}`;
+
+  let response;
+  try {
+    response = await fetch(url, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept':        'application/vnd.github.v3+json'
+      }
+    });
+  } catch (err) {
+    throw new ArtefactFetchError('Network error fetching repo path', err.message);
+  }
+
+  if (response.status === 404) {
+    throw new ArtefactNotFoundError(`${owner}/${repo}`, path);
+  }
+
+  if (!response.ok) {
+    let errorMessage = 'Unknown error';
+    try {
+      const body = await response.json();
+      errorMessage = body.message || errorMessage;
+    } catch (_) { /* ignore parse failure */ }
+    throw new ArtefactFetchError(`GitHub API error: ${response.status}`, errorMessage);
+  }
+
+  const data = await response.json();
+
+  if (Array.isArray(data)) {
+    return data.map(entry => ({ name: entry.name, path: entry.path, type: entry.type }));
+  }
+
+  return Buffer.from(data.content.replace(/\n/g, ''), 'base64').toString('utf8');
+}
+
 // ── wugs-s1: arbitrary repo-path fetch adapter (D37 injectable) ────────────
 //
 // Generalises fetchArtefact()'s fixed artefacts/<slug>/<type>.md path to any
@@ -128,5 +179,5 @@ function getFetchRepoPath() {
 
 module.exports = {
   fetchArtefact, ArtefactNotFoundError, ArtefactFetchError,
-  fetchRepoPath, setFetchRepoPath, getFetchRepoPath
+  fetchRepoPath, setFetchRepoPath, getFetchRepoPath, realFetchRepoPath
 };

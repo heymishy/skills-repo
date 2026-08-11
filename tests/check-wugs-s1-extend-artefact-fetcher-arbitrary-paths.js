@@ -9,8 +9,15 @@
 // Task 1 covers only AC5 (unwired stub throws); later tasks add AC1-AC4/AC6.
 const assert = require('assert');
 let passed = 0, failed = 0;
-function check(name, fn) {
-  try { fn(); console.log('PASS:', name); passed++; }
+// wugs-s1 Task 2: check() is awaited by every call site below (an async fn's
+// body runs synchronously up to its first await, so a non-awaited call can
+// still silently miss a later rejected assertion). Making check() async and
+// awaiting every invocation ensures async test bodies are actually watched
+// to completion before the summary line prints. Awaiting a synchronous fn's
+// return value (e.g. the AC5 test, which returns undefined) is a no-op, so
+// this is safe for the existing synchronous test too.
+async function check(name, fn) {
+  try { await fn(); console.log('PASS:', name); passed++; }
   catch (e) { console.error('FAIL:', name, '—', e.message); failed++; process.exitCode = 1; }
 }
 
@@ -20,14 +27,39 @@ function freshModule() {
   return require('../src/web-ui/adapters/artefact-fetcher');
 }
 
-check('AC5: fetchRepoPath_unwired_throwsExplicitError', () => {
-  const mod = freshModule();
-  assert.throws(
-    () => mod.fetchRepoPath('owner', 'repo', 'some/path', 'tok'),
-    /Adapter not wired: fetchRepoPath/,
-    'expected the unwired stub to throw immediately (synchronous), not return a rejected promise silently'
-  );
-});
+(async () => {
+  await check('AC5: fetchRepoPath_unwired_throwsExplicitError', () => {
+    const mod = freshModule();
+    assert.throws(
+      () => mod.fetchRepoPath('owner', 'repo', 'some/path', 'tok'),
+      /Adapter not wired: fetchRepoPath/,
+      'expected the unwired stub to throw immediately (synchronous), not return a rejected promise silently'
+    );
+  });
 
-console.log('\n' + passed + ' passed, ' + failed + ' failed');
-if (failed > 0) process.exit(1);
+  await check('AC1: realFetchRepoPath_singleFile_returnsDecodedContent', async () => {
+    const mod = freshModule();
+    const originalFetch = global.fetch;
+    global.fetch = async (url, opts) => {
+      assert.ok(url.includes('/repos/acme/widget/contents/.github/architecture-guardrails.md'));
+      assert.strictEqual(opts.headers['Authorization'], 'Bearer tok123');
+      return {
+        status: 200,
+        ok: true,
+        json: async () => ({
+          content: Buffer.from('# Guardrails\n\nSome content.').toString('base64'),
+          type: 'file'
+        })
+      };
+    };
+    try {
+      const result = await mod.realFetchRepoPath('acme', 'widget', '.github/architecture-guardrails.md', 'tok123');
+      assert.strictEqual(result, '# Guardrails\n\nSome content.');
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
+  console.log('\n' + passed + ' passed, ' + failed + ' failed');
+  if (failed > 0) process.exit(1);
+})();
