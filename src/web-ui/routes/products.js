@@ -1179,7 +1179,7 @@ async function _fetchGuardrailsSectionPiece(owner, repo, path, token) {
  * connected repo. Each piece renders independently so a failure in one
  * does not affect the other (AC4).
  */
-function _renderGuardrailsSection(guardrailsPiece) {
+function _renderGuardrailsSection(guardrailsPiece, standardsPiece) {
   var guardrailsHtml;
   if (guardrailsPiece.status === 'ok') {
     guardrailsHtml = '<pre class="gv-guardrails-content" style="white-space:pre-wrap;font-family:inherit;font-size:14px;background:var(--surface);padding:16px;border-radius:8px;border:1px solid var(--line)">' + _escapeHtml(guardrailsPiece.value) + '</pre>';
@@ -1189,9 +1189,25 @@ function _renderGuardrailsSection(guardrailsPiece) {
     guardrailsHtml = '<p class="gv-guardrails-error" style="color:var(--danger,#c0392b);font-size:14px">Could not load architecture-guardrails.md: ' + _escapeHtml(guardrailsPiece.errorMessage) + '</p>';
   }
 
+  var standardsHtml;
+  if (standardsPiece.status === 'ok') {
+    var entries = Array.isArray(standardsPiece.value) ? standardsPiece.value : [];
+    standardsHtml = entries.length === 0
+      ? '<p class="gv-standards-empty" style="color:var(--muted);font-size:14px">No standards found in this repo.</p>'
+      : '<ul class="gv-standards-list">' + entries.map(function (e) {
+          return '<li>' + _escapeHtml(e.name) + '</li>';
+        }).join('') + '</ul>';
+  } else if (standardsPiece.status === 'empty') {
+    standardsHtml = '<p class="gv-standards-empty" style="color:var(--muted);font-size:14px">No standards found in this repo.</p>';
+  } else {
+    standardsHtml = '<p class="gv-standards-error" style="color:var(--danger,#c0392b);font-size:14px">Could not load standards/: ' + _escapeHtml(standardsPiece.errorMessage) + '</p>';
+  }
+
   return '<div class="gv-product-section">' +
     '<h2 style="font-size:18px;margin:0 0 12px">Architecture guardrails</h2>' +
     guardrailsHtml +
+    '<h2 style="font-size:18px;margin:24px 0 12px">Standards</h2>' +
+    standardsHtml +
   '</div>';
 }
 
@@ -1217,7 +1233,8 @@ async function handleGetProductGuardrailsView(req, res, _next, pool) {
   }
 
   var guardrailsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, '.github/architecture-guardrails.md', token);
-  var productSectionHtml = _renderGuardrailsSection(guardrailsPiece);
+  var standardsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, 'standards/', token);
+  var productSectionHtml = _renderGuardrailsSection(guardrailsPiece, standardsPiece);
 
   var navSummary = await getProductsNavSummary(_pool, tenantId);
 

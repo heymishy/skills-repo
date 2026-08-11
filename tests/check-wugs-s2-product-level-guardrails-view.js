@@ -126,6 +126,57 @@ await checkAsync('AC1: handleGetGuardrailsView_fetchFails_rendersErrorState', as
   });
 });
 
+// ── AC2: lists real standards/ folder entries ────────────────────────────
+await checkAsync('AC2: handleGetGuardrailsView_productHasStandardsFolder_listsEntries', async () => {
+  var pool = makeMockPool([]);
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    if (path === '.github/architecture-guardrails.md') { throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path); }
+    if (path === 'standards/') { return [{ name: 'saas-gui', path: 'standards/saas-gui', type: 'dir' }, { name: 'backend-api', path: 'standards/backend-api', type: 'dir' }]; }
+    throw new Error('unexpected path: ' + path);
+  }, async function () {
+    var req = mockReq();
+    var res = mockRes();
+    await products.handleGetProductGuardrailsView(req, res, null, pool);
+    var result = res._get();
+    assert.strictEqual(result.statusCode, 200);
+    assert.ok(result.body.indexOf('saas-gui') !== -1, 'expected the real "saas-gui" entry name in the response');
+    assert.ok(result.body.indexOf('backend-api') !== -1, 'expected the real "backend-api" entry name in the response');
+  });
+});
+
+// ── AC2: empty state when standards/ is missing ─────────────────────────
+await checkAsync('AC2: handleGetGuardrailsView_productHasNoStandardsFolder_rendersEmptyState', async () => {
+  var pool = makeMockPool([]);
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    var req = mockReq();
+    var res = mockRes();
+    await products.handleGetProductGuardrailsView(req, res, null, pool);
+    var result = res._get();
+    assert.strictEqual(result.statusCode, 200, 'expected 200, got: ' + result.statusCode);
+    assert.ok(result.body.indexOf('No standards found in this repo.') !== -1, 'expected empty-state message in response');
+  });
+});
+
+// ── AC2: error state when the standards fetch fails ──────────────────────
+await checkAsync('AC2: handleGetGuardrailsView_standardsFetchFails_rendersErrorState', async () => {
+  var pool = makeMockPool([]);
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    if (path === '.github/architecture-guardrails.md') { throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path); }
+    if (path === 'standards/') { throw new Error('rate limit exceeded'); }
+    throw new Error('unexpected path: ' + path);
+  }, async function () {
+    var req = mockReq();
+    var res = mockRes();
+    await products.handleGetProductGuardrailsView(req, res, null, pool);
+    var result = res._get();
+    assert.strictEqual(result.statusCode, 200, 'expected 200, got: ' + result.statusCode);
+    assert.ok(result.body.indexOf('Could not load standards/:') !== -1, 'expected error-state message in response');
+    assert.ok(result.body.indexOf('rate limit exceeded') !== -1, 'expected underlying error message in response');
+  });
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
