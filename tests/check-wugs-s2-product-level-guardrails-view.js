@@ -256,6 +256,14 @@ await checkAsync('NFR-SEC-01: guardrailsContent_withScriptTag_isEscapedNotLiveMa
   });
 });
 
+// ── Wiring: GET /products/:id/guardrails is routed in server.js ─────────
+check('wiring: server_js_routes_getProductsGuardrails_to_handler', () => {
+  var fs = require('fs');
+  var serverSrc = fs.readFileSync(require.resolve('../src/web-ui/server.js'), 'utf8');
+  assert.ok(serverSrc.indexOf('/guardrails$/') !== -1, 'expected server.js to route GET /products/:id/guardrails');
+  assert.ok(serverSrc.indexOf('handleGetProductGuardrailsView') !== -1, 'expected server.js to reference handleGetProductGuardrailsView');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
