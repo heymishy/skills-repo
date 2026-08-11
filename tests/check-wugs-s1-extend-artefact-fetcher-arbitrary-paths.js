@@ -107,14 +107,14 @@ async function withMockedFetch(mockFn, testFn) {
   await check('AC4: realFetchRepoPath_apiError_throwsArtefactFetchError', () => withMockedFetch(
     async () => ({ status: 500, ok: false, json: async () => ({ message: 'Internal error' }) }),
     async (mod) => {
-      let caught;
-      try {
-        await mod.realFetchRepoPath('acme', 'widget', 'some/path.md', 'tok123');
-      } catch (err) {
-        caught = err;
-      }
-      assert.ok(caught instanceof mod.ArtefactFetchError, 'expected an ArtefactFetchError instance');
-      assert.strictEqual(caught.cause, 'Internal error', 'expected the underlying GitHub error message to be preserved in .cause, per AC4');
+      await assert.rejects(
+        () => mod.realFetchRepoPath('acme', 'widget', 'some/path.md', 'tok123'),
+        (err) => {
+          assert.ok(err instanceof mod.ArtefactFetchError, 'expected an ArtefactFetchError instance');
+          assert.strictEqual(err.cause, 'Internal error', 'expected the underlying GitHub error message to be preserved in .cause, per AC4');
+          return true;
+        }
+      );
     }
   ));
 
