@@ -22083,12 +22083,12 @@
           "id": "wugs-s1",
           "slug": "wugs-s1-extend-artefact-fetcher-arbitrary-paths",
           "name": "Extend the artefact-fetcher adapter to read arbitrary repo files and folders",
-          "stage": "subagent-execution",
+          "stage": "verify-completion",
           "health": "green",
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s1-extend-artefact-fetcher-arbitrary-paths.md",
           "prStatus": "none",
           "notes": "Epic 1 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-11T14:23:55.563Z",
+          "updatedAt": "2026-08-11T18:26:49.662Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
@@ -22142,7 +22142,8 @@
               "tddState": "committed",
               "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s1-plan.md"
             }
-          ]
+          ],
+          "verifyStatus": "passed"
         },
         {
           "id": "wugs-s2",
