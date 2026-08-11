@@ -56,6 +56,7 @@ const { migrateProductRepoColumns }                                  = require('
 const { registerSelfAsProduct }                                       = require('./modules/platform-self-registration'); // pr-s1
 const { setRepoAdapter, realCheckRepoAccess }                        = require('./adapters/repo-adapter'); // prc-s1.2 (D37 separate task)
 const { setPipelineStateFetchAdapter, realFetchPipelineState }        = require('./adapters/pipeline-state-fetch-adapter'); // pr-s2
+const { setFetchRepoPath, realFetchRepoPath }                        = require('./adapters/artefact-fetcher'); // wugs-s1
 const { handlePostConnectRepo }                                      = require('./routes/product-repo');   // prc-s1.2
 const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter, handleGetBillingPortal, handleGetBillingPlanState } = require('./routes/billing'); // lab-s3.2 / lab-s3.4 / lab-s3.5 / bri-s3.5
 const { setStripeAdapter }                                           = require('./modules/stripe-client');  // lab-s3.2
@@ -177,6 +178,16 @@ if (process.env.NODE_ENV !== 'test') {
 if (process.env.NODE_ENV !== 'test') {
   setPipelineStateFetchAdapter(realFetchPipelineState);
   console.log('[pr-s2] pipeline-state fetch adapter wired');
+}
+
+// wugs-s1 / D37 mandatory separate wiring task -- wire the real GitHub
+// Contents API adapter for fetching arbitrary repo files/folders (guardrails
+// and standards content). Never wired in NODE_ENV=test (tests call
+// setFetchRepoPath() themselves with a mock); the throwing stub stays active
+// there, matching the pattern already used by the adapters above.
+if (process.env.NODE_ENV !== 'test') {
+  setFetchRepoPath(realFetchRepoPath);
+  console.log('[wugs-s1] repo-path fetch adapter wired');
 }
 
 // rb-s4 / D37 mandatory separate wiring task -- wire the real export

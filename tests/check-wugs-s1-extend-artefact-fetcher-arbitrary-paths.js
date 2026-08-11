@@ -118,6 +118,29 @@ async function withMockedFetch(mockFn, testFn) {
     }
   ));
 
+  await check('AC6: realWiring_twoDifferentPaths_returnTwoDifferentCorrectContents', () => withMockedFetch(
+    async (url) => {
+      const responses = {
+        'path-one.md': 'Content One',
+        'path-two.md': 'Content Two'
+      };
+      const matchedPath = Object.keys(responses).find(p => url.includes(p));
+      return {
+        status: 200,
+        ok: true,
+        json: async () => ({ content: Buffer.from(responses[matchedPath]).toString('base64') })
+      };
+    },
+    async (mod) => {
+      mod.setFetchRepoPath(mod.realFetchRepoPath);
+      const resultOne = await mod.fetchRepoPath('acme', 'widget', 'path-one.md', 'tok');
+      const resultTwo = await mod.fetchRepoPath('acme', 'widget', 'path-two.md', 'tok');
+      assert.strictEqual(resultOne, 'Content One');
+      assert.strictEqual(resultTwo, 'Content Two');
+      assert.notStrictEqual(resultOne, resultTwo, 'the two calls must return genuinely different, individually-correct content — not the same value twice (D37 requirement 4)');
+    }
+  ));
+
   console.log('\n' + passed + ' passed, ' + failed + ' failed');
   if (failed > 0) process.exit(1);
 })();
