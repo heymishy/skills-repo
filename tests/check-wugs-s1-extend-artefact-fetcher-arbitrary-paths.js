@@ -27,6 +27,23 @@ function freshModule() {
   return require('../src/web-ui/adapters/artefact-fetcher');
 }
 
+// wugs-s1 Task 4: extracted after the freshModule()/save-global.fetch/
+// try-finally-restore scaffold reached its third verbatim occurrence
+// (AC1, AC2, AC3), per Task 3's own code-quality review flagging this as
+// the threshold to extract at. mockFn replaces global.fetch for the
+// duration of testFn(mod); the original is always restored, including if
+// testFn itself throws.
+async function withMockedFetch(mockFn, testFn) {
+  const mod = freshModule();
+  const originalFetch = global.fetch;
+  global.fetch = mockFn;
+  try {
+    await testFn(mod);
+  } finally {
+    global.fetch = originalFetch;
+  }
+}
+
 (async () => {
   await check('AC5: fetchRepoPath_unwired_throwsExplicitError', () => {
     const mod = freshModule();
@@ -37,10 +54,8 @@ function freshModule() {
     );
   });
 
-  await check('AC1: realFetchRepoPath_singleFile_returnsDecodedContent', async () => {
-    const mod = freshModule();
-    const originalFetch = global.fetch;
-    global.fetch = async (url, opts) => {
+  await check('AC1: realFetchRepoPath_singleFile_returnsDecodedContent', () => withMockedFetch(
+    async (url, opts) => {
       assert.ok(url.includes('/repos/acme/widget/contents/.github/architecture-guardrails.md'));
       assert.strictEqual(opts.headers['Authorization'], 'Bearer tok123');
       return {
@@ -51,19 +66,15 @@ function freshModule() {
           type: 'file'
         })
       };
-    };
-    try {
+    },
+    async (mod) => {
       const result = await mod.realFetchRepoPath('acme', 'widget', '.github/architecture-guardrails.md', 'tok123');
       assert.strictEqual(result, '# Guardrails\n\nSome content.');
-    } finally {
-      global.fetch = originalFetch;
     }
-  });
+  ));
 
-  await check('AC2: realFetchRepoPath_folder_returnsEntryArray', async () => {
-    const mod = freshModule();
-    const originalFetch = global.fetch;
-    global.fetch = async (url) => {
+  await check('AC2: realFetchRepoPath_folder_returnsEntryArray', () => withMockedFetch(
+    async (url) => {
       assert.ok(url.includes('/repos/acme/widget/contents/standards'));
       return {
         status: 200,
@@ -73,31 +84,25 @@ function freshModule() {
           { name: 'devops', path: 'standards/devops', type: 'dir', sha: 'def' }
         ])
       };
-    };
-    try {
+    },
+    async (mod) => {
       const result = await mod.realFetchRepoPath('acme', 'widget', 'standards', 'tok123');
       assert.ok(Array.isArray(result), 'expected an array for a folder path');
       assert.strictEqual(result.length, 2);
       assert.strictEqual(result[0].name, 'data');
       assert.strictEqual(result[0].type, 'dir');
-    } finally {
-      global.fetch = originalFetch;
     }
-  });
+  ));
 
-  await check('AC3: realFetchRepoPath_missingPath_throwsArtefactNotFoundError', async () => {
-    const mod = freshModule();
-    const originalFetch = global.fetch;
-    global.fetch = async () => ({ status: 404, ok: false, json: async () => ({ message: 'Not Found' }) });
-    try {
+  await check('AC3: realFetchRepoPath_missingPath_throwsArtefactNotFoundError', () => withMockedFetch(
+    async () => ({ status: 404, ok: false, json: async () => ({ message: 'Not Found' }) }),
+    async (mod) => {
       await assert.rejects(
         () => mod.realFetchRepoPath('acme', 'widget', 'nonexistent.md', 'tok123'),
         mod.ArtefactNotFoundError
       );
-    } finally {
-      global.fetch = originalFetch;
     }
-  });
+  ));
 
   console.log('\n' + passed + ' passed, ' + failed + ' failed');
   if (failed > 0) process.exit(1);
