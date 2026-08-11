@@ -216,6 +216,46 @@ await checkAsync('AC4: handleGetGuardrailsView_fetchFails_sectionIsolatedError',
   });
 });
 
+// ── AC5: nav/activeProductId regression guard (rapp-s2-class bug) ────────
+await checkAsync('AC5: handleGetGuardrailsView_nav_rendersFullSidebarAndActiveProduct', async () => {
+  // Current product (p1) must itself be a member of the tenant's nav product
+  // list for its /products/p1 link to render -- the sidebar only ever
+  // renders entries present in navSummary.products (html-shell.js's
+  // renderProductsSection), it does not synthesize a row for the page's own
+  // product. p2 stays in the fixture too so this test still exercises "full
+  // sidebar" (more than just the active product) per AC5's stated intent.
+  var pool = makeMockPool([{ id: 'p1', name: 'Current Product' }, { id: 'p2', name: 'Nav Product One' }]);
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    var req = mockReq({ params: { id: 'p1' } });
+    var res = mockRes();
+    await products.handleGetProductGuardrailsView(req, res, null, pool);
+    var result = res._get();
+    assert.strictEqual(result.statusCode, 200);
+    assert.ok(result.body.indexOf('Nav Product One') !== -1, 'expected the products-nav sidebar to be populated');
+    assert.ok(result.body.indexOf('/products/p1') !== -1, 'expected the current product to appear as a real nav link (activeProductId wired)');
+  });
+});
+
+// ── NFR-SEC-01: repo content is escaped before rendering ────────────────
+await checkAsync('NFR-SEC-01: guardrailsContent_withScriptTag_isEscapedNotLiveMarkup', async () => {
+  var pool = makeMockPool([]);
+  var malicious = '<script>alert(1)</script><img src=x onerror="alert(2)">';
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    if (path === '.github/architecture-guardrails.md') { return malicious; }
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    var req = mockReq();
+    var res = mockRes();
+    await products.handleGetProductGuardrailsView(req, res, null, pool);
+    var result = res._get();
+    assert.ok(result.body.indexOf('<script>alert(1)</script>') === -1, 'expected the <script> tag to be escaped, not rendered live');
+    assert.ok(result.body.indexOf('onerror="alert(2)"') === -1, 'expected the onerror attribute to be escaped, not rendered live');
+    assert.ok(result.body.indexOf('&lt;script&gt;') !== -1, 'expected the escaped form of the script tag to be present');
+  });
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
