@@ -104,6 +104,16 @@ async function withMockedFetch(mockFn, testFn) {
     }
   ));
 
+  await check('AC4: realFetchRepoPath_apiError_throwsArtefactFetchError', () => withMockedFetch(
+    async () => ({ status: 500, ok: false, json: async () => ({ message: 'Internal error' }) }),
+    async (mod) => {
+      await assert.rejects(
+        () => mod.realFetchRepoPath('acme', 'widget', 'some/path.md', 'tok123'),
+        mod.ArtefactFetchError
+      );
+    }
+  ));
+
   console.log('\n' + passed + ' passed, ' + failed + ' failed');
   if (failed > 0) process.exit(1);
 })();
