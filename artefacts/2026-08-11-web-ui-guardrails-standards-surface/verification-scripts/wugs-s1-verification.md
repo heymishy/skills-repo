@@ -66,6 +66,36 @@
 
 ---
 
+### Scenario 4: A GitHub API error that isn't "not found" gives a clear error, with the real reason included
+
+**Covers:** AC4
+
+**Steps:**
+1. Run the fetch function in a way that triggers a non-404 GitHub API error (e.g. a rate-limit response, or a genuine server error).
+
+**Expected outcome:**
+> You get a clear error — not a crash, not a silent empty result — and the error carries the real reason GitHub gave (e.g. the actual message from GitHub's response), not just a generic "something went wrong."
+
+**Result:** [ ] Pass  [ ] Fail
+**Notes:**
+
+---
+
+### Scenario 5: Once really connected, fetching two different things gives two different, correct results
+
+**Covers:** AC6
+
+**Steps:**
+1. With the real fetch capability properly connected (not the "not set up yet" state from the Edge case below), fetch two different, known files or folders one after another.
+
+**Expected outcome:**
+> Each fetch returns its own correct content — the second result is not a repeat of the first, and neither is empty or wrong. This confirms the real connection actually works end-to-end, not just that it was "wired up" in name only.
+
+**Result:** [ ] Pass  [ ] Fail
+**Notes:**
+
+---
+
 ### Edge case: Using the fetch capability before it's set up gives a clear error, not silence
 
 **Covers:** AC5
@@ -88,6 +118,8 @@
 | Scenario 1 | | |
 | Scenario 2 | | |
 | Scenario 3 | | |
+| Scenario 4 | | |
+| Scenario 5 | | |
 | Edge case | | |
 
 **Overall verdict:** [ ] All pass — ready to proceed
