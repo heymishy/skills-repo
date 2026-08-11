@@ -177,6 +177,27 @@ await checkAsync('AC2: handleGetGuardrailsView_standardsFetchFails_rendersErrorS
   });
 });
 
+// ── AC3: empty-repo state, not fabricated ────────────────────────────────
+await checkAsync('AC3: handleGetGuardrailsView_emptyRepo_showsExplicitEmptyState', async () => {
+  var pool = makeMockPool([]);
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    var req = mockReq();
+    var res = mockRes();
+    await products.handleGetProductGuardrailsView(req, res, null, pool);
+    var result = res._get();
+    assert.strictEqual(result.statusCode, 200);
+    assert.ok(result.body.indexOf('No architecture-guardrails.md found in this repo.') !== -1, 'expected explicit "none found" text for the missing guardrails file');
+    assert.ok(result.body.indexOf('No standards found in this repo.') !== -1, 'expected explicit "none found" text for the missing standards folder');
+    // NFR-A11Y (MC-A11Y-02): the empty state must be conveyed via a real text
+    // sentence, not only a CSS class name — assert the sentence matches as a
+    // regex against the response body, not just an indexOf on a fixed string,
+    // so this would catch a regression that replaced the text with markup-only styling.
+    assert.ok(/No architecture-guardrails\.md found in this repo\./.test(result.body), 'expected the empty-state text to be a real matchable sentence, not just a CSS class');
+  });
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
