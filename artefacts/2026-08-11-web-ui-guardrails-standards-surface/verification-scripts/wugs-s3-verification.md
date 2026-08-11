@@ -1,7 +1,7 @@
 # AC Verification Script: Show a tenant's org-level guardrails and standards, read from a designated org repo, seeded on first use
 
 **Story reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s3-org-level-guardrails-view-with-seeding.md
-**Technical test plan:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s3-test-plan.md
+**Technical test plan:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s3-org-level-guardrails-view-with-seeding-test-plan.md
 **Script version:** 1
 **Verified by:** _____ | **Date:** _____ | **Context:** [ ] Pre-code  [ ] Post-merge  [ ] Demo
 

@@ -1,7 +1,7 @@
 # AC Verification Script: Show a product's own guardrails and standards, read live from its connected repo
 
 **Story reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s2-product-level-guardrails-view.md
-**Technical test plan:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s2-test-plan.md
+**Technical test plan:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s2-product-level-guardrails-view-test-plan.md
 **Script version:** 1
 **Verified by:** _____ | **Date:** _____ | **Context:** [ ] Pre-code  [ ] Post-merge  [ ] Demo
 

@@ -1,7 +1,7 @@
 ## Definition of Ready: Audit-log promotion request, approval, and rejection events
 
 **Story reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s10-audit-log-promotion-events.md
-**Test plan reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s10-test-plan.md
+**Test plan reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s10-audit-log-promotion-events-test-plan.md
 **Assessed by:** Claude (agent)
 **Date:** 2026-08-11
 
@@ -66,7 +66,7 @@ Matched: `standards/saas-gui/POLICY.md`
 
 Proceed: Yes
 Story: Audit-log promotion request, approval, and rejection events — artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s10-audit-log-promotion-events.md
-Test plan: artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s10-test-plan.md
+Test plan: artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s10-audit-log-promotion-events-test-plan.md
 
 Goal:
 Make every test in the test plan pass. Do not add scope, behaviour, or

@@ -1,7 +1,7 @@
 ## Definition of Ready: Remove the `standards`/`standard_product_optouts` DB tables and their references
 
 **Story reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s12-remove-db-tables.md
-**Test plan reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s12-test-plan.md
+**Test plan reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s12-remove-db-tables-test-plan.md
 **Assessed by:** Claude (agent)
 **Date:** 2026-08-11
 
@@ -66,7 +66,7 @@ Matched: `standards/saas-gui/POLICY.md`, `standards/data/core.md`, `standards/da
 
 Proceed: Yes
 Story: Remove the standards/standard_product_optouts DB tables and their references — artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s12-remove-db-tables.md
-Test plan: artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s12-test-plan.md
+Test plan: artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s12-remove-db-tables-test-plan.md
 
 Goal:
 Make every test in the test plan pass. Do not add scope, behaviour, or

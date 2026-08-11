@@ -1,7 +1,7 @@
 ## Definition of Ready: Extend the artefact-fetcher adapter to read arbitrary repo files and folders
 
 **Story reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s1-extend-artefact-fetcher-arbitrary-paths.md
-**Test plan reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s1-test-plan.md
+**Test plan reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s1-extend-artefact-fetcher-arbitrary-paths-test-plan.md
 **Assessed by:** Claude (agent)
 **Date:** 2026-08-11
 
@@ -73,7 +73,7 @@ Matched standards files: `standards/saas-gui/POLICY.md` (surface-type floor, `qu
 
 Proceed: Yes
 Story: Extend the artefact-fetcher adapter to read arbitrary repo files and folders — artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s1-extend-artefact-fetcher-arbitrary-paths.md
-Test plan: artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s1-test-plan.md
+Test plan: artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s1-extend-artefact-fetcher-arbitrary-paths-test-plan.md
 
 Goal:
 Make every test in the test plan pass. Do not add scope, behaviour, or
