@@ -83,4 +83,25 @@ async function fetchArtefact(featureSlug, artefactType, token, repoOverride) {
   return decoded;
 }
 
-module.exports = { fetchArtefact, ArtefactNotFoundError, ArtefactFetchError };
+// ── wugs-s1: arbitrary repo-path fetch adapter (D37 injectable) ────────────
+
+let _fetchRepoPath = function() {
+  throw new Error('Adapter not wired: fetchRepoPath. Call setFetchRepoPath() with a real implementation before use.');
+};
+
+function fetchRepoPath(owner, repo, path, token) {
+  return _fetchRepoPath(owner, repo, path, token);
+}
+
+function setFetchRepoPath(impl) {
+  _fetchRepoPath = impl;
+}
+
+function getFetchRepoPath() {
+  return _fetchRepoPath;
+}
+
+module.exports = {
+  fetchArtefact, ArtefactNotFoundError, ArtefactFetchError,
+  fetchRepoPath, setFetchRepoPath, getFetchRepoPath
+};
