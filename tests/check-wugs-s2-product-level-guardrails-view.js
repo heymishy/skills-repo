@@ -198,6 +198,24 @@ await checkAsync('AC3: handleGetGuardrailsView_emptyRepo_showsExplicitEmptyState
   });
 });
 
+// ── AC4: fetch failure — isolated error state, rest of page still renders ─
+await checkAsync('AC4: handleGetGuardrailsView_fetchFails_sectionIsolatedError', async () => {
+  var pool = makeMockPool([{ id: 'p2', name: 'Nav Product One' }]);
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    if (path === '.github/architecture-guardrails.md') { throw new artefactFetcher.ArtefactFetchError('Network error fetching repo path', 'rate limit exceeded'); }
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    var req = mockReq();
+    var res = mockRes();
+    await products.handleGetProductGuardrailsView(req, res, null, pool);
+    var result = res._get();
+    assert.strictEqual(result.statusCode, 200, 'a section-level fetch failure must not crash the whole response');
+    assert.ok(result.body.indexOf('Could not load architecture-guardrails.md') !== -1, 'expected a named error state for the guardrails section');
+    // Rest of the page (nav) still renders — regression guard consistent with AC5.
+    assert.ok(result.body.indexOf('Nav Product One') !== -1, 'expected the nav sidebar to still render despite the guardrails-section failure');
+  });
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
