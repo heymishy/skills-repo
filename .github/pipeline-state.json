@@ -22155,12 +22155,12 @@
           "id": "wugs-s2",
           "slug": "wugs-s2-product-level-guardrails-view",
           "name": "Product-level guardrails/standards view from the connected repo",
-          "stage": "branch-setup",
+          "stage": "implementation-plan",
           "health": "green",
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s2-product-level-guardrails-view.md",
           "prStatus": "none",
           "notes": "Epic 1 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-11T19:01:27.328Z",
+          "updatedAt": "2026-08-11T19:07:06.612Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
@@ -22177,7 +22177,45 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s2-dor.md",
           "dorContractArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s2-dor-contract.md",
-          "dorSignedOffAt": "2026-08-11T08:38:42.453Z"
+          "dorSignedOffAt": "2026-08-11T08:38:42.453Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Guardrails-file section: fetch, render, empty/error states (AC1)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s2-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Standards-folder listing (AC2)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s2-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Empty-repo state + accessibility text-label NFR (AC3)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s2-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Isolated fetch-failure error state (AC4)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s2-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Nav/activeProductId regression guard + escaping NFR (AC5)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s2-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "Wire GET /products/:id/guardrails in server.js",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s2-plan.md"
+            }
+          ]
         },
         {
           "id": "wugs-s3",
