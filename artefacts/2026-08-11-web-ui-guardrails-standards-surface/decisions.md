@@ -84,6 +84,15 @@
 **Revisit trigger:** None obvious — this was a pure dependency-graph correction, not a scope or behaviour change.
 ---
 
+---
+**[2026-08-11] | RISK-ACCEPT | branch-setup (wugs-s1)**
+**Decision:** Proceeding with `wugs-s1`'s worktree despite 33 pre-existing test failures at baseline (506 files run via `npm test`, 33 failed, exit code 0).
+**Alternatives considered:** Investigate and fix pre-existing failures first — rejected, out of scope for this feature and would delay the whole inner loop for unrelated pre-existing repo drift.
+**Rationale:** None of the 33 failing files (`check-bee3-posthog.js`, `check-mfc1/mfc2-*.js`, `check-ougl*.js`, `check-inc2.1/inc4-*.js`, etc.) overlap with `wugs-s1`'s touchpoints (`artefact-fetcher.js`, `server.js` wiring) or any other story in this feature. Matches the established pre-existing-baseline-drift pattern already documented for prior stories this session (e.g. `rapp-s1`'s DoR).
+**Made by:** Claude (agent), per branch-setup's own Step 5 option 2 protocol
+**Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this feature's changes during implementation, stop and investigate.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded — all four decisions from this discovery/clarify session were logged as entries above, not full ADRs, per the operator's confirmation that none warranted ADR-level depth. -->
