@@ -102,6 +102,15 @@
 **Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this feature's changes during implementation, stop and investigate.
 ---
 
+---
+**[2026-08-12] | RISK-ACCEPT | final story-level review (wugs-s2)**
+**Decision:** Shipping `wugs-s2` without a fetch timeout on the GitHub API reads its handler depends on, despite the story's own NFR row stating "a reasonable fetch timeout (e.g. 10s) with a clear timeout error state is expected."
+**Alternatives considered:** (1) Block `wugs-s2` and add timeout handling now — rejected, the gap sits in `wugs-s1`'s already-merged `fetchRepoPath`/`realFetchRepoPath` adapter, not in `wugs-s2`'s own touchpoints, so fixing it here would be out-of-scope adapter surgery bundled into an unrelated story's PR (CLAUDE.md's artefact-first / scope-containment discipline). (2) Silently ship without recording the gap — rejected, this repo's own CSS-layout-dependent-AC discipline (`decisions.md` precedent, wuce.14 AC3-AC5) explicitly requires NFR gaps to be RISK-ACCEPTed or automated, never silently dropped, and that principle applies to this NFR gap too even though it isn't CSS-layout-specific.
+**Rationale:** A hung GitHub API call currently hangs the whole page render indefinitely rather than degrading to a named timeout error, which weakens AC4's "page still renders" intent under a slow-but-not-yet-failed network condition (as opposed to AC4's already-tested hard-failure case). This is a real, understood gap — not an oversight being hidden — and the fix naturally belongs in the shared adapter (`wugs-s1`'s `artefact-fetcher.js`) rather than duplicated per-consumer in `wugs-s2`/`wugs-3`/`wugs-4`.
+**Made by:** Claude (agent), following up on the final story-level reviewer's finding for `wugs-s2`
+**Revisit trigger:** Add `AbortController`-based timeout handling to `fetchRepoPath`/`realFetchRepoPath` before or shortly after `wugs-3`/`wugs-4` ship (both share the same adapter and same exposure to this gap). Logged in `nfr-profile.md`'s Gaps and open questions table.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded — all four decisions from this discovery/clarify session were logged as entries above, not full ADRs, per the operator's confirmation that none warranted ADR-level depth. -->
