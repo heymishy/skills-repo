@@ -93,6 +93,15 @@
 **Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this feature's changes during implementation, stop and investigate.
 ---
 
+---
+**[2026-08-12] | RISK-ACCEPT | branch-setup (wugs-s2)**
+**Decision:** Proceeding with `wugs-s2`'s worktree despite 33 pre-existing test failures at baseline (507 files run via `npm test`, 33 failed, exit code 0).
+**Alternatives considered:** Investigate and fix pre-existing failures first — rejected, out of scope for this feature and would delay the whole inner loop for unrelated pre-existing repo drift.
+**Rationale:** The 33 failing files (`check-bee3-posthog.js`, `check-mfc1/mfc2-*.js`, `check-ougl*.js`, `check-inc2.1/inc4-*.js`, `artefact-preview.test.js`/`artefact-writeback.test.js` (wuce.14/wuce.15, unrelated session-state features), etc.) do not overlap with `wugs-s2`'s touchpoints (`src/web-ui/routes/products.js`, `src/web-ui/utils/html-shell.js` nav wiring, and `wugs-s1`'s already-tested `artefact-fetcher.js` consumer usage). Same baseline-drift pattern already documented for `wugs-s1`.
+**Made by:** Claude (agent), per branch-setup's own Step 5 option 2 protocol
+**Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this feature's changes during implementation, stop and investigate.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded — all four decisions from this discovery/clarify session were logged as entries above, not full ADRs, per the operator's confirmation that none warranted ADR-level depth. -->
