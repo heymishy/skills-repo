@@ -20,6 +20,7 @@ var _agencyClientGrants = require('../modules/agency-client-grants'); // story-2
 var _journeyAccess = require('../middleware/journey-access'); // story-2-relationship-grants-enforcement -- reuses requireGrantAccess/asHttpResponse/POLICY (ADR-025 guard extension)
 var _agencyClientComments = require('../modules/agency-client-comments'); // story-5-client-agency-comments -- append-only comments adapter
 var _standardsRoutes = require('./standards'); // smug-s1 -- fetchStandardsForProduct, shared with the JSON standards API
+var _artefactFetcher = require('../adapters/artefact-fetcher'); // wugs-s2 — reuses wugs-s1's fetchRepoPath (ADR-012)
 
 // s1.1 -- injectable bulk session-store reader. Defaults to a lazy require of
 // skills.js's real _getHtmlSessionsBulk (mirrors the same lazy-getter shape
@@ -1152,6 +1153,91 @@ function _renderStandardsTab(productName, productId, login, standards, navProduc
     activeProductId: productId,
     noProductJourneyCount: noProductJourneyCount
   });
+}
+
+/**
+ * wugs-s2 — fetches a single repo path (file or folder) for the
+ * guardrails/standards view, isolating failures per-piece (AC4) rather
+ * than letting one GitHub API error crash the whole page render.
+ * @returns {Promise<{status: 'ok'|'empty'|'error', value: (string|Array|null), errorMessage: (string|null)}>}
+ */
+async function _fetchGuardrailsSectionPiece(owner, repo, path, token) {
+  try {
+    var value = await _artefactFetcher.fetchRepoPath(owner, repo, path, token);
+    return { status: 'ok', value: value, errorMessage: null };
+  } catch (e) {
+    if (e instanceof _artefactFetcher.ArtefactNotFoundError) {
+      return { status: 'empty', value: null, errorMessage: null };
+    }
+    return { status: 'error', value: null, errorMessage: (e && e.message) || 'Unknown error' };
+  }
+}
+
+/**
+ * wugs-s2 — product-level guardrails/standards section: live-reads
+ * .github/architecture-guardrails.md and standards/ from the product's
+ * connected repo. Each piece renders independently so a failure in one
+ * does not affect the other (AC4).
+ */
+function _renderGuardrailsSection(guardrailsPiece) {
+  var guardrailsHtml;
+  if (guardrailsPiece.status === 'ok') {
+    guardrailsHtml = '<pre class="gv-guardrails-content" style="white-space:pre-wrap;font-family:inherit;font-size:14px;background:var(--surface);padding:16px;border-radius:8px;border:1px solid var(--line)">' + _escapeHtml(guardrailsPiece.value) + '</pre>';
+  } else if (guardrailsPiece.status === 'empty') {
+    guardrailsHtml = '<p class="gv-guardrails-empty" style="color:var(--muted);font-size:14px">No architecture-guardrails.md found in this repo.</p>';
+  } else {
+    guardrailsHtml = '<p class="gv-guardrails-error" style="color:var(--danger,#c0392b);font-size:14px">Could not load architecture-guardrails.md: ' + _escapeHtml(guardrailsPiece.errorMessage) + '</p>';
+  }
+
+  return '<div class="gv-product-section">' +
+    '<h2 style="font-size:18px;margin:0 0 12px">Architecture guardrails</h2>' +
+    guardrailsHtml +
+  '</div>';
+}
+
+/**
+ * wugs-s2 — GET /products/:id/guardrails: live-read product-level
+ * architecture guardrails + standards from the product's connected repo.
+ */
+async function handleGetProductGuardrailsView(req, res, _next, pool) {
+  var _pool = pool;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+  var login = req.session && req.session.login;
+  var token = req.session && req.session.accessToken;
+
+  var prodRow = (await _pool.query(
+    'SELECT name, tenant_id, repo_owner, repo_name FROM products WHERE product_id = $1',
+    [productId]
+  )).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+
+  var guardrailsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, '.github/architecture-guardrails.md', token);
+  var productSectionHtml = _renderGuardrailsSection(guardrailsPiece);
+
+  var navSummary = await getProductsNavSummary(_pool, tenantId);
+
+  var body = '<div style="max-width:720px">' +
+    '<div style="margin-bottom:24px"><h1 style="margin:0;font-size:24px">Guardrails &amp; Standards</h1></div>' +
+    productSectionHtml +
+  '</div>';
+
+  var html = _htmlShell.renderShell({
+    title: 'Guardrails & Standards',
+    bodyContent: body,
+    user: { login: login },
+    active: 'dashboard',
+    crumbs: [prodRow.name, 'Guardrails & Standards'],
+    products: navSummary.products,
+    activeProductId: productId,
+    noProductJourneyCount: navSummary.noProductJourneyCount
+  });
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
 }
 
 /**
@@ -3022,6 +3108,8 @@ module.exports = {
   handleGetProductView,
   handleGetProductRoadmap,
   handleGetProductStandardsTab,
+  // wugs-s2: product-level guardrails/standards view, live-read from the connected repo
+  handleGetProductGuardrailsView,
   handlePostProductSync,
   handlePostProductFeature,
   handleGetProductKanban,
