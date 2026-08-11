@@ -1,7 +1,7 @@
 # AC Verification Script: Request a product-level guardrail/standard be promoted to org level
 
 **Story reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s8-request-promotion.md
-**Technical test plan:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s8-test-plan.md
+**Technical test plan:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s8-request-promotion-test-plan.md
 **Script version:** 1
 **Verified by:** _____ | **Date:** _____ | **Context:** [ ] Pre-code  [ ] Post-merge  [ ] Demo
 

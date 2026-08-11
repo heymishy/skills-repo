@@ -1,7 +1,7 @@
 ## Definition of Ready: Remove `smug-s1`'s promote/opt-out routes and old Standards tab rendering
 
 **Story reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s11-remove-smug-s1-routes-and-tab.md
-**Test plan reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s11-test-plan.md
+**Test plan reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s11-remove-smug-s1-routes-and-tab-test-plan.md
 **Assessed by:** Claude (agent)
 **Date:** 2026-08-11
 
@@ -66,7 +66,7 @@ Matched: `standards/saas-gui/POLICY.md`
 
 Proceed: Yes
 Story: Remove smug-s1's promote/opt-out routes and old Standards tab rendering — artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s11-remove-smug-s1-routes-and-tab.md
-Test plan: artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s11-test-plan.md
+Test plan: artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s11-remove-smug-s1-routes-and-tab-test-plan.md
 
 Goal:
 Make every test in the test plan pass. Do not add scope, behaviour, or

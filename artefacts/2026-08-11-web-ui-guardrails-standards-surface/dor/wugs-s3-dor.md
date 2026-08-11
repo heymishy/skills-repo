@@ -1,7 +1,7 @@
 ## Definition of Ready: Show a tenant's org-level guardrails and standards, read from a designated org repo, seeded on first use
 
 **Story reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s3-org-level-guardrails-view-with-seeding.md
-**Test plan reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s3-test-plan.md
+**Test plan reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s3-org-level-guardrails-view-with-seeding-test-plan.md
 **Assessed by:** Claude (agent)
 **Date:** 2026-08-11
 
@@ -66,7 +66,7 @@ Matched: `standards/saas-gui/POLICY.md`, `standards/data/core.md`, `standards/da
 
 Proceed: Yes
 Story: Show a tenant's org-level guardrails and standards, read from a designated org repo, seeded on first use — artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s3-org-level-guardrails-view-with-seeding.md
-Test plan: artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s3-test-plan.md
+Test plan: artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s3-org-level-guardrails-view-with-seeding-test-plan.md
 
 Goal:
 Make every test in the test plan pass. Do not add scope, behaviour, or

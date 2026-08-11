@@ -1,7 +1,7 @@
 ## Definition of Ready: Provide a create/edit form for a guardrail or standard
 
 **Story reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s5-create-edit-form.md
-**Test plan reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s5-test-plan.md
+**Test plan reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s5-create-edit-form-test-plan.md
 **Assessed by:** Claude (agent)
 **Date:** 2026-08-11
 
@@ -66,7 +66,7 @@ Matched: `standards/saas-gui/POLICY.md`
 
 Proceed: Yes
 Story: Provide a create/edit form for a guardrail or standard — artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s5-create-edit-form.md
-Test plan: artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s5-test-plan.md
+Test plan: artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s5-create-edit-form-test-plan.md
 
 Goal:
 Make every test in the test plan pass. Do not add scope, behaviour, or

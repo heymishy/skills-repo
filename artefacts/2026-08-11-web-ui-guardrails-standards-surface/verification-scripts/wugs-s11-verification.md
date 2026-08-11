@@ -1,7 +1,7 @@
 # AC Verification Script: Remove `smug-s1`'s promote/opt-out routes and old Standards tab rendering
 
 **Story reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s11-remove-smug-s1-routes-and-tab.md
-**Technical test plan:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s11-test-plan.md
+**Technical test plan:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s11-remove-smug-s1-routes-and-tab-test-plan.md
 **Script version:** 1
 **Verified by:** _____ | **Date:** _____ | **Context:** [ ] Pre-code  [ ] Post-merge  [ ] Demo
 

@@ -1,7 +1,7 @@
 ## Definition of Ready: Request a product-level guardrail/standard be promoted to org level
 
 **Story reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s8-request-promotion.md
-**Test plan reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s8-test-plan.md
+**Test plan reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s8-request-promotion-test-plan.md
 **Assessed by:** Claude (agent)
 **Date:** 2026-08-11
 
@@ -66,7 +66,7 @@ Matched: `standards/saas-gui/POLICY.md`, `standards/data/core.md`, `standards/da
 
 Proceed: Yes
 Story: Request a product-level guardrail/standard be promoted to org level — artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s8-request-promotion.md
-Test plan: artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s8-test-plan.md
+Test plan: artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s8-request-promotion-test-plan.md
 
 Goal:
 Make every test in the test plan pass. Do not add scope, behaviour, or

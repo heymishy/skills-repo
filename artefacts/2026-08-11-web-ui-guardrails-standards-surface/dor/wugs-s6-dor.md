@@ -1,7 +1,7 @@
 ## Definition of Ready: Build the branch + PR creation adapter for guardrail/standard edits
 
 **Story reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s6-branch-pr-creation-adapter.md
-**Test plan reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s6-test-plan.md
+**Test plan reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s6-branch-pr-creation-adapter-test-plan.md
 **Assessed by:** Claude (agent)
 **Date:** 2026-08-11
 
@@ -67,7 +67,7 @@ Matched: `standards/saas-gui/POLICY.md`, `standards/security-engineering/core.md
 
 Proceed: Yes
 Story: Build the branch + PR creation adapter for guardrail/standard edits — artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s6-branch-pr-creation-adapter.md
-Test plan: artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s6-test-plan.md
+Test plan: artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s6-branch-pr-creation-adapter-test-plan.md
 
 Goal:
 Make every test in the test plan pass. Do not add scope, behaviour, or

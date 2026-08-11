@@ -1,7 +1,7 @@
 # AC Verification Script: Build the branch + PR creation adapter for guardrail/standard edits
 
 **Story reference:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s6-branch-pr-creation-adapter.md
-**Technical test plan:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s6-test-plan.md
+**Technical test plan:** artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s6-branch-pr-creation-adapter-test-plan.md
 **Script version:** 1
 **Verified by:** _____ | **Date:** _____ | **Context:** [ ] Pre-code  [ ] Post-merge  [ ] Demo
 
