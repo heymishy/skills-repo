@@ -85,6 +85,20 @@ function freshModule() {
     }
   });
 
+  await check('AC3: realFetchRepoPath_missingPath_throwsArtefactNotFoundError', async () => {
+    const mod = freshModule();
+    const originalFetch = global.fetch;
+    global.fetch = async () => ({ status: 404, ok: false, json: async () => ({ message: 'Not Found' }) });
+    try {
+      await assert.rejects(
+        () => mod.realFetchRepoPath('acme', 'widget', 'nonexistent.md', 'tok123'),
+        mod.ArtefactNotFoundError
+      );
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
   console.log('\n' + passed + ' passed, ' + failed + ' failed');
   if (failed > 0) process.exit(1);
 })();
