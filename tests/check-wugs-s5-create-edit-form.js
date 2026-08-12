@@ -233,6 +233,67 @@ check('wiring: server_js_routes_getGuardrailsForm_to_handler', () => {
   assert.ok(serverSrc.indexOf('handleGetGuardrailsForm') !== -1, 'expected server.js to reference handleGetGuardrailsForm');
 });
 
+// ── Fix: Add-new-standard form has an editable path field ───────────────
+await checkAsync('FIX: addStandardForm_noExistingPath_rendersEditablePathInput', async () => {
+  var pool = makeMockPool([]);
+  await withMockedFetchRepoPath(async function () {
+    throw new Error('should not fetch when adding a new standard (no path given)');
+  }, async function () {
+    var req = mockReq({ query: { section: 'standards' } });
+    var res = mockRes();
+    await products.handleGetGuardrailsForm(req, res, null, pool);
+    var result = res._get();
+    assert.strictEqual(result.statusCode, 200);
+    // Must be a real, editable text input the operator can type into --
+    // not a hidden field with an empty value (which is what currently ships).
+    assert.ok(/<input[^>]*name="path"[^>]*type="text"/.test(result.body) || /<input[^>]*type="text"[^>]*name="path"/.test(result.body), 'expected an editable text input for path when adding a new standard');
+    assert.ok(result.body.indexOf('type="hidden" name="path"') === -1, 'expected the path field to NOT be hidden when adding a new entry with no existing path');
+  });
+});
+
+await checkAsync('FIX: editForm_existingPath_keepsPathHiddenAndFixed', async () => {
+  var pool = makeMockPool([]);
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    if (path === 'standards/saas-gui') { return 'existing content'; }
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    var req = mockReq({ query: { path: 'standards/saas-gui' } });
+    var res = mockRes();
+    await products.handleGetGuardrailsForm(req, res, null, pool);
+    var result = res._get();
+    assert.strictEqual(result.statusCode, 200);
+    // Editing an existing entry must NOT let the operator change its path --
+    // that would be a silent rename, out of this story's scope.
+    assert.ok(result.body.indexOf('type="hidden" name="path" value="standards/saas-gui"') !== -1, 'expected the path to remain a fixed hidden field when editing an existing entry');
+  });
+});
+
+// ── Fix: server-side rejects a submission with no target path ───────────
+await checkAsync('FIX: submitForm_emptyPath_rejectedServerSide', async () => {
+  var pool = makeMockPool([]);
+  var writeAdapterCalled = false;
+  var writeAdapter = async function () { writeAdapterCalled = true; };
+  var req = mockReq({ body: { path: '', content: 'Real content but no target path' } });
+  var res = mockRes();
+  await products.handlePostGuardrailsForm(req, res, null, pool, writeAdapter);
+  var result = res._get();
+  assert.strictEqual(result.statusCode, 400, 'expected a 400 validation error when no target path is given');
+  assert.ok(/path/i.test(result.body), 'expected a clear validation error message mentioning path');
+  assert.strictEqual(writeAdapterCalled, false, 'expected the write adapter to never be called when path is missing');
+});
+
+await checkAsync('FIX: submitForm_validPathAndContent_stillAccepted', async () => {
+  var pool = makeMockPool([]);
+  var capturedTarget = null;
+  var writeAdapter = async function (target) { capturedTarget = target; return { ok: true }; };
+  var req = mockReq({ body: { path: 'standards/new-discipline', content: 'Real content' } });
+  var res = mockRes();
+  await products.handlePostGuardrailsForm(req, res, null, pool, writeAdapter);
+  var result = res._get();
+  assert.strictEqual(result.statusCode, 200, 'expected a valid path + content submission to still succeed');
+  assert.ok(capturedTarget && capturedTarget.path === 'standards/new-discipline', 'expected the operator-supplied path to reach the write adapter');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 

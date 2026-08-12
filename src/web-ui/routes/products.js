@@ -1233,7 +1233,22 @@ function _renderGuardrailsForm(productId, path, prefillContent, productName) {
   var body = '<div style="max-width:720px">' +
     '<h1 style="margin:0 0 24px;font-size:24px">' + (isEdit ? 'Edit' : 'Add') + ' guardrail or standard</h1>' +
     '<form method="POST" action="/products/' + encodeURIComponent(productId) + '/guardrails/form">' +
-      '<input type="hidden" name="path" value="' + _escapeHtml(path) + '">' +
+      // fix (post-wugs-s5): when adding a NEW entry (no existing path), the
+      // path was previously always a hidden field with an empty value --
+      // there was no way for the operator to ever tell the write path where
+      // a new standard should be written. Editing an EXISTING entry (isEdit)
+      // keeps the path fixed and hidden -- letting it be edited there would
+      // be a silent rename, out of scope. Note: the guardrails file's own
+      // Add link (see _renderGuardrailsSection) always carries a non-empty
+      // `path` query param even when the file doesn't yet exist on disk (its
+      // path is fixed at .github/architecture-guardrails.md), so isEdit is
+      // true for that flow too and it correctly keeps using the hidden,
+      // fixed-path branch below -- unaffected by this fix.
+      (isEdit ?
+        '<input type="hidden" name="path" value="' + _escapeHtml(path) + '">' :
+        '<label style="display:block;margin-bottom:8px;font-size:14px;font-weight:500" for="gv-form-path">File path</label>' +
+        '<input id="gv-form-path" type="text" name="path" placeholder="standards/your-discipline-name" style="width:100%;font-family:inherit;font-size:14px;padding:8px 12px;border-radius:6px;border:1px solid var(--line);margin-bottom:16px" value="">'
+      ) +
       '<label style="display:block;margin-bottom:8px;font-size:14px;font-weight:500" for="gv-form-content">Content</label>' +
       '<textarea id="gv-form-content" name="content" rows="16" style="width:100%;font-family:inherit;font-size:14px;padding:12px;border-radius:8px;border:1px solid var(--line)">' + _escapeHtml(prefillContent) + '</textarea>' +
       '<button type="submit" style="margin-top:16px;padding:8px 16px;border-radius:6px;border:none;background:var(--accent);color:#fff;font-size:14px;cursor:pointer">Save</button>' +
@@ -1294,6 +1309,19 @@ function _validateGuardrailContent(content) {
 }
 
 /**
+ * wugs-s5 (fix) — validates the submitted target path server-side. An
+ * empty path means the operator never specified where a new entry should
+ * be written (e.g. the Add-new-standard flow with no filename typed in).
+ * @returns {{valid: boolean, error: (string|null)}}
+ */
+function _validateGuardrailPath(path) {
+  if (typeof path !== 'string' || path.trim().length === 0) {
+    return { valid: false, error: 'A target file path is required.' };
+  }
+  return { valid: true, error: null };
+}
+
+/**
  * wugs-s5 — POST /products/:id/guardrails/form: validates submitted
  * content server-side and, if valid, hands it to the write path.
  * `writeAdapter(target, content)` is the write path — not yet wired to a
@@ -1311,6 +1339,13 @@ async function handlePostGuardrailsForm(req, res, _next, pool, writeAdapter) {
   // where needed; avoid shadowing that.
   var contentPath = (req.body && req.body.path) || '';
   var content = (req.body && req.body.content) || '';
+
+  var pathValidation = _validateGuardrailPath(contentPath);
+  if (!pathValidation.valid) {
+    if (res.status) { res.status(400).json({ error: pathValidation.error }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: pathValidation.error })); }
+    return;
+  }
 
   var validation = _validateGuardrailContent(content);
   if (!validation.valid) {
