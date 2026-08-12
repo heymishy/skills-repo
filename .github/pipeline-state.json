@@ -22476,14 +22476,14 @@
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s7-surface-pr-state-in-view.md",
           "prStatus": "none",
           "notes": "Epic 2 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-12T21:51:23.719Z",
+          "updatedAt": "2026-08-12T22:00:54.477Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
           "testPlan": {
             "status": "written",
-            "totalTests": 5,
-            "passing": 0,
+            "totalTests": 2,
+            "passing": 2,
             "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s7-surface-pr-state-in-view-test-plan.md"
           },
           "acTotal": 4,
@@ -22498,7 +22498,7 @@
             {
               "id": "task-1",
               "name": "guardrail_pending_prs table + tracking-row creation on write",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s7-plan.md"
             },
             {
