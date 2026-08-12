@@ -23,6 +23,7 @@ async function checkAsync(name, fn) {
 
 var products = require('../src/web-ui/routes/products');
 var artefactFetcher = require('../src/web-ui/adapters/artefact-fetcher');
+var guardrailPrAdapter = require('../src/web-ui/adapters/guardrail-pr-adapter');
 
 function mockReq(overrides) {
   return Object.assign({
@@ -240,6 +241,60 @@ await checkAsync('AC1: designateOrgRepo_missingTenantId_returns404AndSkipsWrite'
   var result = res._get();
   assert.strictEqual(result.statusCode, 404, 'expected 404 when session has no tenantId, got: ' + result.statusCode + ' body: ' + result.body);
   assert.strictEqual(writeAdapterCalled, false, 'expected no seed writes and no DB insert when tenantId is missing');
+});
+
+// ── review fix: CSRF guard blocks the org-repo settings POST ────────────
+await checkAsync('review fix: designateOrgRepo_mismatchedCsrf_returns403AndSkipsWrite', async () => {
+  var pool = makeMockPool([], {});
+  var writeAdapterCalled = false;
+  var writeAdapter = async function () { writeAdapterCalled = true; };
+  var req = mockReq({ body: { repo_owner: 'org-co', repo_name: 'org-repo', _csrf: 'attacker-guess' } });
+  var res = mockRes();
+  await products.handlePostOrgRepoSettings(req, res, null, pool, writeAdapter, { capture: function () {} });
+  var result = res._get();
+  assert.strictEqual(result.statusCode, 403, 'expected a 403 for a mismatched CSRF token, got: ' + result.statusCode + ' body: ' + result.body);
+  assert.strictEqual(result.body, 'Forbidden');
+  assert.strictEqual(writeAdapterCalled, false, 'expected the write adapter to never be called when the CSRF guard blocks the request');
+});
+
+await checkAsync('review fix: designateOrgRepo_missingCsrf_returns403AndSkipsWrite', async () => {
+  var pool = makeMockPool([], {});
+  var writeAdapterCalled = false;
+  var writeAdapter = async function () { writeAdapterCalled = true; };
+  var req = mockReq({ body: { repo_owner: 'org-co', repo_name: 'org-repo' } }); // no _csrf field at all
+  var res = mockRes();
+  await products.handlePostOrgRepoSettings(req, res, null, pool, writeAdapter, { capture: function () {} });
+  var result = res._get();
+  assert.strictEqual(result.statusCode, 403, 'expected a 403 when _csrf is missing entirely, got: ' + result.statusCode + ' body: ' + result.body);
+  assert.strictEqual(result.body, 'Forbidden');
+  assert.strictEqual(writeAdapterCalled, false, 'expected the write adapter to never be called when the CSRF guard blocks the request');
+});
+
+// ── review fix: write-path errors from writeAdapter are handled distinctly ──
+await checkAsync('review fix: designateOrgRepo_writeAdapterConflictError_returns409WithClearMessage', async () => {
+  var pool = makeMockPool([], {});
+  var writeAdapter = async function () {
+    throw new guardrailPrAdapter.GuardrailPrConflictError('Artefact was updated — please reload and try again');
+  };
+  var req = mockReq({ body: { repo_owner: 'org-co', repo_name: 'org-repo', _csrf: 'ct1' } });
+  var res = mockRes();
+  await products.handlePostOrgRepoSettings(req, res, null, pool, writeAdapter, { capture: function () {} });
+  var result = res._get();
+  assert.strictEqual(result.statusCode, 409, 'expected a 409 when the write adapter throws GuardrailPrConflictError, got: ' + result.statusCode + ' body: ' + result.body);
+  assert.ok(/reload|refresh/i.test(result.body), 'expected a clear, actionable error message in the response body');
+});
+
+await checkAsync('review fix: designateOrgRepo_writeAdapterGenericError_returns500', async () => {
+  var pool = makeMockPool([], {});
+  var writeAdapter = async function () {
+    throw new Error('unexpected GitHub API failure');
+  };
+  var req = mockReq({ body: { repo_owner: 'org-co', repo_name: 'org-repo', _csrf: 'ct1' } });
+  var res = mockRes();
+  await products.handlePostOrgRepoSettings(req, res, null, pool, writeAdapter, { capture: function () {} });
+  var result = res._get();
+  assert.strictEqual(result.statusCode, 500, 'expected a 500 for a generic write-adapter error, got: ' + result.statusCode + ' body: ' + result.body);
+  assert.ok(/Failed to create pull request/i.test(result.body), 'expected a clear error message in the response body');
 });
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
