@@ -297,6 +297,14 @@ await checkAsync('review fix: designateOrgRepo_writeAdapterGenericError_returns5
   assert.ok(/Failed to create pull request/i.test(result.body), 'expected a clear error message in the response body');
 });
 
+// ── Wiring: POST /settings/org-repo is routed in server.js ──────────────
+check('wiring: server_js_routes_postSettingsOrgRepo_to_handler', () => {
+  var fs = require('fs');
+  var serverSrc = fs.readFileSync(require.resolve('../src/web-ui/server.js'), 'utf8');
+  assert.ok(serverSrc.indexOf('/settings/org-repo') !== -1, 'expected server.js to route POST /settings/org-repo');
+  assert.ok(serverSrc.indexOf('handlePostOrgRepoSettings') !== -1, 'expected server.js to reference handlePostOrgRepoSettings');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 

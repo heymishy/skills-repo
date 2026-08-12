@@ -73,7 +73,7 @@ const { createSettingsHandlers } = require('./routes/settings'); // c1
 const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
 const { adminCreditsGet, adminCreditsPost, adminSetPlanPost }        = require('./routes/admin-credits');     // arl-s3 / tpac-s1
 const { adminMockGatewayGet, adminMockGatewayPost }                  = require('./routes/admin-mock-gateway'); // amgt-s1
-const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handleGetProductStandardsTab, handleGetProductGuardrailsView, handleGetGuardrailsForm, handlePostGuardrailsForm, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1 / smug-s1 / wugs-s2 / wugs-s5 / wugs-s6
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handleGetProductStandardsTab, handleGetProductGuardrailsView, handleGetGuardrailsForm, handlePostGuardrailsForm, handlePostOrgRepoSettings, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1 / smug-s1 / wugs-s2 / wugs-s5 / wugs-s6 / wugs-s3
 const { setModulesAdapter } = require('./adapters/modules-adapter'); // a1
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
@@ -3124,6 +3124,30 @@ async function router(req, res) {
         });
       };
       await handlePostGuardrailsForm(req, res, null, _pshPool, writeAdapterForRequest);
+    });
+
+  } else if (pathname === '/settings/org-repo' && req.method === 'POST') {
+    // wugs-s3 -- tenant-level org-repo designation + first-time seeding.
+    // The repo being written to is the repo being designated (from the
+    // request body itself), not a pre-existing product's connected repo --
+    // unlike wugs-s6's per-product writeAdapter closure.
+    authGuard(req, res, async () => {
+      req.body = req.body || await new Promise((resolve) => {
+        let raw = '';
+        req.on('data', (c) => { raw += c; });
+        req.on('end', () => {
+          const ct = (req.headers && req.headers['content-type']) || '';
+          if (ct.indexOf('application/json') !== -1) { try { resolve(JSON.parse(raw)); } catch (_) { resolve({}); } }
+          else { const p = new URLSearchParams(raw); const o = {}; p.forEach((v, k) => { o[k] = v; }); resolve(o); }
+        });
+      });
+      const writeAdapterForRequest = async (target, content) => {
+        return createGuardrailPr(req.session.accessToken, req.body.repo_owner, req.body.repo_name, target.path, content, {
+          tenantId: req.session.tenantId,
+          productId: null
+        });
+      };
+      await handlePostOrgRepoSettings(req, res, null, _pshPool, writeAdapterForRequest);
     });
 
   } else if (pathname.match(/^\/products\/[^/]+\/modules$/) && req.method === 'GET') {
