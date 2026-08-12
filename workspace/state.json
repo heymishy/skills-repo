@@ -1,63 +1,31 @@
 {
-  "currentPhase": "definition-of-ready",
-  "lastUpdated": "2026-08-08T04:05:00.000Z",
-  "activeFeature": "2026-08-08-landing-page-hero-features",
-  "previousFeature": "2026-08-08-kanban-board-unstyled-shell-fix",
+  "currentPhase": "inner-coding-loop",
+  "lastUpdated": "2026-08-13T06:00:00.000Z",
+  "activeFeature": "2026-08-11-web-ui-guardrails-standards-surface",
+  "previousFeature": "2026-08-08-landing-page-hero-features",
   "cycle": {
-    "discovery": {
-      "status": "approved",
-      "artefact": "artefacts/2026-08-08-landing-page-hero-features/discovery.md",
-      "completedAt": "2026-08-08T00:00:00.000Z"
-    },
-    "benefitMetric": {
-      "status": "active",
-      "artefact": "artefacts/2026-08-08-landing-page-hero-features/benefit-metric.md",
-      "completedAt": "2026-08-08T02:20:00.000Z",
-      "note": "2 Tier 1 product metrics: signup conversion rate (+20% relative target) and time-on-page (+30% relative, blocked on a future instrumentation story). No meta-benefit, no Tier 3 compliance metrics."
-    },
-    "definition": {
-      "status": "complete",
-      "artefact": "artefacts/2026-08-08-landing-page-hero-features/epics/epic-1-landing-page-hero-features.md",
-      "completedAt": "2026-08-08T02:55:00.000Z",
-      "note": "1 epic, 5 stories (lphf-s1..s5), vertical slice, scope ratio 1.0 clean."
-    },
-    "review": {
-      "status": "complete",
-      "completedAt": "2026-08-08T03:34:00.000Z",
-      "note": "All 5 stories PASS, run 1. 3 MEDIUM findings fixed directly (wrong handler reference in lphf-s5, stale hardcoded number in lphf-s4, subjective AC wording in lphf-s3)."
-    },
-    "testPlan": {
-      "status": "complete",
-      "completedAt": "2026-08-08T03:50:00.000Z",
-      "note": "21 tests across 5 stories. All 4 CSS-layout-dependent ACs covered by real Playwright E2E tests (tooling already configured), not manual-only."
-    },
-    "definitionOfReady": {
-      "status": "complete",
-      "completedAt": "2026-08-08T04:05:00.000Z",
-      "note": "All 5 stories PROCEED, 18/18 hard blocks each, Low oversight (no sign-off required). Hit 4 real gate-validator gotchas during this run (heading name mismatch, missing Review artefact header, Architecture Constraints missing a literal guardrail/constraint/ADR keyword, string-vs-boolean field bug) -- all fixed, logged as a learning."
-    }
-  },
-  "estimate": {
-    "e1": {
-      "date": "2026-08-08",
-      "expectedCalendarDays": 0.5,
-      "engagementFraction": 0.25,
-      "outerLoopFocusH": 0.25,
-      "innerLoopHuman": 0,
-      "expectedStoryCount": 4,
-      "confidence": "low",
-      "assumptions": "~4 stories: hero-section content/layout, golden-trace swappable demo build (2 candidates, one deleted pre-merge), auth-panel restyle, and possibly a follow-on PostHog time-on-page instrumentation story. Small, well-bounded scope post-/clarify -- no new backend surface, no live LLM calls, no CMS. Actual: 5 stories, all complexity 1.",
-      "gaugeAtStart": null,
-      "premiumRequestsForecast": null
+    "discovery": { "status": "approved", "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/discovery.md", "completedAt": "2026-08-11T07:00:00.000Z" },
+    "benefitMetric": { "status": "active" },
+    "definition": { "status": "complete", "note": "12 stories across 4 epics, ADR-017 flat features[].stories[] structure." },
+    "review": { "status": "complete" },
+    "testPlan": { "status": "complete" },
+    "definitionOfReady": { "status": "complete", "note": "All 12 stories signed off. Corrected topological implementation sequence (differs from epic order due to a circular-dependency fix logged in decisions.md, wugs-s5's upstream narrowed to wugs-s2 only): wugs-s1 -> wugs-s2 -> wugs-s5 -> wugs-s6 -> wugs-s3 -> wugs-s7 -> wugs-s4 -> wugs-s8 -> wugs-s9 -> wugs-s10 -> wugs-s11 -> wugs-s12." },
+    "innerCodingLoop": {
+      "status": "in-progress",
+      "note": "wugs-s1, wugs-s2, wugs-s5 fully shipped (merged + DoD complete). wugs-s6 in progress: 3 of 7 tasks committed and two-stage-reviewed (Task 1 AC5 skeleton, Task 2 AC1 new-file sequence, Task 3 AC2 SHA-update/conflict). 8 stories not yet started: wugs-s3, wugs-s7, wugs-s4, wugs-s8, wugs-s9, wugs-s10, wugs-s11, wugs-s12."
     }
   },
   "checkpoint": {
-    "writtenAt": "2026-08-08",
-    "contextAtWrite": "landing-page-hero-features has completed the full outer loop: discovery through definition-of-ready. All 5 stories (lphf-s1..s5) signed off, Low oversight, ready for the inner coding loop. Separately this session: PR #664 (prc-s2.2) and PR #682 (kbsf-s1) both merged and independently verified.",
-    "resumeInstruction": "Next step is the inner coding loop for the 5 lphf stories: /branch-setup -> /implementation-plan -> /subagent-execution (or /tdd) -> /verify-completion -> /branch-complete, per story. Read each story's DoR file (artefacts/2026-08-08-landing-page-hero-features/dor/lphf-sN-dor.md) in full before starting -- it contains the Coding Agent Instructions block with file-scope constraints. Warning W4 (verification script reviewed by a domain expert) was left unacknowledged for all 5 stories -- recommend a human review the verification scripts before assigning to a coding agent, or explicitly acknowledge via /decisions.",
+    "writtenAt": "2026-08-13",
+    "contextAtWrite": "Session hit ~99% context. Mid-story on wugs-s6 (branch + PR creation adapter, the highest-risk story in this feature -- Complexity 3, High oversight, first story that writes to a real external GitHub repo). Worktree .worktrees/wugs-s6 on branch feature/wugs-s6, HEAD commit 025ad4e9 ('chore(wugs-s6): mark Task 3 committed -- 5/12 tests passing'). Tasks 1-3 of 7 done (each required at least one Critical/Important code-quality-review fix-and-re-review cycle before approval -- see workspace/learnings.md's new 'tests that check presence/shape, not trace a specific value' entry, this pattern is expected to keep recurring on Tasks 4-7). Not pushed to origin yet -- still purely local commits on feature/wugs-s6, no PR opened.",
+    "resumeInstruction": "1) cd into the worktree: C:\\Users\\Hamis\\code\\skills repo\\.worktrees\\wugs-s6 (branch feature/wugs-s6 -- if the worktree no longer exists, re-create it: `git worktree add .worktrees/wugs-s6 feature/wugs-s6` from the main repo, since the branch itself is real and pushed-or-local; check `git branch -a | grep wugs-s6` first to confirm which). 2) Read the full implementation plan: artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s6-plan.md -- Task 4 (Success returns PR number and URL, AC3) is next, starting at the '## Task 4' heading. The plan's identifiers are already correctly renamed (createGuardrailPr / realCreateGuardrailPr / setGuardrailPrAdapter / getGuardrailPrAdapter -- do NOT use an earlier draft name 'guardrailPrAdapter' as the callable, that was renamed during Task 1's code-quality review and the plan text was corrected to match; the DoR's own error-message string 'Adapter not wired: guardrailPrAdapter...' is intentionally NOT renamed, it's the wiring-slot's literal name per the DoR). 3) Continue /subagent-execution exactly as done for Tasks 1-3: dispatch a fresh Agent (subagent_type general-purpose, run_in_background:false) with the task's exact plan text as a self-contained prompt (the implementer subagents from this session cannot be resumed -- their agent IDs belong to this ended session's process; dispatch NEW Agent calls). After each implementer reports DONE, independently verify via git log/git show/running the test file yourself (do not trust the self-report) BEFORE dispatching the spec-compliance reviewer, then the code-quality reviewer. Given every task so far has surfaced at least one legitimate Critical/Important finding (always 'this assertion checks presence/shape, not a specific traced value, so it wouldn't catch a plausible mutation'), expect Tasks 4-7 to need at least one fix-and-re-dispatch round each -- budget for it, don't be surprised by it. 4) After Task 7 (the final task: wires the real adapter + POST route in server.js, closes the wugs-s5 GAP-FLAG already logged in decisions.md), run the final story-level reviewer (Step 3 of /subagent-execution), then /verify-completion (run the FULL npm test suite in the FOREGROUND, not backgrounded -- see workspace/learnings.md's new entry on backgrounded full-suite runs getting silently killed twice this session), then /branch-complete (push + open draft PR by default, per established session convention -- no need to ask). 5) CRITICAL, cannot be automated: the DoR for wugs-s6 has a REQUIRED pre-merge manual step -- 'perform one real, manual test against a sandbox GitHub repo confirming the branch/Contents/Pulls API response shapes match the mocked test shapes, record this in the PR description' (CLAUDE.md's mock-shape-verification rule, tir-s5 precedent). This needs the operator's own GitHub credentials and a disposable sandbox repo -- flag this to the operator explicitly once the draft PR is open, do not silently skip it or claim the story is done without it. 6) After wugs-s6 merges: write its DoD (same pattern as wugs-s1/s2/s5's DoD artefacts -- run tests fresh on merged master, walk the AC table, check the NFR profile, write to artefacts/.../dod/wugs-s6-dod.md, update .github/pipeline-state.json per definition-of-done's mandatory state-update section, commit+push directly to master per the artefact-bookkeeping convention). 7) Then continue the inner loop for wugs-s3 (next in the corrected sequence), following the exact same branch-setup -> implementation-plan -> subagent-execution -> verify-completion -> branch-complete -> DoD cycle, then wugs-s7, wugs-s4, wugs-s8, wugs-s9, wugs-s10, wugs-s11, wugs-s12 in that order. For every pipeline-state.json write: fetch origin/master first and compare against the worktree's own base commit before writing directly (see each skill's own 'Pipeline-state write safety' section) -- if no drift, safe to write the worktree's local copy directly, which was true for every write this whole session. Baseline test count to expect throughout: 33 pre-existing failures out of ~509-510 files (documented in decisions.md's repeated RISK-ACCEPT entries) -- confirm this hasn't changed before assuming any new failure is pre-existing.",
     "pendingActions": [
-      "Decide inner-loop dispatch order/approach for lphf-s1 through lphf-s5",
-      "Consider addressing W4 (verification script domain-expert review) before dispatch"
+      "Continue wugs-s6 Task 4 (AC3, PR number/URL return shape) via /subagent-execution",
+      "wugs-s6 Tasks 5, 6, 7 after that (AC4 per-step errors, NFRs, real server.js wiring)",
+      "wugs-s6 final story-level review, /verify-completion, /branch-complete (push + draft PR)",
+      "Flag the REQUIRED manual sandbox-GitHub-repo mock-shape-verification step to the operator before wugs-s6's PR can be considered ready to merge -- cannot be automated, needs operator's own GitHub credentials",
+      "wugs-s6 DoD after PR merges",
+      "Continue the inner loop for the remaining 8 stories in corrected sequence: wugs-s3, wugs-s7, wugs-s4, wugs-s8, wugs-s9, wugs-s10, wugs-s11, wugs-s12"
     ]
   }
 }
