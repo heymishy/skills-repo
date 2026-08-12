@@ -22370,8 +22370,8 @@
           "mediumFindings": 1,
           "testPlan": {
             "status": "written",
-            "totalTests": 12,
-            "passing": 10,
+            "totalTests": 13,
+            "passing": 13,
             "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s6-branch-pr-creation-adapter-test-plan.md"
           },
           "acTotal": 6,
@@ -22416,7 +22416,7 @@
             {
               "id": "task-6",
               "name": "NFRs: token never logged, PR creation audit-logged",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s6-plan.md"
             },
             {
