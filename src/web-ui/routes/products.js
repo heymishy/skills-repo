@@ -1179,7 +1179,11 @@ async function _fetchGuardrailsSectionPiece(owner, repo, path, token) {
  * connected repo. Each piece renders independently so a failure in one
  * does not affect the other (AC4).
  */
-function _renderGuardrailsSection(guardrailsPiece, standardsPiece) {
+function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId) {
+  var guardrailsPath = '.github/architecture-guardrails.md';
+  var guardrailsEditHref = '/products/' + encodeURIComponent(productId) + '/guardrails/form?path=' + encodeURIComponent(guardrailsPath);
+  var guardrailsActionHtml = '<a href="' + guardrailsEditHref + '" style="font-size:13px;color:var(--accent)">' + (guardrailsPiece.status === 'ok' ? 'Edit' : 'Add') + '</a>';
+
   var guardrailsHtml;
   if (guardrailsPiece.status === 'ok') {
     guardrailsHtml = '<pre class="gv-guardrails-content" style="white-space:pre-wrap;font-family:inherit;font-size:14px;background:var(--surface);padding:16px;border-radius:8px;border:1px solid var(--line)">' + _escapeHtml(guardrailsPiece.value) + '</pre>';
@@ -1195,7 +1199,11 @@ function _renderGuardrailsSection(guardrailsPiece, standardsPiece) {
     standardsHtml = entries.length === 0
       ? '<p class="gv-standards-empty" style="color:var(--muted);font-size:14px">No standards found in this repo.</p>'
       : '<ul class="gv-standards-list">' + entries.map(function (e) {
-          return '<li>' + _escapeHtml(e.name) + '</li>';
+          var editHref = '/products/' + encodeURIComponent(productId) + '/guardrails/form?path=' + encodeURIComponent(e.path);
+          return '<li style="display:flex;align-items:center;justify-content:space-between;gap:12px">' +
+            '<span>' + _escapeHtml(e.name) + '</span>' +
+            '<a href="' + editHref + '" style="font-size:13px;color:var(--accent)">Edit</a>' +
+          '</li>';
         }).join('') + '</ul>';
   } else if (standardsPiece.status === 'empty') {
     standardsHtml = '<p class="gv-standards-empty" style="color:var(--muted);font-size:14px">No standards found in this repo.</p>';
@@ -1203,10 +1211,12 @@ function _renderGuardrailsSection(guardrailsPiece, standardsPiece) {
     standardsHtml = '<p class="gv-standards-error" style="color:var(--danger,#c0392b);font-size:14px">Could not load standards/: ' + _escapeHtml(standardsPiece.errorMessage) + '</p>';
   }
 
+  var addStandardHref = '/products/' + encodeURIComponent(productId) + '/guardrails/form?section=standards';
+
   return '<div class="gv-product-section">' +
-    '<h2 style="font-size:18px;margin:0 0 12px">Architecture guardrails</h2>' +
+    '<div style="display:flex;align-items:center;justify-content:space-between"><h2 style="font-size:18px;margin:0 0 12px">Architecture guardrails</h2>' + guardrailsActionHtml + '</div>' +
     guardrailsHtml +
-    '<h2 style="font-size:18px;margin:24px 0 12px">Standards</h2>' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:24px"><h2 style="font-size:18px;margin:0 0 12px">Standards</h2><a href="' + addStandardHref + '" style="font-size:13px;color:var(--accent)">Add</a></div>' +
     standardsHtml +
   '</div>';
 }
@@ -1234,7 +1244,7 @@ async function handleGetProductGuardrailsView(req, res, _next, pool) {
 
   var guardrailsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, '.github/architecture-guardrails.md', token);
   var standardsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, 'standards/', token);
-  var productSectionHtml = _renderGuardrailsSection(guardrailsPiece, standardsPiece);
+  var productSectionHtml = _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId);
 
   var navSummary = await getProductsNavSummary(_pool, tenantId);
 
