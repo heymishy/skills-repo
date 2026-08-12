@@ -125,6 +125,59 @@ await checkAsync('AC1: guardrailsView_missingGuardrailsFile_showsAddNotEdit', as
   });
 });
 
+// ── AC2: Edit form pre-filled with real current content ─────────────────
+await checkAsync('AC2: editForm_prefillsWithRealCurrentContent', async () => {
+  var pool = makeMockPool([]);
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    if (path === 'standards/saas-gui') { return 'REAL SAAS-GUI STANDARD CONTENT'; }
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    var req = mockReq({ query: { path: 'standards/saas-gui' } });
+    var res = mockRes();
+    await products.handleGetGuardrailsForm(req, res, null, pool);
+    var result = res._get();
+    assert.strictEqual(result.statusCode, 200);
+    assert.ok(result.body.indexOf('REAL SAAS-GUI STANDARD CONTENT') !== -1, 'expected the real current content pre-filled in the form');
+    assert.ok(result.body.indexOf('<h1 style="margin:0 0 24px;font-size:24px">Edit guardrail or standard</h1>') !== -1, 'expected the "Edit" heading when editing an existing path');
+  });
+});
+
+// ── AC2 (blank mode): Add form (no path) renders blank, no fetch needed ──
+await checkAsync('AC2: addForm_noPath_rendersBlank', async () => {
+  var pool = makeMockPool([]);
+  var fetchCallCount = 0;
+  await withMockedFetchRepoPath(async function () {
+    fetchCallCount++;
+    return 'should not be reached';
+  }, async function () {
+    var req = mockReq({ query: { section: 'standards' } });
+    var res = mockRes();
+    await products.handleGetGuardrailsForm(req, res, null, pool);
+    var result = res._get();
+    assert.strictEqual(result.statusCode, 200);
+    assert.ok(result.body.indexOf('<textarea') !== -1, 'expected a blank textarea for add mode');
+    assert.strictEqual(fetchCallCount, 0, 'expected no fetch call in add mode (no path given)');
+    assert.ok(result.body.indexOf('<h1 style="margin:0 0 24px;font-size:24px">Add guardrail or standard</h1>') !== -1, 'expected the "Add" heading when no path is given');
+  });
+});
+
+// ── NFR-SEC-01: pre-filled content is escaped before rendering ──────────
+await checkAsync('NFR-SEC-01: editForm_withScriptTag_isEscapedNotLiveMarkup', async () => {
+  var pool = makeMockPool([]);
+  var malicious = '<script>alert(1)</script>';
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    if (path === 'standards/saas-gui') { return malicious; }
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    var req = mockReq({ query: { path: 'standards/saas-gui' } });
+    var res = mockRes();
+    await products.handleGetGuardrailsForm(req, res, null, pool);
+    var result = res._get();
+    assert.ok(result.body.indexOf('<script>alert(1)</script>') === -1, 'expected the script tag to be escaped, not rendered live');
+    assert.ok(result.body.indexOf('&lt;script&gt;') !== -1, 'expected the escaped form to be present');
+  });
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 

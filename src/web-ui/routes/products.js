@@ -1222,6 +1222,66 @@ function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId) {
 }
 
 /**
+ * wugs-s5 — renders the create/edit form for a guardrail or standard.
+ * @param {string} productId
+ * @param {string} path        - repo path being edited, or '' for a new entry
+ * @param {string} prefillContent - existing content to pre-fill, or '' for blank
+ * @param {string} productName
+ */
+function _renderGuardrailsForm(productId, path, prefillContent, productName) {
+  var isEdit = !!path;
+  var body = '<div style="max-width:720px">' +
+    '<h1 style="margin:0 0 24px;font-size:24px">' + (isEdit ? 'Edit' : 'Add') + ' guardrail or standard</h1>' +
+    '<form method="POST" action="/products/' + encodeURIComponent(productId) + '/guardrails/form">' +
+      '<input type="hidden" name="path" value="' + _escapeHtml(path) + '">' +
+      '<label style="display:block;margin-bottom:8px;font-size:14px;font-weight:500" for="gv-form-content">Content</label>' +
+      '<textarea id="gv-form-content" name="content" rows="16" style="width:100%;font-family:inherit;font-size:14px;padding:12px;border-radius:8px;border:1px solid var(--line)">' + _escapeHtml(prefillContent) + '</textarea>' +
+      '<button type="submit" style="margin-top:16px;padding:8px 16px;border-radius:6px;border:none;background:var(--accent);color:#fff;font-size:14px;cursor:pointer">Save</button>' +
+    '</form>' +
+  '</div>';
+
+  return _htmlShell.renderShell({
+    title: (isEdit ? 'Edit' : 'Add') + ' guardrail or standard',
+    bodyContent: body,
+    active: 'dashboard',
+    crumbs: [productName, 'Guardrails & Standards', isEdit ? 'Edit' : 'Add']
+  });
+}
+
+/**
+ * wugs-s5 — GET /products/:id/guardrails/form: renders the create/edit
+ * form, pre-filled with real current content when editing an existing
+ * path (?path=...), or blank when adding a new entry (?section=...).
+ */
+async function handleGetGuardrailsForm(req, res, _next, pool) {
+  var _pool = pool;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+  var token = req.session && req.session.accessToken;
+  var path = (req.query && req.query.path) || '';
+
+  var prodRow = (await _pool.query(
+    'SELECT name, tenant_id, repo_owner, repo_name FROM products WHERE product_id = $1',
+    [productId]
+  )).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+
+  var prefillContent = '';
+  if (path) {
+    var piece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, path, token);
+    prefillContent = piece.status === 'ok' ? piece.value : '';
+  }
+
+  var html = _renderGuardrailsForm(productId, path, prefillContent, prodRow.name);
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
+/**
  * wugs-s2 — GET /products/:id/guardrails: live-read product-level
  * architecture guardrails + standards from the product's connected repo.
  */
@@ -3137,6 +3197,8 @@ module.exports = {
   handleGetProductStandardsTab,
   // wugs-s2: product-level guardrails/standards view, live-read from the connected repo
   handleGetProductGuardrailsView,
+  // wugs-s5: create/edit form for a guardrail or standard, pre-filled with real content when editing
+  handleGetGuardrailsForm,
   handlePostProductSync,
   handlePostProductFeature,
   handleGetProductKanban,
