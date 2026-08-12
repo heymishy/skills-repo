@@ -1421,10 +1421,10 @@ async function handlePostGuardrailsForm(req, res, _next, pool, writeAdapter) {
  * wugs-s7 — records a tracking row for a PR wugs-s6's write adapter just
  * opened, so its live status can be surfaced on later view renders.
  */
-async function _trackPendingPr(pool, tenantId, productId, path, prNumber, prUrl) {
+async function _trackPendingPr(pool, tenantId, productId, contentPath, prNumber, prUrl) {
   await pool.query(
     'INSERT INTO guardrail_pending_prs (tenant_id, product_id, path, pr_number, pr_url) VALUES ($1, $2, $3, $4, $5)',
-    [tenantId, productId, path, prNumber, prUrl]
+    [tenantId, productId, contentPath, prNumber, prUrl]
   );
 }
 

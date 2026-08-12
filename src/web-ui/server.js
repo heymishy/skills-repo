@@ -3127,7 +3127,14 @@ async function router(req, res) {
           tenantId: req.session.tenantId,
           productId: target.productId
         });
-        await _trackPendingPr(_pshPool, req.session.tenantId, target.productId, target.path, writeResult.prNumber, writeResult.prUrl); // wugs-s7
+        try {
+          await _trackPendingPr(_pshPool, req.session.tenantId, target.productId, target.path, writeResult.prNumber, writeResult.prUrl); // wugs-s7
+        } catch (trackErr) {
+          // A failure here means the GitHub PR was already opened successfully;
+          // swallow so it never surfaces as a failed PR creation to the user
+          // (which could prompt a retry and a duplicate PR on GitHub).
+          console.error('Failed to record pending-PR tracking row (PR was still created successfully):', trackErr);
+        }
         return writeResult;
       };
       await handlePostGuardrailsForm(req, res, null, _pshPool, writeAdapterForRequest);
