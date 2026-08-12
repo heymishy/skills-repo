@@ -22286,12 +22286,12 @@
           "id": "wugs-s5",
           "slug": "wugs-s5-create-edit-form",
           "name": "Create/edit form for a guardrail or standard",
-          "stage": "branch-setup",
+          "stage": "implementation-plan",
           "health": "green",
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s5-create-edit-form.md",
           "prStatus": "none",
           "notes": "Epic 2 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-12T00:19:43.318Z",
+          "updatedAt": "2026-08-12T00:23:48.197Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
@@ -22308,7 +22308,39 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s5-dor.md",
           "dorContractArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s5-dor-contract.md",
-          "dorSignedOffAt": "2026-08-11T08:38:42.453Z"
+          "dorSignedOffAt": "2026-08-11T08:38:42.453Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Add/Edit action links in guardrails/standards view (AC1)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s5-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "GET form route with pre-fill (AC2, NFR-SEC-01)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s5-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Server-side empty-content validation (AC3)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s5-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Valid submission passed to write path (AC4)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s5-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Wire GET /products/:id/guardrails/form in server.js",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s5-plan.md"
+            }
+          ]
         },
         {
           "id": "wugs-s6",
