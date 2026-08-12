@@ -1282,6 +1282,48 @@ async function handleGetGuardrailsForm(req, res, _next, pool) {
 }
 
 /**
+ * wugs-s5 — validates submitted guardrail/standard content server-side.
+ * Never trust client-side-only validation (Architecture Constraints).
+ * @returns {{valid: boolean, error: (string|null)}}
+ */
+function _validateGuardrailContent(content) {
+  if (typeof content !== 'string' || content.trim().length === 0) {
+    return { valid: false, error: 'Content cannot be empty.' };
+  }
+  return { valid: true, error: null };
+}
+
+/**
+ * wugs-s5 — POST /products/:id/guardrails/form: validates submitted
+ * content server-side and, if valid, hands it to the write path.
+ * `writeAdapter(target, content)` is the write path — not yet wired to a
+ * real implementation in server.js (wugs-s6's job, see the plan's Design
+ * note); tests inject a mock directly as a function parameter.
+ */
+async function handlePostGuardrailsForm(req, res, _next, pool, writeAdapter) {
+  req.body = await _readBody(req);
+  // wugs-s6: staged for the write-adapter target object (productId + contentPath),
+  // unused by this task's own validation-only logic.
+  var productId = req.params && req.params.id;
+  // Named contentPath, not path -- this function will need the real Node
+  // `path` module for a path-traversal guard once the write path is wired
+  // (wugs-s6), and this file's convention is to require('path') locally
+  // where needed; avoid shadowing that.
+  var contentPath = (req.body && req.body.path) || '';
+  var content = (req.body && req.body.content) || '';
+
+  var validation = _validateGuardrailContent(content);
+  if (!validation.valid) {
+    if (res.status) { res.status(400).json({ error: validation.error }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: validation.error })); }
+    return;
+  }
+
+  if (res.status) { res.status(200).json({ ok: true }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true })); }
+}
+
+/**
  * wugs-s2 — GET /products/:id/guardrails: live-read product-level
  * architecture guardrails + standards from the product's connected repo.
  */
@@ -3199,6 +3241,8 @@ module.exports = {
   handleGetProductGuardrailsView,
   // wugs-s5: create/edit form for a guardrail or standard, pre-filled with real content when editing
   handleGetGuardrailsForm,
+  // wugs-s5: POST handler validating submitted content server-side (AC3) before handing off to the write path
+  handlePostGuardrailsForm,
   handlePostProductSync,
   handlePostProductFeature,
   handleGetProductKanban,

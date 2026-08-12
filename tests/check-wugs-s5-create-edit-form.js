@@ -178,6 +178,31 @@ await checkAsync('NFR-SEC-01: editForm_withScriptTag_isEscapedNotLiveMarkup', as
   });
 });
 
+// ── AC3: empty submission rejected server-side ───────────────────────────
+await checkAsync('AC3: submitForm_emptyContent_rejectedServerSide', async () => {
+  var pool = makeMockPool([]);
+  var writeAdapterCalled = false;
+  var writeAdapter = async function () { writeAdapterCalled = true; };
+  var req = mockReq({ body: { path: 'standards/saas-gui', content: '   ' } });
+  var res = mockRes();
+  await products.handlePostGuardrailsForm(req, res, null, pool, writeAdapter);
+  var result = res._get();
+  assert.strictEqual(result.statusCode, 400, 'expected a 400 validation error for whitespace-only content');
+  assert.ok(/content/i.test(result.body), 'expected a clear validation error message mentioning content');
+  assert.strictEqual(writeAdapterCalled, false, 'expected the write adapter to never be called for invalid content');
+});
+
+// ── AC3 (accept path): valid content is accepted, not rejected ──────────
+await checkAsync('AC3: submitForm_validContent_acceptedServerSide', async () => {
+  var pool = makeMockPool([]);
+  var req = mockReq({ body: { path: 'standards/saas-gui', content: 'Some real content' } });
+  var res = mockRes();
+  await products.handlePostGuardrailsForm(req, res, null, pool, async function () {});
+  var result = res._get();
+  assert.strictEqual(result.statusCode, 200, 'expected valid content to be accepted, not rejected');
+  assert.ok(/"ok":true/.test(result.body), 'expected an ok:true response body');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
