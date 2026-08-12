@@ -22291,14 +22291,14 @@
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s5-create-edit-form.md",
           "prStatus": "none",
           "notes": "Epic 2 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-12T00:50:18.941Z",
+          "updatedAt": "2026-08-12T04:44:01.660Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
           "testPlan": {
             "status": "written",
-            "totalTests": 8,
-            "passing": 7,
+            "totalTests": 9,
+            "passing": 8,
             "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s5-create-edit-form-test-plan.md"
           },
           "acTotal": 4,
@@ -22331,7 +22331,7 @@
             {
               "id": "task-4",
               "name": "Valid submission passed to write path (AC4)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s5-plan.md"
             },
             {
