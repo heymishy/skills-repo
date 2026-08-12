@@ -22371,7 +22371,7 @@
           "testPlan": {
             "status": "written",
             "totalTests": 12,
-            "passing": 6,
+            "passing": 10,
             "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s6-branch-pr-creation-adapter-test-plan.md"
           },
           "acTotal": 6,
@@ -22410,7 +22410,7 @@
             {
               "id": "task-5",
               "name": "Step failure surfaces which step failed (AC4)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s6-plan.md"
             },
             {
