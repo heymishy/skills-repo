@@ -66,6 +66,21 @@
 
 ---
 
+### Scenario 4: A GitHub API failure only breaks the guardrails/standards section, not the whole page
+
+**Covers:** AC4
+
+**Steps:**
+1. Open the guardrails/standards view for a product whose connected repo is unreachable in a way that isn't a simple 404 (e.g. revoke the connected token's repo access, or point the product at a repo you don't have read access to, so the GitHub API returns a rate-limit/auth error rather than "not found").
+
+**Expected outcome:**
+> The guardrails/standards section shows a clear message naming the failure (not a generic "something went wrong", not a silent blank section). The rest of the page — nav sidebar, page chrome — still renders normally; the whole page does not crash or blank out.
+
+**Result:** [ ] Pass  [ ] Fail
+**Notes:**
+
+---
+
 ### Edge case: The full sidebar and page navigation still work on this page
 
 **Covers:** AC5
@@ -89,6 +104,7 @@
 | Scenario 1 | | |
 | Scenario 2 | | |
 | Scenario 3 | | |
+| Scenario 4 | | |
 | Edge case | | |
 
 **Overall verdict:** [ ] All pass — ready to proceed
