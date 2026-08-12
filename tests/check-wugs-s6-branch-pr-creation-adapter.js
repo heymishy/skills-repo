@@ -311,6 +311,68 @@ await checkAsync('AC4: createGuardrailPr_prCreationFails_surfacesPrCreationStep'
   } finally { global.fetch = originalFetch; }
 });
 
+// ── NFR: token is never logged ───────────────────────────────────────────
+await checkAsync('NFR-SEC: createGuardrailPr_run_neverLogsToken', async () => {
+  var mock = mockFetchSequence([
+    { status: 200, body: { object: { sha: 'x' } } },
+    { status: 201, body: {} },
+    { status: 404, body: {} },
+    { status: 201, body: { content: { sha: 'y' } } },
+    { status: 201, body: { number: 1, html_url: 'https://github.com/acme/widgets/pull/1' } }
+  ]);
+  var originalFetch = global.fetch;
+  var originalLog = console.log;
+  var originalError = console.error;
+  var logged = [];
+  console.log = function() { logged.push(Array.prototype.slice.call(arguments).join(' ')); };
+  console.error = function() { logged.push(Array.prototype.slice.call(arguments).join(' ')); };
+  global.fetch = mock.fn;
+  try {
+    var { setGuardrailPrAdapter, getGuardrailPrAdapter, createGuardrailPr, realCreateGuardrailPr } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var original = getGuardrailPrAdapter();
+    setGuardrailPrAdapter(realCreateGuardrailPr);
+    var SECRET_TOKEN = 'ghp_supersecrettoken12345';
+    try {
+      await createGuardrailPr(SECRET_TOKEN, 'acme', 'widgets', 'x.md', 'c', { tenantId: 't1', productId: 'p1' });
+      var allLogged = logged.join('\n');
+      assert.ok(allLogged.indexOf(SECRET_TOKEN) === -1, 'expected the raw token to never appear in any log output');
+    } finally { setGuardrailPrAdapter(original); }
+  } finally {
+    global.fetch = originalFetch;
+    console.log = originalLog;
+    console.error = originalError;
+  }
+});
+
+// ── NFR: PR creation is audit-logged via PostHog ─────────────────────────
+await checkAsync('NFR-AUDIT: createGuardrailPr_success_capturesPostHogEvent', async () => {
+  var mock = mockFetchSequence([
+    { status: 200, body: { object: { sha: 'x' } } },
+    { status: 201, body: {} },
+    { status: 404, body: {} },
+    { status: 201, body: { content: { sha: 'y' } } },
+    { status: 201, body: { number: 7, html_url: 'https://github.com/acme/widgets/pull/7' } }
+  ]);
+  var originalFetch = global.fetch;
+  global.fetch = mock.fn;
+  var captured = null;
+  var mockPosthog = { capture: function(distinctId, event, properties) { captured = { distinctId: distinctId, event: event, properties: properties }; } };
+  try {
+    var { setGuardrailPrAdapter, getGuardrailPrAdapter, createGuardrailPr, realCreateGuardrailPr } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var original = getGuardrailPrAdapter();
+    setGuardrailPrAdapter(realCreateGuardrailPr);
+    try {
+      await createGuardrailPr('tok', 'acme', 'widgets', 'x.md', 'c', { tenantId: 't1', productId: 'p1', posthog: mockPosthog });
+      assert.ok(captured, 'expected a PostHog capture call to have fired');
+      assert.strictEqual(captured.event, 'guardrail_pr_opened');
+      assert.strictEqual(captured.properties.tenant_id, 't1');
+      assert.strictEqual(captured.properties.product_id, 'p1');
+      assert.strictEqual(captured.properties.repo, 'acme/widgets');
+      assert.strictEqual(captured.properties.pr_number, 7, 'expected the real PR number in the audit event, not a placeholder');
+    } finally { setGuardrailPrAdapter(original); }
+  } finally { global.fetch = originalFetch; }
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 

@@ -22,6 +22,8 @@ class GuardrailPrConflictError extends Error {
   }
 }
 
+const _posthog = require('../modules/posthog-server');
+
 let _guardrailPrAdapter = function() {
   throw new Error('Adapter not wired: guardrailPrAdapter. Call setGuardrailPrAdapter() with a real implementation before use.');
 };
@@ -124,6 +126,14 @@ async function realCreateGuardrailPr(token, owner, repo, targetPath, content, op
     throw new GuardrailPrError('PR creation failed', `Could not open PR (${prRes.status})`);
   }
   const prData = await prRes.json();
+
+  const _ph = opts.posthog || _posthog;
+  _ph.capture(opts.tenantId, 'guardrail_pr_opened', {
+    tenant_id: opts.tenantId,
+    product_id: opts.productId,
+    repo: `${owner}/${repo}`,
+    pr_number: prData.number
+  });
 
   return { prNumber: prData.number, prUrl: prData.html_url };
 }
