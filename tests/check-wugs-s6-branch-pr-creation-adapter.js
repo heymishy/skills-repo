@@ -157,6 +157,37 @@ await checkAsync('AC2: createGuardrailPr_staleSha_throwsConflictError', async ()
         function(err) { return err instanceof GuardrailPrConflictError; },
         'expected a GuardrailPrConflictError, not a generic error or silent failure'
       );
+      assert.strictEqual(mock.calls.length, 4, 'expected PR creation to never fire after a conflict');
+    } finally {
+      setGuardrailPrAdapter(original);
+    }
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+// ── AC2 (negative case): a non-conflict PUT failure is NOT mislabeled as a conflict ──
+await checkAsync('AC2: createGuardrailPr_nonConflictPutFailure_throwsGenericErrorNotConflict', async () => {
+  var mock = mockFetchSequence([
+    { status: 200, body: { object: { sha: 'base-sha-123' } } },
+    { status: 201, body: { ref: 'refs/heads/guardrail-edit-x' } },
+    { status: 200, body: { sha: 'existing-sha' } },
+    { status: 500, statusText: 'Internal Server Error', body: {} }  // NOT a conflict status
+  ]);
+  var originalFetch = global.fetch;
+  global.fetch = mock.fn;
+  try {
+    var { setGuardrailPrAdapter, getGuardrailPrAdapter, createGuardrailPr, realCreateGuardrailPr, GuardrailPrError, GuardrailPrConflictError } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var original = getGuardrailPrAdapter();
+    setGuardrailPrAdapter(realCreateGuardrailPr);
+    try {
+      await assert.rejects(
+        createGuardrailPr('tok', 'acme', 'widgets', 'standards/saas-gui.md', 'Updated content', { tenantId: 't1', productId: 'p1' }),
+        function(err) {
+          return err instanceof GuardrailPrError && !(err instanceof GuardrailPrConflictError) && err.step === 'file commit failed';
+        },
+        'expected a generic GuardrailPrError for a non-conflict PUT failure, NOT a GuardrailPrConflictError'
+      );
     } finally {
       setGuardrailPrAdapter(original);
     }
