@@ -21,6 +21,7 @@ var _journeyAccess = require('../middleware/journey-access'); // story-2-relatio
 var _agencyClientComments = require('../modules/agency-client-comments'); // story-5-client-agency-comments -- append-only comments adapter
 var _standardsRoutes = require('./standards'); // smug-s1 -- fetchStandardsForProduct, shared with the JSON standards API
 var _artefactFetcher = require('../adapters/artefact-fetcher'); // wugs-s2 — reuses wugs-s1's fetchRepoPath (ADR-012)
+var _guardrailPrAdapter = require('../adapters/guardrail-pr-adapter'); // wugs-s6 review fix — GuardrailPrConflictError for the write-adapter try/catch
 
 // s1.1 -- injectable bulk session-store reader. Defaults to a lazy require of
 // skills.js's real _getHtmlSessionsBulk (mirrors the same lazy-getter shape
@@ -1322,21 +1323,58 @@ function _validateGuardrailPath(path) {
 }
 
 /**
- * wugs-s5 — POST /products/:id/guardrails/form: validates submitted
- * content server-side and, if valid, hands it to the write path.
- * `writeAdapter(target, content)` is the write path — not yet wired to a
- * real implementation in server.js (wugs-s6's job, see the plan's Design
- * note); tests inject a mock directly as a function parameter.
+ * wugs-s6 review fix — restricts writes to the two canonical guardrail/
+ * standards locations this feature is scoped to (matching wugs-s2's own
+ * live-read locations, see the GET /products/:id/guardrails comment in
+ * server.js: '.github/architecture-guardrails.md' and the 'standards/'
+ * folder). Without this, a submission could target ANY path in the repo
+ * (e.g. '.github/workflows/ci.yml'), which is out of scope for a
+ * guardrails/standards editing feature and a real write-surface risk now
+ * that this route is wired to a real GitHub-writing adapter.
+ * @returns {boolean}
+ */
+function _isAllowedGuardrailPath(path) {
+  return path === '.github/architecture-guardrails.md' || path.indexOf('standards/') === 0;
+}
+
+/**
+ * wugs-s5 / wugs-s6 review fix — POST /products/:id/guardrails/form:
+ * CSRF-guards and tenant-scopes the request (matching every other mutating
+ * form route in this file, e.g. handlePostProductModule), validates the
+ * submitted path + content server-side, restricts the target path to the
+ * feature's canonical locations, and hands the write off to `writeAdapter`
+ * (the real branch+PR adapter once wired in server.js — wugs-s6). Handles
+ * GuardrailPrConflictError (409, stale-SHA race) and any other write-path
+ * failure (500, generic) distinctly, matching routes/sign-off.js's
+ * commitSignOff try/catch shape.
  */
 async function handlePostGuardrailsForm(req, res, _next, pool, writeAdapter) {
+  // wugs-s6 review fix -- CSRF guard first, matching handlePostProductModule.
+  // csrfGuard reads and caches the body itself; the _readBody call below
+  // (unchanged) picks it up via its own req.body !== undefined short-circuit.
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
   req.body = await _readBody(req);
+
   // productId + contentPath form the write-adapter target object passed to
   // writeAdapter() below on the success path.
   var productId = req.params && req.params.id;
-  // Named contentPath, not path -- this function will need the real Node
-  // `path` module for a path-traversal guard once the write path is wired
-  // (wugs-s6), and this file's convention is to require('path') locally
-  // where needed; avoid shadowing that.
+  var tenantId = req.session && req.session.tenantId;
+
+  // wugs-s6 review fix -- tenant-scoped guard (FORBIDDEN-vs-NOT_FOUND
+  // policy: 404, not 403, matching handleGetProductModules /
+  // handlePostProductModule exactly). Without this, any authenticated user
+  // of ANY tenant could POST a different tenant's productId and open a real
+  // PR against that tenant's connected GitHub repo.
+  var prodRow = (await pool.query('SELECT tenant_id FROM products WHERE product_id = $1', [productId])).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+
+  // Named contentPath, not path -- this file's convention is to require('path')
+  // locally where needed; avoid shadowing that.
   var contentPath = (req.body && req.body.path) || '';
   var content = (req.body && req.body.content) || '';
 
@@ -1347,6 +1385,13 @@ async function handlePostGuardrailsForm(req, res, _next, pool, writeAdapter) {
     return;
   }
 
+  if (!_isAllowedGuardrailPath(contentPath)) {
+    var allowlistError = 'Target path must be .github/architecture-guardrails.md or under standards/.';
+    if (res.status) { res.status(400).json({ error: allowlistError }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: allowlistError })); }
+    return;
+  }
+
   var validation = _validateGuardrailContent(content);
   if (!validation.valid) {
     if (res.status) { res.status(400).json({ error: validation.error }); }
@@ -1354,7 +1399,19 @@ async function handlePostGuardrailsForm(req, res, _next, pool, writeAdapter) {
     return;
   }
 
-  var writeResult = await writeAdapter({ productId: productId, path: contentPath }, content);
+  var writeResult;
+  try {
+    writeResult = await writeAdapter({ productId: productId, path: contentPath }, content);
+  } catch (err) {
+    if (err instanceof _guardrailPrAdapter.GuardrailPrConflictError) {
+      if (res.status) { res.status(409).json({ error: 'Artefact was updated — please reload and try again' }); }
+      else { res.writeHead(409, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'Artefact was updated — please reload and try again' })); }
+      return;
+    }
+    if (res.status) { res.status(500).json({ error: 'Failed to create pull request' }); }
+    else { res.writeHead(500, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'Failed to create pull request' })); }
+    return;
+  }
 
   if (res.status) { res.status(200).json({ ok: true, result: writeResult }); }
   else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, result: writeResult })); }

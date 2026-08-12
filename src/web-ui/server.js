@@ -57,6 +57,7 @@ const { registerSelfAsProduct }                                       = require(
 const { setRepoAdapter, realCheckRepoAccess }                        = require('./adapters/repo-adapter'); // prc-s1.2 (D37 separate task)
 const { setPipelineStateFetchAdapter, realFetchPipelineState }        = require('./adapters/pipeline-state-fetch-adapter'); // pr-s2
 const { setFetchRepoPath, realFetchRepoPath }                        = require('./adapters/artefact-fetcher'); // wugs-s1
+const { createGuardrailPr, setGuardrailPrAdapter, realCreateGuardrailPr } = require('./adapters/guardrail-pr-adapter'); // wugs-s6
 const { handlePostConnectRepo }                                      = require('./routes/product-repo');   // prc-s1.2
 const { handlePostCheckout, handleGetBillingSuccess, handlePostStripeWebhook, setWebhookDbAdapter, handleGetBillingPortal, handleGetBillingPlanState } = require('./routes/billing'); // lab-s3.2 / lab-s3.4 / lab-s3.5 / bri-s3.5
 const { setStripeAdapter }                                           = require('./modules/stripe-client');  // lab-s3.2
@@ -72,7 +73,7 @@ const { createSettingsHandlers } = require('./routes/settings'); // c1
 const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
 const { adminCreditsGet, adminCreditsPost, adminSetPlanPost }        = require('./routes/admin-credits');     // arl-s3 / tpac-s1
 const { adminMockGatewayGet, adminMockGatewayPost }                  = require('./routes/admin-mock-gateway'); // amgt-s1
-const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handleGetProductStandardsTab, handleGetProductGuardrailsView, handleGetGuardrailsForm, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1 / smug-s1 / wugs-s2 / wugs-s5
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handleGetProductStandardsTab, handleGetProductGuardrailsView, handleGetGuardrailsForm, handlePostGuardrailsForm, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1 / smug-s1 / wugs-s2 / wugs-s5 / wugs-s6
 const { setModulesAdapter } = require('./adapters/modules-adapter'); // a1
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
@@ -188,6 +189,8 @@ if (process.env.NODE_ENV !== 'test') {
 if (process.env.NODE_ENV !== 'test') {
   setFetchRepoPath(realFetchRepoPath);
   console.log('[wugs-s1] repo-path fetch adapter wired');
+  setGuardrailPrAdapter(realCreateGuardrailPr);
+  console.log('[wugs-s6] guardrail PR adapter wired');
 }
 
 // rb-s4 / D37 mandatory separate wiring task -- wire the real export
@@ -3089,6 +3092,25 @@ async function router(req, res) {
     // write adapter until wugs-s6 ships.
     req.params = { id: pathname.split('/')[2] };
     authGuard(req, res, async () => { await handleGetGuardrailsForm(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/guardrails\/form$/) && req.method === 'POST') {
+    // wugs-s6 -- submission handler for the create/edit form (wugs-s5),
+    // now wired to a real write adapter. Closes the gap wugs-s5 flagged in
+    // decisions.md: the POST route previously did not exist at all.
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => {
+      const writeAdapterForRequest = async (target, content) => {
+        const prodRow = (await _pshPool.query(
+          'SELECT repo_owner, repo_name FROM products WHERE product_id = $1',
+          [target.productId]
+        )).rows[0];
+        return createGuardrailPr(req.session.accessToken, prodRow.repo_owner, prodRow.repo_name, target.path, content, {
+          tenantId: req.session.tenantId,
+          productId: target.productId
+        });
+      };
+      await handlePostGuardrailsForm(req, res, null, _pshPool, writeAdapterForRequest);
+    });
 
   } else if (pathname.match(/^\/products\/[^/]+\/modules$/) && req.method === 'GET') {
     // a1 (AC1) — list modules curated for a product

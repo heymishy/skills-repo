@@ -22359,29 +22359,73 @@
           "id": "wugs-s6",
           "slug": "wugs-s6-branch-pr-creation-adapter",
           "name": "Branch + PR creation adapter against the tenant's repo",
-          "stage": "definition-of-ready",
+          "stage": "subagent-execution",
           "health": "green",
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s6-branch-pr-creation-adapter.md",
-          "prStatus": "none",
+          "prStatus": "draft",
           "notes": "Epic 2 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-11T18:35:48.323Z",
+          "updatedAt": "2026-08-12T19:20:22.446Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 1,
           "testPlan": {
             "status": "written",
-            "totalTests": 8,
-            "passing": 0,
+            "totalTests": 18,
+            "passing": 18,
             "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s6-branch-pr-creation-adapter-test-plan.md"
           },
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 6,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s6-dor.md",
           "dorContractArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s6-dor-contract.md",
-          "dorSignedOffAt": "2026-08-11T08:38:42.453Z"
+          "dorSignedOffAt": "2026-08-11T08:38:42.453Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Adapter skeleton + injectable pattern (AC5)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s6-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "New file: branch, commit, PR; never writes default directly (AC1)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s6-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Existing file: SHA-based update, conflict surfaced (AC2)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s6-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Success returns PR number and URL (AC3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s6-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Step failure surfaces which step failed (AC4)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s6-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "NFRs: token never logged, PR creation audit-logged",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s6-plan.md"
+            },
+            {
+              "id": "task-7",
+              "name": "Wire real adapter + POST route in server.js (AC6, closes wugs-s5 GAP-FLAG)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s6-plan.md"
+            }
+          ]
         },
         {
           "id": "wugs-s7",

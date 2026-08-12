@@ -27,7 +27,10 @@ function mockReq(overrides) {
   return Object.assign({
     params: { id: 'p1' },
     query: {},
-    session: { accessToken: 'tok', tenantId: 't1', login: 'alice' }
+    // wugs-s6 review fix: csrfToken added so POST call sites (which now go
+    // through handlePostGuardrailsForm's CSRF guard) can supply a matching
+    // _csrf field in their body and pass validation.
+    session: { accessToken: 'tok', tenantId: 't1', login: 'alice', csrfToken: 'ct1' }
   }, overrides || {});
 }
 
@@ -47,6 +50,12 @@ function makeMockPool(navProducts) {
       var s = String(sql);
       if (/SELECT name, tenant_id, repo_owner, repo_name FROM products WHERE product_id/i.test(s)) {
         return { rows: [{ name: 'Test Product', tenant_id: 't1', repo_owner: 'acme', repo_name: 'widgets' }] };
+      }
+      // wugs-s6 review fix: handlePostGuardrailsForm's tenant-scoped guard
+      // (matching handleGetProductModules/handlePostProductModule) queries
+      // just tenant_id.
+      if (/SELECT tenant_id FROM products WHERE product_id/i.test(s)) {
+        return { rows: [{ tenant_id: 't1' }] };
       }
       if (/SELECT product_id, name, created_at FROM products WHERE tenant_id/i.test(s)) {
         return { rows: (navProducts || []).map(function (p) { return { product_id: p.id, name: p.name, created_at: new Date().toISOString() }; }) };
@@ -183,7 +192,7 @@ await checkAsync('AC3: submitForm_emptyContent_rejectedServerSide', async () => 
   var pool = makeMockPool([]);
   var writeAdapterCalled = false;
   var writeAdapter = async function () { writeAdapterCalled = true; };
-  var req = mockReq({ body: { path: 'standards/saas-gui', content: '   ' } });
+  var req = mockReq({ body: { path: 'standards/saas-gui', content: '   ', _csrf: 'ct1' } });
   var res = mockRes();
   await products.handlePostGuardrailsForm(req, res, null, pool, writeAdapter);
   var result = res._get();
@@ -195,7 +204,7 @@ await checkAsync('AC3: submitForm_emptyContent_rejectedServerSide', async () => 
 // ── AC3 (accept path): valid content is accepted, not rejected ──────────
 await checkAsync('AC3: submitForm_validContent_acceptedServerSide', async () => {
   var pool = makeMockPool([]);
-  var req = mockReq({ body: { path: 'standards/saas-gui', content: 'Some real content' } });
+  var req = mockReq({ body: { path: 'standards/saas-gui', content: 'Some real content', _csrf: 'ct1' } });
   var res = mockRes();
   await products.handlePostGuardrailsForm(req, res, null, pool, async function () {});
   var result = res._get();
@@ -213,7 +222,7 @@ await checkAsync('AC4: submitForm_validContent_passesToWritePathWithCorrectTarge
     capturedContent = content;
     return { ok: true };
   };
-  var req = mockReq({ body: { path: 'standards/saas-gui', content: 'Real new content for the standard.' } });
+  var req = mockReq({ body: { path: 'standards/saas-gui', content: 'Real new content for the standard.', _csrf: 'ct1' } });
   var res = mockRes();
   await products.handlePostGuardrailsForm(req, res, null, pool, writeAdapter);
   var result = res._get();
@@ -273,7 +282,7 @@ await checkAsync('FIX: submitForm_emptyPath_rejectedServerSide', async () => {
   var pool = makeMockPool([]);
   var writeAdapterCalled = false;
   var writeAdapter = async function () { writeAdapterCalled = true; };
-  var req = mockReq({ body: { path: '', content: 'Real content but no target path' } });
+  var req = mockReq({ body: { path: '', content: 'Real content but no target path', _csrf: 'ct1' } });
   var res = mockRes();
   await products.handlePostGuardrailsForm(req, res, null, pool, writeAdapter);
   var result = res._get();
@@ -286,7 +295,7 @@ await checkAsync('FIX: submitForm_validPathAndContent_stillAccepted', async () =
   var pool = makeMockPool([]);
   var capturedTarget = null;
   var writeAdapter = async function (target) { capturedTarget = target; return { ok: true }; };
-  var req = mockReq({ body: { path: 'standards/new-discipline', content: 'Real content' } });
+  var req = mockReq({ body: { path: 'standards/new-discipline', content: 'Real content', _csrf: 'ct1' } });
   var res = mockRes();
   await products.handlePostGuardrailsForm(req, res, null, pool, writeAdapter);
   var result = res._get();
