@@ -2,7 +2,7 @@
 
 > **For agent execution:** Use /subagent-execution (subagents available).
 
-**Goal:** Make every test in the test plan pass — a new injectable adapter (`guardrailPrAdapter`) that creates a branch, commits a file (new or SHA-based update), and opens a PR against a tenant's connected repo, never writing the default branch directly; wire it for real in `server.js`, closing the gap `wugs-s5` flagged (the form's POST route currently has no real write adapter to call).
+**Goal:** Make every test in the test plan pass — a new injectable adapter (`createGuardrailPr`) that creates a branch, commits a file (new or SHA-based update), and opens a PR against a tenant's connected repo, never writing the default branch directly; wire it for real in `server.js`, closing the gap `wugs-s5` flagged (the form's POST route currently has no real write adapter to call).
 **Branch:** `feature/wugs-s6`
 **Worktree:** `.worktrees/wugs-s6`
 **Test command:** `node tests/check-wugs-s6-branch-pr-creation-adapter.js` (per task) / `npm test` (full suite, final step)
@@ -17,9 +17,9 @@ Create:
   tests/check-wugs-s6-branch-pr-creation-adapter.js   — AC1-AC6 + 2 NFRs
 
 Modify:
-  src/web-ui/server.js  — wire setGuardrailPrAdapter(realGuardrailPrAdapter), and wire the
+  src/web-ui/server.js  — wire setGuardrailPrAdapter(realCreateGuardrailPr), and wire the
                            POST /products/:id/guardrails/form route to handlePostGuardrailsForm
-                           (wugs-s5), passing a real writeAdapter that calls guardrailPrAdapter
+                           (wugs-s5), passing a real writeAdapter that calls createGuardrailPr
 ```
 
 **Design note on the real GitHub API call sequence (read before starting):** The test plan describes
@@ -43,7 +43,7 @@ does NOT look up `repo_owner`/`repo_name` or the session token, because at the t
 no real adapter needing them. Rather than modifying `handlePostGuardrailsForm` itself (already reviewed and
 merged), the POST route wiring in `server.js` constructs a per-request closure that looks up the product's
 `repo_owner`/`repo_name` via `pool` and reads `req.session.accessToken`, then calls the real
-`guardrailPrAdapter` with the full parameter set. This keeps `wugs-s5`'s code untouched and contains the
+`createGuardrailPr` with the full parameter set. This keeps `wugs-s5`'s code untouched and contains the
 new lookup logic entirely within the wiring task (Task 7).
 
 ---
@@ -81,27 +81,21 @@ async function checkAsync(name, fn) {
   catch (e) { console.error('FAIL:', name, '—', e.message); failed++; process.exitCode = 1; }
 }
 
-var guardrailPrAdapter = require('../src/web-ui/adapters/guardrail-pr-adapter');
+var createGuardrailPr = require('../src/web-ui/adapters/guardrail-pr-adapter');
 
 (async () => {
 
 // ── AC5: unwired adapter throws explicit error ───────────────────────────
-await checkAsync('AC5: guardrailPrAdapter_unwired_throwsExplicitError', async () => {
-  var original = guardrailPrAdapter.getGuardrailPrAdapter();
-  guardrailPrAdapter.setGuardrailPrAdapter(function() {
-    throw new Error('Adapter not wired: guardrailPrAdapter. Call setGuardrailPrAdapter() with a real implementation before use.');
-  });
-  try {
-    await assert.rejects(
-      guardrailPrAdapter.guardrailPrAdapter('token', 'owner', 'repo', 'path.md', 'content', {}),
-      function(err) {
-        return err.message === 'Adapter not wired: guardrailPrAdapter. Call setGuardrailPrAdapter() with a real implementation before use.';
-      },
-      'expected the exact D37 "not wired" error message'
-    );
-  } finally {
-    guardrailPrAdapter.setGuardrailPrAdapter(original);
-  }
+// Calls the module's real default directly -- no setGuardrailPrAdapter()
+// call precedes this, per AC5's own "no adapter wired" precondition.
+await checkAsync('AC5: createGuardrailPr_unwired_throwsExplicitError', async () => {
+  await assert.rejects(
+    createGuardrailPr.createGuardrailPr('token', 'owner', 'repo', 'path.md', 'content', {}),
+    function(err) {
+      return err.message === 'Adapter not wired: guardrailPrAdapter. Call setGuardrailPrAdapter() with a real implementation before use.';
+    },
+    'expected the exact D37 "not wired" error message from the real, unwired default'
+  );
 });
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
@@ -147,7 +141,7 @@ class GuardrailPrConflictError extends Error {
   }
 }
 
-let _guardrailPrAdapter = function() {
+let _createGuardrailPr = function() {
   throw new Error('Adapter not wired: guardrailPrAdapter. Call setGuardrailPrAdapter() with a real implementation before use.');
 };
 
@@ -159,20 +153,20 @@ let _guardrailPrAdapter = function() {
  * @param {string} content
  * @param {object} options - { tenantId, productId, defaultBranch, posthog }
  */
-async function guardrailPrAdapter(token, owner, repo, targetPath, content, options) {
-  return _guardrailPrAdapter(token, owner, repo, targetPath, content, options);
+async function createGuardrailPr(token, owner, repo, targetPath, content, options) {
+  return getGuardrailPrAdapter()(token, owner, repo, targetPath, content, options);
 }
 
 function setGuardrailPrAdapter(impl) {
-  _guardrailPrAdapter = impl;
+  _createGuardrailPr = impl;
 }
 
 function getGuardrailPrAdapter() {
-  return _guardrailPrAdapter;
+  return _createGuardrailPr;
 }
 
 module.exports = {
-  guardrailPrAdapter,
+  createGuardrailPr,
   setGuardrailPrAdapter,
   getGuardrailPrAdapter,
   GuardrailPrError,
@@ -240,7 +234,7 @@ function mockFetchSequence(responses) {
 }
 
 // ── AC1: new file — branch, commit, PR; never writes default directly ───
-await checkAsync('AC1: guardrailPrAdapter_newFile_createsBranchCommitsAndOpensPr', async () => {
+await checkAsync('AC1: createGuardrailPr_newFile_createsBranchCommitsAndOpensPr', async () => {
   var mock = mockFetchSequence([
     { status: 200, body: { object: { sha: 'base-sha-123' } } },              // 1. get default branch SHA
     { status: 201, body: { ref: 'refs/heads/guardrail-edit-x' } },           // 2. create ref
@@ -252,11 +246,11 @@ await checkAsync('AC1: guardrailPrAdapter_newFile_createsBranchCommitsAndOpensPr
   global.fetch = mock.fn;
   try {
     var original = require('../src/web-ui/adapters/guardrail-pr-adapter').getGuardrailPrAdapter();
-    var { setGuardrailPrAdapter, guardrailPrAdapter, GuardrailPrError } = require('../src/web-ui/adapters/guardrail-pr-adapter');
-    var { realGuardrailPrAdapter } = require('../src/web-ui/adapters/guardrail-pr-adapter');
-    setGuardrailPrAdapter(realGuardrailPrAdapter);
+    var { setGuardrailPrAdapter, createGuardrailPr, GuardrailPrError } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var { realCreateGuardrailPr } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    setGuardrailPrAdapter(realCreateGuardrailPr);
     try {
-      await guardrailPrAdapter('tok', 'acme', 'widgets', 'standards/new-discipline.md', 'New content', { tenantId: 't1', productId: 'p1' });
+      await createGuardrailPr('tok', 'acme', 'widgets', 'standards/new-discipline.md', 'New content', { tenantId: 't1', productId: 'p1' });
       assert.strictEqual(mock.calls.length, 5, 'expected exactly 5 sequential API calls');
       assert.ok(mock.calls[1].method === 'POST' && /\/git\/refs$/.test(mock.calls[1].url), 'expected step 2 to create a new ref');
       assert.ok(mock.calls[3].method === 'PUT' && /\/contents\//.test(mock.calls[3].url), 'expected step 4 to PUT the file content');
@@ -278,7 +272,7 @@ await checkAsync('AC1: guardrailPrAdapter_newFile_createsBranchCommitsAndOpensPr
 node tests/check-wugs-s6-branch-pr-creation-adapter.js
 ```
 
-Expected: `FAIL: AC1: ... — realGuardrailPrAdapter is not a function` (or similar — not implemented yet)
+Expected: `FAIL: AC1: ... — realCreateGuardrailPr is not a function` (or similar — not implemented yet)
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -304,7 +298,7 @@ async function _ghRequest(token, apiBase, method, endpoint, body) {
  * performs a GET-file-existence check for both new and existing paths,
  * rather than trusting a caller-supplied "is this new" flag.
  */
-async function realGuardrailPrAdapter(token, owner, repo, targetPath, content, options) {
+async function realCreateGuardrailPr(token, owner, repo, targetPath, content, options) {
   const opts = options || {};
   const defaultBranch = opts.defaultBranch || 'main';
   const apiBase = (process.env.GITHUB_API_BASE_URL || 'https://api.github.com').replace(/\/$/, '');
@@ -368,7 +362,7 @@ async function realGuardrailPrAdapter(token, owner, repo, targetPath, content, o
 }
 ```
 
-Add `realGuardrailPrAdapter` to `module.exports`.
+Add `realCreateGuardrailPr` to `module.exports`.
 
 - [ ] **Step 4: Run test — must pass**
 
@@ -406,7 +400,7 @@ Add before the final `console.log`:
 
 ```javascript
 // ── AC2: existing file — SHA-based update ────────────────────────────────
-await checkAsync('AC2: guardrailPrAdapter_existingFile_usesShaForUpdate', async () => {
+await checkAsync('AC2: createGuardrailPr_existingFile_usesShaForUpdate', async () => {
   var mock = mockFetchSequence([
     { status: 200, body: { object: { sha: 'base-sha-123' } } },
     { status: 201, body: { ref: 'refs/heads/guardrail-edit-x' } },
@@ -417,11 +411,11 @@ await checkAsync('AC2: guardrailPrAdapter_existingFile_usesShaForUpdate', async 
   var originalFetch = global.fetch;
   global.fetch = mock.fn;
   try {
-    var { setGuardrailPrAdapter, getGuardrailPrAdapter, guardrailPrAdapter, realGuardrailPrAdapter } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var { setGuardrailPrAdapter, getGuardrailPrAdapter, createGuardrailPr, realCreateGuardrailPr } = require('../src/web-ui/adapters/guardrail-pr-adapter');
     var original = getGuardrailPrAdapter();
-    setGuardrailPrAdapter(realGuardrailPrAdapter);
+    setGuardrailPrAdapter(realCreateGuardrailPr);
     try {
-      await guardrailPrAdapter('tok', 'acme', 'widgets', 'standards/saas-gui.md', 'Updated content', { tenantId: 't1', productId: 'p1' });
+      await createGuardrailPr('tok', 'acme', 'widgets', 'standards/saas-gui.md', 'Updated content', { tenantId: 't1', productId: 'p1' });
       var putBody = JSON.parse(mock.calls[3].body);
       assert.strictEqual(putBody.sha, 'existing-file-sha-999', 'expected the fetched SHA to be included in the update payload');
     } finally {
@@ -433,7 +427,7 @@ await checkAsync('AC2: guardrailPrAdapter_existingFile_usesShaForUpdate', async 
 });
 
 // ── AC2 (conflict edge case): stale SHA surfaces a clear conflict error ──
-await checkAsync('AC2: guardrailPrAdapter_staleSha_throwsConflictError', async () => {
+await checkAsync('AC2: createGuardrailPr_staleSha_throwsConflictError', async () => {
   var mock = mockFetchSequence([
     { status: 200, body: { object: { sha: 'base-sha-123' } } },
     { status: 201, body: { ref: 'refs/heads/guardrail-edit-x' } },
@@ -443,12 +437,12 @@ await checkAsync('AC2: guardrailPrAdapter_staleSha_throwsConflictError', async (
   var originalFetch = global.fetch;
   global.fetch = mock.fn;
   try {
-    var { setGuardrailPrAdapter, getGuardrailPrAdapter, guardrailPrAdapter, realGuardrailPrAdapter, GuardrailPrConflictError } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var { setGuardrailPrAdapter, getGuardrailPrAdapter, createGuardrailPr, realCreateGuardrailPr, GuardrailPrConflictError } = require('../src/web-ui/adapters/guardrail-pr-adapter');
     var original = getGuardrailPrAdapter();
-    setGuardrailPrAdapter(realGuardrailPrAdapter);
+    setGuardrailPrAdapter(realCreateGuardrailPr);
     try {
       await assert.rejects(
-        guardrailPrAdapter('tok', 'acme', 'widgets', 'standards/saas-gui.md', 'Updated content', { tenantId: 't1', productId: 'p1' }),
+        createGuardrailPr('tok', 'acme', 'widgets', 'standards/saas-gui.md', 'Updated content', { tenantId: 't1', productId: 'p1' }),
         function(err) { return err instanceof GuardrailPrConflictError; },
         'expected a GuardrailPrConflictError, not a generic error or silent failure'
       );
@@ -467,7 +461,7 @@ await checkAsync('AC2: guardrailPrAdapter_staleSha_throwsConflictError', async (
 node tests/check-wugs-s6-branch-pr-creation-adapter.js
 ```
 
-Expected: `4 passed, 0 failed` — if either fails, that's your RED signal; fix `realGuardrailPrAdapter`'s SHA/conflict handling in `guardrail-pr-adapter.js` until both pass.
+Expected: `4 passed, 0 failed` — if either fails, that's your RED signal; fix `realCreateGuardrailPr`'s SHA/conflict handling in `guardrail-pr-adapter.js` until both pass.
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -507,7 +501,7 @@ Add before the final `console.log`:
 
 ```javascript
 // ── AC3: success returns PR number and URL ───────────────────────────────
-await checkAsync('AC3: guardrailPrAdapter_success_returnsPrNumberAndUrl', async () => {
+await checkAsync('AC3: createGuardrailPr_success_returnsPrNumberAndUrl', async () => {
   var mock = mockFetchSequence([
     { status: 200, body: { object: { sha: 'base-sha-123' } } },
     { status: 201, body: { ref: 'refs/heads/guardrail-edit-x' } },
@@ -518,11 +512,11 @@ await checkAsync('AC3: guardrailPrAdapter_success_returnsPrNumberAndUrl', async 
   var originalFetch = global.fetch;
   global.fetch = mock.fn;
   try {
-    var { setGuardrailPrAdapter, getGuardrailPrAdapter, guardrailPrAdapter, realGuardrailPrAdapter } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var { setGuardrailPrAdapter, getGuardrailPrAdapter, createGuardrailPr, realCreateGuardrailPr } = require('../src/web-ui/adapters/guardrail-pr-adapter');
     var original = getGuardrailPrAdapter();
-    setGuardrailPrAdapter(realGuardrailPrAdapter);
+    setGuardrailPrAdapter(realCreateGuardrailPr);
     try {
-      var result = await guardrailPrAdapter('tok', 'acme', 'widgets', 'standards/new.md', 'content', { tenantId: 't1', productId: 'p1' });
+      var result = await createGuardrailPr('tok', 'acme', 'widgets', 'standards/new.md', 'content', { tenantId: 't1', productId: 'p1' });
       assert.strictEqual(result.prNumber, 42, 'expected the real mocked PR number, not a placeholder');
       assert.strictEqual(result.prUrl, 'https://github.com/acme/widgets/pull/42', 'expected the real mocked PR URL, not a constructed/guessed one');
     } finally {
@@ -540,7 +534,7 @@ await checkAsync('AC3: guardrailPrAdapter_success_returnsPrNumberAndUrl', async 
 node tests/check-wugs-s6-branch-pr-creation-adapter.js
 ```
 
-Expected: `5 passed, 0 failed` — if it fails, that's the RED signal; fix the return statement in `realGuardrailPrAdapter`.
+Expected: `5 passed, 0 failed` — if it fails, that's the RED signal; fix the return statement in `realCreateGuardrailPr`.
 
 - [ ] **Step 3: Write minimal implementation**
 
@@ -580,17 +574,17 @@ Add before the final `console.log` — 4 separate cases, one per step:
 
 ```javascript
 // ── AC4: step failure surfaces which step failed (4 distinct steps) ─────
-await checkAsync('AC4: guardrailPrAdapter_branchShaFails_surfacesBranchCreationStep', async () => {
+await checkAsync('AC4: createGuardrailPr_branchShaFails_surfacesBranchCreationStep', async () => {
   var mock = mockFetchSequence([{ status: 500, statusText: 'Internal Server Error', body: {} }]);
   var originalFetch = global.fetch;
   global.fetch = mock.fn;
   try {
-    var { setGuardrailPrAdapter, getGuardrailPrAdapter, guardrailPrAdapter, realGuardrailPrAdapter, GuardrailPrError } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var { setGuardrailPrAdapter, getGuardrailPrAdapter, createGuardrailPr, realCreateGuardrailPr, GuardrailPrError } = require('../src/web-ui/adapters/guardrail-pr-adapter');
     var original = getGuardrailPrAdapter();
-    setGuardrailPrAdapter(realGuardrailPrAdapter);
+    setGuardrailPrAdapter(realCreateGuardrailPr);
     try {
       await assert.rejects(
-        guardrailPrAdapter('tok', 'acme', 'widgets', 'x.md', 'c', {}),
+        createGuardrailPr('tok', 'acme', 'widgets', 'x.md', 'c', {}),
         function(err) { return err instanceof GuardrailPrError && err.step === 'branch creation failed'; },
         'expected a GuardrailPrError naming "branch creation failed"'
       );
@@ -598,7 +592,7 @@ await checkAsync('AC4: guardrailPrAdapter_branchShaFails_surfacesBranchCreationS
   } finally { global.fetch = originalFetch; }
 });
 
-await checkAsync('AC4: guardrailPrAdapter_createRefFails_surfacesBranchCreationStep', async () => {
+await checkAsync('AC4: createGuardrailPr_createRefFails_surfacesBranchCreationStep', async () => {
   var mock = mockFetchSequence([
     { status: 200, body: { object: { sha: 'x' } } },
     { status: 422, body: { message: 'Reference already exists' } }
@@ -606,12 +600,12 @@ await checkAsync('AC4: guardrailPrAdapter_createRefFails_surfacesBranchCreationS
   var originalFetch = global.fetch;
   global.fetch = mock.fn;
   try {
-    var { setGuardrailPrAdapter, getGuardrailPrAdapter, guardrailPrAdapter, realGuardrailPrAdapter, GuardrailPrError } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var { setGuardrailPrAdapter, getGuardrailPrAdapter, createGuardrailPr, realCreateGuardrailPr, GuardrailPrError } = require('../src/web-ui/adapters/guardrail-pr-adapter');
     var original = getGuardrailPrAdapter();
-    setGuardrailPrAdapter(realGuardrailPrAdapter);
+    setGuardrailPrAdapter(realCreateGuardrailPr);
     try {
       await assert.rejects(
-        guardrailPrAdapter('tok', 'acme', 'widgets', 'x.md', 'c', {}),
+        createGuardrailPr('tok', 'acme', 'widgets', 'x.md', 'c', {}),
         function(err) { return err instanceof GuardrailPrError && err.step === 'branch creation failed'; },
         'expected a GuardrailPrError naming "branch creation failed" for the create-ref step'
       );
@@ -619,7 +613,7 @@ await checkAsync('AC4: guardrailPrAdapter_createRefFails_surfacesBranchCreationS
   } finally { global.fetch = originalFetch; }
 });
 
-await checkAsync('AC4: guardrailPrAdapter_fileCommitFails_surfacesFileCommitStep', async () => {
+await checkAsync('AC4: createGuardrailPr_fileCommitFails_surfacesFileCommitStep', async () => {
   var mock = mockFetchSequence([
     { status: 200, body: { object: { sha: 'x' } } },
     { status: 201, body: {} },
@@ -629,12 +623,12 @@ await checkAsync('AC4: guardrailPrAdapter_fileCommitFails_surfacesFileCommitStep
   var originalFetch = global.fetch;
   global.fetch = mock.fn;
   try {
-    var { setGuardrailPrAdapter, getGuardrailPrAdapter, guardrailPrAdapter, realGuardrailPrAdapter, GuardrailPrError } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var { setGuardrailPrAdapter, getGuardrailPrAdapter, createGuardrailPr, realCreateGuardrailPr, GuardrailPrError } = require('../src/web-ui/adapters/guardrail-pr-adapter');
     var original = getGuardrailPrAdapter();
-    setGuardrailPrAdapter(realGuardrailPrAdapter);
+    setGuardrailPrAdapter(realCreateGuardrailPr);
     try {
       await assert.rejects(
-        guardrailPrAdapter('tok', 'acme', 'widgets', 'x.md', 'c', {}),
+        createGuardrailPr('tok', 'acme', 'widgets', 'x.md', 'c', {}),
         function(err) { return err instanceof GuardrailPrError && err.step === 'file commit failed'; },
         'expected a GuardrailPrError naming "file commit failed"'
       );
@@ -642,7 +636,7 @@ await checkAsync('AC4: guardrailPrAdapter_fileCommitFails_surfacesFileCommitStep
   } finally { global.fetch = originalFetch; }
 });
 
-await checkAsync('AC4: guardrailPrAdapter_prCreationFails_surfacesPrCreationStep', async () => {
+await checkAsync('AC4: createGuardrailPr_prCreationFails_surfacesPrCreationStep', async () => {
   var mock = mockFetchSequence([
     { status: 200, body: { object: { sha: 'x' } } },
     { status: 201, body: {} },
@@ -653,12 +647,12 @@ await checkAsync('AC4: guardrailPrAdapter_prCreationFails_surfacesPrCreationStep
   var originalFetch = global.fetch;
   global.fetch = mock.fn;
   try {
-    var { setGuardrailPrAdapter, getGuardrailPrAdapter, guardrailPrAdapter, realGuardrailPrAdapter, GuardrailPrError } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var { setGuardrailPrAdapter, getGuardrailPrAdapter, createGuardrailPr, realCreateGuardrailPr, GuardrailPrError } = require('../src/web-ui/adapters/guardrail-pr-adapter');
     var original = getGuardrailPrAdapter();
-    setGuardrailPrAdapter(realGuardrailPrAdapter);
+    setGuardrailPrAdapter(realCreateGuardrailPr);
     try {
       await assert.rejects(
-        guardrailPrAdapter('tok', 'acme', 'widgets', 'x.md', 'c', {}),
+        createGuardrailPr('tok', 'acme', 'widgets', 'x.md', 'c', {}),
         function(err) { return err instanceof GuardrailPrError && err.step === 'PR creation failed'; },
         'expected a GuardrailPrError naming "PR creation failed"'
       );
@@ -713,7 +707,7 @@ Add before the final `console.log`:
 
 ```javascript
 // ── NFR: token is never logged ───────────────────────────────────────────
-await checkAsync('NFR-SEC: guardrailPrAdapter_run_neverLogsToken', async () => {
+await checkAsync('NFR-SEC: createGuardrailPr_run_neverLogsToken', async () => {
   var mock = mockFetchSequence([
     { status: 200, body: { object: { sha: 'x' } } },
     { status: 201, body: {} },
@@ -729,12 +723,12 @@ await checkAsync('NFR-SEC: guardrailPrAdapter_run_neverLogsToken', async () => {
   console.error = function() { logged.push(Array.prototype.slice.call(arguments).join(' ')); };
   global.fetch = mock.fn;
   try {
-    var { setGuardrailPrAdapter, getGuardrailPrAdapter, guardrailPrAdapter, realGuardrailPrAdapter } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var { setGuardrailPrAdapter, getGuardrailPrAdapter, createGuardrailPr, realCreateGuardrailPr } = require('../src/web-ui/adapters/guardrail-pr-adapter');
     var original = getGuardrailPrAdapter();
-    setGuardrailPrAdapter(realGuardrailPrAdapter);
+    setGuardrailPrAdapter(realCreateGuardrailPr);
     var SECRET_TOKEN = 'ghp_supersecrettoken12345';
     try {
-      await guardrailPrAdapter(SECRET_TOKEN, 'acme', 'widgets', 'x.md', 'c', { tenantId: 't1', productId: 'p1' });
+      await createGuardrailPr(SECRET_TOKEN, 'acme', 'widgets', 'x.md', 'c', { tenantId: 't1', productId: 'p1' });
       var allLogged = logged.join('\n');
       assert.ok(allLogged.indexOf(SECRET_TOKEN) === -1, 'expected the raw token to never appear in any log output');
     } finally { setGuardrailPrAdapter(original); }
@@ -746,7 +740,7 @@ await checkAsync('NFR-SEC: guardrailPrAdapter_run_neverLogsToken', async () => {
 });
 
 // ── NFR: PR creation is audit-logged via PostHog ─────────────────────────
-await checkAsync('NFR-AUDIT: guardrailPrAdapter_success_capturesPostHogEvent', async () => {
+await checkAsync('NFR-AUDIT: createGuardrailPr_success_capturesPostHogEvent', async () => {
   var mock = mockFetchSequence([
     { status: 200, body: { object: { sha: 'x' } } },
     { status: 201, body: {} },
@@ -759,11 +753,11 @@ await checkAsync('NFR-AUDIT: guardrailPrAdapter_success_capturesPostHogEvent', a
   var captured = null;
   var mockPosthog = { capture: function(distinctId, event, properties) { captured = { distinctId: distinctId, event: event, properties: properties }; } };
   try {
-    var { setGuardrailPrAdapter, getGuardrailPrAdapter, guardrailPrAdapter, realGuardrailPrAdapter } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var { setGuardrailPrAdapter, getGuardrailPrAdapter, createGuardrailPr, realCreateGuardrailPr } = require('../src/web-ui/adapters/guardrail-pr-adapter');
     var original = getGuardrailPrAdapter();
-    setGuardrailPrAdapter(realGuardrailPrAdapter);
+    setGuardrailPrAdapter(realCreateGuardrailPr);
     try {
-      await guardrailPrAdapter('tok', 'acme', 'widgets', 'x.md', 'c', { tenantId: 't1', productId: 'p1', posthog: mockPosthog });
+      await createGuardrailPr('tok', 'acme', 'widgets', 'x.md', 'c', { tenantId: 't1', productId: 'p1', posthog: mockPosthog });
       assert.ok(captured, 'expected a PostHog capture call to have fired');
       assert.strictEqual(captured.event, 'guardrail_pr_opened');
       assert.strictEqual(captured.properties.tenant_id, 't1');
@@ -785,13 +779,13 @@ Expected: the token-not-logged test already passes (Task 2's code never calls `c
 
 - [ ] **Step 3: Write minimal implementation**
 
-In `src/web-ui/adapters/guardrail-pr-adapter.js`, add the PostHog require near the top (after the class definitions, before `_guardrailPrAdapter`):
+In `src/web-ui/adapters/guardrail-pr-adapter.js`, add the PostHog require near the top (after the class definitions, before `_createGuardrailPr`):
 
 ```javascript
 const _posthog = require('../modules/posthog-server');
 ```
 
-In `realGuardrailPrAdapter`, right before the final `return { prNumber: ..., prUrl: ... };` line, add:
+In `realCreateGuardrailPr`, right before the final `return { prNumber: ..., prUrl: ... };` line, add:
 
 ```javascript
   const _ph = opts.posthog || _posthog;
@@ -895,14 +889,14 @@ await checkAsync('AC6: realWiring_twoDifferentContentChanges_produceTwoDifferent
   }
 
   try {
-    var { guardrailPrAdapter, setGuardrailPrAdapter, getGuardrailPrAdapter, realGuardrailPrAdapter } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var { createGuardrailPr, setGuardrailPrAdapter, getGuardrailPrAdapter, realCreateGuardrailPr } = require('../src/web-ui/adapters/guardrail-pr-adapter');
     var original = getGuardrailPrAdapter();
-    setGuardrailPrAdapter(realGuardrailPrAdapter);
+    setGuardrailPrAdapter(realCreateGuardrailPr);
     try {
       var pool = mockPool();
       var writeAdapterForRequest = async function(target, content) {
         var prodRow = (await pool.query('SELECT repo_owner, repo_name FROM products WHERE product_id = $1')).rows[0];
-        return guardrailPrAdapter('tok', prodRow.repo_owner, prodRow.repo_name, target.path, content, { tenantId: 't1', productId: target.productId });
+        return createGuardrailPr('tok', prodRow.repo_owner, prodRow.repo_name, target.path, content, { tenantId: 't1', productId: target.productId });
       };
 
       var req1 = mockReq({ path: 'standards/first-discipline.md', content: 'First content' });
@@ -938,20 +932,20 @@ Expected: `FAIL: AC6: ... — expected server.js to wire setGuardrailPrAdapter`
 
 - [ ] **Step 3: Write minimal implementation**
 
-In `src/web-ui/server.js`, add the require near the other adapter requires (search for `setFetchRepoPath, realFetchRepoPath` — the `wugs-s1` adapter wiring require — add a new line right after it):
+In `src/web-ui/server.js`, add ONE require near the other adapter requires (search for `setFetchRepoPath, realFetchRepoPath` — the `wugs-s1` adapter wiring require — add a new line right after it). This single line covers everything this task needs — do not add a second, duplicate `require('./adapters/guardrail-pr-adapter')` line later:
 
 ```javascript
-const { setGuardrailPrAdapter, realGuardrailPrAdapter } = require('./adapters/guardrail-pr-adapter'); // wugs-s6
+const { createGuardrailPr, setGuardrailPrAdapter, realCreateGuardrailPr } = require('./adapters/guardrail-pr-adapter'); // wugs-s6
 ```
 
 Find where `wugs-s1`'s adapter is wired unconditionally (search for `setFetchRepoPath(realFetchRepoPath)`, inside the `if (process.env.NODE_ENV !== 'test')` block near the other production wiring calls) and add the new wiring right after it, inside the same block:
 
 ```javascript
-  setGuardrailPrAdapter(realGuardrailPrAdapter);
+  setGuardrailPrAdapter(realCreateGuardrailPr);
   console.log('[wugs-s6] guardrail PR adapter wired');
 ```
 
-Add `handlePostGuardrailsForm` and `guardrailPrAdapter` requires where needed — `handlePostGuardrailsForm` is already imported from `wugs-s5`'s wiring (search for `handleGetGuardrailsForm` in the destructured `./routes/products` import — add `handlePostGuardrailsForm` right after it):
+Add `handlePostGuardrailsForm` and `createGuardrailPr` requires where needed — `handlePostGuardrailsForm` is already imported from `wugs-s5`'s wiring (search for `handleGetGuardrailsForm` in the destructured `./routes/products` import — add `handlePostGuardrailsForm` right after it):
 
 ```javascript
 const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handleGetProductStandardsTab, handleGetProductGuardrailsView, handleGetGuardrailsForm, handlePostGuardrailsForm, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1 / smug-s1 / wugs-s2 / wugs-s5 / wugs-s6
@@ -971,7 +965,7 @@ Find the existing GET `/products/:id/guardrails/form` route (search for `\/guard
           'SELECT repo_owner, repo_name FROM products WHERE product_id = $1',
           [target.productId]
         )).rows[0];
-        return guardrailPrAdapter(req.session.accessToken, prodRow.repo_owner, prodRow.repo_name, target.path, content, {
+        return createGuardrailPr(req.session.accessToken, prodRow.repo_owner, prodRow.repo_name, target.path, content, {
           tenantId: req.session.tenantId,
           productId: target.productId
         });
@@ -980,11 +974,7 @@ Find the existing GET `/products/:id/guardrails/form` route (search for `\/guard
     });
 ```
 
-This closure needs `guardrailPrAdapter` (the injectable wrapper function, not `realGuardrailPrAdapter`) imported too — add it to the same require line as `setGuardrailPrAdapter`/`realGuardrailPrAdapter`:
-
-```javascript
-const { guardrailPrAdapter, setGuardrailPrAdapter, realGuardrailPrAdapter } = require('./adapters/guardrail-pr-adapter'); // wugs-s6
-```
+This closure calls `createGuardrailPr` (the injectable wrapper function, not `realCreateGuardrailPr` directly) — already covered by the single require line added at the start of this step, no second require needed.
 
 - [ ] **Step 4: Run test — must pass**
 
