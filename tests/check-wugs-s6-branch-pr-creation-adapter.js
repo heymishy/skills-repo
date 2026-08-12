@@ -110,6 +110,61 @@ await checkAsync('AC1: createGuardrailPr_newFile_createsBranchCommitsAndOpensPr'
   }
 });
 
+// ── AC2: existing file — SHA-based update ────────────────────────────────
+await checkAsync('AC2: createGuardrailPr_existingFile_usesShaForUpdate', async () => {
+  var mock = mockFetchSequence([
+    { status: 200, body: { object: { sha: 'base-sha-123' } } },
+    { status: 201, body: { ref: 'refs/heads/guardrail-edit-x' } },
+    { status: 200, body: { sha: 'existing-file-sha-999' } },  // file exists
+    { status: 200, body: { content: { sha: 'updated-file-sha' } } },
+    { status: 201, body: { number: 43, html_url: 'https://github.com/acme/widgets/pull/43' } }
+  ]);
+  var originalFetch = global.fetch;
+  global.fetch = mock.fn;
+  try {
+    var { setGuardrailPrAdapter, getGuardrailPrAdapter, createGuardrailPr, realCreateGuardrailPr } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var original = getGuardrailPrAdapter();
+    setGuardrailPrAdapter(realCreateGuardrailPr);
+    try {
+      await createGuardrailPr('tok', 'acme', 'widgets', 'standards/saas-gui.md', 'Updated content', { tenantId: 't1', productId: 'p1' });
+      var putBody = JSON.parse(mock.calls[3].body);
+      assert.strictEqual(putBody.sha, 'existing-file-sha-999', 'expected the fetched SHA to be included in the update payload');
+    } finally {
+      setGuardrailPrAdapter(original);
+    }
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+// ── AC2 (conflict edge case): stale SHA surfaces a clear conflict error ──
+await checkAsync('AC2: createGuardrailPr_staleSha_throwsConflictError', async () => {
+  var mock = mockFetchSequence([
+    { status: 200, body: { object: { sha: 'base-sha-123' } } },
+    { status: 201, body: { ref: 'refs/heads/guardrail-edit-x' } },
+    { status: 200, body: { sha: 'stale-sha' } },
+    { status: 409, body: { message: 'sha does not match' } }  // conflict on update
+  ]);
+  var originalFetch = global.fetch;
+  global.fetch = mock.fn;
+  try {
+    var { setGuardrailPrAdapter, getGuardrailPrAdapter, createGuardrailPr, realCreateGuardrailPr, GuardrailPrConflictError } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var original = getGuardrailPrAdapter();
+    setGuardrailPrAdapter(realCreateGuardrailPr);
+    try {
+      await assert.rejects(
+        createGuardrailPr('tok', 'acme', 'widgets', 'standards/saas-gui.md', 'Updated content', { tenantId: 't1', productId: 'p1' }),
+        function(err) { return err instanceof GuardrailPrConflictError; },
+        'expected a GuardrailPrConflictError, not a generic error or silent failure'
+      );
+    } finally {
+      setGuardrailPrAdapter(original);
+    }
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
