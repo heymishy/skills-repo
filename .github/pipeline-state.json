@@ -22291,14 +22291,14 @@
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s5-create-edit-form.md",
           "prStatus": "none",
           "notes": "Epic 2 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-12T00:32:35.897Z",
+          "updatedAt": "2026-08-12T00:42:08.581Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 7,
-            "passing": 2,
+            "passing": 5,
             "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s5-create-edit-form-test-plan.md"
           },
           "acTotal": 4,
@@ -22319,7 +22319,7 @@
             {
               "id": "task-2",
               "name": "GET form route with pre-fill (AC2, NFR-SEC-01)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s5-plan.md"
             },
             {
