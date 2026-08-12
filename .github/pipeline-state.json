@@ -22235,14 +22235,14 @@
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s3-org-level-guardrails-view-with-seeding.md",
           "prStatus": "none",
           "notes": "Epic 1 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-12T20:38:25.007Z",
+          "updatedAt": "2026-08-12T20:40:43.456Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
           "testPlan": {
             "status": "written",
-            "totalTests": 2,
-            "passing": 2,
+            "totalTests": 3,
+            "passing": 3,
             "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s3-org-level-guardrails-view-with-seeding-test-plan.md"
           },
           "acTotal": 5,
@@ -22269,7 +22269,7 @@
             {
               "id": "task-3",
               "name": "Two products, same tenant, identical org content (AC4)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s3-plan.md"
             },
             {
