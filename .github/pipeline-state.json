@@ -22235,14 +22235,14 @@
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s3-org-level-guardrails-view-with-seeding.md",
           "prStatus": "none",
           "notes": "Epic 1 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-12T20:57:31.582Z",
+          "updatedAt": "2026-08-12T21:17:32.388Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
           "testPlan": {
             "status": "written",
-            "totalTests": 11,
-            "passing": 11,
+            "totalTests": 12,
+            "passing": 12,
             "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s3-org-level-guardrails-view-with-seeding-test-plan.md"
           },
           "acTotal": 5,
@@ -22287,7 +22287,7 @@
             {
               "id": "task-6",
               "name": "Wire the real route in server.js + final regression check",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s3-plan.md"
             }
           ]
