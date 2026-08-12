@@ -225,6 +225,14 @@ await checkAsync('AC4: submitForm_validContent_passesToWritePathWithCorrectTarge
   assert.deepStrictEqual(parsedBody.result, { ok: true }, 'expected the write adapter\'s return value to be threaded through in the response result field');
 });
 
+// ── Wiring: GET /products/:id/guardrails/form is routed in server.js ────
+check('wiring: server_js_routes_getGuardrailsForm_to_handler', () => {
+  var fs = require('fs');
+  var serverSrc = fs.readFileSync(require.resolve('../src/web-ui/server.js'), 'utf8');
+  assert.ok(serverSrc.indexOf('/guardrails\\/form$/') !== -1, 'expected server.js to route GET /products/:id/guardrails/form');
+  assert.ok(serverSrc.indexOf('handleGetGuardrailsForm') !== -1, 'expected server.js to reference handleGetGuardrailsForm');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
