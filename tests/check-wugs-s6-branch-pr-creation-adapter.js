@@ -407,6 +407,36 @@ await checkAsync('NFR-AUDIT: createGuardrailPr_prCreationFails_neverCapturesEven
   } finally { global.fetch = originalFetch; }
 });
 
+// ── AC6 shared helpers ────────────────────────────────────────────────────
+// wugs-s6 review fix: the CSRF guard, tenant check, path allowlist, and
+// conflict-error handling all now live inside handlePostGuardrailsForm
+// (products.js), not in server.js's closure -- so every test below that
+// calls handlePostGuardrailsForm directly genuinely exercises that real
+// production logic (not a re-implemented stand-in that could silently
+// diverge from it).
+function _ac6MockPool(tenantId) {
+  return {
+    query: async function(sql) {
+      if (/SELECT repo_owner, repo_name FROM products/i.test(sql)) {
+        return { rows: [{ repo_owner: 'acme', repo_name: 'widgets' }] };
+      }
+      if (/SELECT tenant_id FROM products WHERE product_id/i.test(sql)) {
+        return { rows: [{ tenant_id: tenantId }] };
+      }
+      return { rows: [] };
+    }
+  };
+}
+
+function _ac6MockReq(body) {
+  return { params: { id: 'p1' }, session: { accessToken: 'tok', tenantId: 't1', csrfToken: 'ct1' }, body: body };
+}
+
+function _ac6MockRes() {
+  var _status = null, _body = '';
+  return { status: function(c) { _status = c; return this; }, json: function(b) { _body = JSON.stringify(b); }, writeHead: function(c) { _status = c; return this; }, end: function(b) { if (b != null) _body = b; }, _get: function() { return { statusCode: _status, body: _body }; } };
+}
+
 // ── AC6: real wiring — two different submissions produce two different, correct PRs ──
 await checkAsync('AC6: realWiring_twoDifferentContentChanges_produceTwoDifferentCorrectPrs', async () => {
   var fs = require('fs');
@@ -440,43 +470,23 @@ await checkAsync('AC6: realWiring_twoDifferentContentChanges_produceTwoDifferent
     throw new Error('unexpected fetch call in AC6 test: ' + method + ' ' + url);
   };
 
-  function mockPool() {
-    return {
-      query: async function(sql) {
-        if (/SELECT repo_owner, repo_name FROM products/i.test(sql)) {
-          return { rows: [{ repo_owner: 'acme', repo_name: 'widgets' }] };
-        }
-        return { rows: [] };
-      }
-    };
-  }
-
-  function mockReq(body) {
-    return { params: { id: 'p1' }, session: { accessToken: 'tok', tenantId: 't1' }, body: body };
-  }
-
-  function mockRes() {
-    var _status = null, _body = '';
-    return { status: function(c) { _status = c; return this; }, json: function(b) { _body = JSON.stringify(b); }, writeHead: function(c) { _status = c; return this; }, end: function(b) { if (b != null) _body = b; }, _get: function() { return { statusCode: _status, body: _body }; } };
-  }
-
   try {
     var { createGuardrailPr, setGuardrailPrAdapter, getGuardrailPrAdapter, realCreateGuardrailPr } = require('../src/web-ui/adapters/guardrail-pr-adapter');
     var original = getGuardrailPrAdapter();
     setGuardrailPrAdapter(realCreateGuardrailPr);
     try {
-      var pool = mockPool();
+      var pool = _ac6MockPool('t1');
       var writeAdapterForRequest = async function(target, content) {
         var prodRow = (await pool.query('SELECT repo_owner, repo_name FROM products WHERE product_id = $1')).rows[0];
         return createGuardrailPr('tok', prodRow.repo_owner, prodRow.repo_name, target.path, content, { tenantId: 't1', productId: target.productId });
       };
 
-      var req1 = mockReq({ path: 'standards/first-discipline.md', content: 'First content' });
-      var res1 = mockRes();
+      var req1 = _ac6MockReq({ path: 'standards/first-discipline.md', content: 'First content', _csrf: 'ct1' });
+      var res1 = _ac6MockRes();
       await products.handlePostGuardrailsForm(req1, res1, null, pool, writeAdapterForRequest);
 
-      var req2 = mockReq({ path: 'standards/second-discipline.md', content: 'Second content' });
-      var res2 = mockRes();
+      var req2 = _ac6MockReq({ path: 'standards/second-discipline.md', content: 'Second content', _csrf: 'ct1' });
+      var res2 = _ac6MockRes();
       await products.handlePostGuardrailsForm(req2, res2, null, pool, writeAdapterForRequest);
 
       assert.strictEqual(res1._get().statusCode, 200);
@@ -491,6 +501,104 @@ await checkAsync('AC6: realWiring_twoDifferentContentChanges_produceTwoDifferent
   } finally {
     global.fetch = originalFetch;
   }
+});
+
+// ── AC6 (review fix, Critical 2): cross-tenant productId is rejected before any PR is opened ──
+await checkAsync('AC6: tenantMismatch_rejectedNotFoundAndNoPrCallMade', async () => {
+  var products = require('../src/web-ui/routes/products');
+  var prCallCount = 0;
+  var originalFetch = global.fetch;
+  global.fetch = async function() { prCallCount++; throw new Error('no fetch call expected -- the tenant check must short-circuit before any GitHub API call'); };
+
+  try {
+    // Product belongs to a DIFFERENT tenant ('t2') than the requesting
+    // session's tenantId ('t1') -- simulates a cross-tenant attack: any
+    // authenticated user of ANY tenant submitting a different tenant's
+    // productId must not be able to open a real PR against that tenant's repo.
+    var pool = _ac6MockPool('t2');
+    var writeAdapterCalled = false;
+    var writeAdapter = async function() { writeAdapterCalled = true; };
+
+    var req = _ac6MockReq({ path: 'standards/attack.md', content: 'attacker content', _csrf: 'ct1' });
+    var res = _ac6MockRes();
+    await products.handlePostGuardrailsForm(req, res, null, pool, writeAdapter);
+
+    assert.strictEqual(res._get().statusCode, 404, 'expected a 404 (not-found, matching the FORBIDDEN-vs-NOT_FOUND policy) for a cross-tenant productId');
+    assert.strictEqual(writeAdapterCalled, false, 'expected the write adapter to never be called for a cross-tenant productId');
+    assert.strictEqual(prCallCount, 0, 'expected zero GitHub API calls -- the tenant check must short-circuit before any PR is opened');
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+// ── AC6 (review fix, Critical 3): missing/wrong CSRF token is rejected before any PR is opened ──
+await checkAsync('AC6: missingOrWrongCsrfToken_rejectedAndNoPrCallMade', async () => {
+  var products = require('../src/web-ui/routes/products');
+  var prCallCount = 0;
+  var originalFetch = global.fetch;
+  global.fetch = async function() { prCallCount++; throw new Error('no fetch call expected -- the CSRF guard must short-circuit before any GitHub API call'); };
+
+  try {
+    var pool = _ac6MockPool('t1');
+    var writeAdapterCalled = false;
+    var writeAdapter = async function() { writeAdapterCalled = true; };
+
+    // Wrong _csrf token (does not match session.csrfToken = 'ct1').
+    var req = _ac6MockReq({ path: 'standards/discipline.md', content: 'real content', _csrf: 'wrong-token' });
+    var res = _ac6MockRes();
+    await products.handlePostGuardrailsForm(req, res, null, pool, writeAdapter);
+
+    assert.strictEqual(res._get().statusCode, 403, 'expected a 403 for a missing/mismatched CSRF token');
+    assert.strictEqual(writeAdapterCalled, false, 'expected the write adapter to never be called on CSRF failure');
+    assert.strictEqual(prCallCount, 0, 'expected zero GitHub API calls -- the CSRF guard must short-circuit before any PR is opened');
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+// ── AC6 (review fix, Important 5): a path outside the guardrails/standards allowlist is rejected ──
+await checkAsync('AC6: pathOutsideAllowlist_rejectedBadRequestAndNoPrCallMade', async () => {
+  var products = require('../src/web-ui/routes/products');
+  var prCallCount = 0;
+  var originalFetch = global.fetch;
+  global.fetch = async function() { prCallCount++; throw new Error('no fetch call expected -- the path allowlist must short-circuit before any GitHub API call'); };
+
+  try {
+    var pool = _ac6MockPool('t1');
+    var writeAdapterCalled = false;
+    var writeAdapter = async function() { writeAdapterCalled = true; };
+
+    // Not one of the two canonical guardrails/standards locations
+    // ('.github/architecture-guardrails.md' or under 'standards/').
+    var req = _ac6MockReq({ path: '.github/workflows/ci.yml', content: 'malicious workflow content', _csrf: 'ct1' });
+    var res = _ac6MockRes();
+    await products.handlePostGuardrailsForm(req, res, null, pool, writeAdapter);
+
+    assert.strictEqual(res._get().statusCode, 400, 'expected a 400 for a target path outside the guardrails/standards allowlist');
+    assert.strictEqual(writeAdapterCalled, false, 'expected the write adapter to never be called for a disallowed path');
+    assert.strictEqual(prCallCount, 0, 'expected zero GitHub API calls -- the allowlist check must short-circuit before any PR is opened');
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
+// ── AC6 (review fix, Important 4): a GuardrailPrConflictError from the write adapter surfaces as 409 ──
+await checkAsync('AC6: writeAdapterConflictError_returns409WithClearMessage', async () => {
+  var products = require('../src/web-ui/routes/products');
+  var { GuardrailPrConflictError } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+
+  var pool = _ac6MockPool('t1');
+  var writeAdapter = async function() {
+    throw new GuardrailPrConflictError('This file changed since you started editing — please refresh and try again.');
+  };
+
+  var req = _ac6MockReq({ path: 'standards/discipline.md', content: 'real content', _csrf: 'ct1' });
+  var res = _ac6MockRes();
+  await products.handlePostGuardrailsForm(req, res, null, pool, writeAdapter);
+
+  var result = res._get();
+  assert.strictEqual(result.statusCode, 409, 'expected a 409 when the write adapter throws GuardrailPrConflictError');
+  assert.ok(/reload|refresh/i.test(result.body), 'expected a clear, actionable error message in the response body');
 });
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
