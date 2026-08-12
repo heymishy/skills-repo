@@ -196,6 +196,33 @@ await checkAsync('AC2: createGuardrailPr_nonConflictPutFailure_throwsGenericErro
   }
 });
 
+// ── AC3: success returns PR number and URL ───────────────────────────────
+await checkAsync('AC3: createGuardrailPr_success_returnsPrNumberAndUrl', async () => {
+  var mock = mockFetchSequence([
+    { status: 200, body: { object: { sha: 'base-sha-123' } } },
+    { status: 201, body: { ref: 'refs/heads/guardrail-edit-x' } },
+    { status: 404, body: {} },
+    { status: 201, body: { content: { sha: 'x' } } },
+    { status: 201, body: { number: 42, html_url: 'https://github.com/acme/widgets/pull/42' } }
+  ]);
+  var originalFetch = global.fetch;
+  global.fetch = mock.fn;
+  try {
+    var { setGuardrailPrAdapter, getGuardrailPrAdapter, createGuardrailPr, realCreateGuardrailPr } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var original = getGuardrailPrAdapter();
+    setGuardrailPrAdapter(realCreateGuardrailPr);
+    try {
+      var result = await createGuardrailPr('tok', 'acme', 'widgets', 'standards/new.md', 'content', { tenantId: 't1', productId: 'p1' });
+      assert.strictEqual(result.prNumber, 42, 'expected the real mocked PR number, not a placeholder');
+      assert.strictEqual(result.prUrl, 'https://github.com/acme/widgets/pull/42', 'expected the real mocked PR URL, not a constructed/guessed one');
+    } finally {
+      setGuardrailPrAdapter(original);
+    }
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
