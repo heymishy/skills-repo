@@ -327,15 +327,20 @@ await checkAsync('NFR-SEC: createGuardrailPr_run_neverLogsToken', async () => {
   console.log = function() { logged.push(Array.prototype.slice.call(arguments).join(' ')); };
   console.error = function() { logged.push(Array.prototype.slice.call(arguments).join(' ')); };
   global.fetch = mock.fn;
+  var captured = null;
+  var mockPosthog = { capture: function(distinctId, event, properties) { captured = { distinctId: distinctId, event: event, properties: properties }; } };
   try {
     var { setGuardrailPrAdapter, getGuardrailPrAdapter, createGuardrailPr, realCreateGuardrailPr } = require('../src/web-ui/adapters/guardrail-pr-adapter');
     var original = getGuardrailPrAdapter();
     setGuardrailPrAdapter(realCreateGuardrailPr);
     var SECRET_TOKEN = 'ghp_supersecrettoken12345';
     try {
-      await createGuardrailPr(SECRET_TOKEN, 'acme', 'widgets', 'x.md', 'c', { tenantId: 't1', productId: 'p1' });
+      await createGuardrailPr(SECRET_TOKEN, 'acme', 'widgets', 'x.md', 'c', { tenantId: 't1', productId: 'p1', posthog: mockPosthog });
       var allLogged = logged.join('\n');
       assert.ok(allLogged.indexOf(SECRET_TOKEN) === -1, 'expected the raw token to never appear in any log output');
+      assert.ok(captured, 'expected a PostHog capture call to have fired');
+      assert.notStrictEqual(captured.distinctId, SECRET_TOKEN, 'expected the token to never be used as the PostHog distinctId');
+      assert.ok(JSON.stringify(captured.properties).indexOf(SECRET_TOKEN) === -1, 'expected the raw token to never appear anywhere in the PostHog audit event properties');
     } finally { setGuardrailPrAdapter(original); }
   } finally {
     global.fetch = originalFetch;
@@ -364,11 +369,40 @@ await checkAsync('NFR-AUDIT: createGuardrailPr_success_capturesPostHogEvent', as
     try {
       await createGuardrailPr('tok', 'acme', 'widgets', 'x.md', 'c', { tenantId: 't1', productId: 'p1', posthog: mockPosthog });
       assert.ok(captured, 'expected a PostHog capture call to have fired');
+      assert.strictEqual(captured.distinctId, 't1', 'expected the event attributed to the correct tenant');
       assert.strictEqual(captured.event, 'guardrail_pr_opened');
       assert.strictEqual(captured.properties.tenant_id, 't1');
       assert.strictEqual(captured.properties.product_id, 'p1');
       assert.strictEqual(captured.properties.repo, 'acme/widgets');
       assert.strictEqual(captured.properties.pr_number, 7, 'expected the real PR number in the audit event, not a placeholder');
+    } finally { setGuardrailPrAdapter(original); }
+  } finally { global.fetch = originalFetch; }
+});
+
+// ── NFR: audit event never fires unless PR creation actually succeeded ──
+await checkAsync('NFR-AUDIT: createGuardrailPr_prCreationFails_neverCapturesEvent', async () => {
+  var mock = mockFetchSequence([
+    { status: 200, body: { object: { sha: 'x' } } },
+    { status: 201, body: {} },
+    { status: 404, body: {} },
+    { status: 201, body: { content: { sha: 'y' } } },
+    { status: 500, statusText: 'Internal Server Error', body: {} }
+  ]);
+  var originalFetch = global.fetch;
+  global.fetch = mock.fn;
+  var captured = null;
+  var mockPosthog = { capture: function(distinctId, event, properties) { captured = { distinctId: distinctId, event: event, properties: properties }; } };
+  try {
+    var { setGuardrailPrAdapter, getGuardrailPrAdapter, createGuardrailPr, realCreateGuardrailPr, GuardrailPrError } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var original = getGuardrailPrAdapter();
+    setGuardrailPrAdapter(realCreateGuardrailPr);
+    try {
+      await assert.rejects(
+        createGuardrailPr('tok', 'acme', 'widgets', 'x.md', 'c', { tenantId: 't1', productId: 'p1', posthog: mockPosthog }),
+        function(err) { return err instanceof GuardrailPrError && err.step === 'PR creation failed'; },
+        'expected a GuardrailPrError naming "PR creation failed"'
+      );
+      assert.strictEqual(captured, null, 'expected no audit event when PR creation fails');
     } finally { setGuardrailPrAdapter(original); }
   } finally { global.fetch = originalFetch; }
 });
