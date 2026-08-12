@@ -1302,8 +1302,8 @@ function _validateGuardrailContent(content) {
  */
 async function handlePostGuardrailsForm(req, res, _next, pool, writeAdapter) {
   req.body = await _readBody(req);
-  // wugs-s6: staged for the write-adapter target object (productId + contentPath),
-  // unused by this task's own validation-only logic.
+  // productId + contentPath form the write-adapter target object passed to
+  // writeAdapter() below on the success path.
   var productId = req.params && req.params.id;
   // Named contentPath, not path -- this function will need the real Node
   // `path` module for a path-traversal guard once the write path is wired
@@ -1319,8 +1319,10 @@ async function handlePostGuardrailsForm(req, res, _next, pool, writeAdapter) {
     return;
   }
 
-  if (res.status) { res.status(200).json({ ok: true }); }
-  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true })); }
+  var writeResult = await writeAdapter({ productId: productId, path: contentPath }, content);
+
+  if (res.status) { res.status(200).json({ ok: true, result: writeResult }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, result: writeResult })); }
 }
 
 /**

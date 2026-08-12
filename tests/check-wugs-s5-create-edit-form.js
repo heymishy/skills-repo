@@ -203,6 +203,28 @@ await checkAsync('AC3: submitForm_validContent_acceptedServerSide', async () => 
   assert.ok(/"ok":true/.test(result.body), 'expected an ok:true response body');
 });
 
+// ── AC4: valid submission passed to write path with correct target ──────
+await checkAsync('AC4: submitForm_validContent_passesToWritePathWithCorrectTarget', async () => {
+  var pool = makeMockPool([]);
+  var capturedTarget = null;
+  var capturedContent = null;
+  var writeAdapter = async function (target, content) {
+    capturedTarget = target;
+    capturedContent = content;
+    return { ok: true };
+  };
+  var req = mockReq({ body: { path: 'standards/saas-gui', content: 'Real new content for the standard.' } });
+  var res = mockRes();
+  await products.handlePostGuardrailsForm(req, res, null, pool, writeAdapter);
+  var result = res._get();
+  assert.strictEqual(result.statusCode, 200, 'expected a 200 on valid submission');
+  assert.ok(capturedContent === 'Real new content for the standard.', 'expected the exact submitted content to reach the write adapter, no silent transformation');
+  assert.ok(capturedTarget && capturedTarget.path === 'standards/saas-gui', 'expected the exact target path to reach the write adapter');
+  assert.ok(capturedTarget && capturedTarget.productId === 'p1', 'expected the productId to reach the write adapter as part of the target');
+  var parsedBody = JSON.parse(result.body);
+  assert.deepStrictEqual(parsedBody.result, { ok: true }, 'expected the write adapter\'s return value to be threaded through in the response result field');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
