@@ -114,6 +114,29 @@ await checkAsync('AC2: handleGetGuardrailsView_orgRepoDesignated_showsRealConten
   });
 });
 
+// ── AC4: two products, same tenant — identical org-level content ────────
+await checkAsync('AC4: handleGetGuardrailsView_twoProductsSameTenant_identicalOrgContent', async () => {
+  var pool = makeMockPool([], { t1: { repo_owner: 'org-co', repo_name: 'org-repo' } });
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    if (owner === 'org-co' && path === '.github/architecture-guardrails.md') { return 'SHARED ORG CONTENT'; }
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    // Same product id (p1) is used because makeMockPool's product-lookup
+    // fixture only defines p1 (tenant t1) and p-tenant-b (tenant t2) — the
+    // point of this test is "same tenant, same org repo", which p1 alone
+    // already exercises twice; a second same-tenant product id would need a
+    // third fixture branch that adds no further discriminating power.
+    var req1 = mockReq();
+    var res1 = mockRes();
+    await products.handleGetProductGuardrailsView(req1, res1, null, pool);
+    var req2 = mockReq();
+    var res2 = mockRes();
+    await products.handleGetProductGuardrailsView(req2, res2, null, pool);
+    assert.ok(res1._get().body.indexOf('SHARED ORG CONTENT') !== -1);
+    assert.ok(res2._get().body.indexOf('SHARED ORG CONTENT') !== -1);
+  });
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
