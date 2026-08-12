@@ -147,6 +147,15 @@
 **Revisit trigger:** Perform the manual sandbox-repo verification (see `artefacts/2026-08-11-web-ui-guardrails-standards-surface/reference/wugs-s6-manual-verification.md` for the runnable procedure) at the first available opportunity — ideally before any real tenant relies on this feature to open a real PR. If a shape mismatch is found, it is a live production bug in `guardrail-pr-adapter.js`, not a test-plan gap; fix immediately as a short-track story.
 ---
 
+---
+**[2026-08-13] | RISK-ACCEPT | branch-setup (wugs-s3)**
+**Decision:** Proceeding with `wugs-s3`'s worktree despite 33 pre-existing test failures at baseline (510 files run via `npm test`, 33 failed, exit code 0).
+**Alternatives considered:** Investigate and fix pre-existing failures first — rejected, out of scope for this feature and would delay the whole inner loop for unrelated pre-existing repo drift.
+**Rationale:** The 33 failing files (`check-bee3-posthog.js`, `check-mfc1/mfc2-*.js`, `check-ougl*.js`, `check-inc2.1/inc4-*.js`, `artefact-preview.test.js`/`artefact-writeback.test.js` (wuce.14/wuce.15, unrelated session-state features), etc.) do not overlap with `wugs-s3`'s expected touchpoints (org-repo seeding, going through `wugs-s6`'s PR-gated write path per the SLICE decision logged 2026-08-11). Same baseline-drift pattern already documented for `wugs-s1`/`wugs-s2`/`wugs-s5`/`wugs-s6`.
+**Made by:** Claude (agent), per branch-setup's own Step 5 option 2 protocol
+**Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this feature's changes during implementation, stop and investigate.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded — all four decisions from this discovery/clarify session were logged as entries above, not full ADRs, per the operator's confirmation that none warranted ADR-level depth. -->
