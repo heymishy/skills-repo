@@ -138,6 +138,15 @@
 **Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this feature's changes during implementation, stop and investigate.
 ---
 
+---
+**[2026-08-13] | RISK-ACCEPT | post-merge (wugs-s6, PR #726)**
+**Decision:** `wugs-s6` merged (PR #726, merge commit `2aaa8fa7`) without performing the DoR's own REQUIRED pre-merge step — a real manual test against a disposable sandbox GitHub repo confirming the actual branch-ref/Contents/Pulls API response shapes match what `tests/check-wugs-s6-branch-pr-creation-adapter.js` mocks (CLAUDE.md's mock-shape-verification rule, `tir-s5` precedent). The PR description's checklist item for this step was left unchecked and no outcome was ever recorded.
+**Alternatives considered:** (1) Revert the merge and re-open until verified — rejected as disproportionate; the merge already happened and reverting a working, review-passed, fully-unit-tested feature to fix a process gap creates more churn than it resolves. (2) Silently treat the story as fully done — rejected, this is exactly the "silently becomes a post-merge deferred item" failure mode CLAUDE.md's CSS-layout-dependent-ACs section warns against for a structurally identical reason (an assertion that can only be verified against a real external system, not a mock).
+**Rationale:** `guardrail-pr-adapter.js`'s `realCreateGuardrailPr` has never actually been exercised against the real GitHub API — every one of its 18 passing tests exercises it against a hand-authored mock `fetch`. The mock shapes were authored from GitHub's public API docs, not from an observed real response, so there is a live (if likely low) risk that a real GitHub API response — e.g. the `PUT contents` response shape, or a rate-limit/secondary-rate-limit response GitHub can return under load — differs from what the code branches on, which would only surface the first time an operator actually submits the guardrails form in production.
+**Made by:** Claude (agent), operator confirmed the step was not performed and asked how to run it
+**Revisit trigger:** Perform the manual sandbox-repo verification (see `artefacts/2026-08-11-web-ui-guardrails-standards-surface/reference/wugs-s6-manual-verification.md` for the runnable procedure) at the first available opportunity — ideally before any real tenant relies on this feature to open a real PR. If a shape mismatch is found, it is a live production bug in `guardrail-pr-adapter.js`, not a test-plan gap; fix immediately as a short-track story.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded — all four decisions from this discovery/clarify session were logged as entries above, not full ADRs, per the operator's confirmation that none warranted ADR-level depth. -->
