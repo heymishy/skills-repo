@@ -56,6 +56,7 @@ function makeMockPool(navProducts, orgRepoRowsByTenant, calls) {
         var pid = params && params[0];
         var row = { name: 'Test Product', tenant_id: 't1', repo_owner: 'acme', repo_name: 'widgets' };
         if (pid === 'p-tenant-b') { row = { name: 'Tenant B Product', tenant_id: 't2', repo_owner: 'bravo', repo_name: 'stuff' }; }
+        if (pid === 'p2-tenant-a') { row = { name: 'Second Product', tenant_id: 't1', repo_owner: 'acme', repo_name: 'gadgets' }; }
         return { rows: [row] };
       }
       if (/SELECT product_id, name, created_at FROM products WHERE tenant_id/i.test(s)) {
@@ -122,15 +123,16 @@ await checkAsync('AC4: handleGetGuardrailsView_twoProductsSameTenant_identicalOr
     if (owner === 'org-co' && path === '.github/architecture-guardrails.md') { return 'SHARED ORG CONTENT'; }
     throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
   }, async function () {
-    // Same product id (p1) is used because makeMockPool's product-lookup
-    // fixture only defines p1 (tenant t1) and p-tenant-b (tenant t2) — the
-    // point of this test is "same tenant, same org repo", which p1 alone
-    // already exercises twice; a second same-tenant product id would need a
-    // third fixture branch that adds no further discriminating power.
-    var req1 = mockReq();
+    // Two genuinely distinct products under the same tenant (p1 and
+    // p2-tenant-a, both tenant_id: 't1' in makeMockPool's product-lookup
+    // fixture, with their own distinct product-level repo_owner/repo_name)
+    // — this exercises "same tenant, same org repo" without letting a
+    // bug that scopes org content by product_id instead of tenant_id pass
+    // undetected.
+    var req1 = mockReq({ params: { id: 'p1' } });
     var res1 = mockRes();
     await products.handleGetProductGuardrailsView(req1, res1, null, pool);
-    var req2 = mockReq();
+    var req2 = mockReq({ params: { id: 'p2-tenant-a' } });
     var res2 = mockRes();
     await products.handleGetProductGuardrailsView(req2, res2, null, pool);
     assert.ok(res1._get().body.indexOf('SHARED ORG CONTENT') !== -1);
