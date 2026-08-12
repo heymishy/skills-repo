@@ -223,6 +223,93 @@ await checkAsync('AC3: createGuardrailPr_success_returnsPrNumberAndUrl', async (
   }
 });
 
+// ── AC4: step failure surfaces which step failed (4 distinct steps) ─────
+await checkAsync('AC4: createGuardrailPr_branchShaFails_surfacesBranchCreationStep', async () => {
+  var mock = mockFetchSequence([{ status: 500, statusText: 'Internal Server Error', body: {} }]);
+  var originalFetch = global.fetch;
+  global.fetch = mock.fn;
+  try {
+    var { setGuardrailPrAdapter, getGuardrailPrAdapter, createGuardrailPr, realCreateGuardrailPr, GuardrailPrError } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var original = getGuardrailPrAdapter();
+    setGuardrailPrAdapter(realCreateGuardrailPr);
+    try {
+      await assert.rejects(
+        createGuardrailPr('tok', 'acme', 'widgets', 'x.md', 'c', {}),
+        function(err) { return err instanceof GuardrailPrError && err.step === 'branch creation failed'; },
+        'expected a GuardrailPrError naming "branch creation failed"'
+      );
+    } finally { setGuardrailPrAdapter(original); }
+  } finally { global.fetch = originalFetch; }
+});
+
+await checkAsync('AC4: createGuardrailPr_createRefFails_surfacesBranchCreationStep', async () => {
+  var mock = mockFetchSequence([
+    { status: 200, body: { object: { sha: 'x' } } },
+    { status: 422, body: { message: 'Reference already exists' } }
+  ]);
+  var originalFetch = global.fetch;
+  global.fetch = mock.fn;
+  try {
+    var { setGuardrailPrAdapter, getGuardrailPrAdapter, createGuardrailPr, realCreateGuardrailPr, GuardrailPrError } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var original = getGuardrailPrAdapter();
+    setGuardrailPrAdapter(realCreateGuardrailPr);
+    try {
+      await assert.rejects(
+        createGuardrailPr('tok', 'acme', 'widgets', 'x.md', 'c', {}),
+        function(err) { return err instanceof GuardrailPrError && err.step === 'branch creation failed'; },
+        'expected a GuardrailPrError naming "branch creation failed" for the create-ref step'
+      );
+    } finally { setGuardrailPrAdapter(original); }
+  } finally { global.fetch = originalFetch; }
+});
+
+await checkAsync('AC4: createGuardrailPr_fileCommitFails_surfacesFileCommitStep', async () => {
+  var mock = mockFetchSequence([
+    { status: 200, body: { object: { sha: 'x' } } },
+    { status: 201, body: {} },
+    { status: 404, body: {} },
+    { status: 500, statusText: 'Internal Server Error', body: {} }
+  ]);
+  var originalFetch = global.fetch;
+  global.fetch = mock.fn;
+  try {
+    var { setGuardrailPrAdapter, getGuardrailPrAdapter, createGuardrailPr, realCreateGuardrailPr, GuardrailPrError } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var original = getGuardrailPrAdapter();
+    setGuardrailPrAdapter(realCreateGuardrailPr);
+    try {
+      await assert.rejects(
+        createGuardrailPr('tok', 'acme', 'widgets', 'x.md', 'c', {}),
+        function(err) { return err instanceof GuardrailPrError && err.step === 'file commit failed'; },
+        'expected a GuardrailPrError naming "file commit failed"'
+      );
+    } finally { setGuardrailPrAdapter(original); }
+  } finally { global.fetch = originalFetch; }
+});
+
+await checkAsync('AC4: createGuardrailPr_prCreationFails_surfacesPrCreationStep', async () => {
+  var mock = mockFetchSequence([
+    { status: 200, body: { object: { sha: 'x' } } },
+    { status: 201, body: {} },
+    { status: 404, body: {} },
+    { status: 201, body: { content: { sha: 'y' } } },
+    { status: 500, statusText: 'Internal Server Error', body: {} }
+  ]);
+  var originalFetch = global.fetch;
+  global.fetch = mock.fn;
+  try {
+    var { setGuardrailPrAdapter, getGuardrailPrAdapter, createGuardrailPr, realCreateGuardrailPr, GuardrailPrError } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var original = getGuardrailPrAdapter();
+    setGuardrailPrAdapter(realCreateGuardrailPr);
+    try {
+      await assert.rejects(
+        createGuardrailPr('tok', 'acme', 'widgets', 'x.md', 'c', {}),
+        function(err) { return err instanceof GuardrailPrError && err.step === 'PR creation failed'; },
+        'expected a GuardrailPrError naming "PR creation failed"'
+      );
+    } finally { setGuardrailPrAdapter(original); }
+  } finally { global.fetch = originalFetch; }
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
