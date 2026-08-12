@@ -282,6 +282,7 @@ await checkAsync('AC4: createGuardrailPr_fileCommitFails_surfacesFileCommitStep'
         function(err) { return err instanceof GuardrailPrError && err.step === 'file commit failed'; },
         'expected a GuardrailPrError naming "file commit failed"'
       );
+      assert.strictEqual(mock.calls.length, 4, 'expected exactly 4 calls -- failure at the PUT (file-commit) step specifically, not the earlier GET-file-existence-check');
     } finally { setGuardrailPrAdapter(original); }
   } finally { global.fetch = originalFetch; }
 });
