@@ -97,6 +97,23 @@ await checkAsync('AC3: handleGetGuardrailsView_noOrgRepoDesignated_showsExplicit
   });
 });
 
+// ── AC2: org section shows real designated-repo content ─────────────────
+await checkAsync('AC2: handleGetGuardrailsView_orgRepoDesignated_showsRealContent', async () => {
+  var pool = makeMockPool([], { t1: { repo_owner: 'org-co', repo_name: 'org-repo' } });
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    if (owner === 'org-co' && path === '.github/architecture-guardrails.md') { return 'REAL ORG GUARDRAILS CONTENT'; }
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    var req = mockReq();
+    var res = mockRes();
+    await products.handleGetProductGuardrailsView(req, res, null, pool);
+    var result = res._get();
+    assert.strictEqual(result.statusCode, 200);
+    assert.ok(result.body.indexOf('REAL ORG GUARDRAILS CONTENT') !== -1, 'expected the org repo\'s real content, not the product repo\'s or a placeholder');
+    assert.ok(!/no org repo designated/i.test(result.body), 'expected the "no org repo designated" prompt to be gone once a repo IS designated');
+  });
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
