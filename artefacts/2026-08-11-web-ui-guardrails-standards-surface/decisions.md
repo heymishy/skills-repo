@@ -129,6 +129,15 @@
 **Revisit trigger:** When `wugs-s6`'s implementation plan is written, explicitly add a task: "wire `POST /products/:id/guardrails/form` in `server.js`, passing the real `guardrailPrAdapter` as `handlePostGuardrailsForm`'s `writeAdapter` parameter" — do not assume `wugs-s6`'s own AC5/AC6 wiring (which covers `setGuardrailPrAdapter` only) already covers this.
 ---
 
+---
+**[2026-08-12] | RISK-ACCEPT | branch-setup (wugs-s6)**
+**Decision:** Proceeding with `wugs-s6`'s worktree despite 33 pre-existing test failures at baseline (509 files run via `npm test`, 33 failed, exit code 0).
+**Alternatives considered:** Investigate and fix pre-existing failures first — rejected, out of scope for this feature and would delay the whole inner loop for unrelated pre-existing repo drift.
+**Rationale:** The 33 failing files (`check-bee3-posthog.js`, `check-mfc1/mfc2-*.js`, `check-ougl*.js`, `check-inc2.1/inc4-*.js`, `artefact-preview.test.js`/`artefact-writeback.test.js` (wuce.14/wuce.15, unrelated session-state features), etc.) do not overlap with `wugs-s6`'s touchpoints (a new `src/web-ui/adapters/guardrail-pr-adapter.js` module and `src/web-ui/server.js` wiring, plus the `wugs-s6`-noted follow-up wiring `handlePostGuardrailsForm` in `src/web-ui/routes/products.js`). Same baseline-drift pattern already documented for `wugs-s1`/`wugs-s2`/`wugs-s5`.
+**Made by:** Claude (agent), per branch-setup's own Step 5 option 2 protocol
+**Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this feature's changes during implementation, stop and investigate.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded — all four decisions from this discovery/clarify session were logged as entries above, not full ADRs, per the operator's confirmation that none warranted ADR-level depth. -->
