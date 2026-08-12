@@ -1175,6 +1175,34 @@ async function _fetchGuardrailsSectionPiece(owner, repo, path, token) {
 }
 
 /**
+ * wugs-s3 review fix — shared ok/empty/error status-branch renderer for a
+ * single guardrails/standards "piece". Extracted because
+ * _renderGuardrailsSection (product-level) and _renderOrgGuardrailsSection
+ * (org-level) each had their own near-identical copy of this three-state
+ * branching, once for the guardrails piece and once for the standards
+ * piece, for 4 duplicated blocks total.
+ *
+ * The guardrails piece uses the default `<pre>` rendering (ok branch).
+ * The standards piece's 'ok' branch renders a structurally different
+ * `<ul>` (product-level entries carry a per-row Edit link, org-level
+ * entries are plain names) — callers pass `opts.renderOk` to keep that
+ * bit bespoke while still sharing the empty/error branches here.
+ * @param {{status: 'ok'|'empty'|'error', value: *, errorMessage: (string|null)}} piece
+ * @param {{contentClass: (string|undefined), emptyClass: string, emptyText: string, errorClass: string, errorPrefix: string, renderOk: (function(*): string)=}} opts
+ * @returns {string}
+ */
+function _renderPieceContent(piece, opts) {
+  if (piece.status === 'ok') {
+    return opts.renderOk
+      ? opts.renderOk(piece.value)
+      : '<pre class="' + opts.contentClass + '" style="white-space:pre-wrap;font-family:inherit;font-size:14px;background:var(--surface);padding:16px;border-radius:8px;border:1px solid var(--line)">' + _escapeHtml(piece.value) + '</pre>';
+  } else if (piece.status === 'empty') {
+    return '<p class="' + opts.emptyClass + '" style="color:var(--muted);font-size:14px">' + opts.emptyText + '</p>';
+  }
+  return '<p class="' + opts.errorClass + '" style="color:var(--danger,#c0392b);font-size:14px">' + opts.errorPrefix + _escapeHtml(piece.errorMessage) + '</p>';
+}
+
+/**
  * wugs-s3 — looks up the tenant's designated org-level repo, if any.
  * @returns {Promise<{repo_owner: string, repo_name: string}|null>}
  */
@@ -1198,35 +1226,37 @@ function _renderOrgGuardrailsSection(orgRow, guardrailsPiece, standardsPiece) {
       '<h2 style="font-size:18px;margin:0 0 8px">Organisation guardrails &amp; standards</h2>' +
       '<p style="color:var(--muted);font-size:14px;margin:0 0 12px">No org repo designated yet — designate one to share guardrails/standards across every product in your organisation.</p>' +
       '<form method="POST" action="/settings/org-repo" style="display:flex;gap:8px;align-items:center">' +
-        '<input type="text" name="repo_owner" placeholder="owner" style="font-family:inherit;font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid var(--line)">' +
-        '<input type="text" name="repo_name" placeholder="repo" style="font-family:inherit;font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid var(--line)">' +
+        '<label for="org-repo-owner" style="font-size:13px;color:var(--muted)">Owner</label>' +
+        '<input id="org-repo-owner" type="text" name="repo_owner" placeholder="owner" style="font-family:inherit;font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid var(--line)">' +
+        '<label for="org-repo-name" style="font-size:13px;color:var(--muted)">Repo</label>' +
+        '<input id="org-repo-name" type="text" name="repo_name" placeholder="repo" style="font-family:inherit;font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid var(--line)">' +
         '<button type="submit" style="padding:6px 12px;border-radius:6px;border:none;background:var(--accent);color:#fff;font-size:13px;cursor:pointer">Designate</button>' +
       '</form>' +
     '</div>';
   }
 
-  var guardrailsHtml;
-  if (guardrailsPiece.status === 'ok') {
-    guardrailsHtml = '<pre class="gv-org-guardrails-content" style="white-space:pre-wrap;font-family:inherit;font-size:14px;background:var(--surface);padding:16px;border-radius:8px;border:1px solid var(--line)">' + _escapeHtml(guardrailsPiece.value) + '</pre>';
-  } else if (guardrailsPiece.status === 'empty') {
-    guardrailsHtml = '<p class="gv-org-guardrails-empty" style="color:var(--muted);font-size:14px">No architecture-guardrails.md found in the org repo.</p>';
-  } else {
-    guardrailsHtml = '<p class="gv-org-guardrails-error" style="color:var(--danger,#c0392b);font-size:14px">Could not load org architecture-guardrails.md: ' + _escapeHtml(guardrailsPiece.errorMessage) + '</p>';
-  }
+  var guardrailsHtml = _renderPieceContent(guardrailsPiece, {
+    contentClass: 'gv-org-guardrails-content',
+    emptyClass: 'gv-org-guardrails-empty',
+    emptyText: 'No architecture-guardrails.md found in the org repo.',
+    errorClass: 'gv-org-guardrails-error',
+    errorPrefix: 'Could not load org architecture-guardrails.md: '
+  });
 
-  var standardsHtml;
-  if (standardsPiece.status === 'ok') {
-    var entries = Array.isArray(standardsPiece.value) ? standardsPiece.value : [];
-    standardsHtml = entries.length === 0
-      ? '<p class="gv-org-standards-empty" style="color:var(--muted);font-size:14px">No standards found in the org repo.</p>'
-      : '<ul class="gv-org-standards-list">' + entries.map(function (e) {
-          return '<li>' + _escapeHtml(e.name) + '</li>';
-        }).join('') + '</ul>';
-  } else if (standardsPiece.status === 'empty') {
-    standardsHtml = '<p class="gv-org-standards-empty" style="color:var(--muted);font-size:14px">No standards found in the org repo.</p>';
-  } else {
-    standardsHtml = '<p class="gv-org-standards-error" style="color:var(--danger,#c0392b);font-size:14px">Could not load org standards/: ' + _escapeHtml(standardsPiece.errorMessage) + '</p>';
-  }
+  var standardsHtml = _renderPieceContent(standardsPiece, {
+    emptyClass: 'gv-org-standards-empty',
+    emptyText: 'No standards found in the org repo.',
+    errorClass: 'gv-org-standards-error',
+    errorPrefix: 'Could not load org standards/: ',
+    renderOk: function (value) {
+      var entries = Array.isArray(value) ? value : [];
+      return entries.length === 0
+        ? '<p class="gv-org-standards-empty" style="color:var(--muted);font-size:14px">No standards found in the org repo.</p>'
+        : '<ul class="gv-org-standards-list">' + entries.map(function (e) {
+            return '<li>' + _escapeHtml(e.name) + '</li>';
+          }).join('') + '</ul>';
+    }
+  });
 
   return '<div class="gv-org-section" style="margin-bottom:32px">' +
     '<h2 style="font-size:18px;margin:0 0 12px">Organisation guardrails</h2>' +
@@ -1247,32 +1277,32 @@ function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId) {
   var guardrailsEditHref = '/products/' + encodeURIComponent(productId) + '/guardrails/form?path=' + encodeURIComponent(guardrailsPath);
   var guardrailsActionHtml = '<a href="' + guardrailsEditHref + '" style="font-size:13px;color:var(--accent)">' + (guardrailsPiece.status === 'ok' ? 'Edit' : 'Add') + '</a>';
 
-  var guardrailsHtml;
-  if (guardrailsPiece.status === 'ok') {
-    guardrailsHtml = '<pre class="gv-guardrails-content" style="white-space:pre-wrap;font-family:inherit;font-size:14px;background:var(--surface);padding:16px;border-radius:8px;border:1px solid var(--line)">' + _escapeHtml(guardrailsPiece.value) + '</pre>';
-  } else if (guardrailsPiece.status === 'empty') {
-    guardrailsHtml = '<p class="gv-guardrails-empty" style="color:var(--muted);font-size:14px">No architecture-guardrails.md found in this repo.</p>';
-  } else {
-    guardrailsHtml = '<p class="gv-guardrails-error" style="color:var(--danger,#c0392b);font-size:14px">Could not load architecture-guardrails.md: ' + _escapeHtml(guardrailsPiece.errorMessage) + '</p>';
-  }
+  var guardrailsHtml = _renderPieceContent(guardrailsPiece, {
+    contentClass: 'gv-guardrails-content',
+    emptyClass: 'gv-guardrails-empty',
+    emptyText: 'No architecture-guardrails.md found in this repo.',
+    errorClass: 'gv-guardrails-error',
+    errorPrefix: 'Could not load architecture-guardrails.md: '
+  });
 
-  var standardsHtml;
-  if (standardsPiece.status === 'ok') {
-    var entries = Array.isArray(standardsPiece.value) ? standardsPiece.value : [];
-    standardsHtml = entries.length === 0
-      ? '<p class="gv-standards-empty" style="color:var(--muted);font-size:14px">No standards found in this repo.</p>'
-      : '<ul class="gv-standards-list">' + entries.map(function (e) {
-          var editHref = '/products/' + encodeURIComponent(productId) + '/guardrails/form?path=' + encodeURIComponent(e.path);
-          return '<li style="display:flex;align-items:center;justify-content:space-between;gap:12px">' +
-            '<span>' + _escapeHtml(e.name) + '</span>' +
-            '<a href="' + editHref + '" style="font-size:13px;color:var(--accent)">Edit</a>' +
-          '</li>';
-        }).join('') + '</ul>';
-  } else if (standardsPiece.status === 'empty') {
-    standardsHtml = '<p class="gv-standards-empty" style="color:var(--muted);font-size:14px">No standards found in this repo.</p>';
-  } else {
-    standardsHtml = '<p class="gv-standards-error" style="color:var(--danger,#c0392b);font-size:14px">Could not load standards/: ' + _escapeHtml(standardsPiece.errorMessage) + '</p>';
-  }
+  var standardsHtml = _renderPieceContent(standardsPiece, {
+    emptyClass: 'gv-standards-empty',
+    emptyText: 'No standards found in this repo.',
+    errorClass: 'gv-standards-error',
+    errorPrefix: 'Could not load standards/: ',
+    renderOk: function (value) {
+      var entries = Array.isArray(value) ? value : [];
+      return entries.length === 0
+        ? '<p class="gv-standards-empty" style="color:var(--muted);font-size:14px">No standards found in this repo.</p>'
+        : '<ul class="gv-standards-list">' + entries.map(function (e) {
+            var editHref = '/products/' + encodeURIComponent(productId) + '/guardrails/form?path=' + encodeURIComponent(e.path);
+            return '<li style="display:flex;align-items:center;justify-content:space-between;gap:12px">' +
+              '<span>' + _escapeHtml(e.name) + '</span>' +
+              '<a href="' + editHref + '" style="font-size:13px;color:var(--accent)">Edit</a>' +
+            '</li>';
+          }).join('') + '</ul>';
+    }
+  });
 
   var addStandardHref = '/products/' + encodeURIComponent(productId) + '/guardrails/form?section=standards';
 
