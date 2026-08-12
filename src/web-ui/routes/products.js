@@ -1542,14 +1542,34 @@ async function _designateOrgRepo(pool, tenantId, repoOwner, repoName, writeAdapt
 }
 
 /**
- * wugs-s3 — POST /settings/org-repo: validates the submitted repo_owner/
- * repo_name and, if valid, hands off to _designateOrgRepo. Tenant-level
- * settings action (not product-scoped) — matches the story's "via a
- * settings action introduced by this story" phrasing for AC1.
+ * wugs-s3 / review fix — POST /settings/org-repo: CSRF-guards and
+ * tenant-scopes the request (matching handlePostGuardrailsForm above),
+ * validates the submitted repo_owner/repo_name and, if valid, hands off to
+ * _designateOrgRepo. Tenant-level settings action (not product-scoped) —
+ * matches the story's "via a settings action introduced by this story"
+ * phrasing for AC1. Handles GuardrailPrConflictError (409, stale-SHA race)
+ * and any other write-path failure (500, generic) distinctly, matching
+ * handlePostGuardrailsForm's try/catch shape.
  */
 async function handlePostOrgRepoSettings(req, res, _next, pool, writeAdapter, posthog) {
+  // review fix -- CSRF guard first, matching handlePostGuardrailsForm.
+  // csrfGuard reads and caches the body itself; the _readBody call below
+  // (unchanged) picks it up via its own req.body !== undefined short-circuit.
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
   req.body = await _readBody(req);
+
   var tenantId = req.session && req.session.tenantId;
+
+  // review fix -- tenantId must be present before any DB insert is
+  // attempted; without this check, _designateOrgRepo would unconditionally
+  // INSERT a row keyed on an undefined tenant_id.
+  if (!tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+
   var repoOwner = (req.body && req.body.repo_owner) || '';
   var repoName = (req.body && req.body.repo_name) || '';
 
@@ -1560,7 +1580,18 @@ async function handlePostOrgRepoSettings(req, res, _next, pool, writeAdapter, po
     return;
   }
 
-  await _designateOrgRepo(pool, tenantId, repoOwner.trim(), repoName.trim(), writeAdapter, posthog);
+  try {
+    await _designateOrgRepo(pool, tenantId, repoOwner.trim(), repoName.trim(), writeAdapter, posthog);
+  } catch (writeErr) {
+    if (writeErr instanceof _guardrailPrAdapter.GuardrailPrConflictError) {
+      if (res.status) { res.status(409).json({ error: 'Artefact was updated — please reload and try again' }); }
+      else { res.writeHead(409, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'Artefact was updated — please reload and try again' })); }
+      return;
+    }
+    if (res.status) { res.status(500).json({ error: 'Failed to create pull request' }); }
+    else { res.writeHead(500, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'Failed to create pull request' })); }
+    return;
+  }
 
   if (res.status) { res.status(200).json({ ok: true }); }
   else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true })); }

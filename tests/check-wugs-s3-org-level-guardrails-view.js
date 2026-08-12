@@ -179,7 +179,7 @@ await checkAsync('AC1: designateOrgRepo_noExistingRow_createsRowAndSeedsExactCon
   var captured = null;
   var mockPosthog = { capture: function (distinctId, event, properties) { captured = { distinctId: distinctId, event: event, properties: properties }; } };
 
-  var req = mockReq({ body: { repo_owner: 'org-co', repo_name: 'org-repo' } });
+  var req = mockReq({ body: { repo_owner: 'org-co', repo_name: 'org-repo', _csrf: 'ct1' } });
   var res = mockRes();
   await products.handlePostOrgRepoSettings(req, res, null, pool, writeAdapter, mockPosthog);
 
@@ -218,12 +218,28 @@ await checkAsync('AC1: designateOrgRepo_missingRepoName_rejectedServerSide', asy
   var pool = makeMockPool([], {});
   var writeAdapterCalled = false;
   var writeAdapter = async function () { writeAdapterCalled = true; };
-  var req = mockReq({ body: { repo_owner: 'org-co', repo_name: '' } });
+  var req = mockReq({ body: { repo_owner: 'org-co', repo_name: '', _csrf: 'ct1' } });
   var res = mockRes();
   await products.handlePostOrgRepoSettings(req, res, null, pool, writeAdapter, { capture: function () {} });
   var result = res._get();
   assert.strictEqual(result.statusCode, 400);
   assert.strictEqual(writeAdapterCalled, false, 'expected no seed writes when validation rejects the submission');
+});
+
+// ── review fix: missing tenantId is rejected before any DB insert ───────
+await checkAsync('AC1: designateOrgRepo_missingTenantId_returns404AndSkipsWrite', async () => {
+  var pool = makeMockPool([], {});
+  var writeAdapterCalled = false;
+  var writeAdapter = async function () { writeAdapterCalled = true; };
+  var req = mockReq({
+    session: { accessToken: 'tok', csrfToken: 'ct1' },
+    body: { repo_owner: 'org-co', repo_name: 'org-repo', _csrf: 'ct1' }
+  });
+  var res = mockRes();
+  await products.handlePostOrgRepoSettings(req, res, null, pool, writeAdapter, { capture: function () {} });
+  var result = res._get();
+  assert.strictEqual(result.statusCode, 404, 'expected 404 when session has no tenantId, got: ' + result.statusCode + ' body: ' + result.body);
+  assert.strictEqual(writeAdapterCalled, false, 'expected no seed writes and no DB insert when tenantId is missing');
 });
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
