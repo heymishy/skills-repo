@@ -3131,24 +3131,20 @@ async function router(req, res) {
     // The repo being written to is the repo being designated (from the
     // request body itself), not a pre-existing product's connected repo --
     // unlike wugs-s6's per-product writeAdapter closure.
-    authGuard(req, res, async () => {
-      req.body = req.body || await new Promise((resolve) => {
-        let raw = '';
-        req.on('data', (c) => { raw += c; });
-        req.on('end', () => {
-          const ct = (req.headers && req.headers['content-type']) || '';
-          if (ct.indexOf('application/json') !== -1) { try { resolve(JSON.parse(raw)); } catch (_) { resolve({}); } }
-          else { const p = new URLSearchParams(raw); const o = {}; p.forEach((v, k) => { o[k] = v; }); resolve(o); }
-        });
+    // Gated on requireAdmin (not plain authGuard): this designates where all
+    // future tenant-wide guardrail PRs get written, matching the convention
+    // used by every other tenant-level mutating settings/admin route in this
+    // file (see /api/team/members, /api/admin/credits/adjust, etc.).
+    let _raOk = false;
+    await requireAdmin(req, res, () => { _raOk = true; });
+    if (!_raOk) return;
+    const writeAdapterForRequest = async (target, content) => {
+      return createGuardrailPr(req.session.accessToken, req.body.repo_owner, req.body.repo_name, target.path, content, {
+        tenantId: req.session.tenantId,
+        productId: null
       });
-      const writeAdapterForRequest = async (target, content) => {
-        return createGuardrailPr(req.session.accessToken, req.body.repo_owner, req.body.repo_name, target.path, content, {
-          tenantId: req.session.tenantId,
-          productId: null
-        });
-      };
-      await handlePostOrgRepoSettings(req, res, null, _pshPool, writeAdapterForRequest);
-    });
+    };
+    await handlePostOrgRepoSettings(req, res, null, _pshPool, writeAdapterForRequest);
 
   } else if (pathname.match(/^\/products\/[^/]+\/modules$/) && req.method === 'GET') {
     // a1 (AC1) — list modules curated for a product
