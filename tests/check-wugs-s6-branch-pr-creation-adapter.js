@@ -407,6 +407,92 @@ await checkAsync('NFR-AUDIT: createGuardrailPr_prCreationFails_neverCapturesEven
   } finally { global.fetch = originalFetch; }
 });
 
+// ── AC6: real wiring — two different submissions produce two different, correct PRs ──
+await checkAsync('AC6: realWiring_twoDifferentContentChanges_produceTwoDifferentCorrectPrs', async () => {
+  var fs = require('fs');
+  var serverSrc = fs.readFileSync(require.resolve('../src/web-ui/server.js'), 'utf8');
+  assert.ok(serverSrc.indexOf('setGuardrailPrAdapter') !== -1, 'expected server.js to wire setGuardrailPrAdapter');
+  assert.ok(serverSrc.indexOf('guardrails\\/form$/) && req.method === \'POST\'') !== -1 || serverSrc.indexOf("guardrails/form$/) && req.method === 'POST'") !== -1, 'expected server.js to route POST /products/:id/guardrails/form');
+
+  // Differentiating-outcome check (D37 requirement 4): call the real handler
+  // twice with two distinct submissions through a mocked GitHub API, and
+  // confirm two distinct, individually-correct PRs are opened -- not the
+  // same content/target twice, not merely "a setter was called".
+  var products = require('../src/web-ui/routes/products');
+  var prPayloads = [];
+  var callIndex = 0;
+  var originalFetch = global.fetch;
+  global.fetch = async function(url, opts) {
+    var method = (opts && opts.method) || 'GET';
+    if (method === 'GET' && /\/git\/ref\/heads\//.test(url)) { return { ok: true, status: 200, json: async function() { return { object: { sha: 'base-sha' } }; } }; }
+    if (method === 'POST' && /\/git\/refs$/.test(url)) { return { ok: true, status: 201, json: async function() { return {}; } }; }
+    if (method === 'GET' && /\/contents\//.test(url)) { return { ok: false, status: 404, json: async function() { return {}; } }; }
+    if (method === 'PUT' && /\/contents\//.test(url)) {
+      var body = JSON.parse(opts.body);
+      return { ok: true, status: 201, json: async function() { return { content: { sha: 'x' } }; } };
+    }
+    if (method === 'POST' && /\/pulls$/.test(url)) {
+      var prBody = JSON.parse(opts.body);
+      prPayloads.push(prBody);
+      callIndex++;
+      return { ok: true, status: 201, json: async function() { return { number: callIndex, html_url: 'https://github.com/acme/widgets/pull/' + callIndex }; } };
+    }
+    throw new Error('unexpected fetch call in AC6 test: ' + method + ' ' + url);
+  };
+
+  function mockPool() {
+    return {
+      query: async function(sql) {
+        if (/SELECT repo_owner, repo_name FROM products/i.test(sql)) {
+          return { rows: [{ repo_owner: 'acme', repo_name: 'widgets' }] };
+        }
+        return { rows: [] };
+      }
+    };
+  }
+
+  function mockReq(body) {
+    return { params: { id: 'p1' }, session: { accessToken: 'tok', tenantId: 't1' }, body: body };
+  }
+
+  function mockRes() {
+    var _status = null, _body = '';
+    return { status: function(c) { _status = c; return this; }, json: function(b) { _body = JSON.stringify(b); }, writeHead: function(c) { _status = c; return this; }, end: function(b) { if (b != null) _body = b; }, _get: function() { return { statusCode: _status, body: _body }; } };
+  }
+
+  try {
+    var { createGuardrailPr, setGuardrailPrAdapter, getGuardrailPrAdapter, realCreateGuardrailPr } = require('../src/web-ui/adapters/guardrail-pr-adapter');
+    var original = getGuardrailPrAdapter();
+    setGuardrailPrAdapter(realCreateGuardrailPr);
+    try {
+      var pool = mockPool();
+      var writeAdapterForRequest = async function(target, content) {
+        var prodRow = (await pool.query('SELECT repo_owner, repo_name FROM products WHERE product_id = $1')).rows[0];
+        return createGuardrailPr('tok', prodRow.repo_owner, prodRow.repo_name, target.path, content, { tenantId: 't1', productId: target.productId });
+      };
+
+      var req1 = mockReq({ path: 'standards/first-discipline.md', content: 'First content' });
+      var res1 = mockRes();
+      await products.handlePostGuardrailsForm(req1, res1, null, pool, writeAdapterForRequest);
+
+      var req2 = mockReq({ path: 'standards/second-discipline.md', content: 'Second content' });
+      var res2 = mockRes();
+      await products.handlePostGuardrailsForm(req2, res2, null, pool, writeAdapterForRequest);
+
+      assert.strictEqual(res1._get().statusCode, 200);
+      assert.strictEqual(res2._get().statusCode, 200);
+      assert.strictEqual(prPayloads.length, 2, 'expected exactly two PR-creation calls');
+      assert.notStrictEqual(prPayloads[0].title, prPayloads[1].title, 'expected two individually-distinct PR titles, not the same content twice');
+      assert.ok(/first-discipline/.test(prPayloads[0].title), 'expected the first PR to reference the first submission\'s real path');
+      assert.ok(/second-discipline/.test(prPayloads[1].title), 'expected the second PR to reference the second submission\'s real path');
+    } finally {
+      setGuardrailPrAdapter(original);
+    }
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
