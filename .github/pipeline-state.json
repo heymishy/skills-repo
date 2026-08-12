@@ -22286,29 +22286,69 @@
           "id": "wugs-s5",
           "slug": "wugs-s5-create-edit-form",
           "name": "Create/edit form for a guardrail or standard",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s5-create-edit-form.md",
-          "prStatus": "none",
+          "prStatus": "draft",
           "notes": "Epic 2 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-11T18:35:48.323Z",
+          "updatedAt": "2026-08-12T05:18:19.342Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
           "testPlan": {
             "status": "written",
-            "totalTests": 5,
-            "passing": 0,
+            "totalTests": 13,
+            "passing": 13,
             "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s5-create-edit-form-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s5-dor.md",
           "dorContractArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s5-dor-contract.md",
-          "dorSignedOffAt": "2026-08-11T08:38:42.453Z"
+          "dorSignedOffAt": "2026-08-11T08:38:42.453Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Add/Edit action links in guardrails/standards view (AC1)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s5-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "GET form route with pre-fill (AC2, NFR-SEC-01)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s5-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Server-side empty-content validation (AC3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s5-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Valid submission passed to write path (AC4)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s5-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Wire GET /products/:id/guardrails/form in server.js",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s5-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "Fix: editable path field + server-side path validation for new-entry submissions (post-final-review finding)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s5-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/725"
         },
         {
           "id": "wugs-s6",

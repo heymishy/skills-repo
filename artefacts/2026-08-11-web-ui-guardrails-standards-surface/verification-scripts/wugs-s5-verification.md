@@ -67,6 +67,25 @@
 
 ---
 
+### Scenario 4: A valid submission carries the right content to the right target
+
+**Covers:** AC4
+
+**Steps:**
+1. Click "Add" next to "Standards" to create a new standard, or "Edit" on an existing entry.
+2. Type real content (and, if adding a new standard, a target file path — e.g. `standards/your-discipline-name`).
+3. Submit.
+
+**Expected outcome:**
+> The form submits without a client-side-only validation error, and the exact content and target path you entered are what get sent onward — nothing silently transformed, dropped, or misdirected to the wrong file/repo.
+>
+> **Known limitation at this story's stage:** the actual write (branch/PR creation) is not yet wired to a real backend — that lands with a later story (`wugs-s6`). Until then, submitting will not yet produce a real PR; this scenario verifies the form's own submission behaviour (content/path correctness, no client-only validation gap) up to that handoff point, not the end-to-end write.
+
+**Result:** [ ] Pass  [ ] Fail
+**Notes:**
+
+---
+
 ## Summary
 
 | Scenario | Result | Notes |
@@ -74,6 +93,7 @@
 | Scenario 1 | | |
 | Scenario 2 | | |
 | Scenario 3 | | |
+| Scenario 4 | | |
 
 **Overall verdict:** [ ] All pass — ready to proceed
 [ ] Failures found — log findings below before proceeding

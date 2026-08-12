@@ -1179,7 +1179,11 @@ async function _fetchGuardrailsSectionPiece(owner, repo, path, token) {
  * connected repo. Each piece renders independently so a failure in one
  * does not affect the other (AC4).
  */
-function _renderGuardrailsSection(guardrailsPiece, standardsPiece) {
+function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId) {
+  var guardrailsPath = '.github/architecture-guardrails.md';
+  var guardrailsEditHref = '/products/' + encodeURIComponent(productId) + '/guardrails/form?path=' + encodeURIComponent(guardrailsPath);
+  var guardrailsActionHtml = '<a href="' + guardrailsEditHref + '" style="font-size:13px;color:var(--accent)">' + (guardrailsPiece.status === 'ok' ? 'Edit' : 'Add') + '</a>';
+
   var guardrailsHtml;
   if (guardrailsPiece.status === 'ok') {
     guardrailsHtml = '<pre class="gv-guardrails-content" style="white-space:pre-wrap;font-family:inherit;font-size:14px;background:var(--surface);padding:16px;border-radius:8px;border:1px solid var(--line)">' + _escapeHtml(guardrailsPiece.value) + '</pre>';
@@ -1195,7 +1199,11 @@ function _renderGuardrailsSection(guardrailsPiece, standardsPiece) {
     standardsHtml = entries.length === 0
       ? '<p class="gv-standards-empty" style="color:var(--muted);font-size:14px">No standards found in this repo.</p>'
       : '<ul class="gv-standards-list">' + entries.map(function (e) {
-          return '<li>' + _escapeHtml(e.name) + '</li>';
+          var editHref = '/products/' + encodeURIComponent(productId) + '/guardrails/form?path=' + encodeURIComponent(e.path);
+          return '<li style="display:flex;align-items:center;justify-content:space-between;gap:12px">' +
+            '<span>' + _escapeHtml(e.name) + '</span>' +
+            '<a href="' + editHref + '" style="font-size:13px;color:var(--accent)">Edit</a>' +
+          '</li>';
         }).join('') + '</ul>';
   } else if (standardsPiece.status === 'empty') {
     standardsHtml = '<p class="gv-standards-empty" style="color:var(--muted);font-size:14px">No standards found in this repo.</p>';
@@ -1203,12 +1211,153 @@ function _renderGuardrailsSection(guardrailsPiece, standardsPiece) {
     standardsHtml = '<p class="gv-standards-error" style="color:var(--danger,#c0392b);font-size:14px">Could not load standards/: ' + _escapeHtml(standardsPiece.errorMessage) + '</p>';
   }
 
+  var addStandardHref = '/products/' + encodeURIComponent(productId) + '/guardrails/form?section=standards';
+
   return '<div class="gv-product-section">' +
-    '<h2 style="font-size:18px;margin:0 0 12px">Architecture guardrails</h2>' +
+    '<div style="display:flex;align-items:center;justify-content:space-between"><h2 style="font-size:18px;margin:0 0 12px">Architecture guardrails</h2>' + guardrailsActionHtml + '</div>' +
     guardrailsHtml +
-    '<h2 style="font-size:18px;margin:24px 0 12px">Standards</h2>' +
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-top:24px"><h2 style="font-size:18px;margin:0 0 12px">Standards</h2><a href="' + addStandardHref + '" style="font-size:13px;color:var(--accent)">Add</a></div>' +
     standardsHtml +
   '</div>';
+}
+
+/**
+ * wugs-s5 — renders the create/edit form for a guardrail or standard.
+ * @param {string} productId
+ * @param {string} path        - repo path being edited, or '' for a new entry
+ * @param {string} prefillContent - existing content to pre-fill, or '' for blank
+ * @param {string} productName
+ */
+function _renderGuardrailsForm(productId, path, prefillContent, productName) {
+  var isEdit = !!path;
+  var body = '<div style="max-width:720px">' +
+    '<h1 style="margin:0 0 24px;font-size:24px">' + (isEdit ? 'Edit' : 'Add') + ' guardrail or standard</h1>' +
+    '<form method="POST" action="/products/' + encodeURIComponent(productId) + '/guardrails/form">' +
+      // fix (post-wugs-s5): when adding a NEW entry (no existing path), the
+      // path was previously always a hidden field with an empty value --
+      // there was no way for the operator to ever tell the write path where
+      // a new standard should be written. Editing an EXISTING entry (isEdit)
+      // keeps the path fixed and hidden -- letting it be edited there would
+      // be a silent rename, out of scope. Note: the guardrails file's own
+      // Add link (see _renderGuardrailsSection) always carries a non-empty
+      // `path` query param even when the file doesn't yet exist on disk (its
+      // path is fixed at .github/architecture-guardrails.md), so isEdit is
+      // true for that flow too and it correctly keeps using the hidden,
+      // fixed-path branch below -- unaffected by this fix.
+      (isEdit ?
+        '<input type="hidden" name="path" value="' + _escapeHtml(path) + '">' :
+        '<label style="display:block;margin-bottom:8px;font-size:14px;font-weight:500" for="gv-form-path">File path</label>' +
+        '<input id="gv-form-path" type="text" name="path" placeholder="standards/your-discipline-name" style="width:100%;font-family:inherit;font-size:14px;padding:8px 12px;border-radius:6px;border:1px solid var(--line);margin-bottom:16px" value="">'
+      ) +
+      '<label style="display:block;margin-bottom:8px;font-size:14px;font-weight:500" for="gv-form-content">Content</label>' +
+      '<textarea id="gv-form-content" name="content" rows="16" style="width:100%;font-family:inherit;font-size:14px;padding:12px;border-radius:8px;border:1px solid var(--line)">' + _escapeHtml(prefillContent) + '</textarea>' +
+      '<button type="submit" style="margin-top:16px;padding:8px 16px;border-radius:6px;border:none;background:var(--accent);color:#fff;font-size:14px;cursor:pointer">Save</button>' +
+    '</form>' +
+  '</div>';
+
+  return _htmlShell.renderShell({
+    title: (isEdit ? 'Edit' : 'Add') + ' guardrail or standard',
+    bodyContent: body,
+    active: 'dashboard',
+    crumbs: [productName, 'Guardrails & Standards', isEdit ? 'Edit' : 'Add']
+  });
+}
+
+/**
+ * wugs-s5 — GET /products/:id/guardrails/form: renders the create/edit
+ * form, pre-filled with real current content when editing an existing
+ * path (?path=...), or blank when adding a new entry (?section=...).
+ */
+async function handleGetGuardrailsForm(req, res, _next, pool) {
+  var _pool = pool;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+  var token = req.session && req.session.accessToken;
+  var path = (req.query && req.query.path) || '';
+
+  var prodRow = (await _pool.query(
+    'SELECT name, tenant_id, repo_owner, repo_name FROM products WHERE product_id = $1',
+    [productId]
+  )).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+
+  var prefillContent = '';
+  if (path) {
+    var piece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, path, token);
+    prefillContent = piece.status === 'ok' ? piece.value : '';
+  }
+
+  var html = _renderGuardrailsForm(productId, path, prefillContent, prodRow.name);
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(html);
+}
+
+/**
+ * wugs-s5 — validates submitted guardrail/standard content server-side.
+ * Never trust client-side-only validation (Architecture Constraints).
+ * @returns {{valid: boolean, error: (string|null)}}
+ */
+function _validateGuardrailContent(content) {
+  if (typeof content !== 'string' || content.trim().length === 0) {
+    return { valid: false, error: 'Content cannot be empty.' };
+  }
+  return { valid: true, error: null };
+}
+
+/**
+ * wugs-s5 (fix) — validates the submitted target path server-side. An
+ * empty path means the operator never specified where a new entry should
+ * be written (e.g. the Add-new-standard flow with no filename typed in).
+ * @returns {{valid: boolean, error: (string|null)}}
+ */
+function _validateGuardrailPath(path) {
+  if (typeof path !== 'string' || path.trim().length === 0) {
+    return { valid: false, error: 'A target file path is required.' };
+  }
+  return { valid: true, error: null };
+}
+
+/**
+ * wugs-s5 — POST /products/:id/guardrails/form: validates submitted
+ * content server-side and, if valid, hands it to the write path.
+ * `writeAdapter(target, content)` is the write path — not yet wired to a
+ * real implementation in server.js (wugs-s6's job, see the plan's Design
+ * note); tests inject a mock directly as a function parameter.
+ */
+async function handlePostGuardrailsForm(req, res, _next, pool, writeAdapter) {
+  req.body = await _readBody(req);
+  // productId + contentPath form the write-adapter target object passed to
+  // writeAdapter() below on the success path.
+  var productId = req.params && req.params.id;
+  // Named contentPath, not path -- this function will need the real Node
+  // `path` module for a path-traversal guard once the write path is wired
+  // (wugs-s6), and this file's convention is to require('path') locally
+  // where needed; avoid shadowing that.
+  var contentPath = (req.body && req.body.path) || '';
+  var content = (req.body && req.body.content) || '';
+
+  var pathValidation = _validateGuardrailPath(contentPath);
+  if (!pathValidation.valid) {
+    if (res.status) { res.status(400).json({ error: pathValidation.error }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: pathValidation.error })); }
+    return;
+  }
+
+  var validation = _validateGuardrailContent(content);
+  if (!validation.valid) {
+    if (res.status) { res.status(400).json({ error: validation.error }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: validation.error })); }
+    return;
+  }
+
+  var writeResult = await writeAdapter({ productId: productId, path: contentPath }, content);
+
+  if (res.status) { res.status(200).json({ ok: true, result: writeResult }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, result: writeResult })); }
 }
 
 /**
@@ -1234,7 +1383,7 @@ async function handleGetProductGuardrailsView(req, res, _next, pool) {
 
   var guardrailsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, '.github/architecture-guardrails.md', token);
   var standardsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, 'standards/', token);
-  var productSectionHtml = _renderGuardrailsSection(guardrailsPiece, standardsPiece);
+  var productSectionHtml = _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId);
 
   var navSummary = await getProductsNavSummary(_pool, tenantId);
 
@@ -3127,6 +3276,10 @@ module.exports = {
   handleGetProductStandardsTab,
   // wugs-s2: product-level guardrails/standards view, live-read from the connected repo
   handleGetProductGuardrailsView,
+  // wugs-s5: create/edit form for a guardrail or standard, pre-filled with real content when editing
+  handleGetGuardrailsForm,
+  // wugs-s5: POST handler validating submitted content server-side (AC3) before handing off to the write path
+  handlePostGuardrailsForm,
   handlePostProductSync,
   handlePostProductFeature,
   handleGetProductKanban,

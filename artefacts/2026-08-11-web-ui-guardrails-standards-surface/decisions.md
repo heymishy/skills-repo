@@ -111,6 +111,24 @@
 **Revisit trigger:** Add `AbortController`-based timeout handling to `fetchRepoPath`/`realFetchRepoPath` before or shortly after `wugs-3`/`wugs-4` ship (both share the same adapter and same exposure to this gap). Logged in `nfr-profile.md`'s Gaps and open questions table.
 ---
 
+---
+**[2026-08-12] | RISK-ACCEPT | branch-setup (wugs-s5)**
+**Decision:** Proceeding with `wugs-s5`'s worktree despite 33 pre-existing test failures at baseline (508 files run via `npm test`, 33 failed, exit code 0).
+**Alternatives considered:** Investigate and fix pre-existing failures first — rejected, out of scope for this feature and would delay the whole inner loop for unrelated pre-existing repo drift.
+**Rationale:** The 33 failing files (`check-bee3-posthog.js`, `check-mfc1/mfc2-*.js`, `check-ougl*.js`, `check-inc2.1/inc4-*.js`, `artefact-preview.test.js`/`artefact-writeback.test.js` (wuce.14/wuce.15, unrelated session-state features), etc.) do not overlap with `wugs-s5`'s touchpoints (`src/web-ui/routes/products.js`'s new Add/Edit form render + submission-handling code, `src/web-ui/server.js` route wiring). Same baseline-drift pattern already documented for `wugs-s1`/`wugs-s2`.
+**Made by:** Claude (agent), per branch-setup's own Step 5 option 2 protocol
+**Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this feature's changes during implementation, stop and investigate.
+---
+
+---
+**[2026-08-12] | GAP-FLAG | final review, Task 5 (wugs-s5)**
+**Decision:** No action taken now — flagging for `wugs-s6`'s implementation phase, not blocking `wugs-s5`'s own completion.
+**Context:** `wugs-s5` built `handlePostGuardrailsForm` in `src/web-ui/routes/products.js`, which takes the write path as a plain function parameter (`writeAdapter`) — intentionally not wired to any real implementation or POST route in `server.js`, since no real write adapter exists yet (see the plan's own Design note). `wugs-s6`'s story (`artefacts/.../stories/wugs-s6-branch-pr-creation-adapter.md`) builds that real adapter (`guardrailPrAdapter`, a D37 injectable module) and its AC5/AC6 cover wiring `setGuardrailPrAdapter` itself — but the story text does not explicitly mention wiring the `POST /products/:id/guardrails/form` route in `server.js`, nor passing the new adapter into `handlePostGuardrailsForm` as its `writeAdapter` parameter. Without that explicit connection, `wugs-s6` could ship a fully-working, fully-tested `guardrailPrAdapter` while the form submission still 404s in production — technically satisfying `wugs-s6`'s own literal ACs while leaving the end-to-end feature non-functional.
+**Rationale for not fixing now:** `wugs-s6`'s story artefact already passed review/DoR sign-off as a complete outer-loop artefact; re-litigating its ACs is out of scope for `wugs-s5`'s inner loop. The gap is a cross-story integration point, not a defect in either story individually.
+**Made by:** Claude (agent), following up on `wugs-s5` Task 5's code-quality reviewer's finding
+**Revisit trigger:** When `wugs-s6`'s implementation plan is written, explicitly add a task: "wire `POST /products/:id/guardrails/form` in `server.js`, passing the real `guardrailPrAdapter` as `handlePostGuardrailsForm`'s `writeAdapter` parameter" — do not assume `wugs-s6`'s own AC5/AC6 wiring (which covers `setGuardrailPrAdapter` only) already covers this.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded — all four decisions from this discovery/clarify session were logged as entries above, not full ADRs, per the operator's confirmation that none warranted ADR-level depth. -->
