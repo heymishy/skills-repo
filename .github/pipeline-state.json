@@ -22359,12 +22359,12 @@
           "id": "wugs-s6",
           "slug": "wugs-s6-branch-pr-creation-adapter",
           "name": "Branch + PR creation adapter against the tenant's repo",
-          "stage": "subagent-execution",
+          "stage": "definition-of-done",
           "health": "green",
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s6-branch-pr-creation-adapter.md",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "notes": "Epic 2 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-12T19:20:22.446Z",
+          "updatedAt": "2026-08-12T19:44:03.741Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 1,
@@ -22425,7 +22425,9 @@
               "tddState": "committed",
               "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s6-plan.md"
             }
-          ]
+          ],
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dod/wugs-s6-dod.md"
         },
         {
           "id": "wugs-s7",
