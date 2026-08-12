@@ -1509,6 +1509,63 @@ async function handlePostGuardrailsForm(req, res, _next, pool, writeAdapter) {
   else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, result: writeResult })); }
 }
 
+var _ORG_REPO_SEED_GUARDRAILS =
+  '## Getting Started\n\nThis file records your organisation\'s architectural decisions and constraints — the things every product should respect unless explicitly overridden. Add an entry here whenever your team makes a structural choice that should apply broadly (e.g. \'All new services must expose a health-check endpoint at /health\'). Delete this section once you\'ve added your own guardrails.';
+var _ORG_REPO_SEED_STANDARDS =
+  '# Getting Started\n\nThis folder holds your organisation\'s engineering standards — practices every product is expected to follow. Add a file per discipline as your standards mature (e.g. security, data handling, accessibility). A reasonable first standard: all code changes require a passing test suite before merge. Delete this file once you\'ve added your own standards.';
+
+/**
+ * wugs-s3 — first-time org-repo designation: creates the tenant_org_repo
+ * row, then seeds both starter files via the same PR-gated write path as
+ * any other edit (wugs-s6's createGuardrailPr, injected as writeAdapter —
+ * per decisions.md's SLICE entry, no direct-commit shortcut for seeding).
+ * @param {object} pool
+ * @param {string} tenantId
+ * @param {string} repoOwner
+ * @param {string} repoName
+ * @param {Function} writeAdapter - (target: {productId, path}, content: string) => Promise
+ * @param {object} posthog
+ */
+async function _designateOrgRepo(pool, tenantId, repoOwner, repoName, writeAdapter, posthog) {
+  await pool.query(
+    'INSERT INTO tenant_org_repo (tenant_id, repo_owner, repo_name) VALUES ($1, $2, $3)',
+    [tenantId, repoOwner, repoName]
+  );
+  await writeAdapter({ productId: null, path: '.github/architecture-guardrails.md' }, _ORG_REPO_SEED_GUARDRAILS);
+  await writeAdapter({ productId: null, path: 'standards/getting-started.md' }, _ORG_REPO_SEED_STANDARDS);
+  var _ph = posthog || _posthog;
+  _ph.capture(tenantId, 'org_repo_designated', {
+    tenant_id: tenantId,
+    repo_owner: repoOwner,
+    repo_name: repoName
+  });
+}
+
+/**
+ * wugs-s3 — POST /settings/org-repo: validates the submitted repo_owner/
+ * repo_name and, if valid, hands off to _designateOrgRepo. Tenant-level
+ * settings action (not product-scoped) — matches the story's "via a
+ * settings action introduced by this story" phrasing for AC1.
+ */
+async function handlePostOrgRepoSettings(req, res, _next, pool, writeAdapter, posthog) {
+  req.body = await _readBody(req);
+  var tenantId = req.session && req.session.tenantId;
+  var repoOwner = (req.body && req.body.repo_owner) || '';
+  var repoName = (req.body && req.body.repo_name) || '';
+
+  if (!repoOwner.trim() || !repoName.trim()) {
+    var err = 'repo_owner and repo_name are both required.';
+    if (res.status) { res.status(400).json({ error: err }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: err })); }
+    return;
+  }
+
+  await _designateOrgRepo(pool, tenantId, repoOwner.trim(), repoName.trim(), writeAdapter, posthog);
+
+  if (res.status) { res.status(200).json({ ok: true }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true })); }
+}
+
 /**
  * wugs-s2 — GET /products/:id/guardrails: live-read product-level
  * architecture guardrails + standards from the product's connected repo.
@@ -3439,6 +3496,10 @@ module.exports = {
   handleGetGuardrailsForm,
   // wugs-s5: POST handler validating submitted content server-side (AC3) before handing off to the write path
   handlePostGuardrailsForm,
+  // wugs-s3: first-time org-repo designation, exported for direct unit testing (AC1 NFR)
+  _designateOrgRepo,
+  // wugs-s3: POST /settings/org-repo handler
+  handlePostOrgRepoSettings,
   handlePostProductSync,
   handlePostProductFeature,
   handleGetProductKanban,

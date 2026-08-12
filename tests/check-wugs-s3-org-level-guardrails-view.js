@@ -167,6 +167,65 @@ await checkAsync('AC5: handleGetGuardrailsView_crossTenantIsolation_neverLeaksOt
   });
 });
 
+// ── AC1: first designation creates the row and seeds exact verbatim content ──
+await checkAsync('AC1: designateOrgRepo_noExistingRow_createsRowAndSeedsExactContent', async () => {
+  var calls = [];
+  var pool = makeMockPool([], {}, calls);
+  var writeCalls = [];
+  var writeAdapter = async function (target, content) {
+    writeCalls.push({ target: target, content: content });
+    return { prNumber: 1, prUrl: 'https://github.com/org-co/org-repo/pull/1' };
+  };
+  var captured = null;
+  var mockPosthog = { capture: function (distinctId, event, properties) { captured = { distinctId: distinctId, event: event, properties: properties }; } };
+
+  var req = mockReq({ body: { repo_owner: 'org-co', repo_name: 'org-repo' } });
+  var res = mockRes();
+  await products.handlePostOrgRepoSettings(req, res, null, pool, writeAdapter, mockPosthog);
+
+  var result = res._get();
+  assert.strictEqual(result.statusCode, 200, 'expected 200, got: ' + result.statusCode + ' body: ' + result.body);
+
+  var insertCall = calls.find(function (c) { return /INSERT INTO tenant_org_repo/i.test(c.sql); });
+  assert.ok(insertCall, 'expected an INSERT INTO tenant_org_repo to be issued');
+  assert.deepStrictEqual(insertCall.params, ['t1', 'org-co', 'org-repo'], 'expected the insert to carry the real tenant_id/repo_owner/repo_name');
+
+  assert.strictEqual(writeCalls.length, 2, 'expected exactly 2 seed writes (guardrails + standards getting-started)');
+  var guardrailsWrite = writeCalls.find(function (w) { return w.target.path === '.github/architecture-guardrails.md'; });
+  var standardsWrite = writeCalls.find(function (w) { return w.target.path === 'standards/getting-started.md'; });
+  assert.ok(guardrailsWrite, 'expected a seed write to .github/architecture-guardrails.md');
+  assert.ok(standardsWrite, 'expected a seed write to standards/getting-started.md');
+  assert.strictEqual(
+    guardrailsWrite.content,
+    '## Getting Started\n\nThis file records your organisation\'s architectural decisions and constraints — the things every product should respect unless explicitly overridden. Add an entry here whenever your team makes a structural choice that should apply broadly (e.g. \'All new services must expose a health-check endpoint at /health\'). Delete this section once you\'ve added your own guardrails.',
+    'expected the exact verbatim AC1 guardrails seed text, not a paraphrase'
+  );
+  assert.strictEqual(
+    standardsWrite.content,
+    '# Getting Started\n\nThis folder holds your organisation\'s engineering standards — practices every product is expected to follow. Add a file per discipline as your standards mature (e.g. security, data handling, accessibility). A reasonable first standard: all code changes require a passing test suite before merge. Delete this file once you\'ve added your own standards.',
+    'expected the exact verbatim AC1 standards seed text, not a paraphrase'
+  );
+
+  assert.ok(captured, 'expected a PostHog capture call to have fired');
+  assert.strictEqual(captured.event, 'org_repo_designated');
+  assert.strictEqual(captured.properties.tenant_id, 't1');
+  assert.strictEqual(captured.properties.repo_owner, 'org-co');
+  assert.strictEqual(captured.properties.repo_name, 'org-repo');
+});
+
+// ── AC1 (negative): missing repo fields rejected server-side ────────────
+await checkAsync('AC1: designateOrgRepo_missingRepoName_rejectedServerSide', async () => {
+  var pool = makeMockPool([], {});
+  var writeAdapterCalled = false;
+  var writeAdapter = async function () { writeAdapterCalled = true; };
+  var req = mockReq({ body: { repo_owner: 'org-co', repo_name: '' } });
+  var res = mockRes();
+  await products.handlePostOrgRepoSettings(req, res, null, pool, writeAdapter, { capture: function () {} });
+  var result = res._get();
+  assert.strictEqual(result.statusCode, 400);
+  assert.strictEqual(writeAdapterCalled, false, 'expected no seed writes when validation rejects the submission');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
