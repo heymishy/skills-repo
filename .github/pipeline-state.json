@@ -22056,8 +22056,10 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "wugs-s2 just merged -- no real product view has been loaded by an actual tenant yet; org-level content (wugs-s3) and the no-repo fallback (wugs-s4) are still outstanding.",
+          "contributingStories": [
+            "wugs-s2"
+          ]
         },
         {
           "id": "m2",
@@ -22155,12 +22157,12 @@
           "id": "wugs-s2",
           "slug": "wugs-s2-product-level-guardrails-view",
           "name": "Product-level guardrails/standards view from the connected repo",
-          "stage": "branch-complete",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s2-product-level-guardrails-view.md",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "notes": "Epic 1 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-11T23:59:20.449Z",
+          "updatedAt": "2026-08-12T00:08:40.481Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
@@ -22217,7 +22219,12 @@
             }
           ],
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/724"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/724",
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "blocker": "NFR gap: no fetch timeout in wugs-s1 adapter (RISK-ACCEPTed, revisit before/after wugs-3/wugs-4)",
+          "dodArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dod/wugs-s2-dod.md",
+          "layoutGapsAtMerge": false
         },
         {
           "id": "wugs-s3",
