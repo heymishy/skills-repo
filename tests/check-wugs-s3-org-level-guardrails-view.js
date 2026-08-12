@@ -137,6 +137,36 @@ await checkAsync('AC4: handleGetGuardrailsView_twoProductsSameTenant_identicalOr
   });
 });
 
+// ── AC5: cross-tenant isolation — never leaks another tenant's org repo ──
+await checkAsync('AC5: handleGetGuardrailsView_crossTenantIsolation_neverLeaksOtherTenantOrgRepo', async () => {
+  var pool = makeMockPool([], {
+    t1: { repo_owner: 'tenant-a-org', repo_name: 'tenant-a-repo' },
+    t2: { repo_owner: 'tenant-b-org', repo_name: 'tenant-b-repo' }
+  });
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    if (owner === 'tenant-a-org' && path === '.github/architecture-guardrails.md') { return 'TENANT A ORG CONTENT'; }
+    if (owner === 'tenant-b-org' && path === '.github/architecture-guardrails.md') { return 'TENANT B ORG CONTENT'; }
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    var reqA = mockReq({ params: { id: 'p1' }, session: { accessToken: 'tok', tenantId: 't1', login: 'alice', csrfToken: 'ct1' } });
+    var resA = mockRes();
+    await products.handleGetProductGuardrailsView(reqA, resA, null, pool);
+
+    var reqB = mockReq({ params: { id: 'p-tenant-b' }, session: { accessToken: 'tok', tenantId: 't2', login: 'bob', csrfToken: 'ct1' } });
+    var resB = mockRes();
+    await products.handleGetProductGuardrailsView(reqB, resB, null, pool);
+
+    var bodyA = resA._get().body;
+    var bodyB = resB._get().body;
+    assert.ok(bodyA.indexOf('TENANT A ORG CONTENT') !== -1, 'Tenant A should see its own org content');
+    assert.ok(bodyA.indexOf('TENANT B ORG CONTENT') === -1, 'Tenant A must never see Tenant B\'s org content');
+    assert.ok(bodyA.indexOf('tenant-b-org') === -1 && bodyA.indexOf('tenant-b-repo') === -1, 'Tenant A must never see Tenant B\'s org repo owner/name');
+    assert.ok(bodyB.indexOf('TENANT B ORG CONTENT') !== -1, 'Tenant B should see its own org content');
+    assert.ok(bodyB.indexOf('TENANT A ORG CONTENT') === -1, 'Tenant B must never see Tenant A\'s org content');
+    assert.ok(bodyB.indexOf('tenant-a-org') === -1 && bodyB.indexOf('tenant-a-repo') === -1, 'Tenant B must never see Tenant A\'s org repo owner/name');
+  });
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
