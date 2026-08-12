@@ -1175,6 +1175,68 @@ async function _fetchGuardrailsSectionPiece(owner, repo, path, token) {
 }
 
 /**
+ * wugs-s3 — looks up the tenant's designated org-level repo, if any.
+ * @returns {Promise<{repo_owner: string, repo_name: string}|null>}
+ */
+async function _fetchOrgRepoRow(pool, tenantId) {
+  var row = (await pool.query(
+    'SELECT repo_owner, repo_name FROM tenant_org_repo WHERE tenant_id = $1',
+    [tenantId]
+  )).rows[0];
+  return row || null;
+}
+
+/**
+ * wugs-s3 — org-level guardrails/standards section. Mirrors
+ * _renderGuardrailsSection's ok/empty/error piece states, plus a fourth
+ * state on top: no org repo designated at all (AC3) renders an explicit
+ * prompt instead of attempting any fetch.
+ */
+function _renderOrgGuardrailsSection(orgRow, guardrailsPiece, standardsPiece) {
+  if (!orgRow) {
+    return '<div class="gv-org-section" style="margin-bottom:32px;padding:16px;border:1px dashed var(--line);border-radius:8px">' +
+      '<h2 style="font-size:18px;margin:0 0 8px">Organisation guardrails &amp; standards</h2>' +
+      '<p style="color:var(--muted);font-size:14px;margin:0 0 12px">No org repo designated yet — designate one to share guardrails/standards across every product in your organisation.</p>' +
+      '<form method="POST" action="/settings/org-repo" style="display:flex;gap:8px;align-items:center">' +
+        '<input type="text" name="repo_owner" placeholder="owner" style="font-family:inherit;font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid var(--line)">' +
+        '<input type="text" name="repo_name" placeholder="repo" style="font-family:inherit;font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid var(--line)">' +
+        '<button type="submit" style="padding:6px 12px;border-radius:6px;border:none;background:var(--accent);color:#fff;font-size:13px;cursor:pointer">Designate</button>' +
+      '</form>' +
+    '</div>';
+  }
+
+  var guardrailsHtml;
+  if (guardrailsPiece.status === 'ok') {
+    guardrailsHtml = '<pre class="gv-org-guardrails-content" style="white-space:pre-wrap;font-family:inherit;font-size:14px;background:var(--surface);padding:16px;border-radius:8px;border:1px solid var(--line)">' + _escapeHtml(guardrailsPiece.value) + '</pre>';
+  } else if (guardrailsPiece.status === 'empty') {
+    guardrailsHtml = '<p class="gv-org-guardrails-empty" style="color:var(--muted);font-size:14px">No architecture-guardrails.md found in the org repo.</p>';
+  } else {
+    guardrailsHtml = '<p class="gv-org-guardrails-error" style="color:var(--danger,#c0392b);font-size:14px">Could not load org architecture-guardrails.md: ' + _escapeHtml(guardrailsPiece.errorMessage) + '</p>';
+  }
+
+  var standardsHtml;
+  if (standardsPiece.status === 'ok') {
+    var entries = Array.isArray(standardsPiece.value) ? standardsPiece.value : [];
+    standardsHtml = entries.length === 0
+      ? '<p class="gv-org-standards-empty" style="color:var(--muted);font-size:14px">No standards found in the org repo.</p>'
+      : '<ul class="gv-org-standards-list">' + entries.map(function (e) {
+          return '<li>' + _escapeHtml(e.name) + '</li>';
+        }).join('') + '</ul>';
+  } else if (standardsPiece.status === 'empty') {
+    standardsHtml = '<p class="gv-org-standards-empty" style="color:var(--muted);font-size:14px">No standards found in the org repo.</p>';
+  } else {
+    standardsHtml = '<p class="gv-org-standards-error" style="color:var(--danger,#c0392b);font-size:14px">Could not load org standards/: ' + _escapeHtml(standardsPiece.errorMessage) + '</p>';
+  }
+
+  return '<div class="gv-org-section" style="margin-bottom:32px">' +
+    '<h2 style="font-size:18px;margin:0 0 12px">Organisation guardrails</h2>' +
+    guardrailsHtml +
+    '<h2 style="font-size:18px;margin:24px 0 12px">Organisation standards</h2>' +
+    standardsHtml +
+  '</div>';
+}
+
+/**
  * wugs-s2 — product-level guardrails/standards section: live-reads
  * .github/architecture-guardrails.md and standards/ from the product's
  * connected repo. Each piece renders independently so a failure in one
@@ -1438,6 +1500,15 @@ async function handleGetProductGuardrailsView(req, res, _next, pool) {
     return;
   }
 
+  var orgRow = await _fetchOrgRepoRow(_pool, prodRow.tenant_id);
+  var orgGuardrailsPiece = { status: 'empty', value: null, errorMessage: null };
+  var orgStandardsPiece = { status: 'empty', value: null, errorMessage: null };
+  if (orgRow) {
+    orgGuardrailsPiece = await _fetchGuardrailsSectionPiece(orgRow.repo_owner, orgRow.repo_name, '.github/architecture-guardrails.md', token);
+    orgStandardsPiece = await _fetchGuardrailsSectionPiece(orgRow.repo_owner, orgRow.repo_name, 'standards/', token);
+  }
+  var orgSectionHtml = _renderOrgGuardrailsSection(orgRow, orgGuardrailsPiece, orgStandardsPiece);
+
   var guardrailsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, '.github/architecture-guardrails.md', token);
   var standardsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, 'standards/', token);
   var productSectionHtml = _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId);
@@ -1446,6 +1517,7 @@ async function handleGetProductGuardrailsView(req, res, _next, pool) {
 
   var body = '<div style="max-width:720px">' +
     '<div style="margin-bottom:24px"><h1 style="margin:0;font-size:24px">Guardrails &amp; Standards</h1></div>' +
+    orgSectionHtml +
     productSectionHtml +
   '</div>';
 

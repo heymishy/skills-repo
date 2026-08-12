@@ -774,6 +774,20 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.error('[psh-s1] products migration failed:', err.message);
     });
 
+    // wugs-s3: tenant_org_repo table — one designated org-level repo per
+    // tenant (no FK to products; tenant_id-scoped like every other
+    // tenant-scoped table here, ADR-025).
+    _creditsPool.query(`CREATE TABLE IF NOT EXISTS tenant_org_repo (
+      tenant_id VARCHAR PRIMARY KEY,
+      repo_owner VARCHAR NOT NULL,
+      repo_name VARCHAR NOT NULL,
+      seeded_at TIMESTAMPTZ DEFAULT NOW()
+    )`).then(function() {
+      console.log('[wugs-s3] tenant_org_repo table ready');
+    }).catch(function(err) {
+      console.error('[wugs-s3] tenant_org_repo migration failed:', err.message);
+    });
+
     // prc-s1.1: repo association columns on products (repo_provider/repo_owner/repo_name)
     migrateProductRepoColumns(_creditsPool).catch(function(err) {
       console.error('[prc-s1.1] products repo-column migration failed:', err.message);
