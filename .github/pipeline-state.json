@@ -22286,12 +22286,12 @@
           "id": "wugs-s5",
           "slug": "wugs-s5-create-edit-form",
           "name": "Create/edit form for a guardrail or standard",
-          "stage": "subagent-execution",
+          "stage": "verify-completion",
           "health": "green",
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s5-create-edit-form.md",
           "prStatus": "none",
           "notes": "Epic 2 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-12T05:05:42.668Z",
+          "updatedAt": "2026-08-12T05:17:19.265Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
@@ -22302,7 +22302,7 @@
             "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s5-create-edit-form-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
@@ -22346,7 +22346,8 @@
               "tddState": "committed",
               "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s5-plan.md"
             }
-          ]
+          ],
+          "verifyStatus": "passed"
         },
         {
           "id": "wugs-s6",
