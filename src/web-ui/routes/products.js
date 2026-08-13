@@ -1229,7 +1229,7 @@ function _renderNoConnectedRepoPrompt(productId) {
  * connected repo. Each piece renders independently so a failure in one
  * does not affect the other (AC4).
  */
-function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pendingByPath, promotionByPath, csrfToken) {
+function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pendingByPath, promotionByPath, csrfToken, isAdmin) {
   pendingByPath = pendingByPath || new Map();
   promotionByPath = promotionByPath || new Map();
   var guardrailsPath = '.github/architecture-guardrails.md';
@@ -1246,7 +1246,7 @@ function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pe
   if (pendingByPath.has(guardrailsPath)) {
     guardrailsHtml += _renderPendingPrBadge(pendingByPath.get(guardrailsPath));
   }
-  guardrailsHtml += _renderPromotionAction(productId, guardrailsPath, csrfToken, promotionByPath.get(guardrailsPath));
+  guardrailsHtml += _renderPromotionAction(productId, guardrailsPath, csrfToken, promotionByPath.get(guardrailsPath), isAdmin);
 
   var standardsHtml = _renderPieceContent(standardsPiece, {
     emptyClass: 'gv-standards-empty',
@@ -1263,7 +1263,7 @@ function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pe
               '<span>' + _escapeHtml(e.name) + '</span>' +
               '<a href="' + editHref + '" style="font-size:13px;color:var(--accent)">Edit</a>' +
               (pendingByPath.has(e.path) ? _renderPendingPrBadge(pendingByPath.get(e.path)) : '') +
-              _renderPromotionAction(productId, e.path, csrfToken, promotionByPath.get(e.path)) +
+              _renderPromotionAction(productId, e.path, csrfToken, promotionByPath.get(e.path), isAdmin) +
             '</li>';
           }).join('') + '</ul>';
     }
@@ -1819,7 +1819,14 @@ async function handlePostRejectPromotion(req, res, _next, pool, posthog) {
  * approval" indicator, depending on whether a promotion request is
  * already pending for this exact path.
  */
-function _renderPromotionAction(productId, filePath, csrfToken, pendingPromotion) {
+function _renderPromotionAction(productId, filePath, csrfToken, pendingPromotion, isAdmin) {
+  if (pendingPromotion && isAdmin) {
+    var reqId = _escapeHtml(pendingPromotion.requestId);
+    return ' <span class="gv-promotion-admin-actions" id="promo-row-' + reqId + '" style="margin-left:8px">' +
+      '<button type="button" onclick="wugsApprove(this,\'' + reqId + '\',\'' + _escapeHtml(csrfToken) + '\')" style="font-size:12px;color:var(--accent);background:none;border:1px solid var(--accent);border-radius:4px;padding:2px 8px;cursor:pointer;margin-right:4px">Approve</button>' +
+      '<button type="button" onclick="wugsReject(this,\'' + reqId + '\',\'' + _escapeHtml(csrfToken) + '\')" style="font-size:12px;color:var(--muted);background:none;border:1px solid var(--line);border-radius:4px;padding:2px 8px;cursor:pointer">Reject</button>' +
+    '</span>';
+  }
   if (pendingPromotion) {
     return ' <span class="gv-promotion-pending" style="font-size:12px;color:var(--muted);margin-left:8px">Promotion requested — pending approval</span>';
   }
@@ -1880,6 +1887,7 @@ async function handleGetProductGuardrailsView(req, res, _next, pool) {
   var tenantId = req.session && req.session.tenantId;
   var login = req.session && req.session.login;
   var token = req.session && req.session.accessToken;
+  var isAdmin = !!(req.session && isEffectivelyAdmin(req.session));
 
   var prodRow = (await _pool.query(
     'SELECT name, tenant_id, repo_owner, repo_name FROM products WHERE product_id = $1',
@@ -1910,7 +1918,7 @@ async function handleGetProductGuardrailsView(req, res, _next, pool) {
   } else {
     var guardrailsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, '.github/architecture-guardrails.md', token);
     var standardsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, 'standards/', token);
-    productSectionHtml = _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pendingByPath, promotionByPath, csrfToken);
+    productSectionHtml = _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pendingByPath, promotionByPath, csrfToken, isAdmin);
   }
 
   var navSummary = await getProductsNavSummary(_pool, tenantId);
