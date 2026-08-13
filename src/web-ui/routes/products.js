@@ -1180,7 +1180,8 @@ async function _fetchGuardrailsSectionPiece(owner, repo, path, token) {
  * connected repo. Each piece renders independently so a failure in one
  * does not affect the other (AC4).
  */
-function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId) {
+function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pendingByPath) {
+  pendingByPath = pendingByPath || new Map();
   var guardrailsPath = '.github/architecture-guardrails.md';
   var guardrailsEditHref = '/products/' + encodeURIComponent(productId) + '/guardrails/form?path=' + encodeURIComponent(guardrailsPath);
   var guardrailsActionHtml = '<a href="' + guardrailsEditHref + '" style="font-size:13px;color:var(--accent)">' + (guardrailsPiece.status === 'ok' ? 'Edit' : 'Add') + '</a>';
@@ -1193,6 +1194,9 @@ function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId) {
   } else {
     guardrailsHtml = '<p class="gv-guardrails-error" style="color:var(--danger,#c0392b);font-size:14px">Could not load architecture-guardrails.md: ' + _escapeHtml(guardrailsPiece.errorMessage) + '</p>';
   }
+  if (pendingByPath.has(guardrailsPath)) {
+    guardrailsHtml += _renderPendingPrBadge(pendingByPath.get(guardrailsPath));
+  }
 
   var standardsHtml;
   if (standardsPiece.status === 'ok') {
@@ -1204,6 +1208,7 @@ function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId) {
           return '<li style="display:flex;align-items:center;justify-content:space-between;gap:12px">' +
             '<span>' + _escapeHtml(e.name) + '</span>' +
             '<a href="' + editHref + '" style="font-size:13px;color:var(--accent)">Edit</a>' +
+            (pendingByPath.has(e.path) ? _renderPendingPrBadge(pendingByPath.get(e.path)) : '') +
           '</li>';
         }).join('') + '</ul>';
   } else if (standardsPiece.status === 'empty') {
@@ -1429,6 +1434,41 @@ async function _trackPendingPr(pool, tenantId, productId, contentPath, prNumber,
 }
 
 /**
+ * wugs-s7 — resolves every tracked pending PR for a product: live-checks
+ * each one's status via checkPrStatus, clears (DELETEs) any that have
+ * merged or closed without merging (AC2/AC3), and returns a Map of
+ * path -> {prNumber, prUrl} for any still genuinely open (AC1). Handling
+ * all three states in one pass is what makes AC4 (multiple independent
+ * pending PRs) correct by construction — each row is resolved on its own.
+ * @returns {Promise<Map<string, {prNumber: number, prUrl: string}>>}
+ */
+async function _resolveAllPendingPrs(pool, owner, repo, token, tenantId, productId) {
+  var rows = (await pool.query(
+    'SELECT id, path, pr_number, pr_url FROM guardrail_pending_prs WHERE tenant_id = $1 AND product_id = $2',
+    [tenantId, productId]
+  )).rows;
+  var openByPath = new Map();
+  for (var i = 0; i < rows.length; i++) {
+    var row = rows[i];
+    var status = await _guardrailPrAdapter.checkPrStatus(token, owner, repo, row.pr_number);
+    if (status.state === 'open') {
+      openByPath.set(row.path, { prNumber: row.pr_number, prUrl: row.pr_url });
+    } else {
+      await pool.query('DELETE FROM guardrail_pending_prs WHERE id = $1', [row.id]);
+    }
+  }
+  return openByPath;
+}
+
+/**
+ * wugs-s7 — renders a text-based (not colour-only, MC-A11Y-02) pending
+ * review badge linking to the real PR.
+ */
+function _renderPendingPrBadge(prInfo) {
+  return ' <a href="' + _escapeHtml(prInfo.prUrl) + '" class="gv-pending-pr-badge" style="font-size:12px;color:var(--accent);margin-left:8px">Pending review — PR #' + prInfo.prNumber + '</a>';
+}
+
+/**
  * wugs-s2 — GET /products/:id/guardrails: live-read product-level
  * architecture guardrails + standards from the product's connected repo.
  */
@@ -1449,9 +1489,11 @@ async function handleGetProductGuardrailsView(req, res, _next, pool) {
     return;
   }
 
+  var pendingByPath = await _resolveAllPendingPrs(_pool, prodRow.repo_owner, prodRow.repo_name, token, tenantId, productId);
+
   var guardrailsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, '.github/architecture-guardrails.md', token);
   var standardsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, 'standards/', token);
-  var productSectionHtml = _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId);
+  var productSectionHtml = _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pendingByPath);
 
   var navSummary = await getProductsNavSummary(_pool, tenantId);
 

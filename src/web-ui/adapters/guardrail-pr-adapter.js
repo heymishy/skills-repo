@@ -138,11 +138,30 @@ async function realCreateGuardrailPr(token, owner, repo, targetPath, content, op
   return { prNumber: prData.number, prUrl: prData.html_url };
 }
 
+/**
+ * wugs-s7 — live-checks a single PR's status. Read-only; not a D37
+ * injectable adapter (the DoR's own H-ADAPTER row confirms none is needed
+ * here — this reuses _ghRequest's already-established fetch pattern
+ * directly, matching realCreateGuardrailPr's own style).
+ * @returns {Promise<{state: 'open'|'merged'|'closed'}>}
+ */
+async function checkPrStatus(token, owner, repo, prNumber) {
+  const apiBase = (process.env.GITHUB_API_BASE_URL || 'https://api.github.com').replace(/\/$/, '');
+  const res = await _ghRequest(token, apiBase, 'GET', `/repos/${owner}/${repo}/pulls/${prNumber}`);
+  if (!res.ok) {
+    throw new GuardrailPrError('PR status check failed', `Could not check PR status (${res.status})`);
+  }
+  const data = await res.json();
+  if (data.merged) { return { state: 'merged' }; }
+  return { state: data.state === 'open' ? 'open' : 'closed' };
+}
+
 module.exports = {
   createGuardrailPr,
   setGuardrailPrAdapter,
   getGuardrailPrAdapter,
   realCreateGuardrailPr,
+  checkPrStatus,
   GuardrailPrError,
   GuardrailPrConflictError
 };

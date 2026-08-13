@@ -94,6 +94,42 @@ check('wiring: server_js_tracksNewPrAfterSuccessfulWrite', () => {
   assert.ok(serverSrc.indexOf('_trackPendingPr') !== -1, 'expected server.js to call _trackPendingPr after a successful guardrail write');
 });
 
+// ── Shared test helper: mock a single GitHub PR-status response ─────────
+function mockPrStatusFetch(state, merged) {
+  return async function (url) {
+    return {
+      ok: true,
+      status: 200,
+      json: async function () { return { state: state, merged: !!merged, number: 42, html_url: 'https://github.com/acme/widgets/pull/42' }; }
+    };
+  };
+}
+
+// ── AC1: pending PR shows indicator + link ───────────────────────────────
+await checkAsync('AC1: handleGetGuardrailsView_pendingPr_showsIndicatorAndLink', async () => {
+  var deletedIds = [];
+  var pool = makeMockPool([
+    { id: 'row-1', tenant_id: 't1', product_id: 'p1', path: '.github/architecture-guardrails.md', pr_number: 42, pr_url: 'https://github.com/acme/widgets/pull/42' }
+  ], deletedIds);
+  var originalFetch = global.fetch;
+  global.fetch = mockPrStatusFetch('open', false);
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    var artefactFetcher = require('../src/web-ui/adapters/artefact-fetcher');
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    try {
+      var req = mockReq();
+      var res = mockRes();
+      await products.handleGetProductGuardrailsView(req, res, null, pool);
+      var result = res._get();
+      assert.strictEqual(result.statusCode, 200);
+      assert.ok(/Pending review/i.test(result.body), 'expected a "Pending review" text indicator');
+      assert.ok(result.body.indexOf('https://github.com/acme/widgets/pull/42') !== -1, 'expected a real link to the PR URL');
+      assert.strictEqual(deletedIds.length, 0, 'an open PR must not clear its tracking row');
+    } finally { global.fetch = originalFetch; }
+  });
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
