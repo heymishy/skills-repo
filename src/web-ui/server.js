@@ -73,7 +73,7 @@ const { createSettingsHandlers } = require('./routes/settings'); // c1
 const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
 const { adminCreditsGet, adminCreditsPost, adminSetPlanPost }        = require('./routes/admin-credits');     // arl-s3 / tpac-s1
 const { adminMockGatewayGet, adminMockGatewayPost }                  = require('./routes/admin-mock-gateway'); // amgt-s1
-const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handleGetProductStandardsTab, handleGetProductGuardrailsView, handleGetGuardrailsForm, handlePostGuardrailsForm, handlePostOrgRepoSettings, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1 / smug-s1 / wugs-s2 / wugs-s5 / wugs-s6 / wugs-s3
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handleGetProductStandardsTab, handleGetProductGuardrailsView, handleGetGuardrailsForm, handlePostGuardrailsForm, _trackPendingPr, handlePostOrgRepoSettings, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1 / smug-s1 / wugs-s2 / wugs-s5 / wugs-s6 / wugs-s3 / wugs-s7
 const { setModulesAdapter } = require('./adapters/modules-adapter'); // a1
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
@@ -847,6 +847,25 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.log('[psh-s9] standard_product_optouts table ready');
     }).catch(function(err) {
       console.error('[psh-s9] standard_product_optouts migration failed:', err.message);
+    });
+
+    // wugs-s7: guardrail_pending_prs table — tracks PRs opened by wugs-s6's
+    // write adapter so their live status can be surfaced on each view render.
+    // product_id nullable (NULL = org-level entry, matching wugs-s3's
+    // target.productId=null convention); no FK, same tenant-scoped pattern
+    // as tenant_org_repo.
+    _creditsPool.query(`CREATE TABLE IF NOT EXISTS guardrail_pending_prs (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      tenant_id VARCHAR NOT NULL,
+      product_id UUID,
+      path VARCHAR NOT NULL,
+      pr_number INTEGER NOT NULL,
+      pr_url VARCHAR NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    )`).then(function() {
+      console.log('[wugs-s7] guardrail_pending_prs table ready');
+    }).catch(function(err) {
+      console.error('[wugs-s7] guardrail_pending_prs migration failed:', err.message);
     });
 
     // pr-s2: cache table for the computed product rollup (DoD-status counts
@@ -3118,10 +3137,19 @@ async function router(req, res) {
           'SELECT repo_owner, repo_name FROM products WHERE product_id = $1',
           [target.productId]
         )).rows[0];
-        return createGuardrailPr(req.session.accessToken, prodRow.repo_owner, prodRow.repo_name, target.path, content, {
+        const writeResult = await createGuardrailPr(req.session.accessToken, prodRow.repo_owner, prodRow.repo_name, target.path, content, {
           tenantId: req.session.tenantId,
           productId: target.productId
         });
+        try {
+          await _trackPendingPr(_pshPool, req.session.tenantId, target.productId, target.path, writeResult.prNumber, writeResult.prUrl); // wugs-s7
+        } catch (trackErr) {
+          // A failure here means the GitHub PR was already opened successfully;
+          // swallow so it never surfaces as a failed PR creation to the user
+          // (which could prompt a retry and a duplicate PR on GitHub).
+          console.error('Failed to record pending-PR tracking row (PR was still created successfully):', trackErr);
+        }
+        return writeResult;
       };
       await handlePostGuardrailsForm(req, res, null, _pshPool, writeAdapterForRequest);
     });
