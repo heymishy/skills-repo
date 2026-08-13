@@ -22675,12 +22675,12 @@
           "id": "wugs-s10",
           "slug": "wugs-s10-audit-log-promotion-events",
           "name": "Audit-log promotion request/approval/rejection events",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s10-audit-log-promotion-events.md",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "notes": "Epic 3 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-13T09:01:23.739Z",
+          "updatedAt": "2026-08-13T09:10:46.796Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
@@ -22697,7 +22697,29 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s10-dor.md",
           "dorContractArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s10-dor-contract.md",
-          "dorSignedOffAt": "2026-08-11T08:38:42.453Z"
+          "dorSignedOffAt": "2026-08-11T08:38:42.453Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "guardrail_promotion_requested audit event, fail-open (AC1/AC4)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s10-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "guardrail_promotion_approved audit event, fail-open (AC2/AC4)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s10-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "guardrail_promotion_rejected audit event, fail-open (AC3/AC4) + NFR-SEC lock-in",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s10-plan.md"
+            }
+          ],
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dod/wugs-s10-dod.md"
         },
         {
           "id": "wugs-s11",
