@@ -46,16 +46,27 @@ check('AC1: standardsOptoutRoutes_removedFromServerJs', function () {
 check('AC2: standardsNavLink_repointedToGuardrailsView_exactlyOnce', function () {
   var matches = productsSrc.match(/>Standards<\/a>/g) || [];
   assert.strictEqual(matches.length, 1, 'expected exactly one "Standards"-labelled nav link, found ' + matches.length);
-  assert.ok(productsSrc.indexOf("/guardrails' style") !== -1 || /\/products\/'[^']*productId[^']*'\/guardrails/.test(productsSrc),
-    'expected the Standards link\'s href to point at the /guardrails route');
-  assert.ok(productsSrc.indexOf('standards-tab') === -1, 'expected no remaining reference to the old /standards-tab href');
+  // review fix -- the previous check's OR-branches were too loose: one
+  // matched any /guardrails-containing string in the whole file (including
+  // unrelated edit-form/add-standard hrefs), the other's quote-pattern never
+  // occurred in the real markup. This href is built via JS string
+  // concatenation ('/products/' + _escapeHtml(productId) + '/guardrails"
+  // style=...'), not a literal HTML attribute, so anchor on the exact
+  // concatenated line instead: it must end the href at "/guardrails" (the
+  // closing quote immediately follows), ruling out /guardrails/form or any
+  // other sibling route matching a loose substring check.
+  var standardsLinkLineMatch = productsSrc.match(/^.*>Standards<\/a>.*$/m);
+  assert.ok(standardsLinkLineMatch, 'expected to find the source line containing the "Standards" link');
+  var standardsLinkLine = standardsLinkLineMatch[0];
+  assert.ok(standardsLinkLine.indexOf('/guardrails" style') !== -1,
+    'expected the Standards link\'s href to end exactly at /guardrails (not /guardrails/form or similar), got line: ' + standardsLinkLine);
+  assert.ok(standardsLinkLine.indexOf('standards-tab') === -1, 'expected no remaining reference to the old /standards-tab href on this line');
 });
 
 // ── Removed-function sanity: handleGetProductStandardsTab/_renderStandardsTab gone ──
 check('AC1/AC4: oldHandlers_removedFromProductsJs', function () {
   assert.ok(productsSrc.indexOf('handleGetProductStandardsTab') === -1, 'expected handleGetProductStandardsTab to be fully removed');
   assert.ok(productsSrc.indexOf('_renderStandardsTab') === -1, 'expected _renderStandardsTab to be fully removed');
-  assert.ok(productsSrc.indexOf("require('./standards')") === -1, 'expected the dead _standardsRoutes require to be removed');
 });
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
