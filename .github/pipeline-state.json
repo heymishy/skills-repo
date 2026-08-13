@@ -22476,14 +22476,14 @@
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s7-surface-pr-state-in-view.md",
           "prStatus": "none",
           "notes": "Epic 2 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-12T22:00:54.477Z",
+          "updatedAt": "2026-08-13T00:19:12.070Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
           "testPlan": {
             "status": "written",
-            "totalTests": 2,
-            "passing": 2,
+            "totalTests": 4,
+            "passing": 4,
             "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s7-surface-pr-state-in-view-test-plan.md"
           },
           "acTotal": 4,
@@ -22504,7 +22504,7 @@
             {
               "id": "task-2",
               "name": "Live PR-status resolution + pending indicator (AC1)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s7-plan.md"
             },
             {
