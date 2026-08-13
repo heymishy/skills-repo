@@ -22568,18 +22568,18 @@
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s8-request-promotion.md",
           "prStatus": "none",
           "notes": "Epic 3 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-13T05:02:52.003Z",
+          "updatedAt": "2026-08-13T05:21:05.494Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
           "testPlan": {
             "status": "written",
-            "totalTests": 5,
-            "passing": 5,
+            "totalTests": 7,
+            "passing": 7,
             "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s8-request-promotion-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
@@ -22608,7 +22608,7 @@
             {
               "id": "task-4",
               "name": "Pending-approval indicator in the view + wire real route (AC3)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s8-plan.md"
             }
           ]
