@@ -58,7 +58,14 @@ check('AC1: standardsAdapterPostgresWiring_removedFromServerJs', function () {
 // ── AC1: repo-wide grep, the REAL complete removal list ────────────────────
 check('AC1: noReferencesToRemovedTables_inSrcOrScripts', function () {
   var { execSync } = require('child_process');
-  var pattern = 'FROM standards\\b|INTO standards\\b|UPDATE standards\\b|CREATE TABLE.*\\bstandards\\b(?!.*wugs-s12)|FROM standard_product_optouts|INTO standard_product_optouts';
+  // review fix -- the trailing (?!.*wugs-s12) negative lookahead was dead:
+  // POSIX ERE (grep -E) does not support lookahead at all, so that
+  // alternative silently never matched anything, in every case, not just
+  // the tagged-exclusion case it looked like it was allowing. There is no
+  // legitimate reason to allow ANY CREATE TABLE mentioning standards in
+  // src/ or scripts/ regardless of comment tagging, so the exclusion was
+  // never actually needed -- removed rather than reimplemented.
+  var pattern = 'FROM standards\\b|INTO standards\\b|UPDATE standards\\b|UPDATE standard_product_optouts\\b|CREATE TABLE.*\\bstandards\\b|FROM standard_product_optouts|INTO standard_product_optouts';
   var raw;
   try {
     raw = execSync('grep -rn -E "' + pattern + '" src/ scripts/', { cwd: require('path').join(__dirname, '..'), encoding: 'utf8' });
