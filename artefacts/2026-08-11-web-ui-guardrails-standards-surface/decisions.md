@@ -237,6 +237,15 @@
 **Revisit trigger:** If a 4th removal-framed story (in this feature or a future one) recurs with the same undercounting pattern after the `implementation-plan` proposal is accepted and merged, that would indicate the proposed fix (mandatory exhaustive grep sweep) did not fully close the gap and needs a follow-up. If `wugs-s2`'s AbortController follow-up or `wugs-s6`'s manual sandbox-verification gap remain open past the next feature's own kickoff, escalate beyond a DoD-level RISK-ACCEPT.
 ---
 
+---
+**[2026-08-14] | RISK-ACCEPT | branch-setup (wugs-s13)**
+**Decision:** Proceeding with `wugs-s13`'s worktree despite 33 pre-existing test failures at baseline (514 files run via `npm test`, 33 failed, exit code 0).
+**Alternatives considered:** Investigate and fix pre-existing failures first — rejected, out of scope for this follow-up story and would delay resolving `/trace`'s own HIGH finding.
+**Rationale:** The 33 failing files match the exact same list documented in every prior story's own branch-setup RISK-ACCEPT entry in this file — same baseline-drift pattern already documented throughout this feature. None overlap with `wugs-s13`'s expected touchpoints (`_renderPromotionAction`, `handleGetProductGuardrailsView`, `_renderGuardrailsSection` in `products.js`).
+**Made by:** Claude (agent), per branch-setup's own Step 5 option 2 protocol
+**Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this story's changes during implementation, stop and investigate.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded — all four decisions from this discovery/clarify session were logged as entries above, not full ADRs, per the operator's confirmation that none warranted ADR-level depth. -->
