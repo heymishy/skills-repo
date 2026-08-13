@@ -228,6 +228,54 @@ await checkAsync('AC4: resolveRequest_noOrgRepo_blockedWithClearError', async ()
   assert.ok(!claimUpdate, 'expected the request to remain untouched -- no wasted atomic claim on a doomed approval');
 });
 
+// ── AC5: concurrent resolution -- only the first call wins ──────────────
+await checkAsync('AC5: resolveRequest_concurrentCalls_onlyFirstUpdateSucceeds', async () => {
+  var calls = [];
+  var claimCallCount = 0;
+  var pool = {
+    query: async function (sql, params) {
+      var s = String(sql);
+      calls.push({ sql: s, params: params });
+      if (/SELECT repo_owner, repo_name FROM tenant_org_repo WHERE tenant_id/i.test(s)) {
+        return { rows: [{ repo_owner: 'org-co', repo_name: 'org-repo' }] };
+      }
+      if (/UPDATE guardrail_promotion_requests SET status = \$1, resolved_by = \$2, resolved_at = NOW\(\) WHERE request_id = \$3 AND tenant_id = \$4 AND status = \$5/i.test(s)) {
+        claimCallCount++;
+        // Simulate real Postgres behaviour: only the FIRST conditional
+        // UPDATE actually finds a row still in 'pending' -- the second
+        // one (fired after the first already flipped the status) matches
+        // zero rows, exactly as a real DB would return under this race.
+        return claimCallCount === 1
+          ? { rows: [{ request_id: 'req-1', product_id: 'p1', file_path: 'standards/saas-gui.md', content_snapshot: 'X' }] }
+          : { rows: [] };
+      }
+      if (/UPDATE guardrail_promotion_requests SET pr_number = \$1 WHERE request_id = \$2/i.test(s)) { return { rows: [] }; }
+      return { rows: [] };
+    }
+  };
+  var writeAdapterCallCount = 0;
+  await withMockedWriteAdapter(async function () { writeAdapterCallCount++; return { prNumber: 42, prUrl: 'https://github.com/org-co/org-repo/pull/42' }; }, async function () {
+    var req1 = mockReq();
+    var res1 = mockRes();
+    var req2 = mockReq({ session: { accessToken: 'tok', tenantId: 't1', login: 'admin-carol', role: 'admin', csrfToken: 'ct1' } });
+    var res2 = mockRes();
+    await products.handlePostApprovePromotion(req1, res1, null, pool);
+    await products.handlePostApprovePromotion(req2, res2, null, pool);
+    assert.strictEqual(res1._get().statusCode, 200, 'expected the first call to succeed');
+    assert.strictEqual(res2._get().statusCode, 409, 'expected the second call to get "already resolved", not a duplicate success');
+    assert.strictEqual(writeAdapterCallCount, 1, 'expected the write adapter to be invoked exactly ONCE, not twice -- no duplicate PR');
+  });
+});
+
+// ── Wiring: both admin routes are registered in server.js ───────────────
+check('wiring: server_js_routes_adminPromotionsApproveReject_to_handlers', () => {
+  var fs = require('fs');
+  var serverSrc = fs.readFileSync(require.resolve('../src/web-ui/server.js'), 'utf8');
+  assert.ok(serverSrc.indexOf('/api/admin/promotions') !== -1, 'expected server.js to route /api/admin/promotions/:requestId/approve|reject');
+  assert.ok(serverSrc.indexOf('handlePostApprovePromotion') !== -1, 'expected server.js to reference handlePostApprovePromotion');
+  assert.ok(serverSrc.indexOf('handlePostRejectPromotion') !== -1, 'expected server.js to reference handlePostRejectPromotion');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 

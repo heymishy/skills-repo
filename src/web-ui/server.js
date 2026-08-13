@@ -73,7 +73,7 @@ const { createSettingsHandlers } = require('./routes/settings'); // c1
 const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
 const { adminCreditsGet, adminCreditsPost, adminSetPlanPost }        = require('./routes/admin-credits');     // arl-s3 / tpac-s1
 const { adminMockGatewayGet, adminMockGatewayPost }                  = require('./routes/admin-mock-gateway'); // amgt-s1
-const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handleGetProductStandardsTab, handleGetProductGuardrailsView, handleGetGuardrailsForm, handlePostGuardrailsForm, _trackPendingPr, handlePostRequestPromotion, handlePostOrgRepoSettings, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1 / smug-s1 / wugs-s2 / wugs-s5 / wugs-s6 / wugs-s3 / wugs-s7
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handleGetProductStandardsTab, handleGetProductGuardrailsView, handleGetGuardrailsForm, handlePostGuardrailsForm, _trackPendingPr, handlePostRequestPromotion, handlePostOrgRepoSettings, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules, handlePostApprovePromotion, handlePostRejectPromotion } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1 / smug-s1 / wugs-s2 / wugs-s5 / wugs-s6 / wugs-s3 / wugs-s7 / wugs-s9
 const { setModulesAdapter } = require('./adapters/modules-adapter'); // a1
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
@@ -3189,6 +3189,22 @@ async function router(req, res) {
     // wugs-s8 -- POST /products/:id/guardrails/promote: request a product-level guardrail/standard be promoted to org level.
     req.params = { id: pathname.split('/')[2] };
     authGuard(req, res, async () => { await handlePostRequestPromotion(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/api\/admin\/promotions\/[^/]+\/approve$/) && req.method === 'POST') {
+    // wugs-s9 -- POST /api/admin/promotions/:requestId/approve. Role gate
+    // is performed INSIDE the handler (isEffectivelyAdmin, matching
+    // credits-guard.js's own pattern) per this story's explicit DoR choice
+    // -- not the requireAdmin middleware used by other /api/admin/* routes
+    // in this file, so only the base session-presence gate (authGuard) is
+    // applied here, same as wugs-s8's promote route immediately above.
+    req.params = { requestId: pathname.split('/')[4] };
+    authGuard(req, res, async () => { await handlePostApprovePromotion(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/api\/admin\/promotions\/[^/]+\/reject$/) && req.method === 'POST') {
+    // wugs-s9 -- POST /api/admin/promotions/:requestId/reject. Same gating
+    // rationale as the approve route immediately above.
+    req.params = { requestId: pathname.split('/')[4] };
+    authGuard(req, res, async () => { await handlePostRejectPromotion(req, res, null, _pshPool); });
 
   } else if (pathname === '/settings/org-repo' && req.method === 'POST') {
     // wugs-s3 -- tenant-level org-repo designation + first-time seeding.
