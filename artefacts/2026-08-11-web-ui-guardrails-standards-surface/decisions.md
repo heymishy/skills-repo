@@ -210,6 +210,24 @@
 **Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this feature's changes during implementation, stop and investigate.
 ---
 
+---
+**[2026-08-13] | RISK-ACCEPT | branch-setup (wugs-s12)**
+**Decision:** Proceeding with `wugs-s12`'s worktree despite 33 pre-existing test failures at baseline (513 files run via `npm test`, 33 failed, exit code 0).
+**Alternatives considered:** Investigate and fix pre-existing failures first — rejected, out of scope for this feature and would delay the whole inner loop for unrelated pre-existing repo drift.
+**Rationale:** The 33 failing files match the exact same list documented in every prior story's own branch-setup RISK-ACCEPT entry above — same baseline-drift pattern already documented for every prior story this session. None overlap with `wugs-s12`'s expected touchpoints (dropping the `standards`/`standard_product_optouts` tables). This worktree branched from master after `wugs-s11` merged.
+**Made by:** Claude (agent), per branch-setup's own Step 5 option 2 protocol
+**Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this feature's changes during implementation, stop and investigate.
+---
+
+---
+**[2026-08-13] | SCOPE-EXPANSION | implementation-plan (wugs-s12)**
+**Decision:** Expanding `wugs-s12`'s implementation scope beyond the 1 cross-reference (`handleDeleteProduct`) its own AC2/Architecture Constraints text names, to include 2 additional real code paths confirmed via a pre-implementation exhaustive whole-repo grep sweep (a discipline this feature's own `wugs-s11` DoD explicitly recommended for removal stories, given `wugs-s11` found a similar undercounting pattern).
+**Alternatives considered:** (1) Implement only the story's literal AC2 text (`handleDeleteProduct` only) and file follow-up tickets for the rest — rejected, since AC1's own plain wording ("no route, **handler**, or test still queries them") and AC3's requirement to actually `DROP TABLE` already make the narrower scope unsafe: dropping the tables while `scripts/cleanup-e2e-staging-data.js`'s `deleteProduct` still issues `DELETE FROM standards`/`standard_product_optouts` would break that script's every future run, and leaving `server.js`'s `setStandardsAdapter` real-Postgres wiring in place would mean live (if currently unreachable) SQL text referencing a dropped table. (2) Stop and ask the operator before proceeding — considered given the blast radius (one of the two additional findings touches a different epic's script, `b3-staging-test-data-cleanup`), but the ACs' own plain-language intent already covers this scope without requiring a scope-boundary decision, consistent with how `wugs-s9`'s AC3 gap and `wugs-s11`'s full removal-scope correction were both handled by proceeding with documentation rather than pausing.
+**Rationale:** Grep sweep (`grep -rn -E "FROM standards|INTO standards|CREATE TABLE.*standards|FROM standard_product_optouts" src/ scripts/`) found 3 real SQL-issuing code paths, not 1: `handleDeleteProduct` (products.js, named by the story), `scripts/cleanup-e2e-staging-data.js`'s `deleteProduct` (NOT named — a near-identical mirror of the same 2 DELETE lines, from story `b3-staging-test-data-cleanup`, epic `2026-07-23-e2e-core-journey-coverage`), and `server.js`'s `setStandardsAdapter` real-Postgres wiring (NOT named — `psh-s10`'s standards-injection-into-skill-prompts feature). The third was confirmed, via a repo-wide search for its only real call site (`buildSystemPromptWithProductContext` in `skills.js`), to have zero production callers anywhere — its own dedicated tests (`check-psh-s5-context-injection.js`, `check-psh-s10-standards-injection.js`) both wire mocked adapters, never touching real Postgres — so removing this wiring breaks nothing currently reachable and correctly reverts the D37 adapter to its mandated throwing stub.
+**Made by:** Claude (agent), per this feature's own established "read the real code, document deviations, proceed" discipline (source: `wugs-s9`/`wugs-s11` decisions.md entries and DoD Observations)
+**Revisit trigger:** If `psh-s10`'s standards-injection feature is ever revived with a real production caller in the future, its adapter wiring will need to be re-added against a real (different) data source, since `standards`/`standard_product_optouts` will no longer exist.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded — all four decisions from this discovery/clarify session were logged as entries above, not full ADRs, per the operator's confirmation that none warranted ADR-level depth. -->
