@@ -165,6 +165,15 @@
 **Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this feature's changes during implementation, stop and investigate.
 ---
 
+---
+**[2026-08-13] | RISK-ACCEPT | branch-setup (wugs-s4)**
+**Decision:** Proceeding with `wugs-s4`'s worktree despite 33 pre-existing test failures at baseline (512 files run via `npm test`, 33 failed, exit code 0).
+**Alternatives considered:** Investigate and fix pre-existing failures first — rejected, out of scope for this feature and would delay the whole inner loop for unrelated pre-existing repo drift.
+**Rationale:** The 33 failing files (`check-bee3-posthog.js`, `check-mfc1/mfc2-*.js`, `check-ougl*.js`, `check-inc2.1/inc4-*.js`, etc.) do not overlap with `wugs-s4`'s expected touchpoints. Same baseline-drift pattern already documented for `wugs-s1`/`wugs-s2`/`wugs-s5`/`wugs-s6`/`wugs-s3`/`wugs-s7`. This worktree branched from master after both `wugs-s3` and `wugs-s7` merged, so it includes their combined changes.
+**Made by:** Claude (agent), per branch-setup's own Step 5 option 2 protocol
+**Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this feature's changes during implementation, stop and investigate.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded — all four decisions from this discovery/clarify session were logged as entries above, not full ADRs, per the operator's confirmation that none warranted ADR-level depth. -->
