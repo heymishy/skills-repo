@@ -65,6 +65,12 @@ function makeMockPool(state) {
   };
 }
 
+async function withMockedWriteAdapter(mockFn, testFn) {
+  var original = guardrailPrAdapter.getGuardrailPrAdapter();
+  guardrailPrAdapter.setGuardrailPrAdapter(mockFn);
+  try { await testFn(); } finally { guardrailPrAdapter.setGuardrailPrAdapter(original); }
+}
+
 (async () => {
 
 // ── AC1: request creation fires guardrail_promotion_requested ───────────
@@ -105,6 +111,63 @@ await checkAsync('AC4: requestPromotion_captureThrows_stillCreatesRequest', asyn
   } finally {
     artefactFetcher.fetchRepoPath = originalFetch;
   }
+});
+
+// ── AC2: approval fires guardrail_promotion_approved ─────────────────────
+await checkAsync('AC2: approveRequest_fires_guardrailPromotionApproved', async () => {
+  var captured = null;
+  var ph = mockPosthog(function (distinctId, event, properties) {
+    captured = { distinctId: distinctId, event: event, properties: properties };
+  });
+  var calls = [];
+  var pool = {
+    query: async function (sql, params) {
+      var s = String(sql);
+      calls.push({ sql: s, params: params });
+      if (/SELECT repo_owner, repo_name FROM tenant_org_repo WHERE tenant_id/i.test(s)) {
+        return { rows: [{ repo_owner: 'org-co', repo_name: 'org-repo' }] };
+      }
+      if (/UPDATE guardrail_promotion_requests SET status = \$1, resolved_by = \$2, resolved_at = NOW\(\)/i.test(s)) {
+        return { rows: [{ request_id: 'req-1', product_id: 'p1', file_path: 'standards/saas-gui.md', content_snapshot: 'X' }] };
+      }
+      return { rows: [] };
+    }
+  };
+  await withMockedWriteAdapter(async function () { return { prNumber: 55, prUrl: 'https://github.com/org-co/org-repo/pull/55' }; }, async function () {
+    var req = mockReq();
+    var res = mockRes();
+    await products.handlePostApprovePromotion(req, res, null, pool, ph);
+    assert.strictEqual(res._get().statusCode, 200);
+    assert.ok(captured, 'expected .capture() to be called');
+    assert.strictEqual(captured.event, 'guardrail_promotion_approved');
+    assert.strictEqual(captured.properties.tenantId, 't1');
+    assert.strictEqual(captured.properties.requestId, 'req-1');
+    assert.strictEqual(captured.properties.approvedBy, 'admin-alice');
+    assert.strictEqual(captured.properties.prNumber, 55);
+  });
+});
+
+// ── AC4 (approve path): capture failure doesn't block approval ──────────
+await checkAsync('AC4: approveRequest_captureThrows_stillApproves', async () => {
+  var ph = mockPosthog(function () { throw new Error('simulated PostHog failure'); });
+  var pool = {
+    query: async function (sql) {
+      var s = String(sql);
+      if (/SELECT repo_owner, repo_name FROM tenant_org_repo WHERE tenant_id/i.test(s)) {
+        return { rows: [{ repo_owner: 'org-co', repo_name: 'org-repo' }] };
+      }
+      if (/UPDATE guardrail_promotion_requests SET status = \$1, resolved_by = \$2, resolved_at = NOW\(\)/i.test(s)) {
+        return { rows: [{ request_id: 'req-2', product_id: 'p1', file_path: 'standards/saas-gui.md', content_snapshot: 'X' }] };
+      }
+      return { rows: [] };
+    }
+  };
+  await withMockedWriteAdapter(async function () { return { prNumber: 56, prUrl: 'x' }; }, async function () {
+    var req = mockReq();
+    var res = mockRes();
+    await products.handlePostApprovePromotion(req, res, null, pool, ph);
+    assert.strictEqual(res._get().statusCode, 200, 'expected approval to still succeed despite the capture failure');
+  });
 });
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');

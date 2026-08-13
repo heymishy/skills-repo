@@ -1794,7 +1794,7 @@ async function _resolvePromotionRequest(pool, tenantId, requestId, newStatus, re
  * successful claim, reverts status back to 'pending' so the admin has a
  * real retry path (see plan's design note -- a decision, not an AC).
  */
-async function handlePostApprovePromotion(req, res, _next, pool) {
+async function handlePostApprovePromotion(req, res, _next, pool, posthog) {
   // review fix -- CSRF guard first, matching every other mutating POST
   // handler in this file (handlePostRequestPromotion, handlePostOrgRepoSettings).
   var csrfOk = await _csrf.csrfGuard(req, res);
@@ -1831,6 +1831,19 @@ async function handlePostApprovePromotion(req, res, _next, pool) {
       productId: claimed.product_id
     });
     await pool.query('UPDATE guardrail_promotion_requests SET pr_number = $1 WHERE request_id = $2', [writeResult.prNumber, requestId]);
+
+    // wugs-s10 -- fail-open audit capture (AC2/AC4): a PostHog failure must
+    // never block or roll back the approval that just succeeded.
+    var _ph = posthog || _posthog;
+    try {
+      _ph.capture(tenantId, 'guardrail_promotion_approved', {
+        tenantId: tenantId,
+        requestId: requestId,
+        approvedBy: login,
+        prNumber: writeResult.prNumber
+      });
+    } catch (_) { /* fail-open, per AC4 */ }
+
     if (res.status) { res.status(200).json({ ok: true, prNumber: writeResult.prNumber, prUrl: writeResult.prUrl }); }
     else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, prNumber: writeResult.prNumber, prUrl: writeResult.prUrl })); }
   } catch (writeErr) {
