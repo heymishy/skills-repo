@@ -22781,12 +22781,12 @@
           "id": "wugs-s12",
           "slug": "wugs-s12-remove-db-tables",
           "name": "Remove the standards/standard_product_optouts DB tables and their references",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s12-remove-db-tables.md",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "notes": "Epic 4 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-13T18:45:12.097Z",
+          "updatedAt": "2026-08-13T19:18:59.708Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
@@ -22803,7 +22803,35 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s12-dor.md",
           "dorContractArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s12-dor-contract.md",
-          "dorSignedOffAt": "2026-08-11T08:38:42.453Z"
+          "dorSignedOffAt": "2026-08-11T08:38:42.453Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "AC2 -- remove handleDeleteProduct's two DELETE lines, TDD-first per the DoR's own instruction",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s12-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Remove cleanup-e2e-staging-data.js's mirrored DELETE lines + its own dedicated test's expectations",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s12-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Remove dead setStandardsAdapter Postgres wiring + fake-test-db.js's dead simulation + check-psh-s1-schema.js's surgical edit",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s12-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "AC1/AC4 lock-in test + final regression",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s12-plan.md"
+            }
+          ],
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dod/wugs-s12-dod.md"
         }
       ],
       "slicingStrategy": "walking-skeleton",
