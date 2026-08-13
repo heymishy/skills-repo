@@ -142,6 +142,27 @@ await checkAsync('AC2: handleGetGuardrailsView_noConnectedRepo_orgSectionStillRe
   });
 });
 
+// ── AC3: prompt links to the real, existing connection flow ─────────────
+await checkAsync('AC3: handleGetGuardrailsView_connectPrompt_linksToRealConnectionFlow', async () => {
+  var pool = makeMockPool({ hasRepo: false });
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    var req = mockReq();
+    var res = mockRes();
+    await products.handleGetProductGuardrailsView(req, res, null, pool);
+    var result = res._get();
+    assert.ok(result.body.indexOf('href="/products/p1"') !== -1, 'expected the prompt to link to the real product view page (GET /products/:id), where the existing rpc-s1/prc-s2.1 connect-repo form lives — not a new route');
+  });
+});
+
+// ── Wiring: the real connection route (prc-s1.2) still exists ───────────
+check('wiring: server_js_still_routes_postProductsIdRepo_to_handlePostConnectRepo', () => {
+  var fs = require('fs');
+  var serverSrc = fs.readFileSync(require.resolve('../src/web-ui/server.js'), 'utf8');
+  assert.ok(serverSrc.indexOf('handlePostConnectRepo') !== -1, 'expected server.js to still reference the existing handlePostConnectRepo — confirms this story reused it rather than replacing it');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
