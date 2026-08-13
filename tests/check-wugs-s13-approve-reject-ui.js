@@ -96,6 +96,62 @@ await checkAsyncOrSync('AC2: nonAdminSession_pendingRequest_rendersStaticTextUnc
   assert.ok(body.indexOf('req-2') === -1, 'expected the requestId to NOT be embedded in non-admin-visible markup (only needed for the admin buttons)');
 });
 
+// ── AC3/AC4/AC5: client-side handler wiring ──────────────────────────────
+await checkAsyncOrSync('AC3: approveHandler_source_callsRealEndpointWithCsrfAndUpdatesRow', async () => {
+  var pool = makeMockPool({
+    prodRow: { name: 'P', tenant_id: 't1', repo_owner: 'org', repo_name: 'repo' },
+    pendingRequests: [{ request_id: 'req-3', file_path: '.github/architecture-guardrails.md', status: 'pending' }]
+  });
+  var req = mockReq();
+  var res = mockRes();
+  await products.handleGetProductGuardrailsView(req, res, null, pool);
+  var body = res._get().body;
+  assert.ok(/function wugsApprove/.test(body), 'expected a wugsApprove client-side handler function in the rendered page');
+  var fnMatch = body.match(/function wugsApprove[\s\S]*?\n\s*\}/);
+  assert.ok(fnMatch, 'expected to extract wugsApprove function source');
+  var fnSrc = fnMatch[0];
+  assert.ok(/\.disabled\s*=\s*true/.test(fnSrc), 'expected the button to be disabled on click');
+  assert.ok(/fetch\(/.test(fnSrc) && /\/api\/admin\/promotions\//.test(fnSrc) && /approve/.test(fnSrc), 'expected a fetch call to the real approve endpoint');
+  assert.ok(/_csrf/.test(fnSrc), 'expected the CSRF token to be included in the request');
+  assert.ok(/method:\s*["']POST["']/.test(fnSrc), 'expected a POST request');
+});
+
+await checkAsyncOrSync('AC4: rejectHandler_source_callsRealEndpointWithCsrfAndUpdatesRow', async () => {
+  var pool = makeMockPool({
+    prodRow: { name: 'P', tenant_id: 't1', repo_owner: 'org', repo_name: 'repo' },
+    pendingRequests: [{ request_id: 'req-4', file_path: '.github/architecture-guardrails.md', status: 'pending' }]
+  });
+  var req = mockReq();
+  var res = mockRes();
+  await products.handleGetProductGuardrailsView(req, res, null, pool);
+  var body = res._get().body;
+  assert.ok(/function wugsReject/.test(body), 'expected a wugsReject client-side handler function in the rendered page');
+  var fnMatch = body.match(/function wugsReject[\s\S]*?\n\s*\}/);
+  assert.ok(fnMatch, 'expected to extract wugsReject function source');
+  var fnSrc = fnMatch[0];
+  assert.ok(/\.disabled\s*=\s*true/.test(fnSrc), 'expected the button to be disabled on click');
+  assert.ok(/fetch\(/.test(fnSrc) && /\/api\/admin\/promotions\//.test(fnSrc) && /reject/.test(fnSrc), 'expected a fetch call to the real reject endpoint');
+  assert.ok(/_csrf/.test(fnSrc), 'expected the CSRF token to be included in the request');
+});
+
+await checkAsyncOrSync('AC5: approveAndRejectHandlers_failurePath_reEnableButtonAndShowError', async () => {
+  var pool = makeMockPool({
+    prodRow: { name: 'P', tenant_id: 't1', repo_owner: 'org', repo_name: 'repo' },
+    pendingRequests: [{ request_id: 'req-5', file_path: '.github/architecture-guardrails.md', status: 'pending' }]
+  });
+  var req = mockReq();
+  var res = mockRes();
+  await products.handleGetProductGuardrailsView(req, res, null, pool);
+  var body = res._get().body;
+  ['wugsApprove', 'wugsReject'].forEach(function (fnName) {
+    var fnMatch = body.match(new RegExp('function ' + fnName + '[\\s\\S]*?catch[\\s\\S]*?\\}\\s*\\)'));
+    assert.ok(fnMatch, 'expected to find ' + fnName + '\'s own catch/failure branch');
+    var fnSrc = fnMatch[0];
+    assert.ok(/\.disabled\s*=\s*false/.test(fnSrc), fnName + ': expected the button to re-enable on failure');
+    assert.ok(/alert\(/.test(fnSrc), fnName + ': expected a clear error to be surfaced on failure');
+  });
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 

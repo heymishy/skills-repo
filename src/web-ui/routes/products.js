@@ -1878,6 +1878,49 @@ function _renderPendingPrBadge(prInfo) {
 }
 
 /**
+ * wugs-s13 — client-side handlers for the real Approve/Reject buttons
+ * rendered by `_renderPromotionAction`'s admin branch. Emitted once per
+ * page (inline `<script>` block in the guardrails view's own HTML shell),
+ * not per-row — matching the pattern the removed `smug-s1` Standards tab's
+ * `ssPromote`/`ssOptOut` functions used. Each handler disables its own
+ * button on click, calls the real `wugs-s9` endpoint with the CSRF token
+ * in the JSON body, updates the row's own DOM on success, and re-enables
+ * the button with an alert on failure.
+ */
+function _wugsClientScript() {
+  return '<script>' +
+    'function wugsApprove(btn, requestId, csrfToken) {\n' +
+    '  btn.disabled = true;\n' +
+    '  fetch(\'/api/admin/promotions/\' + requestId + \'/approve\', {\n' +
+    '    method: \'POST\',\n' +
+    '    headers: { \'Content-Type\': \'application/json\' },\n' +
+    '    body: JSON.stringify({ _csrf: csrfToken })\n' +
+    '  })\n' +
+    '    .then(function(r) { if (!r.ok) throw new Error(\'failed\'); return r.json(); })\n' +
+    '    .then(function() {\n' +
+    '      var row = document.getElementById(\'promo-row-\' + requestId);\n' +
+    '      if (row) { row.outerHTML = \' <span style="font-size:12px;color:var(--accent);margin-left:8px">Approved</span>\'; }\n' +
+    '    })\n' +
+    '    .catch(function() { btn.disabled = false; alert(\'Failed to approve this request. Please try again.\'); });\n' +
+    '}\n' +
+    'function wugsReject(btn, requestId, csrfToken) {\n' +
+    '  btn.disabled = true;\n' +
+    '  fetch(\'/api/admin/promotions/\' + requestId + \'/reject\', {\n' +
+    '    method: \'POST\',\n' +
+    '    headers: { \'Content-Type\': \'application/json\' },\n' +
+    '    body: JSON.stringify({ _csrf: csrfToken })\n' +
+    '  })\n' +
+    '    .then(function(r) { if (!r.ok) throw new Error(\'failed\'); return r.json(); })\n' +
+    '    .then(function() {\n' +
+    '      var row = document.getElementById(\'promo-row-\' + requestId);\n' +
+    '      if (row) { row.outerHTML = \' <span style="font-size:12px;color:var(--muted);margin-left:8px">Rejected</span>\'; }\n' +
+    '    })\n' +
+    '    .catch(function() { btn.disabled = false; alert(\'Failed to reject this request. Please try again.\'); });\n' +
+    '}' +
+    '<\/script>';
+}
+
+/**
  * wugs-s2 — GET /products/:id/guardrails: live-read product-level
  * architecture guardrails + standards from the product's connected repo.
  */
@@ -1927,6 +1970,7 @@ async function handleGetProductGuardrailsView(req, res, _next, pool) {
     '<div style="margin-bottom:24px"><h1 style="margin:0;font-size:24px">Guardrails &amp; Standards</h1></div>' +
     orgSectionHtml +
     productSectionHtml +
+    _wugsClientScript() +
   '</div>';
 
   var html = _htmlShell.renderShell({
