@@ -22476,14 +22476,14 @@
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s7-surface-pr-state-in-view.md",
           "prStatus": "none",
           "notes": "Epic 2 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-13T00:50:35.099Z",
+          "updatedAt": "2026-08-13T00:52:32.205Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
           "testPlan": {
             "status": "written",
-            "totalTests": 5,
-            "passing": 5,
+            "totalTests": 6,
+            "passing": 6,
             "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s7-surface-pr-state-in-view-test-plan.md"
           },
           "acTotal": 4,
@@ -22516,7 +22516,7 @@
             {
               "id": "task-4",
               "name": "Closed-without-merge reverts cleanly (AC3)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s7-plan.md"
             },
             {
