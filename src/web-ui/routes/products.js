@@ -1314,8 +1314,9 @@ function _renderNoConnectedRepoPrompt(productId) {
  * connected repo. Each piece renders independently so a failure in one
  * does not affect the other (AC4).
  */
-function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pendingByPath) {
+function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pendingByPath, promotionByPath, csrfToken) {
   pendingByPath = pendingByPath || new Map();
+  promotionByPath = promotionByPath || new Map();
   var guardrailsPath = '.github/architecture-guardrails.md';
   var guardrailsEditHref = '/products/' + encodeURIComponent(productId) + '/guardrails/form?path=' + encodeURIComponent(guardrailsPath);
   var guardrailsActionHtml = '<a href="' + guardrailsEditHref + '" style="font-size:13px;color:var(--accent)">' + (guardrailsPiece.status === 'ok' ? 'Edit' : 'Add') + '</a>';
@@ -1330,6 +1331,7 @@ function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pe
   if (pendingByPath.has(guardrailsPath)) {
     guardrailsHtml += _renderPendingPrBadge(pendingByPath.get(guardrailsPath));
   }
+  guardrailsHtml += _renderPromotionAction(productId, guardrailsPath, csrfToken, promotionByPath.get(guardrailsPath));
 
   var standardsHtml = _renderPieceContent(standardsPiece, {
     emptyClass: 'gv-standards-empty',
@@ -1346,6 +1348,7 @@ function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pe
               '<span>' + _escapeHtml(e.name) + '</span>' +
               '<a href="' + editHref + '" style="font-size:13px;color:var(--accent)">Edit</a>' +
               (pendingByPath.has(e.path) ? _renderPendingPrBadge(pendingByPath.get(e.path)) : '') +
+              _renderPromotionAction(productId, e.path, csrfToken, promotionByPath.get(e.path)) +
             '</li>';
           }).join('') + '</ul>';
     }
@@ -1656,6 +1659,119 @@ async function _trackPendingPr(pool, tenantId, productId, contentPath, prNumber,
 }
 
 /**
+ * wugs-s8 — creates a promotion request if none is pending for this exact
+ * tenant/product/path, or returns the existing pending one (AC1/AC2 are
+ * the same idempotent operation, not two different code paths).
+ * @returns {Promise<{requestId: string, status: string, alreadyExisted: boolean}>}
+ */
+async function _requestPromotion(pool, tenantId, productId, filePath, requestedBy, owner, repo, token) {
+  var existing = (await pool.query(
+    'SELECT request_id, status FROM guardrail_promotion_requests WHERE tenant_id = $1 AND product_id = $2 AND file_path = $3 AND status = $4',
+    [tenantId, productId, filePath, 'pending']
+  )).rows[0];
+  if (existing) {
+    return { requestId: existing.request_id, status: existing.status, alreadyExisted: true };
+  }
+  var currentContent = await _artefactFetcher.fetchRepoPath(owner, repo, filePath, token);
+  var inserted = (await pool.query(
+    'INSERT INTO guardrail_promotion_requests (tenant_id, product_id, file_path, content_snapshot, status, requested_by) VALUES ($1, $2, $3, $4, $5, $6) RETURNING request_id, status',
+    [tenantId, productId, filePath, currentContent, 'pending', requestedBy]
+  )).rows[0];
+  return { requestId: inserted.request_id, status: inserted.status, alreadyExisted: false };
+}
+
+/**
+ * wugs-s8 — POST /products/:id/guardrails/promote: tenant-scoped (AC4,
+ * matching handlePostGuardrailsForm's own 404-not-403 FORBIDDEN-vs-NOT_FOUND
+ * convention), CSRF-guarded (matching every other mutating form in this
+ * file). Delegates to _requestPromotion for the idempotent create-or-return.
+ */
+async function handlePostRequestPromotion(req, res, _next, pool) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+  req.body = await _readBody(req);
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+  var login = req.session && req.session.login;
+  var token = req.session && req.session.accessToken;
+  var filePath = (req.body && req.body.path) || '';
+
+  var prodRow = (await pool.query(
+    'SELECT name, tenant_id, repo_owner, repo_name FROM products WHERE product_id = $1',
+    [productId]
+  )).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+
+  // review fix -- restrict the promoted path to the same allowlist as
+  // handlePostGuardrailsForm, matching its own usage of this check exactly.
+  if (!_isAllowedGuardrailPath(filePath)) {
+    var allowlistError = 'Target path must be .github/architecture-guardrails.md or under standards/.';
+    if (res.status) { res.status(400).json({ error: allowlistError }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: allowlistError })); }
+    return;
+  }
+
+  // review fix -- _requestPromotion does a live fetchRepoPath call followed
+  // by a DB INSERT; if the file was deleted since page-load (or any other
+  // fetch/DB error occurs), this must not propagate as an unhandled
+  // exception. Matches handlePostGuardrailsForm's try/catch shape.
+  var result;
+  try {
+    result = await _requestPromotion(pool, tenantId, productId, filePath, login, prodRow.repo_owner, prodRow.repo_name, token);
+  } catch (err) {
+    if (err instanceof _artefactFetcher.ArtefactNotFoundError) {
+      if (res.status) { res.status(404).json({ error: 'the file no longer exists — refresh and try again' }); }
+      else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'the file no longer exists — refresh and try again' })); }
+      return;
+    }
+    if (res.status) { res.status(500).json({ error: 'Failed to request promotion' }); }
+    else { res.writeHead(500, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'Failed to request promotion' })); }
+    return;
+  }
+  if (res.status) { res.status(200).json({ ok: true, result: result }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, result: result })); }
+}
+
+/**
+ * wugs-s8 — fetches all pending promotion requests for a product, keyed
+ * by file_path, so the view can show a "pending approval" indicator per
+ * entry without an N+1 query per displayed entry.
+ * @returns {Promise<Map<string, {requestId: string}>>}
+ */
+async function _resolvePendingPromotions(pool, tenantId, productId) {
+  var rows = (await pool.query(
+    'SELECT request_id, file_path, status FROM guardrail_promotion_requests WHERE tenant_id = $1 AND product_id = $2 AND status = $3',
+    [tenantId, productId, 'pending']
+  )).rows;
+  var byPath = new Map();
+  for (var i = 0; i < rows.length; i++) {
+    byPath.set(rows[i].file_path, { requestId: rows[i].request_id });
+  }
+  return byPath;
+}
+
+/**
+ * wugs-s8 — renders either the "Request promotion" form (real, keyboard-
+ * accessible button per the story's own Accessibility NFR) or a "pending
+ * approval" indicator, depending on whether a promotion request is
+ * already pending for this exact path.
+ */
+function _renderPromotionAction(productId, filePath, csrfToken, pendingPromotion) {
+  if (pendingPromotion) {
+    return ' <span class="gv-promotion-pending" style="font-size:12px;color:var(--muted);margin-left:8px">Promotion requested — pending approval</span>';
+  }
+  return ' <form method="POST" action="/products/' + encodeURIComponent(productId) + '/guardrails/promote" style="display:inline;margin-left:8px">' +
+    '<input type="hidden" name="path" value="' + _escapeHtml(filePath) + '">' +
+    '<input type="hidden" name="_csrf" value="' + _escapeHtml(csrfToken) + '">' +
+    '<button type="submit" style="font-size:12px;color:var(--accent);background:none;border:none;padding:0;cursor:pointer;text-decoration:underline">Request promotion</button>' +
+  '</form>';
+}
+
+/**
  * wugs-s7 — resolves every tracked pending PR for a product: live-checks
  * each one's status via checkPrStatus, clears (DELETEs) any that have
  * merged or closed without merging (AC2/AC3), and returns a Map of
@@ -1717,6 +1833,8 @@ async function handleGetProductGuardrailsView(req, res, _next, pool) {
   }
 
   var pendingByPath = await _resolveAllPendingPrs(_pool, prodRow.repo_owner, prodRow.repo_name, token, tenantId, productId);
+  var promotionByPath = await _resolvePendingPromotions(_pool, tenantId, productId);
+  var csrfToken = _csrf.generateCsrfToken(req);
 
   var orgRow = await _fetchOrgRepoRow(_pool, prodRow.tenant_id);
   var orgGuardrailsPiece = { status: 'empty', value: null, errorMessage: null };
@@ -1733,7 +1851,7 @@ async function handleGetProductGuardrailsView(req, res, _next, pool) {
   } else {
     var guardrailsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, '.github/architecture-guardrails.md', token);
     var standardsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, 'standards/', token);
-    productSectionHtml = _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pendingByPath);
+    productSectionHtml = _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pendingByPath, promotionByPath, csrfToken);
   }
 
   var navSummary = await getProductsNavSummary(_pool, tenantId);
@@ -3681,5 +3799,8 @@ module.exports = {
   handleListSharedComments,
   handleCreateAgencyComment,
   handleListAgencyComments,
-  renderCommentThreadHtml
+  renderCommentThreadHtml,
+  // wugs-s8: request a product-level guardrail/standard be promoted to org level
+  _requestPromotion,
+  handlePostRequestPromotion
 };
