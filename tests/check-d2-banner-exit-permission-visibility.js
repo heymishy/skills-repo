@@ -594,11 +594,11 @@ async function main() {
 
   queue.push(function() {
     console.log('\n[d2] T24 -- Security NFR: every existing requireAdmin-gated route already reflects the effective role (enumeration checklist)');
-    return test('server.js: exactly 11 requireAdmin( gate call sites, all tenantId-keyed via D1\'s session swap (8 pre-existing + amgt-s1\'s GET /admin/mock-gateway + POST /api/admin/mock-gateway/toggle routes + tpac-s1\'s new POST /api/admin/plan/set route, merged after this count was last written)', function() {
+    return test('server.js: exactly 12 requireAdmin( gate call sites, all tenantId-keyed via D1\'s session swap (8 pre-existing + amgt-s1\'s GET /admin/mock-gateway + POST /api/admin/mock-gateway/toggle routes + tpac-s1\'s new POST /api/admin/plan/set route + wugs-s3\'s new POST /settings/org-repo route, merged after this count was last written)', function() {
       var src = fs.readFileSync(SERVER_PATH, 'utf8');
       var matches = src.match(/await requireAdmin\(/g) || [];
-      assert.strictEqual(matches.length, 11, 'expected exactly 11 requireAdmin( gate call sites in server.js -- if this changes again, D4\'s security review checklist must be re-run against the new route. Went from 8 to 10 when amgt-s1\'s GET /admin/mock-gateway and POST /api/admin/mock-gateway/toggle routes merged, then 10 to 11 when tpac-s1\'s POST /api/admin/plan/set route merged (verified to call requireAdmin the same standard way as every other gated route -- no route-specific bypass, so it automatically inherits D1\'s tenantId-keyed effective-role behaviour).');
-      // Confirm the new routes specifically are among the 11, and call requireAdmin
+      assert.strictEqual(matches.length, 12, 'expected exactly 12 requireAdmin( gate call sites in server.js -- if this changes again, D4\'s security review checklist must be re-run against the new route. Went from 8 to 10 when amgt-s1\'s GET /admin/mock-gateway and POST /api/admin/mock-gateway/toggle routes merged, then 10 to 11 when tpac-s1\'s POST /api/admin/plan/set route merged, then 11 to 12 when wugs-s3\'s POST /settings/org-repo route merged (verified to call requireAdmin the same standard way as every other gated route -- no route-specific bypass, so it automatically inherits D1\'s tenantId-keyed effective-role behaviour).');
+      // Confirm the new routes specifically are among the 12, and call requireAdmin
       // the identical way every other gated route does (no special-cased logic
       // that could bypass the effective-role behaviour D1 already established).
       var auditRouteBlock = src.slice(src.indexOf("pathname === '/api/admin/impersonate/audit'"), src.indexOf("pathname === '/api/admin/impersonate/audit'") + 600);
@@ -609,6 +609,8 @@ async function main() {
       assert.ok(/await requireAdmin\(req, res, \(\) => \{ _raOk = true; \}\)/.test(mockGatewayPostBlock), 'expected amgt-s1\'s POST /api/admin/mock-gateway/toggle route to call requireAdmin the same standard way as every other gated route');
       var planSetBlock = src.slice(src.indexOf("pathname === '/api/admin/plan/set'"), src.indexOf("pathname === '/api/admin/plan/set'") + 400);
       assert.ok(/await requireAdmin\(req, res, \(\) => \{ _raOk = true; \}\)/.test(planSetBlock), 'expected tpac-s1\'s POST /api/admin/plan/set route to call requireAdmin the same standard way as every other gated route');
+      var orgRepoBlock = src.slice(src.indexOf("pathname === '/settings/org-repo'"), src.indexOf("pathname === '/settings/org-repo'") + 800);
+      assert.ok(/await requireAdmin\(req, res, \(\) => \{ _raOk = true; \}\)/.test(orgRepoBlock), 'expected wugs-s3\'s POST /settings/org-repo route to call requireAdmin the same standard way as every other gated route');
     });
   });
 
