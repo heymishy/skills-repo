@@ -69,5 +69,43 @@ check('AC1/AC4: oldHandlers_removedFromProductsJs', function () {
   assert.ok(productsSrc.indexOf('_renderStandardsTab') === -1, 'expected _renderStandardsTab to be fully removed');
 });
 
+// ── AC4: repo-wide grep, the REAL complete removal list (not the story's
+// own AC4 text, which used incorrect function names for the promote/optout
+// handlers) ──
+check('AC4: noReferencesToRemovedStandardsExports_inSrcOrTests', function () {
+  var { execSync } = require('child_process');
+  var pattern = 'standardsPost|standardsList|standardsPut|standardsPromote|optoutPost|optoutDelete|fetchStandardsForProduct|handleGetProductStandardsTab|_renderStandardsTab';
+  var raw;
+  try {
+    raw = execSync('grep -rn -E "' + pattern + '" src/ tests/', { cwd: require('path').join(__dirname, '..'), encoding: 'utf8' });
+  } catch (e) {
+    // grep exits 1 when no matches are found -- that is the SUCCESS case here.
+    raw = '';
+  }
+  // Filter out known, non-blocking residue that a plain repo-wide grep
+  // cannot distinguish from a real dangling reference:
+  //  (1) this test file's own assertions, which must reference the removed
+  //      identifiers as literal strings in order to check for their
+  //      absence elsewhere -- an unavoidable self-match, not a dangling
+  //      reference;
+  //  (2) fake-test-db.js's DB-table-level fixture comments -- per this
+  //      plan's Design note, explicitly left in place because DB table
+  //      removal is wugs-s12's job, not this story's;
+  //  (3) the single trailing documentation comment on server.js's
+  //      routes/products requires-line noting what was removed and when
+  //      (added by this story's own Task 2 review-fix commit) -- prose,
+  //      not a live require/call.
+  // Any OTHER match in src/ or tests/ (including elsewhere in server.js)
+  // still fails this check.
+  var offendingLines = raw.split('\n').filter(function (line) {
+    if (!line.trim()) return false;
+    if (line.indexOf('tests/check-wugs-s11-remove-smug-s1-routes-and-tab.js:') === 0) return false;
+    if (line.indexOf('src/web-ui/adapters/fake-test-db.js:') === 0) return false;
+    if (line.indexOf('src/web-ui/server.js:') === 0 && line.indexOf('removed, wugs-s11') !== -1) return false;
+    return true;
+  });
+  assert.strictEqual(offendingLines.length, 0, 'expected zero live references to removed standards.js exports, found:\n' + offendingLines.join('\n'));
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
