@@ -1215,6 +1215,24 @@ async function _fetchOrgRepoRow(pool, tenantId) {
 }
 
 /**
+ * Shared shell markup for a "heading + explanatory paragraph + single
+ * action" prompt box. Used by both _renderOrgGuardrailsSection's !orgRow
+ * branch (wugs-s3) and _renderNoConnectedRepoPrompt (wugs-s4) — the two
+ * share identical container/heading/paragraph styling and differ only in
+ * their action content (a form vs. a link). `extraContainerStyle` lets
+ * callers prepend additional container CSS (e.g. margin) ahead of the
+ * shared padding/border/radius declarations, matching each caller's
+ * pre-existing exact style string.
+ */
+function _renderPromptBox(sectionClass, extraContainerStyle, title, message, actionHtml) {
+  return '<div class="' + sectionClass + '" style="' + extraContainerStyle + 'padding:16px;border:1px dashed var(--line);border-radius:8px">' +
+    '<h2 style="font-size:18px;margin:0 0 8px">' + title + '</h2>' +
+    '<p style="color:var(--muted);font-size:14px;margin:0 0 12px">' + message + '</p>' +
+    actionHtml +
+  '</div>';
+}
+
+/**
  * wugs-s3 — org-level guardrails/standards section. Mirrors
  * _renderGuardrailsSection's ok/empty/error piece states, plus a fourth
  * state on top: no org repo designated at all (AC3) renders an explicit
@@ -1222,17 +1240,19 @@ async function _fetchOrgRepoRow(pool, tenantId) {
  */
 function _renderOrgGuardrailsSection(orgRow, guardrailsPiece, standardsPiece) {
   if (!orgRow) {
-    return '<div class="gv-org-section" style="margin-bottom:32px;padding:16px;border:1px dashed var(--line);border-radius:8px">' +
-      '<h2 style="font-size:18px;margin:0 0 8px">Organisation guardrails &amp; standards</h2>' +
-      '<p style="color:var(--muted);font-size:14px;margin:0 0 12px">No org repo designated yet — designate one to share guardrails/standards across every product in your organisation.</p>' +
+    return _renderPromptBox(
+      'gv-org-section',
+      'margin-bottom:32px;',
+      'Organisation guardrails &amp; standards',
+      'No org repo designated yet — designate one to share guardrails/standards across every product in your organisation.',
       '<form method="POST" action="/settings/org-repo" style="display:flex;gap:8px;align-items:center">' +
         '<label for="org-repo-owner" style="font-size:13px;color:var(--muted)">Owner</label>' +
         '<input id="org-repo-owner" type="text" name="repo_owner" placeholder="owner" style="font-family:inherit;font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid var(--line)">' +
         '<label for="org-repo-name" style="font-size:13px;color:var(--muted)">Repo</label>' +
         '<input id="org-repo-name" type="text" name="repo_name" placeholder="repo" style="font-family:inherit;font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid var(--line)">' +
         '<button type="submit" style="padding:6px 12px;border-radius:6px;border:none;background:var(--accent);color:#fff;font-size:13px;cursor:pointer">Designate</button>' +
-      '</form>' +
-    '</div>';
+      '</form>'
+    );
   }
 
   var guardrailsHtml = _renderPieceContent(guardrailsPiece, {
@@ -1279,11 +1299,13 @@ function _renderOrgGuardrailsSection(orgRow, guardrailsPiece, standardsPiece) {
  * fallback for the established precedent this mirrors).
  */
 function _renderNoConnectedRepoPrompt(productId) {
-  return '<div class="gv-product-section gv-no-repo-prompt" style="padding:16px;border:1px dashed var(--line);border-radius:8px">' +
-    '<h2 style="font-size:18px;margin:0 0 8px">Architecture guardrails &amp; standards</h2>' +
-    '<p style="color:var(--muted);font-size:14px;margin:0 0 12px">Connect a repo to see this product\'s architecture guardrails and standards.</p>' +
-    '<a href="/products/' + encodeURIComponent(productId) + '" style="font-size:13px;color:var(--accent)">Connect a repo</a>' +
-  '</div>';
+  return _renderPromptBox(
+    'gv-product-section gv-no-repo-prompt',
+    '',
+    'Architecture guardrails &amp; standards',
+    'Connect a repo to see this product\'s architecture guardrails and standards.',
+    '<a href="/products/' + encodeURIComponent(productId) + '" style="font-size:13px;color:var(--accent)">Connect a repo</a>'
+  );
 }
 
 /**
