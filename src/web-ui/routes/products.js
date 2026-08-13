@@ -19,7 +19,6 @@ var _csrf = require('../middleware/csrf'); // fix-forward (post-a1) -- module CR
 var _agencyClientGrants = require('../modules/agency-client-grants'); // story-2-relationship-grants-enforcement -- the ONE dedicated grant-check adapter (story Guardrail)
 var _journeyAccess = require('../middleware/journey-access'); // story-2-relationship-grants-enforcement -- reuses requireGrantAccess/asHttpResponse/POLICY (ADR-025 guard extension)
 var _agencyClientComments = require('../modules/agency-client-comments'); // story-5-client-agency-comments -- append-only comments adapter
-var _standardsRoutes = require('./standards'); // smug-s1 -- fetchStandardsForProduct, shared with the JSON standards API
 var _artefactFetcher = require('../adapters/artefact-fetcher'); // wugs-s2 — reuses wugs-s1's fetchRepoPath (ADR-012)
 var _guardrailPrAdapter = require('../adapters/guardrail-pr-adapter'); // wugs-s6 review fix — GuardrailPrConflictError for the write-adapter try/catch
 var { isEffectivelyAdmin } = require('../modules/impersonation'); // wugs-s9 — DoR-specified effective-role check, matching credits-guard.js's exact pattern

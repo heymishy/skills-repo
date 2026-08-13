@@ -3260,42 +3260,6 @@ async function router(req, res) {
     // psh-s7 — org-level kanban: all products and their features grouped by product
     authGuard(req, res, async () => { await handleGetOrgKanban(req, res, null, _pshPool, null); });
 
-  } else if (pathname.match(/^\/products\/[^/]+\/standards$/) && req.method === 'POST') {
-    // psh-s8 — create standard for a product
-    req.params = { id: pathname.split('/')[2] };
-    const _standardsRoutes = require('./routes/standards');
-    authGuard(req, res, async () => { await _standardsRoutes.standardsPost(req, res, null, _pshPool, null); });
-
-  } else if (pathname.match(/^\/products\/[^/]+\/standards$/) && req.method === 'GET') {
-    // psh-s8 — list standards for a product
-    req.params = { id: pathname.split('/')[2] };
-    const _standardsRoutes = require('./routes/standards');
-    authGuard(req, res, async () => { await _standardsRoutes.standardsList(req, res, null, _pshPool); });
-
-  } else if (pathname.match(/^\/standards\/[^/]+$/) && req.method === 'PUT') {
-    // psh-s8 — edit a standard
-    req.params = { id: pathname.split('/')[2] };
-    const _standardsRoutes = require('./routes/standards');
-    authGuard(req, res, async () => { await _standardsRoutes.standardsPut(req, res, null, _pshPool); });
-
-  } else if (pathname.match(/^\/standards\/[^/]+\/promote$/) && req.method === 'PUT') {
-    // psh-s9 — promote standard to org-wide visibility
-    req.params = { id: pathname.split('/')[2] };
-    const _standardsRoutes = require('./routes/standards');
-    authGuard(req, res, async () => { await _standardsRoutes.standardsPromote(req, res, null, _pshPool, null); });
-
-  } else if (pathname.match(/^\/standards\/[^/]+\/optout$/) && req.method === 'POST') {
-    // psh-s9 — per-product opt-out from org standard
-    req.params = { id: pathname.split('/')[2] };
-    const _standardsRoutes = require('./routes/standards');
-    authGuard(req, res, async () => { await _standardsRoutes.optoutPost(req, res, null, _pshPool, null); });
-
-  } else if (pathname.match(/^\/standards\/[^/]+\/optout$/) && req.method === 'DELETE') {
-    // psh-s9 — remove per-product opt-out (opt back in)
-    req.params = { id: pathname.split('/')[2] };
-    const _standardsRoutes = require('./routes/standards');
-    authGuard(req, res, async () => { await _standardsRoutes.optoutDelete(req, res, null, _pshPool, null); });
-
   } else if (pathname === '/agency/clients/new' && req.method === 'GET') {
     // story-3-self-service-provisioning — Create Client form (Agency-only, AC2)
     if (!_agencyProvisioningHandlers) {
