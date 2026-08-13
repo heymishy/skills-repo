@@ -130,6 +130,44 @@ await checkAsync('AC1: handleGetGuardrailsView_pendingPr_showsIndicatorAndLink',
   });
 });
 
+// ── Error isolation: one row's status check throwing must not crash the
+// whole view, nor affect any other row's resolution (Task 2 review fix) ──
+await checkAsync('errorIsolation: onePrStatusCheckThrows_otherRowsStillResolveAndViewRenders', async () => {
+  var deletedIds = [];
+  var pool = makeMockPool([
+    { id: 'row-1', tenant_id: 't1', product_id: 'p1', path: 'standards/foo.md', pr_number: 1, pr_url: 'https://github.com/acme/widgets/pull/1' },
+    { id: 'row-2', tenant_id: 't1', product_id: 'p1', path: '.github/architecture-guardrails.md', pr_number: 2, pr_url: 'https://github.com/acme/widgets/pull/2' }
+  ], deletedIds);
+  var originalFetch = global.fetch;
+  global.fetch = async function (url) {
+    if (String(url).indexOf('/pulls/1') !== -1) {
+      throw new Error('simulated GitHub API failure for PR #1');
+    }
+    if (String(url).indexOf('/pulls/2') !== -1) {
+      return {
+        ok: true,
+        status: 200,
+        json: async function () { return { state: 'open', merged: false, number: 2, html_url: 'https://github.com/acme/widgets/pull/2' }; }
+      };
+    }
+    throw new Error('unexpected fetch URL in test: ' + url);
+  };
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    var artefactFetcher = require('../src/web-ui/adapters/artefact-fetcher');
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    try {
+      var req = mockReq();
+      var res = mockRes();
+      await products.handleGetProductGuardrailsView(req, res, null, pool);
+      var result = res._get();
+      assert.strictEqual(result.statusCode, 200, 'expected the view to still render 200 despite one PR status check throwing');
+      assert.ok(/Pending review — PR #2/.test(result.body), 'expected PR #2\'s pending badge to still show correctly');
+      assert.strictEqual(deletedIds.indexOf('row-1'), -1, 'row-1 (status check threw) must NOT be deleted');
+    } finally { global.fetch = originalFetch; }
+  });
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 

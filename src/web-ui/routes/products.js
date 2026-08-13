@@ -1450,11 +1450,16 @@ async function _resolveAllPendingPrs(pool, owner, repo, token, tenantId, product
   var openByPath = new Map();
   for (var i = 0; i < rows.length; i++) {
     var row = rows[i];
-    var status = await _guardrailPrAdapter.checkPrStatus(token, owner, repo, row.pr_number);
-    if (status.state === 'open') {
-      openByPath.set(row.path, { prNumber: row.pr_number, prUrl: row.pr_url });
-    } else {
-      await pool.query('DELETE FROM guardrail_pending_prs WHERE id = $1', [row.id]);
+    try {
+      var status = await _guardrailPrAdapter.checkPrStatus(token, owner, repo, row.pr_number);
+      if (status.state === 'open') {
+        openByPath.set(row.path, { prNumber: row.pr_number, prUrl: row.pr_url });
+      } else {
+        await pool.query('DELETE FROM guardrail_pending_prs WHERE id = $1', [row.id]);
+      }
+    } catch (err) {
+      console.error('wugs-s7: failed to resolve pending PR status for pr_number=' + row.pr_number + ', path=' + row.path + ':', err);
+      continue;
     }
   }
   return openByPath;
