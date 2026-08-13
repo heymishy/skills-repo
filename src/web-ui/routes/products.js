@@ -1267,6 +1267,26 @@ function _renderOrgGuardrailsSection(orgRow, guardrailsPiece, standardsPiece) {
 }
 
 /**
+ * wugs-s4 — distinct "connect a repo" prompt shown in place of the
+ * product-level section when the product has no connected repo at all.
+ * Deliberately different copy/markup from _renderPieceContent's 'empty'
+ * branch ("No X found in this repo.") -- that's the "repo exists but the
+ * file/folder doesn't" case (wugs-s2 AC3); this is the "no repo at all"
+ * case, and the two must stay textually distinguishable per AC1. Reuses
+ * the product view page (GET /products/:id) as the connection entry point
+ * -- the existing rpc-s1/prc-s2.1 connect-repo form lives there already
+ * (see handleGetProductRoadmap's own "Connect a repo to get started"
+ * fallback for the established precedent this mirrors).
+ */
+function _renderNoConnectedRepoPrompt(productId) {
+  return '<div class="gv-product-section gv-no-repo-prompt" style="padding:16px;border:1px dashed var(--line);border-radius:8px">' +
+    '<h2 style="font-size:18px;margin:0 0 8px">Architecture guardrails &amp; standards</h2>' +
+    '<p style="color:var(--muted);font-size:14px;margin:0 0 12px">Connect a repo to see this product\'s architecture guardrails and standards.</p>' +
+    '<a href="/products/' + encodeURIComponent(productId) + '" style="font-size:13px;color:var(--accent)">Connect a repo</a>' +
+  '</div>';
+}
+
+/**
  * wugs-s2 — product-level guardrails/standards section: live-reads
  * .github/architecture-guardrails.md and standards/ from the product's
  * connected repo. Each piece renders independently so a failure in one
@@ -1685,9 +1705,14 @@ async function handleGetProductGuardrailsView(req, res, _next, pool) {
   }
   var orgSectionHtml = _renderOrgGuardrailsSection(orgRow, orgGuardrailsPiece, orgStandardsPiece);
 
-  var guardrailsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, '.github/architecture-guardrails.md', token);
-  var standardsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, 'standards/', token);
-  var productSectionHtml = _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pendingByPath);
+  var productSectionHtml;
+  if (!prodRow.repo_owner || !prodRow.repo_name) {
+    productSectionHtml = _renderNoConnectedRepoPrompt(productId);
+  } else {
+    var guardrailsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, '.github/architecture-guardrails.md', token);
+    var standardsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, 'standards/', token);
+    productSectionHtml = _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pendingByPath);
+  }
 
   var navSummary = await getProductsNavSummary(_pool, tenantId);
 
