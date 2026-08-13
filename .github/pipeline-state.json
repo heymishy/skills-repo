@@ -23227,9 +23227,15 @@
         "type": "standards",
         "file": ".github/standards/security/security-standards.md",
         "summary": "kanban-epic /improve: known gap -- GET /features/:slug has no tenant-ownership check"
+      },
+      {
+        "date": "2026-08-14",
+        "type": "standards",
+        "file": "standards/governance/delivery-patterns.md",
+        "summary": "web-ui-guardrails-standards-surface /improve: two-reviewer-per-task discipline, read-real-upstream-code-before-planning, removal-story scope-undercounting pattern + exhaustive-grep-sweep rule, DoR-required-manual-step enforcement gap, AC-verification-scenario cross-check gap, shared-render-function merge-conflict expectation, deploy-group CI concurrency flake diagnosis/mitigation, dispatch-transparency norm, 3 anti-patterns (subagent self-spawned background processes, checkpoint task-count trust, non-discriminating test assertions)"
       }
     ],
-    "lastUpdated": "2026-07-17"
+    "lastUpdated": "2026-08-14"
   },
   "updatedAt": "2026-08-10T07:07:00.114Z"
 }

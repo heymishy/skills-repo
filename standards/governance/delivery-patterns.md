@@ -160,3 +160,138 @@ git push origin master
 **The automated confirmation (primary mechanism going forward):** `staging-deploy.yml`'s `post-deploy-e2e-confirm` job (pmec-s1) re-runs the exact same Scenario A/B real-staging spec files, behind the exact same `audit.staging_e2e_scenario_a`/`audit.staging_e2e_scenario_b` flags, immediately after every real deploy (`needs: deploy-staging`). This closes the gap automatically — a newly-merged endpoint's spec gets its first genuine confirmation the same day, without depending on a human remembering to do the manual re-run above. The job is deliberately non-blocking (not a dependency of `promote-to-prod`, which continues to depend on `smoke-test` alone) — a failure here is a same-day investigation signal, not an automatic release block.
 
 **Source:** durable-session-history epic, dsh-s4 (`workspace/capture-log.md`, 2026-07-28, two entries: the pattern itself and the `gh run rerun` gap); closed by `post-merge-e2e-confirmation` (pmec-s1, 2026-07-29).
+
+---
+
+## Two-Reviewer-Per-Task Discipline Earns Its Cost Regardless of Story Size
+
+**Pattern:** Dispatch a spec-compliance reviewer and a code-quality reviewer as two separate subagents per implementation task (not one combined reviewer), with a fix-and-re-review cycle for any genuine finding.
+
+**Evidence:** Across a 12-story feature, at least one round found a real, legitimate finding on nearly every task in nearly every story — including the lowest-complexity story in the feature (Complexity Rating 1), where the finding rate did not drop relative to higher-complexity stories. The one story where two full review rounds found zero blocking findings across all tasks was a story that was purely additive on top of three already-reviewed, already-hardened handlers — the absence of findings correlated with the absence of new surface area, not with review being unnecessary.
+
+**Companion pattern — final story-level synthesis review is not redundant with per-task review.** A final review pass across the complete diff (not just each task's own slice) caught a genuine functional gap that none of the individual task-level reviews caught, because each task reviewed its own diff in isolation and the gap was only visible when reasoning about the complete user-facing flow end-to-end.
+
+**Source:** web-ui-guardrails-standards-surface epic (2026-08-11), observed consistently across wugs-s3 through wugs-s10's own DoD Observations.
+
+---
+
+## Read the Real, Merged Upstream Code Before Writing an Implementation Plan
+
+**Pattern:** Before drafting an implementation plan for a story that builds on or removes previously-shipped code, read the actual current state of that code directly (not just the story/DoR text's description of it) — grep for the real function/export names, the real route table, the real schema, the real call sites.
+
+**Why this belongs here, not just as generic advice:** A feature's own story text is written at `/definition` time, before any of the code it describes exists yet in its final, real-and-merged shape. By the time a downstream story's implementation plan is drafted, the story text it's building on may already be stale relative to what actually shipped (renamed functions, review-added fields, additional test coverage that shifted a "predicted" count). Adopting the discipline of re-deriving the real shape from the merged code — rather than trusting the story text as if it were live documentation — correlated directly with cleaner review outcomes: the one story in a 10-story run with zero blocking findings across two full review rounds was the first to consistently apply this discipline from its own planning stage onward.
+
+**Source:** web-ui-guardrails-standards-surface epic, adopted from wugs-s9 onward; explicitly credited in wugs-s10's DoD Observation #1.
+
+---
+
+## Removal/Deletion Stories Systematically Undercount Real Scope — Investigate Before Planning
+
+**Context:** A story framed as "remove X" or "delete Y" (routes, DB tables, dead code paths).
+
+**Pattern found:** Across three independent removal stories in the same epic, each story's own AC text named fewer real cross-references than actually existed in the codebase — not once, but every time, and the gap grew each time it recurred:
+- Story 1: AC text used incorrect function names for 2 of 5 real functions being removed.
+- Story 2: AC text named 3 of 7 real routes and 2 of 5 real test files needing changes.
+- Story 3: AC text named 1 of 3 real code paths still referencing the data being removed — one of the missed references was in a *different epic's* script entirely.
+
+**Why this is systematically harder to catch than it sounds:** A story that gets a function *name* wrong produces an obvious signal (a grep for that name returns zero hits, prompting a second look). A story that *undercounts scope* produces no such signal — the named references are all real and all correct, so nothing prompts a search for what else might be missing. Only an unprompted, exhaustive investigation (not triggered by any single AC's own wording) surfaces the gap.
+
+**Rule:** Before finalizing an implementation plan for any removal/deletion-framed story, run an exhaustive `grep -rln` sweep for the real symbol/route/table names being removed across the *whole* repository — not just the files or exports the story's own AC text names. Document the real, complete scope in the plan's own Design note, and log any material expansion beyond the story's literal text as a SCOPE-EXPANSION decision before implementation begins, not after.
+
+**Companion gap — identifier-based lock-in tests cannot see this class of dangling reference.** An automated `grep`-based regression test verifying "zero remaining references" can only match literal identifier/table names within the directories it scans. It structurally cannot catch: (a) references in directories outside its scan scope (e.g. `tests/e2e/*.spec.js`, if the lock-in test only scans `src/`/`tests/*.js`), or (b) references that hit removed functionality via a raw string (an HTTP route path, a SQL table name inside a string literal) rather than a JS identifier. Extending the grep pattern to catch raw-string usage was tested in this epic and confirmed too noisy (matches unrelated legitimate uses of the same substring elsewhere in the codebase) — the reliable mitigation is a manual, human/agent-read scan of `tests/e2e/*.spec.js` for the literal old path/table strings as an explicit pre-PR step, and an explicit reviewer instruction to check that directory (not just `src/`/`tests/*.js`) during removal-story code review.
+
+**Source:** web-ui-guardrails-standards-surface epic, wugs-s9 (incorrect function names), wugs-s11 (undercounted routes/tests, plus a real CI-caught regression from exactly this blind spot), wugs-s12 (undercounted cross-references spanning a different epic's script).
+
+---
+
+## DoR-Required Manual Verification Steps Need Mechanical Enforcement, Not Just a Checkbox
+
+**The gap:** A DoR artefact named a REQUIRED pre-merge manual step (verifying a mocked external API's real response shape against the actual live API before trusting the mock in production). The only trace of this requirement in the delivery flow was an unchecked markdown checkbox in the PR description — nothing in the branch-complete gate validation checked for it, and the PR merged with the step never performed.
+
+**Rule:** When a DoR names a REQUIRED manual verification step, the branch-complete artefact (or its own gate validation) should carry an explicit machine-checkable field — e.g. `manualVerificationRequired: true` / `manualVerificationRecorded: <url-or-null>` — so the gate can refuse to pass silently on an unrecorded requirement, rather than relying entirely on a human noticing an unchecked box in a PR description template.
+
+**Source:** web-ui-guardrails-standards-surface epic, wugs-s6 (PR merged without the DoR's own required sandbox-GitHub mock-shape verification; recorded as a RISK-ACCEPT and still open as of this note).
+
+---
+
+## Verification-Script AC-Scenario Gaps Recur Until Named as a Cross-Check, Not an Incidental Catch
+
+**The gap:** A story's own AC verification script was missing a scenario for one of its named ACs — found and fixed at `/verify-completion`, independently, on three separate stories in the same feature before the pattern was explicitly named.
+
+**Rule:** Before DoR sign-off, cross-check that every AC number appearing in a story has a corresponding "Covers: ACn" scenario in that story's verification script. This is a mechanical, five-minute check that eliminates a defect class currently being caught three separate times by three separate final-review passes, at three separate later stages of the pipeline, at three separate additional review-time costs.
+
+**Source:** web-ui-guardrails-standards-surface epic, wugs-s1, wugs-s2, wugs-s5 (same gap class, each caught independently at `/verify-completion` before being named as systemic in wugs-s5's own DoD).
+
+---
+
+## Same-Feature Shared-Render-Function Merge Conflicts Are Expected When Worktrees Overlap
+
+**Context:** Two stories in the same feature both modify the same shared render/handler functions, and their git worktrees have overlapping lifetimes (both branched from master before either merged).
+
+**Pattern:** This produces a real, expected merge conflict when both PRs land close together — correctly resolving it requires understanding both stories' full intent well enough to combine their logic, not just mechanically pick one side. This is process friction inherent to genuinely-parallel delivery on shared files, not a defect in either story. By contrast, sequencing a story's worktree creation *after* its shared-code siblings have already merged reliably avoids this class of conflict — confirmed by direct comparison within the same feature (one pair of stories hit the conflict; a later pair touching the same shared functions, but sequenced after the first pair merged, did not).
+
+**Rule:** When two stories in the same feature are both known to touch the same named functions (visible from either story's Architecture Constraints or implementation-plan File Map sections), flag this at `/implementation-plan` time as an anticipated merge conflict regardless of implementation order — so it is expected at merge time, not discovered as a surprise. See also this document's own Wave-Gate Delivery Pattern (A1) for the structural version of this same problem at a larger, multi-wave scale.
+
+**Source:** web-ui-guardrails-standards-surface epic, wugs-s3/wugs-s7 (conflict occurred, overlapping worktree lifetimes), wugs-s4 (no conflict, sequenced after both prior siblings merged).
+
+---
+
+## `deploy-group` CI Concurrency Flake: Diagnosis and Mitigation
+
+**The flake:** A PR's E2E checks fail on the first CI run with job conclusion `cancelled` (not `failure`), caused by two pushes to the same branch roughly 20-30 seconds apart both requesting the same CI `deploy-group` concurrency slot — the second push cancels the first's still-running E2E jobs. Recurred on three consecutive PRs within the same feature before the exact mechanism was pinned down.
+
+**Root cause:** A `branch-complete` flow that (1) pushes the feature branch, (2) opens the PR, then (3) separately commits and pushes a branch-complete bookkeeping artefact once the real PR URL is known — structurally requires two pushes to the same branch close together in time.
+
+**Mitigation confirmed effective:** When the bookkeeping write can be deferred to a direct-to-master commit instead of a second push to the feature branch itself, the flake does not reproduce — confirmed clean across four consecutive stories after this pattern was adopted.
+
+**Standing mitigation until a structural fix exists:** Proactively check `gh pr checks <pr-number>` immediately after every `branch-complete`'s `gh pr create` call, before reporting branch-complete as done — do not wait for CI to finish or for a human to notice and report a failure.
+
+**Diagnosis check:** Confirm via `gh api repos/.../actions/jobs/<id>` that the job `conclusion` is `cancelled`, not `failure`, and that a same-branch push landed 20-30 seconds after the first — this signature distinguishes the known flake from a genuine regression. Never assume the flake without checking; a real regression can look superficially similar.
+
+**Source:** web-ui-guardrails-standards-surface epic, wugs-s3/wugs-s4/wugs-s8 (flake occurred, root cause diagnosed), wugs-s9 through wugs-s12 (mitigation held, zero recurrences).
+
+---
+
+## Dispatch Transparency Norm: Report Plan-vs-Reality Mismatches, Don't Force-Match
+
+**The norm:** When a dispatched implementer's actual observed result diverges from an implementation plan's own prediction (a predicted test-failure count that doesn't match, a test expected to fail RED that instead passes vacuously, a predicted total that's off by a few), the correct response is to report the discrepancy and its cause explicitly in the completion report — not to silently force the actual result to match the plan's prediction, and not to treat the mismatch as a defect requiring the plan to be "corrected" without explanation.
+
+**Why this matters:** An implementation plan's own predictions are written before the code exists, based on the plan author's best understanding at that time — they are a sanity check the implementer verifies against reality, not a target the implementer's own report should be shaped to confirm. Transparent reporting of a mismatch (with root cause) is what allows a plan gap to be caught and fixed *during* delivery rather than silently accepted as if nothing were unusual.
+
+**Companion rule for plan authors:** Implementation plans should phrase per-task expected test counts relatively ("N more than currently committed") rather than as absolute totals, since review-round test additions in earlier tasks routinely shift what a later task's own "expected count" should be — an absolute number written before Task 1 even starts cannot account for tasks 2-4's own review-driven growth.
+
+**Source:** web-ui-guardrails-standards-surface epic, wugs-s9 (a plan's own AC3 test design gap caught via a pre-dispatch sanity re-read, not a review round), wugs-s10 (a dispatched implementer explicitly reported and explained a plan-vs-reality test-count mismatch rather than silently matching it), wugs-s4 (named the relative-vs-absolute phrasing issue directly).
+
+---
+
+## Anti-pattern: A Subagent Waiting on Its Own Self-Spawned Background Process Will Never Be Notified
+
+**What went wrong:** A dispatched implementer subagent spawned its own long-running background process (e.g. the full test suite) and then reported it would "wait for the background task to complete on its own" before continuing. It never did — and never could. Only the orchestrating session receives background-task completion notifications; a dispatched subagent has no channel to ever learn that a process it itself started has finished. This is a distinct failure mode from an agent falsely believing *it personally* will be notified of something external — here the agent's own understanding of the mechanism was correct, it simply had no way to close the loop on a task it initiated itself.
+
+**Recovery:** Check the worktree's actual `git status`/`git diff` directly rather than waiting — if the implementation work is genuinely complete (just uncommitted, because the agent is stuck waiting on its own dead-end), complete verification and the commit directly rather than re-dispatching or waiting further.
+
+**Rule:** Dispatch instructions for implementer subagents should explicitly forbid launching self-spawned background/detached processes — all commands, including long-running ones like a full test suite run, must run in the foreground within the single dispatch turn that started them.
+
+**Source:** web-ui-guardrails-standards-surface epic, wugs-s8 Task 4.
+
+---
+
+## Anti-pattern: A Session Checkpoint's Own Task-Count Is Not Ground Truth for Resuming
+
+**What went wrong:** A background implementer subagent completed all of a story's implementation tasks — plus a full round of review-driven security hardening — entirely unattended, past the point where the last session checkpoint had been written. The checkpoint's own record (based on the state known at write time) significantly undersold actual progress. Resuming correctly required two independent checks, neither of which alone would have sufficed: (a) comparing the implementation plan's task list against `git log --oneline` in the worktree to find completed-but-unrecorded tasks, and (b) separately checking `git status` for completed-but-uncommitted work. Checking only one would have missed the other category.
+
+**Rule:** When resuming a session after a background agent may have continued working past the last checkpoint, re-derive actual task state from `git log` *and* `git status` directly — never trust a checkpoint's own task-count as sufficient ground truth on its own, since a background agent can legitimately outrun the checkpoint that was supposed to describe it.
+
+**Source:** web-ui-guardrails-standards-surface epic, wugs-s6 (resumed from a checkpoint reading 3 of 7 tasks; actual state was all 7 tasks committed, plus uncommitted review-driven hardening on top).
+
+---
+
+## Anti-pattern: Non-Discriminating Test Assertions
+
+**What went wrong:** A story's first five implementation tasks each drew a Critical or Important code-quality finding of the same defect class: a shipped conditional/branch whose own test didn't actually discriminate it — a mock that swallowed the exact failure it was meant to catch, or an assertion that would pass regardless of which branch of the code actually executed. Only the sixth task, after the pattern had been named and explicitly checked for five times running, passed code-quality review clean on the first attempt.
+
+**Companion anti-pattern — redundant same-shape NFR tests.** A separate, smaller instance of the same underlying issue: an NFR test written with the exact same mock/assertion shape as an adjacent AC test next to it is a zero-signal duplicate, not real additional coverage — it was caught and merged into the AC test as a documented sub-assertion rather than shipped as a separate test.
+
+**Rule:** When authoring or reviewing a task's tests, explicitly ask: "if I broke this specific branch, would this exact assertion actually fail?" — not just "does a test exist that touches this code path." A test that would pass identically whether the branch under test is correct or broken provides no real regression protection, regardless of how it reads.
+
+**Source:** web-ui-guardrails-standards-surface epic, wugs-s5 (5 of 6 tasks hit this exact defect class before code-quality review stabilized it), wugs-s2 (redundant NFR-test-shape instance).
