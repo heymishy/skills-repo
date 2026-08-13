@@ -868,6 +868,26 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.error('[wugs-s7] guardrail_pending_prs migration failed:', err.message);
     });
 
+    // wugs-s8: guardrail_promotion_requests table — tracks a tech lead's
+    // request to promote a product-level guardrail/standard to org level.
+    // content_snapshot taken at request time (not re-read at approval),
+    // per the story's own Architecture Constraints -- immune to the
+    // product-level file changing between request and approval.
+    _creditsPool.query(`CREATE TABLE IF NOT EXISTS guardrail_promotion_requests (
+      request_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      tenant_id VARCHAR NOT NULL,
+      product_id UUID NOT NULL,
+      file_path VARCHAR NOT NULL,
+      content_snapshot TEXT NOT NULL,
+      status VARCHAR NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+      requested_by VARCHAR NOT NULL,
+      requested_at TIMESTAMPTZ DEFAULT NOW()
+    )`).then(function() {
+      console.log('[wugs-s8] guardrail_promotion_requests table ready');
+    }).catch(function(err) {
+      console.error('[wugs-s8] guardrail_promotion_requests migration failed:', err.message);
+    });
+
     // pr-s2: cache table for the computed product rollup (DoD-status counts
     // today; Epic 2 stories add more columns for health/test-coverage/AC-
     // coverage/taxonomy). One row per product_id -- ON CONFLICT (product_id)

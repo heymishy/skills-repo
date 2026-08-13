@@ -1656,6 +1656,59 @@ async function _trackPendingPr(pool, tenantId, productId, contentPath, prNumber,
 }
 
 /**
+ * wugs-s8 — creates a promotion request if none is pending for this exact
+ * tenant/product/path, or returns the existing pending one (AC1/AC2 are
+ * the same idempotent operation, not two different code paths).
+ * @returns {Promise<{requestId: string, status: string, alreadyExisted: boolean}>}
+ */
+async function _requestPromotion(pool, tenantId, productId, filePath, requestedBy, owner, repo, token) {
+  var existing = (await pool.query(
+    'SELECT request_id, status FROM guardrail_promotion_requests WHERE tenant_id = $1 AND product_id = $2 AND file_path = $3 AND status = $4',
+    [tenantId, productId, filePath, 'pending']
+  )).rows[0];
+  if (existing) {
+    return { requestId: existing.request_id, status: existing.status, alreadyExisted: true };
+  }
+  var currentContent = await _artefactFetcher.fetchRepoPath(owner, repo, filePath, token);
+  var inserted = (await pool.query(
+    'INSERT INTO guardrail_promotion_requests (tenant_id, product_id, file_path, content_snapshot, status, requested_by) VALUES ($1, $2, $3, $4, $5, $6) RETURNING request_id, status',
+    [tenantId, productId, filePath, currentContent, 'pending', requestedBy]
+  )).rows[0];
+  return { requestId: inserted.request_id, status: inserted.status, alreadyExisted: false };
+}
+
+/**
+ * wugs-s8 — POST /products/:id/guardrails/promote: tenant-scoped (AC4,
+ * matching handlePostGuardrailsForm's own 404-not-403 FORBIDDEN-vs-NOT_FOUND
+ * convention), CSRF-guarded (matching every other mutating form in this
+ * file). Delegates to _requestPromotion for the idempotent create-or-return.
+ */
+async function handlePostRequestPromotion(req, res, _next, pool) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+  req.body = await _readBody(req);
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+  var login = req.session && req.session.login;
+  var token = req.session && req.session.accessToken;
+  var filePath = (req.body && req.body.path) || '';
+
+  var prodRow = (await pool.query(
+    'SELECT name, tenant_id, repo_owner, repo_name FROM products WHERE product_id = $1',
+    [productId]
+  )).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+
+  var result = await _requestPromotion(pool, tenantId, productId, filePath, login, prodRow.repo_owner, prodRow.repo_name, token);
+  if (res.status) { res.status(200).json({ ok: true, result: result }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, result: result })); }
+}
+
+/**
  * wugs-s7 — resolves every tracked pending PR for a product: live-checks
  * each one's status via checkPrStatus, clears (DELETEs) any that have
  * merged or closed without merging (AC2/AC3), and returns a Map of
@@ -3681,5 +3734,8 @@ module.exports = {
   handleListSharedComments,
   handleCreateAgencyComment,
   handleListAgencyComments,
-  renderCommentThreadHtml
+  renderCommentThreadHtml,
+  // wugs-s8: request a product-level guardrail/standard be promoted to org level
+  _requestPromotion,
+  handlePostRequestPromotion
 };
