@@ -1782,6 +1782,11 @@ async function _resolvePromotionRequest(pool, tenantId, requestId, newStatus, re
  * real retry path (see plan's design note -- a decision, not an AC).
  */
 async function handlePostApprovePromotion(req, res, _next, pool) {
+  // review fix -- CSRF guard first, matching every other mutating POST
+  // handler in this file (handlePostRequestPromotion, handlePostOrgRepoSettings).
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
   if (!req.session || !isEffectivelyAdmin(req.session)) {
     if (res.status) { res.status(403).json({ error: 'forbidden' }); }
     else { res.writeHead(403, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'forbidden' })); }
@@ -1816,7 +1821,12 @@ async function handlePostApprovePromotion(req, res, _next, pool) {
     if (res.status) { res.status(200).json({ ok: true, prNumber: writeResult.prNumber, prUrl: writeResult.prUrl }); }
     else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, prNumber: writeResult.prNumber, prUrl: writeResult.prUrl })); }
   } catch (writeErr) {
-    await pool.query(`UPDATE guardrail_promotion_requests SET status = 'pending' WHERE request_id = $1`, [requestId]);
+    await pool.query('UPDATE guardrail_promotion_requests SET status = $1 WHERE request_id = $2', ['pending', requestId]);
+    if (writeErr instanceof _guardrailPrAdapter.GuardrailPrConflictError) {
+      if (res.status) { res.status(409).json({ error: 'Artefact was updated — please reload and try again' }); }
+      else { res.writeHead(409, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'Artefact was updated — please reload and try again' })); }
+      return;
+    }
     if (res.status) { res.status(500).json({ error: 'Failed to create the promotion PR. The request has been returned to pending -- please try again.' }); }
     else { res.writeHead(500, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'Failed to create the promotion PR. The request has been returned to pending -- please try again.' })); }
   }

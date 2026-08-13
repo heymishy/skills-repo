@@ -26,6 +26,7 @@ var guardrailPrAdapter = require('../src/web-ui/adapters/guardrail-pr-adapter');
 function mockReq(overrides) {
   return Object.assign({
     params: { requestId: 'req-1' },
+    body: { _csrf: 'ct1' },
     session: { accessToken: 'tok', tenantId: 't1', login: 'admin-alice', role: 'admin', csrfToken: 'ct1' }
   }, overrides || {});
 }
@@ -59,7 +60,7 @@ function makeMockPool(state, calls) {
       if (/UPDATE guardrail_promotion_requests SET pr_number = \$1 WHERE request_id = \$2/i.test(s)) {
         return { rows: [] };
       }
-      if (/UPDATE guardrail_promotion_requests SET status = 'pending' WHERE request_id/i.test(s)) {
+      if (/UPDATE guardrail_promotion_requests SET status = \$1 WHERE request_id = \$2/i.test(s)) {
         return { rows: [] };
       }
       return { rows: [] };
@@ -99,6 +100,63 @@ await checkAsync('AC1: approveRequest_pending_invokesWriteAdapterAndRecordsPr', 
     assert.strictEqual(prNumberUpdate.params[0], 7);
     var body = JSON.parse(result.body);
     assert.strictEqual(body.prNumber, 7);
+  });
+});
+
+// ── review fix: CSRF guard blocks approval, no state change ─────────────
+await checkAsync('review: approveRequest_missingCsrf_rejected403NoStateChange', async () => {
+  var calls = [];
+  var pool = makeMockPool({
+    orgRepoRow: { repo_owner: 'org-co', repo_name: 'org-repo' },
+    pendingRow: { request_id: 'req-1', product_id: 'p1', file_path: 'standards/saas-gui.md', content_snapshot: 'X' }
+  }, calls);
+  var req = mockReq({ body: { _csrf: 'wrong-token' } });
+  var res = mockRes();
+  await products.handlePostApprovePromotion(req, res, null, pool);
+  var result = res._get();
+  assert.strictEqual(result.statusCode, 403, 'expected 403 for a CSRF token mismatch');
+  var claimUpdate = calls.find(function (c) { return /SET status = \$1, resolved_by = \$2/i.test(c.sql); });
+  assert.ok(!claimUpdate, 'expected NO state change -- the CSRF guard must block before any DB write');
+});
+
+// ── review fix: write-adapter failure reverts the claim back to pending ─
+await checkAsync('review: approveRequest_writeAdapterFails_revertsToPendingWith500', async () => {
+  var calls = [];
+  var pool = makeMockPool({
+    orgRepoRow: { repo_owner: 'org-co', repo_name: 'org-repo' },
+    pendingRow: { request_id: 'req-1', product_id: 'p1', file_path: 'standards/saas-gui.md', content_snapshot: 'X' }
+  }, calls);
+  await withMockedWriteAdapter(async function () {
+    throw new Error('simulated GitHub API failure');
+  }, async function () {
+    var req = mockReq();
+    var res = mockRes();
+    await products.handlePostApprovePromotion(req, res, null, pool);
+    var result = res._get();
+    assert.strictEqual(result.statusCode, 500, 'expected 500 on write-adapter failure, got: ' + result.statusCode + ' body: ' + result.body);
+    var revertUpdate = calls.find(function (c) { return /SET status = \$1 WHERE request_id = \$2/i.test(c.sql) && c.params[0] === 'pending'; });
+    assert.ok(revertUpdate, 'expected a compensating UPDATE reverting status back to pending so the admin can retry');
+    assert.strictEqual(revertUpdate.params[1], 'req-1');
+  });
+});
+
+// ── review fix: GuardrailPrConflictError on write gets its own 409 ──────
+await checkAsync('review: approveRequest_writeAdapterConflict_409NotGeneric500', async () => {
+  var calls = [];
+  var pool = makeMockPool({
+    orgRepoRow: { repo_owner: 'org-co', repo_name: 'org-repo' },
+    pendingRow: { request_id: 'req-1', product_id: 'p1', file_path: 'standards/saas-gui.md', content_snapshot: 'X' }
+  }, calls);
+  await withMockedWriteAdapter(async function () {
+    throw new guardrailPrAdapter.GuardrailPrConflictError('stale sha');
+  }, async function () {
+    var req = mockReq();
+    var res = mockRes();
+    await products.handlePostApprovePromotion(req, res, null, pool);
+    var result = res._get();
+    assert.strictEqual(result.statusCode, 409, 'expected 409 for a stale-SHA conflict, matching handlePostOrgRepoSettings\'s sibling handling');
+    var revertUpdate = calls.find(function (c) { return /SET status = \$1 WHERE request_id = \$2/i.test(c.sql) && c.params[0] === 'pending'; });
+    assert.ok(revertUpdate, 'expected the request to be reverted to pending even on a conflict, so it can be retried');
   });
 });
 
