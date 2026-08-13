@@ -174,6 +174,15 @@
 **Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this feature's changes during implementation, stop and investigate.
 ---
 
+---
+**[2026-08-13] | RISK-ACCEPT | branch-setup (wugs-s8)**
+**Decision:** Proceeding with `wugs-s8`'s worktree despite 34 test failures at baseline (513 files run via `npm test`, 34 failed, exit code 0) — one more than the documented 33-failure baseline.
+**Alternatives considered:** Investigate and fix pre-existing failures first — rejected for the 33 documented ones (out of scope, same pattern as every prior story this session). For the 34th (new) failure, investigated directly rather than assuming flake.
+**Rationale:** The extra failure is `tests/check-pcr-s1-test-runner.js`'s `N1-perf-per-file-average-within-110pct` check — a hardcoded wall-clock performance assertion (spawns 40 test files, asserts average per-file runtime is within 110% of a fixed `682ms/file` baseline). Confirmed via direct standalone run (`node tests/check-pcr-s1-test-runner.js`) that this test passes cleanly in isolation (`14 check(s) OK`) — it only fails as part of the full-suite run, whose total wall-clock this time (551563ms) was notably slower than earlier same-session runs (~470000-490000ms), consistent with system load from this session's own accumulated background processes (multiple `gh run watch` background tasks, concurrent npm installs across worktrees). This is a load-sensitive NFR check reacting to the current machine's contention, not a code regression — it does not touch `wugs-s8`'s expected touchpoints, and the 33 previously-documented failures remain unchanged.
+**Made by:** Claude (agent), per branch-setup's own Step 5 option 2 protocol, with additional direct investigation of the new failure per this session's own "verify actual state, don't assume" discipline
+**Revisit trigger:** If `check-pcr-s1-test-runner.js`'s `N1` check fails again on a full-suite run under normal (non-contended) system load, investigate as a genuine regression rather than assuming load-sensitivity again.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded — all four decisions from this discovery/clarify session were logged as entries above, not full ADRs, per the operator's confirmation that none warranted ADR-level depth. -->
