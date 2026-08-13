@@ -926,7 +926,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     featuresSectionHtml +
     '<script>' +
     'function pshConfirmDeleteProduct(id){' +
-      'var ok=confirm("Delete this product? This permanently removes it from wuce, including its journeys and standards cache. Your GitHub repository will NOT be deleted — this only removes the product from wuce, the repo and its history are untouched.");' +
+      'var ok=confirm("Delete this product? This permanently removes it from wuce, including its journeys. Your GitHub repository will NOT be deleted — this only removes the product from wuce, the repo and its history are untouched.");' +
       'if(!ok)return;' +
       'fetch(\'/products/\'+id,{method:\'DELETE\'}).then(function(r){' +
         'if(r.ok){window.location.href=\'/dashboard\';}' +
@@ -2312,7 +2312,7 @@ async function handlePostProductSync(req, res, _next, pool, posthog) {
 
 /**
  * prc-s4.2: DELETE /products/:id — hard-delete a product and its wuce-side
- * data (journeys, standards-cache rows). The underlying GitHub repo is NEVER
+ * data (journeys). The underlying GitHub repo is NEVER
  * touched by this handler -- no fetch()/https call of any kind is made here,
  * by design (MVP scope: detach only, never delete the repo). Tenant-scoped:
  * a product not owned by the caller's tenant returns 404 (not 403), matching

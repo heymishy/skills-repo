@@ -3097,8 +3097,8 @@ async function router(req, res) {
     authGuard(req, res, async () => { await handlePostConnectRepo(req, res, null, _pshPool, null); });
 
   } else if (pathname.match(/^\/products\/[^/]+$/) && req.method === 'DELETE') {
-    // prc-s4.2 — delete (detach) a product: removes product row, journeys, and
-    // standards-cache rows; never touches the underlying GitHub repo
+    // prc-s4.2 — delete (detach) a product: removes product row and journeys;
+    // never touches the underlying GitHub repo
     req.params = { id: pathname.split('/')[2] };
     authGuard(req, res, async () => { await handleDeleteProduct(req, res, null, _pshPool, null); });
 

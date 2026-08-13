@@ -6,7 +6,7 @@ function pass(name) { console.log(`  [PASS] ${name}`); passed++; }
 function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err}`); failed++; }
 
 function makeMockPool(state) {
-  // state = { productId, tenantId, journeys: [...], standards: [...], optouts: [...] }
+  // state = { productId, tenantId, journeys: [...] }
   const queries = [];
   return {
     _queries: queries,
@@ -58,7 +58,7 @@ function makeMockPool(state) {
 
   // T2 — audit log: capture() invoked with deleting user, product ID (AC/NFR: audit)
   try {
-    const state = { productId: 'prod-2', tenantId: 'ty', journeys: [], standards: [], optouts: [] };
+    const state = { productId: 'prod-2', tenantId: 'ty', journeys: [] };
     const pool = makeMockPool(state);
     const ph = { _caps: [], capture: function(id, ev, props) { this._caps.push({ id, ev, props }); } };
     const req = { session: { tenantId: 'ty', login: 'deleter-user' }, params: { id: 'prod-2' } };
@@ -73,7 +73,7 @@ function makeMockPool(state) {
 
   // T3 — NFR Security: only the product's own tenant can delete it (tenant mismatch -> 404, zero deletion)
   try {
-    const state = { productId: 'prod-3', tenantId: 'owner-tenant', journeys: [], standards: [], optouts: [] };
+    const state = { productId: 'prod-3', tenantId: 'owner-tenant', journeys: [] };
     const pool = makeMockPool(state);
     const ph = { _caps: [], capture: function() {} };
     const req = { session: { tenantId: 'attacker-tenant', login: 'attacker' }, params: { id: 'prod-3' } };
