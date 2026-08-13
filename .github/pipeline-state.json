@@ -22298,12 +22298,12 @@
           "id": "wugs-s4",
           "slug": "wugs-s4-no-connected-repo-fallback",
           "name": "No-connected-repo fallback: org-level only, with a connect-repo prompt",
-          "stage": "branch-setup",
+          "stage": "implementation-plan",
           "health": "green",
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s4-no-connected-repo-fallback.md",
           "prStatus": "none",
           "notes": "Epic 1 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-13T03:05:45.592Z",
+          "updatedAt": "2026-08-13T03:09:01.107Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
@@ -22320,7 +22320,33 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s4-dor.md",
           "dorContractArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s4-dor-contract.md",
-          "dorSignedOffAt": "2026-08-11T08:38:42.453Z"
+          "dorSignedOffAt": "2026-08-11T08:38:42.453Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Distinct connect-a-repo prompt when no repo connected (AC1)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s4-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Org-level section still renders (AC2)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s4-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Prompt links to the real connection flow (AC3)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s4-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Not sticky past repo connection + accessibility (AC4, NFR-A11Y)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s4-plan.md"
+            }
+          ]
         },
         {
           "id": "wugs-s5",
