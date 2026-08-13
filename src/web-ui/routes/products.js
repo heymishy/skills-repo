@@ -1864,7 +1864,7 @@ async function handlePostApprovePromotion(req, res, _next, pool, posthog) {
  * adapter call, no org-repo check needed (AC2: rejecting never touches
  * the org repo).
  */
-async function handlePostRejectPromotion(req, res, _next, pool) {
+async function handlePostRejectPromotion(req, res, _next, pool, posthog) {
   var csrfOk = await _csrf.csrfGuard(req, res);
   if (!csrfOk) return;
 
@@ -1883,6 +1883,17 @@ async function handlePostRejectPromotion(req, res, _next, pool) {
     else { res.writeHead(409, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'This request has already been resolved.' })); }
     return;
   }
+
+  // wugs-s10 -- fail-open audit capture (AC3/AC4): a PostHog failure must
+  // never block or roll back the rejection that just succeeded.
+  var _ph = posthog || _posthog;
+  try {
+    _ph.capture(tenantId, 'guardrail_promotion_rejected', {
+      tenantId: tenantId,
+      requestId: claimed.request_id,
+      rejectedBy: login
+    });
+  } catch (_) { /* fail-open, per AC4 */ }
 
   if (res.status) { res.status(200).json({ ok: true }); }
   else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true })); }

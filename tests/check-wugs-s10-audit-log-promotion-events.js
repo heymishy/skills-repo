@@ -170,6 +170,67 @@ await checkAsync('AC4: approveRequest_captureThrows_stillApproves', async () => 
   });
 });
 
+// ── AC3: rejection fires guardrail_promotion_rejected ────────────────────
+await checkAsync('AC3: rejectRequest_fires_guardrailPromotionRejected', async () => {
+  var captured = null;
+  var ph = mockPosthog(function (distinctId, event, properties) {
+    captured = { distinctId: distinctId, event: event, properties: properties };
+  });
+  var pool = {
+    query: async function (sql) {
+      var s = String(sql);
+      if (/UPDATE guardrail_promotion_requests SET status = \$1, resolved_by = \$2, resolved_at = NOW\(\)/i.test(s)) {
+        return { rows: [{ request_id: 'req-3', product_id: 'p1', file_path: 'standards/saas-gui.md', content_snapshot: 'X' }] };
+      }
+      return { rows: [] };
+    }
+  };
+  var req = mockReq();
+  var res = mockRes();
+  await products.handlePostRejectPromotion(req, res, null, pool, ph);
+  assert.strictEqual(res._get().statusCode, 200);
+  assert.ok(captured, 'expected .capture() to be called');
+  assert.strictEqual(captured.event, 'guardrail_promotion_rejected');
+  assert.strictEqual(captured.properties.tenantId, 't1');
+  assert.strictEqual(captured.properties.requestId, 'req-3');
+  assert.strictEqual(captured.properties.rejectedBy, 'admin-alice');
+});
+
+// ── AC4 (reject path): capture failure doesn't block rejection ──────────
+await checkAsync('AC4: rejectRequest_captureThrows_stillRejects', async () => {
+  var ph = mockPosthog(function () { throw new Error('simulated PostHog failure'); });
+  var pool = {
+    query: async function (sql) {
+      var s = String(sql);
+      if (/UPDATE guardrail_promotion_requests SET status = \$1, resolved_by = \$2, resolved_at = NOW\(\)/i.test(s)) {
+        return { rows: [{ request_id: 'req-4', product_id: 'p1', file_path: 'standards/saas-gui.md', content_snapshot: 'X' }] };
+      }
+      return { rows: [] };
+    }
+  };
+  var req = mockReq();
+  var res = mockRes();
+  await products.handlePostRejectPromotion(req, res, null, pool, ph);
+  assert.strictEqual(res._get().statusCode, 200, 'expected rejection to still succeed despite the capture failure');
+});
+
+// ── NFR-SEC: no PII/credential content in any captured event ────────────
+check('NFR-SEC: capturedProperties_neverContainTokenOrContent', () => {
+  var forbidden = ['token', 'accessToken', 'content', 'content_snapshot', 'csrfToken'];
+  // Static check: read the source and confirm none of the three capture
+  // call sites reference these field names inside their properties object.
+  var fs = require('fs');
+  var src = fs.readFileSync(require.resolve('../src/web-ui/routes/products.js'), 'utf8');
+  var captureBlocks = src.match(/_ph\.capture\([^)]*\{[^}]*\}/g) || [];
+  var promotionCaptureBlocks = captureBlocks.filter(function (b) { return /guardrail_promotion_(requested|approved|rejected)/.test(b); });
+  assert.ok(promotionCaptureBlocks.length >= 3, 'expected to find all 3 promotion capture call sites in source');
+  promotionCaptureBlocks.forEach(function (block) {
+    forbidden.forEach(function (field) {
+      assert.ok(block.indexOf(field) === -1, 'capture block unexpectedly references "' + field + '": ' + block);
+    });
+  });
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
