@@ -1,0 +1,211 @@
+'use strict';
+// check-wugs-s4-no-connected-repo-fallback.js — wugs-s4
+//
+// Unit/integration tests for the "no connected repo" fallback: the
+// product-level section shows a distinct connect-a-repo prompt (not
+// wugs-s2's "none found in this repo" empty state) while the org-level
+// section (wugs-s3) still renders normally.
+
+var assert = require('assert');
+
+var passed = 0;
+var failed = 0;
+
+function check(name, fn) {
+  try { fn(); console.log('PASS:', name); passed++; }
+  catch (e) { console.error('FAIL:', name, '—', e.message); failed++; process.exitCode = 1; }
+}
+
+async function checkAsync(name, fn) {
+  try { await fn(); console.log('PASS:', name); passed++; }
+  catch (e) { console.error('FAIL:', name, '—', e.message); failed++; process.exitCode = 1; }
+}
+
+var products = require('../src/web-ui/routes/products');
+var artefactFetcher = require('../src/web-ui/adapters/artefact-fetcher');
+
+function mockReq(overrides) {
+  return Object.assign({
+    params: { id: 'p1' },
+    session: { accessToken: 'tok', tenantId: 't1', login: 'alice', csrfToken: 'ct1' }
+  }, overrides || {});
+}
+
+function mockRes() {
+  var _statusCode = null;
+  var _body = '';
+  return {
+    writeHead: function (code) { _statusCode = code; return this; },
+    end: function (body) { if (body != null) _body = body; },
+    _get: function () { return { statusCode: _statusCode, body: _body }; }
+  };
+}
+
+// Mock pool: product lookup (repo_owner/repo_name nullable), nav summary,
+// tenant_org_repo, guardrail_pending_prs — matches check-wugs-s3/s7's own
+// makeMockPool convention. `hasRepo` controls whether the product row has a
+// connected repo; pass a mutable `state` object to change it between calls
+// (AC4's not-sticky test).
+function makeMockPool(state) {
+  return {
+    query: async function (sql, params) {
+      var s = String(sql);
+      if (/SELECT name, tenant_id, repo_owner, repo_name FROM products WHERE product_id/i.test(s)) {
+        var row = state.hasRepo
+          ? { name: 'Test Product', tenant_id: 't1', repo_owner: 'acme', repo_name: 'widgets' }
+          : { name: 'Test Product', tenant_id: 't1', repo_owner: null, repo_name: null };
+        return { rows: [row] };
+      }
+      if (/SELECT product_id, name, created_at FROM products WHERE tenant_id/i.test(s)) {
+        return { rows: (state.navProducts || []).map(function (p) { return { product_id: p.id, name: p.name, created_at: new Date().toISOString() }; }) };
+      }
+      if (/SELECT journey_id, created_at AS updated_at FROM journeys WHERE product_id/i.test(s)) { return { rows: [] }; }
+      if (/SELECT journey_id FROM journeys WHERE tenant_id.*product_id IS NULL/i.test(s)) { return { rows: [] }; }
+      if (/SELECT .* FROM tenant_org_repo WHERE tenant_id/i.test(s)) {
+        return { rows: state.orgRepoRow ? [state.orgRepoRow] : [] };
+      }
+      if (/SELECT .* FROM guardrail_pending_prs WHERE tenant_id/i.test(s)) { return { rows: [] }; }
+      return { rows: [] };
+    }
+  };
+}
+
+async function withMockedFetchRepoPath(mockFn, testFn) {
+  var original = artefactFetcher.getFetchRepoPath();
+  artefactFetcher.setFetchRepoPath(mockFn);
+  try { await testFn(); } finally { artefactFetcher.setFetchRepoPath(original); }
+}
+
+(async () => {
+
+// ── AC1: distinct "connect a repo" prompt, not wugs-s2's empty state ────
+await checkAsync('AC1: handleGetGuardrailsView_noConnectedRepo_showsDistinctConnectPrompt', async () => {
+  var pool = makeMockPool({ hasRepo: false });
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    var req = mockReq();
+    var res = mockRes();
+    await products.handleGetProductGuardrailsView(req, res, null, pool);
+    var result = res._get();
+    assert.strictEqual(result.statusCode, 200);
+    assert.ok(/connect a repo/i.test(result.body), 'expected a "connect a repo" prompt');
+    assert.ok(result.body.indexOf('No architecture-guardrails.md found in this repo.') === -1, 'expected the distinct no-repo prompt, NOT wugs-s2\'s "none found in this repo" empty-state copy');
+  });
+});
+
+// ── nav coverage: sidebar still renders fully around the fallback branch ─
+// Modeled on check-wugs-s2-product-level-guardrails-view.js's own AC5
+// (handleGetGuardrailsView_nav_rendersFullSidebarAndActiveProduct): the
+// current product (p1) must itself be a member of the tenant's nav product
+// list for its /products/p1 link to render -- the sidebar only ever renders
+// entries present in navSummary.products (html-shell.js's
+// renderProductsSection), it does not synthesize a row for the page's own
+// product. p2 stays in the fixture too so this test still exercises "full
+// sidebar" (more than just the active product). Scoped to wugs-s4: hasRepo
+// is false here, so the fallback "connect a repo" prompt renders in place
+// of the product-level section -- the nav sidebar must still render fully
+// around it, not just the fallback prompt in isolation.
+await checkAsync('AC1-nav: handleGetGuardrailsView_noConnectedRepo_navStillRendersFullSidebarAndActiveProduct', async () => {
+  var pool = makeMockPool({
+    hasRepo: false,
+    navProducts: [{ id: 'p1', name: 'Current Product' }, { id: 'p2', name: 'Nav Product One' }]
+  });
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    var req = mockReq({ params: { id: 'p1' } });
+    var res = mockRes();
+    await products.handleGetProductGuardrailsView(req, res, null, pool);
+    var result = res._get();
+    assert.strictEqual(result.statusCode, 200);
+    assert.ok(result.body.indexOf('Nav Product One') !== -1, 'expected the products-nav sidebar to be populated even with no connected repo');
+    assert.ok(result.body.indexOf('/products/p1') !== -1, 'expected the current product to appear as a real nav link (activeProductId wired) even with no connected repo');
+    assert.ok(/connect a repo/i.test(result.body), 'expected the no-connected-repo fallback prompt to still render alongside the nav sidebar');
+  });
+});
+
+// ── AC2: org section still renders alongside the product-level prompt ───
+await checkAsync('AC2: handleGetGuardrailsView_noConnectedRepo_orgSectionStillRenders', async () => {
+  var pool = makeMockPool({ hasRepo: false, orgRepoRow: { repo_owner: 'org-co', repo_name: 'org-repo' } });
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    if (owner === 'org-co' && path === '.github/architecture-guardrails.md') { return 'REAL ORG CONTENT'; }
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    var req = mockReq();
+    var res = mockRes();
+    await products.handleGetProductGuardrailsView(req, res, null, pool);
+    var result = res._get();
+    assert.strictEqual(result.statusCode, 200);
+    assert.ok(result.body.indexOf('REAL ORG CONTENT') !== -1, 'expected the org-level section to still render its real content');
+    assert.ok(/connect a repo/i.test(result.body), 'expected the product-level connect-a-repo prompt to also be present — the page is not blocked/hidden');
+  });
+});
+
+// ── AC3: prompt links to the real, existing connection flow ─────────────
+await checkAsync('AC3: handleGetGuardrailsView_connectPrompt_linksToRealConnectionFlow', async () => {
+  var pool = makeMockPool({ hasRepo: false });
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    var req = mockReq();
+    var res = mockRes();
+    await products.handleGetProductGuardrailsView(req, res, null, pool);
+    var result = res._get();
+    assert.ok(result.body.indexOf('href="/products/p1"') !== -1, 'expected the prompt to link to the real product view page (GET /products/:id), where the existing rpc-s1/prc-s2.1 connect-repo form lives — not a new route');
+  });
+});
+
+// ── Wiring: the real connection route (prc-s1.2) still exists ───────────
+check('wiring: server_js_still_routes_postProductsIdRepo_to_handlePostConnectRepo', () => {
+  var fs = require('fs');
+  var serverSrc = fs.readFileSync(require.resolve('../src/web-ui/server.js'), 'utf8');
+  assert.ok(serverSrc.indexOf('handlePostConnectRepo') !== -1, 'expected server.js to still reference the existing handlePostConnectRepo — confirms this story reused it rather than replacing it');
+});
+
+// ── AC4: fallback state is not sticky past a repo connection ────────────
+await checkAsync('AC4: handleGetGuardrailsView_repoConnectedAfterFallback_showsNormalContentNextLoad', async () => {
+  var state = { hasRepo: false };
+  var pool = makeMockPool(state);
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    if (path === '.github/architecture-guardrails.md') { return 'REAL PRODUCT CONTENT'; }
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    var req1 = mockReq();
+    var res1 = mockRes();
+    await products.handleGetProductGuardrailsView(req1, res1, null, pool);
+    assert.ok(/connect a repo/i.test(res1._get().body), 'expected the fallback prompt on the first call (no repo yet)');
+
+    // Simulate a real repo connection happening between the two page loads.
+    state.hasRepo = true;
+
+    var req2 = mockReq();
+    var res2 = mockRes();
+    await products.handleGetProductGuardrailsView(req2, res2, null, pool);
+    var body2 = res2._get().body;
+    assert.ok(!/connect a repo/i.test(body2), 'expected the fallback prompt to be GONE on the second call, now that a repo is connected');
+    assert.ok(body2.indexOf('REAL PRODUCT CONTENT') !== -1, 'expected wugs-s2\'s normal product-level content on the second call — no stale/cached fallback state');
+  });
+});
+
+// ── NFR-A11Y: the connect-a-repo prompt is a real, keyboard-accessible link ──
+// Note: as of the Task 1 review fix, _renderNoConnectedRepoPrompt delegates
+// its shell markup to the shared _renderPromptBox helper, but the <a href>
+// action itself is still constructed as a string literal INSIDE
+// _renderNoConnectedRepoPrompt's own function body (passed in as the
+// actionHtml argument to _renderPromptBox) -- it is not inside
+// _renderPromptBox's own definition. Verified directly against the current
+// source before writing this assertion. A generous 800-char window off the
+// function signature comfortably covers the whole function body either way.
+check('NFR-A11Y: connectPrompt_isRealFocusableLinkNotNonInteractiveText', () => {
+  var fs = require('fs');
+  var src = fs.readFileSync(require.resolve('../src/web-ui/routes/products.js'), 'utf8');
+  var promptFnMatch = src.match(/function _renderNoConnectedRepoPrompt[\s\S]{0,800}/);
+  assert.ok(promptFnMatch, 'expected to find _renderNoConnectedRepoPrompt in the source');
+  assert.ok(/<a\s+href=/.test(promptFnMatch[0]), 'expected a real <a href> element, not a non-interactive <div>/<span> hint');
+});
+
+console.log('\n' + passed + ' passed, ' + failed + ' failed');
+if (failed > 0) process.exit(1);
+
+})();
