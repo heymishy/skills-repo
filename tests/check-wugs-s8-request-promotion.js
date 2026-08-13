@@ -133,6 +133,22 @@ await checkAsync('reviewFix: requestPromotion_pathOutsideAllowlist_returns400NoI
   });
 });
 
+// ── AC2: existing pending request — no duplicate created ────────────────
+await checkAsync('AC2: requestPromotion_existingPending_returnsExistingNotDuplicate', async () => {
+  var calls = [];
+  var pool = makeMockPool({ pendingRow: { request_id: 'req-existing', status: 'pending' } }, calls);
+  var req = mockReq({ body: { path: 'standards/saas-gui.md', _csrf: 'ct1' } });
+  var res = mockRes();
+  await products.handlePostRequestPromotion(req, res, null, pool);
+  var result = res._get();
+  assert.strictEqual(result.statusCode, 200);
+  var insertCall = calls.find(function (c) { return /INSERT INTO guardrail_promotion_requests/i.test(c.sql); });
+  assert.ok(!insertCall, 'expected NO new INSERT — a pending request already exists for this exact entry');
+  var body = JSON.parse(result.body);
+  assert.strictEqual(body.result.requestId, 'req-existing', 'expected the existing pending request to be returned, not a new one');
+  assert.strictEqual(body.result.alreadyExisted, true);
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
