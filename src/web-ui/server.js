@@ -825,8 +825,9 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // this feature's decisions.md ARCH entry #4 commits to a clean
     // supersession, not carrying a dead data concept. Explicit DROP (not
     // just stopping the CREATE) so existing deployed databases actually
-    // lose the tables, per ADR-003 applied in reverse. standard_product_optouts
-    // dropped first -- it has an ON DELETE CASCADE FK to standards.standard_id.
+    // lose the tables, not just skip creating them on fresh installs.
+    // standard_product_optouts dropped first -- it has an ON DELETE CASCADE
+    // FK to standards.standard_id.
     _creditsPool.query(`DROP TABLE IF EXISTS standard_product_optouts`).then(function() {
       console.log('[wugs-s12] standard_product_optouts table dropped');
     }).catch(function(err) {
