@@ -73,7 +73,7 @@ const { createSettingsHandlers } = require('./routes/settings'); // c1
 const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
 const { adminCreditsGet, adminCreditsPost, adminSetPlanPost }        = require('./routes/admin-credits');     // arl-s3 / tpac-s1
 const { adminMockGatewayGet, adminMockGatewayPost }                  = require('./routes/admin-mock-gateway'); // amgt-s1
-const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handleGetProductStandardsTab, handleGetProductGuardrailsView, handleGetGuardrailsForm, handlePostGuardrailsForm, _trackPendingPr, handlePostRequestPromotion, handlePostOrgRepoSettings, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules, handlePostApprovePromotion, handlePostRejectPromotion } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1 / smug-s1 / wugs-s2 / wugs-s5 / wugs-s6 / wugs-s3 / wugs-s7 / wugs-s9
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handleGetProductGuardrailsView, handleGetGuardrailsForm, handlePostGuardrailsForm, _trackPendingPr, handlePostRequestPromotion, handlePostOrgRepoSettings, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules, handlePostApprovePromotion, handlePostRejectPromotion } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1 / smug-s1 / wugs-s2 / wugs-s5 / wugs-s6 / wugs-s3 / wugs-s7 / wugs-s9
 const { setModulesAdapter } = require('./adapters/modules-adapter'); // a1
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
@@ -3135,18 +3135,10 @@ async function router(req, res) {
     req.params = { id: pathname.split('/')[2] };
     authGuard(req, res, async () => { await handleGetProductRoadmap(req, res, null, _pshPool); });
 
-  } else if (pathname.match(/^\/products\/[^/]+\/standards-tab$/) && req.method === 'GET') {
-    // smug-s1 -- Standards tab: list + promote/opt-out, reachable from the
-    // product page nav. Distinct path from the existing JSON
-    // GET /products/:id/standards API (routes/standards.js's standardsList).
-    req.params = { id: pathname.split('/')[2] };
-    authGuard(req, res, async () => { await handleGetProductStandardsTab(req, res, null, _pshPool); });
-
   } else if (pathname.match(/^\/products\/[^/]+\/guardrails$/) && req.method === 'GET') {
     // wugs-s2 -- product-level guardrails/standards view: live-reads
     // .github/architecture-guardrails.md and standards/ from the product's
-    // connected repo. Distinct from /products/:id/standards-tab (smug-s1,
-    // DB-backed standard docs) and /products/:id/standards (its JSON API).
+    // connected repo.
     req.params = { id: pathname.split('/')[2] };
     authGuard(req, res, async () => { await handleGetProductGuardrailsView(req, res, null, _pshPool); });
 
