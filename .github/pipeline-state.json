@@ -22725,12 +22725,12 @@
           "id": "wugs-s11",
           "slug": "wugs-s11-remove-smug-s1-routes-and-tab",
           "name": "Remove smug-s1 promote/opt-out routes and Standards tab rendering",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s11-remove-smug-s1-routes-and-tab.md",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "notes": "Epic 4 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-13T10:14:47.770Z",
+          "updatedAt": "2026-08-13T10:40:49.567Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
@@ -22747,7 +22747,35 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s11-dor.md",
           "dorContractArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s11-dor-contract.md",
-          "dorSignedOffAt": "2026-08-11T08:38:42.453Z"
+          "dorSignedOffAt": "2026-08-11T08:38:42.453Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Remove standards.js JSON API, its 6 routes, and its 3 dedicated/surgical test references",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s11-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Remove old Standards tab, repoint nav to repo-backed view (AC1/AC2)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s11-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Lock in the real, complete AC4 grep (story's own AC4 text named incorrect function names)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s11-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Post-CI fix -- remove dead standard-creation coverage from the bri-s3.4 E2E spec (real regression caught by cross-tenant isolation gate)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dod/wugs-s11-dod.md"
+            }
+          ],
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dod/wugs-s11-dod.md"
         },
         {
           "id": "wugs-s12",
