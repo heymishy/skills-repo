@@ -149,6 +149,23 @@ await checkAsync('AC2: requestPromotion_existingPending_returnsExistingNotDuplic
   assert.strictEqual(body.result.alreadyExisted, true);
 });
 
+// ── AC4: cross-tenant request rejected, no row created ───────────────────
+await checkAsync('AC4: requestPromotion_crossTenantProduct_rejected', async () => {
+  var calls = [];
+  var pool = makeMockPool({ pendingRow: null }, calls);
+  var req = mockReq({
+    params: { id: 'p-tenant-b' },
+    session: { accessToken: 'tok', tenantId: 't1', login: 'alice', csrfToken: 'ct1' },
+    body: { path: 'standards/saas-gui.md', _csrf: 'ct1' }
+  });
+  var res = mockRes();
+  await products.handlePostRequestPromotion(req, res, null, pool);
+  var result = res._get();
+  assert.strictEqual(result.statusCode, 404, 'expected 404 (FORBIDDEN-vs-NOT_FOUND convention), got: ' + result.statusCode);
+  var insertCall = calls.find(function (c) { return /INSERT INTO guardrail_promotion_requests/i.test(c.sql); });
+  assert.ok(!insertCall, 'expected no row created for a cross-tenant request');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
