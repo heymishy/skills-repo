@@ -163,6 +163,48 @@ check('wiring: server_js_still_routes_postProductsIdRepo_to_handlePostConnectRep
   assert.ok(serverSrc.indexOf('handlePostConnectRepo') !== -1, 'expected server.js to still reference the existing handlePostConnectRepo — confirms this story reused it rather than replacing it');
 });
 
+// ── AC4: fallback state is not sticky past a repo connection ────────────
+await checkAsync('AC4: handleGetGuardrailsView_repoConnectedAfterFallback_showsNormalContentNextLoad', async () => {
+  var state = { hasRepo: false };
+  var pool = makeMockPool(state);
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    if (path === '.github/architecture-guardrails.md') { return 'REAL PRODUCT CONTENT'; }
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    var req1 = mockReq();
+    var res1 = mockRes();
+    await products.handleGetProductGuardrailsView(req1, res1, null, pool);
+    assert.ok(/connect a repo/i.test(res1._get().body), 'expected the fallback prompt on the first call (no repo yet)');
+
+    // Simulate a real repo connection happening between the two page loads.
+    state.hasRepo = true;
+
+    var req2 = mockReq();
+    var res2 = mockRes();
+    await products.handleGetProductGuardrailsView(req2, res2, null, pool);
+    var body2 = res2._get().body;
+    assert.ok(!/connect a repo/i.test(body2), 'expected the fallback prompt to be GONE on the second call, now that a repo is connected');
+    assert.ok(body2.indexOf('REAL PRODUCT CONTENT') !== -1, 'expected wugs-s2\'s normal product-level content on the second call — no stale/cached fallback state');
+  });
+});
+
+// ── NFR-A11Y: the connect-a-repo prompt is a real, keyboard-accessible link ──
+// Note: as of the Task 1 review fix, _renderNoConnectedRepoPrompt delegates
+// its shell markup to the shared _renderPromptBox helper, but the <a href>
+// action itself is still constructed as a string literal INSIDE
+// _renderNoConnectedRepoPrompt's own function body (passed in as the
+// actionHtml argument to _renderPromptBox) -- it is not inside
+// _renderPromptBox's own definition. Verified directly against the current
+// source before writing this assertion. A generous 800-char window off the
+// function signature comfortably covers the whole function body either way.
+check('NFR-A11Y: connectPrompt_isRealFocusableLinkNotNonInteractiveText', () => {
+  var fs = require('fs');
+  var src = fs.readFileSync(require.resolve('../src/web-ui/routes/products.js'), 'utf8');
+  var promptFnMatch = src.match(/function _renderNoConnectedRepoPrompt[\s\S]{0,800}/);
+  assert.ok(promptFnMatch, 'expected to find _renderNoConnectedRepoPrompt in the source');
+  assert.ok(/<a\s+href=/.test(promptFnMatch[0]), 'expected a real <a href> element, not a non-interactive <div>/<span> hint');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
