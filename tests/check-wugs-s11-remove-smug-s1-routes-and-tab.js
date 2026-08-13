@@ -79,7 +79,11 @@ check('AC4: noReferencesToRemovedStandardsExports_inSrcOrTests', function () {
   try {
     raw = execSync('grep -rn -E "' + pattern + '" src/ tests/', { cwd: require('path').join(__dirname, '..'), encoding: 'utf8' });
   } catch (e) {
-    // grep exits 1 when no matches are found -- that is the SUCCESS case here.
+    // review fix -- grep exits 1 for "no matches" (the success case here),
+    // but exits 2+ for a real error (bad path, grep missing, malformed
+    // pattern). Only treat exit 1 as success; anything else must fail loudly
+    // rather than silently becoming a false-green on this regression guard.
+    if (e.status !== 1) { throw e; }
     raw = '';
   }
   // Filter out known, non-blocking residue that a plain repo-wide grep
