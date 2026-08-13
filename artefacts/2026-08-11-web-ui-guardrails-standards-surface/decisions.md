@@ -192,6 +192,15 @@
 **Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this feature's changes during implementation, stop and investigate.
 ---
 
+---
+**[2026-08-13] | RISK-ACCEPT | branch-setup (wugs-s10)**
+**Decision:** Proceeding with `wugs-s10`'s worktree despite 33 pre-existing test failures at baseline (515 files run via `npm test`, 33 failed, exit code 0).
+**Alternatives considered:** Investigate and fix pre-existing failures first — rejected, out of scope for this feature and would delay the whole inner loop for unrelated pre-existing repo drift.
+**Rationale:** The 33 failing files match the exact same list documented in `wugs-s9`'s own branch-setup RISK-ACCEPT entry above (`check-bee3-posthog.js`, `check-mfc1/mfc2-*.js`, `check-ougl*.js`, `check-inc2.1/inc4-*.js`, etc.) — same baseline-drift pattern already documented for every prior story this session. None overlap with `wugs-s10`'s expected touchpoints (PostHog audit-log capture wired into `wugs-s8`'s `_requestPromotion` and `wugs-s9`'s `handlePostApprovePromotion`/`handlePostRejectPromotion`). This worktree branched from master after `wugs-s9` merged, so it includes `wugs-s9`'s real approve/reject handlers.
+**Made by:** Claude (agent), per branch-setup's own Step 5 option 2 protocol
+**Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this feature's changes during implementation, stop and investigate.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded — all four decisions from this discovery/clarify session were logged as entries above, not full ADRs, per the operator's confirmation that none warranted ADR-level depth. -->
