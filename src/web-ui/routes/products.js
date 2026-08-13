@@ -22,6 +22,7 @@ var _agencyClientComments = require('../modules/agency-client-comments'); // sto
 var _standardsRoutes = require('./standards'); // smug-s1 -- fetchStandardsForProduct, shared with the JSON standards API
 var _artefactFetcher = require('../adapters/artefact-fetcher'); // wugs-s2 — reuses wugs-s1's fetchRepoPath (ADR-012)
 var _guardrailPrAdapter = require('../adapters/guardrail-pr-adapter'); // wugs-s6 review fix — GuardrailPrConflictError for the write-adapter try/catch
+var { isEffectivelyAdmin } = require('../modules/impersonation'); // wugs-s9 — DoR-specified effective-role check, matching credits-guard.js's exact pattern
 
 // s1.1 -- injectable bulk session-store reader. Defaults to a lazy require of
 // skills.js's real _getHtmlSessionsBulk (mirrors the same lazy-getter shape
@@ -1752,6 +1753,73 @@ async function _resolvePendingPromotions(pool, tenantId, productId) {
     byPath.set(rows[i].file_path, { requestId: rows[i].request_id });
   }
   return byPath;
+}
+
+/**
+ * wugs-s9 — race-safe resolution of a pending promotion request. The
+ * single conditional UPDATE (status = 'pending' in the WHERE clause) IS
+ * the concurrency-safety mechanism (AC5, story's own Architecture
+ * Constraints) -- a read-then-write pattern is explicitly disallowed.
+ * @returns {Promise<{request_id, product_id, file_path, content_snapshot}|null>}
+ *   null means the request was already resolved by a concurrent call.
+ */
+async function _resolvePromotionRequest(pool, tenantId, requestId, newStatus, resolvedBy) {
+  var claimed = (await pool.query(
+    'UPDATE guardrail_promotion_requests SET status = $1, resolved_by = $2, resolved_at = NOW() WHERE request_id = $3 AND tenant_id = $4 AND status = $5 RETURNING request_id, product_id, file_path, content_snapshot',
+    [newStatus, resolvedBy, requestId, tenantId, 'pending']
+  )).rows[0];
+  return claimed || null;
+}
+
+/**
+ * wugs-s9 — POST /api/admin/promotions/:requestId/approve. Role-gated via
+ * isEffectivelyAdmin (matching credits-guard.js's exact pattern, per the
+ * DoR's own explicit choice -- not the requireAdmin middleware other
+ * /api/admin/* routes use). Blocks with a clear error if no org repo is
+ * designated (AC4) BEFORE claiming the request, so a doomed approval
+ * never burns the atomic claim. On write-adapter failure after a
+ * successful claim, reverts status back to 'pending' so the admin has a
+ * real retry path (see plan's design note -- a decision, not an AC).
+ */
+async function handlePostApprovePromotion(req, res, _next, pool) {
+  if (!req.session || !isEffectivelyAdmin(req.session)) {
+    if (res.status) { res.status(403).json({ error: 'forbidden' }); }
+    else { res.writeHead(403, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'forbidden' })); }
+    return;
+  }
+  var tenantId = req.session.tenantId;
+  var requestId = req.params && req.params.requestId;
+  var login = req.session.login;
+  var token = req.session.accessToken;
+
+  var orgRow = await _fetchOrgRepoRow(pool, tenantId);
+  if (!orgRow) {
+    var err = 'No org repo designated for this tenant yet. Designate one before approving promotions.';
+    if (res.status) { res.status(422).json({ error: err }); }
+    else { res.writeHead(422, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: err })); }
+    return;
+  }
+
+  var claimed = await _resolvePromotionRequest(pool, tenantId, requestId, 'approved', login);
+  if (!claimed) {
+    if (res.status) { res.status(409).json({ error: 'This request has already been resolved.' }); }
+    else { res.writeHead(409, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'This request has already been resolved.' })); }
+    return;
+  }
+
+  try {
+    var writeResult = await _guardrailPrAdapter.createGuardrailPr(token, orgRow.repo_owner, orgRow.repo_name, claimed.file_path, claimed.content_snapshot, {
+      tenantId: tenantId,
+      productId: claimed.product_id
+    });
+    await pool.query('UPDATE guardrail_promotion_requests SET pr_number = $1 WHERE request_id = $2', [writeResult.prNumber, requestId]);
+    if (res.status) { res.status(200).json({ ok: true, prNumber: writeResult.prNumber, prUrl: writeResult.prUrl }); }
+    else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, prNumber: writeResult.prNumber, prUrl: writeResult.prUrl })); }
+  } catch (writeErr) {
+    await pool.query(`UPDATE guardrail_promotion_requests SET status = 'pending' WHERE request_id = $1`, [requestId]);
+    if (res.status) { res.status(500).json({ error: 'Failed to create the promotion PR. The request has been returned to pending -- please try again.' }); }
+    else { res.writeHead(500, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'Failed to create the promotion PR. The request has been returned to pending -- please try again.' })); }
+  }
 }
 
 /**
@@ -3802,5 +3870,8 @@ module.exports = {
   renderCommentThreadHtml,
   // wugs-s8: request a product-level guardrail/standard be promoted to org level
   _requestPromotion,
-  handlePostRequestPromotion
+  handlePostRequestPromotion,
+  // wugs-s9: race-safe resolution of a pending promotion request (approve/reject share this)
+  _resolvePromotionRequest,
+  handlePostApprovePromotion
 };

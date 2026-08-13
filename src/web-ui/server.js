@@ -888,6 +888,17 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.error('[wugs-s8] guardrail_promotion_requests migration failed:', err.message);
     });
 
+    // wugs-s9: extend guardrail_promotion_requests with resolution tracking.
+    // Separate ALTER (not part of wugs-s8's original CREATE) since this
+    // story adds columns to an existing table -- idempotent, safe to run on
+    // every startup per this file's own established pattern (see psh-s3's
+    // ALTER TABLE products ADD COLUMN IF NOT EXISTS block above).
+    _creditsPool.query(`ALTER TABLE guardrail_promotion_requests ADD COLUMN IF NOT EXISTS resolved_by VARCHAR`)
+      .then(function() { return _creditsPool.query(`ALTER TABLE guardrail_promotion_requests ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMPTZ`); })
+      .then(function() { return _creditsPool.query(`ALTER TABLE guardrail_promotion_requests ADD COLUMN IF NOT EXISTS pr_number INTEGER`); })
+      .then(function() { console.log('[wugs-s9] guardrail_promotion_requests resolution columns ready'); })
+      .catch(function(err) { console.error('[wugs-s9] guardrail_promotion_requests ALTER failed:', err.message); });
+
     // pr-s2: cache table for the computed product rollup (DoD-status counts
     // today; Epic 2 stories add more columns for health/test-coverage/AC-
     // coverage/taxonomy). One row per product_id -- ON CONFLICT (product_id)
