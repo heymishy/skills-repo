@@ -166,6 +166,45 @@ await checkAsync('AC4: requestPromotion_crossTenantProduct_rejected', async () =
   assert.ok(!insertCall, 'expected no row created for a cross-tenant request');
 });
 
+// ── AC3: pending promotion shows an indicator on the next render ────────
+await checkAsync('AC3: handleGetGuardrailsView_pendingPromotion_showsIndicator', async () => {
+  var pool = {
+    query: async function (sql, params) {
+      var s = String(sql);
+      if (/SELECT name, tenant_id, repo_owner, repo_name FROM products WHERE product_id/i.test(s)) {
+        return { rows: [{ name: 'Test Product', tenant_id: 't1', repo_owner: 'acme', repo_name: 'widgets' }] };
+      }
+      if (/SELECT product_id, name, created_at FROM products WHERE tenant_id/i.test(s)) { return { rows: [] }; }
+      if (/SELECT journey_id, created_at AS updated_at FROM journeys WHERE product_id/i.test(s)) { return { rows: [] }; }
+      if (/SELECT journey_id FROM journeys WHERE tenant_id.*product_id IS NULL/i.test(s)) { return { rows: [] }; }
+      if (/SELECT .* FROM tenant_org_repo WHERE tenant_id/i.test(s)) { return { rows: [] }; }
+      if (/SELECT .* FROM guardrail_pending_prs WHERE tenant_id/i.test(s)) { return { rows: [] }; }
+      if (/SELECT .* FROM guardrail_promotion_requests WHERE tenant_id.*product_id.*status/i.test(s)) {
+        return { rows: [{ file_path: '.github/architecture-guardrails.md', status: 'pending' }] };
+      }
+      return { rows: [] };
+    }
+  };
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    var req = mockReq();
+    var res = mockRes();
+    await products.handleGetProductGuardrailsView(req, res, null, pool);
+    var result = res._get();
+    assert.strictEqual(result.statusCode, 200);
+    assert.ok(/promotion requested.{0,20}pending approval/i.test(result.body), 'expected a "promotion requested, pending approval" indicator');
+  });
+});
+
+// ── Wiring: POST /products/:id/guardrails/promote is routed in server.js ──
+check('wiring: server_js_routes_postProductsIdGuardrailsPromote_to_handler', () => {
+  var fs = require('fs');
+  var serverSrc = fs.readFileSync(require.resolve('../src/web-ui/server.js'), 'utf8');
+  assert.ok(serverSrc.indexOf('guardrails/promote') !== -1, 'expected server.js to route POST /products/:id/guardrails/promote');
+  assert.ok(serverSrc.indexOf('handlePostRequestPromotion') !== -1, 'expected server.js to reference handlePostRequestPromotion');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 

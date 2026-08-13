@@ -1314,8 +1314,9 @@ function _renderNoConnectedRepoPrompt(productId) {
  * connected repo. Each piece renders independently so a failure in one
  * does not affect the other (AC4).
  */
-function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pendingByPath) {
+function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pendingByPath, promotionByPath, csrfToken) {
   pendingByPath = pendingByPath || new Map();
+  promotionByPath = promotionByPath || new Map();
   var guardrailsPath = '.github/architecture-guardrails.md';
   var guardrailsEditHref = '/products/' + encodeURIComponent(productId) + '/guardrails/form?path=' + encodeURIComponent(guardrailsPath);
   var guardrailsActionHtml = '<a href="' + guardrailsEditHref + '" style="font-size:13px;color:var(--accent)">' + (guardrailsPiece.status === 'ok' ? 'Edit' : 'Add') + '</a>';
@@ -1330,6 +1331,7 @@ function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pe
   if (pendingByPath.has(guardrailsPath)) {
     guardrailsHtml += _renderPendingPrBadge(pendingByPath.get(guardrailsPath));
   }
+  guardrailsHtml += _renderPromotionAction(productId, guardrailsPath, csrfToken, promotionByPath.get(guardrailsPath));
 
   var standardsHtml = _renderPieceContent(standardsPiece, {
     emptyClass: 'gv-standards-empty',
@@ -1346,6 +1348,7 @@ function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pe
               '<span>' + _escapeHtml(e.name) + '</span>' +
               '<a href="' + editHref + '" style="font-size:13px;color:var(--accent)">Edit</a>' +
               (pendingByPath.has(e.path) ? _renderPendingPrBadge(pendingByPath.get(e.path)) : '') +
+              _renderPromotionAction(productId, e.path, csrfToken, promotionByPath.get(e.path)) +
             '</li>';
           }).join('') + '</ul>';
     }
@@ -1734,6 +1737,41 @@ async function handlePostRequestPromotion(req, res, _next, pool) {
 }
 
 /**
+ * wugs-s8 — fetches all pending promotion requests for a product, keyed
+ * by file_path, so the view can show a "pending approval" indicator per
+ * entry without an N+1 query per displayed entry.
+ * @returns {Promise<Map<string, {requestId: string}>>}
+ */
+async function _resolvePendingPromotions(pool, tenantId, productId) {
+  var rows = (await pool.query(
+    'SELECT request_id, file_path, status FROM guardrail_promotion_requests WHERE tenant_id = $1 AND product_id = $2 AND status = $3',
+    [tenantId, productId, 'pending']
+  )).rows;
+  var byPath = new Map();
+  for (var i = 0; i < rows.length; i++) {
+    byPath.set(rows[i].file_path, { requestId: rows[i].request_id });
+  }
+  return byPath;
+}
+
+/**
+ * wugs-s8 — renders either the "Request promotion" form (real, keyboard-
+ * accessible button per the story's own Accessibility NFR) or a "pending
+ * approval" indicator, depending on whether a promotion request is
+ * already pending for this exact path.
+ */
+function _renderPromotionAction(productId, path, csrfToken, pendingPromotion) {
+  if (pendingPromotion) {
+    return ' <span class="gv-promotion-pending" style="font-size:12px;color:var(--muted);margin-left:8px">Promotion requested — pending approval</span>';
+  }
+  return ' <form method="POST" action="/products/' + encodeURIComponent(productId) + '/guardrails/promote" style="display:inline;margin-left:8px">' +
+    '<input type="hidden" name="path" value="' + _escapeHtml(path) + '">' +
+    '<input type="hidden" name="_csrf" value="' + _escapeHtml(csrfToken) + '">' +
+    '<button type="submit" style="font-size:12px;color:var(--accent);background:none;border:none;padding:0;cursor:pointer;text-decoration:underline">Request promotion</button>' +
+  '</form>';
+}
+
+/**
  * wugs-s7 — resolves every tracked pending PR for a product: live-checks
  * each one's status via checkPrStatus, clears (DELETEs) any that have
  * merged or closed without merging (AC2/AC3), and returns a Map of
@@ -1795,6 +1833,8 @@ async function handleGetProductGuardrailsView(req, res, _next, pool) {
   }
 
   var pendingByPath = await _resolveAllPendingPrs(_pool, prodRow.repo_owner, prodRow.repo_name, token, tenantId, productId);
+  var promotionByPath = await _resolvePendingPromotions(_pool, tenantId, productId);
+  var csrfToken = _csrf.generateCsrfToken(req);
 
   var orgRow = await _fetchOrgRepoRow(_pool, prodRow.tenant_id);
   var orgGuardrailsPiece = { status: 'empty', value: null, errorMessage: null };
@@ -1811,7 +1851,7 @@ async function handleGetProductGuardrailsView(req, res, _next, pool) {
   } else {
     var guardrailsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, '.github/architecture-guardrails.md', token);
     var standardsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, 'standards/', token);
-    productSectionHtml = _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pendingByPath);
+    productSectionHtml = _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pendingByPath, promotionByPath, csrfToken);
   }
 
   var navSummary = await getProductsNavSummary(_pool, tenantId);
