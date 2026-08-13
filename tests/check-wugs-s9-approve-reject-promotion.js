@@ -180,6 +180,54 @@ await checkAsync('AC2: rejectRequest_pending_setsStatusNoWrite', async () => {
   });
 });
 
+// ── AC3: non-admin approve rejected server-side, no state change ────────
+await checkAsync('AC3: resolveRequest_nonAdmin_approveRejected403', async () => {
+  var calls = [];
+  var pool = makeMockPool({
+    orgRepoRow: { repo_owner: 'org-co', repo_name: 'org-repo' },
+    pendingRow: { request_id: 'req-1', product_id: 'p1', file_path: 'standards/saas-gui.md', content_snapshot: 'X' }
+  }, calls);
+  var req = mockReq({ session: { accessToken: 'tok', tenantId: 't1', login: 'engineer-bob', role: 'engineer', csrfToken: 'ct1' } });
+  var res = mockRes();
+  await products.handlePostApprovePromotion(req, res, null, pool);
+  var result = res._get();
+  assert.strictEqual(result.statusCode, 403, 'expected 403 for a non-admin, matching-role session');
+  var claimUpdate = calls.find(function (c) { return /SET status = \$1, resolved_by = \$2/i.test(c.sql); });
+  assert.ok(!claimUpdate, 'expected NO state change -- the role gate must block before any DB write');
+});
+
+// ── AC3: non-admin reject rejected server-side, no state change ─────────
+await checkAsync('AC3: resolveRequest_nonAdmin_rejectRejected403', async () => {
+  var calls = [];
+  var pool = makeMockPool({
+    pendingRow: { request_id: 'req-1', product_id: 'p1', file_path: 'standards/saas-gui.md', content_snapshot: 'X' }
+  }, calls);
+  var req = mockReq({ session: { accessToken: 'tok', tenantId: 't1', login: 'engineer-bob', role: 'engineer', csrfToken: 'ct1' } });
+  var res = mockRes();
+  await products.handlePostRejectPromotion(req, res, null, pool);
+  var result = res._get();
+  assert.strictEqual(result.statusCode, 403, 'expected 403 for a non-admin, matching-role session');
+  var claimUpdate = calls.find(function (c) { return /SET status = \$1, resolved_by = \$2/i.test(c.sql); });
+  assert.ok(!claimUpdate, 'expected NO state change -- the role gate must block before any DB write');
+});
+
+// ── AC4: no org repo designated — approval blocked with a clear error ───
+await checkAsync('AC4: resolveRequest_noOrgRepo_blockedWithClearError', async () => {
+  var calls = [];
+  var pool = makeMockPool({
+    orgRepoRow: null,
+    pendingRow: { request_id: 'req-1', product_id: 'p1', file_path: 'standards/saas-gui.md', content_snapshot: 'X' }
+  }, calls);
+  var req = mockReq();
+  var res = mockRes();
+  await products.handlePostApprovePromotion(req, res, null, pool);
+  var result = res._get();
+  assert.strictEqual(result.statusCode, 422, 'expected 422 (not a silent failure)');
+  assert.ok(/org repo/i.test(result.body), 'expected a clear error mentioning the org repo');
+  var claimUpdate = calls.find(function (c) { return /SET status = \$1, resolved_by = \$2/i.test(c.sql); });
+  assert.ok(!claimUpdate, 'expected the request to remain untouched -- no wasted atomic claim on a doomed approval');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
