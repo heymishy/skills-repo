@@ -168,6 +168,32 @@ await checkAsync('errorIsolation: onePrStatusCheckThrows_otherRowsStillResolveAn
   });
 });
 
+// ── AC2: merged PR clears indicator, shows new content ───────────────────
+await checkAsync('AC2: handleGetGuardrailsView_mergedPr_clearsIndicatorShowsNewContent', async () => {
+  var deletedIds = [];
+  var pool = makeMockPool([
+    { id: 'row-1', tenant_id: 't1', product_id: 'p1', path: '.github/architecture-guardrails.md', pr_number: 42, pr_url: 'https://github.com/acme/widgets/pull/42' }
+  ], deletedIds);
+  var originalFetch = global.fetch;
+  global.fetch = mockPrStatusFetch('closed', true);
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    if (path === '.github/architecture-guardrails.md') { return 'THE NEW MERGED CONTENT'; }
+    var artefactFetcher = require('../src/web-ui/adapters/artefact-fetcher');
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    try {
+      var req = mockReq();
+      var res = mockRes();
+      await products.handleGetProductGuardrailsView(req, res, null, pool);
+      var result = res._get();
+      assert.strictEqual(result.statusCode, 200);
+      assert.ok(!/Pending review/i.test(result.body), 'expected no pending indicator once merged');
+      assert.ok(result.body.indexOf('THE NEW MERGED CONTENT') !== -1, 'expected the new merged content to show via the normal live-read path');
+      assert.deepStrictEqual(deletedIds, ['row-1'], 'expected the tracking row to be cleared');
+    } finally { global.fetch = originalFetch; }
+  });
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
