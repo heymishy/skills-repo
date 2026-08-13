@@ -256,6 +256,15 @@
 **Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this story's changes during implementation, stop and investigate.
 ---
 
+---
+**[2026-08-14] | RISK-ACCEPT | branch-complete (wugs-s13)**
+**Decision:** Draft PR #735 (`wugs-s13`) has no CI check runs on its current head commit, and this is not fixable from within the PR — proceeding without them for now, flagged for operator investigation.
+**Alternatives considered:** (1) Close/reopen the PR to force a fresh `pull_request` event — tried, did not trigger any run. (2) Push a fresh empty commit to force a `synchronize` event — tried, did not trigger any run even after ~3 minutes of polling. (3) Assume it's a transient GitHub-wide outage — checked githubstatus.com directly, Actions is reported fully operational, no active incident.
+**Rationale:** Confirmed via the GitHub API (`/repos/.../actions/runs?head_sha=...`, zero results) that no workflow run exists for wugs-s13's last three pushes. Critically, this is NOT isolated to PR #735: two of this session's own direct pushes to `master` (`20063925`, `75727b49`) also triggered zero workflow runs — the same symptom repo-wide, starting right around when `wugs-s14`'s PR merged (`6951c06a`, ~2026-08-13T23:32). Workflow definitions themselves are confirmed `active` (not manually disabled), and repo-level Actions permissions show `enabled: true`. The most likely remaining cause — an Actions minutes/spending cap reached at the account or org level — is not something visible or actionable via this session's API token; it requires the operator to check Settings → Billing → Plans and usage (or the org equivalent). By contrast, `wugs-s13`'s and `wugs-s14`'s EARLIER pushes (through `51351ac0` / `f9a0916f` respectively) did trigger and pass CI cleanly — this is a newly-onset gap affecting only pushes after ~2026-08-13T23:32, not a defect in either story's own code or workflow config.
+**Made by:** Claude (agent), operator reported "735 has no CI checks run" and prompted this investigation
+**Revisit trigger:** Once the operator resolves the underlying cause (billing/quota, or whatever it turns out to be), push a fresh commit (or close/reopen) to confirm CI resumes triggering — for BOTH remaining open PRs and future work. Until resolved, no PR on this repo can be merged with genuine confidence that its required status checks reflect its actual current head commit.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded — all four decisions from this discovery/clarify session were logged as entries above, not full ADRs, per the operator's confirmation that none warranted ADR-level depth. -->
