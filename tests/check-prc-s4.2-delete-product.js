@@ -19,12 +19,6 @@ function makeMockPool(state) {
       if (/DELETE FROM journeys WHERE product_id/i.test(sql)) {
         return { rowCount: state.journeys.length };
       }
-      if (/DELETE FROM standard_product_optouts WHERE product_id/i.test(sql)) {
-        return { rowCount: state.optouts.length };
-      }
-      if (/DELETE FROM standards WHERE product_id/i.test(sql)) {
-        return { rowCount: state.standards.length };
-      }
       if (/DELETE FROM products WHERE product_id/i.test(sql)) {
         return { rowCount: 1 };
       }
@@ -36,9 +30,9 @@ function makeMockPool(state) {
 (async function() {
   const { handleDeleteProduct, handleGetProductView } = require('../src/web-ui/routes/products');
 
-  // T1 — deletes product row, journeys, and standards-cache rows; zero GitHub delete calls
+  // T1 — deletes product row, journeys rows (standards/optouts no longer referenced); zero GitHub delete calls
   try {
-    const state = { productId: 'prod-1', tenantId: 'tx', journeys: [{ id: 'j1' }], standards: [{ id: 's1' }], optouts: [{ id: 'o1' }] };
+    const state = { productId: 'prod-1', tenantId: 'tx', journeys: [{ id: 'j1' }] };
     const pool = makeMockPool(state);
     const ph = { _caps: [], capture: function(id, ev, props) { this._caps.push({ id, ev, props }); } };
     const req = { session: { tenantId: 'tx', login: 'u' }, params: { id: 'prod-1' } };
@@ -55,12 +49,12 @@ function makeMockPool(state) {
 
     assert.strictEqual(fetchCalls, 0, 'handleDeleteProduct made a network call (possible GitHub delete-repo call)');
     assert(pool._queries.some(q => /DELETE FROM journeys WHERE product_id/i.test(q.sql)), 'journeys not deleted');
-    assert(pool._queries.some(q => /DELETE FROM standards WHERE product_id/i.test(q.sql)), 'standards cache rows not deleted');
-    assert(pool._queries.some(q => /DELETE FROM standard_product_optouts WHERE product_id/i.test(q.sql)), 'standard_product_optouts rows not deleted');
+    assert(!pool._queries.some(q => /DELETE FROM standards WHERE product_id/i.test(q.sql)), 'standards DELETE still issued after table removal -- handleDeleteProduct must no longer reference it');
+    assert(!pool._queries.some(q => /DELETE FROM standard_product_optouts WHERE product_id/i.test(q.sql)), 'standard_product_optouts DELETE still issued after table removal -- handleDeleteProduct must no longer reference it');
     assert(pool._queries.some(q => /DELETE FROM products WHERE product_id/i.test(q.sql)), 'product row not deleted');
     assert(res._s === 200 || res._s === 204 || res._b, 'no success response sent');
-    pass('DELETE /products/:id removes product, journeys, standards-cache rows; zero GitHub calls made');
-  } catch (e) { fail('DELETE /products/:id removes product, journeys, standards-cache rows; zero GitHub calls made', e); }
+    pass('DELETE /products/:id removes product, journeys rows (standards/optouts no longer referenced); zero GitHub calls made');
+  } catch (e) { fail('DELETE /products/:id removes product, journeys rows (standards/optouts no longer referenced); zero GitHub calls made', e); }
 
   // T2 — audit log: capture() invoked with deleting user, product ID (AC/NFR: audit)
   try {

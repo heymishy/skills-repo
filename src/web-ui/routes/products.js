@@ -2342,8 +2342,6 @@ async function handleDeleteProduct(req, res, _next, pool, posthog) {
   // with product_id set to NULL (journeys.product_id is ON DELETE SET NULL,
   // which would leave stale rows behind -- not what AC1 requires).
   await _pool.query('DELETE FROM journeys WHERE product_id = $1', [productId]);
-  await _pool.query('DELETE FROM standard_product_optouts WHERE product_id = $1', [productId]);
-  await _pool.query('DELETE FROM standards WHERE product_id = $1', [productId]);
   await _pool.query('DELETE FROM products WHERE product_id = $1', [productId]);
 
   _ph.capture(tenantId, 'product_deleted', {
