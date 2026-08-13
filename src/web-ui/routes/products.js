@@ -1175,6 +1175,98 @@ async function _fetchGuardrailsSectionPiece(owner, repo, path, token) {
 }
 
 /**
+ * wugs-s3 review fix — shared ok/empty/error status-branch renderer for a
+ * single guardrails/standards "piece". Extracted because
+ * _renderGuardrailsSection (product-level) and _renderOrgGuardrailsSection
+ * (org-level) each had their own near-identical copy of this three-state
+ * branching, once for the guardrails piece and once for the standards
+ * piece, for 4 duplicated blocks total.
+ *
+ * The guardrails piece uses the default `<pre>` rendering (ok branch).
+ * The standards piece's 'ok' branch renders a structurally different
+ * `<ul>` (product-level entries carry a per-row Edit link, org-level
+ * entries are plain names) — callers pass `opts.renderOk` to keep that
+ * bit bespoke while still sharing the empty/error branches here.
+ * @param {{status: 'ok'|'empty'|'error', value: *, errorMessage: (string|null)}} piece
+ * @param {{contentClass: (string|undefined), emptyClass: string, emptyText: string, errorClass: string, errorPrefix: string, renderOk: (function(*): string)=}} opts
+ * @returns {string}
+ */
+function _renderPieceContent(piece, opts) {
+  if (piece.status === 'ok') {
+    return opts.renderOk
+      ? opts.renderOk(piece.value)
+      : '<pre class="' + opts.contentClass + '" style="white-space:pre-wrap;font-family:inherit;font-size:14px;background:var(--surface);padding:16px;border-radius:8px;border:1px solid var(--line)">' + _escapeHtml(piece.value) + '</pre>';
+  } else if (piece.status === 'empty') {
+    return '<p class="' + opts.emptyClass + '" style="color:var(--muted);font-size:14px">' + opts.emptyText + '</p>';
+  }
+  return '<p class="' + opts.errorClass + '" style="color:var(--danger,#c0392b);font-size:14px">' + opts.errorPrefix + _escapeHtml(piece.errorMessage) + '</p>';
+}
+
+/**
+ * wugs-s3 — looks up the tenant's designated org-level repo, if any.
+ * @returns {Promise<{repo_owner: string, repo_name: string}|null>}
+ */
+async function _fetchOrgRepoRow(pool, tenantId) {
+  var row = (await pool.query(
+    'SELECT repo_owner, repo_name FROM tenant_org_repo WHERE tenant_id = $1',
+    [tenantId]
+  )).rows[0];
+  return row || null;
+}
+
+/**
+ * wugs-s3 — org-level guardrails/standards section. Mirrors
+ * _renderGuardrailsSection's ok/empty/error piece states, plus a fourth
+ * state on top: no org repo designated at all (AC3) renders an explicit
+ * prompt instead of attempting any fetch.
+ */
+function _renderOrgGuardrailsSection(orgRow, guardrailsPiece, standardsPiece) {
+  if (!orgRow) {
+    return '<div class="gv-org-section" style="margin-bottom:32px;padding:16px;border:1px dashed var(--line);border-radius:8px">' +
+      '<h2 style="font-size:18px;margin:0 0 8px">Organisation guardrails &amp; standards</h2>' +
+      '<p style="color:var(--muted);font-size:14px;margin:0 0 12px">No org repo designated yet — designate one to share guardrails/standards across every product in your organisation.</p>' +
+      '<form method="POST" action="/settings/org-repo" style="display:flex;gap:8px;align-items:center">' +
+        '<label for="org-repo-owner" style="font-size:13px;color:var(--muted)">Owner</label>' +
+        '<input id="org-repo-owner" type="text" name="repo_owner" placeholder="owner" style="font-family:inherit;font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid var(--line)">' +
+        '<label for="org-repo-name" style="font-size:13px;color:var(--muted)">Repo</label>' +
+        '<input id="org-repo-name" type="text" name="repo_name" placeholder="repo" style="font-family:inherit;font-size:13px;padding:6px 10px;border-radius:6px;border:1px solid var(--line)">' +
+        '<button type="submit" style="padding:6px 12px;border-radius:6px;border:none;background:var(--accent);color:#fff;font-size:13px;cursor:pointer">Designate</button>' +
+      '</form>' +
+    '</div>';
+  }
+
+  var guardrailsHtml = _renderPieceContent(guardrailsPiece, {
+    contentClass: 'gv-org-guardrails-content',
+    emptyClass: 'gv-org-guardrails-empty',
+    emptyText: 'No architecture-guardrails.md found in the org repo.',
+    errorClass: 'gv-org-guardrails-error',
+    errorPrefix: 'Could not load org architecture-guardrails.md: '
+  });
+
+  var standardsHtml = _renderPieceContent(standardsPiece, {
+    emptyClass: 'gv-org-standards-empty',
+    emptyText: 'No standards found in the org repo.',
+    errorClass: 'gv-org-standards-error',
+    errorPrefix: 'Could not load org standards/: ',
+    renderOk: function (value) {
+      var entries = Array.isArray(value) ? value : [];
+      return entries.length === 0
+        ? '<p class="gv-org-standards-empty" style="color:var(--muted);font-size:14px">No standards found in the org repo.</p>'
+        : '<ul class="gv-org-standards-list">' + entries.map(function (e) {
+            return '<li>' + _escapeHtml(e.name) + '</li>';
+          }).join('') + '</ul>';
+    }
+  });
+
+  return '<div class="gv-org-section" style="margin-bottom:32px">' +
+    '<h2 style="font-size:18px;margin:0 0 12px">Organisation guardrails</h2>' +
+    guardrailsHtml +
+    '<h2 style="font-size:18px;margin:24px 0 12px">Organisation standards</h2>' +
+    standardsHtml +
+  '</div>';
+}
+
+/**
  * wugs-s2 — product-level guardrails/standards section: live-reads
  * .github/architecture-guardrails.md and standards/ from the product's
  * connected repo. Each piece renders independently so a failure in one
@@ -1186,36 +1278,36 @@ function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pe
   var guardrailsEditHref = '/products/' + encodeURIComponent(productId) + '/guardrails/form?path=' + encodeURIComponent(guardrailsPath);
   var guardrailsActionHtml = '<a href="' + guardrailsEditHref + '" style="font-size:13px;color:var(--accent)">' + (guardrailsPiece.status === 'ok' ? 'Edit' : 'Add') + '</a>';
 
-  var guardrailsHtml;
-  if (guardrailsPiece.status === 'ok') {
-    guardrailsHtml = '<pre class="gv-guardrails-content" style="white-space:pre-wrap;font-family:inherit;font-size:14px;background:var(--surface);padding:16px;border-radius:8px;border:1px solid var(--line)">' + _escapeHtml(guardrailsPiece.value) + '</pre>';
-  } else if (guardrailsPiece.status === 'empty') {
-    guardrailsHtml = '<p class="gv-guardrails-empty" style="color:var(--muted);font-size:14px">No architecture-guardrails.md found in this repo.</p>';
-  } else {
-    guardrailsHtml = '<p class="gv-guardrails-error" style="color:var(--danger,#c0392b);font-size:14px">Could not load architecture-guardrails.md: ' + _escapeHtml(guardrailsPiece.errorMessage) + '</p>';
-  }
+  var guardrailsHtml = _renderPieceContent(guardrailsPiece, {
+    contentClass: 'gv-guardrails-content',
+    emptyClass: 'gv-guardrails-empty',
+    emptyText: 'No architecture-guardrails.md found in this repo.',
+    errorClass: 'gv-guardrails-error',
+    errorPrefix: 'Could not load architecture-guardrails.md: '
+  });
   if (pendingByPath.has(guardrailsPath)) {
     guardrailsHtml += _renderPendingPrBadge(pendingByPath.get(guardrailsPath));
   }
 
-  var standardsHtml;
-  if (standardsPiece.status === 'ok') {
-    var entries = Array.isArray(standardsPiece.value) ? standardsPiece.value : [];
-    standardsHtml = entries.length === 0
-      ? '<p class="gv-standards-empty" style="color:var(--muted);font-size:14px">No standards found in this repo.</p>'
-      : '<ul class="gv-standards-list">' + entries.map(function (e) {
-          var editHref = '/products/' + encodeURIComponent(productId) + '/guardrails/form?path=' + encodeURIComponent(e.path);
-          return '<li style="display:flex;align-items:center;justify-content:space-between;gap:12px">' +
-            '<span>' + _escapeHtml(e.name) + '</span>' +
-            '<a href="' + editHref + '" style="font-size:13px;color:var(--accent)">Edit</a>' +
-            (pendingByPath.has(e.path) ? _renderPendingPrBadge(pendingByPath.get(e.path)) : '') +
-          '</li>';
-        }).join('') + '</ul>';
-  } else if (standardsPiece.status === 'empty') {
-    standardsHtml = '<p class="gv-standards-empty" style="color:var(--muted);font-size:14px">No standards found in this repo.</p>';
-  } else {
-    standardsHtml = '<p class="gv-standards-error" style="color:var(--danger,#c0392b);font-size:14px">Could not load standards/: ' + _escapeHtml(standardsPiece.errorMessage) + '</p>';
-  }
+  var standardsHtml = _renderPieceContent(standardsPiece, {
+    emptyClass: 'gv-standards-empty',
+    emptyText: 'No standards found in this repo.',
+    errorClass: 'gv-standards-error',
+    errorPrefix: 'Could not load standards/: ',
+    renderOk: function (value) {
+      var entries = Array.isArray(value) ? value : [];
+      return entries.length === 0
+        ? '<p class="gv-standards-empty" style="color:var(--muted);font-size:14px">No standards found in this repo.</p>'
+        : '<ul class="gv-standards-list">' + entries.map(function (e) {
+            var editHref = '/products/' + encodeURIComponent(productId) + '/guardrails/form?path=' + encodeURIComponent(e.path);
+            return '<li style="display:flex;align-items:center;justify-content:space-between;gap:12px">' +
+              '<span>' + _escapeHtml(e.name) + '</span>' +
+              '<a href="' + editHref + '" style="font-size:13px;color:var(--accent)">Edit</a>' +
+              (pendingByPath.has(e.path) ? _renderPendingPrBadge(pendingByPath.get(e.path)) : '') +
+            '</li>';
+          }).join('') + '</ul>';
+    }
+  });
 
   var addStandardHref = '/products/' + encodeURIComponent(productId) + '/guardrails/form?section=standards';
 
@@ -1422,6 +1514,94 @@ async function handlePostGuardrailsForm(req, res, _next, pool, writeAdapter) {
   else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, result: writeResult })); }
 }
 
+var _ORG_REPO_SEED_GUARDRAILS =
+  '## Getting Started\n\nThis file records your organisation\'s architectural decisions and constraints — the things every product should respect unless explicitly overridden. Add an entry here whenever your team makes a structural choice that should apply broadly (e.g. \'All new services must expose a health-check endpoint at /health\'). Delete this section once you\'ve added your own guardrails.';
+var _ORG_REPO_SEED_STANDARDS =
+  '# Getting Started\n\nThis folder holds your organisation\'s engineering standards — practices every product is expected to follow. Add a file per discipline as your standards mature (e.g. security, data handling, accessibility). A reasonable first standard: all code changes require a passing test suite before merge. Delete this file once you\'ve added your own standards.';
+
+/**
+ * wugs-s3 — first-time org-repo designation: creates the tenant_org_repo
+ * row, then seeds both starter files via the same PR-gated write path as
+ * any other edit (wugs-s6's createGuardrailPr, injected as writeAdapter —
+ * per decisions.md's SLICE entry, no direct-commit shortcut for seeding).
+ * @param {object} pool
+ * @param {string} tenantId
+ * @param {string} repoOwner
+ * @param {string} repoName
+ * @param {Function} writeAdapter - (target: {productId, path}, content: string) => Promise
+ * @param {object} posthog
+ */
+async function _designateOrgRepo(pool, tenantId, repoOwner, repoName, writeAdapter, posthog) {
+  await pool.query(
+    'INSERT INTO tenant_org_repo (tenant_id, repo_owner, repo_name) VALUES ($1, $2, $3)',
+    [tenantId, repoOwner, repoName]
+  );
+  await writeAdapter({ productId: null, path: '.github/architecture-guardrails.md' }, _ORG_REPO_SEED_GUARDRAILS);
+  await writeAdapter({ productId: null, path: 'standards/getting-started.md' }, _ORG_REPO_SEED_STANDARDS);
+  var _ph = posthog || _posthog;
+  _ph.capture(tenantId, 'org_repo_designated', {
+    tenant_id: tenantId,
+    repo_owner: repoOwner,
+    repo_name: repoName
+  });
+}
+
+/**
+ * wugs-s3 / review fix — POST /settings/org-repo: CSRF-guards and
+ * tenant-scopes the request (matching handlePostGuardrailsForm above),
+ * validates the submitted repo_owner/repo_name and, if valid, hands off to
+ * _designateOrgRepo. Tenant-level settings action (not product-scoped) —
+ * matches the story's "via a settings action introduced by this story"
+ * phrasing for AC1. Handles GuardrailPrConflictError (409, stale-SHA race)
+ * and any other write-path failure (500, generic) distinctly, matching
+ * handlePostGuardrailsForm's try/catch shape.
+ */
+async function handlePostOrgRepoSettings(req, res, _next, pool, writeAdapter, posthog) {
+  // review fix -- CSRF guard first, matching handlePostGuardrailsForm.
+  // csrfGuard reads and caches the body itself; the _readBody call below
+  // (unchanged) picks it up via its own req.body !== undefined short-circuit.
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+  req.body = await _readBody(req);
+
+  var tenantId = req.session && req.session.tenantId;
+
+  // review fix -- tenantId must be present before any DB insert is
+  // attempted; without this check, _designateOrgRepo would unconditionally
+  // INSERT a row keyed on an undefined tenant_id.
+  if (!tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+
+  var repoOwner = (req.body && req.body.repo_owner) || '';
+  var repoName = (req.body && req.body.repo_name) || '';
+
+  if (!repoOwner.trim() || !repoName.trim()) {
+    var err = 'repo_owner and repo_name are both required.';
+    if (res.status) { res.status(400).json({ error: err }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: err })); }
+    return;
+  }
+
+  try {
+    await _designateOrgRepo(pool, tenantId, repoOwner.trim(), repoName.trim(), writeAdapter, posthog);
+  } catch (writeErr) {
+    if (writeErr instanceof _guardrailPrAdapter.GuardrailPrConflictError) {
+      if (res.status) { res.status(409).json({ error: 'Artefact was updated — please reload and try again' }); }
+      else { res.writeHead(409, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'Artefact was updated — please reload and try again' })); }
+      return;
+    }
+    if (res.status) { res.status(500).json({ error: 'Failed to create pull request' }); }
+    else { res.writeHead(500, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'Failed to create pull request' })); }
+    return;
+  }
+
+  if (res.status) { res.status(200).json({ ok: true }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true })); }
+}
+
 /**
  * wugs-s7 — records a tracking row for a PR wugs-s6's write adapter just
  * opened, so its live status can be surfaced on later view renders.
@@ -1496,6 +1676,15 @@ async function handleGetProductGuardrailsView(req, res, _next, pool) {
 
   var pendingByPath = await _resolveAllPendingPrs(_pool, prodRow.repo_owner, prodRow.repo_name, token, tenantId, productId);
 
+  var orgRow = await _fetchOrgRepoRow(_pool, prodRow.tenant_id);
+  var orgGuardrailsPiece = { status: 'empty', value: null, errorMessage: null };
+  var orgStandardsPiece = { status: 'empty', value: null, errorMessage: null };
+  if (orgRow) {
+    orgGuardrailsPiece = await _fetchGuardrailsSectionPiece(orgRow.repo_owner, orgRow.repo_name, '.github/architecture-guardrails.md', token);
+    orgStandardsPiece = await _fetchGuardrailsSectionPiece(orgRow.repo_owner, orgRow.repo_name, 'standards/', token);
+  }
+  var orgSectionHtml = _renderOrgGuardrailsSection(orgRow, orgGuardrailsPiece, orgStandardsPiece);
+
   var guardrailsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, '.github/architecture-guardrails.md', token);
   var standardsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, 'standards/', token);
   var productSectionHtml = _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pendingByPath);
@@ -1504,6 +1693,7 @@ async function handleGetProductGuardrailsView(req, res, _next, pool) {
 
   var body = '<div style="max-width:720px">' +
     '<div style="margin-bottom:24px"><h1 style="margin:0;font-size:24px">Guardrails &amp; Standards</h1></div>' +
+    orgSectionHtml +
     productSectionHtml +
   '</div>';
 
@@ -3397,6 +3587,10 @@ module.exports = {
   handlePostGuardrailsForm,
   // wugs-s7: records a tracking row for a PR wugs-s6's write adapter just opened
   _trackPendingPr,
+  // wugs-s3: first-time org-repo designation, exported for direct unit testing (AC1 NFR)
+  _designateOrgRepo,
+  // wugs-s3: POST /settings/org-repo handler
+  handlePostOrgRepoSettings,
   handlePostProductSync,
   handlePostProductFeature,
   handleGetProductKanban,

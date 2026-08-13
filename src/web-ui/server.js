@@ -73,7 +73,7 @@ const { createSettingsHandlers } = require('./routes/settings'); // c1
 const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
 const { adminCreditsGet, adminCreditsPost, adminSetPlanPost }        = require('./routes/admin-credits');     // arl-s3 / tpac-s1
 const { adminMockGatewayGet, adminMockGatewayPost }                  = require('./routes/admin-mock-gateway'); // amgt-s1
-const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handleGetProductStandardsTab, handleGetProductGuardrailsView, handleGetGuardrailsForm, handlePostGuardrailsForm, _trackPendingPr, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1 / smug-s1 / wugs-s2 / wugs-s5 / wugs-s6
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handleGetProductStandardsTab, handleGetProductGuardrailsView, handleGetGuardrailsForm, handlePostGuardrailsForm, _trackPendingPr, handlePostOrgRepoSettings, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1 / smug-s1 / wugs-s2 / wugs-s5 / wugs-s6 / wugs-s3 / wugs-s7
 const { setModulesAdapter } = require('./adapters/modules-adapter'); // a1
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
@@ -772,6 +772,20 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.log('[psh-s3] products context columns ready');
     }).catch(function(err) {
       console.error('[psh-s1] products migration failed:', err.message);
+    });
+
+    // wugs-s3: tenant_org_repo table — one designated org-level repo per
+    // tenant (no FK to products; tenant_id-scoped like every other
+    // tenant-scoped table here, ADR-025).
+    _creditsPool.query(`CREATE TABLE IF NOT EXISTS tenant_org_repo (
+      tenant_id VARCHAR PRIMARY KEY,
+      repo_owner VARCHAR NOT NULL,
+      repo_name VARCHAR NOT NULL,
+      seeded_at TIMESTAMPTZ DEFAULT NOW()
+    )`).then(function() {
+      console.log('[wugs-s3] tenant_org_repo table ready');
+    }).catch(function(err) {
+      console.error('[wugs-s3] tenant_org_repo migration failed:', err.message);
     });
 
     // prc-s1.1: repo association columns on products (repo_provider/repo_owner/repo_name)
@@ -3139,6 +3153,26 @@ async function router(req, res) {
       };
       await handlePostGuardrailsForm(req, res, null, _pshPool, writeAdapterForRequest);
     });
+
+  } else if (pathname === '/settings/org-repo' && req.method === 'POST') {
+    // wugs-s3 -- tenant-level org-repo designation + first-time seeding.
+    // The repo being written to is the repo being designated (from the
+    // request body itself), not a pre-existing product's connected repo --
+    // unlike wugs-s6's per-product writeAdapter closure.
+    // Gated on requireAdmin (not plain authGuard): this designates where all
+    // future tenant-wide guardrail PRs get written, matching the convention
+    // used by every other tenant-level mutating settings/admin route in this
+    // file (see /api/team/members, /api/admin/credits/adjust, etc.).
+    let _raOk = false;
+    await requireAdmin(req, res, () => { _raOk = true; });
+    if (!_raOk) return;
+    const writeAdapterForRequest = async (target, content) => {
+      return createGuardrailPr(req.session.accessToken, req.body.repo_owner, req.body.repo_name, target.path, content, {
+        tenantId: req.session.tenantId,
+        productId: null
+      });
+    };
+    await handlePostOrgRepoSettings(req, res, null, _pshPool, writeAdapterForRequest);
 
   } else if (pathname.match(/^\/products\/[^/]+\/modules$/) && req.method === 'GET') {
     // a1 (AC1) — list modules curated for a product
