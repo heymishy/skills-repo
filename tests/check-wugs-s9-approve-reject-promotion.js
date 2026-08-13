@@ -264,6 +264,8 @@ await checkAsync('AC5: resolveRequest_concurrentCalls_onlyFirstUpdateSucceeds', 
     assert.strictEqual(res1._get().statusCode, 200, 'expected the first call to succeed');
     assert.strictEqual(res2._get().statusCode, 409, 'expected the second call to get "already resolved", not a duplicate success');
     assert.strictEqual(writeAdapterCallCount, 1, 'expected the write adapter to be invoked exactly ONCE, not twice -- no duplicate PR');
+    var claimAttempts = calls.filter(function (c) { return /SET status = \$1, resolved_by = \$2/i.test(c.sql); });
+    assert.strictEqual(claimAttempts.length, 2, 'expected both admins to attempt the atomic claim -- only the DB\'s WHERE clause decides the winner, not application logic');
   });
 });
 
