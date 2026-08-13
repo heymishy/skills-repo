@@ -194,6 +194,32 @@ await checkAsync('AC2: handleGetGuardrailsView_mergedPr_clearsIndicatorShowsNewC
   });
 });
 
+// ── AC3: closed-without-merge reverts cleanly ────────────────────────────
+await checkAsync('AC3: handleGetGuardrailsView_closedPr_revertsCleanly', async () => {
+  var deletedIds = [];
+  var pool = makeMockPool([
+    { id: 'row-1', tenant_id: 't1', product_id: 'p1', path: '.github/architecture-guardrails.md', pr_number: 42, pr_url: 'https://github.com/acme/widgets/pull/42' }
+  ], deletedIds);
+  var originalFetch = global.fetch;
+  global.fetch = mockPrStatusFetch('closed', false);
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    if (path === '.github/architecture-guardrails.md') { return 'ORIGINAL PRE-EDIT CONTENT'; }
+    var artefactFetcher = require('../src/web-ui/adapters/artefact-fetcher');
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    try {
+      var req = mockReq();
+      var res = mockRes();
+      await products.handleGetProductGuardrailsView(req, res, null, pool);
+      var result = res._get();
+      assert.strictEqual(result.statusCode, 200);
+      assert.ok(!/Pending review/i.test(result.body), 'expected no pending indicator once closed without merging');
+      assert.ok(result.body.indexOf('ORIGINAL PRE-EDIT CONTENT') !== -1, 'expected the original pre-edit content, not a placeholder or blank');
+      assert.deepStrictEqual(deletedIds, ['row-1'], 'expected the tracking row to be cleared, no orphaned pending state');
+    } finally { global.fetch = originalFetch; }
+  });
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
