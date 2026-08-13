@@ -22860,6 +22860,33 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s13-dor.md",
           "dorSignedOffAt": "2026-08-14T08:15:00.000Z"
+        },
+        {
+          "id": "wugs-s14",
+          "slug": "wugs-s14-fetch-timeout",
+          "name": "Add a fetch timeout to the shared GitHub Contents API adapter",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s14-fetch-timeout.md",
+          "prStatus": "none",
+          "notes": "Epic 1 follow-up story, created 2026-08-14 in response to /trace's MEDIUM finding #1 (nfr-profile.md's own already-recorded fetch-timeout gap, found during wugs-s2's review 2026-08-12, still overdue). Short-track: reuses this feature's existing discovery/benefit-metric/epic artefacts, starts at story+test-plan.",
+          "updatedAt": "2026-08-14T08:30:00.000Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "mediumFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s14-fetch-timeout-test-plan.md"
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s14-dor.md",
+          "dorSignedOffAt": "2026-08-14T08:30:00.000Z"
         }
       ],
       "slicingStrategy": "walking-skeleton",
