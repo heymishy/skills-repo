@@ -22476,14 +22476,14 @@
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s7-surface-pr-state-in-view.md",
           "prStatus": "none",
           "notes": "Epic 2 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-13T00:19:12.070Z",
+          "updatedAt": "2026-08-13T00:50:35.099Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
           "testPlan": {
             "status": "written",
-            "totalTests": 4,
-            "passing": 4,
+            "totalTests": 5,
+            "passing": 5,
             "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s7-surface-pr-state-in-view-test-plan.md"
           },
           "acTotal": 4,
@@ -22510,7 +22510,7 @@
             {
               "id": "task-3",
               "name": "Merged PR clears indicator, shows new content (AC2)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s7-plan.md"
             },
             {
