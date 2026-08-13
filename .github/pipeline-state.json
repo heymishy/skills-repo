@@ -22303,14 +22303,14 @@
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s4-no-connected-repo-fallback.md",
           "prStatus": "none",
           "notes": "Epic 1 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-13T03:09:01.107Z",
+          "updatedAt": "2026-08-13T03:19:54.002Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
           "testPlan": {
             "status": "written",
-            "totalTests": 5,
-            "passing": 0,
+            "totalTests": 2,
+            "passing": 2,
             "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s4-no-connected-repo-fallback-test-plan.md"
           },
           "acTotal": 4,
@@ -22325,7 +22325,7 @@
             {
               "id": "task-1",
               "name": "Distinct connect-a-repo prompt when no repo connected (AC1)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s4-plan.md"
             },
             {
