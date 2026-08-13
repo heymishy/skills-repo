@@ -22833,6 +22833,33 @@
           ],
           "dodStatus": "complete",
           "dodArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dod/wugs-s12-dod.md"
+        },
+        {
+          "id": "wugs-s13",
+          "slug": "wugs-s13-approve-reject-ui",
+          "name": "Admin sees real Approve/Reject buttons for pending promotion requests",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s13-approve-reject-ui.md",
+          "prStatus": "none",
+          "notes": "Epic 3 follow-up story, created 2026-08-14 in response to /trace's HIGH finding (promotion-approval workflow shipped with no UI trigger anywhere in wugs-s1 through wugs-s12). Short-track: reuses this feature's existing discovery/benefit-metric/epic artefacts, starts at story+test-plan.",
+          "updatedAt": "2026-08-14T08:15:00.000Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "mediumFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s13-approve-reject-ui-test-plan.md"
+          },
+          "acTotal": 6,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s13-dor.md",
+          "dorSignedOffAt": "2026-08-14T08:15:00.000Z"
         }
       ],
       "slicingStrategy": "walking-skeleton",
