@@ -1703,7 +1703,32 @@ async function handlePostRequestPromotion(req, res, _next, pool) {
     return;
   }
 
-  var result = await _requestPromotion(pool, tenantId, productId, filePath, login, prodRow.repo_owner, prodRow.repo_name, token);
+  // review fix -- restrict the promoted path to the same allowlist as
+  // handlePostGuardrailsForm, matching its own usage of this check exactly.
+  if (!_isAllowedGuardrailPath(filePath)) {
+    var allowlistError = 'Target path must be .github/architecture-guardrails.md or under standards/.';
+    if (res.status) { res.status(400).json({ error: allowlistError }); }
+    else { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: allowlistError })); }
+    return;
+  }
+
+  // review fix -- _requestPromotion does a live fetchRepoPath call followed
+  // by a DB INSERT; if the file was deleted since page-load (or any other
+  // fetch/DB error occurs), this must not propagate as an unhandled
+  // exception. Matches handlePostGuardrailsForm's try/catch shape.
+  var result;
+  try {
+    result = await _requestPromotion(pool, tenantId, productId, filePath, login, prodRow.repo_owner, prodRow.repo_name, token);
+  } catch (err) {
+    if (err instanceof _artefactFetcher.ArtefactNotFoundError) {
+      if (res.status) { res.status(404).json({ error: 'the file no longer exists — refresh and try again' }); }
+      else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'the file no longer exists — refresh and try again' })); }
+      return;
+    }
+    if (res.status) { res.status(500).json({ error: 'Failed to request promotion' }); }
+    else { res.writeHead(500, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'Failed to request promotion' })); }
+    return;
+  }
   if (res.status) { res.status(200).json({ ok: true, result: result }); }
   else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, result: result })); }
 }

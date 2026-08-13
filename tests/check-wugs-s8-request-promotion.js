@@ -99,6 +99,40 @@ await checkAsync('AC1: requestPromotion_newRequest_createsRowWithSnapshot', asyn
   });
 });
 
+// ── review fix: fetchRepoPath throws ArtefactNotFoundError -> 404, no INSERT ──
+await checkAsync('reviewFix: requestPromotion_fileDeletedSincePageLoad_returns404NoInsert', async () => {
+  var calls = [];
+  var pool = makeMockPool({ pendingRow: null }, calls);
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    var req = mockReq({ body: { path: 'standards/saas-gui.md', _csrf: 'ct1' } });
+    var res = mockRes();
+    await products.handlePostRequestPromotion(req, res, null, pool);
+    var result = res._get();
+    assert.strictEqual(result.statusCode, 404, 'expected 404, got: ' + result.statusCode + ' body: ' + result.body);
+    var insertCall = calls.find(function (c) { return /INSERT INTO guardrail_promotion_requests/i.test(c.sql); });
+    assert.ok(!insertCall, 'expected no INSERT INTO guardrail_promotion_requests when the fetch fails');
+  });
+});
+
+// ── review fix: path outside the allowlist -> 400, no INSERT ────────────
+await checkAsync('reviewFix: requestPromotion_pathOutsideAllowlist_returns400NoInsert', async () => {
+  var calls = [];
+  var pool = makeMockPool({ pendingRow: null }, calls);
+  await withMockedFetchRepoPath(async function () {
+    return 'should never be reached';
+  }, async function () {
+    var req = mockReq({ body: { path: '.github/workflows/ci.yml', _csrf: 'ct1' } });
+    var res = mockRes();
+    await products.handlePostRequestPromotion(req, res, null, pool);
+    var result = res._get();
+    assert.strictEqual(result.statusCode, 400, 'expected 400, got: ' + result.statusCode + ' body: ' + result.body);
+    var insertCall = calls.find(function (c) { return /INSERT INTO guardrail_promotion_requests/i.test(c.sql); });
+    assert.ok(!insertCall, 'expected no INSERT INTO guardrail_promotion_requests for a disallowed path');
+  });
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
