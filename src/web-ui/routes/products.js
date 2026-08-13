@@ -1665,7 +1665,7 @@ async function _trackPendingPr(pool, tenantId, productId, contentPath, prNumber,
  * the same idempotent operation, not two different code paths).
  * @returns {Promise<{requestId: string, status: string, alreadyExisted: boolean}>}
  */
-async function _requestPromotion(pool, tenantId, productId, filePath, requestedBy, owner, repo, token) {
+async function _requestPromotion(pool, tenantId, productId, filePath, requestedBy, owner, repo, token, posthog) {
   var existing = (await pool.query(
     'SELECT request_id, status FROM guardrail_promotion_requests WHERE tenant_id = $1 AND product_id = $2 AND file_path = $3 AND status = $4',
     [tenantId, productId, filePath, 'pending']
@@ -1678,6 +1678,19 @@ async function _requestPromotion(pool, tenantId, productId, filePath, requestedB
     'INSERT INTO guardrail_promotion_requests (tenant_id, product_id, file_path, content_snapshot, status, requested_by) VALUES ($1, $2, $3, $4, $5, $6) RETURNING request_id, status',
     [tenantId, productId, filePath, currentContent, 'pending', requestedBy]
   )).rows[0];
+
+  // wugs-s10 -- fail-open audit capture (AC1/AC4): a PostHog failure must
+  // never block or roll back the request that was just created.
+  var _ph = posthog || _posthog;
+  try {
+    _ph.capture(tenantId, 'guardrail_promotion_requested', {
+      tenantId: tenantId,
+      productId: productId,
+      requestId: inserted.request_id,
+      filePath: filePath
+    });
+  } catch (_) { /* fail-open, per AC4 */ }
+
   return { requestId: inserted.request_id, status: inserted.status, alreadyExisted: false };
 }
 
@@ -1687,7 +1700,7 @@ async function _requestPromotion(pool, tenantId, productId, filePath, requestedB
  * convention), CSRF-guarded (matching every other mutating form in this
  * file). Delegates to _requestPromotion for the idempotent create-or-return.
  */
-async function handlePostRequestPromotion(req, res, _next, pool) {
+async function handlePostRequestPromotion(req, res, _next, pool, posthog) {
   var csrfOk = await _csrf.csrfGuard(req, res);
   if (!csrfOk) return;
   req.body = await _readBody(req);
@@ -1722,7 +1735,7 @@ async function handlePostRequestPromotion(req, res, _next, pool) {
   // exception. Matches handlePostGuardrailsForm's try/catch shape.
   var result;
   try {
-    result = await _requestPromotion(pool, tenantId, productId, filePath, login, prodRow.repo_owner, prodRow.repo_name, token);
+    result = await _requestPromotion(pool, tenantId, productId, filePath, login, prodRow.repo_owner, prodRow.repo_name, token, posthog);
   } catch (err) {
     if (err instanceof _artefactFetcher.ArtefactNotFoundError) {
       if (res.status) { res.status(404).json({ error: 'the file no longer exists — refresh and try again' }); }
@@ -1781,7 +1794,7 @@ async function _resolvePromotionRequest(pool, tenantId, requestId, newStatus, re
  * successful claim, reverts status back to 'pending' so the admin has a
  * real retry path (see plan's design note -- a decision, not an AC).
  */
-async function handlePostApprovePromotion(req, res, _next, pool) {
+async function handlePostApprovePromotion(req, res, _next, pool, posthog) {
   // review fix -- CSRF guard first, matching every other mutating POST
   // handler in this file (handlePostRequestPromotion, handlePostOrgRepoSettings).
   var csrfOk = await _csrf.csrfGuard(req, res);
@@ -1818,6 +1831,19 @@ async function handlePostApprovePromotion(req, res, _next, pool) {
       productId: claimed.product_id
     });
     await pool.query('UPDATE guardrail_promotion_requests SET pr_number = $1 WHERE request_id = $2', [writeResult.prNumber, requestId]);
+
+    // wugs-s10 -- fail-open audit capture (AC2/AC4): a PostHog failure must
+    // never block or roll back the approval that just succeeded.
+    var _ph = posthog || _posthog;
+    try {
+      _ph.capture(tenantId, 'guardrail_promotion_approved', {
+        tenantId: tenantId,
+        requestId: requestId,
+        approvedBy: login,
+        prNumber: writeResult.prNumber
+      });
+    } catch (_) { /* fail-open, per AC4 */ }
+
     if (res.status) { res.status(200).json({ ok: true, prNumber: writeResult.prNumber, prUrl: writeResult.prUrl }); }
     else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true, prNumber: writeResult.prNumber, prUrl: writeResult.prUrl })); }
   } catch (writeErr) {
@@ -1838,7 +1864,7 @@ async function handlePostApprovePromotion(req, res, _next, pool) {
  * adapter call, no org-repo check needed (AC2: rejecting never touches
  * the org repo).
  */
-async function handlePostRejectPromotion(req, res, _next, pool) {
+async function handlePostRejectPromotion(req, res, _next, pool, posthog) {
   var csrfOk = await _csrf.csrfGuard(req, res);
   if (!csrfOk) return;
 
@@ -1857,6 +1883,17 @@ async function handlePostRejectPromotion(req, res, _next, pool) {
     else { res.writeHead(409, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'This request has already been resolved.' })); }
     return;
   }
+
+  // wugs-s10 -- fail-open audit capture (AC3/AC4): a PostHog failure must
+  // never block or roll back the rejection that just succeeded.
+  var _ph = posthog || _posthog;
+  try {
+    _ph.capture(tenantId, 'guardrail_promotion_rejected', {
+      tenantId: tenantId,
+      requestId: claimed.request_id,
+      rejectedBy: login
+    });
+  } catch (_) { /* fail-open, per AC4 */ }
 
   if (res.status) { res.status(200).json({ ok: true }); }
   else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true })); }
