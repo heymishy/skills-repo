@@ -160,6 +160,26 @@ await checkAsync('review: approveRequest_writeAdapterConflict_409NotGeneric500',
   });
 });
 
+// ── AC2: rejection sets status, no write ─────────────────────────────────
+await checkAsync('AC2: rejectRequest_pending_setsStatusNoWrite', async () => {
+  var calls = [];
+  var writeAdapterCalled = false;
+  var pool = makeMockPool({
+    pendingRow: { request_id: 'req-1', product_id: 'p1', file_path: 'standards/saas-gui.md', content_snapshot: 'SNAPSHOT CONTENT' }
+  }, calls);
+  await withMockedWriteAdapter(async function () { writeAdapterCalled = true; return { prNumber: 999, prUrl: 'should-never-be-called' }; }, async function () {
+    var req = mockReq();
+    var res = mockRes();
+    await products.handlePostRejectPromotion(req, res, null, pool);
+    var result = res._get();
+    assert.strictEqual(result.statusCode, 200, 'expected 200, got: ' + result.statusCode + ' body: ' + result.body);
+    assert.strictEqual(writeAdapterCalled, false, 'expected wugs-s6\'s write adapter to NEVER be called for a rejection');
+    var claimUpdate = calls.find(function (c) { return /SET status = \$1, resolved_by = \$2/i.test(c.sql); });
+    assert.ok(claimUpdate, 'expected the atomic claim UPDATE');
+    assert.strictEqual(claimUpdate.params[0], 'rejected');
+  });
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 

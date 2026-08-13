@@ -1833,6 +1833,36 @@ async function handlePostApprovePromotion(req, res, _next, pool) {
 }
 
 /**
+ * wugs-s9 — POST /api/admin/promotions/:requestId/reject. Same role gate,
+ * CSRF guard, and atomic claim as approve, but stops there -- no write
+ * adapter call, no org-repo check needed (AC2: rejecting never touches
+ * the org repo).
+ */
+async function handlePostRejectPromotion(req, res, _next, pool) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
+  if (!req.session || !isEffectivelyAdmin(req.session)) {
+    if (res.status) { res.status(403).json({ error: 'forbidden' }); }
+    else { res.writeHead(403, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'forbidden' })); }
+    return;
+  }
+  var tenantId = req.session.tenantId;
+  var requestId = req.params && req.params.requestId;
+  var login = req.session.login;
+
+  var claimed = await _resolvePromotionRequest(pool, tenantId, requestId, 'rejected', login);
+  if (!claimed) {
+    if (res.status) { res.status(409).json({ error: 'This request has already been resolved.' }); }
+    else { res.writeHead(409, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'This request has already been resolved.' })); }
+    return;
+  }
+
+  if (res.status) { res.status(200).json({ ok: true }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ ok: true })); }
+}
+
+/**
  * wugs-s8 — renders either the "Request promotion" form (real, keyboard-
  * accessible button per the story's own Accessibility NFR) or a "pending
  * approval" indicator, depending on whether a promotion request is
@@ -3883,5 +3913,6 @@ module.exports = {
   handlePostRequestPromotion,
   // wugs-s9: race-safe resolution of a pending promotion request (approve/reject share this)
   _resolvePromotionRequest,
-  handlePostApprovePromotion
+  handlePostApprovePromotion,
+  handlePostRejectPromotion
 };
