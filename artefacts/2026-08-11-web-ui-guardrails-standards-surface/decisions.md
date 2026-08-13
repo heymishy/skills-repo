@@ -145,6 +145,16 @@
 **Rationale:** `guardrail-pr-adapter.js`'s `realCreateGuardrailPr` has never actually been exercised against the real GitHub API — every one of its 18 passing tests exercises it against a hand-authored mock `fetch`. The mock shapes were authored from GitHub's public API docs, not from an observed real response, so there is a live (if likely low) risk that a real GitHub API response — e.g. the `PUT contents` response shape, or a rate-limit/secondary-rate-limit response GitHub can return under load — differs from what the code branches on, which would only surface the first time an operator actually submits the guardrails form in production.
 **Made by:** Claude (agent), operator confirmed the step was not performed and asked how to run it
 **Revisit trigger:** Perform the manual sandbox-repo verification (see `artefacts/2026-08-11-web-ui-guardrails-standards-surface/reference/wugs-s6-manual-verification.md` for the runnable procedure) at the first available opportunity — ideally before any real tenant relies on this feature to open a real PR. If a shape mismatch is found, it is a live production bug in `guardrail-pr-adapter.js`, not a test-plan gap; fix immediately as a short-track story.
+**Status update [2026-08-14]:** RESOLVED — see the resolving entry below.
+---
+
+---
+**[2026-08-14] | RISK-ACCEPT-RESOLVED | post-merge verification (wugs-s6)**
+**Decision:** The manual sandbox-repo verification required by the RISK-ACCEPT entry above (2026-08-13) has now been performed by the operator, closing that gap.
+**Alternatives considered:** N/A — this entry records completion of an already-agreed action, not a new decision point.
+**Rationale:** The operator ran `artefacts/2026-08-11-web-ui-guardrails-standards-surface/reference/wugs-s6-manual-verification.js` against a disposable sandbox repo (`heymishy/skills-repo-sandbox`) using a freshly-generated GitHub PAT (the operator's first PAT was accidentally exposed in a chat transcript during an earlier failed attempt and has since been revoked — see this session's `workspace/learnings.md`/`state.json` for that thread). The script's real write path produced a genuine branch + PR on the sandbox repo, independently confirmed via `gh pr view 1 --repo heymishy/skills-repo-sandbox` (state: OPEN, title `Update standards/wugs-s6-manual-verification-....md`) — real evidence that `guardrail-pr-adapter.js`'s `realCreateGuardrailPr` successfully exercised the actual GitHub branch-ref/Contents/Pulls API end-to-end, not just its mocks. This closes the specific gap the RISK-ACCEPT flagged: the real API response shapes were exercised by production code, not just asserted against hand-authored mocks.
+**Made by:** Hamish King — Platform owner (operator ran the verification); Claude (agent) independently confirmed the resulting PR is real via `gh pr view`
+**Revisit trigger:** None — this closes trace finding #2 from the 2026-08-14 trace report. If a future real-tenant PR ever surfaces a shape this verification didn't happen to exercise (e.g. a GitHub secondary-rate-limit response, or an edit/update path rather than a first-time create), treat that as a new gap, not a reopening of this one.
 ---
 
 ---
