@@ -22298,12 +22298,12 @@
           "id": "wugs-s4",
           "slug": "wugs-s4-no-connected-repo-fallback",
           "name": "No-connected-repo fallback: org-level only, with a connect-repo prompt",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s4-no-connected-repo-fallback.md",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "notes": "Epic 1 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-13T03:44:19.121Z",
+          "updatedAt": "2026-08-13T04:20:07.136Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
@@ -22346,7 +22346,9 @@
               "tddState": "committed",
               "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s4-plan.md"
             }
-          ]
+          ],
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dod/wugs-s4-dod.md"
         },
         {
           "id": "wugs-s5",
