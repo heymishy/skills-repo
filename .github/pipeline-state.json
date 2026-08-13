@@ -22568,14 +22568,14 @@
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s8-request-promotion.md",
           "prStatus": "none",
           "notes": "Epic 3 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-13T04:58:54.682Z",
+          "updatedAt": "2026-08-13T05:00:56.952Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
           "testPlan": {
             "status": "written",
-            "totalTests": 3,
-            "passing": 3,
+            "totalTests": 4,
+            "passing": 4,
             "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/test-plans/wugs-s8-request-promotion-test-plan.md"
           },
           "acTotal": 4,
@@ -22596,7 +22596,7 @@
             {
               "id": "task-2",
               "name": "Duplicate pending request not re-created (AC2)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s8-plan.md"
             },
             {
