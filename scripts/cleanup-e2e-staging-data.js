@@ -180,8 +180,6 @@ async function findEligibleProducts(db, cutoff) {
 
 async function deleteProduct(db, product) {
   await db.query('DELETE FROM journeys WHERE product_id = $1', [product.product_id]);
-  await db.query('DELETE FROM standard_product_optouts WHERE product_id = $1', [product.product_id]);
-  await db.query('DELETE FROM standards WHERE product_id = $1', [product.product_id]);
   await db.query('DELETE FROM products WHERE product_id = $1', [product.product_id]);
 }
 
