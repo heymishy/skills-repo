@@ -1760,12 +1760,12 @@ async function _resolvePendingPromotions(pool, tenantId, productId) {
  * approval" indicator, depending on whether a promotion request is
  * already pending for this exact path.
  */
-function _renderPromotionAction(productId, path, csrfToken, pendingPromotion) {
+function _renderPromotionAction(productId, filePath, csrfToken, pendingPromotion) {
   if (pendingPromotion) {
     return ' <span class="gv-promotion-pending" style="font-size:12px;color:var(--muted);margin-left:8px">Promotion requested — pending approval</span>';
   }
   return ' <form method="POST" action="/products/' + encodeURIComponent(productId) + '/guardrails/promote" style="display:inline;margin-left:8px">' +
-    '<input type="hidden" name="path" value="' + _escapeHtml(path) + '">' +
+    '<input type="hidden" name="path" value="' + _escapeHtml(filePath) + '">' +
     '<input type="hidden" name="_csrf" value="' + _escapeHtml(csrfToken) + '">' +
     '<button type="submit" style="font-size:12px;color:var(--accent);background:none;border:none;padding:0;cursor:pointer;text-decoration:underline">Request promotion</button>' +
   '</form>';
