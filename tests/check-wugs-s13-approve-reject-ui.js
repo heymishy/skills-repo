@@ -1,22 +1,19 @@
 'use strict';
 // check-wugs-s13-approve-reject-ui.js — wugs-s13
 //
-// Confirms an effectively-admin session sees real, wired Approve/Reject
-// buttons for a pending promotion request (AC1), a non-admin session sees
-// the existing static text unchanged (AC2), the client-side handlers call
-// the real wugs-s9 endpoints with CSRF and proper disable/update/error
-// behaviour (AC3-AC5), and wugs-s9's own server-side role gate is
-// unaffected (AC6, regression-checked via its own existing test file).
+// Currently implemented: confirms an effectively-admin session sees real,
+// wired Approve/Reject buttons for a pending promotion request (AC1), and
+// a non-admin session sees the existing static "pending approval" text
+// unchanged, with no buttons and no requestId leaked into the markup (AC2).
+//
+// AC3-AC6 (client-side handler wiring to the real wugs-s9 endpoints with
+// CSRF and disable/update/error behaviour, and the wugs-s9 server-side
+// role-gate regression check) are added in later tasks of this story.
 
 var assert = require('assert');
 
 var passed = 0;
 var failed = 0;
-
-function check(name, fn) {
-  try { fn(); console.log('PASS:', name); passed++; }
-  catch (e) { console.error('FAIL:', name, '—', e.message); failed++; process.exitCode = 1; }
-}
 
 var products = require('../src/web-ui/routes/products');
 
@@ -82,6 +79,22 @@ async function checkAsyncOrSync(name, fn) {
   try { await fn(); console.log('PASS:', name); passed++; }
   catch (e) { console.error('FAIL:', name, '—', e.message); failed++; process.exitCode = 1; }
 }
+
+// ── AC2: non-admin sees unchanged static text ────────────────────────────
+await checkAsyncOrSync('AC2: nonAdminSession_pendingRequest_rendersStaticTextUnchanged', async () => {
+  var pool = makeMockPool({
+    prodRow: { name: 'P', tenant_id: 't1', repo_owner: 'org', repo_name: 'repo' },
+    pendingRequests: [{ request_id: 'req-2', file_path: '.github/architecture-guardrails.md', status: 'pending' }]
+  });
+  var req = mockReq({ session: { accessToken: 'tok', tenantId: 't1', login: 'engineer-bob', role: 'engineer', csrfToken: 'ct1' } });
+  var res = mockRes();
+  await products.handleGetProductGuardrailsView(req, res, null, pool);
+  var body = res._get().body;
+  assert.ok(body.indexOf('Promotion requested — pending approval') !== -1, 'expected the existing static text to still render for a non-admin');
+  assert.ok(body.indexOf('>Approve<') === -1, 'expected no Approve button leaked into non-admin-visible markup');
+  assert.ok(body.indexOf('>Reject<') === -1, 'expected no Reject button leaked into non-admin-visible markup');
+  assert.ok(body.indexOf('req-2') === -1, 'expected the requestId to NOT be embedded in non-admin-visible markup (only needed for the admin buttons)');
+});
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
