@@ -220,6 +220,52 @@ await checkAsync('AC3: handleGetGuardrailsView_closedPr_revertsCleanly', async (
   });
 });
 
+// ── AC4: multiple pending PRs, each shows its own correct state ─────────
+await checkAsync('AC4: handleGetGuardrailsView_multiplePendingPrs_eachShowsOwnCorrectState', async () => {
+  var deletedIds = [];
+  var pool = makeMockPool([
+    { id: 'row-1', tenant_id: 't1', product_id: 'p1', path: '.github/architecture-guardrails.md', pr_number: 42, pr_url: 'https://github.com/acme/widgets/pull/42' },
+    { id: 'row-2', tenant_id: 't1', product_id: 'p1', path: 'standards/saas-gui.md', pr_number: 43, pr_url: 'https://github.com/acme/widgets/pull/43' }
+  ], deletedIds);
+  var originalFetch = global.fetch;
+  var callCount = 0;
+  global.fetch = async function (url) {
+    callCount++;
+    // First PR (42) is still open; second PR (43) has merged -- proves each
+    // row is resolved independently, not one shared/ambiguous status.
+    var isFirstPr = /pulls\/42$/.test(url);
+    return { ok: true, status: 200, json: async function () {
+      return isFirstPr
+        ? { state: 'open', merged: false, number: 42, html_url: 'https://github.com/acme/widgets/pull/42' }
+        : { state: 'closed', merged: true, number: 43, html_url: 'https://github.com/acme/widgets/pull/43' };
+    } };
+  };
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    if (path === 'standards/') { return [{ name: 'saas-gui', path: 'standards/saas-gui.md', type: 'file' }]; }
+    var artefactFetcher = require('../src/web-ui/adapters/artefact-fetcher');
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    try {
+      var req = mockReq();
+      var res = mockRes();
+      await products.handleGetProductGuardrailsView(req, res, null, pool);
+      var result = res._get();
+      assert.strictEqual(result.statusCode, 200);
+      assert.strictEqual(callCount, 2, 'expected one live PR-status check per pending row');
+      assert.ok(result.body.indexOf('PR #42') !== -1, 'expected the still-open PR #42 to show its own pending indicator');
+      assert.ok(result.body.indexOf('PR #43') === -1, 'expected the merged PR #43 to NOT show a pending indicator');
+      assert.deepStrictEqual(deletedIds, ['row-2'], 'expected only the merged row to be cleared, the open one left alone');
+    } finally { global.fetch = originalFetch; }
+  });
+});
+
+// ── NFR-A11Y: pending indicator conveys state via text, not colour alone ─
+check('NFR-A11Y: pendingPrBadge_conveysStateViaTextLabel', () => {
+  var fs = require('fs');
+  var src = fs.readFileSync(require.resolve('../src/web-ui/routes/products.js'), 'utf8');
+  assert.ok(/Pending review/.test(src), 'expected a real "Pending review" text label in the source, not a colour-only indicator');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
