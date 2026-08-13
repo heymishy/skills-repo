@@ -201,6 +201,15 @@
 **Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this feature's changes during implementation, stop and investigate.
 ---
 
+---
+**[2026-08-13] | RISK-ACCEPT | branch-setup (wugs-s11)**
+**Decision:** Proceeding with `wugs-s11`'s worktree despite 33 pre-existing test failures at baseline (516 files run via `npm test`, 33 failed, exit code 0).
+**Alternatives considered:** Investigate and fix pre-existing failures first — rejected, out of scope for this feature and would delay the whole inner loop for unrelated pre-existing repo drift.
+**Rationale:** The 33 failing files match the exact same list documented in every prior story's own branch-setup RISK-ACCEPT entry above — same baseline-drift pattern already documented for every prior story this session. None overlap with `wugs-s11`'s expected touchpoints (removal of `smug-s1`'s DB-backed `standards.js` route surface and old HTML Standards tab). This worktree branched from master after `wugs-s10` merged.
+**Made by:** Claude (agent), per branch-setup's own Step 5 option 2 protocol
+**Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this feature's changes during implementation, stop and investigate.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded — all four decisions from this discovery/clarify session were logged as entries above, not full ADRs, per the operator's confirmation that none warranted ADR-level depth. -->
