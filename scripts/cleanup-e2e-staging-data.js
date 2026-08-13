@@ -26,9 +26,9 @@
  * NFR-Security: this script requires explicit, injected credentials (D37
  * pattern) — it never falls back to a default/ambient connection, and the
  * CLI entrypoint below wires only the minimum needed: a Postgres pool for
- * DELETE/SELECT on users/products/journeys/standards/
- * standard_product_optouts, and (optionally) a Stripe secret key scoped to
- * test mode. No broader admin scope is requested anywhere in this file.
+ * DELETE/SELECT on users/products/journeys, and (optionally) a Stripe
+ * secret key scoped to test mode. No broader admin scope is requested
+ * anywhere in this file.
  * NFR-Audit: every deleted record is logged (record type, id, createdAt)
  * via the returned summary and console output — see logDeletion().
  *
@@ -180,8 +180,6 @@ async function findEligibleProducts(db, cutoff) {
 
 async function deleteProduct(db, product) {
   await db.query('DELETE FROM journeys WHERE product_id = $1', [product.product_id]);
-  await db.query('DELETE FROM standard_product_optouts WHERE product_id = $1', [product.product_id]);
-  await db.query('DELETE FROM standards WHERE product_id = $1', [product.product_id]);
   await db.query('DELETE FROM products WHERE product_id = $1', [product.product_id]);
 }
 

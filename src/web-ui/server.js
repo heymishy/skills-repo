@@ -81,7 +81,6 @@ const { setBootstrapAdapter, realBootstrapRepo }                     = require('
 const { setListReposAdapter, realListRepos }                         = require('./adapters/repo-adapter');       // mtrr-s2
 const { setArtefactCommitAdapter, realCommitArtefact }               = require('./adapters/artefact-commit-writer'); // das-s1
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
-const { setStandardsAdapter }                                        = require('./standards-adapter');             // psh-s10
 const { setPostHogFlagsAdapter }                                     = require('./modules/posthog-flags');          // bri-s1.1
 const { initPostHogFlagsClient }                                     = require('./modules/posthog-config');         // bri-s1.2
 const { createTeamManagementHandlers }                               = require('./routes/team-management');       // tir-s3
@@ -821,32 +820,24 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.error('[pr-s1] platform self-registration failed:', err.message);
     });
 
-    // psh-s1: standards table
-    _creditsPool.query(`CREATE TABLE IF NOT EXISTS standards (
-      standard_id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-      product_id UUID REFERENCES products(product_id) ON DELETE CASCADE,
-      org_id VARCHAR NOT NULL,
-      name VARCHAR NOT NULL,
-      content TEXT NOT NULL,
-      visibility VARCHAR NOT NULL DEFAULT 'product' CHECK (visibility IN ('product', 'org', 'public')),
-      created_at TIMESTAMPTZ DEFAULT NOW(),
-      updated_at TIMESTAMPTZ DEFAULT NOW()
-    )`).then(function() {
-      console.log('[psh-s1] standards table ready');
+    // wugs-s12: standards/standard_product_optouts tables removed -- their
+    // only real consumers (smug-s1's routes) were removed in wugs-s11, and
+    // this feature's decisions.md ARCH entry #4 commits to a clean
+    // supersession, not carrying a dead data concept. Explicit DROP (not
+    // just stopping the CREATE) so existing deployed databases actually
+    // lose the tables, not just skip creating them on fresh installs.
+    // standard_product_optouts dropped first -- it has an ON DELETE CASCADE
+    // FK to standards.standard_id.
+    _creditsPool.query(`DROP TABLE IF EXISTS standard_product_optouts`).then(function() {
+      console.log('[wugs-s12] standard_product_optouts table dropped');
     }).catch(function(err) {
-      console.error('[psh-s1] standards migration failed:', err.message);
+      console.error('[wugs-s12] standard_product_optouts drop failed:', err.message);
     });
 
-    // psh-s9: standard_product_optouts table
-    _creditsPool.query(`CREATE TABLE IF NOT EXISTS standard_product_optouts (
-      standard_id UUID REFERENCES standards(standard_id) ON DELETE CASCADE,
-      product_id  UUID REFERENCES products(product_id)   ON DELETE CASCADE,
-      opted_out_at TIMESTAMPTZ DEFAULT NOW(),
-      PRIMARY KEY (standard_id, product_id)
-    )`).then(function() {
-      console.log('[psh-s9] standard_product_optouts table ready');
+    _creditsPool.query(`DROP TABLE IF EXISTS standards`).then(function() {
+      console.log('[wugs-s12] standards table dropped');
     }).catch(function(err) {
-      console.error('[psh-s9] standard_product_optouts migration failed:', err.message);
+      console.error('[wugs-s12] standards drop failed:', err.message);
     });
 
     // wugs-s7: guardrail_pending_prs table — tracks PRs opened by wugs-s6's
@@ -1112,23 +1103,6 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
         };
       });
       console.log('[psh-s5] product context adapter wired');
-    }
-
-    // psh-s10 D37 wiring: wire real Postgres active standards adapter
-    {
-      setStandardsAdapter(async function(productId, orgId) {
-        var r = await _creditsPool.query(
-          `SELECT name, content FROM standards
-           WHERE (product_id = $1 OR (visibility = 'org' AND org_id = $2))
-             AND standard_id NOT IN (
-               SELECT standard_id FROM standard_product_optouts WHERE product_id = $1
-             )
-           ORDER BY created_at ASC`,
-          [productId, orgId]
-        );
-        return r.rows;
-      });
-      console.log('[psh-s10] standards adapter wired');
     }
   }
 
@@ -3097,8 +3071,8 @@ async function router(req, res) {
     authGuard(req, res, async () => { await handlePostConnectRepo(req, res, null, _pshPool, null); });
 
   } else if (pathname.match(/^\/products\/[^/]+$/) && req.method === 'DELETE') {
-    // prc-s4.2 — delete (detach) a product: removes product row, journeys, and
-    // standards-cache rows; never touches the underlying GitHub repo
+    // prc-s4.2 — delete (detach) a product: removes product row and journeys;
+    // never touches the underlying GitHub repo
     req.params = { id: pathname.split('/')[2] };
     authGuard(req, res, async () => { await handleDeleteProduct(req, res, null, _pshPool, null); });
 

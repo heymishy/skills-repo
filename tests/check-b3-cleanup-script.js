@@ -67,8 +67,6 @@ function createMockDb(seed) {
     products: (seed.products || []).map(function(p) { return Object.assign({}, p); }),
     journeys: (seed.journeys || []).map(function(j) { return Object.assign({}, j); }),
     artefacts: (seed.artefacts || []).map(function(a) { return Object.assign({}, a); }),
-    standards: (seed.standards || []).map(function(s) { return Object.assign({}, s); }),
-    standard_product_optouts: (seed.standard_product_optouts || []).map(function(s) { return Object.assign({}, s); }),
     credits: (seed.credits || []).map(function(c) { return Object.assign({}, c); }),
     tenant_plan: (seed.tenant_plan || []).map(function(t) { return Object.assign({}, t); }),
     user_roles: (seed.user_roles || []).map(function(u) { return Object.assign({}, u); })
@@ -140,16 +138,6 @@ function createMockDb(seed) {
     if (/^DELETE FROM user_roles WHERE tenant_id = \$1$/i.test(s)) {
       deletions.push({ table: 'user_roles', tenantId: params[0] });
       tables.user_roles = tables.user_roles.filter(function(u) { return u.tenant_id !== params[0]; });
-      return { rowCount: 0 };
-    }
-    if (/^DELETE FROM standard_product_optouts WHERE product_id = \$1$/i.test(s)) {
-      deletions.push({ table: 'standard_product_optouts', productId: params[0] });
-      tables.standard_product_optouts = tables.standard_product_optouts.filter(function(x) { return x.product_id !== params[0]; });
-      return { rowCount: 0 };
-    }
-    if (/^DELETE FROM standards WHERE product_id = \$1$/i.test(s)) {
-      deletions.push({ table: 'standards', productId: params[0] });
-      tables.standards = tables.standards.filter(function(x) { return x.product_id !== params[0]; });
       return { rowCount: 0 };
     }
     throw new Error('Unhandled mock query: ' + s);
@@ -254,21 +242,17 @@ async function runTests() {
     assert.deepStrictEqual(remainingCustomerIds.sort(), ['cus-real', 'cus-recent-tagged'].sort());
   });
 
-  await testAsync('AC1: deleting an old tagged product also removes its journeys/standards/standard_product_optouts rows (no orphans)', async () => {
+  await testAsync('AC1: deleting an old tagged product also removes its journeys rows (no orphans)', async () => {
     const seedDb = {
       products: [
         { product_id: 'p-old-tagged', tenant_id: 'e2e-test-old@wuce-staging.test', name: 'e2e-test-old-product', created_at: daysAgoIso(10) }
       ],
-      journeys: [{ journey_id: 'j1', product_id: 'p-old-tagged' }],
-      standards: [{ standard_id: 's1', product_id: 'p-old-tagged' }],
-      standard_product_optouts: [{ standard_id: 's1', product_id: 'p-old-tagged' }]
+      journeys: [{ journey_id: 'j1', product_id: 'p-old-tagged' }]
     };
     const db = createMockDb(seedDb);
     await run({ db, skipStripe: true, dryRun: false, retentionDays: 7 });
 
     assert.strictEqual(db.remaining.journeys.length, 0, 'expected orphaned journeys row to be cleaned up');
-    assert.strictEqual(db.remaining.standards.length, 0, 'expected orphaned standards row to be cleaned up');
-    assert.strictEqual(db.remaining.standard_product_optouts.length, 0, 'expected orphaned standard_product_optouts row to be cleaned up');
   });
 
   // -------------------------------------------------------------------------
