@@ -22230,12 +22230,12 @@
           "id": "wugs-s3",
           "slug": "wugs-s3-org-level-guardrails-view-with-seeding",
           "name": "Org-level guardrails/standards view from the tenant's designated org repo, with seeding",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s3-org-level-guardrails-view-with-seeding.md",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "notes": "Epic 1 (see epics/ for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-12T21:32:01.630Z",
+          "updatedAt": "2026-08-13T02:33:37.210Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
@@ -22290,7 +22290,9 @@
               "tddState": "committed",
               "file": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/plans/wugs-s3-plan.md"
             }
-          ]
+          ],
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dod/wugs-s3-dod.md"
         },
         {
           "id": "wugs-s4",
