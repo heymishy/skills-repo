@@ -125,6 +125,23 @@ await checkAsync('AC1-nav: handleGetGuardrailsView_noConnectedRepo_navStillRende
   });
 });
 
+// ── AC2: org section still renders alongside the product-level prompt ───
+await checkAsync('AC2: handleGetGuardrailsView_noConnectedRepo_orgSectionStillRenders', async () => {
+  var pool = makeMockPool({ hasRepo: false, orgRepoRow: { repo_owner: 'org-co', repo_name: 'org-repo' } });
+  await withMockedFetchRepoPath(async function (owner, repo, path) {
+    if (owner === 'org-co' && path === '.github/architecture-guardrails.md') { return 'REAL ORG CONTENT'; }
+    throw new artefactFetcher.ArtefactNotFoundError(owner + '/' + repo, path);
+  }, async function () {
+    var req = mockReq();
+    var res = mockRes();
+    await products.handleGetProductGuardrailsView(req, res, null, pool);
+    var result = res._get();
+    assert.strictEqual(result.statusCode, 200);
+    assert.ok(result.body.indexOf('REAL ORG CONTENT') !== -1, 'expected the org-level section to still render its real content');
+    assert.ok(/connect a repo/i.test(result.body), 'expected the product-level connect-a-repo prompt to also be present — the page is not blocked/hidden');
+  });
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
