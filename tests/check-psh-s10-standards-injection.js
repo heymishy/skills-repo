@@ -90,13 +90,6 @@ function getFreshModules() {
     pass('standards adapter DB error propagates — not silently swallowed');
   } catch(e) { fail('standards adapter DB error propagates — not silently swallowed', e); }
 
-  // T6 — server.js wires setStandardsAdapter
-  try {
-    const src = require('fs').readFileSync('src/web-ui/server.js', 'utf8');
-    assert(src.includes('setStandardsAdapter'), 'setStandardsAdapter not found in server.js');
-    pass('server.js wires setStandardsAdapter before HTTP server starts');
-  } catch(e) { fail('server.js wires setStandardsAdapter before HTTP server starts', e); }
-
   // T-NFR1 — adapter called with correct productId and orgId
   try {
     const { bsp, setStandardsAdapter, setProductContextAdapter } = getFreshModules();

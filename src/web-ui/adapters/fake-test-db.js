@@ -30,11 +30,9 @@ function createFakeTestDb() {
   var nextUserId = 1;
   var products = [];     // { product_id, tenant_id, name, ...}
   var nextProductSeq = 1;
-  var standards = [];    // { standard_id, product_id, org_id, name, content, visibility, created_at }
   var productModules = [];          // { id, product_id, tenant_id, name, created_at } -- bmau-s1
   var nextModuleSeq = 1;
   var featureModuleAssignments = []; // { product_id, tenant_id, feature_slug, module_id } -- bmau-s1
-  var nextStandardSeq = 1;
   var people = [];       // { id, created_at } — tir-s1/bri-s3.3
   var nextPersonId = 1;
   var teamMemberships = [];    // { person_id, tenant_id, role, created_at } — tir-s1/bri-s3.3
@@ -212,63 +210,6 @@ function createFakeTestDb() {
           };
         });
       return Promise.resolve({ rows: jRows });
-    }
-
-    // ── standards (bri-s3.4) ─────────────────────────────────────────────
-    // Narrow support for exactly the query shapes routes/standards.js issues,
-    // added to let the @mocked cross-tenant-isolation E2E spec exercise real
-    // standards create/list/update flows without a live Postgres.
-    if (s.indexOf('INSERT INTO STANDARDS') === 0) {
-      var standardId = 'fake-standard-' + (nextStandardSeq++);
-      var stdRow = {
-        standard_id: standardId,
-        product_id:  p[0],
-        org_id:      p[1],
-        name:        p[2],
-        content:     p[3],
-        visibility:  p[4],
-        created_at:  new Date().toISOString()
-      };
-      standards.push(stdRow);
-      return Promise.resolve({ rows: [{ standard_id: standardId }] });
-    }
-    // smug-s1: standardsList's real query was fixed to match
-    // setStandardsAdapter's promoted/opted-out-aware shape (own-product
-    // standards OR org-promoted standards from a different product, minus
-    // opted-out ones) -- see routes/standards.js's fetchStandardsForProduct
-    // for the exact SQL text this branch's normalized-prefix match is keyed
-    // to. No E2E spec creates opt-out rows via this fake DB today (no
-    // standard_product_optouts backing array exists here), so the NOT IN
-    // subquery in the real SQL text is a correctness no-op for every
-    // scenario this fake currently needs to support -- if a future spec
-    // exercises opt-out, add a standard_product_optouts array here (mirroring
-    // journeys/people/etc. above) and filter it out below, rather than
-    // silently returning wrong results.
-    if (s.indexOf('SELECT STANDARD_ID, PRODUCT_ID, NAME, VISIBILITY, CREATED_AT FROM STANDARDS WHERE') === 0) {
-      var stdProductId = p[0];
-      var stdOrgId = p[1];
-      var stdRows = standards
-        .filter(function(r) {
-          var ownedByProduct = r.product_id === stdProductId && r.org_id === stdOrgId;
-          var orgPromoted = r.visibility === 'org' && r.org_id === stdOrgId;
-          return ownedByProduct || orgPromoted;
-        })
-        .sort(function(a, b) { return b.created_at.localeCompare(a.created_at); })
-        .map(function(r) { return { standard_id: r.standard_id, product_id: r.product_id, name: r.name, visibility: r.visibility, created_at: r.created_at }; });
-      return Promise.resolve({ rows: stdRows });
-    }
-    if (s.indexOf('SELECT ORG_ID FROM STANDARDS WHERE STANDARD_ID') === 0) {
-      var lookupStdId = p[0];
-      var stdMatch = standards.filter(function(r) { return r.standard_id === lookupStdId; }).map(function(r) { return { org_id: r.org_id }; });
-      return Promise.resolve({ rows: stdMatch });
-    }
-    if (s.indexOf('UPDATE STANDARDS SET NAME') === 0) {
-      var updName = p[0];
-      var updContent = p[1];
-      var updStdId = p[2];
-      var target = standards.find(function(r) { return r.standard_id === updStdId; });
-      if (target) { target.name = updName; target.content = updContent; }
-      return Promise.resolve({ rows: target ? [{ standard_id: target.standard_id }] : [], rowCount: target ? 1 : 0 });
     }
 
     // ── product_modules / feature_module_assignments (bmau-s1) ───────────
@@ -481,7 +422,6 @@ function createFakeTestDb() {
     _reset: function() {
       users = []; nextUserId = 1;
       products = []; nextProductSeq = 1;
-      standards = []; nextStandardSeq = 1;
       people = []; nextPersonId = 1;
       teamMemberships = [];
       personIdentities = [];

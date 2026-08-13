@@ -40,22 +40,6 @@ try {
   pass('products table has product_id UUID PK, tenant_id, name, created_at, created_by, updated_at');
 } catch(e) { fail('products table has product_id UUID PK, tenant_id, name, created_at, created_by, updated_at', e); }
 
-// T3 — standards table present with correct columns
-try {
-  const src = require('fs').readFileSync('src/web-ui/server.js', 'utf8');
-  assert(/CREATE TABLE IF NOT EXISTS standards/i.test(src), 'standards table migration not in server.js');
-  const idx = src.indexOf('CREATE TABLE IF NOT EXISTS standards');
-  const block = src.slice(idx, idx + 800);
-  assert(/standard_id.*UUID.*PRIMARY KEY/i.test(block) || /UUID PRIMARY KEY/i.test(block), 'standard_id UUID PK missing');
-  assert(/product_id.*UUID.*REFERENCES products/i.test(block) || /REFERENCES products.*product_id/i.test(block), 'product_id FK to products missing');
-  assert(/ON DELETE CASCADE/i.test(block), 'ON DELETE CASCADE missing on standards.product_id FK');
-  assert(/org_id/i.test(block), 'org_id column missing');
-  assert(/content.*TEXT/i.test(block) || /TEXT/i.test(block), 'content TEXT column missing');
-  assert(/visibility.*VARCHAR/i.test(block) || /visibility/i.test(block), 'visibility column missing');
-  assert(/CHECK.*visibility.*IN/i.test(block) || /product.*org.*public/i.test(block), 'visibility CHECK constraint missing');
-  pass('standards table has standard_id PK, product_id FK with CASCADE, org_id, content TEXT, visibility CHECK');
-} catch(e) { fail('standards table has standard_id PK, product_id FK with CASCADE, org_id, content TEXT, visibility CHECK', e); }
-
 // T4 — journeys.product_id FK column present
 try {
   const src = require('fs').readFileSync('src/web-ui/server.js', 'utf8');
@@ -70,21 +54,10 @@ try {
   const src = require('fs').readFileSync('src/web-ui/server.js', 'utf8');
   const dbIdx = src.indexOf("process.env.DATABASE_URL");
   const productsMigIdx = src.indexOf('CREATE TABLE IF NOT EXISTS products');
-  const standardsMigIdx = src.indexOf('CREATE TABLE IF NOT EXISTS standards');
   assert(dbIdx !== -1, 'DATABASE_URL block not found');
   assert(productsMigIdx > dbIdx, 'products migration must be inside DATABASE_URL block');
-  assert(standardsMigIdx > dbIdx, 'standards migration must be inside DATABASE_URL block');
   pass('migrations are inside the existing DATABASE_URL conditional block');
 } catch(e) { fail('migrations are inside the existing DATABASE_URL conditional block', e); }
-
-// T6 — visibility default is 'product'
-try {
-  const src = require('fs').readFileSync('src/web-ui/server.js', 'utf8');
-  const idx = src.indexOf('CREATE TABLE IF NOT EXISTS standards');
-  const block = src.slice(idx, idx + 900);
-  assert(/DEFAULT\s+'product'/i.test(block) || /DEFAULT 'product'/i.test(block), "visibility DEFAULT 'product' missing");
-  pass("standards.visibility DEFAULT 'product'");
-} catch(e) { fail("standards.visibility DEFAULT 'product'", e); }
 
 // T7 — products uses gen_random_uuid() for product_id default
 try {
