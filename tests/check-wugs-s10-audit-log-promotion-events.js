@@ -65,8 +65,6 @@ function makeMockPool(state) {
   };
 }
 
-var originalFetchRepoPath = require('../src/web-ui/adapters/artefact-fetcher').fetchRepoPath;
-
 (async () => {
 
 // ── AC1: request creation fires guardrail_promotion_requested ───────────
