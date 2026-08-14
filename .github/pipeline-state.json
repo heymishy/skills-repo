@@ -23246,10 +23246,10 @@
     {
       "slug": "2026-08-14-wuce-self-serve-invites",
       "name": "Self-serve team invite flow",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "discoveryStatus": "approved",
-      "updatedAt": "2026-08-14T10:14:32.408Z",
+      "updatedAt": "2026-08-14T10:16:06.598Z",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
@@ -23257,7 +23257,28 @@
       "sensitiveDataCategories": [],
       "epics": [],
       "stories": [],
-      "metrics": [],
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Share of new teammates added via self-serve invite",
+          "target": "A majority (>50%) of new teammates join via self-serve invite within a few weeks of launch",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Time from invite creation to invitee access",
+          "target": "Under 10 minutes",
+          "baseline": "Not yet established",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
       "guardrails": []
     }
   ],
