@@ -23242,6 +23242,23 @@
           "assessedAt": "2026-08-11T08:38:42.453Z"
         }
       ]
+    },
+    {
+      "slug": "2026-08-14-wuce-self-serve-invites",
+      "name": "Self-serve team invite flow",
+      "stage": "discovery",
+      "health": "green",
+      "discoveryStatus": "clarified",
+      "updatedAt": "2026-08-14T09:59:03.462Z",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": [],
+      "stories": [],
+      "metrics": [],
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
