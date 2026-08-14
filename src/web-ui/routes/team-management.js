@@ -9,7 +9,7 @@
 
 var teamManagement = require('../modules/team-management');
 var teamInvitations = require('../modules/team-invitations');
-var invitationEmail = require('../modules/invitation-email');
+var magicLinkStrategy = require('../auth/magic-link-strategy');
 // sec-perf-s3: session-scoped CSRF (Cross-Site Request Forgery) protection.
 var csrf = require('../middleware/csrf');
 
@@ -133,7 +133,9 @@ function createTeamManagementHandlers(pool) {
   }
 
   /**
-   * POST /api/team/invites — create a per-person team invite (wsi-s1 AC1).
+   * POST /api/team/invites — create a per-person team invite (wsi-s1 AC1),
+   * then email it as a signed magic-link JWT carrying teamInvitationId
+   * (AC2), surfacing a distinct error if the send itself fails (AC5).
    * ADR-025: tenantId is ALWAYS req.session.tenantId, never request input.
    */
   async function handleCreateInvite(req, res) {
@@ -160,8 +162,26 @@ function createTeamManagementHandlers(pool) {
 
       var invite = await teamInvitations.createInvitation(pool, tenantId, email, role, adminId, _logger);
 
-      var link = (process.env.APP_BASE_URL || '') + '/invite/redeem?teamInvitationId=' + encodeURIComponent(invite.team_invitation_id);
-      await invitationEmail.sendInvitationEmail(invite.email, link);
+      // AC2/AC5: issues the signed magic-link JWT (carrying teamInvitationId)
+      // and sends it via the reused sendInvitationEmail adapter (see
+      // auth/magic-link-strategy.js's sendMagicLink wiring in server.js) --
+      // mirrors agency-provisioning.js's own handlePostInviteUser exactly,
+      // including the explicit success check below: passport-magic-login's
+      // own .send() swallows a rejected sendMagicLink into {success:false}
+      // rather than rejecting the promise, so a failed send must be checked
+      // for explicitly or it is silently reported back as a success.
+      var sent;
+      try {
+        sent = await magicLinkStrategy.issueMagicLink(invite.email, { teamInvitationId: invite.team_invitation_id });
+      } catch (err) {
+        sent = null;
+      }
+
+      if (!sent || !sent.success) {
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'The invite was created but could not be emailed. Please try again.' }));
+        return;
+      }
 
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ team_invitation_id: invite.team_invitation_id, email: invite.email, role: invite.role, expires_at: invite.expires_at }));

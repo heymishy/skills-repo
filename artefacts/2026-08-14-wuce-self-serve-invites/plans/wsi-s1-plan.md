@@ -410,6 +410,15 @@ git add src/web-ui/routes/team-management.js tests/check-wsi-s1-admin-creates-in
 git commit -m "feat(wsi-s1): send invite email via reused sendInvitationEmail adapter (AC2)"
 ```
 
+**Task 2 CORRECTION (found post-commit, via two dispatched review subagents — spec-compliance and code-quality — before Task 3 began):** Steps 1-6 above, as originally written and as committed in `a32a32c9`, do NOT satisfy AC2. AC2's exact text requires "a link containing the signed invite token"; the signed-off DoR contract requires "a link containing a signed JWT carrying `teamInvitationId`". The code above built a plaintext URL around the raw, non-cryptographically-random `team_invitation_id` and passed it straight to `sendInvitationEmail` — an unsigned, guessable bearer credential, not a signed JWT. Full writeup in `decisions.md`'s 2026-08-15 CORRECTION entry. The corrected mechanism, now implemented and committed:
+
+- `src/web-ui/routes/team-management.js` no longer requires `../modules/invitation-email` directly. It requires `../auth/magic-link-strategy` instead, and `handleCreateInvite` now calls `magicLinkStrategy.issueMagicLink(invite.email, { teamInvitationId: invite.team_invitation_id })` — the exact same primitive `routes/agency-provisioning.js`'s own `handlePostInviteUser` uses for the equivalent "invite a person, send a signed magic link" shape. `issueMagicLink` internally builds the signed JWT AND sends it via the same reused `sendInvitationEmail` adapter (wired once in `server.js`'s `sendMagicLink` callback) — so the adapter reuse constraint is still satisfied, just through the correct entry point.
+- Because `passport-magic-login`'s own `.send()` swallows a rejected `sendMagicLink` into `{success:false}` rather than rejecting the promise (the same behaviour `agency-provisioning.js` already documents and guards against), the corrected `handleCreateInvite` checks `!sent || !sent.success` and returns HTTP 502 with the message `'The invite was created but could not be emailed. Please try again.'` if the send failed. **This means AC5 (Task 4's whole scope) is now already implemented as a direct consequence of correctly implementing AC2** — see Task 4's own correction note below.
+- `tests/check-wsi-s1-admin-creates-invite.js` was rewritten to mock `sendMagicLink` (via a fresh `magic-link-strategy` module instance registered per test, using `freshRequire()` + `registerMagicLinkStrategy()`, exactly mirroring `tests/check-story3-self-service-provisioning.js`'s own established pattern for testing this same shared singleton strategy) instead of mocking `invitation-email.js`'s `sendInvitationEmail` directly. Both AC1 tests and the AC2 test (renamed `createInvite_success_issuesSignedMagicLinkWithCorrectTeamInvitationId`) now go through this setup. Verified: `node tests/check-wsi-s1-admin-creates-invite.js` → `3 passed, 0 failed`; sibling regressions `node tests/check-story3-self-service-provisioning.js` → `18 passed, 0 failed` and `node tests/check-tir-s3-admin-adds-teammate.js` → `8 passed, 0 failed`, both unaffected.
+- Manually smoke-tested the failure path (`sendMagicLink` mock throws) before touching Task 4: confirms `handleCreateInvite` already returns `502` with the expected message — Task 4 needs no further source change, only its test.
+
+This correction is committed separately from `a32a32c9` (see the commit immediately following this note in `git log`) rather than amended into it, per this repo's own no-amend convention.
+
 ---
 
 ## Task 3: Role validation (AC3, AC4)
@@ -464,75 +473,56 @@ git commit -m "test(wsi-s1): lock in AC3/AC4 -- invalid and missing role both re
 
 ## Task 4: Email-send failure handling (AC5)
 
+**CORRECTION (superseding this task's original Steps 1-3 below, made when Task 2 was corrected — see Task 2's own correction note and `decisions.md`'s 2026-08-15 CORRECTION entry):** The `502` + `!sent.success` check this task originally set out to add in its own Step 3 is now already implemented in `src/web-ui/routes/team-management.js` as a direct, unavoidable consequence of correctly implementing AC2 via `magicLinkStrategy.issueMagicLink` (`issueMagicLink`'s underlying `passport-magic-login` swallows a rejected `sendMagicLink` into `{success:false}` rather than throwing, so the success check had to be added at Task 2 time, not deferred). Manually smoke-tested and confirmed: a `sendMagicLink` mock that throws already produces `502` + `'The invite was created but could not be emailed. Please try again.'`. This task's remaining scope is now test-only — mirrors Task 3's own "should already pass, lock in via test" shape exactly. The test below is updated to mock `sendMagicLink` (via the same `setUpTeamManagementWithMagicLink()` helper Task 2's correction introduced) instead of `invitation-email.js`'s `sendInvitationEmail` directly — do not use the original mocking shown further below, it targets the wrong (now-unused) layer.
+
 **Files:**
-- Modify: `src/web-ui/routes/team-management.js`
-- Modify: `tests/check-wsi-s1-admin-creates-invite.js`
+- Modify: `tests/check-wsi-s1-admin-creates-invite.js` (test-only; no source change expected — if the test fails, that indicates a real regression in the Task 2 correction, not a Task-4-shaped gap; investigate rather than adding new source code to force it green.)
 
-- [ ] **Step 1: Write the failing test**
+- [ ] **Step 1: Write the test (corrected mocking layer)**
 
-Add before the final `console.log`:
+Add before the final `console.log`, using the `setUpTeamManagementWithMagicLink()` helper already defined near the top of the test file:
 
 ```javascript
 await checkAsyncOrSync('AC5: createInvite_emailSendFails_surfacesErrorRowAlreadyWritten', async () => {
   var state = {};
   var pool = makeMockPool(state);
+  var teamManagementRoutes = setUpTeamManagementWithMagicLink(async function () {
+    throw new Error('Resend API error');
+  });
   var handlers = teamManagementRoutes.createTeamManagementHandlers(pool);
-  var invitationEmail = require('../src/web-ui/modules/invitation-email');
-  invitationEmail.setSendInvitationEmail(function () { return Promise.reject(new Error('Resend API error')); });
-  try {
-    var req = mockReq({ body: { email: 'fail@example.com', role: 'viewer', _csrf: 'test-csrf-token' } });
-    var res = mockRes();
-    await handlers.handleCreateInvite(req, res);
-    var result = res._get();
-    assert.strictEqual(result.statusCode, 502, 'expected a distinct error status for an email-send failure, not a generic 500');
-    var parsed = JSON.parse(result.body);
-    assert.ok(/could not be emailed|failed to send/i.test(parsed.error), 'expected a specific "could not be emailed" style message, not a generic error');
-    assert.ok(state.inserted, 'expected the team_invitations row to still exist despite the email failure');
-  } finally {
-    invitationEmail._resetForTesting();
-  }
+  var req = mockReq({ body: { email: 'fail@example.com', role: 'viewer', _csrf: 'test-csrf-token' } });
+  var res = mockRes();
+  await handlers.handleCreateInvite(req, res);
+  var result = res._get();
+  assert.strictEqual(result.statusCode, 502, 'expected a distinct error status for an email-send failure, not a generic 500');
+  var parsed = JSON.parse(result.body);
+  assert.ok(/could not be emailed|failed to send/i.test(parsed.error), 'expected a specific "could not be emailed" style message, not a generic error');
+  assert.ok(state.inserted, 'expected the team_invitations row to still exist despite the email failure');
 });
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [ ] **Step 2: Run test — expected to already pass**
 
 ```bash
 node tests/check-wsi-s1-admin-creates-invite.js
 ```
 
-Expected: `4 passed, 1 failed` — the current implementation lets the `sendInvitationEmail` rejection propagate as an uncaught error, not a clean 502 response.
+Expected: `5 passed, 0 failed` (4 from Task 2's corrected file + this one) — no source change needed, per the correction note above. If it fails, stop and investigate before writing any new source code; do not force a pass.
 
-- [ ] **Step 3: Write minimal implementation**
+<details><summary>Original (superseded) Steps 1-3 — kept for the historical record only, do not follow</summary>
 
-In `src/web-ui/routes/team-management.js`, wrap the `sendInvitationEmail` call in `handleCreateInvite` with a try/catch:
+The original plan mocked `invitation-email.js`'s `sendInvitationEmail` directly and proposed adding a try/catch around a direct `sendInvitationEmail` call in `handleCreateInvite`. Both are obsolete: Task 2's correction replaced the direct `sendInvitationEmail` call with `magicLinkStrategy.issueMagicLink`, and the `502`/`!sent.success` handling this task originally proposed adding here was folded into that same correction.
 
-```javascript
-    var link = (process.env.APP_BASE_URL || '') + '/invite/redeem?teamInvitationId=' + encodeURIComponent(invite.team_invitation_id);
-    try {
-      await invitationEmail.sendInvitationEmail(invite.email, link);
-    } catch (err) {
-      res.writeHead(502, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'The invite was created but could not be emailed. Please try again.' }));
-      return;
-    }
-```
+</details>
 
-- [ ] **Step 4: Run test — must pass**
-
-```bash
-node tests/check-wsi-s1-admin-creates-invite.js
-```
-
-Expected: `5 passed, 0 failed`
-
-- [ ] **Step 5: Run sibling regressions**
+- [ ] **Step 3 (was Step 5): Run sibling regressions**
 
 ```bash
 node tests/check-tir-s3-admin-adds-teammate.js
 node tests/check-story3-self-service-provisioning.js
 ```
 
-- [ ] **Step 6: Full regression + commit**
+- [ ] **Step 4 (was Step 6): Full regression + commit**
 
 ```bash
 npm test
@@ -541,8 +531,8 @@ npm test
 Expected: matches the documented pre-existing baseline (33 failures, same list — see `decisions.md`'s 2026-08-15 branch-setup RISK-ACCEPT entry).
 
 ```bash
-git add src/web-ui/routes/team-management.js tests/check-wsi-s1-admin-creates-invite.js
-git commit -m "feat(wsi-s1): surface a clear error when invite email send fails (AC5)"
+git add tests/check-wsi-s1-admin-creates-invite.js
+git commit -m "test(wsi-s1): lock in AC5 -- email-send failure already surfaces 502, no source change needed"
 ```
 
 ---
