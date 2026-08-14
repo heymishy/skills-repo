@@ -44,6 +44,7 @@ const { migrateOrganisationsSchema, backfillStandaloneOrganisations } = require(
 const { setOrganisationsPool }                                       = require('./routes/auth');            // story-1-organisation-entity
 const { migrateAgencyClientGrantsSchema }                            = require('./modules/agency-client-grants'); // story-2-relationship-grants-enforcement
 const { migrateClientInvitationsSchema, redeemInvitation }           = require('./modules/client-invitations'); // story-3-self-service-provisioning
+const { migrateTeamInvitationsSchema }                               = require('./modules/team-invitations'); // wsi-s1
 const { setSendInvitationEmail }                                     = require('./modules/invitation-email'); // story-3-self-service-provisioning (D37, AC5)
 const { registerMagicLinkStrategy }                                  = require('./auth/magic-link-strategy'); // story-3-self-service-provisioning -- ONE shared strategy registration point (Story 4 extends via setVerifyCallback)
 const { createAgencyProvisioningHandlers }                           = require('./routes/agency-provisioning'); // story-3-self-service-provisioning
@@ -705,6 +706,15 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       });
     }).catch(function(err) {
       console.error('[story-3-self-service-provisioning] client_invitations migration/wiring failed:', err.message);
+    });
+
+    // wsi-s1 — Auto-migrate team_invitations (sibling migration to
+    // client_invitations above, same _userRolesPool reuse pattern). The
+    // handler that writes to this table is wired below as part of
+    // _teamManagementHandlers (tir-s3's factory, extended with
+    // handleCreateInvite), so no separate handler-wiring step is needed here.
+    migrateTeamInvitationsSchema(_userRolesPool).then(function() {
+      console.log('[wsi-s1] team_invitations table ready');
     });
 
     // tir-s2 — Wire the /settings/link-account callback handlers to the same
@@ -2977,6 +2987,19 @@ async function router(req, res) {
       await requireAdmin(req, res, () => { _raOk = true; });
       if (!_raOk) return;
       await _teamManagementHandlers.handleAddTeammate(req, res);
+    }
+
+  } else if (pathname === '/api/team/invites' && req.method === 'POST') {
+    // wsi-s1 — create a per-person team invite (requireAdmin gate, AC1;
+    // ADR-025: handler always writes to req.session.tenantId, never a request field)
+    if (!_teamManagementHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Team management unavailable');
+    } else {
+      let _raOk = false;
+      await requireAdmin(req, res, () => { _raOk = true; });
+      if (!_raOk) return;
+      await _teamManagementHandlers.handleCreateInvite(req, res);
     }
 
   } else if (pathname === '/api/team/bulk-add-github-org' && req.method === 'POST') {
