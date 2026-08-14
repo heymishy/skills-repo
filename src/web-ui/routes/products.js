@@ -1229,7 +1229,7 @@ function _renderNoConnectedRepoPrompt(productId) {
  * connected repo. Each piece renders independently so a failure in one
  * does not affect the other (AC4).
  */
-function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pendingByPath, promotionByPath, csrfToken) {
+function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pendingByPath, promotionByPath, csrfToken, isAdmin) {
   pendingByPath = pendingByPath || new Map();
   promotionByPath = promotionByPath || new Map();
   var guardrailsPath = '.github/architecture-guardrails.md';
@@ -1246,7 +1246,7 @@ function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pe
   if (pendingByPath.has(guardrailsPath)) {
     guardrailsHtml += _renderPendingPrBadge(pendingByPath.get(guardrailsPath));
   }
-  guardrailsHtml += _renderPromotionAction(productId, guardrailsPath, csrfToken, promotionByPath.get(guardrailsPath));
+  guardrailsHtml += _renderPromotionAction(productId, guardrailsPath, csrfToken, promotionByPath.get(guardrailsPath), isAdmin);
 
   var standardsHtml = _renderPieceContent(standardsPiece, {
     emptyClass: 'gv-standards-empty',
@@ -1263,7 +1263,7 @@ function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pe
               '<span>' + _escapeHtml(e.name) + '</span>' +
               '<a href="' + editHref + '" style="font-size:13px;color:var(--accent)">Edit</a>' +
               (pendingByPath.has(e.path) ? _renderPendingPrBadge(pendingByPath.get(e.path)) : '') +
-              _renderPromotionAction(productId, e.path, csrfToken, promotionByPath.get(e.path)) +
+              _renderPromotionAction(productId, e.path, csrfToken, promotionByPath.get(e.path), isAdmin) +
             '</li>';
           }).join('') + '</ul>';
     }
@@ -1819,7 +1819,14 @@ async function handlePostRejectPromotion(req, res, _next, pool, posthog) {
  * approval" indicator, depending on whether a promotion request is
  * already pending for this exact path.
  */
-function _renderPromotionAction(productId, filePath, csrfToken, pendingPromotion) {
+function _renderPromotionAction(productId, filePath, csrfToken, pendingPromotion, isAdmin) {
+  if (pendingPromotion && isAdmin) {
+    var reqId = _escapeHtml(pendingPromotion.requestId);
+    return ' <span class="gv-promotion-admin-actions" id="promo-row-' + reqId + '" style="margin-left:8px">' +
+      '<button type="button" onclick="wugsApprove(this,\'' + reqId + '\',\'' + _escapeHtml(csrfToken) + '\')" style="font-size:12px;color:var(--accent);background:none;border:1px solid var(--accent);border-radius:4px;padding:2px 8px;cursor:pointer;margin-right:4px">Approve</button>' +
+      '<button type="button" onclick="wugsReject(this,\'' + reqId + '\',\'' + _escapeHtml(csrfToken) + '\')" style="font-size:12px;color:var(--muted);background:none;border:1px solid var(--line);border-radius:4px;padding:2px 8px;cursor:pointer">Reject</button>' +
+    '</span>';
+  }
   if (pendingPromotion) {
     return ' <span class="gv-promotion-pending" style="font-size:12px;color:var(--muted);margin-left:8px">Promotion requested — pending approval</span>';
   }
@@ -1871,6 +1878,49 @@ function _renderPendingPrBadge(prInfo) {
 }
 
 /**
+ * wugs-s13 — client-side handlers for the real Approve/Reject buttons
+ * rendered by `_renderPromotionAction`'s admin branch. Emitted once per
+ * page (inline `<script>` block in the guardrails view's own HTML shell),
+ * not per-row — matching the pattern the removed `smug-s1` Standards tab's
+ * `ssPromote`/`ssOptOut` functions used. Each handler disables its own
+ * button on click, calls the real `wugs-s9` endpoint with the CSRF token
+ * in the JSON body, updates the row's own DOM on success, and re-enables
+ * the button with an alert on failure.
+ */
+function _wugsClientScript() {
+  return '<script>' +
+    'function wugsApprove(btn, requestId, csrfToken) {\n' +
+    '  btn.disabled = true;\n' +
+    '  fetch(\'/api/admin/promotions/\' + requestId + \'/approve\', {\n' +
+    '    method: \'POST\',\n' +
+    '    headers: { \'Content-Type\': \'application/json\' },\n' +
+    '    body: JSON.stringify({ _csrf: csrfToken })\n' +
+    '  })\n' +
+    '    .then(function(r) { if (!r.ok) throw new Error(\'failed\'); return r.json(); })\n' +
+    '    .then(function() {\n' +
+    '      var row = document.getElementById(\'promo-row-\' + requestId);\n' +
+    '      if (row) { row.outerHTML = \' <span style="font-size:12px;color:var(--accent);margin-left:8px">Approved</span>\'; }\n' +
+    '    })\n' +
+    '    .catch(function() { btn.disabled = false; alert(\'Failed to approve this request. Please try again.\'); });\n' +
+    '}\n' +
+    'function wugsReject(btn, requestId, csrfToken) {\n' +
+    '  btn.disabled = true;\n' +
+    '  fetch(\'/api/admin/promotions/\' + requestId + \'/reject\', {\n' +
+    '    method: \'POST\',\n' +
+    '    headers: { \'Content-Type\': \'application/json\' },\n' +
+    '    body: JSON.stringify({ _csrf: csrfToken })\n' +
+    '  })\n' +
+    '    .then(function(r) { if (!r.ok) throw new Error(\'failed\'); return r.json(); })\n' +
+    '    .then(function() {\n' +
+    '      var row = document.getElementById(\'promo-row-\' + requestId);\n' +
+    '      if (row) { row.outerHTML = \' <span style="font-size:12px;color:var(--muted);margin-left:8px">Rejected</span>\'; }\n' +
+    '    })\n' +
+    '    .catch(function() { btn.disabled = false; alert(\'Failed to reject this request. Please try again.\'); });\n' +
+    '}' +
+    '<\/script>';
+}
+
+/**
  * wugs-s2 — GET /products/:id/guardrails: live-read product-level
  * architecture guardrails + standards from the product's connected repo.
  */
@@ -1880,6 +1930,7 @@ async function handleGetProductGuardrailsView(req, res, _next, pool) {
   var tenantId = req.session && req.session.tenantId;
   var login = req.session && req.session.login;
   var token = req.session && req.session.accessToken;
+  var isAdmin = !!(req.session && isEffectivelyAdmin(req.session));
 
   var prodRow = (await _pool.query(
     'SELECT name, tenant_id, repo_owner, repo_name FROM products WHERE product_id = $1',
@@ -1910,7 +1961,7 @@ async function handleGetProductGuardrailsView(req, res, _next, pool) {
   } else {
     var guardrailsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, '.github/architecture-guardrails.md', token);
     var standardsPiece = await _fetchGuardrailsSectionPiece(prodRow.repo_owner, prodRow.repo_name, 'standards/', token);
-    productSectionHtml = _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pendingByPath, promotionByPath, csrfToken);
+    productSectionHtml = _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pendingByPath, promotionByPath, csrfToken, isAdmin);
   }
 
   var navSummary = await getProductsNavSummary(_pool, tenantId);
@@ -1919,6 +1970,7 @@ async function handleGetProductGuardrailsView(req, res, _next, pool) {
     '<div style="margin-bottom:24px"><h1 style="margin:0;font-size:24px">Guardrails &amp; Standards</h1></div>' +
     orgSectionHtml +
     productSectionHtml +
+    _wugsClientScript() +
   '</div>';
 
   var html = _htmlShell.renderShell({
