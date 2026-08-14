@@ -57,6 +57,15 @@
 **Revisit trigger:** If beta feedback shows 24 hours is too short (invitees frequently miss the window and need a new invite), reconsider the window length — this does not require reconsidering whether a fixed expiry exists at all.
 ---
 
+---
+**[2026-08-15] | ASSUMPTION | definition (architecture constraints scan)**
+**Decision:** The discovery artefact's MVP scope assumed wuce already has "the platform's existing transactional email path from `2026-07-01-landing-auth-billing`." This assumption is INVALIDATED. Direct verification (grep for email-sending code across `src/`, plus reading `lab-s2.2-email-password-auth.md`) confirms wuce has never sent an email — `lab-s2.2` explicitly scoped out email verification, stating "no verification email sent in MVP." No transactional email adapter exists anywhere in this codebase.
+**Alternatives considered:** (1) Revert the /clarify decision and go back to a manually-shared link (no email needed) — considered, rejected because the operator explicitly wants the per-person emailed-invite shape. (2) Build a minimal email-sending adapter as a genuine prerequisite story before the invite-creation story — chosen.
+**Rationale:** Discovering this now (at /definition's architecture constraints scan, before any stories are written) is exactly the checkpoint this gap should surface at — writing stories against a false assumption about existing infrastructure would have produced an unbuildable "create invite" story that silently depended on something that doesn't exist. The fix is to add a new prerequisite story/epic for a minimal email-sending capability, following this codebase's established D37 injectable-adapter pattern (throwing stub default, real implementation wired separately, per CLAUDE.md's Injectable adapter rule).
+**Made by:** Claude (agent), verified via direct grep of `src/` and reading `lab-s2.2`'s own story text before writing any stories
+**Revisit trigger:** None — this is now locked into the epic/story structure as a real prerequisite, not a deferred risk.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded yet — the seat-limit-at-acceptance decision above is logged as an ARCH entry rather than a full ADR, consistent with this repo's own practice of reserving full ADRs for structural decisions with broader platform-wide implications. -->
