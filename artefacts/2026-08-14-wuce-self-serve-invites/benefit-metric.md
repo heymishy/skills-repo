@@ -56,7 +56,8 @@ Not applicable — see Tier Classification above (META-BENEFIT FLAG: No).
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Share of new teammates added via self-serve invite | TBD at /definition | Pending |
+| Share of new teammates added via self-serve invite | wsi-s1 (creates the mechanism), wsi-s2 (completes it), wsi-s5 (instruments both this event and the comparable admin-add event, making the share computable) | Covered |
+| Time from invite creation to invitee access | wsi-s1 (creation timestamp), wsi-s2 (acceptance timestamp), wsi-s5 (computes and captures the elapsed-time property) | Covered |
 | Time from invite creation to invitee access | TBD at /definition | Pending |
 
 ---

@@ -46,6 +46,7 @@
 **Rationale:** Operator's explicit choice during /clarify Q3. This matches how limits are more commonly enforced in practice (at the point of consumption, not reservation) and avoids blocking legitimate invite creation for a limit that may no longer apply by the time it matters.
 **Made by:** Hamish King — Platform owner
 **Revisit trigger:** If beta feedback shows admins are confused by being able to create an invite that then fails at acceptance time, reconsider creation-time pre-checking with a warning (not a hard block) instead.
+**Correction note [2026-08-15]:** The "no seat-limit check... rejected as a real gap that would let self-serve joins bypass existing billing enforcement" framing above assumed an existing seat-limit mechanism to bypass. Verified at /definition: no such mechanism exists anywhere in wuce today (see the correction entry below). The acceptance-time-not-creation-time TIMING decision itself remains correct and unchanged; what changes is that this feature now builds the FIRST seat-limit enforcement, not integrating with a pre-existing one.
 ---
 
 ---
@@ -58,12 +59,30 @@
 ---
 
 ---
-**[2026-08-15] | ASSUMPTION | definition (architecture constraints scan)**
-**Decision:** The discovery artefact's MVP scope assumed wuce already has "the platform's existing transactional email path from `2026-07-01-landing-auth-billing`." This assumption is INVALIDATED. Direct verification (grep for email-sending code across `src/`, plus reading `lab-s2.2-email-password-auth.md`) confirms wuce has never sent an email — `lab-s2.2` explicitly scoped out email verification, stating "no verification email sent in MVP." No transactional email adapter exists anywhere in this codebase.
-**Alternatives considered:** (1) Revert the /clarify decision and go back to a manually-shared link (no email needed) — considered, rejected because the operator explicitly wants the per-person emailed-invite shape. (2) Build a minimal email-sending adapter as a genuine prerequisite story before the invite-creation story — chosen.
-**Rationale:** Discovering this now (at /definition's architecture constraints scan, before any stories are written) is exactly the checkpoint this gap should surface at — writing stories against a false assumption about existing infrastructure would have produced an unbuildable "create invite" story that silently depended on something that doesn't exist. The fix is to add a new prerequisite story/epic for a minimal email-sending capability, following this codebase's established D37 injectable-adapter pattern (throwing stub default, real implementation wired separately, per CLAUDE.md's Injectable adapter rule).
-**Made by:** Claude (agent), verified via direct grep of `src/` and reading `lab-s2.2`'s own story text before writing any stories
-**Revisit trigger:** None — this is now locked into the epic/story structure as a real prerequisite, not a deferred risk.
+**[2026-08-15] | ASSUMPTION | definition (architecture constraints scan) — SUPERSEDED, see entry below**
+**Decision:** The discovery artefact's MVP scope assumed wuce already has "the platform's existing transactional email path from `2026-07-01-landing-auth-billing`." This assumption was believed INVALIDATED based on a grep for email-sending code across `src/` (pattern: `sendEmail|nodemailer|sendgrid|SMTP|mailer|transactional`) that returned no real match, plus reading `lab-s2.2-email-password-auth.md`'s "no verification email sent in MVP" note.
+**Alternatives considered:** (1) Revert the /clarify decision and go back to a manually-shared link — rejected. (2) Build a minimal email-sending adapter as a genuine prerequisite story — chosen at the time.
+**Rationale:** [SUPERSEDED — this conclusion was wrong.] The grep pattern used did not include "invitation" or "Resend" as search terms, and missed `modules/invitation-email.js`'s `sendInvitationEmail()` function entirely — a real, D37-compliant, production-wired (Resend SDK) email adapter that already exists, built for a different feature (`2026-07-30-agency-client-organisations`). A narrow negative grep result was treated as proof of absence without a broader follow-up search. See the corrected entry immediately below.
+**Made by:** Claude (agent) — incomplete verification
+**Revisit trigger:** N/A — superseded.
+---
+
+---
+**[2026-08-15] | ASSUMPTION | definition (correction)**
+**Decision:** The prior entry's conclusion is WRONG and is corrected here rather than silently edited, to keep an honest record. wuce already has a real, working, D37-compliant email-sending adapter: `src/web-ui/modules/invitation-email.js`'s `sendInvitationEmail()`/`setSendInvitationEmail()`, production-wired to the Resend SDK in `server.js` (gated on `RESEND_API_KEY`), built for `2026-07-30-agency-client-organisations`'s own Client-org invitation flow. This feature will REUSE that adapter unchanged, per ADR-026 (reuse before introducing a new entity) — no new email-sending story is needed.
+**Alternatives considered:** N/A — this is a factual correction, not a new decision point.
+**Rationale:** Also found while investigating: a `client_invitations` table + atomic single-use redemption pattern (`modules/client-invitations.js`), and a shared Passport magic-link strategy (`auth/magic-link-strategy.js`, `registerMagicLinkStrategy`/`setVerifyCallback`) already extended once (`story-4-dual-path-authentication`'s `_combinedMagicLinkVerify`, which dispatches between two existing invitation/login types by payload shape). This feature's real "thinnest end-to-end" foundation is extending that shared dispatcher to a THIRD case (team-tenant invite) plus a new `team_invitations` table matching `client_invitations`' shape but with `tenant_id`, `role`, and expiry columns it doesn't have — not building new email infrastructure. The epic/story structure was revised accordingly (fewer, larger stories combining the dispatcher extension with the admin-facing create-invite story, rather than an artificial standalone "build the adapter" story with no user-visible outcome).
+**Made by:** Claude (agent), verified via reading `modules/invitation-email.js`, `modules/client-invitations.js`, `modules/team-management.js`, and `server.js`'s real wiring in full before writing any stories
+**Revisit trigger:** None — this is now the corrected, locked-in basis for the epic/story structure.
+---
+
+---
+**[2026-08-15] | SCOPE | definition (correction + scope expansion)**
+**Decision:** No seat/plan-quantity limit exists anywhere in wuce today — corrected here rather than silently edited, to keep an honest record. Direct verification (`billing.js`, `tenant-plan.js`, `github-org-bulk-add.js`) confirms billing tracks a plan TIER per tenant (starter/pro), never a seat COUNT; `product/roadmap.md` explicitly lists "per-seat/usage-based Stripe billing" as deferred, never built. This is the second research gap found in this feature at /definition (the first being the email-adapter assumption, corrected above) — both followed the same shape: assuming existing infrastructure without verifying it first.
+**Alternatives considered:** (1) Drop the seat-limit check entirely from MVP scope, treating self-serve joins as unlimited (matching manual admin-adds today, which also have no cap) — considered, would have been the lower-risk/lower-scope choice. (2) Build a basic per-tenant member-count cap, keyed to the tenant's existing plan tier, as new prerequisite scope within this epic — chosen by the operator.
+**Rationale:** Operator explicitly chose to build real enforcement rather than defer it, given self-serve invite removes the last practical friction that was implicitly limiting team size (an admin's own willingness to manually add people). This is deliberately scoped as a BASIC count cap (e.g. a per-plan-tier maximum, checked via a simple `COUNT(*) FROM team_memberships WHERE tenant_id = $1`), not full Stripe per-seat billing (still correctly deferred per `product/roadmap.md` — no Stripe quantity/metering integration is built here).
+**Made by:** Hamish King — Platform owner (chose to build it); Claude (agent) verified the gap and scoped the basic-cap alternative
+**Revisit trigger:** If/when full Stripe per-seat billing is eventually built (still deferred per roadmap.md), this basic count cap should be reconciled with or replaced by the real per-seat billing enforcement — it is an interim mechanism, not intended to be the permanent seat-limit model.
 ---
 
 ## Architecture Decision Records
