@@ -23264,32 +23264,47 @@
             {
               "slug": "wsi-s1-admin-creates-invite",
               "name": "Admin creates a per-person team invite, which sends the invite email",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-08-14T19:34:16.931Z"
             },
             {
               "slug": "wsi-s2-invitee-accepts-and-joins",
               "name": "Invitee accepts the invite and joins the tenant with the assigned role",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-08-14T19:34:57.284Z"
             },
             {
               "slug": "wsi-s3-invite-expiry",
               "name": "Expired invites (past 24 hours) are rejected cleanly",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-08-14T19:35:22.928Z"
             },
             {
               "slug": "wsi-s4-member-count-cap",
               "name": "Invite acceptance is blocked if the tenant is at its member-count cap",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-08-14T19:35:50.316Z"
             },
             {
               "slug": "wsi-s5-metrics-instrumentation",
               "name": "PostHog instrumentation for both benefit metrics",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-08-14T19:36:21.848Z"
             }
           ]
         }
@@ -23622,7 +23637,10 @@
           "id": "ADR-025",
           "category": "adr",
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "Multi-tenancy: wsi-s1/wsi-s2/wsi-s4 all cite tenant_id scoping consistent with the application-layer pattern -- wsi-s2 explicitly closes a tamper vector by sourcing tenant_id from the invite record (set at creation), never from the accept-time request.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-08-14T19:37:11.966Z"
         }
       ],
       "slicingStrategy": "walking-skeleton"
