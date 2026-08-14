@@ -112,6 +112,15 @@
 **Revisit trigger:** If a future implementer or reviewer is ever confused by the User-Story/AC mismatch (e.g. flags the `team-management.js` change as unexpected scope creep during /verify-completion), fix both fields at that point rather than proactively now.
 ---
 
+---
+**[2026-08-15] | RISK-ACCEPT | definition-of-ready (W4, all 5 stories)**
+**Decision:** Proceeding with DoR sign-off on `wsi-s1` through `wsi-s5` despite W4 (verification script reviewed by a domain expert) not being independently satisfied for any of the 5 — the verification scripts exist and are complete, but no separate domain expert has reviewed them ahead of implementation.
+**Alternatives considered:** Pause DoR sign-off until a separate reviewer walks each script — the more thorough option, deferred since this is a solo-operator feature with no separate domain-expert role available, matching the same practical constraint this repo's own solo-operator precedent has accepted throughout (e.g. `web-ui-guardrails-standards-surface`'s own DoR runs).
+**Rationale:** The verification scripts were written directly from the same story ACs the operator has already reviewed and approved through `/review`; the marginal value of a separate pre-code read-through is lower than the cost of blocking 5 stories on an unavailable role. Post-merge smoke testing (the scripts' own second intended use) remains the real verification checkpoint.
+**Made by:** Hamish King — Platform owner
+**Revisit trigger:** If this feature ever has a genuinely separate domain-expert reviewer available, use them for W4 satisfaction on future stories rather than accepting this gap by default.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded yet — the seat-limit-at-acceptance decision above is logged as an ARCH entry rather than a full ADR, consistent with this repo's own practice of reserving full ADRs for structural decisions with broader platform-wide implications. -->

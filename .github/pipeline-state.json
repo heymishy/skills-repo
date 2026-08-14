@@ -23264,11 +23264,11 @@
             {
               "slug": "wsi-s1-admin-creates-invite",
               "name": "Admin creates a per-person team invite, which sends the invite email",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-14T19:41:59.358Z",
+              "updatedAt": "2026-08-14T19:48:16.879Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -23277,16 +23277,19 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": "false",
-              "e2eToolingRequired": "false"
+              "e2eToolingRequired": "false",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-14-wuce-self-serve-invites/dor/wsi-s1-dor.md",
+              "dorSignedOffAt": "2026-08-15T00:00:00.000Z"
             },
             {
               "slug": "wsi-s2-invitee-accepts-and-joins",
               "name": "Invitee accepts the invite and joins the tenant with the assigned role",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-14T19:42:52.209Z",
+              "updatedAt": "2026-08-14T19:49:00.448Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -23295,16 +23298,19 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": "false",
-              "e2eToolingRequired": "false"
+              "e2eToolingRequired": "false",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-14-wuce-self-serve-invites/dor/wsi-s2-dor.md",
+              "dorSignedOffAt": "2026-08-15T00:00:00.000Z"
             },
             {
               "slug": "wsi-s3-invite-expiry",
               "name": "Expired invites (past 24 hours) are rejected cleanly",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-14T19:43:30.953Z",
+              "updatedAt": "2026-08-14T19:49:35.753Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -23313,16 +23319,19 @@
               "acTotal": 3,
               "acVerified": 0,
               "hasLayoutDependentGaps": "false",
-              "e2eToolingRequired": "false"
+              "e2eToolingRequired": "false",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-14-wuce-self-serve-invites/dor/wsi-s3-dor.md",
+              "dorSignedOffAt": "2026-08-15T00:00:00.000Z"
             },
             {
               "slug": "wsi-s4-member-count-cap",
               "name": "Invite acceptance is blocked if the tenant is at its member-count cap",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-14T19:44:23.555Z",
+              "updatedAt": "2026-08-14T19:50:14.213Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -23331,16 +23340,19 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": "false",
-              "e2eToolingRequired": "false"
+              "e2eToolingRequired": "false",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-14-wuce-self-serve-invites/dor/wsi-s4-dor.md",
+              "dorSignedOffAt": "2026-08-15T00:00:00.000Z"
             },
             {
               "slug": "wsi-s5-metrics-instrumentation",
               "name": "PostHog instrumentation for both benefit metrics",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-14T19:45:07.124Z",
+              "updatedAt": "2026-08-14T19:50:56.800Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -23349,7 +23361,10 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": "false",
-              "e2eToolingRequired": "false"
+              "e2eToolingRequired": "false",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-14-wuce-self-serve-invites/dor/wsi-s5-dor.md",
+              "dorSignedOffAt": "2026-08-15T00:00:00.000Z"
             }
           ]
         }
