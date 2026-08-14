@@ -40,21 +40,32 @@ class ArtefactFetchError extends Error {
  * @param {string} token
  * @param {[string, string]} notFoundArgs - passed positionally to `new ArtefactNotFoundError(...)`
  * @param {string} networkErrorMessage
+ * @param {number} [timeoutMs=10000] - wugs-s14: abort the request if no
+ *   response arrives within this window, so a hung GitHub API call can't
+ *   leave a route handler (and its caller) waiting indefinitely.
  * @returns {Promise<object|Array>} parsed GitHub Contents API JSON response
  * @throws {ArtefactNotFoundError} on 404
- * @throws {ArtefactFetchError}    on other errors
+ * @throws {ArtefactFetchError}    on other errors, including a timeout
  */
-async function fetchGithubContentsResponse(url, token, notFoundArgs, networkErrorMessage) {
+async function fetchGithubContentsResponse(url, token, notFoundArgs, networkErrorMessage, timeoutMs = 10000) {
   let response;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     response = await fetch(url, {
       headers: {
         'Authorization': `Bearer ${token}`,
         'Accept':        'application/vnd.github.v3+json'
-      }
+      },
+      signal: controller.signal
     });
   } catch (err) {
+    if (err.name === 'AbortError') {
+      throw new ArtefactFetchError(`Timeout: ${networkErrorMessage} (exceeded ${timeoutMs}ms)`, 'timeout');
+    }
     throw new ArtefactFetchError(networkErrorMessage, err.message);
+  } finally {
+    clearTimeout(timer);
   }
 
   if (response.status === 404) {
@@ -89,16 +100,19 @@ async function fetchGithubContentsResponse(url, token, notFoundArgs, networkErro
  *   reintroducing the exact cross-tenant defect mtrr-s1 exists to close.
  *   Optional and additive: every other caller (e.g. handleArtefactRoute, the
  *   in-app viewer) is unaffected and keeps using the env-var default.
+ * @param {number} [timeoutMs] - wugs-s14: optional override of the shared
+ *   helper's default request timeout; undefined falls through to
+ *   fetchGithubContentsResponse's own 10000ms default.
  * @returns {Promise<string>} decoded markdown content
  * @throws {ArtefactNotFoundError} when the Contents API returns 404
- * @throws {ArtefactFetchError}    on non-404 error or network failure
+ * @throws {ArtefactFetchError}    on non-404 error, network failure, or timeout
  */
-async function fetchArtefact(featureSlug, artefactType, token, repoOverride) {
+async function fetchArtefact(featureSlug, artefactType, token, repoOverride, timeoutMs) {
   const repoPath = `artefacts/${featureSlug}/${artefactType}.md`;
   const targetRepo = repoOverride ? `${repoOverride.owner}/${repoOverride.repo}` : GITHUB_REPO;
   const url      = `${GITHUB_API_BASE}/repos/${targetRepo}/contents/${repoPath}`;
 
-  const data    = await fetchGithubContentsResponse(url, token, [featureSlug, artefactType], 'Network error fetching artefact');
+  const data    = await fetchGithubContentsResponse(url, token, [featureSlug, artefactType], 'Network error fetching artefact', timeoutMs);
   const decoded = Buffer.from(data.content.replace(/\n/g, ''), 'base64').toString('utf8');
   return decoded;
 }
@@ -113,14 +127,17 @@ async function fetchArtefact(featureSlug, artefactType, token, repoOverride) {
  * @param {string} repo
  * @param {string} path
  * @param {string} token
+ * @param {number} [timeoutMs] - wugs-s14: optional override of the shared
+ *   helper's default request timeout; undefined falls through to
+ *   fetchGithubContentsResponse's own 10000ms default.
  * @returns {Promise<string|Array>} decoded file content, or a directory entry array
  * @throws {ArtefactNotFoundError} on 404
- * @throws {ArtefactFetchError}    on other errors
+ * @throws {ArtefactFetchError}    on other errors, including a timeout
  */
-async function realFetchRepoPath(owner, repo, path, token) {
+async function realFetchRepoPath(owner, repo, path, token, timeoutMs) {
   const url = `${GITHUB_API_BASE}/repos/${owner}/${repo}/contents/${path}`;
 
-  const data = await fetchGithubContentsResponse(url, token, [`${owner}/${repo}`, path], 'Network error fetching repo path');
+  const data = await fetchGithubContentsResponse(url, token, [`${owner}/${repo}`, path], 'Network error fetching repo path', timeoutMs);
 
   if (Array.isArray(data)) {
     return data.map(entry => ({ name: entry.name, path: entry.path, type: entry.type }));
@@ -174,5 +191,6 @@ function getFetchRepoPath() {
 
 module.exports = {
   fetchArtefact, ArtefactNotFoundError, ArtefactFetchError,
-  fetchRepoPath, setFetchRepoPath, getFetchRepoPath, realFetchRepoPath
+  fetchRepoPath, setFetchRepoPath, getFetchRepoPath, realFetchRepoPath,
+  fetchGithubContentsResponse
 };

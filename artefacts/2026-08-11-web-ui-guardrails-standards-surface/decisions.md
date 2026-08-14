@@ -145,6 +145,16 @@
 **Rationale:** `guardrail-pr-adapter.js`'s `realCreateGuardrailPr` has never actually been exercised against the real GitHub API — every one of its 18 passing tests exercises it against a hand-authored mock `fetch`. The mock shapes were authored from GitHub's public API docs, not from an observed real response, so there is a live (if likely low) risk that a real GitHub API response — e.g. the `PUT contents` response shape, or a rate-limit/secondary-rate-limit response GitHub can return under load — differs from what the code branches on, which would only surface the first time an operator actually submits the guardrails form in production.
 **Made by:** Claude (agent), operator confirmed the step was not performed and asked how to run it
 **Revisit trigger:** Perform the manual sandbox-repo verification (see `artefacts/2026-08-11-web-ui-guardrails-standards-surface/reference/wugs-s6-manual-verification.md` for the runnable procedure) at the first available opportunity — ideally before any real tenant relies on this feature to open a real PR. If a shape mismatch is found, it is a live production bug in `guardrail-pr-adapter.js`, not a test-plan gap; fix immediately as a short-track story.
+**Status update [2026-08-14]:** RESOLVED — see the resolving entry below.
+---
+
+---
+**[2026-08-14] | RISK-ACCEPT-RESOLVED | post-merge verification (wugs-s6)**
+**Decision:** The manual sandbox-repo verification required by the RISK-ACCEPT entry above (2026-08-13) has now been performed by the operator, closing that gap.
+**Alternatives considered:** N/A — this entry records completion of an already-agreed action, not a new decision point.
+**Rationale:** The operator ran `artefacts/2026-08-11-web-ui-guardrails-standards-surface/reference/wugs-s6-manual-verification.js` against a disposable sandbox repo (`heymishy/skills-repo-sandbox`) using a freshly-generated GitHub PAT (the operator's first PAT was accidentally exposed in a chat transcript during an earlier failed attempt and has since been revoked — see this session's `workspace/learnings.md`/`state.json` for that thread). The script's real write path produced a genuine branch + PR on the sandbox repo, independently confirmed via `gh pr view 1 --repo heymishy/skills-repo-sandbox` (state: OPEN, title `Update standards/wugs-s6-manual-verification-....md`) — real evidence that `guardrail-pr-adapter.js`'s `realCreateGuardrailPr` successfully exercised the actual GitHub branch-ref/Contents/Pulls API end-to-end, not just its mocks. This closes the specific gap the RISK-ACCEPT flagged: the real API response shapes were exercised by production code, not just asserted against hand-authored mocks.
+**Made by:** Hamish King — Platform owner (operator ran the verification); Claude (agent) independently confirmed the resulting PR is real via `gh pr view`
+**Revisit trigger:** None — this closes trace finding #2 from the 2026-08-14 trace report. If a future real-tenant PR ever surfaces a shape this verification didn't happen to exercise (e.g. a GitHub secondary-rate-limit response, or an edit/update path rather than a first-time create), treat that as a new gap, not a reopening of this one.
 ---
 
 ---
@@ -244,6 +254,24 @@
 **Rationale:** `push`/`pull_request`-triggered workflow runs have produced zero results repo-wide since ~2026-08-13T23:32 (confirmed via direct pushes to `master` too), while manually-dispatched (`workflow_dispatch`) and `schedule`-triggered runs both completed successfully in the same window — the Actions execution pipeline itself is healthy, only event-based auto-triggering is affected. Likely cause: a webhook or GitHub App installation issue visible only via the repo's Settings UI, not the REST API available to this session.
 **Made by:** Claude (agent), continuing the operator's own report that this PR "has no CI checks run"
 **Revisit trigger:** Once CI triggering resumes repo-wide (see master's decisions.md), push a fresh commit here to confirm this PR picks up real status checks before merging.
+---
+
+---
+**[2026-08-14] | RISK-ACCEPT | branch-setup (wugs-s13)**
+**Decision:** Proceeding with `wugs-s13`'s worktree despite 33 pre-existing test failures at baseline (514 files run via `npm test`, 33 failed, exit code 0).
+**Alternatives considered:** Investigate and fix pre-existing failures first — rejected, out of scope for this follow-up story and would delay resolving `/trace`'s own HIGH finding.
+**Rationale:** The 33 failing files match the exact same list documented in every prior story's own branch-setup RISK-ACCEPT entry in this file — same baseline-drift pattern already documented throughout this feature. None overlap with `wugs-s13`'s expected touchpoints (`_renderPromotionAction`, `handleGetProductGuardrailsView`, `_renderGuardrailsSection` in `products.js`).
+**Made by:** Claude (agent), per branch-setup's own Step 5 option 2 protocol
+**Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this story's changes during implementation, stop and investigate.
+---
+
+---
+**[2026-08-14] | RISK-ACCEPT | branch-complete (wugs-s13)**
+**Decision:** Draft PR #735 (`wugs-s13`) has no CI check runs on its current head commit, and this is not fixable from within the PR — proceeding without them for now, flagged for operator investigation.
+**Alternatives considered:** (1) Close/reopen the PR to force a fresh `pull_request` event — tried, did not trigger any run. (2) Push a fresh empty commit to force a `synchronize` event — tried, did not trigger any run even after ~3 minutes of polling. (3) Assume it's a transient GitHub-wide outage — checked githubstatus.com directly, Actions is reported fully operational, no active incident.
+**Rationale:** Confirmed via the GitHub API (`/repos/.../actions/runs?head_sha=...`, zero results) that no workflow run exists for wugs-s13's last three pushes. Critically, this is NOT isolated to PR #735: two of this session's own direct pushes to `master` (`20063925`, `75727b49`) also triggered zero workflow runs — the same symptom repo-wide, starting right around when `wugs-s14`'s PR merged (`6951c06a`, ~2026-08-13T23:32). Workflow definitions themselves are confirmed `active` (not manually disabled), and repo-level Actions permissions show `enabled: true`. The most likely remaining cause — an Actions minutes/spending cap reached at the account or org level — is not something visible or actionable via this session's API token; it requires the operator to check Settings → Billing → Plans and usage (or the org equivalent). By contrast, `wugs-s13`'s and `wugs-s14`'s EARLIER pushes (through `51351ac0` / `f9a0916f` respectively) did trigger and pass CI cleanly — this is a newly-onset gap affecting only pushes after ~2026-08-13T23:32, not a defect in either story's own code or workflow config.
+**Made by:** Claude (agent), operator reported "735 has no CI checks run" and prompted this investigation
+**Revisit trigger:** Once the operator resolves the underlying cause (billing/quota, or whatever it turns out to be), push a fresh commit (or close/reopen) to confirm CI resumes triggering — for BOTH remaining open PRs and future work. Until resolved, no PR on this repo can be merged with genuine confidence that its required status checks reflect its actual current head commit.
 ---
 
 ## Architecture Decision Records
