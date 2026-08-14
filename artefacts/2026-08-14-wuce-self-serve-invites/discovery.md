@@ -1,8 +1,8 @@
 # Discovery: Self-serve team invite flow
 
-**Status:** Clarified — awaiting approval
+**Status:** Approved
 **Created:** 2026-08-14
-**Approved by:** Pending
+**Approved by:** Hamish King — Platform Owner — 2026-08-14
 **Author:** Copilot (Claude)
 
 ---
@@ -58,11 +58,11 @@ An admin enters a teammate's email address and a role (role selection is require
 
 ## Reviewers
 
-- [Name — Role]
+- Hamish King — Platform Owner — 2026-08-14
 
 ## Approved By
 
-Pending
+Hamish King — Platform Owner — 2026-08-14
 
 ---
 
