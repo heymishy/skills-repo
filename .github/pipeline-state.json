@@ -22058,9 +22058,18 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "wugs-s2 just merged -- no real product view has been loaded by an actual tenant yet; org-level content (wugs-s3) and the no-repo fallback (wugs-s4) are still outstanding.",
+          "evidence": "wugs-s14 (2026-08-14) closed the shared adapter reliability gap (AbortController timeout) that m1's primary contributing stories all depend on. m1 itself remains not-yet-measured -- no real tenant view load has been observed yet.",
           "contributingStories": [
-            "wugs-s2"
+            "wugs-s1",
+            "wugs-s2",
+            "wugs-s3",
+            "wugs-s4",
+            "wugs-s5",
+            "wugs-s6",
+            "wugs-s7",
+            "wugs-s11",
+            "wugs-s12",
+            "wugs-s14"
           ]
         },
         {
@@ -22070,8 +22079,13 @@
           "baseline": "0",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "wugs-s13 (2026-08-14) closes the last blocker: the full promotion-approval workflow (request -> approve/reject -> audit log) is now code-complete and reachable entirely through the web UI. Target is at least 1 real promotion request submitted and resolved within 4 weeks of release -- the 4-week window has not yet elapsed.",
+          "contributingStories": [
+            "wugs-s8",
+            "wugs-s9",
+            "wugs-s10",
+            "wugs-s13"
+          ]
         }
       ],
       "track": "standard",
@@ -22838,12 +22852,12 @@
           "id": "wugs-s13",
           "slug": "wugs-s13-approve-reject-ui",
           "name": "Admin sees real Approve/Reject buttons for pending promotion requests",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s13-approve-reject-ui.md",
           "prStatus": "merged",
           "notes": "Epic 3 follow-up story, created 2026-08-14 in response to /trace's HIGH finding (promotion-approval workflow shipped with no UI trigger anywhere in wugs-s1 through wugs-s12). Short-track: reuses this feature's existing discovery/benefit-metric/epic artefacts, starts at story+test-plan.",
-          "updatedAt": "2026-08-14T04:43:52.993Z",
+          "updatedAt": "2026-08-14T04:47:09.717Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
@@ -22860,18 +22874,20 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s13-dor.md",
           "dorSignedOffAt": "2026-08-14T08:15:00.000Z",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/735"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/735",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "wugs-s14",
           "slug": "wugs-s14-fetch-timeout",
           "name": "Add a fetch timeout to the shared GitHub Contents API adapter",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/stories/wugs-s14-fetch-timeout.md",
           "prStatus": "merged",
           "notes": "Epic 1 follow-up story, created 2026-08-14 in response to /trace's MEDIUM finding #1 (nfr-profile.md's own already-recorded fetch-timeout gap, found during wugs-s2's review 2026-08-12, still overdue). Short-track: reuses this feature's existing discovery/benefit-metric/epic artefacts, starts at story+test-plan.",
-          "updatedAt": "2026-08-13T23:40:59.825Z",
+          "updatedAt": "2026-08-14T04:47:09.981Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "mediumFindings": 0,
@@ -22888,7 +22904,9 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/dor/wugs-s14-dor.md",
           "dorSignedOffAt": "2026-08-14T08:30:00.000Z",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/736"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/736",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "slicingStrategy": "walking-skeleton",
