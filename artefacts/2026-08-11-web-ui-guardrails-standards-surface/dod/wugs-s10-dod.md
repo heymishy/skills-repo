@@ -73,16 +73,16 @@ Two review rounds across 3 tasks found no blocking issues — a first for this s
 
 **Measurement-ready gate:** Is measurement possible yet for this story? **Yes — this is the terminal story completing M2's measurement mechanism.**
 
-`m2` ("Product→org promotion-approval workflow usage") lists `wugs-s8`, `wugs-s9`, `wugs-s10` as its primary contributing stories, with this story's own benefit linkage stating it plainly: "This story IS the measurement mechanism benefit-metric.md names for M2 — without it, M2 cannot be measured at all, regardless of whether `wugs-s8`/`wugs-s9` work correctly." With all three merged, a real tenant can now request, approve, or reject a promotion, and every one of those actions is captured as a real PostHog event the metric owner can query.
+`m2` ("Product-to-org promotion-approval workflow usage") lists `wugs-s8`, `wugs-s9`, `wugs-s10` as its primary contributing stories, with this story's own benefit linkage stating it plainly: "This story IS the measurement mechanism benefit-metric.md names for M2 — without it, M2 cannot be measured at all, regardless of whether `wugs-s8`/`wugs-s9` work correctly." With all three merged, a real tenant can now request, approve, or reject a promotion, and every one of those actions is captured as a real PostHog event the metric owner can query.
 
-> **Product→org promotion-approval workflow usage**
+> **Product-to-org promotion-approval workflow usage**
 > Signal: not-yet-measured
 > Evidence note: the full request → approve/reject round-trip is code-complete and every state transition now fires a real, audit-logged PostHog event — `benefit-metric.md`'s stated measurement method (weekly manual PostHog query by the metric owner) is now fully executable. What remains is real usage occurring in production, not further instrumentation work.
 > Date measured: null
 
 | Metric | Baseline available? | First signal measurable | Notes |
 |--------|--------------------|-----------------------|-------|
-| Product→org promotion-approval workflow usage | ✅ (0) | As soon as a real tenant submits a promotion request in production | Instrumentation complete as of this story; `benefit-metric.md`'s own Feedback loop (reassess discoverability/priority if zero requests occur within 4 weeks) is now the correct next checkpoint, not a further code change |
+| Product-to-org promotion-approval workflow usage | ✅ (0) | As soon as a real tenant submits a promotion request in production | Instrumentation complete as of this story; `benefit-metric.md`'s own Feedback loop (reassess discoverability/priority if zero requests occur within 4 weeks) is now the correct next checkpoint, not a further code change |
 
 ---
 

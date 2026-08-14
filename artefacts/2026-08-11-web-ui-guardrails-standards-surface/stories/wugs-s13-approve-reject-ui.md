@@ -14,7 +14,7 @@ So that **I can resolve a promotion request through the product itself, not only
 
 ## Benefit Linkage
 
-**Metric moved:** Product→org promotion-approval workflow usage
+**Metric moved:** Product-to-org promotion-approval workflow usage
 **How:** This story is what makes Metric 2 measurable through the actual product for the first time — `wugs-s8`/`wugs-s9`/`wugs-s10` together built a fully working, fully audit-logged backend round-trip, but with no UI trigger, the metric's own "at least 1 real promotion request submitted **and resolved**" target could only ever be exercised by someone making a direct API call, not a real admin using the web UI.
 
 ## Architecture Constraints

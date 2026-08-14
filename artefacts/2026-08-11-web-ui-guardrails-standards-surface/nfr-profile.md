@@ -2,7 +2,7 @@
 
 **Feature:** 2026-08-11-web-ui-guardrails-standards-surface
 **Created:** 2026-08-11
-**Last updated:** 2026-08-11
+**Last updated:** 2026-08-14
 **Status:** Active
 
 ---
@@ -37,6 +37,20 @@
 - [ ] Restricted
 
 **Source:** `.github/architecture-guardrails.md` Mandatory Constraints / ADR-025 / `decisions.md`
+
+---
+
+## Accessibility
+
+| NFR | Requirement | Standard or clause | Applies to story |
+|-----|-------------|-------------------|-----------------|
+| Colour-independent state | Error and empty states must be conveyed via text/label, not colour alone | `MC-A11Y-02` | `wugs-s2`, `wugs-s3` (same as `wugs-s2`), `wugs-s7` |
+| Keyboard-accessible controls | "Connect a repo" prompt is a real link/button, not a non-interactive text hint | Mandatory Constraint pattern (`.github/architecture-guardrails.md`) | `wugs-s4` |
+| Keyboard-accessible controls | Form fields have labels; Add/Edit actions are keyboard-accessible buttons/links, not click-only divs | Mandatory Constraint pattern | `wugs-s5` |
+| Keyboard-accessible controls | "Request promotion" is a real button, keyboard-accessible | Mandatory Constraint pattern | `wugs-s8` |
+| Keyboard-accessible controls | Approve/Reject are real `<button>` elements, keyboard-accessible — named as a requirement by `wugs-s9`'s own story text, but not actually built until `wugs-s13` (per `/trace`'s 2026-08-14 HIGH finding) | Mandatory Constraint pattern | `wugs-s9` (requirement), `wugs-s13` (implementation) |
+
+**Source:** Individual story Accessibility NFR bullets (`wugs-s2`, `wugs-s3`, `wugs-s4`, `wugs-s5`, `wugs-s7`, `wugs-s8`, `wugs-s9`, `wugs-s13`) — this section was added 2026-08-14 to close `/trace`'s 2026-08-14 LOW finding #6 (profile-level Accessibility section was missing entirely despite multiple stories carrying explicit Accessibility NFRs). Stories with no user-facing UI (`wugs-s1`, `wugs-s6`, `wugs-s10`, `wugs-s14`) or no new accessibility surface (`wugs-s11`, `wugs-s12`) are correctly excluded.
 
 ---
 
@@ -78,4 +92,4 @@
 |----------|-----|-------|-----|
 | Performance | No hard SLO for live GitHub reads — deferred per `decisions.md` ARCH entry #4's own revisit trigger; monitor real latency during beta and reconsider a caching layer if it proves too slow | Hamish King | Revisit if flagged during beta (no fixed date — usage-triggered) |
 | Authorisation | `admin`-only promotion-approval gating may prove too coarse in practice (per `decisions.md` SCOPE entry's own revisit trigger) | Hamish King | Revisit if a non-admin tech lead legitimately needs approval authority (usage-triggered, no fixed date) |
-| Performance | No fetch timeout on live GitHub reads, despite this file's own Performance NFR row stating "a reasonable fetch timeout (e.g. 10s) with a clear timeout error state is expected" — `wugs-s1`'s `fetchRepoPath`/`realFetchRepoPath` adapter (the shared read path `wugs-s2`, `wugs-s3` consume) has no `AbortController` or timeout wrapper, so a hung GitHub API call currently hangs the whole page render indefinitely rather than degrading to a named timeout error. Found during `wugs-s2`'s final story-level review (2026-08-12); the gap predates `wugs-s2` — it sits in `wugs-s1`'s adapter, already merged — so fixing it is out of `wugs-s2`'s own task scope. Logged here rather than silently dropped, per this repo's CSS-layout-dependent-AC discipline extended to NFR gaps generally | Hamish King | Add timeout handling to `fetchRepoPath`/`realFetchRepoPath` before or shortly after `wugs-3`/`wugs-4` ship (both share the same adapter and same exposure) |
+| Performance | ~~No fetch timeout on live GitHub reads~~ **RESOLVED 2026-08-14** — `wugs-s14` added an `AbortController`-based 10s timeout (overridable) to `fetchGithubContentsResponse`, the shared helper both `fetchArtefact` and `realFetchRepoPath` call through, closing the gap this row originally tracked (found during `wugs-s2`'s final story-level review, 2026-08-12). See `artefacts/2026-08-11-web-ui-guardrails-standards-surface/dod/wugs-s14-dod.md` | Hamish King | Closed |

@@ -509,4 +509,4 @@ git commit -m "feat(wugs-s10): guardrail_promotion_rejected audit event, fail-op
 
 ## Final story-level check (before /verify-completion)
 
-After all 3 tasks: `node tests/check-wugs-s10-audit-log-promotion-events.js` → `9 passed, 0 failed`, plus all sibling regression files unchanged, plus `npm test` at the documented baseline. This is the terminal story in Epic 3's walking skeleton — after it merges, `m2` (Product→org promotion-approval workflow usage) becomes fully measurable via a real PostHog event count, closing out the epic's own benefit-metric linkage.
+After all 3 tasks: `node tests/check-wugs-s10-audit-log-promotion-events.js` → `9 passed, 0 failed`, plus all sibling regression files unchanged, plus `npm test` at the documented baseline. This is the terminal story in Epic 3's walking skeleton — after it merges, `m2` (Product-to-org promotion-approval workflow usage) becomes fully measurable via a real PostHog event count, closing out the epic's own benefit-metric linkage.

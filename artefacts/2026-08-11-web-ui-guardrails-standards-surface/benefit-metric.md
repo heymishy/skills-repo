@@ -30,7 +30,7 @@ This is a standard product-value initiative — the discovery's "Why Now" sectio
 | **Measurement method** | Metric owner spot-checks a sample of active products weekly during beta; supplemented by an automated smoke test asserting the view renders real repo-sourced data (not empty/error) for at least one connected and one unconnected product |
 | **Feedback loop** | If the view fails to populate correctly for connected-repo products within 2 weeks of release (GitHub API errors, empty renders, wrong org/product delineation), the metric owner reassesses the live-read architecture decision (`decisions.md` ARCH entry #4 — no caching layer) toward a caching approach, per that decision's own logged revisit trigger |
 
-### Metric 2: Product→org promotion-approval workflow usage
+### Metric 2: Product-to-org promotion-approval workflow usage
 
 | Field | Value |
 |-------|-------|
@@ -50,7 +50,7 @@ This is a standard product-value initiative — the discovery's "Why Now" sectio
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
 | Guardrail/standard visibility in the web UI | `wugs-s1`, `wugs-s2`, `wugs-s3`, `wugs-s4` (primary), `wugs-s5`, `wugs-s6`, `wugs-s7` (indirect — enables content to exist), `wugs-s11`, `wugs-s12` (indirect — removes the competing old view) | Covered |
-| Product→org promotion-approval workflow usage | `wugs-s8`, `wugs-s9`, `wugs-s10` (primary) | Covered |
+| Product-to-org promotion-approval workflow usage | `wugs-s8`, `wugs-s9`, `wugs-s10` (primary) | Covered |
 
 ---
 

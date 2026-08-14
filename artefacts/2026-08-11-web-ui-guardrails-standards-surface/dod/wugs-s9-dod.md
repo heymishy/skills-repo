@@ -80,16 +80,16 @@ Three additions beyond the original 4-task plan, all found during two rounds of 
 
 **Measurement-ready gate:** Is measurement possible yet for this story? **Functionally yes — request → approve/reject round-trip is now code-complete; observable/measurable signal still needs `wugs-s10`.**
 
-`m2` ("Product→org promotion-approval workflow usage") lists `wugs-s8`, `wugs-s9`, `wugs-s10` as its primary contributing stories. With this story merged, a real tech lead can now request a promotion (`wugs-s8`) and a real admin can approve or reject it (`wugs-s9`) end-to-end — the functional workflow is live. What's still missing is `wugs-s10`'s audit logging, which is what the metric's own "what we measure" definition depends on to produce a counted, observable usage signal rather than an inferred one.
+`m2` ("Product-to-org promotion-approval workflow usage") lists `wugs-s8`, `wugs-s9`, `wugs-s10` as its primary contributing stories. With this story merged, a real tech lead can now request a promotion (`wugs-s8`) and a real admin can approve or reject it (`wugs-s9`) end-to-end — the functional workflow is live. What's still missing is `wugs-s10`'s audit logging, which is what the metric's own "what we measure" definition depends on to produce a counted, observable usage signal rather than an inferred one.
 
-> **Product→org promotion-approval workflow usage**
+> **Product-to-org promotion-approval workflow usage**
 > Signal: not-yet-measured
 > Evidence note: request-creation (`wugs-s8`) and resolution (`wugs-s9`) are both code-complete and the round-trip is functionally usable by a real tenant, but the metric's defined measurement method requires `wugs-s10`'s audit log to produce a real usage count.
 > Date measured: null
 
 | Metric | Baseline available? | First signal measurable | Notes |
 |--------|--------------------|-----------------------|-------|
-| Product→org promotion-approval workflow usage | ✅ (0%) | After `wugs-s10` ships audit logging | Functional round-trip complete as of this story; measurement instrumentation is `wugs-s10`'s job |
+| Product-to-org promotion-approval workflow usage | ✅ (0%) | After `wugs-s10` ships audit logging | Functional round-trip complete as of this story; measurement instrumentation is `wugs-s10`'s job |
 
 ---
 
