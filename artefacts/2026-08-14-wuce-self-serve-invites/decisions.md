@@ -121,6 +121,15 @@
 **Revisit trigger:** If this feature ever has a genuinely separate domain-expert reviewer available, use them for W4 satisfaction on future stories rather than accepting this gap by default.
 ---
 
+---
+**[2026-08-15] | RISK-ACCEPT | branch-setup (wsi-s1)**
+**Decision:** Proceeding with `wsi-s1`'s worktree despite 33 pre-existing test failures at baseline (516 files run via `npm test`, 33 failed, exit code 0).
+**Alternatives considered:** Investigate and fix pre-existing failures first — rejected, out of scope for this feature and would delay the whole inner loop for unrelated pre-existing repo drift.
+**Rationale:** The 33 failing files (`check-bee3-posthog.js`, `check-mfc1/mfc2-*.js`, `check-ougl*.js`, `check-inc2.1/inc4-*.js`, etc.) exactly match the same baseline documented throughout `web-ui-guardrails-standards-surface`'s own delivery this session — a pre-existing, unrelated repo-drift pattern, not caused by this feature. None overlap with `wsi-s1`'s expected touchpoints (new `team_invitations` table/module, new route, `server.js` wiring).
+**Made by:** Claude (agent), per branch-setup's own Step 5 option 2 protocol
+**Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this story's changes during implementation, stop and investigate.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded yet — the seat-limit-at-acceptance decision above is logged as an ARCH entry rather than a full ADR, consistent with this repo's own practice of reserving full ADRs for structural decisions with broader platform-wide implications. -->
