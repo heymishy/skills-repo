@@ -85,6 +85,33 @@
 **Revisit trigger:** If/when full Stripe per-seat billing is eventually built (still deferred per roadmap.md), this basic count cap should be reconciled with or replaced by the real per-seat billing enforcement — it is an interim mechanism, not intended to be the permanent seat-limit model.
 ---
 
+---
+**[2026-08-15] | RISK-ACCEPT | review (wsi-s1, finding 1-M1)**
+**Decision:** Proceeding without an AC covering duplicate-invite handling (an admin inviting the same email for the same tenant twice while a first invite is still pending).
+**Alternatives considered:** (1) Add an explicit AC before /test-plan defining the exact behaviour (reject the second submission / supersede the first / allow both) — the more correct fix, deferred. (2) Accept the gap and let the implementer's natural choice (most likely: a second, independent `team_invitations` row, since nothing in the schema enforces uniqueness) stand as the de facto behaviour, revisited if it proves confusing in practice.
+**Rationale:** Low real-world frequency expected at beta scale (small teams, an admin re-inviting the same person twice before they act is an edge case, not a common flow) — not worth blocking `/test-plan` for. If it proves confusing in practice (e.g. an invitee receiving two separate invite emails), it can be tightened in a fast-follow story once real usage surfaces it as an actual problem rather than a theoretical one.
+**Made by:** Hamish King — Platform owner
+**Revisit trigger:** If beta feedback surfaces confusion from duplicate invites (two emails, or an admin unsure which invite is "live"), add the missing AC and enforce a single-pending-invite-per-email-per-tenant constraint.
+---
+
+---
+**[2026-08-15] | RISK-ACCEPT | review (wsi-s3/wsi-s4, finding 1-M1 in both)**
+**Decision:** Proceeding without updating `benefit-metric.md`'s Metric Coverage Matrix to list `wsi-s3` and `wsi-s4` as indirect contributors, even though both stories' own Benefit Linkage sections claim that connection.
+**Alternatives considered:** Update the coverage matrix now, before /test-plan — the more complete fix, deferred as low-value busywork given the matrix's own primary purpose (catching orphaned metrics/stories) is already satisfied without this addition — neither metric is orphaned, and neither story is unlinked to any metric (both have real Benefit Linkage text).
+**Rationale:** The gap is a documentation-completeness issue, not a functional or traceability risk — both stories correctly and honestly document their own indirect metric linkage in their own artefacts; only the separate, redundant coverage-matrix table doesn't mirror it. Fixing this costs almost nothing whenever someone next touches `benefit-metric.md`, so it is deferred rather than blocking now.
+**Made by:** Hamish King — Platform owner
+**Revisit trigger:** Next time `benefit-metric.md` is edited for this feature (e.g. at /definition-of-done metric-signal capture), add `wsi-s3`/`wsi-s4` to the coverage matrix's two rows as indirect contributors.
+---
+
+---
+**[2026-08-15] | RISK-ACCEPT | review (wsi-s5, findings 1-M1 and 1-M2)**
+**Decision:** Proceeding without rewording the User Story's "I want" clause or adding an explicit Architecture Constraints bullet naming the cross-feature touch to `routes/team-management.js`/`modules/team-management.js` (an existing file from `team-identity-roles`, not this feature's own new code).
+**Alternatives considered:** Rewrite both fields before /test-plan for full internal consistency — the more thorough fix, deferred because AC3 itself (the actual acceptance criterion an implementer or reviewer must read to build/verify the story) already states the cross-feature touch explicitly and transparently, including that it was verified via direct file inspection. The gap is between the User-Story-level framing and the AC-level detail, not a gap in the detail itself.
+**Rationale:** Low practical risk — a coding agent working from this story's DoR contract reads every AC in full, not just the User Story summary, so the actual implementation work is unlikely to be missed. The inconsistency is a documentation-polish issue, not a functional gap.
+**Made by:** Hamish King — Platform owner
+**Revisit trigger:** If a future implementer or reviewer is ever confused by the User-Story/AC mismatch (e.g. flags the `team-management.js` change as unexpected scope creep during /verify-completion), fix both fields at that point rather than proactively now.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded yet — the seat-limit-at-acceptance decision above is logged as an ARCH entry rather than a full ADR, consistent with this repo's own practice of reserving full ADRs for structural decisions with broader platform-wide implications. -->
