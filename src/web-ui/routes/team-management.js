@@ -9,6 +9,7 @@
 
 var teamManagement = require('../modules/team-management');
 var teamInvitations = require('../modules/team-invitations');
+var invitationEmail = require('../modules/invitation-email');
 // sec-perf-s3: session-scoped CSRF (Cross-Site Request Forgery) protection.
 var csrf = require('../middleware/csrf');
 
@@ -158,6 +159,10 @@ function createTeamManagementHandlers(pool) {
       }
 
       var invite = await teamInvitations.createInvitation(pool, tenantId, email, role, adminId, _logger);
+
+      var link = (process.env.APP_BASE_URL || '') + '/invite/redeem?teamInvitationId=' + encodeURIComponent(invite.team_invitation_id);
+      await invitationEmail.sendInvitationEmail(invite.email, link);
+
       res.writeHead(200, { 'Content-Type': 'application/json' });
       res.end(JSON.stringify({ team_invitation_id: invite.team_invitation_id, email: invite.email, role: invite.role, expires_at: invite.expires_at }));
     } catch (err) {
