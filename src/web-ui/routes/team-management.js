@@ -135,12 +135,10 @@ function createTeamManagementHandlers(pool) {
    * POST /api/team/invites — create a per-person team invite (wsi-s1 AC1).
    * ADR-025: tenantId is ALWAYS req.session.tenantId, never request input.
    */
-  async function handleCreateInvite(req, res, _opts) {
-    var opts = _opts || {};
-    if (!opts.skipCsrf) {
-      var csrfOk = await csrf.csrfGuard(req, res);
-      if (!csrfOk) return;
-    }
+  async function handleCreateInvite(req, res) {
+    // sec-perf-s3 AC2: reject a POST that does not carry a valid session-scoped CSRF token.
+    var csrfOk = await csrf.csrfGuard(req, res);
+    if (!csrfOk) return;
 
     var body = await _readBody(req);
     var email = body && body.email ? String(body.email) : '';
@@ -154,15 +152,22 @@ function createTeamManagementHandlers(pool) {
       return;
     }
 
-    if (teamManagement.VALID_ROLES.indexOf(role) === -1) {
-      res.writeHead(400, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Invalid role \'' + role + '\'. Must be one of: ' + teamManagement.VALID_ROLES.join(', ') }));
-      return;
-    }
+    try {
+      if (teamManagement.VALID_ROLES.indexOf(role) === -1) {
+        throw new teamManagement.InvalidRoleError('Invalid role \'' + role + '\'. Must be one of: ' + teamManagement.VALID_ROLES.join(', '));
+      }
 
-    var invite = await teamInvitations.createInvitation(pool, tenantId, email, role, adminId, _logger);
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ team_invitation_id: invite.team_invitation_id, email: invite.email, role: invite.role, expires_at: invite.expires_at }));
+      var invite = await teamInvitations.createInvitation(pool, tenantId, email, role, adminId, _logger);
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ team_invitation_id: invite.team_invitation_id, email: invite.email, role: invite.role, expires_at: invite.expires_at }));
+    } catch (err) {
+      if (err instanceof teamManagement.InvalidRoleError) {
+        res.writeHead(err.status || 400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+        return;
+      }
+      throw err;
+    }
   }
 
   return { handleGetTeamMembers: handleGetTeamMembers, handleAddTeammate: handleAddTeammate, handleCreateInvite: handleCreateInvite };
