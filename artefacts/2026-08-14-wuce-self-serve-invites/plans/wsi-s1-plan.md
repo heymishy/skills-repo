@@ -325,6 +325,12 @@ git add src/web-ui/modules/team-invitations.js src/web-ui/routes/team-management
 git commit -m "feat(wsi-s1): team_invitations module + invite-creation handler (AC1)"
 ```
 
+**Post-Task-1 correction (recorded here for an accurate historical record, not re-executed):** The two-stage review of the resulting commit (`2b39f06c`) found 2 blocking issues and 2 real test gaps, all fixed in a follow-up commit `29f2cd28` before Task 2 began:
+1. The original `handleCreateInvite` hand-rolled its own role-rejection response instead of reusing `teamManagement.InvalidRoleError` (the story's own explicit constraint) — fixed to `throw new teamManagement.InvalidRoleError(...)` inside a try/catch matching `handleAddTeammate`'s exact shape.
+2. The original handler accepted an `_opts.skipCsrf` test-convenience flag — a live, undocumented CSRF bypass shipped in production code. Removed entirely; the test file now constructs a real, matching CSRF token pair (`session.csrfToken`/`body._csrf`), following `check-tir-s3-admin-adds-teammate.js`'s own established pattern.
+3. The committed AC1 test never asserted `expires_at` despite the test plan requiring it — added.
+4. The test plan's own `createInvite_tenantIdNeverFromRequest_onlyFromSession` tamper test (an explicit ADR-025 guarantee) was missing from this plan's own Step 1 code above and from the commit — added, adapted from `check-tir-s3-admin-adds-teammate.js`'s own tamper-test shape. **Test count after this fix is 2 (not 1)** — the plan's own Step 1 code block above under-specified this from the start; treat the plan's embedded test code as the original intent, and the actual committed test file (post-fix) as the corrected, authoritative version going forward.
+
 ---
 
 ## Task 2: Send the invite email (AC2)
@@ -346,9 +352,9 @@ await checkAsyncOrSync('AC2: createInvite_success_callsSendInvitationEmailWithCo
   var sentArgs = null;
   invitationEmail.setSendInvitationEmail(function (email, link) { sentArgs = { email: email, link: link }; return Promise.resolve(); });
   try {
-    var req = mockReq({ body: { email: 'someone@example.com', role: 'product' } });
+    var req = mockReq({ body: { email: 'someone@example.com', role: 'product', _csrf: 'test-csrf-token' } });
     var res = mockRes();
-    await handlers.handleCreateInvite(req, res, { skipCsrf: true });
+    await handlers.handleCreateInvite(req, res);
     assert.ok(sentArgs, 'expected sendInvitationEmail to be called');
     assert.strictEqual(sentArgs.email, 'someone@example.com', 'expected the invitee email to be passed');
     assert.ok(sentArgs.link && sentArgs.link.indexOf(state.inserted.team_invitation_id) !== -1, 'expected the invite link to contain the real invite id');
@@ -418,9 +424,9 @@ await checkAsyncOrSync('AC3: createInvite_invalidRole_rejectedNoRowWritten', asy
   var state = {};
   var pool = makeMockPool(state);
   var handlers = teamManagementRoutes.createTeamManagementHandlers(pool);
-  var req = mockReq({ body: { email: 'x@example.com', role: 'superadmin' } });
+  var req = mockReq({ body: { email: 'x@example.com', role: 'superadmin', _csrf: 'test-csrf-token' } });
   var res = mockRes();
-  await handlers.handleCreateInvite(req, res, { skipCsrf: true });
+  await handlers.handleCreateInvite(req, res);
   assert.strictEqual(res._get().statusCode, 400, 'expected 400 for an invalid role');
   assert.ok(!state.inserted, 'expected no team_invitations row to be written');
 });
@@ -429,9 +435,9 @@ await checkAsyncOrSync('AC4: createInvite_missingRole_rejected', async () => {
   var state = {};
   var pool = makeMockPool(state);
   var handlers = teamManagementRoutes.createTeamManagementHandlers(pool);
-  var req = mockReq({ body: { email: 'x@example.com' } });
+  var req = mockReq({ body: { email: 'x@example.com', _csrf: 'test-csrf-token' } });
   var res = mockRes();
-  await handlers.handleCreateInvite(req, res, { skipCsrf: true });
+  await handlers.handleCreateInvite(req, res);
   assert.strictEqual(res._get().statusCode, 400, 'expected 400 for a missing role');
   assert.ok(!state.inserted, 'expected no team_invitations row to be written');
 });
@@ -472,9 +478,9 @@ await checkAsyncOrSync('AC5: createInvite_emailSendFails_surfacesErrorRowAlready
   var invitationEmail = require('../src/web-ui/modules/invitation-email');
   invitationEmail.setSendInvitationEmail(function () { return Promise.reject(new Error('Resend API error')); });
   try {
-    var req = mockReq({ body: { email: 'fail@example.com', role: 'viewer' } });
+    var req = mockReq({ body: { email: 'fail@example.com', role: 'viewer', _csrf: 'test-csrf-token' } });
     var res = mockRes();
-    await handlers.handleCreateInvite(req, res, { skipCsrf: true });
+    await handlers.handleCreateInvite(req, res);
     var result = res._get();
     assert.strictEqual(result.statusCode, 502, 'expected a distinct error status for an email-send failure, not a generic 500');
     var parsed = JSON.parse(result.body);
