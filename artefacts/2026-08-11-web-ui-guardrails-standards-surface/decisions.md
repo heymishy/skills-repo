@@ -237,6 +237,15 @@
 **Revisit trigger:** If a 4th removal-framed story (in this feature or a future one) recurs with the same undercounting pattern after the `implementation-plan` proposal is accepted and merged, that would indicate the proposed fix (mandatory exhaustive grep sweep) did not fully close the gap and needs a follow-up. If `wugs-s2`'s AbortController follow-up or `wugs-s6`'s manual sandbox-verification gap remain open past the next feature's own kickoff, escalate beyond a DoD-level RISK-ACCEPT.
 ---
 
+---
+**[2026-08-14] | RISK-ACCEPT | branch-complete (wugs-s13)**
+**Decision:** This PR's CI checks are absent on its current head commit, and this is a repo-wide issue, not specific to this PR — see the corresponding entry on `master`'s copy of this file for full investigation detail (this branch diverged before that entry was added).
+**Alternatives considered:** Close/reopen the PR, and a fresh empty-commit push — both tried on this branch, neither retriggered anything.
+**Rationale:** `push`/`pull_request`-triggered workflow runs have produced zero results repo-wide since ~2026-08-13T23:32 (confirmed via direct pushes to `master` too), while manually-dispatched (`workflow_dispatch`) and `schedule`-triggered runs both completed successfully in the same window — the Actions execution pipeline itself is healthy, only event-based auto-triggering is affected. Likely cause: a webhook or GitHub App installation issue visible only via the repo's Settings UI, not the REST API available to this session.
+**Made by:** Claude (agent), continuing the operator's own report that this PR "has no CI checks run"
+**Revisit trigger:** Once CI triggering resumes repo-wide (see master's decisions.md), push a fresh commit here to confirm this PR picks up real status checks before merging.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded — all four decisions from this discovery/clarify session were logged as entries above, not full ADRs, per the operator's confirmation that none warranted ADR-level depth. -->
