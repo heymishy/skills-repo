@@ -393,7 +393,9 @@ In `handleCreateInvite`, after the `createInvitation` call and before writing th
 node tests/check-wsi-s1-admin-creates-invite.js
 ```
 
-Expected: `2 passed, 0 failed`
+Expected: `3 passed, 0 failed`.
+
+**Correction (found during Task 2 dispatch, before any commit):** the plan under-specified this step. Once `handleCreateInvite` unconditionally calls `invitationEmail.sendInvitationEmail`, Task 1's two AC1 tests (`createInvite_validRoleAndEmail_writesTenantScopedRow`, `createInvite_tenantIdNeverFromRequest_onlyFromSession`) fail with `Adapter not wired: sendInvitationEmail` — the D37 stub throws by default (correct, intentional behaviour; see `CLAUDE.md`'s D37 rule), and neither AC1 test wires a mock adapter because they were written before Task 2 existed. This is expected, not a regression: in real production behaviour, creating an invite always sends an email, so any test exercising the row-write path must also wire the adapter. Fix: wrap each of the two AC1 tests' `handlers.handleCreateInvite(req, res)` call in a `try { ... } finally { invitationEmail._resetForTesting(); }` block, calling `invitationEmail.setSendInvitationEmail(function () { return Promise.resolve(); });` before the call (same `var invitationEmail = require('../src/web-ui/modules/invitation-email');` require already used by the AC2 test, added once near the top of the IIFE rather than duplicated per test). `tests/check-wsi-s1-admin-creates-invite.js` is already listed as a "Modify" target for this task, so this stays in scope.
 
 - [ ] **Step 5: Run sibling regressions**
 
