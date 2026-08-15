@@ -23264,23 +23264,25 @@
             {
               "slug": "wsi-s1-admin-creates-invite",
               "name": "Admin creates a per-person team invite, which sends the invite email",
-              "stage": "branch-setup",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-14T20:05:50.565Z",
+              "updatedAt": "2026-08-15T08:06:54.323Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 7,
-                "passing": 0
+                "totalTests": 6,
+                "passing": 6
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-14-wuce-self-serve-invites/dor/wsi-s1-dor.md",
-              "dorSignedOffAt": "2026-08-15T00:00:00.000Z"
+              "dorSignedOffAt": "2026-08-15T00:00:00.000Z",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/737"
             },
             {
               "slug": "wsi-s2-invitee-accepts-and-joins",

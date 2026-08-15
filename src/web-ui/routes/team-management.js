@@ -8,6 +8,8 @@
 // time, not inside the handler, AC3).
 
 var teamManagement = require('../modules/team-management');
+var teamInvitations = require('../modules/team-invitations');
+var magicLinkStrategy = require('../auth/magic-link-strategy');
 // sec-perf-s3: session-scoped CSRF (Cross-Site Request Forgery) protection.
 var csrf = require('../middleware/csrf');
 
@@ -130,7 +132,70 @@ function createTeamManagementHandlers(pool) {
     }
   }
 
-  return { handleGetTeamMembers: handleGetTeamMembers, handleAddTeammate: handleAddTeammate };
+  /**
+   * POST /api/team/invites — create a per-person team invite (wsi-s1 AC1),
+   * then email it as a signed magic-link JWT carrying teamInvitationId
+   * (AC2), surfacing a distinct error if the send itself fails (AC5).
+   * ADR-025: tenantId is ALWAYS req.session.tenantId, never request input.
+   */
+  async function handleCreateInvite(req, res) {
+    // sec-perf-s3 AC2: reject a POST that does not carry a valid session-scoped CSRF token.
+    var csrfOk = await csrf.csrfGuard(req, res);
+    if (!csrfOk) return;
+
+    var body = await _readBody(req);
+    var email = body && body.email ? String(body.email) : '';
+    var role = body && body.role ? String(body.role) : '';
+    var tenantId = req.session && req.session.tenantId;
+    var adminId = req.session && req.session.userId;
+
+    if (!email || !role) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'email and role are both required' }));
+      return;
+    }
+
+    try {
+      if (teamManagement.VALID_ROLES.indexOf(role) === -1) {
+        throw new teamManagement.InvalidRoleError('Invalid role \'' + role + '\'. Must be one of: ' + teamManagement.VALID_ROLES.join(', '));
+      }
+
+      var invite = await teamInvitations.createInvitation(pool, tenantId, email, role, adminId, _logger);
+
+      // AC2/AC5: issues the signed magic-link JWT (carrying teamInvitationId)
+      // and sends it via the reused sendInvitationEmail adapter (see
+      // auth/magic-link-strategy.js's sendMagicLink wiring in server.js) --
+      // mirrors agency-provisioning.js's own handlePostInviteUser exactly,
+      // including the explicit success check below: passport-magic-login's
+      // own .send() swallows a rejected sendMagicLink into {success:false}
+      // rather than rejecting the promise, so a failed send must be checked
+      // for explicitly or it is silently reported back as a success.
+      var sent;
+      try {
+        sent = await magicLinkStrategy.issueMagicLink(invite.email, { teamInvitationId: invite.team_invitation_id });
+      } catch (err) {
+        sent = null;
+      }
+
+      if (!sent || !sent.success) {
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'The invite was created but could not be emailed. Please try again.' }));
+        return;
+      }
+
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ team_invitation_id: invite.team_invitation_id, email: invite.email, role: invite.role, expires_at: invite.expires_at }));
+    } catch (err) {
+      if (err instanceof teamManagement.InvalidRoleError) {
+        res.writeHead(err.status || 400, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: err.message }));
+        return;
+      }
+      throw err;
+    }
+  }
+
+  return { handleGetTeamMembers: handleGetTeamMembers, handleAddTeammate: handleAddTeammate, handleCreateInvite: handleCreateInvite };
 }
 
 module.exports = { createTeamManagementHandlers: createTeamManagementHandlers, setLogger: setLogger };

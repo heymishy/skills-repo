@@ -181,10 +181,10 @@ async function main() {
 
   queue.push(function() {
     console.log('\n[d4] AC1 -- exhaustive requireAdmin(req...) call-site enumeration (server.js)');
-    return test('server.js: exactly the 12 known requireAdmin(req...) call sites exist, all still present (8 pre-existing + amgt-s1\'s GET /admin/mock-gateway + POST /api/admin/mock-gateway/toggle routes + tpac-s1\'s new POST /api/admin/plan/set route + wugs-s3\'s new POST /settings/org-repo route)', function() {
+    return test('server.js: exactly the 13 known requireAdmin(req...) call sites exist, all still present (8 pre-existing + amgt-s1\'s GET /admin/mock-gateway + POST /api/admin/mock-gateway/toggle routes + tpac-s1\'s new POST /api/admin/plan/set route + wugs-s3\'s new POST /settings/org-repo route + wsi-s1\'s new POST /api/team/invites route)', function() {
       var src = fs.readFileSync(SERVER_PATH, 'utf8');
       var matches = src.match(/requireAdmin\(req/g) || [];
-      assert.strictEqual(matches.length, 12, 'expected exactly 12 requireAdmin(req...) call sites (exhaustive per this story\'s AC1 audit) -- a changed count means a new admin-gated route was added without going through this same enumeration. Went from 8 to 10 when amgt-s1\'s mock-gateway toggle routes merged, then 10 to 11 when tpac-s1\'s POST /api/admin/plan/set route merged, then 11 to 12 when wugs-s3\'s POST /settings/org-repo route merged (verified to call requireAdmin the same standard way as every other gated route).');
+      assert.strictEqual(matches.length, 13, 'expected exactly 13 requireAdmin(req...) call sites (exhaustive per this story\'s AC1 audit) -- a changed count means a new admin-gated route was added without going through this same enumeration. Went from 8 to 10 when amgt-s1\'s mock-gateway toggle routes merged, then 10 to 11 when tpac-s1\'s POST /api/admin/plan/set route merged, then 11 to 12 when wugs-s3\'s POST /settings/org-repo route merged, then 12 to 13 when wsi-s1\'s POST /api/team/invites route merged (verified to call requireAdmin the same standard way as every other gated route).');
 
       var expectedRoutes = [
         "'/admin/credits'",
@@ -198,7 +198,8 @@ async function main() {
         "'/admin/mock-gateway'",
         "'/api/admin/mock-gateway/toggle'",
         "'/api/admin/plan/set'",
-        "'/settings/org-repo'"
+        "'/settings/org-repo'",
+        "'/api/team/invites'"
       ];
       expectedRoutes.forEach(function(routeLiteral) {
         assert.ok(src.includes(routeLiteral), 'expected server.js to still register route ' + routeLiteral);
