@@ -146,6 +146,47 @@ await checkAsyncOrSync('AC2: createInvite_success_issuesSignedMagicLinkWithCorre
   assert.ok(sentCalls[0].href && sentCalls[0].href.indexOf('token=') !== -1, 'expected the sent link to contain a signed token-bearing query param, not a raw id');
 });
 
+await checkAsyncOrSync('AC3: createInvite_invalidRole_rejectedNoRowWritten', async () => {
+  var state = {};
+  var pool = makeMockPool(state);
+  var teamManagementRoutes = setUpTeamManagementWithMagicLink(async function () {});
+  var handlers = teamManagementRoutes.createTeamManagementHandlers(pool);
+  var req = mockReq({ body: { email: 'x@example.com', role: 'superadmin', _csrf: 'test-csrf-token' } });
+  var res = mockRes();
+  await handlers.handleCreateInvite(req, res);
+  assert.strictEqual(res._get().statusCode, 400, 'expected 400 for an invalid role');
+  assert.ok(!state.inserted, 'expected no team_invitations row to be written');
+});
+
+await checkAsyncOrSync('AC4: createInvite_missingRole_rejected', async () => {
+  var state = {};
+  var pool = makeMockPool(state);
+  var teamManagementRoutes = setUpTeamManagementWithMagicLink(async function () {});
+  var handlers = teamManagementRoutes.createTeamManagementHandlers(pool);
+  var req = mockReq({ body: { email: 'x@example.com', _csrf: 'test-csrf-token' } });
+  var res = mockRes();
+  await handlers.handleCreateInvite(req, res);
+  assert.strictEqual(res._get().statusCode, 400, 'expected 400 for a missing role');
+  assert.ok(!state.inserted, 'expected no team_invitations row to be written');
+});
+
+await checkAsyncOrSync('AC5: createInvite_emailSendFails_surfacesErrorRowAlreadyWritten', async () => {
+  var state = {};
+  var pool = makeMockPool(state);
+  var teamManagementRoutes = setUpTeamManagementWithMagicLink(async function () {
+    throw new Error('Resend API error');
+  });
+  var handlers = teamManagementRoutes.createTeamManagementHandlers(pool);
+  var req = mockReq({ body: { email: 'fail@example.com', role: 'viewer', _csrf: 'test-csrf-token' } });
+  var res = mockRes();
+  await handlers.handleCreateInvite(req, res);
+  var result = res._get();
+  assert.strictEqual(result.statusCode, 502, 'expected a distinct error status for an email-send failure, not a generic 500');
+  var parsed = JSON.parse(result.body);
+  assert.ok(/could not be emailed|failed to send/i.test(parsed.error), 'expected a specific "could not be emailed" style message, not a generic error');
+  assert.ok(state.inserted, 'expected the team_invitations row to still exist despite the email failure');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
