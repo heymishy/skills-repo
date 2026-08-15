@@ -23382,11 +23382,11 @@
             {
               "slug": "wsi-s4-member-count-cap",
               "name": "Invite acceptance is blocked if the tenant is at its member-count cap",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-14T19:50:14.213Z",
+              "updatedAt": "2026-08-15T21:32:24.386Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
