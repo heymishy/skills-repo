@@ -101,7 +101,7 @@ async function markTeamInvitationRedeemed(pool, teamInvitationId, logger) {
   var log = logger || _defaultLogger;
   var result = await pool.query(
     'UPDATE team_invitations SET redeemed_at = NOW() ' +
-    'WHERE team_invitation_id = $1 AND redeemed_at IS NULL ' +
+    'WHERE team_invitation_id = $1 AND redeemed_at IS NULL AND expires_at > NOW() ' +
     'RETURNING team_invitation_id, tenant_id, email, role, created_at, expires_at, redeemed_at',
     [teamInvitationId]
   );
@@ -183,6 +183,17 @@ async function redeemTeamInvitation(pool, payload, logger) {
   }
   var redeemed = await markTeamInvitationRedeemed(pool, invitation.team_invitation_id, logger);
   if (!redeemed) {
+    // Explanatory-only: the atomic UPDATE above already made the real
+    // redemption decision (both redeemed_at IS NULL and expires_at > NOW()
+    // are checked together, in the same WHERE clause -- wsi-s3's own NFR).
+    // This comparison only selects which rejection message to return; it
+    // never re-decides whether redemption succeeded. expires_at is
+    // immutable, so comparing the already-fetched value against "now" here
+    // (a moment after the atomic UPDATE ran) is always accurate.
+    var isExpired = new Date(invitation.expires_at).getTime() <= Date.now();
+    if (isExpired) {
+      return { ok: false, reason: 'invitation expired' };
+    }
     return { ok: false, reason: 'invitation already used' };
   }
   var user = await createOrReuseTeamMemberAndMembership(pool, invitation.tenant_id, invitation.email, invitation.role, logger);
