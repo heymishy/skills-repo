@@ -23419,11 +23419,11 @@
             {
               "slug": "wsi-s5-metrics-instrumentation",
               "name": "PostHog instrumentation for both benefit metrics",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-15T23:51:35.605Z",
+              "updatedAt": "2026-08-15T23:53:05.195Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -23436,7 +23436,8 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-14-wuce-self-serve-invites/dor/wsi-s5-dor.md",
               "dorSignedOffAt": "2026-08-15T00:00:00.000Z",
-              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/741",
               "tasks": [
                 {
                   "id": "task-1",
