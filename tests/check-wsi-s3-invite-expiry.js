@@ -103,6 +103,42 @@ await checkAsyncOrSync('AC2: acceptInvite_expired_noMembershipCreatedRedeemedAtS
   assert.strictEqual(stillThere.redeemed_at, null, 'expected redeemed_at to remain NULL -- an expired attempt must never be treated as a successful redemption');
 });
 
+await checkAsyncOrSync('AC3: acceptInvite_withinWindow_unaffectedByExpiryCheck', async () => {
+  var teamInvitations = freshRequire(TEAM_INVITATIONS_PATH);
+  var pool = makeFakePool({
+    invitations: [{ team_invitation_id: 'tinv-valid', tenant_id: 'tenant-C', email: 'ontime@example.com', role: 'admin', created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 12 * 3600 * 1000).toISOString(), redeemed_at: null }]
+  });
+  var result = await teamInvitations.redeemTeamInvitation(pool, { destination: 'ontime@example.com', teamInvitationId: 'tinv-valid' });
+  assert.strictEqual(result.ok, true, 'expected a still-valid invite (12h remaining) to redeem successfully, unaffected by the new expiry check');
+  assert.strictEqual(result.user.tenantId, 'tenant-C');
+});
+
+await checkAsyncOrSync('NFR-security: expiryCheck_racesWithRedemption_noWindowWhereExpiredInviteSucceeds', async () => {
+  var fs = require('fs');
+  var SOURCE_PATH = path.resolve(ROOT, 'src/web-ui/modules/team-invitations.js');
+  var src = fs.readFileSync(SOURCE_PATH, 'utf8');
+
+  // Structural assertion: the expiry condition lives in the SAME SQL WHERE
+  // clause as the atomic redeemed_at IS NULL check -- not a separate,
+  // independently-timed `if` statement gating the redemption path. This is
+  // the property that makes "no window where an expired invite succeeds"
+  // true regardless of timing, rather than merely true "most of the time".
+  var updateStatementMatch = /UPDATE team_invitations SET redeemed_at = NOW\(\)[^`]*?RETURNING/.exec(src);
+  assert.ok(updateStatementMatch, 'expected to find the markTeamInvitationRedeemed UPDATE statement');
+  var whereClause = updateStatementMatch[0];
+  assert.ok(/redeemed_at IS NULL/.test(whereClause), 'expected the atomic UPDATE to still check redeemed_at IS NULL');
+  assert.ok(/expires_at > NOW\(\)/.test(whereClause), 'expected the SAME atomic UPDATE to also check expires_at > NOW() -- not a separate step');
+
+  // Behavioural boundary check: an invite whose expiry is exactly "now" (already passed by the time the query runs) must never redeem.
+  var teamInvitations = freshRequire(TEAM_INVITATIONS_PATH);
+  var pool = makeFakePool({
+    invitations: [{ team_invitation_id: 'tinv-boundary', tenant_id: 'tenant-D', email: 'boundary@example.com', role: 'viewer', created_at: new Date(Date.now() - 24 * 3600 * 1000).toISOString(), expires_at: new Date(Date.now() - 1).toISOString(), redeemed_at: null }]
+  });
+  var result = await teamInvitations.redeemTeamInvitation(pool, { destination: 'boundary@example.com', teamInvitationId: 'tinv-boundary' });
+  assert.strictEqual(result.ok, false, 'expected an invite whose expiry has just passed to be rejected, not to sneak through a timing window');
+  assert.strictEqual(result.reason, 'invitation expired');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
