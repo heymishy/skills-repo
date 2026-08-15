@@ -23345,11 +23345,11 @@
             {
               "slug": "wsi-s3-invite-expiry",
               "name": "Expired invites (past 24 hours) are rejected cleanly",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-14T19:49:35.753Z",
+              "updatedAt": "2026-08-15T20:33:18.829Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
