@@ -23345,23 +23345,39 @@
             {
               "slug": "wsi-s3-invite-expiry",
               "name": "Expired invites (past 24 hours) are rejected cleanly",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-14T19:49:35.753Z",
+              "updatedAt": "2026-08-15T20:56:56.097Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
-                "passing": 0
+                "passing": 4
               },
               "acTotal": 3,
-              "acVerified": 0,
+              "acVerified": 3,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-14-wuce-self-serve-invites/dor/wsi-s3-dor.md",
-              "dorSignedOffAt": "2026-08-15T00:00:00.000Z"
+              "dorSignedOffAt": "2026-08-15T00:00:00.000Z",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/739",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Expired invite rejected with clear message, no membership created (AC1, AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Unexpired invites unaffected; atomic expiry+redemption (AC3, NFR)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s3-plan.md"
+                }
+              ]
             },
             {
               "slug": "wsi-s4-member-count-cap",
