@@ -23307,7 +23307,39 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-14-wuce-self-serve-invites/dor/wsi-s2-dor.md",
               "dorSignedOffAt": "2026-08-15T00:00:00.000Z",
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Redeem valid invite -- membership created, new invitee gets a person (AC1, AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s2-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Existing invitee reuses their person, no duplicate (AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s2-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Double redemption rejected atomically (AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s2-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Extend shared dispatcher to a third case (AC5)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s2-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Audit log never logs raw token (NFR-audit)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s2-plan.md"
+                }
+              ]
             },
             {
               "slug": "wsi-s3-invite-expiry",
