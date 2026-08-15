@@ -539,4 +539,10 @@ git commit -m "test(wsi-s1): lock in AC5 -- email-send failure already surfaces 
 
 ## Final story-level check (before /verify-completion)
 
-After all 4 tasks: `node tests/check-wsi-s1-admin-creates-invite.js` → `5 passed, 0 failed`, both sibling regression files (`check-tir-s3-admin-adds-teammate.js`, `check-story3-self-service-provisioning.js`) unchanged, `npm test` at the documented baseline. This story closes the first, foundational piece of the self-serve invite epic — after it merges, `wsi-s2` can begin (it depends on this story's `team_invitations` table and `teamInvitationId` payload shape).
+**Actual result (superseding the estimate below — see `decisions.md`'s 2026-08-15 CORRECTION entry for the full ground-truth investigation):** `node tests/check-wsi-s1-admin-creates-invite.js` → `6 passed, 0 failed` (Task 2's AC2 correction added a 3rd AC1-adjacent assertion the original estimate didn't count). Both sibling regression files unchanged (`check-tir-s3-admin-adds-teammate.js` → `8 passed`, `check-story3-self-service-provisioning.js` → `18 passed`). Full `npm test`: `517 file(s) run, 33 failed` — independently re-verified against the exact true baseline commit (`6a290867`, checked out in a disposable worktree) rather than trusting the plan's original citation, which turned out to point to a `decisions.md` entry that landed on `master`, not this branch. 2 of the failures the branch showed before this check (`check-d2-banner-exit-permission-visibility.js`, `check-d4-nfr-security-review-and-hardening.js`) were real, expected consequences of this story's new admin-gated route and were fixed (commit `f0b03656`); the failure list after fixing is byte-for-byte identical to true baseline. Zero net regressions. This story closes the first, foundational piece of the self-serve invite epic — after it merges, `wsi-s2` can begin (it depends on this story's `team_invitations` table and `teamInvitationId` payload shape).
+
+<details><summary>Original (superseded) estimate — kept for the historical record</summary>
+
+After all 4 tasks: `node tests/check-wsi-s1-admin-creates-invite.js` → `5 passed, 0 failed`, both sibling regression files (`check-tir-s3-admin-adds-teammate.js`, `check-story3-self-service-provisioning.js`) unchanged, `npm test` at the documented baseline.
+
+</details>
