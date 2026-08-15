@@ -120,6 +120,21 @@ await checkAsyncOrSync('AC2: acceptInvite_newInvitee_createsPersonAndIdentityLin
   assert.strictEqual(link.person_id, state.people[0].id, 'expected the link to point at the newly created person');
 });
 
+await checkAsyncOrSync('AC3: acceptInvite_existingInvitee_reusesPersonNoDuplicate', async () => {
+  var teamInvitations = freshRequire(TEAM_INVITATIONS_PATH);
+  var pool = makeFakePool({
+    invitations: [{ team_invitation_id: 'tinv-3', tenant_id: 'tenant-C', email: 'existing@example.com', role: 'product', created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 3600000).toISOString(), redeemed_at: null }],
+    personIdentities: [{ identity_key: 'existing@example.com', person_id: 42 }]
+  });
+  var result = await teamInvitations.redeemTeamInvitation(pool, { destination: 'existing@example.com', teamInvitationId: 'tinv-3' });
+  assert.strictEqual(result.ok, true);
+  var state = pool._state();
+  assert.strictEqual(state.people.length, 0, 'expected no new people row -- the identity already existed');
+  assert.strictEqual(result.user.personId, 42, 'expected the reused, pre-existing person_id');
+  var tm = state.teamMemberships.filter(function (r) { return r.person_id === 42 && r.tenant_id === 'tenant-C'; })[0];
+  assert.ok(tm, 'expected a team_memberships row for the reused person_id');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
