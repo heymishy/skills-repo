@@ -444,10 +444,14 @@ await checkAsyncOrSync('AC4: bothMetrics_realEventShapes_computableWithoutManual
     };
     await teamInvitations.redeemTeamInvitation(acceptPool, { destination: 'mix1@example.com', teamInvitationId: 'tinv-mix' });
 
-    var teamManagement = freshRequire(TEAM_MANAGEMENT_MODULE_PATH);
+    // Ordering fixed proactively (same bug already found and corrected in
+    // Task 3): identityLinks must be freshRequired and patched BEFORE
+    // teamManagement is freshRequired, or team-management.js's own internal
+    // require('./identity-links') resolves to a stale, unpatched instance.
     var identityLinks = freshRequire(require.resolve(path.join(ROOT, 'src', 'web-ui', 'modules', 'identity-links')));
     var originalResolve = identityLinks.resolvePersonForIdentity;
     identityLinks.resolvePersonForIdentity = async function () { return 5555; };
+    var teamManagement = freshRequire(TEAM_MANAGEMENT_MODULE_PATH);
     try {
       await teamManagement.addOrUpdateTeammate({ query: async function () { return { rows: [] }; } }, 'tenant-mix', 'mix2@example.com', 'viewer', 'admin-1');
     } finally {
@@ -491,10 +495,11 @@ await checkAsyncOrSync('NFR-security: eventProperties_neverIncludeEmailOrToken',
     };
     await teamInvitations.redeemTeamInvitation(acceptPool, { destination: 'secret-invitee@example.com', teamInvitationId: 'tinv-nfr' });
 
-    var teamManagement = freshRequire(TEAM_MANAGEMENT_MODULE_PATH);
+    // Same ordering fix as above: identityLinks freshRequired/patched first.
     var identityLinks = freshRequire(require.resolve(path.join(ROOT, 'src', 'web-ui', 'modules', 'identity-links')));
     var originalResolve = identityLinks.resolvePersonForIdentity;
     identityLinks.resolvePersonForIdentity = async function () { return 6666; };
+    var teamManagement = freshRequire(TEAM_MANAGEMENT_MODULE_PATH);
     try {
       await teamManagement.addOrUpdateTeammate({ query: async function () { return { rows: [] }; } }, 'tenant-nfr', 'secret-admin-added@example.com', 'viewer', 'admin-1');
     } finally {
