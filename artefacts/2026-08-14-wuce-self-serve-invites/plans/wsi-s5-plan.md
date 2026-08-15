@@ -528,6 +528,8 @@ node tests/check-wsi-s5-metrics-instrumentation.js
 
 Expected: `5 passed, 0 failed` — Tasks 1-3's implementations already make both true. If either fails, investigate before forcing a pass.
 
+**Correction (found during Task 4 dispatch, before any commit):** the plan's own AC4 and NFR-security tests' `acceptPool.query` mocks (both, identically) omitted two SQL-prefix branches that `redeemTeamInvitation` → `createOrReuseTeamMemberAndMembership` unconditionally issues for a new invitee: `SELECT person_id FROM person_identities WHERE identity_key = $1` and `INSERT INTO people DEFAULT VALUES RETURNING id`. Both fell through to the mock's default `{rows: []}`, and `personResult.rows[0].id` threw `Cannot read properties of undefined (reading 'id')` — a real plan-authoring gap, distinct in kind from the require-ordering bug found and proactively fixed in Task 3/4 earlier (that fix was correct and NOT implicated in this failure; the dispatched subagent correctly distinguished the two rather than assuming a repeat of the same root cause). Task 2's own AC2 test pool already handled both branches correctly (`SELECT PERSON_ID FROM PERSON_IDENTITIES` → `{rows: []}`, `INSERT INTO PEOPLE DEFAULT VALUES` → `{rows: [{id: 9001}]}`) — this pattern was simply not carried over when the AC4/NFR pools were drafted. Fixed by adding the same two branches (with distinct ids `9101`/`9102`) to both pools. Verified: `5 passed, 0 failed`; all 7 sibling regressions unaffected.
+
 - [ ] **Step 3: Run full sibling regressions**
 
 ```bash

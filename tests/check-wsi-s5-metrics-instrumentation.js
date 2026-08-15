@@ -185,6 +185,106 @@ await checkAsyncOrSync('AC3: addTeammateByAdmin_success_capturesComparableEvent'
   }
 });
 
+await checkAsyncOrSync('AC4: bothMetrics_realEventShapes_computableWithoutManualEstimation', async () => {
+  var patch = patchPosthogCapture();
+  try {
+    // Simulate a mix: one self-serve invite created + accepted, one admin-add.
+    var teamManagementRoutes = setUpTeamManagementRoutesWithMagicLink(async function () {});
+    var createState = {};
+    var createPool = makeMockPool(createState);
+    var createHandlers = teamManagementRoutes.createTeamManagementHandlers(createPool);
+    await createHandlers.handleCreateInvite(mockReq({ body: { email: 'mix1@example.com', role: 'engineer', _csrf: 'test-csrf-token' } }), mockRes());
+
+    var teamInvitations = freshRequire(TEAM_INVITATIONS_PATH);
+    var createdAt = new Date(Date.now() - 60000).toISOString();
+    var acceptPool = {
+      query: async function (sql) {
+        var s = String(sql).toUpperCase();
+        if (s.indexOf('SELECT TEAM_INVITATION_ID') === 0) return { rows: [{ team_invitation_id: 'tinv-mix', tenant_id: 'tenant-mix', email: 'mix1@example.com', role: 'engineer', created_at: createdAt, expires_at: new Date(Date.now() + 3600000).toISOString(), redeemed_at: null }] };
+        if (s.indexOf('UPDATE TEAM_INVITATIONS SET REDEEMED_AT') === 0) return { rows: [{ team_invitation_id: 'tinv-mix', tenant_id: 'tenant-mix', role: 'engineer' }] };
+        if (s.indexOf('SELECT PERSON_ID FROM PERSON_IDENTITIES') === 0) return { rows: [] };
+        if (s.indexOf('INSERT INTO PEOPLE DEFAULT VALUES') === 0) return { rows: [{ id: 9101 }] };
+        if (s.indexOf('SELECT COUNT(*) AS COUNT FROM TEAM_MEMBERSHIPS') === 0) return { rows: [{ count: '0' }] };
+        return { rows: [] };
+      }
+    };
+    await teamInvitations.redeemTeamInvitation(acceptPool, { destination: 'mix1@example.com', teamInvitationId: 'tinv-mix' });
+
+    // Ordering fixed proactively (same bug already found and corrected in
+    // Task 3): identityLinks must be freshRequired and patched BEFORE
+    // teamManagement is freshRequired, or team-management.js's own internal
+    // require('./identity-links') resolves to a stale, unpatched instance.
+    var identityLinks = freshRequire(require.resolve(path.join(ROOT, 'src', 'web-ui', 'modules', 'identity-links')));
+    var originalResolve = identityLinks.resolvePersonForIdentity;
+    identityLinks.resolvePersonForIdentity = async function () { return 5555; };
+    var teamManagement = freshRequire(TEAM_MANAGEMENT_MODULE_PATH);
+    try {
+      await teamManagement.addOrUpdateTeammate({ query: async function () { return { rows: [] }; } }, 'tenant-mix', 'mix2@example.com', 'viewer', 'admin-1');
+    } finally {
+      identityLinks.resolvePersonForIdentity = originalResolve;
+    }
+
+    // Metric 1: share of self-serve vs admin-add.
+    var selfServeAccepted = patch.calls.filter(function (c) { return c.event === 'team_invite_accepted'; }).length;
+    var adminAdded = patch.calls.filter(function (c) { return c.event === 'teammate_added_by_admin'; }).length;
+    assert.strictEqual(selfServeAccepted, 1);
+    assert.strictEqual(adminAdded, 1);
+    var shareOfSelfServe = selfServeAccepted / (selfServeAccepted + adminAdded);
+    assert.strictEqual(shareOfSelfServe, 0.5, 'expected the share metric to be directly computable from captured event counts alone');
+
+    // Metric 2: time from creation to access.
+    var acceptedEvent = patch.calls.find(function (c) { return c.event === 'team_invite_accepted'; });
+    assert.ok(typeof acceptedEvent.props.elapsedMs === 'number' && acceptedEvent.props.elapsedMs > 0, 'expected the elapsed-time metric to be directly computable from the captured event alone, no external correlation needed');
+  } finally {
+    patch.restore();
+  }
+});
+
+await checkAsyncOrSync('NFR-security: eventProperties_neverIncludeEmailOrToken', async () => {
+  var patch = patchPosthogCapture();
+  try {
+    var teamManagementRoutes = setUpTeamManagementRoutesWithMagicLink(async function () {});
+    var createState = {};
+    var createPool = makeMockPool(createState);
+    var createHandlers = teamManagementRoutes.createTeamManagementHandlers(createPool);
+    await createHandlers.handleCreateInvite(mockReq({ body: { email: 'secret-invitee@example.com', role: 'engineer', _csrf: 'test-csrf-token' } }), mockRes());
+
+    var teamInvitations = freshRequire(TEAM_INVITATIONS_PATH);
+    var acceptPool = {
+      query: async function (sql) {
+        var s = String(sql).toUpperCase();
+        if (s.indexOf('SELECT TEAM_INVITATION_ID') === 0) return { rows: [{ team_invitation_id: 'tinv-nfr', tenant_id: 'tenant-nfr', email: 'secret-invitee@example.com', role: 'engineer', created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 3600000).toISOString(), redeemed_at: null }] };
+        if (s.indexOf('UPDATE TEAM_INVITATIONS SET REDEEMED_AT') === 0) return { rows: [{ team_invitation_id: 'tinv-nfr', tenant_id: 'tenant-nfr', role: 'engineer' }] };
+        if (s.indexOf('SELECT PERSON_ID FROM PERSON_IDENTITIES') === 0) return { rows: [] };
+        if (s.indexOf('INSERT INTO PEOPLE DEFAULT VALUES') === 0) return { rows: [{ id: 9102 }] };
+        if (s.indexOf('SELECT COUNT(*) AS COUNT FROM TEAM_MEMBERSHIPS') === 0) return { rows: [{ count: '0' }] };
+        return { rows: [] };
+      }
+    };
+    await teamInvitations.redeemTeamInvitation(acceptPool, { destination: 'secret-invitee@example.com', teamInvitationId: 'tinv-nfr' });
+
+    // Same ordering fix as above: identityLinks freshRequired/patched first.
+    var identityLinks = freshRequire(require.resolve(path.join(ROOT, 'src', 'web-ui', 'modules', 'identity-links')));
+    var originalResolve = identityLinks.resolvePersonForIdentity;
+    identityLinks.resolvePersonForIdentity = async function () { return 6666; };
+    var teamManagement = freshRequire(TEAM_MANAGEMENT_MODULE_PATH);
+    try {
+      await teamManagement.addOrUpdateTeammate({ query: async function () { return { rows: [] }; } }, 'tenant-nfr', 'secret-admin-added@example.com', 'viewer', 'admin-1');
+    } finally {
+      identityLinks.resolvePersonForIdentity = originalResolve;
+    }
+
+    assert.ok(patch.calls.length >= 3, 'expected at least 3 events captured across all three flows');
+    patch.calls.forEach(function (c) {
+      var serialized = JSON.stringify(c.props);
+      assert.ok(serialized.indexOf('@example.com') === -1, 'expected event "' + c.event + '" properties to never contain a raw email address, got: ' + serialized);
+      assert.ok(serialized.indexOf('secret-invitee') === -1 && serialized.indexOf('secret-admin-added') === -1, 'expected event "' + c.event + '" properties to never contain the raw email local-part either');
+    });
+  } finally {
+    patch.restore();
+  }
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
