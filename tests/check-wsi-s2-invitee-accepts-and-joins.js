@@ -198,6 +198,43 @@ await checkAsyncOrSync('AC5: combinedDispatcher_clientLoginPayload_stillRoutesTo
   assert.strictEqual(result.tenantId, 'from-client-login');
 });
 
+await checkAsyncOrSync('NFR-audit: auditLog_redemption_neverLogsRawToken', async () => {
+  var strategy = freshRequire(MAGIC_LINK_STRATEGY_PATH);
+  var teamInvitations = freshRequire(TEAM_INVITATIONS_PATH);
+  strategy._resetForTesting();
+
+  var pool = makeFakePool({
+    invitations: [{ team_invitation_id: 'tinv-audit', tenant_id: 'tenant-audit', email: 'audit@example.com', role: 'engineer', created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 3600000).toISOString(), redeemed_at: null }]
+  });
+  var loggerCalls = [];
+  var capturedHref = null;
+
+  strategy.registerMagicLinkStrategy({
+    secret: 'wsi-s2-audit-test-secret',
+    callbackUrl: '/invite/redeem',
+    sendMagicLink: async function (destination, href) { capturedHref = href; },
+    verify: async function (payload, callback) {
+      var result = await teamInvitations.redeemTeamInvitation(pool, payload, { info: function (m) { loggerCalls.push(String(m)); } });
+      if (!result.ok) { callback(null, false); return; }
+      callback(null, result.user);
+    }
+  });
+
+  await strategy.issueMagicLink('audit@example.com', { teamInvitationId: 'tinv-audit' });
+  assert.ok(capturedHref, 'expected a magic link to have been issued');
+  var tokenMatch = /token=([^&]+)/.exec(capturedHref);
+  assert.ok(tokenMatch, 'expected the issued link to contain a token= query param');
+  var rawToken = decodeURIComponent(tokenMatch[1]);
+
+  var verifyResult = await strategy.verifyMagicLinkToken(rawToken);
+  assert.strictEqual(verifyResult.ok, true, 'expected redemption to succeed');
+  assert.ok(loggerCalls.length > 0, 'expected at least one audit log entry to have been captured');
+  loggerCalls.forEach(function (entry) {
+    assert.ok(entry.indexOf(rawToken) === -1, 'expected the audit log to never contain the raw invite token, found in: ' + entry);
+    assert.ok(entry.indexOf(capturedHref) === -1, 'expected the audit log to never contain the full signed link, found in: ' + entry);
+  });
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
