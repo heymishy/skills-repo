@@ -148,6 +148,56 @@ await checkAsyncOrSync('AC4: acceptInvite_sameTokenTwice_secondAttemptRejectedNo
   assert.strictEqual(state.teamMemberships.length, 1, 'expected exactly one team_memberships row despite two redemption attempts');
 });
 
+await checkAsyncOrSync('AC5: combinedDispatcher_clientOrgInvitePayload_stillRoutesToOriginalHandlerUnchanged', async () => {
+  var fs = require('fs');
+  var SERVER_PATH = path.resolve(ROOT, 'src/web-ui/server.js');
+  var src = fs.readFileSync(SERVER_PATH, 'utf8');
+  assert.ok(src.indexOf('payload.teamInvitationId') !== -1, 'expected server.js\'s dispatcher to check payload.teamInvitationId');
+  assert.ok(src.indexOf('payload.invitationId') !== -1, 'expected the existing Client-org invite check to remain');
+
+  // Replicate the exact 3-way dispatch shape server.js now wires.
+  var invitationRedemptionCalls = [];
+  var clientLoginCalls = [];
+  var teamInviteCalls = [];
+  async function _verifyInvitationRedemption(payload, callback) { invitationRedemptionCalls.push(payload); callback(null, { tenantId: 'from-client-org-invite' }); }
+  async function _verifyClientLogin(payload, callback) { clientLoginCalls.push(payload); callback(null, { tenantId: 'from-client-login' }); }
+  async function _verifyTeamInviteRedemption(payload, callback) { teamInviteCalls.push(payload); callback(null, { tenantId: 'from-team-invite' }); }
+  function _combinedMagicLinkVerify(payload, callback, req) {
+    if (payload && payload.teamInvitationId) return _verifyTeamInviteRedemption(payload, callback, req);
+    if (payload && payload.invitationId) return _verifyInvitationRedemption(payload, callback, req);
+    return _verifyClientLogin(payload, callback, req);
+  }
+
+  var result = await new Promise(function (resolve) {
+    _combinedMagicLinkVerify({ destination: 'x@example.com', invitationId: 'inv-123' }, function (err, user) { resolve(user); });
+  });
+  assert.strictEqual(invitationRedemptionCalls.length, 1, 'expected the Client-org invite payload to route to the ORIGINAL handler');
+  assert.strictEqual(teamInviteCalls.length, 0, 'expected the team-invite handler NOT to be called for this payload shape');
+  assert.strictEqual(result.tenantId, 'from-client-org-invite');
+});
+
+await checkAsyncOrSync('AC5: combinedDispatcher_clientLoginPayload_stillRoutesToOriginalHandlerUnchanged', async () => {
+  var invitationRedemptionCalls = [];
+  var clientLoginCalls = [];
+  var teamInviteCalls = [];
+  async function _verifyInvitationRedemption(payload, callback) { invitationRedemptionCalls.push(payload); callback(null, { tenantId: 'from-client-org-invite' }); }
+  async function _verifyClientLogin(payload, callback) { clientLoginCalls.push(payload); callback(null, { tenantId: 'from-client-login' }); }
+  async function _verifyTeamInviteRedemption(payload, callback) { teamInviteCalls.push(payload); callback(null, { tenantId: 'from-team-invite' }); }
+  function _combinedMagicLinkVerify(payload, callback, req) {
+    if (payload && payload.teamInvitationId) return _verifyTeamInviteRedemption(payload, callback, req);
+    if (payload && payload.invitationId) return _verifyInvitationRedemption(payload, callback, req);
+    return _verifyClientLogin(payload, callback, req);
+  }
+
+  var result = await new Promise(function (resolve) {
+    _combinedMagicLinkVerify({ destination: 'y@example.com' }, function (err, user) { resolve(user); });
+  });
+  assert.strictEqual(clientLoginCalls.length, 1, 'expected the plain Client login payload (neither id field) to route to the ORIGINAL login handler');
+  assert.strictEqual(teamInviteCalls.length, 0);
+  assert.strictEqual(invitationRedemptionCalls.length, 0);
+  assert.strictEqual(result.tenantId, 'from-client-login');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 

@@ -44,7 +44,7 @@ const { migrateOrganisationsSchema, backfillStandaloneOrganisations } = require(
 const { setOrganisationsPool }                                       = require('./routes/auth');            // story-1-organisation-entity
 const { migrateAgencyClientGrantsSchema }                            = require('./modules/agency-client-grants'); // story-2-relationship-grants-enforcement
 const { migrateClientInvitationsSchema, redeemInvitation }           = require('./modules/client-invitations'); // story-3-self-service-provisioning
-const { migrateTeamInvitationsSchema }                               = require('./modules/team-invitations'); // wsi-s1
+const { migrateTeamInvitationsSchema, redeemTeamInvitation }         = require('./modules/team-invitations'); // wsi-s1, wsi-s2
 const { setSendInvitationEmail }                                     = require('./modules/invitation-email'); // story-3-self-service-provisioning (D37, AC5)
 const { registerMagicLinkStrategy }                                  = require('./auth/magic-link-strategy'); // story-3-self-service-provisioning -- ONE shared strategy registration point (Story 4 extends via setVerifyCallback)
 const { createAgencyProvisioningHandlers }                           = require('./routes/agency-provisioning'); // story-3-self-service-provisioning
@@ -687,7 +687,29 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
         }
       }
 
+      // wsi-s2: the registered verify() callback delegates to
+      // modules/team-invitations.js's redeemTeamInvitation() -- resolves the
+      // teamInvitationId carried inside the redeemed JWT payload, atomically
+      // marks the invite redeemed, and creates/updates the invitee's
+      // team_memberships row with the invite's own stored tenant_id and role
+      // (never accept-time request input -- ADR-025).
+      async function _verifyTeamInviteRedemption(payload, callback) {
+        try {
+          var result = await redeemTeamInvitation(_userRolesPool, payload);
+          if (!result.ok) {
+            callback(null, false, { message: result.reason });
+            return;
+          }
+          callback(null, result.user);
+        } catch (err) {
+          callback(err);
+        }
+      }
+
       function _combinedMagicLinkVerify(payload, callback, req) {
+        if (payload && payload.teamInvitationId) {
+          return _verifyTeamInviteRedemption(payload, callback, req);
+        }
         if (payload && payload.invitationId) {
           return _verifyInvitationRedemption(payload, callback, req);
         }
