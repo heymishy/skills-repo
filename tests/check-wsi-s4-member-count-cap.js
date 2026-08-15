@@ -124,6 +124,41 @@ await checkAsyncOrSync('AC2: acceptInvite_tenantBelowCap_unaffected', async () =
   assert.strictEqual(result.user.tenantId, 'tenant-belowcap');
 });
 
+await checkAsyncOrSync('AC3: capValues_paidTierVsTrialTier_paidIsMateriallyHigher', async () => {
+  var teamInvitations = freshRequire(TEAM_INVITATIONS_PATH);
+  assert.ok(teamInvitations.PAID_MEMBER_CAP > teamInvitations.TRIAL_MEMBER_CAP, 'expected the paid cap to be strictly greater than the trial cap');
+  assert.ok(teamInvitations.PAID_MEMBER_CAP >= teamInvitations.TRIAL_MEMBER_CAP * 2, 'expected the paid cap to be materially higher -- at least double the trial cap, not a trivial increment (review finding wsi-s4 1-L1)');
+});
+
+await checkAsyncOrSync('AC4: acceptInvite_countExactlyAtCap_stillBlocked', async () => {
+  var tenantPlan = freshRequire(TENANT_PLAN_PATH);
+  tenantPlan.setCapReader(function () { return null; });
+  var teamInvitations = freshRequire(TEAM_INVITATIONS_PATH);
+  var pool = makeFakePool({
+    invitations: [{ team_invitation_id: 'tinv-cap-4', tenant_id: 'tenant-exactlyatcap', email: 'exact@example.com', role: 'admin', created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 3600000).toISOString(), redeemed_at: null }],
+    teamMemberships: seedMembers('tenant-exactlyatcap', teamInvitations.TRIAL_MEMBER_CAP) // exactly at cap, not one over
+  });
+  var result = await teamInvitations.redeemTeamInvitation(pool, { destination: 'exact@example.com', teamInvitationId: 'tinv-cap-4' });
+  assert.strictEqual(result.ok, false, 'expected a tenant with count EXACTLY equal to its cap to still be blocked (inclusive maximum)');
+  assert.strictEqual(result.reason, 'member limit reached');
+});
+
+await checkAsyncOrSync('NFR-security: capCheck_tenantScoped_countQueryUsesInviteOwnTenantId', async () => {
+  var tenantPlan = freshRequire(TENANT_PLAN_PATH);
+  tenantPlan.setCapReader(function () { return null; });
+  var teamInvitations = freshRequire(TEAM_INVITATIONS_PATH);
+  var pool = makeFakePool({
+    invitations: [{ team_invitation_id: 'tinv-cap-5', tenant_id: 'tenant-real', email: 'scoped@example.com', role: 'engineer', created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 3600000).toISOString(), redeemed_at: null }],
+    teamMemberships: seedMembers('tenant-real', 1)
+  });
+  // Payload carries a spoofed tenantId field -- must be completely ignored;
+  // the invite's own server-side-stored tenant_id is the only source used.
+  await teamInvitations.redeemTeamInvitation(pool, { destination: 'scoped@example.com', teamInvitationId: 'tinv-cap-5', tenantId: 'tenant-spoofed' });
+  var calls = pool._countQueryCalls();
+  assert.strictEqual(calls.length, 1, 'expected exactly one member-count query');
+  assert.strictEqual(calls[0], 'tenant-real', 'expected the count query to use the invite\'s own stored tenant_id, never a request-supplied field');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
