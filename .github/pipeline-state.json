@@ -23268,7 +23268,7 @@
               "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-15T10:05:40.552Z",
+              "updatedAt": "2026-08-15T18:49:06.149Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -23285,7 +23285,7 @@
               "prUrl": "https://github.com/heymishy/skills-repo/pull/737",
               "dodStatus": "complete",
               "releaseReady": false,
-              "blocker": "DoD gaps: missing auditLog_invitationCreated_neverLogsRawToken NFR test (behaviour verified by code review, not automated); no invite-creation UI exists yet despite story NFR claiming one -- epic benefit metric cannot move until resolved. See dod/wsi-s1-dod.md follow-up actions."
+              "blocker": "No invite-creation UI exists yet -- wsi-s1 shipped only the API handler. Epic benefit metrics stay not-yet-measured until wsi-s6 (invite-creation UI) reaches DoD. Missing NFR audit test closed 2026-08-16, no longer a blocker."
             },
             {
               "slug": "wsi-s2-invitee-accepts-and-joins",

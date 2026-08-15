@@ -34,8 +34,8 @@ None. Checked the merged PR's 10 commits against the story's Out of Scope (invit
 
 ## Test Plan Coverage
 
-**Tests from plan implemented:** 6 / 7 (test-plan specified 6 unit tests + 1 NFR test = 7 total)
-**Tests passing in CI:** 6 / 6 implemented
+**Tests from plan implemented:** 7 / 7 (test-plan specified 6 unit tests + 1 NFR test = 7 total)
+**Tests passing in CI:** 7 / 7 implemented
 
 | Test | Implemented | Passing | Notes |
 |------|-------------|---------|-------|
@@ -45,11 +45,11 @@ None. Checked the merged PR's 10 commits against the story's Out of Scope (invit
 | createInvite_invalidRole_rejectedNoRowWritten | ✅ | ✅ | |
 | createInvite_missingRole_rejected | ✅ | ✅ | |
 | createInvite_emailSendFails_surfacesErrorRowAlreadyWritten | ✅ | ✅ | |
-| auditLog_invitationCreated_neverLogsRawToken (NFR test) | ❌ | N/A | **Gap — see below** |
+| auditLog_invitationCreated_neverLogsRawToken (NFR test) | ✅ | ✅ | **Closed post-merge, 2026-08-16** — added directly to `master` (test-only, no source change, direct copy of `check-story3-self-service-provisioning.js`'s own `invitationTokenNeverLoggedInPlaintext` pattern). Asserts the raw token AND the full signed link never appear in any captured audit-log entry. |
 
-**Gaps (tests not implemented):**
+**Gaps (tests not implemented):** None remaining.
 
-1. **`auditLog_invitationCreated_neverLogsRawToken`** — specified in the test plan (NFR Tests section, Security/audit) but never implemented across any of the 4 implementation tasks; not RISK-ACCEPTed in `decisions.md` at any point. Root cause: an authoring gap in the implementation plan (`wsi-s1-plan.md`'s 4 tasks map to AC1–AC5 only; the plan never scheduled a task for this NFR test). **Risk assessment:** LOW in practice — direct code inspection of the shipped `createInvitation` (in `modules/team-invitations.js`) confirms its `log.info(...)` call only passes `event`, `team_invitation_id`, `tenant_id`, `role`, `created_by`, `timestamp` — no token or link field is constructed or passed anywhere in the invite-creation code path, so the underlying NFR requirement is actually satisfied by the code as written. The gap is in automated *proof* of that fact, not in the behaviour itself — a future refactor could silently regress this with no test to catch it. Logged as a genuine test gap requiring a decision (see Step 4 question below), not previously surfaced during the inner loop's own /verify-completion (which checked ACs, not the NFR test list directly).
+**Historical note:** `auditLog_invitationCreated_neverLogsRawToken` was originally specified in the test plan (NFR Tests section, Security/audit) but never implemented across any of the 4 implementation tasks in the PR that merged as #737 — an authoring gap in the implementation plan (`wsi-s1-plan.md`'s 4 tasks mapped to AC1–AC5 only; the plan never scheduled a task for this NFR test). Direct code inspection at the time confirmed the underlying behaviour was already safe (no token/link field is ever passed to the logger); only the automated proof was missing. Closed as this DoD run's own follow-up action #1, immediately after this artefact was first written.
 
 ---
 
@@ -59,7 +59,7 @@ None. Checked the merged PR's 10 commits against the story's Out of Scope (invit
 |-----|------------|---------|
 | Performance — no hard SLO, non-blocking send | ✅ | Code review: `handleCreateInvite` awaits `issueMagicLink` but does not block on invitee email-client delivery, matching the NFR's own stated bar |
 | Security — tenant scoping server-side from session only (ADR-025) | ✅ | `createInvite_tenantIdNeverFromRequest_onlyFromSession` test, PASS |
-| Security — raw token never logged in plaintext | ⚠️ | Code inspection confirms compliance (see Test Plan Coverage gap above); no automated test exists to guard against regression |
+| Security — raw token never logged in plaintext | ✅ | `auditLog_invitationCreated_neverLogsRawToken` test, PASS (added 2026-08-16, closing the original gap — see Test Plan Coverage) |
 | Security — secrets management (reuses existing `RESEND_API_KEY` pattern) | ✅ | No new credential/env-var introduced; `magicLinkStrategy`/`invitation-email.js` wiring in `server.js` unchanged by this story |
 | Audit — invite creation logged with IDs/tenant/timestamp | ✅ | `modules/team-invitations.js`'s `createInvitation` `log.info(...)` call, code-reviewed |
 | Accessibility — invite-creation form has labelled, keyboard-accessible fields | ❌ | **Gap — see below** |
@@ -84,8 +84,8 @@ Update the NFR profile's status: **not updated to Verified** — the Accessibili
 **COMPLETE WITH DEVIATIONS**
 
 **Follow-up actions:**
-1. **[Owner: Hamish King]** Decide on the missing `auditLog_invitationCreated_neverLogsRawToken` NFR test: (a) log a retroactive RISK-ACCEPT in `decisions.md` given the underlying behaviour is already code-review-verified, or (b) create a short follow-up task to add the automated test before `wsi-s2` ships (cheap — the pattern already exists in `check-story3-self-service-provisioning.js`'s own `invitationTokenNeverLoggedInPlaintext` NFR test, directly copyable).
-2. **[Owner: Hamish King]** Decide whether an invite-creation UI form is: (a) in-scope for a new, explicitly-named follow-up story (recommended, since the epic's benefit metric cannot move without one), or (b) deliberately deferred with a stated reason and target story — either way, the current silence on this in the epic/story artefacts should be corrected so a future `/trace` run doesn't rediscover this same gap independently.
+1. ~~Decide on the missing `auditLog_invitationCreated_neverLogsRawToken` NFR test~~ — **CLOSED 2026-08-16.** Test added directly (test-only commit, no source change); see Test Plan Coverage above.
+2. ~~Decide whether an invite-creation UI form is in-scope for a new story or deliberately deferred~~ — **CLOSED 2026-08-16.** Operator chose a dedicated follow-up story (`AskUserQuestion`, 3 options presented). See `stories/wsi-s6-invite-creation-ui.md` and `decisions.md`'s 2026-08-16 SLICE entry. Remains open until `wsi-s6` itself reaches DoD — the epic's benefit metrics stay `not-yet-measured` until then.
 3. **[Informational, no action needed]** wsi-s2 should follow AC2's corrected `magicLinkStrategy.issueMagicLink(email, { teamInvitationId })` pattern for its own redemption-side dispatch — already noted as the locked-in precedent in `decisions.md`.
 
 ---

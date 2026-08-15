@@ -187,6 +187,30 @@ await checkAsyncOrSync('AC5: createInvite_emailSendFails_surfacesErrorRowAlready
   assert.ok(state.inserted, 'expected the team_invitations row to still exist despite the email failure');
 });
 
+await checkAsyncOrSync('NFR-audit: auditLog_invitationCreated_neverLogsRawToken', async () => {
+  var state = {};
+  var pool = makeMockPool(state);
+  var loggerCalls = [];
+  var capturedHref = null;
+  var teamManagementRoutes = setUpTeamManagementWithMagicLink(async function (destination, href) {
+    capturedHref = href;
+  });
+  teamManagementRoutes.setLogger({ info: function (msg) { loggerCalls.push(String(msg)); } });
+  var handlers = teamManagementRoutes.createTeamManagementHandlers(pool);
+  var req = mockReq({ body: { email: 'audit@example.com', role: 'engineer', _csrf: 'test-csrf-token' } });
+  var res = mockRes();
+  await handlers.handleCreateInvite(req, res);
+  assert.ok(capturedHref, 'expected a magic link to have been issued');
+  var tokenMatch = /token=([^&]+)/.exec(capturedHref);
+  assert.ok(tokenMatch, 'expected the issued link to contain a token= query param');
+  var rawToken = decodeURIComponent(tokenMatch[1]);
+  assert.ok(loggerCalls.length > 0, 'expected at least one audit log entry to have been captured');
+  loggerCalls.forEach(function (entry) {
+    assert.ok(entry.indexOf(rawToken) === -1, 'expected the audit log to never contain the raw invite token, found in: ' + entry);
+    assert.ok(entry.indexOf(capturedHref) === -1, 'expected the audit log to never contain the full signed link, found in: ' + entry);
+  });
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
