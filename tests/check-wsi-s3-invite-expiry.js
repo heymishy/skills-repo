@@ -37,6 +37,13 @@ function makeFakePool(seed) {
     var s = String(sql).replace(/\s+/g, ' ').trim().toUpperCase();
     var p = params || [];
 
+    if (s.indexOf('SELECT COUNT(*) AS COUNT FROM TEAM_MEMBERSHIPS') === 0) {
+      // wsi-s4: this story's own redeemTeamInvitation now always checks the
+      // member-count cap for a still-valid invite -- this pool never seeds
+      // team_memberships, so the count is always 0, well under either cap.
+      var n = teamMemberships.filter(function (r) { return r.tenant_id === p[0]; }).length;
+      return Promise.resolve({ rows: [{ count: String(n) }] });
+    }
     if (s.indexOf('SELECT TEAM_INVITATION_ID') === 0) {
       var match = invitations.filter(function (r) { return r.team_invitation_id === p[0]; });
       return Promise.resolve({ rows: match });

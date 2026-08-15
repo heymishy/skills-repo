@@ -257,12 +257,18 @@ node tests/check-wsi-s3-invite-expiry.js
 node tests/check-wsi-s2-invitee-accepts-and-joins.js
 ```
 
-Both must remain fully green — this task changes shared code (`redeemTeamInvitation`) that both stories' own tests exercise directly. `wsi-s3`'s tests use tenants with no seeded `team_memberships` at all (so `count` is always `0`, well under either cap) — confirm this holds by actually running the file, not assuming it.
+Both must remain fully green — this task changes shared code (`redeemTeamInvitation`) that both stories' own tests exercise directly.
+
+**Correction (found during Task 1 dispatch, before any commit):** the plan's prediction above ("this holds, confirm by running") was wrong in its reasoning even though its conclusion (0 seeded rows, well under cap) was right. `wsi-s2`'s and `wsi-s3`'s own `makeFakePool()` implementations have no branch matching the new `SELECT COUNT(*) AS count FROM team_memberships` query at all — unmatched queries fall through to their default `Promise.resolve({ rows: [] })`, so `checkMemberCountCap`'s `result.rows[0]` was `undefined`, throwing `TypeError: Cannot read properties of undefined (reading 'count')` and crashing both sibling test files outright (not merely failing an assertion). The dispatched subagent correctly stopped rather than improvising a fix outside its stated file scope (`git status`/no commit made) — exactly the right call, since editing `wsi-s2`'s/`wsi-s3`'s own test files was not part of this task's original file list.
+
+Fix (applied directly, not re-dispatched, since it was small and fully understood): added a `SELECT COUNT(*) AS COUNT FROM TEAM_MEMBERSHIPS` branch to both `tests/check-wsi-s2-invitee-accepts-and-joins.js`'s and `tests/check-wsi-s3-invite-expiry.js`'s own `makeFakePool()` functions, returning the real count from their existing (always-empty, for their own scenarios) `teamMemberships` array — both already tracked one for their own `INSERT INTO team_memberships` handling. Also added a defensive `result.rows.length ? ... : 0` guard in `checkMemberCountCap` itself (belt-and-braces only — a real SQL `COUNT(*)` aggregate always returns exactly one row even over zero matches, so this guard is for test-double robustness, not a real production gap). All three files (`wsi-s4`'s own, plus both fixed siblings) verified green after the fix, along with the remaining 4 sibling regressions (`story3`, `story4`, `wsi-s1`, `tir-s3`) all still clean.
+
+This is a **generalizable lesson for `wsi-s5`'s own implementation plan** (not yet written): any story that adds a new required query to `redeemTeamInvitation`'s shared code path must budget a check (and likely a fix) against every prior story's own fake-pool test file that exercises that function directly, not just the two nearest siblings.
 
 - [ ] **Step 6: Commit**
 
 ```bash
-git add src/web-ui/modules/team-invitations.js tests/check-wsi-s4-member-count-cap.js
+git add src/web-ui/modules/team-invitations.js tests/check-wsi-s4-member-count-cap.js tests/check-wsi-s2-invitee-accepts-and-joins.js tests/check-wsi-s3-invite-expiry.js
 git commit -m "feat(wsi-s4): block invite acceptance at the tenant's member-count cap (AC1, AC2)"
 ```
 
