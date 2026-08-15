@@ -23259,7 +23259,7 @@
         {
           "slug": "epic-1-self-serve-invite-flow",
           "name": "Teammates can join a tenant on their own, without waiting on the admin",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "wsi-s1-admin-creates-invite",
@@ -23268,7 +23268,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-15T08:06:54.323Z",
+              "updatedAt": "2026-08-15T09:13:00.891Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -23281,7 +23281,7 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-14-wuce-self-serve-invites/dor/wsi-s1-dor.md",
               "dorSignedOffAt": "2026-08-15T00:00:00.000Z",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/737"
             },
             {
