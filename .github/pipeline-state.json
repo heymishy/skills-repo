@@ -23264,49 +23264,24 @@
             {
               "slug": "wsi-s1-admin-creates-invite",
               "name": "Admin creates a per-person team invite, which sends the invite email",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-14T22:03:51.822Z",
+              "updatedAt": "2026-08-15T04:11:18.358Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 7,
-                "passing": 0
+                "totalTests": 6,
+                "passing": 6
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-14-wuce-self-serve-invites/dor/wsi-s1-dor.md",
               "dorSignedOffAt": "2026-08-15T00:00:00.000Z",
-              "tasks": [
-                {
-                  "id": "task-1",
-                  "name": "Module + happy-path invite creation (AC1)",
-                  "tddState": "not-started",
-                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s1-plan.md"
-                },
-                {
-                  "id": "task-2",
-                  "name": "Send the invite email (AC2)",
-                  "tddState": "not-started",
-                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s1-plan.md"
-                },
-                {
-                  "id": "task-3",
-                  "name": "Role validation (AC3, AC4)",
-                  "tddState": "not-started",
-                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s1-plan.md"
-                },
-                {
-                  "id": "task-4",
-                  "name": "Email-send failure handling (AC5)",
-                  "tddState": "not-started",
-                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s1-plan.md"
-                }
-              ]
+              "verifyStatus": "passed"
             },
             {
               "slug": "wsi-s2-invitee-accepts-and-joins",
