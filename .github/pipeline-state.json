@@ -23382,11 +23382,11 @@
             {
               "slug": "wsi-s4-member-count-cap",
               "name": "Invite acceptance is blocked if the tenant is at its member-count cap",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-15T21:32:24.386Z",
+              "updatedAt": "2026-08-15T21:35:12.760Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -23398,7 +23398,21 @@
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-14-wuce-self-serve-invites/dor/wsi-s4-dor.md",
-              "dorSignedOffAt": "2026-08-15T00:00:00.000Z"
+              "dorSignedOffAt": "2026-08-15T00:00:00.000Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Tenant at cap blocked, invite not consumed (AC1, AC2)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s4-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Paid tier materially higher; exact-cap boundary; tenant-scoped (AC3, AC4, NFR)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s4-plan.md"
+                }
+              ]
             },
             {
               "slug": "wsi-s5-metrics-instrumentation",
