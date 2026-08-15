@@ -23290,55 +23290,24 @@
             {
               "slug": "wsi-s2-invitee-accepts-and-joins",
               "name": "Invitee accepts the invite and joins the tenant with the assigned role",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-15T19:24:52.961Z",
+              "updatedAt": "2026-08-15T19:50:17.352Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
-                "passing": 0
+                "passing": 7
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-14-wuce-self-serve-invites/dor/wsi-s2-dor.md",
               "dorSignedOffAt": "2026-08-15T00:00:00.000Z",
-              "tasks": [
-                {
-                  "id": "task-1",
-                  "name": "Redeem valid invite -- membership created, new invitee gets a person (AC1, AC2)",
-                  "tddState": "not-started",
-                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s2-plan.md"
-                },
-                {
-                  "id": "task-2",
-                  "name": "Existing invitee reuses their person, no duplicate (AC3)",
-                  "tddState": "not-started",
-                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s2-plan.md"
-                },
-                {
-                  "id": "task-3",
-                  "name": "Double redemption rejected atomically (AC4)",
-                  "tddState": "not-started",
-                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s2-plan.md"
-                },
-                {
-                  "id": "task-4",
-                  "name": "Extend shared dispatcher to a third case (AC5)",
-                  "tddState": "not-started",
-                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s2-plan.md"
-                },
-                {
-                  "id": "task-5",
-                  "name": "Audit log never logs raw token (NFR-audit)",
-                  "tddState": "not-started",
-                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s2-plan.md"
-                }
-              ]
+              "verifyStatus": "passed"
             },
             {
               "slug": "wsi-s3-invite-expiry",
