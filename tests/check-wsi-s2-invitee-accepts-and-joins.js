@@ -135,6 +135,19 @@ await checkAsyncOrSync('AC3: acceptInvite_existingInvitee_reusesPersonNoDuplicat
   assert.ok(tm, 'expected a team_memberships row for the reused person_id');
 });
 
+await checkAsyncOrSync('AC4: acceptInvite_sameTokenTwice_secondAttemptRejectedNoSecondMembership', async () => {
+  var teamInvitations = freshRequire(TEAM_INVITATIONS_PATH);
+  var pool = makeFakePool({
+    invitations: [{ team_invitation_id: 'tinv-4', tenant_id: 'tenant-D', email: 'double@example.com', role: 'admin', created_at: new Date().toISOString(), expires_at: new Date(Date.now() + 3600000).toISOString(), redeemed_at: null }]
+  });
+  var first = await teamInvitations.redeemTeamInvitation(pool, { destination: 'double@example.com', teamInvitationId: 'tinv-4' });
+  assert.strictEqual(first.ok, true, 'expected the first redemption to succeed');
+  var second = await teamInvitations.redeemTeamInvitation(pool, { destination: 'double@example.com', teamInvitationId: 'tinv-4' });
+  assert.strictEqual(second.ok, false, 'expected the second redemption attempt to be rejected');
+  var state = pool._state();
+  assert.strictEqual(state.teamMemberships.length, 1, 'expected exactly one team_memberships row despite two redemption attempts');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
