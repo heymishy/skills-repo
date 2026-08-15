@@ -149,6 +149,15 @@
 **Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this story's changes during implementation, stop and investigate.
 ---
 
+---
+**[2026-08-16] | SLICE | wsi-s1 DoD follow-up**
+**Decision:** Add a new story, `wsi-s6-invite-creation-ui`, to close a gap found during `wsi-s1`'s `/definition-of-done` run: the story's own Accessibility NFR claimed a labelled, keyboard-accessible invite-creation form exists, but neither the DoR contract's "What will be built" list nor the actual implementation ever built one — `wsi-s1` shipped only `POST /api/team/invites`, with no reachable UI. As shipped, no real admin can create an invite through the product; only a direct API call works.
+**Alternatives considered:** (1) Fold the form into `wsi-s2` (invitee accepts) — rejected by the operator, since `wsi-s2` is a different concern (acceptance, not creation) and bundling would blur that story's own scope. (2) Defer with no story yet, just a noted gap — rejected by the operator; the gap is a hard blocker for both benefit metrics ever producing a real signal, so it should stay visible and scheduled, not silently deferred.
+**Rationale:** Operator's explicit choice, presented with all three options via `AskUserQuestion` after the gap was surfaced in `wsi-s1`'s DoD artefact (`dod/wsi-s1-dod.md`). A dedicated, narrowly-scoped story (Complexity 1, reuses `handleGetTeamMembers`'s exact existing form pattern) keeps the fix small and traceable rather than expanding an unrelated story's scope.
+**Made by:** Hamish King — Platform owner
+**Revisit trigger:** None — `wsi-s6` is now the locked-in home for this gap; see `stories/wsi-s6-invite-creation-ui.md`.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded yet — the seat-limit-at-acceptance decision above is logged as an ARCH entry rather than a full ADR, consistent with this repo's own practice of reserving full ADRs for structural decisions with broader platform-wide implications. -->

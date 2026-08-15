@@ -26,11 +26,12 @@ An admin can invite a specific teammate by email and role, without that teammate
 
 ## Stories in This Epic
 
-- [ ] Admin creates a per-person invite, which sends the invite email (reusing the existing adapter) — wsi-s1
+- [x] Admin creates a per-person invite, which sends the invite email (reusing the existing adapter) — wsi-s1
 - [ ] Invitee accepts the invite and joins the tenant with the assigned role — wsi-s2
 - [ ] Expired invites (past 24 hours) are rejected cleanly — wsi-s3
 - [ ] Invite acceptance is blocked if the tenant is at its paid seat limit — wsi-s4
 - [ ] PostHog instrumentation for both benefit metrics — wsi-s5
+- [ ] Admin has a real, reachable form to create a team invite — wsi-s6 (added 2026-08-16, post-wsi-s1-DoD: wsi-s1 shipped only the API handler, no UI ever reached it — see `decisions.md` and `dod/wsi-s1-dod.md`)
 
 ## Human Oversight Level
 
