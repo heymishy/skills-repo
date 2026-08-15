@@ -23264,11 +23264,11 @@
             {
               "slug": "wsi-s1-admin-creates-invite",
               "name": "Admin creates a per-person team invite, which sends the invite email",
-              "stage": "branch-complete",
-              "health": "green",
+              "stage": "definition-of-done",
+              "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-15T09:13:00.891Z",
+              "updatedAt": "2026-08-15T10:05:40.552Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -23282,7 +23282,10 @@
               "dorArtefact": "artefacts/2026-08-14-wuce-self-serve-invites/dor/wsi-s1-dor.md",
               "dorSignedOffAt": "2026-08-15T00:00:00.000Z",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/737"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/737",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "DoD gaps: missing auditLog_invitationCreated_neverLogsRawToken NFR test (behaviour verified by code review, not automated); no invite-creation UI exists yet despite story NFR claiming one -- epic benefit metric cannot move until resolved. See dod/wsi-s1-dod.md follow-up actions."
             },
             {
               "slug": "wsi-s2-invitee-accepts-and-joins",
@@ -23380,8 +23383,10 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "No user-facing invite-creation surface exists yet (API-only handler shipped in wsi-s1); the round-trip is not usable end-to-end until wsi-s2 merges and a creation UI is built.",
+          "contributingStories": [
+            "wsi-s1-admin-creates-invite"
+          ]
         },
         {
           "id": "m2",
@@ -23390,8 +23395,10 @@
           "baseline": "Not yet established",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "Same blockers as m1 -- no UI surface yet and wsi-s2 (acceptance) not yet merged, so elapsed time cannot be measured.",
+          "contributingStories": [
+            "wsi-s1-admin-creates-invite"
+          ]
         }
       ],
       "guardrails": [
