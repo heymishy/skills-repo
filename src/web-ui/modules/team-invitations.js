@@ -20,6 +20,15 @@ function _genId(prefix) {
   return prefix + '-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 8);
 }
 
+var tenantPlan = require('./tenant-plan');
+
+// wsi-s4: simple, hardcoded per-tier member-count caps -- NOT read from
+// Stripe, NOT per-tenant configurable (both explicitly out of scope). A
+// deliberately separate mechanism from tenant-plan.js's own checkJourneyCap
+// (a different resource -- journeys -- with a Stripe/env-var-driven cap).
+var TRIAL_MEMBER_CAP = 3;
+var PAID_MEMBER_CAP = 25;
+
 /**
  * Startup schema bootstrap. Idempotent, matching client-invitations.js's own
  * CREATE TABLE IF NOT EXISTS migration convention.
@@ -165,6 +174,24 @@ async function createOrReuseTeamMemberAndMembership(pool, tenantId, email, role,
 }
 
 /**
+ * AC1/AC3/AC4: resolve the member-count cap for a tenant's plan tier and
+ * check whether it currently has room for one more member. A live COUNT(*)
+ * against team_memberships -- not a cached/denormalized counter, avoiding a
+ * second source of truth that could drift (this story's own Architecture
+ * Constraint).
+ * @param {object} pool
+ * @param {string} tenantId
+ * @returns {Promise<{allowed: boolean, cap: number, count: number}>}
+ */
+async function checkMemberCountCap(pool, tenantId) {
+  var planState = await tenantPlan.getPlanState(tenantId);
+  var cap = planState.plan === 'paid' ? PAID_MEMBER_CAP : TRIAL_MEMBER_CAP;
+  var result = await pool.query('SELECT COUNT(*) AS count FROM team_memberships WHERE tenant_id = $1', [tenantId]);
+  var count = result.rows.length ? parseInt(result.rows[0].count, 10) : 0;
+  return { allowed: count < cap, cap: cap, count: count };
+}
+
+/**
  * AC1-AC4: resolve a redeemed team-invite payload (the JWT payload carrying
  * `destination` [the invitee's email] and `teamInvitationId`) into either a
  * successfully created/updated team_memberships row, or a rejection reason
@@ -176,10 +203,32 @@ async function createOrReuseTeamMemberAndMembership(pool, tenantId, email, role,
  * @returns {Promise<{ok:true, user:object}|{ok:false, reason:string}>}
  */
 async function redeemTeamInvitation(pool, payload, logger) {
+  var log = logger || _defaultLogger;
   var teamInvitationId = payload && payload.teamInvitationId;
   var invitation = await getInvitationById(pool, teamInvitationId);
   if (!invitation || invitation.email !== (payload && payload.destination)) {
     return { ok: false, reason: 'invitation not found' };
+  }
+  // AC1/AC2/AC4: only check the member-count cap for an invite that still
+  // looks redeemable based on its own already-fetched state -- an invite
+  // that is already redeemed or already expired should report THAT reason,
+  // not a cap-related one. The atomic UPDATE below remains the final
+  // arbiter of whether redemption actually succeeds; this check only
+  // decides whether to attempt it, so a cap-blocked invite's redeemed_at
+  // is never touched (AC1).
+  var looksRedeemable = !invitation.redeemed_at && new Date(invitation.expires_at).getTime() > Date.now();
+  if (looksRedeemable) {
+    var capCheck = await checkMemberCountCap(pool, invitation.tenant_id);
+    if (!capCheck.allowed) {
+      log.info(JSON.stringify({
+        event: 'team_invite_blocked_by_cap',
+        tenant_id: invitation.tenant_id,
+        cap: capCheck.cap,
+        count: capCheck.count,
+        timestamp: new Date().toISOString()
+      }));
+      return { ok: false, reason: 'member limit reached' };
+    }
   }
   var redeemed = await markTeamInvitationRedeemed(pool, invitation.team_invitation_id, logger);
   if (!redeemed) {
@@ -200,4 +249,4 @@ async function redeemTeamInvitation(pool, payload, logger) {
   return { ok: true, user: user };
 }
 
-module.exports = { migrateTeamInvitationsSchema, createInvitation, getInvitationById, markTeamInvitationRedeemed, createOrReuseTeamMemberAndMembership, redeemTeamInvitation };
+module.exports = { migrateTeamInvitationsSchema, createInvitation, getInvitationById, markTeamInvitationRedeemed, createOrReuseTeamMemberAndMembership, redeemTeamInvitation, checkMemberCountCap, TRIAL_MEMBER_CAP, PAID_MEMBER_CAP };

@@ -23382,23 +23382,39 @@
             {
               "slug": "wsi-s4-member-count-cap",
               "name": "Invite acceptance is blocked if the tenant is at its member-count cap",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-14T19:50:14.213Z",
+              "updatedAt": "2026-08-15T21:58:04.105Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0
+                "passing": 5
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-14-wuce-self-serve-invites/dor/wsi-s4-dor.md",
-              "dorSignedOffAt": "2026-08-15T00:00:00.000Z"
+              "dorSignedOffAt": "2026-08-15T00:00:00.000Z",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/740",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Tenant at cap blocked, invite not consumed (AC1, AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s4-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Paid tier materially higher; exact-cap boundary; tenant-scoped (AC3, AC4, NFR)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s4-plan.md"
+                }
+              ]
             },
             {
               "slug": "wsi-s5-metrics-instrumentation",
