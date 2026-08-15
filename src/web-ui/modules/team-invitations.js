@@ -21,6 +21,7 @@ function _genId(prefix) {
 }
 
 var tenantPlan = require('./tenant-plan');
+var _posthog = require('./posthog-server');
 
 // wsi-s4: simple, hardcoded per-tier member-count caps -- NOT read from
 // Stripe, NOT per-tenant configurable (both explicitly out of scope). A
@@ -246,6 +247,18 @@ async function redeemTeamInvitation(pool, payload, logger) {
     return { ok: false, reason: 'invitation already used' };
   }
   var user = await createOrReuseTeamMemberAndMembership(pool, invitation.tenant_id, invitation.email, invitation.role, logger);
+
+  // wsi-s5 AC2: real, observable event for both benefit metrics -- the
+  // elapsedMs property is the direct input to "time from invite creation
+  // to invitee access". Computed from the invite's own already-fetched,
+  // immutable created_at, not a separate timestamp read. Never includes
+  // the invitee's raw email.
+  _posthog.capture(invitation.tenant_id, 'team_invite_accepted', {
+    tenant_id: invitation.tenant_id,
+    role: invitation.role,
+    team_invitation_id: invitation.team_invitation_id,
+    elapsedMs: Date.now() - new Date(invitation.created_at).getTime()
+  });
   return { ok: true, user: user };
 }
 

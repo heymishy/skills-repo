@@ -106,6 +106,45 @@ await checkAsyncOrSync('AC1: createInvite_success_capturesTeamInviteCreatedWithP
   }
 });
 
+await checkAsyncOrSync('AC2: acceptInvite_success_capturesTeamInviteAcceptedWithElapsedTime', async () => {
+  var patch = patchPosthogCapture();
+  try {
+    var teamInvitations = freshRequire(TEAM_INVITATIONS_PATH);
+    var createdAt = new Date(Date.now() - 90000).toISOString(); // 90 seconds ago
+    var pool = {
+      query: async function (sql, params) {
+        var s = String(sql).toUpperCase();
+        if (s.indexOf('SELECT TEAM_INVITATION_ID') === 0) {
+          return { rows: [{ team_invitation_id: 'tinv-metrics-1', tenant_id: 'tenant-metrics', email: 'accepted@example.com', role: 'viewer', created_at: createdAt, expires_at: new Date(Date.now() + 3600000).toISOString(), redeemed_at: null }] };
+        }
+        if (s.indexOf('UPDATE TEAM_INVITATIONS SET REDEEMED_AT') === 0) {
+          return { rows: [{ team_invitation_id: 'tinv-metrics-1', tenant_id: 'tenant-metrics', email: 'accepted@example.com', role: 'viewer', created_at: createdAt, redeemed_at: new Date().toISOString() }] };
+        }
+        if (s.indexOf('SELECT PERSON_ID FROM PERSON_IDENTITIES') === 0) return { rows: [] };
+        if (s.indexOf('INSERT INTO PEOPLE DEFAULT VALUES') === 0) return { rows: [{ id: 9001 }] };
+        if (s.indexOf('SELECT COUNT(*) AS COUNT FROM TEAM_MEMBERSHIPS') === 0) return { rows: [{ count: '0' }] };
+        return { rows: [] };
+      }
+    };
+    var beforeAccept = Date.now();
+    var result = await teamInvitations.redeemTeamInvitation(pool, { destination: 'accepted@example.com', teamInvitationId: 'tinv-metrics-1' });
+    var afterAccept = Date.now();
+    assert.strictEqual(result.ok, true, 'expected acceptance to succeed');
+
+    var event = patch.calls.find(function (c) { return c.event === 'team_invite_accepted'; });
+    assert.ok(event, 'expected a team_invite_accepted event to be captured');
+    assert.strictEqual(event.props.tenant_id, 'tenant-metrics');
+    assert.strictEqual(event.props.role, 'viewer');
+    assert.strictEqual(event.props.team_invitation_id, 'tinv-metrics-1');
+    assert.ok(typeof event.props.elapsedMs === 'number', 'expected a numeric elapsedMs property');
+    var minExpected = beforeAccept - new Date(createdAt).getTime() - 1000; // small tolerance
+    var maxExpected = afterAccept - new Date(createdAt).getTime() + 1000;
+    assert.ok(event.props.elapsedMs >= minExpected && event.props.elapsedMs <= maxExpected, 'expected elapsedMs to reflect the ACTUAL computed difference (~90000ms), got: ' + event.props.elapsedMs);
+  } finally {
+    patch.restore();
+  }
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
