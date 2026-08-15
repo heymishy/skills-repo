@@ -23419,11 +23419,11 @@
             {
               "slug": "wsi-s5-metrics-instrumentation",
               "name": "PostHog instrumentation for both benefit metrics",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-14T19:50:56.800Z",
+              "updatedAt": "2026-08-15T23:25:24.106Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
