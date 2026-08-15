@@ -23290,11 +23290,11 @@
             {
               "slug": "wsi-s2-invitee-accepts-and-joins",
               "name": "Invitee accepts the invite and joins the tenant with the assigned role",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-14T19:49:00.448Z",
+              "updatedAt": "2026-08-15T19:19:31.591Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
