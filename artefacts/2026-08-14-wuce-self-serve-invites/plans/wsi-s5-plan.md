@@ -394,6 +394,8 @@ node tests/check-wsi-s5-metrics-instrumentation.js
 
 Expected: `3 passed, 0 failed`
 
+**Correction (found during Task 3 dispatch, before any commit):** the plan's Step 1 test code, as originally written, freshRequired `team-management.js` BEFORE freshRequiring and patching `identity-links.js`. This meant `team-management.js`'s own internal `require('./identity-links')` had already resolved to the previous (unpatched) cached module instance by the time the test patched a *different*, later-created instance — `addOrUpdateTeammate` called the real, unpatched `resolvePersonForIdentity`, which legitimately threw `UnknownIdentityError` against the mock pool (always returns `{rows: []}`). This produced a `2 passed, 1 failed` RED state that superficially matched the plan's own prediction, masking the fact that the failure reason was a test-authoring bug, not the intended "no event exists yet" signal. The dispatched subagent correctly diagnosed this via direct `require.cache` object-identity instrumentation (not a guess) and stopped rather than editing the plan's "verbatim" test code on its own initiative. Fixed by reordering: `identityLinks` is now freshRequired and patched FIRST, `teamManagement` freshRequired second — the same "dependency freshRequired before consumer" rule already established in this story's own `setUpTeamManagementRoutesWithMagicLink` helper (and in `wsi-s1`'s/`wsi-s2`'s own test files for `magic-link-strategy.js`). Verified: `3 passed, 0 failed`, sibling regression (`check-tir-s3-admin-adds-teammate.js`) unaffected at `8 passed, 0 failed`.
+
 - [ ] **Step 5: Run sibling regressions**
 
 ```bash

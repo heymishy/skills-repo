@@ -145,6 +145,46 @@ await checkAsyncOrSync('AC2: acceptInvite_success_capturesTeamInviteAcceptedWith
   }
 });
 
+await checkAsyncOrSync('AC3: addTeammateByAdmin_success_capturesComparableEvent', async () => {
+  var patch = patchPosthogCapture();
+  try {
+    var pool = {
+      query: async function (sql) {
+        var s = String(sql).toUpperCase();
+        if (s.indexOf('SELECT ROLE FROM TEAM_MEMBERSHIPS') === 0) return { rows: [] };
+        return { rows: [] };
+      }
+    };
+    // resolvePersonForIdentity lives in identity-links.js, a real upstream
+    // dependency this story does not touch -- mock only what this test
+    // needs by monkey-patching it the same way posthog is patched above,
+    // matching this same file's own established approach for an
+    // unavoidable real dependency. Ordering matters here (same rule as this
+    // story's own setUpTeamManagementRoutesWithMagicLink helper): identity-links
+    // must be freshRequired and patched BEFORE team-management.js is
+    // freshRequired, so team-management.js's own internal
+    // require('./identity-links') resolves to this SAME patched instance,
+    // not a stale, already-cached, unpatched one.
+    var identityLinks = freshRequire(require.resolve(path.join(ROOT, 'src', 'web-ui', 'modules', 'identity-links')));
+    var originalResolve = identityLinks.resolvePersonForIdentity;
+    identityLinks.resolvePersonForIdentity = async function () { return 4242; };
+    var teamManagement = freshRequire(TEAM_MANAGEMENT_MODULE_PATH);
+    try {
+      var result = await teamManagement.addOrUpdateTeammate(pool, 'tenant-admin-add', 'someone@example.com', 'engineer', 'admin-99');
+      assert.strictEqual(result.personId, 4242);
+
+      var event = patch.calls.find(function (c) { return c.event === 'teammate_added_by_admin'; });
+      assert.ok(event, 'expected a teammate_added_by_admin event to be captured -- this event does not exist in the pre-story code');
+      assert.strictEqual(event.props.tenant_id, 'tenant-admin-add');
+      assert.strictEqual(event.props.role, 'engineer');
+    } finally {
+      identityLinks.resolvePersonForIdentity = originalResolve;
+    }
+  } finally {
+    patch.restore();
+  }
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
