@@ -23386,7 +23386,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-15T21:58:04.105Z",
+              "updatedAt": "2026-08-15T23:07:05.075Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -23399,7 +23399,7 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-14-wuce-self-serve-invites/dor/wsi-s4-dor.md",
               "dorSignedOffAt": "2026-08-15T00:00:00.000Z",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/740",
               "tasks": [
                 {
