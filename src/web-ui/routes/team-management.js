@@ -96,6 +96,38 @@ function createTeamManagementHandlers(pool) {
   }
 
   /**
+   * GET /team/invites/new — minimal, functional form to create a team
+   * invite (wsi-s6 AC1, AC4). Reuses handleGetTeamMembers's exact existing
+   * rendering pattern -- native labelled controls, a real <button>, the
+   * same CSRF field embedding convention. Role options come from the same
+   * VALID_ROLES array wsi-s1's own handler already validates against
+   * server-side. The form POSTs to wsi-s1's existing /api/team/invites
+   * endpoint unchanged -- no new request shape (AC2).
+   */
+  function handleGetCreateInviteForm(req, res) {
+    var roleOptions = teamManagement.VALID_ROLES.map(function(r) {
+      return '<option value="' + _escapeHtml(r) + '">' + _escapeHtml(r) + '</option>';
+    }).join('');
+
+    var csrfToken = csrf.generateCsrfToken(req);
+
+    var html = '<!DOCTYPE html><html><head><title>Invite a teammate</title></head><body>' +
+      '<h1>Invite a teammate</h1>' +
+      '<form method="POST" action="/api/team/invites">' +
+      csrf.csrfField(csrfToken) +
+      '<label for="email">Email</label>' +
+      '<input id="email" name="email" type="email" required>' +
+      '<label for="role">Role</label>' +
+      '<select id="role" name="role" required>' + roleOptions + '</select>' +
+      '<button type="submit">Send invite</button>' +
+      '</form>' +
+      '</body></html>';
+
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+  }
+
+  /**
    * POST /api/team/members — add or update a teammate's role in the calling
    * admin's own tenant (AC1, AC4). ADR-025: tenantId is ALWAYS
    * req.session.tenantId -- the request body carries only `identity` and
@@ -206,7 +238,7 @@ function createTeamManagementHandlers(pool) {
     }
   }
 
-  return { handleGetTeamMembers: handleGetTeamMembers, handleAddTeammate: handleAddTeammate, handleCreateInvite: handleCreateInvite };
+  return { handleGetTeamMembers: handleGetTeamMembers, handleAddTeammate: handleAddTeammate, handleCreateInvite: handleCreateInvite, handleGetCreateInviteForm: handleGetCreateInviteForm };
 }
 
 module.exports = { createTeamManagementHandlers: createTeamManagementHandlers, setLogger: setLogger };

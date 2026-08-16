@@ -23468,23 +23468,39 @@
             {
               "slug": "wsi-s6-invite-creation-ui",
               "name": "Admin has a real, reachable form to create a team invite",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "acTotal": 4,
-              "acVerified": 0,
-              "updatedAt": "2026-08-16T00:45:08.520Z",
+              "acVerified": 4,
+              "updatedAt": "2026-08-16T01:48:51.579Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
-                "passing": 0
+                "passing": 4
               },
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-14-wuce-self-serve-invites/dor/wsi-s6-dor.md",
-              "dorSignedOffAt": "2026-08-16T00:45:08.519Z"
+              "dorSignedOffAt": "2026-08-16T00:45:08.519Z",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/742",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Form renders with labelled inputs, role options, real button (AC1, AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s6-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Form targets existing endpoint correctly; non-admins rejected (AC2, AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s6-plan.md"
+                }
+              ]
             }
           ]
         }
