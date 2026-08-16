@@ -281,13 +281,21 @@ console.log('\nU1 — skillsListPage_showsProductsSidebar (AC1: Run a Skill list
     // fallback for the artefact viewer) with no connection to nav/Products
     // wiring -- removed from this list rather than left to trip on every
     // future unrelated change to that file.
+    // bse-s1: same precedent applied to routes/settings.js -- legitimately
+    // modified for an unrelated fix (a visible error banner on the Billing
+    // tab for a billing-portal redirect error, artefacts/2026-08-16-billing-
+    // settings-error-banner/) with no connection to nav/Products wiring.
+    // IT2.2/IT2.3 below (determinism + "no Products section" checks against
+    // the live renderSettingsPage output) still hold unmodified -- only the
+    // git-diff-against-origin/master freeze on the byte content of the file
+    // itself no longer applies, for the same reason it stopped applying to
+    // routes/artefact.js.
     const EXCLUDED_FILES = [
       'src/web-ui/routes/journey.js',
       'src/web-ui/routes/features.js',
       'src/web-ui/routes/dashboard.js',
       'src/web-ui/routes/admin-credits.js',
-      'src/web-ui/routes/admin-mock-gateway.js',
-      'src/web-ui/routes/settings.js'
+      'src/web-ui/routes/admin-mock-gateway.js'
     ];
     const repoRoot = path.resolve(__dirname, '..');
     let diffOutput = '';

@@ -37,6 +37,18 @@ var PROVIDERS = [
   { id: 'google', label: 'Google' }
 ];
 
+// bse-s1: maps bpe-s1's two known billing-portal error codes
+// (src/web-ui/routes/billing.js's handleGetBillingPortal, lines ~464/~479 --
+// the redirect targets ?error=no_billing_account / ?error=billing_unavailable)
+// to a specific, honest, human-readable message. Any other value (including
+// absent) intentionally has no entry here -- see decisions.md's DESIGN entry:
+// an unrecognized error code shows no banner, never a generic fallback or a
+// reflection of the raw query value.
+var _BILLING_ERROR_MESSAGES = {
+  no_billing_account: "You don't have a billing account set up yet.",
+  billing_unavailable: 'Billing is temporarily unavailable — please try again shortly.'
+};
+
 function _escapeHtml(s) {
   return String(s == null ? '' : s)
     .replace(/&/g, '&amp;')
@@ -127,12 +139,25 @@ function _billingStatusPill(planState) {
  * as lab-s3.2/sec-perf-s3's own /welcome plan-selection form does.
  * @param {{plan: string, status: string}} planState
  * @param {string} csrfToken
+ * @param {{errorMessage?: string}} [opts] - bse-s1: when opts.errorMessage is
+ *   set, a visible banner is rendered (reusing the Credits tab's existing
+ *   .sw-credits-error CSS class verbatim, no new CSS rule). When unset, no
+ *   banner element is rendered at all -- not a hidden placeholder, matching
+ *   this story's AC3 ("no banner element is present").
  * @returns {string} HTML fragment
  */
-function renderBillingTab(planState, csrfToken) {
+function renderBillingTab(planState, csrfToken, opts) {
+  opts = opts || {};
   planState = planState || { plan: 'trial', status: 'active' };
   var pill = _billingStatusPill(planState);
   var planLabel = planState.plan === 'paid' ? 'Paid plan' : 'Trial plan';
+
+  // bse-s1 (AC1/AC2/AC3): distinct id="billing-error" (vs. Credits'
+  // id="credits-error") and lives inside this tab's own fragment -- see
+  // story AC4 for the structural-isolation requirement.
+  var errorBanner = opts.errorMessage
+    ? '<div id="billing-error" class="sw-credits-error" role="alert">' + _escapeHtml(opts.errorMessage) + '</div>'
+    : '';
 
   var upgradeForm = planState.plan === 'trial'
     ? (
@@ -145,6 +170,7 @@ function renderBillingTab(planState, csrfToken) {
     : '';
 
   return (
+    errorBanner +
     '<div class="sw-card sw-card--lg" style="margin-bottom:20px">' +
       '<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">' +
         '<span class="sw-pill sw-pill--' + pill.cls + '">' + _escapeHtml(pill.label) + '</span>' +
@@ -404,7 +430,10 @@ function renderSettingsPage(opts) {
     _renderTabNav(isAdmin) +
     renderProfileTab(user, linkedSet) +
     '<div id="tab-panel-billing" class="sw-tab-panel" role="tabpanel" aria-labelledby="tab-billing">' +
-      renderBillingTab(planState, csrfToken) +
+      // bse-s1 (AC1/AC2/AC3): forwards the billing-portal error message (if
+      // any) resolved by handleGetSettings from req.query.error, via the
+      // same opts-in/CSS-class-reuse pattern the Credits tab already uses.
+      renderBillingTab(planState, csrfToken, { errorMessage: opts.billingError }) +
     '</div>' +
     // c3 (AC1/AC2): real, server-gated Credits content -- only ever built when
     // isAdmin is true. A non-admin request never even has creditsRows/csrfToken
@@ -481,6 +510,18 @@ function createSettingsHandlers(pool) {
     // load is sufficient and avoids generating it twice per request.
     var csrfToken = _csrf.generateCsrfToken(req);
 
+    // bse-s1: read the billing-portal error code bpe-s1's redirect carries,
+    // via this codebase's already-established req.query convention
+    // (src/web-ui/server.js's router already parses the URL's query string
+    // into req.query before any handler runs -- see also billing.js's
+    // req.query.session_id, products.js's req.query.path) -- not a new
+    // req.url parser. Mapped through a fixed allowlist dictionary: an
+    // unrecognized or absent value produces no message, and the raw query
+    // value itself is never interpolated into the response (see NFR profile,
+    // Security).
+    var billingErrorCode = req.query && req.query.error;
+    var billingErrorMessage = _BILLING_ERROR_MESSAGES[billingErrorCode] || null;
+
     // c3 (AC1/AC2): fetch real tenant balances ONLY when isAdmin is true --
     // reuses getAllTenantBalances exactly as admin-credits.js already does
     // (Architecture Constraints). A non-admin request never calls this, so
@@ -521,7 +562,8 @@ function createSettingsHandlers(pool) {
       creditsRows: creditsRows,
       impersonation: impersonationOpts,
       impersonationAuditRows: impersonationAuditRows,
-      impersonationStartEnabled: impersonationStartEnabled
+      impersonationStartEnabled: impersonationStartEnabled,
+      billingError: billingErrorMessage
     });
 
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
