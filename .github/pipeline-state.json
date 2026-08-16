@@ -24072,7 +24072,7 @@
           "id": "bcf-s1",
           "slug": "bcf-s1",
           "name": "Fix dark-mode (and light-mode) button contrast bug on the Products page",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -24086,7 +24086,7 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-16T18:27:20.959Z",
+          "updatedAt": "2026-08-16T18:34:19.162Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-16-button-contrast-fix/dor/bcf-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-16-button-contrast-fix/dor/bcf-s1-dor-contract.md",
@@ -24100,7 +24100,10 @@
           ],
           "verifyStatus": "passed",
           "prStatus": "merged",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/746"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/746",
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-08-16-button-contrast-fix/dod/bcf-s1-dod.md",
+          "releaseReady": true
         }
       ],
       "metrics": [],
@@ -24127,7 +24130,7 @@
           "id": "bse-s1",
           "slug": "bse-s1",
           "name": "Show a visible error banner on Settings when a billing-portal redirect carries an error",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -24141,12 +24144,15 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-16T18:27:20.959Z",
+          "updatedAt": "2026-08-16T18:34:19.162Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-16-billing-settings-error-banner/dor/bse-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-16-billing-settings-error-banner/dor/bse-s1-dor-contract.md",
           "prStatus": "merged",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/747"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/747",
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-08-16-billing-settings-error-banner/dod/bse-s1-dod.md",
+          "releaseReady": true
         }
       ],
       "metrics": [],
