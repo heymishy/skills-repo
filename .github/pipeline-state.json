@@ -23468,11 +23468,11 @@
             {
               "slug": "wsi-s6-invite-creation-ui",
               "name": "Admin has a real, reachable form to create a team invite",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "acTotal": 4,
               "acVerified": 0,
-              "updatedAt": "2026-08-16T00:42:28.991Z",
+              "updatedAt": "2026-08-16T00:45:08.520Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -23481,7 +23481,10 @@
                 "passing": 0
               },
               "hasLayoutDependentGaps": "false",
-              "e2eToolingRequired": "false"
+              "e2eToolingRequired": "false",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-14-wuce-self-serve-invites/dor/wsi-s6-dor.md",
+              "dorSignedOffAt": "2026-08-16T00:45:08.519Z"
             }
           ]
         }

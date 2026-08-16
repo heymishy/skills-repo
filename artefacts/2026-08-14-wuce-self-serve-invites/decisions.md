@@ -158,6 +158,15 @@
 **Revisit trigger:** None — `wsi-s6` is now the locked-in home for this gap; see `stories/wsi-s6-invite-creation-ui.md`.
 ---
 
+---
+**[2026-08-16] | RISK-ACCEPT | definition-of-ready (W4, wsi-s6)**
+**Decision:** Proceeding with DoR sign-off on `wsi-s6` despite W4 (verification script reviewed by a domain expert) not being independently satisfied — the verification script exists and is complete, but no separate domain expert has reviewed it ahead of implementation.
+**Alternatives considered:** Pause DoR sign-off until a separate reviewer walks the script — the more thorough option, deferred for the same practical reason as the existing 2026-08-15 blanket entry (solo-operator feature, no separate domain-expert role available).
+**Rationale:** Same rationale as the existing 2026-08-15 W4 entry, which covered `wsi-s1` through `wsi-s5` — that entry was written before `wsi-s6` existed (added later, post-`wsi-s1`-DoD), so it is extended explicitly here rather than silently assumed to already cover this story. The verification script was written directly from `wsi-s6`'s own reviewed ACs; post-merge smoke testing remains the real verification checkpoint.
+**Made by:** Hamish King — Platform owner
+**Revisit trigger:** If this feature ever has a genuinely separate domain-expert reviewer available, use them for W4 satisfaction on future stories rather than accepting this gap by default.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded yet — the seat-limit-at-acceptance decision above is logged as an ARCH entry rather than a full ADR, consistent with this repo's own practice of reserving full ADRs for structural decisions with broader platform-wide implications. -->
