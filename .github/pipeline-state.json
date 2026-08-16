@@ -24037,14 +24037,14 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": true,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-16T09:57:39.286Z",
+          "updatedAt": "2026-08-16T10:48:37.466Z",
           "dorContractArtefact": "artefacts/2026-08-16-nav-icon-affordance/dor/nia-s1-dor-contract.md",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-16-nav-icon-affordance/dor/nia-s1-dor.md",
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/745",
           "verifyStatus": "passed",
-          "dodStatus": "complete-with-deviations",
+          "dodStatus": "complete",
           "dodArtefact": "artefacts/2026-08-16-nav-icon-affordance/dod/nia-s1-dod.md",
           "releaseReady": true
         }
