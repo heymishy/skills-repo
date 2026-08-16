@@ -23944,36 +23944,39 @@
     {
       "slug": "2026-08-16-billing-portal-error-handling",
       "name": "Add error handling and a missing-customer guard to the Stripe Billing Portal redirect",
-      "stage": "test-plan",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "id": "bpe-s1",
           "name": "Add error handling and a missing-customer guard to the Stripe Billing Portal redirect",
-          "stage": "dor",
+          "stage": "branch-complete",
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "totalTests": 9,
-            "passing": 0,
+            "passing": 9,
             "artefact": "artefacts/2026-08-16-billing-portal-error-handling/test-plans/bpe-s1-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "health": "green",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-16T06:32:15.057Z",
+          "updatedAt": "2026-08-16T06:58:50.914Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "slug": "bpe-s1",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-16-billing-portal-error-handling/dor/bpe-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-16-billing-portal-error-handling/dor/bpe-s1-dor-contract.md",
-          "dorSignedOffAt": "2026-08-16T06:32:06.124Z"
+          "dorSignedOffAt": "2026-08-16T06:32:06.124Z",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/744",
+          "verifyStatus": "passed"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-16T06:29:18.160Z",
+      "updatedAt": "2026-08-16T06:58:50.915Z",
       "track": "short"
     },
     {
