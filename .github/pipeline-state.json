@@ -24118,24 +24118,26 @@
           "id": "bse-s1",
           "slug": "bse-s1",
           "name": "Show a visible error banner on Settings when a billing-portal redirect carries an error",
-          "stage": "dor-signed-off",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
-            "totalTests": 6,
-            "passing": 0,
+            "status": "all-passing",
+            "totalTests": 7,
+            "passing": 7,
             "artefact": "artefacts/2026-08-16-billing-settings-error-banner/test-plans/bse-s1-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-16T10:58:09.414Z",
+          "updatedAt": "2026-08-16T11:30:29.259Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-16-billing-settings-error-banner/dor/bse-s1-dor.md",
-          "dorContractArtefact": "artefacts/2026-08-16-billing-settings-error-banner/dor/bse-s1-dor-contract.md"
+          "dorContractArtefact": "artefacts/2026-08-16-billing-settings-error-banner/dor/bse-s1-dor-contract.md",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/747"
         }
       ],
       "metrics": [],
