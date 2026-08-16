@@ -24173,7 +24173,7 @@
       "slug": "2026-08-17-settings-improvements",
       "name": "Settings improvements — locale, plan management, theme relocation",
       "stage": "review",
-      "health": "red",
+      "health": "amber",
       "stories": [],
       "metrics": [
         {
@@ -24207,7 +24207,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-16T19:49:42.612Z",
+      "updatedAt": "2026-08-16T19:58:35.079Z",
       "track": "standard",
       "discoveryArtefact": "artefacts/2026-08-17-settings-improvements/discovery.md",
       "discoveryStatus": "approved",
@@ -24236,10 +24236,10 @@
               "slug": "si-s2",
               "name": "Add a timezone and date-format preference to Settings",
               "stage": "review",
-              "health": "red",
-              "updatedAt": "2026-08-16T19:47:33.103Z",
-              "reviewStatus": "has-findings",
-              "highFindings": 1
+              "health": "green",
+              "updatedAt": "2026-08-16T19:58:18.972Z",
+              "reviewStatus": "passed",
+              "highFindings": 0
             },
             {
               "slug": "si-s3",

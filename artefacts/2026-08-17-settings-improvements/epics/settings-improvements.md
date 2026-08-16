@@ -44,4 +44,4 @@ A signed-in wuce user — owner/admin or regular team member — can go to Setti
 
 **Stability:** Stable
 
----CANVAS-JSON: {"type":"program-design","title":"Program Design","content":{"mermaid":"flowchart LR\n    SETTINGS[routes/settings.js]\n    SHELL[utils/html-shell.js]\n    USERS[(users table)]\n    STRIPE[Stripe-hosted portal /settings/billing]\n    SETTINGS -->|renderShell/escHtml| SHELL\n    SHELL -->|swToggleTheme relocated| SETTINGS\n    SETTINGS -->|read/write timezone, date_format| USERS\n    SETTINGS -->|existing redirect, unmodified| STRIPE"}}---
+---CANVAS-JSON: {"type":"program-design","title":"Program Design","content":{"mermaid":"flowchart LR\n    SETTINGS[routes/settings.js]\n    SHELL[utils/html-shell.js]\n    IDLINKS[modules/identity-links.js]\n    PEOPLE[(people table)]\n    STRIPE[Stripe-hosted portal /settings/billing]\n    SETTINGS -->|renderShell/escHtml| SHELL\n    SHELL -->|swToggleTheme relocated| SETTINGS\n    SETTINGS -->|resolvePersonForIdentity identityKey| IDLINKS\n    IDLINKS -->|read/write timezone, date_format| PEOPLE\n    SETTINGS -->|existing redirect, unmodified| STRIPE"}}---
