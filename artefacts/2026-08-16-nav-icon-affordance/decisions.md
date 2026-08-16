@@ -97,6 +97,16 @@
 **Revisit trigger:** If a future story registers `artefacts/feedback/` properly (reference_dirs or a real feature entry) and/or cleans up the 14 pre-existing schema violations, re-run this PR's CI to confirm it now passes cleanly.
 ---
 
+---
+**[2026-08-16] | CORRECTION | operator verification (post-branch-complete)**
+**Decision:** Finding #2 in the entry immediately above is WRONG and is corrected here rather than silently edited, to keep an honest record. The "Validate traceability chain" `schema_valid` failure was NOT among the 14 pre-existing, unrelated violations it was attributed to — it was a 15th, NEW violation, self-caused by this story's own DoR sign-off: `category: "accessibility"` was written for the `nav-icon-affordance-accessibility` guardrail entry, but the schema only permits `mandatory-constraint`, `adr`, `nfr`, `compliance-framework`, `pattern`, `anti-pattern` (see `.github/standards/index.yml`'s own guardrails-compliance-update rule, and `skills/definition-of-ready/SKILL.md`'s explicit "Subcategories (performance, security, audit) must be written as nfr" instruction — the same rule applies to accessibility). The prior entry's `check-pipeline-state-integrity.js` re-run against master evidently ran before or without correctly surfacing this specific feature's own entry, and the investigation did not directly grep the CI failure's own cited violation line (`features > 174 > guardrails > 0 > category: 'accessibility'`) against this story's own `pipeline-state.json` contribution before concluding it was unrelated.
+**Ground truth (independently re-established):** Operator fetched CI's actual failure log (`gh run view --log-failed` on the specific failing run) and found the precise violation path, then confirmed directly against `.github/pipeline-state.json` that `features[174]` is `2026-08-16-nav-icon-affordance` and its one guardrail entry had exactly this invalid value. Fixed on both `feature/nia-s1` (commit `e24582cb`) and `master` (commit `cddb5fbc`) — `category: "accessibility"` → `category: "nfr"`.
+**Alternatives considered:** Leave the prior entry as-is and just fix the value — rejected, matches this repo's own established pattern (`wsi-s1`'s branch-setup CORRECTION, `tmss-s1`'s two CORRECTION entries) of recording an inaccurate claim's correction transparently rather than quietly editing it away.
+**Rationale:** This is exactly the class of thing CLAUDE.md's "verify coding-agent dispatch completion independently — do not trust the agent's self-report" guidance exists for: a confidently-stated "pre-existing, unrelated" claim, backed by a real investigation command, was still wrong on one of its two findings — only caught by an operator re-deriving the specific violation from the CI log directly rather than trusting the agent's own categorisation of it.
+**Made by:** Claude (agent), operator-directed independent verification pass
+**Revisit trigger:** None — `category: "nfr"` is now the corrected, locked-in value. The "Run assurance gate" (`artefacts/feedback/` registration gap) and "Scenario A E2E (staging)" (cancelled/concurrency) findings in the prior entry remain accurate and unaffected by this correction.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded yet. -->
