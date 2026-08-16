@@ -192,7 +192,10 @@ function renderSidebar(active, login, isAdmin, products, activeProductId, noProd
       '<div class="sw-user">',
         '<div class="sw-avatar">' + escHtml(initial) + '</div>',
         '<span>' + escHtml(login || 'signed in') + '</span>',
-        '<a class="sw-signout" href="/auth/logout" title="Sign out">↗</a>',
+        '<a class="sw-signout" href="/auth/logout" title="Sign out" onclick="return confirm(\'Sign out of wuce?\')">' +
+          '<span class="sw-signout-icon" aria-hidden="true">↗</span>' +
+          '<span class="sw-signout-label">Sign out</span>' +
+        '</a>',
       '</div>',
       renderVersionStamp(),
     '</aside>'
@@ -363,7 +366,10 @@ function renderShell(opts) {
   const noProductJourneyCount = opts.noProductJourneyCount;
 
   const themeToggle =
-    '<button class="sw-theme-toggle" onclick="swToggleTheme()" aria-label="Toggle dark mode" title="Toggle dark/light mode">◑</button>';
+    '<button class="sw-theme-toggle" onclick="swToggleTheme()" aria-label="Toggle dark mode" title="Toggle dark/light mode">' +
+      '<span class="sw-theme-toggle-icon sw-theme-toggle-icon--light" aria-hidden="true">☀</span>' +
+      '<span class="sw-theme-toggle-icon sw-theme-toggle-icon--dark" aria-hidden="true">☾</span>' +
+    '</button>';
   const hamburger =
     '<button class="sw-hamburger" onclick="swToggleSidebar()" aria-label="Open navigation" aria-expanded="false">☰</button>';
 
@@ -513,8 +519,12 @@ a { color: inherit; }
   background: var(--accent-soft); color: var(--accent-ink);
   display: grid; place-items: center; font-size: 11px; font-weight: 600;
 }
-.sw-signout { margin-left: auto; color: var(--muted-2); text-decoration: none; }
+.sw-signout {
+  margin-left: auto; display: inline-flex; align-items: center; gap: 4px;
+  color: var(--muted-2); text-decoration: none; font-size: 12px;
+}
 .sw-signout:hover { color: var(--ink-2); }
+.sw-signout-icon { font-size: 12px; line-height: 1; }
 .sw-version-stamp {
   padding: 4px 8px 0; font-family: var(--mono); font-size: 10px;
   color: var(--muted-2); letter-spacing: 0.02em;
@@ -563,6 +573,13 @@ a { color: inherit; }
   transition: background 0.15s, color 0.15s, border-color 0.15s;
 }
 .sw-theme-toggle:hover { background: var(--line-2); color: var(--ink); }
+.sw-theme-toggle-icon--dark { display: none; }
+[data-theme="dark"] .sw-theme-toggle-icon--light { display: none; }
+[data-theme="dark"] .sw-theme-toggle-icon--dark { display: inline; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not([data-theme="dark"]) .sw-theme-toggle-icon--light { display: none; }
+  :root:not([data-theme="light"]):not([data-theme="dark"]) .sw-theme-toggle-icon--dark { display: inline; }
+}
 
 /* ── Nav collapse button ────────────────────────────────────────────────────── */
 .sw-nav-collapse-btn {
