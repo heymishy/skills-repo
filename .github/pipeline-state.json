@@ -23962,7 +23962,7 @@
           "health": "green",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-16T06:58:50.914Z",
+          "updatedAt": "2026-08-16T09:29:21.900Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "slug": "bpe-s1",
@@ -23971,7 +23971,7 @@
           "dorContractArtefact": "artefacts/2026-08-16-billing-portal-error-handling/dor/bpe-s1-dor-contract.md",
           "dorSignedOffAt": "2026-08-16T06:32:06.124Z",
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/744",
           "tasks": [
             {
