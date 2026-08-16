@@ -434,11 +434,17 @@ async function handlePostStripeWebhook(req, res) {
 }
 
 /**
- * GET /settings/billing — Stripe Billing Portal redirect (lab-s3.5)
+ * GET /settings/billing — Stripe Billing Portal redirect (lab-s3.5, bpe-s1)
  *
- * AC2: No session (or no accessToken) → 302 to /
- * AC1: Has session with stripeCustomerId → call createPortalSession → 302 to portal URL
- * AC6: returnUrl passed to createPortalSession contains '/dashboard'
+ * AC2 (regression): No session (or no accessToken) → 302 to /
+ * AC1 (regression): Has session with stripeCustomerId → call createPortalSession → 302 to portal URL
+ * AC2/regression: returnUrl passed to createPortalSession contains '/dashboard'
+ * bpe-s1 AC4: Missing/falsy stripeCustomerId → 302 to /settings?error=no_billing_account,
+ *   never calls Stripe (guards the call, not the failure mode). This is the exact
+ *   real-world condition confirmed live against wuce-staging.fly.dev (beta-001 #1/#6).
+ * bpe-s1 AC5: A genuine createPortalSession() failure (Stripe API error, invalid
+ *   customer, Stripe outage, etc.) is caught → 302 to /settings?error=billing_unavailable
+ *   instead of an unhandled throw reaching the framework as a raw 500.
  */
 async function handleGetBillingPortal(req, res) {
   // AC2: auth guard — no session → redirect to /
@@ -448,12 +454,31 @@ async function handleGetBillingPortal(req, res) {
     return;
   }
 
-  // AC1: create portal session and redirect
+  // bpe-s1 AC4: explicit guard for a missing/falsy stripeCustomerId — never
+  // attempt the Stripe call without one. This is the "not fully set up yet"
+  // case (e.g. a trial tenant that has never completed Checkout), distinct
+  // from a genuine Stripe API failure below.
   var customerId = req.session.stripeCustomerId;
-  var portalUrl = await stripeClient.createPortalSession(customerId, '/dashboard');
+  if (!customerId) {
+    console.warn(JSON.stringify({ event: 'billing_portal_no_customer_id', tenantId: req.session.tenantId || null }));
+    res.writeHead(302, { Location: '/settings?error=no_billing_account' });
+    res.end();
+    return;
+  }
 
-  res.writeHead(302, { Location: portalUrl });
-  res.end();
+  // bpe-s1 AC5: a real Stripe API failure (network error, invalid customer,
+  // Stripe outage, etc.) must not reach the caller as an unhandled 500 —
+  // catch it and fail open to Settings with an error indicator, matching
+  // this file's own existing fail-open precedent (handleGetBillingSuccess above).
+  try {
+    var portalUrl = await stripeClient.createPortalSession(customerId, '/dashboard');
+    res.writeHead(302, { Location: portalUrl });
+    res.end();
+  } catch (err) {
+    console.error(JSON.stringify({ event: 'billing_portal_error', tenantId: req.session.tenantId || null, message: err && err.message }));
+    res.writeHead(302, { Location: '/settings?error=billing_unavailable' });
+    res.end();
+  }
 }
 
 /**
