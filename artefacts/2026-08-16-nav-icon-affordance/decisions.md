@@ -84,6 +84,19 @@
 **Revisit trigger:** None — informational only.
 ---
 
+---
+**[2026-08-16] | RISK-ACCEPT | branch-complete (nia-s1) — pre-existing CI gate failures on PR #745**
+**Decision:** PR #745 (draft) shows 3 CI check failures: "Run assurance gate," "Validate traceability chain," and "Scenario A E2E (staging)" (cancelled). Investigated all three directly via `gh run view --log-failed` and confirmed none are caused by `nia-s1`'s changes; the PR is left open as draft (per standing instruction to never mark ready for review) rather than attempting to fix these out-of-scope, repo-wide gaps.
+**Findings:**
+1. "Run assurance gate" fails on `node scripts/trace-report.js --collect --feature feedback` — "No feature resolved" — `artefacts/feedback/` (the beta-001/002/003/004 triage docs, created before this story began) is not a registered pipeline-state feature slug and has no `discovery.md`. Pre-existing gap from the beta-feedback-intake work, unrelated to nav icon affordance.
+2. "Validate traceability chain" fails on the same `discovery_exists` check for `artefacts/feedback/`, plus a `schema_valid` failure — confirmed via `node scripts/check-pipeline-state-integrity.js` run directly against current master (independent of this PR) that 14 pre-existing violations already exist across unrelated features (`2026-06-22-wuce-multi-tenancy` s3.1/s3.2/s4.1/s4.2/s5.1, `2026-05-05-web-ui-dynamic-skill-questions` dsq.1-4, `2026-05-07-web-ui-session-management` wsm.2/wsm.3, `2026-07-01-landing-auth-billing` lab-s3.1, `2026-08-05-repo-bootstrap-no-fork` rb-s5) — none reference `nia-s1` or `nav-icon-affordance`.
+3. "Scenario A E2E (staging)" shows `conclusion: cancelled`, not a genuine test failure — consistent with this repo's own already-documented, unresolved CI-triggering/concurrency-queue flakiness (see `workspace/state.json`'s `checkpoint.pendingActions`, entry logged 2026-08-14, still open).
+**Alternatives considered:** Fix the `artefacts/feedback/` registration gap and/or the 14 unrelated schema violations as part of this PR — rejected, explicitly out of scope for a bounded short-track nav-icon bug fix (CLAUDE.md's Out of Scope discipline); would also touch unrelated features' pipeline-state entries this story has no authority or context to correct safely.
+**Rationale:** This story's own scope (`src/web-ui/utils/html-shell.js` + its test file, confirmed via `git diff --stat 4f1efb4b..HEAD`) is unaffected by any of these three failures. Leaving the PR in draft (already the standing instruction) is the correct state until either these pre-existing gaps are fixed in a separate story, or an operator decides to bypass them for this merge the same way `tmss-s1`/`wugs-s13` did for their own unrelated pre-existing CI gaps.
+**Made by:** Claude (agent), via `gh run view --log-failed`/`gh api` investigation of all 3 failing checks plus a direct local re-run of `check-pipeline-state-integrity.js` against master
+**Revisit trigger:** If a future story registers `artefacts/feedback/` properly (reference_dirs or a real feature entry) and/or cleans up the 14 pre-existing schema violations, re-run this PR's CI to confirm it now passes cleanly.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded yet. -->
