@@ -24086,7 +24086,7 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-16T10:42:16.680Z",
+          "updatedAt": "2026-08-16T18:27:20.959Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-16-button-contrast-fix/dor/bcf-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-16-button-contrast-fix/dor/bcf-s1-dor-contract.md",
@@ -24099,7 +24099,7 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/746"
         }
       ],
@@ -24141,11 +24141,11 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-16T11:30:29.259Z",
+          "updatedAt": "2026-08-16T18:27:20.959Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-16-billing-settings-error-banner/dor/bse-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-16-billing-settings-error-banner/dor/bse-s1-dor-contract.md",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/747"
         }
       ],
