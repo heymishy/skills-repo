@@ -10,6 +10,17 @@
 // AC4: theme toggle's class/onclick/aria-label unchanged; swToggleTheme()
 //      behaviour unregressed
 //
+// si-s1 (2026-08-17-settings-improvements) update: the theme toggle button
+// itself was relocated from the shared topbar (renderShell) into Settings'
+// Profile tab (routes/settings.js's renderProfileTab(), via html-shell.js's
+// new exported renderThemeToggle()) -- see si-s1 AC3. AC3/AC4 below now
+// assert against the full Settings page render instead of the bare
+// renderShell() topbar output, since that is where this exact markup and
+// CSS-gating now lives; the underlying behaviour these ACs protect (no
+// ambiguous glyph, correct icon-pair CSS gating, swToggleTheme()
+// unregressed) is unchanged, only its location moved. AC1/AC2 (sign-out
+// control) are untouched by si-s1 and still assert against renderShell().
+//
 // Follows this repo's hand-rolled test()/assert convention (see
 // tests/check-b2-account-nav.js) — no Jest/Mocha, Node.js built-ins only.
 
@@ -19,6 +30,7 @@ var assert = require('assert');
 var path = require('path');
 
 var HTML_SHELL_PATH = path.resolve(__dirname, '../src/web-ui/utils/html-shell.js');
+var SETTINGS_PATH    = path.resolve(__dirname, '../src/web-ui/routes/settings.js');
 
 var passed = 0;
 var failed = 0;
@@ -41,6 +53,7 @@ function freshRequire(p) {
 
 function main() {
   var shell = freshRequire(HTML_SHELL_PATH);
+  var settings = freshRequire(SETTINGS_PATH);
   var sidebarHtml = shell.renderShell({
     title: 'Dashboard',
     bodyContent: '<h1>Dashboard</h1>',
@@ -48,6 +61,11 @@ function main() {
     active: 'dashboard',
     isAdmin: false
   });
+  // si-s1: full Settings page render -- the toggle's new home, and the only
+  // render path that carries both the button markup AND the shared
+  // DESIGN_SYSTEM_CSS icon-gating rules (renderThemeToggle() alone returns
+  // just the button fragment, no <style> block).
+  var settingsHtml = settings.renderSettingsPage({ user: { login: 'alice' }, linkedSet: new Set(), isAdmin: false });
 
   // ── AC1 ──────────────────────────────────────────────────────────────────
   test('AC1: .sw-signout contains a visible "Sign out" text label, href unchanged', function() {
@@ -66,23 +84,29 @@ function main() {
   });
 
   // ── AC3 ──────────────────────────────────────────────────────────────────
+  // si-s1: asserted against settingsHtml (the toggle's new home) instead of
+  // sidebarHtml -- see file-header note above.
   test('AC3: theme toggle no longer renders ◑; renders a CSS-gated sun/moon icon pair', function() {
-    assert.ok(sidebarHtml.indexOf('◑') === -1, 'expected the ambiguous ◑ glyph to be absent');
-    assert.ok(/class="sw-theme-toggle-icon sw-theme-toggle-icon--light"/.test(sidebarHtml), 'expected a light-mode icon element');
-    assert.ok(/class="sw-theme-toggle-icon sw-theme-toggle-icon--dark"/.test(sidebarHtml), 'expected a dark-mode icon element');
-    assert.ok(/\.sw-theme-toggle-icon--dark\s*\{[^}]*display:\s*none/.test(sidebarHtml), 'expected the dark icon hidden by default');
-    assert.ok(/\[data-theme="dark"\]\s*\.sw-theme-toggle-icon--light\s*\{[^}]*display:\s*none/.test(sidebarHtml), 'expected [data-theme="dark"] to hide the light icon');
-    assert.ok(/\[data-theme="dark"\]\s*\.sw-theme-toggle-icon--dark\s*\{[^}]*display:\s*inline/.test(sidebarHtml), 'expected [data-theme="dark"] to show the dark icon');
-    assert.ok(/prefers-color-scheme:\s*dark/.test(sidebarHtml), 'expected the existing no-JS OS-preference fallback pattern to also gate the new icons');
+    assert.ok(settingsHtml.indexOf('◑') === -1, 'expected the ambiguous ◑ glyph to be absent');
+    assert.ok(/class="sw-theme-toggle-icon sw-theme-toggle-icon--light"/.test(settingsHtml), 'expected a light-mode icon element');
+    assert.ok(/class="sw-theme-toggle-icon sw-theme-toggle-icon--dark"/.test(settingsHtml), 'expected a dark-mode icon element');
+    assert.ok(/\.sw-theme-toggle-icon--dark\s*\{[^}]*display:\s*none/.test(settingsHtml), 'expected the dark icon hidden by default');
+    assert.ok(/\[data-theme="dark"\]\s*\.sw-theme-toggle-icon--light\s*\{[^}]*display:\s*none/.test(settingsHtml), 'expected [data-theme="dark"] to hide the light icon');
+    assert.ok(/\[data-theme="dark"\]\s*\.sw-theme-toggle-icon--dark\s*\{[^}]*display:\s*inline/.test(settingsHtml), 'expected [data-theme="dark"] to show the dark icon');
+    assert.ok(/prefers-color-scheme:\s*dark/.test(settingsHtml), 'expected the existing no-JS OS-preference fallback pattern to also gate the new icons');
   });
 
   // ── AC4 ──────────────────────────────────────────────────────────────────
+  // si-s1: asserted against settingsHtml; onclick now also fires
+  // swCaptureThemeToggle() (si-s1 AC4's new click-rate capture) alongside
+  // the original, unmodified swToggleTheme() call -- the regex below still
+  // requires swToggleTheme() to be the first call, proving it is unregressed.
   test('AC4: theme toggle class/onclick/aria-label unchanged; swToggleTheme() logic unregressed', function() {
-    assert.ok(/<button class="sw-theme-toggle" onclick="swToggleTheme\(\)" aria-label="Toggle dark mode"/.test(sidebarHtml),
-      'expected the theme toggle button\'s class/onclick/aria-label unchanged');
-    assert.ok(/window\.swToggleTheme=function\(\)\{/.test(sidebarHtml), 'expected swToggleTheme function definition present');
-    assert.ok(/_html\.setAttribute\('data-theme',next\)/.test(sidebarHtml), 'expected swToggleTheme to still set data-theme on <html>');
-    assert.ok(/localStorage\.setItem\('sw-theme',next\)/.test(sidebarHtml), 'expected swToggleTheme to still persist to localStorage');
+    assert.ok(/<button class="sw-theme-toggle" onclick="swToggleTheme\(\)[^"]*" aria-label="Toggle dark mode"/.test(settingsHtml),
+      'expected the theme toggle button\'s class/onclick/aria-label unchanged (onclick may carry additional calls appended after swToggleTheme())');
+    assert.ok(/window\.swToggleTheme=function\(\)\{/.test(settingsHtml), 'expected swToggleTheme function definition present');
+    assert.ok(/_html\.setAttribute\('data-theme',next\)/.test(settingsHtml), 'expected swToggleTheme to still set data-theme on <html>');
+    assert.ok(/localStorage\.setItem\('sw-theme',next\)/.test(settingsHtml), 'expected swToggleTheme to still persist to localStorage');
   });
 
   console.log('\n' + passed + ' passed, ' + failed + ' failed');
