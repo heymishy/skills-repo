@@ -23468,11 +23468,13 @@
             {
               "slug": "wsi-s6-invite-creation-ui",
               "name": "Admin has a real, reachable form to create a team invite",
-              "stage": "definition",
+              "stage": "review",
               "health": "green",
               "acTotal": 4,
               "acVerified": 0,
-              "updatedAt": "2026-08-15T18:46:20.448Z"
+              "updatedAt": "2026-08-16T00:38:38.806Z",
+              "reviewStatus": "passed",
+              "highFindings": 0
             }
           ]
         }
@@ -23569,7 +23571,10 @@
           "id": "MC-A11Y-01",
           "category": "mandatory-constraint",
           "label": "Interactive elements keyboard-accessible",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "wsi-s6 review run 1: AC1/AC4 independently specify labelled inputs and a real, keyboard-accessible <button> (finding 1-L4 notes the cited constraint label text is scoped to \"the viz\" specifically -- a citation-precision gap inherited from nfr-profile.md, not a substantive accessibility gap in this story).",
+          "assessedBy": "/review",
+          "assessedAt": "2026-08-16T00:38:38.807Z"
         },
         {
           "id": "MC-A11Y-02",
