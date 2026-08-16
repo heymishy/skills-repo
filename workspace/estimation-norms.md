@@ -6,6 +6,7 @@
 | 2026-04-12 | 2026-04-11-skills-platform-phase2 | 13 | 25% | 30h | 1h | -29h | 1h | 2 |
 | 2026-04-20 | 2026-04-19-skills-platform-phase4 | 24 | 25% | 0.75h (E2) | ~6h | +5.25h | 1h | 2 |
 | 2026-07-24 | 2026-07-24-interactive-kanban-boards (+3 triage fixes) | 11 | ~15% | — | ~1 session-day | — | ~0.5h | 1 |
+| 2026-08-16 | 2026-08-14-wuce-self-serve-invites | 6 | ~30% | — | ~6h (calendar-span fallback) | — | ~1h | 3 |
 
 ```yaml estimation-norms
 - date: "2026-04-12"
@@ -153,4 +154,24 @@ note: "null-path -- no E1/E2 recorded; seeds normalisation table only. 25% engag
   acsManualVerification: 3
   testMethod: "Node unit/integration tests (per-story check-*.js files) + Playwright E2E (real browser drag-and-drop simulation for S3.1/S3.2) + 1 documentation-only story (dspw-s1, manual review, no automated tests)"
   note: "Null-path -- no E1/E2 recorded for either the kanban feature or the 3 short-track triage fixes; seeds normalisation table only. Engagement fraction (~15%) is a rough estimate, not measured: this session's real operator touchpoints were staging-deploy confirmations, PR-merge confirmations, and AskUserQuestion pauses at 2 genuine decision points (triage sequencing, DoD-batch sequencing) -- otherwise heavily agent-autonomous, including salvaging/completing 5 of 8 dispatched-then-died coding-agent attempts directly rather than re-dispatching. Distinguishing feature vs. prior agent-wave entries (wuce, p4): this session mixed formal outer-loop-built stories (the 8 kanban stories, full discovery->DoR chain already existed) with short-track fixes discovered and built ad hoc mid-session (dtra-s1/dspw-s1/tdc-s1, triggered by direct operator bug reports rather than planned scope) -- a delivery pattern not yet represented in this table. Calibration candidate: short-track reactive fixes triggered by live operator findings mid-session may have a meaningfully different focus-time profile than planned, DoR-signed-off stories -- worth tracking separately once wall-clock data exists."
+- date: "2026-08-16"
+  feature: "2026-08-14-wuce-self-serve-invites"
+  storyCount: 6
+  engagementFraction: 0.3
+  totalSessionSpanH: null
+  outerLoopEstimateH: null
+  outerLoopActualH: 6
+  outerLoopDeltaH: null
+  innerLoopHumanH: 1
+  agentAutonomousH: null
+  calendarDays: 3
+  outerLoopSessions: null
+  focusHPerStory: 1.0
+  source: "calendar-span-fallback"
+  derivedBy: "scripts/parse-session-timing.js --summary run, but returned no sessions in the 2026-08-14..2026-08-16 date range (all recorded Copilot Chat transcripts predate this feature) -- this session runs in Claude Code, not Copilot Chat, so the parser has no matching JSONL to read. Fell back to the E3 null-path calendar-span formula (calendarDays x 2h) per skills/estimate/SKILL.md E3b fallback. engagementFraction (0.3) is a judgment estimate, not measured: operator touchpoints across the 6-story epic were almost entirely confirmations (\"Merged\", \"continue\", CI-check nudges) plus 2 real decision points (wsi-s6 scope addition after wsi-s1's DoD found a UI-reachability gap; a Chrome-review request that surfaced a real styling-consistency finding) -- distinctly lighter operator engagement than a feature with active mid-build design discussion, but not as fully hands-off as the kanban entry's 0.15 since DoD authorship and the deliberate staging-based Chrome review both required real operator-facing judgment calls."
+  acCount: 24
+  acsAutomated: 24
+  acsManualVerification: 0
+  testMethod: "Node unit/integration tests (per-story check-*.js files), all re-run fresh at each story's DoD; plus one ad hoc real-browser (Chrome, staging deployment) accessibility/keyboard-navigation spot-check for wsi-s6, not part of the automated suite"
+  note: "Null-path -- feature predates this session's /estimate usage entirely (no E1 at /discovery, no E2 at /definition); seeds normalisation table only. Six single-story slices delivered as one continuous inner-loop wave (branch-setup through branch-complete per story, DoD run in a batch across all 6 after the epic closed). Notable delivery pattern: a same-epic follow-up story (wsi-s6) was added directly from a prior story's own DoD finding (wsi-s1 shipped an API with no reachable UI) rather than being planned upfront -- worth watching whether this recurs enough across features to warrant treating 'DoD-discovered UI-reachability gap' as its own named risk category at /definition-of-ready for any story introducing a new admin-gated POST-only route. Distinguishing feature vs. prior agent-wave entries: this is the first entry where a live Chrome-in-browser review (against the real staging deployment, not a local static render) was run as an explicit post-DoD step and surfaced a real finding (styling inconsistency vs. the rest of the app) that no automated jsdom-style test could have caught -- see workspace/learnings.md and decisions.md for the shared-dependency-check-gap pattern this feature's retrospective also produced."
 ```

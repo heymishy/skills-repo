@@ -167,6 +167,15 @@
 **Revisit trigger:** If this feature ever has a genuinely separate domain-expert reviewer available, use them for W4 satisfaction on future stories rather than accepting this gap by default.
 ---
 
+---
+**[2026-08-16] | RISK-ACCEPT | improve (post-DoD Chrome review)**
+**Decision:** `wsi-s6`'s `handleGetCreateInviteForm` (and its precedent, `tir-s3`'s `handleGetTeamMembers`) violate an existing standard (`.github/standards/web-ui/web-ui-patterns.md`'s "Shared shell module" rule): every HTML route view must use `html-shell.js`'s `renderShell`/`escHtml`, and neither does — both hand-roll a bare, unstyled HTML string with a duplicated local `_escapeHtml`. Found via a live Chrome review of the real staging deployment (operator flagged the rendered form as visually inconsistent with the rest of the app), not by any automated test or either story's DoR/review pass. Not fixed as part of this epic — fixing `handleGetCreateInviteForm` alone without also fixing `handleGetTeamMembers` would leave the two pages inconsistent with each other; fixing both means touching `tir-s3`, a different, already-shipped feature, which is out of `wuce-self-serve-invites`' scope.
+**Alternatives considered:** (1) Fix `handleGetCreateInviteForm` now, leaving `handleGetTeamMembers` as the sole remaining violation — rejected, would fix a symptom while leaving the same standard violated elsewhere and the two team-management pages inconsistent with each other. (2) Open a new short-track story now to fix both pages — rejected for this epic's scope; logged instead as a fast-follow candidate.
+**Rationale:** Both pages are functional and pass their own stories' ACs (native labelled controls satisfy accessibility informally, per each handler's own code comment) — this is a standards/consistency gap, not a broken-functionality gap. Low urgency, real debt.
+**Made by:** Hamish King — Platform owner (flagged via Chrome review) — Claude (agent) traced it to the existing standard and both violating handlers
+**Revisit trigger:** A short-track story to migrate `routes/team-management.js`'s two handlers (`handleGetTeamMembers`, `handleGetCreateInviteForm`) onto `renderShell`/`escHtml`, closing both violations of the existing web-ui-patterns.md rule in one pass.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded yet — the seat-limit-at-acceptance decision above is logged as an ARCH entry rather than a full ADR, consistent with this repo's own practice of reserving full ADRs for structural decisions with broader platform-wide implications. -->

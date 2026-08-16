@@ -23249,7 +23249,7 @@
       "stage": "branch-setup",
       "health": "green",
       "discoveryStatus": "approved",
-      "updatedAt": "2026-08-14T20:06:01.064Z",
+      "updatedAt": "2026-08-16T02:38:43.550Z",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
@@ -23863,7 +23863,8 @@
           "assessedAt": "2026-08-14T19:37:11.966Z"
         }
       ],
-      "slicingStrategy": "walking-skeleton"
+      "slicingStrategy": "walking-skeleton",
+      "lastImprove": "2026-08-16"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -23929,9 +23930,21 @@
         "type": "standards",
         "file": "standards/governance/delivery-patterns.md",
         "summary": "web-ui-guardrails-standards-surface /improve: two-reviewer-per-task discipline, read-real-upstream-code-before-planning, removal-story scope-undercounting pattern + exhaustive-grep-sweep rule, DoR-required-manual-step enforcement gap, AC-verification-scenario cross-check gap, shared-render-function merge-conflict expectation, deploy-group CI concurrency flake diagnosis/mitigation, dispatch-transparency norm, 3 anti-patterns (subagent self-spawned background processes, checkpoint task-count trust, non-discriminating test assertions)"
+      },
+      {
+        "date": "2026-08-16",
+        "type": "standards",
+        "file": ".github/standards/web-ui/web-ui-patterns.md",
+        "summary": "wuce-self-serve-invites /improve: renderShell/escHtml rule applies even to minimal/admin-only pages -- found via live Chrome staging review, not automated tests; tir-s3 and wsi-s6 both violated it"
+      },
+      {
+        "date": "2026-08-16",
+        "type": "proposal-merge",
+        "file": "workspace/proposals/2026-08-14-implementation-plan-improve-proposal.md",
+        "summary": "wuce-self-serve-invites /improve: merged in finding (5), shared-dependency sweep step -- recurred 4x in this epic (wsi-s1/s4/s5/s6), consolidated into existing pending-review implementation-plan proposal rather than duplicating"
       }
     ],
-    "lastUpdated": "2026-08-14"
+    "lastUpdated": "2026-08-16"
   },
   "updatedAt": "2026-08-10T07:07:00.114Z"
 }
