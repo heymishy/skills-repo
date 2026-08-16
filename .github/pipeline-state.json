@@ -24111,7 +24111,7 @@
     {
       "slug": "2026-08-16-billing-settings-error-banner",
       "name": "Show a visible error banner on Settings when a billing-portal redirect carries an error",
-      "stage": "test-plan",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
@@ -24141,7 +24141,7 @@
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-16T11:00:00.000Z",
+      "updatedAt": "2026-08-16T11:33:46.099Z",
       "track": "short",
       "guardrails": [
         {
