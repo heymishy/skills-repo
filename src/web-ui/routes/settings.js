@@ -30,6 +30,7 @@ var _impersonation = require('../modules/impersonation'); // d2
 var _impersonationAudit = require('../adapters/impersonation-audit-adapter');
 var _postHogFlags = require('../modules/posthog-flags'); // d4 (AC5 hardening)
 var _flagKeys = require('../modules/flag-keys'); // d4
+var _posthog = require('../modules/posthog-server'); // si-s1 (AC4)
 
 // Sign-in providers surfaced on the Profile tab, in display order.
 var PROVIDERS = [
@@ -109,8 +110,43 @@ function renderProfileTab(user, linkedSet) {
       '</div>' +
       '<div class="sw-section-title">Sign-in methods</div>' +
       '<ul class="sw-list">' + rows + '</ul>' +
+      // si-s1 (AC1/AC3): relocated from the persistent topbar into this
+      // Profile tab. Reuses html-shell.js's renderThemeToggle() verbatim
+      // (Architecture Constraints: do not duplicate/reimplement toggle logic).
+      '<div class="sw-section-title">Appearance</div>' +
+      '<div class="sw-card sw-card--lg" style="display:flex;align-items:center;justify-content:space-between;gap:12px">' +
+        '<div>' +
+          '<div style="font-weight:600;font-size:14px">Dark mode</div>' +
+          '<div style="color:var(--muted);font-size:13px">Switch between light and dark theme</div>' +
+        '</div>' +
+        _htmlShell.renderThemeToggle() +
+      '</div>' +
     '</div>'
   );
+}
+
+/**
+ * si-s1 (AC4) — fire-and-forget capture endpoint for the relocated theme
+ * toggle's click-rate metric. Called via fetch() from swCaptureThemeToggle()
+ * (html-shell.js SHELL_JS) alongside the existing swToggleTheme() call --
+ * this route never touches theme state itself, it only records the event.
+ * No CSRF token: capture-only, no state mutation, gated by authGuard's
+ * session check same as every other /settings route. This route was not in
+ * the DoR contract's original touch-point list (see decisions.md for the
+ * deviation rationale: AC4 requires the real _posthog.capture() convention,
+ * which is server-side only, and the toggle click itself is a deliberately
+ * zero-network client action -- a server round trip is unavoidable to
+ * satisfy AC4 without violating the NFR against new client-side dependencies).
+ * @param {object} req
+ * @param {object} res
+ */
+async function handlePostThemeToggleClicked(req, res) {
+  var distinctId = (req.session && (req.session.login || req.session.tenantId)) || 'anonymous';
+  _posthog.capture(distinctId, 'settings_theme_toggle_clicked', {
+    tenant_id: req.session && req.session.tenantId
+  });
+  res.writeHead(204);
+  res.end();
 }
 
 // c2: real production shape from tenantPlan.getPlanState() (and the
@@ -580,5 +616,6 @@ module.exports = {
   renderCreditsTab: renderCreditsTab,
   renderImpersonationAuditTab: renderImpersonationAuditTab,
   renderSettingsPage: renderSettingsPage,
-  createSettingsHandlers: createSettingsHandlers
+  createSettingsHandlers: createSettingsHandlers,
+  handlePostThemeToggleClicked: handlePostThemeToggleClicked
 };
