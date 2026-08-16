@@ -23944,11 +23944,33 @@
     {
       "slug": "2026-08-16-billing-portal-error-handling",
       "name": "Add error handling and a missing-customer guard to the Stripe Billing Portal redirect",
-      "stage": "discovery",
+      "stage": "test-plan",
       "health": "green",
-      "stories": [],
+      "stories": [
+        {
+          "id": "bpe-s1",
+          "name": "Add error handling and a missing-customer guard to the Stripe Billing Portal redirect",
+          "stage": "test-plan",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-16-billing-portal-error-handling/test-plans/bpe-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "health": "green",
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-16T06:29:18.033Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "slug": "bpe-s1"
+        }
+      ],
       "metrics": [],
-      "updatedAt": "2026-08-16"
+      "updatedAt": "2026-08-16T06:29:18.160Z",
+      "track": "short"
     },
     {
       "slug": "2026-08-16-nav-icon-affordance",
