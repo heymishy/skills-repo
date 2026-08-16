@@ -24107,6 +24107,47 @@
           "assessedAt": "2026-08-16T10:09:59.438Z"
         }
       ]
+    },
+    {
+      "slug": "2026-08-16-billing-settings-error-banner",
+      "name": "Show a visible error banner on Settings when a billing-portal redirect carries an error",
+      "stage": "test-plan",
+      "health": "green",
+      "stories": [
+        {
+          "id": "bse-s1",
+          "slug": "bse-s1",
+          "name": "Show a visible error banner on Settings when a billing-portal redirect carries an error",
+          "stage": "test-plan",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-16-billing-settings-error-banner/test-plans/bse-s1-test-plan.md"
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "updatedAt": "2026-08-16T11:00:00.000Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-16T11:00:00.000Z",
+      "track": "short",
+      "guardrails": [
+        {
+          "id": "billing-settings-error-banner-security",
+          "category": "nfr",
+          "label": "User-controlled ?error= query parameter must never be reflected raw into Settings page HTML",
+          "status": "met",
+          "assessedBy": "/test-plan",
+          "assessedAt": "2026-08-16T11:00:00.000Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
