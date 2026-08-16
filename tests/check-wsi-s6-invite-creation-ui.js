@@ -80,6 +80,26 @@ await checkAsyncOrSync('AC4: getCreateInviteForm_everyInputHasLabelSubmitIsRealB
   assert.ok(!/<div[^>]*onclick/.test(html) && !/<a[^>]*class="[^"]*submit/.test(html), 'expected no styled div/anchor masquerading as the submit control');
 });
 
+await checkAsyncOrSync('AC2: getCreateInviteForm_formPostsToApiTeamInvitesWithCsrfAndCorrectFieldNames', async () => {
+  var teamManagementRoutes = require(TEAM_MANAGEMENT_ROUTES_PATH);
+  var handlers = teamManagementRoutes.createTeamManagementHandlers({});
+  var req = mockReq();
+  var res = mockRes();
+  handlers.handleGetCreateInviteForm(req, res);
+  var html = res._get().body;
+
+  assert.ok(/<form method="POST" action="\/api\/team\/invites">/.test(html), 'expected the form to POST to the existing, unchanged /api/team/invites endpoint');
+  assert.ok(/<input type="hidden" name="_csrf" value="[^"]+">/.test(html), 'expected an embedded CSRF field matching csrf.csrfField\'s own established shape');
+  assert.ok(/name="email"/.test(html) && /name="role"/.test(html), 'expected exactly the email/role field names handleCreateInvite already reads -- no new request shape');
+});
+
+await checkAsyncOrSync('AC3: getCreateInviteForm_wiredBehindRequireAdminSameStandardWay', async () => {
+  var src = fs.readFileSync(SERVER_PATH, 'utf8');
+  assert.ok(src.indexOf("pathname === '/team/invites/new'") !== -1, 'expected server.js to register the new GET /team/invites/new route');
+  var routeBlock = src.slice(src.indexOf("pathname === '/team/invites/new'"), src.indexOf("pathname === '/team/invites/new'") + 500);
+  assert.ok(/await requireAdmin\(req, res, \(\) => \{ _raOk = true; \}\)/.test(routeBlock), 'expected the new route to call requireAdmin the same standard way every other gated route does -- no route-specific bypass');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
