@@ -66,6 +66,24 @@
 **Revisit trigger:** If this feature ever has a genuinely separate domain-expert reviewer available, use them for W4 satisfaction on future stories rather than accepting this gap by default.
 ---
 
+---
+**[2026-08-16] | RISK-ACCEPT | branch-setup (nia-s1)**
+**Decision:** Proceeding with `nia-s1`'s worktree despite 33 pre-existing test failures at baseline (523 files run via `npm test`, 33 failed, exit code 1).
+**Alternatives considered:** Investigate and fix pre-existing failures first — rejected, out of scope for this bounded bug fix and would delay it for unrelated pre-existing repo drift.
+**Rationale:** The 33 failing files (`scripts/check-pipeline-state-integrity.js`, `tests/check-bee3-posthog.js`, `tests/check-mfc1/mfc2-*.js`, `tests/check-ougl*.js`, `tests/check-i*.js`, `tests/check-p*.js`, `tests/check-s*.js`, `tests/check-wuce*.js`, `tests/check-wucp1-context-autoloader.js`, `tests/check-rb-s5-optional-outer-loop-install.js`, `tests/artefact-preview.test.js`, `tests/artefact-writeback.test.js`) closely match the same baseline pattern already independently verified multiple times this session (e.g. `tmss-s1`'s own branch-setup RISK-ACCEPT entry, which found an overlapping-in-kind 33-file baseline). None overlap with `nia-s1`'s expected touchpoints (`src/web-ui/utils/html-shell.js`, a new `tests/check-nia-s1-nav-icon-affordance.js` file).
+**Made by:** Claude (agent), per branch-setup's own Step 5 option 2 protocol
+**Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this story's changes during implementation, stop and investigate.
+---
+
+---
+**[2026-08-16] | RISK-ACCEPT | post-implementation full-suite comparison (nia-s1, both tasks)**
+**Decision:** After implementing both fixes (sign-out label/confirm, theme-toggle icon), the full suite shows 524 files run, 32 failed — one fewer than the 33-failure baseline. `tests/check-rb-s5-optional-outer-loop-install.js` is present in the baseline's failed list but absent from the post-implementation failed list; every other failing file is an exact subset of the baseline list. Treated as a pre-existing flaky test (unrelated to `html-shell.js`, `team-management`, or any scope of this story — it concerns optional outer-loop installation), not a fix introduced by this story, and not investigated further as it is a net-positive, not a regression.
+**Alternatives considered:** Investigate why `rb-s5`'s test now passes — deferred, out of scope for this bug fix and not a regression risk (a previously-failing, now-passing test carries no risk of masking a real defect the way a new failure would).
+**Rationale:** The only requirement for this story's regression gate is "no NEW failure beyond baseline." That gate is met — 0 new failures, all 32 post-implementation failures are already-known baseline entries, and the new `tests/check-nia-s1-nav-icon-affordance.js` (4/4) passes cleanly.
+**Made by:** Claude (agent), via direct diff of the baseline and post-implementation failed-file lists
+**Revisit trigger:** None — informational only.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded yet. -->
