@@ -11,10 +11,10 @@ Every failing file was run standalone (`node <file>`) and its actual output read
 | Category | Count |
 |---|---|
 | (a) Fixed | 2 |
-| (b) Deferred (including `check-md-3-adr.js`, category c) | 67 |
-| **Total** | **69** |
+| (b) Deferred (including `check-md-3-adr.js`, category c) | 68 |
+| **Total** | **70** |
 
-Net: 2 files fixed and removed from the baseline; 67 files remain deferred and documented (66 (b) + `check-md-3-adr.js` (c), which is genuinely improved but cannot be removed from the baseline — see its dedicated section below) — plus the 5 already-confirmed-now-passing files removed separately per AC4 (see `tests/known-baseline-failures.json`).
+Net: 2 files fixed and removed from the baseline; 68 files remain deferred and documented (67 (b) + `check-md-3-adr.js` (c), which is genuinely improved but cannot be removed from the baseline — see its dedicated section below) — plus the 5 already-confirmed-now-passing files removed separately per AC4 (see `tests/known-baseline-failures.json`). **Updated 2026-08-16:** `tests/check-p4-enf-second-line.js` added to the baseline and this report (see "no shared group" section below) — unrelated to the original 2026-07-16 triage, added later when it started failing CI's regression-check gate on unrelated PRs.
 
 **Correction note (post-verification):** an earlier draft of this report classified `check-md-3-adr.js` as Fixed after it passed 9/9 standalone with no time limit. A subsequent full `node scripts/run-all-tests.js` run showed it *still* appears in the failed-files list — not because the logic fix is wrong, but because `run-all-tests.js`'s own `spawnSync` call applies a 120-second timeout per child process, and this file's T4 check (which runs a full nested `npm test`) takes several minutes to complete. It is killed by that timeout every time it runs inside the aggregate suite, regardless of the correctness of its internal comparison logic. Recorded here rather than silently corrected, per this story's own standard: never present a categorization that hasn't been verified against the real, full-suite signal that `scripts/ci-test-regression-check.js` actually gates on.
 
@@ -93,10 +93,11 @@ Files: `tests/check-wuce4-docker-deployment.js`.
 
 ---
 
-## (b) Deferred — individually investigated, no shared group (15 files)
+## (b) Deferred — individually investigated, no shared group (16 files)
 
 | File | Root cause (one sentence) |
 |---|---|
+| `tests/check-p4-enf-second-line.js` | **Added 2026-08-16, not part of the original 2026-07-16 triage.** A deliberately-failing TDD placeholder test tied to an archived phase-4 story (`artefacts/archived/2026-04-19-skills-platform-phase4/theme-f-inputs.md`) that was never written — the test's own header comment states it fails by design until that document exists and the trace schema is updated. Confirmed unrelated to any in-flight work: fails identically regardless of changeset (observed on two unrelated PRs touching fully disjoint files). Resolving it would mean either completing the archived phase-4 story's own scope or deleting the placeholder test outright — a real decision for whoever owns that archived area, not something to invent here. |
 | `tests/check-md-3-adr.js` | (c) AC3: determined to be a pre-existing gap, not a genuinely new regression (see the dedicated AC3 classification section above). T4's stale comparison logic was fixed and verified 9/9 passing standalone with no imposed time limit, but the file cannot be removed from the baseline: `scripts/run-all-tests.js`'s own 120-second per-file `spawnSync` timeout always kills T4's nested `npm test` check (which takes several minutes) before it can complete, so this file is killed (not failed on a real assertion) every time it runs inside the aggregate suite. |
 | `tests/check-p3.5-validate-trace.js` | **Added 2026-07-17, not part of the original 2026-07-16 triage.** Symmetric victim of `check-md-3-adr.js`'s own root cause above: its `pwsh` subprocess spawn (running `scripts/validate-trace.ps1 --ci`) competes for the same limited CI runner resources as `check-md-3-adr.js`'s nested `npm test` recursion. Whenever that recursion happens to finish inside its own 120-second window (flipping `check-md-3-adr.js` to passing), it is consuming CPU at the exact moment this file's `pwsh` spawn needs it, starving that spawn instead — this explains the exact, repeated `check-md-3-adr.js`/`check-p3.5-validate-trace.js` pairing observed across multiple unrelated PRs (#489, #490, #492), rather than random flakiness scattered across different files. Doubling this file's own `spawnSync` timeouts (15s→30s) did not resolve it, confirming the cause is resource contention from `check-md-3-adr.js`'s recursion, not this file's own timeout value. |
 | `tests/check-artefact-coverage.js` | 5 `src/` module slugs are uncovered by any story artefact and not yet exempted in `artefact-coverage-exemptions.json`; needs a per-slug decision (retrospective story vs. exemption), not invented here. |
