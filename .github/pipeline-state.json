@@ -24118,7 +24118,7 @@
           "id": "bse-s1",
           "slug": "bse-s1",
           "name": "Show a visible error banner on Settings when a billing-portal redirect carries an error",
-          "stage": "test-plan",
+          "stage": "dor-signed-off",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -24132,7 +24132,10 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-16T11:00:00.000Z"
+          "updatedAt": "2026-08-16T10:58:09.414Z",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-16-billing-settings-error-banner/dor/bse-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-16-billing-settings-error-banner/dor/bse-s1-dor-contract.md"
         }
       ],
       "metrics": [],
