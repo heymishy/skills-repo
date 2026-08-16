@@ -22,6 +22,7 @@
 // oversight -- see artefacts/2026-07-09-team-identity-roles/plans/tir-s3-plan.md.
 
 var identityLinks = require('./identity-links');
+var _posthog = require('./posthog-server');
 
 var VALID_ROLES = ['admin', 'engineer', 'product', 'viewer'];
 
@@ -116,6 +117,15 @@ async function addOrUpdateTeammate(pool, adminTenantId, identityKey, role, admin
     tenantId: adminTenantId,
     updated: alreadyMember,
     timestamp: new Date().toISOString()
+  });
+
+  // wsi-s5 AC3: the comparable "admin-add" side of the self-serve-vs-admin-add
+  // benefit metric -- without this, only one side of the comparison exists.
+  // Never includes the raw identityKey string, matching this function's
+  // own existing audit-log convention above.
+  _posthog.capture(adminTenantId, 'teammate_added_by_admin', {
+    tenant_id: adminTenantId,
+    role: role
   });
 
   return { personId: personId, tenantId: adminTenantId, role: role, updated: alreadyMember };

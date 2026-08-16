@@ -12,6 +12,7 @@ var teamInvitations = require('../modules/team-invitations');
 var magicLinkStrategy = require('../auth/magic-link-strategy');
 // sec-perf-s3: session-scoped CSRF (Cross-Site Request Forgery) protection.
 var csrf = require('../middleware/csrf');
+var _posthog = require('../modules/posthog-server');
 
 // Audit logger — replaced via setLogger() in tests and production bootstrap.
 // Mirrors account-linking.js's own _logger / setLogger convention exactly.
@@ -161,6 +162,16 @@ function createTeamManagementHandlers(pool) {
       }
 
       var invite = await teamInvitations.createInvitation(pool, tenantId, email, role, adminId, _logger);
+
+      // wsi-s5 AC1: real, observable event for the "share of self-serve
+      // invites" benefit metric -- fire-and-forget, never blocks the
+      // response (matches this codebase's existing _posthog.capture
+      // convention elsewhere). Never includes the invitee's raw email.
+      _posthog.capture(tenantId, 'team_invite_created', {
+        tenant_id: tenantId,
+        role: role,
+        team_invitation_id: invite.team_invitation_id
+      });
 
       // AC2/AC5: issues the signed magic-link JWT (carrying teamInvitationId)
       // and sends it via the reused sendInvitationEmail adapter (see

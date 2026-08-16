@@ -23419,23 +23419,51 @@
             {
               "slug": "wsi-s5-metrics-instrumentation",
               "name": "PostHog instrumentation for both benefit metrics",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-14T19:50:56.800Z",
+              "updatedAt": "2026-08-15T23:53:05.195Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0
+                "passing": 5
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-14-wuce-self-serve-invites/dor/wsi-s5-dor.md",
-              "dorSignedOffAt": "2026-08-15T00:00:00.000Z"
+              "dorSignedOffAt": "2026-08-15T00:00:00.000Z",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/741",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "team_invite_created event captured (AC1)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s5-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "team_invite_accepted event with elapsed time (AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s5-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "teammate_added_by_admin comparable event (AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s5-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Both metrics computable; no PII in events (AC4, NFR)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s5-plan.md"
+                }
+              ]
             },
             {
               "slug": "wsi-s6-invite-creation-ui",
