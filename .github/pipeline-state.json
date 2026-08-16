@@ -23983,7 +23983,7 @@
       "slug": "2026-08-16-nav-icon-affordance",
       "name": "Fix affordance mismatch on the sign-out control and theme-toggle button in the shared shell",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "epics": [],
       "stories": [
@@ -23991,28 +23991,31 @@
           "slug": "nia-s1",
           "id": "nia-s1",
           "name": "Fix affordance mismatch on the sign-out control and theme-toggle button",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "totalTests": 4,
-            "passing": 0,
+            "passing": 4,
             "artefact": "artefacts/2026-08-16-nav-icon-affordance/test-plans/nia-s1-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": true,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-16T06:33:00.796Z",
+          "updatedAt": "2026-08-16T07:08:36.115Z",
           "dorContractArtefact": "artefacts/2026-08-16-nav-icon-affordance/dor/nia-s1-dor-contract.md",
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-08-16-nav-icon-affordance/dor/nia-s1-dor.md"
+          "dorArtefact": "artefacts/2026-08-16-nav-icon-affordance/dor/nia-s1-dor.md",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/745",
+          "verifyStatus": "passed"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-16T06:33:39.055Z",
+      "updatedAt": "2026-08-16T07:08:22.916Z",
       "guardrails": [
         {
           "id": "nav-icon-affordance-accessibility",
@@ -24104,5 +24107,5 @@
     ],
     "lastUpdated": "2026-08-16"
   },
-  "updatedAt": "2026-08-16T06:33:39.055Z"
+  "updatedAt": "2026-08-16T07:08:22.916Z"
 }
