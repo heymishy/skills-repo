@@ -10,8 +10,11 @@
  */
 function extractPRSlug(bodyText) {
   if (!bodyText) return '';
-  // Exclude * and other non-slug chars; a valid feature slug is always YYYY-MM-DD-name
-  const match = bodyText.match(/artefacts\/([^/\s*`|)\]<>]+)\//);
+  // A valid feature slug is always YYYY-MM-DD-name -- require the date prefix so a
+  // non-dated artefacts/ path mentioned earlier in free-form PR body text (e.g. a
+  // reference to artefacts/feedback/beta-001.md in a Summary section) can't be
+  // mistaken for the real feature slug just because it appears first.
+  const match = bodyText.match(/artefacts\/(\d{4}-\d{2}-\d{2}-[^/\s*`|)\]<>]+)\//);
   return match ? match[1] : '';
 }
 
