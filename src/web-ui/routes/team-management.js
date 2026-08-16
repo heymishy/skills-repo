@@ -114,13 +114,12 @@ function createTeamManagementHandlers(pool) {
    */
   function handleGetCreateInviteForm(req, res) {
     var roleOptions = teamManagement.VALID_ROLES.map(function(r) {
-      return '<option value="' + _escapeHtml(r) + '">' + _escapeHtml(r) + '</option>';
+      return '<option value="' + htmlShell.escHtml(r) + '">' + htmlShell.escHtml(r) + '</option>';
     }).join('');
 
     var csrfToken = csrf.generateCsrfToken(req);
 
-    var html = '<!DOCTYPE html><html><head><title>Invite a teammate</title></head><body>' +
-      '<h1>Invite a teammate</h1>' +
+    var bodyContent = '<h1>Invite a teammate</h1>' +
       '<form method="POST" action="/api/team/invites">' +
       csrf.csrfField(csrfToken) +
       '<label for="email">Email</label>' +
@@ -128,8 +127,16 @@ function createTeamManagementHandlers(pool) {
       '<label for="role">Role</label>' +
       '<select id="role" name="role" required>' + roleOptions + '</select>' +
       '<button type="submit">Send invite</button>' +
-      '</form>' +
-      '</body></html>';
+      '</form>';
+
+    var html = htmlShell.renderShell({
+      title: 'Invite a teammate',
+      bodyContent: bodyContent,
+      user: req.session,
+      active: 'team-members',
+      crumbs: ['Team members', 'Invite a teammate'],
+      isAdmin: true
+    });
 
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);

@@ -55,6 +55,24 @@ await checkAsyncOrSync('AC1: teamManagement_getTeamMembers_rendersViaSharedShell
   assert.ok(/<button type="submit">Add teammate<\/button>/.test(html), 'expected the submit button unchanged');
 });
 
+await checkAsyncOrSync('AC2: teamManagement_getCreateInviteForm_rendersViaSharedShell', async () => {
+  var teamManagementRoutes = require(TEAM_MANAGEMENT_ROUTES_PATH);
+  var handlers = teamManagementRoutes.createTeamManagementHandlers({});
+  var req = mockReq();
+  var res = mockRes();
+  handlers.handleGetCreateInviteForm(req, res);
+  var html = res._get().body;
+
+  assert.ok(html.indexOf('class="sw-app"') !== -1, 'expected the shared shell wrapper (sw-app) to be present');
+  assert.ok(html.indexOf('id="sw-sidebar"') !== -1, 'expected the shared shell sidebar to be present');
+  assert.ok(html.indexOf('class="sw-main"') !== -1, 'expected the shared shell main content area to be present');
+  assert.ok(/<main>[\s\S]*<label for="email">[\s\S]*<\/main>/.test(html), 'expected the invite form to be rendered inside <main>');
+  assert.ok(/<input id="email" name="email" type="email" required>/.test(html), 'expected the email input unchanged');
+  assert.ok(/<label for="role">/.test(html) && /<select id="role" name="role" required>/.test(html), 'expected the role field unchanged');
+  assert.ok(/<button type="submit">Send invite<\/button>/.test(html), 'expected the submit button unchanged');
+  assert.ok(/<form method="POST" action="\/api\/team\/invites">/.test(html), 'expected the form to still POST to the unchanged /api/team/invites endpoint');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
