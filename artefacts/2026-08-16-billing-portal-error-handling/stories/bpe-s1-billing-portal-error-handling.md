@@ -18,7 +18,7 @@ So that **I can reach my receipts and invoice history (which live inside Stripe'
 
 ## Architecture Constraints
 
-None beyond existing conventions already used elsewhere in this same file. This story follows `handleGetBillingSuccess`'s own existing "fail open" precedent in `billing.js` (an external Stripe API failure there is caught and falls back to a redirect, never an unhandled throw) and reuses the `?error=<code>` query-param convention already established by `src/web-ui/routes/products.js` (`handleGetProductNew`'s `plan_limit` guard) rather than inventing a new error-signalling mechanism. No new adapter, no change to `stripeClient`'s public contract, no change to `settings.js` (rendering the error code into a visible banner on the Settings page is explicitly out of scope below — a future story's job).
+No named architectural constraint is violated or newly introduced — this fix stays within the existing Mandatory Constraints (`.github/architecture-guardrails.md`, "Correctness" and "Self-containment" sections) and does not require a new ADR. This story follows `handleGetBillingSuccess`'s own existing "fail open" precedent in `billing.js` (an external Stripe API failure there is caught and falls back to a redirect, never an unhandled throw) and reuses the `?error=<code>` query-param convention already established by `src/web-ui/routes/products.js` (`handleGetProductNew`'s `plan_limit` guard) rather than inventing a new error-signalling mechanism. No new adapter, no change to `stripeClient`'s public contract, no change to `settings.js` (rendering the error code into a visible banner on the Settings page is explicitly out of scope below — a future story's job).
 
 ## Dependencies
 

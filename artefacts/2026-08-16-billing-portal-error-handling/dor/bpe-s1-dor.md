@@ -2,6 +2,7 @@
 
 **Story reference:** artefacts/2026-08-16-billing-portal-error-handling/stories/bpe-s1-billing-portal-error-handling.md
 **Test plan reference:** artefacts/2026-08-16-billing-portal-error-handling/test-plans/bpe-s1-test-plan.md
+**Review artefact:** artefacts/2026-08-16-billing-portal-error-handling/review/bpe-s1-review-1.md
 **Assessed by:** Claude (agent)
 **Date:** 2026-08-16
 
