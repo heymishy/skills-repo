@@ -33,7 +33,7 @@ So that **I can actually manage my plan end-to-end, closing the "I want to manag
 
 **AC3:** Given an authenticated staging account WITH a valid Stripe customer ID configured, When "Manage billing" is clicked, Then the user reaches the actual Stripe-hosted billing portal successfully — this is the positive/success path, not previously covered by `bpe-s1`/`bse-s1`'s error-focused test suites, and is the specific gap this story closes.
 
-**PROCEED-BLOCKED condition (review run 1, finding 1-M1 / PAT-06):** AC3 requires a staging account with a real Stripe customer ID already configured. This story must not be dispatched to a coding agent until that fixture's existence is confirmed at `/definition-of-ready` — either an existing staging account is named, or one is provisioned first. If no such fixture can be provisioned within this story's scope, AC3 is deferred and this condition is re-evaluated (see `decisions.md`, RISK-ACCEPT 2026-08-17).
+**PROCEED-BLOCKED condition (review run 1, finding 1-M1 / PAT-06) — RESOLVED at /definition-of-ready, 2026-08-17:** operator confirmed a staging account with a configured Stripe test-mode customer ID already exists. Whoever executes AC3 must obtain the specific account identity from the operator at verification time — not recorded in this artefact (avoid committing account identifiers to a versioned artefact).
 
 **AC4:** Given AC2 and AC3 have both been verified live, When this story's DoD is written, Then the outcome (portal reachable and working end-to-end vs. a genuine remaining gap) is recorded explicitly — if a gap is found, it is logged as a new feedback signal (`artefacts/feedback/`) rather than silently expanding this story's scope to fix it inline.
 

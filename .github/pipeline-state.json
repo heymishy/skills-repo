@@ -24172,8 +24172,8 @@
     {
       "slug": "2026-08-17-settings-improvements",
       "name": "Settings improvements — locale, plan management, theme relocation",
-      "stage": "test-plan",
-      "health": "amber",
+      "stage": "definition-of-ready",
+      "health": "green",
       "stories": [],
       "metrics": [
         {
@@ -24207,7 +24207,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-16T20:07:08.873Z",
+      "updatedAt": "2026-08-16T20:19:06.902Z",
       "track": "standard",
       "discoveryArtefact": "artefacts/2026-08-17-settings-improvements/discovery.md",
       "discoveryStatus": "approved",
@@ -24226,9 +24226,9 @@
             {
               "slug": "si-s1",
               "name": "Relocate the theme toggle into Settings",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-08-16T20:04:57.268Z",
+              "updatedAt": "2026-08-16T20:14:19.876Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -24240,14 +24240,17 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-17-settings-improvements/dor/si-s1-dor.md",
+              "dorContractArtefact": "artefacts/2026-08-17-settings-improvements/dor/si-s1-dor-contract.md"
             },
             {
               "slug": "si-s2",
               "name": "Add a timezone and date-format preference to Settings",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-08-16T20:06:03.992Z",
+              "updatedAt": "2026-08-16T20:16:12.567Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -24259,14 +24262,17 @@
               "acTotal": 6,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-17-settings-improvements/dor/si-s2-dor.md",
+              "dorContractArtefact": "artefacts/2026-08-17-settings-improvements/dor/si-s2-dor-contract.md"
             },
             {
               "slug": "si-s3",
               "name": "Confirm the Stripe billing portal satisfies the \"manage my plan\" ask",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-08-16T20:06:54.679Z",
+              "updatedAt": "2026-08-16T20:18:52.288Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -24278,7 +24284,10 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-17-settings-improvements/dor/si-s3-dor.md",
+              "dorContractArtefact": "artefacts/2026-08-17-settings-improvements/dor/si-s3-dor-contract.md"
             }
           ]
         }
