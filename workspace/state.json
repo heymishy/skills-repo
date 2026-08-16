@@ -4,15 +4,41 @@
   "activeFeature": "2026-08-11-web-ui-guardrails-standards-surface",
   "previousFeature": "2026-08-08-landing-page-hero-features",
   "cycle": {
-    "discovery": { "status": "approved", "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/discovery.md", "completedAt": "2026-08-11T07:00:00.000Z" },
-    "benefitMetric": { "status": "active" },
-    "definition": { "status": "complete", "note": "12 stories across 4 epics, ADR-017 flat features[].stories[] structure." },
-    "review": { "status": "complete" },
-    "testPlan": { "status": "complete" },
-    "definitionOfReady": { "status": "complete", "note": "All 12 original stories signed off, plus 2 follow-up stories (wugs-s13, wugs-s14) signed off 2026-08-14." },
-    "innerCodingLoop": { "status": "complete", "note": "ALL 14 stories now fully shipped (merged + DoD complete): wugs-s1 through wugs-s12 (original), plus wugs-s13 and wugs-s14 (trace-driven follow-ups, both merged and DoD-complete as of 2026-08-14)." },
-    "trace": { "status": "complete", "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/trace/2026-08-14-trace.md", "note": "Full 12-story chain traced 2026-08-14. ALL 7 original findings (1 HIGH, 3 MEDIUM, 3 LOW) are now RESOLVED as of 2026-08-14 -- trace report header updated to CLEAN. Metric name normalized to spelled-out form across 6 files; nfr-profile.md gained a dedicated Accessibility section (also closed its now-stale Performance/timeout gap row); metrics[].contributingStories arrays corrected." },
-    "improve": { "status": "complete", "note": "Full feature-wide /improve run 2026-08-14 -- 12 durable patterns in delivery-patterns.md, 5 skill-improvement proposals pending_review, decisions.md summary entry. Unchanged this session." }
+    "discovery": {
+      "status": "approved",
+      "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/discovery.md",
+      "completedAt": "2026-08-11T07:00:00.000Z"
+    },
+    "benefitMetric": {
+      "status": "active"
+    },
+    "definition": {
+      "status": "complete",
+      "note": "12 stories across 4 epics, ADR-017 flat features[].stories[] structure."
+    },
+    "review": {
+      "status": "complete"
+    },
+    "testPlan": {
+      "status": "complete"
+    },
+    "definitionOfReady": {
+      "status": "complete",
+      "note": "All 12 original stories signed off, plus 2 follow-up stories (wugs-s13, wugs-s14) signed off 2026-08-14."
+    },
+    "innerCodingLoop": {
+      "status": "complete",
+      "note": "ALL 14 stories now fully shipped (merged + DoD complete): wugs-s1 through wugs-s12 (original), plus wugs-s13 and wugs-s14 (trace-driven follow-ups, both merged and DoD-complete as of 2026-08-14)."
+    },
+    "trace": {
+      "status": "complete",
+      "artefact": "artefacts/2026-08-11-web-ui-guardrails-standards-surface/trace/2026-08-14-trace.md",
+      "note": "Full 12-story chain traced 2026-08-14. ALL 7 original findings (1 HIGH, 3 MEDIUM, 3 LOW) are now RESOLVED as of 2026-08-14 -- trace report header updated to CLEAN. Metric name normalized to spelled-out form across 6 files; nfr-profile.md gained a dedicated Accessibility section (also closed its now-stale Performance/timeout gap row); metrics[].contributingStories arrays corrected."
+    },
+    "improve": {
+      "status": "complete",
+      "note": "Full feature-wide /improve run 2026-08-14 -- 12 durable patterns in delivery-patterns.md, 5 skill-improvement proposals pending_review, decisions.md summary entry. Unchanged this session."
+    }
   },
   "checkpoint": {
     "writtenAt": "2026-08-14",
@@ -23,7 +49,8 @@
       "The origin/traces branch's staleness (documented since the original 2026-08-14 trace report) may share the same root cause as the CI-triggering outage above -- worth checking together once the underlying cause is found.",
       "All 7 of the 2026-08-14 trace report's findings are now RESOLVED (as of a follow-up cleanup pass later the same day) -- nothing outstanding from that trace run.",
       "LOW: wugs-s6-verification.md's Scenarios 2 (edit/stale-edit) and 3 (failure path) were not exercised by the 2026-08-14 verification run -- non-blocking, not currently requested, but still open if anyone wants full script coverage (requires the operator's own sandbox-repo credentials, not something an agent can do unattended)",
-      "The 5 skill-improvement proposals (workspace/proposals/2026-08-14-*-improve-proposal.md) remain pending_review -- operator to decide whether/when to route these through this repo's own governed skill-update PR process"
+      "The 5 skill-improvement proposals (workspace/proposals/2026-08-14-*-improve-proposal.md) remain pending_review -- operator to decide whether/when to route these through this repo's own governed skill-update PR process",
+      "nia-s1 (2026-08-16-nav-icon-affordance, PR #745, draft): AC3 RISK-ACCEPT post-deployment smoke test -- once this PR merges and deploys to wuce-staging.fly.dev, manually verify the theme-toggle button (top-right of the header on any signed-in page) visually reads as a sun/moon theme control, not a profile/avatar placeholder, on a real device or emulated mobile viewport -- this closes the one AC (AC3 visual legibility) that unit tests could not fully verify. See artefacts/2026-08-16-nav-icon-affordance/verification-scripts/nia-s1-verification.md Scenario 3 and decisions.md RISK-ACCEPT entry (test-plan, H-E2E/B2)."
     ]
   }
 }
