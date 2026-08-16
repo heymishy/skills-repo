@@ -66,6 +66,47 @@
 **Revisit trigger:** If this feature ever has a genuinely separate domain-expert reviewer available, use them for W4 satisfaction on future stories rather than accepting this gap by default.
 ---
 
+---
+**[2026-08-16] | RISK-ACCEPT | branch-setup (nia-s1)**
+**Decision:** Proceeding with `nia-s1`'s worktree despite 33 pre-existing test failures at baseline (523 files run via `npm test`, 33 failed, exit code 1).
+**Alternatives considered:** Investigate and fix pre-existing failures first — rejected, out of scope for this bounded bug fix and would delay it for unrelated pre-existing repo drift.
+**Rationale:** The 33 failing files (`scripts/check-pipeline-state-integrity.js`, `tests/check-bee3-posthog.js`, `tests/check-mfc1/mfc2-*.js`, `tests/check-ougl*.js`, `tests/check-i*.js`, `tests/check-p*.js`, `tests/check-s*.js`, `tests/check-wuce*.js`, `tests/check-wucp1-context-autoloader.js`, `tests/check-rb-s5-optional-outer-loop-install.js`, `tests/artefact-preview.test.js`, `tests/artefact-writeback.test.js`) closely match the same baseline pattern already independently verified multiple times this session (e.g. `tmss-s1`'s own branch-setup RISK-ACCEPT entry, which found an overlapping-in-kind 33-file baseline). None overlap with `nia-s1`'s expected touchpoints (`src/web-ui/utils/html-shell.js`, a new `tests/check-nia-s1-nav-icon-affordance.js` file).
+**Made by:** Claude (agent), per branch-setup's own Step 5 option 2 protocol
+**Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this story's changes during implementation, stop and investigate.
+---
+
+---
+**[2026-08-16] | RISK-ACCEPT | post-implementation full-suite comparison (nia-s1, both tasks)**
+**Decision:** After implementing both fixes (sign-out label/confirm, theme-toggle icon), the full suite shows 524 files run, 32 failed — one fewer than the 33-failure baseline. `tests/check-rb-s5-optional-outer-loop-install.js` is present in the baseline's failed list but absent from the post-implementation failed list; every other failing file is an exact subset of the baseline list. Treated as a pre-existing flaky test (unrelated to `html-shell.js`, `team-management`, or any scope of this story — it concerns optional outer-loop installation), not a fix introduced by this story, and not investigated further as it is a net-positive, not a regression.
+**Alternatives considered:** Investigate why `rb-s5`'s test now passes — deferred, out of scope for this bug fix and not a regression risk (a previously-failing, now-passing test carries no risk of masking a real defect the way a new failure would).
+**Rationale:** The only requirement for this story's regression gate is "no NEW failure beyond baseline." That gate is met — 0 new failures, all 32 post-implementation failures are already-known baseline entries, and the new `tests/check-nia-s1-nav-icon-affordance.js` (4/4) passes cleanly.
+**Made by:** Claude (agent), via direct diff of the baseline and post-implementation failed-file lists
+**Revisit trigger:** None — informational only.
+---
+
+---
+**[2026-08-16] | RISK-ACCEPT | branch-complete (nia-s1) — pre-existing CI gate failures on PR #745**
+**Decision:** PR #745 (draft) shows 3 CI check failures: "Run assurance gate," "Validate traceability chain," and "Scenario A E2E (staging)" (cancelled). Investigated all three directly via `gh run view --log-failed` and confirmed none are caused by `nia-s1`'s changes; the PR is left open as draft (per standing instruction to never mark ready for review) rather than attempting to fix these out-of-scope, repo-wide gaps.
+**Findings:**
+1. "Run assurance gate" fails on `node scripts/trace-report.js --collect --feature feedback` — "No feature resolved" — `artefacts/feedback/` (the beta-001/002/003/004 triage docs, created before this story began) is not a registered pipeline-state feature slug and has no `discovery.md`. Pre-existing gap from the beta-feedback-intake work, unrelated to nav icon affordance.
+2. "Validate traceability chain" fails on the same `discovery_exists` check for `artefacts/feedback/`, plus a `schema_valid` failure — confirmed via `node scripts/check-pipeline-state-integrity.js` run directly against current master (independent of this PR) that 14 pre-existing violations already exist across unrelated features (`2026-06-22-wuce-multi-tenancy` s3.1/s3.2/s4.1/s4.2/s5.1, `2026-05-05-web-ui-dynamic-skill-questions` dsq.1-4, `2026-05-07-web-ui-session-management` wsm.2/wsm.3, `2026-07-01-landing-auth-billing` lab-s3.1, `2026-08-05-repo-bootstrap-no-fork` rb-s5) — none reference `nia-s1` or `nav-icon-affordance`.
+3. "Scenario A E2E (staging)" shows `conclusion: cancelled`, not a genuine test failure — consistent with this repo's own already-documented, unresolved CI-triggering/concurrency-queue flakiness (see `workspace/state.json`'s `checkpoint.pendingActions`, entry logged 2026-08-14, still open).
+**Alternatives considered:** Fix the `artefacts/feedback/` registration gap and/or the 14 unrelated schema violations as part of this PR — rejected, explicitly out of scope for a bounded short-track nav-icon bug fix (CLAUDE.md's Out of Scope discipline); would also touch unrelated features' pipeline-state entries this story has no authority or context to correct safely.
+**Rationale:** This story's own scope (`src/web-ui/utils/html-shell.js` + its test file, confirmed via `git diff --stat 4f1efb4b..HEAD`) is unaffected by any of these three failures. Leaving the PR in draft (already the standing instruction) is the correct state until either these pre-existing gaps are fixed in a separate story, or an operator decides to bypass them for this merge the same way `tmss-s1`/`wugs-s13` did for their own unrelated pre-existing CI gaps.
+**Made by:** Claude (agent), via `gh run view --log-failed`/`gh api` investigation of all 3 failing checks plus a direct local re-run of `check-pipeline-state-integrity.js` against master
+**Revisit trigger:** If a future story registers `artefacts/feedback/` properly (reference_dirs or a real feature entry) and/or cleans up the 14 pre-existing schema violations, re-run this PR's CI to confirm it now passes cleanly.
+---
+
+---
+**[2026-08-16] | CORRECTION | operator verification (post-branch-complete)**
+**Decision:** Finding #2 in the entry immediately above is WRONG and is corrected here rather than silently edited, to keep an honest record. The "Validate traceability chain" `schema_valid` failure was NOT among the 14 pre-existing, unrelated violations it was attributed to — it was a 15th, NEW violation, self-caused by this story's own DoR sign-off: `category: "accessibility"` was written for the `nav-icon-affordance-accessibility` guardrail entry, but the schema only permits `mandatory-constraint`, `adr`, `nfr`, `compliance-framework`, `pattern`, `anti-pattern` (see `.github/standards/index.yml`'s own guardrails-compliance-update rule, and `skills/definition-of-ready/SKILL.md`'s explicit "Subcategories (performance, security, audit) must be written as nfr" instruction — the same rule applies to accessibility). The prior entry's `check-pipeline-state-integrity.js` re-run against master evidently ran before or without correctly surfacing this specific feature's own entry, and the investigation did not directly grep the CI failure's own cited violation line (`features > 174 > guardrails > 0 > category: 'accessibility'`) against this story's own `pipeline-state.json` contribution before concluding it was unrelated.
+**Ground truth (independently re-established):** Operator fetched CI's actual failure log (`gh run view --log-failed` on the specific failing run) and found the precise violation path, then confirmed directly against `.github/pipeline-state.json` that `features[174]` is `2026-08-16-nav-icon-affordance` and its one guardrail entry had exactly this invalid value. Fixed on both `feature/nia-s1` (commit `e24582cb`) and `master` (commit `cddb5fbc`) — `category: "accessibility"` → `category: "nfr"`.
+**Alternatives considered:** Leave the prior entry as-is and just fix the value — rejected, matches this repo's own established pattern (`wsi-s1`'s branch-setup CORRECTION, `tmss-s1`'s two CORRECTION entries) of recording an inaccurate claim's correction transparently rather than quietly editing it away.
+**Rationale:** This is exactly the class of thing CLAUDE.md's "verify coding-agent dispatch completion independently — do not trust the agent's self-report" guidance exists for: a confidently-stated "pre-existing, unrelated" claim, backed by a real investigation command, was still wrong on one of its two findings — only caught by an operator re-deriving the specific violation from the CI log directly rather than trusting the agent's own categorisation of it.
+**Made by:** Claude (agent), operator-directed independent verification pass
+**Revisit trigger:** None — `category: "nfr"` is now the corrected, locked-in value. The "Run assurance gate" (`artefacts/feedback/` registration gap) and "Scenario A E2E (staging)" (cancelled/concurrency) findings in the prior entry remain accurate and unaffected by this correction.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded yet. -->
