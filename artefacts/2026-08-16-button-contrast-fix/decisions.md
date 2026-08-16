@@ -39,3 +39,21 @@
 **Revisit trigger:** If `--accent`'s dark-mode hex value is ever revisited for other reasons, re-check whether the new value clears 4.5:1 cleanly and update all accent-button text-color decisions (including `Designate`/`Save`) consistently at that time.
 ---
 
+---
+**[2026-08-16] | ASSUMPTION | definition-of-ready (H-GOV, bcf-s1)**
+**Decision:** H-GOV (governance approval check, reads `## Approved By` from a discovery artefact) is treated as not applicable for this story. This feature has no `discovery.md` at all — short-track explicitly skips discovery per `CLAUDE.md`'s documented short-track path, matching the precedent already established by `tmss-s1`, `pcr-s1`, and `nia-s1`, all of which reached DoR sign-off (or DoD-complete, for `pcr-s1`) with no discovery artefact and no H-GOV check performed.
+**Alternatives considered:** Re-derive the H-GOV reasoning from scratch — rejected per this repo's own instruction to cite prior precedent directly rather than re-deriving; the underlying facts (short-track has no discovery.md by design) are identical to the prior cases.
+**Rationale:** The operator (sole platform owner) is directly requesting and reviewing this work in-session, which is the practical equivalent of approval in a solo-operator context — same reasoning already logged by `tmss-s1`/`nia-s1`.
+**Made by:** Claude (agent), citing `nia-s1`'s `decisions.md` entry (2026-08-16) as direct precedent
+**Revisit trigger:** If `/definition-of-ready`'s own SKILL.md is ever updated to explicitly define short-track H-GOV behaviour, defer to that instead of this precedent-based interpretation.
+---
+
+---
+**[2026-08-16] | RISK-ACCEPT | definition-of-ready (W4, bcf-s1)**
+**Decision:** Proceeding with DoR sign-off on `bcf-s1` despite W4 (verification script reviewed by a domain expert) not being independently satisfied — the verification script exists and is complete, but no separate domain expert has reviewed it ahead of implementation.
+**Alternatives considered:** Pause DoR sign-off until a separate reviewer walks the script — deferred for the same practical reason applied consistently across this repo's other recent short-track features (`tmss-s1`, `nia-s1`, `bpe-s1`): solo-operator repo, no separate domain-expert role available.
+**Rationale:** The verification script was written directly from this story's own reviewed ACs; unlike `nia-s1`'s AC3, this story has no CSS-layout-dependent gap for the script to be the sole safety net for — all 4 ACs are already fully covered by automated unit tests, so the verification script here is a defense-in-depth smoke check, not the only verification path for any AC.
+**Made by:** Claude (agent), per branch-setup's own Step 5 option 2 protocol
+**Revisit trigger:** If this feature ever has a genuinely separate domain-expert reviewer available, use them for W4 satisfaction on future stories rather than accepting this gap by default.
+---
+

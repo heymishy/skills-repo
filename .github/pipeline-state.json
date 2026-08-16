@@ -24065,14 +24065,14 @@
     {
       "slug": "2026-08-16-button-contrast-fix",
       "name": "Fix dark-mode (and light-mode) button contrast bug on the Products page",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "health": "green",
       "stories": [
         {
           "id": "bcf-s1",
           "slug": "bcf-s1",
           "name": "Fix dark-mode (and light-mode) button contrast bug on the Products page",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -24086,12 +24086,25 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-16T10:06:52.085Z"
+          "updatedAt": "2026-08-16T10:09:41.499Z",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-16-button-contrast-fix/dor/bcf-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-16-button-contrast-fix/dor/bcf-s1-dor-contract.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-16T10:07:05.387Z",
-      "track": "short"
+      "updatedAt": "2026-08-16T10:09:51.587Z",
+      "track": "short",
+      "guardrails": [
+        {
+          "id": "button-contrast-fix-accessibility",
+          "category": "nfr",
+          "label": "Accent-button text on accent background must clear WCAG AA 4.5:1 contrast in both themes",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-16T10:09:59.438Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
