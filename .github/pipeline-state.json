@@ -23347,11 +23347,11 @@
             {
               "slug": "wsi-s3-invite-expiry",
               "name": "Expired invites (past 24 hours) are rejected cleanly",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-15T21:16:19.960Z",
+              "updatedAt": "2026-08-16T02:09:59.734Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -23379,7 +23379,9 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s3-plan.md"
                 }
-              ]
+              ],
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "wsi-s4-member-count-cap",
@@ -23532,7 +23534,8 @@
           "evidence": "Same reasoning as m1 -- mechanism complete, no real usage yet.",
           "contributingStories": [
             "wsi-s1-admin-creates-invite",
-            "wsi-s2-invitee-accepts-and-joins"
+            "wsi-s2-invitee-accepts-and-joins",
+            "wsi-s3-invite-expiry"
           ]
         }
       ],
