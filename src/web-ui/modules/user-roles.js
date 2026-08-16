@@ -134,6 +134,13 @@ async function migrateTeamSchema(pool, logger) {
     await _backfillOne(pool, row.tenant_id, row.role);
   }
 
+  // si-s2: idempotent column additions for per-person locale preference --
+  // mirrors product-repo.js's migrateProductRepoColumns() ALTER TABLE ... ADD
+  // COLUMN IF NOT EXISTS convention exactly. Never touches the legacy `users`
+  // table (Architecture Constraints, story si-s2 -- ADR-026 correction).
+  await pool.query('ALTER TABLE people ADD COLUMN IF NOT EXISTS timezone TEXT');
+  await pool.query('ALTER TABLE people ADD COLUMN IF NOT EXISTS date_format TEXT');
+
   log.info('[tir-s1] people/team_memberships schema migrated (' + legacy.rows.length + ' legacy user_roles row(s) considered for backfill)');
 }
 
