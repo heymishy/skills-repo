@@ -147,7 +147,7 @@ function _renderProductDashboard(products, login, navProducts, activeProductId, 
   var cardsHtml = products.length === 0
     ? '<div style="padding:48px 0;text-align:center;color:var(--muted)">' +
         '<p style="font-size:18px;margin:0 0 16px">No products yet</p>' +
-        '<a href="/products/new" style="display:inline-block;padding:10px 20px;background:var(--accent);color:var(--accent-ink);border-radius:6px;text-decoration:none;font-weight:500">Create your first product →</a>' +
+        '<a href="/products/new" style="display:inline-block;padding:10px 20px;background:var(--accent);color:#fff;border-radius:6px;text-decoration:none;font-weight:500">Create your first product →</a>' +
       '</div>'
     : products.map(function(p) {
         return '<a href="/products/' + _escapeHtml(p.product_id) + '" style="display:block;padding:20px;background:var(--surface);border:1px solid var(--line);border-radius:8px;text-decoration:none;color:var(--ink);margin-bottom:12px">' +
@@ -161,7 +161,7 @@ function _renderProductDashboard(products, login, navProducts, activeProductId, 
   var body = '<div style="max-width:720px">' +
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">' +
       '<h1 style="margin:0;font-size:24px">Products</h1>' +
-      (products.length > 0 ? '<a href="/products/new" style="padding:8px 16px;background:var(--accent);color:var(--accent-ink);border-radius:6px;text-decoration:none;font-size:14px;font-weight:500">New product</a>' : '') +
+      (products.length > 0 ? '<a href="/products/new" style="padding:8px 16px;background:var(--accent);color:#fff;border-radius:6px;text-decoration:none;font-size:14px;font-weight:500">New product</a>' : '') +
     '</div>' +
     cardsHtml +
     '<div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--line)">' +
@@ -191,7 +191,7 @@ function _renderProductNew(login, error) {
       '<label style="display:flex;flex-direction:column;gap:6px;font-size:14px">Short description <span style="color:var(--muted)">(optional — helps the AI generate better context files)</span>' +
         '<textarea id="psh-description" name="description" rows="3" style="padding:8px 10px;border:1px solid var(--line);border-radius:6px;font-size:14px;background:var(--surface);color:var(--ink);resize:vertical"></textarea>' +
       '</label>' +
-      '<button id="psh-draft-btn" type="button" onclick="pshGenerateDraft()" style="align-self:flex-start;padding:10px 20px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;font-size:14px;font-weight:500;cursor:pointer">Generate context files →</button>' +
+      '<button id="psh-draft-btn" type="button" onclick="pshGenerateDraft()" style="align-self:flex-start;padding:10px 20px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:500;cursor:pointer">Generate context files →</button>' +
     '</form>' +
     '<div id="psh-drafts" style="display:none;margin-top:32px">' +
       '<h2 style="font-size:18px;margin:0 0 16px">Review and edit your context files</h2>' +
@@ -205,7 +205,7 @@ function _renderProductNew(login, error) {
           '</label>';
         }).join('') +
         '<div style="display:flex;gap:12px">' +
-          '<button type="submit" style="padding:10px 24px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;font-size:14px;font-weight:500;cursor:pointer">Confirm and create product</button>' +
+          '<button type="submit" style="padding:10px 24px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:14px;font-weight:500;cursor:pointer">Confirm and create product</button>' +
           '<button type="button" onclick="document.getElementById(\'psh-drafts\').style.display=\'none\'" style="padding:10px 16px;background:none;border:1px solid var(--line);border-radius:6px;font-size:14px;cursor:pointer;color:var(--muted)">Edit name</button>' +
         '</div>' +
       '</form>' +
@@ -654,7 +654,7 @@ function _renderModulesManagement(productId, modules, csrfToken) {
         '<input type="hidden" name="_csrf" value="' + csrf + '">' +
         '<input type="text" name="name" placeholder="New module name" required ' +
           'style="flex:1;padding:6px 8px;border:1px solid var(--line);border-radius:6px;font-size:13px">' +
-        '<button type="submit" style="padding:6px 14px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Add module</button>' +
+        '<button type="submit" style="padding:6px 14px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Add module</button>' +
       '</form>' +
     '</div>' +
     '<script>(function(){' +
@@ -835,7 +835,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
           var fullName = _escapeHtml(r.fullName || (r.owner + '/' + r.name));
           return '<li class="rpc-repo-item" data-fullname="' + fullName.toLowerCase() + '" style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--line)">' +
             '<span style="font-size:13px">' + fullName + '</span>' +
-            '<button type="button" onclick="rpcSelectRepo(\'' + _escapeHtml(productId) + '\',\'' + owner + '\',\'' + name + '\')" style="padding:6px 10px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:4px;font-size:12px;cursor:pointer;white-space:nowrap">Select</button>' +
+            '<button type="button" onclick="rpcSelectRepo(\'' + _escapeHtml(productId) + '\',\'' + owner + '\',\'' + name + '\')" style="padding:6px 10px;background:var(--accent);color:#fff;border:none;border-radius:4px;font-size:12px;cursor:pointer;white-space:nowrap">Select</button>' +
           '</li>';
         }).join('')
       : '';
@@ -849,7 +849,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
         fallbackMessageHtml +
         '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px">Repository owner<input id="rpc-connect-owner" type="text" placeholder="github-username" aria-label="Repository owner" style="padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:13px;background:var(--surface);color:var(--ink)"></label>' +
         '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px">Repository name<input id="rpc-connect-repo" type="text" placeholder="repo-name" aria-label="Repository name" style="padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:13px;background:var(--surface);color:var(--ink)"></label>' +
-        '<button type="button" onclick="rpcSubmitConnect(\'' + _escapeHtml(productId) + '\')" style="padding:8px 12px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:4px;font-size:13px;cursor:pointer">Connect</button>' +
+        '<button type="button" onclick="rpcSubmitConnect(\'' + _escapeHtml(productId) + '\')" style="padding:8px 12px;background:var(--accent);color:#fff;border:none;border-radius:4px;font-size:13px;cursor:pointer">Connect</button>' +
       '</div>';
 
     var pickerPanelHtml = pickerOk
@@ -870,11 +870,11 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
         '<h3 style="margin:0 0 12px;font-size:14px">Connect GitHub repo</h3>' +
         '<form id="rpc-repo-form" style="display:flex;flex-direction:column;gap:12px">' +
           '<div style="display:flex;gap:10px">' +
-            '<button type="button" id="rpc-btn-create" onclick="rpcShowCreateForm()" style="flex:1;padding:10px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Create new repo</button>' +
+            '<button type="button" id="rpc-btn-create" onclick="rpcShowCreateForm()" style="flex:1;padding:10px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Create new repo</button>' +
           '</div>' +
           '<div id="rpc-create-panel" style="display:none">' +
             '<label style="display:flex;flex-direction:column;gap:6px;font-size:13px">New repo name<input id="rpc-create-name" type="text" placeholder="my-repo" aria-label="New repo name" style="padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:13px;background:var(--surface);color:var(--ink)"></label>' +
-            '<button type="button" onclick="rpcSubmitCreate(\'' + _escapeHtml(productId) + '\')" style="padding:8px 12px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:4px;font-size:13px;cursor:pointer">Create</button>' +
+            '<button type="button" onclick="rpcSubmitCreate(\'' + _escapeHtml(productId) + '\')" style="padding:8px 12px;background:var(--accent);color:#fff;border:none;border-radius:4px;font-size:13px;cursor:pointer">Create</button>' +
           '</div>' +
           pickerPanelHtml +
           manualPanelHtml +
@@ -899,7 +899,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
         '<a href="/products/' + _escapeHtml(productId) + '/roadmap" style="padding:8px 14px;border:1px solid var(--line);border-radius:6px;text-decoration:none;font-size:13px;color:var(--ink)">Roadmap</a>' +
         '<a href="/products/' + _escapeHtml(productId) + '/guardrails" style="padding:8px 14px;border:1px solid var(--line);border-radius:6px;text-decoration:none;font-size:13px;color:var(--ink)">Standards</a>' +
         '<div style="position:relative">' +
-          '<button type="button" id="psh-new-feature-btn" onclick="pshToggleNewFeaturePanel()" style="padding:8px 16px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">New feature</button>' +
+          '<button type="button" id="psh-new-feature-btn" onclick="pshToggleNewFeaturePanel()" style="padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">New feature</button>' +
           '<div id="psh-new-feature-panel" style="display:none;position:absolute;right:0;top:calc(100% + 6px);z-index:20;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;min-width:290px;box-shadow:0 4px 14px rgba(0,0,0,.12)">' +
             '<form method="POST" action="/products/' + _escapeHtml(productId) + '/features" style="margin:0">' +
               // fdn-s1: optional at creation -- the "Rough idea" path is
@@ -910,7 +910,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
               '<div style="font-size:13px;font-weight:600;margin-bottom:10px">Where are you starting from?</div>' +
               '<label style="display:flex;align-items:baseline;gap:8px;font-size:13px;margin-bottom:8px;cursor:pointer;line-height:1.5"><input type="radio" name="startSkill" value="ideate"> Rough idea — explore the opportunity space first</label>' +
               '<label style="display:flex;align-items:baseline;gap:8px;font-size:13px;margin-bottom:14px;cursor:pointer;line-height:1.5"><input type="radio" name="startSkill" value="discovery" checked> Formed idea — jump straight to discovery</label>' +
-              '<button type="submit" style="width:100%;padding:8px 12px;background:var(--accent);color:var(--accent-ink);border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Start &#8594;</button>' +
+              '<button type="submit" style="width:100%;padding:8px 12px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">Start &#8594;</button>' +
             '</form>' +
           '</div>' +
         '</div>' +

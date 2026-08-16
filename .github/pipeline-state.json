@@ -24090,6 +24090,15 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-16-button-contrast-fix/dor/bcf-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-16-button-contrast-fix/dor/bcf-s1-dor-contract.md",
+          "tasks": [
+            {
+              "id": 1,
+              "name": "Fix dark/light-mode button contrast on Products page (11 color:var(--accent-ink) -> color:#fff)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-16-button-contrast-fix/plans/bcf-s1-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
           "prStatus": "draft",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/746"
         }
