@@ -23870,7 +23870,7 @@
       "slug": "2026-08-16-team-management-shared-shell-migration",
       "name": "Migrate team-management admin pages onto the shared HTML shell",
       "track": "short",
-      "stage": "branch-setup",
+      "stage": "branch-complete",
       "health": "green",
       "epics": [],
       "stories": [
@@ -23878,7 +23878,7 @@
           "slug": "tmss-s1",
           "id": "tmss-s1",
           "name": "Migrate team-management admin pages onto the shared HTML shell (renderShell/escHtml)",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -23892,7 +23892,7 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-16T04:15:10.622Z",
+          "updatedAt": "2026-08-16T04:17:42.263Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-16-team-management-shared-shell-migration/dor/tmss-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-16-team-management-shared-shell-migration/dor/tmss-s1-dor-contract.md",
@@ -23919,11 +23919,13 @@
             {
               "id": "task-4",
               "name": "Open draft PR",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-16-team-management-shared-shell-migration/plans/tmss-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/743"
         }
       ],
       "metrics": [],
