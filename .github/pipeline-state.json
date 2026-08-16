@@ -23940,6 +23940,57 @@
           "assessedAt": "2026-08-16T02:50:39.263Z"
         }
       ]
+    },
+    {
+      "slug": "2026-08-16-billing-portal-error-handling",
+      "name": "Add error handling and a missing-customer guard to the Stripe Billing Portal redirect",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [],
+      "metrics": [],
+      "updatedAt": "2026-08-16"
+    },
+    {
+      "slug": "2026-08-16-nav-icon-affordance",
+      "name": "Fix affordance mismatch on the sign-out control and theme-toggle button in the shared shell",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "nia-s1",
+          "id": "nia-s1",
+          "name": "Fix affordance mismatch on the sign-out control and theme-toggle button",
+          "stage": "test-plan",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-16-nav-icon-affordance/test-plans/nia-s1-test-plan.md"
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": true,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-16T06:28:42.759Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-16T06:28:42.759Z",
+      "guardrails": [
+        {
+          "id": "nav-icon-affordance-accessibility",
+          "category": "accessibility",
+          "label": "Sign-out control must have a visible, non-hover-only affordance signal",
+          "status": "in-progress",
+          "assessedBy": "/test-plan",
+          "assessedAt": "2026-08-16T06:28:42.759Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -24021,5 +24072,5 @@
     ],
     "lastUpdated": "2026-08-16"
   },
-  "updatedAt": "2026-08-10T07:07:00.114Z"
+  "updatedAt": "2026-08-16T06:28:42.759Z"
 }
