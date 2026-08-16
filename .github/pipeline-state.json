@@ -23386,11 +23386,11 @@
             {
               "slug": "wsi-s4-member-count-cap",
               "name": "Invite acceptance is blocked if the tenant is at its member-count cap",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-15T23:07:05.075Z",
+              "updatedAt": "2026-08-16T02:11:13.404Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -23418,7 +23418,9 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s4-plan.md"
                 }
-              ]
+              ],
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "wsi-s5-metrics-instrumentation",
