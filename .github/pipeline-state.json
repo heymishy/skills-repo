@@ -23468,11 +23468,11 @@
             {
               "slug": "wsi-s6-invite-creation-ui",
               "name": "Admin has a real, reachable form to create a team invite",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "acTotal": 4,
               "acVerified": 4,
-              "updatedAt": "2026-08-16T01:47:24.976Z",
+              "updatedAt": "2026-08-16T01:48:51.579Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -23485,7 +23485,8 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-14-wuce-self-serve-invites/dor/wsi-s6-dor.md",
               "dorSignedOffAt": "2026-08-16T00:45:08.519Z",
-              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/742",
               "tasks": [
                 {
                   "id": "task-1",
