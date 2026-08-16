@@ -2998,6 +2998,18 @@ async function router(req, res) {
       await _teamManagementHandlers.handleGetTeamMembers(req, res);
     }
 
+  } else if (pathname === '/team/invites/new' && req.method === 'GET') {
+    // wsi-s6 — invite-creation form (requireAdmin gate)
+    if (!_teamManagementHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Team management unavailable');
+    } else {
+      let _raOk = false;
+      await requireAdmin(req, res, () => { _raOk = true; });
+      if (!_raOk) return;
+      await _teamManagementHandlers.handleGetCreateInviteForm(req, res);
+    }
+
   } else if (pathname === '/api/team/members' && req.method === 'POST') {
     // tir-s3 — add/assign teammate role (requireAdmin gate, AC3; ADR-025:
     // handler always writes to req.session.tenantId, never a request field)
