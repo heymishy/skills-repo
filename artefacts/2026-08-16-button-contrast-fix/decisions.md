@@ -57,3 +57,21 @@
 **Revisit trigger:** If this feature ever has a genuinely separate domain-expert reviewer available, use them for W4 satisfaction on future stories rather than accepting this gap by default.
 ---
 
+---
+**[2026-08-16] | RISK-ACCEPT | branch-setup (bcf-s1)**
+**Decision:** Proceeding with `bcf-s1`'s worktree despite 33 pre-existing test failures at baseline (526 files run via `npm test`, 33 failed, exit code 1, 524090ms).
+**Alternatives considered:** Investigate and fix pre-existing failures first — rejected, out of scope for this bounded bug fix and would delay it for unrelated pre-existing repo drift.
+**Rationale:** The 33 failing files (`scripts/check-pipeline-state-integrity.js`, `tests/artefact-preview.test.js`, `tests/artefact-writeback.test.js`, `tests/check-bee3-posthog.js`, `tests/check-i1.2/i3.1/i3.2/i3.3-*.js`, `tests/check-ilc2-agent-selfrecord.js`, `tests/check-inc2.1/inc4-*.js`, `tests/check-iwu2-right-panel-layout.js`, `tests/check-mfc1/mfc2-*.js`, `tests/check-ougl1-6-*.js`, `tests/check-p11-hgov.js`, `tests/check-p3.5-validate-trace.js`, `tests/check-p4-enf-decision.js`, `tests/check-rb-s5-optional-outer-loop-install.js`, `tests/check-s0.2-tenant-login-fallback.js`, `tests/check-sec3-return-to.js`, `tests/check-sec5-session-rotation.js`, `tests/check-srt1-status-report-template.js`, `tests/check-wsm2-collaborative-sessions.js`, `tests/check-wuce24-guided-question-form.js`, `tests/check-wuce3-attributed-signoff.js`, `tests/check-wuce4-docker-deployment.js`, `tests/check-wucp1-context-autoloader.js`) closely match — largely overlap with — the same baseline pattern already independently verified multiple times earlier this session (`nia-s1`'s own branch-setup RISK-ACCEPT entry, which found an overlapping-in-kind 33-file baseline the same day). None overlap with `bcf-s1`'s expected touchpoints (`src/web-ui/routes/products.js`, a new `tests/check-bcf-s1-button-contrast.js` file) — confirmed via direct grep of the failed-file list for "products"/"bcf-s1", zero matches.
+**Made by:** Claude (agent), per branch-setup's own Step 5 option 2 protocol
+**Revisit trigger:** If any of these 33 files' failures turn out to be caused by (or newly relevant to) this story's changes during implementation, stop and investigate.
+---
+
+---
+**[2026-08-16] | RISK-ACCEPT | post-implementation full-suite comparison (bcf-s1)**
+**Decision:** After implementing the fix (11 `color:var(--accent-ink)` → `color:#fff` replacements in `products.js`) and adding `tests/check-bcf-s1-button-contrast.js`, the full suite shows 527 files run (526 baseline + 1 new file), 33 failed — the exact same count as the branch-setup baseline, and the failed-file list is byte-for-byte identical to the baseline list. Zero new failures, zero resolved failures. The new `tests/check-bcf-s1-button-contrast.js` passes cleanly (4/4, confirmed separately) and is correctly absent from the failed-file list.
+**Alternatives considered:** None needed — this is a clean, zero-regression result requiring no further action.
+**Rationale:** The only requirement for this story's regression gate is "no NEW failure beyond baseline." That gate is met exactly — identical failed-file list, pre- and post-fix.
+**Made by:** Claude (agent), via direct diff of the baseline (526 files, 33 failed) and post-implementation (527 files, 33 failed) failed-file lists
+**Revisit trigger:** None — informational only.
+---
+

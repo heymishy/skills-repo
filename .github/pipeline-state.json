@@ -24037,14 +24037,14 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": true,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-16T09:57:39.286Z",
+          "updatedAt": "2026-08-16T10:48:37.466Z",
           "dorContractArtefact": "artefacts/2026-08-16-nav-icon-affordance/dor/nia-s1-dor-contract.md",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-16-nav-icon-affordance/dor/nia-s1-dor.md",
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/745",
           "verifyStatus": "passed",
-          "dodStatus": "complete-with-deviations",
+          "dodStatus": "complete",
           "dodArtefact": "artefacts/2026-08-16-nav-icon-affordance/dod/nia-s1-dod.md",
           "releaseReady": true
         }
@@ -24065,14 +24065,14 @@
     {
       "slug": "2026-08-16-button-contrast-fix",
       "name": "Fix dark-mode (and light-mode) button contrast bug on the Products page",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "id": "bcf-s1",
           "slug": "bcf-s1",
           "name": "Fix dark-mode (and light-mode) button contrast bug on the Products page",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -24086,7 +24086,7 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-16T10:39:52.649Z",
+          "updatedAt": "2026-08-16T10:42:16.680Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-16-button-contrast-fix/dor/bcf-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-16-button-contrast-fix/dor/bcf-s1-dor-contract.md",
@@ -24098,11 +24098,13 @@
               "file": "artefacts/2026-08-16-button-contrast-fix/plans/bcf-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/746"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-16T10:09:51.587Z",
+      "updatedAt": "2026-08-16T10:42:16.682Z",
       "track": "short",
       "guardrails": [
         {
@@ -24112,6 +24114,52 @@
           "status": "met",
           "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-08-16T10:09:59.438Z"
+        }
+      ]
+    },
+    {
+      "slug": "2026-08-16-billing-settings-error-banner",
+      "name": "Show a visible error banner on Settings when a billing-portal redirect carries an error",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "id": "bse-s1",
+          "slug": "bse-s1",
+          "name": "Show a visible error banner on Settings when a billing-portal redirect carries an error",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 7,
+            "passing": 7,
+            "artefact": "artefacts/2026-08-16-billing-settings-error-banner/test-plans/bse-s1-test-plan.md"
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "updatedAt": "2026-08-16T11:30:29.259Z",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-16-billing-settings-error-banner/dor/bse-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-16-billing-settings-error-banner/dor/bse-s1-dor-contract.md",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/747"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-16T11:33:46.099Z",
+      "track": "short",
+      "guardrails": [
+        {
+          "id": "billing-settings-error-banner-security",
+          "category": "nfr",
+          "label": "User-controlled ?error= query parameter must never be reflected raw into Settings page HTML",
+          "status": "met",
+          "assessedBy": "/test-plan",
+          "assessedAt": "2026-08-16T11:00:00.000Z"
         }
       ]
     }
