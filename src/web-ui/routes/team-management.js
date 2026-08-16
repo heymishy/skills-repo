@@ -13,6 +13,7 @@ var magicLinkStrategy = require('../auth/magic-link-strategy');
 // sec-perf-s3: session-scoped CSRF (Cross-Site Request Forgery) protection.
 var csrf = require('../middleware/csrf');
 var _posthog = require('../modules/posthog-server');
+var htmlShell = require('../utils/html-shell');
 
 // Audit logger — replaced via setLogger() in tests and production bootstrap.
 // Mirrors account-linking.js's own _logger / setLogger convention exactly.
@@ -26,14 +27,6 @@ let _logger = {
  */
 function setLogger(logger) {
   _logger = logger;
-}
-
-function _escapeHtml(s) {
-  return String(s == null ? '' : s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
 }
 
 /**
@@ -73,14 +66,13 @@ function createTeamManagementHandlers(pool) {
    */
   function handleGetTeamMembers(req, res) {
     var roleOptions = teamManagement.VALID_ROLES.map(function(r) {
-      return '<option value="' + _escapeHtml(r) + '">' + _escapeHtml(r) + '</option>';
+      return '<option value="' + htmlShell.escHtml(r) + '">' + htmlShell.escHtml(r) + '</option>';
     }).join('');
 
     // sec-perf-s3 AC2: session-scoped CSRF token, embedded in the add-teammate form below.
     var csrfToken = csrf.generateCsrfToken(req);
 
-    var html = '<!DOCTYPE html><html><head><title>Team members</title></head><body>' +
-      '<h1>Team members</h1>' +
+    var bodyContent = '<h1>Team members</h1>' +
       '<form method="POST" action="/api/team/members">' +
       csrf.csrfField(csrfToken) +
       '<label for="identity">Add teammate by identity (GitHub login, Google email, or email/password email)</label>' +
@@ -88,8 +80,16 @@ function createTeamManagementHandlers(pool) {
       '<label for="role">Role</label>' +
       '<select id="role" name="role" required>' + roleOptions + '</select>' +
       '<button type="submit">Add teammate</button>' +
-      '</form>' +
-      '</body></html>';
+      '</form>';
+
+    var html = htmlShell.renderShell({
+      title: 'Team members',
+      bodyContent: bodyContent,
+      user: req.session,
+      active: 'team-members',
+      crumbs: ['Team members'],
+      isAdmin: true
+    });
 
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
@@ -106,13 +106,12 @@ function createTeamManagementHandlers(pool) {
    */
   function handleGetCreateInviteForm(req, res) {
     var roleOptions = teamManagement.VALID_ROLES.map(function(r) {
-      return '<option value="' + _escapeHtml(r) + '">' + _escapeHtml(r) + '</option>';
+      return '<option value="' + htmlShell.escHtml(r) + '">' + htmlShell.escHtml(r) + '</option>';
     }).join('');
 
     var csrfToken = csrf.generateCsrfToken(req);
 
-    var html = '<!DOCTYPE html><html><head><title>Invite a teammate</title></head><body>' +
-      '<h1>Invite a teammate</h1>' +
+    var bodyContent = '<h1>Invite a teammate</h1>' +
       '<form method="POST" action="/api/team/invites">' +
       csrf.csrfField(csrfToken) +
       '<label for="email">Email</label>' +
@@ -120,8 +119,16 @@ function createTeamManagementHandlers(pool) {
       '<label for="role">Role</label>' +
       '<select id="role" name="role" required>' + roleOptions + '</select>' +
       '<button type="submit">Send invite</button>' +
-      '</form>' +
-      '</body></html>';
+      '</form>';
+
+    var html = htmlShell.renderShell({
+      title: 'Invite a teammate',
+      bodyContent: bodyContent,
+      user: req.session,
+      active: 'team-members',
+      crumbs: ['Team members', 'Invite a teammate'],
+      isAdmin: true
+    });
 
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);

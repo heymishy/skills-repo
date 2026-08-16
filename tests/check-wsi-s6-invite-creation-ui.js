@@ -77,7 +77,15 @@ await checkAsyncOrSync('AC4: getCreateInviteForm_everyInputHasLabelSubmitIsRealB
   });
 
   assert.ok(/<button type="submit">/.test(html), 'expected a real <button> element');
-  assert.ok(!/<div[^>]*onclick/.test(html) && !/<a[^>]*class="[^"]*submit/.test(html), 'expected no styled div/anchor masquerading as the submit control');
+  // tmss-s1: scoped to the <form>...</form> block, not the whole page --
+  // the shared HTML shell (html-shell.js's renderShell(), adopted by this
+  // handler in tmss-s1) legitimately renders an unrelated <div onclick=...>
+  // (the mobile sidebar overlay), which the previous whole-page regex
+  // false-flagged as a styled div masquerading as the submit control.
+  var formMatch = /<form[\s\S]*?<\/form>/.exec(html);
+  assert.ok(formMatch, 'expected a <form> element to be present');
+  var formHtml = formMatch[0];
+  assert.ok(!/<div[^>]*onclick/.test(formHtml) && !/<a[^>]*class="[^"]*submit/.test(formHtml), 'expected no styled div/anchor masquerading as the submit control inside the form');
 });
 
 await checkAsyncOrSync('AC2: getCreateInviteForm_formPostsToApiTeamInvitesWithCsrfAndCorrectFieldNames', async () => {
