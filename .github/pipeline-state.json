@@ -23290,11 +23290,11 @@
             {
               "slug": "wsi-s2-invitee-accepts-and-joins",
               "name": "Invitee accepts the invite and joins the tenant with the assigned role",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-15T20:12:57.773Z",
+              "updatedAt": "2026-08-16T02:08:48.023Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -23340,7 +23340,9 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s2-plan.md"
                 }
-              ]
+              ],
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "wsi-s3-invite-expiry",
@@ -23514,9 +23516,10 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "No user-facing invite-creation surface exists yet (API-only handler shipped in wsi-s1); the round-trip is not usable end-to-end until wsi-s2 merges and a creation UI is built.",
+          "evidence": "Mechanism complete as of wsi-s2; UI blocker (wsi-s6) has since been resolved, but no real production usage has occurred yet to produce a signal.",
           "contributingStories": [
-            "wsi-s1-admin-creates-invite"
+            "wsi-s1-admin-creates-invite",
+            "wsi-s2-invitee-accepts-and-joins"
           ]
         },
         {
@@ -23526,9 +23529,10 @@
           "baseline": "Not yet established",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "Same blockers as m1 -- no UI surface yet and wsi-s2 (acceptance) not yet merged, so elapsed time cannot be measured.",
+          "evidence": "Same reasoning as m1 -- mechanism complete, no real usage yet.",
           "contributingStories": [
-            "wsi-s1-admin-creates-invite"
+            "wsi-s1-admin-creates-invite",
+            "wsi-s2-invitee-accepts-and-joins"
           ]
         }
       ],
