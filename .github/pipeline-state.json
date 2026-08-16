@@ -24168,6 +24168,54 @@
           "assessedAt": "2026-08-16T11:00:00.000Z"
         }
       ]
+    },
+    {
+      "slug": "2026-08-17-settings-improvements",
+      "name": "Settings improvements — locale, plan management, theme relocation",
+      "stage": "benefit-metric",
+      "health": "green",
+      "stories": [],
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Locale preference adoption",
+          "target": "Any signed-in user can set timezone/date-format and see it reflected; >=1 real user beyond the beta reporter sets a non-default value within 4 weeks",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Theme toggle relocation - no usage regression",
+          "target": "Post-relocation click rate within 20% of pre-relocation baseline",
+          "baseline": "Not yet established - 2-week capture window before relocation",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Original beta-reported friction resolved",
+          "target": "Beta user confirms all 3 in-scope asks resolved to his satisfaction",
+          "baseline": "3 explicit asks, 0 confirmed resolved",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "updatedAt": "2026-08-16T19:13:09.108Z",
+      "track": "standard",
+      "discoveryArtefact": "artefacts/2026-08-17-settings-improvements/discovery.md",
+      "discoveryStatus": "approved",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "benefitMetricArtefact": "artefacts/2026-08-17-settings-improvements/benefit-metric.md"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
