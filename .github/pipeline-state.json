@@ -23425,11 +23425,11 @@
             {
               "slug": "wsi-s5-metrics-instrumentation",
               "name": "PostHog instrumentation for both benefit metrics",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-08-16T00:10:44.454Z",
+              "updatedAt": "2026-08-16T02:12:31.945Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -23469,7 +23469,9 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-08-14-wuce-self-serve-invites/plans/wsi-s5-plan.md"
                 }
-              ]
+              ],
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "wsi-s6-invite-creation-ui",
@@ -23520,10 +23522,11 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "Mechanism complete as of wsi-s2; UI blocker (wsi-s6) has since been resolved, but no real production usage has occurred yet to produce a signal.",
+          "evidence": "Instrumentation complete and UI reachable as of 2026-08-16 (wsi-s5 + wsi-s6 both merged) -- first real signal is now purely a function of real usage occurring, not any remaining engineering blocker.",
           "contributingStories": [
             "wsi-s1-admin-creates-invite",
-            "wsi-s2-invitee-accepts-and-joins"
+            "wsi-s2-invitee-accepts-and-joins",
+            "wsi-s5-metrics-instrumentation"
           ]
         },
         {
@@ -23533,11 +23536,12 @@
           "baseline": "Not yet established",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "Same reasoning as m1 -- mechanism complete, no real usage yet.",
+          "evidence": "Same reasoning as m1 -- elapsedMs property exists and is verified correct; first real signal is now purely a function of real usage.",
           "contributingStories": [
             "wsi-s1-admin-creates-invite",
             "wsi-s2-invitee-accepts-and-joins",
-            "wsi-s3-invite-expiry"
+            "wsi-s3-invite-expiry",
+            "wsi-s5-metrics-instrumentation"
           ]
         }
       ],
