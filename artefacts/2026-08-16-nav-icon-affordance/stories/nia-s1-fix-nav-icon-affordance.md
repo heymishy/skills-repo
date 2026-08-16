@@ -18,7 +18,7 @@ So that **I don't accidentally sign myself out with no warning, and I don't wast
 
 ## Architecture Constraints
 
-`src/web-ui/utils/html-shell.js`'s `renderSidebar` and `renderShell` are the sole owners of this markup — both fixes stay entirely inside this one file, per `.github/standards/web-ui/web-ui-patterns.md`'s shared-shell-module rule (never re-implement shell markup per-route). No route file touches this story.
+`src/web-ui/utils/html-shell.js`'s `renderSidebar` and `renderShell` are the sole owners of this markup — both fixes stay entirely inside this one file, per `.github/standards/web-ui/web-ui-patterns.md`'s shared-shell-module named constraint (never re-implement shell markup per-route; this story does not introduce a new constraint, it operates entirely within that existing one). No route file touches this story. No Active ADR in `.github/architecture-guardrails.md` is affected — this fix does not change any guardrail-governed pattern, only markup/CSS inside the already-designated shared-shell module.
 
 **Design reasoning (documented per CLAUDE.md's requirement that a real design call be written down, not just implemented silently):**
 
