@@ -23883,7 +23883,7 @@
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "totalTests": 4,
             "passing": 4,
             "artefact": "artefacts/2026-08-16-team-management-shared-shell-migration/test-plans/tmss-s1-test-plan.md"
@@ -23897,6 +23897,33 @@
           "dorArtefact": "artefacts/2026-08-16-team-management-shared-shell-migration/dor/tmss-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-16-team-management-shared-shell-migration/dor/tmss-s1-dor-contract.md",
           "dorSignedOffAt": "2026-08-16T02:50:39.263Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Migrate handleGetTeamMembers to shared shell (AC1)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-16-team-management-shared-shell-migration/plans/tmss-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Migrate handleGetCreateInviteForm to shared shell (AC2)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-16-team-management-shared-shell-migration/plans/tmss-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Remove _escapeHtml, prove no regression, confirm CSRF unchanged (AC3, AC4)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-16-team-management-shared-shell-migration/plans/tmss-s1-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Open draft PR",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-16-team-management-shared-shell-migration/plans/tmss-s1-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
           "prStatus": "draft",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/743"
         }
