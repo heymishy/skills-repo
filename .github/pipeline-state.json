@@ -24072,24 +24072,32 @@
           "id": "bcf-s1",
           "slug": "bcf-s1",
           "name": "Fix dark-mode (and light-mode) button contrast bug on the Products page",
-          "stage": "definition-of-ready",
+          "stage": "subagent-execution",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "totalTests": 4,
-            "passing": 0,
+            "passing": 4,
             "artefact": "artefacts/2026-08-16-button-contrast-fix/test-plans/bcf-s1-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-16T10:09:41.499Z",
+          "updatedAt": "2026-08-16T10:31:29.510Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-16-button-contrast-fix/dor/bcf-s1-dor.md",
-          "dorContractArtefact": "artefacts/2026-08-16-button-contrast-fix/dor/bcf-s1-dor-contract.md"
+          "dorContractArtefact": "artefacts/2026-08-16-button-contrast-fix/dor/bcf-s1-dor-contract.md",
+          "tasks": [
+            {
+              "id": 1,
+              "name": "Fix dark/light-mode button contrast on Products page (11 color:var(--accent-ink) -> color:#fff)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-16-button-contrast-fix/plans/bcf-s1-plan.md"
+            }
+          ]
         }
       ],
       "metrics": [],
