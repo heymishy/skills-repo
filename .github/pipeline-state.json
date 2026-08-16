@@ -23980,7 +23980,7 @@
       "slug": "2026-08-16-nav-icon-affordance",
       "name": "Fix affordance mismatch on the sign-out control and theme-toggle button in the shared shell",
       "track": "short",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "health": "green",
       "epics": [],
       "stories": [
@@ -23988,7 +23988,7 @@
           "slug": "nia-s1",
           "id": "nia-s1",
           "name": "Fix affordance mismatch on the sign-out control and theme-toggle button",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -24002,20 +24002,22 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": true,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-16T06:32:08.714Z",
-          "dorContractArtefact": "artefacts/2026-08-16-nav-icon-affordance/dor/nia-s1-dor-contract.md"
+          "updatedAt": "2026-08-16T06:33:00.796Z",
+          "dorContractArtefact": "artefacts/2026-08-16-nav-icon-affordance/dor/nia-s1-dor-contract.md",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-16-nav-icon-affordance/dor/nia-s1-dor.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-16T06:28:42.759Z",
+      "updatedAt": "2026-08-16T06:33:39.055Z",
       "guardrails": [
         {
           "id": "nav-icon-affordance-accessibility",
           "category": "accessibility",
           "label": "Sign-out control must have a visible, non-hover-only affordance signal",
-          "status": "in-progress",
-          "assessedBy": "/test-plan",
-          "assessedAt": "2026-08-16T06:28:42.759Z"
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-16T06:33:39.055Z"
         }
       ]
     }
@@ -24099,5 +24101,5 @@
     ],
     "lastUpdated": "2026-08-16"
   },
-  "updatedAt": "2026-08-16T06:28:42.759Z"
+  "updatedAt": "2026-08-16T06:33:39.055Z"
 }
