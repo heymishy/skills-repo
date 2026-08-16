@@ -24172,8 +24172,8 @@
     {
       "slug": "2026-08-17-settings-improvements",
       "name": "Settings improvements — locale, plan management, theme relocation",
-      "stage": "definition",
-      "health": "green",
+      "stage": "review",
+      "health": "red",
       "stories": [],
       "metrics": [
         {
@@ -24207,7 +24207,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-16T19:29:59.616Z",
+      "updatedAt": "2026-08-16T19:49:42.612Z",
       "track": "standard",
       "discoveryArtefact": "artefacts/2026-08-17-settings-improvements/discovery.md",
       "discoveryStatus": "approved",
@@ -24226,20 +24226,29 @@
             {
               "slug": "si-s1",
               "name": "Relocate the theme toggle into Settings",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-08-16T19:47:01.437Z",
+              "reviewStatus": "passed",
+              "highFindings": 0
             },
             {
               "slug": "si-s2",
               "name": "Add a timezone and date-format preference to Settings",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "red",
+              "updatedAt": "2026-08-16T19:47:33.103Z",
+              "reviewStatus": "has-findings",
+              "highFindings": 1
             },
             {
               "slug": "si-s3",
               "name": "Confirm the Stripe billing portal satisfies the \"manage my plan\" ask",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "updatedAt": "2026-08-16T19:47:54.634Z",
+              "reviewStatus": "passed",
+              "highFindings": 0
             }
           ]
         }
@@ -24249,7 +24258,10 @@
           "id": "MC-SEC-01",
           "category": "mandatory-constraint",
           "label": "No user-supplied content in innerHTML without sanitisation",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "si-s1/si-s2 Architecture Constraints require escHtml() on any dynamic value re-rendered in the Profile tab, per web-ui-patterns.md shared shell rule.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-08-16T19:49:28.136Z"
         },
         {
           "id": "MC-SEC-02",
@@ -24309,7 +24321,10 @@
           "id": "MC-A11Y-01",
           "category": "mandatory-constraint",
           "label": "Interactive elements keyboard-accessible",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "si-s1 AC/NFR retains existing aria-label and focus-visible behaviour on relocation; si-s2 NFR requires keyboard-navigable, labelled form selectors.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-08-16T19:49:28.136Z"
         },
         {
           "id": "MC-A11Y-02",
@@ -24399,7 +24414,10 @@
           "id": "PAT-06",
           "category": "pattern",
           "label": "Execution pre-condition gate on runtime artefact existence (DoR PROCEED-BLOCKED)",
-          "status": "not-assessed"
+          "status": "not-met",
+          "evidence": "si-s3 review run 1 finding 1-M1: AC3 requires a staging account with a configured Stripe customer ID with no DoR PROCEED-BLOCKED gate expressed for that fixture, per this pattern.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-08-16T19:49:28.136Z"
         },
         {
           "id": "PAT-07",
@@ -24549,7 +24567,10 @@
           "id": "ADR-025",
           "category": "adr",
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "si-s2 Architecture Constraints correctly reasons this is a per-user preference within the existing session-scoped tenant boundary, no new resource requiring a dedicated tenant guard. (Note: si-s2 review run 1 finding 1-H1 flags the WRONG underlying table (users vs people) as a separate ADR-026 reuse-check gap -- the tenant-scoping reasoning itself is sound.)",
+          "assessedBy": "/review",
+          "assessedAt": "2026-08-16T19:49:28.136Z"
         }
       ]
     }
