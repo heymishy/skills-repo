@@ -29,14 +29,6 @@ function setLogger(logger) {
   _logger = logger;
 }
 
-function _escapeHtml(s) {
-  return String(s == null ? '' : s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;');
-}
-
 /**
  * Read and parse the request body (form-urlencoded). Mirrors admin-credits.js's
  * own _readBody convention exactly.

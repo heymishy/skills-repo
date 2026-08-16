@@ -73,6 +73,55 @@ await checkAsyncOrSync('AC2: teamManagement_getCreateInviteForm_rendersViaShared
   assert.ok(/<form method="POST" action="\/api\/team\/invites">/.test(html), 'expected the form to still POST to the unchanged /api/team/invites endpoint');
 });
 
+function htmlShellEscape(s) {
+  return String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+await checkAsyncOrSync('AC3: teamManagement_escapeHtmlRemoved_escHtmlUsedNoRegression', async () => {
+  var src = fs.readFileSync(TEAM_MANAGEMENT_ROUTES_PATH, 'utf8');
+  assert.ok(!/function _escapeHtml/.test(src), 'expected the locally-defined _escapeHtml function to be removed entirely');
+  assert.ok(!/\b_escapeHtml\(/.test(src), 'expected no remaining call sites of the removed _escapeHtml function');
+
+  var teamManagementRoutes = require(TEAM_MANAGEMENT_ROUTES_PATH);
+  var teamManagement = require(path.join(ROOT, 'src', 'web-ui', 'modules', 'team-management'));
+  var handlers = teamManagementRoutes.createTeamManagementHandlers({});
+
+  var maliciousRole = '"><script>bad</script>';
+  teamManagement.VALID_ROLES.push(maliciousRole);
+  try {
+    var req = mockReq();
+    var res = mockRes();
+    handlers.handleGetTeamMembers(req, res);
+    var html = res._get().body;
+
+    assert.ok(html.indexOf('<script>bad</script>') === -1, 'expected the malicious role value to NOT appear unescaped in the rendered HTML');
+    assert.ok(html.indexOf(htmlShellEscape(maliciousRole)) !== -1, 'expected the malicious role value to appear HTML-escaped');
+  } finally {
+    teamManagement.VALID_ROLES.pop();
+  }
+});
+
+await checkAsyncOrSync('AC4: teamManagement_csrfFieldUnchangedInBothForms', async () => {
+  var teamManagementRoutes = require(TEAM_MANAGEMENT_ROUTES_PATH);
+  var handlers = teamManagementRoutes.createTeamManagementHandlers({});
+
+  var req1 = mockReq();
+  var res1 = mockRes();
+  handlers.handleGetTeamMembers(req1, res1);
+  var html1 = res1._get().body;
+  assert.ok(/<input type="hidden" name="_csrf" value="test-csrf-token">/.test(html1), 'expected an unchanged CSRF hidden field on /team/members');
+
+  var req2 = mockReq();
+  var res2 = mockRes();
+  handlers.handleGetCreateInviteForm(req2, res2);
+  var html2 = res2._get().body;
+  assert.ok(/<input type="hidden" name="_csrf" value="test-csrf-token">/.test(html2), 'expected an unchanged CSRF hidden field on /team/invites/new');
+});
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 if (failed > 0) process.exit(1);
 
