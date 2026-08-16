@@ -24248,24 +24248,26 @@
             {
               "slug": "si-s2",
               "name": "Add a timezone and date-format preference to Settings",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-08-16T20:16:12.567Z",
+              "updatedAt": "2026-08-16T23:57:56.354Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 9,
-                "passing": 0,
+                "totalTests": 10,
+                "passing": 10,
                 "artefact": "artefacts/2026-08-17-settings-improvements/test-plans/si-s2-test-plan.md"
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-17-settings-improvements/dor/si-s2-dor.md",
-              "dorContractArtefact": "artefacts/2026-08-17-settings-improvements/dor/si-s2-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-08-17-settings-improvements/dor/si-s2-dor-contract.md",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/748"
             },
             {
               "slug": "si-s3",
