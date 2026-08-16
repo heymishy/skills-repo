@@ -24031,11 +24031,11 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": true,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-16T07:08:36.115Z",
+          "updatedAt": "2026-08-16T09:50:41.524Z",
           "dorContractArtefact": "artefacts/2026-08-16-nav-icon-affordance/dor/nia-s1-dor-contract.md",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-16-nav-icon-affordance/dor/nia-s1-dor.md",
-          "prStatus": "open",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/745",
           "verifyStatus": "passed"
         }
