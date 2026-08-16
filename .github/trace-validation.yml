@@ -87,6 +87,7 @@ reference_dirs:
   - test-slug
   - 2026-07-01-security-perf-hardening
   - 2026-07-01-session-resume-hardening
+  - feedback
 tracks_without_discovery:
   - short
   - defect
