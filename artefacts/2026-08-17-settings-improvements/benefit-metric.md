@@ -60,9 +60,9 @@ This is a straightforward product-improvement initiative closing real beta-user 
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Metric 1: Locale preference adoption | TBD at /definition | Pending |
-| Metric 2: Theme toggle relocation — no usage regression | TBD at /definition | Pending |
-| Metric 3: Original beta-reported friction resolved | TBD at /definition | Pending |
+| Metric 1: Locale preference adoption | si-s2 | Covered |
+| Metric 2: Theme toggle relocation — no usage regression | si-s1 | Covered |
+| Metric 3: Original beta-reported friction resolved | si-s1, si-s2, si-s3 | Covered |
 
 ---
 
