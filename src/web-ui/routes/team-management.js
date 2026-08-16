@@ -13,6 +13,7 @@ var magicLinkStrategy = require('../auth/magic-link-strategy');
 // sec-perf-s3: session-scoped CSRF (Cross-Site Request Forgery) protection.
 var csrf = require('../middleware/csrf');
 var _posthog = require('../modules/posthog-server');
+var htmlShell = require('../utils/html-shell');
 
 // Audit logger — replaced via setLogger() in tests and production bootstrap.
 // Mirrors account-linking.js's own _logger / setLogger convention exactly.
@@ -73,14 +74,13 @@ function createTeamManagementHandlers(pool) {
    */
   function handleGetTeamMembers(req, res) {
     var roleOptions = teamManagement.VALID_ROLES.map(function(r) {
-      return '<option value="' + _escapeHtml(r) + '">' + _escapeHtml(r) + '</option>';
+      return '<option value="' + htmlShell.escHtml(r) + '">' + htmlShell.escHtml(r) + '</option>';
     }).join('');
 
     // sec-perf-s3 AC2: session-scoped CSRF token, embedded in the add-teammate form below.
     var csrfToken = csrf.generateCsrfToken(req);
 
-    var html = '<!DOCTYPE html><html><head><title>Team members</title></head><body>' +
-      '<h1>Team members</h1>' +
+    var bodyContent = '<h1>Team members</h1>' +
       '<form method="POST" action="/api/team/members">' +
       csrf.csrfField(csrfToken) +
       '<label for="identity">Add teammate by identity (GitHub login, Google email, or email/password email)</label>' +
@@ -88,8 +88,16 @@ function createTeamManagementHandlers(pool) {
       '<label for="role">Role</label>' +
       '<select id="role" name="role" required>' + roleOptions + '</select>' +
       '<button type="submit">Add teammate</button>' +
-      '</form>' +
-      '</body></html>';
+      '</form>';
+
+    var html = htmlShell.renderShell({
+      title: 'Team members',
+      bodyContent: bodyContent,
+      user: req.session,
+      active: 'team-members',
+      crumbs: ['Team members'],
+      isAdmin: true
+    });
 
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
