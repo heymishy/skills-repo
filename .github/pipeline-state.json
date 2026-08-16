@@ -23970,9 +23970,35 @@
           "dorArtefact": "artefacts/2026-08-16-billing-portal-error-handling/dor/bpe-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-16-billing-portal-error-handling/dor/bpe-s1-dor-contract.md",
           "dorSignedOffAt": "2026-08-16T06:32:06.124Z",
+          "verifyStatus": "passed",
           "prStatus": "draft",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/744",
-          "verifyStatus": "passed"
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Regression baseline for handleGetBillingPortal (AC1-AC3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-16-billing-portal-error-handling/plans/bpe-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Missing/falsy stripeCustomerId guard (AC4)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-16-billing-portal-error-handling/plans/bpe-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Catch genuine Stripe API failure + NFR logging test (AC5)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-16-billing-portal-error-handling/plans/bpe-s1-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Open draft PR",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-16-billing-portal-error-handling/plans/bpe-s1-plan.md"
+            }
+          ]
         }
       ],
       "metrics": [],
