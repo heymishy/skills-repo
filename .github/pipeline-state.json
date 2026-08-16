@@ -24019,7 +24019,7 @@
       "guardrails": [
         {
           "id": "nav-icon-affordance-accessibility",
-          "category": "accessibility",
+          "category": "nfr",
           "label": "Sign-out control must have a visible, non-hover-only affordance signal",
           "status": "met",
           "assessedBy": "/definition-of-ready",
