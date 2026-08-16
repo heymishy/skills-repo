@@ -23865,6 +23865,52 @@
       ],
       "slicingStrategy": "walking-skeleton",
       "lastImprove": "2026-08-16"
+    },
+    {
+      "slug": "2026-08-16-team-management-shared-shell-migration",
+      "name": "Migrate team-management admin pages onto the shared HTML shell",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "tmss-s1",
+          "id": "tmss-s1",
+          "name": "Migrate team-management admin pages onto the shared HTML shell (renderShell/escHtml)",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-16-team-management-shared-shell-migration/test-plans/tmss-s1-test-plan.md"
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-16T02:50:39.263Z",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-16-team-management-shared-shell-migration/dor/tmss-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-16-team-management-shared-shell-migration/dor/tmss-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-08-16T02:50:39.263Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-16T02:50:39.263Z",
+      "guardrails": [
+        {
+          "id": "web-ui-patterns-shared-shell",
+          "category": "pattern",
+          "label": "Shared shell module (renderShell/escHtml) required for every HTML route view",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-16T02:50:39.263Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
