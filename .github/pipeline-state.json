@@ -23892,7 +23892,7 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-16T04:17:42.263Z",
+          "updatedAt": "2026-08-16T05:45:10.752Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-16-team-management-shared-shell-migration/dor/tmss-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-16-team-management-shared-shell-migration/dor/tmss-s1-dor-contract.md",
@@ -23924,7 +23924,7 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/743"
         }
       ],
