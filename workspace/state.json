@@ -52,5 +52,12 @@
       "The 5 skill-improvement proposals (workspace/proposals/2026-08-14-*-improve-proposal.md) remain pending_review -- operator to decide whether/when to route these through this repo's own governed skill-update PR process",
       "nia-s1 (2026-08-16-nav-icon-affordance, PR #745, draft): AC3 RISK-ACCEPT post-deployment smoke test -- once this PR merges and deploys to wuce-staging.fly.dev, manually verify the theme-toggle button (top-right of the header on any signed-in page) visually reads as a sun/moon theme control, not a profile/avatar placeholder, on a real device or emulated mobile viewport -- this closes the one AC (AC3 visual legibility) that unit tests could not fully verify. See artefacts/2026-08-16-nav-icon-affordance/verification-scripts/nia-s1-verification.md Scenario 3 and decisions.md RISK-ACCEPT entry (test-plan, H-E2E/B2)."
     ]
-  }
+  },
+  "pendingActions": [
+    {
+      "date": "2026-08-16",
+      "action": "Run /definition-of-done for the pre-existing backlog of 161 merged-but-DoD-less stories across the repo history (found via a full pipeline-state.json scan on 2026-08-16 -- 164 total merged stories missing DoD, of which 3 -- tmss-s1, bpe-s1, nia-s1 -- were completed the same session this was logged). Operator explicitly deferred this to a future session rather than doing it alongside same-day work. Re-run the same scan query to get the current list, since more stories will likely merge before this is picked up.",
+      "owner": "operator/next session"
+    }
+  ]
 }

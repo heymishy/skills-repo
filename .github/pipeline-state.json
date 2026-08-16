@@ -23878,7 +23878,7 @@
           "slug": "tmss-s1",
           "id": "tmss-s1",
           "name": "Migrate team-management admin pages onto the shared HTML shell (renderShell/escHtml)",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -23892,7 +23892,7 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-16T05:45:10.752Z",
+          "updatedAt": "2026-08-16T09:55:16.084Z",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-16-team-management-shared-shell-migration/dor/tmss-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-16-team-management-shared-shell-migration/dor/tmss-s1-dor-contract.md",
@@ -23925,7 +23925,10 @@
           ],
           "verifyStatus": "passed",
           "prStatus": "merged",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/743"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/743",
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-08-16-team-management-shared-shell-migration/dod/tmss-s1-dod.md",
+          "releaseReady": true
         }
       ],
       "metrics": [],
@@ -23950,7 +23953,7 @@
         {
           "id": "bpe-s1",
           "name": "Add error handling and a missing-customer guard to the Stripe Billing Portal redirect",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 9,
@@ -23962,7 +23965,7 @@
           "health": "green",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-16T09:29:21.900Z",
+          "updatedAt": "2026-08-16T09:56:29.644Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "slug": "bpe-s1",
@@ -23998,7 +24001,10 @@
               "tddState": "committed",
               "file": "artefacts/2026-08-16-billing-portal-error-handling/plans/bpe-s1-plan.md"
             }
-          ]
+          ],
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-08-16-billing-portal-error-handling/dod/bpe-s1-dod.md",
+          "releaseReady": true
         }
       ],
       "metrics": [],
@@ -24017,7 +24023,7 @@
           "slug": "nia-s1",
           "id": "nia-s1",
           "name": "Fix affordance mismatch on the sign-out control and theme-toggle button",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -24031,13 +24037,16 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": true,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-16T09:50:41.524Z",
+          "updatedAt": "2026-08-16T09:57:39.286Z",
           "dorContractArtefact": "artefacts/2026-08-16-nav-icon-affordance/dor/nia-s1-dor-contract.md",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-16-nav-icon-affordance/dor/nia-s1-dor.md",
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/745",
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "dodStatus": "complete-with-deviations",
+          "dodArtefact": "artefacts/2026-08-16-nav-icon-affordance/dod/nia-s1-dod.md",
+          "releaseReady": true
         }
       ],
       "metrics": [],
