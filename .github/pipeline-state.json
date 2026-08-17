@@ -16290,7 +16290,7 @@
               "id": "csd-s7-as-built-system-architecture-diagram",
               "slug": "csd-s7-as-built-system-architecture-diagram",
               "name": "As-built System Architecture diagram generation via static service-call detection",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "not-started",
               "highFindings": 0,
@@ -16308,20 +16308,26 @@
               "dorStatus": "signed-off",
               "dorSignedOffAt": "2026-07-26T00:00:00Z",
               "prStatus": "merged",
-              "updatedAt": "2026-07-26T05:50:46.215Z"
+              "updatedAt": "2026-08-17T08:41:18.450Z",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-25-code-shape-diagrams/dod/csd-s7-dod.md"
             },
             {
               "id": "alrf-s9",
               "slug": "alrf-s9-design-as-built-context-injection",
               "name": "Feed as-built Data Model / System Architecture into /design system prompt",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "acTotal": 6,
               "acVerified": 6,
               "artefact": "artefacts/2026-07-25-code-shape-diagrams/stories/alrf-s9-design-as-built-context-injection.md",
               "prStatus": "merged",
               "notes": "Answers the operators architecture question: does /design need a tie-in to the products existing data model/architecture from prior feature runs? Yes -- SKILL.md already required it but nothing fed it in. buildSystemPrompt() now injects a fresh, read-only as-built snapshot (via the existing csd-s5/csd-s7 generators) into /design sessions only.",
-              "updatedAt": "2026-07-26T09:27:10.594Z"
+              "updatedAt": "2026-08-17T08:41:18.450Z",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-25-code-shape-diagrams/dod/alrf-s9-dod.md"
             }
           ]
         }
