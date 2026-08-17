@@ -5550,11 +5550,20 @@
               "testPlanWrittenAt": "2026-05-25",
               "dorStatus": "signed-off",
               "prStatus": "merged",
-              "updatedAt": "2026-05-25",
+              "updatedAt": "2026-08-17T06:19:48.192Z",
               "dorArtefact": "artefacts/2026-05-24-governance-platform-architecture/dor/gpa-sc-01-trace-contract-dor.md",
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/360",
               "dispatchedAt": "2026-05-25T00:00:00Z",
-              "dispatchTarget": "vscode"
+              "dispatchTarget": "vscode",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/367",
+              "testPlan": {
+                "totalTests": 27,
+                "passing": 27,
+                "status": "all-passing"
+              },
+              "dodArtefact": "artefacts/2026-05-24-governance-platform-architecture/dod/gpa-sc-01-dod.md"
             },
             {
               "slug": "gpa-sc-04-test-output-format",
@@ -5569,11 +5578,20 @@
               "testPlanWrittenAt": "2026-05-25",
               "dorStatus": "signed-off",
               "prStatus": "merged",
-              "updatedAt": "2026-05-25",
+              "updatedAt": "2026-08-17T06:19:48.192Z",
               "dorArtefact": "artefacts/2026-05-24-governance-platform-architecture/dor/gpa-sc-04-test-output-format-dor.md",
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/361",
               "dispatchedAt": "2026-05-25T00:00:00Z",
-              "dispatchTarget": "vscode"
+              "dispatchTarget": "vscode",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/368",
+              "testPlan": {
+                "totalTests": 11,
+                "passing": 11,
+                "status": "all-passing"
+              },
+              "dodArtefact": "artefacts/2026-05-24-governance-platform-architecture/dod/gpa-sc-04-dod.md"
             },
             {
               "slug": "gpa-sc-05-skills-init",
@@ -5588,11 +5606,20 @@
               "testPlanWrittenAt": "2026-05-25",
               "dorStatus": "signed-off",
               "prStatus": "merged",
-              "updatedAt": "2026-05-25",
+              "updatedAt": "2026-08-17T06:19:48.192Z",
               "dorArtefact": "artefacts/2026-05-24-governance-platform-architecture/dor/gpa-sc-05-skills-init-dor.md",
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/362",
               "dispatchedAt": "2026-05-25T00:00:00Z",
-              "dispatchTarget": "vscode"
+              "dispatchTarget": "vscode",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/369",
+              "testPlan": {
+                "totalTests": 42,
+                "passing": 42,
+                "status": "all-passing"
+              },
+              "dodArtefact": "artefacts/2026-05-24-governance-platform-architecture/dod/gpa-sc-05-dod.md"
             }
           ]
         },
@@ -5614,12 +5641,19 @@
               "prStatus": "merged",
               "testPlan": {
                 "artefact": "artefacts/2026-05-24-governance-platform-architecture/test-plans/gpa-sc-07-inline-js-extraction-test-plan.md",
-                "writtenAt": "2026-05-25"
+                "writtenAt": "2026-05-25",
+                "totalTests": 8,
+                "passing": 8,
+                "status": "all-passing"
               },
-              "updatedAt": "2026-05-25",
+              "updatedAt": "2026-08-17T06:19:48.192Z",
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/363",
               "dispatchedAt": "2026-05-25T00:00:00Z",
-              "dispatchTarget": "vscode"
+              "dispatchTarget": "vscode",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/366",
+              "dodArtefact": "artefacts/2026-05-24-governance-platform-architecture/dod/gpa-sc-07-dod.md"
             },
             {
               "slug": "gpa-sc-03-cli-validate-ci",
@@ -5634,12 +5668,19 @@
               "prStatus": "merged",
               "testPlan": {
                 "artefact": "artefacts/2026-05-24-governance-platform-architecture/test-plans/gpa-sc-03-cli-validate-ci-test-plan.md",
-                "writtenAt": "2026-05-25"
+                "writtenAt": "2026-05-25",
+                "totalTests": 13,
+                "passing": 13,
+                "status": "all-passing"
               },
-              "updatedAt": "2026-05-25",
+              "updatedAt": "2026-08-17T06:19:48.192Z",
               "issueUrl": "https://github.com/heymishy/skills-repo/issues/365",
               "dispatchedAt": "2026-05-25T00:00:00Z",
-              "dispatchTarget": "vscode"
+              "dispatchTarget": "vscode",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/370",
+              "dodArtefact": "artefacts/2026-05-24-governance-platform-architecture/dod/gpa-sc-03-dod.md"
             },
             {
               "slug": "gpa-sc-06-source-path-guard",
@@ -5654,9 +5695,16 @@
               "prStatus": "merged",
               "testPlan": {
                 "artefact": "artefacts/2026-05-24-governance-platform-architecture/test-plans/gpa-sc-06-source-path-guard-test-plan.md",
-                "writtenAt": "2026-05-25"
+                "writtenAt": "2026-05-25",
+                "totalTests": 7,
+                "passing": 7,
+                "status": "all-passing"
               },
-              "updatedAt": "2026-05-25"
+              "updatedAt": "2026-08-17T06:19:48.192Z",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/371",
+              "dodArtefact": "artefacts/2026-05-24-governance-platform-architecture/dod/gpa-sc-06-dod.md"
             },
             {
               "slug": "gpa-sc-02-unified-gate-evaluator",
