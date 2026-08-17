@@ -24226,9 +24226,9 @@
             {
               "slug": "si-s1",
               "name": "Relocate the theme toggle into Settings",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-08-17T04:24:43.943Z",
+              "updatedAt": "2026-08-17T04:25:58.614Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -24244,7 +24244,9 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-17-settings-improvements/dor/si-s1-dor.md",
               "dorContractArtefact": "artefacts/2026-08-17-settings-improvements/dor/si-s1-dor-contract.md",
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/749"
             },
             {
               "slug": "si-s2",
