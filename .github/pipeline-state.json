@@ -15648,22 +15648,22 @@
     {
       "slug": "2026-07-25-feature-display-name-and-progress",
       "name": "Feature display name at creation/rename + progress proxy for unknown-health features",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "reviewStatus": "not-required",
       "highFindings": 0,
-      "updatedAt": "2026-07-25T00:25:16.775Z",
+      "updatedAt": "2026-08-17T08:38:43.505Z",
       "track": "short",
       "stories": [
         {
           "slug": "fdn-s1-feature-display-name",
           "id": "fdn-s1-feature-display-name",
           "name": "Give a feature a real name at creation, and let it be renamed afterward",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-07-25T00:25:16.775Z",
+          "updatedAt": "2026-08-17T08:38:43.505Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 15,
@@ -15675,17 +15675,20 @@
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-07-25-feature-display-name-and-progress/dor/fdn-s1-dor.md",
           "dorStatus": "signed-off",
-          "prStatus": "merged"
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-25-feature-display-name-and-progress/dod/fdn-s1-dod.md"
         },
         {
           "slug": "fps-s1-progress-proxy-for-unknown-health",
           "id": "fps-s1-progress-proxy-for-unknown-health",
           "name": "Show pipeline progress instead of a bare Unknown for features with no test data yet",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-07-25T00:25:16.775Z",
+          "updatedAt": "2026-08-17T08:38:43.505Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 7,
@@ -15697,7 +15700,10 @@
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-07-25-feature-display-name-and-progress/dor/fps-s1-dor.md",
           "dorStatus": "signed-off",
-          "prStatus": "merged"
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-25-feature-display-name-and-progress/dod/fps-s1-dod.md"
         }
       ]
     },
