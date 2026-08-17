@@ -25022,6 +25022,28 @@
       "updatedAt": "2026-08-17T05:49:11.962Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-08-17-canvas-story-extraction-gate-confirm-gap",
+      "name": "Story-extraction regression test and gate-confirm 400 investigation (found during canvas-render-and-story-extraction-fix DoD review)",
+      "stage": "definition",
+      "health": "amber",
+      "stories": [
+        {
+          "id": "csgc-s1",
+          "slug": "csgc-s1",
+          "name": "Add regression test for story-extraction and investigate the unexplained gate-confirm 400",
+          "stage": "definition",
+          "health": "amber",
+          "dorStatus": "not-started",
+          "dodStatus": "not-started",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-17T07:02:47.464Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

@@ -73,6 +73,11 @@
       "date": "2026-08-17",
       "action": "New short-track story sbrc-s1 (2026-08-17-scenario-b-not-required-check) created: a real gap found during the DoD backlog pass on b2 (2026-07-23-e2e-core-journey-coverage) -- b2's own AC1 requires 'a PR that breaks Scenario B... the PR's merge is blocked', but the live master branch ruleset (gh api repos/heymishy/skills-repo/rulesets/14979696) only lists 'Run assurance gate' and 'Scenario A E2E (staging)' in required_status_checks -- 'Scenario B E2E (staging)' is NOT required, even though the job runs on every PR. b2's own test file (check-b2-ci-gate-config.js) already flags this as SKIPPED/inconclusive rather than a hard failure, since it depends on live GitHub ruleset state the test can't assert confidently offline -- the live gh api check confirms it's a real, current gap. Story artefact written: adds one context entry to the existing ruleset (same pattern already used for Scenario A by a5). Needs /test-plan -> /definition-of-ready -> dispatch -- not yet started.",
       "owner": "operator/next session -- run /test-plan for sbrc-s1 next"
+    },
+    {
+      "date": "2026-08-17",
+      "action": "New short-track story csgc-s1 (2026-08-17-canvas-story-extraction-gate-confirm-gap) created: closes a gap self-documented (not newly discovered) by r-canvas-render-and-story-extraction-fix's own AC3 at merge time (2026-07-26, PR #613) -- extractStoryIdsFromDefinitionArtefact() was manually verified correct against the corrected fixture (finds [\"mock-fixture.1\"]) but this was never captured as an automated regression test, and a 400 on POST /api/journey/:id/gate-confirm observed immediately after a real /definition turn was left unconfirmed either way. Story artefact written with AC1 (regression test for the extraction function), AC2 (regression coverage for the downstream auto-skip-to-review logic that consumes it), and AC3 (root-cause or explicitly rule out the 400). Needs /test-plan -> /definition-of-ready -> dispatch -- not yet started.",
+      "owner": "operator/next session -- run /test-plan for csgc-s1 next"
     }
   ]
 }
