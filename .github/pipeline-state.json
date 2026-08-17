@@ -10244,9 +10244,9 @@
             {
               "slug": "prc-s1.1",
               "name": "Add repo association columns to the products table",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-15T06:00:17.803Z",
+              "updatedAt": "2026-08-17T06:00:36.289Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s1.1-review-1.md",
@@ -10269,14 +10269,17 @@
               "prNumber": 478,
               "prUrl": "https://github.com/heymishy/skills-repo/pull/478",
               "mergeCommit": "2f0b486eb0cdf6f15c6b5460740e1c36d8dbc09e",
-              "mergedAt": "2026-07-15T06:00:17.803Z"
+              "mergedAt": "2026-07-15T06:00:17.803Z",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-14-product-repo-config/dod/prc-s1.1-dod.md"
             },
             {
               "slug": "prc-s1.2",
               "name": "Connect an existing GitHub repo to a product",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-15T06:52:37.910Z",
+              "updatedAt": "2026-08-17T06:00:36.289Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s1.2-review-1.md",
@@ -10299,14 +10302,17 @@
               "prNumber": 479,
               "prUrl": "https://github.com/heymishy/skills-repo/pull/479",
               "mergeCommit": "99bd7ff4e3c95f6931bde7de4ad9ac613dc6d649",
-              "mergedAt": "2026-07-15T06:52:37.910Z"
+              "mergedAt": "2026-07-15T06:52:37.910Z",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-14-product-repo-config/dod/prc-s1.2-dod.md"
             },
             {
               "slug": "prc-s1.3",
               "name": "Resolve sign-off write-back to the product's own repo",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-15T11:19:11.433Z",
+              "updatedAt": "2026-08-17T06:00:36.289Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s1.3-review-1.md",
@@ -10329,7 +10335,10 @@
               "prNumber": 481,
               "prUrl": "https://github.com/heymishy/skills-repo/pull/481",
               "mergeCommit": "93641f8c288bdf5e6b336d104c0ef28c2827f0bb",
-              "mergedAt": "2026-07-15T11:19:11.433Z"
+              "mergedAt": "2026-07-15T11:19:11.433Z",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-14-product-repo-config/dod/prc-s1.3-dod.md"
             },
             {
               "slug": "prc-s1.4",
@@ -10366,9 +10375,9 @@
             {
               "slug": "prc-s2.1",
               "name": "Create a new GitHub repo directly from product creation",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-15T08:15:46.422Z",
+              "updatedAt": "2026-08-17T06:00:36.289Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s2.1-review-1.md",
@@ -10391,21 +10400,24 @@
               "prNumber": 480,
               "prUrl": "https://github.com/heymishy/skills-repo/pull/480",
               "mergeCommit": "c2eaac93ff8d5a571f3477bbf620bd14e1f4c50d",
-              "mergedAt": "2026-07-15T08:15:46.422Z"
+              "mergedAt": "2026-07-15T08:15:46.422Z",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-14-product-repo-config/dod/prc-s2.1-dod.md"
             },
             {
               "slug": "prc-s2.2",
               "name": "Bootstrap a newly created repo with the skills framework",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-08-08T01:10:19.018Z",
+              "updatedAt": "2026-08-17T06:00:36.289Z",
               "reviewStatus": "has-findings",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s2.2-review-1.md",
               "testPlan": {
-                "status": "written",
-                "totalTests": 5,
-                "passing": 5
+                "status": "all-passing",
+                "totalTests": 4,
+                "passing": 4
               },
               "acTotal": 4,
               "acVerified": 4,
@@ -10419,7 +10431,11 @@
               "dorSignedOffAt": "2026-07-14T10:27:25.197Z",
               "prStatus": "merged",
               "prNumber": 664,
-              "mergeCommit": "f57a6289374c442ca36914b512dcfd1192894274"
+              "mergeCommit": "f57a6289374c442ca36914b512dcfd1192894274",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/664",
+              "dodArtefact": "artefacts/2026-07-14-product-repo-config/dod/prc-s2.2-dod.md"
             },
             {
               "slug": "prc-s2.3",
@@ -10563,9 +10579,9 @@
             {
               "slug": "prc-s4.1",
               "name": "Edit a product's name, description, and repo association",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-15T12:18:31.689Z",
+              "updatedAt": "2026-08-17T06:00:36.289Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s4.1-review-1.md",
@@ -10588,14 +10604,17 @@
               "prNumber": 482,
               "prUrl": "https://github.com/heymishy/skills-repo/pull/482",
               "mergeCommit": "8480dbd75f866c3d029a259b4902f0fd736a7155",
-              "mergedAt": "2026-07-15T12:18:31.689Z"
+              "mergedAt": "2026-07-15T12:18:31.689Z",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-14-product-repo-config/dod/prc-s4.1-dod.md"
             },
             {
               "slug": "prc-s4.2",
               "name": "Delete (detach) a product",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-14T18:03:17.522Z",
+              "updatedAt": "2026-08-17T06:00:36.289Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-14-product-repo-config/review/prc-s4.2-review-2.md",
@@ -10618,7 +10637,10 @@
               "prNumber": 477,
               "prUrl": "https://github.com/heymishy/skills-repo/pull/477",
               "mergeCommit": "89a1b749fbdab9970fead263f07f58d6ecdb2cec",
-              "mergedAt": "2026-07-14T18:03:17.522Z"
+              "mergedAt": "2026-07-14T18:03:17.522Z",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-14-product-repo-config/dod/prc-s4.2-dod.md"
             },
             {
               "slug": "prc-s4.3",
