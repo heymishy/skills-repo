@@ -85,3 +85,10 @@
 **Made by:** Claude (agent), implementing si-s2, caught via full-suite diff against the /branch-setup baseline (verify-completion scoping)
 **Revisit trigger:** None expected.
 ---
+**[2026-08-17] | RISK-ACCEPT | si-s3 live verification**
+**Decision:** si-s3's AC3 (an account with a real Stripe customer ID reaching the actual portal) is left for the operator's own manual review rather than the agent completing it via two other available paths: logging into the separate `test@test.com` account, or upgrading the currently-verified `heymishy` account through the Stripe test-sandbox checkout with a test card number.
+**Alternatives considered:** (1) Agent logs into `test@test.com` — rejected, requires entering a password, which is out of scope for the agent regardless of the account being a staging/test account. (2) Agent upgrades `heymishy`'s account via Stripe test-sandbox checkout — rejected, requires entering a card number, which is out of scope for the agent even though it is a published Stripe test-mode dummy card with zero real financial risk. Both are categorical boundaries, not risk-based judgment calls.
+**Rationale:** AC1 and AC2 are now confirmed live and passing (regression suites clean; the `no_billing_account` error banner renders correctly, scoped to the Billing tab, exact expected text). AC3 is the one remaining check, and the operator explicitly chose to complete it themselves rather than hand over either credential path.
+**Made by:** Hamish King (operator choice, after the agent explained why it could not perform either handoff itself)
+**Revisit trigger:** When the operator completes AC3 manually, record the full AC1-AC4 outcome in si-s3's DoD and close this entry.
+---

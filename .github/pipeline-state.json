@@ -24277,7 +24277,7 @@
               "name": "Confirm the Stripe billing portal satisfies the \"manage my plan\" ask",
               "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-08-17T02:17:48.710Z",
+              "updatedAt": "2026-08-17T04:52:33.825Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -24287,7 +24287,7 @@
                 "artefact": "artefacts/2026-08-17-settings-improvements/test-plans/si-s3-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 1,
+              "acVerified": 2,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
