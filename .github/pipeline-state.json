@@ -15794,11 +15794,11 @@
           "slug": "spv-s1-reject-non-price-id-checkout-config",
           "id": "spv-s1-reject-non-price-id-checkout-config",
           "name": "Fail fast with a clear log when a plan Stripe price ID env var is misconfigured",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-08-04T10:24:54.905Z",
+          "updatedAt": "2026-08-17T12:19:14.655Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 4,
@@ -15811,7 +15811,10 @@
           "dorArtefact": "artefacts/2026-07-25-stripe-price-id-validation/dor/spv-s1-dor.md",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "prNumber": 595
+          "prNumber": 595,
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-25-stripe-price-id-validation/dod/spv-s1-reject-non-price-id-checkout-config-dod.md"
         }
       ]
     },
@@ -15863,11 +15866,11 @@
           "slug": "dss-s1-staging-safe-test-endpoint-gate",
           "id": "dss-s1-staging-safe-test-endpoint-gate",
           "name": "Make the 4 test-support endpoints the mocked smoke suite needs staging-safe",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-07-25T04:40:52.747Z",
+          "updatedAt": "2026-08-17T12:19:14.655Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 16,
@@ -15879,7 +15882,10 @@
           "e2eToolingRequired": true,
           "dorArtefact": "artefacts/2026-07-25-staging-safe-test-endpoints/dor/dss-s1-dor.md",
           "dorStatus": "signed-off",
-          "prStatus": "merged"
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-25-staging-safe-test-endpoints/dod/dss-s1-staging-safe-test-endpoint-gate-dod.md"
         }
       ]
     },
@@ -15897,11 +15903,11 @@
           "slug": "dsn-s1-deploy-config-safety-net",
           "id": "dsn-s1-deploy-config-safety-net",
           "name": "A single deploy-to-staging entry point that cannot silently use the wrong Fly config",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-07-25T05:26:11.317Z",
+          "updatedAt": "2026-08-17T12:19:14.655Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 8,
@@ -15913,7 +15919,10 @@
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-07-25-deploy-safety-net/dor/dsn-s1-dor.md",
           "dorStatus": "signed-off",
-          "prStatus": "merged"
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-25-deploy-safety-net/dod/dsn-s1-deploy-config-safety-net-dod.md"
         }
       ]
     },
@@ -15931,11 +15940,11 @@
           "slug": "ftcg-s1-free-tier-credit-grant",
           "id": "ftcg-s1-free-tier-credit-grant",
           "name": "Grant every brand-new tenant a free-tier credit balance at signup",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-08-04T10:22:25.773Z",
+          "updatedAt": "2026-08-17T12:19:14.655Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 13,
@@ -15948,7 +15957,10 @@
           "dorArtefact": "artefacts/2026-07-25-free-tier-credit-grant/dor/ftcg-s1-dor.md",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "prNumber": 599
+          "prNumber": 599,
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-25-free-tier-credit-grant/dod/ftcg-s1-free-tier-credit-grant-dod.md"
         }
       ]
     },
@@ -15966,11 +15978,11 @@
           "slug": "acv-s1-loud-story-creation-warning",
           "id": "acv-s1-loud-story-creation-warning",
           "name": "skills advance warns loudly when it creates a new story record instead of updating an existing one",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-07-25T05:55:18.370Z",
+          "updatedAt": "2026-08-17T12:19:14.655Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 16,
@@ -15982,7 +15994,10 @@
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-07-25-advance-cli-visibility/dor/acv-s1-dor.md",
           "dorStatus": "signed-off",
-          "prStatus": "merged"
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-25-advance-cli-visibility/dod/acv-s1-loud-story-creation-warning-dod.md"
         }
       ]
     },
@@ -16000,11 +16015,11 @@
           "slug": "pss-s1-schema-required-field-checks",
           "id": "pss-s1-schema-required-field-checks",
           "name": "Local pipeline-state schema checks catch required-field/enum/type mistakes before CI",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-08-04T10:24:55.061Z",
+          "updatedAt": "2026-08-17T12:19:14.655Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 25,
@@ -16017,7 +16032,10 @@
           "dorArtefact": "artefacts/2026-07-25-pipeline-state-schema-validation/dor/pss-s1-dor.md",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "prNumber": 602
+          "prNumber": 602,
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-25-pipeline-state-schema-validation/dod/pss-s1-schema-required-field-checks-dod.md"
         }
       ]
     },
