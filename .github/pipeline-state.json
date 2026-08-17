@@ -18977,12 +18977,12 @@
             {
               "slug": "mtrr-s1",
               "name": "Resolve each product's own repo for SaaS export, tenant-scoped",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/review/mtrr-s1-review-2.md",
-              "updatedAt": "2026-08-06T00:25:08.720Z",
+              "updatedAt": "2026-08-17T08:43:46.958Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
@@ -18996,17 +18996,20 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "prStatus": "merged",
-              "mergeCommit": "b8002e82"
+              "mergeCommit": "b8002e82",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/dod/mtrr-s1-dod.md"
             },
             {
               "slug": "mtrr-s2",
               "name": "Connect a repo by picking from your own accessible repos",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/review/mtrr-s2-review-1.md",
-              "updatedAt": "2026-08-06T00:50:33.875Z",
+              "updatedAt": "2026-08-17T08:43:46.958Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -19020,7 +19023,10 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "prStatus": "merged",
-              "mergeCommit": "dd8e493b"
+              "mergeCommit": "dd8e493b",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-08-06-multi-tenant-repo-resolution/dod/mtrr-s2-dod.md"
             }
           ]
         }
