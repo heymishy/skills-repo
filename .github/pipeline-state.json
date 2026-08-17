@@ -10338,7 +10338,7 @@
             "totalTests": 12,
             "passing": 12
           },
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-01-security-perf-hardening/dor/sec-perf-s2-dor.md",
           "reviewStatus": "passed",
@@ -10346,15 +10346,18 @@
           "health": "green",
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-07-14T04:41:05.765Z",
+          "updatedAt": "2026-08-17T08:35:41.786Z",
           "prStatus": "merged",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/474"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/474",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-01-security-perf-hardening/dod/sec-perf-s2-dod.md"
         },
         {
           "id": "sec-perf-s3",
           "name": "CSRF tokens on server-rendered form POST endpoints",
-          "stage": "branch-complete",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "complexity": 2,
           "scopeStability": "stable",
           "reviewStatus": "passed",
@@ -10362,7 +10365,7 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-01-security-perf-hardening/dor/sec-perf-s3.md",
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "artefact": "artefacts/2026-07-01-security-perf-hardening/test-plans/sec-perf-s3-test-plan.md",
             "totalTests": 35,
             "passing": 35
@@ -10370,8 +10373,11 @@
           "acTotal": 6,
           "acVerified": 6,
           "prStatus": "merged",
-          "updatedAt": "2026-07-14T05:04:40.021Z",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/476"
+          "updatedAt": "2026-08-17T08:35:41.786Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/476",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-01-security-perf-hardening/dod/sec-perf-s3-dod.md"
         }
       ],
       "metrics": [],
@@ -25064,6 +25070,28 @@
       ],
       "metrics": [],
       "updatedAt": "2026-08-17T07:02:47.464Z",
+      "track": "short",
+      "guardrails": []
+    },
+    {
+      "slug": "2026-08-17-remaining-csrf-form-coverage",
+      "name": "Extend CSRF token protection to remaining server-rendered forms (found during sec-perf-s3 DoD review)",
+      "stage": "definition",
+      "health": "amber",
+      "stories": [
+        {
+          "id": "rcfc-s1",
+          "slug": "rcfc-s1",
+          "name": "Extend CSRF token protection to the remaining server-rendered POST forms",
+          "stage": "definition",
+          "health": "amber",
+          "dorStatus": "not-started",
+          "dodStatus": "not-started",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-17T08:35:41.786Z",
       "track": "short",
       "guardrails": []
     }
