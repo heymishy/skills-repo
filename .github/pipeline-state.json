@@ -4258,8 +4258,10 @@
           "title": "Clarify side-trip",
           "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/stories/owle.1-clarify-side-trip.md",
           "testPlan": {
-            "status": "written",
-            "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/test-plans/owle.1-test-plan.md"
+            "status": "all-passing",
+            "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/test-plans/owle.1-test-plan.md",
+            "totalTests": 14,
+            "passing": 14
           },
           "stage": "definition-of-done",
           "dorStatus": "signed-off",
@@ -4271,18 +4273,23 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.1-dor.md",
-          "updatedAt": "2026-05-09",
+          "updatedAt": "2026-08-17T06:04:13.178Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/321",
           "dispatchedAt": "2026-05-08T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/archived/2026-05-07-web-ui-outer-loop-extensions/dod/owle.1-dod.md"
         },
         {
           "id": "owle.2",
           "title": "Decisions side-trip",
           "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/stories/owle.2-decisions-side-trip.md",
           "testPlan": {
-            "status": "written",
-            "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/test-plans/owle.2-test-plan.md"
+            "status": "all-passing",
+            "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/test-plans/owle.2-test-plan.md",
+            "totalTests": 15,
+            "passing": 15
           },
           "stage": "definition-of-done",
           "dorStatus": "signed-off",
@@ -4294,18 +4301,23 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.2-dor.md",
-          "updatedAt": "2026-05-09",
+          "updatedAt": "2026-08-17T06:04:13.178Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/322",
           "dispatchedAt": "2026-05-08T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/archived/2026-05-07-web-ui-outer-loop-extensions/dod/owle.2-dod.md"
         },
         {
           "id": "owle.3",
           "title": "Trace side-trip",
           "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/stories/owle.3-trace-side-trip.md",
           "testPlan": {
-            "status": "written",
-            "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/test-plans/owle.3-test-plan.md"
+            "status": "all-passing",
+            "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/test-plans/owle.3-test-plan.md",
+            "totalTests": 11,
+            "passing": 11
           },
           "stage": "definition-of-done",
           "dorStatus": "signed-off",
@@ -4317,18 +4329,23 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.3-dor.md",
-          "updatedAt": "2026-05-09",
+          "updatedAt": "2026-08-17T06:04:13.178Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/323",
           "dispatchedAt": "2026-05-08T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/archived/2026-05-07-web-ui-outer-loop-extensions/dod/owle.3-dod.md"
         },
         {
           "id": "owle.4",
           "title": "Estimate side-trip",
           "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/stories/owle.4-estimate-side-trip.md",
           "testPlan": {
-            "status": "written",
-            "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/test-plans/owle.4-test-plan.md"
+            "status": "all-passing",
+            "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/test-plans/owle.4-test-plan.md",
+            "totalTests": 20,
+            "passing": 20
           },
           "stage": "definition-of-done",
           "dorStatus": "signed-off",
@@ -4340,18 +4357,23 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.4-dor.md",
-          "updatedAt": "2026-05-09",
+          "updatedAt": "2026-08-17T06:04:13.178Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/324",
           "dispatchedAt": "2026-05-08T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/archived/2026-05-07-web-ui-outer-loop-extensions/dod/owle.4-dod.md"
         },
         {
           "id": "owle.5",
           "title": "Spike side-trip",
           "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/stories/owle.5-spike-side-trip.md",
           "testPlan": {
-            "status": "written",
-            "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/test-plans/owle.5-test-plan.md"
+            "status": "all-passing",
+            "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/test-plans/owle.5-test-plan.md",
+            "totalTests": 18,
+            "passing": 18
           },
           "stage": "definition-of-done",
           "dorStatus": "signed-off",
@@ -4363,18 +4385,23 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.5-dor.md",
-          "updatedAt": "2026-05-09",
+          "updatedAt": "2026-08-17T06:04:13.178Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/325",
           "dispatchedAt": "2026-05-08T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/archived/2026-05-07-web-ui-outer-loop-extensions/dod/owle.5-dod.md"
         },
         {
           "id": "owle.6",
           "title": "Pipeline-state auto-write",
           "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/stories/owle.6-pipeline-state-auto-write.md",
           "testPlan": {
-            "status": "written",
-            "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/test-plans/owle.6-test-plan.md"
+            "status": "all-passing",
+            "artefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/test-plans/owle.6-test-plan.md",
+            "totalTests": 20,
+            "passing": 20
           },
           "stage": "definition-of-done",
           "dorStatus": "signed-off",
@@ -4386,10 +4413,13 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-05-07-web-ui-outer-loop-extensions/dor/owle.6-dor.md",
-          "updatedAt": "2026-05-09",
+          "updatedAt": "2026-08-17T06:04:13.178Z",
           "issueUrl": "https://github.com/heymishy/skills-repo/issues/326",
           "dispatchedAt": "2026-05-08T00:00:00Z",
-          "dispatchTarget": "vscode"
+          "dispatchTarget": "vscode",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/archived/2026-05-07-web-ui-outer-loop-extensions/dod/owle.6-dod.md"
         }
       ]
     },
