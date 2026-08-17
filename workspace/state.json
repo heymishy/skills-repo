@@ -68,6 +68,11 @@
       "date": "2026-08-17",
       "action": "New short-track story ibg-s1 (2026-08-17-impersonation-banner-dashboard-gap) created: a real, live-confirmed AC1 gap found during the DoD backlog pass on d2 (2026-07-21-web-ui-experience-redesign) -- the persistent impersonation 'Viewing as' banner does not render on /dashboard (the Products landing page, likely the most-visited page in the app), because handleGetDashboard in src/web-ui/routes/products.js never threads req.session.impersonation into its renderShell() call, unlike dashboard.js's older handleDashboard (which does) and settings.js. Confirmed live via Chrome (started a real impersonation session as tenant-demo-1, banner present on /settings, absent on /dashboard, reproduced twice). Root-caused precisely; story artefact written with a bounded, single-file fix. Needs /test-plan -> /definition-of-ready -> dispatch to a coding agent -- not yet started.",
       "owner": "operator/next session -- run /test-plan for ibg-s1 next"
+    },
+    {
+      "date": "2026-08-17",
+      "action": "New short-track story sbrc-s1 (2026-08-17-scenario-b-not-required-check) created: a real gap found during the DoD backlog pass on b2 (2026-07-23-e2e-core-journey-coverage) -- b2's own AC1 requires 'a PR that breaks Scenario B... the PR's merge is blocked', but the live master branch ruleset (gh api repos/heymishy/skills-repo/rulesets/14979696) only lists 'Run assurance gate' and 'Scenario A E2E (staging)' in required_status_checks -- 'Scenario B E2E (staging)' is NOT required, even though the job runs on every PR. b2's own test file (check-b2-ci-gate-config.js) already flags this as SKIPPED/inconclusive rather than a hard failure, since it depends on live GitHub ruleset state the test can't assert confidently offline -- the live gh api check confirms it's a real, current gap. Story artefact written: adds one context entry to the existing ruleset (same pattern already used for Scenario A by a5). Needs /test-plan -> /definition-of-ready -> dispatch -- not yet started.",
+      "owner": "operator/next session -- run /test-plan for sbrc-s1 next"
     }
   ]
 }

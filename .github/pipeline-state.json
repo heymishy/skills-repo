@@ -24727,6 +24727,28 @@
       "updatedAt": "2026-08-17T05:25:39.237Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-08-17-scenario-b-not-required-check",
+      "name": "Add \"Scenario B E2E (staging)\" to master's required status checks (found during b2 DoD review)",
+      "stage": "definition",
+      "health": "amber",
+      "stories": [
+        {
+          "id": "sbrc-s1",
+          "slug": "sbrc-s1",
+          "name": "Add \"Scenario B E2E (staging)\" to master's required status checks",
+          "stage": "definition",
+          "health": "amber",
+          "dorStatus": "not-started",
+          "dodStatus": "not-started",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-17T05:49:11.962Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
