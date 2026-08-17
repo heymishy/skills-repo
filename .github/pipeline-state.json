@@ -1574,7 +1574,10 @@
               "planArtefact": "artefacts/2026-05-19-cli-deterministic-governance/plans/cdg.3-plan.md",
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/355",
-              "updatedAt": "2026-05-25"
+              "updatedAt": "2026-08-17T06:52:50.250Z",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-05-19-cli-deterministic-governance/dod/cdg.3-dod.md"
             },
             {
               "slug": "cdg.4",
@@ -1628,7 +1631,10 @@
               "dorArtefact": "artefacts/2026-05-19-cli-deterministic-governance/dor/cdg.5-dor.md",
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/357",
-              "updatedAt": "2026-05-25"
+              "updatedAt": "2026-08-17T06:52:50.250Z",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-05-19-cli-deterministic-governance/dod/cdg.5-dod.md"
             },
             {
               "slug": "cdg.6",
@@ -1644,10 +1650,13 @@
               "passing": 34,
               "totalTests": 34,
               "acVerified": 7,
-              "updatedAt": "2026-05-24",
+              "updatedAt": "2026-08-17T06:52:50.250Z",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/358",
               "name": "skills advance epic-nested lookup, dot-notation field writes, integer coercion, and harness wiring rule",
-              "health": "green"
+              "health": "green",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-05-19-cli-deterministic-governance/dod/cdg.6-dod.md"
             },
             {
               "slug": "cdg.7",
@@ -1662,8 +1671,11 @@
               },
               "dorArtefact": "artefacts/2026-05-19-cli-deterministic-governance/dor/cdg.7-dor.md",
               "dorContract": "artefacts/2026-05-19-cli-deterministic-governance/dor/cdg.7-dor-contract.md",
-              "updatedAt": "2026-05-24",
-              "health": "green"
+              "updatedAt": "2026-08-17T06:52:50.250Z",
+              "health": "green",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-05-19-cli-deterministic-governance/dod/cdg.7-dod.md"
             }
           ]
         }
