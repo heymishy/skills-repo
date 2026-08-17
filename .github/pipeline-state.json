@@ -18545,7 +18545,7 @@
       "slug": "2026-08-05-repo-bootstrap-no-fork",
       "name": "No-Fork Repo Bootstrap for the Inner (and Optionally Outer) Loop",
       "stage": "branch-complete",
-      "health": "green",
+      "health": "amber",
       "stories": [],
       "metrics": [
         {
@@ -18579,7 +18579,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-05T20:39:40.182Z",
+      "updatedAt": "2026-08-17T06:33:43.664Z",
       "discoveryArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/discovery.md",
       "regulated": false,
       "complianceProfile": "standard",
@@ -18597,14 +18597,14 @@
             {
               "slug": "rb-s1",
               "name": "Bootstrap a minimal fresh repo with one init command",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/review/rb-s1-review-2.md",
-              "updatedAt": "2026-08-05T09:39:01.889Z",
+              "updatedAt": "2026-08-17T06:33:43.664Z",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 10,
                 "passing": 10
               },
@@ -18646,19 +18646,22 @@
               ],
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/665",
-              "mergeCommit": "e3e7a500"
+              "mergeCommit": "e3e7a500",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dod/rb-s1-dod.md"
             },
             {
               "slug": "rb-s2",
               "name": "Install the full skill set with a lightweight outer/inner/ancillary registry",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/review/rb-s2-review-2.md",
-              "updatedAt": "2026-08-05T20:39:32.567Z",
+              "updatedAt": "2026-08-17T06:33:43.664Z",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 10,
                 "passing": 10
               },
@@ -18672,19 +18675,23 @@
               "dorArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s2-dor.md",
               "dorContractArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s2-dor-contract.md",
               "prStatus": "merged",
-              "mergeCommit": "6397a0ec"
+              "mergeCommit": "6397a0ec",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/666",
+              "dodArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dod/rb-s2-dod.md"
             },
             {
               "slug": "rb-s3",
               "name": "Generate harness-agnostic instruction files from one source",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/review/rb-s3-review-1.md",
-              "updatedAt": "2026-08-05T10:38:37.660Z",
+              "updatedAt": "2026-08-17T06:33:43.664Z",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 8,
                 "passing": 8
               },
@@ -18701,7 +18708,10 @@
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/667",
               "planArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/plans/rb-s3-plan.md",
-              "mergeCommit": "7f509ec5"
+              "mergeCommit": "7f509ec5",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dod/rb-s3-dod.md"
             }
           ]
         },
@@ -18713,14 +18723,14 @@
             {
               "slug": "rb-s4",
               "name": "Bootstrap an existing repo from a DoR-approved SaaS artefact",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/review/rb-s4-review-3.md",
-              "updatedAt": "2026-08-05T19:16:52.884Z",
+              "updatedAt": "2026-08-17T06:33:43.664Z",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 15,
                 "passing": 15
               },
@@ -18736,17 +18746,20 @@
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/668",
               "planArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/plans/rb-s4-plan.md",
-              "mergeCommit": "bbbcb27d"
+              "mergeCommit": "bbbcb27d",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dod/rb-s4-dod.md"
             },
             {
               "slug": "rb-s5",
               "name": "Optionally install the full outer loop during bootstrap",
-              "stage": "branch-complete",
-              "health": "green",
+              "stage": "definition-of-done",
+              "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/review/rb-s5-review-1.md",
-              "updatedAt": "2026-08-05T20:39:32.696Z",
+              "updatedAt": "2026-08-17T06:33:43.664Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
@@ -18762,7 +18775,11 @@
               "dorArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s5-dor.md",
               "dorContractArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dor/rb-s5-dor-contract.md",
               "prStatus": "merged",
-              "mergeCommit": "79b76c4b"
+              "mergeCommit": "79b76c4b",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "COMPLETE WITH DEVIATIONS: --with-outer-loop overhead NFR consistently ~24% over the 3000ms budget (3722ms/3776ms, re-confirmed twice). All functional behaviour correct. Possible confound: measured during an unusually resource-heavy session.",
+              "dodArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dod/rb-s5-dod.md"
             }
           ]
         }
