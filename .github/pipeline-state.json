@@ -5247,19 +5247,21 @@
               "prStatus": "merged",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
-              "dodStatus": "not-started",
+              "dodStatus": "complete",
               "tasks": [],
               "name": "Render context manifest panel with chip layout in the /ideate session shell",
               "stage": "definition-of-done",
               "health": "green",
               "acTotal": 5,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.1-test-plan.md",
                 "totalTests": 11,
                 "passing": 11
               },
-              "updatedAt": "2026-06-04"
+              "updatedAt": "2026-08-17T06:15:29.446Z",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-05-21-ideate-web-ux/dod/iwu-feature-dod.md"
             },
             {
               "id": "iwu.2",
@@ -5271,19 +5273,21 @@
               "prStatus": "merged",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
-              "dodStatus": "not-started",
+              "dodStatus": "complete",
               "tasks": [],
               "name": "Restructure right panel layout for two-section coexistence",
               "stage": "definition-of-done",
               "health": "green",
               "acTotal": 5,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.2-test-plan.md",
                 "totalTests": 8,
                 "passing": 8
               },
-              "updatedAt": "2026-06-04"
+              "updatedAt": "2026-08-17T06:15:29.446Z",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-05-21-ideate-web-ux/dod/iwu-feature-dod.md"
             },
             {
               "id": "iwu.3",
@@ -5295,18 +5299,21 @@
               "prStatus": "merged",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
-              "dodStatus": "not-started",
+              "dodStatus": "complete",
               "tasks": [],
               "name": "Stream assumption cards from SSE marker events into #assumption-cards",
               "stage": "definition-of-done",
               "health": "green",
               "acTotal": 6,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.3-test-plan.md",
                 "totalTests": 14,
                 "passing": 14
-              }
+              },
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-05-21-ideate-web-ux/dod/iwu-feature-dod.md",
+              "updatedAt": "2026-08-17T06:15:29.446Z"
             },
             {
               "id": "iwu.4",
@@ -5318,18 +5325,21 @@
               "prStatus": "merged",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
-              "dodStatus": "not-started",
+              "dodStatus": "complete",
               "tasks": [],
               "name": "Confirm or flag assumption cards via POST endpoint with in-session state persistence",
               "stage": "definition-of-done",
               "health": "green",
               "acTotal": 7,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.4-test-plan.md",
                 "totalTests": 13,
                 "passing": 13
-              }
+              },
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-05-21-ideate-web-ux/dod/iwu-feature-dod.md",
+              "updatedAt": "2026-08-17T06:15:29.446Z"
             },
             {
               "id": "iwu.5",
@@ -5341,18 +5351,21 @@
               "prStatus": "merged",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
-              "dodStatus": "not-started",
+              "dodStatus": "complete",
               "tasks": [],
               "name": "Emit lensComplete SSE event and render lens-transition nudge bar",
               "stage": "definition-of-done",
               "health": "green",
               "acTotal": 6,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.5-test-plan.md",
                 "totalTests": 14,
                 "passing": 14
-              }
+              },
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-05-21-ideate-web-ux/dod/iwu-feature-dod.md",
+              "updatedAt": "2026-08-17T06:15:29.446Z"
             }
           ]
         },
@@ -5374,18 +5387,21 @@
               "prStatus": "merged",
               "reviewStatus": "passed",
               "dorStatus": "signed-off",
-              "dodStatus": "not-started",
+              "dodStatus": "complete",
               "tasks": [],
               "name": "Add ---ASSUMPTION-JSON--- marker emission instruction to ideate/SKILL.md",
               "stage": "definition-of-done",
               "health": "green",
               "acTotal": 4,
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-05-21-ideate-web-ux/test-plans/iwu.6-test-plan.md",
                 "totalTests": 2,
                 "passing": 2
-              }
+              },
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-05-21-ideate-web-ux/dod/iwu-feature-dod.md",
+              "updatedAt": "2026-08-17T06:15:29.446Z"
             }
           ]
         }
