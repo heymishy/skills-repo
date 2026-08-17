@@ -13658,9 +13658,9 @@
       "slug": "2026-07-23-e2e-core-journey-coverage",
       "name": "E2E Core Journey Coverage on Staging",
       "track": "standard",
-      "stage": "definition-of-ready",
-      "health": "green",
-      "updatedAt": "2026-07-22T23:33:08.155Z",
+      "stage": "definition-of-done",
+      "health": "amber",
+      "updatedAt": "2026-08-17T05:53:30.946Z",
       "discoveryArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/discovery.md",
       "discoveryStatus": "approved",
       "regulated": false,
@@ -14132,14 +14132,14 @@
         {
           "slug": "epic-a-new-user-journey-e2e-staging-auth-foundation",
           "name": "New-User Journey E2E + Staging Auth Foundation",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "a1-staging-safe-auth-stub",
               "name": "Stand up a staging-safe GitHub OAuth/email auth stub for real-staging E2E",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-22T23:33:08.155Z",
+              "updatedAt": "2026-08-17T05:53:30.946Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -14160,14 +14160,17 @@
               "prUrl": "https://github.com/heymishy/skills-repo/pull/551",
               "prNumber": 551,
               "verifyStatus": "passed",
-              "notes": "PR #551 merged. Post-merge: flyctl deploy --remote-only --config fly.staging.toml --app wuce-staging + flyctl secrets set E2E_STAGING_AUTH_STUB_SECRET run 2026-07-23 -- confirmed live against real wuce-staging via curl: wrong secret -> 403, correct secret -> 200 with real session identity created. All 4 ACs + NFR-Audit now verified against real staging, not just the local NODE_ENV=test scaffold."
+              "notes": "PR #551 merged. Post-merge: flyctl deploy --remote-only --config fly.staging.toml --app wuce-staging + flyctl secrets set E2E_STAGING_AUTH_STUB_SECRET run 2026-07-23 -- confirmed live against real wuce-staging via curl: wrong secret -> 403, correct secret -> 200 with real session identity created. All 4 ACs + NFR-Audit now verified against real staging, not just the local NODE_ENV=test scaffold.",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dod/a1-staging-safe-auth-stub-dod.md"
             },
             {
               "slug": "a2-stripe-test-mode-plan-selection",
               "name": "Drive Stripe test-mode plan selection on real staging",
-              "stage": "dor-signed-off",
+              "stage": "definition-of-done",
               "health": "amber",
-              "updatedAt": "2026-08-04T10:23:33.846Z",
+              "updatedAt": "2026-08-17T05:53:30.946Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -14187,14 +14190,18 @@
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/552",
               "prNumber": 552,
-              "verifyStatus": "running"
+              "verifyStatus": "running",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "COMPLETE WITH DEVIATIONS: AC1 not manually re-verified this pass (requires entering a Stripe test-mode card, out of scope for the agent). Well-documented, pre-existing manual-only classification for all 3 ACs (hCaptcha blocks CI automation) -- not a new finding.",
+              "dodArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dod/a2-stripe-test-mode-plan-selection-dod.md"
             },
             {
               "slug": "a3-product-feature-ideate-canvas",
               "name": "Drive product + first-feature creation via rough-idea/ideate, assert canvas and artefact persistence",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-08-04T10:23:33.990Z",
+              "updatedAt": "2026-08-17T05:53:30.946Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -14212,14 +14219,17 @@
               "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a3-product-feature-ideate-canvas-dor.md",
               "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a3-product-feature-ideate-canvas-dor-contract.md",
               "prStatus": "merged",
-              "prNumber": 557
+              "prNumber": 557,
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dod/a3-product-feature-ideate-canvas-dod.md"
             },
             {
               "slug": "a4-ideate-session-resume",
               "name": "Assert full session close/resume mid-SSE-stream for the ideate canvas",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-08-04T10:23:34.117Z",
+              "updatedAt": "2026-08-17T05:53:30.946Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -14237,14 +14247,17 @@
               "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a4-ideate-session-resume-dor.md",
               "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a4-ideate-session-resume-dor-contract.md",
               "prStatus": "merged",
-              "prNumber": 559
+              "prNumber": 559,
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dod/a4-ideate-session-resume-dod.md"
             },
             {
               "slug": "a5-ci-gate-scenario-a-blocking",
               "name": "Wire Scenario A as a CI-blocking gate",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-08-04T10:23:34.259Z",
+              "updatedAt": "2026-08-17T05:53:30.946Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -14262,21 +14275,24 @@
               "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a5-ci-gate-scenario-a-blocking-dor.md",
               "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/a5-ci-gate-scenario-a-blocking-dor-contract.md",
               "prStatus": "merged",
-              "prNumber": 566
+              "prNumber": 566,
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dod/a5-ci-gate-scenario-a-blocking-dod.md"
             }
           ]
         },
         {
           "slug": "epic-b-formed-idea-journey-e2e-full-gate-data-hygiene",
           "name": "Formed-Idea Journey E2E + Full Gate + Data Hygiene",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "b1-formed-idea-outer-loop-story-map",
               "name": "Drive the formed-idea outer loop to DoR and assert the /definition story-map canvas, close/resume mid-SSE",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-08-04T10:23:34.418Z",
+              "updatedAt": "2026-08-17T05:53:30.946Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -14294,14 +14310,17 @@
               "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/b1-formed-idea-outer-loop-story-map-dor.md",
               "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/b1-formed-idea-outer-loop-story-map-dor-contract.md",
               "prStatus": "merged",
-              "prNumber": 553
+              "prNumber": 553,
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dod/b1-formed-idea-outer-loop-story-map-dod.md"
             },
             {
               "slug": "b2-ci-gate-scenario-b-coverage-mapping",
               "name": "Add Scenario B to the CI-blocking gate and publish the spec-to-journey-step coverage mapping",
-              "stage": "definition-of-ready",
-              "health": "green",
-              "updatedAt": "2026-08-04T10:23:34.547Z",
+              "stage": "definition-of-done",
+              "health": "amber",
+              "updatedAt": "2026-08-17T05:53:30.946Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -14319,14 +14338,18 @@
               "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/b2-ci-gate-scenario-b-coverage-mapping-dor.md",
               "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/b2-ci-gate-scenario-b-coverage-mapping-dor-contract.md",
               "prStatus": "merged",
-              "prNumber": 567
+              "prNumber": 567,
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "COMPLETE WITH DEVIATIONS: AC1 fails live -- \"Scenario B E2E (staging)\" is not in the master ruleset required_status_checks (confirmed via gh api), so a broken Scenario B step does not actually block PR merge. Follow-up story sbrc-s1 (2026-08-17-scenario-b-not-required-check) created, queued for /test-plan.",
+              "dodArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dod/b2-ci-gate-scenario-b-coverage-mapping-dod.md"
             },
             {
               "slug": "b3-staging-test-data-cleanup",
               "name": "Design and implement a staging test-data cleanup strategy for E2E-generated accounts and records",
-              "stage": "definition-of-ready",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-08-04T10:23:34.688Z",
+              "updatedAt": "2026-08-17T05:53:30.946Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -14344,7 +14367,10 @@
               "dorArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/b3-staging-test-data-cleanup-dor.md",
               "dorContractArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dor/b3-staging-test-data-cleanup-dor-contract.md",
               "prStatus": "merged",
-              "prNumber": 561
+              "prNumber": 561,
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dod/b3-staging-test-data-cleanup-dod.md"
             }
           ]
         }
