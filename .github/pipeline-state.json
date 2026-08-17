@@ -24632,6 +24632,28 @@
           "assessedAt": "2026-08-17T04:57:51.953Z"
         }
       ]
+    },
+    {
+      "slug": "2026-08-17-impersonation-banner-dashboard-gap",
+      "name": "Thread impersonation state into the /dashboard route (found during d2 DoD review)",
+      "stage": "definition",
+      "health": "amber",
+      "stories": [
+        {
+          "id": "ibg-s1",
+          "slug": "ibg-s1",
+          "name": "Thread impersonation state into the /dashboard route's renderShell call",
+          "stage": "definition",
+          "health": "amber",
+          "dorStatus": "not-started",
+          "dodStatus": "not-started",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-17T05:25:39.237Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
