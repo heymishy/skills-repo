@@ -24228,7 +24228,7 @@
               "name": "Relocate the theme toggle into Settings",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-08-17T04:25:58.614Z",
+              "updatedAt": "2026-08-17T04:41:38.477Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -24245,7 +24245,7 @@
               "dorArtefact": "artefacts/2026-08-17-settings-improvements/dor/si-s1-dor.md",
               "dorContractArtefact": "artefacts/2026-08-17-settings-improvements/dor/si-s1-dor-contract.md",
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/749"
             },
             {
