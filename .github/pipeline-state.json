@@ -16053,11 +16053,11 @@
           "slug": "rlcc-s1-smoke-test-worker-isolation",
           "id": "rlcc-s1-smoke-test-worker-isolation",
           "name": "Staging smoke-test job runs single-worker so the real-LLM-call counter cannot be polluted by a concurrently-running spec",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-08-04T10:22:25.937Z",
+          "updatedAt": "2026-08-17T12:23:53.001Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 5,
@@ -16070,7 +16070,10 @@
           "dorArtefact": "artefacts/2026-07-25-realllm-counter-isolation/dor/rlcc-s1-dor.md",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "prNumber": 603
+          "prNumber": 603,
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-25-realllm-counter-isolation/dod/rlcc-s1-smoke-test-worker-isolation-dod.md"
         }
       ]
     },
@@ -16088,11 +16091,11 @@
           "slug": "nis-s1-named-identity-staging-stub",
           "id": "nis-s1-named-identity-staging-stub",
           "name": "auth/github/callback supports a staging-safe named-identity stub so bri-s3.3/bri-s3.6 can run against real staging",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-08-04T10:22:26.080Z",
+          "updatedAt": "2026-08-17T12:23:53.001Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 16,
@@ -16105,7 +16108,10 @@
           "dorArtefact": "artefacts/2026-07-25-named-identity-stub/dor/nis-s1-dor.md",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "prNumber": 604
+          "prNumber": 604,
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-25-named-identity-stub/dod/nis-s1-named-identity-staging-stub-dod.md"
         }
       ]
     },
@@ -16123,11 +16129,11 @@
           "slug": "bjs-s1-billing-journey-staging-safe",
           "id": "bjs-s1-billing-journey-staging-safe",
           "name": "bri-s3.5 billing journey runs against real staging (session seeding + webhook signature stub)",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-08-04T10:22:26.222Z",
+          "updatedAt": "2026-08-17T12:23:53.001Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 17,
@@ -16140,7 +16146,10 @@
           "dorArtefact": "artefacts/2026-07-25-billing-journey-staging-safe/dor/bjs-s1-dor.md",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "prNumber": 605
+          "prNumber": 605,
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-25-billing-journey-staging-safe/dod/bjs-s1-billing-journey-staging-safe-dod.md"
         }
       ]
     },
@@ -16881,14 +16890,17 @@
           "id": "alrf-s3",
           "slug": "alrf-s3-pipeline-state-writer-guard",
           "name": "pipeline-state-writer refuses to fabricate state on a missing file",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 4,
           "acVerified": 4,
           "artefact": "artefacts/2026-07-26-storage-drift-audit/stories/alrf-s3-pipeline-state-writer-guard.md",
           "prStatus": "merged",
           "notes": "Closes a CRITICAL finding: gate-confirm on staging was silently fabricating a fresh, near-empty pipeline-state.json on every stage completion, never committed to git. Guard-only fix; full durable-store unification (ideas.json, estimation-norms.md, artefact content) tracked separately in decisions.md D1.",
-          "updatedAt": "2026-07-26T07:35:19.906Z"
+          "updatedAt": "2026-08-17T12:23:53.001Z",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-26-storage-drift-audit/dod/alrf-s3-pipeline-state-writer-guard-dod.md"
         }
       ],
       "metrics": [],
@@ -17052,7 +17064,7 @@
           "id": "jsvr-s1",
           "slug": "jsvr-s1-wire-stage-view-route",
           "name": "Wire GET /journey/:id/stage/:name and its artefact-save sibling into server.js's router",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 4,
           "acVerified": 4,
@@ -17067,7 +17079,10 @@
           "dorStatus": "signed-off",
           "prStatus": "merged",
           "notes": "Operator reported breadcrumb back-navigation on a resumed journey gives an error. Investigation confirmed the real, live-reproducible defect: GET /journey/:id/stage/:name (handleGetJourneyStageView), the destination of every completed-stage breadcrumb link, was fully built and unit-tested but never registered in server.js's router -- clicking it silently served the sign-in page instead of the artefact. Fixed by wiring the two missing else-if branches; added a router-dispatch regression test (dispatches through the real exported router, not a direct handler call) so this class of bug fails CI if it recurs.",
-          "updatedAt": "2026-07-27T19:13:45.399Z"
+          "updatedAt": "2026-08-17T12:23:53.001Z",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-27-journey-stage-view-routing/dod/jsvr-s1-wire-stage-view-route-dod.md"
         }
       ],
       "metrics": [],
@@ -19312,7 +19327,7 @@
         {
           "slug": "tpac-s1",
           "name": "Give admins a real control to lift a tenant's journey cap, separate from credits",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -19328,11 +19343,14 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-06T10:02:40.728Z",
+          "updatedAt": "2026-08-17T12:23:53.001Z",
           "id": "tpac-s1",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "mergeCommit": "41368538"
+          "mergeCommit": "41368538",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-06-tenant-plan-admin-control/dod/tpac-s1-dod.md"
         }
       ],
       "metrics": [],
