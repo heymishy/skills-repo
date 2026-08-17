@@ -24250,7 +24250,7 @@
               "name": "Add a timezone and date-format preference to Settings",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-08-16T23:57:56.354Z",
+              "updatedAt": "2026-08-17T00:12:13.212Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -24266,7 +24266,7 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-17-settings-improvements/dor/si-s2-dor.md",
               "dorContractArtefact": "artefacts/2026-08-17-settings-improvements/dor/si-s2-dor-contract.md",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/748"
             },
             {
