@@ -24184,7 +24184,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "si-s2"
+          ]
         },
         {
           "id": "m2",
@@ -24194,7 +24196,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "si-s1"
+          ]
         },
         {
           "id": "m3",
@@ -24204,7 +24208,11 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "si-s1",
+            "si-s2",
+            "si-s3"
+          ]
         }
       ],
       "updatedAt": "2026-08-16T20:19:06.902Z",
@@ -24226,9 +24234,9 @@
             {
               "slug": "si-s1",
               "name": "Relocate the theme toggle into Settings",
-              "stage": "branch-complete",
-              "health": "green",
-              "updatedAt": "2026-08-17T04:41:38.477Z",
+              "stage": "definition-of-done",
+              "health": "amber",
+              "updatedAt": "2026-08-17T04:57:32.058Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -24246,14 +24254,18 @@
               "dorContractArtefact": "artefacts/2026-08-17-settings-improvements/dor/si-s1-dor-contract.md",
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/749"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/749",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "COMPLETE WITH DEVIATIONS: AC4 required a new server route not in the original DoR contract touch-points (documented, reasoned); m2 metric has no pre-relocation baseline to compare against (metric-design gap, not a delivery defect).",
+              "dodArtefact": "artefacts/2026-08-17-settings-improvements/dod/si-s1-dod.md"
             },
             {
               "slug": "si-s2",
               "name": "Add a timezone and date-format preference to Settings",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-08-17T00:12:13.212Z",
+              "updatedAt": "2026-08-17T04:57:32.058Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -24270,7 +24282,10 @@
               "dorArtefact": "artefacts/2026-08-17-settings-improvements/dor/si-s2-dor.md",
               "dorContractArtefact": "artefacts/2026-08-17-settings-improvements/dor/si-s2-dor-contract.md",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/748"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/748",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-08-17-settings-improvements/dod/si-s2-dod.md"
             },
             {
               "slug": "si-s3",
@@ -24303,9 +24318,9 @@
           "category": "mandatory-constraint",
           "label": "No user-supplied content in innerHTML without sanitisation",
           "status": "met",
-          "evidence": "si-s1/si-s2 Architecture Constraints require escHtml() on any dynamic value re-rendered in the Profile tab, per web-ui-patterns.md shared shell rule.",
-          "assessedBy": "/review",
-          "assessedAt": "2026-08-16T19:49:28.136Z"
+          "evidence": "si-s2 NFR test confirms no unescaped value in rendered locale form output, re-run fresh at DoD 2026-08-17, passing. escHtml() usage confirmed via code review.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-17T04:57:51.953Z"
         },
         {
           "id": "MC-SEC-02",
@@ -24366,9 +24381,9 @@
           "category": "mandatory-constraint",
           "label": "Interactive elements keyboard-accessible",
           "status": "met",
-          "evidence": "si-s1 AC/NFR retains existing aria-label and focus-visible behaviour on relocation; si-s2 NFR requires keyboard-navigable, labelled form selectors.",
-          "assessedBy": "/review",
-          "assessedAt": "2026-08-16T19:49:28.136Z"
+          "evidence": "si-s1 NFR test themeToggleRetainsAccessibilityAttributes and si-s2 code review of renderLocaleForm markup, both re-run/re-checked fresh at DoD 2026-08-17, both passing.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-17T04:57:51.953Z"
         },
         {
           "id": "MC-A11Y-02",
@@ -24612,9 +24627,9 @@
           "category": "adr",
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
           "status": "met",
-          "evidence": "si-s2 Architecture Constraints correctly reasons this is a per-user preference within the existing session-scoped tenant boundary, no new resource requiring a dedicated tenant guard. (Note: si-s2 review run 1 finding 1-H1 flags the WRONG underlying table (users vs people) as a separate ADR-026 reuse-check gap -- the tenant-scoping reasoning itself is sound.)",
-          "assessedBy": "/review",
-          "assessedAt": "2026-08-16T19:49:28.136Z"
+          "evidence": "si-s2 merged and live -- resolvePersonForIdentity(pool, identityKey) correctly scopes locale preference reads/writes to the resolved person within the existing session-based tenant boundary, no new guard needed. Confirmed via merged code (git show 0254804c) at DoD 2026-08-17.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-17T04:57:51.953Z"
         }
       ]
     }
