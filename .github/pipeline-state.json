@@ -6397,7 +6397,7 @@
         {
           "id": "kfd1",
           "dorStatus": "signed-off",
-          "stage": "released",
+          "stage": "definition-of-done",
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/388",
           "testPlan": {
@@ -6407,7 +6407,12 @@
             "artefact": "artefacts/2026-06-17-kanban-feature-detail-cx/test-plans/kfd1-kanban-card-and-detail-page-cx-test-plan.md"
           },
           "acTotal": 6,
-          "acVerified": 6
+          "acVerified": 6,
+          "dodStatus": "complete",
+          "health": "amber",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-06-17-kanban-feature-detail-cx/dod/kfd1-dod.md",
+          "updatedAt": "2026-08-17T11:55:15.680Z"
         }
       ],
       "metrics": [],
@@ -25130,6 +25135,28 @@
       ],
       "metrics": [],
       "updatedAt": "2026-08-17T08:35:41.786Z",
+      "track": "short",
+      "guardrails": []
+    },
+    {
+      "slug": "2026-08-17-kfd1-visual-verification-gap",
+      "name": "Execute or RISK-ACCEPT kfd1's unexecuted CSS-layout visual verification (found during kfd1 DoD review)",
+      "stage": "definition",
+      "health": "amber",
+      "stories": [
+        {
+          "id": "kvvg-s1",
+          "slug": "kvvg-s1",
+          "name": "Execute kfd1's unexecuted manual visual-verification scenarios, or log an explicit RISK-ACCEPT",
+          "stage": "definition",
+          "health": "amber",
+          "dorStatus": "not-started",
+          "dodStatus": "not-started",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-17T11:55:15.680Z",
       "track": "short",
       "guardrails": []
     }
