@@ -19087,16 +19087,16 @@
             {
               "slug": "das-s1",
               "name": "Commit completed-stage artefacts to the product's connected repo, with git-fallback on Resume conversation",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-06-durable-artefact-storage/review/das-s1-review-2.md",
-              "updatedAt": "2026-08-07T00:34:21.152Z",
+              "updatedAt": "2026-08-17T08:32:26.191Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 9,
-                "passing": 9,
+                "totalTests": 11,
+                "passing": 11,
                 "artefact": "artefacts/2026-08-06-durable-artefact-storage/test-plans/das-s1-test-plan.md"
               },
               "verificationScriptArtefact": "artefacts/2026-08-06-durable-artefact-storage/verification-scripts/das-s1-verification.md",
@@ -19104,17 +19104,20 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "prStatus": "merged",
-              "mergeCommit": "9312e335cafdb7b25198fc59a93fd7963d86ac87"
+              "mergeCommit": "9312e335cafdb7b25198fc59a93fd7963d86ac87",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-08-06-durable-artefact-storage/dod/das-s1-dod.md"
             },
             {
               "slug": "das-s2",
               "name": "Require a connected repo before a new product can start its first journey",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-06-durable-artefact-storage/review/das-s2-review-2.md",
-              "updatedAt": "2026-08-07T06:05:19.834Z",
+              "updatedAt": "2026-08-17T08:32:26.191Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -19126,18 +19129,21 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "prStatus": "merged",
-              "mergeCommit": "4207b2db7d4c9f069335c4ade6e8782f3b01af4f"
+              "mergeCommit": "4207b2db7d4c9f069335c4ade6e8782f3b01af4f",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-08-06-durable-artefact-storage/dod/das-s2-dod.md"
             },
             {
               "slug": "das-s3",
               "name": "Backfill already-completed stage artefacts to a repo at the moment it is connected",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "updatedAt": "2026-08-07T09:32:44.712Z",
+              "updatedAt": "2026-08-17T08:32:26.191Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-06-durable-artefact-storage/review/das-s3-review-2.md",
@@ -19153,7 +19159,10 @@
               "oversightLevel": "high",
               "dorApprover": "Hamish King",
               "prStatus": "merged",
-              "mergeCommit": "83033573e4bbfd771dfd8d509bc7bc9533e448d6"
+              "mergeCommit": "83033573e4bbfd771dfd8d509bc7bc9533e448d6",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-08-06-durable-artefact-storage/dod/das-s3-dod.md"
             }
           ]
         }
