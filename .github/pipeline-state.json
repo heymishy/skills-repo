@@ -25239,6 +25239,28 @@
       "updatedAt": "2026-08-17T12:02:25.031Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-08-18-canvas-fix-staging-verification-gap",
+      "name": "Close icrh-s1's and icv-s1's unconfirmed real-staging E2E verification (found during DoD review)",
+      "stage": "definition",
+      "health": "amber",
+      "stories": [
+        {
+          "id": "csvg-s1",
+          "slug": "csvg-s1",
+          "name": "Close icrh-s1's and icv-s1's unconfirmed real-staging E2E verification",
+          "stage": "definition",
+          "health": "amber",
+          "dorStatus": "not-started",
+          "dodStatus": "not-started",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-17T12:08:49.506Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

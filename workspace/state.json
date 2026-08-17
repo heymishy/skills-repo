@@ -98,6 +98,11 @@
       "date": "2026-08-18",
       "action": "New short-track story vcb-s1 (2026-08-18-verification-coverage-backfill) created: bundles two small, unrelated, already-diagnosed verification gaps found during the DoD backlog pass. (a) rpc-s1 (2026-07-19-product-repo-connect-ux, merged PR #508+#510) promised a dedicated automated NFR-Accessibility test in its test plan but shipped none -- markup itself manually confirmed compliant during the DoD pass, no known defect. (b) jrf-s1 (2026-07-19-new-feature-redirect-fix, merged)'s AC4 regression test only calls the fixed handler twice in isolation, not the full documented 67/345-baseline suite run its own DoR contract required. Needs /test-plan -> /definition-of-ready -> dispatch -- not yet started. Logged in workspace/dod-backlog-findings.md as F7.",
       "owner": "operator/next session -- run /test-plan for vcb-s1 next"
+    },
+    {
+      "date": "2026-08-18",
+      "action": "New short-track story csvg-s1 (2026-08-18-canvas-fix-staging-verification-gap) created: bundles two related, already-diagnosed staging-verification gaps found during the DoD backlog pass, both from the same 2026-07-23 ideate-canvas-fix cluster. (a) icrh-s1 (2026-07-23-ideate-canvas-resume-hydration-fix, merged PR #569)'s AC6 real-staging E2E verification shows as skipped (not passed) in CI, blocked by a precondition gate; a promised manual re-run/follow-up comment was never posted, though the deploy itself was confirmed live. (b) icv-s1 (2026-07-23-ideate-canvas-turn2-render-fix, merged)'s AC6 real-staging re-verification was explicitly left 'pending' in decisions.md and never closed -- acVerified 5 of 6 in pipeline-state.json confirms it. Both stories' underlying canvas-rendering fixes are already confirmed correct via unit/behavioural tests (15/15 and 3/3 respectively) -- this is unclosed staging confirmation, not a known defect. Needs /test-plan -> /definition-of-ready -> dispatch -- not yet started. Logged in workspace/dod-backlog-findings.md as F8.",
+      "owner": "operator/next session -- run /test-plan for csvg-s1 next"
     }
   ]
 }
