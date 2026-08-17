@@ -70,7 +70,7 @@ const { setUserFlagsAdapter }                                        = require('
 const { setGetUserRole, setGetRoleForTenant, getRoleForTenant, migrateTeamSchema, resolveRoleForPerson } = require('./modules/user-roles'); // arl-s1 / tir-s1 / tir-s7 / sec-perf-s2
 const { migrateIdentityLinksSchema } = require('./modules/identity-links'); // tir-s2
 const { handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers } = require('./routes/account-linking'); // tir-s2
-const { createSettingsHandlers } = require('./routes/settings'); // c1
+const { createSettingsHandlers, handlePostThemeToggleClicked } = require('./routes/settings'); // c1 / si-s1
 const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
 const { adminCreditsGet, adminCreditsPost, adminSetPlanPost }        = require('./routes/admin-credits');     // arl-s3 / tpac-s1
 const { adminMockGatewayGet, adminMockGatewayPost }                  = require('./routes/admin-mock-gateway'); // amgt-s1
@@ -2900,6 +2900,11 @@ async function router(req, res) {
       res.writeHead(503, { 'Content-Type': 'text/plain' });
       res.end('Settings unavailable');
     }
+
+  } else if (pathname === '/settings/theme-toggle-clicked' && req.method === 'POST') {
+    // si-s1 (AC4) -- fire-and-forget click-rate capture for the relocated
+    // theme toggle; see routes/settings.js's handlePostThemeToggleClicked.
+    authGuard(req, res, () => handlePostThemeToggleClicked(req, res));
 
   } else if (pathname === '/settings/locale-preference' && req.method === 'POST') {
     // si-s2 — save timezone/date-format preference (Profile tab)

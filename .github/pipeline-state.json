@@ -24226,24 +24226,27 @@
             {
               "slug": "si-s1",
               "name": "Relocate the theme toggle into Settings",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-08-16T20:14:19.876Z",
+              "updatedAt": "2026-08-17T04:25:58.614Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0,
+                "passing": 5,
                 "artefact": "artefacts/2026-08-17-settings-improvements/test-plans/si-s1-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-17-settings-improvements/dor/si-s1-dor.md",
-              "dorContractArtefact": "artefacts/2026-08-17-settings-improvements/dor/si-s1-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-08-17-settings-improvements/dor/si-s1-dor-contract.md",
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/749"
             },
             {
               "slug": "si-s2",

@@ -286,6 +286,15 @@ const SHELL_JS =
       '_html.setAttribute(\'data-theme\',next);' +
       'localStorage.setItem(\'sw-theme\',next);' +
     '};' +
+    // si-s1 (AC4): fire-and-forget click-rate capture for the relocated
+    // toggle -- POSTs to /settings/theme-toggle-clicked, which calls the
+    // existing server-side _posthog.capture() convention (routes/settings.js).
+    // Mirrors swExitImpersonation's existing fetch-on-click pattern below;
+    // failures are swallowed silently -- analytics only, never blocks the
+    // theme switch itself.
+    'window.swCaptureThemeToggle=function(){' +
+      'fetch(\'/settings/theme-toggle-clicked\',{method:\'POST\'}).catch(function(){});' +
+    '};' +
     // Sidebar drawer (mobile)
     'window.swToggleSidebar=function(){' +
       'var s=document.getElementById(\'sw-sidebar\');' +
@@ -345,6 +354,25 @@ const SHELL_JS =
     '}' +
   '})();<\/script>';
 
+/**
+ * si-s1 — the dark/light mode toggle button, extracted as a shared render
+ * function so callers outside the shell (Settings' Profile tab) can reuse
+ * the exact same markup/classes/handler instead of duplicating the string
+ * (Architecture Constraints: do not duplicate or reimplement toggle logic).
+ * AC4: also fires swCaptureThemeToggle() (SHELL_JS, always loaded via
+ * renderShell) for the click-rate PostHog event -- swToggleTheme() itself is
+ * untouched; this only adds a second call alongside it in the onclick.
+ * @returns {string}
+ */
+function renderThemeToggle() {
+  return (
+    '<button class="sw-theme-toggle" onclick="swToggleTheme();swCaptureThemeToggle()" aria-label="Toggle dark mode" title="Toggle dark/light mode">' +
+      '<span class="sw-theme-toggle-icon sw-theme-toggle-icon--light" aria-hidden="true">☀</span>' +
+      '<span class="sw-theme-toggle-icon sw-theme-toggle-icon--dark" aria-hidden="true">☾</span>' +
+    '</button>'
+  );
+}
+
 function renderShell(opts) {
   opts = opts || {};
   const safeTitle    = escHtml(opts.title || '');
@@ -365,11 +393,10 @@ function renderShell(opts) {
   const activeProductId       = opts.activeProductId;
   const noProductJourneyCount = opts.noProductJourneyCount;
 
-  const themeToggle =
-    '<button class="sw-theme-toggle" onclick="swToggleTheme()" aria-label="Toggle dark mode" title="Toggle dark/light mode">' +
-      '<span class="sw-theme-toggle-icon sw-theme-toggle-icon--light" aria-hidden="true">☀</span>' +
-      '<span class="sw-theme-toggle-icon sw-theme-toggle-icon--dark" aria-hidden="true">☾</span>' +
-    '</button>';
+  // si-s1 (AC3): the theme toggle no longer renders here -- it moved into
+  // Settings' Profile tab (see routes/settings.js's renderProfileTab(), which
+  // calls renderThemeToggle() above). The shared .sw-theme-toggle CSS rule
+  // stays in DESIGN_SYSTEM_CSS below (still needed on the Settings page).
   const hamburger =
     '<button class="sw-hamburger" onclick="swToggleSidebar()" aria-label="Open navigation" aria-expanded="false">☰</button>';
 
@@ -391,7 +418,7 @@ function renderShell(opts) {
         '<header>' +
           hamburger +
           renderCrumbs(crumbs) +
-          '<div class="sw-topbar-actions">' + headerActions + themeToggle + '</div>' +
+          '<div class="sw-topbar-actions">' + headerActions + '</div>' +
         '</header>' +
         '<main>' + bodyContent + '</main>' +
       '</div>' +
@@ -898,4 +925,4 @@ function renderLoginPage() {
     '</body>\n</html>';
 }
 
-module.exports = { renderShell, renderLoginPage, escHtml, NAV_ITEMS };
+module.exports = { renderShell, renderLoginPage, escHtml, NAV_ITEMS, renderThemeToggle };
