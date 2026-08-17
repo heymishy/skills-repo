@@ -30,13 +30,55 @@ var _impersonation = require('../modules/impersonation'); // d2
 var _impersonationAudit = require('../adapters/impersonation-audit-adapter');
 var _postHogFlags = require('../modules/posthog-flags'); // d4 (AC5 hardening)
 var _flagKeys = require('../modules/flag-keys'); // d4
-var _posthog = require('../modules/posthog-server'); // si-s1 (AC4)
+var _posthog = require('../modules/posthog-server'); // si-s1 (AC4) / si-s2 (AC6) -- same plain-module capture() convention as team-management.js/team-invitations.js, not a D37 adapter (posthog-server.js has no setter/getter pair)
 
 // Sign-in providers surfaced on the Profile tab, in display order.
 var PROVIDERS = [
   { id: 'github', label: 'GitHub' },
   { id: 'google', label: 'Google' }
 ];
+
+// si-s2: real IANA timezone list, derived from the JS engine's own tz
+// database (Node 22 / ICU) rather than a hand-maintained list -- always
+// current, never drifts from what the runtime itself considers valid. Used
+// to populate the <select> dropdown. 'UTC' is prepended explicitly: it is a
+// genuinely valid IANA/ECMA-402 timezone identifier (Intl.DateTimeFormat
+// accepts it) but this ICU build's Intl.supportedValuesOf('timeZone') does
+// not enumerate it -- confirmed empirically (0 UTC/GMT-matching entries in
+// the 418-item list) -- so it must be added, not assumed present.
+var IANA_TIMEZONES = ['UTC'].concat(Intl.supportedValuesOf('timeZone'));
+var DEFAULT_TIMEZONE = 'UTC';
+
+// si-s2 (AC4/NFR-security): the REAL validity check used at save time.
+// Deliberately NOT an indexOf() against IANA_TIMEZONES above -- that array
+// is for populating the dropdown and would reject any technically-valid
+// identifier ICU's supportedValuesOf() happens not to enumerate (as 'UTC'
+// itself demonstrated). Intl.DateTimeFormat's own constructor is the
+// engine's authoritative IANA validator: it throws RangeError for anything
+// that is not a real timezone identifier, so this is a real allowlist check,
+// just implemented via the canonical source of truth instead of a copy of it.
+function _isValidTimezone(tz) {
+  try {
+    new Intl.DateTimeFormat('en-US', { timeZone: tz });
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+var DATE_FORMATS = [
+  { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD (ISO)' },
+  { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY (US)' },
+  { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY (UK/EU)' }
+];
+var DEFAULT_DATE_FORMAT = 'YYYY-MM-DD';
+
+// si-s2: bse-s1's query-param -> fixed-dictionary -> conditional-banner
+// pattern (see _BILLING_ERROR_MESSAGES above), reused verbatim for a SUCCESS
+// confirmation instead of an error -- same "never reflect the raw query
+// value" discipline, just a distinct outcome (AC2).
+var _LOCALE_SUCCESS_MESSAGES = {
+  saved: 'Your timezone and date format preferences have been saved.'
+};
 
 // bse-s1: maps bpe-s1's two known billing-portal error codes
 // (src/web-ui/routes/billing.js's handleGetBillingPortal, lines ~464/~479 --
@@ -59,6 +101,61 @@ function _escapeHtml(s) {
 }
 
 /**
+ * si-s2 -- Render the locale preference form (timezone + date format),
+ * AC1/AC3: always shows a sensible non-blank default (UTC / YYYY-MM-DD) when
+ * unset, or the person's saved values when present. A stored value that no
+ * longer matches the current allowlist (legacy/malformed data) is still
+ * shown -- escaped -- as an extra selected option, rather than being
+ * silently replaced by the default (the user should see what is actually
+ * saved). escHtml is applied to every value reflected into the markup (NFR
+ * security) via this file's own _escapeHtml, mirroring every other render
+ * function in this file.
+ * @param {{timezone?: string|null, date_format?: string|null}} locale
+ * @param {string} csrfToken
+ * @param {{successMessage?: string}} [opts]
+ * @returns {string} HTML fragment
+ */
+function renderLocaleForm(locale, csrfToken, opts) {
+  opts = opts || {};
+  locale = locale || {};
+  var selectedTimezone = locale.timezone || DEFAULT_TIMEZONE;
+  var selectedDateFormat = locale.date_format || DEFAULT_DATE_FORMAT;
+
+  var timezoneKnown = IANA_TIMEZONES.indexOf(selectedTimezone) !== -1;
+  var timezoneOptions = IANA_TIMEZONES.map(function(tz) {
+    return '<option value="' + _escapeHtml(tz) + '"' + (tz === selectedTimezone ? ' selected' : '') + '>' + _escapeHtml(tz) + '</option>';
+  }).join('');
+  if (!timezoneKnown) {
+    timezoneOptions += '<option value="' + _escapeHtml(selectedTimezone) + '" selected>' + _escapeHtml(selectedTimezone) + '</option>';
+  }
+
+  var dateFormatKnown = DATE_FORMATS.some(function(d) { return d.value === selectedDateFormat; });
+  var dateFormatOptions = DATE_FORMATS.map(function(d) {
+    return '<option value="' + _escapeHtml(d.value) + '"' + (d.value === selectedDateFormat ? ' selected' : '') + '>' + _escapeHtml(d.label) + '</option>';
+  }).join('');
+  if (!dateFormatKnown) {
+    dateFormatOptions += '<option value="' + _escapeHtml(selectedDateFormat) + '" selected>' + _escapeHtml(selectedDateFormat) + '</option>';
+  }
+
+  var successBanner = opts.successMessage
+    ? '<div id="locale-success" class="sw-locale-success" role="status">' + _escapeHtml(opts.successMessage) + '</div>'
+    : '';
+
+  return (
+    '<div class="sw-section-title" style="margin-top:24px">Locale preferences</div>' +
+    successBanner +
+    '<form method="POST" action="/settings/locale-preference" class="sw-card sw-card--lg">' +
+      _csrf.csrfField(csrfToken || '') +
+      '<label for="locale-timezone" style="display:block;margin-bottom:6px;font-weight:500;font-size:13px">Timezone</label>' +
+      '<select id="locale-timezone" name="timezone" class="sw-input" style="margin-bottom:14px">' + timezoneOptions + '</select>' +
+      '<label for="locale-date-format" style="display:block;margin-bottom:6px;font-weight:500;font-size:13px">Date format</label>' +
+      '<select id="locale-date-format" name="dateFormat" class="sw-input" style="margin-bottom:14px">' + dateFormatOptions + '</select>' +
+      '<button type="submit" class="sw-btn sw-btn--accent">Save locale preferences</button>' +
+    '</form>'
+  );
+}
+
+/**
  * Render the Profile tab's panel content: identity card (avatar/login/which
  * provider they signed in via) + a list of sign-in methods with linked/
  * not-linked status (AC2). A provider that is already linked never offers a
@@ -68,9 +165,13 @@ function _escapeHtml(s) {
  * @param {{login: string, authProvider?: string}} user
  * @param {Set<string>} linkedSet - the full set of providers already linked
  *   (session's own authProvider + identity-links.js's getLinkedProviders())
+ * @param {{locale?: object, csrfToken?: string, localeSuccessMessage?: string}} [opts] -
+ *   si-s2: locale preference form data. Optional -- 2-arg call sites (existing
+ *   c1 tests) still render correctly with defaults (opts defaults to {}).
  * @returns {string} HTML fragment (no <html>/<body> wrapper)
  */
-function renderProfileTab(user, linkedSet) {
+function renderProfileTab(user, linkedSet, opts) {
+  opts = opts || {};
   var login = (user && user.login) || 'signed in';
   var initial = String(login).charAt(0).toUpperCase();
   var signedInVia = (user && user.authProvider) || null;
@@ -121,6 +222,10 @@ function renderProfileTab(user, linkedSet) {
         '</div>' +
         _htmlShell.renderThemeToggle() +
       '</div>' +
+      // si-s2: locale preference form -- always rendered (defaults apply when
+      // opts.locale is unset), so the 2-arg c1 call sites still render valid,
+      // harmless markup with UTC/ISO defaults and no CSRF token.
+      renderLocaleForm(opts.locale, opts.csrfToken, { successMessage: opts.localeSuccessMessage }) +
     '</div>'
   );
 }
@@ -430,6 +535,10 @@ var _TAB_CSS =
     '.sw-credits-error[hidden]{display:none}' +
     // d3 — Impersonate tab empty-state text.
     '.sw-muted-note{color:var(--muted);font-size:13.5px}' +
+    // si-s2 — locale preference save confirmation banner (green/success
+    // variant of .sw-credits-error's shape, same tokens as the existing
+    // .sw-pill--green success colour already used elsewhere on this page).
+    '.sw-locale-success{background:var(--green-soft);color:var(--green);border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:13.5px}' +
   '</style>';
 
 var _TAB_JS =
@@ -464,7 +573,10 @@ function renderSettingsPage(opts) {
     '<p class="sw-page-sub">Manage your identity, sign-in methods' + (isAdmin ? ', billing, and platform credits' : ' and billing') + '.</p>' +
     _TAB_CSS +
     _renderTabNav(isAdmin) +
-    renderProfileTab(user, linkedSet) +
+    // si-s2: forwards the person's saved locale (if any), the shared CSRF
+    // token (same one already generated below for Billing/Credits), and the
+    // query-param-driven success message (AC2) into the Profile tab.
+    renderProfileTab(user, linkedSet, { locale: opts.locale, csrfToken: csrfToken, localeSuccessMessage: opts.localeSuccessMessage }) +
     '<div id="tab-panel-billing" class="sw-tab-panel" role="tabpanel" aria-labelledby="tab-billing">' +
       // bse-s1 (AC1/AC2/AC3): forwards the billing-portal error message (if
       // any) resolved by handleGetSettings from req.query.error, via the
@@ -519,6 +631,23 @@ function createSettingsHandlers(pool) {
 
     var linkedSet = new Set(linkedFromDb);
     if (currentProvider) linkedSet.add(currentProvider);
+
+    // si-s2 (AC1/AC3): resolve person_id via the SAME identityKey already
+    // computed above -- no second identity-resolution path (Architecture
+    // Constraints). A GET with no resolvable person (e.g. a brand-new
+    // session edge case) simply falls back to the form's defaults -- only
+    // the POST path (AC5) needs to hard-reject an unresolved identity, since
+    // GET never writes.
+    var personId = identityKey ? await _identityLinks.resolvePersonForIdentity(pool, identityKey) : null;
+    var personLocale = {};
+    if (personId != null) {
+      var localeResult = await pool.query('SELECT timezone, date_format FROM people WHERE id = $1', [personId]);
+      personLocale = localeResult.rows[0] || {};
+    }
+    // si-s2 (AC2): bse-s1's query-param -> fixed-dictionary -> conditional-
+    // banner pattern, reused for a success confirmation -- the raw query
+    // value is never reflected, only the dictionary-mapped message.
+    var localeSuccessMessage = _LOCALE_SUCCESS_MESSAGES[req.query && req.query.locale] || null;
 
     var user = {
       login: req.session && req.session.login,
@@ -599,18 +728,76 @@ function createSettingsHandlers(pool) {
       impersonation: impersonationOpts,
       impersonationAuditRows: impersonationAuditRows,
       impersonationStartEnabled: impersonationStartEnabled,
-      billingError: billingErrorMessage
+      billingError: billingErrorMessage,
+      locale: personLocale,
+      localeSuccessMessage: localeSuccessMessage
     });
 
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
 
-  return { handleGetSettings: handleGetSettings };
+  /**
+   * POST /settings/locale-preference — si-s2: save a person's timezone/
+   * date-format preference. Mounted behind authGuard in server.js, same as
+   * handleGetSettings.
+   *
+   * AC4: validates BEFORE any identity resolution or write -- no partial
+   * write, field-specific 400 message, matches admin-credits.js's
+   * established JSON-400 shape (adminCreditsPost/adminSetPlanPost).
+   * AC5: resolvePersonForIdentity returning null is a clean 400 rejection,
+   * never an unhandled exception and never a write to a wrong/new row.
+   * AC2/AC6: on success, persists to the people row resolved via the SAME
+   * identityKey handleGetSettings already computes, fires a PostHog capture,
+   * then redirects to /settings?locale=saved (handleGetSettings's own
+   * dictionary renders the confirmation banner on the next GET).
+   */
+  async function handlePostLocalePreference(req, res) {
+    var csrfOk = await _csrf.csrfGuard(req, res);
+    if (!csrfOk) return;
+
+    var body = req.body || {};
+    var timezone = body.timezone ? String(body.timezone) : '';
+    var dateFormat = body.dateFormat ? String(body.dateFormat) : '';
+
+    if (!timezone || !_isValidTimezone(timezone)) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Timezone must be a valid IANA timezone identifier' }));
+      return;
+    }
+    if (!dateFormat || !DATE_FORMATS.some(function(d) { return d.value === dateFormat; })) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Date format must be one of: ' + DATE_FORMATS.map(function(d) { return d.value; }).join(', ') }));
+      return;
+    }
+
+    var identityKey = req.session && req.session.tenantId;
+    var personId = identityKey ? await _identityLinks.resolvePersonForIdentity(pool, identityKey) : null;
+
+    if (personId == null) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Unable to resolve your account. Please sign in again.' }));
+      return;
+    }
+
+    await pool.query('UPDATE people SET timezone = $1, date_format = $2 WHERE id = $3', [timezone, dateFormat, personId]);
+
+    // AC6: fire-and-forget, same _posthog.capture(distinctId, event, props)
+    // convention as team-management.js/team-invitations.js.
+    _posthog.capture(identityKey, 'locale_preference_saved', { timezone: timezone, dateFormat: dateFormat });
+
+    res.writeHead(302, { Location: '/settings?locale=saved' });
+    res.end();
+  }
+
+  return { handleGetSettings: handleGetSettings, handlePostLocalePreference: handlePostLocalePreference };
 }
 
 module.exports = {
   PROVIDERS: PROVIDERS,
+  IANA_TIMEZONES: IANA_TIMEZONES,
+  DATE_FORMATS: DATE_FORMATS,
+  renderLocaleForm: renderLocaleForm,
   renderProfileTab: renderProfileTab,
   renderBillingTab: renderBillingTab,
   renderCreditsTab: renderCreditsTab,

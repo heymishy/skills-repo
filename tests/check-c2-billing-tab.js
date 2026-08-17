@@ -223,9 +223,21 @@ async function testHandleGetSettingsReflectsRealPlanStateNoDuplicateComputation(
     assert.ok(/Past due</.test(res.body), 'AC3: "Past due" text label reflected in the rendered page');
     assert.ok(req.session.csrfToken, 'A CSRF token is generated and stored on the session');
     // paid/past_due -> no Upgrade form is rendered (trial-only, AC5), so no _csrf
-    // field is embedded here -- that's correct (a GET-only Manage-billing link
-    // needs no CSRF protection). The trial-tenant test below covers embedding.
-    assert.ok(res.body.indexOf('name="_csrf"') === -1, 'No CSRF field rendered when no form is shown (paid/past_due -- Manage billing is a plain GET link)');
+    // field is embedded WITHIN THE BILLING PANEL -- that's correct (a GET-only
+    // Manage-billing link needs no CSRF protection). The trial-tenant test below
+    // covers embedding. si-s2: scoped to the Billing panel specifically (rather
+    // than the whole page) because the Profile tab now unconditionally renders
+    // its own, unrelated locale-preference form -- which legitimately has its
+    // own _csrf field regardless of billing plan state. The original page-wide
+    // assertion predates that form and no longer reflects this AC's actual
+    // intent (no CSRF field for an absent BILLING form), so the boundary check
+    // below narrows it to what AC5 actually claims.
+    var billingPanelStart = res.body.indexOf('id="tab-panel-billing"');
+    var billingPanelEnd = res.body.indexOf('id="tab-panel-credits"');
+    if (billingPanelEnd === -1) billingPanelEnd = res.body.indexOf('id="tab-panel-impersonate"');
+    if (billingPanelEnd === -1) billingPanelEnd = res.body.length;
+    var billingPanelHtml = res.body.slice(billingPanelStart, billingPanelEnd);
+    assert.ok(billingPanelHtml.indexOf('name="_csrf"') === -1, 'No CSRF field rendered inside the Billing panel when no billing form is shown (paid/past_due -- Manage billing is a plain GET link)');
   } finally {
     tenantPlan.getPlanState = originalGetPlanState;
   }

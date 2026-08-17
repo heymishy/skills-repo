@@ -108,6 +108,10 @@ let _handleGithubLinkCallback = null;
 // wiring precedent).
 let _handleGetSettings = null;
 
+// si-s2: module-level handler reference for POST /settings/locale-preference,
+// same real-Postgres-only wiring pattern as _handleGetSettings above.
+let _handlePostLocalePreference = null;
+
 // tir-s3: module-level handler reference for /team/members + /api/team/members
 // (assigned inside the DATABASE_URL block, same pattern as
 // _handleGoogleLinkCallback above — real-Postgres-only, no NODE_ENV=test
@@ -754,6 +758,10 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // setter/getter pair.
     const _settingsHandlers = createSettingsHandlers(_userRolesPool);
     _handleGetSettings = _settingsHandlers.handleGetSettings;
+    // si-s2: same factory, same pool -- handlePostLocalePreference reuses
+    // handleGetSettings's exact identity-resolution mechanism (Architecture
+    // Constraints), so no separate wiring step is needed beyond this.
+    _handlePostLocalePreference = _settingsHandlers.handlePostLocalePreference;
     console.log('[c1] settings page handler wired');
 
     // tir-s3 — Wire the /team/members add-teammate handlers to the same
@@ -2897,6 +2905,15 @@ async function router(req, res) {
     // si-s1 (AC4) -- fire-and-forget click-rate capture for the relocated
     // theme toggle; see routes/settings.js's handlePostThemeToggleClicked.
     authGuard(req, res, () => handlePostThemeToggleClicked(req, res));
+
+  } else if (pathname === '/settings/locale-preference' && req.method === 'POST') {
+    // si-s2 — save timezone/date-format preference (Profile tab)
+    if (_handlePostLocalePreference) {
+      authGuard(req, res, () => _handlePostLocalePreference(req, res));
+    } else {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Settings unavailable');
+    }
 
   } else if (pathname === '/settings/link-account' && req.method === 'GET') {
     // c1 — the old bare link-settings page now redirects into the unified
