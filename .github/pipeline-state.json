@@ -6707,8 +6707,12 @@
                 "passing": 34
               },
               "tddState": "green",
-              "updatedAt": "2026-08-10T02:00:41.025Z",
-              "prStatus": "merged"
+              "updatedAt": "2026-08-17T06:50:25.736Z",
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/416",
+              "dodArtefact": "artefacts/2026-06-28-definition-canvas/dod/dic.1-dod.md"
             },
             {
               "id": "dic.2",
@@ -6731,8 +6735,12 @@
                 "passing": 37
               },
               "tddState": "green",
-              "updatedAt": "2026-08-10T02:00:41.183Z",
-              "prStatus": "merged"
+              "updatedAt": "2026-08-17T06:50:25.736Z",
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/416",
+              "dodArtefact": "artefacts/2026-06-28-definition-canvas/dod/dic.2-dod.md"
             },
             {
               "id": "dic.3",
@@ -6755,8 +6763,12 @@
                 "passing": 37
               },
               "tddState": "green",
-              "updatedAt": "2026-08-10T02:00:41.342Z",
-              "prStatus": "merged"
+              "updatedAt": "2026-08-17T06:50:25.736Z",
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/416",
+              "dodArtefact": "artefacts/2026-06-28-definition-canvas/dod/dic.3-dod.md"
             },
             {
               "id": "dic.4",
@@ -6779,8 +6791,12 @@
                 "passing": 32
               },
               "tddState": "green",
-              "updatedAt": "2026-08-10T02:00:41.484Z",
-              "prStatus": "merged"
+              "updatedAt": "2026-08-17T06:50:25.736Z",
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/416",
+              "dodArtefact": "artefacts/2026-06-28-definition-canvas/dod/dic.4-dod.md"
             },
             {
               "id": "dic.5",
@@ -6803,8 +6819,12 @@
                 "passing": 75
               },
               "tddState": "green",
-              "updatedAt": "2026-08-10T02:00:41.626Z",
-              "prStatus": "merged"
+              "updatedAt": "2026-08-17T06:50:25.736Z",
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/416",
+              "dodArtefact": "artefacts/2026-06-28-definition-canvas/dod/dic.5-dod.md"
             }
           ]
         }
