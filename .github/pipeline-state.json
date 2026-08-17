@@ -15391,7 +15391,7 @@
           "id": "acps-s1",
           "slug": "acps-s1",
           "name": "Style the admin credits page with the shared design system shell",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
@@ -15409,8 +15409,11 @@
           "dorArtefact": "artefacts/2026-07-24-admin-credits-page-styling/dor/acps-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-24-admin-credits-page-styling/dor/acps-s1-dor-contract.md",
           "prStatus": "merged",
-          "updatedAt": "2026-07-24T00:25:06.592Z",
-          "notes": "Implemented: adminCreditsGet in src/web-ui/routes/admin-credits.js now builds bodyContent and wraps it in renderShell (title, bodyContent, user, active=admin-credits, crumbs=[Admin credits], isAdmin=true) instead of hand-rolled <!DOCTYPE html>. adminCreditsPost/CSRF/audit logic untouched. New test tests/check-acps-s1-admin-credits-shell.js (3 unit tests, AC1/AC2/AC4) written RED-first then GREEN. Existing tests/check-arl-s3-admin-credits.js (12), tests/check-sec-perf-s3-admin-credits-csrf.js (3), tests/check-arl-s5-credit-audit-log.js (12) all pass unmodified, confirming AC3. Full npm test run: 384 files, 37 failed -- all 37 already in tests/known-baseline-failures.json, zero new regressions (confirmed via scripts/ci-test-regression-check.js). Draft PR opened against master."
+          "updatedAt": "2026-08-17T12:14:10.038Z",
+          "notes": "Implemented: adminCreditsGet in src/web-ui/routes/admin-credits.js now builds bodyContent and wraps it in renderShell (title, bodyContent, user, active=admin-credits, crumbs=[Admin credits], isAdmin=true) instead of hand-rolled <!DOCTYPE html>. adminCreditsPost/CSRF/audit logic untouched. New test tests/check-acps-s1-admin-credits-shell.js (3 unit tests, AC1/AC2/AC4) written RED-first then GREEN. Existing tests/check-arl-s3-admin-credits.js (12), tests/check-sec-perf-s3-admin-credits-csrf.js (3), tests/check-arl-s5-credit-audit-log.js (12) all pass unmodified, confirming AC3. Full npm test run: 384 files, 37 failed -- all 37 already in tests/known-baseline-failures.json, zero new regressions (confirmed via scripts/ci-test-regression-check.js). Draft PR opened against master.",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-24-admin-credits-page-styling/dod/acps-s1-dod.md"
         }
       ],
       "updatedAt": "2026-07-24T00:25:06.592Z"
@@ -15427,7 +15430,7 @@
           "id": "amgt-s1",
           "slug": "amgt-s1",
           "name": "Let an admin toggle the mock LLM gateway on/off from an in-app admin page",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
@@ -15445,8 +15448,11 @@
           "dorArtefact": "artefacts/2026-07-24-admin-mock-gateway-toggle/dor/amgt-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-24-admin-mock-gateway-toggle/dor/amgt-s1-dor-contract.md",
           "prStatus": "merged",
-          "updatedAt": "2026-07-24T02:46:51.650Z",
-          "notes": "Operator-reported gap (2026-07-24): MOCK_LLM_GATEWAY is env-var-only, requiring a redeploy to switch mock/real model behaviour. Fix adds a runtime, in-memory override consulted by isMockGatewayEnabled() AFTER its existing NODE_ENV=production hard-override (which remains untouched -- AC4 verified). Admin-gated via the existing requireAdmin/renderShell/CSRF pattern established by admin-credits.js. Implemented: mock-llm-gateway.js runtime override, new routes/admin-mock-gateway.js, 2 new requireAdmin-gated server.js routes (GET /admin/mock-gateway, POST /api/admin/mock-gateway/toggle). All 9 of its own tests pass. Bumped check-d2/check-d4's hardcoded requireAdmin-call-site checklist count from 8 to 10 (by-design friction, both routes verified to call requireAdmin the standard way, no bypass). Draft PR opened."
+          "updatedAt": "2026-08-17T12:14:10.038Z",
+          "notes": "Operator-reported gap (2026-07-24): MOCK_LLM_GATEWAY is env-var-only, requiring a redeploy to switch mock/real model behaviour. Fix adds a runtime, in-memory override consulted by isMockGatewayEnabled() AFTER its existing NODE_ENV=production hard-override (which remains untouched -- AC4 verified). Admin-gated via the existing requireAdmin/renderShell/CSRF pattern established by admin-credits.js. Implemented: mock-llm-gateway.js runtime override, new routes/admin-mock-gateway.js, 2 new requireAdmin-gated server.js routes (GET /admin/mock-gateway, POST /api/admin/mock-gateway/toggle). All 9 of its own tests pass. Bumped check-d2/check-d4's hardcoded requireAdmin-call-site checklist count from 8 to 10 (by-design friction, both routes verified to call requireAdmin the standard way, no bypass). Draft PR opened.",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-24-admin-mock-gateway-toggle/dod/amgt-s1-dod.md"
         }
       ]
     },
@@ -15462,7 +15468,7 @@
           "id": "pnfc-s1",
           "slug": "pnfc-s1",
           "name": "Offer the formed-idea/rough-idea choice when creating a new feature from a product's page",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
@@ -15480,8 +15486,11 @@
           "dorArtefact": "artefacts/2026-07-24-product-new-feature-idea-choice/dor/pnfc-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-24-product-new-feature-idea-choice/dor/pnfc-s1-dor-contract.md",
           "prStatus": "merged",
-          "updatedAt": "2026-07-24T03:07:09.893Z",
-          "notes": "Operator-reported gap (2026-07-24): handlePostProductFeature (products.js:1488) hardcoded discovery with zero branching, bypassing the rough-idea/formed-idea choice that already exists and works correctly on the separate /journey page (handlePostJourney, startSkill branching). Fix reuses that proven mechanism: /products/:id's \"New feature\" panel now offers the same startSkill=ideate/discovery radio choice, threaded through registerHtmlSession/setActiveSession/updateStage/redirect. decisions.md documents the deliberate choice to duplicate (not extend) handlePostJourney's branch, per the jrf-s1/jrf-s2 precedent, to keep /journey completely unregressed (AC5). 5 unit + 4 E2E tests all pass; check-jrf-s2 and check-psh-s4 (the 2 pre-existing tests this touched) re-run clean, zero regression. Draft PR opened."
+          "updatedAt": "2026-08-17T12:14:10.038Z",
+          "notes": "Operator-reported gap (2026-07-24): handlePostProductFeature (products.js:1488) hardcoded discovery with zero branching, bypassing the rough-idea/formed-idea choice that already exists and works correctly on the separate /journey page (handlePostJourney, startSkill branching). Fix reuses that proven mechanism: /products/:id's \"New feature\" panel now offers the same startSkill=ideate/discovery radio choice, threaded through registerHtmlSession/setActiveSession/updateStage/redirect. decisions.md documents the deliberate choice to duplicate (not extend) handlePostJourney's branch, per the jrf-s1/jrf-s2 precedent, to keep /journey completely unregressed (AC5). 5 unit + 4 E2E tests all pass; check-jrf-s2 and check-psh-s4 (the 2 pre-existing tests this touched) re-run clean, zero regression. Draft PR opened.",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-24-product-new-feature-idea-choice/dod/pnfc-s1-dod.md"
         }
       ]
     },
@@ -15497,7 +15506,7 @@
           "id": "dsda-s1",
           "slug": "dsda-s1",
           "name": "Default to all stories from /definition when starting the per-story review sequence",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
@@ -15515,8 +15524,11 @@
           "dorArtefact": "artefacts/2026-07-24-definition-stories-default-all/dor/dsda-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-24-definition-stories-default-all/dor/dsda-s1-dor-contract.md",
           "prStatus": "merged",
-          "updatedAt": "2026-07-24T03:49:03.438Z",
-          "notes": "Operator-reported gap (2026-07-24): after /definition, handleGetStories presented a manual textarea asking the operator to retype story slugs, even though /definition already wrote them into the real artefact. Fix adds extractStoryIdsFromDefinitionArtefact (journey.js), a new server-side extractor mirroring the client-side parseDefinitionArtefact's own story-ID regexes for its two documented formats (H1 epic/story headers, flat-story fallback) -- cross-checked directly against the real client-side parser for zero drift (AC5). handleGetStories now pre-fills the textarea from the definition artefact, falling back to the existing empty manual-entry textarea when extraction finds nothing (AC4) or when there's no definition stage yet. The textarea remains a normal editable field, so the existing manual-entry mechanism doubles as the edit affordance (AC3) with no separate UI needed. 9 unit/integration tests + 1 Playwright E2E test (drives a real mocked-LLM journey to /journey/:id/stories) all pass. Two dispatched coding-agent attempts for this story died during research before writing any code (monthly spend limit); implemented directly. Draft PR opened."
+          "updatedAt": "2026-08-17T12:14:10.038Z",
+          "notes": "Operator-reported gap (2026-07-24): after /definition, handleGetStories presented a manual textarea asking the operator to retype story slugs, even though /definition already wrote them into the real artefact. Fix adds extractStoryIdsFromDefinitionArtefact (journey.js), a new server-side extractor mirroring the client-side parseDefinitionArtefact's own story-ID regexes for its two documented formats (H1 epic/story headers, flat-story fallback) -- cross-checked directly against the real client-side parser for zero drift (AC5). handleGetStories now pre-fills the textarea from the definition artefact, falling back to the existing empty manual-entry textarea when extraction finds nothing (AC4) or when there's no definition stage yet. The textarea remains a normal editable field, so the existing manual-entry mechanism doubles as the edit affordance (AC3) with no separate UI needed. 9 unit/integration tests + 1 Playwright E2E test (drives a real mocked-LLM journey to /journey/:id/stories) all pass. Two dispatched coding-agent attempts for this story died during research before writing any code (monthly spend limit); implemented directly. Draft PR opened.",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-24-definition-stories-default-all/dod/dsda-s1-dod.md"
         }
       ]
     },
@@ -15532,7 +15544,7 @@
           "id": "frsr-s1",
           "slug": "frsr-s1",
           "name": "Make feature rows in a product's view clickable, linking through to persisted conversation/artefacts",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
@@ -15550,8 +15562,11 @@
           "dorArtefact": "artefacts/2026-07-24-feature-row-session-resume-link/dor/frsr-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-24-feature-row-session-resume-link/dor/frsr-s1-dor-contract.md",
           "prStatus": "merged",
-          "updatedAt": "2026-07-24T03:56:40.892Z",
-          "notes": "Operator-reported gap (2026-07-24): feature rows in a product's view (_renderPvcItemRow, products.js) were plain non-interactive text. Fix confirmed all the real pieces already existed (mergeFeatureSources already carries journeyId; item.slug already matches the real artefacts/[slug]/ directory -- confirmed directly, no journeyId-based resolution needed; handleGetChatHtml already resumes any session by ID via Redis fallback; /features/:slug already renders a kfd1-styled artefact index) except one real gap: completeStage() did not record which sessionId produced each completed stage. completeStage() now takes an optional 5th sessionId param (both real call sites in journey.js and skills.js updated); a new getJourneyByFeatureSlug (journey-store.js) plus _resolveResumeLinksForFeature (features.js, keyed by artefactPath -- the same path both sides already derive from the same real file, not by fragile skillName/type inference) wires a 'Resume conversation' link alongside the existing 'View' link when resolvable; _renderPvcItemRow now wraps each card in a real, keyboard-activatable <a href=/features/:slug>, with the discoveryArtefact suffix kept as a separate sibling link (no nested anchors). NFR-Performance (one lookup per render) and NFR-Security (identical tenant/ownership guard, reused not weakened) both verified directly. 10 unit/integration tests + 2 Playwright E2E tests all pass. Most complex of the four findings (Complexity 3) -- two prior coding-agent dispatches died during research before writing any code (monthly spend limit); implemented directly. Draft PR opened."
+          "updatedAt": "2026-08-17T12:14:10.038Z",
+          "notes": "Operator-reported gap (2026-07-24): feature rows in a product's view (_renderPvcItemRow, products.js) were plain non-interactive text. Fix confirmed all the real pieces already existed (mergeFeatureSources already carries journeyId; item.slug already matches the real artefacts/[slug]/ directory -- confirmed directly, no journeyId-based resolution needed; handleGetChatHtml already resumes any session by ID via Redis fallback; /features/:slug already renders a kfd1-styled artefact index) except one real gap: completeStage() did not record which sessionId produced each completed stage. completeStage() now takes an optional 5th sessionId param (both real call sites in journey.js and skills.js updated); a new getJourneyByFeatureSlug (journey-store.js) plus _resolveResumeLinksForFeature (features.js, keyed by artefactPath -- the same path both sides already derive from the same real file, not by fragile skillName/type inference) wires a 'Resume conversation' link alongside the existing 'View' link when resolvable; _renderPvcItemRow now wraps each card in a real, keyboard-activatable <a href=/features/:slug>, with the discoveryArtefact suffix kept as a separate sibling link (no nested anchors). NFR-Performance (one lookup per render) and NFR-Security (identical tenant/ownership guard, reused not weakened) both verified directly. 10 unit/integration tests + 2 Playwright E2E tests all pass. Most complex of the four findings (Complexity 3) -- two prior coding-agent dispatches died during research before writing any code (monthly spend limit); implemented directly. Draft PR opened.",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-24-feature-row-session-resume-link/dod/frsr-s1-dod.md"
         }
       ]
     },
@@ -15680,11 +15695,11 @@
           "slug": "kcrs-s1-kanban-card-resumes-live-session",
           "id": "kcrs-s1-kanban-card-resumes-live-session",
           "name": "Clicking a kanban card resumes the journey live session, not a static summary page",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-07-24T21:44:35.557Z",
+          "updatedAt": "2026-08-17T12:14:10.038Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 15,
@@ -15696,7 +15711,10 @@
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-07-24-kanban-card-resume-session/dor/kcrs-s1-kanban-card-resumes-live-session-dor.md",
           "dorStatus": "signed-off",
-          "prStatus": "merged"
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-24-kanban-card-resume-session/dod/kcrs-s1-kanban-card-resumes-live-session-dod.md"
         }
       ]
     },
