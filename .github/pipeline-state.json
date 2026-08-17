@@ -9037,9 +9037,9 @@
               "slug": "tir-s9",
               "id": "tir-s9",
               "name": "The identityKey passed to login-time role resolution must be each person's own identity, not the shared tenantId",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-08-04T10:22:25.344Z",
+              "updatedAt": "2026-08-17T12:00:54.465Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-07-09-team-identity-roles/review/tir-s9-review-1.md",
@@ -9059,7 +9059,10 @@
               "dorContractArtefact": "artefacts/2026-07-09-team-identity-roles/dor/tir-s9-dor-contract.md",
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/472",
-              "prNumber": 472
+              "prNumber": 472,
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-09-team-identity-roles/dod/tir-s9-dod.md"
             }
           ]
         }
@@ -9781,8 +9784,8 @@
               "slug": "bri-s3.3",
               "name": "Multi-user within one tenant journey spec",
               "stage": "definition-of-done",
-              "health": "green",
-              "updatedAt": "2026-07-16T03:59:22.237Z",
+              "health": "amber",
+              "updatedAt": "2026-08-17T12:00:54.465Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -9798,7 +9801,10 @@
               "dorStatus": "signed-off",
               "blocker": "",
               "dorArtefact": "artefacts/2026-07-09-beta-readiness-infra/dor/bri-s3.3-multi-user-tenant-journey-dor.md",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s3.3-dod.md"
             },
             {
               "slug": "bri-s3.4",
@@ -10313,7 +10319,7 @@
           "id": "els-s1",
           "slug": "els-s1",
           "name": "Capture epic-delivery learnings into CLAUDE.md and architecture-guardrails.md",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -10333,7 +10339,10 @@
           "dorSignedOffAt": "2026-07-13T08:13:07.960Z",
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/471",
-          "updatedAt": "2026-07-13T08:21:21.106Z"
+          "updatedAt": "2026-08-17T12:00:54.465Z",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-13-epic-learnings-capture/dod/els-s1-dod.md"
         }
       ],
       "metrics": [],
@@ -12102,8 +12111,8 @@
           "id": "jrf-s1",
           "slug": "jrf-s1",
           "name": "Fix \"New feature\" redirecting to the sign-in page for logged-in users",
-          "stage": "branch-complete",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -12121,7 +12130,10 @@
           "dorContractArtefact": "artefacts/2026-07-19-new-feature-redirect-fix/dor/jrf-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-19T06:36:01.138Z",
           "prStatus": "merged",
-          "updatedAt": "2026-07-19T20:12:41.651Z"
+          "updatedAt": "2026-08-17T12:00:54.465Z",
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "dodArtefact": "artefacts/2026-07-19-new-feature-redirect-fix/dod/jrf-s1-dod.md"
         }
       ],
       "metrics": [],
@@ -12139,8 +12151,8 @@
           "id": "rpc-s1",
           "slug": "rpc-s1",
           "name": "Give every product a UI path to connect or create a GitHub repo",
-          "stage": "branch-complete",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -12158,7 +12170,10 @@
           "dorContractArtefact": "artefacts/2026-07-19-product-repo-connect-ux/dor/rpc-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-19T06:36:01.138Z",
           "prStatus": "merged",
-          "updatedAt": "2026-07-19T20:12:41.795Z"
+          "updatedAt": "2026-08-17T12:00:54.465Z",
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "dodArtefact": "artefacts/2026-07-19-product-repo-connect-ux/dod/rpc-s1-dod.md"
         }
       ],
       "metrics": [],
@@ -12176,7 +12191,7 @@
           "id": "kbc-s1",
           "slug": "kbc-s1",
           "name": "Consolidate kanban rendering into one shared pattern; retire /features, /actions, /status",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -12265,7 +12280,10 @@
               "file": "artefacts/2026-07-19-kanban-consolidation/plans/kbc-s1-plan.md"
             }
           ],
-          "updatedAt": "2026-07-19T20:12:41.924Z"
+          "updatedAt": "2026-08-17T12:00:54.465Z",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-19-kanban-consolidation/dod/kbc-s1-dod.md"
         }
       ],
       "metrics": [],
