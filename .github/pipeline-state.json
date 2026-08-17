@@ -393,7 +393,7 @@
       "regulated": false,
       "complianceProfile": "standard",
       "slicingStrategy": "risk-first",
-      "updatedAt": "2026-07-14T04:41:05.765Z",
+      "updatedAt": "2026-08-17T05:42:32.854Z",
       "discovery": {
         "status": "approved",
         "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/discovery.md",
@@ -646,7 +646,7 @@
         {
           "slug": "phase-1-tenant-identity",
           "name": "Phase 1 — Tenant Identity",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "p1.1",
@@ -658,17 +658,21 @@
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/p1.1-review-1.md",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p1.1-test-plan.md",
-                "totalTests": 9
+                "totalTests": 13,
+                "passing": 13
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/p1.1-dor.md",
-              "updatedAt": "2026-06-23T04:00:00Z",
+              "updatedAt": "2026-08-17T05:42:32.854Z",
               "planArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/plans/p1.1-plan.md",
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/391",
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dod/p1.1-dod.md"
             },
             {
               "slug": "p1.2",
@@ -680,22 +684,26 @@
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/p1.2-review-1.md",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/p1.2-test-plan.md",
-                "totalTests": 8
+                "totalTests": 15,
+                "passing": 15
               },
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/p1.2-dor.md",
-              "updatedAt": "2026-06-23T05:00:00Z",
+              "updatedAt": "2026-08-17T05:42:32.854Z",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/393"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/393",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dod/p1.2-dod.md"
             }
           ]
         },
         {
           "slug": "phase-2-storage-isolation",
           "name": "Phase 2 — Storage Isolation",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "p2.1",
@@ -747,7 +755,7 @@
         {
           "slug": "phase-3-state-persistence",
           "name": "Phase 3 — State Persistence",
-          "status": "not-started",
+          "status": "complete",
           "deferralReason": "Pending OQ7 vendor selection (managed Postgres + Redis). Run /definition for Phase 3 after vendor is confirmed.",
           "stories": [
             {
@@ -815,7 +823,7 @@
         {
           "slug": "phase-4-performance-isolation",
           "name": "Phase 4 — Performance Isolation",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "p4.1",
@@ -845,7 +853,7 @@
             {
               "slug": "s6.1",
               "name": "Thread session into prompt-cache scoping (activate Decision 8)",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "complexity": 2,
               "scopeStability": "Stable",
@@ -867,14 +875,17 @@
               "prStatus": "merged",
               "notes": "Fix-forward: activates Decision 8 (RISK-ACCEPT, 2026-06-24) — threads tenantId/sessionId through the real production call chain into _anthropicSystem(). See decisions.md Decision 12.",
               "prNumber": 475,
-              "updatedAt": "2026-07-14T04:41:05.765Z"
+              "updatedAt": "2026-08-17T05:42:32.854Z",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dod/s6.1-dod.md"
             }
           ]
         },
         {
           "slug": "phase-5-security-hardening",
           "name": "Phase 5 — Security Hardening",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "p5.1",
@@ -906,7 +917,7 @@
         {
           "slug": "sprint-3-infrastructure-provisioning",
           "name": "Sprint 3 — Infrastructure Provisioning (Neon + Upstash)",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "s3.1",
@@ -918,12 +929,12 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/s3.1-review-1.md",
-              "updatedAt": "2026-06-29T07:30:00Z",
+              "updatedAt": "2026-08-17T05:38:44.336Z",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/s3.1-test-plan.md",
                 "totalTests": 7,
-                "passing": 0
+                "passing": 7
               },
               "acTotal": 5,
               "acVerified": 5,
@@ -931,7 +942,10 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/s3.1-dor.md",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dod/s3.1-dod.md"
             },
             {
               "slug": "s3.2",
@@ -943,12 +957,12 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/s3.2-review-1.md",
-              "updatedAt": "2026-06-29T07:30:00Z",
+              "updatedAt": "2026-08-17T05:38:44.336Z",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/s3.2-test-plan.md",
                 "totalTests": 8,
-                "passing": 0
+                "passing": 8
               },
               "acTotal": 5,
               "acVerified": 5,
@@ -956,14 +970,17 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/s3.2-dor.md",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dod/s3.2-dod.md"
             }
           ]
         },
         {
           "slug": "sprint-4-beta-deployment",
           "name": "Sprint 4 — Beta Deployment and Tenant Onboarding",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "s4.1",
@@ -975,12 +992,12 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/s4.1-review-1.md",
-              "updatedAt": "2026-06-29T07:30:00Z",
+              "updatedAt": "2026-08-17T05:38:44.336Z",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/s4.1-test-plan.md",
                 "totalTests": 5,
-                "passing": 0
+                "passing": 5
               },
               "acTotal": 6,
               "acVerified": 6,
@@ -988,7 +1005,10 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/s4.1-dor.md",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dod/s4.1-dod.md"
             },
             {
               "slug": "s4.2",
@@ -1000,12 +1020,12 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/s4.2-review-1.md",
-              "updatedAt": "2026-06-29T08:00:00Z",
+              "updatedAt": "2026-08-17T05:38:44.336Z",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/s4.2-test-plan.md",
                 "totalTests": 2,
-                "passing": 0
+                "passing": 2
               },
               "acTotal": 6,
               "acVerified": 2,
@@ -1013,7 +1033,10 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/s4.2-dor.md",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dod/s4.2-dod.md"
             },
             {
               "slug": "s4.3",
@@ -1025,19 +1048,22 @@
               "dorStatus": "signed-off",
               "reviewStatus": "passed",
               "prStatus": "merged",
-              "updatedAt": "2026-06-29T05:00:00Z",
+              "updatedAt": "2026-08-17T05:43:49.918Z",
               "notes": "Production hotfix during s4.1 execution — retroactive story. Commit 8c21dcd.",
               "testPlan": {
                 "status": "all-passing",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/s4.3-test-plan.md"
-              }
+              },
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dod/s4.3-dod.md"
             }
           ]
         },
         {
           "slug": "sprint-5-beta-assessment",
           "name": "Sprint 5 — Beta Monitoring and Assessment",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "s5.1",
@@ -1049,12 +1075,12 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/review/s5.1-review-1.md",
-              "updatedAt": "2026-06-29T08:30:00Z",
+              "updatedAt": "2026-08-17T05:38:44.336Z",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-06-22-wuce-multi-tenancy/test-plans/s5.1-test-plan.md",
                 "totalTests": 11,
-                "passing": 0
+                "passing": 11
               },
               "acTotal": 5,
               "acVerified": 5,
@@ -1062,7 +1088,10 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dor/s5.1-dor.md",
-              "prStatus": "merged"
+              "prStatus": "merged",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-06-22-wuce-multi-tenancy/dod/s5.1-dod.md"
             }
           ]
         }
