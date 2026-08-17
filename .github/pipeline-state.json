@@ -16688,64 +16688,77 @@
       "slug": "2026-07-26-canvas-render-and-story-extraction-fix",
       "name": "Fix /design and /definition canvas rendering + story-extraction, both broken by stale mock fixtures",
       "track": "short",
-      "stage": "branch-complete",
-      "health": "green",
+      "stage": "definition-of-done",
+      "health": "amber",
       "epics": [],
       "stories": [
         {
           "id": "r-canvas-render-and-story-extraction-fix",
           "slug": "r-canvas-render-and-story-extraction-fix",
           "name": "Fix /design and /definition canvas rendering + story-extraction (stale mock fixtures)",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "amber",
           "acTotal": 4,
           "acVerified": 3,
           "artefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/stories/r-canvas-render-and-story-extraction-fix.md",
           "prStatus": "merged",
-          "notes": "Retrospective story for PR #613 (merged). AC3 (story-extraction test coverage) is NEEDS-TESTS -- open gap, see story file Open Questions. A real 400-error observation on gate-confirm after a real streaming /definition turn was found but not root-caused."
+          "notes": "Retrospective story for PR #613 (merged). AC3 (story-extraction test coverage) is NEEDS-TESTS -- open gap, see story file Open Questions. A real 400-error observation on gate-confirm after a real streaming /definition turn was found but not root-caused.",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/dod/r-canvas-render-and-story-extraction-fix-dod.md",
+          "updatedAt": "2026-08-17T07:07:26.882Z"
         },
         {
           "id": "alrf-s1",
           "slug": "alrf-s1-artefact-list-repo-root-fallback",
           "name": "Artefact-list repo-root fallback (close the artefact-listing mismatch)",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 4,
           "acVerified": 4,
           "artefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/stories/alrf-s1-artefact-list-repo-root-fallback.md",
           "prStatus": "merged",
           "notes": "Fixes the operator-reported staging mismatch (feature-index page showed No artefacts found for a feature the kanban board correctly showed 3 artefacts for). listArtefacts now checks local filesystem via repoRoot before falling back to the GitHub-API path. See decisions.md D1/D2.",
-          "updatedAt": "2026-07-26T06:30:04.474Z"
+          "updatedAt": "2026-08-17T07:07:26.882Z",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/dod/alrf-s1-dod.md"
         },
         {
           "id": "alrf-s2",
           "slug": "alrf-s2-build-identity-footer-stamp",
           "name": "Build-identity footer stamp (commit SHA + PR #) for staging deploy confirmation",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 7,
           "acVerified": 7,
           "artefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/stories/alrf-s2-build-identity-footer-stamp.md",
           "prStatus": "merged",
           "notes": "Closes the same-day gap where alrf-s1 (PR #614) deployed successfully but the overall CI run showed red from an unrelated pre-existing smoke-test failure, making a real deploy indistinguishable from a failed one. Adds GET /version + a sidebar footer stamp (commit SHA + PR #).",
-          "updatedAt": "2026-07-26T07:04:21.414Z"
+          "updatedAt": "2026-08-17T07:07:26.882Z",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/dod/alrf-s2-dod.md"
         },
         {
           "id": "alrf-s4",
           "slug": "alrf-s4-postgres-artefact-fallback",
           "name": "Postgres artefact-content fallback for listArtefacts (D3/D4)",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 7,
           "acVerified": 7,
           "artefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/stories/alrf-s4-postgres-artefact-fallback.md",
           "prStatus": "merged",
           "notes": "Implements D3s durable-artefact-store goal using a store that already existed: routes/skills.js already saves artefact content to Postgres on stage completion; nothing read it back for the feature-index page. Wires listArtefacts to check Postgres (via journey-store.getArtefactsForJourney) after local disk, before GitHub API.",
-          "updatedAt": "2026-07-26T07:46:04.110Z"
+          "updatedAt": "2026-08-17T07:07:26.882Z",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/dod/alrf-s4-dod.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-07-26T07:23:35.224Z"
+      "updatedAt": "2026-08-17T07:07:26.882Z"
     },
     {
       "slug": "2026-07-26-storage-drift-audit",
