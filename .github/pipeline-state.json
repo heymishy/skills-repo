@@ -12040,9 +12040,9 @@
       "slug": "2026-07-21-web-ui-experience-redesign",
       "name": "Web UI Experience Redesign — Product View, Navigation, Settings, and Admin Impersonation",
       "track": "standard",
-      "stage": "branch-complete",
-      "health": "green",
-      "updatedAt": "2026-07-21T20:47:36.090Z",
+      "stage": "definition-of-done",
+      "health": "amber",
+      "updatedAt": "2026-08-17T05:31:18.819Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -12051,14 +12051,14 @@
         {
           "slug": "epic-a-product-view-redesign",
           "name": "Operators can read a large product’s health, scale, and organisation at a glance",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "a1",
               "name": "Curate a Modules taxonomy for a product",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-21T08:23:23.052Z",
+              "updatedAt": "2026-08-17T05:30:59.377Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12076,14 +12076,17 @@
               "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
               "prStatus": "merged",
               "prNumber": 520,
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dod/a1-dod.md"
             },
             {
               "slug": "a2",
               "name": "Reassign an epic to a different module",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-21T08:23:23.721Z",
+              "updatedAt": "2026-08-17T05:30:59.377Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12152,14 +12155,17 @@
               "verifyStatus": "passed",
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/526",
-              "prNumber": 526
+              "prNumber": 526,
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dod/a2-dod.md"
             },
             {
               "slug": "a3",
               "name": "Compute health per-feature, distinct from test coverage",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-21T08:23:24.235Z",
+              "updatedAt": "2026-08-17T05:30:59.377Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12216,14 +12222,17 @@
                 }
               ],
               "prNumber": 519,
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dod/a3-dod.md"
             },
             {
               "slug": "a4",
               "name": "Render the product view grouped by module with dual health/coverage indicators and a scale gauge",
-              "stage": "branch-complete",
-              "health": "green",
-              "updatedAt": "2026-07-21T08:23:23.191Z",
+              "stage": "definition-of-done",
+              "health": "amber",
+              "updatedAt": "2026-08-17T05:30:59.377Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12286,14 +12295,18 @@
               "verifyStatus": "passed",
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/531",
-              "prNumber": 531
+              "prNumber": 531,
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "COMPLETE WITH DEVIATIONS: AC1-AC3/AC5 (grouped rendering) not live-observed -- no staging product has modules configured, evidence rests on automated tests only (16/16 passing). AC4 (fallback) live-confirmed.",
+              "dodArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dod/a4-dod.md"
             },
             {
               "slug": "a5",
               "name": "Surface discovery-only and ideation-only work in a Roadmap tab",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-21T08:23:23.320Z",
+              "updatedAt": "2026-08-17T05:30:59.377Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12311,21 +12324,24 @@
               "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
               "prStatus": "merged",
               "prNumber": 522,
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dod/a5-dod.md"
             }
           ]
         },
         {
           "slug": "epic-b-navigation-fix",
           "name": "Every nav item goes somewhere real, and every real destination has a nav item",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "b1",
               "name": "Remove dead nav links and add the missing Org board and Home List/Board toggle",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-21T08:23:23.457Z",
+              "updatedAt": "2026-08-17T05:30:59.377Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12343,14 +12359,17 @@
               "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
               "prStatus": "merged",
               "prNumber": 523,
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dod/b1-dod.md"
             },
             {
               "slug": "b2",
               "name": "Restructure account-level nav items and add a dangling-link regression test",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-21T08:23:23.846Z",
+              "updatedAt": "2026-08-17T05:30:59.377Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12413,21 +12432,24 @@
                   "file": "artefacts/2026-07-21-web-ui-experience-redesign/plans/b2-plan.md"
                 }
               ],
-              "prNumber": 528
+              "prNumber": 528,
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dod/b2-dod.md"
             }
           ]
         },
         {
           "slug": "epic-c-account-settings-page",
           "name": "A signed-in user has one real place to manage their account, billing, and (if admin) platform credits",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "c1",
               "name": "Settings page shell with Profile tab",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-21T08:23:23.594Z",
+              "updatedAt": "2026-08-17T05:30:59.377Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12445,14 +12467,17 @@
               "dorSignedOffAt": "2026-07-20T20:47:56.104Z",
               "prStatus": "merged",
               "prNumber": 521,
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dod/c1-dod.md"
             },
             {
               "slug": "c2",
               "name": "Billing tab — plan status and Stripe portal access",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-21T08:23:23.979Z",
+              "updatedAt": "2026-08-17T05:30:59.377Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12471,14 +12496,17 @@
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/527",
               "prNumber": 527,
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dod/c2-dod.md"
             },
             {
               "slug": "c3",
               "name": "Credits tab — restyle admin credit management into the shared design system",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-21T08:23:24.108Z",
+              "updatedAt": "2026-08-17T05:30:59.377Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12529,21 +12557,24 @@
                 }
               ],
               "prNumber": 525,
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dod/c3-dod.md"
             }
           ]
         },
         {
           "slug": "epic-d-admin-user-impersonation",
           "name": "An admin can reproduce exactly what a specific user sees, safely and with full accountability",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "d1",
               "name": "Start an impersonation session (search, reason-gated, session swap)",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-21T09:47:12.866Z",
+              "updatedAt": "2026-08-17T05:30:59.377Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12562,14 +12593,17 @@
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/534",
               "prNumber": 534,
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dod/d1-dod.md"
             },
             {
               "slug": "d2",
               "name": "Persistent viewing-as banner, exit flow, and permission-scoped visibility",
-              "stage": "branch-complete",
-              "health": "green",
-              "updatedAt": "2026-07-21T19:10:23.786Z",
+              "stage": "definition-of-done",
+              "health": "amber",
+              "updatedAt": "2026-08-17T05:30:59.377Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12588,14 +12622,18 @@
               "verifyStatus": "passed",
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/538",
-              "prNumber": 538
+              "prNumber": 538,
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "COMPLETE WITH DEVIATIONS: AC1 fails live -- impersonation banner does not render on /dashboard (handleGetDashboard in products.js never threads req.session.impersonation). Follow-up story ibg-s1 (2026-08-17-impersonation-banner-dashboard-gap) created, queued for /test-plan.",
+              "dodArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dod/d2-dod.md"
             },
             {
               "slug": "d3",
               "name": "Impersonation audit log",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-21T18:01:33.629Z",
+              "updatedAt": "2026-08-17T05:30:59.377Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12646,14 +12684,17 @@
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/537",
               "prNumber": 537,
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dod/d3-dod.md"
             },
             {
               "slug": "d4",
               "name": "NFR-security review and hardening pass for Admin User Impersonation",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-07-21T20:47:23.980Z",
+              "updatedAt": "2026-08-17T05:30:59.377Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12672,7 +12713,10 @@
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/541",
               "prNumber": 541,
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dod/d4-dod.md"
             }
           ]
         }
