@@ -58,6 +58,11 @@
       "date": "2026-08-16",
       "action": "Run /definition-of-done for the pre-existing backlog of 161 merged-but-DoD-less stories across the repo history (found via a full pipeline-state.json scan on 2026-08-16 -- 164 total merged stories missing DoD, of which 3 -- tmss-s1, bpe-s1, nia-s1 -- were completed the same session this was logged). Operator explicitly deferred this to a future session rather than doing it alongside same-day work. Re-run the same scan query to get the current list, since more stories will likely merge before this is picked up.",
       "owner": "operator/next session"
+    },
+    {
+      "date": "2026-08-17",
+      "action": "si-s3 (2026-08-17-settings-improvements, DoR signed off): AC2/AC3 live staging verification deferred -- operator confirmed a staging account with a configured Stripe test-mode customer ID exists (test@test.com) but won't be able to log in on the Chrome-connected laptop for a few days. AC1 (regression re-run of bpe-s1/bse-s1's existing test suites) already confirmed passing on current master (9/9 and 7/7) -- no regression from si-s1/si-s2. Once the operator is back on that laptop: log in as test@test.com (no-Stripe-customer account) for AC2, then the separate configured-Stripe-customer account for AC3, per artefacts/2026-08-17-settings-improvements/verification-scripts/si-s3-verification.md Scenarios 1-2. Then record the outcome in si-s3's DoD per its own AC4.",
+      "owner": "operator (Hamish King) -- resume when back on the Chrome-connected laptop"
     }
   ]
 }
