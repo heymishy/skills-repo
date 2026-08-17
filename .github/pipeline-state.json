@@ -1157,8 +1157,8 @@
               "slug": "inc4",
               "title": "Canvas output panel for lens structured content",
               "artefact": "artefacts/2026-06-15-ideate-web-ux-inc3/stories/inc4.md",
-              "stage": "verify-completion",
-              "health": "green",
+              "stage": "definition-of-done",
+              "health": "amber",
               "complexity": 3,
               "reviewStatus": "passed",
               "reviewArtefact": "artefacts/2026-06-15-ideate-web-ux-inc3/review/inc4-review-1.md",
@@ -1172,7 +1172,7 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-06-15-ideate-web-ux-inc3/dor/inc4-dor.md",
               "designArtefact": "artefacts/2026-06-15-ideate-web-ux-inc3/design/inc4-canvas-panel.html",
-              "updatedAt": "2026-06-15",
+              "updatedAt": "2026-08-17T11:53:38.519Z",
               "dorContract": "artefacts/2026-06-15-ideate-web-ux-inc3/dor/inc4-dor.md",
               "tasks": [
                 {
@@ -1207,7 +1207,10 @@
                 }
               ],
               "prStatus": "merged",
-              "name": "Canvas output panel for lens structured content"
+              "name": "Canvas output panel for lens structured content",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "dodArtefact": "artefacts/2026-06-15-ideate-web-ux-inc3/dod/inc4-dod.md"
             },
             {
               "id": "inc5",
@@ -4935,7 +4938,12 @@
           "dispatchTarget": "vscode",
           "stage": "definition-of-done",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/359",
-          "mergedAt": "2026-05-24"
+          "mergedAt": "2026-05-24",
+          "dodStatus": "complete",
+          "health": "green",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-05-16-trace-writer-fix/dod/trw.1-dod.md",
+          "updatedAt": "2026-08-17T11:53:38.519Z"
         }
       ],
       "updatedAt": "2026-05-24"
@@ -5776,7 +5784,12 @@
           "prStatus": "merged",
           "testPlan": {
             "artefact": "artefacts/2026-05-27-cli-advance-boolean-coercion/test-plans/b3-boolean-coercion-test-plan.md"
-          }
+          },
+          "dodStatus": "complete",
+          "health": "green",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-05-27-cli-advance-boolean-coercion/dod/b3-boolean-coercion-dod.md",
+          "updatedAt": "2026-08-17T11:53:38.519Z"
         }
       ],
       "metrics": [],
@@ -7723,7 +7736,7 @@
               "complexity": 1,
               "scopeStability": "Stable",
               "status": "branch-complete",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "metricsAddressed": [],
               "tddState": "green",
               "testsTotal": 12,
@@ -7745,11 +7758,12 @@
               "dorArtefact": "artefacts/2026-07-03-admin-role-panel/dor/arl-s5-dor.md",
               "prStatus": "merged",
               "prNumber": 473,
-              "dodStatus": "not-started",
-              "releaseReady": false,
+              "dodStatus": "complete",
+              "releaseReady": true,
               "layoutGapsAtMerge": false,
               "layoutGapsRiskAccepted": false,
-              "updatedAt": "2026-07-14T04:41:05.765Z"
+              "updatedAt": "2026-08-17T11:53:38.519Z",
+              "dodArtefact": "artefacts/2026-07-03-admin-role-panel/dod/arl-s5-dod.md"
             }
           ]
         }
@@ -21567,12 +21581,14 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-09T06:32:21.345Z",
+          "updatedAt": "2026-08-17T11:53:38.519Z",
           "prStatus": "merged",
           "prNumber": 698,
           "prUrl": "https://github.com/heymishy/skills-repo/pull/698",
           "mergeCommit": "3f7ece6ac632494bb61abb158de63a5bedd5db5e",
-          "dodArtefact": "artefacts/2026-08-09-session-done-reexecution-guard/dod/sdrg-s1-dod.md"
+          "dodArtefact": "artefacts/2026-08-09-session-done-reexecution-guard/dod/sdrg-s1-dod.md",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
@@ -21612,10 +21628,12 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-09T08:51:50.401Z",
+          "updatedAt": "2026-08-17T11:53:38.519Z",
           "prStatus": "merged",
           "mergeCommit": "084700a1eb19af954336ac1a6c92854172ab2bae",
-          "dodArtefact": "artefacts/2026-08-09-settings-profile-tab-fix/dod/spft-s1-dod.md"
+          "dodArtefact": "artefacts/2026-08-09-settings-profile-tab-fix/dod/spft-s1-dod.md",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
@@ -21655,10 +21673,12 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-09T08:51:50.541Z",
+          "updatedAt": "2026-08-17T11:53:38.519Z",
           "prStatus": "merged",
           "mergeCommit": "1344596d762bafcc24e6604c96b92d6aaf3e6ca3",
-          "dodArtefact": "artefacts/2026-08-09-journey-legacy-filter-cutoff/dod/jlfc-s1-dod.md"
+          "dodArtefact": "artefacts/2026-08-09-journey-legacy-filter-cutoff/dod/jlfc-s1-dod.md",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
