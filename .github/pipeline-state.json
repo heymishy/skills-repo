@@ -25177,6 +25177,50 @@
       "updatedAt": "2026-08-17T11:55:15.680Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-08-18-bri-s3-3-role-boundary-guard-gap",
+      "name": "Fix bri-s3.3's non-functional role-boundary regression guard (found during bri-s3.3 DoD review)",
+      "stage": "definition",
+      "health": "amber",
+      "stories": [
+        {
+          "id": "rbg-s1",
+          "slug": "rbg-s1",
+          "name": "Fix bri-s3.3's role-boundary regression guard so it actually asserts denial",
+          "stage": "definition",
+          "health": "amber",
+          "dorStatus": "not-started",
+          "dodStatus": "not-started",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-17T12:02:25.031Z",
+      "track": "short",
+      "guardrails": []
+    },
+    {
+      "slug": "2026-08-18-verification-coverage-backfill",
+      "name": "Backfill rpc-s1 accessibility test and jrf-s1 regression scope (found during DoD review)",
+      "stage": "definition",
+      "health": "amber",
+      "stories": [
+        {
+          "id": "vcb-s1",
+          "slug": "vcb-s1",
+          "name": "Backfill rpc-s1's missing accessibility test and jrf-s1's narrower-than-required regression pass",
+          "stage": "definition",
+          "health": "amber",
+          "dorStatus": "not-started",
+          "dodStatus": "not-started",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-17T12:02:25.031Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
