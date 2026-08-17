@@ -13631,7 +13631,7 @@
           "id": "pvc-s1",
           "slug": "pvc-s1",
           "name": "Consolidate and tab the features view",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -13662,8 +13662,11 @@
               "tddState": "committed"
             }
           ],
-          "updatedAt": "2026-08-04T10:22:25.487Z",
-          "prNumber": 545
+          "updatedAt": "2026-08-17T12:07:42.378Z",
+          "prNumber": 545,
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-22-product-view-consolidation/dod/pvc-s1-dod.md"
         }
       ],
       "metrics": []
@@ -13848,7 +13851,7 @@
           "id": "wusl-s2",
           "slug": "wusl-s2",
           "name": "Full session-state restore from Redis",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -13872,8 +13875,11 @@
               "tddState": "committed"
             }
           ],
-          "updatedAt": "2026-08-04T10:22:25.648Z",
-          "prNumber": 550
+          "updatedAt": "2026-08-17T12:07:42.378Z",
+          "prNumber": 550,
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-23-skill-session-full-restore/dod/wusl-s2-dod.md"
         }
       ],
       "metrics": []
@@ -14807,8 +14813,8 @@
           "id": "serlb-s1",
           "slug": "serlb-s1",
           "name": "Narrow, staging-only rate-limit bypass for auth-email.js signup/login (triple-gated: staging secret + header + e2e-test- email prefix)",
-          "stage": "branch-complete",
-          "health": "amber",
+          "stage": "definition-of-done",
+          "health": "green",
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
           "testPlan": {
@@ -14826,9 +14832,12 @@
           "dorSignedOffAt": "2026-07-23T05:05:01.711Z",
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/564",
-          "updatedAt": "2026-08-04T10:24:54.763Z",
+          "updatedAt": "2026-08-17T12:07:42.378Z",
           "notes": "AC1-AC4 fully verified (unit tests + zero regressions). AC5 partial: fix deployed to real wuce-staging and underlying defect re-confirmed live, but full CI-green activation blocked pending operator action -- E2E_STAGING_AUTH_STUB_SECRET was never configured as a GitHub Actions secret (only as a Fly secret); rotating/setting it was correctly blocked by the auto-mode classifier. See decisions.md RISK-ACCEPT entry.",
-          "prNumber": 564
+          "prNumber": 564,
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-23-staging-e2e-rate-limit-bypass/dod/serlb-s1-dod.md"
         }
       ]
     },
@@ -14880,8 +14889,8 @@
           "id": "icrh-s1",
           "slug": "icrh-s1",
           "name": "Hydrate the ideate canvas from restored session.canvasBlocks on page load/session-resume",
-          "stage": "branch-complete",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
           "testPlan": {
@@ -14898,8 +14907,11 @@
           "dorArtefact": "artefacts/2026-07-23-ideate-canvas-resume-hydration-fix/dor/icrh-s1-dor.md",
           "dorSignedOffAt": "2026-07-23T10:00:14.661Z",
           "prStatus": "merged",
-          "updatedAt": "2026-07-23T10:00:14.661Z",
-          "notes": "Root cause: tests/e2e/a4-ideate-session-resume.spec.js AC2/AC3 failed against real wuce-staging (CI run 29996127983, job 89170114731, PR #568) -- resumed session showed zero .canvas-block elements despite turn 1 rendering blocks pre-close. Data layer proven correct (tests/check-a4-session-store-state.js, 5/5 passing, unmodified). Actual gap: _renderChatPage never read session.canvasBlocks to seed initial HTML/hydration payload -- .canvas-block elements were only ever created reactively via live SSE canvasBlock events. Fix: new canvasBlocksInitScript (window.__SW_INITIAL_CANVAS_BLOCKS__) mirroring the existing __SW_INITIAL_ARTEFACT__ pattern, plus a client-side hydration call reusing the existing appendCanvasBlock function unmodified. AC1-AC5 verified locally (15/15 new unit tests passing, RED confirmed pre-fix, GREEN post-fix; full npm test shows zero new regressions vs tests/known-baseline-failures.json). Merged via PR #569."
+          "updatedAt": "2026-08-17T12:07:42.378Z",
+          "notes": "Root cause: tests/e2e/a4-ideate-session-resume.spec.js AC2/AC3 failed against real wuce-staging (CI run 29996127983, job 89170114731, PR #568) -- resumed session showed zero .canvas-block elements despite turn 1 rendering blocks pre-close. Data layer proven correct (tests/check-a4-session-store-state.js, 5/5 passing, unmodified). Actual gap: _renderChatPage never read session.canvasBlocks to seed initial HTML/hydration payload -- .canvas-block elements were only ever created reactively via live SSE canvasBlock events. Fix: new canvasBlocksInitScript (window.__SW_INITIAL_CANVAS_BLOCKS__) mirroring the existing __SW_INITIAL_ARTEFACT__ pattern, plus a client-side hydration call reusing the existing appendCanvasBlock function unmodified. AC1-AC5 verified locally (15/15 new unit tests passing, RED confirmed pre-fix, GREEN post-fix; full npm test shows zero new regressions vs tests/known-baseline-failures.json). Merged via PR #569.",
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "dodArtefact": "artefacts/2026-07-23-ideate-canvas-resume-hydration-fix/dod/icrh-s1-dod.md"
         }
       ],
       "updatedAt": "2026-07-23T10:00:14.661Z"
@@ -14916,8 +14928,8 @@
           "id": "icv-s1",
           "slug": "icv-s1",
           "name": "Stop /ideate chat client from auto-firing an unbounded continue chain that duplicates canvas blocks and freezes turn 2",
-          "stage": "branch-complete",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
           "testPlan": {
@@ -14933,8 +14945,11 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-23-ideate-canvas-turn2-render-fix/dor/icv-s1-dor.md",
           "prStatus": "merged",
-          "updatedAt": "2026-07-23T10:43:14.000Z",
-          "notes": "Root cause: tests/e2e/a3-product-feature-ideate-canvas.spec.js's AC3 failed against real wuce-staging (CI run 29996127983, job 89170114731, PR #568) -- canvas count frozen after turn 1, never growing after a genuine second turn. Actual cause: _renderChatPage's inline client script auto-fires a hidden 'continue' turn whenever a response has no literal '?' and no ARTEFACT marker (a10b32a3's nudge, correct for artefact-generating skills, wrong for /ideate which is conversational and never emits artefact markers) -- this fired an unbounded chain of hidden turns against the static mock fixture. Fixed with a single conditional gate (!IS_IDEATE &&) on the existing IS_IDEATE flag. 3/3 new unit tests passing (jsdom-driven, RED confirmed pre-fix, GREEN post-fix, plus a contrast case proving the original a10b32a3 nudge is untouched for non-ideate skills). Full npm test: zero new regressions. Rebased onto master (post-#569 merge) to resolve the shared skills.js edit; both fixes coexist cleanly. Merged via PR #570."
+          "updatedAt": "2026-08-17T12:07:42.378Z",
+          "notes": "Root cause: tests/e2e/a3-product-feature-ideate-canvas.spec.js's AC3 failed against real wuce-staging (CI run 29996127983, job 89170114731, PR #568) -- canvas count frozen after turn 1, never growing after a genuine second turn. Actual cause: _renderChatPage's inline client script auto-fires a hidden 'continue' turn whenever a response has no literal '?' and no ARTEFACT marker (a10b32a3's nudge, correct for artefact-generating skills, wrong for /ideate which is conversational and never emits artefact markers) -- this fired an unbounded chain of hidden turns against the static mock fixture. Fixed with a single conditional gate (!IS_IDEATE &&) on the existing IS_IDEATE flag. 3/3 new unit tests passing (jsdom-driven, RED confirmed pre-fix, GREEN post-fix, plus a contrast case proving the original a10b32a3 nudge is untouched for non-ideate skills). Full npm test: zero new regressions. Rebased onto master (post-#569 merge) to resolve the shared skills.js edit; both fixes coexist cleanly. Merged via PR #570.",
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "dodArtefact": "artefacts/2026-07-23-ideate-canvas-turn2-render-fix/dod/icv-s1-dod.md"
         }
       ]
     },
@@ -14988,8 +15003,8 @@
           "id": "cmtt-s1",
           "slug": "cmtt-s1",
           "name": "Fix sanitiseAnswer() silently eating hyphenated user-message text before a colon",
-          "stage": "branch-complete",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
           "testPlan": {
@@ -15006,8 +15021,11 @@
           "dorArtefact": "artefacts/2026-07-24-chat-message-text-truncation-fix/dor/cmtt-s1-dor.md",
           "dorSignedOffAt": "2026-07-23T18:09:19.306Z",
           "prStatus": "merged",
-          "updatedAt": "2026-07-23T18:09:19.306Z",
-          "notes": "Root cause: tests/e2e/a4-ideate-session-resume.spec.js AC2/AC3 failed against real wuce-staging -- resumed chat thread showed user message truncated (\"call it Project: an internal tool...\" instead of the full \"Project-Codename-Falcon-detail-...: an internal tool...\"). Isolated and ruled out both lightMd (skills.js) and lightMarkdown (chat-view.js) directly with the exact failing input -- neither reproduces it. Actual root cause: sanitiseAnswer() (src/answer-sanitiser.js) CLI_FLAG regex /--?[a-z][w-]*/gi has no boundary check on what precedes the leading hyphen, so it matches and deletes an entire hyphenated compound-word span mid-sentence, at write time, before the turn is ever pushed to session.turns -- a real, permanent corruption of any user own stored chat history matching this shape, not a render-time or session-restore bug. Fix: added a negative lookbehind (?<![w-]) so a flag is only recognised at a genuine token boundary. Verified: 8/8 new unit tests passing (RED confirmed pre-fix including through the real htmlSubmitTurn() write path, GREEN post-fix); all pre-existing sanitiser tests (T4.3/T4.5/NFR3/T4.4 in tests/skill-launcher.test.js) still pass unmodified; full npm test run shows zero new regressions vs tests/known-baseline-failures.json (the one delta, check-s6.1-cache-scope-session-threading.js, independently reproduced as failing identically on origin/master before this fix -- a pre-existing baseline-file drift, not a regression introduced by this change). Merged via PR #571."
+          "updatedAt": "2026-08-17T12:07:42.378Z",
+          "notes": "Root cause: tests/e2e/a4-ideate-session-resume.spec.js AC2/AC3 failed against real wuce-staging -- resumed chat thread showed user message truncated (\"call it Project: an internal tool...\" instead of the full \"Project-Codename-Falcon-detail-...: an internal tool...\"). Isolated and ruled out both lightMd (skills.js) and lightMarkdown (chat-view.js) directly with the exact failing input -- neither reproduces it. Actual root cause: sanitiseAnswer() (src/answer-sanitiser.js) CLI_FLAG regex /--?[a-z][w-]*/gi has no boundary check on what precedes the leading hyphen, so it matches and deletes an entire hyphenated compound-word span mid-sentence, at write time, before the turn is ever pushed to session.turns -- a real, permanent corruption of any user own stored chat history matching this shape, not a render-time or session-restore bug. Fix: added a negative lookbehind (?<![w-]) so a flag is only recognised at a genuine token boundary. Verified: 8/8 new unit tests passing (RED confirmed pre-fix including through the real htmlSubmitTurn() write path, GREEN post-fix); all pre-existing sanitiser tests (T4.3/T4.5/NFR3/T4.4 in tests/skill-launcher.test.js) still pass unmodified; full npm test run shows zero new regressions vs tests/known-baseline-failures.json (the one delta, check-s6.1-cache-scope-session-threading.js, independently reproduced as failing identically on origin/master before this fix -- a pre-existing baseline-file drift, not a regression introduced by this change). Merged via PR #571.",
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "dodArtefact": "artefacts/2026-07-24-chat-message-text-truncation-fix/dod/cmtt-s1-dod.md"
         }
       ],
       "updatedAt": "2026-07-23T19:55:49.000Z"
