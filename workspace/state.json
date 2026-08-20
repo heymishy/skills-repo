@@ -56,8 +56,8 @@
   "pendingActions": [
     {
       "date": "2026-08-16",
-      "action": "Run /definition-of-done for the pre-existing backlog of 161 merged-but-DoD-less stories across the repo history (found via a full pipeline-state.json scan on 2026-08-16 -- 164 total merged stories missing DoD, of which 3 -- tmss-s1, bpe-s1, nia-s1 -- were completed the same session this was logged). Operator explicitly deferred this to a future session rather than doing it alongside same-day work. Re-run the same scan query to get the current list, since more stories will likely merge before this is picked up.",
-      "owner": "operator/next session"
+      "action": "RESOLVED 2026-08-21. The 161-story DoD backlog identified here was fully processed across sessions 2026-08-17 through 2026-08-21: all stories from the 2026-08-16 scan now have DoD artefacts (53 via automated retroactive review, 2 -- cdpl-s1/bmau-s1 -- via live Chrome verification against real staging). check-pipeline-state-integrity.js shows only the same 3 pre-existing C3 partial-pass failures that predate this backlog pass -- no regressions introduced. 9 real findings (F1-F9) surfaced during the pass, each closed into its own tracked follow-up story (ibg-s1, sbrc-s1, csgc-s1, rcfc-s1, kvvg-s1, rbg-s1, vcb-s1, csvg-s1, cmba-s1) -- see workspace/dod-backlog-findings.md for the full consolidated list and status. None of F1-F9 have started /test-plan yet -- that is the actual remaining work, tracked as its own pendingActions entries below, not a continuation of this backlog note.",
+      "owner": "closed -- superseded by workspace/dod-backlog-findings.md"
     },
     {
       "date": "2026-08-17",
