@@ -143,7 +143,7 @@ function _renderGroupedCoverageBreakdown(coverage) {
   return epicsSectionHtml + ungroupedSectionHtml;
 }
 
-function _renderProductDashboard(products, login, navProducts, activeProductId, noProductJourneyCount) {
+function _renderProductDashboard(products, login, navProducts, activeProductId, noProductJourneyCount, isAdmin) {
   var cardsHtml = products.length === 0
     ? '<div style="padding:48px 0;text-align:center;color:var(--muted)">' +
         '<p style="font-size:18px;margin:0 0 16px">No products yet</p>' +
@@ -175,11 +175,12 @@ function _renderProductDashboard(products, login, navProducts, activeProductId, 
     active: 'dashboard',
     products: navProducts,
     activeProductId: activeProductId,
-    noProductJourneyCount: noProductJourneyCount
+    noProductJourneyCount: noProductJourneyCount,
+    isAdmin: isAdmin
   });
 }
 
-function _renderProductNew(login, error) {
+function _renderProductNew(login, error, isAdmin) {
   var errorHtml = error ? '<div style="padding:12px;background:#fee;border:1px solid #fcc;border-radius:6px;color:#c33;margin-bottom:16px;font-size:14px">' + _escapeHtml(error) + '</div>' : '';
   var body = '<div style="max-width:560px">' +
     '<h1 style="margin:0 0 24px;font-size:24px">Create a product</h1>' +
@@ -235,7 +236,7 @@ function _renderProductNew(login, error) {
     '}' +
     '<\/script>' +
   '</div>';
-  return _htmlShell.renderShell({ title: 'New product', bodyContent: body, user: { login: login }, active: 'dashboard', crumbs: ['Products', 'New'] });
+  return _htmlShell.renderShell({ title: 'New product', bodyContent: body, user: { login: login }, active: 'dashboard', crumbs: ['Products', 'New'], isAdmin: isAdmin });
 }
 
 // a4 -- renders one epic (journey) row with two visually distinct
@@ -720,7 +721,7 @@ function _unknownHealthCoverageLabel(item, artefactCountsByJourneyId) {
   return (item.stage || 'discovery') + ' · ' + countLabel;
 }
 
-function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navProducts, noProductJourneyCount, repoPickerResult) {
+function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navProducts, noProductJourneyCount, repoPickerResult, isAdmin) {
   modules = modules || [];
   csrfToken = csrfToken || '';
   featureModuleAssignments = featureModuleAssignments || {};
@@ -969,7 +970,8 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     active: 'dashboard',
     products: navProducts,
     activeProductId: productId,
-    noProductJourneyCount: noProductJourneyCount
+    noProductJourneyCount: noProductJourneyCount,
+    isAdmin: isAdmin
   });
 }
 
@@ -979,7 +981,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
  * text label alongside their colour class (NFR-Accessibility -- never
  * colour-only), reusing the existing sw-pill classes from html-shell.js.
  */
-function _renderRoadmapTab(productName, productId, login, roadmapEntries) {
+function _renderRoadmapTab(productName, productId, login, roadmapEntries, isAdmin) {
   var listHtml = roadmapEntries.length === 0
     ? '<p style="color:var(--muted);font-size:14px">Nothing in early-stage discovery right now</p>'
     : '<ul class="sw-list">' +
@@ -1001,7 +1003,7 @@ function _renderRoadmapTab(productName, productId, login, roadmapEntries) {
     '</div>' +
     listHtml +
   '</div>';
-  return _htmlShell.renderShell({ title: 'Roadmap', bodyContent: body, user: { login: login }, active: 'dashboard', crumbs: [productName, 'Roadmap'] });
+  return _htmlShell.renderShell({ title: 'Roadmap', bodyContent: body, user: { login: login }, active: 'dashboard', crumbs: [productName, 'Roadmap'], isAdmin: isAdmin });
 }
 
 /**
@@ -1019,6 +1021,7 @@ async function handleGetProductRoadmap(req, res, _next, pool) {
   var productId = req.params && req.params.id;
   var tenantId = req.session && req.session.tenantId;
   var login = req.session && req.session.login;
+  var isAdmin = !!(req.session && isEffectivelyAdmin(req.session));
 
   var prodRow = (await _pool.query(
     'SELECT name, tenant_id FROM products WHERE product_id = $1',
@@ -1065,7 +1068,7 @@ async function handleGetProductRoadmap(req, res, _next, pool) {
   if (res.json) {
     res.json({ roadmap: roadmapEntries });
   } else {
-    var html = _renderRoadmapTab(prodRow.name, productId, login, roadmapEntries);
+    var html = _renderRoadmapTab(prodRow.name, productId, login, roadmapEntries, isAdmin);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
@@ -1286,7 +1289,7 @@ function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pe
  * @param {string} prefillContent - existing content to pre-fill, or '' for blank
  * @param {string} productName
  */
-function _renderGuardrailsForm(productId, path, prefillContent, productName) {
+function _renderGuardrailsForm(productId, path, prefillContent, productName, isAdmin) {
   var isEdit = !!path;
   var body = '<div style="max-width:720px">' +
     '<h1 style="margin:0 0 24px;font-size:24px">' + (isEdit ? 'Edit' : 'Add') + ' guardrail or standard</h1>' +
@@ -1317,7 +1320,8 @@ function _renderGuardrailsForm(productId, path, prefillContent, productName) {
     title: (isEdit ? 'Edit' : 'Add') + ' guardrail or standard',
     bodyContent: body,
     active: 'dashboard',
-    crumbs: [productName, 'Guardrails & Standards', isEdit ? 'Edit' : 'Add']
+    crumbs: [productName, 'Guardrails & Standards', isEdit ? 'Edit' : 'Add'],
+    isAdmin: isAdmin
   });
 }
 
@@ -1331,6 +1335,7 @@ async function handleGetGuardrailsForm(req, res, _next, pool) {
   var productId = req.params && req.params.id;
   var tenantId = req.session && req.session.tenantId;
   var token = req.session && req.session.accessToken;
+  var isAdmin = !!(req.session && isEffectivelyAdmin(req.session));
   var path = (req.query && req.query.path) || '';
 
   var prodRow = (await _pool.query(
@@ -1349,7 +1354,7 @@ async function handleGetGuardrailsForm(req, res, _next, pool) {
     prefillContent = piece.status === 'ok' ? piece.value : '';
   }
 
-  var html = _renderGuardrailsForm(productId, path, prefillContent, prodRow.name);
+  var html = _renderGuardrailsForm(productId, path, prefillContent, prodRow.name, isAdmin);
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -1981,7 +1986,8 @@ async function handleGetProductGuardrailsView(req, res, _next, pool) {
     crumbs: [prodRow.name, 'Guardrails & Standards'],
     products: navSummary.products,
     activeProductId: productId,
-    noProductJourneyCount: navSummary.noProductJourneyCount
+    noProductJourneyCount: navSummary.noProductJourneyCount,
+    isAdmin: isAdmin
   });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
@@ -2155,6 +2161,7 @@ async function handleGetDashboard(req, res, _next, pool) {
   var _pool = pool;
   var tenantId = req.session && req.session.tenantId;
   var login = req.session && req.session.login;
+  var isAdmin = !!(req.session && isEffectivelyAdmin(req.session));
 
   // kbc-s1 (AC4): GET /dashboard?view=board -- tenant-scope kanban board,
   // aggregating every journey across every product this tenant owns onto
@@ -2172,7 +2179,8 @@ async function handleGetDashboard(req, res, _next, pool) {
       title: 'Kanban board',
       bodyContent: tenantHtml,
       user: { login: req.session && req.session.login },
-      active: 'dashboard'
+      active: 'dashboard',
+      isAdmin: isAdmin
     }));
     return;
   }
@@ -2189,7 +2197,7 @@ async function handleGetDashboard(req, res, _next, pool) {
   if (res.json) {
     res.json({ products: cards, showCta: cards.length === 0 });
   } else {
-    var html = _renderProductDashboard(cards, login, navSummary.products, null, navSummary.noProductJourneyCount);
+    var html = _renderProductDashboard(cards, login, navSummary.products, null, navSummary.noProductJourneyCount, isAdmin);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
@@ -2197,9 +2205,10 @@ async function handleGetDashboard(req, res, _next, pool) {
 
 function handleGetProductNew(req, res) {
   var login = req.session && req.session.login;
+  var isAdmin = !!(req.session && isEffectivelyAdmin(req.session));
   var errorParam = req.query && req.query.error;
   var error = errorParam === 'plan_limit' ? 'Your plan allows 1 product. Upgrade to create more.' : null;
-  var html = _renderProductNew(login, error);
+  var html = _renderProductNew(login, error, isAdmin);
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -2209,6 +2218,7 @@ async function handleGetProductView(req, res, _next, pool) {
   var productId = req.params && req.params.id;
   var tenantId = req.session && req.session.tenantId;
   var login = req.session && req.session.login;
+  var isAdmin = !!(req.session && isEffectivelyAdmin(req.session));
   // bri-s3.4: this lookup previously had no tenant_id filter at all -- any
   // authenticated user of any tenant could view any other tenant's product
   // (and its feature list) by guessing/knowing the product ID. 404 (not 403)
@@ -2303,7 +2313,7 @@ async function handleGetProductView(req, res, _next, pool) {
     if (!prodRow.repo_owner && !prodRow.repo_name && accessTokenForPicker) {
       repoPickerResult = await _repoPicker.getAccessibleRepos(accessTokenForPicker, _repoAdapter.listRepos);
     }
-    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navSummary.products, navSummary.noProductJourneyCount, repoPickerResult);
+    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navSummary.products, navSummary.noProductJourneyCount, repoPickerResult, isAdmin);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
@@ -2657,6 +2667,7 @@ async function handleGetProductKanban(req, res, _next, pool, posthog) {
   var _ph = posthog || _posthog;
   var productId = req.params && req.params.id;
   var tenantId = req.session && req.session.tenantId;
+  var isAdmin = !!(req.session && isEffectivelyAdmin(req.session));
 
   // bri-s1.5 AC2 — gate before the DB call; D37: only the shared isEnabled() helper,
   // no bespoke per-flag evaluation logic.
@@ -2708,7 +2719,8 @@ async function handleGetProductKanban(req, res, _next, pool, posthog) {
     title: 'Kanban board',
     bodyContent: html,
     user: { login: req.session && req.session.login },
-    active: 'dashboard'
+    active: 'dashboard',
+    isAdmin: isAdmin
   }));
 }
 
@@ -2716,6 +2728,7 @@ async function handleGetOrgKanban(req, res, _next, pool, posthog) {
   var _pool = pool;
   var _ph = posthog || _posthog;
   var tenantId = req.session && req.session.tenantId;
+  var isAdmin = !!(req.session && isEffectivelyAdmin(req.session));
   var productFilter = req.query && req.query.product;
 
   // bri-s1.5 AC3 — gate before any DB call, keyed by tenantId so PostHog's tenant-
@@ -2777,7 +2790,8 @@ async function handleGetOrgKanban(req, res, _next, pool, posthog) {
     title: 'Kanban board',
     bodyContent: html,
     user: { login: req.session && req.session.login },
-    active: 'dashboard'
+    active: 'dashboard',
+    isAdmin: isAdmin
   }));
 }
 
@@ -2895,6 +2909,7 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
   var _ph = posthog || _posthog;
   var tenantId = req.session && req.session.tenantId;
   var productId = req.params && req.params.id;
+  var isAdmin = !!(req.session && isEffectivelyAdmin(req.session));
 
   // pnfc-s1: branch on the submitted startSkill exactly as handlePostJourney
   // (routes/journey.js, POST /api/journey) already does -- 'ideate' for the
@@ -2936,7 +2951,8 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
       res.end(_htmlShell.renderShell({
         title: 'Journey limit reached',
         bodyContent: '<div class="sw-page-content"><h1>Journey limit reached</h1><p>You have reached the maximum of ' + _capResult.cap + ' journey' + (_capResult.cap === 1 ? '' : 's') + ' for your account. This limit is tied to your plan, not your credits balance &mdash; contact the operator to increase it.</p><a href="/dashboard">Back to dashboard</a></div>',
-        user: { login: req.session && req.session.login || '' }
+        user: { login: req.session && req.session.login || '' },
+        isAdmin: isAdmin
       }));
       return;
     }
@@ -2981,7 +2997,8 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
         res.end(_htmlShell.renderShell({
           title: 'Connect a repo to get started',
           bodyContent: '<div class="sw-page-content"><h1>Connect a repo to get started</h1><p>This product needs a connected GitHub repo before its first journey can start, so your completed work is durably saved from day one.</p><a href="/products/' + _escapeHtml(productId) + '">Connect a repo</a></div>',
-          user: { login: req.session && req.session.login || '' }
+          user: { login: req.session && req.session.login || '' },
+          isAdmin: isAdmin
         }));
         return;
       }
