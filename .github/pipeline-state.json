@@ -19367,7 +19367,7 @@
         {
           "slug": "npwe-s1",
           "name": "Show the Products sidebar during skill chat sessions",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -19383,11 +19383,14 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-06T09:50:38.789Z",
+          "updatedAt": "2026-08-20T08:58:01.769Z",
           "id": "npwe-s1",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "mergeCommit": "394b455e"
+          "mergeCommit": "394b455e",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-06-nav-products-wiring-expansion/dod/npwe-s1-dod.md"
         }
       ],
       "metrics": [],
@@ -19405,7 +19408,7 @@
           "slug": "emss-s1",
           "id": "emss-s1",
           "name": "Let a --from-saas export request specify which DoR-approved story to fetch",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -19421,10 +19424,13 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-07T01:41:33.077Z",
+          "updatedAt": "2026-08-20T08:58:01.769Z",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "mergeCommit": "3a43960c8bbe5ae5048c260be82c80dc116c34a2"
+          "mergeCommit": "3a43960c8bbe5ae5048c260be82c80dc116c34a2",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-07-export-multi-story-selection/dod/emss-s1-dod.md"
         }
       ],
       "metrics": [],
@@ -19442,8 +19448,8 @@
           "slug": "scr-s1",
           "id": "scr-s1",
           "name": "Unify skill-categorization into one source of truth and close the --with-outer-loop NFR gap",
-          "stage": "branch-complete",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-07-skill-categorization-reconciliation/review/scr-s1-review-1.md",
@@ -19458,10 +19464,13 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-07T01:41:33.077Z",
+          "updatedAt": "2026-08-20T08:58:01.769Z",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "mergeCommit": "0518aecf9b50f0ee1f04bb10e6b0d566782ca4dd"
+          "mergeCommit": "0518aecf9b50f0ee1f04bb10e6b0d566782ca4dd",
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "dodArtefact": "artefacts/2026-08-07-skill-categorization-reconciliation/dod/scr-s1-dod.md"
         }
       ],
       "metrics": [],
@@ -19724,7 +19733,7 @@
           "slug": "anvf-s1",
           "id": "anvf-s1",
           "name": "Distinguish artefact-not-found from fetch-failed",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -19743,9 +19752,12 @@
           "acVerified": 3,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-07T06:05:19.834Z",
+          "updatedAt": "2026-08-20T08:58:01.769Z",
           "prStatus": "merged",
-          "mergeCommit": "67a4a1c5d1102e403caa86623f73aa2fa92ca4f9"
+          "mergeCommit": "67a4a1c5d1102e403caa86623f73aa2fa92ca4f9",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-07-artefact-not-found-vs-fetch-failed/dod/anvf-s1-dod.md"
         }
       ],
       "metrics": [],
@@ -19767,7 +19779,7 @@
           "slug": "djfk-s1",
           "id": "djfk-s1",
           "name": "Delete a journey session_turns rows before the journey row, alongside artefacts",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -19786,9 +19798,12 @@
           "acVerified": 3,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-07T21:45:46.017Z",
+          "updatedAt": "2026-08-20T08:58:01.769Z",
           "prStatus": "merged",
-          "mergeCommit": "ad41718437743c68c5d41662aa322e867756b45e"
+          "mergeCommit": "ad41718437743c68c5d41662aa322e867756b45e",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-07-delete-journey-session-turns-fk/dod/djfk-s1-dod.md"
         }
       ],
       "metrics": [],
@@ -19810,7 +19825,7 @@
           "slug": "kbsf-s1",
           "id": "kbsf-s1",
           "name": "Wrap kanban board HTML in the shared page shell so design tokens resolve",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -19829,11 +19844,14 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": true,
-          "updatedAt": "2026-08-08T03:02:53.106Z",
+          "updatedAt": "2026-08-20T08:58:01.769Z",
           "prStatus": "merged",
           "prNumber": 682,
           "prUrl": "https://github.com/heymishy/skills-repo/pull/682",
-          "mergeCommit": "641d57ac84a4bf26c8240da1aa77732908f186da"
+          "mergeCommit": "641d57ac84a4bf26c8240da1aa77732908f186da",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-08-kanban-board-unstyled-shell-fix/dod/kbsf-s1-dod.md"
         }
       ],
       "metrics": [],
