@@ -22291,7 +22291,7 @@
           "slug": "fjcv-s1",
           "id": "fjcv-s1",
           "name": "Full journey core flow and resume E2E coverage",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "testPlan": {
             "status": "all-passing",
@@ -22306,8 +22306,11 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": true,
-          "updatedAt": "2026-08-10T19:47:27.000Z",
-          "prStatus": "merged"
+          "updatedAt": "2026-08-20T09:07:49.304Z",
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-10-full-journey-core-flow-e2e/dod/fjcv-s1-dod.md"
         },
         {
           "slug": "fjcv-s2",
@@ -22351,7 +22354,7 @@
           "slug": "rht-s1",
           "id": "rht-s1",
           "name": "Trailing assistant turn shown in resumed history",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -22369,8 +22372,11 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-10T01:58:37.649Z",
-          "prStatus": "merged"
+          "updatedAt": "2026-08-20T09:07:49.304Z",
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-10-resume-history-trailing-turn-fix/dod/rht-s1-dod.md"
         }
       ],
       "metrics": [],
@@ -22392,7 +22398,7 @@
           "slug": "okf-s1",
           "id": "okf-s1",
           "name": "Product filter dropdown for org kanban",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -22410,8 +22416,11 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-10T04:53:35.807Z",
-          "prStatus": "merged"
+          "updatedAt": "2026-08-20T09:07:49.304Z",
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-10-org-kanban-filter-ui-gap/dod/okf-s1-dod.md"
         }
       ],
       "metrics": [],
@@ -22433,7 +22442,7 @@
           "slug": "mgtc-s1",
           "id": "mgtc-s1",
           "name": "Turn-index-aware mock responses",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -22451,8 +22460,11 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-10T02:55:10.762Z",
-          "prStatus": "merged"
+          "updatedAt": "2026-08-20T09:07:49.304Z",
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-10-mock-gateway-turn-index-cycling/dod/mgtc-s1-dod.md"
         }
       ],
       "metrics": [],
@@ -22474,7 +22486,7 @@
           "slug": "jcn-s1",
           "id": "jcn-s1",
           "name": "Thread Products nav into the stage-history and journey-complete pages",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -22492,8 +22504,11 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-10T06:53:18.617Z",
-          "prStatus": "merged"
+          "updatedAt": "2026-08-20T09:07:49.304Z",
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-10-journey-page-nav-products-gap/dod/jcn-s1-dod.md"
         }
       ],
       "metrics": [],
