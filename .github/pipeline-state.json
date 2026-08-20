@@ -19690,13 +19690,13 @@
           "slug": "cdpl-s1",
           "id": "cdpl-s1",
           "name": "Stop the artefact panel squeezing the diagram panel, and fix the dead maximise-canvas button",
-          "stage": "branch-complete",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "acTotal": 5,
           "acVerified": 5,
           "hasLayoutDependentGaps": true,
           "e2eToolingRequired": true,
-          "updatedAt": "2026-08-07T06:05:19.834Z",
+          "updatedAt": "2026-08-20T12:35:35.388Z",
           "testPlan": {
             "status": "written",
             "totalTests": 15,
@@ -19711,7 +19711,10 @@
           "dorArtefact": "artefacts/2026-08-07-canvas-diagram-panel-layout-fix/dor/cdpl-s1-dor.md",
           "oversightLevel": "low",
           "prStatus": "merged",
-          "mergeCommit": "450280e232e9fc0028980db2d021c3e002456e92"
+          "mergeCommit": "450280e232e9fc0028980db2d021c3e002456e92",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-07-canvas-diagram-panel-layout-fix/dod/cdpl-s1-dod.md"
         }
       ],
       "metrics": [],
@@ -22048,8 +22051,8 @@
           "slug": "bmau-s1",
           "id": "bmau-s1",
           "name": "Bulk-assign checkbox UI",
-          "stage": "branch-complete",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-10-bulk-module-assignment-ui-gap/review/bmau-s1-review-1.md",
@@ -22066,8 +22069,11 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": true,
           "e2eToolingRequired": true,
-          "updatedAt": "2026-08-10T06:28:43.459Z",
-          "prStatus": "merged"
+          "updatedAt": "2026-08-20T12:35:35.388Z",
+          "prStatus": "merged",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-10-bulk-module-assignment-ui-gap/dod/bmau-s1-dod.md"
         }
       ],
       "metrics": [],
@@ -25364,6 +25370,28 @@
       ],
       "metrics": [],
       "updatedAt": "2026-08-17T12:08:49.506Z",
+      "track": "short",
+      "guardrails": []
+    },
+    {
+      "slug": "2026-08-21-canvas-maximise-and-bulk-assign-button-fixes",
+      "name": "Fix read-only-view maximise ReferenceError and stuck bulk-assign button label (found during live-Chrome DoD review)",
+      "stage": "definition",
+      "health": "amber",
+      "stories": [
+        {
+          "id": "cmba-s1",
+          "slug": "cmba-s1",
+          "name": "Fix the read-only-view maximise-button ReferenceError and the stuck \"Assigning…\" button label",
+          "stage": "definition",
+          "health": "amber",
+          "dorStatus": "not-started",
+          "dodStatus": "not-started",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-20T12:35:35.388Z",
       "track": "short",
       "guardrails": []
     }
