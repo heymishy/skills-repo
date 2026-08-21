@@ -25521,22 +25521,27 @@
     {
       "slug": "2026-08-21-test-plan-backfill-gap",
       "name": "Backfill missing test-plan artefacts for 11 already-shipped stories (found via lrtc-s1 PR #750 trace failure)",
-      "stage": "definition",
-      "health": "amber",
+      "stage": "definition-of-done",
+      "health": "green",
       "stories": [
         {
           "id": "tpbg-s1",
           "slug": "tpbg-s1",
           "name": "Backfill missing test-plan artefacts for 11 already-shipped stories",
-          "stage": "definition",
-          "health": "amber",
+          "stage": "definition-of-done",
+          "health": "green",
           "dorStatus": "not-started",
-          "dodStatus": "not-started",
-          "prStatus": "none"
+          "dodStatus": "complete",
+          "prStatus": "none",
+          "dodArtefact": "artefacts/2026-08-21-test-plan-backfill-gap/dod/tpbg-s1-dod.md",
+          "acTotal": 3,
+          "acVerified": 3,
+          "releaseReady": true,
+          "updatedAt": "2026-08-21T09:05:34.460Z"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-21T08:49:50.761Z",
+      "updatedAt": "2026-08-21T09:05:34.460Z",
       "track": "short",
       "guardrails": []
     }
