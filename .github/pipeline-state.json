@@ -25317,12 +25317,12 @@
           "id": "rbg-s1",
           "slug": "rbg-s1",
           "name": "Fix bri-s3.3's role-boundary regression guard so it actually asserts denial",
-          "stage": "branch-setup",
+          "stage": "implementation-plan",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
           "prStatus": "none",
-          "updatedAt": "2026-08-21T06:56:36.064Z",
+          "updatedAt": "2026-08-21T06:59:20.757Z",
           "testPlan": {
             "status": "written",
             "totalTests": 3,
@@ -25343,6 +25343,27 @@
               "id": "RISK-ACCEPT-rbg-s1-baseline-33-failures",
               "decision": "Proceeded with rbg-s1 implementation despite 33 pre-existing failing files in npm test (unrelated to this story's scope; story's own E2E test track is clean 5/5)",
               "date": "2026-08-21"
+            }
+          ],
+          "planArtefact": "artefacts/2026-08-18-bri-s3-3-role-boundary-guard-gap/plans/rbg-s1-plan.md",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "AC1 -- admin succeeds, engineer denied on a real admin-gated route",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-18-bri-s3-3-role-boundary-guard-gap/plans/rbg-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "AC2 -- viewer denied on the same admin-gated route",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-18-bri-s3-3-role-boundary-guard-gap/plans/rbg-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "AC3 -- full spec file passes clean",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-18-bri-s3-3-role-boundary-guard-gap/plans/rbg-s1-plan.md"
             }
           ]
         }
