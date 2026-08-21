@@ -553,6 +553,10 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
               '}' +
             '});' +
             'bmauUpdateSelection();' +
+            // cmba-s1: the success path never reset the button, unlike
+            // .catch() below -- left the label stuck on "Assigning..."
+            // forever after the first successful use in a session.
+            'btn.disabled=false;btn.textContent=origText;' +
           '})' +
           '.catch(function(){' +
             'btn.disabled=false;btn.textContent=origText;' +
