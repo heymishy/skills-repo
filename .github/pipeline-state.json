@@ -25317,12 +25317,12 @@
           "id": "rbg-s1",
           "slug": "rbg-s1",
           "name": "Fix bri-s3.3's role-boundary regression guard so it actually asserts denial",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "dodStatus": "not-started",
           "prStatus": "none",
-          "updatedAt": "2026-08-21T05:39:42.425Z",
+          "updatedAt": "2026-08-21T06:07:47.727Z",
           "testPlan": {
             "status": "written",
             "totalTests": 3,
@@ -25333,7 +25333,11 @@
           "acTotal": 3,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "oversightLevel": "medium",
+          "dorArtefact": "artefacts/2026-08-18-bri-s3-3-role-boundary-guard-gap/dor/rbg-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-18-bri-s3-3-role-boundary-guard-gap/dor/rbg-s1-dor-contract.md",
+          "guardrails": []
         }
       ],
       "metrics": [],
