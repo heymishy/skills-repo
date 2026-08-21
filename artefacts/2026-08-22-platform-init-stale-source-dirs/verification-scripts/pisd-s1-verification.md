@@ -3,7 +3,7 @@
 **Story reference:** `artefacts/2026-08-22-platform-init-stale-source-dirs/stories/pisd-s1-fix-platform-init-source-directories.md`
 **Technical test plan:** `artefacts/2026-08-22-platform-init-stale-source-dirs/test-plans/pisd-s1-test-plan.md`
 **Script version:** 1
-**Verified by:** [name] | **Date:** [date] | **Context:** [ ] Pre-code  [ ] Post-merge  [ ] Demo
+**Verified by:** Copilot (agent self-verification, per /verify-completion) | **Date:** 2026-08-22 | **Context:** [x] Pre-code  [x] Post-merge  [ ] Demo
 
 ---
 
@@ -35,8 +35,8 @@
 **Expected outcome:**
 > The output ends with two lines: `INSTALLED SKILLS: <a number that is 40 or higher>` and `orient present: true`. Before this fix, that first number would have read `5` and the second line would have read `orient present: false`.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Actual output: `INSTALLED SKILLS: 51` / `orient present: true`.
 
 ---
 
@@ -53,8 +53,8 @@
 **Expected outcome:**
 > The output ends with `INSTALLED TEMPLATES: <a number that is 35 or higher>` and `story.md present: true`. Before this fix, the count would have read `1` and `story.md present` would have read `false`.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Actual output: `INSTALLED TEMPLATES: 41` / `story.md present: true`.
 
 ---
 
@@ -71,8 +71,8 @@
 **Expected outcome:**
 > The last line of output reads `[i1.2-platform-init-fetch] Results: 20 passed, 0 failed`. In particular, look for two lines earlier in the output: `✔ platform-init-reports-skipped-files` and `✔ platform-init-force-flag-overwrites-existing` — both should show a checkmark (✔), not a cross (✖).
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Confirmed `[i1.2-platform-init-fetch] Results: 20 passed, 0 failed`. Required a companion fix to `scripts/platform-fetch.js` (same stale-source-path bug, separate script) discovered while confirming this scenario — see decisions.md and the branch's own commit history.
 
 ---
 
@@ -90,8 +90,8 @@
 **Expected outcome:**
 > The summary line near the end reads `[run-all-tests] <N> file(s) run, <F> failed`, and the "Failed files" list underneath it contains only `scripts/check-pipeline-state-integrity.js` (a separate, already-known, already-accepted issue unrelated to this story) — no other file should appear in that list.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Actual: `531 file(s) run, 4 failed` — `scripts/check-pipeline-state-integrity.js` plus `tests/check-p3.5-validate-trace.js`, `tests/check-p4-enf-decision.js`, `tests/check-wsm2-collaborative-sessions.js`. All 4 are pre-existing and separately tracked (acknowledged at `/branch-setup`, unrelated to this story), matching this scenario's original intent — the list this scenario expected was written before those 3 additional pre-existing findings existed, but none are new regressions from this story. Along the way, the relocation itself (Task 3) surfaced and required fixing 3 additional real regressions before reaching this clean state: `src/web-ui/modules/repo-bootstrap.js` (a third script sharing the same stale-source-path bug), 6 tests hardcoding the old `.github/skills/`/`.github/templates/` path for the relocated files, and 2 artefact-coverage exemption entries for a pre-existing DoR-slug-mismatch this relocation made visible for the first time — see decisions.md and commit `0721cec5`.
 
 ---
 
@@ -124,8 +124,8 @@
 **Expected outcome:**
 > A short, written answer to the question above — recorded somewhere durable (this story's `decisions.md`, or a note added to this verification script's Notes field below) — before this story is marked done. There's no single "correct" pass/fail here; the requirement is that the question gets a deliberate, documented answer rather than being silently ignored.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Answered in `decisions.md` ("AC5 investigation" entry, 2026-08-22): all 5 skills (plus `staging-data-policy.md`) were added to `.github/skills/`/`.github/templates/` two days after the repo-root migration (commit `1b1d0682`) — real, general-purpose files placed in the wrong (legacy) directory by mistake, not dead leftovers. Resolved by relocating them via `git mv` to `skills/`/`templates/` (Task 3), so they became ordinary members of the real skill/template set with no special-case merge logic needed.
 
 ---
 
@@ -133,19 +133,17 @@
 
 | Scenario | Result | Notes |
 |----------|--------|-------|
-| Scenario 1 — full skill set installed | | |
-| Scenario 2 — full template set installed | | |
-| Scenario 3 — existing skip/force tests pass | | |
-| Scenario 4 — full suite has no new failures | | |
-| Edge case — `.github/skills/` purpose documented | | |
+| Scenario 1 — full skill set installed | Pass | 51 skills installed, `orient` present |
+| Scenario 2 — full template set installed | Pass | 41 templates installed, `story.md` present |
+| Scenario 3 — existing skip/force tests pass | Pass | 20/20, required a companion fix to `platform-fetch.js` |
+| Scenario 4 — full suite has no new failures | Pass | 4 pre-existing/unrelated failures, 0 new; 3 additional regressions found and fixed along the way |
+| Edge case — `.github/skills/` purpose documented | Pass | Answered in decisions.md — misplaced files, relocated |
 
-**Overall verdict:** [ ] All pass — ready to proceed
+**Overall verdict:** [x] All pass — ready to proceed
 [ ] Failures found — log findings below before proceeding
 
 ---
 
 ## Findings
 
-| Scenario | Expected | Actual | Severity | Action |
-|----------|----------|--------|----------|--------|
-| | | | HIGH / MED / LOW | Fix AC / Fix implementation / Accept |
+No open findings. Three additional real bugs of the same root-cause class were found and fixed during implementation (not merely test artefacts): `scripts/platform-fetch.js` and `src/web-ui/modules/repo-bootstrap.js` shared `platform-init.js`'s stale `.github/skills/`/`.github/templates/` source-path bug — both fixed as part of this story (see `decisions.md` and commit `0721cec5`), since AC4 and AC6 could not otherwise be honestly satisfied.
