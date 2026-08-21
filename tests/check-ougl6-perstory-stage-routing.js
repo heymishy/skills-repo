@@ -140,9 +140,9 @@ queue.push(function() {
   });
 });
 
-// T6.4 — POST stories → 303 to test-plan session chat
+// T6.4 — POST stories → 303 to review session chat (first per-story stage)
 queue.push(function() {
-  return test('T6.4: POST stories → 303 to /skills/test-plan/sessions/[sid]/chat', async function() {
+  return test('T6.4: POST stories → 303 to /skills/review/sessions/[sid]/chat', async function() {
     var journey = freshRequireJourney();
     var store = getStore();
     store._clear();
@@ -163,17 +163,24 @@ queue.push(function() {
     await journey.handlePostStories(req, res);
 
     assert.strictEqual(res._status, 303, 'Expected 303, got ' + res._status);
+    // fix-forward: per-story routing was corrected (commit "fix(journey):
+    // correct per-story stage order to review-then-test-plan-then-DoR") so
+    // PER_STORY_SEQ is now ['review', 'test-plan', 'definition-of-ready']
+    // (journey.js:2270) — matching CLAUDE.md's documented pipeline order
+    // (review before test-plan) and test-plan's own SKILL.md entry
+    // condition (requires a passed review). handlePostStories always opens
+    // the first story at review, not test-plan (journey.js:2507-2508).
     assert.ok(
-      res._headers.Location && res._headers.Location.includes('/skills/test-plan/sessions/'),
-      'Expected redirect to test-plan session, got: ' + res._headers.Location
+      res._headers.Location && res._headers.Location.includes('/skills/review/sessions/'),
+      'Expected redirect to review session (first per-story stage), got: ' + res._headers.Location
     );
     assert.ok(res._headers.Location.includes('/chat'), 'Expected /chat suffix on redirect');
   });
 });
 
-// T6.5 — New test-plan session systemPrompt has handoff block + story slug
+// T6.5 — New review session (first per-story stage) systemPrompt has handoff block + story slug
 queue.push(function() {
-  return test('T6.5: test-plan session systemPrompt includes handoff block + story slug', async function() {
+  return test('T6.5: review session includes handoff block + story slug', async function() {
     var journey = freshRequireJourney();
     var store = getStore();
     store._clear();
@@ -189,8 +196,11 @@ queue.push(function() {
 
     var capturedPriorArtefacts = null;
     journey.setJourneyStoreModule(store);
-    journey.setRegisterHtmlSession(function(sid, sessionPath, skillName, priorArtefacts) {
-      capturedPriorArtefacts = priorArtefacts;
+    // fix-forward: registerHtmlSession's 4th argument is now an options
+    // object ({priorArtefacts, featureSlug, mockScenarioName, ...}), not
+    // priorArtefacts directly — see journey.js:2367 (_startReviewSessionForJourney).
+    journey.setRegisterHtmlSession(function(sid, sessionPath, skillName, options) {
+      capturedPriorArtefacts = options && options.priorArtefacts;
     });
     journey.setLinkSessionToJourney(function() {});
     journey.setRepoRoot(tmpdir);
@@ -204,7 +214,7 @@ queue.push(function() {
     await journey.handlePostStories(req, res);
 
     // The first story being processed should be reflected in priorArtefacts / sessionPath
-    // The test-plan session for 'wgol.1' should have current story context
+    // The review session for 'wgol.1' should have current story context
     assert.ok(capturedPriorArtefacts, 'Expected priorArtefacts passed to registerHtmlSession');
     // Prior artefacts must include the discovery artefact
     var hasDiscovery = capturedPriorArtefacts.some(function(a) { return a.path === discPath; });

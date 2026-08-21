@@ -136,8 +136,14 @@ queue.push(function() {
 
     var capturedPriorArtefacts = null;
     journey.setJourneyStoreModule(store);
-    journey.setRegisterHtmlSession(function(sid, sessionPath, skillName, priorArtefacts) {
-      capturedPriorArtefacts = priorArtefacts;
+    // fix-forward: registerHtmlSession's 4th argument is now an options
+    // object ({priorArtefacts, featureSlug, mockScenarioName, ...}), not
+    // priorArtefacts directly — see journey.js:2298/2348/2367. The actual
+    // priorArtefacts computation itself (Postgres-first, disk fallback,
+    // journey.js:2241-2263) is unchanged and still correct; only this
+    // mock's capture shape was stale.
+    journey.setRegisterHtmlSession(function(sid, sessionPath, skillName, options) {
+      capturedPriorArtefacts = options && options.priorArtefacts;
     });
     journey.setLinkSessionToJourney(function() {});
     journey.setRepoRoot(tmpdir);
@@ -186,8 +192,10 @@ queue.push(function() {
 
     var capturedPriorArtefacts = null;
     journey.setJourneyStoreModule(store);
-    journey.setRegisterHtmlSession(function(sid, sessionPath, skillName, priorArtefacts) {
-      capturedPriorArtefacts = priorArtefacts;
+    // fix-forward: see T5.2's comment — registerHtmlSession's 4th argument
+    // is now an options object, not priorArtefacts directly.
+    journey.setRegisterHtmlSession(function(sid, sessionPath, skillName, options) {
+      capturedPriorArtefacts = options && options.priorArtefacts;
     });
     journey.setLinkSessionToJourney(function() {});
     journey.setRepoRoot(tmpdir);
