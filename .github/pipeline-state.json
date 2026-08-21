@@ -25677,22 +25677,34 @@
     {
       "slug": "2026-08-22-platform-init-stale-source-dirs",
       "name": "Point platform-init.js at the real skills/ and templates/ source directories (found during 33-failures cleanup)",
-      "stage": "definition",
-      "health": "red",
+      "stage": "test-plan",
+      "health": "green",
       "stories": [
         {
           "id": "pisd-s1",
           "slug": "pisd-s1",
           "name": "Point platform-init.js at the real skills/ and templates/ source directories",
-          "stage": "definition",
-          "health": "red",
+          "stage": "test-plan",
+          "health": "green",
           "dorStatus": "not-started",
           "dodStatus": "not-started",
-          "prStatus": "none"
+          "prStatus": "none",
+          "updatedAt": "2026-08-21T22:41:36.054Z",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 8,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-22-platform-init-stale-source-dirs/test-plans/pisd-s1-test-plan.md"
+          },
+          "acTotal": 6,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "verificationScriptArtefact": "artefacts/2026-08-22-platform-init-stale-source-dirs/verification-scripts/pisd-s1-verification.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-21T22:28:23.452Z",
+      "updatedAt": "2026-08-21T22:41:36.054Z",
       "track": "short",
       "guardrails": []
     }

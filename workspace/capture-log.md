@@ -1284,3 +1284,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: gap
   signal-text: While fixing check-i1.2-platform-init-fetch.js (2 pre-existing failures), found scripts/platform-init.js -- the real /bootstrap installer -- copies FROM sourceRoot/.github/skills (5 entries) and sourceRoot/.github/templates (1 entry), not from this repos real skills/ (49 entries) and templates/ (40 entries) at root, which moved there in commit 1b1d0682 (2026-06-23) and were never updated in COPY_DIRS. Confirmed via direct reproduction: a real run never attempts to copy orient or the other 48 real skills. Every consumer repo bootstrapped from this platform since 2026-06-23 would have received this near-empty install. Highest-severity finding of this whole pass -- logged as F16/pisd-s1 with health:red rather than fixed inline, per operator direction (same stop-and-log treatment as F14/F15).
   source: agent-auto
+
+- date: 2026-08-22
+  session-phase: test-plan (pisd-s1)
+  signal-type: decision
+  signal-text: pisd-s1s test plan treats AC5 (what .github/skills/ 5-entry subset is for, and whether the fix must preserve it) as a documented investigation gap rather than an automated test -- the correct behaviour genuinely depends on reading git history and intent, not something a unit test can assert. AC6s full-suite regression test is written to require AC5s answer to be reflected before it can be honestly called green, so the investigation cannot be silently skipped. Test data strategy is Synthetic/self-contained throughout, reusing check-i1.2-platform-init-fetch.jss existing mktmp/runInit helpers rather than introducing new fixtures.
+  source: agent-auto
