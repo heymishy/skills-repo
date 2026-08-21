@@ -16434,10 +16434,13 @@
               "artefact": "artefacts/2026-07-25-code-shape-diagrams/stories/alrf-s9-design-as-built-context-injection.md",
               "prStatus": "merged",
               "notes": "Answers the operators architecture question: does /design need a tie-in to the products existing data model/architecture from prior feature runs? Yes -- SKILL.md already required it but nothing fed it in. buildSystemPrompt() now injects a fresh, read-only as-built snapshot (via the existing csd-s5/csd-s7 generators) into /design sessions only.",
-              "updatedAt": "2026-08-17T08:41:18.450Z",
+              "updatedAt": "2026-08-21T09:03:02.293Z",
               "dodStatus": "complete",
               "releaseReady": true,
-              "dodArtefact": "artefacts/2026-07-25-code-shape-diagrams/dod/alrf-s9-dod.md"
+              "dodArtefact": "artefacts/2026-07-25-code-shape-diagrams/dod/alrf-s9-dod.md",
+              "testPlan": {
+                "artefact": "artefacts/2026-07-25-code-shape-diagrams/test-plans/alrf-s9-design-as-built-context-injection-test-plan.md"
+              }
             }
           ]
         }
@@ -16834,7 +16837,10 @@
           "dodStatus": "complete",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/dod/r-canvas-render-and-story-extraction-fix-dod.md",
-          "updatedAt": "2026-08-17T07:07:26.882Z"
+          "updatedAt": "2026-08-21T09:03:02.293Z",
+          "testPlan": {
+            "artefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/test-plans/r-canvas-render-and-story-extraction-fix-test-plan.md"
+          }
         },
         {
           "id": "alrf-s1",
@@ -16847,10 +16853,13 @@
           "artefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/stories/alrf-s1-artefact-list-repo-root-fallback.md",
           "prStatus": "merged",
           "notes": "Fixes the operator-reported staging mismatch (feature-index page showed No artefacts found for a feature the kanban board correctly showed 3 artefacts for). listArtefacts now checks local filesystem via repoRoot before falling back to the GitHub-API path. See decisions.md D1/D2.",
-          "updatedAt": "2026-08-17T07:07:26.882Z",
+          "updatedAt": "2026-08-21T09:03:02.293Z",
           "dodStatus": "complete",
           "releaseReady": true,
-          "dodArtefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/dod/alrf-s1-dod.md"
+          "dodArtefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/dod/alrf-s1-dod.md",
+          "testPlan": {
+            "artefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/test-plans/alrf-s1-artefact-list-repo-root-fallback-test-plan.md"
+          }
         },
         {
           "id": "alrf-s2",
@@ -16863,10 +16872,13 @@
           "artefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/stories/alrf-s2-build-identity-footer-stamp.md",
           "prStatus": "merged",
           "notes": "Closes the same-day gap where alrf-s1 (PR #614) deployed successfully but the overall CI run showed red from an unrelated pre-existing smoke-test failure, making a real deploy indistinguishable from a failed one. Adds GET /version + a sidebar footer stamp (commit SHA + PR #).",
-          "updatedAt": "2026-08-17T07:07:26.882Z",
+          "updatedAt": "2026-08-21T09:03:02.293Z",
           "dodStatus": "complete",
           "releaseReady": true,
-          "dodArtefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/dod/alrf-s2-dod.md"
+          "dodArtefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/dod/alrf-s2-dod.md",
+          "testPlan": {
+            "artefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/test-plans/alrf-s2-build-identity-footer-stamp-test-plan.md"
+          }
         },
         {
           "id": "alrf-s4",
@@ -16879,10 +16891,13 @@
           "artefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/stories/alrf-s4-postgres-artefact-fallback.md",
           "prStatus": "merged",
           "notes": "Implements D3s durable-artefact-store goal using a store that already existed: routes/skills.js already saves artefact content to Postgres on stage completion; nothing read it back for the feature-index page. Wires listArtefacts to check Postgres (via journey-store.getArtefactsForJourney) after local disk, before GitHub API.",
-          "updatedAt": "2026-08-17T07:07:26.882Z",
+          "updatedAt": "2026-08-21T09:03:02.293Z",
           "dodStatus": "complete",
           "releaseReady": true,
-          "dodArtefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/dod/alrf-s4-dod.md"
+          "dodArtefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/dod/alrf-s4-dod.md",
+          "testPlan": {
+            "artefact": "artefacts/2026-07-26-canvas-render-and-story-extraction-fix/test-plans/alrf-s4-postgres-artefact-fallback-test-plan.md"
+          }
         }
       ],
       "metrics": [],
@@ -16907,10 +16922,13 @@
           "artefact": "artefacts/2026-07-26-storage-drift-audit/stories/alrf-s3-pipeline-state-writer-guard.md",
           "prStatus": "merged",
           "notes": "Closes a CRITICAL finding: gate-confirm on staging was silently fabricating a fresh, near-empty pipeline-state.json on every stage completion, never committed to git. Guard-only fix; full durable-store unification (ideas.json, estimation-norms.md, artefact content) tracked separately in decisions.md D1.",
-          "updatedAt": "2026-08-17T12:23:53.001Z",
+          "updatedAt": "2026-08-21T09:03:02.293Z",
           "dodStatus": "complete",
           "releaseReady": true,
-          "dodArtefact": "artefacts/2026-07-26-storage-drift-audit/dod/alrf-s3-pipeline-state-writer-guard-dod.md"
+          "dodArtefact": "artefacts/2026-07-26-storage-drift-audit/dod/alrf-s3-pipeline-state-writer-guard-dod.md",
+          "testPlan": {
+            "artefact": "artefacts/2026-07-26-storage-drift-audit/test-plans/alrf-s3-pipeline-state-writer-guard-test-plan.md"
+          }
         }
       ],
       "metrics": [],
@@ -16935,14 +16953,15 @@
           "artefact": "artefacts/2026-07-26-function-level-audit/stories/alrf-s5-artefact-path-traversal-guard.md",
           "prStatus": "merged",
           "notes": "CRITICAL, active, exploitable path-traversal write vulnerability in as-built-diagrams.js (csd-s5) and as-built-system-architecture.js (csd-s7), shared via migration-schema-parser.js writeAsBuiltDiagramArtefact(). featureSlug taken directly from req.query with zero validation. Fixed immediately (not batched) given active severity. 3 more findings (tenant-isolation _repoRoot() bypass, orphaned assignFeatureToModule/unassignFeature, auth-email.js rate-limiter duplication) deferred to a batch fix per operator direction -- see decisions.md.",
-          "updatedAt": "2026-08-17T06:25:10.425Z",
+          "updatedAt": "2026-08-21T09:03:02.293Z",
           "dodStatus": "complete",
           "releaseReady": true,
           "prUrl": "https://github.com/heymishy/skills-repo/pull/618",
           "testPlan": {
             "totalTests": 10,
             "passing": 10,
-            "status": "all-passing"
+            "status": "all-passing",
+            "artefact": "artefacts/2026-07-26-function-level-audit/test-plans/alrf-s5-artefact-path-traversal-guard-test-plan.md"
           },
           "dodArtefact": "artefacts/2026-07-26-function-level-audit/dod/alrf-s5-dod.md"
         },
@@ -16957,14 +16976,15 @@
           "artefact": "artefacts/2026-07-26-function-level-audit/stories/alrf-s6-batch-fix-tenant-isolation-and-dead-code.md",
           "prStatus": "merged",
           "notes": "Fixes finding #2 (tenant-isolation bypass -- both as-built routes now use getRepoRoot(req)). Findings #3/#4 revised after deeper investigation: #3 (assignFeatureToModule/unassignFeature) was dead code sitting alongside an already-wired real mechanism (bulkAssignFeaturesToModule), removed rather than wired to a nonexistent gap. #4 (auth-email.js rate-limiter) confirmed acceptable -- carries incident-driven bypass logic the shared limiter should not carry, no fix needed.",
-          "updatedAt": "2026-08-17T06:25:10.425Z",
+          "updatedAt": "2026-08-21T09:03:02.293Z",
           "dodStatus": "complete",
           "releaseReady": true,
           "prUrl": "https://github.com/heymishy/skills-repo/pull/619",
           "testPlan": {
             "totalTests": 8,
             "passing": 8,
-            "status": "all-passing"
+            "status": "all-passing",
+            "artefact": "artefacts/2026-07-26-function-level-audit/test-plans/alrf-s6-batch-fix-tenant-isolation-and-dead-code-test-plan.md"
           },
           "dodArtefact": "artefacts/2026-07-26-function-level-audit/dod/alrf-s6-dod.md"
         },
@@ -16979,14 +16999,15 @@
           "artefact": "artefacts/2026-07-26-function-level-audit/stories/alrf-s8-journey-slug-priority-and-mock-gateway-nav.md",
           "prStatus": "merged",
           "notes": "Fixes the real root cause behind the operator-reported resume-session bug: both turn-completion handlers in skills.js always preferred the mock (or real) response SLUG marker over an already-known real journey featureSlug, causing every real feature to collide onto the mock fixtures shared slug whenever MOCK_LLM_GATEWAY=true. Also adds a nav entry for the previously-unreachable /admin/mock-gateway toggle (amgt-s1).",
-          "updatedAt": "2026-08-17T06:25:10.425Z",
+          "updatedAt": "2026-08-21T09:03:02.293Z",
           "dodStatus": "complete",
           "releaseReady": true,
           "prUrl": "https://github.com/heymishy/skills-repo/pull/620",
           "testPlan": {
             "totalTests": 4,
             "passing": 4,
-            "status": "all-passing"
+            "status": "all-passing",
+            "artefact": "artefacts/2026-07-26-function-level-audit/test-plans/alrf-s8-journey-slug-priority-and-mock-gateway-nav-test-plan.md"
           },
           "dodArtefact": "artefacts/2026-07-26-function-level-audit/dod/alrf-s8-dod.md"
         },
@@ -17001,14 +17022,15 @@
           "artefact": "artefacts/2026-07-26-function-level-audit/stories/alrf-s10-delete-journey-capability.md",
           "prStatus": "merged",
           "notes": "Operator-requested: a real way to delete stale/corrupted staging data. Hard delete (journeys + artefacts rows), tenant-scoped (404 not 403 cross-tenant), CSRF-protected, audit-logged. UI: a real Delete button on the feature-index page. Follows the established handleDeleteProduct convention exactly.",
-          "updatedAt": "2026-08-17T06:25:10.425Z",
+          "updatedAt": "2026-08-21T09:03:02.293Z",
           "dodStatus": "complete",
           "releaseReady": true,
           "prUrl": "https://github.com/heymishy/skills-repo/pull/621",
           "testPlan": {
             "totalTests": 11,
             "passing": 11,
-            "status": "all-passing"
+            "status": "all-passing",
+            "artefact": "artefacts/2026-07-26-function-level-audit/test-plans/alrf-s10-delete-journey-capability-test-plan.md"
           },
           "dodArtefact": "artefacts/2026-07-26-function-level-audit/dod/alrf-s10-dod.md"
         },
@@ -17023,14 +17045,15 @@
           "artefact": "artefacts/2026-07-26-function-level-audit/stories/alrf-s11-purge-e2e-tenants-ci-cleanup.md",
           "prStatus": "merged",
           "notes": "Operator noticed hundreds of persistent e2e-test-/UAT tenants on staging via /admin/credits. Sequencing agreed: stop the leak first (this story), retroactive purge next, admin view + PostHog tie-in later. New scripts/purge-e2e-tenants.js wired into e2e.yml Scenario A/B and staging-deploy.yml smoke-test, always() so cleanup happens on pass or fail.",
-          "updatedAt": "2026-08-17T06:25:10.425Z",
+          "updatedAt": "2026-08-21T09:03:02.293Z",
           "dodStatus": "complete",
           "releaseReady": true,
           "prUrl": "https://github.com/heymishy/skills-repo/pull/622",
           "testPlan": {
             "totalTests": 11,
             "passing": 11,
-            "status": "all-passing"
+            "status": "all-passing",
+            "artefact": "artefacts/2026-07-26-function-level-audit/test-plans/alrf-s11-purge-e2e-tenants-ci-cleanup-test-plan.md"
           },
           "dodArtefact": "artefacts/2026-07-26-function-level-audit/dod/alrf-s11-dod.md"
         },
@@ -25515,6 +25538,33 @@
       ],
       "metrics": [],
       "updatedAt": "2026-08-21T07:58:54.586Z",
+      "track": "short",
+      "guardrails": []
+    },
+    {
+      "slug": "2026-08-21-test-plan-backfill-gap",
+      "name": "Backfill missing test-plan artefacts for 11 already-shipped stories (found via lrtc-s1 PR #750 trace failure)",
+      "stage": "definition-of-done",
+      "health": "green",
+      "stories": [
+        {
+          "id": "tpbg-s1",
+          "slug": "tpbg-s1",
+          "name": "Backfill missing test-plan artefacts for 11 already-shipped stories",
+          "stage": "definition-of-done",
+          "health": "green",
+          "dorStatus": "not-started",
+          "dodStatus": "complete",
+          "prStatus": "none",
+          "dodArtefact": "artefacts/2026-08-21-test-plan-backfill-gap/dod/tpbg-s1-dod.md",
+          "acTotal": 3,
+          "acVerified": 3,
+          "releaseReady": true,
+          "updatedAt": "2026-08-21T09:05:34.460Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-21T09:05:34.460Z",
       "track": "short",
       "guardrails": []
     }

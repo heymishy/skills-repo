@@ -27,7 +27,9 @@ Update this file whenever a new finding surfaces during the backlog pass, and wh
 
 ## Resolved
 
-None yet — all nine open findings above are still pre-`/test-plan`.
+| ID | Finding | Resolution | Closed |
+|----|---------|-----------|--------|
+| F13 | **CI-gate reliability finding, not a security/functional issue.** `lrtc-s1`'s PR #750 failed `/trace`'s `test_plan_coverage` check with 21 MISSING entries, unrelated to that PR's own scope. Split into two causes: (1) 10 false positives — `pipeline-state.json` never recorded `testPlan.artefact` for `fps-s1`, `spv-s1`, `dss-s1`, `dsn-s1`, `ftcg-s1`, `acv-s1`, `pss-s1`, `rlcc-s1`, `nis-s1`, `bjs-s1`. (2) 11 genuine gaps — already-shipped stories (`alrf-s1/s2/s3/s4/s5/s6/s8/s9/s10/s11`, `r-canvas-render-and-story-extraction-fix`) with no test-plan artefact under any naming convention. | Both causes fixed: (1) `testPlan.artefact` populated directly, commit `3348c3d2`. (2) `tpbg-s1` backfilled all 11 test-plan.md files reconstructed from each story's already-documented AC-to-test mapping, commit `2e8b211c`. `validate-trace.sh --ci` confirmed locally: 6 passed, 0 warnings, 0 failed (was 1 failed/21 missing). One genuine underlying gap surfaced during backfill (`r-canvas-render-and-story-extraction-fix` AC3, no automated test for `extractStoryIdsFromDefinitionArtefact`) — not fabricated as covered, correctly left routed to its own existing tracking, F3/`csgc-s1`. | `tpbg-s1` DoD complete, 2026-08-21 (`artefacts/2026-08-21-test-plan-backfill-gap/dod/tpbg-s1-dod.md`) |
 
 ---
 
