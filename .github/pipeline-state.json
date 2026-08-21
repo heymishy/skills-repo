@@ -25689,7 +25689,7 @@
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
           "prStatus": "none",
-          "updatedAt": "2026-08-21T23:00:35.475Z",
+          "updatedAt": "2026-08-21T23:24:48.598Z",
           "testPlan": {
             "status": "written",
             "totalTests": 8,
@@ -25710,25 +25710,25 @@
             {
               "id": "task-1",
               "name": "RED -- write failing tests for AC1/AC2/AC3/AC5",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-22-platform-init-stale-source-dirs/plans/pisd-s1-plan.md"
             },
             {
               "id": "task-2",
               "name": "GREEN -- fix platform-init.js COPY_DIRS source paths (AC1)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-22-platform-init-stale-source-dirs/plans/pisd-s1-plan.md"
             },
             {
               "id": "task-3",
               "name": "Relocate infra-*/schema-migration-*/staging-data-policy to skills/templates (AC5)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-22-platform-init-stale-source-dirs/plans/pisd-s1-plan.md"
             },
             {
               "id": "task-4",
               "name": "Confirm AC4 (existing i1.2 tests) and AC6 (full suite regression)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-22-platform-init-stale-source-dirs/plans/pisd-s1-plan.md"
             }
           ]
