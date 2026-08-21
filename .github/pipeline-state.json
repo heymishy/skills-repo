@@ -25677,19 +25677,19 @@
     {
       "slug": "2026-08-22-platform-init-stale-source-dirs",
       "name": "Point platform-init.js at the real skills/ and templates/ source directories (found during 33-failures cleanup)",
-      "stage": "definition-of-ready",
+      "stage": "branch-setup",
       "health": "green",
       "stories": [
         {
           "id": "pisd-s1",
           "slug": "pisd-s1",
           "name": "Point platform-init.js at the real skills/ and templates/ source directories",
-          "stage": "definition-of-ready",
+          "stage": "branch-setup",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
           "prStatus": "none",
-          "updatedAt": "2026-08-21T22:45:32.613Z",
+          "updatedAt": "2026-08-21T22:56:07.088Z",
           "testPlan": {
             "status": "written",
             "totalTests": 8,
@@ -25708,7 +25708,7 @@
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-21T22:45:32.613Z",
+      "updatedAt": "2026-08-21T22:56:07.088Z",
       "track": "short",
       "guardrails": []
     }
