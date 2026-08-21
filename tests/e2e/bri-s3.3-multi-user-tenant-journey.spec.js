@@ -214,9 +214,18 @@ test.describe('bri-s3.3 multi-user within one tenant journey @mocked @multi-tena
     const beforeCountRes = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
     const beforeCount = (await beforeCountRes.json()).count;
 
-    // ── Setup: viewer role user ──
-    // For this test, we'd need a third user with viewer role
-    // For now, this is a placeholder that demonstrates the structure
+    // ── Setup: viewer-role user (e2e-viewer, seeded by beforeAll) ──
+    const viewer = await githubLogin('e2e-viewer');
+
+    // AC2 (corrected scope): viewer is denied on the one admin-gated route that
+    // actually exists and is gated (requireAdmin), same mechanism as AC1's bob
+    // check. This does NOT assert viewer is blocked from every possible write
+    // action -- no such enforcement exists anywhere in the codebase today (see
+    // artefacts/2026-08-21-viewer-role-no-enforcement/discovery.md).
+    const viewerAdminRes = await viewer.ctx.get('/admin/credits');
+    expect(viewerAdminRes.status()).toBe(403);
+
+    await viewer.ctx.dispose();
 
     // Verify zero real LLM calls
     const afterCountRes = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });
