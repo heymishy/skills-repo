@@ -68,6 +68,7 @@ let handleLanding;
 let handleJourneys;
 let setListJourneys;
 let handleGetChatHtml;
+let _setHtmlSession;
 
 try {
   ({ handleLanding } = require('../src/web-ui/routes/landing'));
@@ -86,7 +87,7 @@ try {
 }
 
 try {
-  ({ handleGetChatHtml } = require('../src/web-ui/routes/skills'));
+  ({ handleGetChatHtml, _setHtmlSession } = require('../src/web-ui/routes/skills'));
 } catch (e) {
   // skills.js may load but not export handleGetChatHtml until bee.3 is implemented
   console.log('✗ WARN: handleGetChatHtml not found in routes/skills.js — chat page tests will fail');
@@ -357,12 +358,23 @@ async function t13() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// T14 — chat page: journey_created capture present when key set (AC7)
+// T14 — chat page: skill_session_view capture present when key set (AC7)
 // ─────────────────────────────────────────────────────────────────────────────
-console.log('\nT14 — chat page: journey_created capture present when key set (AC7)');
+console.log('\nT14 — chat page: skill_session_view capture present when key set (AC7)');
 async function t14() {
   process.env.POSTHOG_KEY = 'phc_test123';
   if (!handleGetChatHtml) { ok(false, 'T14: skipped — handleGetChatHtml not loaded'); return; }
+  // fix-forward: handleGetChatHtml 404s for an unregistered session,
+  // skipping the posthog snippet entirely — this test never registered
+  // 'sess-1' via _setHtmlSession, so it was checking a 404 error page
+  // regardless of which event name it looked for.
+  if (_setHtmlSession) {
+    _setHtmlSession('sess-1', {
+      skillName: 'definition', sessionPath: '/tmp/bee3-test.md', systemPrompt: 'test',
+      turns: [{ role: 'assistant', content: 'Hello' }], artefactContent: '', artefactPath: '',
+      done: false, journeyId: null
+    });
+  }
   const req = mockReq({
     session: { accessToken: 'tok', login: 'alice', tenantId: 'org-1' },
     url: '/skills/definition/sessions/sess-1/chat',
@@ -371,9 +383,17 @@ async function t14() {
   const res = mockRes();
   try {
     await handleGetChatHtml(req, res);
+    // fix-forward: journey_created moved server-side (psh-s4/pla-s2) --
+    // it now fires once, at journey-creation time (journey.js:436,
+    // products.js:3028), tenant-scoped via $groups.company, and is
+    // covered by check-pla-s2-posthog-wiring.js/check-psh-s4-navigation.js
+    // (both already passing). A per-chat-page-view client-side capture
+    // still exists here, but it's skill_session_view (skills.js:4324), not
+    // journey_created -- this test's original assertion was checking for
+    // an event that no longer fires from this page at all.
     ok(
-      res.body.includes("posthog.capture('journey_created')") || res.body.includes('posthog.capture("journey_created")'),
-      "T14.1: chat page body contains posthog.capture('journey_created')"
+      res.body.includes('posthog.capture("skill_session_view"'),
+      'T14.1: chat page body contains posthog.capture("skill_session_view")'
     );
   } catch (e) {
     ok(false, 'T14: handleGetChatHtml threw — ' + e.message);
@@ -387,6 +407,15 @@ console.log('\nT15 — chat page (key unset): no posthog.capture reference');
 async function t15() {
   delete process.env.POSTHOG_KEY;
   if (!handleGetChatHtml) { ok(false, 'T15: skipped — handleGetChatHtml not loaded'); return; }
+  // fix-forward: see T14 — register a real session so this exercises the
+  // actual rendered chat page, not an incidental 404 page.
+  if (_setHtmlSession) {
+    _setHtmlSession('sess-1', {
+      skillName: 'definition', sessionPath: '/tmp/bee3-test.md', systemPrompt: 'test',
+      turns: [{ role: 'assistant', content: 'Hello' }], artefactContent: '', artefactPath: '',
+      done: false, journeyId: null
+    });
+  }
   const req = mockReq({
     session: { accessToken: 'tok', login: 'alice', tenantId: 'org-1' },
     url: '/skills/definition/sessions/sess-1/chat',
@@ -402,15 +431,28 @@ async function t15() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// T16 — No posthog npm package in package.json (AC9)
+// T16 — No CLIENT-side posthog npm package in package.json (AC9)
 // ─────────────────────────────────────────────────────────────────────────────
-console.log('\nT16 — No posthog npm package in package.json (AC9)');
+console.log('\nT16 — No client-side posthog npm package in package.json (AC9)');
 {
+  // fix-forward: AC9's real intent was "don't bundle the CLIENT-side
+  // posthog-js library" -- bee3 deliberately loads PostHog client-side via
+  // CDN <script async> (T1/T2 above), not npm, to avoid a bundler
+  // dependency. `posthog-node` is the SERVER-side SDK, added later and
+  // legitimately by bri-s1.2 (#446) for separate staging/prod PostHog
+  // projects (server-side capture + feature flags, posthog-config.js /
+  // posthog-flags.js / posthog-server.js) -- already governed by
+  // PERMITTED_PROD_DEPS in check-ilc2-agent-selfrecord.js. It was never a
+  // violation of the client-bundling constraint this AC actually cares
+  // about.
   const pkgPath = path.join(ROOT, 'package.json');
   const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
   const allDeps = Object.assign({}, pkg.dependencies || {}, pkg.devDependencies || {});
-  const posthogPkgs = Object.keys(allDeps).filter(function(k) { return /posthog/i.test(k); });
-  eq(posthogPkgs.length, 0, 'T16.1: no posthog package in dependencies');
+  const ALLOWED_SERVER_SDK = ['posthog-node'];
+  const posthogPkgs = Object.keys(allDeps).filter(function(k) {
+    return /posthog/i.test(k) && ALLOWED_SERVER_SDK.indexOf(k) === -1;
+  });
+  eq(posthogPkgs.length, 0, 'T16.1: no client-side posthog package in dependencies');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
