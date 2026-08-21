@@ -25458,11 +25458,23 @@
           "id": "lrtc-s1",
           "slug": "lrtc-s1",
           "name": "Thread the authenticating person's identity through requireAdmin's live role re-check",
-          "stage": "definition",
-          "health": "red",
+          "stage": "test-plan",
+          "health": "green",
           "dorStatus": "not-started",
           "dodStatus": "not-started",
-          "prStatus": "none"
+          "prStatus": "none",
+          "updatedAt": "2026-08-21T07:52:02.378Z",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 3,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-21-live-role-recheck-tenant-collapse/test-plans/lrtc-s1-test-plan.md"
+          },
+          "verificationScriptArtefact": "artefacts/2026-08-21-live-role-recheck-tenant-collapse/verification-scripts/lrtc-s1-verification.md",
+          "acTotal": 3,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         }
       ],
       "metrics": [],
