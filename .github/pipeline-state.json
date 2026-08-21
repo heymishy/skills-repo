@@ -25457,19 +25457,19 @@
     {
       "slug": "2026-08-21-canvas-maximise-and-bulk-assign-button-fixes",
       "name": "Fix read-only-view maximise ReferenceError and stuck bulk-assign button label (found during live-Chrome DoD review)",
-      "stage": "definition",
-      "health": "amber",
+      "stage": "branch-setup",
+      "health": "green",
       "stories": [
         {
           "id": "cmba-s1",
           "slug": "cmba-s1",
           "name": "Fix the read-only-view maximise-button ReferenceError and the stuck \"Assigning…\" button label",
-          "stage": "definition-of-ready",
+          "stage": "branch-setup",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
           "prStatus": "none",
-          "updatedAt": "2026-08-21T09:58:32.819Z",
+          "updatedAt": "2026-08-21T10:00:37.185Z",
           "testPlan": {
             "status": "written",
             "totalTests": 5,
@@ -25495,7 +25495,7 @@
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-20T12:35:35.388Z",
+      "updatedAt": "2026-08-21T10:00:37.185Z",
       "track": "short",
       "guardrails": []
     },
