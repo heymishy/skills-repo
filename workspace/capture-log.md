@@ -1260,3 +1260,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: decision
   signal-text: cmba-s1's test plan reuses check-cdpl-s1-canvas-panel-layout-fix.js's existing extractFnBody helper pattern (calling renderChat() directly, no server) rather than introducing E2E tooling -- AC1/AC2's bug (readOnly suppresses the whole scriptHtml block including button handler functions, even though button markup renders unconditionally) is fully verifiable as a string/function-presence check, matching the precedent already set for this exact file. AC4 (stuck button label) is likewise a plain success-handler-body string check, not a rendered-DOM assertion, following bmau-s1's own test plan's precedent of routing only genuinely visual re-render checks to Playwright.
   source: agent-auto
+
+- date: 2026-08-21
+  session-phase: definition-of-ready (cmba-s1)
+  signal-type: decision
+  signal-text: cmba-s1's DoR completed with all hard blocks passing; Warning W4 acknowledged (not resolved) this time -- operator chose to proceed without reviewing the verification script, RISK-ACCEPT logged. First short-track story this session where W4 was accepted rather than resolved via direct review, giving a live comparison point for whether pre-implementation review catches anything a post-merge smoke test wouldn't.
+  source: agent-auto
