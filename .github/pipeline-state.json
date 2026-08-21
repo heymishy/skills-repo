@@ -25483,19 +25483,19 @@
     {
       "slug": "2026-08-21-live-role-recheck-tenant-collapse",
       "name": "Thread the authenticating person's identity through requireAdmin's live role re-check (found during rbg-s1)",
-      "stage": "branch-setup",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "id": "lrtc-s1",
           "slug": "lrtc-s1",
           "name": "Thread the authenticating person's identity through requireAdmin's live role re-check",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
-          "dodStatus": "not-started",
+          "dodStatus": "complete",
           "prStatus": "merged",
-          "updatedAt": "2026-08-21T09:18:33.098Z",
+          "updatedAt": "2026-08-21T09:21:23.614Z",
           "testPlan": {
             "status": "written",
             "totalTests": 3,
@@ -25533,11 +25533,13 @@
             }
           ],
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/750"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/750",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-21-live-role-recheck-tenant-collapse/dod/lrtc-s1-dod.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-21T07:58:54.586Z",
+      "updatedAt": "2026-08-21T09:21:23.614Z",
       "track": "short",
       "guardrails": []
     },
