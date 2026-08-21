@@ -25416,6 +25416,19 @@
       "updatedAt": "2026-08-21T04:07:36.177Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-08-21-viewer-role-no-enforcement",
+      "name": "Viewer role has no actual write-blocking enforcement anywhere in the codebase (found while test-planning rbg-s1)",
+      "stage": "discovery",
+      "health": "amber",
+      "discoveryStatus": "draft",
+      "discoveryArtefact": "artefacts/2026-08-21-viewer-role-no-enforcement/discovery.md",
+      "stories": [],
+      "metrics": [],
+      "updatedAt": "2026-08-21T05:36:53.284Z",
+      "track": "standard",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
