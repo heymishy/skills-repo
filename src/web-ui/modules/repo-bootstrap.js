@@ -43,10 +43,19 @@ async function realBootstrapRepo(token, owner, repo, user) {
     return res.json();
   }
 
+  // pisd-s1: platformRoot/skills and platformRoot/templates are this
+  // platform's real, current source of truth (moved there in commit
+  // 1b1d0682) -- platformRoot/.github/skills and platformRoot/.github/templates
+  // were only ever the bootstrap-install DESTINATION, never a source.
+  // destPrefix keeps the destination path in the target repo unchanged
+  // (.github/skills/, .github/templates/), matching platform-init.js's and
+  // platform-fetch.js's own {src, dest} convention -- source and
+  // destination are no longer the same relative path, so they're tracked
+  // separately here.
   const frameworkDirs = [
-    path.join(platformRoot, '.github', 'skills'),
-    path.join(platformRoot, '.github', 'templates'),
-    path.join(platformRoot, 'scripts')
+    { src: path.join(platformRoot, 'skills'), destPrefix: '.github/skills' },
+    { src: path.join(platformRoot, 'templates'), destPrefix: '.github/templates' },
+    { src: path.join(platformRoot, 'scripts'), destPrefix: 'scripts' }
   ];
 
   function collectFiles(dir, baseDir = '') {
@@ -67,9 +76,8 @@ async function realBootstrapRepo(token, owner, repo, user) {
   }
 
   let allFiles = [];
-  for (const dir of frameworkDirs) {
-    const relRoot = path.relative(platformRoot, dir).replace(/\\/g, '/');
-    allFiles.push(...collectFiles(dir, relRoot));
+  for (const { src, destPrefix } of frameworkDirs) {
+    allFiles.push(...collectFiles(src, destPrefix));
   }
 
   if (allFiles.length === 0) {
