@@ -25343,19 +25343,19 @@
     {
       "slug": "2026-08-18-bri-s3-3-role-boundary-guard-gap",
       "name": "Fix bri-s3.3's non-functional role-boundary regression guard (found during bri-s3.3 DoD review)",
-      "stage": "branch-setup",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "id": "rbg-s1",
           "slug": "rbg-s1",
           "name": "Fix bri-s3.3's role-boundary regression guard so it actually asserts denial",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
-          "dodStatus": "not-started",
-          "prStatus": "draft",
-          "updatedAt": "2026-08-21T09:39:25.894Z",
+          "dodStatus": "complete",
+          "prStatus": "merged",
+          "updatedAt": "2026-08-21T09:50:23.310Z",
           "testPlan": {
             "status": "written",
             "totalTests": 3,
@@ -25400,11 +25400,13 @@
             }
           ],
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/751"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/751",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-18-bri-s3-3-role-boundary-guard-gap/dod/rbg-s1-dod.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-21T06:56:36.064Z",
+      "updatedAt": "2026-08-21T09:50:23.310Z",
       "track": "short",
       "guardrails": []
     },
