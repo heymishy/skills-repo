@@ -25450,19 +25450,19 @@
     {
       "slug": "2026-08-21-live-role-recheck-tenant-collapse",
       "name": "Thread the authenticating person's identity through requireAdmin's live role re-check (found during rbg-s1)",
-      "stage": "definition",
+      "stage": "branch-setup",
       "health": "green",
       "stories": [
         {
           "id": "lrtc-s1",
           "slug": "lrtc-s1",
           "name": "Thread the authenticating person's identity through requireAdmin's live role re-check",
-          "stage": "definition-of-ready",
+          "stage": "branch-setup",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
           "prStatus": "none",
-          "updatedAt": "2026-08-21T07:54:41.940Z",
+          "updatedAt": "2026-08-21T07:58:54.586Z",
           "testPlan": {
             "status": "written",
             "totalTests": 3,
@@ -25481,7 +25481,7 @@
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-21T07:46:14.841Z",
+      "updatedAt": "2026-08-21T07:58:54.586Z",
       "track": "short",
       "guardrails": []
     }
