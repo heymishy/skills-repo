@@ -25494,6 +25494,28 @@
       "updatedAt": "2026-08-21T07:46:14.841Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-08-21-test-plan-backfill-gap",
+      "name": "Backfill missing test-plan artefacts for 11 already-shipped stories (found via lrtc-s1 PR #750 trace failure)",
+      "stage": "definition",
+      "health": "amber",
+      "stories": [
+        {
+          "id": "tpbg-s1",
+          "slug": "tpbg-s1",
+          "name": "Backfill missing test-plan artefacts for 11 already-shipped stories",
+          "stage": "definition",
+          "health": "amber",
+          "dorStatus": "not-started",
+          "dodStatus": "not-started",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-21T08:49:50.761Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
