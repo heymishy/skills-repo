@@ -9,6 +9,15 @@ const assert = require('assert');
 const path   = require('path');
 const fs     = require('fs');
 
+// fix-forward: this repo's own skills live at repo-root skills/, not
+// .github/skills/ (listAvailableSkills' hardcoded default) -- .github/skills/
+// is only the bootstrap-install target for CONSUMER repos and, in this repo,
+// happens to contain an unrelated partial set (infra-definition/infra-plan/
+// infra-review only). Without this override, handlePostSession's skill-name
+// allowlist check never finds 'benefit-metric' (or most other real skills),
+// causing every session-creation call in this file to 400 SKILL_NOT_FOUND.
+process.env.COPILOT_SKILLS_DIRS = 'skills';
+
 const { handlePostSession, handlePostAnswer, handleGetSessionState, setLogger, NO_LICENCE_MSG } = require('../src/web-ui/routes/skills');
 
 // jsdom is a devDependency not installed in CI — DOM tests skip gracefully when absent

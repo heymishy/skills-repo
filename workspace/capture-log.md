@@ -1272,3 +1272,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: gap
   signal-text: While fixing check-wsm2-collaborative-sessions.js T2/T4 (404 where 200 expected), found requireJourneyAccess() (journey-access.js) never actually grants access for a same-tenant non-owner under POLICY.TENANT -- isSameTenant() result is computed but both branches throw FORBIDDEN regardless, confirmed via isolated reproduction. All 11 POLICY.TENANT call sites in journey.js currently behave as owner-only. Operator chose "stop and log as a dedicated finding" (same treatment as F12) rather than fixing inline -- logged as F14/jatg-s1, artefacts/2026-08-22-journey-access-tenant-grant-gap/. Test itself left unmodified since it is correctly detecting a real bug, not a stale mock.
   source: agent-auto
+
+- date: 2026-08-22
+  session-phase: inner coding loop (33-failures test cleanup pass)
+  signal-type: gap
+  signal-text: While fixing artefact-preview.test.js/artefact-writeback.test.js (both 400-where-201-expected, session creation failing), found listAvailableSkills() defaults to .github/skills/ but this repo self-hosts skills at root skills/ instead -- .github/skills/ here only has an unrelated infra-definition/infra-plan/infra-review subset. handlePostSession (JSON POST /api/skills/:name/sessions, live-wired server.js:2679) would 400 SKILL_NOT_FOUND for most real skill names unless a Fly secret already overrides COPILOT_SKILLS_DIRS -- fly.tomls committed env block does not set it, but a secret would not be visible from this environment. Logged as F15/csdg-s1 rather than assuming; AC1 asks the operator to check the live Fly config first. Both test files fixed independently by setting COPILOT_SKILLS_DIRS=skills before requiring routes/skills -- a legitimate, hermetic test fix regardless of how the production question resolves.
+  source: agent-auto

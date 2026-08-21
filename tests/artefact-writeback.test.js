@@ -11,6 +11,13 @@ const fs     = require('fs');
 
 const { commitArtefact }       = require('../src/scm-adapter');
 const { validateArtefactPath } = require('../src/artefact-path-validator');
+
+// fix-forward: see the identical note in artefact-preview.test.js --
+// listAvailableSkills defaults to .github/skills/, but this repo's own
+// skills live at repo-root skills/. Without this override every
+// handlePostSession call in this file 400s SKILL_NOT_FOUND.
+process.env.COPILOT_SKILLS_DIRS = 'skills';
+
 const { handlePostSession, handlePostAnswer, handleCommitArtefact, handleGetSessionState, setLogger } = require('../src/web-ui/routes/skills');
 
 // Load fixtures (created by checkFixtures guard below)

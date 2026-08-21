@@ -25651,6 +25651,28 @@
       "updatedAt": "2026-08-21T21:36:36.935Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-08-22-copilot-skills-dirs-prod-gap",
+      "name": "Verify and wire the correct skills directory for this repo's own production deployment (found during 33-failures cleanup)",
+      "stage": "definition",
+      "health": "amber",
+      "stories": [
+        {
+          "id": "csdg-s1",
+          "slug": "csdg-s1",
+          "name": "Verify and wire the correct skills directory for this repo's own production deployment",
+          "stage": "definition",
+          "health": "amber",
+          "dorStatus": "not-started",
+          "dodStatus": "not-started",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-21T21:56:54.890Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
