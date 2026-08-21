@@ -25451,19 +25451,18 @@
       "slug": "2026-08-21-live-role-recheck-tenant-collapse",
       "name": "Thread the authenticating person's identity through requireAdmin's live role re-check (found during rbg-s1)",
       "stage": "definition",
-      "health": "red",
-      "blocker": "Security-severity privilege-escalation bug (F12) -- blocks rbg-s1 (artefacts/2026-08-18-bri-s3-3-role-boundary-guard-gap) from completing AC1",
+      "health": "green",
       "stories": [
         {
           "id": "lrtc-s1",
           "slug": "lrtc-s1",
           "name": "Thread the authenticating person's identity through requireAdmin's live role re-check",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "dodStatus": "not-started",
           "prStatus": "none",
-          "updatedAt": "2026-08-21T07:52:02.378Z",
+          "updatedAt": "2026-08-21T07:54:41.940Z",
           "testPlan": {
             "status": "written",
             "totalTests": 3,
@@ -25474,7 +25473,11 @@
           "acTotal": 3,
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
-          "e2eToolingRequired": false
+          "e2eToolingRequired": false,
+          "oversightLevel": "medium",
+          "dorArtefact": "artefacts/2026-08-21-live-role-recheck-tenant-collapse/dor/lrtc-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-21-live-role-recheck-tenant-collapse/dor/lrtc-s1-dor-contract.md",
+          "guardrails": []
         }
       ],
       "metrics": [],

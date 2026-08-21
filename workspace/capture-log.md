@@ -1248,3 +1248,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: pattern
   signal-text: While writing lrtc-s1's test plan, found that sec-perf-s2's own existing regression test for this exact scenario (T8 in check-sec-perf-s2-stale-role-revalidation.js, "two distinct sessions resolve to two different, correct roles") already looked like it covered per-person differentiation on a shared tenant, and already passed -- but it wires setGetCurrentRole to a hand-rolled mock that ignores its real tenantId argument and instead branches on an external test-only variable flipped by the test itself, never exercising the real (buggy) argument-passing path. This is the same "asserts wiring occurred, not that it's behaviourally correct" anti-pattern CLAUDE.md's D37 rule already documents for tir-s1, just in a subtler shape (it looks like a real two-person differentiation test at a glance). lrtc-s1's new AC1 test is designed to exercise the REAL resolveRoleForPerson chain instead, specifically so it would have caught this bug. Pattern worth remembering: a test with two clearly-different inputs and two clearly-different expected outputs can still be a wiring-only test in disguise if the mock's branching logic doesn't come from the same argument the real call site actually passes.
   source: agent-auto
+
+- date: 2026-08-21
+  session-phase: definition-of-ready (lrtc-s1)
+  signal-type: decision
+  signal-text: lrtc-s1's DoR completed with all hard blocks passing and Warning W4 resolved by direct operator review, same pattern as rbg-s1. Oversight level Medium by the same precedent. Story removed the blocked/red status from its own feature and story pipeline-state entries now that a concrete implementation path exists.
+  source: agent-auto
