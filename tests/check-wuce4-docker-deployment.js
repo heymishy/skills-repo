@@ -223,7 +223,15 @@ console.log('\n[wuce.4-docker-deployment] IT1 + NFR1 — HTTP integration tests'
 
   // ── Summary ────────────────────────────────────────────────────────────────
   console.log(`\n[wuce.4-docker-deployment] ${passed} passed, ${failed} failed`);
-  if (failed > 0) process.exit(1);
+  // fix-forward: requiring the full server module (for the health-check
+  // handler / env-validation logic under test) pulls in various
+  // module-level adapters/background timers as a side effect. On the
+  // all-passed path there was no explicit exit, so the process hung
+  // waiting for the event loop to empty instead of ending -- this made
+  // `npm test` report the run as timed-out even though every assertion
+  // here genuinely passed. Exit explicitly on both paths, matching the
+  // pattern used by every other check-*.js file in this suite.
+  process.exit(failed > 0 ? 1 : 0);
 })().catch(err => {
   console.error('[wuce.4-docker-deployment] Unexpected error:', err.message);
   process.exit(1);
