@@ -63,8 +63,18 @@ const tests = [];
 function test(name, fn) { tests.push({ name, fn }); }
 
 function mockReq(overrides) {
+  // fix-forward: ADR-009/p4.1 added a per-tenant rate limiter
+  // (middleware/rate-limiter.js) in front of handleSignOff.
+  // buildRateLimitKey() requires session.tenantId (falling back to
+  // req.ip/req.connection.remoteAddress) -- with neither present, every
+  // request resolved to the 'unknown' key and got an early 401
+  // ("Unauthorised — no session") from the rate limiter itself, before
+  // ever reaching handleSignOff's own logic. That's why every IT/NFR test
+  // here failed uniformly while the adapter-level tests (T1-T6, which
+  // call commitSignOff/validateArtefactPath directly, bypassing
+  // handleSignOff) were unaffected.
   return Object.assign(
-    { session: { accessToken: 'gho_test_fixture_token_wuce1', userId: 99001, login: 'test-stakeholder' },
+    { session: { accessToken: 'gho_test_fixture_token_wuce1', userId: 99001, login: 'test-stakeholder', tenantId: 'wuce3-test-tenant' },
       sessionId: 'test-sid', query: {}, headers: {}, body: undefined },
     overrides || {}
   );
@@ -410,7 +420,7 @@ test('IT5 POST /sign-off when artefact already has ## Approved by returns 409 wi
 test('NFR1 sign-off endpoint rate-limits at 10 attempts per user per minute', async () => {
   const limiter = createRateLimiter({ maxRequests: 10, windowMs: 60 * 1000 });
 
-  const session = { userId: 99999, login: 'rate-limit-test-user', accessToken: 'token' };
+  const session = { userId: 99999, login: 'rate-limit-test-user', accessToken: 'token', tenantId: 'wuce3-nfr1-tenant' };
   let lastStatus;
 
   for (let i = 0; i < 11; i++) {
@@ -445,7 +455,7 @@ test('NFR2 sign-off logs signoff_submitted event with userId, artefactPath, time
   };
 
   const req = mockReq({
-    session: { accessToken: 'gho_test_fixture_token_wuce1', userId: 99001, login: 'test-stakeholder' },
+    session: { accessToken: 'gho_test_fixture_token_wuce1', userId: 99001, login: 'test-stakeholder', tenantId: 'wuce3-test-tenant' },
     body: { artefactPath: 'artefacts/2026-01-01-example-feature/discovery.md' }
   });
   const res = mockRes();
