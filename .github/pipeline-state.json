@@ -25394,6 +25394,28 @@
       "updatedAt": "2026-08-20T12:35:35.388Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-08-21-admin-credits-plan-status-ux",
+      "name": "Improve the cramped Plan/Status radio-button layout on /admin/credits (operator UX feedback)",
+      "stage": "definition",
+      "health": "amber",
+      "stories": [
+        {
+          "id": "apsc-s1",
+          "slug": "apsc-s1",
+          "name": "Improve the cramped Plan/Status radio-button layout on /admin/credits",
+          "stage": "definition",
+          "health": "amber",
+          "dorStatus": "not-started",
+          "dodStatus": "not-started",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-21T04:07:36.177Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
