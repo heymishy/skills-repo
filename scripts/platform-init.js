@@ -23,9 +23,16 @@ const sourceRoot = process.env.PLATFORM_ROOT
   : path.join(__dirname, '..');
 
 // ── Directories to copy ───────────────────────────────────────────────────────
+// pisd-s1: sourceRoot/skills and sourceRoot/templates are this platform's
+// real, current source of truth (moved there in commit 1b1d0682) --
+// sourceRoot/.github/skills and sourceRoot/.github/templates were only
+// ever the bootstrap-install DESTINATION for consumer repos, never a
+// source. dest paths are unchanged: a consumer repo still receives its
+// install at .github/skills / .github/templates, matching the documented
+// convention.
 const COPY_DIRS = [
-  { src: path.join(sourceRoot, '.github', 'skills'), dest: path.join(targetDir, '.github', 'skills') },
-  { src: path.join(sourceRoot, '.github', 'templates'), dest: path.join(targetDir, '.github', 'templates') },
+  { src: path.join(sourceRoot, 'skills'), dest: path.join(targetDir, '.github', 'skills') },
+  { src: path.join(sourceRoot, 'templates'), dest: path.join(targetDir, '.github', 'templates') },
   { src: path.join(sourceRoot, 'scripts'), dest: path.join(targetDir, 'scripts') }
 ];
 
