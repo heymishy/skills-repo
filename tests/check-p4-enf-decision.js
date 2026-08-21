@@ -26,6 +26,23 @@ function readGuardrails() {
   return fs.readFileSync(GUARDRAILS_FILE, 'utf8');
 }
 
+// fix-forward: architecture-guardrails.md started as this single ADR's home
+// and has since grown into the repo-wide ADR register (many unrelated ADRs
+// live in the same file). A whole-file scan for "secret[:=]"/"tenantid" now
+// false-positives on other, legitimate ADRs' own prose (e.g. a documented
+// `flyctl secrets set X_SECRET=<value>` CLI example, or ADR-025's own
+// multi-tenancy tenantId architecture text) that has nothing to do with
+// THIS ADR. Scope the credential check to just this ADR's own subsection.
+function readAdrSection() {
+  const text = readGuardrails();
+  if (!text) return null;
+  const start = text.indexOf('### ADR-phase4-enforcement:');
+  if (start === -1) return null;
+  const rest = text.slice(start + 1);
+  const nextHeading = rest.search(/\n#{2,3}\s/);
+  return nextHeading === -1 ? text.slice(start) : text.slice(start, start + 1 + nextHeading);
+}
+
 function readPipelineState() {
   if (!fs.existsSync(PIPELINE_STATE)) return null;
   try { return JSON.parse(fs.readFileSync(PIPELINE_STATE, 'utf8')); } catch (_) { return null; }
@@ -202,7 +219,7 @@ console.log('\n[p4-enf-decision] T8 — ADR-phase4-enforcement ID appears exactl
 // ── T-NFR1 — No credentials in ADR ───────────────────────────────────────────
 console.log('\n[p4-enf-decision] T-NFR1 — no credentials in ADR text');
 {
-  const text = readGuardrails();
+  const text = readAdrSection();
   if (!text) {
     assert(false, 'T-NFR1: cannot check credentials (file missing)');
   } else {
