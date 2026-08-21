@@ -1832,6 +1832,26 @@ if (process.env.NODE_ENV === 'test') {
     setModulesAdapter(_fakeTestDb);
     console.log('[bmau-s1] fake in-memory modules adapter wired (NODE_ENV=test, no DATABASE_URL)');
 
+    // rbg-s1: the arl-s1/tir-s1/tir-s7/tir-s9/sec-perf-s2 role adapters
+    // (setGetRoleForTenant, setGetCurrentRole) were previously only ever
+    // wired inside the `if (process.env.DATABASE_URL)` block above -- the
+    // same gap bmau-s1 found and fixed for setModulesAdapter just above.
+    // With no fake-db fallback, every role lookup in the standard local/CI
+    // harness (NODE_ENV=test, no DATABASE_URL) threw "Adapter not wired",
+    // caught by both call sites (routes/auth.js at login, require-admin.js's
+    // live re-check) and silently defaulted to non-admin -- meaning no E2E
+    // test could ever verify real admin-role-gated behaviour locally. Wired
+    // here, same fake db instance already backing team_memberships/
+    // person_identities via _pshPool above (bri-s3.3's own seed-multi-user-
+    // roles test endpoint writes through that same instance).
+    setGetRoleForTenant(function(tenantId, identityKey) {
+      return resolveRoleForPerson(_fakeTestDb, identityKey || tenantId, tenantId);
+    });
+    setGetCurrentRole(function(tenantId) {
+      return getRoleForTenant(tenantId);
+    });
+    console.log('[rbg-s1] fake in-memory team_memberships role adapter wired (NODE_ENV=test, no DATABASE_URL)');
+
     // s1.1: bridge the in-memory journey-store's async write-through to this
     // SAME fake db instance, test-mode only. Without this, real journeys
     // (created via the real disk-backed journey-store) are invisible to the
