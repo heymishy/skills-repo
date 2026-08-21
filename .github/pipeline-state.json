@@ -25673,6 +25673,28 @@
       "updatedAt": "2026-08-21T21:56:54.890Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-08-22-platform-init-stale-source-dirs",
+      "name": "Point platform-init.js at the real skills/ and templates/ source directories (found during 33-failures cleanup)",
+      "stage": "definition",
+      "health": "red",
+      "stories": [
+        {
+          "id": "pisd-s1",
+          "slug": "pisd-s1",
+          "name": "Point platform-init.js at the real skills/ and templates/ source directories",
+          "stage": "definition",
+          "health": "red",
+          "dorStatus": "not-started",
+          "dodStatus": "not-started",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-21T22:28:23.452Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
