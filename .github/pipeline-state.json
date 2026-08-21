@@ -25457,12 +25457,12 @@
           "id": "lrtc-s1",
           "slug": "lrtc-s1",
           "name": "Thread the authenticating person's identity through requireAdmin's live role re-check",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "none",
-          "updatedAt": "2026-08-21T08:14:01.557Z",
+          "prStatus": "draft",
+          "updatedAt": "2026-08-21T08:21:20.307Z",
           "testPlan": {
             "status": "written",
             "totalTests": 3,
@@ -25499,7 +25499,8 @@
               "file": "artefacts/2026-08-21-live-role-recheck-tenant-collapse/plans/lrtc-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/750"
         }
       ],
       "metrics": [],
