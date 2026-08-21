@@ -93,7 +93,7 @@ queue.push(function() {
     var routes = freshRequire(SKILLS_PATH);
     var repoRoot = mkTmp('t1-3');
     var ctxContent = 'instrumentation:\n  enabled: false\n  label: t13-unique-label\n';
-    writeFile(repoRoot, 'context.yml', ctxContent);
+    writeFile(repoRoot, '.github/context.yml', ctxContent);
     var result = routes.buildSystemPrompt('discovery', path.join(repoRoot, 'sess'), repoRoot, [], {});
     assert.ok(result.includes('context.yml'), 'prompt must contain "context.yml" label');
     assert.ok(result.includes('t13-unique-label'), 'prompt must contain context.yml content');
@@ -109,7 +109,7 @@ queue.push(function() {
     var repoRoot = mkTmp('t1-4');
     writeFile(repoRoot, 'pipeline-state.json', '{"features":[]}');
     writeFile(repoRoot, 'workspace/state.json', '{"currentPhase":"definition"}');
-    writeFile(repoRoot, 'context.yml', 'instrumentation:\n  enabled: false\n');
+    writeFile(repoRoot, '.github/context.yml', 'instrumentation:\n  enabled: false\n');
     var result = routes.buildSystemPrompt('discovery', path.join(repoRoot, 'sess'), repoRoot, [], {});
     var pIdx = result.indexOf('pipeline-state.json');
     var wIdx = result.indexOf('workspace/state.json');
@@ -132,7 +132,7 @@ queue.push(function() {
     var repoRoot = mkTmp('t1-5');
     // Only write workspace/state.json and context.yml — no pipeline-state.json
     writeFile(repoRoot, 'workspace/state.json', '{"currentPhase":"definition"}');
-    writeFile(repoRoot, 'context.yml', 'instrumentation:\n  enabled: false\n');
+    writeFile(repoRoot, '.github/context.yml', 'instrumentation:\n  enabled: false\n');
     var threw = false;
     var result;
     try {
@@ -155,7 +155,7 @@ queue.push(function() {
     var routes = freshRequire(SKILLS_PATH);
     var repoRoot = mkTmp('t1-6');
     writeFile(repoRoot, 'pipeline-state.json', '{"features":[]}');
-    writeFile(repoRoot, 'context.yml', 'instrumentation:\n  enabled: false\n');
+    writeFile(repoRoot, '.github/context.yml', 'instrumentation:\n  enabled: false\n');
     var threw = false;
     try {
       routes.buildSystemPrompt('discovery', path.join(repoRoot, 'sess'), repoRoot, [], {});
@@ -228,15 +228,20 @@ queue.push(function() {
 // T1.10 — First 50 lines of workspace/learnings.md included (AC4)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T1.10: First 50 lines of learnings.md included; lines 51+ excluded (AC4)', function() {
+  return test('T1.10: Most recent 50 lines of learnings.md included; older lines excluded (AC4)', function() {
+    // fix-forward: the implementation truncates to the MOST RECENT 50
+    // lines (skills.js:1841, `allLines.slice(-_maxLearnings)`), not the
+    // first 50 — a deliberate choice, since the file only grows and the
+    // newest learnings are the most relevant context, not the oldest.
     var routes = freshRequire(SKILLS_PATH);
     var repoRoot = mkTmp('t1-10');
     var lines = [];
     for (var i = 1; i <= 60; i++) { lines.push('Learning line ' + i + ' unique-t110'); }
     writeFile(repoRoot, 'workspace/learnings.md', lines.join('\n'));
     var result = routes.buildSystemPrompt('discovery', path.join(repoRoot, 'sess'), repoRoot, [], {});
-    assert.ok(result.includes('Learning line 50 unique-t110'), 'line 50 must appear in prompt');
-    assert.ok(!result.includes('Learning line 51 unique-t110'), 'line 51 must NOT appear in prompt (truncated at 50)');
+    assert.ok(result.includes('Learning line 60 unique-t110'), 'line 60 (most recent) must appear in prompt');
+    assert.ok(result.includes('Learning line 11 unique-t110'), 'line 11 (start of last-50 window) must appear in prompt');
+    assert.ok(!result.includes('Learning line 10 unique-t110'), 'line 10 (older than last-50 window) must NOT appear in prompt');
   });
 });
 
@@ -344,7 +349,7 @@ queue.push(function() {
     var repoRoot = mkTmp('t1-17');
     writeFile(repoRoot, 'pipeline-state.json', '{"features":[{"slug":"int-feature-t117","stage":"definition"}]}');
     writeFile(repoRoot, 'workspace/state.json', '{"currentPhase":"definition"}');
-    writeFile(repoRoot, 'context.yml', 'instrumentation:\n  enabled: false\n');
+    writeFile(repoRoot, '.github/context.yml', 'instrumentation:\n  enabled: false\n');
     var learningsLines = [];
     for (var i = 1; i <= 60; i++) { learningsLines.push('Line ' + i); }
     writeFile(repoRoot, 'workspace/learnings.md', learningsLines.join('\n'));
@@ -358,9 +363,9 @@ queue.push(function() {
     assert.ok(result.includes('context.yml'), 'must include context.yml label');
     assert.ok(result.includes('fleet-state.json'), 'must include fleet-state.json label');
     assert.ok(result.includes('artefact-coverage-exemptions.json'), 'must include exemptions label');
-    // learnings capped at 50 lines
-    assert.ok(result.includes('Line 50'), 'line 50 must be included');
-    assert.ok(!result.includes('Line 51'), 'line 51 must be excluded (truncation at 50)');
+    // learnings capped at the most recent 50 lines (see T1.10's fix-forward note)
+    assert.ok(result.includes('Line 60'), 'line 60 (most recent) must be included');
+    assert.ok(!result.includes('Line 10'), 'line 10 (older than last-50 window) must be excluded');
   });
 });
 
@@ -396,7 +401,7 @@ queue.push(function() {
     for (var i = 0; i < 30; i++) { features.push({ slug: 'feature-' + i, stage: 'definition', health: 'green' }); }
     writeFile(repoRoot, 'pipeline-state.json', JSON.stringify({ features: features }));
     writeFile(repoRoot, 'workspace/state.json', '{"currentPhase":"definition"}');
-    writeFile(repoRoot, 'context.yml', 'instrumentation:\n  enabled: false\n');
+    writeFile(repoRoot, '.github/context.yml', 'instrumentation:\n  enabled: false\n');
     // 500-line learnings.md
     var learnings = [];
     for (var j = 1; j <= 500; j++) { learnings.push('Learning entry ' + j); }
