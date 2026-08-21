@@ -103,8 +103,20 @@ function main() {
     test('AC5: no <button type="submit" present', function() {
       assert.strictEqual(/<button[^>]*type=["']submit["']/i.test(readOnlyHtml), false, 'expected no submit button in read-only output');
     });
-    test('AC5: no <script> tag present', function() {
-      assert.strictEqual(/<script/i.test(readOnlyHtml), false, 'expected no <script> tag in read-only output');
+    // cmba-s1 (fix-forward): read-only output now legitimately contains ONE
+    // always-emitted <script> block (the maximise/fullscreen toggle
+    // functions -- their button markup was always rendered unconditionally,
+    // but the functions themselves were bugged out of read-only views until
+    // cmba-s1). AC5's real intent -- no LIVE-SESSION script content leaks
+    // into a read-only page with no live session to wire up -- still holds;
+    // only the "zero <script> tags at all" literal assertion was too broad.
+    test('AC5: no live-session-only script content present (SSE pump, submit handler)', function() {
+      assert.strictEqual(/appendConditionItem/.test(readOnlyHtml), false, 'expected no SSE-pump helper in read-only output');
+      assert.strictEqual(/id="chat-form"/.test(readOnlyHtml), false, 'expected no chat-form (and thus no Cmd/Ctrl+Enter submit wiring target) in read-only output');
+    });
+    test('AC5: the maximise/fullscreen toggle functions ARE present (cmba-s1)', function() {
+      assert.ok(/function swToggleCanvasFs/.test(readOnlyHtml), 'expected swToggleCanvasFs() to be defined in read-only output');
+      assert.ok(/function swToggleArtefactFs/.test(readOnlyHtml), 'expected swToggleArtefactFs() to be defined in read-only output');
     });
     // Sanity: readOnly output still carries the actual chat content -- proves
     // this isn't an empty-string / early-return shortcut masking the checks above.
