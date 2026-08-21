@@ -261,8 +261,18 @@ async function runTests() {
     const req = mockReqGet();
     const res = mockRes();
     await handleGetQuestionHtml(req, res);
-    ok('T15: no onclick= attribute', !res.body.includes('onclick='));
-    ok('T15: no addEventListener',   !res.body.includes('addEventListener'));
+    // fix-forward: this check originally scanned the whole rendered page,
+    // but handleGetQuestionHtml's page now shares the same renderShell
+    // chrome as every other page (sidebar toggle, dark-mode preference
+    // listener) -- legitimate, unrelated progressive-enhancement JS that
+    // has nothing to do with the guided-question FORM's own no-JS-required
+    // submission mechanism. Scope the check to just the <form> element
+    // itself, which is what T15 actually cares about.
+    var formStart = res.body.indexOf('<form');
+    var formEnd = res.body.indexOf('</form>', formStart);
+    var formHtml = (formStart !== -1 && formEnd !== -1) ? res.body.slice(formStart, formEnd + 7) : '';
+    ok('T15: no onclick= attribute', formHtml.length > 0 && !formHtml.includes('onclick='));
+    ok('T15: no addEventListener',   formHtml.length > 0 && !formHtml.includes('addEventListener'));
     ok('T15: form method present',   res.body.includes('method="POST"'));
     ok('T15: form action present',   res.body.includes('action='));
   }
