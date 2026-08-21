@@ -138,20 +138,24 @@ console.log('\n  T6 — #canvas-panel in renderChat output');
 // ── T7/T8/T9 — renderCanvasBlock ─────────────────────────────────────────────
 console.log('\n  T7/T8/T9 — renderCanvasBlock in inline script');
 {
-  const baseData2 = {
-    skillName: 'ideate', skillLabel: 'Ideate', featureSlug: '', sessionId: 'test2',
-    questionIndex: 1, totalQuestions: 1, currentQuestion: 'Hi?',
-    priorQA: [], draftSections: [], pendingConfirmation: false,
-    userInitial: 'M', modelLabel: 'test-model'
-  };
-  const cvHtml2 = renderChat(baseData2);
+  // fix-forward: renderCanvasBlock is defined in routes/skills.js's own
+  // turn-streaming inline script (the client-side rendering counterpart to
+  // its appendCanvasBlock() SSE handler) -- it was never part of
+  // chat-view.js's own renderChat() output, which only defines the simpler
+  // client helpers (escHtmlClient, appendConditionItem, etc.). Checking
+  // renderChat()'s output here was always checking the wrong artifact;
+  // check the real source directly, matching this file's own established
+  // static-source-check convention (see check-sec3-return-to.js AC3f).
+  const fs = require('fs');
+  const path = require('path');
+  const skillsSrc = fs.readFileSync(path.join(__dirname, '../src/web-ui/routes/skills.js'), 'utf8');
 
-  // T7: renderCanvasBlock function present in inline script
-  ok(cvHtml2.includes('function renderCanvasBlock'), 'T7: renderCanvasBlock present in page source');
+  // T7: renderCanvasBlock function present
+  ok(skillsSrc.includes('function renderCanvasBlock'), 'T7: renderCanvasBlock present in page source');
 
   // T8: handles all three block types
-  const rcStart = cvHtml2.indexOf('function renderCanvasBlock');
-  const rcSrc   = cvHtml2.slice(rcStart, rcStart + 2000);
+  const rcStart = skillsSrc.indexOf('function renderCanvasBlock');
+  const rcSrc   = skillsSrc.slice(rcStart, rcStart + 4000);
   ok(rcSrc.includes('cluster-tree'), 'T8: cluster-tree handler present');
   ok(rcSrc.includes('table'),        'T8: table handler present');
   ok(rcSrc.includes('text'),         'T8: text handler present');

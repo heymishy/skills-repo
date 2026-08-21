@@ -20,9 +20,15 @@ function assert(label, condition) {
 }
 
 // Minimal mock data — no draftSections (empty state)
+// fix-forward: every assertion below (assumption-cards, aria-label="Canvas",
+// "Lens output will appear here" copy) matches the ideate 3-panel layout's
+// current, real output exactly -- discovery/design/definition skills
+// diverged onto a simpler sw-artefact-pane layout later (no assumption-cards
+// at all; #canvas-panel's aria-label is "Diagrams", not "Canvas"). This
+// test's own assertions were never wrong, only its fixture's skillName.
 const baseData = {
-  skillName:           'discovery',
-  skillLabel:          'Discovery',
+  skillName:           'ideate',
+  skillLabel:          'Ideate',
   featureSlug:         'test-feature-slug',
   sessionId:           'test-session-id-001',
   questionIndex:       1,

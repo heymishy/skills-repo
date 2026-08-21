@@ -151,6 +151,13 @@ assert('T11: source=operator is preserved', po && po.source === 'operator');
 
 (function() {
   var html = renderChat({
+    // fix-forward: renderChat's ideate-vs-artefact-pane gate checks
+    // data.skillName === 'ideate' (or isIdeate === true) -- skillLabel is
+    // only the human-readable display string. This fixture set skillLabel
+    // but never skillName, so the ideate 3-panel branch (including
+    // #condition-items) never rendered, no matter how the tests below
+    // reasoned about the output.
+    skillName: 'ideate',
     skillLabel: 'ideate',
     sessionId: 'test-render',
     featureSlug: '',
@@ -196,11 +203,22 @@ assert('T11: source=operator is preserved', po && po.source === 'operator');
 // ---------------------------------------------------------------------------
 
 (function() {
-  var html = renderChat({
-    skillLabel: 'ideate', sessionId: 'x', featureSlug: '', turns: [],
-    modelLabel: '', done: false, contextManifestHtml: null, draftSections: null
-  });
-  assert('SSE pump: evt.conditionItem branch present in inline script', html.indexOf('evt.conditionItem') !== -1);
+  // fix-forward: evt.conditionItem is dispatched by the turn-streaming SSE
+  // pump script routes/skills.js generates for a live page -- it was never
+  // part of chat-view.js's own renderChat() output (that only defines the
+  // appendConditionItem() client function it eventually calls, checked
+  // separately by T7 above). Checking renderChat()'s output here was always
+  // checking the wrong artifact; check the real source directly instead.
+  var fs = require('fs');
+  var path = require('path');
+  var skillsSrc = fs.readFileSync(path.join(__dirname, '../src/web-ui/routes/skills.js'), 'utf8');
+  assert('SSE pump: evt.conditionItem branch present in the SSE-pump script (routes/skills.js)', skillsSrc.indexOf('evt.conditionItem') !== -1);
+  // Source is a JS string-literal array (joined into one script at runtime),
+  // so check the two lines as adjacent array entries rather than one
+  // contiguous substring.
+  var condItemIdx = skillsSrc.indexOf("if(evt.conditionItem)");
+  var nextChunk = condItemIdx !== -1 ? skillsSrc.slice(condItemIdx, condItemIdx + 200) : '';
+  assert('SSE pump: evt.conditionItem branch calls appendConditionItem(evt.conditionItem)', nextChunk.indexOf('appendConditionItem(evt.conditionItem)') !== -1);
 })();
 
 function report() {

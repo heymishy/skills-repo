@@ -134,9 +134,15 @@ queue.push(function runT2_3() {
 // ── T2.4 — AC3: artefactContent populates canvas-panel on server render ─────
 
 queue.push(function runT2_4() {
-  console.log('\n── T2.4 — AC3: draftSections renders inside canvas-panel element');
-  return test('T2.4 (AC3): when draftSections is provided, its content appears inside #canvas-panel', function() {
+  console.log('\n── T2.4 — AC3: artefactContent renders inside artefact-panel element');
+  return test('T2.4 (AC3): when data.artefactContent is provided, its content appears inside #artefact-panel', function() {
     const { renderChat } = freshRequire(CHAT_VIEW_PATH);
+    // fix-forward (dsh-s3): for non-ideate skills, draftSections is only
+    // consumed inside the ideate branch's #canvas-panel (dead for
+    // 'discovery'/'design'/etc.) -- draft/artefact content for those skills
+    // must be pre-rendered by the caller and passed as data.artefactContent,
+    // which renders inside #artefact-panel, not #canvas-panel. See
+    // chat-view.js's own dsh-s3 comment on data.artefactContent.
     const html = renderChat({
       skillName:   'discovery',
       skillLabel:  'Discovery',
@@ -146,14 +152,14 @@ queue.push(function runT2_4() {
       totalQuestions:   1,
       currentQuestion:  '',
       priorQA:     [],
-      draftSections: [{ title: 'Problem statement', body: 'A real problem', state: 'drafted' }],
+      artefactContent: '<div class="sw-draft-section"><p>A real problem</p></div>',
       pendingConfirmation: false,
       userInitial: 'M'
     });
-    const canvasIdx = html.indexOf('id="canvas-panel"');
+    const panelIdx = html.indexOf('id="artefact-panel"');
     const contentIdx = html.indexOf('A real problem');
-    assert.ok(canvasIdx !== -1, 'canvas-panel element must exist');
-    assert.ok(contentIdx > canvasIdx, 'draft section content must appear after (inside) canvas-panel element');
+    assert.ok(panelIdx !== -1, 'artefact-panel element must exist');
+    assert.ok(contentIdx > panelIdx, 'artefact content must appear after (inside) artefact-panel element');
   });
 });
 
