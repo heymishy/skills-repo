@@ -10,7 +10,9 @@ const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
 
-const SKILL_PATH = path.join(__dirname, '../.github/skills/definition-of-ready/SKILL.md');
+// fix-forward: see check-i3.1-discovery-attribution.js for the full
+// explanation -- this repo's own skills moved to skills/ (from .github/skills/).
+const SKILL_PATH = path.join(__dirname, '../skills/definition-of-ready/SKILL.md');
 const CONTRACT_SCRIPT = path.join(__dirname, '../.github/scripts/check-skill-contracts.js');
 
 let passed = 0;

@@ -9,7 +9,11 @@
 const fs = require('fs');
 const path = require('path');
 
-const SKILL_PATH = path.join(__dirname, '../.github/skills/discovery/SKILL.md');
+// fix-forward: this repo's own skills live under skills/ (moved from
+// .github/skills/ at some point after i3.1 was written); .github/skills/ is
+// now only the INSTALL target for bootstrapped consumer repos (see i1.2,
+// rb-s5), not where this repo's own SKILL.md files live.
+const SKILL_PATH = path.join(__dirname, '../skills/discovery/SKILL.md');
 
 let passed = 0;
 let failed = 0;

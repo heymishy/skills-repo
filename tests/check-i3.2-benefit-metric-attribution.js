@@ -9,7 +9,9 @@
 const fs = require('fs');
 const path = require('path');
 
-const SKILL_PATH = path.join(__dirname, '../.github/skills/benefit-metric/SKILL.md');
+// fix-forward: see check-i3.1-discovery-attribution.js for the full
+// explanation -- this repo's own skills moved to skills/ (from .github/skills/).
+const SKILL_PATH = path.join(__dirname, '../skills/benefit-metric/SKILL.md');
 
 let passed = 0;
 let failed = 0;
