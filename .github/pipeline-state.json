@@ -25537,7 +25537,13 @@
           "acTotal": 3,
           "acVerified": 3,
           "releaseReady": true,
-          "updatedAt": "2026-08-21T09:05:34.460Z"
+          "updatedAt": "2026-08-21T09:09:17.058Z",
+          "testPlan": {
+            "artefact": "artefacts/2026-08-21-test-plan-backfill-gap/test-plans/tpbg-s1-test-plan.md",
+            "status": "all-passing",
+            "totalTests": 3,
+            "passing": 3
+          }
         }
       ],
       "metrics": [],
