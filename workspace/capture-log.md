@@ -1290,3 +1290,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: decision
   signal-text: pisd-s1s test plan treats AC5 (what .github/skills/ 5-entry subset is for, and whether the fix must preserve it) as a documented investigation gap rather than an automated test -- the correct behaviour genuinely depends on reading git history and intent, not something a unit test can assert. AC6s full-suite regression test is written to require AC5s answer to be reflected before it can be honestly called green, so the investigation cannot be silently skipped. Test data strategy is Synthetic/self-contained throughout, reusing check-i1.2-platform-init-fetch.jss existing mktmp/runInit helpers rather than introducing new fixtures.
   source: agent-auto
+
+- date: 2026-08-22
+  session-phase: definition-of-ready (pisd-s1)
+  signal-type: decision
+  signal-text: pisd-s1s DoR completed with all hard blocks passing (7 of 18 N-A given short-track scope: no discovery/review artefacts exist, no injectable adapters, no infra/migration tracks). Warning W4 acknowledged rather than resolved -- RISK-ACCEPT logged, matching cmba-s1s precedent. domain: [platform-tooling] did not match any key in .github/standards/index.yml -- surfaced as a distinct warning per the skills own instruction, not silently dropped. Oversight set to Medium by the same short-track precedent as rbg-s1/lrtc-s1, given this fix touches the actual production /bootstrap installer.
+  source: agent-auto
