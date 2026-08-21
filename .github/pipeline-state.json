@@ -25684,12 +25684,12 @@
           "id": "pisd-s1",
           "slug": "pisd-s1",
           "name": "Point platform-init.js at the real skills/ and templates/ source directories",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "none",
-          "updatedAt": "2026-08-21T23:32:43.525Z",
+          "prStatus": "draft",
+          "updatedAt": "2026-08-21T23:34:33.297Z",
           "testPlan": {
             "status": "written",
             "totalTests": 8,
@@ -25732,7 +25732,8 @@
               "file": "artefacts/2026-08-22-platform-init-stale-source-dirs/plans/pisd-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/753"
         }
       ],
       "metrics": [],
