@@ -46,6 +46,18 @@ oauthAdapter.getUserIdentity      = function() { return Promise.resolve({ id: 'u
 
 var authRoute = require('../src/web-ui/routes/auth');
 authRoute.setFetchOrgs(function() { return Promise.resolve([]); });
+
+// lab-s1.3 (fix-forward): requiring routes/auth.js wires the REAL
+// gitHubProviderAdapter at module load (for direct-require compat), which
+// overrides the exchangeCodeForToken/getUserIdentity monkeypatches above --
+// route handlers call providerExchangeCode/providerGetUserIdentity, not
+// those standalone functions directly. Must re-wire via setProviderAdapter
+// AFTER requiring routes/auth.js, or every call hits the real GitHub API
+// with a fake code/token and 404s.
+oauthAdapter.setProviderAdapter({
+  exchangeCode: function() { return Promise.resolve('tok'); },
+  getUserIdentity: function() { return Promise.resolve({ id: 'u1', login: 'alice' }); }
+});
 authRoute.setLogger({ info: function() {}, warn: function() {} });
 
 delete process.env.TENANT_ORG_ALLOWLIST;

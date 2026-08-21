@@ -66,6 +66,15 @@ console.log('\nAC1 — no TENANT_ORG_ALLOWLIST: tenantId set to user.login');
   // Monkeypatch — restore after test
   oauthAdapter.exchangeCodeForToken = async function() { return 'fake-token'; };
   oauthAdapter.getUserIdentity      = async function() { return { id: 42, login: 'hamish-test' }; };
+  // lab-s1.3 (fix-forward): requiring routes/auth.js (line 29, above) already
+  // wired the REAL gitHubProviderAdapter at module load -- route handlers
+  // call providerExchangeCode/providerGetUserIdentity, not the standalone
+  // functions monkeypatched above. Re-wire via setProviderAdapter so this
+  // block's fake identity actually takes effect.
+  oauthAdapter.setProviderAdapter({
+    exchangeCode: function() { return Promise.resolve('fake-token'); },
+    getUserIdentity: function() { return Promise.resolve({ id: 42, login: 'hamish-test' }); }
+  });
 
   var req = fakeReq();
   var res = fakeRes();
@@ -91,6 +100,11 @@ return (async function() {
 
   oauthAdapter.exchangeCodeForToken = async function() { return 'fake-token-2'; };
   oauthAdapter.getUserIdentity      = async function() { return { id: 99, login: 'hamish-test' }; };
+  // lab-s1.3 (fix-forward): see AC1 block above for the full explanation.
+  oauthAdapter.setProviderAdapter({
+    exchangeCode: function() { return Promise.resolve('fake-token-2'); },
+    getUserIdentity: function() { return Promise.resolve({ id: 99, login: 'hamish-test' }); }
+  });
   // fetchOrgs returns the user's org — matches 'myorg' in the allowlist
   auth.setFetchOrgs(async function() { return [{ login: 'myorg' }]; });
 
@@ -121,6 +135,11 @@ return (async function() {
 
   oauthAdapter.exchangeCodeForToken = async function() { return 'fake-token-3'; };
   oauthAdapter.getUserIdentity      = async function() { return { id: 77, login: 'outsider' }; };
+  // lab-s1.3 (fix-forward): see AC1 block above for the full explanation.
+  oauthAdapter.setProviderAdapter({
+    exchangeCode: function() { return Promise.resolve('fake-token-3'); },
+    getUserIdentity: function() { return Promise.resolve({ id: 77, login: 'outsider' }); }
+  });
   auth.setFetchOrgs(async function() { return [{ login: 'some-other-org' }]; });
 
   var req = fakeReq();

@@ -104,6 +104,15 @@ console.log('\nAC5d — handleAuthCallback uses new session ID after rotation');
   authRoute.setLogger({ info: function() {}, warn: function() {} });
   delete process.env.TENANT_ORG_ALLOWLIST;
 
+  // lab-s1.3 (fix-forward): requiring routes/auth.js wires the REAL
+  // gitHubProviderAdapter at module load, overriding the monkeypatches
+  // above -- re-wire via setProviderAdapter after the require. See
+  // check-sec3-return-to.js for the full explanation.
+  oauthAdapter.setProviderAdapter({
+    exchangeCode: function() { return Promise.resolve('tok'); },
+    getUserIdentity: function() { return Promise.resolve({ id: 'u99', login: 'carol' }); }
+  });
+
   var req = {
     session:   preLoginSess,
     sessionId: preLoginId,
