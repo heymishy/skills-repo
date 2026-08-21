@@ -107,9 +107,16 @@ queue.push(function() {
   return test('T2.6: getNextStage follows correct sequence', function() {
     var store = freshRequireStore();
     store._clear();
+    // fix-forward: STAGE_SEQUENCE gained two steps after this test was
+    // written -- 'design' (optional step 2.5, per CLAUDE.md's own
+    // documented pipeline) between benefit-metric and definition, and
+    // 'review' between definition and test-plan. Updated to match the
+    // real, current sequence in journey-store.js.
     assert.strictEqual(store.getNextStage('discovery'), 'benefit-metric', 'discovery → benefit-metric');
-    assert.strictEqual(store.getNextStage('benefit-metric'), 'definition', 'benefit-metric → definition');
-    assert.strictEqual(store.getNextStage('definition'), 'test-plan', 'definition → test-plan');
+    assert.strictEqual(store.getNextStage('benefit-metric'), 'design', 'benefit-metric → design');
+    assert.strictEqual(store.getNextStage('design'), 'definition', 'design → definition');
+    assert.strictEqual(store.getNextStage('definition'), 'review', 'definition → review');
+    assert.strictEqual(store.getNextStage('review'), 'test-plan', 'review → test-plan');
     assert.strictEqual(store.getNextStage('test-plan'), 'definition-of-ready', 'test-plan → definition-of-ready');
     assert.ok(store.getNextStage('definition-of-ready') === null || store.getNextStage('definition-of-ready') === undefined, 'definition-of-ready → null');
   });

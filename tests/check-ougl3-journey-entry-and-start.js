@@ -102,7 +102,12 @@ queue.push(function() {
       linkCalled = true;
     });
     journey.setJourneyStoreModule(store);
-    var req = authReq({ method: 'POST' });
+    // fix-forward: handlePostJourney's own guard returns 303 to
+    // /journey?new=1#jh-new when body.featureName is empty -- authReq()'s
+    // default body: {} always hit that early branch, before ever reaching
+    // real journey-creation logic. This is what made T3.3/T3.4/T3.7's
+    // failures look related (all 3 short-circuited the same way).
+    var req = authReq({ method: 'POST', body: { featureName: 'Test Feature', startSkill: 'discovery' } });
     var res = makeRes();
     return Promise.resolve().then(function() {
       return journey.handlePostJourney(req, res);
@@ -125,7 +130,12 @@ queue.push(function() {
     });
     journey.setLinkSessionToJourney(function() {});
     journey.setJourneyStoreModule(store);
-    var req = authReq({ method: 'POST' });
+    // fix-forward: handlePostJourney's own guard returns 303 to
+    // /journey?new=1#jh-new when body.featureName is empty -- authReq()'s
+    // default body: {} always hit that early branch, before ever reaching
+    // real journey-creation logic. This is what made T3.3/T3.4/T3.7's
+    // failures look related (all 3 short-circuited the same way).
+    var req = authReq({ method: 'POST', body: { featureName: 'Test Feature', startSkill: 'discovery' } });
     var res = makeRes();
     return Promise.resolve().then(function() {
       return journey.handlePostJourney(req, res);
@@ -168,9 +178,19 @@ queue.push(function() {
       res._body.toLowerCase().includes('journey'),
       'Expected "journey" in page content'
     );
-    assert.ok(
-      !res._body.includes('<input type="hidden"') && !res._body.includes("<input type='hidden'"),
-      'Expected no hidden inputs in form'
+    // fix-forward: multi-product-profile support (added after this test)
+    // legitimately carries the active profile via
+    // <input type="hidden" name="profileName" ...> -- a real, named,
+    // purposeful field, not leaked/mystery state. Allow that one specific
+    // field by name while still failing on any OTHER unexpected hidden
+    // input, preserving the original guard's actual intent.
+    var hiddenInputs = res._body.match(/<input type=["']hidden["'][^>]*>/g) || [];
+    var unexpectedHidden = hiddenInputs.filter(function(tag) {
+      return tag.indexOf('name="profileName"') === -1 && tag.indexOf("name='profileName'") === -1;
+    });
+    assert.strictEqual(
+      unexpectedHidden.length, 0,
+      'Expected no unexpected hidden inputs in form, found: ' + unexpectedHidden.join(', ')
     );
   });
 });
@@ -191,7 +211,12 @@ queue.push(function() {
     journey.setJourneyStoreModule(brokenStore);
     journey.setRegisterHtmlSession(function() {});
     journey.setLinkSessionToJourney(function() {});
-    var req = authReq({ method: 'POST' });
+    // fix-forward: handlePostJourney's own guard returns 303 to
+    // /journey?new=1#jh-new when body.featureName is empty -- authReq()'s
+    // default body: {} always hit that early branch, before ever reaching
+    // real journey-creation logic. This is what made T3.3/T3.4/T3.7's
+    // failures look related (all 3 short-circuited the same way).
+    var req = authReq({ method: 'POST', body: { featureName: 'Test Feature', startSkill: 'discovery' } });
     var res = makeRes();
     return Promise.resolve().then(function() {
       return journey.handlePostJourney(req, res);

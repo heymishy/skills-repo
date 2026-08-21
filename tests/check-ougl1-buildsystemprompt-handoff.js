@@ -100,7 +100,15 @@ queue.push(function() {
       { path: 'artefacts/test/benefit-metric.md', content: 'Benefit metric content' }
     ];
     var result = routes.buildSystemPrompt('definition', path.join(tmpdir, 'sess'), tmpdir, prior);
-    var headerCount = (result.match(/--- PRIOR ARTEFACT:/g) || []).length;
+    // fix-forward: a later story added a "PRIOR ARTEFACTS — DO NOT ASK"
+    // instruction sentence that quotes this exact marker pattern as an
+    // illustrative example for the model ("...each labelled '--- PRIOR
+    // ARTEFACT: artefacts/<feature>/<stage>.md ---'..."). A bare substring
+    // count picks that up as a false third match. Real headers are always
+    // followed by a newline (the array-joined block format); the prose
+    // example is followed by a closing quote/paren mid-sentence instead --
+    // anchor on that to count only real headers.
+    var headerCount = (result.match(/--- PRIOR ARTEFACT: [^\n]+ ---\n/g) || []).length;
     var endCount = (result.match(/--- END PRIOR ARTEFACT ---/g) || []).length;
     assert.strictEqual(headerCount, 2, 'Expected 2 PRIOR ARTEFACT headers, got ' + headerCount);
     assert.strictEqual(endCount, 2, 'Expected 2 END PRIOR ARTEFACT markers, got ' + endCount);
