@@ -25318,11 +25318,11 @@
           "slug": "rbg-s1",
           "name": "Fix bri-s3.3's role-boundary regression guard so it actually asserts denial",
           "stage": "implementation-plan",
-          "health": "green",
+          "health": "red",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
           "prStatus": "none",
-          "updatedAt": "2026-08-21T06:59:20.757Z",
+          "updatedAt": "2026-08-21T07:47:27.611Z",
           "testPlan": {
             "status": "written",
             "totalTests": 3,
@@ -25350,7 +25350,7 @@
             {
               "id": "task-1",
               "name": "AC1 -- admin succeeds, engineer denied on a real admin-gated route",
-              "tddState": "not-started",
+              "tddState": "red",
               "file": "artefacts/2026-08-18-bri-s3-3-role-boundary-guard-gap/plans/rbg-s1-plan.md"
             },
             {
@@ -25365,7 +25365,8 @@
               "tddState": "not-started",
               "file": "artefacts/2026-08-18-bri-s3-3-role-boundary-guard-gap/plans/rbg-s1-plan.md"
             }
-          ]
+          ],
+          "blocker": "Blocked by F12 (lrtc-s1, artefacts/2026-08-21-live-role-recheck-tenant-collapse) -- AC1 test cannot pass until requireAdmin live-recheck privilege-escalation bug is fixed"
         }
       ],
       "metrics": [],
