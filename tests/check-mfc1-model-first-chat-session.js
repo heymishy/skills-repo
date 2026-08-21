@@ -258,21 +258,30 @@ queue.push(function runT3_1() {
 });
 
 queue.push(function runT3_2() {
-  console.log('\n── T3.2 — AC3: handleGetChatHtml fires executor with history=[] on first load');
-  return test('T3.2 (AC3): initial GET /chat fires executor with empty history and single-question opener prompt as currentInput', async function() {
+  console.log('\n── T3.2 — AC3: initial __init__ turn fires executor with history=[] and opener prompt');
+  return test('T3.2 (AC3): initial __init__ turn fires executor with empty history and single-question opener prompt as currentInput', async function() {
+    // fix-forward: handleGetChatHtml only renders the page now — it never
+    // calls the executor itself. The initial turn is fired by the
+    // client's own JS (skills.js:2915, `if(!SESSION_DONE && ...) {
+    // sendTurn("__init__"); }`) as a separate POST to the SSE stream
+    // endpoint (handlePostTurnStreamHtml), which is where the
+    // "Begin the session." opener prompt is actually built
+    // (skills.js:4507-4508) for rawAnswer === '__init__' on a fresh
+    // session. Exercise that real path directly instead, matching the
+    // pattern already established in check-sdrg-s1-session-done-reexecution-guard.js.
     const routes = freshRequire(ROUTES_PATH);
 
     let capturedHistory = null;
     let capturedInput = null;
 
-    routes.setSkillTurnExecutorAdapter(async function(_sysPrompt, history, currentInput, _token) {
+    routes.setSkillTurnExecutorStreamAdapter(async function(_sysPrompt, history, currentInput, _token, onChunk) {
       capturedHistory = history;
       capturedInput   = currentInput;
+      onChunk('What would you like to discover today?');
       return 'What would you like to discover today?';
     });
 
     const sid = 't3b-' + Math.random().toString(36).slice(2);
-    // Use _setHtmlSession to plant session — bypasses buildSystemPrompt file I/O (Flag 1 fix)
     routes._setHtmlSession(sid, {
       skillName:       'discovery',
       sessionPath:     '/tmp/test',
@@ -285,11 +294,22 @@ queue.push(function runT3_2() {
 
     const req = {
       params:  { name: 'discovery', id: sid },
-      session: { accessToken: 'test-token' }
+      session: { accessToken: 'test-token' },
+      body:    { answer: '__init__' }
     };
-    const res = { writeHead: function() {}, end: function() {} };
+    const events = [];
+    const res = {
+      writeHead: function() {},
+      write: function(chunk) {
+        String(chunk).split('\n').forEach(function(line) {
+          if (!line.startsWith('data: ')) { return; }
+          try { events.push(JSON.parse(line.slice(6).trim())); } catch (_) {}
+        });
+      },
+      end: function() {}
+    };
 
-    await routes.handleGetChatHtml(req, res);
+    await routes.handlePostTurnStreamHtml(req, res);
 
     assert.deepStrictEqual(capturedHistory, [], 'initial turn must have history=[]');
     assert.ok(typeof capturedInput === 'string' && capturedInput.startsWith('Begin the session.'), 'initial currentInput must start with "Begin the session."');
@@ -575,6 +595,15 @@ queue.push(function runT8_1() {
   console.log('\n── T8.1 — AC8: skill-turn-executor builds [system, ...history, user] messages');
   return test('T8.1 (AC8): skillTurnExecutor includes system message as first message', async function() {
     // We test the executor module directly by providing a mock https
+    // fix-forward: SKILL_EXECUTOR_PROVIDER now defaults to 'anthropic'
+    // (skill-turn-executor.js:625), whose request body puts the system
+    // prompt in a top-level `system` field, not messages[0] — that's an
+    // OpenAI-Chat-Completions-style shape, which is what the still-real,
+    // still-maintained `_callCopilot` path builds (skill-turn-executor.js:329).
+    // Pin the provider here so this test keeps exercising the shape its
+    // assertions actually check, rather than rewriting for a different
+    // (also-real) provider's different wire format.
+    process.env.SKILL_EXECUTOR_PROVIDER = 'copilot';
     const execPath = path.resolve(__dirname, '../src/modules/skill-turn-executor.js');
     delete require.cache[require.resolve(execPath)];
 
@@ -609,6 +638,7 @@ queue.push(function runT8_1() {
     await skillTurnExecutor('SYSTEM PROMPT', [{ role: 'user', content: 'Q1' }, { role: 'assistant', content: 'A1' }], 'My question', 'token');
 
     origHttps.request = origRequest;
+    delete process.env.SKILL_EXECUTOR_PROVIDER;
 
     assert.ok(capturedBody, 'request body must be captured');
     assert.ok(Array.isArray(capturedBody.messages), 'messages must be an array');
@@ -620,6 +650,10 @@ queue.push(function runT8_1() {
 queue.push(function runT8_2() {
   console.log('\n── T8.2 — AC8: skill-turn-executor appends history before user message');
   return test('T8.2 (AC8): skillTurnExecutor inserts history turns between system and final user message', async function() {
+    // fix-forward: see T8.1 — pin the copilot provider to keep this
+    // exercising the OpenAI-style [system, ...history, user] messages
+    // shape its assertions check.
+    process.env.SKILL_EXECUTOR_PROVIDER = 'copilot';
     const execPath = path.resolve(__dirname, '../src/modules/skill-turn-executor.js');
     delete require.cache[require.resolve(execPath)];
 
@@ -656,6 +690,7 @@ queue.push(function runT8_2() {
     await skillTurnExecutor('SYS', history, 'Current input', 'token');
 
     origHttps.request = origRequest;
+    delete process.env.SKILL_EXECUTOR_PROVIDER;
 
     assert.strictEqual(capturedBody.messages.length, 4, 'must have 4 messages: system + 2 history + user');
     assert.strictEqual(capturedBody.messages[1].content, 'First assistant turn');
@@ -667,6 +702,10 @@ queue.push(function runT8_2() {
 queue.push(function runT8_3() {
   console.log('\n── T8.3 — AC8: skill-turn-executor handles empty history');
   return test('T8.3 (AC8): skillTurnExecutor with empty history builds [system, user] only', async function() {
+    // fix-forward: see T8.1 — pin the copilot provider to keep this
+    // exercising the OpenAI-style [system, user] messages shape its
+    // assertions check.
+    process.env.SKILL_EXECUTOR_PROVIDER = 'copilot';
     const execPath = path.resolve(__dirname, '../src/modules/skill-turn-executor.js');
     delete require.cache[require.resolve(execPath)];
 
@@ -699,6 +738,7 @@ queue.push(function runT8_3() {
     await skillTurnExecutor('SYS', [], 'Begin the session.', 'token');
 
     origHttps.request = origRequest;
+    delete process.env.SKILL_EXECUTOR_PROVIDER;
 
     assert.strictEqual(capturedBody.messages.length, 2, 'must have exactly 2 messages: system + user');
     assert.strictEqual(capturedBody.messages[0].role, 'system');
