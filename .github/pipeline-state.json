@@ -25629,6 +25629,28 @@
       "updatedAt": "2026-08-21T09:05:34.460Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-08-22-journey-access-tenant-grant-gap",
+      "name": "Restore same-tenant journey access under POLICY.TENANT (found during 33-failures cleanup)",
+      "stage": "definition",
+      "health": "amber",
+      "stories": [
+        {
+          "id": "jatg-s1",
+          "slug": "jatg-s1",
+          "name": "Restore same-tenant journey access under POLICY.TENANT",
+          "stage": "definition",
+          "health": "amber",
+          "dorStatus": "not-started",
+          "dodStatus": "not-started",
+          "prStatus": "none"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-21T21:36:36.935Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

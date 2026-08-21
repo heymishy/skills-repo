@@ -1266,3 +1266,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: decision
   signal-text: cmba-s1's DoR completed with all hard blocks passing; Warning W4 acknowledged (not resolved) this time -- operator chose to proceed without reviewing the verification script, RISK-ACCEPT logged. First short-track story this session where W4 was accepted rather than resolved via direct review, giving a live comparison point for whether pre-implementation review catches anything a post-merge smoke test wouldn't.
   source: agent-auto
+
+- date: 2026-08-22
+  session-phase: inner coding loop (33-failures test cleanup pass)
+  signal-type: gap
+  signal-text: While fixing check-wsm2-collaborative-sessions.js T2/T4 (404 where 200 expected), found requireJourneyAccess() (journey-access.js) never actually grants access for a same-tenant non-owner under POLICY.TENANT -- isSameTenant() result is computed but both branches throw FORBIDDEN regardless, confirmed via isolated reproduction. All 11 POLICY.TENANT call sites in journey.js currently behave as owner-only. Operator chose "stop and log as a dedicated finding" (same treatment as F12) rather than fixing inline -- logged as F14/jatg-s1, artefacts/2026-08-22-journey-access-tenant-grant-gap/. Test itself left unmodified since it is correctly detecting a real bug, not a stale mock.
+  source: agent-auto
