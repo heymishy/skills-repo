@@ -57,9 +57,25 @@ queue.push(function() {
       { params: { name: 'discovery', id: sid }, session: { accessToken: 'tok' } },
       { writeHead: function() {}, end: function(h) { body = h || ''; } }
     );
+    // fix-forward: the separate /journey/:id/stage-review link page was
+    // replaced by an inline, SSE-driven confirmation: showCommitLink() is a
+    // function DEFINITION always present in the page's script (its
+    // invocation is deferred to a live 'done' SSE event, which this
+    // string-only unit test cannot simulate/observe -- that's E2E
+    // territory). Verify the real current mechanism instead: GATE_CONFIRM_URL
+    // is correctly computed from journeyId, and showCommitLink()'s own logic
+    // correctly branches on it to build the real gate-confirm form.
     assert.ok(
-      body.includes('/journey/journey-abc/stage-review'),
-      'Expected stage-review link in HTML, got body length: ' + body.length
+      body.includes('GATE_CONFIRM_URL = "/api/journey/journey-abc/gate-confirm"'),
+      'Expected GATE_CONFIRM_URL computed from journeyId, got body length: ' + body.length
+    );
+    var showCommitLinkStart = body.indexOf('function showCommitLink()');
+    var showCommitLinkSrc = showCommitLinkStart !== -1 ? body.slice(showCommitLinkStart, showCommitLinkStart + 1200) : '';
+    assert.ok(
+      showCommitLinkSrc.includes('if(GATE_CONFIRM_URL)') &&
+      showCommitLinkSrc.includes('action="') &&
+      showCommitLinkSrc.includes('GATE_CONFIRM_URL'),
+      'Expected showCommitLink() to conditionally build a real gate-confirm form from GATE_CONFIRM_URL'
     );
   });
 });
@@ -126,9 +142,24 @@ queue.push(function() {
       { params: { name: 'discovery', id: sid }, session: { accessToken: 'tok' } },
       { writeHead: function() {}, end: function(h) { body = h || ''; } }
     );
+    // fix-forward: no <form ...gate-confirm...> is EVER server-rendered
+    // statically -- for done:true too (see T4.1), the form markup is only
+    // ever constructed client-side inside showCommitLink(), itself only
+    // invoked from the SSE stream's evt.done handler. So GATE_CONFIRM_URL
+    // being present as a JS string literal is not a meaningful signal here
+    // (it's derived from journeyId alone, per skills.js:2900, not from
+    // done). The real, current signal of "is this session done" in the
+    // static page is the SESSION_DONE JS variable (skills.js:2898), which
+    // in turn gates whether the client auto-fires the initial __init__
+    // turn (skills.js:2915) and whether a stray __init__ is a no-op
+    // (skills.js:4480). Assert that instead of a form that never exists.
     assert.ok(
-      !body.includes('/api/journey/journey-abc/gate-confirm'),
-      'Expected no gate-confirm form when done:false'
+      body.includes('var SESSION_DONE   = false;'),
+      'Expected SESSION_DONE = false in HTML when session.done is false, got body length: ' + body.length
+    );
+    assert.ok(
+      !/<form[^>]*action="[^"]*gate-confirm[^"]*"/.test(body),
+      'Expected no statically-rendered gate-confirm <form> markup'
     );
   });
 });
@@ -156,9 +187,9 @@ queue.push(function() {
   });
 });
 
-// T4.6 — standalone journeyId:null + done:true → commit-preview link still present
+// T4.6 — standalone journeyId:null + done:true → artefact-saved confirmation (no commit-preview step)
 queue.push(function() {
-  return test('T4.6: standalone done:true → commit-preview link still present', async function() {
+  return test('T4.6: standalone done:true → artefact-saved confirmation shown, no dangling commit-preview link', async function() {
     var routes = freshRequire(ROUTES_PATH);
     routes.setSkillTurnExecutorAdapter(async function() { return 'Opening question?'; });
     var sid = 'ougl4-t6-' + Date.now();
@@ -173,9 +204,36 @@ queue.push(function() {
       { params: { name: 'discovery', id: sid }, session: { accessToken: 'tok' } },
       { writeHead: function() {}, end: function(h) { body = h || ''; } }
     );
+    // fix-forward: this assertion tested the wrong mechanism from the
+    // start. "commit-preview" (GET /skills/:name/sessions/:id/commit-preview,
+    // still real and covered by wuce24/wuce25/dsq3) belongs to the OLDER
+    // guided-question-per-page flow, where an explicit review-then-commit
+    // step was necessary because nothing was saved until the user
+    // confirmed. The model-first SSE chat flow this handler renders
+    // (handleGetChatHtml) auto-saves the artefact to disk the moment
+    // `done` fires (skills.js:4901-4906, 'artefact_auto_saved' /
+    // 'artefact_auto_amended' log event) -- there is nothing left to
+    // preview-then-commit by the time this page can even render done:true.
+    // A dead `commitUrl` local (skills.js:2877) is a leftover from before
+    // that auto-save behaviour existed and is never embedded into the
+    // script -- confirmed via `grep -n "commitUrl\\b"` returning only its
+    // own declaration. So for a standalone session, showCommitLink()'s
+    // real, current, correct behaviour is the plain-text confirmation
+    // (its `else` branch, skills.js:3502-3504), not a link to a page that
+    // no longer has a role in this flow. Assert that instead.
+    var showCommitLinkStart = body.indexOf('function showCommitLink()');
+    var showCommitLinkSrc = showCommitLinkStart !== -1 ? body.slice(showCommitLinkStart, showCommitLinkStart + 1200) : '';
     assert.ok(
-      body.includes('commit-preview'),
-      'Expected commit-preview URL in standalone done:true HTML'
+      body.includes('var GATE_CONFIRM_URL = "";'),
+      'Expected empty GATE_CONFIRM_URL for a standalone (no journeyId) session, body length: ' + body.length
+    );
+    assert.ok(
+      showCommitLinkSrc.includes('Artefact saved'),
+      'Expected showCommitLink() to render a plain "Artefact saved" confirmation for standalone sessions'
+    );
+    assert.ok(
+      !body.includes('commit-preview'),
+      'Expected no dangling commit-preview link in the model-first chat page — that flow no longer applies once the artefact auto-saves on done'
     );
   });
 });
