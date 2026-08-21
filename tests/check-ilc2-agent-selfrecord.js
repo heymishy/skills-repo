@@ -107,8 +107,23 @@ test('self-recording-no-new-npm-dependencies — package.json has no new depende
   const pkg = JSON.parse(fs.readFileSync(path.join(REPO_ROOT, 'package.json'), 'utf8'));
   // ILC (self-recording) must not add new npm dependencies.
   // Pre-existing devDeps added by the wuce feature (ADR-018) are permitted.
+  // fix-forward: this allowlist is a maintained, living list (already
+  // extended once for pino/obs-1) -- maintenance lapsed as the app grew for
+  // real reasons unrelated to ilc.2 itself. Backfilled from git log -S on
+  // package.json for each dependency's actual introducing commit.
   const PERMITTED_DEV_DEPS  = new Set(['@playwright/test', 'jsdom']);
-  const PERMITTED_PROD_DEPS = new Set(['pino']); // pino added by obs-1 for server logging
+  const PERMITTED_PROD_DEPS = new Set([
+    'pino',               // obs-1: server logging
+    '@upstash/redis',     // wuce-mt-phase3 (#419): Postgres + Redis persistence for journeys/sessions
+    'pg',                 // wuce-mt-phase3 (#419): Postgres + Redis persistence for journeys/sessions
+    'bcrypt',             // lab-s2.2 (#431): email/password auth
+    'mermaid',            // csd-s1 (#606): /ideate canvas diagram rendering
+    'passport',           // story-3 (#660): Agency-to-Client provisioning (magic-link auth)
+    'passport-magic-login', // story-3 (#660): Agency-to-Client provisioning (magic-link auth)
+    'resend',             // story-3 (#660): Agency-to-Client provisioning (transactional email)
+    'posthog-node',       // bri-s1.2 (#446): separate staging/prod PostHog projects
+    'stripe',             // billing fix (08587265): Stripe billing integration
+  ]);
   const unknownProdDeps = Object.keys(pkg.dependencies || {}).filter(k => !PERMITTED_PROD_DEPS.has(k));
   const unknownDevDeps  = Object.keys(pkg.devDependencies || {}).filter(k => !PERMITTED_DEV_DEPS.has(k));
   assert.deepStrictEqual(unknownProdDeps, [], `Unexpected production dependencies added by ILC: [${unknownProdDeps.join(', ')}]`);

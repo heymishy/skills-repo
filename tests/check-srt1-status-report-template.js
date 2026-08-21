@@ -8,7 +8,10 @@ const fs   = require('fs');
 const path = require('path');
 
 const ROOT = path.join(__dirname, '..');
-const TEMPLATE_PATH = path.join(ROOT, '.github', 'templates', 'status-report.md');
+// fix-forward: this repo's own templates moved to templates/ (from
+// .github/templates/) at some point, same as skills/ -- see
+// check-i3.1-discovery-attribution.js for the parallel skills/ fix.
+const TEMPLATE_PATH = path.join(ROOT, 'templates', 'status-report.md');
 const SCRIPT_PATH   = path.join(ROOT, 'scripts', 'generate-status-report.js');
 
 let passed = 0;
@@ -116,15 +119,15 @@ if (!scriptContent.includes('loadReportTemplate')) {
   console.log('  PASS: generate-status-report.js includes loadReportTemplate');
 }
 
-// 5. package.json includes this check
-const pkgPath    = path.join(ROOT, 'package.json');
-const pkgContent = fs.readFileSync(pkgPath, 'utf8');
-if (!pkgContent.includes('check-srt1-status-report-template')) {
-  console.error('  FAIL: package.json test chain does not include check-srt1-status-report-template');
-  errors++;
-} else {
-  console.log('  PASS: package.json includes check-srt1-status-report-template');
-}
+// 5. fix-forward: this check used to require package.json to individually
+// list each test file's name. scripts/run-all-tests.js now auto-discovers
+// every tests/check-*.js file via glob (see its own header comment) --
+// individual package.json registration is no longer how tests get picked
+// up, which is exactly why this file itself kept running despite failing
+// this very check. The property this check wanted (this test actually
+// runs as part of `npm test`) is now structurally guaranteed by the glob
+// convention, not by textual presence in package.json. Retired rather than
+// left checking a mechanism that no longer exists.
 
 if (errors > 0) {
   console.error('\n  ' + errors + ' governance check(s) failed.');
