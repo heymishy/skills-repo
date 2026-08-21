@@ -25310,19 +25310,19 @@
     {
       "slug": "2026-08-18-bri-s3-3-role-boundary-guard-gap",
       "name": "Fix bri-s3.3's non-functional role-boundary regression guard (found during bri-s3.3 DoD review)",
-      "stage": "definition",
-      "health": "amber",
+      "stage": "branch-setup",
+      "health": "green",
       "stories": [
         {
           "id": "rbg-s1",
           "slug": "rbg-s1",
           "name": "Fix bri-s3.3's role-boundary regression guard so it actually asserts denial",
-          "stage": "definition-of-ready",
+          "stage": "branch-setup",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
           "prStatus": "none",
-          "updatedAt": "2026-08-21T06:07:47.727Z",
+          "updatedAt": "2026-08-21T06:56:36.064Z",
           "testPlan": {
             "status": "written",
             "totalTests": 3,
@@ -25337,11 +25337,18 @@
           "oversightLevel": "medium",
           "dorArtefact": "artefacts/2026-08-18-bri-s3-3-role-boundary-guard-gap/dor/rbg-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-18-bri-s3-3-role-boundary-guard-gap/dor/rbg-s1-dor-contract.md",
-          "guardrails": []
+          "guardrails": [],
+          "riskAcceptances": [
+            {
+              "id": "RISK-ACCEPT-rbg-s1-baseline-33-failures",
+              "decision": "Proceeded with rbg-s1 implementation despite 33 pre-existing failing files in npm test (unrelated to this story's scope; story's own E2E test track is clean 5/5)",
+              "date": "2026-08-21"
+            }
+          ]
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-17T12:02:25.031Z",
+      "updatedAt": "2026-08-21T06:56:36.064Z",
       "track": "short",
       "guardrails": []
     },
