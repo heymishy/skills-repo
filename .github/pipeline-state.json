@@ -25483,38 +25483,61 @@
     {
       "slug": "2026-08-21-live-role-recheck-tenant-collapse",
       "name": "Thread the authenticating person's identity through requireAdmin's live role re-check (found during rbg-s1)",
-      "stage": "definition",
+      "stage": "branch-setup",
       "health": "green",
       "stories": [
         {
           "id": "lrtc-s1",
           "slug": "lrtc-s1",
           "name": "Thread the authenticating person's identity through requireAdmin's live role re-check",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "none",
-          "updatedAt": "2026-08-21T07:54:41.940Z",
+          "prStatus": "draft",
+          "updatedAt": "2026-08-21T08:21:20.307Z",
           "testPlan": {
             "status": "written",
             "totalTests": 3,
-            "passing": 0,
+            "passing": 3,
             "artefact": "artefacts/2026-08-21-live-role-recheck-tenant-collapse/test-plans/lrtc-s1-test-plan.md"
           },
           "verificationScriptArtefact": "artefacts/2026-08-21-live-role-recheck-tenant-collapse/verification-scripts/lrtc-s1-verification.md",
           "acTotal": 3,
-          "acVerified": 0,
+          "acVerified": 3,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "oversightLevel": "medium",
           "dorArtefact": "artefacts/2026-08-21-live-role-recheck-tenant-collapse/dor/lrtc-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-21-live-role-recheck-tenant-collapse/dor/lrtc-s1-dor-contract.md",
-          "guardrails": []
+          "guardrails": [],
+          "planArtefact": "artefacts/2026-08-21-live-role-recheck-tenant-collapse/plans/lrtc-s1-plan.md",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "RED -- write failing tests for AC1/AC2",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-21-live-role-recheck-tenant-collapse/plans/lrtc-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "GREEN -- thread req.session.login through the live re-check",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-21-live-role-recheck-tenant-collapse/plans/lrtc-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "AC3 -- confirm rbg-s1 own E2E test passes unmodified",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-21-live-role-recheck-tenant-collapse/plans/lrtc-s1-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/750"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-21T07:46:14.841Z",
+      "updatedAt": "2026-08-21T07:58:54.586Z",
       "track": "short",
       "guardrails": []
     },

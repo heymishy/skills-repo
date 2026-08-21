@@ -148,18 +148,13 @@ test.describe('bri-s3.3 multi-user within one tenant journey @mocked @multi-tena
     const alice = await githubLogin('e2e-alice');
     const bob = await githubLogin('e2e-bob');
 
-    // AC1: Verify both users successfully authenticated and share the same tenant
-    // Each login redirects to dashboard after successful auth
-    // Both should be able to create products in the shared tenant
-    const productId = await createProduct(alice.ctx, 'Shared Product');
-    expect(productId).toBeTruthy();
+    // AC1: a genuinely admin-gated route (requireAdmin middleware) must
+    // differentiate by role -- alice (admin) succeeds, bob (engineer) is denied.
+    const aliceAdminRes = await alice.ctx.get('/admin/credits');
+    expect(aliceAdminRes.status()).toBe(200);
 
-    // Both users can view products in their shared tenant
-    const aliceViewRes = await alice.ctx.get('/products/' + productId);
-    expect(aliceViewRes.status()).toBe(200);
-
-    const bobViewRes = await bob.ctx.get('/products/' + productId);
-    expect(bobViewRes.status()).toBe(200);
+    const bobAdminRes = await bob.ctx.get('/admin/credits');
+    expect(bobAdminRes.status()).toBe(403);
 
     // Verify zero real LLM calls were made
     const afterCountRes = await request.get('/test/real-llm-call-count', { headers: testEndpointBypassHeaders() });

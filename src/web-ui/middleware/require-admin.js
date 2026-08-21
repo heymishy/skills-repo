@@ -86,7 +86,11 @@ async function requireAdmin(req, res, next) {
 
   if (hasSession && _getCurrentRole) {
     try {
-      role = await _getCurrentRole(req.session.tenantId);
+      // lrtc-s1: pass req.session.login as the identity key, mirroring the
+      // login-time resolution pattern tir-s9 already established. Without
+      // it, a shared TENANT_ORG_ALLOWLIST tenant's live re-check could not
+      // tell requesters apart and resolved an arbitrary tenant-mate's role.
+      role = await _getCurrentRole(req.session.tenantId, req.session.login);
     } catch (_err) {
       // AC6: fail closed on adapter error -- never fall back to the stale cached role.
       role = null;

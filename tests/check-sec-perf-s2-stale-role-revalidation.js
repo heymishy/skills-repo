@@ -52,6 +52,36 @@ function freshRequire(p) {
   return require(p);
 }
 
+// lrtc-s1: minimal in-memory fake pool, mirrors
+// tests/check-tir-s7-person-scoped-login-resolution.js's own makeFakePool,
+// narrowed to only the query shapes resolveRoleForPerson issues.
+function makeFakePool(personIdentities, teamMemberships) {
+  var _pi = (personIdentities || []).slice();
+  var _tm = (teamMemberships || []).slice();
+  function query(sql, params) {
+    var s = String(sql).trim().replace(/\s+/g, ' ').toUpperCase();
+    var p = params || [];
+    if (s.indexOf('SELECT PERSON_ID FROM PERSON_IDENTITIES WHERE IDENTITY_KEY') === 0) {
+      var match = _pi.filter(function(r) { return r.identity_key === p[0]; });
+      return Promise.resolve({ rows: match.map(function(r) { return { person_id: r.person_id }; }) });
+    }
+    if (s.indexOf('SELECT PERSON_ID FROM TEAM_MEMBERSHIPS WHERE TENANT_ID') === 0 && s.indexOf('AND') === -1) {
+      var fb = _tm.filter(function(r) { return r.tenant_id === p[0]; });
+      return Promise.resolve({ rows: fb.length ? [{ person_id: fb[0].person_id }] : [] });
+    }
+    if (s.indexOf('SELECT ROLE FROM TEAM_MEMBERSHIPS WHERE PERSON_ID') === 0 && s.indexOf('AND TENANT_ID') !== -1) {
+      var scoped = _tm.filter(function(r) { return r.person_id === p[0] && r.tenant_id === p[1]; });
+      return Promise.resolve({ rows: scoped.length ? [{ role: scoped[0].role }] : [] });
+    }
+    if (s.indexOf('SELECT ROLE FROM TEAM_MEMBERSHIPS WHERE TENANT_ID') === 0) {
+      var legacy = _tm.filter(function(r) { return r.tenant_id === p[0]; });
+      return Promise.resolve({ rows: legacy.length ? [{ role: legacy[0].role }] : [] });
+    }
+    return Promise.resolve({ rows: [] });
+  }
+  return { query: query };
+}
+
 function makeRes() {
   var r = { _status: null, _headers: {}, _body: '' };
   r.writeHead = function(s, h) { r._status = s; Object.assign(r._headers, h || {}); };
@@ -275,6 +305,63 @@ async function main() {
       assert.strictEqual(loggedEvents[0].data.personId, 42);
       assert.strictEqual(loggedEvents[0].data.tenantId, 'acme');
       assert.ok(loggedEvents[0].data.timestamp, 'timestamp should be present');
+    });
+  });
+
+  // ── AC1 (lrtc-s1): live re-check resolves each person's OWN role via the
+  // REAL resolveRoleForPerson chain -- NOT a hand-substituted mock like T8
+  // above. T8 wires setGetCurrentRole to a closure that ignores its tenantId
+  // argument and branches on an external test variable instead -- it never
+  // exercises the real argument-passing bug this test is designed to catch.
+  queue.push(function() {
+    console.log('\n[lrtc-s1] T13 -- two people sharing one tenant resolve to two different, correct roles via the REAL resolution chain (AC1)');
+    return test('requireAdmin live re-check: person-X (admin) granted, person-Y (engineer) denied despite stale cached admin role', async function() {
+      var m = freshRequire(REQUIRE_ADMIN_PATH);
+      var userRoles = freshRequire(USER_ROLES_PATH);
+      var pool = makeFakePool(
+        [{ identity_key: 'person-X', person_id: 1 }, { identity_key: 'person-Y', person_id: 2 }],
+        [{ person_id: 1, tenant_id: 'shared-tenant', role: 'admin' }, { person_id: 2, tenant_id: 'shared-tenant', role: 'engineer' }]
+      );
+      userRoles.setGetRoleForTenant(function(tenantId, identityKey) {
+        return userRoles.resolveRoleForPerson(pool, identityKey || tenantId, tenantId);
+      });
+      m.setGetCurrentRole(function(tenantId, identityKey) { return userRoles.getRoleForTenant(tenantId, identityKey); });
+
+      var reqX = { session: { userId: 'person-X', tenantId: 'shared-tenant', login: 'person-X', role: 'user' } };
+      var resX = makeRes();
+      var nextX = false;
+      await m.requireAdmin(reqX, resX, function() { nextX = true; });
+      assert.ok(nextX, 'person-X (admin) should be granted');
+
+      var reqY = { session: { userId: 'person-Y', tenantId: 'shared-tenant', login: 'person-Y', role: 'admin' } };
+      var resY = makeRes();
+      var nextY = false;
+      await m.requireAdmin(reqY, resY, function() { nextY = true; });
+      assert.ok(!nextY, 'person-Y (engineer) should be denied, even though session was cached as admin');
+      assert.strictEqual(resY._status, 403, 'Expected 403, got ' + resY._status);
+    });
+  });
+
+  // ── AC2 (lrtc-s1): solo-tenant call pattern unchanged (regression check) ──
+  queue.push(function() {
+    console.log('\n[lrtc-s1] T14 -- solo-tenant call pattern unchanged (AC2, regression check)');
+    return test('requireAdmin live re-check: solo tenant (tenantId === identity) still resolves correctly', async function() {
+      var m = freshRequire(REQUIRE_ADMIN_PATH);
+      var userRoles = freshRequire(USER_ROLES_PATH);
+      var pool = makeFakePool(
+        [{ identity_key: 'solo-person', person_id: 3 }],
+        [{ person_id: 3, tenant_id: 'solo-person', role: 'admin' }]
+      );
+      userRoles.setGetRoleForTenant(function(tenantId, identityKey) {
+        return userRoles.resolveRoleForPerson(pool, identityKey || tenantId, tenantId);
+      });
+      m.setGetCurrentRole(function(tenantId, identityKey) { return userRoles.getRoleForTenant(tenantId, identityKey); });
+
+      var req = { session: { userId: 'solo-person', tenantId: 'solo-person', login: 'solo-person', role: 'user' } };
+      var res = makeRes();
+      var nextCalled = false;
+      await m.requireAdmin(req, res, function() { nextCalled = true; });
+      assert.ok(nextCalled, 'solo-tenant admin should be granted, unchanged from before this story');
     });
   });
 

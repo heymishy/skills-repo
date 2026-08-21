@@ -529,10 +529,16 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // so a mid-session role change (e.g. an admin demoted via addOrUpdateTeammate) is
     // reflected on the very next requireAdmin-gated request instead of staying cached in
     // req.session.role until the person logs out and back in.
-    setGetCurrentRole(function(tenantId) {
-      return getRoleForTenant(tenantId);
+    //
+    // lrtc-s1 (fix-forward): accepts and forwards identityKey, mirroring
+    // tir-s9's fix for the login-time call site above. Without it, a shared
+    // TENANT_ORG_ALLOWLIST tenant's live re-check fell back to an arbitrary
+    // tenant-mate's role for every requester (found live while implementing
+    // rbg-s1's own admin-gated-route regression test).
+    setGetCurrentRole(function(tenantId, identityKey) {
+      return getRoleForTenant(tenantId, identityKey);
     });
-    console.log('[sec-perf-s2] requireAdmin live-role adapter wired (getCurrentRole -> getRoleForTenant)');
+    console.log('[sec-perf-s2/lrtc-s1] requireAdmin live-role adapter wired (getCurrentRole -> getRoleForTenant, identity-aware)');
 
     // tir-s1 — Auto-migrate people/team_memberships schema + backfill every
     // legacy user_roles row (AC1, AC2). Chained after the user_roles table
@@ -1831,6 +1837,30 @@ if (process.env.NODE_ENV === 'test') {
     // instance already backing products/users above.
     setModulesAdapter(_fakeTestDb);
     console.log('[bmau-s1] fake in-memory modules adapter wired (NODE_ENV=test, no DATABASE_URL)');
+
+    // rbg-s1: the arl-s1/tir-s1/tir-s7/tir-s9/sec-perf-s2 role adapters
+    // (setGetRoleForTenant, setGetCurrentRole) were previously only ever
+    // wired inside the `if (process.env.DATABASE_URL)` block above -- the
+    // same gap bmau-s1 found and fixed for setModulesAdapter just above.
+    // With no fake-db fallback, every role lookup in the standard local/CI
+    // harness (NODE_ENV=test, no DATABASE_URL) threw "Adapter not wired",
+    // caught by both call sites (routes/auth.js at login, require-admin.js's
+    // live re-check) and silently defaulted to non-admin -- meaning no E2E
+    // test could ever verify real admin-role-gated behaviour locally. Wired
+    // here, same fake db instance already backing team_memberships/
+    // person_identities via _pshPool above (bri-s3.3's own seed-multi-user-
+    // roles test endpoint writes through that same instance).
+    setGetRoleForTenant(function(tenantId, identityKey) {
+      return resolveRoleForPerson(_fakeTestDb, identityKey || tenantId, tenantId);
+    });
+    // lrtc-s1: accepts and forwards identityKey too, mirroring the fix just
+    // above for the real-DATABASE_URL branch -- without it, this fake-db
+    // branch reproduced the exact same tenant-mate-collapse bug the real
+    // branch had, just against in-memory data instead of Postgres.
+    setGetCurrentRole(function(tenantId, identityKey) {
+      return getRoleForTenant(tenantId, identityKey);
+    });
+    console.log('[rbg-s1/lrtc-s1] fake in-memory team_memberships role adapter wired, identity-aware (NODE_ENV=test, no DATABASE_URL)');
 
     // s1.1: bridge the in-memory journey-store's async write-through to this
     // SAME fake db instance, test-mode only. Without this, real journeys
