@@ -25457,12 +25457,12 @@
           "id": "lrtc-s1",
           "slug": "lrtc-s1",
           "name": "Thread the authenticating person's identity through requireAdmin's live role re-check",
-          "stage": "branch-setup",
+          "stage": "implementation-plan",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
           "prStatus": "none",
-          "updatedAt": "2026-08-21T07:58:54.586Z",
+          "updatedAt": "2026-08-21T08:00:59.625Z",
           "testPlan": {
             "status": "written",
             "totalTests": 3,
@@ -25477,7 +25477,28 @@
           "oversightLevel": "medium",
           "dorArtefact": "artefacts/2026-08-21-live-role-recheck-tenant-collapse/dor/lrtc-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-21-live-role-recheck-tenant-collapse/dor/lrtc-s1-dor-contract.md",
-          "guardrails": []
+          "guardrails": [],
+          "planArtefact": "artefacts/2026-08-21-live-role-recheck-tenant-collapse/plans/lrtc-s1-plan.md",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "RED -- write failing tests for AC1/AC2",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-21-live-role-recheck-tenant-collapse/plans/lrtc-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "GREEN -- thread req.session.login through the live re-check",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-21-live-role-recheck-tenant-collapse/plans/lrtc-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "AC3 -- confirm rbg-s1 own E2E test passes unmodified",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-21-live-role-recheck-tenant-collapse/plans/lrtc-s1-plan.md"
+            }
+          ]
         }
       ],
       "metrics": [],
