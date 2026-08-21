@@ -15761,11 +15761,12 @@
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-08-17T08:38:43.505Z",
+          "updatedAt": "2026-08-21T08:42:57.326Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 7,
-            "passing": 7
+            "passing": 7,
+            "artefact": "artefacts/2026-07-25-feature-display-name-and-progress/test-plans/fps-s1-progress-proxy-test-plan.md"
           },
           "acTotal": 6,
           "acVerified": 6,
@@ -15798,11 +15799,12 @@
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-08-17T12:19:14.655Z",
+          "updatedAt": "2026-08-21T08:42:57.326Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 4,
-            "passing": 4
+            "passing": 4,
+            "artefact": "artefacts/2026-07-25-stripe-price-id-validation/test-plans/spv-s1-test-plan.md"
           },
           "acTotal": 4,
           "acVerified": 4,
@@ -15870,11 +15872,12 @@
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-08-17T12:19:14.655Z",
+          "updatedAt": "2026-08-21T08:42:57.326Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 16,
-            "passing": 16
+            "passing": 16,
+            "artefact": "artefacts/2026-07-25-staging-safe-test-endpoints/test-plans/dss-s1-test-plan.md"
           },
           "acTotal": 7,
           "acVerified": 7,
@@ -15907,11 +15910,12 @@
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-08-17T12:19:14.655Z",
+          "updatedAt": "2026-08-21T08:42:57.326Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 8,
-            "passing": 8
+            "passing": 8,
+            "artefact": "artefacts/2026-07-25-deploy-safety-net/test-plans/dsn-s1-test-plan.md"
           },
           "acTotal": 6,
           "acVerified": 6,
@@ -15944,11 +15948,12 @@
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-08-17T12:19:14.655Z",
+          "updatedAt": "2026-08-21T08:42:57.326Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 13,
-            "passing": 13
+            "passing": 13,
+            "artefact": "artefacts/2026-07-25-free-tier-credit-grant/test-plans/ftcg-s1-test-plan.md"
           },
           "acTotal": 8,
           "acVerified": 8,
@@ -15982,11 +15987,12 @@
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-08-17T12:19:14.655Z",
+          "updatedAt": "2026-08-21T08:42:57.326Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 16,
-            "passing": 16
+            "passing": 16,
+            "artefact": "artefacts/2026-07-25-advance-cli-visibility/test-plans/acv-s1-test-plan.md"
           },
           "acTotal": 4,
           "acVerified": 4,
@@ -16019,11 +16025,12 @@
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-08-17T12:19:14.655Z",
+          "updatedAt": "2026-08-21T08:42:57.326Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 25,
-            "passing": 25
+            "passing": 25,
+            "artefact": "artefacts/2026-07-25-pipeline-state-schema-validation/test-plans/pss-s1-test-plan.md"
           },
           "acTotal": 6,
           "acVerified": 6,
@@ -16057,11 +16064,12 @@
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-08-17T12:23:53.001Z",
+          "updatedAt": "2026-08-21T08:42:57.326Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 5,
-            "passing": 5
+            "passing": 5,
+            "artefact": "artefacts/2026-07-25-realllm-counter-isolation/test-plans/rlcc-s1-test-plan.md"
           },
           "acTotal": 3,
           "acVerified": 3,
@@ -16095,11 +16103,12 @@
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-08-17T12:23:53.001Z",
+          "updatedAt": "2026-08-21T08:42:57.326Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 16,
-            "passing": 16
+            "passing": 16,
+            "artefact": "artefacts/2026-07-25-named-identity-stub/test-plans/nis-s1-test-plan.md"
           },
           "acTotal": 8,
           "acVerified": 8,
@@ -16133,11 +16142,12 @@
           "health": "green",
           "reviewStatus": "not-required",
           "highFindings": 0,
-          "updatedAt": "2026-08-17T12:23:53.001Z",
+          "updatedAt": "2026-08-21T08:42:57.326Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 17,
-            "passing": 17
+            "passing": 17,
+            "artefact": "artefacts/2026-07-25-billing-journey-staging-safe/test-plans/bjs-s1-test-plan.md"
           },
           "acTotal": 8,
           "acVerified": 8,
