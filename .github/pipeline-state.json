@@ -25968,13 +25968,13 @@
               "name": "Build the shared viewer-write-block gate and wire it to Products + Features/journeys routes",
               "stage": "subagent-execution",
               "health": "green",
-              "updatedAt": "2026-08-22T10:59:00.783Z",
+              "updatedAt": "2026-08-22T11:04:47.177Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 44,
-                "passing": 33
+                "passing": 42
               },
               "acTotal": 5,
               "acVerified": 0,
@@ -26024,7 +26024,7 @@
                 {
                   "id": "task-7",
                   "name": "RED — write failing tests for AC2 (18 Features/journeys-group routes)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s1-plan.md"
                 },
                 {
