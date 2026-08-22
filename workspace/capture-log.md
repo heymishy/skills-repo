@@ -1308,3 +1308,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: decision
   signal-text: jatg-s1s test plan is fully unit-testable at the requireJourneyAccess() level since all 11 real POLICY.TENANT call sites in journey.js share that one function -- AC4s full-suite regression check is structurally redundant with the unit coverage but included anyway as direct evidence, matching the same discipline applied to pisd-s1s AC6. No CSS-layout-dependent gaps, no E2E tooling question -- pure backend authorization logic.
   source: agent-auto
+
+- date: 2026-08-22
+  session-phase: definition-of-done (jatg-s1)
+  signal-type: pattern
+  signal-text: jatg-s1's DoD closes F14. Notable pattern -- a full-suite regression check surfaced 6 newly-failing files under an initial fix design, and every one turned out to be either already-correct, an incomplete pre-existing test fixture that never modeled tenant identity at all, or one genuinely separate pre-existing bug at a different call site (session-turns-pg.js using the wrong POLICY constant). None required weakening the new access-control guard itself. Investigating each failure individually (per explicit operator direction) rather than picking whichever design made the loudest failures disappear was the difference between a correct fix and a silent new vulnerability (isSameTenant()'s permissive legacy passthrough would have re-opened cross-tenant-shaped denial gaps this story specifically guards against in AC2/AC3).
+  source: agent-auto
