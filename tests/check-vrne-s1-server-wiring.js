@@ -1,5 +1,22 @@
 'use strict';
 
+// vrne-s1 (Task 10, Part B): env vars required to require('../src/web-ui/server')
+// -- must be set BEFORE that require() below runs. Mirrors
+// tests/check-jsvr-s1-wire-stage-view-route.js's own top-of-file setup (the
+// established pattern in this codebase for tests that dispatch real requests
+// through server.js's router). NODE_ENV=test + no DATABASE_URL routes server.js
+// to its bri-s3.2/rbg-s1 in-memory fake-test-db bootstrap branch, which wires a
+// real (fake-backed) getCurrentRole adapter -- required for requireNonViewer's
+// live role resolution to see the viewer role seeded via
+// /test/seed-multi-user-roles below.
+process.env.NODE_ENV             = 'test';
+process.env.SESSION_SECRET       = 'test-session-secret-minimum32chars!!';
+process.env.GITHUB_CLIENT_ID     = 'test-client-id';
+process.env.GITHUB_CLIENT_SECRET = 'test-secret';
+process.env.GITHUB_CALLBACK_URL  = 'http://localhost:3000/auth/github/callback';
+delete process.env.POSTHOG_KEY;
+delete process.env.DATABASE_URL;
+
 // NOTE: These tests exercise requireNonViewer directly (the gate function in
 // isolation) -- they do NOT dispatch real HTTP requests through server.js and
 // do NOT prove these routes are actually wired to call requireNonViewer in
@@ -23,6 +40,14 @@
 
 var assert = require('assert');
 var path = require('path');
+var EventEmitter = require('events').EventEmitter;
+
+// vrne-s1 (Task 10, Part B): real server.js dispatch requires for the
+// integration test below -- same `router` + `seedTestSession` pair
+// check-jsvr-s1-wire-stage-view-route.js already uses successfully for this
+// exact real-dispatch pattern.
+var router = require('../src/web-ui/server').router;
+var seedTestSession = require('../src/web-ui/middleware/session').seedTestSession;
 
 var passed = 0; var failed = 0; var failures = [];
 
@@ -60,6 +85,88 @@ function makeRes() {
 
 function viewerSession() {
   return { session: { userId: 'u1', role: 'viewer', tenantId: 't1', login: 'viewer@test' } };
+}
+
+// ── Real server.js dispatch helpers (Task 10, Part B integration test) ──────
+// mockReq/mockRes mirror check-jsvr-s1-wire-stage-view-route.js's own
+// mockReq/mockRes exactly (the proven real-router-dispatch pattern already
+// used successfully elsewhere in this codebase).
+
+function integrationMockRes() {
+  var _statusCode = null;
+  var _headers = {};
+  var _chunks = [];
+  return {
+    writeHead: function(code, headers) { _statusCode = code; Object.assign(_headers, headers || {}); return this; },
+    setHeader: function(k, v) { _headers[k] = v; },
+    end: function(body) { if (body != null) _chunks.push(body); },
+    _get: function() { return { statusCode: _statusCode, headers: _headers, body: _chunks.join('') }; }
+  };
+}
+
+// Dispatches req/res through the real router and resolves once the response
+// actually completes (res.end() fires) -- NOT once router()'s own returned
+// promise resolves. Required because /products/confirm's route branch calls
+// `authGuard(req, res, async () => { ... })` without awaiting or returning
+// authGuard's inner promise (authGuard itself is fire-and-forget: it invokes
+// next() and only .catch()es it for unhandled errors, it never awaits or
+// returns that promise up to the router() caller). That means
+// `await router(req, res)` resolves BEFORE the async requireNonViewer check
+// inside that callback has actually written a status code -- confirmed by
+// running this exact assertion pattern first: it observed statusCode===null
+// synchronously, with the real 403 write (and audit log line) landing only
+// afterward. /api/journey's own branch (no authGuard wrapper) awaits
+// requireNonViewer directly inline, so router()'s promise already resolves
+// correctly for it -- but this helper is used for both dispatches so the
+// test does not depend on which internal pattern each route happens to use.
+function dispatchAndAwaitResponse(req) {
+  return new Promise(function(resolve, reject) {
+    var res = integrationMockRes();
+    var origEnd = res.end;
+    var settled = false;
+    res.end = function(body) {
+      origEnd(body);
+      if (!settled) { settled = true; resolve(res._get()); }
+    };
+    router(req, res).catch(function(err) {
+      if (!settled) { settled = true; reject(err); }
+    });
+  });
+}
+
+// Seeds e2e-alice (admin), e2e-bob (engineer) and e2e-viewer (viewer) team
+// roles for the given shared org via the real /test/seed-multi-user-roles
+// route -- the SAME real, already-proven endpoint
+// check-jsvr-s1-wire-stage-view-route.js's own seedMultiUserRoles() uses.
+// That route reads its body via req.on('data'/'end') rather than a
+// pre-parsed req.body, so this dispatch uses an EventEmitter-based fake req
+// (the same fix check-jsvr-s1-wire-stage-view-route.js's commit 05409b17
+// established for exactly this situation) -- router() runs an unconditional
+// `await sessionMiddleware(req, res)` before reaching this pathname's
+// branch, so the 'data'/'end' listeners are not attached synchronously;
+// await router() first, THEN emit the body.
+function seedMultiUserRolesForIntegrationTest(sharedOrg) {
+  return new Promise(function(resolve, reject) {
+    var req = new EventEmitter();
+    req.method = 'POST';
+    req.url = '/test/seed-multi-user-roles';
+    req.headers = { 'content-type': 'application/json' };
+    var res = integrationMockRes();
+    var origEnd = res.end;
+    res.end = function(body) {
+      origEnd(body);
+      var result = res._get();
+      if (result.statusCode !== 200) {
+        reject(new Error('seed-multi-user-roles failed: ' + result.statusCode + ' ' + result.body));
+      } else {
+        resolve(result);
+      }
+    };
+    router(req, res).then(function() {
+      req.emit('data', JSON.stringify({ sharedOrg: sharedOrg }));
+      req.emit('end');
+    }).catch(reject);
+  });
 }
 
 // AC1 — Products-group routes
@@ -147,17 +254,36 @@ async function main() {
   });
 
   // Integration: real server.js dispatch for one representative route from each group
+  // (Task 10, Part B). Issues two REAL dispatches through the actual exported
+  // `router` function -- not a direct requireNonViewer() call like the AC1/AC2
+  // tests above -- so this fails if server.js's wiring for either call site is
+  // ever removed, matching the regression-guard rationale
+  // check-jsvr-s1-wire-stage-view-route.js documents for its own real-dispatch
+  // tests.
   queue.push(function() {
     console.log('\n[vrne-s1] T-integration-real-dispatch -- real server.js dispatch denies viewer on representative routes');
     return test('integration: requireNonViewer reachable via real server.js dispatch', async function() {
-      // NOTE for implementing agent: wire this against this repo's existing real-server-dispatch
-      // test harness pattern (the same one used by other routes' own integration tests --
-      // search tests/ for an existing example that boots server.js with stubbed DB/credits
-      // adapters and issues a real HTTP request, e.g. via `http.request` against a
-      // `server.listen(0)` ephemeral port). Issue POST /products/confirm and POST /api/journey
-      // with a viewer-role session cookie/header (matching however this repo's existing
-      // integration tests authenticate a test session) and assert both return 403.
-      assert.fail('placeholder assertion -- replace with real dispatch calls per the note above before marking this task GREEN');
+      var sharedOrg = 'e2e-vrne-s1-integration';
+      await seedMultiUserRolesForIntegrationTest(sharedOrg);
+
+      var sessionId = 'faceb00c01';
+      seedTestSession(sessionId, {
+        accessToken: 'e2e-test-access-token',
+        userId: 9001,
+        login: 'e2e-viewer',
+        tenantId: sharedOrg
+      });
+      var cookieHeader = { cookie: 'session_id=' + sessionId };
+
+      // AC1: POST /products/confirm (Products-group route, authGuard-wrapped)
+      var req1 = { headers: cookieHeader, method: 'POST', url: '/products/confirm' };
+      var result1 = await dispatchAndAwaitResponse(req1);
+      assert.strictEqual(result1.statusCode, 403, 'POST /products/confirm must return 403 for a viewer-role session, got ' + result1.statusCode + ' -- ' + result1.body);
+
+      // AC2: POST /api/journey (Features/journeys-group route, no authGuard wrapper)
+      var req2 = { headers: cookieHeader, method: 'POST', url: '/api/journey' };
+      var result2 = await dispatchAndAwaitResponse(req2);
+      assert.strictEqual(result2.statusCode, 403, 'POST /api/journey must return 403 for a viewer-role session, got ' + result2.statusCode + ' -- ' + result2.body);
     });
   });
 

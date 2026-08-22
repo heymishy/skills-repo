@@ -153,6 +153,17 @@ setLogger({
   warn: (event, data) => console.warn(`[auth] ${event}`, JSON.stringify(Object.assign({ timestamp: _ts() }, data)))
 });
 
+// vrne-s1 — wire the viewer-write-block gate's audit logger. requireAdmin's
+// own setLogger is never called in this file either (confirmed: it silently
+// uses its no-op default in production) -- this is the first gate in this
+// file to wire a real audit logger, using a simple structured-JSON console
+// log matching this repo's existing structured-lifecycle-log-events
+// convention (see .github/standards/web-ui/web-ui-patterns.md).
+setViewerGateLogger({
+  warn: function(event, data) { console.log(JSON.stringify(Object.assign({ event: event }, data))); }
+});
+console.log('[vrne-s1] requireNonViewer audit logger wired');
+
 // lab-s1.3 / D37 mandatory separate wiring task — wire real GitHub provider adapter
 // routes/auth.js also wires this at module load for direct-require compat, but server.js
 // must wire it explicitly so AC6 is independently verifiable.
