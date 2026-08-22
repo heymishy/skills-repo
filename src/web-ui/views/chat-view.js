@@ -153,23 +153,17 @@ function renderChat(data) {
     '</footer>'
   );
 
-  const scriptHtml = data.readOnly ? '' : (
+  // cmba-s1: the three maximise/fullscreen toggle functions (swToggleArtefactFs,
+  // swToggleCanvasFs, swExpandCanvas) must be available regardless of
+  // data.readOnly, since their button markup below is rendered unconditionally
+  // -- previously they lived inside the readOnly-gated scriptHtml block, so
+  // clicking either maximise button on a read-only/historical view threw
+  // ReferenceError. Emitted unconditionally, in their own script block,
+  // separate from scriptHtml's live-session-only content (the SSE pump and
+  // the Cmd/Ctrl+Enter submit handler genuinely don't apply to a read-only
+  // page with no live session and no chat-form to submit).
+  const alwaysOnScriptHtml =
     '<script>' +
-      'function escHtmlClient(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}' +
-      'function appendConditionItem(item){' +
-        'var container=document.getElementById("condition-items");' +
-        'if(!container)return;' +
-        'var p=container.querySelector("p");if(p)p.remove();' +
-        'var typeKey=(item.type||"").toLowerCase().replace(/[^a-z]/g,"");' +
-        'var typeClass=["constraint","dependency","outcome"].indexOf(typeKey)>=0?typeKey:"constraint";' +
-        'var cardEl=document.createElement("div");' +
-        'cardEl.className="condition-card";' +
-        'cardEl.innerHTML=\'<div class="condition-card-meta">\'+' +
-          '\'<span class="ci-type-tag ci-type-\'+typeClass+\'">\'+escHtmlClient(item.type||"constraint")+\'</span>\'+' +
-          '\'<span class="ci-source">\'+escHtmlClient(item.source||"model")+\'</span>\'+' +
-          '\'</div><div class="condition-card-text">\'+escHtmlClient(item.text||"")+\'</div>\';' +
-        'container.appendChild(cardEl);' +
-      '}' +
       'function swToggleArtefactFs(){var p=document.getElementById("sw-artefact-pane");var b=document.getElementById("sw-artefact-fs-btn");if(!p)return;p.classList.toggle("ad-fs");b.textContent=p.classList.contains("ad-fs")?"⊡":"⊞";}' +
       // cdpl-s1: shared canvas-maximise mechanism, mirroring
       // swToggleArtefactFs()'s exact classList.toggle() + button-glyph-swap
@@ -187,6 +181,25 @@ function renderChat(data) {
       // the same shared toggle.
       'function swToggleCanvasFs(){var p=document.getElementById("canvas-section");if(!p)return;p.classList.toggle("canvas-fs");var g=p.classList.contains("canvas-fs")?"⊡":"⊞";var b1=document.getElementById("sw-canvas-fs-btn");if(b1)b1.textContent=g;var b2=document.getElementById("sw-expand-canvas");if(b2)b2.textContent=g;}' +
       'function swExpandCanvas(){swToggleCanvasFs();}' +
+    '</script>';
+
+  const scriptHtml = data.readOnly ? '' : (
+    '<script>' +
+      'function escHtmlClient(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}' +
+      'function appendConditionItem(item){' +
+        'var container=document.getElementById("condition-items");' +
+        'if(!container)return;' +
+        'var p=container.querySelector("p");if(p)p.remove();' +
+        'var typeKey=(item.type||"").toLowerCase().replace(/[^a-z]/g,"");' +
+        'var typeClass=["constraint","dependency","outcome"].indexOf(typeKey)>=0?typeKey:"constraint";' +
+        'var cardEl=document.createElement("div");' +
+        'cardEl.className="condition-card";' +
+        'cardEl.innerHTML=\'<div class="condition-card-meta">\'+' +
+          '\'<span class="ci-type-tag ci-type-\'+typeClass+\'">\'+escHtmlClient(item.type||"constraint")+\'</span>\'+' +
+          '\'<span class="ci-source">\'+escHtmlClient(item.source||"model")+\'</span>\'+' +
+          '\'</div><div class="condition-card-text">\'+escHtmlClient(item.text||"")+\'</div>\';' +
+        'container.appendChild(cardEl);' +
+      '}' +
       '// SSE pump wires: appendConditionItem, appendCanvasBlock defined in the IIFE (skills.js)' +
       'document.addEventListener("keydown",function(e){' +
         'if((e.metaKey||e.ctrlKey)&&e.key==="Enter"){' +
@@ -519,6 +532,8 @@ function renderChat(data) {
       ),
 
     '</div>',
+    // cmba-s1: maximise/fullscreen toggle functions, always emitted
+    alwaysOnScriptHtml,
     // Cmd/Ctrl+Enter to submit + inc2.1 condition-item client rendering
     scriptHtml
   ].join('');

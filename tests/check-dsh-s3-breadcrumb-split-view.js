@@ -197,12 +197,15 @@ await checkAsync('AC5: readOnly split view has no input/textarea/submit-button c
   // block regardless of readOnly, since styles aren't conditionally stripped).
   assert.ok(result.body.indexOf('<footer class="sw-chat-foot"') === -1, 'did not expect the live chat input footer element to render');
   assert.ok(result.body.indexOf('id="chat-form"') === -1, 'did not expect the live chat <form id="chat-form"> to render');
-  // Check for the function *definition* (unique to renderChat's own
-  // scriptHtml, suppressed when readOnly), not the onclick="...()" call
-  // reference on the always-rendered fullscreen-toggle button, which is a
-  // separate, harmless no-op unrelated to messaging when its definition is
-  // absent -- not a message-input control and out of this story's scope.
-  assert.ok(result.body.indexOf('function swToggleArtefactFs') === -1, 'did not expect renderChat\'s own client-side script (suppressed by readOnly) to render');
+  // cmba-s1 (fix-forward): swToggleArtefactFs's definition now legitimately
+  // renders in read-only output too -- it moved out of renderChat's
+  // readOnly-suppressed scriptHtml into its own always-emitted block,
+  // exactly the "separate, harmless no-op unrelated to messaging" case this
+  // test's own prior comment anticipated. It is not a message-input
+  // control, so its presence doesn't violate AC5's actual intent -- only
+  // the SSE-pump/submit-handler content (asserted below) must stay absent.
+  assert.ok(result.body.indexOf('function swToggleArtefactFs') !== -1, 'expected swToggleArtefactFs() to be defined in read-only output (cmba-s1)');
+  assert.ok(result.body.indexOf('appendConditionItem') === -1, 'did not expect the live-session SSE-pump helper in read-only output');
 });
 
 // ── AC3: existing inline artefact-edit flow (handlePostJourneyStageArtefact, unmodified) still works ──
