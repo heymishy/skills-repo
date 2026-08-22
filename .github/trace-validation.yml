@@ -89,6 +89,7 @@ reference_dirs:
   - 2026-07-01-session-resume-hardening
   - feedback
   - 2026-08-22-p4-enf-decision-test-fix
+  - 2026-08-23-inner-loop-ceremony-optimisation
 tracks_without_discovery:
   - short
   - defect

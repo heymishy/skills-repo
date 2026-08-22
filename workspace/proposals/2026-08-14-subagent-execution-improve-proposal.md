@@ -54,8 +54,10 @@ anti_overfitting_gate: >
   recur — suggesting the fix, once made explicit in the skill's own
   template, should generalize cleanly rather than needing story-specific
   tuning.
-status: pending_review
+status: merged
 created_at: 2026-08-14
+merged_at: 2026-08-23
+merged_via: chore/inner-loop-ceremony-optimisation (loop-design pass, see artefacts/2026-08-23-inner-loop-ceremony-optimisation/loop-design.md)
 skill_target: subagent-execution
 source: improve
 ---
