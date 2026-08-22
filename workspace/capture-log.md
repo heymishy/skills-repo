@@ -1296,3 +1296,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: decision
   signal-text: pisd-s1s DoR completed with all hard blocks passing (7 of 18 N-A given short-track scope: no discovery/review artefacts exist, no injectable adapters, no infra/migration tracks). Warning W4 acknowledged rather than resolved -- RISK-ACCEPT logged, matching cmba-s1s precedent. domain: [platform-tooling] did not match any key in .github/standards/index.yml -- surfaced as a distinct warning per the skills own instruction, not silently dropped. Oversight set to Medium by the same short-track precedent as rbg-s1/lrtc-s1, given this fix touches the actual production /bootstrap installer.
   source: agent-auto
+
+- date: 2026-08-22
+  session-phase: definition-of-done (pisd-s1)
+  signal-type: pattern
+  signal-text: pisd-s1s DoD closes F16 (highest-severity finding this session). Notable pattern: local Windows npm test gives false confidence for any check gated on process.platform !== win32 -- two tests silently no-op their real bash-script assertion locally, only genuinely exercised by CI (Linux) or a direct bash invocation. CI caught a real regression (assemble-copilot-instructions.sh, a 4th instance of the same stale .github/skills source bug) that a fully-green local run had missed entirely. Recommend flagging this class of check explicitly in future DoR/verify-completion runs touching .sh scripts in this repo.
+  source: agent-auto

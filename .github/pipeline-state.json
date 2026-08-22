@@ -25684,12 +25684,12 @@
           "id": "pisd-s1",
           "slug": "pisd-s1",
           "name": "Point platform-init.js at the real skills/ and templates/ source directories",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
-          "dodStatus": "not-started",
-          "prStatus": "draft",
-          "updatedAt": "2026-08-21T23:34:33.297Z",
+          "dodStatus": "complete",
+          "prStatus": "merged",
+          "updatedAt": "2026-08-22T03:21:19.785Z",
           "testPlan": {
             "status": "written",
             "totalTests": 8,
@@ -25733,13 +25733,16 @@
             }
           ],
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/753"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/753",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-22-platform-init-stale-source-dirs/dod/pisd-s1-dod.md"
         }
       ],
       "metrics": [],
       "updatedAt": "2026-08-21T22:45:32.613Z",
       "track": "short",
-      "guardrails": []
+      "guardrails": [],
+      "status": "complete"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
