@@ -25968,13 +25968,13 @@
               "name": "Build the shared viewer-write-block gate and wire it to Products + Features/journeys routes",
               "stage": "subagent-execution",
               "health": "green",
-              "updatedAt": "2026-08-22T19:45:18.802Z",
+              "updatedAt": "2026-08-22T20:11:48.034Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 44,
-                "passing": 42
+                "passing": 44
               },
               "acTotal": 5,
               "acVerified": 0,
@@ -26042,7 +26042,7 @@
                 {
                   "id": "task-10",
                   "name": "GREEN — wire setViewerGateLogger bootstrap + finalise integration test",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s1-plan.md"
                 },
                 {
