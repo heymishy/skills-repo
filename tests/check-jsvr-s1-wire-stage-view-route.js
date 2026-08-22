@@ -41,6 +41,7 @@ function check(label, ok) {
 var os = require('os');
 var path = require('path');
 var fs = require('fs');
+var EventEmitter = require('events').EventEmitter;
 
 var router, seedTestSession, journeyStore, journeyRoutes;
 try {
@@ -88,6 +89,49 @@ function seedSession(sessionId, fields) {
   }, fields || {}));
 }
 
+// vrne-s1 surfaced a pre-existing gap: this file's seedSession() never seeded
+// a matching team_memberships role row, so requireNonViewer's live role
+// resolution (added in vrne-s1) fail-closed 403s the AC3 request instead of
+// reaching the real handler. Completing the fixture (not weakening the gate)
+// by seeding a real, resolvable role via the same staging-safe
+// /test/seed-multi-user-roles endpoint dss-s1/nis-s1 already provide -- it
+// writes through the SAME in-memory fake-test-db instance server.js wires
+// internally (see server.js's `if (!process.env.DATABASE_URL)` bootstrap
+// block), which this test has no other handle on. Dispatches the request
+// through the real `router(req, res)` (matching this file's own
+// direct-router-dispatch convention) with an EventEmitter-based req, since
+// the route reads its body via req.on('data'/'end') rather than a
+// pre-parsed req.body.
+function seedMultiUserRoles(sharedOrg) {
+  return new Promise(function(resolve, reject) {
+    var req = new EventEmitter();
+    req.method = 'POST';
+    req.url = '/test/seed-multi-user-roles';
+    req.headers = { 'content-type': 'application/json' };
+    var res = mockRes();
+    var origEnd = res.end;
+    res.end = function(body) {
+      origEnd(body);
+      var result = res._get();
+      if (result.statusCode !== 200) {
+        reject(new Error('seed-multi-user-roles failed: ' + result.statusCode + ' ' + result.body));
+      } else {
+        resolve(result);
+      }
+    };
+    // router() runs an unconditional `await sessionMiddleware(req, res)`
+    // before reaching this pathname's branch, so the 'data'/'end' listeners
+    // are not attached synchronously -- await router() fully first (it
+    // registers the listeners then returns without waiting on the body,
+    // mirroring real Node http streaming) and only then emit the body,
+    // otherwise the emitted events are lost before anything is listening.
+    router(req, res).then(function() {
+      req.emit('data', JSON.stringify({ sharedOrg: sharedOrg }));
+      req.emit('end');
+    }).catch(reject);
+  });
+}
+
 async function main() {
   // ── Fixture: a journey with one completed stage ("discovery") ─────────────
   var journey = journeyStore.createJourney('jsvr-s1-test-feature', 'default');
@@ -129,7 +173,14 @@ async function main() {
 
   // ── AC3: POST .../stage/:name/artefact reaches handlePostJourneyStageArtefact ──
   await (async function () {
-    seedSession('cccc3333', {});
+    // vrne-s1: requireNonViewer now live-resolves this session's role before
+    // the real handler runs. 'e2e-tester' (this suite's default tenantId,
+    // already 'e2e-'-prefixed) is seeded via /test/seed-multi-user-roles with
+    // 'e2e-bob' as an 'engineer' -- an ALLOWED_ROLES role -- so the session
+    // below authenticates as a normal, legitimate non-viewer identity, not a
+    // role-less one the gate correctly denies.
+    await seedMultiUserRoles('e2e-tester');
+    seedSession('cccc3333', { login: 'e2e-bob' });
     var req = mockReq({
       method: 'POST',
       url: '/api/journey/' + journey.journeyId + '/stage/discovery/artefact',
