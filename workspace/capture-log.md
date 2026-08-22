@@ -1320,3 +1320,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: decision
   signal-text: F11's discovery.md approved by operator. Attempted to validate the discovery's own flagged open question (whether any real production tenant has a viewer-role person assigned) via Chrome against the live /team/members admin page -- the route returned {"error":"Forbidden"} for a session with otherwise-working admin access to /admin/credits, and a second navigation attempt was blocked by the auto-mode classifier. Did not chase further to avoid repeated unattended navigation against production auth. Left as an open, non-blocking manual follow-up rather than guessed at. Also noted: gate-advance's CLI requires a story-id, but this feature has zero stories at discovery-approval time (stories are created at /definition) -- direct pipeline-state.json field write used instead (discoveryStatus/stage/health), matching CDG.6's exception for cases where the advance harness does not cleanly apply, with an integrity check run immediately after.
   source: agent-auto
+
+- date: 2026-08-22
+  session-phase: benefit-metric (F11 / viewer-role-no-enforcement)
+  signal-type: decision
+  signal-text: F11's benefit-metric.md produced in a single pass (per operator's established preference, not the skill's own step-by-step Q&A flow) and approved by the operator without changes. Two metrics defined -- Tier 1 product metric (viewer role actually enforces read-only access, 0% to 100% of enumerated write actions blocked) and a Tier 3 compliance/risk-reduction metric (enumerated unenforced routes, target 0), since this is a self-imposed access-control obligation rather than an external regulatory driver. No meta-benefit -- this is a correctness/security fix, not a pilot. Metric owner/reviewer defaulted to the operator given this is a solo-operator repo.
+  source: agent-auto

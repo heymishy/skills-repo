@@ -25546,8 +25546,29 @@
       "discoveryStatus": "approved",
       "discoveryArtefact": "artefacts/2026-08-21-viewer-role-no-enforcement/discovery.md",
       "stories": [],
-      "metrics": [],
-      "updatedAt": "2026-08-22T06:47:12.687Z",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Viewer role actually enforces read-only access",
+          "target": "100% of the enumerated write-action set returns a real denial for a viewer-role session",
+          "baseline": "0% blocked (confirmed via codebase search at discovery)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Enumerated viewer-role write actions blocked (Tier 3 risk-reduction)",
+          "target": "0 remaining unenforced routes in the enumerated set",
+          "baseline": "All enumerated routes currently unenforced",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "updatedAt": "2026-08-22T06:50:30.004Z",
       "track": "standard",
       "guardrails": []
     },
