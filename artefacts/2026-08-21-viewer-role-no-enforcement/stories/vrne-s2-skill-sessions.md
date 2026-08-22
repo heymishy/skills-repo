@@ -38,14 +38,15 @@ So that **a viewer cannot drive real LLM cost or produce real governed artefacts
 
 **AC4:** Given a session with `role: 'engineer'`, `'product'`, or `'admin'`, When that person submits any Skill session write route, Then the request proceeds exactly as before this story (no regression to legitimate skill-session usage — the app's core function).
 
-**AC5:** Given the gate denies a viewer-role request on a Skill session route, When the denial occurs, Then it is logged the same way as `vrne-s1`'s AC5 (person ID, tenant ID, timestamp, route).
+**AC5:** Given a session with `role: 'viewer'` and an existing skill session, When the person submits `POST /api/skills/:name/sessions/:id/canvas-edit` or `POST /api/skills/:name/sessions/:id/assumption/:cardId/confirm`, Then the response is a real denial — not a silent success. (Added via `/decisions`, 2026-08-22, SCOPE entry — resolves review finding `1-M1`: these routes were originally carved out of scope, but that contradicted the parent epic's unqualified "every real write action" goal.)
+
+**AC6:** Given the gate denies a viewer-role request on any Skill session route (including `canvas-edit`/`assumption-confirm`), When the denial occurs, Then it is logged the same way as `vrne-s1`'s AC5 (person ID, tenant ID, timestamp, route).
 
 ## Out of Scope
 
 - Products/Features routes — covered by `vrne-s1`.
 - Credits/billing and edge-case routes — covered by `vrne-s3`/`vrne-s4`.
 - Read-only skill-session routes (viewing session history/transcripts) — `viewer` must retain full read access.
-- Canvas-edit and assumption-confirm routes (`/canvas-edit`, `/assumption/:cardId/confirm`) — lower-value, non-cost-incurring write actions within a session; not included in this story's AC set, may be swept up incidentally by the shared gate if applied broadly but not a required AC here.
 
 ## NFRs
 
