@@ -3,7 +3,7 @@
 **Story reference:** `artefacts/2026-08-22-journey-access-tenant-grant-gap/stories/jatg-s1-restore-same-tenant-journey-access.md`
 **Technical test plan:** `artefacts/2026-08-22-journey-access-tenant-grant-gap/test-plans/jatg-s1-test-plan.md`
 **Script version:** 1
-**Verified by:** [name] | **Date:** [date] | **Context:** [ ] Pre-code  [ ] Post-merge  [ ] Demo
+**Verified by:** Copilot (agent self-verification, per /verify-completion) | **Date:** 2026-08-22 | **Context:** [x] Pre-code  [ ] Post-merge  [ ] Demo
 
 ---
 
@@ -35,8 +35,8 @@
 **Expected outcome:**
 > The output reads `ACCESS GRANTED`. Before this fix, it read `ACCESS DENIED: {"code":"FORBIDDEN"}` — a teammate ("user-B") sharing the same tenant ("acme") as the journey's owner ("user-A") was wrongly denied.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Actual output: `ACCESS GRANTED`.
 
 ---
 
@@ -53,8 +53,8 @@
 **Expected outcome:**
 > The output reads `ACCESS DENIED, HTTP 404`. Someone from a different tenant ("other-tenant") must never be able to view another tenant's journey — this must not change before or after the fix.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Actual output: `ACCESS DENIED, HTTP 404`.
 
 ---
 
@@ -71,8 +71,8 @@
 **Expected outcome:**
 > The output reads `ACCESS DENIED: {"code":"FORBIDDEN"}`. This confirms the two owner-only actions (recommitting a journey, committing a stage) stay restricted to the actual owner, even though same-tenant teammates can now view/resume — a teammate being able to *see* a journey is not the same as being allowed to *finalize* it on the owner's behalf.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Actual output: `ACCESS DENIED: {"code":"FORBIDDEN"}`.
 
 ---
 
@@ -89,8 +89,8 @@
 **Expected outcome:**
 > The last line reads `=== wsm2 results: 22 passed, 0 failed ===`. Before this fix, it read `17 passed, 5 failed`, with the 5 failures being `T2b`, `T2c`, `T2d`, `T4a`, `T4b` — all 404-where-200-expected for a same-tenant viewer.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Confirmed `=== wsm2 results: 22 passed, 0 failed ===`. Required adding explicit, matching `tenantId` to `wsm2`'s own T2/T4 fixtures (they never modeled tenant identity at all before) — see decisions.md.
 
 ---
 
@@ -108,8 +108,8 @@
 **Expected outcome:**
 > The "Failed files" list contains only the small set of already-known, already-tracked pre-existing issues unrelated to this story (`scripts/check-pipeline-state-integrity.js`, `tests/check-p3.5-validate-trace.js`, `tests/check-p4-enf-decision.js`) — `tests/check-wsm2-collaborative-sessions.js` must no longer appear in this list, and no other file should newly appear either.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Actual: `533 file(s) run, 3 failed` — exactly the 3 expected pre-existing/unrelated entries. Reaching this state required investigating and fixing 5 additional files beyond `wsm2` itself, once a first attempt (reusing `isSameTenant()`'s existing passthrough) surfaced them as newly-failing: `check-s3.4-item-detail-view.js` and `check-kcrs-s1-kanban-card-resume-session.js` had incomplete cross-tenant fixtures (completed with explicit tenant IDs), and `session-turns-pg.js`'s `getTurnsForStage()` had a separate, pre-existing wrong-policy-constant bug (`POLICY.TENANT` → `POLICY.OWNER`), exposed rather than caused by this fix. Full investigation and reasoning in decisions.md.
 
 ---
 
@@ -117,19 +117,17 @@
 
 | Scenario | Result | Notes |
 |----------|--------|-------|
-| Scenario 1 — same-tenant teammate granted access | | |
-| Scenario 2 — different-tenant viewer still denied | | |
-| Scenario 3 — owner-only action still restricted | | |
-| Scenario 4 — wsm2's own tests now pass | | |
-| Scenario 5 — full suite has no new failures | | |
+| Scenario 1 — same-tenant teammate granted access | Pass | |
+| Scenario 2 — different-tenant viewer still denied | Pass | |
+| Scenario 3 — owner-only action still restricted | Pass | |
+| Scenario 4 — wsm2's own tests now pass | Pass | Required completing wsm2's own incomplete tenant fixtures |
+| Scenario 5 — full suite has no new failures | Pass | Required fixing 2 additional test fixtures + 1 separate policy-constant bug |
 
-**Overall verdict:** [ ] All pass — ready to proceed
+**Overall verdict:** [x] All pass — ready to proceed
 [ ] Failures found — log findings below before proceeding
 
 ---
 
 ## Findings
 
-| Scenario | Expected | Actual | Severity | Action |
-|----------|----------|--------|----------|--------|
-| | | | HIGH / MED / LOW | Fix AC / Fix implementation / Accept |
+No open findings. One additional, genuinely separate bug was found and fixed during implementation: `src/web-ui/adapters/session-turns-pg.js`'s `getTurnsForStage()` used `POLICY.TENANT` where its own test explicitly wanted owner-only semantics for reading conversation content — fixed to `POLICY.OWNER` (see decisions.md). Not a new finding requiring its own story — a one-line, narrowly-scoped, already-fixed correction discovered as a direct consequence of this story's own regression check.
