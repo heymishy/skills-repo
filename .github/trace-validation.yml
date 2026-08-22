@@ -88,6 +88,7 @@ reference_dirs:
   - 2026-07-01-security-perf-hardening
   - 2026-07-01-session-resume-hardening
   - feedback
+  - 2026-08-22-p4-enf-decision-test-fix
 tracks_without_discovery:
   - short
   - defect
