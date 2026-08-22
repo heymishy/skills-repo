@@ -106,10 +106,10 @@ async function main() {
       var res = makeRes();
       await gate.requireNonViewer(req, res, function() {});
       assert.strictEqual(loggedEvent, 'viewer_write_denied');
-      assert.ok(loggedPayload.personId, 'personId must be logged');
-      assert.ok(loggedPayload.tenantId, 'tenantId must be logged');
-      assert.ok(loggedPayload.timestamp, 'timestamp must be logged');
-      assert.ok(loggedPayload.route, 'route must be logged');
+      assert.strictEqual(loggedPayload.personId, 'u1', 'personId must match the session userId exactly');
+      assert.strictEqual(loggedPayload.tenantId, 't1', 'tenantId must match the session tenantId exactly');
+      assert.ok(/^\d{4}-\d{2}-\d{2}T/.test(loggedPayload.timestamp), 'timestamp must be an ISO date string');
+      assert.strictEqual(loggedPayload.route, '/products/confirm', 'route must match req.url exactly');
     });
   });
 
