@@ -25966,9 +25966,9 @@
             {
               "slug": "vrne-s1",
               "name": "Build the shared viewer-write-block gate and wire it to Products + Features/journeys routes",
-              "stage": "implementation-plan",
+              "stage": "subagent-execution",
               "health": "green",
-              "updatedAt": "2026-08-22T10:05:17.848Z",
+              "updatedAt": "2026-08-22T10:19:09.767Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -25988,7 +25988,7 @@
                 {
                   "id": "task-1",
                   "name": "RED — write failing tests for resolveRole(req) extraction",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s1-plan.md"
                 },
                 {
