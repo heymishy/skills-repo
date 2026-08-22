@@ -48,12 +48,10 @@
 
 ## Metric Coverage Matrix
 
-<!-- Populated by /definition once story slugs are known. -->
-
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Metric 1: Viewer role enforces read-only access | TBD at /definition | Gap — no stories written yet |
-| Tier 3: Enumerated viewer-role write actions blocked | TBD at /definition | Gap — no stories written yet |
+| Metric 1: Viewer role enforces read-only access | vrne-s1, vrne-s2, vrne-s3, vrne-s4 | Covered |
+| Tier 3: Enumerated viewer-role write actions blocked | vrne-s1, vrne-s2, vrne-s3, vrne-s4 | Covered |
 
 ---
 

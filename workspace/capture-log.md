@@ -1338,3 +1338,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: decision
   signal-text: Ran /clarify on the month-old 2026-07-16-legacy-ingestion discovery (F19). Both of its own flagged open assumptions resolved toward the larger-scope answer -- (1) web-UI entry point is now MVP-in-scope, not deferred to CLI/chat-only, (2) boundary-signal detection for a confirmed non-Java target stack is now MVP-in-scope, not deferred as Java-only. The specific non-Java stack itself remains genuinely unconfirmed and was recorded as an explicit open item (not assumed) blocking /definition until named. Both resolutions materially enlarge the MVP versus the original draft -- discovery.md updated (Status: Clarified), decisions.md created with 2 SCOPE log entries recording the reasoning.
   source: agent-auto
+
+- date: 2026-08-22
+  session-phase: definition (F11 / viewer-role-no-enforcement)
+  signal-type: decision
+  signal-text: F11's /definition complete. Slicing strategy chosen by operator: risk-first (prove the shared gate mechanism against highest-value routes before rolling out further, de-risking the discovery's own flagged concern about breaking engineer/product access). Route scope resolved via a full codebase audit (Explore agent enumerated every non-admin-gated write route in server.js) presented to the operator as a multi-select -- operator selected all 4 candidate groups (Products+Features, Skill sessions, Credits/billing, edge cases), so 1 epic with 4 stories (vrne-s1..s4) was written, each gating one route group and reusing vrne-s1's shared gate. Scope accumulator: 4 stories / 3 MVP scope items = 1.33x, no drift. Discovered during the route audit that team-management routes are already fully requireAdmin-gated (nothing to do there) and that /agency/clients/* routes are gated on org-type only, not user-role -- a real, distinct additive-gate case folded into vrne-s4.
+  source: agent-auto
