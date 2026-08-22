@@ -1302,3 +1302,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: pattern
   signal-text: pisd-s1s DoD closes F16 (highest-severity finding this session). Notable pattern: local Windows npm test gives false confidence for any check gated on process.platform !== win32 -- two tests silently no-op their real bash-script assertion locally, only genuinely exercised by CI (Linux) or a direct bash invocation. CI caught a real regression (assemble-copilot-instructions.sh, a 4th instance of the same stale .github/skills source bug) that a fully-green local run had missed entirely. Recommend flagging this class of check explicitly in future DoR/verify-completion runs touching .sh scripts in this repo.
   source: agent-auto
+
+- date: 2026-08-22
+  session-phase: test-plan (jatg-s1)
+  signal-type: decision
+  signal-text: jatg-s1s test plan is fully unit-testable at the requireJourneyAccess() level since all 11 real POLICY.TENANT call sites in journey.js share that one function -- AC4s full-suite regression check is structurally redundant with the unit coverage but included anyway as direct evidence, matching the same discipline applied to pisd-s1s AC6. No CSS-layout-dependent gaps, no E2E tooling question -- pure backend authorization logic.
+  source: agent-auto

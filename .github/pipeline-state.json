@@ -25650,22 +25650,34 @@
     {
       "slug": "2026-08-22-journey-access-tenant-grant-gap",
       "name": "Restore same-tenant journey access under POLICY.TENANT (found during 33-failures cleanup)",
-      "stage": "definition",
-      "health": "amber",
+      "stage": "test-plan",
+      "health": "green",
       "stories": [
         {
           "id": "jatg-s1",
           "slug": "jatg-s1",
           "name": "Restore same-tenant journey access under POLICY.TENANT",
-          "stage": "definition",
-          "health": "amber",
+          "stage": "test-plan",
+          "health": "green",
           "dorStatus": "not-started",
           "dodStatus": "not-started",
-          "prStatus": "none"
+          "prStatus": "none",
+          "updatedAt": "2026-08-22T03:49:38.447Z",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-22-journey-access-tenant-grant-gap/test-plans/jatg-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "verificationScriptArtefact": "artefacts/2026-08-22-journey-access-tenant-grant-gap/verification-scripts/jatg-s1-verification.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-21T21:36:36.935Z",
+      "updatedAt": "2026-08-22T03:49:38.447Z",
       "track": "short",
       "guardrails": []
     },
