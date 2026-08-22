@@ -81,6 +81,9 @@ test('AC4: a non-owner with NEITHER side having a tenantId is still denied (deny
   // This is exactly tests/check-p0.1-journey-access.js's own Test 4 scenario --
   // proving the new grant path requires a POSITIVELY VERIFIED tenant match, not
   // isSameTenant()'s permissive "either side missing -> true" passthrough.
+  // A full audit (jatg-s1's own decisions.md) found the existing test suites
+  // that need real tenant sharing (wsm2, s3.4, kcrs-s1) had incomplete
+  // fixtures -- fixed at the fixture level, not by weakening this guard.
   const journey = { ownerId: 'bob' };
   const session = { accessToken: 'tok-test', userId: '1', login: 'alice' };
   assert.throws(() => requireJourneyAccess(journey, session, POLICY.TENANT), { code: 'FORBIDDEN' });

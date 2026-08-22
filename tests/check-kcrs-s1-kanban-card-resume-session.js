@@ -161,7 +161,12 @@ queue.push(function() {
     store.setJourneyFields(journeyObj.journeyId, { ownerId: 'owner@example.test', tenantId: 'owner@example.test' });
     journey.setJourneyStoreModule(store);
 
-    var req = authReq({ session: { accessToken: 'tok', login: 'attacker@example.test' }, params: { journeyId: journeyObj.journeyId } });
+    // jatg-s1: explicit, different tenantId on the attacker session --
+    // requireJourneyAccess's POLICY.TENANT grant now requires a
+    // positively-verified tenant match; this test's own name and
+    // journey.tenantId already establish intent ("another tenant") -- the
+    // session side was simply incomplete before.
+    var req = authReq({ session: { accessToken: 'tok', login: 'attacker@example.test', tenantId: 'attacker@example.test' }, params: { journeyId: journeyObj.journeyId } });
     var res = makeRes();
     journey.handleGetJourneyById(req, res);
 

@@ -105,9 +105,14 @@ async function main() {
     });
     var journey = store.getJourney(jid);
     journey.ownerId = 'user-A';
+    // jatg-s1: explicit, matching tenantId on both sides -- requireJourneyAccess's
+    // POLICY.TENANT grant requires a positively-verified tenant match, not an
+    // absent-tenantId passthrough. 'user-B' is a same-org teammate viewing a
+    // journey they don't own -- this is the whole point of T2.
+    journey.tenantId = 'acme';
     journey.activeSessionId = sid;
 
-    var req = makeReq({ session: { accessToken: 'tok', login: 'user-B' }, params: { journeyId: jid } });
+    var req = makeReq({ session: { accessToken: 'tok', login: 'user-B', tenantId: 'acme' }, params: { journeyId: jid } });
     var res = makeRes();
 
     await test('T2a: handleGetJourneyState exists', function() {
@@ -200,11 +205,13 @@ async function main() {
     });
     var journey = store.getJourney(jid);
     journey.ownerId = 'user-A';
+    // jatg-s1: explicit, matching tenantId -- see T2's comment above.
+    journey.tenantId = 'acme';
     journey.activeSessionId = sid;
 
     // Owner submits a turn
     var turnReq = makeReq({
-      session: { accessToken: 'tok', login: 'user-A' },
+      session: { accessToken: 'tok', login: 'user-A', tenantId: 'acme' },
       params: { name: 'discovery', id: sid },
       body: {}
     });
@@ -213,7 +220,7 @@ async function main() {
     await skills.handlePostTurnHtml(turnReq, turnRes);
 
     // Viewer polls state
-    var viewReq = makeReq({ session: { accessToken: 'tok', login: 'user-B' }, params: { journeyId: jid } });
+    var viewReq = makeReq({ session: { accessToken: 'tok', login: 'user-B', tenantId: 'acme' }, params: { journeyId: jid } });
     var viewRes = makeRes();
     await j.handleGetJourneyState(viewReq, viewRes);
 

@@ -73,7 +73,17 @@ async function getTurnsForStage(journeyId, skillName, requestingSession) {
 
   const journey = journeyStore.getJourney(journeyId);
   try {
-    requireJourneyAccess(journey, requestingSession, POLICY.TENANT);
+    // jatg-s1: this reads actual conversation content, not journey
+    // metadata -- deliberately owner-only (POLICY.OWNER) even though a
+    // same-tenant teammate can now view/resume the journey itself
+    // (journey.js's own POLICY.TENANT routes). Confirmed against this
+    // function's own dedicated test (check-dsh-s2-shared-durable-read.js,
+    // "same tenantId but not the owner login is rejected") -- was
+    // previously passing POLICY.TENANT, which had no observable effect
+    // while requireJourneyAccess's POLICY.TENANT branch was dead code
+    // (jatg-s1's own root bug), but would have silently started granting
+    // same-tenant non-owners content access once that branch was fixed.
+    requireJourneyAccess(journey, requestingSession, POLICY.OWNER);
   } catch (_) {
     return null;
   }

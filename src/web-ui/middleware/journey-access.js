@@ -11,11 +11,17 @@ function isSameTenant(journey, session) {
 // isSameTenant() returned true or false, both branches above threw
 // FORBIDDEN, so every POLICY.TENANT route behaved as owner-only
 // regardless of tenant match. Fixed with an explicit, positively-verified
-// tenant-match grant -- deliberately NOT reusing isSameTenant() here,
-// since that helper's "either side missing tenantId -> true" passthrough
-// was built for unrelated Phase-0 legacy compatibility and would grant
-// access even when neither side has a verified tenant identity (see
-// tests/check-p0.1-journey-access.js Test 4, and jatg-s1's own decisions.md).
+// tenant-match grant -- deliberately NOT reusing isSameTenant() here.
+// isSameTenant()'s "either side missing tenantId -> true" passthrough
+// was built for unrelated Phase-0 legacy compatibility. A full audit of
+// every real POLICY.TENANT caller's own test suite (p0.2 and its
+// subprocess-callers p1.1/p1.2, s3.4, kcrs-s1, and this story's own
+// wsm2 bug report) found their test fixtures never set session.tenantId
+// at all -- not because they deliberately wanted the passthrough
+// semantics, but because they simply predate/omit tenant modeling on
+// the session side. Reusing isSameTenant() here would silently grant
+// cross-tenant access disguised as a coincidental fixture gap. See
+// jatg-s1's own decisions.md for the full investigation.
 function requireJourneyAccess(journey, session, policy) {
   if (journey == null) throw { code: 'NOT_FOUND' };
   if (!session || !session.accessToken) throw { code: 'UNAUTHENTICATED' };

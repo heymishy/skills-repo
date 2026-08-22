@@ -169,7 +169,16 @@ async function main() {
       store.setJourneyFields(j.journeyId, { ownerId: 'owner-login@example.test', tenantId: 'owner-login@example.test' });
       journey.setJourneyStoreModule(store);
 
-      const req = makeAuthReq('different-login@example.test', { params: { journeyId: j.journeyId } });
+      // jatg-s1: explicit, different tenantId on the requesting session --
+      // requireJourneyAccess's POLICY.TENANT grant now requires a
+      // positively-verified tenant match, so a session with no tenantId at
+      // all no longer coincidentally denies via the old always-deny bug.
+      // This test's own name and journey.tenantId already establish intent
+      // ("another tenant") -- the session side was simply incomplete before.
+      const req = makeAuthReq('different-login@example.test', {
+        session: { accessToken: 'test-token', login: 'different-login@example.test', tenantId: 'different-login@example.test' },
+        params: { journeyId: j.journeyId }
+      });
       const res = makeMockRes();
       await journey.handleGetJourneyById(req, res);
 
