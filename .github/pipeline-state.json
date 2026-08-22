@@ -25930,6 +25930,30 @@
           "assessedBy": "/review",
           "evidence": "No violations found. LOW note (1-L1 on vrne-s1): tenant_id-scoped role resolution is inherited from requireAdmin's existing pattern but not explicitly cited in Architecture Constraints — not a violation.",
           "assessedAt": "2026-08-22T09:21:30.534Z"
+        },
+        {
+          "id": "NFR-viewer-write-block-authorisation",
+          "category": "nfr",
+          "label": "A viewer-role session must be denied on every enumerated write route; engineer/product/admin roles must see zero regression",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-22T09:44:45.193Z"
+        },
+        {
+          "id": "NFR-viewer-write-block-fail-closed",
+          "category": "nfr",
+          "label": "Missing, null, or unrecognised role state must deny, not silently pass",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-22T09:44:45.193Z"
+        },
+        {
+          "id": "NFR-viewer-write-block-audit-logging",
+          "category": "nfr",
+          "label": "Every denial logged with person ID, tenant ID, timestamp, route",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-22T09:44:45.193Z"
         }
       ],
       "slicingStrategy": "risk-first",
@@ -25942,9 +25966,9 @@
             {
               "slug": "vrne-s1",
               "name": "Build the shared viewer-write-block gate and wire it to Products + Features/journeys routes",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-08-22T09:32:11.610Z",
+              "updatedAt": "2026-08-22T09:44:45.193Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -25955,14 +25979,18 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-21-viewer-role-no-enforcement/dor/vrne-s1-dor.md",
+              "dorContractArtefact": "artefacts/2026-08-21-viewer-role-no-enforcement/dor/vrne-s1-dor-contract.md",
+              "oversightLevel": "medium"
             },
             {
               "slug": "vrne-s2",
               "name": "Wire the viewer-write-block gate to Skill session routes",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-08-22T09:32:11.610Z",
+              "updatedAt": "2026-08-22T09:44:45.193Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -25973,14 +26001,18 @@
               "acTotal": 6,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-21-viewer-role-no-enforcement/dor/vrne-s2-dor.md",
+              "dorContractArtefact": "artefacts/2026-08-21-viewer-role-no-enforcement/dor/vrne-s2-dor-contract.md",
+              "oversightLevel": "medium"
             },
             {
               "slug": "vrne-s3",
               "name": "Wire the viewer-write-block gate to Credits/billing routes",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-08-22T09:32:11.610Z",
+              "updatedAt": "2026-08-22T09:44:45.193Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -25991,14 +26023,18 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-21-viewer-role-no-enforcement/dor/vrne-s3-dor.md",
+              "dorContractArtefact": "artefacts/2026-08-21-viewer-role-no-enforcement/dor/vrne-s3-dor-contract.md",
+              "oversightLevel": "medium"
             },
             {
               "slug": "vrne-s4",
               "name": "Wire the viewer-write-block gate to edge-case routes (agency client creation/invite, artefact annotations)",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-08-22T09:32:11.610Z",
+              "updatedAt": "2026-08-22T09:44:45.193Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -26009,7 +26045,11 @@
               "acTotal": 6,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-21-viewer-role-no-enforcement/dor/vrne-s4-dor.md",
+              "dorContractArtefact": "artefacts/2026-08-21-viewer-role-no-enforcement/dor/vrne-s4-dor-contract.md",
+              "oversightLevel": "medium"
             }
           ]
         }

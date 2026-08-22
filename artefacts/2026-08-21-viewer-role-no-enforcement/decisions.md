@@ -55,6 +55,15 @@
 ---
 
 ---
+**2026-08-22 | RISK-ACCEPT | definition-of-ready**
+**Decision:** Proceed to DoR sign-off for all 4 `vrne` stories without a separate domain-expert review of the AC verification scripts (W4 warning, all 4 stories).
+**Alternatives considered:** Pause sign-off until the operator personally walks through all 4 verification scripts against a running instance before assigning to the coding agent.
+**Rationale:** Matches the precedent already established for `jatg-s1`'s own W4 acceptance this session. The ACs across all 4 stories mirror an already-proven, low-ambiguity pattern (`requireAdmin`'s existing fail-closed structure) — each scenario is a direct, mechanically-derived reproduction (viewer denied / non-viewer unaffected / denial logged), not a subjective judgment call. `vrne-s4`'s AC5 in particular is a direct regression guard against the exact kind of over-correction a domain-expert review would be checking for (the additive-not-replacing org-type check).
+**Made by:** Hamish King (Founder/Operator), via `/definition-of-ready`
+**Revisit trigger:** None — accepted for this feature's 4 stories.
+---
+
+---
 
 ## Architecture Decision Records
 
