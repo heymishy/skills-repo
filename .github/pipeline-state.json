@@ -25541,13 +25541,13 @@
     {
       "slug": "2026-08-21-viewer-role-no-enforcement",
       "name": "Viewer role has no actual write-blocking enforcement anywhere in the codebase (found while test-planning rbg-s1)",
-      "stage": "discovery",
-      "health": "amber",
-      "discoveryStatus": "draft",
+      "stage": "benefit-metric",
+      "health": "green",
+      "discoveryStatus": "approved",
       "discoveryArtefact": "artefacts/2026-08-21-viewer-role-no-enforcement/discovery.md",
       "stories": [],
       "metrics": [],
-      "updatedAt": "2026-08-21T05:36:53.284Z",
+      "updatedAt": "2026-08-22T06:47:12.687Z",
       "track": "standard",
       "guardrails": []
     },

@@ -1,8 +1,8 @@
 # Discovery: Viewer role has no actual write-blocking enforcement
 
-**Status:** Draft — awaiting approval
+**Status:** Approved
 **Created:** 2026-08-21
-**Approved by:** [pending human review]
+**Approved by:** Hamish King (2026-08-22)
 **Author:** Claude (agent) — found while writing the test plan for `rbg-s1` (`2026-08-18-bri-s3-3-role-boundary-guard-gap`)
 
 ---
@@ -37,7 +37,7 @@ The smallest thing that validates viewer actually means read-only:
 
 ## Assumptions and Risks
 
-- **Assumption:** No real production tenant currently has a `viewer`-role person, so this is a latent gap rather than an active incident. **Not validated** — worth checking `team_memberships` in production directly before treating this as low-urgency.
+- **Assumption:** No real production tenant currently has a `viewer`-role person, so this is a latent gap rather than an active incident. **Still not validated as of approval (2026-08-22)** — a Chrome-based check of the live `/team/members` admin page was attempted and did not complete (the route returned `{"error":"Forbidden"}` for the logged-in session that had otherwise-working admin access to `/admin/credits`; not investigated further to avoid repeated unattended navigation against production). Direct DB/UI check remains a manual follow-up, non-blocking for this discovery's approval.
 - **Risk:** Enumerating "which write actions viewer should block" is itself a real product decision (not purely technical) — building the wrong boundary could be as confusing as having none.
 - **Risk:** Retrofitting a write-blocking gate across many existing routes risks breaking legitimate access patterns for `engineer`/`product` roles if the gate is implemented too broadly (e.g. accidentally gating a route that should stay open to all non-admin authenticated roles).
 
@@ -57,12 +57,12 @@ The smallest thing that validates viewer actually means read-only:
 
 ## Reviewers
 
-- [pending — recommend the operator/product owner as a non-engineering-equivalent stakeholder for this access-control decision]
+- Hamish King
 
 ## Approved By
 
-[pending]
+Hamish King, 2026-08-22
 
 ---
 
-**Next step:** Human review and approval → `/benefit-metric`
+**Next step:** `/benefit-metric`
