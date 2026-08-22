@@ -2548,11 +2548,23 @@ async function router(req, res) {
     authGuard(req, res, () => handleGetIdeas(req, res));
 
   } else if (pathname === '/api/ideas' && req.method === 'POST') {
-    authGuard(req, res, async () => { await handlePostIdea(req, res); });
+    // vrne-s1 — viewer-role write-block gate (AC2)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostIdea(req, res);
+    });
 
   } else if (pathname.match(/^\/api\/ideas\/[^/]+$/) && req.method === 'DELETE') {
     const ideaId = decodeURIComponent(pathname.slice('/api/ideas/'.length));
-    authGuard(req, res, () => handleDeleteIdea(req, res, ideaId));
+    // vrne-s1 — viewer-role write-block gate (AC2)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      return handleDeleteIdea(req, res, ideaId);
+    });
 
   } else if (pathname.startsWith('/features/') && req.method === 'GET') {
     const featureSlug = pathname.slice('/features/'.length);
@@ -2772,6 +2784,10 @@ async function router(req, res) {
     // jsvr-s1 — save inline-edited artefact content from the stage-view page
     // above. Same wiring gap as handleGetJourneyStageView.
     req.params = { journeyId: pathname.split('/')[3], stageName: decodeURIComponent(pathname.split('/')[5]) };
+    // vrne-s1 — viewer-role write-block gate (AC2)
+    let _rnvOk = false;
+    await requireNonViewer(req, res, () => { _rnvOk = true; });
+    if (!_rnvOk) return;
     await handlePostJourneyStageArtefact(req, res);
 
   } else if (pathname.match(/^\/journey\/[^/]+\/reference$/) && req.method === 'GET') {
@@ -2782,6 +2798,10 @@ async function router(req, res) {
   } else if (pathname.match(/^\/api\/journey\/[^/]+\/reference$/) && req.method === 'POST') {
     // step7 — save reference doc
     req.params = { journeyId: pathname.split('/')[3] };
+    // vrne-s1 — viewer-role write-block gate (AC2)
+    let _rnvOk = false;
+    await requireNonViewer(req, res, () => { _rnvOk = true; });
+    if (!_rnvOk) return;
     await handlePostReference(req, res);
 
   } else if (pathname.match(/^\/journey\/[^/]+\/reference-modal$/) && req.method === 'GET') {
@@ -2792,7 +2812,13 @@ async function router(req, res) {
   } else if (pathname.match(/^\/api\/journey\/[^/]+\/reference-upload$/) && req.method === 'POST') {
     // sdg.1 — reference file upload handler (JSON body: {files:[{name,size,contentBase64}]})
     req.params = { journeyId: pathname.split('/')[3] };
-    authGuard(req, res, async () => { await handlePostReferenceUpload(req, res); });
+    // vrne-s1 — viewer-role write-block gate (AC2)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostReferenceUpload(req, res);
+    });
 
   } else if (pathname.match(/^\/api\/journey\/[^/]+\/reference-modal\/start$/) && req.method === 'GET') {
     // sdg.1 — start first skill session after upload modal
@@ -2802,16 +2828,30 @@ async function router(req, res) {
   } else if (pathname.match(/^\/api\/journey\/[^/]+\/reference-modal\/skip$/) && req.method === 'POST') {
     // sdg.1 — skip strategy grounding and proceed to first skill
     req.params = { journeyId: pathname.split('/')[3] };
-    authGuard(req, res, async () => { await handlePostReferenceModalSkip(req, res); });
+    // vrne-s1 — viewer-role write-block gate (AC2)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostReferenceModalSkip(req, res);
+    });
 
   } else if (pathname === '/api/journey' && req.method === 'POST') {
     // ougl.3 — start journey + discovery session
+    // vrne-s1 — viewer-role write-block gate (AC2)
+    let _rnvOk = false;
+    await requireNonViewer(req, res, () => { _rnvOk = true; });
+    if (!_rnvOk) return;
     await handlePostJourney(req, res);
 
   } else if (pathname.match(/^\/api\/journey\/[^/]+\/gate-confirm$/) && req.method === 'POST') {
     // ougl.5 — gate-confirm: save artefact and advance to next stage
     const journeyIdPart = pathname.split('/')[3];
     req.params = { journeyId: journeyIdPart };
+    // vrne-s1 — viewer-role write-block gate (AC2)
+    let _rnvOk = false;
+    await requireNonViewer(req, res, () => { _rnvOk = true; });
+    if (!_rnvOk) return;
     await handlePostGateConfirm(req, res);
 
   } else if (pathname.match(/^\/journey\/[^/]+\/stories$/) && req.method === 'GET') {
@@ -2824,6 +2864,10 @@ async function router(req, res) {
     // ougl.6 — per-story stage routing: set story list + start test-plan
     const journeyIdPart = pathname.split('/')[3];
     req.params = { journeyId: journeyIdPart };
+    // vrne-s1 — viewer-role write-block gate (AC2)
+    let _rnvOk = false;
+    await requireNonViewer(req, res, () => { _rnvOk = true; });
+    if (!_rnvOk) return;
     await handlePostStories(req, res);
 
   } else if (pathname.match(/^\/journey\/[^/]+\/complete$/) && req.method === 'GET') {
@@ -2842,13 +2886,25 @@ async function router(req, res) {
     // owle.1 — open clarify side-trip
     const journeyIdPart = pathname.split('/')[3];
     req.params = { journeyId: journeyIdPart };
-    authGuard(req, res, async () => await handlePostSideTripClarify(req, res));
+    // vrne-s1 — viewer-role write-block gate (AC2)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostSideTripClarify(req, res);
+    });
 
   } else if (pathname.match(/^\/api\/journey\/[^/]+\/decisions$/) && req.method === 'POST') {
     // owle.2 — append decision entry to decisions.md
     const journeyIdPart = pathname.split('/')[3];
     req.params = { journeyId: journeyIdPart };
-    authGuard(req, res, async () => await handlePostDecisions(req, res));
+    // vrne-s1 — viewer-role write-block gate (AC2)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostDecisions(req, res);
+    });
 
   } else if (pathname.match(/^\/api\/journey\/[^/]+\/trace$/) && req.method === 'GET') {
     // owle.3 — artefact chain trace
@@ -2860,32 +2916,62 @@ async function router(req, res) {
     // owle.4 — post estimate row to workspace/estimation-norms.md
     const journeyIdPart = pathname.split('/')[3];
     req.params = { journeyId: journeyIdPart };
-    authGuard(req, res, async () => await handlePostEstimate(req, res));
+    // vrne-s1 — viewer-role write-block gate (AC2)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostEstimate(req, res);
+    });
 
   } else if (pathname.match(/^\/api\/journey\/[^/]+\/spikes\/[^/]+$/) && req.method === 'PATCH') {
     // owle.5 — record spike outcome
     const parts = pathname.split('/');
     req.params = { journeyId: parts[3], spikeSlug: parts[5] };
-    authGuard(req, res, async () => await handlePatchSpike(req, res));
+    // vrne-s1 — viewer-role write-block gate (AC2)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePatchSpike(req, res);
+    });
 
   } else if (pathname.match(/^\/api\/journey\/[^/]+\/spikes$/) && req.method === 'POST') {
     // owle.5 — create spike
     const journeyIdPart = pathname.split('/')[3];
     req.params = { journeyId: journeyIdPart };
-    authGuard(req, res, async () => await handlePostSpike(req, res));
+    // vrne-s1 — viewer-role write-block gate (AC2)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostSpike(req, res);
+    });
 
   } else if (pathname.match(/^\/api\/journey\/[^/]+\/side-trip$/) && req.method === 'DELETE') {
     // owle.1 — close side-trip
     const journeyIdPart = pathname.split('/')[3];
     req.params = { journeyId: journeyIdPart };
-    authGuard(req, res, async () => await handleDeleteSideTrip(req, res));
+    // vrne-s1 — viewer-role write-block gate (AC2)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handleDeleteSideTrip(req, res);
+    });
 
   } else if (pathname.match(/^\/api\/journey\/[^/]+$/) && req.method === 'DELETE') {
     // alrf-s10 — hard-delete a journey (operator request: clean up stale/
     // corrupted staging data)
     const journeyIdPart = pathname.split('/')[3];
     req.params = { journeyId: journeyIdPart };
-    authGuard(req, res, async () => await handleDeleteJourney(req, res));
+    // vrne-s1 — viewer-role write-block gate (AC2)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handleDeleteJourney(req, res);
+    });
 
   } else if (pathname.match(/^\/api\/journey\/[^/]+$/) && req.method === 'GET') {
     // owle.1 — journey state (excludes sideTripSessionId)
@@ -2897,7 +2983,13 @@ async function router(req, res) {
     // fdn-s1 — rename a feature's operator-facing label (never featureSlug)
     const journeyIdPart = pathname.split('/')[3];
     req.params = { journeyId: journeyIdPart };
-    authGuard(req, res, async () => await handlePutJourneyDisplayName(req, res));
+    // vrne-s1 — viewer-role write-block gate (AC2)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePutJourneyDisplayName(req, res);
+    });
 
   } else if (pathname === '/webhook/stripe' && req.method === 'POST') {
     // lab-s3.4 — Stripe webhook: credit provisioning + idempotency
@@ -3232,7 +3324,13 @@ async function router(req, res) {
   } else if (pathname.match(/^\/products\/[^/]+\/features$/) && req.method === 'POST') {
     // psh-s4 — create new journey with product_id FK, emits journey_created PostHog event
     req.params = { id: pathname.split('/')[2] };
-    authGuard(req, res, async () => { await handlePostProductFeature(req, res, null, _pshPool, null); });
+    // vrne-s1 — viewer-role write-block gate (AC2)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostProductFeature(req, res, null, _pshPool, null);
+    });
 
   } else if (pathname.match(/^\/products\/[^/]+\/repo\/create$/) && req.method === 'POST') {
     // prc-s2.1 — create a brand-new GitHub repo for a product
