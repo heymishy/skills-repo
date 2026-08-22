@@ -25657,12 +25657,12 @@
           "id": "jatg-s1",
           "slug": "jatg-s1",
           "name": "Restore same-tenant journey access under POLICY.TENANT",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "none",
-          "updatedAt": "2026-08-22T05:47:16.454Z",
+          "prStatus": "draft",
+          "updatedAt": "2026-08-22T05:48:42.253Z",
           "testPlan": {
             "status": "written",
             "totalTests": 9,
@@ -25699,7 +25699,8 @@
               "file": "artefacts/2026-08-22-journey-access-tenant-grant-gap/plans/jatg-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/754"
         }
       ],
       "metrics": [],
