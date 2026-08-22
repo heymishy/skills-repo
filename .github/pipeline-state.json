@@ -25657,12 +25657,12 @@
           "id": "jatg-s1",
           "slug": "jatg-s1",
           "name": "Restore same-tenant journey access under POLICY.TENANT",
-          "stage": "branch-setup",
+          "stage": "implementation-plan",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
           "prStatus": "none",
-          "updatedAt": "2026-08-22T04:09:31.475Z",
+          "updatedAt": "2026-08-22T04:12:38.968Z",
           "testPlan": {
             "status": "written",
             "totalTests": 9,
@@ -25677,7 +25677,28 @@
           "oversightLevel": "medium",
           "dorArtefact": "artefacts/2026-08-22-journey-access-tenant-grant-gap/dor/jatg-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-22-journey-access-tenant-grant-gap/dor/jatg-s1-dor-contract.md",
-          "guardrails": []
+          "guardrails": [],
+          "planArtefact": "artefacts/2026-08-22-journey-access-tenant-grant-gap/plans/jatg-s1-plan.md",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "RED -- write failing test for AC1 (same-tenant non-owner grant)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-22-journey-access-tenant-grant-gap/plans/jatg-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "GREEN -- fix requireJourneyAccess() with explicit tenant-match grant (AC1)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-22-journey-access-tenant-grant-gap/plans/jatg-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Confirm AC5 (wsm2 tests) and AC4 (full-suite regression)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-22-journey-access-tenant-grant-gap/plans/jatg-s1-plan.md"
+            }
+          ]
         }
       ],
       "metrics": [],
