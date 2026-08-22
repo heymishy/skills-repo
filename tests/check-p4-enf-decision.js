@@ -139,18 +139,21 @@ console.log('\n[p4-enf-decision] T6 — pipeline-state.json guardrails array has
   if (!state) {
     assert(false, 'T6: cannot read pipeline-state.json');
   } else {
-    // Find phase4 feature entry
+    // Search all feature/phase entries for a guardrails array containing the target entry —
+    // do not stop at the first feature with ANY guardrails array, since most features have
+    // one (often empty or unrelated) and the target entry may live on a later feature.
     const features = state.features || state.phases || {};
     let guardrails = null;
-    // Search all feature/phase entries for guardrails
     for (const key of Object.keys(features)) {
       const entry = features[key];
-      if (entry && Array.isArray(entry.guardrails)) {
+      if (entry && Array.isArray(entry.guardrails) &&
+          entry.guardrails.some(g => g.id === 'ADR-phase4-enforcement')) {
         guardrails = entry.guardrails;
         break;
       }
       // Also check nested structures
-      if (entry && entry.phase4 && Array.isArray(entry.phase4.guardrails)) {
+      if (entry && entry.phase4 && Array.isArray(entry.phase4.guardrails) &&
+          entry.phase4.guardrails.some(g => g.id === 'ADR-phase4-enforcement')) {
         guardrails = entry.phase4.guardrails;
         break;
       }
@@ -180,7 +183,11 @@ console.log('\n[p4-enf-decision] T7 — guardrails entry has correct file and st
     const features = state.features || state.phases || {};
     for (const key of Object.keys(features)) {
       const entry = features[key];
-      if (entry && Array.isArray(entry.guardrails)) { guardrails = entry.guardrails; break; }
+      if (entry && Array.isArray(entry.guardrails) &&
+          entry.guardrails.some(g => g.id === 'ADR-phase4-enforcement')) {
+        guardrails = entry.guardrails;
+        break;
+      }
     }
     if (!guardrails && Array.isArray(state.guardrails)) guardrails = state.guardrails;
 
