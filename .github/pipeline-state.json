@@ -25968,7 +25968,7 @@
               "name": "Build the shared viewer-write-block gate and wire it to Products + Features/journeys routes",
               "stage": "subagent-execution",
               "health": "green",
-              "updatedAt": "2026-08-22T10:28:18.421Z",
+              "updatedAt": "2026-08-22T10:34:06.295Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -26000,7 +26000,7 @@
                 {
                   "id": "task-3",
                   "name": "RED — write failing tests for requireNonViewer core behaviour",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s1-plan.md"
                 },
                 {
