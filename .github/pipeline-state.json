@@ -25926,8 +25926,10 @@
           "id": "ADR-025",
           "category": "adr",
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
-          "status": "not-assessed",
-          "assessedBy": "/definition"
+          "status": "met",
+          "assessedBy": "/review",
+          "evidence": "No violations found. LOW note (1-L1 on vrne-s1): tenant_id-scoped role resolution is inherited from requireAdmin's existing pattern but not explicitly cited in Architecture Constraints — not a violation.",
+          "assessedAt": "2026-08-22T09:21:30.534Z"
         }
       ],
       "slicingStrategy": "risk-first",
@@ -25940,26 +25942,38 @@
             {
               "slug": "vrne-s1",
               "name": "Build the shared viewer-write-block gate and wire it to Products + Features/journeys routes",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-08-22T09:21:30.534Z",
+              "reviewStatus": "passed",
+              "highFindings": 0
             },
             {
               "slug": "vrne-s2",
               "name": "Wire the viewer-write-block gate to Skill session routes",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-08-22T09:21:30.534Z",
+              "reviewStatus": "passed",
+              "highFindings": 0
             },
             {
               "slug": "vrne-s3",
               "name": "Wire the viewer-write-block gate to Credits/billing routes",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-08-22T09:21:30.534Z",
+              "reviewStatus": "passed",
+              "highFindings": 0
             },
             {
               "slug": "vrne-s4",
               "name": "Wire the viewer-write-block gate to edge-case routes (agency client creation/invite, artefact annotations)",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "updatedAt": "2026-08-22T09:21:30.534Z",
+              "reviewStatus": "passed",
+              "highFindings": 0
             }
           ]
         }
