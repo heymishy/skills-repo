@@ -157,7 +157,7 @@ async function main() {
       // `server.listen(0)` ephemeral port). Issue POST /products/confirm and POST /api/journey
       // with a viewer-role session cookie/header (matching however this repo's existing
       // integration tests authenticate a test session) and assert both return 403.
-      assert.ok(true, 'placeholder assertion -- replace with real dispatch calls per the note above before marking this task GREEN');
+      assert.fail('placeholder assertion -- replace with real dispatch calls per the note above before marking this task GREEN');
     });
   });
 
