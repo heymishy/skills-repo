@@ -1,7 +1,8 @@
 # Discovery: Legacy Ingestion Pipeline — `/reverse-engineer` → `/modernisation-decompose` → Feature Candidates → `/discovery`
 
-**Status:** Draft — awaiting approval
+**Status:** Clarified — awaiting approval
 **Created:** 2026-07-16
+**Clarified:** 2026-08-22 (via /clarify — see Clarification log)
 **Approved by:** [Name + date — filled in after human review]
 **Author:** Claude (agent)
 
@@ -28,25 +29,23 @@ Note also that neither skill references or depends on a shared "context-graph" e
 ## MVP Scope
 
 1. **A new Feature-candidate primitive**, formalizing `/modernisation-decompose`'s existing `candidate-features.md` output into a governed entity with `pipeline-state.json` backing: a distinct queue/backlog state (e.g. a top-level `featureCandidates[]` array, or a dedicated `candidateStatus` field) so an operator can see how many candidates exist and their disposition (queued / triaged / promoted to a real feature slug / rejected) without opening the raw markdown file. Fields carried over unchanged from the existing schema: `feature-slug`, `problem-statement`, `rule-ids`, `persona`, `mvp-scope`, plus the existing `umbrellaMetric` and traceability-note fields as provenance.
-2. **`/reverse-engineer` and `/modernisation-decompose` remain unchanged in their extraction/decomposition logic** — this discovery does not re-scope the six-layer methodology or the Java-specific boundary-signal detection itself. The Java-only limitation is named as an explicit, separately-resolvable scope decision (see Out of Scope), not silently absorbed into this MVP's build.
-3. **A UI/CLI entry point for starting legacy ingestion**, given the structural system-slug vs. feature-slug mismatch described in the Problem Statement. The MVP recommendation is a CLI/chat-invoked path (matching how `/reverse-engineer` already operates today, given it has never been run through any interface) rather than attempting to retrofit the existing `handlePostJourney`/`startSkill` UI flow in this same discovery — that retrofit is a larger, separate web-UI change better scoped at `/definition` once this discovery's data model is settled.
-4. **Feature candidates land in the new queue state** (item 1) distinct from active feature slugs, until an operator runs `/discovery` against one and it becomes a real, governed feature slug via the same slug-creation mechanism as manual discovery — preserving the legacy-provenance link (the `rule-ids`/traceability-note fields) as a new field on the resulting feature slug's own `pipeline-state.json` entry, not just in the discarded candidate record.
-5. **No shortcut through DoR/DoD** — feature candidates promoted to real feature slugs go through the full, unmodified outer loop and inner loop exactly as any other feature. Nothing in either component skill's own logic attempts to bypass a gate.
+2. **`/reverse-engineer` remains unchanged in its extraction logic; `/modernisation-decompose` gains boundary-signal detection for the confirmed target stack** (see item 4) — this discovery does not re-scope the six-layer extraction methodology itself, only extends decomposition-side detection for the specific non-Java stack once named.
+3. **A UI-reachable entry point for starting legacy ingestion, in MVP** — resolved via `/clarify` (2026-08-22): a CLI/chat-only interim path is not acceptable; the operator's expectation is a UI-reachable legacy-ingestion journey from day one. This means the web-UI retrofit — extending `handlePostJourney`/`startSkill` (`src/web-ui/routes/journey.js` line 333, currently accepting only `'ideate'`/`'discovery'`) to a third entry point, plus resolving the structural system-slug vs. feature-slug mismatch in the existing journey-creation flow — is in-scope for this feature's MVP, not deferred to a follow-on pass. This materially enlarges the MVP versus the original draft; `/definition` should size this as its own epic or a clearly separated story within the feature, not a small addition to the Feature-candidate primitive story.
+4. **Boundary-signal detection for a specific non-Java stack, in MVP** — resolved via `/clarify` (2026-08-22): the first real legacy-ingestion target is confirmed non-Java, so `/modernisation-decompose`'s current Java/Spring-only boundary-signal detection (Maven module, `@Service`, JPA aggregate root, `@Transactional` span) cannot ship as-is for MVP. **The specific target stack (COBOL / Struts 2 / IBM ACE-IIB / other) is not yet confirmed** — this is a genuine open item, not silently assumed, and must be named before `/definition` locks story scope, since the boundary-signal extension work differs materially by stack. `/reverse-engineer`'s own extraction methodology already supports COBOL, Struts 2, and IBM ACE/IIB — the gap is specifically on the decomposition side (`/modernisation-decompose`), and only for whichever stack is actually targeted first.
+5. **Feature candidates land in the new queue state** (item 1) distinct from active feature slugs, until an operator runs `/discovery` against one and it becomes a real, governed feature slug via the same slug-creation mechanism as manual discovery — preserving the legacy-provenance link (the `rule-ids`/traceability-note fields) as a new field on the resulting feature slug's own `pipeline-state.json` entry, not just in the discarded candidate record.
+6. **No shortcut through DoR/DoD** — feature candidates promoted to real feature slugs go through the full, unmodified outer loop and inner loop exactly as any other feature. Nothing in either component skill's own logic attempts to bypass a gate.
 
 ## Out of Scope
 
 - **The product-level rollup/dashboard work** — separate discovery (`artefacts/2026-07-16-product-rollup/discovery.md`), run first per the operator's own explicit sequencing. That discovery's own Assumptions section flags whether candidate-provenance should become a rollup field; this discovery does not resolve that question, only supplies the provenance field itself.
 - **Actual migration/rewrite tooling** — this pipeline produces discovery inputs, not code.
 - **Automated re-scoring of candidates over time as the legacy repo changes** — one-shot extraction for MVP.
-- **Closing the Java-only boundary-signal gap in `/modernisation-decompose`** — a real, non-trivial gap, but resolving it (adding COBOL/Struts2/ACE-IIB-aware boundary signals) is a substantial, separately-scoped piece of work in its own right, not an MVP-blocking dependency for formalizing the Feature-candidate primitive itself. A Java-only MVP is honest about its own limitation rather than silently pretending multi-stack support already exists.
-- **Retrofitting the existing web-UI journey-creation flow** to add a third `startSkill` option or a system-slug concept — deferred to a follow-on `/definition`/`/ideate` pass per MVP scope item 3's own reasoning.
+- **Boundary-signal detection for any stack beyond the one confirmed non-Java target** (MVP scope item 4) — resolving the *specific* target stack's gap is in-scope; a general-purpose multi-stack boundary-signal engine covering every stack `/reverse-engineer` supports (COBOL, Struts 2, IBM ACE/IIB, and beyond) is not — that remains a larger, separately-scoped piece of work.
 - **Multi-repo cross-referencing** — neither skill currently handles this at all (confirmed by absence in both SKILL.md files, not an explicit single-repo statement), and no evidence exists that a real multi-repo legacy system has been attempted. Deferred as materially harder and unvalidated by any real usage yet, not merely an MVP cut for convenience.
 
 ## Assumptions and Risks
 
-[ASSUMPTION] A CLI/chat-invoked entry point for legacy ingestion (MVP scope item 3) is an acceptable interim path, given the structural system-slug vs. feature-slug mismatch in the web UI — unconfirmed, requires /clarify before scope is locked. If the operator's actual expectation is a UI-reachable legacy-ingestion journey from day one, the web-UI retrofit becomes an MVP-in-scope item rather than a deferred one, materially changing this discovery's own MVP boundary.
-
-[ASSUMPTION] Leaving `/modernisation-decompose`'s Java-only boundary-signal limitation unresolved for MVP (Out of Scope) is acceptable, given the operator's own legacy systems of interest are not yet named — unconfirmed, requires /clarify before scope is locked. If the actual target legacy codebase for this pipeline's first real use is COBOL, Struts 2, or another non-Java stack (all of which `/reverse-engineer` already supports extraction for), this MVP would produce a working corpus with no working decomposition step — a materially incomplete pipeline for that specific case, not a deferred nice-to-have.
+**Open item (not an assumption — a genuinely unresolved fact, blocking for `/definition`):** The specific non-Java target stack (COBOL / Struts 2 / IBM ACE-IIB / other) confirmed via `/clarify` (2026-08-22) is not yet named. `/definition` cannot size the boundary-signal extension work (MVP scope item 4) without it — this must be resolved before story-level scoping locks, either by the operator naming the stack directly or via a short `/spike` if the target legacy system itself is still being identified.
 
 **Risk:** The de facto `candidate-features.md` schema was designed and implemented without ADR-003 hash-verification in mind. Retrofitting hash verification onto an existing, working output format carries a real (if likely small) risk of a breaking schema change to `/modernisation-decompose`'s own Step 3 output — this should be scoped carefully at `/definition` rather than assumed to be additive-only.
 
@@ -58,7 +57,7 @@ Note also that neither skill references or depends on a shared "context-graph" e
 
 **Feature candidates are visible and trackable, not buried in a markdown file.** Baseline: 0% — `candidate-features.md`'s existing entries (whenever first produced) have no `pipeline-state.json` presence today, confirmed directly. Target: 100% of produced feature candidates appear in the new queue state (MVP scope item 1) and are queryable the same way active feature slugs already are via the existing dashboard tooling. Measured via: a scripted check confirming every `candidate-features.md` entry has a corresponding `pipeline-state.json` record.
 
-**The Java-only boundary-signal limitation is a known, visible gap — not a silent one.** Baseline: currently silent — the limitation is documented only as a code comment inside `modernisation-decompose/SKILL.md`, not surfaced anywhere an operator evaluating this pipeline for a non-Java legacy system would see it before starting. Target: the limitation is stated explicitly in this feature's own `decisions.md` and in the Feature-candidate primitive's own documentation, so an operator with a COBOL/Struts2/other legacy system knows before running `/reverse-engineer` that decomposition will hit low-signal escalation. Measured via: direct review of the resulting artefacts at `/definition-of-ready`.
+**The confirmed non-Java target stack's boundary-signal detection works, not just Java's.** Baseline: 0% — `/modernisation-decompose` currently detects boundary signals for Java/Spring only; the confirmed non-Java target stack (name TBD, see Assumptions and Risks open item) has zero working boundary-signal detection today. Target: the named target stack's boundary signals are implemented and validated against at least one real extraction pass, with the decision and stack name recorded explicitly in this feature's own `decisions.md` — not left as a silent code-comment limitation the way the original Java-only gap was. Measured via: direct review of the resulting artefacts at `/definition-of-ready`, plus the first real end-to-end run referenced in the first Directional Success Indicator above.
 
 ## Constraints
 
@@ -71,14 +70,14 @@ Note also that neither skill references or depends on a shared "context-graph" e
 
 ---
 
-## /clarify recommendation
+## Clarification log
 
-This discovery contains 2 unconfirmed assumptions that affect scope and benefit measurement. Before proceeding to `/benefit-metric`, run `/clarify` to resolve:
+[2026-08-22] Clarified via /clarify:
+- Q: Is a CLI/chat-invoked entry point for legacy ingestion acceptable as the MVP interim path, given the structural system-slug vs. feature-slug mismatch in the web UI?  A: No — must be UI-reachable from day one. The web-UI retrofit is now MVP-in-scope (item 3), not deferred.
+- Q: Is leaving `/modernisation-decompose`'s Java-only boundary-signal limitation unresolved acceptable for MVP, given the operator's legacy systems of interest were not yet named?  A: No — the first real target is confirmed non-Java. Boundary-signal detection for that stack is now MVP-in-scope (item 4).
+- Q: Which non-Java stack is the first real target (COBOL / Struts 2 / IBM ACE-IIB / other)?  A: Not yet known — kept as a genuinely open item (see Assumptions and Risks) rather than assumed, to be resolved before `/definition` locks story scope.
 
-- A CLI/chat-invoked entry point for legacy ingestion is an acceptable interim path, given the structural system-slug vs. feature-slug mismatch found in the web UI.
-- Leaving `/modernisation-decompose`'s Java-only boundary-signal limitation unresolved for MVP is acceptable, given the operator's own legacy systems of interest are not yet named.
-
-These assumptions must be confirmed or refuted before scope can be locked. Running `/benefit-metric` with unresolved assumptions produces metrics that will require revision after clarification. The second assumption is time-sensitive — if a specific legacy system is already known to be non-Java, this changes the MVP boundary materially, not just a nice-to-have deferral.
+Both resolved assumptions **enlarge the MVP** relative to the original 2026-07-16 draft — this is a real, material scope change, not a clarification of existing wording. `/definition` should treat this feature's scope as roughly two cohesive bodies of work (the Feature-candidate primitive + queue state, and the UI-reachable entry point + confirmed-stack boundary-signal extension), likely warranting a multi-epic slicing strategy rather than a single small epic.
 
 ## Contributors
 
