@@ -7,12 +7,26 @@ function isSameTenant(journey, session) {
   return journey.tenantId === session.tenantId;
 }
 
+// jatg-s1: the policy param was accepted but never read -- whether
+// isSameTenant() returned true or false, both branches above threw
+// FORBIDDEN, so every POLICY.TENANT route behaved as owner-only
+// regardless of tenant match. Fixed with an explicit, positively-verified
+// tenant-match grant -- deliberately NOT reusing isSameTenant() here,
+// since that helper's "either side missing tenantId -> true" passthrough
+// was built for unrelated Phase-0 legacy compatibility and would grant
+// access even when neither side has a verified tenant identity (see
+// tests/check-p0.1-journey-access.js Test 4, and jatg-s1's own decisions.md).
 function requireJourneyAccess(journey, session, policy) {
   if (journey == null) throw { code: 'NOT_FOUND' };
   if (!session || !session.accessToken) throw { code: 'UNAUTHENTICATED' };
   if (journey.ownerId == null) return;
   if (session.login === journey.ownerId) return;
-  if (!isSameTenant(journey, session)) throw { code: 'FORBIDDEN' };
+  if (policy === POLICY.TENANT &&
+      journey.tenantId != null &&
+      session.tenantId != null &&
+      journey.tenantId === session.tenantId) {
+    return;
+  }
   throw { code: 'FORBIDDEN' };
 }
 
