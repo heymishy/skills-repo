@@ -17,26 +17,22 @@ process.env.GITHUB_CALLBACK_URL  = 'http://localhost:3000/auth/github/callback';
 delete process.env.POSTHOG_KEY;
 delete process.env.DATABASE_URL;
 
-// NOTE: These tests exercise requireNonViewer directly (the gate function in
-// isolation) -- they do NOT dispatch real HTTP requests through server.js and
-// do NOT prove these routes are actually wired to call requireNonViewer in
-// server.js's route dispatch. The route name in each test is a label only,
-// used to enumerate the AC1 (Acceptance Criterion 1, 15 Products-group
-// routes) and AC2 (Acceptance Criterion 2, 18 Features/journeys-group
-// routes) route lists -- it is not evidence that server.js calls this gate
-// for that path.
-// AC1's real server.js wiring HAS landed separately (src/web-ui/server.js
-// calls requireNonViewer at 15 call sites, one per AC1 route) and is verified
-// by that count, independent of this file. AC2's real server.js wiring has
-// NOT yet landed -- as of this writing there are no requireNonViewer call
-// sites in server.js for AC2's 18 routes. When AC2's wiring task lands, it
-// should add its own verification (e.g. a grep count check against
-// src/web-ui/server.js and/or an integration test issuing real HTTP requests
-// through server.js) -- neither exists in this file today.
+// NOTE: The AC1_ROUTES/AC2_ROUTES-driven tests below exercise requireNonViewer
+// directly (the gate function in isolation) -- they do NOT by themselves prove
+// these routes are wired to call requireNonViewer in server.js's route dispatch.
+// The route name in each test is a label only, used to enumerate the AC1
+// (Acceptance Criterion 1, 15 Products-group routes) and AC2 (Acceptance
+// Criterion 2, 18 Features/journeys-group routes) route lists.
+// Real server.js wiring for BOTH AC1 and AC2 HAS landed (src/web-ui/server.js
+// calls requireNonViewer at 34 call sites total: 1 import + 15 AC1 + 18 AC2)
+// and is verified two ways, independent of the isolated tests above: (1) the
+// grep count itself, and (2) the T-integration-real-dispatch test further
+// below in this file, which issues real HTTP requests through server.js's
+// actual router() for one representative route from each group.
 // If you are reading this file to confirm AC1's or AC2's wiring is complete,
-// this file alone is NOT sufficient evidence for either -- confirm the
-// separate wiring verification exists and passes too (already true for AC1;
-// still outstanding for AC2).
+// the T-integration-real-dispatch test further below, plus the grep count
+// (34), together constitute that evidence -- the isolated route-label tests
+// above do not, by themselves.
 
 var assert = require('assert');
 var path = require('path');
