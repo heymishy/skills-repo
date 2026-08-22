@@ -60,6 +60,43 @@ function setGetCurrentRole(fn) {
 }
 
 /**
+ * resolveRole — resolves the current session's role, applying the same live-role
+ * re-check (sec-perf-s2/lrtc-s1) requireAdmin has always used. Extracted so any
+ * gate needing role resolution (requireAdmin, requireNonViewer) observes
+ * identical behaviour by construction, not by two independently-maintained
+ * copies (vrne-s1 decisions.md ARCH entry, 2026-08-22).
+ *
+ * Deliberately NOT declared `async function` -- see requireAdmin's own docstring
+ * (AC4) for why: when unwired, this must return the plain result object
+ * synchronously, with zero `await`/microtask boundary, so requireAdmin's
+ * long-standing no-await-caller contract (arl-s2 T4/T5/T7, sec-perf-s2
+ * "matches pre-story behaviour" tests) is preserved byte-for-byte. When wired,
+ * it returns a Promise, exactly as the pre-extraction inline code did.
+ * @param {object} req
+ * @returns {{hasSession: boolean, role: string|null|undefined}|Promise<{hasSession: boolean, role: string|null|undefined}>}
+ */
+function resolveRole(req) {
+  const hasSession = !!(req.session && req.session.userId);
+  let role = hasSession ? req.session.role : undefined;
+
+  if (hasSession && _getCurrentRole) {
+    return (async () => {
+      try {
+        role = await _getCurrentRole(req.session.tenantId, req.session.login);
+      } catch (_err) {
+        // AC6 (arl-s2/sec-perf-s2): fail closed on adapter error -- never fall back to the stale cached role.
+        role = null;
+      }
+      // AC2: self-heal the cached session role so later reads elsewhere agree with the DB.
+      req.session.role = role;
+      return { hasSession, role };
+    })();
+  }
+
+  return { hasSession, role };
+}
+
+/**
  * requireAdmin — gate middleware for admin-only routes.
  * Returns 403 for unauthenticated users AND for authenticated non-admin users.
  * Fail-closed by default (tir-s4 AC4): any session/role state that is not unambiguously
@@ -81,23 +118,13 @@ function setGetCurrentRole(fn) {
  * @returns {Promise<void>|void}
  */
 async function requireAdmin(req, res, next) {
-  const hasSession = !!(req.session && req.session.userId);
-  let role = hasSession ? req.session.role : undefined;
-
-  if (hasSession && _getCurrentRole) {
-    try {
-      // lrtc-s1: pass req.session.login as the identity key, mirroring the
-      // login-time resolution pattern tir-s9 already established. Without
-      // it, a shared TENANT_ORG_ALLOWLIST tenant's live re-check could not
-      // tell requesters apart and resolved an arbitrary tenant-mate's role.
-      role = await _getCurrentRole(req.session.tenantId, req.session.login);
-    } catch (_err) {
-      // AC6: fail closed on adapter error -- never fall back to the stale cached role.
-      role = null;
-    }
-    // AC2: self-heal the cached session role so later reads elsewhere agree with the DB.
-    req.session.role = role;
-  }
+  const resolved = resolveRole(req);
+  // Only await when resolveRole actually returned a Promise (adapter wired) --
+  // awaiting unconditionally would insert a microtask boundary even on the
+  // synchronous/unwired path, breaking AC4's no-await-caller contract.
+  const { hasSession, role } = (resolved && typeof resolved.then === 'function')
+    ? await resolved
+    : resolved;
 
   const isAdmin = !!(hasSession && role === 'admin');
   if (!isAdmin) {
@@ -114,4 +141,4 @@ async function requireAdmin(req, res, next) {
   next();
 }
 
-module.exports = { requireAdmin, setLogger, setGetCurrentRole };
+module.exports = { requireAdmin, resolveRole, setLogger, setGetCurrentRole };
