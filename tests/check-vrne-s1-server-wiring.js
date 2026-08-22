@@ -1,5 +1,20 @@
 'use strict';
 
+// NOTE: These tests exercise requireNonViewer directly (the gate function in
+// isolation) -- they do NOT dispatch real HTTP requests through server.js and
+// do NOT prove these 15 routes are actually wired to call requireNonViewer in
+// server.js's route dispatch. The route name in each test is a label only,
+// used to enumerate the AC1 (Acceptance Criterion 1) route list -- it is not
+// evidence that server.js calls this gate for that path.
+// Real server.js wiring is a separate task in this story's implementation
+// plan and is not yet verified by any test in this file. When that wiring
+// task lands, it should add its own verification (e.g. a grep count check
+// against src/web-ui/server.js and/or an integration test issuing real HTTP
+// requests through server.js) -- neither exists in this file today.
+// If you are reading this file to confirm AC1's wiring is complete, this file
+// alone is NOT sufficient evidence -- confirm the separate wiring
+// verification exists and passes too.
+
 var assert = require('assert');
 var path = require('path');
 
