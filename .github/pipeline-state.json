@@ -25961,14 +25961,14 @@
         {
           "slug": "vrne-e1-viewer-write-blocking",
           "name": "Viewer-role people are actually restricted to read-only access",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "vrne-s1",
               "name": "Build the shared viewer-write-block gate and wire it to Products + Features/journeys routes",
               "stage": "subagent-execution",
               "health": "green",
-              "updatedAt": "2026-08-22T20:17:34.698Z",
+              "updatedAt": "2026-08-22T20:22:17.477Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
