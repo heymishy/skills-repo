@@ -25966,9 +25966,9 @@
             {
               "slug": "vrne-s1",
               "name": "Build the shared viewer-write-block gate and wire it to Products + Features/journeys routes",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-08-22T20:57:51.934Z",
+              "updatedAt": "2026-08-22T21:09:57.444Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -26052,7 +26052,9 @@
                   "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s1-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/755"
             },
             {
               "slug": "vrne-s2",
