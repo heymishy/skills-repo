@@ -25542,7 +25542,7 @@
     {
       "slug": "2026-08-21-viewer-role-no-enforcement",
       "name": "Viewer role has no actual write-blocking enforcement anywhere in the codebase (found while test-planning rbg-s1)",
-      "stage": "definition",
+      "stage": "branch-setup",
       "health": "green",
       "discoveryStatus": "approved",
       "discoveryArtefact": "artefacts/2026-08-21-viewer-role-no-enforcement/discovery.md",
@@ -25569,7 +25569,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-08-22T09:26:40.487Z",
+      "updatedAt": "2026-08-22T09:58:11.309Z",
       "track": "standard",
       "guardrails": [
         {
@@ -25966,9 +25966,9 @@
             {
               "slug": "vrne-s1",
               "name": "Build the shared viewer-write-block gate and wire it to Products + Features/journeys routes",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
-              "updatedAt": "2026-08-22T09:44:45.193Z",
+              "updatedAt": "2026-08-22T09:58:11.309Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {

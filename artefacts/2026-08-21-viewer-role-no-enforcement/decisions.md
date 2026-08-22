@@ -63,6 +63,14 @@
 **Revisit trigger:** None — accepted for this feature's 4 stories.
 ---
 
+**2026-08-22 | RISK-ACCEPT | branch-setup**
+**Decision:** Acknowledge `tests/check-p3.5-validate-trace.js`'s single baseline failure in the `vrne-s1` worktree as a pre-existing environmental flake, not a real regression, and proceed.
+**Alternatives considered:** Investigate and fix before starting implementation (per `/branch-setup`'s option 1).
+**Rationale:** The test's own internal `spawnSync` call to `pwsh` uses a 30s timeout; on this machine `pwsh`'s startup + `validate-trace.ps1`'s full run occasionally exceeds that window (confirmed directly: re-running the identical `pwsh -File scripts/validate-trace.ps1 --ci` with a 60s timeout in the same worktree returns `6 passed, 0 warnings, 0 failed`). Not a code defect in this feature's own changes — no file this feature touches is related to trace validation.
+**Made by:** Hamish King (Founder/Operator) + Claude (agent), via `/branch-setup`
+**Revisit trigger:** If this recurs across multiple stories/sessions, consider raising the test's own internal timeout (currently hardcoded to 30000ms in `tests/check-p3.5-validate-trace.js`) as a small, separately-scoped fix.
+---
+
 ---
 
 ## Architecture Decision Records
