@@ -162,7 +162,7 @@ setLogger({
 setViewerGateLogger({
   warn: function(event, data) { console.log(JSON.stringify(Object.assign({ event: event }, data))); }
 });
-console.log('[vrne-s1] requireNonViewer audit logger wired');
+console.log('[vrne-s1] viewer-gate audit logger wired');
 
 // lab-s1.3 / D37 mandatory separate wiring task — wire real GitHub provider adapter
 // routes/auth.js also wires this at module load for direct-require compat, but server.js
