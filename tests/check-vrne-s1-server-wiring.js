@@ -75,6 +75,28 @@ var AC1_ROUTES = [
   '/products/:id/modules/bulk-assign'
 ];
 
+// AC2 — Features/journeys-group routes
+var AC2_ROUTES = [
+  '/products/:id/features',
+  '/api/journey (POST)',
+  '/api/journey/:id/gate-confirm',
+  '/api/journey/:id/stories',
+  '/api/journey/:id/stage/:stage/artefact',
+  '/api/journey/:id/reference',
+  '/api/journey/:id/reference-upload',
+  '/api/journey/:id/reference-modal/skip',
+  '/api/journey/:id/side-trip/clarify',
+  '/api/journey/:id/decisions',
+  '/api/journey/:id/estimate',
+  '/api/journey/:id/spikes (POST)',
+  '/api/journey/:id/spikes/:spikeSlug (PATCH)',
+  '/api/journey/:id/side-trip (DELETE)',
+  '/api/journey/:id (DELETE)',
+  '/api/journey/:id/display-name (PUT)',
+  '/api/ideas (POST)',
+  '/api/ideas/:id (DELETE)'
+];
+
 async function main() {
   var queue = [];
 
@@ -93,11 +115,26 @@ async function main() {
     });
   });
 
+  AC2_ROUTES.forEach(function(routeName) {
+    queue.push(function() {
+      console.log('\n[vrne-s1] T-ac2-' + routeName + ' -- viewer denied');
+      return test('AC2: viewer denied on ' + routeName, async function() {
+        var gate = freshRequire(REQUIRE_NON_VIEWER_PATH);
+        var req = viewerSession();
+        var res = makeRes();
+        var nextCalled = false;
+        await gate.requireNonViewer(req, res, function() { nextCalled = true; });
+        assert.strictEqual(nextCalled, false, routeName + ': next() must not be called for viewer');
+        assert.strictEqual(res._status, 403, routeName + ': status must be 403');
+      });
+    });
+  });
+
   for (var i = 0; i < queue.length; i++) {
     await queue[i]();
   }
 
-  console.log('\n[vrne-s1-server-wiring] AC1 subtotal: ' + passed + ' passed, ' + failed + ' failed');
+  console.log('\n[vrne-s1-server-wiring] AC1+AC2 subtotal: ' + passed + ' passed, ' + failed + ' failed');
   if (failed > 0) {
     process.exitCode = 1;
   }
