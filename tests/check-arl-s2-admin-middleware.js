@@ -212,6 +212,19 @@ async function main() {
     });
   });
 
+  // vrne-s1: resolveRole(req) must be exported and independently callable
+  queue.push(function() {
+    console.log('\n[vrne-s1] T-resolveRole -- resolveRole is exported and resolves role independently of requireAdmin');
+    return test('resolveRole: exported function resolves { hasSession, role }', async function() {
+      var mod = freshRequire(REQUIRE_ADMIN_PATH);
+      assert.strictEqual(typeof mod.resolveRole, 'function', 'resolveRole must be an exported function');
+
+      var req = { session: { userId: 'u1', role: 'engineer', tenantId: 't1' } };
+      var result = await mod.resolveRole(req);
+      assert.strictEqual(result.hasSession, true, 'hasSession should be true');
+      assert.strictEqual(result.role, 'engineer', 'role should be read from session when no live adapter wired');
+    });
+  });
   // Run queue sequentially
   for (var i = 0; i < queue.length; i++) {
     await queue[i]();
