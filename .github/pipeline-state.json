@@ -4661,7 +4661,7 @@
             "artefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/test-plans/wucp.1-test-plan.md",
             "status": "written",
             "totalTests": 20,
-            "passing": 16
+            "passing": 20
           },
           "acTotal": 7,
           "acVerified": 7,
@@ -4674,7 +4674,7 @@
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-05-08-web-ui-copilot-chat-parity/review/wucp.1-review-1.md",
-          "updatedAt": "2026-08-17T06:44:37.685Z",
+          "updatedAt": "2026-08-22T07:04:16.618Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/345",
           "mergedAt": "2026-05-10",
           "dodStatus": "complete",
@@ -7366,12 +7366,12 @@
               "highFindings": 0,
               "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-08-10T02:08:44.317Z",
+              "updatedAt": "2026-08-22T07:04:16.619Z",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s3.1-test-plan.md",
-                "totalTests": 9,
-                "passing": 0
+                "totalTests": 12,
+                "passing": 12
               },
               "acTotal": 7,
               "acVerified": 0,
@@ -18981,11 +18981,11 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/review/rb-s5-review-1.md",
-              "updatedAt": "2026-08-17T06:33:43.664Z",
+              "updatedAt": "2026-08-22T07:04:16.619Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
-                "passing": 9
+                "passing": 10
               },
               "acTotal": 4,
               "acVerified": 4,
