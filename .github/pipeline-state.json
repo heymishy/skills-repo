@@ -25968,7 +25968,7 @@
               "name": "Build the shared viewer-write-block gate and wire it to Products + Features/journeys routes",
               "stage": "subagent-execution",
               "health": "green",
-              "updatedAt": "2026-08-22T10:43:49.346Z",
+              "updatedAt": "2026-08-22T10:59:00.783Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -26018,7 +26018,7 @@
                 {
                   "id": "task-6",
                   "name": "GREEN — wire requireNonViewer into 15 Products-group routes",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s1-plan.md"
                 },
                 {
