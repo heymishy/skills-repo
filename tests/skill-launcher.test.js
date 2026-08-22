@@ -7,6 +7,16 @@
  *
  * All tests FAIL until implementation exists (TDD entry condition).
  */
+// pisd-s1: listAvailableSkills defaults to .github/skills/, but this repo's
+// own skills live at repo-root skills/ -- same fix already applied to
+// artefact-preview.test.js/artefact-writeback.test.js earlier this
+// session. Without this override, handlePostSession's skill-name
+// allowlist check finds nothing (skills/ relocation, decisions.md AC5,
+// emptied .github/skills/ of the 5 skills that used to accidentally
+// satisfy this default). The general default-resolution question for
+// production is F15/csdg-s1's separate, still-open scope.
+process.env.COPILOT_SKILLS_DIRS = 'skills';
+
 const assert = require('assert');
 const path   = require('path');
 const fs     = require('fs');

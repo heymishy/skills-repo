@@ -9,7 +9,8 @@ const fs   = require('fs');
 const path = require('path');
 
 const ROOT     = path.resolve(__dirname, '..');
-const SKILL_MD = path.join(ROOT, '.github', 'skills', 'infra-plan', 'SKILL.md');
+// pisd-s1: infra-plan relocated from .github/skills/ to skills/ (its real, canonical home) -- see decisions.md AC5.
+const SKILL_MD = path.join(ROOT, 'skills', 'infra-plan', 'SKILL.md');
 
 let passed = 0;
 let failed = 0;
@@ -33,7 +34,7 @@ const lower       = content.toLowerCase();
 process.stdout.write('\n[inf.3] Unit tests\n');
 
 // infra-plan-skill-file-exists (AC1)
-assert(skillExists, 'infra-plan-skill-file-exists: .github/skills/infra-plan/SKILL.md exists');
+assert(skillExists, 'infra-plan-skill-file-exists: skills/infra-plan/SKILL.md exists');
 
 // skill-specifies-entry-condition-passing-review (AC1)
 assert(

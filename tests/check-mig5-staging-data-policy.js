@@ -9,7 +9,8 @@ const fs   = require('fs');
 const path = require('path');
 
 const ROOT     = path.resolve(__dirname, '..');
-const TEMPLATE = path.join(ROOT, '.github', 'templates', 'staging-data-policy.md');
+// pisd-s1: staging-data-policy.md relocated from .github/templates/ to templates/ (its real, canonical home) -- see decisions.md AC5.
+const TEMPLATE = path.join(ROOT, 'templates', 'staging-data-policy.md');
 
 let passed = 0;
 let failed = 0;
@@ -33,7 +34,7 @@ const lower          = content.toLowerCase();
 process.stdout.write('\n[mig.5] Unit tests\n');
 
 // staging-data-policy-template-file-exists (AC1)
-assert(templateExists, 'staging-data-policy-template-file-exists: .github/templates/staging-data-policy.md exists');
+assert(templateExists, 'staging-data-policy-template-file-exists: templates/staging-data-policy.md exists');
 
 // template-contains-synthetic-generated-data-option (AC1)
 assert(lower.includes('synthetic') && lower.includes('generated'),

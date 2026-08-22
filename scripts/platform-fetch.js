@@ -26,9 +26,13 @@ const sourceRoot = args[1]
     : path.join(__dirname, '..');
 
 // ── Directories to fetch ──────────────────────────────────────────────────────
+// pisd-s1: same fix as scripts/platform-init.js's COPY_DIRS — sourceRoot/skills
+// and sourceRoot/templates are the real, current source; sourceRoot/.github/skills
+// and sourceRoot/.github/templates were only ever the bootstrap-install
+// destination, never a source.
 const FETCH_DIRS = [
-  { src: path.join(sourceRoot, '.github', 'skills'), dest: path.join(targetDir, '.github', 'skills') },
-  { src: path.join(sourceRoot, '.github', 'templates'), dest: path.join(targetDir, '.github', 'templates') }
+  { src: path.join(sourceRoot, 'skills'), dest: path.join(targetDir, '.github', 'skills') },
+  { src: path.join(sourceRoot, 'templates'), dest: path.join(targetDir, '.github', 'templates') }
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────

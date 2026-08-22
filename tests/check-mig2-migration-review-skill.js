@@ -9,7 +9,8 @@ const fs   = require('fs');
 const path = require('path');
 
 const ROOT     = path.resolve(__dirname, '..');
-const SKILL_MD = path.join(ROOT, '.github', 'skills', 'schema-migration-review', 'SKILL.md');
+// pisd-s1: schema-migration-review relocated from .github/skills/ to skills/ (its real, canonical home) -- see decisions.md AC5.
+const SKILL_MD = path.join(ROOT, 'skills', 'schema-migration-review', 'SKILL.md');
 
 let passed = 0;
 let failed = 0;
@@ -33,7 +34,7 @@ const lower       = content.toLowerCase();
 process.stdout.write('\n[mig.2] Unit tests\n');
 
 // migration-review-skill-file-exists (AC1)
-assert(skillExists, 'migration-review-skill-file-exists: .github/skills/schema-migration-review/SKILL.md exists');
+assert(skillExists, 'migration-review-skill-file-exists: skills/schema-migration-review/SKILL.md exists');
 
 // skill-requires-ci-rollback-evidence-for-breaking (AC1)
 assert(

@@ -13,6 +13,26 @@
       "reason": "Bootstrap skill added out-of-band as a platform utility with no formal story chain. Retroactive story pending — tracked in artefact-coverage-exemptions.json as technical debt."
     },
     {
+      "slug": "infra-definition",
+      "reason": "pisd-s1: relocated from .github/skills/ to skills/ (its real, canonical home) — was invisible to this checker before the move, since .github/skills/ is not a scanned governed-source location. DoR artefact path uses the 'inf.1' story-ID slug, not 'infra-definition'. Covered by artefacts/2026-06-22-skills-infra-migration-tracks/dor/inf.1-dor.md — slug mismatch only, same pattern as bitbucket-cloud-validator above."
+    },
+    {
+      "slug": "infra-plan",
+      "reason": "pisd-s1: relocated from .github/skills/ to skills/. DoR artefact path uses the 'inf.3' story-ID slug, not 'infra-plan'. Covered by artefacts/2026-06-22-skills-infra-migration-tracks/dor/inf.3-dor.md — slug mismatch only."
+    },
+    {
+      "slug": "infra-review",
+      "reason": "pisd-s1: relocated from .github/skills/ to skills/. DoR artefact path uses the 'inf.2' story-ID slug, not 'infra-review'. Covered by artefacts/2026-06-22-skills-infra-migration-tracks/dor/inf.2-dor.md — slug mismatch only."
+    },
+    {
+      "slug": "schema-migration-plan",
+      "reason": "pisd-s1: relocated from .github/skills/ to skills/. DoR artefact path uses the 'mig.1' story-ID slug, not 'schema-migration-plan'. Covered by artefacts/2026-06-22-skills-infra-migration-tracks/dor/mig.1-dor.md — slug mismatch only."
+    },
+    {
+      "slug": "schema-migration-review",
+      "reason": "pisd-s1: relocated from .github/skills/ to skills/. DoR artefact path uses the 'mig.2' story-ID slug, not 'schema-migration-review'. Covered by artefacts/2026-06-22-skills-infra-migration-tracks/dor/mig.2-dor.md — slug mismatch only."
+    },
+    {
       "slug": "model-sweep",
       "reason": "Model-sweep skill directory created out-of-band as part of model evaluation capability exploration (artefacts/2026-05-10-model-evaluation-capability). No formal story chain yet. Retroactive story pending."
     },

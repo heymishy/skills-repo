@@ -7,7 +7,8 @@ var assert = require('assert');
 var path = require('path');
 var fs = require('fs');
 
-var SKILL_PATH = path.join(__dirname, '../.github/skills/schema-migration-plan/SKILL.md');
+// pisd-s1: schema-migration-plan relocated from .github/skills/ to skills/ (its real, canonical home) -- see decisions.md AC5.
+var SKILL_PATH = path.join(__dirname, '../skills/schema-migration-plan/SKILL.md');
 
 var passed = 0; var failed = 0; var failures = [];
 
@@ -31,8 +32,8 @@ console.log('====================================');
 // ---------------------------------------------------------------------------
 // T1 — file exists (AC1)
 // ---------------------------------------------------------------------------
-test('T1: .github/skills/schema-migration-plan/SKILL.md exists', function() {
-  assert.ok(fs.existsSync(SKILL_PATH), 'T1: SKILL.md must exist at .github/skills/schema-migration-plan/SKILL.md');
+test('T1: skills/schema-migration-plan/SKILL.md exists', function() {
+  assert.ok(fs.existsSync(SKILL_PATH), 'T1: SKILL.md must exist at skills/schema-migration-plan/SKILL.md');
 });
 
 // ---------------------------------------------------------------------------
