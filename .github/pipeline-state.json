@@ -25650,19 +25650,19 @@
     {
       "slug": "2026-08-22-journey-access-tenant-grant-gap",
       "name": "Restore same-tenant journey access under POLICY.TENANT (found during 33-failures cleanup)",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "health": "green",
       "stories": [
         {
           "id": "jatg-s1",
           "slug": "jatg-s1",
           "name": "Restore same-tenant journey access under POLICY.TENANT",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "dodStatus": "not-started",
           "prStatus": "none",
-          "updatedAt": "2026-08-22T03:49:38.447Z",
+          "updatedAt": "2026-08-22T04:00:26.445Z",
           "testPlan": {
             "status": "written",
             "totalTests": 9,
@@ -25673,11 +25673,15 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "verificationScriptArtefact": "artefacts/2026-08-22-journey-access-tenant-grant-gap/verification-scripts/jatg-s1-verification.md"
+          "verificationScriptArtefact": "artefacts/2026-08-22-journey-access-tenant-grant-gap/verification-scripts/jatg-s1-verification.md",
+          "oversightLevel": "medium",
+          "dorArtefact": "artefacts/2026-08-22-journey-access-tenant-grant-gap/dor/jatg-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-22-journey-access-tenant-grant-gap/dor/jatg-s1-dor-contract.md",
+          "guardrails": []
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-22T03:49:38.447Z",
+      "updatedAt": "2026-08-22T04:00:26.445Z",
       "track": "short",
       "guardrails": []
     },
