@@ -1356,3 +1356,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: decision
   signal-text: F11's decisions.md created with 4 entries -- 2 already-made /definition-time choices (SLICE: risk-first strategy; SCOPE: full 4-group route enumeration) plus 2 newly-resolved review findings (ARCH: require-admin.js refactored to export a shared resolveRole(req) helper rather than accept duplication across the two gates; SCOPE: vrne-s2's canvas-edit/assumption-confirm carve-out reversed -- added as real ACs so the epic's "every real write action" claim holds without qualification). Both story files and their review reports updated in place to reflect the resolutions rather than leaving them as open MEDIUM findings.
   source: agent-auto
+
+- date: 2026-08-22
+  session-phase: test-plan (F11 / viewer-role-no-enforcement)
+  signal-type: decision
+  signal-text: Test plans + verification scripts written for all 4 vrne stories (76 total unit/integration/NFR tests). AC1/AC2 on vrne-s1 (the route-bundling MEDIUM finding from review) resolved by writing one test per listed route rather than one bundled test per AC, directly implementing the review's own recommended fix. Test data strategy for all 4 stories is Synthetic (in-memory req/res mocks, mirroring the existing check-arl-s2-admin-middleware.js pattern) -- no E2E/CSS-layout-dependent ACs anywhere, since every AC is a backend HTTP-response-code assertion. Verification scripts deliberately use representative routes per AC group rather than enumerating all ~40 routes -- automated tests own exhaustive route coverage, human verification confirms representative behaviour is correct.
+  source: agent-auto

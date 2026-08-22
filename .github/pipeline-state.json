@@ -25942,38 +25942,74 @@
             {
               "slug": "vrne-s1",
               "name": "Build the shared viewer-write-block gate and wire it to Products + Features/journeys routes",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-08-22T09:21:30.534Z",
+              "updatedAt": "2026-08-22T09:32:11.610Z",
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 44,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "vrne-s2",
               "name": "Wire the viewer-write-block gate to Skill session routes",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-08-22T09:21:30.534Z",
+              "updatedAt": "2026-08-22T09:32:11.610Z",
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 17,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "vrne-s3",
               "name": "Wire the viewer-write-block gate to Credits/billing routes",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-08-22T09:21:30.534Z",
+              "updatedAt": "2026-08-22T09:32:11.610Z",
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "vrne-s4",
               "name": "Wire the viewer-write-block gate to edge-case routes (agency client creation/invite, artefact annotations)",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-08-22T09:21:30.534Z",
+              "updatedAt": "2026-08-22T09:32:11.610Z",
               "reviewStatus": "passed",
-              "highFindings": 0
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 9,
+                "passing": 0
+              },
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         }
