@@ -25966,18 +25966,18 @@
             {
               "slug": "vrne-s1",
               "name": "Build the shared viewer-write-block gate and wire it to Products + Features/journeys routes",
-              "stage": "subagent-execution",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-08-22T20:22:17.477Z",
+              "updatedAt": "2026-08-22T20:57:51.934Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 44,
-                "passing": 44
+                "totalTests": 53,
+                "passing": 53
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -26051,7 +26051,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s1-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "vrne-s2",
