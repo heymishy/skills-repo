@@ -25968,7 +25968,7 @@
               "name": "Build the shared viewer-write-block gate and wire it to Products + Features/journeys routes",
               "stage": "subagent-execution",
               "health": "green",
-              "updatedAt": "2026-08-22T20:11:48.034Z",
+              "updatedAt": "2026-08-22T20:17:34.698Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -26048,7 +26048,7 @@
                 {
                   "id": "task-11",
                   "name": "Full regression — confirm all 44 planned tests pass, zero regressions",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s1-plan.md"
                 }
               ]
