@@ -72,6 +72,7 @@ const { migrateIdentityLinksSchema } = require('./modules/identity-links'); // t
 const { handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers } = require('./routes/account-linking'); // tir-s2
 const { createSettingsHandlers, handlePostThemeToggleClicked } = require('./routes/settings'); // c1 / si-s1
 const { requireAdmin, setGetCurrentRole }                            = require('./middleware/require-admin'); // arl-s2 / sec-perf-s2
+const { requireNonViewer, setLogger: setViewerGateLogger }           = require('./middleware/require-non-viewer'); // vrne-s1
 const { adminCreditsGet, adminCreditsPost, adminSetPlanPost }        = require('./routes/admin-credits');     // arl-s3 / tpac-s1
 const { adminMockGatewayGet, adminMockGatewayPost }                  = require('./routes/admin-mock-gateway'); // amgt-s1
 const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handleGetProductGuardrailsView, handleGetGuardrailsForm, handlePostGuardrailsForm, _trackPendingPr, handlePostRequestPromotion, handlePostOrgRepoSettings, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules, handlePostApprovePromotion, handlePostRejectPromotion } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1 / wugs-s2 / wugs-s5 / wugs-s6 / wugs-s3 / wugs-s7 / wugs-s9 (smug-s1's handleGetProductStandardsTab removed, wugs-s11)
@@ -3158,11 +3159,23 @@ async function router(req, res) {
 
   } else if (pathname === '/products/new' && req.method === 'POST') {
     // psh-s3 — product creation: generate AI draft
-    authGuard(req, res, async () => { await handlePostProductNew(req, res, null, null, null); });
+    // vrne-s1 — viewer-role write-block gate (AC1)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostProductNew(req, res, null, null, null);
+    });
 
   } else if (pathname === '/products/confirm' && req.method === 'POST') {
     // psh-s3 — product creation: confirm and persist
-    authGuard(req, res, async () => { await handlePostProductConfirm(req, res, null, _pshPool, null); });
+    // vrne-s1 — viewer-role write-block gate (AC1)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostProductConfirm(req, res, null, _pshPool, null);
+    });
 
   } else if (pathname.match(/^\/products\/[^/]+$/) && req.method === 'GET') {
     // psh-s4 — product view: list features for one product with stage + health
@@ -3172,25 +3185,49 @@ async function router(req, res) {
   } else if (pathname.match(/^\/products\/[^/]+\/sync$/) && req.method === 'POST') {
     // pr-s3 -- trigger a new sync of the product's connected repo
     req.params = { id: pathname.split('/')[2] };
-    authGuard(req, res, async () => { await handlePostProductSync(req, res, null, _pshPool, null); });
+    // vrne-s1 — viewer-role write-block gate (AC1)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostProductSync(req, res, null, _pshPool, null);
+    });
 
   } else if (pathname.match(/^\/products\/[^/]+\/repo$/) && req.method === 'POST') {
     // prc-s1.2 — connect (or re-connect) an existing GitHub repo to a product
     req.params = { id: pathname.split('/')[2] };
-    authGuard(req, res, async () => { await handlePostConnectRepo(req, res, null, _pshPool, null); });
+    // vrne-s1 — viewer-role write-block gate (AC1)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostConnectRepo(req, res, null, _pshPool, null);
+    });
 
   } else if (pathname.match(/^\/products\/[^/]+$/) && req.method === 'DELETE') {
     // prc-s4.2 — delete (detach) a product: removes product row and journeys;
     // never touches the underlying GitHub repo
     req.params = { id: pathname.split('/')[2] };
-    authGuard(req, res, async () => { await handleDeleteProduct(req, res, null, _pshPool, null); });
+    // vrne-s1 — viewer-role write-block gate (AC1)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handleDeleteProduct(req, res, null, _pshPool, null);
+    });
 
   } else if (pathname.match(/^\/products\/[^/]+$/) && req.method === 'PUT') {
     // prc-s4.1 — edit a product's name, description, and/or repo association
     // Reuses the repo-access-verification logic from prc-s1.2 via _applyRepoChange
     // to ensure the edit flow and first-time-configuration flow never drift (AC3)
     req.params = { id: pathname.split('/')[2] };
-    authGuard(req, res, async () => { await handlePutProductEdit(req, res, null, _pshPool, null); });
+    // vrne-s1 — viewer-role write-block gate (AC1)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePutProductEdit(req, res, null, _pshPool, null);
+    });
 
   } else if (pathname.match(/^\/products\/[^/]+\/features$/) && req.method === 'POST') {
     // psh-s4 — create new journey with product_id FK, emits journey_created PostHog event
@@ -3200,7 +3237,13 @@ async function router(req, res) {
   } else if (pathname.match(/^\/products\/[^/]+\/repo\/create$/) && req.method === 'POST') {
     // prc-s2.1 — create a brand-new GitHub repo for a product
     req.params = { id: pathname.split('/')[2] };
-    authGuard(req, res, async () => { await handlePostProductRepoCreate(req, res, null, _pshPool, null); });
+    // vrne-s1 — viewer-role write-block gate (AC1)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostProductRepoCreate(req, res, null, _pshPool, null);
+    });
 
   } else if (pathname.match(/^\/products\/[^/]+\/kanban$/) && req.method === 'GET') {
     // psh-s6 — per-product kanban board with 8 stage columns and health indicators
@@ -3211,7 +3254,13 @@ async function router(req, res) {
     // s1.1 — board-driven "Advance" action: a new caller of the existing,
     // already-proven POST /api/journey/:journeyId/gate-confirm route.
     req.params = { journeyId: pathname.split('/')[4] };
-    authGuard(req, res, async () => { await handlePostBoardAdvance(req, res, null, _pshPool, null); });
+    // vrne-s1 — viewer-role write-block gate (AC1)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostBoardAdvance(req, res, null, _pshPool, null);
+    });
 
   } else if (pathname.match(/^\/products\/[^/]+\/roadmap$/) && req.method === 'GET') {
     // a5 -- Roadmap tab: discovery-only/ideate-only work with no pipeline-state.json entry
@@ -3237,7 +3286,11 @@ async function router(req, res) {
     // now wired to a real write adapter. Closes the gap wugs-s5 flagged in
     // decisions.md: the POST route previously did not exist at all.
     req.params = { id: pathname.split('/')[2] };
+    // vrne-s1 — viewer-role write-block gate (AC1)
     authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
       const writeAdapterForRequest = async (target, content) => {
         const prodRow = (await _pshPool.query(
           'SELECT repo_owner, repo_name FROM products WHERE product_id = $1',
@@ -3263,7 +3316,13 @@ async function router(req, res) {
   } else if (pathname.match(/^\/products\/[^/]+\/guardrails\/promote$/) && req.method === 'POST') {
     // wugs-s8 -- POST /products/:id/guardrails/promote: request a product-level guardrail/standard be promoted to org level.
     req.params = { id: pathname.split('/')[2] };
-    authGuard(req, res, async () => { await handlePostRequestPromotion(req, res, null, _pshPool); });
+    // vrne-s1 — viewer-role write-block gate (AC1)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostRequestPromotion(req, res, null, _pshPool);
+    });
 
   } else if (pathname.match(/^\/api\/admin\/promotions\/[^/]+\/approve$/) && req.method === 'POST') {
     // wugs-s9 -- POST /api/admin/promotions/:requestId/approve. Role gate
@@ -3309,27 +3368,57 @@ async function router(req, res) {
   } else if (pathname.match(/^\/products\/[^/]+\/modules$/) && req.method === 'POST') {
     // a1 (AC1, AC4) — create a new module for a product
     req.params = { id: pathname.split('/')[2] };
-    authGuard(req, res, async () => { await handlePostProductModule(req, res, null, _pshPool, null); });
+    // vrne-s1 — viewer-role write-block gate (AC1)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostProductModule(req, res, null, _pshPool, null);
+    });
 
   } else if (pathname.match(/^\/products\/[^/]+\/modules\/[^/]+$/) && req.method === 'PUT') {
     // a1 (AC2) — rename a module, preserving its id and existing references
     req.params = { id: pathname.split('/')[2], moduleId: pathname.split('/')[4] };
-    authGuard(req, res, async () => { await handlePutProductModule(req, res, null, _pshPool, null); });
+    // vrne-s1 — viewer-role write-block gate (AC1)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePutProductModule(req, res, null, _pshPool, null);
+    });
 
   } else if (pathname.match(/^\/products\/[^/]+\/modules\/[^/]+$/) && req.method === 'DELETE') {
     // a1 (AC3) — delete a module, reassigning its journeys/epics to Unassigned
     req.params = { id: pathname.split('/')[2], moduleId: pathname.split('/')[4] };
-    authGuard(req, res, async () => { await handleDeleteProductModule(req, res, null, _pshPool, null); });
+    // vrne-s1 — viewer-role write-block gate (AC1)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handleDeleteProductModule(req, res, null, _pshPool, null);
+    });
 
   } else if (pathname.match(/^\/products\/[^/]+\/epics\/[^/]+\/module$/) && req.method === 'PUT') {
     // a2 -- reassign an epic (journey) to a different module within the same product
     req.params = { id: pathname.split('/')[2], epicId: pathname.split('/')[4] };
-    authGuard(req, res, async () => { await handlePutEpicModule(req, res, null, _pshPool, null); });
+    // vrne-s1 — viewer-role write-block gate (AC1)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePutEpicModule(req, res, null, _pshPool, null);
+    });
 
   } else if (pathname.match(/^\/products\/[^/]+\/modules\/bulk-assign$/) && req.method === 'POST') {
     // tmc-s1 (AC3, AC4, AC7) -- bulk-assign taxonomy feature slugs to a module
     req.params = { id: pathname.split('/')[2] };
-    authGuard(req, res, async () => { await handlePostBulkAssignFeatureModules(req, res, null, _pshPool, null); });
+    // vrne-s1 — viewer-role write-block gate (AC1)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostBulkAssignFeatureModules(req, res, null, _pshPool, null);
+    });
 
   } else if (pathname === '/org/kanban' && req.method === 'GET') {
     // psh-s7 — org-level kanban: all products and their features grouped by product
