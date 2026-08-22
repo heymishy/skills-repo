@@ -25650,38 +25650,61 @@
     {
       "slug": "2026-08-22-journey-access-tenant-grant-gap",
       "name": "Restore same-tenant journey access under POLICY.TENANT (found during 33-failures cleanup)",
-      "stage": "definition-of-ready",
+      "stage": "branch-setup",
       "health": "green",
       "stories": [
         {
           "id": "jatg-s1",
           "slug": "jatg-s1",
           "name": "Restore same-tenant journey access under POLICY.TENANT",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "none",
-          "updatedAt": "2026-08-22T04:00:26.445Z",
+          "prStatus": "draft",
+          "updatedAt": "2026-08-22T05:48:42.253Z",
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0,
+            "passing": 9,
             "artefact": "artefacts/2026-08-22-journey-access-tenant-grant-gap/test-plans/jatg-s1-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "verificationScriptArtefact": "artefacts/2026-08-22-journey-access-tenant-grant-gap/verification-scripts/jatg-s1-verification.md",
           "oversightLevel": "medium",
           "dorArtefact": "artefacts/2026-08-22-journey-access-tenant-grant-gap/dor/jatg-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-22-journey-access-tenant-grant-gap/dor/jatg-s1-dor-contract.md",
-          "guardrails": []
+          "guardrails": [],
+          "planArtefact": "artefacts/2026-08-22-journey-access-tenant-grant-gap/plans/jatg-s1-plan.md",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "RED -- write failing test for AC1 (same-tenant non-owner grant)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-22-journey-access-tenant-grant-gap/plans/jatg-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "GREEN -- fix requireJourneyAccess() with explicit tenant-match grant (AC1)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-22-journey-access-tenant-grant-gap/plans/jatg-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Confirm AC5 (wsm2 tests) and AC4 (full-suite regression)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-22-journey-access-tenant-grant-gap/plans/jatg-s1-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/754"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-22T04:00:26.445Z",
+      "updatedAt": "2026-08-22T04:09:31.475Z",
       "track": "short",
       "guardrails": []
     },
