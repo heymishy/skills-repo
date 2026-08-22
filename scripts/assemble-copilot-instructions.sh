@@ -90,8 +90,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 if [[ -z "$SKILLS_REPO_PATH" ]]; then
-  # If running from inside the skills-repo itself, use the repo root
-  if [[ -d "$REPO_ROOT/.github/skills" ]]; then
+  # If running from inside the skills-repo itself, use the repo root.
+  # pisd-s1: the canonical skills-repo's own skills live at repo-root
+  # skills/ (moved there in commit 1b1d0682); .github/skills/ is only
+  # ever the bootstrap-install DESTINATION for consumer repos.
+  if [[ -d "$REPO_ROOT/skills" ]] || [[ -d "$REPO_ROOT/.github/skills" ]]; then
     SKILLS_REPO_PATH="$REPO_ROOT"
   else
     error "Could not detect skills-repo path. Use --skills-repo-path <path>."
@@ -100,7 +103,19 @@ if [[ -z "$SKILLS_REPO_PATH" ]]; then
   fi
 fi
 
-SKILLS_DIR="$SKILLS_REPO_PATH/.github/skills"
+# pisd-s1: --skills-repo-path is used two ways -- (a) the canonical
+# skills-repo's own checkout (skills at root skills/), and (b) a
+# consumer repo that has already been bootstrapped, whose own copy
+# lives at .github/skills/ (see cli/lib/init.js's --all-harnesses call,
+# which passes the freshly-bootstrapped TARGET as --skills-repo-path).
+# Prefer skills/ (the canonical source) and fall back to .github/skills/
+# (an already-bootstrapped consumer repo) so both callers resolve
+# correctly.
+if [[ -d "$SKILLS_REPO_PATH/skills" ]]; then
+  SKILLS_DIR="$SKILLS_REPO_PATH/skills"
+else
+  SKILLS_DIR="$SKILLS_REPO_PATH/.github/skills"
+fi
 if [[ ! -d "$SKILLS_DIR" ]]; then
   error "Skills directory not found: $SKILLS_DIR"
   exit 1
