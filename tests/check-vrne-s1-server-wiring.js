@@ -2,18 +2,24 @@
 
 // NOTE: These tests exercise requireNonViewer directly (the gate function in
 // isolation) -- they do NOT dispatch real HTTP requests through server.js and
-// do NOT prove these 15 routes are actually wired to call requireNonViewer in
+// do NOT prove these routes are actually wired to call requireNonViewer in
 // server.js's route dispatch. The route name in each test is a label only,
-// used to enumerate the AC1 (Acceptance Criterion 1) route list -- it is not
-// evidence that server.js calls this gate for that path.
-// Real server.js wiring is a separate task in this story's implementation
-// plan and is not yet verified by any test in this file. When that wiring
-// task lands, it should add its own verification (e.g. a grep count check
-// against src/web-ui/server.js and/or an integration test issuing real HTTP
-// requests through server.js) -- neither exists in this file today.
-// If you are reading this file to confirm AC1's wiring is complete, this file
-// alone is NOT sufficient evidence -- confirm the separate wiring
-// verification exists and passes too.
+// used to enumerate the AC1 (Acceptance Criterion 1, 15 Products-group
+// routes) and AC2 (Acceptance Criterion 2, 18 Features/journeys-group
+// routes) route lists -- it is not evidence that server.js calls this gate
+// for that path.
+// AC1's real server.js wiring HAS landed separately (src/web-ui/server.js
+// calls requireNonViewer at 15 call sites, one per AC1 route) and is verified
+// by that count, independent of this file. AC2's real server.js wiring has
+// NOT yet landed -- as of this writing there are no requireNonViewer call
+// sites in server.js for AC2's 18 routes. When AC2's wiring task lands, it
+// should add its own verification (e.g. a grep count check against
+// src/web-ui/server.js and/or an integration test issuing real HTTP requests
+// through server.js) -- neither exists in this file today.
+// If you are reading this file to confirm AC1's or AC2's wiring is complete,
+// this file alone is NOT sufficient evidence for either -- confirm the
+// separate wiring verification exists and passes too (already true for AC1;
+// still outstanding for AC2).
 
 var assert = require('assert');
 var path = require('path');
