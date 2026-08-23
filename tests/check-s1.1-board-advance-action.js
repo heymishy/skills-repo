@@ -171,7 +171,8 @@ queue.push(function() {
       return [];
     });
 
-    const req = { session: { tenantId: 'tenant-x', accessToken: 'tok', login: 'user' }, params: { journeyId: journeyId } };
+    // rcfc-s1: handlePostBoardAdvance delegates to the now-CSRF-guarded handlePostGateConfirm
+    const req = { session: { tenantId: 'tenant-x', accessToken: 'tok', login: 'user', csrfToken: 'test-csrf-token' }, params: { journeyId: journeyId }, body: { _csrf: 'test-csrf-token' } };
     const res = makeMockRes();
     await products.handlePostBoardAdvance(req, res, null, pool, null);
 
@@ -217,7 +218,8 @@ queue.push(function() {
       return [];
     });
 
-    const req = { session: { tenantId: 'tenant-y', accessToken: 'tok', login: 'user' }, params: { journeyId: journeyId } };
+    // rcfc-s1: handlePostBoardAdvance delegates to the now-CSRF-guarded handlePostGateConfirm
+    const req = { session: { tenantId: 'tenant-y', accessToken: 'tok', login: 'user', csrfToken: 'test-csrf-token' }, params: { journeyId: journeyId }, body: { _csrf: 'test-csrf-token' } };
     const res = makeMockRes();
     await products.handlePostBoardAdvance(req, res, null, pool, null);
 
@@ -262,7 +264,8 @@ queue.push(function() {
       return [];
     });
 
-    const req = { session: { tenantId: 'tenant-a', accessToken: 'tok', login: 'attacker' }, params: { journeyId: journeyId } };
+    // rcfc-s1: harmless to include even though this test's 404 fires before csrfGuard is reached
+    const req = { session: { tenantId: 'tenant-a', accessToken: 'tok', login: 'attacker', csrfToken: 'test-csrf-token' }, params: { journeyId: journeyId }, body: { _csrf: 'test-csrf-token' } };
     const res = makeMockRes();
     await products.handlePostBoardAdvance(req, res, null, pool, null);
 
@@ -319,7 +322,8 @@ queue.push(function() {
       return [];
     });
 
-    const req = { session: { tenantId: 'tenant-z', accessToken: 'tok', login: 'user' }, params: { journeyId: journeyId } };
+    // rcfc-s1: handlePostBoardAdvance delegates to the now-CSRF-guarded handlePostGateConfirm
+    const req = { session: { tenantId: 'tenant-z', accessToken: 'tok', login: 'user', csrfToken: 'test-csrf-token' }, params: { journeyId: journeyId }, body: { _csrf: 'test-csrf-token' } };
     const res = makeMockRes();
     await products.handlePostBoardAdvance(req, res, null, pool, null);
 
