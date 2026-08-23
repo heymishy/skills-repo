@@ -26218,9 +26218,9 @@
             {
               "slug": "vrne-s4",
               "name": "Wire the viewer-write-block gate to edge-case routes (agency client creation/invite, artefact annotations)",
-              "stage": "subagent-execution",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-08-23T09:44:54.087Z",
+              "updatedAt": "2026-08-23T09:55:01.275Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -26229,7 +26229,7 @@
                 "passing": 9
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -26261,7 +26261,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s4-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             }
           ]
         }
