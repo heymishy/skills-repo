@@ -2584,7 +2584,11 @@ async function router(req, res) {
     });
 
   } else if (pathname.startsWith('/api/artefacts/') && pathname.endsWith('/annotations') && req.method === 'POST') {
+    // vrne-s4 — viewer-role write-block gate (AC3)
     authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
       await handlePostAnnotation(req, res);
     });
 
@@ -3590,7 +3594,13 @@ async function router(req, res) {
       res.writeHead(503, { 'Content-Type': 'text/plain' });
       res.end('Agency provisioning unavailable');
     } else {
-      authGuard(req, res, async () => { await _agencyProvisioningHandlers.handlePostCreateClient(req, res); });
+      // vrne-s4 — viewer-role write-block gate (AC1)
+      authGuard(req, res, async () => {
+        let _rnvOk = false;
+        await requireNonViewer(req, res, () => { _rnvOk = true; });
+        if (!_rnvOk) return;
+        await _agencyProvisioningHandlers.handlePostCreateClient(req, res);
+      });
     }
 
   } else if (pathname.match(/^\/agency\/clients\/[^/]+\/invite$/) && req.method === 'GET') {
@@ -3610,7 +3620,13 @@ async function router(req, res) {
       res.writeHead(503, { 'Content-Type': 'text/plain' });
       res.end('Agency provisioning unavailable');
     } else {
-      authGuard(req, res, async () => { await _agencyProvisioningHandlers.handlePostInviteUser(req, res); });
+      // vrne-s4 — viewer-role write-block gate (AC2)
+      authGuard(req, res, async () => {
+        let _rnvOk = false;
+        await requireNonViewer(req, res, () => { _rnvOk = true; });
+        if (!_rnvOk) return;
+        await _agencyProvisioningHandlers.handlePostInviteUser(req, res);
+      });
     }
 
   } else if (pathname === '/organisations/convert' && req.method === 'GET') {

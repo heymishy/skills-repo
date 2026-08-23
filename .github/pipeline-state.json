@@ -26218,18 +26218,18 @@
             {
               "slug": "vrne-s4",
               "name": "Wire the viewer-write-block gate to edge-case routes (agency client creation/invite, artefact annotations)",
-              "stage": "subagent-execution",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-08-23T08:56:45.719Z",
+              "updatedAt": "2026-08-23T09:56:46.137Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
-                "passing": 0
+                "passing": 9
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -26240,28 +26240,31 @@
                 {
                   "id": "task-1",
                   "name": "RED -- write failing tests for AC1/AC2/AC3/AC4/AC6",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s4-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "GREEN -- wire requireNonViewer into all 3 call sites, plus annotation integration test",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s4-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "AC5 -- org-type-check-still-fires regression tests (additive, not replacing)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s4-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "Full regression -- confirm all 9 planned tests pass, zero regressions",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s4-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/759"
             }
           ]
         }

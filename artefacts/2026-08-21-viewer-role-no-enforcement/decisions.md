@@ -105,6 +105,24 @@
 **Revisit trigger:** Same as the prior entries — if this recurs across further stories/sessions, raise the test's own internal timeout.
 ---
 
+**2026-08-23 | RISK-ACCEPT | branch-setup (vrne-s4)**
+**Decision:** Acknowledge `tests/check-p3.5-validate-trace.js`'s single baseline failure in the `vrne-s4` worktree as the same pre-existing environmental flake already accepted for `vrne-s1`/`vrne-s2`/`vrne-s3`, and proceed.
+**Alternatives considered:** Investigate and fix before starting implementation.
+**Rationale:** Identical signature to the prior three stories' own branch-setup RISK-ACCEPT entries — 537 files run, 1 failed, no other files affected.
+**Made by:** Claude (agent), via `/branch-setup`.
+**Revisit trigger:** Same as the prior entries.
+---
+
+**2026-08-23 | RISK-ACCEPT | implementation-plan (vrne-s4)**
+**Decision:** Two findings from pre-implementation code investigation, both accepted with a documented fallback test strategy rather than blocking or modifying the story's scope:
+1. The test plan's literal AC1/AC2/AC4/AC5 precondition wording ("Mock `req.session` with ... `org_type: 'agency'`") does not match the real code — `handlePostCreateClient`/`handlePostInviteUser` in `routes/agency-provisioning.js` never read `org_type` from `req.session`; it is resolved from a DB lookup (`organisations.resolveOrganisationForTenant(pool, tenantId)`). The implementation plan uses the established hand-built fake-pool pattern from `tests/check-story3-self-service-provisioning.js` (`pool._seedOrg(tenantId, name, orgType)` + `createAgencyProvisioningHandlers(pool)` + direct handler calls) instead of the literal session-mock wording.
+2. `_agencyProvisioningHandlers` (`server.js`) is only wired inside `if (process.env.DATABASE_URL) {...}` — under this repo's standard test harness (`NODE_ENV=test`, no `DATABASE_URL`, the same setup all 3 prior sibling stories' integration tests use), real `router()` dispatch to `POST /agency/clients/new` or `POST /agency/clients/:id/invite` hits a 503 guard before ever reaching `authGuard`/the new gate. A real-dispatch integration test — the pattern used in all 3 prior sibling stories to prove real wiring, not just isolated gate behaviour — is not achievable for these 2 routes in this harness. The 3rd route (`POST /api/artefacts/:slug/annotations`) has no such dependency and gets a normal real-dispatch integration test.
+**Alternatives considered:** For finding 2 — wire a fake pool for `_agencyProvisioningHandlers` in the `!DATABASE_URL` branch of `server.js`, mirroring `_pshPool`'s existing fake-in-memory fallback, so real dispatch becomes testable.
+**Rationale:** This is a pre-existing architectural gap in `server.js`'s test bootstrap, unrelated to this story's own scope (adding a role gate to already-DB-dependent handlers) — fixing it would mean modifying `_agencyProvisioningHandlers`' production wiring purely to unblock a test, a change with its own blast radius (story-3-self-service-provisioning's own production wiring) that this story's DoR/Architecture Constraints never scoped. For routes 1/2, real-wiring evidence instead comes from: the isolated `requireNonViewer` gate tests (AC1/AC2/AC4/AC6, proving the gate's own behaviour), a grep-count check confirming the wiring text is present at the correct `server.js` location, and AC5's fake-pool direct-handler tests (proving the pre-existing org-type check still independently fires, unaffected by the new gate). This is a real, honestly-documented coverage gap for the "reachable via real server.js dispatch" claim specifically for routes 1/2 — not a silently-accepted one.
+**Made by:** Claude (agent), during pre-implementation-plan code investigation.
+**Revisit trigger:** If `_agencyProvisioningHandlers`' test-mode wiring is ever added for an unrelated reason (e.g. a future story on `story-3-self-service-provisioning`), revisit whether this story's routes 1/2 should retroactively gain a real-dispatch integration test.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet — the require-admin.js resolver refactor (see ARCH entry above) is scoped and small enough to remain a log entry, not a full ADR. Promote to an ADR here if the refactor surfaces a broader reusable-middleware pattern worth applying beyond this feature. -->
