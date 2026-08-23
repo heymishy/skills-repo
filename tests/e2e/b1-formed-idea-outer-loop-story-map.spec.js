@@ -98,6 +98,7 @@
 const { test, expect } = require('@playwright/test');
 const { STAGING_BASE_URL, signUpEmail } = require('./fixtures/staging-auth');
 const { topUpTestTenantCredits } = require('./fixtures/admin-credits-topup');
+const { getCsrfToken } = require('./fixtures/csrf');
 
 test.use({ baseURL: STAGING_BASE_URL });
 
@@ -142,8 +143,12 @@ async function createOwnProductContext(request, label) {
   });
   expect(draftRes.status(), 'products/new should succeed for a freshly authenticated tenant').toBe(200);
 
+  // rcfc-s1: /products/confirm now requires a valid session-scoped CSRF token,
+  // embedded as a hidden field in the real /products/new form.
+  const csrfToken = await getCsrfToken(request, '/products/new', 'products/new page');
+
   const confirmRes = await request.post('/products/confirm', {
-    form: { name: 'B1 Product ' + label, description: 'Product created independently by the b1-formed-idea-outer-loop-story-map E2E spec.' },
+    form: { name: 'B1 Product ' + label, description: 'Product created independently by the b1-formed-idea-outer-loop-story-map E2E spec.', _csrf: csrfToken },
     maxRedirects: 0
   });
   expect(confirmRes.status(), 'products/confirm should redirect to the product view').toBe(302);
@@ -186,8 +191,12 @@ function journeyIdFromChatHtml(html) {
  * @param {string} featureName
  */
 async function createFormedIdeaJourney(request, featureName) {
+  // rcfc-s1: /api/journey now requires a valid session-scoped CSRF token,
+  // embedded as a hidden field in the real /journey home page form.
+  const csrfToken = await getCsrfToken(request, '/journey', 'journey home page');
+
   const createRes = await request.post('/api/journey', {
-    form: { featureName: featureName, startSkill: 'discovery' },
+    form: { featureName: featureName, startSkill: 'discovery', _csrf: csrfToken },
     maxRedirects: 0
   });
   expect(createRes.status(), 'POST /api/journey').toBe(303);
@@ -276,13 +285,22 @@ async function driveSkillToCompletion(request, skillName, sessionId, answerPool)
  * @param {string} journeyId
  */
 async function gateConfirmAndAdvance(request, journeyId) {
-  const gateRes = await request.post(`/api/journey/${journeyId}/gate-confirm`, { maxRedirects: 0 });
+  // rcfc-s1: /api/journey/:id/gate-confirm now requires a valid session-scoped
+  // CSRF token, embedded as a hidden field in the journey's stage-review page.
+  const gateCsrfToken = await getCsrfToken(request, `/journey/${journeyId}/stage-review`, 'journey stage-review page');
+  const gateRes = await request.post(`/api/journey/${journeyId}/gate-confirm`, {
+    form: { _csrf: gateCsrfToken },
+    maxRedirects: 0
+  });
   expect(gateRes.status(), 'gate-confirm').toBe(303);
   let nextLocation = gateRes.headers()['location'];
 
   if (nextLocation && nextLocation.indexOf('/stories') !== -1 && !sessionIdFromChatPath(nextLocation)) {
+    // rcfc-s1: /api/journey/:id/stories now requires a valid session-scoped
+    // CSRF token, embedded as a hidden field in the journey's stories page.
+    const storiesCsrfToken = await getCsrfToken(request, `/journey/${journeyId}/stories`, 'journey stories page');
     const storiesRes = await request.post(`/api/journey/${journeyId}/stories`, {
-      form: { stories: 'b1-e2e-story.1' },
+      form: { stories: 'b1-e2e-story.1', _csrf: storiesCsrfToken },
       maxRedirects: 0
     });
     expect(storiesRes.status(), 'story list submission').toBe(303);
@@ -410,7 +428,13 @@ test.describe('b1-formed-idea-outer-loop-story-map @real-staging', () => {
     const dorResult = await driveSkillToCompletion(request, advance.skillName, advance.sessionId, FORMED_IDEA_ANSWERS);
     expect(dorResult.result.done, 'definition-of-ready should complete and reach a sign-off state').toBe(true);
 
-    const gateConfirmRes = await request.post(`/api/journey/${journey.journeyId}/gate-confirm`, { maxRedirects: 0 });
+    // rcfc-s1: /api/journey/:id/gate-confirm now requires a valid session-scoped
+    // CSRF token, embedded as a hidden field in the journey's stage-review page.
+    const finalGateCsrfToken = await getCsrfToken(request, `/journey/${journey.journeyId}/stage-review`, 'journey stage-review page');
+    const gateConfirmRes = await request.post(`/api/journey/${journey.journeyId}/gate-confirm`, {
+      form: { _csrf: finalGateCsrfToken },
+      maxRedirects: 0
+    });
     expect(gateConfirmRes.status()).toBe(303);
     expect(gateConfirmRes.headers()['location']).toBe('/journey/' + journey.journeyId + '/complete');
 
