@@ -46,7 +46,7 @@ const { listAvailableSkills } = require('../src/adapters/skill-discovery');
 const NO_LICENCE_MSG = 'No active Copilot licence found for this account. Please visit https://github.com/features/copilot to activate.';
 
 function makeReq(overrides) {
-  return Object.assign({ session: { accessToken: 'ghp_test', userId: 'user-1' }, params: {}, body: {} }, overrides);
+  return Object.assign({ session: { accessToken: 'ghp_test', userId: 'user-1', role: 'user' }, params: {}, body: {} }, overrides);
 }
 
 function makeRes() {
@@ -111,7 +111,7 @@ async function runT2() {
   process.stdout.write('\nT2 — Skill list API\n');
 
   await test('T2.1 — returns skill list with name and path; authenticated, licence present', async () => {
-    const req = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1' } });
+    const req = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1', role: 'user' } });
     const res = makeRes();
     await handleGetSkills(req, res);
     assert.strictEqual(res.statusCode, 200, 'expected 200, got ' + res.statusCode);
@@ -128,7 +128,7 @@ async function runT2() {
 
   await test('T2.3 — returns 403 with message when Copilot licence absent', async () => {
     // Whitespace-only token: truthy (passes _checkAuth) but validateLicence trims it → valid:false → 403
-    const req = makeReq({ session: { accessToken: '   ', userId: 'user-1' } });
+    const req = makeReq({ session: { accessToken: '   ', userId: 'user-1', role: 'user' } });
     const res = makeRes();
     await handleGetSkills(req, res);
     assert.strictEqual(res.statusCode, 403);
@@ -144,7 +144,7 @@ async function runT3() {
   process.stdout.write('\nT3 — Session start\n');
 
   await test('T3.1 — valid skill, authenticated, licence present → 201 with sessionId and first question', async () => {
-    const req = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1' }, params: { name: _validSkillName } });
+    const req = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1', role: 'user' }, params: { name: _validSkillName } });
     const res = makeRes();
     await handlePostSession(req, res);
     assert.strictEqual(res.statusCode, 201, 'expected 201, got ' + res.statusCode + ': ' + JSON.stringify(res.body));
@@ -153,7 +153,7 @@ async function runT3() {
   });
 
   await test('T3.2 — skill name not in allowlist → 400 SKILL_NOT_FOUND', async () => {
-    const req = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1' }, params: { name: 'not-a-real-skill-xyz' } });
+    const req = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1', role: 'user' }, params: { name: 'not-a-real-skill-xyz' } });
     const res = makeRes();
     await handlePostSession(req, res);
     assert.strictEqual(res.statusCode, 400);
@@ -161,14 +161,14 @@ async function runT3() {
   });
 
   await test('T3.3 — licence absent → 403', async () => {
-    const req = makeReq({ session: { accessToken: '   ', userId: 'user-1' }, params: { name: _validSkillName } });
+    const req = makeReq({ session: { accessToken: '   ', userId: 'user-1', role: 'user' }, params: { name: _validSkillName } });
     const res = makeRes();
     await handlePostSession(req, res);
     assert.strictEqual(res.statusCode, 403);
   });
 
   await test('T3.4 — session start response does not include raw SKILL.md content or CLI flags', async () => {
-    const req = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1' }, params: { name: _validSkillName } });
+    const req = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1', role: 'user' }, params: { name: _validSkillName } });
     const res = makeRes();
     await handlePostSession(req, res);
     assert.strictEqual(res.statusCode, 201, 'expected 201');
@@ -188,12 +188,12 @@ async function runT4() {
   const { sanitiseAnswer } = require('../src/answer-sanitiser');
 
   await test('T4.1 — valid answer accepted, next question returned', async () => {
-    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1' }, params: { name: _validSkillName } });
+    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1', role: 'user' }, params: { name: _validSkillName } });
     const sesRes = makeRes();
     await handlePostSession(sesReq, sesRes);
     assert.strictEqual(sesRes.statusCode, 201, 'session creation failed: ' + JSON.stringify(sesRes.body));
     const sessionId = sesRes.body.sessionId;
-    const ansReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1' }, params: { name: _validSkillName, id: sessionId }, body: { answer: 'a valid answer under 1000 chars' } });
+    const ansReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1', role: 'user' }, params: { name: _validSkillName, id: sessionId }, body: { answer: 'a valid answer under 1000 chars' } });
     const ansRes = makeRes();
     await handlePostAnswer(ansReq, ansRes);
     assert.strictEqual(ansRes.statusCode, 200);
@@ -201,13 +201,13 @@ async function runT4() {
   });
 
   await test('T4.2 — answer > 1000 chars → 400 ANSWER_TOO_LONG', async () => {
-    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1' }, params: { name: _validSkillName } });
+    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1', role: 'user' }, params: { name: _validSkillName } });
     const sesRes = makeRes();
     await handlePostSession(sesReq, sesRes);
     assert.strictEqual(sesRes.statusCode, 201, 'session creation failed');
     const sessionId = sesRes.body.sessionId;
     const longAnswer = 'a'.repeat(1001);
-    const ansReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1' }, params: { name: _validSkillName, id: sessionId }, body: { answer: longAnswer } });
+    const ansReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1', role: 'user' }, params: { name: _validSkillName, id: sessionId }, body: { answer: longAnswer } });
     const ansRes = makeRes();
     await handlePostAnswer(ansReq, ansRes);
     assert.strictEqual(ansRes.statusCode, 400);
@@ -230,13 +230,13 @@ async function runT4() {
   });
 
   await test('T4.5 — sanitised content (not original) forwarded to execution engine', async () => {
-    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1' }, params: { name: _validSkillName } });
+    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1', role: 'user' }, params: { name: _validSkillName } });
     const sesRes = makeRes();
     await handlePostSession(sesReq, sesRes);
     assert.strictEqual(sesRes.statusCode, 201);
     const sessionId = sesRes.body.sessionId;
     const dirty = 'answer; rm -rf --delete-all $HOME';
-    const ansReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1' }, params: { name: _validSkillName, id: sessionId }, body: { answer: dirty } });
+    const ansReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1', role: 'user' }, params: { name: _validSkillName, id: sessionId }, body: { answer: dirty } });
     const ansRes = makeRes();
     await handlePostAnswer(ansReq, ansRes);
     // Route sanitises dirty input and stores clean value; 200 confirms successful processing
@@ -248,12 +248,12 @@ async function runT4() {
     const logCalls = [];
     setLogger({ info: function(evt, data) { logCalls.push({ evt: evt, data: data }); }, warn: function() {}, error: function() {} });
     try {
-      const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1' }, params: { name: _validSkillName } });
+      const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1', role: 'user' }, params: { name: _validSkillName } });
       const sesRes = makeRes();
       await handlePostSession(sesReq, sesRes);
       const sessionId = sesRes.body.sessionId;
       const rawAnswer = 'unique-audit-test-answer-xyz-99887';
-      const ansReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1' }, params: { name: _validSkillName, id: sessionId }, body: { answer: rawAnswer } });
+      const ansReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1', role: 'user' }, params: { name: _validSkillName, id: sessionId }, body: { answer: rawAnswer } });
       const ansRes = makeRes();
       await handlePostAnswer(ansReq, ansRes);
       const allLogData = JSON.stringify(logCalls);
@@ -297,7 +297,7 @@ async function runNFR() {
   process.stdout.write('\nNFR\n');
 
   await test('NFR1 — skill list endpoint responds within 500ms', async () => {
-    const req = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1' } });
+    const req = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1', role: 'user' } });
     const res = makeRes();
     const start = Date.now();
     await handleGetSkills(req, res);
@@ -307,7 +307,7 @@ async function runNFR() {
   });
 
   await test('NFR2 — server-side path traversal blocked (../etc/passwd in skill name → 400)', async () => {
-    const req = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1' }, params: { name: '../etc/passwd' } });
+    const req = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1', role: 'user' }, params: { name: '../etc/passwd' } });
     const res = makeRes();
     await handlePostSession(req, res);
     assert.strictEqual(res.statusCode, 400);
@@ -332,18 +332,18 @@ async function runINT() {
   process.stdout.write('\nINT — Integration\n');
 
   await test('INT1 — skill list → start session → submit answer round trip (mocked executor)', async () => {
-    const listReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1' } });
+    const listReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1', role: 'user' } });
     const listRes = makeRes();
     await handleGetSkills(listReq, listRes);
     assert.strictEqual(listRes.statusCode, 200);
     assert(listRes.body.skills.length > 0, 'no skills found');
     const skillName = listRes.body.skills[0].name;
-    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1' }, params: { name: skillName } });
+    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1', role: 'user' }, params: { name: skillName } });
     const sesRes = makeRes();
     await handlePostSession(sesReq, sesRes);
     assert.strictEqual(sesRes.statusCode, 201, 'session start failed: ' + JSON.stringify(sesRes.body));
     const sessionId = sesRes.body.sessionId;
-    const ansReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1' }, params: { name: skillName, id: sessionId }, body: { answer: 'integration test answer' } });
+    const ansReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1', role: 'user' }, params: { name: skillName, id: sessionId }, body: { answer: 'integration test answer' } });
     const ansRes = makeRes();
     await handlePostAnswer(ansReq, ansRes);
     assert.strictEqual(ansRes.statusCode, 200, 'answer submission failed: ' + JSON.stringify(ansRes.body));
@@ -351,7 +351,7 @@ async function runINT() {
   });
 
   await test('INT2 — path traversal attempt in skill name blocked end-to-end (400 returned)', async () => {
-    const req = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1' }, params: { name: '../../../etc/passwd' } });
+    const req = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1', role: 'user' }, params: { name: '../../../etc/passwd' } });
     const res = makeRes();
     await handlePostSession(req, res);
     assert.strictEqual(res.statusCode, 400);
@@ -359,13 +359,13 @@ async function runINT() {
   });
 
   await test('INT3 — sanitised answer delivered to executor (not raw input)', async () => {
-    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1' }, params: { name: _validSkillName } });
+    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1', role: 'user' }, params: { name: _validSkillName } });
     const sesRes = makeRes();
     await handlePostSession(sesReq, sesRes);
     assert.strictEqual(sesRes.statusCode, 201, 'session start failed');
     const sessionId = sesRes.body.sessionId;
     const dirtyAnswer = 'build; rm -rf / --no-preserve-root $HOME && cat /etc/passwd';
-    const ansReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1' }, params: { name: _validSkillName, id: sessionId }, body: { answer: dirtyAnswer } });
+    const ansReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-1', role: 'user' }, params: { name: _validSkillName, id: sessionId }, body: { answer: dirtyAnswer } });
     const ansRes = makeRes();
     await handlePostAnswer(ansReq, ansRes);
     // 200 confirms sanitised answer stored in session state; raw dirty content never forwarded

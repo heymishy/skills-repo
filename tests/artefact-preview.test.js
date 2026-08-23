@@ -61,12 +61,12 @@ async function runT1() {
   process.stdout.write('\nT1 — Session state polling\n');
 
   await test('T1.1 — returns status, currentQuestion, and partialArtefact for active session', async () => {
-    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'u1' }, params: { name: 'benefit-metric' } });
+    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'u1', role: 'user' }, params: { name: 'benefit-metric' } });
     const sesRes = makeRes();
     await handlePostSession(sesReq, sesRes);
     if (sesRes.statusCode !== 201) { assert.fail('session creation failed: ' + JSON.stringify(sesRes.body)); }
     const sessionId = sesRes.body.sessionId;
-    const stReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'u1' }, params: { name: 'benefit-metric', id: sessionId } });
+    const stReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'u1', role: 'user' }, params: { name: 'benefit-metric', id: sessionId } });
     const stRes = makeRes();
     await handleGetSessionState(stReq, stRes);
     assert.strictEqual(stRes.statusCode, 200, 'expected 200, got ' + stRes.statusCode);
@@ -76,19 +76,19 @@ async function runT1() {
   });
 
   await test('T1.2 — returns 404 for unknown session ID', async () => {
-    const req = makeReq({ session: { accessToken: 'ghp_test', userId: 'u1' }, params: { name: 'benefit-metric', id: 'nonexistent-session-' + Date.now() } });
+    const req = makeReq({ session: { accessToken: 'ghp_test', userId: 'u1', role: 'user' }, params: { name: 'benefit-metric', id: 'nonexistent-session-' + Date.now() } });
     const res = makeRes();
     await handleGetSessionState(req, res);
     assert.strictEqual(res.statusCode, 404);
   });
 
   await test('T1.3 — returns 403 when session belongs to a different authenticated user', async () => {
-    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-a' }, params: { name: 'benefit-metric' } });
+    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-a', role: 'user' }, params: { name: 'benefit-metric' } });
     const sesRes = makeRes();
     await handlePostSession(sesReq, sesRes);
     assert.strictEqual(sesRes.statusCode, 201, 'session creation failed');
     const sessionId = sesRes.body.sessionId;
-    const stReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-b' }, params: { name: 'benefit-metric', id: sessionId } });
+    const stReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'user-b', role: 'user' }, params: { name: 'benefit-metric', id: sessionId } });
     const stRes = makeRes();
     await handleGetSessionState(stReq, stRes);
     assert.strictEqual(stRes.statusCode, 403);
@@ -237,12 +237,12 @@ async function runNFR() {
   process.stdout.write('\nNFR\n');
 
   await test('NFR1 — session state endpoint responds within 500ms', async () => {
-    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'u-nfr1' }, params: { name: 'benefit-metric' } });
+    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'u-nfr1', role: 'user' }, params: { name: 'benefit-metric' } });
     const sesRes = makeRes();
     await handlePostSession(sesReq, sesRes);
     assert.strictEqual(sesRes.statusCode, 201, 'session creation failed');
     const sessionId = sesRes.body.sessionId;
-    const stReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'u-nfr1' }, params: { name: 'benefit-metric', id: sessionId } });
+    const stReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'u-nfr1', role: 'user' }, params: { name: 'benefit-metric', id: sessionId } });
     const stRes = makeRes();
     const start = Date.now();
     await handleGetSessionState(stReq, stRes);
@@ -281,18 +281,18 @@ async function runINT() {
   process.stdout.write('\nINT — Integration\n');
 
   await test('INT1 — answer submission → poll state → preview content updated (full round-trip)', async () => {
-    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'int1-user' }, params: { name: 'benefit-metric' } });
+    const sesReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'int1-user', role: 'user' }, params: { name: 'benefit-metric' } });
     const sesRes = makeRes();
     await handlePostSession(sesReq, sesRes);
     assert.strictEqual(sesRes.statusCode, 201, 'session creation failed');
     const sessionId = sesRes.body.sessionId;
     // Submit answer
-    const ansReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'int1-user' }, params: { name: 'benefit-metric', id: sessionId }, body: { answer: 'test answer' } });
+    const ansReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'int1-user', role: 'user' }, params: { name: 'benefit-metric', id: sessionId }, body: { answer: 'test answer' } });
     const ansRes = makeRes();
     await handlePostAnswer(ansReq, ansRes);
     assert.strictEqual(ansRes.statusCode, 200);
     // Poll state
-    const stReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'int1-user' }, params: { name: 'benefit-metric', id: sessionId } });
+    const stReq = makeReq({ session: { accessToken: 'ghp_test', userId: 'int1-user', role: 'user' }, params: { name: 'benefit-metric', id: sessionId } });
     const stRes = makeRes();
     await handleGetSessionState(stReq, stRes);
     assert.strictEqual(stRes.statusCode, 200);

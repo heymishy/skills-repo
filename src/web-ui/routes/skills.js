@@ -27,6 +27,7 @@ var _standardsAdapter = require('../standards-adapter'); // psh-s10 D37
 const { listAvailableSkills, validateSkillName } = require('../../adapters/skill-discovery');
 const { extractQuestions, extractSections } = require('../../skill-content-adapter');
 const { sanitiseAnswer }    = require('../../answer-sanitiser');
+const { requireNonViewer } = require('../middleware/require-non-viewer');
 const { validateLicence }   = require('../../adapters/copilot-licence');
 const sessionManager        = require('../../modules/session-manager');
 const { validateArtefactPath } = require('../../artefact-path-validator');
@@ -400,6 +401,10 @@ async function handleGetSkills(req, res) {
  */
 async function handlePostSession(req, res) {
   if (!_checkAuth(req, res)) { return; }
+  // vrne-s2 — viewer-role write-block gate (AC1)
+  let _rnvOk = false;
+  await requireNonViewer(req, res, () => { _rnvOk = true; });
+  if (!_rnvOk) return;
   try {
     if (!await _checkLicence(req, res)) { return; }
     var name = req.params && req.params.name;
@@ -439,6 +444,10 @@ async function handlePostSession(req, res) {
  */
 async function handlePostAnswer(req, res) {
   if (!_checkAuth(req, res)) { return; }
+  // vrne-s2 — viewer-role write-block gate (AC2)
+  let _rnvOk = false;
+  await requireNonViewer(req, res, () => { _rnvOk = true; });
+  if (!_rnvOk) return;
   try {
     if (!await _checkLicence(req, res)) { return; }
     var name = req.params && req.params.name;
@@ -522,6 +531,10 @@ async function handleGetSessionState(req, res) {
  */
 async function handleCommitArtefact(req, res) {
   if (!_checkAuth(req, res)) { return; }
+  // vrne-s2 — viewer-role write-block gate (AC3)
+  let _rnvOk = false;
+  await requireNonViewer(req, res, () => { _rnvOk = true; });
+  if (!_rnvOk) return;
   try {
     var id      = req.params && req.params.id;
     var session = await _getSessionOrRestore(id);
