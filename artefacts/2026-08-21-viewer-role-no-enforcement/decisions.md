@@ -73,6 +73,14 @@
 
 ---
 
+**2026-08-23 | RISK-ACCEPT | branch-setup (vrne-s2)**
+**Decision:** Acknowledge `tests/check-p3.5-validate-trace.js`'s single baseline failure in the `vrne-s2` worktree as the same pre-existing environmental flake already accepted for `vrne-s1`, and proceed.
+**Alternatives considered:** Investigate and fix before starting implementation.
+**Rationale:** Identical signature to `vrne-s1`'s own branch-setup RISK-ACCEPT above (`pwsh`'s startup + `validate-trace.ps1`'s full run occasionally exceeding the test's own 30s internal timeout on this machine) — 535 files run, 1 failed, no other files affected. Not a code defect in `vrne-s2`'s own scope.
+**Made by:** Claude (agent), via `/branch-setup`, first real post-`loop-design` inner loop run — this story's own execution is being used to measure the `loop-design.md` Tier-2 meta-metrics (commits/task ratio, false-wait incident count, local full-suite run count, wall-clock/task) against `vrne-s1`'s pre-fix baseline.
+**Revisit trigger:** Same as `vrne-s1`'s entry — if this recurs across further stories/sessions, raise the test's own internal timeout.
+---
+
 **2026-08-23 | ARCH | CI (post-merge-of-loop-design, pre-merge-of-vrne-s1)**
 **Decision:** Add `'user'` to `require-non-viewer.js`'s `ALLOWED_ROLES` allowlist (now `['admin', 'engineer', 'product', 'user']`), and fix `tests/check-vrne-s1-server-wiring.js`'s `viewerSession()` fixture to use a real seeded `e2e-viewer` identity (via `/test/seed-multi-user-roles`) instead of an unseeded `tenantId: 't1'`/`login: 'viewer@test'` pair.
 **Alternatives considered:** Leave `ALLOWED_ROLES` as `['admin', 'engineer', 'product']` and instead change the signup flow to assign one of those three roles to a brand-new tenant's first user.
