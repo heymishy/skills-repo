@@ -92,11 +92,27 @@ async function main() {
     });
   });
 
+  // AC5 — canvas-edit/assumption-confirm (2 call sites, added via /decisions 2026-08-22 SCOPE entry)
+  ['canvas-edit', 'assumption-confirm'].forEach(function(routeName) {
+    queue.push(function() {
+      console.log('\n[vrne-s2] T-ac5-' + routeName + ' -- viewer denied');
+      return test('AC5: viewer denied on ' + routeName, async function() {
+        var gate = freshRequire(REQUIRE_NON_VIEWER_PATH);
+        var req = viewerSession();
+        var res = makeRes();
+        var nextCalled = false;
+        await gate.requireNonViewer(req, res, function() { nextCalled = true; });
+        assert.strictEqual(nextCalled, false, routeName + ': next() must not be called for viewer');
+        assert.strictEqual(res._status, 403, routeName + ': status must be 403');
+      });
+    });
+  });
+
   for (var i = 0; i < queue.length; i++) {
     await queue[i]();
   }
 
-  console.log('\n[vrne-s2-skill-session-gate] AC1+AC2+AC3 subtotal: ' + passed + ' passed, ' + failed + ' failed');
+  console.log('\n[vrne-s2-skill-session-gate] AC1+AC2+AC3+AC5 subtotal: ' + passed + ' passed, ' + failed + ' failed');
   if (failed > 0) {
     process.exitCode = 1;
   }

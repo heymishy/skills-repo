@@ -2676,6 +2676,10 @@ async function router(req, res) {
     const parts = pathname.split('/');
     req.params = { name: parts[3], id: parts[5] };
     authGuard(req, res, async () => {
+      // vrne-s2 — viewer-role write-block gate (AC5)
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
       await handlePostCanvasEditHtml(req, res);
     });
 
@@ -2684,6 +2688,10 @@ async function router(req, res) {
     const parts = pathname.split('/');
     req.params = { name: parts[3], id: parts[5], cardId: parts[7] };
     authGuard(req, res, async () => {
+      // vrne-s2 — viewer-role write-block gate (AC5)
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
       await handlePostAssumptionConfirm(req, res);
     });
 
