@@ -231,11 +231,17 @@ async function runIntegrationTests() {
     journeyStore._clearForTesting();
     const req = {
       params: { id: 'p1' },
-      session: { tenantId: 'tenant-1', login: 'alice' },
+      session: { tenantId: 'tenant-1', login: 'alice', csrfToken: 'test-csrf-token' },
       headers: {},
       method: 'POST',
-      url: '/products/p1/feature'
-      // deliberately no `.on` / `.body` — _readBody() resolves to {} immediately for this shape
+      url: '/products/p1/feature',
+      // rcfc-s1: csrfGuard's own internal _readBody (middleware/csrf.js) has
+      // no `typeof req.on !== 'function'` guard the way products.js's local
+      // _readBody does -- it would try to call req.on('data', ...) on this
+      // plain object and throw. A body object with a valid _csrf must be
+      // present so csrfGuard's `req.body !== undefined` short-circuit fires
+      // instead.
+      body: { _csrf: 'test-csrf-token' }
     };
     const res = mockRes();
     await productsRoute.handlePostProductFeature(req, res, null, { query: async function(sql) { if (String(sql).toUpperCase().indexOf("SELECT REPO_OWNER, REPO_NAME") !== -1) { return { rows: [{ repo_owner: "acme", repo_name: "widgets" }] }; } return { rows: [] }; } }, { capture: function() {}, identify: function() {}, groupIdentify: function() {} });

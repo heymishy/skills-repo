@@ -67,7 +67,7 @@ setTimeout(function() {
     try {
       const ph = { _caps: [], capture: function(id,ev,p) { this._caps.push({ev,p}); } };
       const pool = makeMockPool([]);
-      const req = { session: { tenantId: 'org-2', plan: 'team' }, body: { name: 'Confirmed Product', description: 'desc', mission: 'm', techStack: 't', constraints: 'c', roadmap: 'r', architectureGuardrails: 'ag' } };
+      const req = { session: { tenantId: 'org-2', plan: 'team', csrfToken: 'test-csrf-token' }, body: { name: 'Confirmed Product', description: 'desc', mission: 'm', techStack: 't', constraints: 'c', roadmap: 'r', architectureGuardrails: 'ag', _csrf: 'test-csrf-token' } };
       const res = { status: function(c) { this._s=c; return this; }, json: function(b) { this._b=b; }, _s:200, _b:null };
       await handlePostProductConfirm(req, res, null, pool, ph);
       const ins = pool._ops.find(op => /INSERT INTO products/i.test(op.sql));
@@ -84,7 +84,7 @@ setTimeout(function() {
     try {
       const ph = { capture: function() {} };
       const pool = makeMockPool([{ product_id: 'existing', tenant_id: 'solo-tenant' }]);
-      const req = { session: { tenantId: 'solo-tenant', plan: 'solo' }, body: { name: 'Second Product', description: 'desc' } };
+      const req = { session: { tenantId: 'solo-tenant', plan: 'solo', csrfToken: 'test-csrf-token' }, body: { name: 'Second Product', description: 'desc', _csrf: 'test-csrf-token' } };
       const res = { status: function(c) { this._s=c; return this; }, json: function(b) { this._b=b; }, _s:200, _b:null };
       await handlePostProductConfirm(req, res, null, pool, ph);
       assert(res._s === 403, `Expected 403 for solo plan second product, got ${res._s}`);
@@ -97,7 +97,7 @@ setTimeout(function() {
     try {
       const ph = { capture: function() {} };
       const pool = makeMockPool([]);
-      const req = { session: { tenantId: 'org-3', plan: 'team' }, body: { name: '../../../etc/passwd', description: 'x' } };
+      const req = { session: { tenantId: 'org-3', plan: 'team', csrfToken: 'test-csrf-token' }, body: { name: '../../../etc/passwd', description: 'x', _csrf: 'test-csrf-token' } };
       const res = { status: function(c) { this._s=c; return this; }, json: function(b) { this._b=b; }, _s:200, _b:null };
       await handlePostProductConfirm(req, res, null, pool, ph);
       assert(res._s === 400, `Expected 400 for traversal name, got ${res._s}`);
@@ -135,7 +135,7 @@ setTimeout(function() {
     try {
       const ph = { capture: function() {} };
       const pool = makeMockPool([{ product_id: 'p1', tenant_id: 'team-t' }, { product_id: 'p2', tenant_id: 'team-t' }]);
-      const req = { session: { tenantId: 'team-t', plan: 'team' }, body: { name: 'Third Product', description: 'y' } };
+      const req = { session: { tenantId: 'team-t', plan: 'team', csrfToken: 'test-csrf-token' }, body: { name: 'Third Product', description: 'y', _csrf: 'test-csrf-token' } };
       const res = { status: function(c) { this._s=c; return this; }, json: function(b) { this._b=b; }, _s:200, _b:null };
       await handlePostProductConfirm(req, res, null, pool, ph);
       assert(res._s !== 403, `Team plan should not be limited, got ${res._s}`);
@@ -146,7 +146,7 @@ setTimeout(function() {
     try {
       const ph = { capture: function() {} };
       const pool = makeMockPool([]);
-      const req = { session: { tenantId: 'real-org' }, body: { name: 'P', description: 'd', tenantId: 'injected-org' } };
+      const req = { session: { tenantId: 'real-org', csrfToken: 'test-csrf-token' }, body: { name: 'P', description: 'd', tenantId: 'injected-org', _csrf: 'test-csrf-token' } };
       const res = { status: function(c) { this._s=c; return this; }, json: function(b) { this._b=b; }, _s:200 };
       await handlePostProductConfirm(req, res, null, pool, ph);
       const ins = pool._ops.find(op => /INSERT INTO products/i.test(op.sql));

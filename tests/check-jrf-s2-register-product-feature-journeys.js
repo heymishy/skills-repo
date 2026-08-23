@@ -100,7 +100,7 @@ function poolWithConnectedRepo() {
     journeyStore._clearForTesting();
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
 
-    var req = { params: { id: 'prod-1' }, session: { tenantId: 'tenant-1', login: 'octocat' } };
+    var req = { params: { id: 'prod-1' }, session: { tenantId: 'tenant-1', login: 'octocat', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
     var res = makeRes();
     var fakePosthog = { capture: function() {} };
     var fakePool = poolWithConnectedRepo();
@@ -127,7 +127,7 @@ function poolWithConnectedRepo() {
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
     var skillsRoute = require(SKILLS_ROUTE_PATH);
 
-    var req = { params: { id: 'prod-1' }, session: { tenantId: 'tenant-1', login: 'octocat' } };
+    var req = { params: { id: 'prod-1' }, session: { tenantId: 'tenant-1', login: 'octocat', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
     var res = makeRes();
     await productsRoute.handlePostProductFeature(req, res, null, poolWithConnectedRepo(), { capture: function() {} });
 
@@ -148,7 +148,7 @@ function poolWithConnectedRepo() {
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
     var skillsRoute = require(SKILLS_ROUTE_PATH);
 
-    var req = { params: { id: 'real-product-id-123' }, session: { tenantId: 'tenant-1', login: 'octocat' } };
+    var req = { params: { id: 'real-product-id-123' }, session: { tenantId: 'tenant-1', login: 'octocat', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
     var res = makeRes();
     await productsRoute.handlePostProductFeature(req, res, null, poolWithConnectedRepo(), { capture: function() {} });
 
@@ -169,7 +169,7 @@ function poolWithConnectedRepo() {
     var skillsRoute = require(SKILLS_ROUTE_PATH);
     var journeyRoute = freshRequire(JOURNEY_ROUTE_PATH);
 
-    var req1 = { params: { id: 'prod-1' }, session: { tenantId: 'tenant-1', login: 'octocat' } };
+    var req1 = { params: { id: 'prod-1' }, session: { tenantId: 'tenant-1', login: 'octocat', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
     var res1 = makeRes();
     await productsRoute.handlePostProductFeature(req1, res1, null, poolWithConnectedRepo(), { capture: function() {} });
 
@@ -205,7 +205,7 @@ function poolWithConnectedRepo() {
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
     var skillsRoute = require(SKILLS_ROUTE_PATH);
 
-    var req = { params: { id: 'listing-product-id' }, session: { tenantId: 'tenant-1', login: 'octocat' } };
+    var req = { params: { id: 'listing-product-id' }, session: { tenantId: 'tenant-1', login: 'octocat', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
     var res = makeRes();
     await productsRoute.handlePostProductFeature(req, res, null, poolWithConnectedRepo(), { capture: function() {} });
 

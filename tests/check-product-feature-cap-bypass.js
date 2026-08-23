@@ -56,7 +56,7 @@ function makeRes() {
     tenantPlan.setCapReader(function() { return 0; }); // cap=0 -- even the very first feature is "at the limit"
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
 
-    var req = { params: { id: 'prod-1' }, session: { tenantId: 'e2e-cap-tenant', login: 'octocat' } };
+    var req = { params: { id: 'prod-1' }, session: { tenantId: 'e2e-cap-tenant', login: 'octocat', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
     var res = makeRes();
     await productsRoute.handlePostProductFeature(req, res, null, { query: async function() { return { rows: [] }; } }, { capture: function() {} });
 
@@ -72,7 +72,7 @@ function makeRes() {
     tenantPlan.setCapReader(function() { return 0; });
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
 
-    var req = { params: { id: 'prod-1' }, session: { tenantId: 'e2e-cap-tenant-2', login: 'octocat' } };
+    var req = { params: { id: 'prod-1' }, session: { tenantId: 'e2e-cap-tenant-2', login: 'octocat', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
     var res = makeRes();
     await productsRoute.handlePostProductFeature(req, res, null, { query: async function() { return { rows: [] }; } }, { capture: function() {} });
 
@@ -108,7 +108,7 @@ function makeRes() {
     tenantPlan.setCapReader(function() { return 5; }); // plenty of headroom
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
 
-    var req = { params: { id: 'prod-1' }, session: { tenantId: 'e2e-cap-tenant-3', login: 'octocat' } };
+    var req = { params: { id: 'prod-1' }, session: { tenantId: 'e2e-cap-tenant-3', login: 'octocat', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
     var res = makeRes();
     await productsRoute.handlePostProductFeature(req, res, null, poolWithConnectedRepo(), { capture: function() {} });
 
@@ -125,7 +125,7 @@ function makeRes() {
     delete process.env.MAX_JOURNEYS_PER_TENANT;
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
 
-    var req = { params: { id: 'prod-1' }, session: { tenantId: 'e2e-cap-tenant-4', login: 'octocat' } };
+    var req = { params: { id: 'prod-1' }, session: { tenantId: 'e2e-cap-tenant-4', login: 'octocat', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
     var res = makeRes();
     await productsRoute.handlePostProductFeature(req, res, null, poolWithConnectedRepo(), { capture: function() {} });
 
@@ -152,7 +152,7 @@ function makeRes() {
     await tenantPlan.setPlanState('e2e-cap-tenant-5', 'paid', 'active');
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
 
-    var req = { params: { id: 'prod-1' }, session: { tenantId: 'e2e-cap-tenant-5', login: 'octocat' } };
+    var req = { params: { id: 'prod-1' }, session: { tenantId: 'e2e-cap-tenant-5', login: 'octocat', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
     var res = makeRes();
     await productsRoute.handlePostProductFeature(req, res, null, poolWithConnectedRepo(), { capture: function() {} });
 
