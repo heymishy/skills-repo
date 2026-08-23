@@ -28,7 +28,18 @@ function setLogger(logger) {
   _logger = logger;
 }
 
-const ALLOWED_ROLES = ['admin', 'engineer', 'product'];
+// 'user' is the system-wide default role (modules/user-roles.js: "Falls back to
+// 'user' if no row found") assigned to every self-service tenant signup that has
+// no team_memberships row yet -- i.e. the single-person tenant, the majority
+// real-world case (routes/auth-email.js signup handler). It is NOT a
+// team-management role (team-management.js's VALID_ROLES is
+// ['admin','engineer','product','viewer'], scoped to invited team members of a
+// multi-person tenant) and was missing from this list at first implementation,
+// which fail-closed-denied every brand-new tenant's first product/journey write
+// -- caught by the cross-tenant isolation E2E spec's repeat-20x CI gate before
+// merge (bri-s3.4-cross-tenant-isolation-journey.spec.js), not by this story's
+// own unit tests, which never exercised the real signup-default role value.
+const ALLOWED_ROLES = ['admin', 'engineer', 'product', 'user'];
 
 /**
  * requireNonViewer — gate middleware denying write actions for the 'viewer' role.

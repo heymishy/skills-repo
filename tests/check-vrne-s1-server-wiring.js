@@ -79,8 +79,24 @@ function makeRes() {
   return r;
 }
 
+// AC1_ROUTES/AC2_ROUTES-owning tenant for the isolated requireNonViewer() calls
+// below. server.js is required at the top of this file, which wires the real
+// (fake-backed) live-role adapter process-wide -- so even these "isolated"
+// gate calls trigger a real getCurrentRole(tenantId, login) lookup, not just a
+// read of the cached req.session.role. viewerSession() previously used an
+// unseeded tenantId/login pair ('t1'/'viewer@test'), so the live lookup found
+// no team_memberships row and fell back to the legacy default role 'user' --
+// which happened to be denied for the same reason 'viewer' was (both were
+// outside ALLOWED_ROLES), masking the fact this fixture never actually
+// exercised a real 'viewer' resolution. Exposed when 'user' was added to
+// ALLOWED_ROLES (that same fallback is now the system-wide default role for a
+// real single-tenant signup, see require-non-viewer.js) -- fixed by seeding a
+// real 'viewer' identity via /test/seed-multi-user-roles and pointing
+// viewerSession() at it, not by weakening the gate.
+var AC_LOOP_SHARED_ORG = 'e2e-vrne-s1-ac-loop';
+
 function viewerSession() {
-  return { session: { userId: 'u1', role: 'viewer', tenantId: 't1', login: 'viewer@test' } };
+  return { session: { userId: 103, role: 'viewer', tenantId: AC_LOOP_SHARED_ORG, login: 'e2e-viewer' } };
 }
 
 // ── Real server.js dispatch helpers (Task 10, Part B integration test) ──────
@@ -208,6 +224,12 @@ var AC2_ROUTES = [
 
 async function main() {
   var queue = [];
+
+  // Seed the real 'viewer' (and admin/engineer) identities the AC1/AC2 loop
+  // tests' viewerSession() fixture now points at, BEFORE those tests run --
+  // the live role adapter wired by server.js's bootstrap needs a real
+  // team_memberships row to resolve, not just the cached req.session.role.
+  await seedMultiUserRolesForIntegrationTest(AC_LOOP_SHARED_ORG);
 
   AC1_ROUTES.forEach(function(routeName) {
     queue.push(function() {

@@ -40,8 +40,11 @@ function makeRes() {
 async function main() {
   var queue = [];
 
-  // AC3: engineer/product/admin all pass through
-  ['admin', 'engineer', 'product'].forEach(function(roleName) {
+  // AC3: engineer/product/admin/user all pass through. 'user' is the system-wide
+  // default role for a single-person tenant signup with no team_memberships row
+  // yet (modules/user-roles.js) -- distinct from team-management.js's
+  // VALID_ROLES, which only covers invited multi-person-tenant team roles.
+  ['admin', 'engineer', 'product', 'user'].forEach(function(roleName) {
     queue.push(function() {
       console.log('\n[vrne-s1] T-nonviewer-' + roleName + '-allowed -- ' + roleName + ' role calls next()');
       return test('requireNonViewer: role=' + roleName + ' calls next(), no response written', async function() {
