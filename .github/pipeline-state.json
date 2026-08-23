@@ -26070,9 +26070,9 @@
             {
               "slug": "vrne-s2",
               "name": "Wire the viewer-write-block gate to Skill session routes",
-              "stage": "implementation-plan",
+              "stage": "subagent-execution",
               "health": "green",
-              "updatedAt": "2026-08-23T02:57:30.913Z",
+              "updatedAt": "2026-08-23T02:59:19.258Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
