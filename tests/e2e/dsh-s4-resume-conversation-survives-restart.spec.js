@@ -66,6 +66,9 @@
 
 const { test, expect } = require('@playwright/test');
 const { STAGING_BASE_URL, signUpEmail, testEndpointBypassHeaders } = require('./fixtures/staging-auth');
+// rcfc-s1: /products/confirm and /api/journey now require a valid
+// session-scoped CSRF token on raw (non-page-driven) POSTs.
+const { getCsrfToken } = require('./fixtures/csrf');
 
 test.use({ baseURL: STAGING_BASE_URL });
 
@@ -92,8 +95,12 @@ async function createOwnProduct(request, label) {
   });
   expect(draftRes.status(), 'products/new should succeed for a freshly authenticated tenant').toBe(200);
 
+  // rcfc-s1: /products/confirm now requires a valid session-scoped CSRF token,
+  // embedded as a hidden field in the real /products/new form.
+  const csrfToken = await getCsrfToken(request, '/products/new', 'products/new page');
+
   const confirmRes = await request.post('/products/confirm', {
-    form: { name: productName, description: 'Product created by the dsh-s4 resume-conversation E2E spec.' },
+    form: { name: productName, description: 'Product created by the dsh-s4 resume-conversation E2E spec.', _csrf: csrfToken },
     maxRedirects: 0
   });
   expect(confirmRes.status(), 'products/confirm should redirect to the product view').toBe(302);
@@ -111,8 +118,11 @@ async function createOwnProduct(request, label) {
  * @returns {Promise<{journeyId: string, sessionId: string, chatPath: string}>}
  */
 async function createFormedIdeaFeature(request, featureName) {
+  // rcfc-s1: /api/journey now requires a valid session-scoped CSRF token,
+  // embedded as a hidden field in the real /journey home page form.
+  const csrfToken = await getCsrfToken(request, '/journey', 'journey home page');
   const createRes = await request.post('/api/journey', {
-    form: { featureName: featureName, startSkill: 'discovery' },
+    form: { featureName: featureName, startSkill: 'discovery', _csrf: csrfToken },
     maxRedirects: 0
   });
   expect(createRes.status(), 'POST /api/journey (formed idea) should redirect to the new session').toBe(303);
