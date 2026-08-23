@@ -29,9 +29,9 @@ So that **the CSRF hardening added on 2026-07-01 covers the whole app's real att
 
 ## Acceptance Criteria
 
-**AC1:** Given the journey-flow server-rendered forms (`POST /journey/wizard`, `POST /api/journey` and sibling journey-flow form POSTs), When submitted without a valid `_csrf` field, Then the response is `403` with body `"Forbidden"` and no state change occurs; When submitted with the correct `_csrf` value (extracted from the real rendered GET page, per `sec-perf-s3`'s AC6 round-trip convention), Then the request succeeds exactly as before.
+**AC1:** Given the journey-flow server-rendered forms — `POST /journey/wizard`, `POST /api/journey`, `POST /api/journey/:journeyId/gate-confirm`, `POST /api/journey/:journeyId/reference-modal/skip`, `POST /api/journey/:journeyId/reference`, and `POST /api/journey/:journeyId/stories` (the full enumerated set of `journey.js` handlers whose output is targeted by a real server-rendered `<form method="POST">`, confirmed via code investigation on 2026-08-24 — supersedes this AC's original, incomplete "and sibling journey-flow form POSTs" wording) — When submitted without a valid `_csrf` field, Then the response is `403` with body `"Forbidden"` and no state change occurs; When submitted with the correct `_csrf` value (extracted from the real rendered GET page, per `sec-perf-s3`'s AC6 round-trip convention), Then the request succeeds exactly as before.
 
-**AC2:** Given `POST /api/artefacts/:slug/:file/annotations`, `POST /api/skills/:name/sessions` (form path), and `POST /api/skills/:name/sessions/:id/commit` (form path), When submitted without a valid `_csrf` field, Then each is rejected `403`/`"Forbidden"`; with a valid token, each succeeds as before.
+**AC2:** Given `POST /api/artefacts/:slug/:file/annotations`, `POST /api/skills/:name/sessions` (form path), and `POST /api/skills/:name/sessions/:id/commit` (form path), When submitted without a valid `_csrf` field, Then each is rejected `403`/`"Forbidden"`; with a valid token, each succeeds as before. **Prerequisite fix required for the annotations route specifically** (found 2026-08-24, unrelated to CSRF): `annotation.js`'s `_readBody` unconditionally `JSON.parse`s the raw request body with no content-type branching, so a genuine browser `<form>` submission (default `application/x-www-form-urlencoded`) currently 400s regardless of any CSRF token — this pre-existing bug must be fixed as part of delivering this AC, otherwise "succeeds as before" is unachievable for a real form POST. Add form-urlencoded parsing support to `annotation.js`'s body-reading path (mirroring the pattern already used elsewhere in this codebase, e.g. `_readFormBody` in `journey.js`), scoped strictly to making this route's real form submission path work — not a general refactor of `annotation.js`.
 
 **AC3:** Given `POST /products/confirm` and `POST /products/:id/features`, When submitted without a valid `_csrf` field, Then each is rejected `403`/`"Forbidden"`; with a valid token, each succeeds as before.
 
@@ -54,8 +54,8 @@ So that **the CSRF hardening added on 2026-07-01 covers the whole app's real att
 
 ## Complexity Rating
 
-**Rating:** 2 — mechanical repetition of an already-proven pattern across ~7 more routes, but each route needs its own round-trip test per AC5.
-**Scope stability:** Stable — the exact list of remaining forms was already enumerated by `sec-perf-s3`'s own text.
+**Rating:** 2 — mechanical repetition of an already-proven pattern across 9 routes (updated 2026-08-24 from the original ~7 estimate, after code investigation found `journey.js` had 4 real form-POST routes needing coverage, not 2), plus one small, tightly-scoped prerequisite bug fix (AC2's form-parsing gap), but each route needs its own round-trip test per AC5.
+**Scope stability:** Stable — the full route list is now code-verified as of 2026-08-24 (see AC1/AC2), not just carried forward from `sec-perf-s3`'s original text.
 
 ## Definition of Ready Pre-check
 

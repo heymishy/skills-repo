@@ -25307,11 +25307,22 @@
           "id": "rcfc-s1",
           "slug": "rcfc-s1",
           "name": "Extend CSRF token protection to the remaining server-rendered POST forms",
-          "stage": "definition",
-          "health": "amber",
+          "stage": "test-plan",
+          "health": "green",
           "dorStatus": "not-started",
           "dodStatus": "not-started",
-          "prStatus": "none"
+          "prStatus": "none",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 26,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-17-remaining-csrf-form-coverage/test-plans/rcfc-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "updatedAt": "2026-08-23T17:48:31.652Z"
         }
       ],
       "metrics": [],
