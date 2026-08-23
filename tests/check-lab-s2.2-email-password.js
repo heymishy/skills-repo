@@ -362,7 +362,8 @@ async function runTests() {
   console.log('\nT7.1 — auth-chooser-contains-email-password-option (AC7)');
   {
     const { renderLoginPage } = require('../src/web-ui/utils/html-shell');
-    const html = renderLoginPage();
+    // rcfc-s1 Task 4: renderLoginPage now requires req.session (embeds a CSRF field).
+    const html = renderLoginPage(mockReq());
     assert(typeof html === 'string' && html.length > 0, 'renderLoginPage returns non-empty HTML');
     assert(
       html.toLowerCase().includes('email') && html.toLowerCase().includes('password'),

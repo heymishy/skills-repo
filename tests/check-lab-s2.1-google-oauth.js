@@ -233,7 +233,8 @@ test('T5.1 server.js imports Google handler functions and registers /auth/google
 
 test('T6.1 renderLoginPage includes "Continue with Google" button pointing to /auth/google', () => {
   const { renderLoginPage } = require('../src/web-ui/utils/html-shell');
-  const html = renderLoginPage();
+  // rcfc-s1 Task 4: renderLoginPage now requires req.session (embeds a CSRF field).
+  const html = renderLoginPage(mockReq());
 
   assert(html.includes('/auth/google'), 'T6.1: login page contains /auth/google link');
   assert(html.includes('Continue with Google') || html.includes('Sign in with Google'),
