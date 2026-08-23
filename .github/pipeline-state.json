@@ -25968,13 +25968,13 @@
               "name": "Build the shared viewer-write-block gate and wire it to Products + Features/journeys routes",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-08-22T21:09:57.444Z",
+              "updatedAt": "2026-08-23T02:23:24.839Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 53,
-                "passing": 53
+                "totalTests": 54,
+                "passing": 54
               },
               "acTotal": 5,
               "acVerified": 5,
@@ -26053,7 +26053,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/755"
             },
             {
