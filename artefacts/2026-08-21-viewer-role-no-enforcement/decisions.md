@@ -97,6 +97,14 @@
 **Revisit trigger:** If Task 10's integration tests do not land as planned (e.g. if the story reaches `/verify-completion` without them), this RISK-ACCEPT is void and the gap must be closed before DoR-equivalent sign-off for merge. Re-check at Task 10 completion and again at `/verify-completion`.
 ---
 
+**2026-08-23 | RISK-ACCEPT | branch-setup (vrne-s3)**
+**Decision:** Acknowledge `tests/check-p3.5-validate-trace.js`'s single baseline failure in the `vrne-s3` worktree as the same pre-existing environmental flake already accepted for `vrne-s1`/`vrne-s2`, and proceed.
+**Alternatives considered:** Investigate and fix before starting implementation.
+**Rationale:** Identical signature to the prior two stories' own branch-setup RISK-ACCEPT entries — 536 files run, 1 failed, no other files affected.
+**Made by:** Claude (agent), via `/branch-setup`.
+**Revisit trigger:** Same as the prior entries — if this recurs across further stories/sessions, raise the test's own internal timeout.
+---
+
 ## Architecture Decision Records
 
 <!-- None yet — the require-admin.js resolver refactor (see ARCH entry above) is scoped and small enough to remain a log entry, not a full ADR. Promote to an ADR here if the refactor surfaces a broader reusable-middleware pattern worth applying beyond this feature. -->
