@@ -263,6 +263,7 @@ function _renderJourneyHome(data) {
       '<section class="jh-new-section" id="jh-new"' + (showNewForm ? ' style="background:var(--accent-soft,#eaf1fb);padding:20px;border-radius:8px;margin-top:4px"' : '') + '>',
         '<h2>Start a new feature</h2>',
         '<form method="POST" action="/api/journey" class="jh-form">',
+          _csrf.csrfField(data.csrfToken),
           '<div class="jh-form-row">',
             '<label class="jh-label" for="jh-fname">Feature name</label>',
             '<input id="jh-fname" class="jh-input" name="featureName" type="text" placeholder="e.g. Impact matrix tool" required autofocus>',
@@ -334,7 +335,7 @@ async function handleGetJourney(req, res, _next, pool) {
   journeys = journeys.filter(function(j) { return j.productId == null; });
   journeys.sort(function(a, b) { return (b.createdAt ? new Date(b.createdAt).toISOString() : '').localeCompare(a.createdAt ? new Date(a.createdAt).toISOString() : ''); });
   var showNewForm = !!(req.query && req.query.new === '1');
-  var body = _renderJourneyHome({ profiles: profiles, activeProfile: activeProfile, journeys: journeys, showNewForm: showNewForm });
+  var body = _renderJourneyHome({ profiles: profiles, activeProfile: activeProfile, journeys: journeys, showNewForm: showNewForm, csrfToken: _csrf.generateCsrfToken(req) });
   // d2: this page previously never computed/passed isAdmin at all (defaulted
   // to false even for a genuine, non-impersonating admin) -- wired here using
   // the same isEffectivelyAdmin() helper as dashboard.js/settings.js so the
@@ -381,6 +382,8 @@ async function handlePostJourney(req, res) {
     res.end();
     return;
   }
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
   try {
     var body        = await _readFormBody(req);
     var featureName = (body.featureName || '').trim();
@@ -709,6 +712,7 @@ async function handleGetStageReview(req, res) {
       '<a href="' + escHtml(chatUrl) + '" class="sw-btn" style="border:1px solid var(--line);flex-shrink:0">← Back to session</a>',
       '<span class="sr-confirm-hint">Confirming saves this artefact and opens the next stage.</span>',
       '<form method="POST" action="/api/journey/' + safeJourneyId + '/gate-confirm" style="margin:0;flex-shrink:0">',
+        _csrf.csrfField(_csrf.generateCsrfToken(req)),
         '<button type="submit" class="sw-btn sw-btn--primary">Confirm &amp; continue to ' + escHtml(nextLabel) + ' &#x2192;</button>',
       '</form>',
     '</div>'
@@ -1611,6 +1615,7 @@ async function handleGetReferenceModal(req, res) {
       '<div class="rm-actions">',
         '<button id="rm-upload-btn" class="sw-btn sw-btn--primary" type="button">Upload and continue</button>',
         '<form method="POST" action="/api/journey/' + safeId + '/reference-modal/skip" style="margin:0">',
+          _csrf.csrfField(_csrf.generateCsrfToken(req)),
           '<button class="rm-skip" type="submit">Skip — continue without files</button>',
         '</form>',
       '</div>',
@@ -1707,6 +1712,8 @@ async function handleGetReferenceModalStart(req, res) {
  * Skips the upload modal and proceeds to the first skill session.
  */
 async function handlePostReferenceModalSkip(req, res) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
   req.params = req.params || {};
   return handleGetReferenceModalStart(req, res);
 }
@@ -1810,6 +1817,7 @@ async function handleGetReference(req, res) {
       '<section class="rf-section">',
         '<h2>Add a reference doc</h2>',
         '<form method="POST" action="/api/journey/' + safeId + '/reference">',
+          _csrf.csrfField(_csrf.generateCsrfToken(req)),
           '<div class="rf-form-row">',
             '<label class="rf-label" for="rf-name">Document name</label>',
             '<input id="rf-name" class="rf-input" name="filename" type="text" placeholder="e.g. solution-architecture or ux-wireframe" required>',
@@ -1844,6 +1852,8 @@ async function handlePostReference(req, res) {
     res.end();
     return;
   }
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
   var journeyId = req.params && req.params.journeyId;
   var journey = _journeyStore.getJourney(journeyId);
   if (!journey) {
@@ -2004,6 +2014,8 @@ async function handlePostGateConfirm(req, res) {
     res.end();
     return;
   }
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
   var journeyId = req.params && req.params.journeyId;
   var journey = _journeyStore.getJourney(journeyId);
   if (!journey) {
@@ -2447,6 +2459,7 @@ async function handleGetStories(req, res) {
       ? '<p>Every story found in the definition artefact is pre-filled below. Edit the list if you want to add, remove, or reorder before starting review.</p>'
       : '<p>Enter one story slug per line. These will be processed through review, test-plan, and definition-of-ready.</p>',
     '<form method="POST" action="/api/journey/' + safeId + '/stories">',
+    _csrf.csrfField(_csrf.generateCsrfToken(req)),
     '<textarea name="stories" rows="10" cols="50" placeholder="e.g. wgol.1&#10;wgol.2&#10;wgol.3">' + textareaValue + '</textarea>',
     '<br><button type="submit" class="sw-btn sw-btn--primary">Start per-story stages</button>',
     '</form>',
@@ -2466,6 +2479,8 @@ async function handlePostStories(req, res) {
     res.end();
     return;
   }
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
   var journeyId = req.params && req.params.journeyId;
   var journey = _journeyStore.getJourney(journeyId);
   if (!journey) {
@@ -3941,6 +3956,7 @@ function handleGetWizard(req, res) {
     var body2 = '<h1>Continue an existing feature</h1>\n' +
       '<a href="/journey/wizard">← Back to options</a>\n' +
       '<form method="POST" action="/journey/wizard">\n' +
+      _csrf.csrfField(_csrf.generateCsrfToken(req)) + '\n' +
       listHtml2 + '\n';
     if (features2 !== null && active2.length > 0) {
       body2 += '<select name="featureSlug">' +
@@ -3984,6 +4000,7 @@ function handleGetWizard(req, res) {
       sessionListHtml;
     if (activeSessions.length > 0) {
       body3 += '\n<form method="POST" action="/journey/wizard">\n' +
+        _csrf.csrfField(_csrf.generateCsrfToken(req)) + '\n' +
         '<input type="hidden" name="selection" value="resume-session">\n' +
         '<select name="sessionId">' +
         activeSessions.map(function(s) {
@@ -4016,6 +4033,7 @@ function handleGetWizard(req, res) {
     '<div class="wiz-option">\n' +
     '<h2>Start something new</h2>\n' +
     '<form method="POST" action="/journey/wizard">\n' +
+    _csrf.csrfField(_csrf.generateCsrfToken(req)) + '\n' +
     '<button type="submit" name="selection" value="new">Start a new feature</button>\n' +
     '</form>\n' +
     '</div>\n' +
@@ -4032,7 +4050,9 @@ function handleGetWizard(req, res) {
   res.end(renderShell({ title: 'Project selection', bodyContent: body }));
 }
 
-function handlePostWizardSelection(req, res) {
+async function handlePostWizardSelection(req, res) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
   var reqBody = (req && req.body) || {};
   var featureSlug = reqBody.featureSlug;
   var selection = reqBody.selection;
