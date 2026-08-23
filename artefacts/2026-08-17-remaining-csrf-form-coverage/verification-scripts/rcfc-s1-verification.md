@@ -53,31 +53,31 @@
 
 ---
 
-### Scenario 3: Adding an annotation without a valid security token is rejected
+### Scenario 3: Starting a new skill session without a valid security token is rejected
 
-**Covers:** AC2 (representative route: artefact annotation form)
+**Covers:** AC2 (representative route: the "Start" button on the skills list page — updated 2026-08-24; the original scenario named the artefact-annotation form, which was removed from AC2's scope after investigation found it is a JSON/fetch-only API with no live server-rendered `<form>` target — see `decisions.md`)
 
 **Steps:**
-1. Open any artefact page and locate the annotation/comment box.
-2. Type a comment and, using dev tools, resubmit the request with the hidden security field removed.
+1. Open the skills list page.
+2. Using dev tools, resubmit the "Start" form's POST but remove or corrupt the hidden security field before sending.
 
 **Expected outcome:**
-> The comment is rejected — "Forbidden" is returned, and the comment does not appear on the artefact after refreshing.
+> You see a blocked/denied response — no new skill session starts, and the exact text "Forbidden" is returned.
 
 **Result:** [ ] Pass  [ ] Fail
 **Notes:**
 
 ---
 
-### Scenario 4: Adding an annotation normally still works exactly as before
+### Scenario 4: Starting a new skill session normally still works exactly as before
 
-**Covers:** AC2, AC5 (same route as Scenario 3 — also confirms a real bug found during investigation is now fixed: previously this form always failed with a generic error regardless of the security token, because the server didn't know how to read a normal browser form submission here)
+**Covers:** AC2, AC5 (same route as Scenario 3)
 
 **Steps:**
-1. Open any artefact page, type a real comment into the annotation box, and submit normally.
+1. Open the skills list page normally and click "Start" on any skill.
 
 **Expected outcome:**
-> The comment appears on the artefact page — no error, no "Invalid request" message.
+> A new skill session starts and you land on its chat page — no difference from how this worked before.
 
 **Result:** [ ] Pass  [ ] Fail
 **Notes:**
@@ -138,8 +138,8 @@
 |----------|--------|-------|
 | Scenario 1 — journey form rejected without token | | |
 | Scenario 2 — journey form works normally | | |
-| Scenario 3 — annotation rejected without token | | |
-| Scenario 4 — annotation works normally (+ bug fix confirmed) | | |
+| Scenario 3 — skill session start rejected without token | | |
+| Scenario 4 — skill session start works normally | | |
 | Scenario 5 — product creation rejected without token | | |
 | Scenario 6 — product creation works normally | | |
 | Edge case — legacy sign-in shell protected and working | | |
