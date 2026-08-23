@@ -67,13 +67,14 @@ queue.push(function runT1_1() {
 
     let capturedStatus = null;
     let capturedHeaders = {};
+    // rcfc-s1: handlePostSkillSessionHtml now requires a valid session-scoped CSRF token.
     const req = {
       method: 'POST',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      session: { accessToken: 'tok', userId: 1, login: 'u' },
+      session: { accessToken: 'tok', userId: 1, login: 'u', csrfToken: 'test-csrf-token' },
       params:  { name: 'discovery' },
       on: function(event, cb) {
-        if (event === 'data') setTimeout(function() { cb(Buffer.from('skill=discovery')); }, 0);
+        if (event === 'data') setTimeout(function() { cb(Buffer.from('skill=discovery&_csrf=test-csrf-token')); }, 0);
         if (event === 'end') setTimeout(function() { cb(); }, 5);
         return req;
       }
@@ -111,13 +112,14 @@ queue.push(function runT1_2() {
     });
 
     let capturedHeaders = {};
+    // rcfc-s1: handlePostSkillSessionHtml now requires a valid session-scoped CSRF token.
     const req = {
       method: 'POST',
       headers: { 'content-type': 'application/x-www-form-urlencoded' },
-      session: { accessToken: 'tok', userId: 1, login: 'u' },
+      session: { accessToken: 'tok', userId: 1, login: 'u', csrfToken: 'test-csrf-token' },
       params:  { name: 'discovery' },
       on: function(event, cb) {
-        if (event === 'data') setTimeout(function() { cb(Buffer.from('skill=discovery')); }, 0);
+        if (event === 'data') setTimeout(function() { cb(Buffer.from('skill=discovery&_csrf=test-csrf-token')); }, 0);
         if (event === 'end') setTimeout(function() { cb(); }, 5);
         return req;
       }
