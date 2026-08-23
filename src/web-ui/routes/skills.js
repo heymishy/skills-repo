@@ -401,6 +401,7 @@ async function handleGetSkills(req, res) {
  */
 async function handlePostSession(req, res) {
   if (!_checkAuth(req, res)) { return; }
+  // vrne-s2 — viewer-role write-block gate (AC1)
   let _rnvOk = false;
   await requireNonViewer(req, res, () => { _rnvOk = true; });
   if (!_rnvOk) return;
@@ -443,6 +444,10 @@ async function handlePostSession(req, res) {
  */
 async function handlePostAnswer(req, res) {
   if (!_checkAuth(req, res)) { return; }
+  // vrne-s2 — viewer-role write-block gate (AC2)
+  let _rnvOk = false;
+  await requireNonViewer(req, res, () => { _rnvOk = true; });
+  if (!_rnvOk) return;
   try {
     if (!await _checkLicence(req, res)) { return; }
     var name = req.params && req.params.name;

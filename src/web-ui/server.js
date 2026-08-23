@@ -2637,6 +2637,10 @@ async function router(req, res) {
     const parts = pathname.split('/');
     req.params = { name: parts[3], id: parts[5] };
     authGuard(req, res, async () => {
+      // vrne-s2 — viewer-role write-block gate (AC2)
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
       let _cgOk = false;
       await creditsGuard(req, res, () => { _cgOk = true; });
       if (!_cgOk) return;
@@ -2650,6 +2654,10 @@ async function router(req, res) {
     const parts = pathname.split('/');
     req.params = { name: parts[3], id: parts[5] };
     authGuard(req, res, async () => {
+      // vrne-s2 — viewer-role write-block gate (AC2)
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
       let _cgOk = false;
       await creditsGuard(req, res, () => { _cgOk = true; });
       if (!_cgOk) return;
@@ -2687,6 +2695,10 @@ async function router(req, res) {
     const parts = pathname.split('/');
     req.params = { name: parts[3], id: parts[5] };
     authGuard(req, res, async () => {
+      // vrne-s2 — viewer-role write-block gate (AC2)
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
       await handlePostAnswerHtml(req, res);
     });
 
@@ -2699,6 +2711,7 @@ async function router(req, res) {
     const ct = (req.headers['content-type'] || '');
     if (ct.includes('application/x-www-form-urlencoded')) {
       authGuard(req, res, async () => {
+        // vrne-s2 — viewer-role write-block gate (AC1)
         let _rnvOk = false;
         await requireNonViewer(req, res, () => { _rnvOk = true; });
         if (!_rnvOk) return;
