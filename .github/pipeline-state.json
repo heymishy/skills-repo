@@ -26218,9 +26218,9 @@
             {
               "slug": "vrne-s4",
               "name": "Wire the viewer-write-block gate to edge-case routes (agency client creation/invite, artefact annotations)",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-08-23T09:55:01.275Z",
+              "updatedAt": "2026-08-23T09:56:46.137Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -26262,7 +26262,9 @@
                   "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s4-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/759"
             }
           ]
         }
