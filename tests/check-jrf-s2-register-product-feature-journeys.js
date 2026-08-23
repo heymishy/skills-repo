@@ -187,7 +187,8 @@ function poolWithConnectedRepo() {
 
     journeyRoute.setRepoRoot(require('os').tmpdir());
 
-    var req2 = { params: { journeyId: journeyId }, session: { tenantId: 'tenant-1', login: 'octocat', accessToken: 'test-token' } };
+    // rcfc-s1: handlePostGateConfirm now requires a valid session-scoped CSRF token.
+    var req2 = { params: { journeyId: journeyId }, session: { tenantId: 'tenant-1', login: 'octocat', accessToken: 'test-token', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
     var res2 = makeRes();
     await journeyRoute.handlePostGateConfirm(req2, res2);
 

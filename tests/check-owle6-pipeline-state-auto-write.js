@@ -33,7 +33,8 @@ function makeRes() {
 }
 
 function makeReq(overrides) {
-  return Object.assign({ session: { accessToken: 'tok', login: 'user' }, params: {}, body: {}, headers: {} }, overrides);
+  // rcfc-s1: handlePostGateConfirm now requires a valid session-scoped CSRF token.
+  return Object.assign({ session: { accessToken: 'tok', login: 'user', csrfToken: 'test-csrf-token' }, params: {}, body: { _csrf: 'test-csrf-token' }, headers: {} }, overrides);
 }
 
 function makeSessionStore() {
@@ -334,7 +335,7 @@ async function main() {
     r.jStore.setActiveSession(jobj.journeyId, sessionId, 'discovery');
 
     await r.j.handlePostGateConfirm(
-      makeReq({ params: { journeyId: jobj.journeyId }, session: { accessToken: secretToken, login: 'user' } }),
+      makeReq({ params: { journeyId: jobj.journeyId }, session: { accessToken: secretToken, login: 'user', csrfToken: 'test-csrf-token' } }),
       makeRes()
     );
 

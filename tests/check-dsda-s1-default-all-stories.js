@@ -66,10 +66,11 @@ function makeRes() {
 }
 
 function authReq(extra) {
+  // rcfc-s1: handlePostStories now requires a valid session-scoped CSRF token.
   return Object.assign({
-    session: { accessToken: 'test-token', userId: 1, login: 'user' },
+    session: { accessToken: 'test-token', userId: 1, login: 'user', csrfToken: 'test-csrf-token' },
     params: {},
-    body: {}
+    body: { _csrf: 'test-csrf-token' }
   }, extra || {});
 }
 
@@ -240,7 +241,7 @@ queue.push(function() {
     var autoPopulatedValue = taValueMatch[1];
     assert.ok(autoPopulatedValue.includes('dsda-fix.1') && autoPopulatedValue.includes('dsda-fix.2'), 'expected both story IDs in the pre-filled value');
 
-    var postReq = authReq({ params: { journeyId: journeyId }, body: { stories: autoPopulatedValue } });
+    var postReq = authReq({ params: { journeyId: journeyId }, body: { stories: autoPopulatedValue, _csrf: 'test-csrf-token' } });
     var postRes = makeRes();
     await journey.handlePostStories(postReq, postRes);
 
@@ -279,7 +280,7 @@ queue.push(function() {
     // Operator removes dsda-fix.2 and adds a story of their own choosing --
     // simulating a real edit of the pre-filled textarea before submitting.
     var editedValue = 'dsda-fix.1\ndsda-fix.3-added-by-operator';
-    var postReq = authReq({ params: { journeyId: journeyId }, body: { stories: editedValue } });
+    var postReq = authReq({ params: { journeyId: journeyId }, body: { stories: editedValue, _csrf: 'test-csrf-token' } });
     var postRes = makeRes();
     await journey.handlePostStories(postReq, postRes);
 

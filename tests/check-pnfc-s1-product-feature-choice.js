@@ -198,10 +198,11 @@ function extractSidFromRedirect(res, skillName) {
     var journeyRoute = freshRequire(JOURNEY_ROUTE_PATH);
     journeyRoute.setRepoRoot(require('os').tmpdir());
 
+    // rcfc-s1: handlePostJourney now requires a valid session-scoped CSRF token.
     var req = {
-      session: { accessToken: 'test-token', tenantId: 'tenant-1', login: 'octocat' },
+      session: { accessToken: 'test-token', tenantId: 'tenant-1', login: 'octocat', csrfToken: 'test-csrf-token' },
       method: 'POST',
-      body: { featureName: 'AC5 regression check', startSkill: 'ideate', profileName: 'default' }
+      body: { featureName: 'AC5 regression check', startSkill: 'ideate', profileName: 'default', _csrf: 'test-csrf-token' }
     };
     var res = makeRes();
     await journeyRoute.handlePostJourney(req, res);

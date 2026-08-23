@@ -69,9 +69,10 @@ function aliceJourney(id) {
     store1._clear();
     m1.setRegisterHtmlSession(function() {});
     m1.setLinkSessionToJourney(function() {});
+    // rcfc-s1: handlePostJourney now requires a valid session-scoped CSRF token.
     var req1 = makeReq({
-      session: { accessToken: 'tok', userId: '1', login: 'alice', tenantId: 'my-org' },
-      body: { featureName: 'test-feature', startSkill: 'discovery', profileName: 'default' }
+      session: { accessToken: 'tok', userId: '1', login: 'alice', tenantId: 'my-org', csrfToken: 'test-csrf-token' },
+      body: { featureName: 'test-feature', startSkill: 'discovery', profileName: 'default', _csrf: 'test-csrf-token' }
     });
     var res1 = makeRes();
     await m1.handlePostJourney(req1, res1);

@@ -49,8 +49,10 @@ function makeRes() {
 }
 
 function authReq(extra) {
+  // rcfc-s1: handlePostJourney now requires a valid session-scoped CSRF token
+  // (csrfToken on the session must match a _csrf field on the POST body).
   return Object.assign({
-    session: { accessToken: 'test-token', userId: 1, login: 'user' },
+    session: { accessToken: 'test-token', userId: 1, login: 'user', csrfToken: 'test-csrf-token' },
     params: {},
     body: {}
   }, extra || {});
@@ -107,7 +109,7 @@ queue.push(function() {
     // default body: {} always hit that early branch, before ever reaching
     // real journey-creation logic. This is what made T3.3/T3.4/T3.7's
     // failures look related (all 3 short-circuited the same way).
-    var req = authReq({ method: 'POST', body: { featureName: 'Test Feature', startSkill: 'discovery' } });
+    var req = authReq({ method: 'POST', body: { featureName: 'Test Feature', startSkill: 'discovery', _csrf: 'test-csrf-token' } });
     var res = makeRes();
     return Promise.resolve().then(function() {
       return journey.handlePostJourney(req, res);
@@ -135,7 +137,7 @@ queue.push(function() {
     // default body: {} always hit that early branch, before ever reaching
     // real journey-creation logic. This is what made T3.3/T3.4/T3.7's
     // failures look related (all 3 short-circuited the same way).
-    var req = authReq({ method: 'POST', body: { featureName: 'Test Feature', startSkill: 'discovery' } });
+    var req = authReq({ method: 'POST', body: { featureName: 'Test Feature', startSkill: 'discovery', _csrf: 'test-csrf-token' } });
     var res = makeRes();
     return Promise.resolve().then(function() {
       return journey.handlePostJourney(req, res);
@@ -184,9 +186,13 @@ queue.push(function() {
     // purposeful field, not leaked/mystery state. Allow that one specific
     // field by name while still failing on any OTHER unexpected hidden
     // input, preserving the original guard's actual intent.
+    // rcfc-s1: the "start a new feature" form now also legitimately carries
+    // a <input type="hidden" name="_csrf" ...> token (csrf.js's csrfField) --
+    // allow that one too, same rationale as profileName above.
     var hiddenInputs = res._body.match(/<input type=["']hidden["'][^>]*>/g) || [];
     var unexpectedHidden = hiddenInputs.filter(function(tag) {
-      return tag.indexOf('name="profileName"') === -1 && tag.indexOf("name='profileName'") === -1;
+      return tag.indexOf('name="profileName"') === -1 && tag.indexOf("name='profileName'") === -1 &&
+        tag.indexOf('name="_csrf"') === -1 && tag.indexOf("name='_csrf'") === -1;
     });
     assert.strictEqual(
       unexpectedHidden.length, 0,
@@ -216,7 +222,7 @@ queue.push(function() {
     // default body: {} always hit that early branch, before ever reaching
     // real journey-creation logic. This is what made T3.3/T3.4/T3.7's
     // failures look related (all 3 short-circuited the same way).
-    var req = authReq({ method: 'POST', body: { featureName: 'Test Feature', startSkill: 'discovery' } });
+    var req = authReq({ method: 'POST', body: { featureName: 'Test Feature', startSkill: 'discovery', _csrf: 'test-csrf-token' } });
     var res = makeRes();
     return Promise.resolve().then(function() {
       return journey.handlePostJourney(req, res);
