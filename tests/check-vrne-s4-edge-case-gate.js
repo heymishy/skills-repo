@@ -3,6 +3,18 @@
 var assert = require('assert');
 var path = require('path');
 
+// vrne-s4: the integration test at the bottom of this file requires
+// '../src/web-ui/server', which wires a live getCurrentRole adapter into
+// require-admin.js's resolveRole() process-wide the moment it is required --
+// overriding req.session.role with a real (fake-backed) DB lookup on every
+// subsequent requireNonViewer() call in THIS process, including the AC1-AC6
+// isolated gate tests above, which rely on their unseeded mock role being
+// trusted as-is. This is only safe because the integration test is the LAST
+// item pushed to `queue` below -- do not reorder it earlier, and do not add
+// a new test after it without accounting for this. Mirrors the identical
+// hazard/fix in check-vrne-s2-skill-session-gate.js and
+// check-vrne-s3-billing-gate.js.
+
 var passed = 0; var failed = 0; var failures = [];
 
 function test(name, fn) {
@@ -105,6 +117,23 @@ async function main() {
   queue.push(function() {
     console.log('\n[vrne-s4] T-integration-real-dispatch -- real server.js dispatch denies viewer on /api/artefacts/:slug/annotations');
     return test('integration: requireNonViewer reachable via real server.js dispatch', async function() {
+      // env vars required to require('../src/web-ui/server') -- must be set
+      // BEFORE that require() below runs. NODE_ENV=test + no DATABASE_URL
+      // routes server.js to its in-memory fake-test-db bootstrap branch, which
+      // wires a real (fake-backed) getCurrentRole adapter -- required for
+      // requireNonViewer's live role resolution to see the viewer role seeded
+      // via /test/seed-multi-user-roles below. Mirrors
+      // check-vrne-s2-skill-session-gate.js's and check-vrne-s3-billing-gate.js's
+      // own setup (this file omitted it on first pass, causing the integration
+      // test to fail/hang when run outside an already-NODE_ENV=test shell).
+      process.env.NODE_ENV             = 'test';
+      process.env.SESSION_SECRET       = 'test-session-secret-minimum32chars!!';
+      process.env.GITHUB_CLIENT_ID     = 'test-client-id';
+      process.env.GITHUB_CLIENT_SECRET = 'test-secret';
+      process.env.GITHUB_CALLBACK_URL  = 'http://localhost:3000/auth/github/callback';
+      delete process.env.POSTHOG_KEY;
+      delete process.env.DATABASE_URL;
+
       var router = require('../src/web-ui/server').router;
       var seedTestSession = require('../src/web-ui/middleware/session').seedTestSession;
       var EventEmitter = require('events').EventEmitter;
