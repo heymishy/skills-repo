@@ -26170,13 +26170,13 @@
               "name": "Wire the viewer-write-block gate to Credits/billing routes",
               "stage": "subagent-execution",
               "health": "green",
-              "updatedAt": "2026-08-23T07:17:57.727Z",
+              "updatedAt": "2026-08-23T08:20:01.464Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 0
+                "passing": 6
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -26190,19 +26190,19 @@
                 {
                   "id": "task-1",
                   "name": "RED -- write failing tests for AC1/AC2/AC3/AC4",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s3-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "GREEN -- wire requireNonViewer into /billing/checkout, plus integration test",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s3-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "Full regression -- confirm all 6 planned tests pass, zero regressions",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s3-plan.md"
                 }
               ]
