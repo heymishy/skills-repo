@@ -557,9 +557,9 @@ Expected: `AC1+AC2+AC3+AC4+AC5+AC6 subtotal: 15 passed, 0 failed`
 **Files:**
 - Modify: `tests/check-vrne-s2-skill-session-gate.js` (append)
 
-**Why two integration tests, not one (test plan names one):** the test plan's `gate-wired-in-real-skill-session-flow` names `/turn` (Pattern A, `authGuard`-wrapped in `server.js`) as its representative route. Since 3 of this story's 11 call sites are Pattern B (gated internally in `skills.js`, no `server.js` wrapper at all), a single Pattern-A integration test would leave the Pattern-B wiring mechanism itself unverified by any real-dispatch test — only by the isolated gate-only tests in Tasks 1–9, which (as `vrne-s1`'s own CI incident showed) can pass without proving the gate is actually reachable via the real route. Adding a second integration test for `/api/skills/:name/sessions/:id/answers` (Pattern B) closes that gap. This is additional coverage beyond the written test plan, not a deviation from it — flag in the DoD as "test count updated from 16 planned to 17 actual, +1 Pattern-B integration test."
+**Why three integration tests, not one (test plan names one):** the test plan's `gate-wired-in-real-skill-session-flow` names `/turn` (Pattern A, `authGuard`-wrapped in `server.js`) as its representative route. Since 3 of this story's 11 call sites are Pattern B (gated internally in `skills.js`, no `server.js` wrapper at all), a single Pattern-A integration test would leave the Pattern-B wiring mechanism itself unverified by any real-dispatch test — only by the isolated gate-only tests in Tasks 1–9, which (as `vrne-s1`'s own CI incident showed) can pass without proving the gate is actually reachable via the real route. Adding a second integration test for `/api/skills/:name/sessions/:id/answers` (Pattern B) closes that gap. A third integration test targets `/canvas-edit` (AC5) specifically — added after a code-quality review flagged that AC5's own routes (the story's own NFR section names this "the highest-value security gate in the epic") had no real-dispatch coverage in the original 2-test plan. This is additional coverage beyond the written test plan, not a deviation from it — flag in the DoD as "test count updated from 16 planned to 18 actual, +1 Pattern-B integration test, +1 AC5-specific integration test."
 
-- [ ] **Step 1: Write both integration tests**
+- [ ] **Step 1: Write all three integration tests**
 
 Mirror `check-vrne-s1-server-wiring.js`'s own `T-integration-real-dispatch` test exactly — same `router`/`seedTestSession`/`dispatchAndAwaitResponse` helpers, same `/test/seed-multi-user-roles` seeding call, same `e2e-viewer` identity (this is the exact fix already proven necessary in `vrne-s1`'s post-merge-CI-catch: an unseeded fake identity falls through to the `'user'` default and produces a false pass, not a false fail — using the real seeded `e2e-viewer` identity from the start avoids repeating that mistake here).
 
@@ -653,7 +653,7 @@ queue.push(function() {
 node tests/check-vrne-s2-skill-session-gate.js
 ```
 
-Expected output: `17 passed, 0 failed`
+Expected output: `18 passed, 0 failed`
 
 - [ ] **Step 3: Commit (batched — this is the final code+test commit before Task 11's full regression)**
 
@@ -674,7 +674,7 @@ git commit -m "test: add AC4/AC6 regression coverage and Pattern-A/Pattern-B int
 node tests/check-vrne-s2-skill-session-gate.js
 ```
 
-Expected output: `17 passed, 0 failed`
+Expected output: `18 passed, 0 failed`
 
 - [ ] **Step 2: Run the full suite (this is one of the 3 anchor points reserved for full-suite runs — branch-setup baseline, this verify-completion check, and branch-complete)**
 
