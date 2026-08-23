@@ -26070,9 +26070,9 @@
             {
               "slug": "vrne-s2",
               "name": "Wire the viewer-write-block gate to Skill session routes",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-08-23T06:25:40.631Z",
+              "updatedAt": "2026-08-23T06:27:50.139Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -26156,7 +26156,9 @@
                   "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s2-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/757"
             },
             {
               "slug": "vrne-s3",
