@@ -26386,5 +26386,11 @@
     ],
     "lastUpdated": "2026-08-16"
   },
-  "updatedAt": "2026-08-16T07:08:22.916Z"
+  "updatedAt": "2026-08-22T22:18:24.526Z",
+  "loopDesign": {
+    "artefact": "artefacts/2026-08-23-inner-loop-ceremony-optimisation/loop-design.md",
+    "mode": "default",
+    "notes": "Default inner-loop pack retained (not swapped for a custom pack) -- amended in place. skills/subagent-execution/SKILL.md updated: (1) merged the pending false-wait dispatch-instruction fix, (2) separated pipeline-state.json state-write cadence from commit cadence, (3) reserved local full-suite test runs for branch-setup/verify-completion/branch-complete anchor points. 4 Tier-2 meta-metrics defined to measure outcome; 2 have real historical baselines, 2 are provisional (n=1) pending accumulation to n>=4 stories.",
+    "updatedAt": "2026-08-22T22:18:24.528Z"
+  }
 }
