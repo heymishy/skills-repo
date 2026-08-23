@@ -285,13 +285,17 @@ console.log('\nU1 — skillsListPage_showsProductsSidebar (AC1: Run a Skill list
     // modified for an unrelated fix (a visible error banner on the Billing
     // tab for a billing-portal redirect error, artefacts/2026-08-16-billing-
     // settings-error-banner/) with no connection to nav/Products wiring.
+    // rcfc-s1: same precedent applied to routes/journey.js -- legitimately
+    // modified to wire CSRF protection onto 6 previously-unprotected POST
+    // handlers (artefacts/2026-08-17-remaining-csrf-form-coverage/) with no
+    // connection to nav/Products wiring. Removed from this list rather than
+    // left to trip on every future unrelated change to that file.
     // IT2.2/IT2.3 below (determinism + "no Products section" checks against
     // the live renderSettingsPage output) still hold unmodified -- only the
     // git-diff-against-origin/master freeze on the byte content of the file
     // itself no longer applies, for the same reason it stopped applying to
     // routes/artefact.js.
     const EXCLUDED_FILES = [
-      'src/web-ui/routes/journey.js',
       'src/web-ui/routes/features.js',
       'src/web-ui/routes/dashboard.js',
       'src/web-ui/routes/admin-credits.js',
