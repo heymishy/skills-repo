@@ -26168,9 +26168,9 @@
             {
               "slug": "vrne-s3",
               "name": "Wire the viewer-write-block gate to Credits/billing routes",
-              "stage": "implementation-plan",
+              "stage": "subagent-execution",
               "health": "green",
-              "updatedAt": "2026-08-23T07:17:10.653Z",
+              "updatedAt": "2026-08-23T07:17:57.727Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
