@@ -48,14 +48,14 @@ function mockFetch(status, body) {
 
 // Helper to complete a session (create + answer all questions)
 async function completeSession(skillName, userId) {
-  const sesReq = makeReq({ session: { accessToken: 'ghp_tok', userId }, params: { name: skillName } });
+  const sesReq = makeReq({ session: { accessToken: 'ghp_tok', userId, role: 'user' }, params: { name: skillName } });
   const sesRes = makeRes();
   await handlePostSession(sesReq, sesRes);
   if (sesRes.statusCode !== 201) return null;
   const sessionId = sesRes.body.sessionId;
   let totalQ = sesRes.body.totalQuestions || 1;
   for (let i = 0; i < totalQ; i++) {
-    const aReq = makeReq({ session: { accessToken: 'ghp_tok', userId }, params: { name: skillName, id: sessionId }, body: { answer: 'test answer ' + i } });
+    const aReq = makeReq({ session: { accessToken: 'ghp_tok', userId, role: 'user' }, params: { name: skillName, id: sessionId }, body: { answer: 'test answer ' + i } });
     const aRes = makeRes();
     await handlePostAnswer(aReq, aRes);
     if (aRes.body && aRes.body.complete) break;
@@ -195,7 +195,7 @@ async function runT3() {
     try {
       const sessionId = await completeSession('benefit-metric', 'usr-t31');
       assert(sessionId, 'session creation failed');
-      const req = makeReq({ session: { accessToken: 'ghp_tok', userId: 'usr-t31' }, params: { name: 'benefit-metric', id: sessionId } });
+      const req = makeReq({ session: { accessToken: 'ghp_tok', userId: 'usr-t31', role: 'user' }, params: { name: 'benefit-metric', id: sessionId } });
       const res = makeRes();
       await handleCommitArtefact(req, res);
       assert.strictEqual(res.statusCode, 201, 'expected 201, got: ' + res.statusCode + ' ' + JSON.stringify(res.body));
@@ -216,7 +216,7 @@ async function runT3() {
   await test('T3.3 — returns 403 when session belongs to a different user', async () => {
     const sessionId = await completeSession('benefit-metric', 'owner-user');
     assert(sessionId, 'session creation failed');
-    const req = makeReq({ session: { accessToken: 'ghp_tok', userId: 'other-user' }, params: { name: 'benefit-metric', id: sessionId } });
+    const req = makeReq({ session: { accessToken: 'ghp_tok', userId: 'other-user', role: 'user' }, params: { name: 'benefit-metric', id: sessionId } });
     const res = makeRes();
     await handleCommitArtefact(req, res);
     assert.strictEqual(res.statusCode, 403);
@@ -224,13 +224,13 @@ async function runT3() {
 
   await test('T3.4 — returns 400 SESSION_NOT_COMPLETE when session not yet complete', async () => {
     // Create session but do NOT answer all questions
-    const sesReq = makeReq({ session: { accessToken: 'ghp_tok', userId: 'incomplete-user' }, params: { name: 'benefit-metric' } });
+    const sesReq = makeReq({ session: { accessToken: 'ghp_tok', userId: 'incomplete-user', role: 'user' }, params: { name: 'benefit-metric' } });
     const sesRes = makeRes();
     await handlePostSession(sesReq, sesRes);
     assert.strictEqual(sesRes.statusCode, 201, 'session creation failed');
     const sessionId = sesRes.body.sessionId;
     // Do NOT answer any questions — commit should fail
-    const req = makeReq({ session: { accessToken: 'ghp_tok', userId: 'incomplete-user' }, params: { name: 'benefit-metric', id: sessionId } });
+    const req = makeReq({ session: { accessToken: 'ghp_tok', userId: 'incomplete-user', role: 'user' }, params: { name: 'benefit-metric', id: sessionId } });
     const res = makeRes();
     await handleCommitArtefact(req, res);
     assert.strictEqual(res.statusCode, 400);
@@ -250,7 +250,7 @@ async function runT4() {
     try {
       const sessionId = await completeSession('benefit-metric', 'conflict-u1');
       assert(sessionId, 'session creation failed');
-      const req = makeReq({ session: { accessToken: 'ghp_tok', userId: 'conflict-u1' }, params: { name: 'benefit-metric', id: sessionId } });
+      const req = makeReq({ session: { accessToken: 'ghp_tok', userId: 'conflict-u1', role: 'user' }, params: { name: 'benefit-metric', id: sessionId } });
       const res = makeRes();
       await handleCommitArtefact(req, res);
       assert.strictEqual(res.statusCode, 409);
@@ -266,7 +266,7 @@ async function runT4() {
     try {
       const sessionId = await completeSession('benefit-metric', 'conflict-u2');
       assert(sessionId, 'session creation failed');
-      const req = makeReq({ session: { accessToken: 'ghp_tok', userId: 'conflict-u2' }, params: { name: 'benefit-metric', id: sessionId } });
+      const req = makeReq({ session: { accessToken: 'ghp_tok', userId: 'conflict-u2', role: 'user' }, params: { name: 'benefit-metric', id: sessionId } });
       const res = makeRes();
       await handleCommitArtefact(req, res);
       assert.strictEqual(res.statusCode, 409);
@@ -289,7 +289,7 @@ async function runT5() {
     try {
       const sessionId = await completeSession('benefit-metric', 't5-user');
       assert(sessionId, 'session creation failed');
-      const req = makeReq({ session: { accessToken: 'ghp_tok', userId: 't5-user' }, params: { name: 'benefit-metric', id: sessionId } });
+      const req = makeReq({ session: { accessToken: 'ghp_tok', userId: 't5-user', role: 'user' }, params: { name: 'benefit-metric', id: sessionId } });
       const res = makeRes();
       await handleCommitArtefact(req, res);
       assert.strictEqual(res.statusCode, 201, JSON.stringify(res.body));
@@ -313,7 +313,7 @@ async function runNFR() {
     try {
       const sessionId = await completeSession('benefit-metric', 'nfr1-user');
       assert(sessionId, 'session creation failed');
-      const req = makeReq({ session: { accessToken: 'ghp_tok', userId: 'nfr1-user' }, params: { name: 'benefit-metric', id: sessionId } });
+      const req = makeReq({ session: { accessToken: 'ghp_tok', userId: 'nfr1-user', role: 'user' }, params: { name: 'benefit-metric', id: sessionId } });
       const res = makeRes();
       const start = Date.now();
       await handleCommitArtefact(req, res);
@@ -331,7 +331,7 @@ async function runNFR() {
     try {
       const sessionId = await completeSession('benefit-metric', 'nfr2-user');
       assert(sessionId, 'session creation failed');
-      const req = makeReq({ session: { accessToken: 'ghp_super_secret_token_xyz', userId: 'nfr2-user' }, params: { name: 'benefit-metric', id: sessionId } });
+      const req = makeReq({ session: { accessToken: 'ghp_super_secret_token_xyz', userId: 'nfr2-user', role: 'user' }, params: { name: 'benefit-metric', id: sessionId } });
       const res = makeRes();
       await handleCommitArtefact(req, res);
       const allLogs = logCalls.join(' ') + JSON.stringify(res.body);
@@ -360,7 +360,7 @@ async function runINT() {
     try {
       const sessionId = await completeSession('benefit-metric', 'int1-user');
       assert(sessionId, 'session creation failed');
-      const req = makeReq({ session: { accessToken: 'ghp_tok', userId: 'int1-user' }, params: { name: 'benefit-metric', id: sessionId } });
+      const req = makeReq({ session: { accessToken: 'ghp_tok', userId: 'int1-user', role: 'user' }, params: { name: 'benefit-metric', id: sessionId } });
       const res = makeRes();
       await handleCommitArtefact(req, res);
       assert.strictEqual(res.statusCode, 201, JSON.stringify(res.body));
