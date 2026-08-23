@@ -2698,7 +2698,12 @@ async function router(req, res) {
     req.params = { name: skillNameParam };
     const ct = (req.headers['content-type'] || '');
     if (ct.includes('application/x-www-form-urlencoded')) {
-      authGuard(req, res, async () => { await handlePostSkillSessionHtml(req, res); });
+      authGuard(req, res, async () => {
+        let _rnvOk = false;
+        await requireNonViewer(req, res, () => { _rnvOk = true; });
+        if (!_rnvOk) return;
+        await handlePostSkillSessionHtml(req, res);
+      });
     } else {
       await handlePostSession(req, res);
     }
