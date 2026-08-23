@@ -213,12 +213,12 @@ Constraints:
 - Node.js built-ins only — no new npm dependencies, no Express (raw http.createServer)
 - Reuse sec-perf-s3's existing CSRF mechanism exactly (src/web-ui/middleware/csrf.js's
   generateCsrfToken(req), csrfField(token), csrfGuard(req, res)) — do not modify csrf.js
-- Wire csrfGuard into exactly the 9 routes enumerated in AC1-AC4 of the story (6 journey-flow
-  routes, annotations, 2 skill-session form-path routes, 2 products routes, plus embedding
+- Wire csrfGuard into exactly the 8 routes enumerated in AC1-AC4 of the story (6 journey-flow
+  routes, 2 skill-session form-path routes, 2 products routes, plus embedding
   the missing CSRF field into the legacy login shell's 2 forms) — no more, no fewer
-- AC2's annotations route additionally requires a prerequisite fix: extend annotation.js's
-  _readBody to parse application/x-www-form-urlencoded bodies (not just JSON) — scoped
-  strictly to this route's real form-submission path, not a general refactor
+- POST /api/artefacts/:slug/:file/annotations is explicitly OUT of scope (removed 2026-08-24 —
+  JSON/fetch-only route, no live server-rendered form target; see decisions.md). Do not touch
+  annotation.js or views/artefact-view.js.
 - Every protected route's GET-rendering counterpart must embed the CSRF field via
   csrfField(generateCsrfToken(req)), matching sec-perf-s3's own established embedding pattern
 - The legacy login shell (renderLoginPage() in html-shell.js) needs ONLY the CSRF field

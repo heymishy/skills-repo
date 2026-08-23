@@ -46,6 +46,14 @@
 **Revisit trigger:** None — accepted for this story.
 ---
 
+**2026-08-24 | SCOPE | branch-setup (pre-implementation-plan investigation)**
+**Decision:** Reverse the prior 2026-08-24 SCOPE decision that added `POST /api/artefacts/:slug/:file/annotations` to AC2. The annotations route is removed from this story's scope entirely — no CSRF wiring, no form-parsing prerequisite fix, no test coverage for it in this story.
+**Alternatives considered:** Keep the prerequisite-fix decision as originally logged and proceed to implement CSRF + form-parsing for this route as planned.
+**Rationale:** Deeper investigation during `/branch-setup`'s pre-implementation-plan GET-side pass found the prior decision's factual premise was wrong. `views/artefact-view.js`'s `renderArtefact()` — the only function in the live tree containing a `<form>` targeting this route — is dead code, confirmed via `grep -rn "renderArtefact\b" src/web-ui` returning only its own definition/export lines, never a call site. The actually-live annotation UI (`annotation-renderer.js`'s `renderAnnotations()`) renders an inert `<button class="annotation-affordance">` with no client-side JS event wiring anywhere in the codebase (`src/web-ui/public` has zero files referencing "annotation"). `annotation.js`'s `handlePostAnnotation` documents itself as a pure JSON API (`Body: { sectionHeading, annotationText, artefactPath }`, JSON responses) — its `_readBody`'s unconditional `JSON.parse` is correct behaviour for a JSON-only route, not a bug. This route is JSON/fetch-only with no live server-rendered form target, which is exactly the category this story's own Architecture Constraints already excludes (protected by `SameSite=Strict`). The original 2026-08-24 `/test-plan`-phase investigation found the button/form markup in `artefact-view.js` and inferred a live form-POST path without checking whether that renderer was ever actually called — this decision corrects that gap. Net effect: route count drops from 9 to 8; AC2 narrows to the 2 skill-session-form routes only; the 3 annotations-related tests are removed from the test plan (26 → 23 total).
+**Made by:** Claude (agent), during pre-implementation-plan investigation
+**Revisit trigger:** If a live client-side caller for this route is ever built, re-open a new story to add CSRF protection at that time — do not silently fold it back into this one.
+---
+
 ## Architecture Decision Records
 
 <!-- None — this story reuses sec-perf-s3's existing CSRF mechanism exactly, introducing no new architectural pattern. -->
