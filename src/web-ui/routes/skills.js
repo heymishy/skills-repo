@@ -33,6 +33,7 @@ const sessionManager        = require('../../modules/session-manager');
 const { validateArtefactPath } = require('../../artefact-path-validator');
 const { commitArtefact }       = require('../../scm-adapter');
 const _journeyStore            = require('../modules/journey-store'); // ougl.4
+const _csrf                    = require('../middleware/csrf'); // rcfc-s1 Task 2
 
 var { createLogger: _createPinoLogger } = require('../logger');
 var _pinoLogger = _createPinoLogger();
@@ -1079,9 +1080,10 @@ function setSkillsAuditLogger(fn) { _htmlAuditLogger = fn; }
  * @param {Array<{name:string,description:string}>} skills
  * @param {object} user
  * @param {object} [navContext] - npwe-s1: products/activeProductId/noProductJourneyCount, see _getSkillsNavContext
+ * @param {string} [csrfToken] - rcfc-s1 Task 2: embedded in the per-skill "Start" form
  * @returns {string}
  */
-function _renderSkillsList(skills, user, navContext) {
+function _renderSkillsList(skills, user, navContext, csrfToken) {
   navContext = navContext || {};
   const items = skills.map(function(skill) {
     const safeName = escHtml(skill.name || '');
@@ -1093,6 +1095,7 @@ function _renderSkillsList(skills, user, navContext) {
       '    <div style="font-size:13px;color:var(--muted)">' + safeDesc + '</div>',
       '  </div>',
       '  <form method="POST" action="/api/skills/' + safeName + '/sessions" style="flex-shrink:0">',
+      '    ' + _csrf.csrfField(csrfToken),
       '    <button type="submit" class="sw-btn sw-btn--primary">Start</button>',
       '  </form>',
       '</div>'
@@ -1136,7 +1139,7 @@ async function handleGetSkillsHtml(req, res) {
       timestamp: new Date().toISOString()
     });
 
-    const html = _renderSkillsList(skills, user, _nav);
+    const html = _renderSkillsList(skills, user, _nav, _csrf.generateCsrfToken(req));
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   } catch (err) {
@@ -1166,6 +1169,8 @@ async function handlePostSkillSessionHtml(req, res) {
     res.end();
     return;
   }
+  const csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
   const skillName = (req.params && req.params.name) || '';
   try {
     const token   = req.session.accessToken;
@@ -1537,7 +1542,8 @@ async function handleGetCommitPreviewHtml(req, res) {
     commitFormAction:  '/api/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(sessionId) + '/commit',
     branchName:        preview.branchName      || 'main',
     defaultMessage:    preview.defaultMessage  || ('feat: ' + (preview.artefactPath || 'artefact')),
-    reviewers:         preview.reviewers       || []
+    reviewers:         preview.reviewers       || [],
+    csrfToken:         _csrf.generateCsrfToken(req)
   });
 
   const html = renderShell({
@@ -1562,6 +1568,8 @@ async function handlePostCommitHtml(req, res) {
     res.end();
     return;
   }
+  const csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
   const skillName = (req.params && req.params.name) || '';
   const sessionId = (req.params && req.params.id)   || '';
   const token     = req.session.accessToken;
@@ -1643,7 +1651,8 @@ async function handleGetResultHtml(req, res) {
     artefactType: result.artefactType || '',
     prUrl:        result.prUrl        || null,
     nextSkillName: result.nextSkillName || null,
-    nextSkillLabel: result.nextSkillLabel || null
+    nextSkillLabel: result.nextSkillLabel || null,
+    csrfToken:    _csrf.generateCsrfToken(req)
   });
 
   const html = renderShell({
