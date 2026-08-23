@@ -25555,9 +25555,10 @@
           "baseline": "0% blocked (confirmed via codebase search at discovery)",
           "signal": "on-track",
           "lastMeasured": "2026-08-23",
-          "evidence": "33/33 Products + Features/journeys write routes now return a real denial for a viewer-role session (up from 0%). Epic-wide target (all 5 route groups) not yet reached -- vrne-s2/vrne-s3/vrne-s4 still pending.",
+          "evidence": "44/44 routes now enforced across Products + Features/journeys (33, vrne-s1) + Skill sessions (11, vrne-s2). Epic-wide target (all 5 route groups) not yet reached -- vrne-s3/vrne-s4 still pending.",
           "contributingStories": [
-            "vrne-s1"
+            "vrne-s1",
+            "vrne-s2"
           ]
         },
         {
@@ -25567,9 +25568,10 @@
           "baseline": "All enumerated routes currently unenforced",
           "signal": "on-track",
           "lastMeasured": "2026-08-23",
-          "evidence": "33 of the epic total enumerated routes moved from unenforced to enforced via vrne-s1. Epic-wide target of 0 remaining unenforced routes not yet reached.",
+          "evidence": "44 of the epic total enumerated routes now enforced (up from 33). Epic-wide target of 0 remaining unenforced routes not yet reached.",
           "contributingStories": [
-            "vrne-s1"
+            "vrne-s1",
+            "vrne-s2"
           ]
         }
       ],
@@ -26070,9 +26072,9 @@
             {
               "slug": "vrne-s2",
               "name": "Wire the viewer-write-block gate to Skill session routes",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-08-23T06:27:50.139Z",
+              "updatedAt": "2026-08-23T06:36:56.472Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -26158,7 +26160,10 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/757"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/757",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-08-21-viewer-role-no-enforcement/dod/vrne-s2-dod.md"
             },
             {
               "slug": "vrne-s3",
