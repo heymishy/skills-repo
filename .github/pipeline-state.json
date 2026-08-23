@@ -26218,9 +26218,9 @@
             {
               "slug": "vrne-s4",
               "name": "Wire the viewer-write-block gate to edge-case routes (agency client creation/invite, artefact annotations)",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
-              "updatedAt": "2026-08-23T08:53:10.393Z",
+              "updatedAt": "2026-08-23T08:55:57.136Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -26235,7 +26235,33 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-21-viewer-role-no-enforcement/dor/vrne-s4-dor.md",
               "dorContractArtefact": "artefacts/2026-08-21-viewer-role-no-enforcement/dor/vrne-s4-dor-contract.md",
-              "oversightLevel": "medium"
+              "oversightLevel": "medium",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "RED -- write failing tests for AC1/AC2/AC3/AC4/AC6",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s4-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "GREEN -- wire requireNonViewer into all 3 call sites, plus annotation integration test",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s4-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "AC5 -- org-type-check-still-fires regression tests (additive, not replacing)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s4-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Full regression -- confirm all 9 planned tests pass, zero regressions",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s4-plan.md"
+                }
+              ]
             }
           ]
         }
