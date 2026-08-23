@@ -531,6 +531,10 @@ async function handleGetSessionState(req, res) {
  */
 async function handleCommitArtefact(req, res) {
   if (!_checkAuth(req, res)) { return; }
+  // vrne-s2 — viewer-role write-block gate (AC3)
+  let _rnvOk = false;
+  await requireNonViewer(req, res, () => { _rnvOk = true; });
+  if (!_rnvOk) return;
   try {
     var id      = req.params && req.params.id;
     var session = await _getSessionOrRestore(id);

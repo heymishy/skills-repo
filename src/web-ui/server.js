@@ -2591,6 +2591,10 @@ async function router(req, res) {
   } else if (pathname.match(/^\/api\/skills\/[^/]+\/execute$/) && req.method === 'POST') {
     const skillNameParam = pathname.split('/')[3];
     req.params = { name: skillNameParam };
+    // vrne-s2 — viewer-role write-block gate (AC3)
+    let _rnvOk = false;
+    await requireNonViewer(req, res, () => { _rnvOk = true; });
+    if (!_rnvOk) return;
     await handleExecuteSkill(req, res);
 
   } else if (pathname === '/skills' && req.method === 'GET') {
@@ -2736,7 +2740,13 @@ async function router(req, res) {
     req.params = { name: parts[3], id: parts[5] };
     const ct = (req.headers['content-type'] || '');
     if (ct.includes('application/x-www-form-urlencoded')) {
-      authGuard(req, res, async () => { await handlePostCommitHtml(req, res); });
+      authGuard(req, res, async () => {
+        // vrne-s2 — viewer-role write-block gate (AC3)
+        let _rnvOk = false;
+        await requireNonViewer(req, res, () => { _rnvOk = true; });
+        if (!_rnvOk) return;
+        await handlePostCommitHtml(req, res);
+      });
     } else {
       await handleCommitArtefact(req, res);
     }
