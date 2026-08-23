@@ -26312,10 +26312,13 @@
       "track": "library",
       "stage": "loop-design",
       "health": "green",
-      "updatedAt": "2026-08-22T22:18:24.528Z",
+      "updatedAt": "2026-08-23T01:01:02.647Z",
       "artefact": "artefacts/2026-08-23-inner-loop-ceremony-optimisation/loop-design.md",
       "mode": "default",
-      "notes": "Default inner-loop pack retained (not swapped for a custom pack) -- amended in place. skills/subagent-execution/SKILL.md updated: (1) merged the pending false-wait dispatch-instruction fix, (2) separated pipeline-state.json state-write cadence from commit cadence, (3) reserved local full-suite test runs for branch-setup/verify-completion/branch-complete anchor points. 4 Tier-2 meta-metrics defined to measure outcome; 2 have real historical baselines, 2 are provisional (n=1) pending accumulation to n>=4 stories."
+      "notes": "Default inner-loop pack retained (not swapped for a custom pack) -- amended in place. skills/subagent-execution/SKILL.md updated: (1) merged the pending false-wait dispatch-instruction fix, (2) separated pipeline-state.json state-write cadence from commit cadence, (3) reserved local full-suite test runs for branch-setup/verify-completion/branch-complete anchor points. 4 Tier-2 meta-metrics defined to measure outcome; 2 have real historical baselines, 2 are provisional (n=1) pending accumulation to n>=4 stories.",
+      "prStatus": "merged",
+      "prUrl": "https://github.com/heymishy/skills-repo/pull/756",
+      "mergedAt": "2026-08-23T00:59:42Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
