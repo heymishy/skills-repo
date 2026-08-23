@@ -26168,9 +26168,9 @@
             {
               "slug": "vrne-s3",
               "name": "Wire the viewer-write-block gate to Credits/billing routes",
-              "stage": "subagent-execution",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-08-23T08:20:01.464Z",
+              "updatedAt": "2026-08-23T08:26:45.868Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -26179,7 +26179,7 @@
                 "passing": 6
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -26205,7 +26205,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s3-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "vrne-s4",
