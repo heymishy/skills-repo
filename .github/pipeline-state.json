@@ -25553,20 +25553,24 @@
           "name": "Viewer role actually enforces read-only access",
           "target": "100% of the enumerated write-action set returns a real denial for a viewer-role session",
           "baseline": "0% blocked (confirmed via codebase search at discovery)",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "signal": "on-track",
+          "lastMeasured": "2026-08-23",
+          "evidence": "33/33 Products + Features/journeys write routes now return a real denial for a viewer-role session (up from 0%). Epic-wide target (all 5 route groups) not yet reached -- vrne-s2/vrne-s3/vrne-s4 still pending.",
+          "contributingStories": [
+            "vrne-s1"
+          ]
         },
         {
           "id": "m2",
           "name": "Enumerated viewer-role write actions blocked (Tier 3 risk-reduction)",
           "target": "0 remaining unenforced routes in the enumerated set",
           "baseline": "All enumerated routes currently unenforced",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "signal": "on-track",
+          "lastMeasured": "2026-08-23",
+          "evidence": "33 of the epic total enumerated routes moved from unenforced to enforced via vrne-s1. Epic-wide target of 0 remaining unenforced routes not yet reached.",
+          "contributingStories": [
+            "vrne-s1"
+          ]
         }
       ],
       "updatedAt": "2026-08-22T09:26:40.487Z",
@@ -25936,24 +25940,27 @@
           "category": "nfr",
           "label": "A viewer-role session must be denied on every enumerated write route; engineer/product/admin roles must see zero regression",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-08-22T09:44:45.193Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-23T02:34:41.891Z",
+          "evidence": "vrne-s1 (PR #755, merged 2026-08-23): Products + Features/journeys groups (33 routes) verified via tests/check-vrne-s1-server-wiring.js AC1/AC2, admin/engineer/product/user roles unaffected (AC3)."
         },
         {
           "id": "NFR-viewer-write-block-fail-closed",
           "category": "nfr",
           "label": "Missing, null, or unrecognised role state must deny, not silently pass",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-08-22T09:44:45.193Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-23T02:34:41.891Z",
+          "evidence": "vrne-s1 (PR #755, merged 2026-08-23): missing/null/genuinely-unrecognised role denied, verified via tests/check-vrne-s1-require-non-viewer.js AC4 (see dod/vrne-s1-dod.md AC4 deviation note re: the user-role gap caught by CI before merge)."
         },
         {
           "id": "NFR-viewer-write-block-audit-logging",
           "category": "nfr",
           "label": "Every denial logged with person ID, tenant ID, timestamp, route",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-08-22T09:44:45.193Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-23T02:34:41.891Z",
+          "evidence": "vrne-s1 (PR #755, merged 2026-08-23): denial logged with personId/tenantId/timestamp/route, verified via tests/check-vrne-s1-require-non-viewer.js and the real-dispatch integration test (AC5)."
         }
       ],
       "slicingStrategy": "risk-first",
@@ -25966,9 +25973,9 @@
             {
               "slug": "vrne-s1",
               "name": "Build the shared viewer-write-block gate and wire it to Products + Features/journeys routes",
-              "stage": "branch-complete",
-              "health": "green",
-              "updatedAt": "2026-08-23T02:23:24.839Z",
+              "stage": "definition-of-done",
+              "health": "amber",
+              "updatedAt": "2026-08-23T02:34:06.912Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -26054,7 +26061,11 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/755"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/755",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "dodArtefact": "artefacts/2026-08-21-viewer-role-no-enforcement/dod/vrne-s1-dod.md",
+              "blocker": "AC4's literal text named 4 known roles (admin/engineer/product/viewer); shipped fix adds 'user' as a 5th allowed role (documented default for new signups) -- fail-closed guarantee itself intact, deviation is AC wording only. See decisions.md 2026-08-23 ARCH entry and dod/vrne-s1-dod.md."
             },
             {
               "slug": "vrne-s2",
