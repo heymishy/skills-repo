@@ -26168,9 +26168,9 @@
             {
               "slug": "vrne-s3",
               "name": "Wire the viewer-write-block gate to Credits/billing routes",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
-              "updatedAt": "2026-08-23T07:15:11.856Z",
+              "updatedAt": "2026-08-23T07:17:10.653Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -26185,7 +26185,27 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-21-viewer-role-no-enforcement/dor/vrne-s3-dor.md",
               "dorContractArtefact": "artefacts/2026-08-21-viewer-role-no-enforcement/dor/vrne-s3-dor-contract.md",
-              "oversightLevel": "medium"
+              "oversightLevel": "medium",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "RED -- write failing tests for AC1/AC2/AC3/AC4",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "GREEN -- wire requireNonViewer into /billing/checkout, plus integration test",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s3-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Full regression -- confirm all 6 planned tests pass, zero regressions",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s3-plan.md"
+                }
+              ]
             },
             {
               "slug": "vrne-s4",
