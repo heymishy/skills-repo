@@ -25307,9 +25307,9 @@
           "id": "rcfc-s1",
           "slug": "rcfc-s1",
           "name": "Extend CSRF token protection to the remaining server-rendered POST forms",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "dodStatus": "not-started",
           "prStatus": "none",
           "testPlan": {
@@ -25322,13 +25322,38 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-23T17:48:31.652Z"
+          "updatedAt": "2026-08-23T17:56:13.800Z"
         }
       ],
       "metrics": [],
       "updatedAt": "2026-08-17T08:35:41.786Z",
       "track": "short",
-      "guardrails": []
+      "guardrails": [
+        {
+          "id": "NFR-rcfc-authorisation",
+          "category": "nfr",
+          "label": "Every server-rendered POST form target must reject a request with a missing or mismatched CSRF token",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-23T17:57:20.476Z"
+        },
+        {
+          "id": "NFR-rcfc-no-weakening",
+          "category": "nfr",
+          "label": "Pre-existing access checks (authGuard, requireNonViewer, org-type checks) must continue to fire independently of the new CSRF check",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-23T17:57:20.476Z"
+        },
+        {
+          "id": "NFR-rcfc-no-token-logged",
+          "category": "nfr",
+          "label": "CSRF token values must never appear in application logs",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-23T17:57:20.476Z"
+        }
+      ]
     },
     {
       "slug": "2026-08-17-kfd1-visual-verification-gap",
