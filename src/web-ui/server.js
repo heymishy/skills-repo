@@ -3048,7 +3048,13 @@ async function router(req, res) {
 
   } else if (pathname === '/billing/checkout' && req.method === 'POST') {
     // lab-s3.2 — Stripe Checkout session creation
-    authGuard(req, res, async () => { await handlePostCheckout(req, res); });
+    // vrne-s3 — viewer-role write-block gate (AC1)
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostCheckout(req, res);
+    });
 
   } else if (pathname === '/billing/success' && req.method === 'GET') {
     // lab-s3.2 — Stripe Checkout success callback
