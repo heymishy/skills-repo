@@ -26070,9 +26070,9 @@
             {
               "slug": "vrne-s2",
               "name": "Wire the viewer-write-block gate to Skill session routes",
-              "stage": "subagent-execution",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-08-23T06:18:44.174Z",
+              "updatedAt": "2026-08-23T06:25:40.631Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -26081,7 +26081,7 @@
                 "passing": 18
               },
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -26155,7 +26155,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-08-21-viewer-role-no-enforcement/plans/vrne-s2-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "vrne-s3",
