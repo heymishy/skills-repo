@@ -191,3 +191,63 @@ This section exists because the operator explicitly asked to ground these change
 - Approved by: Hamish King, 2026-08-23
 - Date: 2026-08-23
 - Review cadence: revisit after the next 2–3 multi-task stories, or immediately if any risk in Section 6 materialises
+
+**Note (2026-08-24 revisit):** Section 4a's Metric 3/4 baselines below are now superseded — see Section 8 for the n≥4 update. Left in place rather than edited, per this repo's convention of preserving prior decision records rather than rewriting them.
+
+---
+
+## 8. Scheduled revisit — 2026-08-24 (item #6 of the 2026-08-24 capture-log 7-item ranked backlog)
+
+This is the Section 7 cadence trigger firing: 2 multi-task stories (`vrne-s2`, `vrne-s3`) plus a third (`vrne-s4`, completing the `vrne-e1-viewer-write-blocking` epic) ran since this document's original approval, followed by `rcfc-s1` (5 tasks) and this session's own short-track work. All evidence below is drawn directly from `workspace/capture-log.md` entries already recorded by the orchestrating sessions that ran those stories — no new measurement was fabricated for this revisit.
+
+### 8a. Metric 1 (commits/task) and Metric 2 (false-wait incidents) — validated
+
+Both metrics reached loop-design.md's own minimum-signal thresholds and held clean across the full n=4 window (`vrne-s2/s3/s4` plus `rcfc-s1` as a fifth, out-of-cluster confirmation):
+
+| Story | Tasks | M1 (commits/task) | M2 (false-wait) |
+|-------|-------|--------------------|--------------------|
+| `vrne-s1` (pre-fix baseline) | 11 | 2.8 | 6 incidents (this story alone: 3) |
+| `vrne-s2` | 11 | 1.0 | 0 |
+| `vrne-s3` | 3 | 0.67 | 0 |
+| `vrne-s4` | 4 | 1.75 (2 genuine defect-driven commits, not ceremony) | 0 |
+| `rcfc-s1` (different epic, out-of-cluster) | 5 | 2.2 (within 1.3–2.5 band) | **1** (see 8b) |
+
+M1: every post-fix sample beats the ≤2.0 (Medium oversight) target — **validated, not just directionally confirmed**, per `capture-log.md`'s own 2026-08-23 vrne-s4 entry. M2: 3 consecutive clean stories (`vrne-s2/s3/s4`) satisfied the original "0 across the next 3 stories" minimum signal in full — **validated** — before `rcfc-s1` produced the one recurrence detailed below.
+
+### 8b. Metric 2 regression found, root-caused, and fixed within this same window
+
+`rcfc-s1` (2026-08-24) hit a false-wait incident despite M2 being validated clean days earlier. Root cause: the existing fix (Section 3a) was written into `/subagent-execution`'s per-task dispatch templates (Steps 2a/2b/2c) but never added to Step 3's cross-cutting final-review dispatch — a scope gap in the original fix's coverage, not a failure of the fix's own wording. This is a useful correction to Section 3a's original framing: "every dispatch prompt template" was not, in fact, fully covered on the first pass. Diagnosed the same session (`capture-log.md`, 2026-08-24, rcfc-s1 branch-complete) and fixed later the same day as `s3fw-s1` (PR #763, merged `e4c90625`) — the missing warning was added to Step 3 specifically, following the exact evidence and precedent already established in this document. No post-fix multi-task story has run yet to confirm Step 3's own false-wait rate at n≥1; this is the next thing to watch, not yet closed.
+
+### 8c. Metric 3 (full-suite run count) and Metric 4 (wall-clock/task) — n≥4 reached, real targets now set
+
+Superseding Section 4a's "n=1, weak baseline" framing:
+
+| Story | Tasks (band) | M3 (full-suite runs) | M3 target | Met? | M4 (min/task) |
+|-------|--------------|------------------------|-----------|------|-----|
+| `vrne-s1` (pre-fix) | 11 (8+) | 7 | ≤4 | No | ~11–16 |
+| `vrne-s2` | 11 (8+) | 4 | ≤4 | Yes (ceiling, but justified — one run caught a real regression) | ~11 (excl. session-limit gap) |
+| `vrne-s3` | 3 (1–3) | 4 | ≤2 | **No — real overrun** | ~21 |
+| `vrne-s4` | 4 (1–3, boundary) | 2 | ≤2 | Yes | ~17 |
+
+**M3 finding:** `vrne-s3`'s overrun was root-caused the same session as a self-inflicted, avoidable duplication — re-running the full suite at `/verify-completion` Step 1 without first checking whether the final AC-review agent's own already-fresh same-session run already satisfied the requirement. `vrne-s4`'s very next story deliberately applied that lesson (the Task 4 dispatch prompt explicitly instructed checking for fresh evidence first) and hit the target exactly. **This reached n≥4 and is now validated as a controllable orchestration-discipline issue, not an inherent property of small stories** — but loop-design.md's own instructions (Section 3d) still don't explicitly say "check for an already-fresh same-session result before re-running," which is the actual mechanism that worked. Recommend adding that one sentence to `/verify-completion`'s Step 1 the next time that skill file is touched, rather than relying on each session to independently rediscover it.
+
+**M4 finding:** now has real per-task-count bands rather than a single flat number (1–3 tasks: noisier, ~17–21 min/task, fixed overhead amortized over fewer tasks; 4+ tasks: ~11–17 min/task). Still too noisy to set a hard target — remains track-only, per the original design. Not retired; the bands are informative even without a target.
+
+### 8d. Section 3c (risk-tiered review depth pilot) — never run, still open
+
+No multi-task story since the original approval deliberately piloted the recommended change (single combined review pass for RED/test-scaffolding-only tasks vs. the full two-stage gate for GREEN/implementation tasks). This session's own work was almost entirely short-track (1–6 file documentation/process fixes), which doesn't exercise `/subagent-execution`'s multi-task review flow at all. **Status: still a recommended-not-committed pilot, unchanged from 2026-08-23.** Given how little multi-task epic work has occurred since the original pass (one epic, `vrne-e1`, now complete), there has been no natural opportunity to run it — not evidence it isn't worth trying, just that it hasn't come up. Carry forward to the next multi-task story rather than closing or forcing an artificial pilot now.
+
+### 8e. Section 6 risks — none materialised
+
+- Batched-commit resumability risk: no session-interruption-mid-story data loss reported across `vrne-s2/s3/s4`, `rcfc-s1`, or this session's own stories.
+- Skipped full-suite runs letting a regression slip past `/verify-completion`: no such incident found in `capture-log.md` or `learnings.md` across the same window. `/verify-completion`'s own run continues to be the evidence gate that actually catches things (e.g. `vrne-s2`'s Task 11 full-suite run caught a real cross-story regression).
+- No misclassification incident from the (unrun) review-depth pilot, since it was never actually piloted (8d).
+
+### 8f. Answering the original ask directly
+
+The original capture-log finding (2026-08-23) asked which inner-loop steps still pull their weight and which could be trimmed, merged, or made conditional. This revisit's evidence says: **no further trimming is recommended beyond what was already decided and has now been validated** (Section 3a/3b/3d's fixes). The loop is in a good, right-sized state for the story shapes actually occurring (short-track fixes and small-to-medium epics) — the risk in Section 3c (review depth) remains a live, reasonable idea but has no data yet, and the one new, genuine finding (8b) was a coverage gap in the original fix, not evidence the loop itself carries unnecessary ceremony. This closes item #6 of the 2026-08-24 capture-log 7-item ranked backlog as "reviewed, no further action needed beyond what's already tracked" — not as a new redesign.
+
+### 8g. Updated review cadence
+
+- Next revisit trigger: after the next multi-task story using `/subagent-execution` (to get n≥1 on Step 3's false-wait fix and a first real opportunity to run the Section 3c pilot), or immediately if any Section 6 risk materialises.
+- Reviewed by: Claude (agent), 2026-08-24, on operator instruction ("Do 6") following the 2026-08-24 capture-log 7-item ranked backlog sweep.

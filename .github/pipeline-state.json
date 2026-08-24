@@ -26605,10 +26605,10 @@
       "track": "library",
       "stage": "loop-design",
       "health": "green",
-      "updatedAt": "2026-08-23T01:01:02.647Z",
+      "updatedAt": "2026-08-24T10:26:46.719Z",
       "artefact": "artefacts/2026-08-23-inner-loop-ceremony-optimisation/loop-design.md",
       "mode": "default",
-      "notes": "Default inner-loop pack retained (not swapped for a custom pack) -- amended in place. skills/subagent-execution/SKILL.md updated: (1) merged the pending false-wait dispatch-instruction fix, (2) separated pipeline-state.json state-write cadence from commit cadence, (3) reserved local full-suite test runs for branch-setup/verify-completion/branch-complete anchor points. 4 Tier-2 meta-metrics defined to measure outcome; 2 have real historical baselines, 2 are provisional (n=1) pending accumulation to n>=4 stories.",
+      "notes": "Default inner-loop pack retained (not swapped for a custom pack) -- amended in place. skills/subagent-execution/SKILL.md updated: (1) merged the pending false-wait dispatch-instruction fix, (2) separated pipeline-state.json state-write cadence from commit cadence, (3) reserved local full-suite test runs for branch-setup/verify-completion/branch-complete anchor points. 4 Tier-2 meta-metrics defined to measure outcome; 2 have real historical baselines, 2 are provisional (n=1) pending accumulation to n>=4 stories. -- 2026-08-24 scheduled revisit (Section 7 cadence trigger, item #6 of the 2026-08-24 capture-log 7-item ranked backlog): n>=4 reached for all 4 meta-metrics using vrne-s2/s3/s4 + rcfc-s1 data already recorded in capture-log.md. M1/M2 validated clean. M3/M4 now have real per-band targets (superseding the n=1 provisional framing). One new finding: rcfc-s1 hit a Metric 2 (false-wait) regression at /subagent-execution Step 3 (final-review dispatch), a coverage gap in the original fix -- root-caused and fixed same session as s3fw-s1 (PR #763, merged). Section 3c (risk-tiered review pilot) never run -- no multi-task story since approval exercised it; carried forward, not closed. No Section 6 risks materialised. One concrete follow-up recommendation surfaced: add an explicit check-for-already-fresh-same-session-result instruction to /verify-completion Step 1 (validated via vrne-s3-to-vrne-s4 real-world correction, just not yet written into the skill text).",
       "prStatus": "merged",
       "prUrl": "https://github.com/heymishy/skills-repo/pull/756",
       "mergedAt": "2026-08-23T00:59:42Z"
