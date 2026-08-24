@@ -26684,6 +26684,39 @@
       "updatedAt": "2026-08-24T02:48:37.470Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-08-24-worktree-checkout-verification",
+      "name": "Add an explicit checkout-verification rule to close the recurring wrong-checkout edit gap",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "id": "vtc-s1",
+          "slug": "vtc-s1",
+          "name": "Add an explicit checkout-verification rule to close the recurring wrong-checkout edit gap",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "dodStatus": "not-started",
+          "prStatus": "none",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 5,
+            "artefact": "artefacts/2026-08-24-worktree-checkout-verification/test-plans/vtc-s1-test-plan.md"
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "updatedAt": "2026-08-24T04:08:03.291Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-24T04:08:03.291Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
