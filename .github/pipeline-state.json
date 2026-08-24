@@ -26811,18 +26811,18 @@
     {
       "slug": "2026-08-24-verify-completion-fresh-result-check",
       "name": "Check for an already-fresh same-session result before re-running the full suite",
-      "stage": "verify-completion",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "id": "vcfrc-s1",
           "slug": "vcfrc-s1",
           "name": "Check for an already-fresh same-session result before re-running the full suite",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "none",
+          "prStatus": "draft",
           "testPlan": {
             "status": "written",
             "totalTests": 5,
@@ -26834,11 +26834,12 @@
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "verifyStatus": "passed",
-          "updatedAt": "2026-08-24T10:30:26.426Z"
+          "updatedAt": "2026-08-24T10:38:04.769Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/767"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-24T10:30:26.426Z",
+      "updatedAt": "2026-08-24T10:38:04.770Z",
       "track": "short",
       "guardrails": []
     }
