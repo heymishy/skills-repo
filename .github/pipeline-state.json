@@ -26789,6 +26789,24 @@
       "updatedAt": "2026-08-24T05:00:02.070Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-08-24-skill-tool-invocability-pilot",
+      "name": "Skill Tool Invocability Pilot",
+      "stage": "discovery",
+      "discoveryStatus": "clarified",
+      "health": "green",
+      "stories": [],
+      "metrics": [],
+      "updatedAt": "2026-08-24T08:01:17.702Z",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "guardrails": [],
+      "notPursuing": true,
+      "notPursuingReason": "Clarification found native Claude Code skill registration adds a permanent always-on token cost (all registered skill descriptions injected at session startup) for benefits largely redundant with this repos existing CLAUDE.md routing table. Superseded by a smaller documentation-only fix (separate short-track story)."
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
