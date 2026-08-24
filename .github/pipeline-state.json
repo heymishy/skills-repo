@@ -25307,10 +25307,10 @@
           "id": "rcfc-s1",
           "slug": "rcfc-s1",
           "name": "Extend CSRF token protection to the remaining server-rendered POST forms",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
-          "dodStatus": "not-started",
+          "dodStatus": "complete",
           "prStatus": "merged",
           "testPlan": {
             "status": "written",
@@ -25322,7 +25322,7 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-24T01:26:21.207Z",
+          "updatedAt": "2026-08-24T01:31:54.330Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/760",
           "tasks": [
             {
@@ -25355,7 +25355,8 @@
               "tddState": "committed",
               "file": "artefacts/2026-08-17-remaining-csrf-form-coverage/plans/rcfc-s1-plan.md"
             }
-          ]
+          ],
+          "releaseReady": true
         }
       ],
       "metrics": [],
@@ -25367,24 +25368,27 @@
           "category": "nfr",
           "label": "Every server-rendered POST form target must reject a request with a missing or mismatched CSRF token",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-08-23T17:57:20.476Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-24T01:31:54.332Z",
+          "evidence": "All 15 -rejected-without-csrf tests across 4 test files assert 403/\"Forbidden\", re-run fresh against merged master (82119523)"
         },
         {
           "id": "NFR-rcfc-no-weakening",
           "category": "nfr",
           "label": "Pre-existing access checks (authGuard, requireNonViewer, org-type checks) must continue to fire independently of the new CSRF check",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-08-23T17:57:20.476Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-24T01:31:54.332Z",
+          "evidence": "Verified against merged code: handlePostJourney auth check and handlePostProductConfirm router-level authGuard/requireNonViewer both fire independently before csrfGuard"
         },
         {
           "id": "NFR-rcfc-no-token-logged",
           "category": "nfr",
           "label": "CSRF token values must never appear in application logs",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-08-23T17:57:20.476Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-24T01:31:54.332Z",
+          "evidence": "git diff branch-setup..merge across src/web-ui/ grepped for console.log/_logger calls referencing csrf: zero matches"
         }
       ]
     },
