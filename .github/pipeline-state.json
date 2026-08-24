@@ -26684,6 +26684,39 @@
       "updatedAt": "2026-08-24T02:48:37.470Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-08-24-step3-final-review-false-wait",
+      "name": "Close the false-wait gap in subagent-execution's Step 3 final-review dispatch",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "id": "s3fw-s1",
+          "slug": "s3fw-s1",
+          "name": "Close the false-wait gap in subagent-execution's Step 3 final-review dispatch",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "dodStatus": "not-started",
+          "prStatus": "none",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 6,
+            "artefact": "artefacts/2026-08-24-step3-final-review-false-wait/test-plans/s3fw-s1-test-plan.md"
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "updatedAt": "2026-08-24T03:46:15.804Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-24T03:46:15.804Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
