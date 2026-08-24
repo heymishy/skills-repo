@@ -34,6 +34,8 @@ If not:
 [test command]
 ```
 
+Also re-run `/verify-completion`'s route/handler E2E coverage check if the diff has changed since that gate last ran — confirm nothing new is broken and the same residual-risk list from its Step 4 report still holds.
+
 **If tests fail:**
 
 > Tests failing ([N] failures). Must fix before completing.

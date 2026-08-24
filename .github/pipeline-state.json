@@ -26614,6 +26614,41 @@
       "mergedAt": "2026-08-23T00:59:42Z"
     },
     {
+      "slug": "2026-08-24-e2e-verification-coverage-gap",
+      "name": "Close the E2E verification blind spot in /verify-completion and /branch-complete",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "id": "evcg-s1",
+          "slug": "evcg-s1",
+          "name": "Close the E2E verification blind spot in /verify-completion and /branch-complete",
+          "stage": "branch-complete",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "dodStatus": "not-started",
+          "prStatus": "draft",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 9,
+            "artefact": "artefacts/2026-08-24-e2e-verification-coverage-gap/test-plans/evcg-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "updatedAt": "2026-08-24T02:20:33.944Z",
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/761"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-24T02:02:19.782Z",
+      "track": "short",
+      "guardrails": []
+    },
+    {
       "slug": "2026-08-24-pipeline-state-merge-safety",
       "name": "Close the silent tasks[] data-loss gap in pipeline-state.json checkpoint writes",
       "stage": "definition-of-ready",

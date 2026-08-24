@@ -167,6 +167,9 @@ const CONTRACTS = [
       'templates/verify-completion.md',
       'Scope found outside DoR',
       'Pipeline-state write safety (psms-s1)',
+      'Route/handler E2E coverage check',
+      'cannot be verified pre-merge by design',
+      'Do not run the full, unscoped `npm run test:e2e` suite',
     ],
   },
   {
@@ -178,6 +181,7 @@ const CONTRACTS = [
       'Step 3 - Present options',
       'Option 2 - Push and open a draft PR',
       'read this story\'s own current entry from the local worktree file on disk',
+      "route/handler E2E coverage check",
     ],
   },
   // ── Post-merge skills ─────────────────────────────────────────────────────

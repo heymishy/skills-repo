@@ -87,6 +87,24 @@ Read the full output. Report:
 
 ---
 
+## Route/handler E2E coverage check (mandatory when the diff touches route/handler files)
+
+`npm test` (or the configured test command above) does not run this repo's E2E Playwright suite — `test:e2e` is a separate command. A story whose diff adds, wires, or modifies anything under `src/web-ui/routes/` (or a middleware that wraps a route handler) can pass Step 1's full-suite evidence cleanly and still break a CI-only E2E gate, because the routes it touches may have Playwright coverage that Step 1 never runs. (Source: `evcg-s1`, found when `rcfc-s1`'s clean local full-suite result was followed by two CI-only E2E failures neither Step 1 nor Step 4 as originally written could have caught.)
+
+**When this diff touches any file under `src/web-ui/routes/` or a middleware wrapping a route handler:**
+
+1. Identify every route path or handler function this diff adds, wires, or changes.
+2. Grep `tests/*.js` for any pre-existing test file that calls the touched handler(s) directly or dispatches through the router to the touched route path(s) — not just this story's own new test files. Treat any fixture gap found the same as a failing test (blocking, not optional).
+3. Grep `tests/e2e/*.spec.js` for any spec file that references the touched route path(s) (a raw `.post(...)`/`.get(...)` call, or a page interaction with a form/link targeting that path).
+   - For each match **not** tagged `@real-staging` (i.e. `@mocked` or untagged, defaulting to the local `webServer`): run it locally — `npx playwright test tests/e2e/<file> --repeat-each=1`, no `E2E_STAGING_BASE_URL` override. A failure here blocks completion exactly like a failing unit test — fix it before proceeding to Step 2.
+   - For each match tagged `@real-staging`: it depends on currently-deployed staging state, not this branch's own code, and cannot be verified pre-merge by design — do not attempt to run it locally against real staging. Instead, name it explicitly in Step 4's completion report as a residual risk — never omit it silently.
+
+**Do not run the full, unscoped `npm run test:e2e` suite as a substitute for this check** — it includes `@real-staging` specs that require secrets and hit real external infrastructure; this is exactly why the CI-side "Playwright E2E smoke tests" job is itself opt-in (`audit.e2e_tests` flag) and `continue-on-error: true`. Only the specific matched spec file(s) found above.
+
+If the diff touches no route/handler file: state this explicitly ("Route/handler E2E coverage check: N/A — no route/handler files touched") and move on — do not run this check unconditionally.
+
+---
+
 ## Step 2 — Walk through the AC verification script
 
 Read `artefacts/[feature]/verification-scripts/[story-slug]-verification.md`.
@@ -132,6 +150,7 @@ If a commit exists that doesn't correspond to either:
 > Tests: [N]/[N] passing, 0 failures
 > ACs verified: [N]/[N]
 > Scope: [clean / N items noted in /decisions]
+> E2E route coverage: [N/A — no route/handler files touched] / [N local specs run, N/N passing] / [N @real-staging specs found — cannot verify locally, residual risk: file1.spec.js, file2.spec.js]
 >
 > Ready to run /branch-complete and open a draft PR.
 
