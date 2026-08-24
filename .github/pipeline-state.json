@@ -26695,7 +26695,7 @@
           "id": "s3fw-s1",
           "slug": "s3fw-s1",
           "name": "Close the false-wait gap in subagent-execution's Step 3 final-review dispatch",
-          "stage": "definition-of-ready",
+          "stage": "verify-completion",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
@@ -26707,10 +26707,11 @@
             "artefact": "artefacts/2026-08-24-step3-final-review-false-wait/test-plans/s3fw-s1-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-24T03:46:15.804Z"
+          "updatedAt": "2026-08-24T04:00:14.341Z",
+          "verifyStatus": "passed"
         }
       ],
       "metrics": [],
