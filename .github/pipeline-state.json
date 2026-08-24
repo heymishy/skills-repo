@@ -26623,11 +26623,11 @@
           "id": "psms-s1",
           "slug": "psms-s1",
           "name": "Close the silent tasks[] data-loss gap in pipeline-state.json checkpoint writes",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "none",
+          "prStatus": "draft",
           "testPlan": {
             "status": "written",
             "totalTests": 9,
@@ -26638,8 +26638,9 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-24T03:02:24.263Z",
-          "verifyStatus": "passed"
+          "updatedAt": "2026-08-24T03:03:42.725Z",
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/762"
         }
       ],
       "metrics": [],
