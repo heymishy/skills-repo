@@ -17,6 +17,7 @@ const VALIDATE_TRACE = path.join(ROOT, 'scripts', 'validate-trace.sh');
 
 let passed = 0;
 let failed = 0;
+let skipped = 0;
 
 function assert(condition, label) {
   if (condition) { console.log(`  \u2713 ${label}`); passed++; }
@@ -145,7 +146,7 @@ console.log('\n[p4-enf-second-line] T6 — validate-trace.sh accepts trace witho
     if (exitCode === -1 || exitCode === 126 || wslStartupError || winEnvError) {
       // bash not available or script dependencies absent (Windows/WSL without python3) — skip gracefully
       console.log('  - T6: skipped (bash not available on this platform — validate manually)');
-      passed++;
+      skipped++;
     } else {
       assert(exitCode === 0,
         `T6: validate-trace.sh exits 0 for trace without executorIdentity (exit: ${exitCode}, stderr: ${stderr.substring(0, 120)})`);
@@ -264,5 +265,6 @@ console.log('\n[p4-enf-second-line] T-NFR2 — executorIdentity is NOT in the "r
 }
 
 // ── Summary ───────────────────────────────────────────────────────────────────
-console.log(`\n[p4-enf-second-line] Results: ${passed} passed, ${failed} failed\n`);
+console.log(`\n[p4-enf-second-line] Results: ${passed} passed, ${failed} failed` +
+  (skipped > 0 ? `, ${skipped} skipped (bash unavailable)` : '') + '\n');
 if (failed > 0) process.exit(1);

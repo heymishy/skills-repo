@@ -156,6 +156,7 @@ const CONTRACTS = [
       'NEEDS_CONTEXT',
       'spec compliance \u2192 code quality',
       'read this story\'s own current entry from the local worktree file on disk',
+      'one dispatch site in this skill missing the warning',
     ],
   },
   {
