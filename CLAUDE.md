@@ -10,6 +10,12 @@ Active pipeline context: `.github/context.yml`
 
 ---
 
+## How skills are invoked
+
+The `/name` notation used throughout this document (`/discovery`, `/workflow`, `/test-plan`, and every other skill referenced below) is this repo's own shorthand for "the skill documented at `skills/[name]/SKILL.md`" — it does not mean these are registered Claude Code skills. Invoking one means reading that `SKILL.md` file directly and following its instructions via ordinary tool calls, not calling the Claude Code Skill tool. Confirmed directly in a real session: calling the Skill tool with `skill="workflow"` fails with "Unknown skill", since no `.claude/skills/` directory or plugin manifest registers these files. This was investigated deliberately — see `artefacts/2026-08-24-skill-tool-invocability-pilot/discovery.md` for the full rationale, including why native Claude Code skill registration was considered and not pursued (it would add a permanent, always-on token cost for benefits largely redundant with this document's own routing table).
+
+---
+
 ## Skills pipeline maintenance
 
 Upstream skills sync configuration is stored in `.github/context.yml` under

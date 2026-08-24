@@ -26807,6 +26807,40 @@
       "guardrails": [],
       "notPursuing": true,
       "notPursuingReason": "Clarification found native Claude Code skill registration adds a permanent always-on token cost (all registered skill descriptions injected at session startup) for benefits largely redundant with this repos existing CLAUDE.md routing table. Superseded by a smaller documentation-only fix (separate short-track story)."
+    },
+    {
+      "slug": "2026-08-24-skill-invocation-wording-fix",
+      "name": "Clarify the real skill-invocation mechanism in CLAUDE.md",
+      "stage": "verify-completion",
+      "health": "green",
+      "stories": [
+        {
+          "id": "sivwf-s1",
+          "slug": "sivwf-s1",
+          "name": "Clarify the real skill-invocation mechanism in CLAUDE.md",
+          "stage": "verify-completion",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "dodStatus": "not-started",
+          "prStatus": "none",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 6,
+            "artefact": "artefacts/2026-08-24-skill-invocation-wording-fix/test-plans/sivwf-s1-test-plan.md"
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "verifyStatus": "passed",
+          "updatedAt": "2026-08-24T08:06:31.972Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-24T08:06:31.972Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
