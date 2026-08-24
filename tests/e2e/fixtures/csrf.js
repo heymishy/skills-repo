@@ -27,14 +27,34 @@
  * @returns {Promise<string>}
  */
 async function getCsrfToken(ctx, path, label) {
-  const res = await ctx.get(path);
-  const html = await res.text();
-  const csrfMatch = html.match(/name="_csrf" value="([^"]*)"/);
-  const csrfToken = csrfMatch ? csrfMatch[1] : null;
+  const csrfToken = await getCsrfTokenOptional(ctx, path);
   if (!csrfToken) {
     throw new Error((label || path) + ' did not embed a _csrf token');
   }
   return csrfToken;
 }
 
-module.exports = { getCsrfToken };
+/**
+ * Same as getCsrfToken(), but returns null instead of throwing when no
+ * token is found — for @real-staging specs (Scenario A/B's CI-blocking
+ * gates) that must keep passing against whatever is *currently deployed*
+ * to real wuce-staging, which lags behind this branch until it merges and
+ * redeploys. Before rcfc-s1 ships to staging, the target GET page won't
+ * embed a _csrf field at all (matching pre-rcfc-s1 behaviour); after it
+ * ships, a real token will be present and used. @mocked specs always run
+ * against a fresh local server built from this branch's own code, so they
+ * should prefer the strict getCsrfToken() above — a null return there would
+ * silently mask a real regression instead of failing at the fetch site.
+ *
+ * @param {import('@playwright/test').APIRequestContext} ctx
+ * @param {string} path
+ * @returns {Promise<string|null>}
+ */
+async function getCsrfTokenOptional(ctx, path) {
+  const res = await ctx.get(path);
+  const html = await res.text();
+  const csrfMatch = html.match(/name="_csrf" value="([^"]*)"/);
+  return csrfMatch ? csrfMatch[1] : null;
+}
+
+module.exports = { getCsrfToken, getCsrfTokenOptional };
