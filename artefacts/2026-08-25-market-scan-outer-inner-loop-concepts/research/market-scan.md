@@ -9,8 +9,9 @@
 
 ## 1. Executive summary
 
-Four months after the April roadmap's competitive scan, the market has moved substantially in two directions relevant to `wuce`:
+Four months after the April roadmap's competitive scan, the market has moved substantially in three directions relevant to `wuce`:
 
+0. **The single strongest finding in this scan (added after operator review, Section 3d): none of the scanned spec-driven-development tools do structured, gated discovery-to-spec, and none show any cross-story/epic traceability mechanism.** Kiro's "Requirements" phase elaborates a request into structured requirements (EARS notation) — it does not validate whether the request represents a genuine, worth-solving problem. OpenSpec, Spec Kit, and Tessl are effectively spec-first with no upstream discovery step at all. BMAD-METHOD is the real exception — genuine named elicitation techniques and a "Brief Phase" — but even it is explicitly lighter-touch than a hard gate ("the agent asks once, briefly, not as a confirmation ritual"), unlike this platform's `/discovery` clarification gate, which outright refuses to produce spec sections until ambiguity is resolved. Independent industry criticism directly validates the "doesn't work for larger concepts, no traceability" concern that prompted this deeper look: published critiques of SDD tools at scale describe "cognitive overload... often resulting in the specifier giving up and blindly approving documents" and note these tools were "not designed for" enterprise stakeholder involvement or multi-team coordination. This platform's outer loop (discovery → benefit-metric → definition → review → test-plan → DoR) plus its hash-verified, git-native trace chain is not something to borrow *from* this category — it is a genuine, evidenced differentiator *against* it.
 1. **"Loop Engineering" has become a named, widely-recognised 2026 industry concept** — coined and popularised by Boris Cherny (Claude Code's own creator), Peter Steinberger, and amplified by Andrew Ng and Addy Osmani. This directly validates skills-repo's own outer-loop/inner-loop framing as directionally correct and industry-relevant — but Cherny's precise definition of the terms differs from this repo's usage in a way worth reconciling (Section 2).
 2. **The spec-driven-development tooling category has exploded** from roughly 3 named tools (Spec Kit, Kiro, this platform's own approach) in April to 30+ named frameworks today, with real performance and quality differentiation between them. Several of these frameworks solve — or attempt to solve — problems this platform has explicitly deferred (spec-drift detection, multi-persona discipline simulation) (Section 3).
 3. **A previously-unscanned competitive category — Internal Developer Portals (Port.io, Backstage, Cortex)** — turns out to be the closest commercial analogue to `wuce`'s actual product shape (a hosted web UI surfacing catalog, standards/scorecards, self-service actions, and governance across a team), closer than the April doc's Layer 3 comparison set (GitLab Duo, Harness.io, Qodo), which focused on CI/CD-embedded governance rather than a standalone web portal (Section 4).
@@ -69,6 +70,26 @@ This is structurally close to this platform's own discipline-persona model (`pro
 
 None of these three introduce a concept not already covered by the Kiro/Spec Kit/OpenSpec/BMAD analysis above.
 
+### 3d. The real gap in this whole category: no structured discovery-to-spec, no cross-story traceability (added after operator review)
+
+The operator's own read on this research, checked directly against the sources above, surfaces the single strongest finding in this scan — strong enough to promote to the top of the executive summary (Section 1, item 0).
+
+**None of the five SDD tools scanned do genuine, gated problem-discovery before spec production:**
+
+- **Kiro** has a real "Requirements" phase that transforms a request into structured requirements using EARS notation, producing `requirements.md` → `design.md` → `tasks.md`. But this is *spec elaboration* — turning a stated request into a well-formed spec — not *problem validation*. Nothing in Kiro's documented workflow challenges whether the request represents a genuine, worth-solving problem, names who is affected, or surfaces unconfirmed assumptions as a blocking condition before proceeding.
+- **GitHub Spec Kit, OpenSpec, Tessl** are effectively spec-first with no upstream discovery step described anywhere in their documentation or independent coverage — you arrive with a spec (or a delta against one), and the tool's value starts there.
+- **BMAD-METHOD is the genuine exception** among the five: a collaborative "Analyst" agent with named elicitation techniques (Pre-mortem Analysis, First Principles Thinking, Inversion, Red Team vs. Blue Team, Socratic Questioning) and a "Brief Phase" producing a 1-2 page executive summary of vision, audience, value proposition, and scope. This is real, more sophisticated discovery than the other four tools combined. **But it is still explicitly lighter-touch than a hard gate**: BMAD's own documentation states "if you say something ambiguous, the agent asks once, briefly, not as a confirmation ritual" — a single clarifying pass, not this platform's `/discovery` mechanism, which has an explicit **Clarification gate** that refuses to produce *any* spec section (no `## Problem`, `## Personas`, `## MVP`, etc.) until specific trigger conditions (no named problem, no named persona, no measurable baseline) are resolved, and which tags every unconfirmed constraint with an explicit `[ASSUMPTION]` marker that mandatorily routes to `/clarify` before scope can lock.
+
+**Independent industry criticism validates the "doesn't work for larger concepts, no traceability" concern directly, not just as inference from the tool descriptions:**
+
+- On scale: *"While spec-driven development tools work well for greenfield projects, prototypes, and small teams, enterprise software development requires working with existing systems, respecting established architectures, involving business stakeholders, and planning for long-term maintainability — areas these popular SDD tools were not designed for."*
+- On cognitive load at scale: *"When using SDD to develop an entire product or large feature, the scope is large and artifacts generated are enormous; if the entire project is specified in one go it is impossible for a human to process so much cognitive load in one shot, often resulting in the specifier giving up and blindly approving documents in the agentic loop."*
+- On multi-team/traceability: *"Coupling and dependencies should be considered; if work touches many parts of the system, it should be broken down, which becomes particularly challenging when coordinating across multiple teams."*
+
+None of the published coverage of any of these five tools — including the more favourable comparisons — describes anything resembling a structural, cross-story or cross-epic traceability mechanism (a hash-verified instruction chain, a git-native audit trail linking a specific delivered AC back to the specific spec section and specific human approval that authorised it). This platform's own trace design (`workspace/traces/`, `validate-trace.sh`/`.ps1`, `pipeline-state.json`'s story-to-epic-to-feature structure) is not matched by anything found in this category.
+
+**Strategic implication:** this is not a "concept to borrow" finding — it inverts the framing. This platform's own outer loop (the `/discovery` clarification gate specifically, plus `/clarify`'s structured 4-category gap analysis, plus the assumption-tagging-and-mandatory-resolution pattern) and its cross-story trace chain are *already* doing something none of the five most-discussed 2026 SDD tools do well, validated by both the tools' own documented behaviour and independent industry criticism of the category as a whole. The risk is not "we're behind" — it's "we might not realise what we have, and could erode it by treating spec-driven-development feature parity with these tools as the goal," when the actual differentiator is the discovery-gate and traceability discipline these tools lack. Worth stating plainly in `wuce` positioning copy: not "we also do spec-driven development" but "we solve the two problems spec-driven development tools don't: getting to a *validated* spec from a vague problem, and proving, after the fact, that what shipped traces back to it."
+
 ---
 
 ## 4. Internal Developer Portals — Port.io, Backstage, Cortex — the closest product-shape analogue to `wuce`
@@ -124,6 +145,7 @@ As of 2026, the Claude Code plugin/skills ecosystem has grown to hundreds of off
 
 | # | Concept | Source | Maps to (wuce feature area) | Effort signal |
 |---|---------|--------|------------------------------|----------------|
+| C0 | **Not a build item — a positioning correction.** State plainly that this platform solves the two problems SDD tools don't: validated discovery from a vague problem (the `/discovery` clarification gate + `/clarify`), and post-hoc proof that delivery traces back to it. Protect this discipline; don't dilute it chasing SDD-tool feature parity. | Section 3d (operator-prompted deep-dive) | `product/mission.md`, `wuce` positioning/marketing copy, sales/onboarding narrative | None — messaging only, but do not skip it |
 | C1 | Explicit crosswalk from trace fields to named compliance frameworks (NIST AI RMF, EU AI Act Art. 11, ISO 42001) | Industry AI-agent-audit-trail pattern (Section 5) | `/trace` skill output; `wuce` compliance-facing docs | Low — data already captured, just needs a mapping layer |
 | C2 | Dynamic, context-aware oversight level (not static per-epic) | Port.io's dynamic permissions (Section 4a) | `oversightLevel` schema field + DoR/branch-complete gating | Medium — schema change (already flagged as open in G6) + UI |
 | C3 | Explicit approval-workflow state machine with notifications | Port.io's action states (Section 4a) | DoR/DoD sign-off surfaces in `wuce` | Medium |
@@ -138,8 +160,9 @@ As of 2026, the Claude Code plugin/skills ecosystem has grown to hundreds of off
 
 ## 8. Recommended next few features, ranked by directness of the gap closed
 
-1. **C1 (compliance-framework crosswalk)** — smallest effort, clearest differentiation, uses data this platform already captures. Good first pick.
-2. **C5 (accelerate G18/WS5.2)** — the highest-value strategic move this scan found: an industry-wide unsolved problem (confirmed via OpenSpec's own admitted limitation) that this platform already has a more structured mitigation plan for than any competitor scanned. Currently scheduled as a Phase 6 candidate; this scan's finding is grounds to reconsider that sequencing.
+0. **C0 (positioning correction) — do this first, before any build item.** It costs nothing to build and changes how every other item in this list should be framed: C1/C4's compliance/audit work and C5's spec-drift work aren't "catching up to the SDD/IDP category" — they're deepening a differentiator that category has repeatedly, independently been criticised for lacking. Get the narrative right before investing build effort, so the build items land as reinforcing a stated position rather than chasing feature parity.
+1. **C5 (accelerate G18/WS5.2)** — promoted above C1 after Section 3d's deeper look: this is not just "an industry-wide unsolved problem this platform has a better plan for" (the original framing) — it is the delivery-side half of the exact discovery-to-traceability differentiator C0 identifies. Currently scheduled as a Phase 6 candidate; this scan is grounds to reconsider that sequencing.
+2. **C1 (compliance-framework crosswalk)** — smallest effort, clearest differentiation, uses data this platform already captures. The traceability-side half of the same C0 differentiator — makes the "we can prove it traces back" claim externally legible to a compliance/risk audience, not just internally true.
 3. **C9 (Cortex comparison for `wugs`)** — cheap to do (a comparison writeup, not a build), and directly informs whatever `wugs` work comes next by naming a real, specific competitor rather than reasoning about the guardrails surface in the abstract.
 4. **C2/C3 (dynamic oversight + approval state machine)** — both already partially scoped as open gaps (G6) from the April roadmap; Port.io's implementation gives a concrete reference shape rather than starting from a blank page.
 5. **C4, C6, C7, C8** — lower urgency, good candidates for opportunistic pickup alongside other `wuce`/dashboard work rather than dedicated features.
@@ -148,6 +171,13 @@ As of 2026, the Claude Code plugin/skills ecosystem has grown to hundreds of off
 
 ## Sources
 
+- [Kiro Feature Specs docs — requirements/design/tasks workflow](https://kiro.dev/docs/specs/feature-specs/)
+- [Understanding Spec-Driven-Development: Kiro, spec-kit, and Tessl (Martin Fowler)](https://martinfowler.com/articles/exploring-gen-ai/sdd-3-tools.html)
+- [Why Spec-Driven Development Breaks at Scale (And How to Fix It) (Arcturus Labs)](http://arcturus-labs.com/blog/2025/10/17/why-spec-driven-development-breaks-at-scale-and-how-to-fix-it/)
+- [Why Specification-Driven Development (SDD) is Not a Silver Bullet for AI-Assisted SDLC (Towards AI)](https://pub.towardsai.net/why-specification-driven-development-sdd-is-not-a-silver-bullet-for-ai-assisted-sdlc-491c71bcf835)
+- [Why Spec-Driven Development Tools Fail in the Enterprise (Martinelli)](https://martinelli.ch/why-spec-driven-development-tools-fail-in-the-enterprise/)
+- [BMAD-METHOD — Advanced Elicitation docs](https://docs.bmad-method.org/explanation/advanced-elicitation/)
+- [BMAD-METHOD — Analysis Phase: From Idea to Foundation](https://docs.bmad-method.org/explanation/analysis-phase/)
 - [Loop Engineering (cobusgreyling)](https://cobusgreyling.substack.com/p/loop-engineering)
 - [Andrew Ng on "Loop engineering" (X/Twitter)](https://x.com/AndrewYNg/status/2071988145667928442)
 - [GitHub — cocodedk/loop-engineering: fact-checked knowledge base on Boris Cherny's methodology](https://github.com/cocodedk/loop-engineering)
