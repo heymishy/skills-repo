@@ -26688,18 +26688,18 @@
     {
       "slug": "2026-08-24-worktree-checkout-verification",
       "name": "Add an explicit checkout-verification rule to close the recurring wrong-checkout edit gap",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "id": "vtc-s1",
           "slug": "vtc-s1",
           "name": "Add an explicit checkout-verification rule to close the recurring wrong-checkout edit gap",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
-          "dodStatus": "not-started",
-          "prStatus": "draft",
+          "dodStatus": "complete",
+          "prStatus": "merged",
           "testPlan": {
             "status": "written",
             "totalTests": 5,
@@ -26710,13 +26710,13 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-24T04:20:40.586Z",
+          "updatedAt": "2026-08-24T05:13:37.674Z",
           "verifyStatus": "passed",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/764"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-24T04:20:40.587Z",
+      "updatedAt": "2026-08-24T05:13:37.675Z",
       "track": "short",
       "guardrails": []
     },
