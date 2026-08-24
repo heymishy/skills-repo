@@ -26811,18 +26811,18 @@
     {
       "slug": "2026-08-24-skill-invocation-wording-fix",
       "name": "Clarify the real skill-invocation mechanism in CLAUDE.md",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "id": "sivwf-s1",
           "slug": "sivwf-s1",
           "name": "Clarify the real skill-invocation mechanism in CLAUDE.md",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
-          "dodStatus": "not-started",
-          "prStatus": "draft",
+          "dodStatus": "complete",
+          "prStatus": "merged",
           "testPlan": {
             "status": "written",
             "totalTests": 6,
@@ -26834,12 +26834,12 @@
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "verifyStatus": "passed",
-          "updatedAt": "2026-08-24T08:50:11.955Z",
+          "updatedAt": "2026-08-24T18:57:51.182Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/766"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-24T08:50:11.956Z",
+      "updatedAt": "2026-08-24T18:57:51.183Z",
       "track": "short",
       "guardrails": []
     }
