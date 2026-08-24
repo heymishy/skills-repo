@@ -261,16 +261,28 @@ const s = usingLocalCopy
   ? JSON.parse(require('fs').readFileSync('.github/pipeline-state.json', 'utf8'))
   : JSON.parse(execSync('git show origin/master:.github/pipeline-state.json').toString());
 console.log(`[pipeline-state] read from ${usingLocalCopy ? 'local worktree file' : 'master'} @ ${masterSha}`);
-// --- apply only this story's fields to s ---
+// psms-s1: read this story's own CURRENT entry from the LOCAL worktree file
+// on disk (not from memory, not reconstructed from only this step's new
+// outputs) -- this is the accumulated source of truth for every field this
+// branch has already written locally this session (tasks[], testPlan.passing,
+// etc.). The fetched master copy `s` above has none of this branch's own
+// unmerged local writes -- it is only the source of truth for every OTHER
+// story/feature.
+const localNow = JSON.parse(require('fs').readFileSync('.github/pipeline-state.json', 'utf8'));
+const localStoryEntry = /* find this story's own entry in localNow.features[...].stories[...] */;
+// --- merge localStoryEntry's fields onto s's corresponding story entry ---
+// (never the reverse: s's own version of this story's entry, from the
+// fetched master, must never replace what has already accumulated locally)
 require('fs').writeFileSync('.github/pipeline-state.json', JSON.stringify(s, null, 2) + '\n', 'utf8');
 ```
 
-**Rule for checkpoint writes (Step 1's initial write, and the batched commit points in Step 2d) — five steps, no exceptions:**
+**Rule for checkpoint writes (Step 1's initial write, and the batched commit points in Step 2d) — six steps, no exceptions:**
 1. `git fetch origin master` with a 5-second timeout — if origin is not reachable, warn and fall back to the local branch copy
 2. Read from `git show origin/master:.github/pipeline-state.json` (or the local worktree file on fallback) — not from the stale worktree file unless origin is unreachable
 3. Log the SHA — one-line audit trail enabling post-hoc reconstruction of any merge inconsistency
-4. Apply only this story's fields to the fetched state
-5. Write back — the worktree file is now current-master + this story's update
+4. **Separately, read this story's own current entry from the local worktree file on disk** (`fs.readFileSync`, not from memory) — this is the accumulated source of truth for every field already written locally this session, not the fetched master copy's version of this story, and not a reconstruction from only this step's own new outputs (psms-s1, closing the residual gap the 2026-08-23 fix above did not — see `workspace/dod-backlog-findings.md`)
+5. Merge that local entry's fields onto the fetched master copy's corresponding story entry
+6. Write back — the worktree file is now current-master (for every other story/feature) + this story's own locally-accumulated update
 
 This applies at Step 1's initial write and at each batched commit point. It does **not** apply to Step 2d's per-task local-only writes (see the scoping clarification above) — those write directly to the worktree's own local file, no fetch.
 

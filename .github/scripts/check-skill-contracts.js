@@ -134,6 +134,7 @@ const CONTRACTS = [
       '## File map',
       'zero codebase context',
       'templates/implementation-plan.md',
+      'read this story\'s own current entry from the local worktree file on disk',
     ],
   },
   {
@@ -154,6 +155,7 @@ const CONTRACTS = [
       'DONE_WITH_CONCERNS',
       'NEEDS_CONTEXT',
       'spec compliance \u2192 code quality',
+      'read this story\'s own current entry from the local worktree file on disk',
     ],
   },
   {
@@ -164,6 +166,7 @@ const CONTRACTS = [
       'artefacts/[feature]/verification-scripts/[story-slug]-verification.md',
       'templates/verify-completion.md',
       'Scope found outside DoR',
+      'Pipeline-state write safety (psms-s1)',
       'Route/handler E2E coverage check',
       'cannot be verified pre-merge by design',
       'Do not run the full, unscoped `npm run test:e2e` suite',
@@ -177,6 +180,7 @@ const CONTRACTS = [
       '/verify-completion must have passed',
       'Step 3 - Present options',
       'Option 2 - Push and open a draft PR',
+      'read this story\'s own current entry from the local worktree file on disk',
       "route/handler E2E coverage check",
     ],
   },

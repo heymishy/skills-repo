@@ -50,8 +50,8 @@ process.stdout.write('\n[md-2-skill-contracts] T1: skill-contracts passes after 
     `exit code: ${exitCode}\n${stdout}`
   );
   assert(
-    'T1.2 — output reports 179 contracts',
-    stdout.includes('179 contract'),
+    'T1.2 — output reports 183 contracts',
+    stdout.includes('183 contract'),
     stdout.trim().slice(-200)
   );
   assert(

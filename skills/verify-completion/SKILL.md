@@ -212,6 +212,8 @@ If `check-trace-commit.js` exits 1 with a stale message, the hours-elapsed value
 
 > **Mandatory.** Do not close this skill or produce a closing summary without writing these fields. Confirm the write in your closing message: "Pipeline state updated ✅."
 
+**Pipeline-state write safety (psms-s1):** This write happens after `/subagent-execution`'s own per-task local writes have already accumulated this story's `tasks[]` array, still pre-push, same branch, no concurrent-worktree-collision risk yet. Write to the **local worktree file directly** (`fs.readFileSync` then `fs.writeFileSync`, no `git fetch`) — `origin/master` does not have this branch's own unmerged local writes yet, so fetching it and using it as the write base would silently discard everything `/subagent-execution` already accumulated locally this session. This mirrors `subagent-execution/SKILL.md`'s own per-task Step 2d local-only writes, not its checkpoint writes — see that skill's Pipeline-state write safety section for the fuller explanation of this failure mode and why it matters here too.
+
 Update `.github/pipeline-state.json` in the **project repository** after running the verification command and walking all ACs:
 
 - Set story `stage: "verify-completion"`, `updatedAt: [now]`
