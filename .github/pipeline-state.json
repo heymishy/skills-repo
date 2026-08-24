@@ -26623,10 +26623,10 @@
           "id": "evcg-s1",
           "slug": "evcg-s1",
           "name": "Close the E2E verification blind spot in /verify-completion and /branch-complete",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
-          "dodStatus": "not-started",
+          "dodStatus": "complete",
           "prStatus": "merged",
           "testPlan": {
             "status": "written",
@@ -26638,9 +26638,10 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-24T03:28:45.980Z",
+          "updatedAt": "2026-08-24T03:30:48.553Z",
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/761"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/761",
+          "releaseReady": true
         }
       ],
       "metrics": [],
@@ -26658,10 +26659,10 @@
           "id": "psms-s1",
           "slug": "psms-s1",
           "name": "Close the silent tasks[] data-loss gap in pipeline-state.json checkpoint writes",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
-          "dodStatus": "not-started",
+          "dodStatus": "complete",
           "prStatus": "merged",
           "testPlan": {
             "status": "written",
@@ -26673,9 +26674,10 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-24T03:28:46.142Z",
+          "updatedAt": "2026-08-24T03:31:45.866Z",
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/762"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/762",
+          "releaseReady": true
         }
       ],
       "metrics": [],
