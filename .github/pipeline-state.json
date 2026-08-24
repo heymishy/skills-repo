@@ -26719,6 +26719,41 @@
       "updatedAt": "2026-08-24T04:30:06.960Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-08-24-env-gated-skip-visibility",
+      "name": "Report environment-gated skips separately from passes in the test suite",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "id": "egsv-s1",
+          "slug": "egsv-s1",
+          "name": "Report environment-gated skips separately from passes",
+          "stage": "branch-complete",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "dodStatus": "not-started",
+          "prStatus": "draft",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 8,
+            "passing": 8,
+            "artefact": "artefacts/2026-08-24-env-gated-skip-visibility/test-plans/egsv-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "verifyStatus": "passed",
+          "updatedAt": "2026-08-24T04:46:19.195Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/765"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-24T04:46:19.197Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
