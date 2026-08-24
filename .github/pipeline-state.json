@@ -26842,6 +26842,19 @@
       "updatedAt": "2026-08-24T18:57:51.183Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-08-25-market-scan-outer-inner-loop-concepts",
+      "name": "Market Scan: Outer-Loop / Inner-Loop Concepts for wuce",
+      "stage": "ideation",
+      "health": "green",
+      "stories": [],
+      "metrics": [],
+      "updatedAt": "2026-08-24T20:18:43.295Z",
+      "track": "reference",
+      "artefact": "artefacts/2026-08-25-market-scan-outer-inner-loop-concepts/research/market-scan.md",
+      "notes": "Redoes lost research from a session ~3-4 days prior (2026-08-21/22) that scanned the web-UI and skills-framework space for concepts to borrow for wuce, including Port.io -- never saved to disk, unrecoverable (see workspace/capture-log.md 2026-08-25 gap entry). This document supersedes that lost research and updates artefacts/archived/phase5-6-roadmap.md (2026-04-21). Key findings: Loop Engineering (Boris Cherny/Claude Code) validates this platforms outer/inner loop framing; OpenSpec/BMAD/Kiro spec-driven-development landscape has grown to 30+ frameworks; Port.io/Backstage/Cortex (Internal Developer Portals) are a closer competitive analogue to wuce than the April docs Layer 3 set; AI agent audit-trail industry patterns validate this platforms trace design but reveal a missing compliance-framework crosswalk. 9 concrete concepts to borrow identified (C1-C9), ranked recommendations for next few features in Section 8.",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
