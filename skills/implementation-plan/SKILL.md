@@ -170,7 +170,7 @@ The visualiser shows tasks as soon as the plan is saved; if you skip this write,
 
 **Pipeline-state write safety — fetch from master before every write:**
 
-Fan-out concurrent worktrees each hold a stale copy of `pipeline-state.json` from branch-creation time. Writing to that stale copy silently overwrites every other story's updates that merged while this branch was open. Always fetch from `origin/master` immediately before writing — never from the worktree's disk copy.
+Fan-out concurrent worktrees each hold a stale copy of `pipeline-state.json` from branch-creation time. Writing to that stale copy silently overwrites every other story's updates that merged while this branch was open. Always fetch from `origin/master` immediately before writing — never from the worktree's disk copy. (This "always fetch" framing is correct specifically because this skill writes exactly once, at the very start of the inner coding loop — there is no prior local-only accumulation on this branch yet to lose. `subagent-execution/SKILL.md`'s own Pipeline-state write safety section explains why this framing becomes wrong for a skill that writes multiple times per story — do not copy this "always fetch" wording into a multi-write context without also copying that scoping nuance.)
 
 ```js
 const { execSync } = require('child_process');
@@ -190,16 +190,26 @@ const s = usingLocalCopy
   ? JSON.parse(require('fs').readFileSync('.github/pipeline-state.json', 'utf8'))
   : JSON.parse(execSync('git show origin/master:.github/pipeline-state.json').toString());
 console.log(`[pipeline-state] read from ${usingLocalCopy ? 'local worktree file' : 'master'} @ ${masterSha}`);
-// --- apply only this story's fields to s ---
+// psms-s1: read this story's own CURRENT entry from the LOCAL worktree file
+// on disk (not from memory, not reconstructed from only this step's new
+// outputs) -- the accumulated source of truth for every field this branch
+// has already written locally (e.g. dorStatus from /definition-of-ready's
+// own earlier checkpoint on master, already present in the fetched copy
+// here since that ran before this worktree existed -- but never assume;
+// always read local first).
+const localNow = JSON.parse(require('fs').readFileSync('.github/pipeline-state.json', 'utf8'));
+const localStoryEntry = /* find this story's own entry in localNow.features[...].stories[...] */;
+// --- merge localStoryEntry's fields onto s's corresponding story entry ---
 require('fs').writeFileSync('.github/pipeline-state.json', JSON.stringify(s, null, 2) + '\n', 'utf8');
 ```
 
-**Rule (five steps, no exceptions):**
+**Rule (six steps, no exceptions):**
 1. `git fetch origin master` with a 5-second timeout — if origin is not reachable, warn and fall back to the local branch copy
 2. Read from `git show origin/master:.github/pipeline-state.json` (or the local worktree file on fallback) — not from the stale worktree file unless origin is unreachable
 3. Log the SHA — one-line audit trail enabling post-hoc reconstruction of any merge inconsistency
-4. Apply only this story's fields to the fetched state
-5. Write back — the worktree file is now current-master + this story's update
+4. **Separately, read this story's own current entry from the local worktree file on disk** (`fs.readFileSync`, not from memory) — the accumulated source of truth for every field already written locally, not the fetched master copy's version of this story, and not a reconstruction from only this step's own new outputs (psms-s1)
+5. Merge that local entry's fields onto the fetched master copy's corresponding story entry
+6. Write back — the worktree file is now current-master (for every other story/feature) + this story's own locally-accumulated update
 
 This applies even when the worktree copy appears current — always fetch immediately before the write, not at branch-creation time.
 

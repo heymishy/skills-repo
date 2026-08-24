@@ -26612,6 +26612,39 @@
       "prStatus": "merged",
       "prUrl": "https://github.com/heymishy/skills-repo/pull/756",
       "mergedAt": "2026-08-23T00:59:42Z"
+    },
+    {
+      "slug": "2026-08-24-pipeline-state-merge-safety",
+      "name": "Close the silent tasks[] data-loss gap in pipeline-state.json checkpoint writes",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "id": "psms-s1",
+          "slug": "psms-s1",
+          "name": "Close the silent tasks[] data-loss gap in pipeline-state.json checkpoint writes",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "dodStatus": "not-started",
+          "prStatus": "none",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 9,
+            "artefact": "artefacts/2026-08-24-pipeline-state-merge-safety/test-plans/psms-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "updatedAt": "2026-08-24T02:48:37.470Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-24T02:48:37.470Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
