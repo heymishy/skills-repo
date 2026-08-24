@@ -180,6 +180,7 @@ Dispatch a final reviewer subagent with:
 - Full diff from first task to last: `git diff [first-sha] HEAD`
 - All ACs from the story artefact
 - Instruction: "Review the complete implementation against all ACs. Confirm nothing is missing or extra."
+- **Mandatory, every dispatch:** the same background-process warning as 2a/2b/2c (psms-s1: this step was the one dispatch site in this skill missing the warning, and confirmed to recur here specifically — `rcfc-s1`'s own Step 3 dispatch hit the false-wait trap even with the warning present verbatim at every other dispatch site in the same run, because it was never added here in the first place). A cross-cutting final-review subagent that runs a verification command (e.g. the full test suite) has the identical no-notification failure mode as a per-task implementer or reviewer — nothing about reviewing the *whole* diff instead of one task's diff changes that.
 
 If issues found: address before proceeding.
 
