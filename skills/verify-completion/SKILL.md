@@ -73,6 +73,8 @@ Before Step 1, read `.github/context.yml` and apply policy overlays:
 
 ## Step 1 — Run the full test suite
 
+**Before running the command below, check whether an already-fresh same-session result exists** — e.g. a final AC-review/spec-compliance agent's own full-suite run, reported earlier in this same session. A result counts as fresh only if both hold: (a) no code changes have been made since that run, and (b) it covered the same full-suite command, not a targeted single-file run. If a qualifying fresh result exists, use it instead of re-running — do not duplicate a run that already produced sufficient evidence. (Source: `vrne-s3`, 2026-08-23 — a self-inflicted Meta Metric 3 overrun where this step re-ran the full suite without checking whether the final review agent's already-fresh run had already produced sufficient evidence; `vrne-s4`, the very next story, applied this check deliberately and hit its target run-count band exactly. See `artefacts/2026-08-23-inner-loop-ceremony-optimisation/loop-design.md` Section 8c.)
+
 ```bash
 [test command]
 ```

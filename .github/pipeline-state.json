@@ -26807,6 +26807,40 @@
       "guardrails": [],
       "notPursuing": true,
       "notPursuingReason": "Clarification found native Claude Code skill registration adds a permanent always-on token cost (all registered skill descriptions injected at session startup) for benefits largely redundant with this repos existing CLAUDE.md routing table. Superseded by a smaller documentation-only fix (separate short-track story)."
+    },
+    {
+      "slug": "2026-08-24-verify-completion-fresh-result-check",
+      "name": "Check for an already-fresh same-session result before re-running the full suite",
+      "stage": "verify-completion",
+      "health": "green",
+      "stories": [
+        {
+          "id": "vcfrc-s1",
+          "slug": "vcfrc-s1",
+          "name": "Check for an already-fresh same-session result before re-running the full suite",
+          "stage": "verify-completion",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "dodStatus": "not-started",
+          "prStatus": "none",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 5,
+            "artefact": "artefacts/2026-08-24-verify-completion-fresh-result-check/test-plans/vcfrc-s1-test-plan.md"
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "verifyStatus": "passed",
+          "updatedAt": "2026-08-24T10:30:26.426Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-24T10:30:26.426Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
