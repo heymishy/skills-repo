@@ -25311,7 +25311,7 @@
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "testPlan": {
             "status": "written",
             "totalTests": 23,
@@ -25322,7 +25322,7 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-23T21:13:39.447Z",
+          "updatedAt": "2026-08-24T01:26:21.207Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/760",
           "tasks": [
             {
