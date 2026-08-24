@@ -26623,11 +26623,11 @@
           "id": "evcg-s1",
           "slug": "evcg-s1",
           "name": "Close the E2E verification blind spot in /verify-completion and /branch-complete",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "none",
+          "prStatus": "draft",
           "testPlan": {
             "status": "written",
             "totalTests": 9,
@@ -26638,8 +26638,9 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-24T02:19:03.524Z",
-          "verifyStatus": "passed"
+          "updatedAt": "2026-08-24T02:20:33.944Z",
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/761"
         }
       ],
       "metrics": [],
