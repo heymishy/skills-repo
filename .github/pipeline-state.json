@@ -26695,11 +26695,11 @@
           "id": "s3fw-s1",
           "slug": "s3fw-s1",
           "name": "Close the false-wait gap in subagent-execution's Step 3 final-review dispatch",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "none",
+          "prStatus": "draft",
           "testPlan": {
             "status": "written",
             "totalTests": 6,
@@ -26710,8 +26710,9 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-24T04:00:14.341Z",
-          "verifyStatus": "passed"
+          "updatedAt": "2026-08-24T04:01:33.747Z",
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/763"
         }
       ],
       "metrics": [],
