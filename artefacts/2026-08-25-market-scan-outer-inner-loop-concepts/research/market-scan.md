@@ -90,6 +90,12 @@ None of the published coverage of any of these five tools — including the more
 
 **Strategic implication:** this is not a "concept to borrow" finding — it inverts the framing. This platform's own outer loop (the `/discovery` clarification gate specifically, plus `/clarify`'s structured 4-category gap analysis, plus the assumption-tagging-and-mandatory-resolution pattern) and its cross-story trace chain are *already* doing something none of the five most-discussed 2026 SDD tools do well, validated by both the tools' own documented behaviour and independent industry criticism of the category as a whole. The risk is not "we're behind" — it's "we might not realise what we have, and could erode it by treating spec-driven-development feature parity with these tools as the goal," when the actual differentiator is the discovery-gate and traceability discipline these tools lack. Worth stating plainly in `wuce` positioning copy: not "we also do spec-driven development" but "we solve the two problems spec-driven development tools don't: getting to a *validated* spec from a vague problem, and proving, after the fact, that what shipped traces back to it."
 
+### 3e. Microsoft HVE Core — components, not a prescriptive process (operator follow-up, 2026-08-25)
+
+The operator separately experimented with **Microsoft HVE Core** (`microsoft/hve-core`, "Hypervelocity Engineering") and observed that it "essentially" requires you to define your own specs and process from it — confirmed directly against the source. HVE Core ships four building blocks — specialised **agents**, reusable **prompts** (workflow entry points), auto-applied **instructions** (coding standards), and reusable **skills** — organised loosely around an "RPI" (Research → Plan → Implement → Review) methodology, intended to accelerate GitHub Copilot usage. It is a components library you compose into your own workflow, not an opinionated end-to-end pipeline the way this platform, Kiro, or BMAD are.
+
+**On measurability specifically — a negative finding, useful as contrast:** HVE Core has no numeric scoring, no maturity metric, and no quantified success criteria anywhere in its documented methodology. Its own quality-gate language ("Validation Standards," CI/CD checks, CodeQL/OpenSSF Scorecard badges) is generic repository hygiene, not a governance-specific measurement system. Microsoft's own framing is "standards alignment and repeatability... rather than quantified outcomes." On this specific axis, HVE Core is *behind* what this platform already has (the DoR hard-block/warning structure, the Meta Metrics in `loop-design.md`), not ahead — worth noting precisely because not every scanned tool turned out to have something to borrow; this one didn't, on the measurement dimension the operator asked about.
+
 ---
 
 ## 4. Internal Developer Portals — Port.io, Backstage, Cortex — the closest product-shape analogue to `wuce`
@@ -141,6 +147,36 @@ As of 2026, the Claude Code plugin/skills ecosystem has grown to hundreds of off
 
 ---
 
+## 6b. Measurable concepts, patterns, and benchmarks — a deeper look (operator follow-up, 2026-08-25)
+
+The operator asked specifically: across everything scanned (including HVE Core, Section 3e), are there *better measurable* concepts, patterns, or improvements this platform could adopt? This section answers that directly — it is narrower and more metric-focused than Sections 2-6 above.
+
+### 6b-i. Port.io / Cortex scorecards — rule-based tiered scoring, a genuinely stronger pattern than this platform's current binary gates
+
+Both platforms score an entity (a service, in their case) against a set of explicit, checkable rules. Each rule evaluates whether the entity's properties satisfy a condition; the cumulative pattern of passed/failed rules determines a **named tier** — Port's default is Basic → Bronze → Silver → Gold (customisable), with an example alternative of Basic → Developing → Established → Mature → Exemplary. Cortex explicitly "gamifies" this with points and levels to encourage teams to progress.
+
+**Why this is stronger than what this platform currently has:** this platform's DoR hard-blocks (H1-H9 etc.) and the `wugs` guardrails/standards surface are already rule-based — but each rule only produces a binary pass/fail, never rolled up into a single, named score. A story or a team currently has no equivalent of "Silver-tier governance maturity" — only a list of individually-passing or -failing checks. Converting the existing rule set into an explicit tiered score is a smaller lift than it sounds, since the underlying rule evaluation logic already exists; what's missing is the rollup and the tier-naming layer on top.
+
+### 6b-ii. AI-era DORA metric variants — the most directly actionable new metric class found
+
+The core 2026 industry finding: traditional DORA metrics (deployment frequency, lead time for changes, change failure rate, MTTR) become **misleading**, not just noisy, once a large share of code is AI-generated — developers estimate ~42% of committed code is AI-assisted industry-wide. Velocity metrics inflate first; stability metrics degrade quietly, without traditional DORA tracking having any visibility into which tool (human, AI-assisted, or fully agent-authored) produced a given change.
+
+**What stays reliable:** Mean Time to Recovery — recovery from a production incident depends on human judgement, system architecture, and observability, none of which AI code generation meaningfully distorts.
+
+**What the 2026 literature recommends instead or in addition:**
+- **Code-provenance segmentation** — track deployment frequency, lead time, and change-failure-rate *separately* by whether the change was human-authored, AI-assisted, or agent-authored, rather than one blended number.
+- **Rework rate** — a new, named metric for how much delivered work required correction after the fact.
+- **Agentic AI commit rate** — the share of commits produced by an autonomous agent loop specifically (distinct from AI-assisted human editing).
+- The "5 highest-signal metrics for AI-era engineering teams" cited: deployment frequency, lead time for changes, change failure rate, rework rate, and agentic AI commit rate.
+
+**Direct relevance to this platform's own Meta Metrics (`loop-design.md`):** the existing Meta Metric 1-4 set (commits/task, false-wait incidents, full-suite run count, wall-clock/task) measures *inner-loop process efficiency only* — none of them measure delivery or business-outcome quality the way DORA-style metrics do. **Rework rate is the standout gap**: this platform already generates the raw data for it (every DoD's "Observations" section, and `workspace/dod-backlog-findings.md`'s F1-F11 tracked corrections, are effectively un-named instances of rework) but has never defined or tracked it as an explicit rate. Since this platform is, by construction, 100% agent-delivered, a literal "agentic AI commit rate" metric would trivially read ~100% and carry no differentiating signal here — but a rework-rate metric (rate of delivered stories that later required a correction, re-opened finding, or DoD deviation) would be a genuine, evidence-grounded addition, distinct from and complementary to the existing process-efficiency Meta Metrics.
+
+### 6b-iii. External standardized benchmarking (SWE-bench) — a credibility gap, not a process gap
+
+Coding-agent tools in this space are increasingly evaluated against **SWE-bench**, a recognised, third-party, standardized benchmark (cited example: Augment Code scoring 70.6% against a 54% industry average). This platform's own evaluation programme (the `EXP-001` through `EXP-0xx` series in `workspace/experiments/`) is entirely self-referential — comparing models like `claude-sonnet-4-6` against `claude-opus-4-6` on this platform's *own* corpus of discovery/definition cases, never against an external, standardized benchmark anyone outside this platform would recognise. This limits how credible any "this platform produces good output" claim is to an external evaluator, customer, or compliance reviewer who has no reason to trust a self-graded corpus. Not a process gap — a positioning/credibility gap, cheap to partially close by adding one external-benchmark data point to the evaluation programme's public-facing summary, even if SWE-bench itself measures a narrower slice (raw coding-agent task completion) than this platform's own outer-loop-inclusive scope.
+
+---
+
 ## 7. Concepts to borrow — consolidated, mapped to `wuce`'s actual feature surface
 
 | # | Concept | Source | Maps to (wuce feature area) | Effort signal |
@@ -155,6 +191,9 @@ As of 2026, the Claude Code plugin/skills ecosystem has grown to hundreds of off
 | C7 | Glossary note distinguishing this platform's outer/inner loop from Cherny's popularised definition | Same (Section 2) | `CLAUDE.md`, onboarding docs | Low |
 | C8 | Lightweight "who is this output for" persona-audience UI affordance (not full Party Mode) | BMAD's Party Mode, cost-adjusted (Section 3b) | `wuce` pipeline-stage views | Medium |
 | C9 | Deliberate feature comparison against Cortex specifically for the guardrails/standards surface | Cortex's scorecards-first positioning (Section 4b) | `wugs` (Web UI Guardrails/Standards Surface) roadmap | Low — a comparison exercise, not a build |
+| C10 | Rule-based tiered maturity score (e.g. Bronze/Silver/Gold) rolled up from existing DoR/guardrails rule checks, replacing binary pass/fail | Port.io/Cortex scorecard mechanics (Section 6b-i) | DoR hard-blocks, `wugs` guardrails compliance matrix | Medium — rollup + naming layer on top of existing rule logic |
+| C11 | Named, tracked **rework rate** metric (rate of delivered stories later requiring a correction/re-opened finding/DoD deviation) | AI-era DORA metric variants (Section 6b-ii) | New Meta Metric 5, alongside `loop-design.md`'s existing 4; sourced from `workspace/dod-backlog-findings.md`-style data already collected | Medium — mostly a definition + backfill exercise, data already exists |
+| C12 | One external, standardized benchmark data point (e.g. SWE-bench) added to the evaluation programme's public-facing summary, alongside the existing self-referential EXP-series corpus | SWE-bench-style industry benchmarking (Section 6b-iii) | `workspace/experiments/` evaluation programme; any external-facing credibility/compliance material | Low-Medium — narrower scope than this platform's own outer-loop evaluation, but cheap to add as a single anchor point |
 
 ---
 
@@ -163,14 +202,28 @@ As of 2026, the Claude Code plugin/skills ecosystem has grown to hundreds of off
 0. **C0 (positioning correction) — do this first, before any build item.** It costs nothing to build and changes how every other item in this list should be framed: C1/C4's compliance/audit work and C5's spec-drift work aren't "catching up to the SDD/IDP category" — they're deepening a differentiator that category has repeatedly, independently been criticised for lacking. Get the narrative right before investing build effort, so the build items land as reinforcing a stated position rather than chasing feature parity.
 1. **C5 (accelerate G18/WS5.2)** — promoted above C1 after Section 3d's deeper look: this is not just "an industry-wide unsolved problem this platform has a better plan for" (the original framing) — it is the delivery-side half of the exact discovery-to-traceability differentiator C0 identifies. Currently scheduled as a Phase 6 candidate; this scan is grounds to reconsider that sequencing.
 2. **C1 (compliance-framework crosswalk)** — smallest effort, clearest differentiation, uses data this platform already captures. The traceability-side half of the same C0 differentiator — makes the "we can prove it traces back" claim externally legible to a compliance/risk audience, not just internally true.
-3. **C9 (Cortex comparison for `wugs`)** — cheap to do (a comparison writeup, not a build), and directly informs whatever `wugs` work comes next by naming a real, specific competitor rather than reasoning about the guardrails surface in the abstract.
-4. **C2/C3 (dynamic oversight + approval state machine)** — both already partially scoped as open gaps (G6) from the April roadmap; Port.io's implementation gives a concrete reference shape rather than starting from a blank page.
-5. **C4, C6, C7, C8** — lower urgency, good candidates for opportunistic pickup alongside other `wuce`/dashboard work rather than dedicated features.
+3. **C11 (rework-rate metric)** — added after the operator's measurability follow-up (Section 6b-ii): the data already exists (DoD Observations, `dod-backlog-findings.md`), the definition work is small, and it closes a real, named gap in the Meta Metrics set (loop-design.md currently measures inner-loop process efficiency only, nothing about delivery/rework quality). High signal-to-effort ratio.
+4. **C9 (Cortex comparison for `wugs`)** — cheap to do (a comparison writeup, not a build), and directly informs whatever `wugs` work comes next by naming a real, specific competitor rather than reasoning about the guardrails surface in the abstract.
+5. **C10 (tiered maturity scoring)** — a genuinely stronger pattern than this platform's current binary DoR/guardrails gates (Section 6b-i), but a real build item (rollup + tier-naming layer), not a quick win — sequence after the cheaper C1/C9/C11 items above.
+6. **C2/C3 (dynamic oversight + approval state machine)** — both already partially scoped as open gaps (G6) from the April roadmap; Port.io's implementation gives a concrete reference shape rather than starting from a blank page.
+7. **C12 (SWE-bench anchor point)** — lower urgency than the above; a credibility/positioning nice-to-have rather than something blocking a current gap, but cheap enough to fold into the next evaluation-programme update.
+8. **C4, C6, C7, C8** — lower urgency, good candidates for opportunistic pickup alongside other `wuce`/dashboard work rather than dedicated features.
 
 ---
 
 ## Sources
 
+- [GitHub — microsoft/hve-core: Hypervelocity Engineering components](https://github.com/microsoft/hve-core)
+- [hve-core getting-started guide](https://github.com/microsoft/hve-core/blob/main/docs/getting-started/README.md)
+- [Port — Concepts and structure (Scorecards)](https://docs.port.io/scorecards/concepts-and-structure/)
+- [Port — What are Scorecards? Examples, Use Cases & Step-by-step Guide](https://www.port.io/guide/scorecards)
+- [Cortex — Scorecards overview](https://docs.cortex.io/standardize/scorecards)
+- [Cortex — Starting with the Right Foundations: The Engineering Maturity Curve](https://www.cortex.io/post/cortex-engineering-maturity-curve)
+- [DORA Metrics for AI-Assisted Software Teams (Snowman Labs)](https://snowmanlabs.com/insights/dora-metrics-for-ai-assisted-teams)
+- [Why DORA Metrics Break in the AI Era (Larridin)](https://larridin.com/developer-productivity-hub/why-dora-metrics-break-ai-era)
+- [DORA Metrics Are Not Enough in 2026: What Elite Engineering Teams Track Instead (Oobeya)](https://www.oobeya.io/blog/dora-metrics-not-enough-2026)
+- [DORA metrics: the complete guide to measuring DevOps performance in the AI era (getDX)](https://getdx.com/blog/dora-metrics/)
+- [6 Best Spec-Driven Development Tools for AI Coding in 2026 (Augment Code) — SWE-bench comparison](https://www.augmentcode.com/tools/best-spec-driven-development-tools)
 - [Kiro Feature Specs docs — requirements/design/tasks workflow](https://kiro.dev/docs/specs/feature-specs/)
 - [Understanding Spec-Driven-Development: Kiro, spec-kit, and Tessl (Martin Fowler)](https://martinfowler.com/articles/exploring-gen-ai/sdd-3-tools.html)
 - [Why Spec-Driven Development Breaks at Scale (And How to Fix It) (Arcturus Labs)](http://arcturus-labs.com/blog/2025/10/17/why-spec-driven-development-breaks-at-scale-and-how-to-fix-it/)
