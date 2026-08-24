@@ -26623,7 +26623,7 @@
           "id": "evcg-s1",
           "slug": "evcg-s1",
           "name": "Close the E2E verification blind spot in /verify-completion and /branch-complete",
-          "stage": "definition-of-ready",
+          "stage": "verify-completion",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
@@ -26635,10 +26635,11 @@
             "artefact": "artefacts/2026-08-24-e2e-verification-coverage-gap/test-plans/evcg-s1-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-24T02:02:19.782Z"
+          "updatedAt": "2026-08-24T02:19:03.524Z",
+          "verifyStatus": "passed"
         }
       ],
       "metrics": [],
