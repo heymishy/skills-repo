@@ -26686,6 +26686,41 @@
       "guardrails": []
     },
     {
+      "slug": "2026-08-24-worktree-checkout-verification",
+      "name": "Add an explicit checkout-verification rule to close the recurring wrong-checkout edit gap",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "id": "vtc-s1",
+          "slug": "vtc-s1",
+          "name": "Add an explicit checkout-verification rule to close the recurring wrong-checkout edit gap",
+          "stage": "branch-complete",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "dodStatus": "not-started",
+          "prStatus": "draft",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 5,
+            "artefact": "artefacts/2026-08-24-worktree-checkout-verification/test-plans/vtc-s1-test-plan.md"
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "updatedAt": "2026-08-24T04:20:40.586Z",
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/764"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-24T04:20:40.587Z",
+      "track": "short",
+      "guardrails": []
+    },
+    {
       "slug": "2026-08-24-step3-final-review-false-wait",
       "name": "Close the false-wait gap in subagent-execution's Step 3 final-review dispatch",
       "stage": "definition-of-done",
