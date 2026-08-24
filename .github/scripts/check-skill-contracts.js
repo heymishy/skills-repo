@@ -164,6 +164,9 @@ const CONTRACTS = [
       'artefacts/[feature]/verification-scripts/[story-slug]-verification.md',
       'templates/verify-completion.md',
       'Scope found outside DoR',
+      'Route/handler E2E coverage check',
+      'cannot be verified pre-merge by design',
+      'Do not run the full, unscoped `npm run test:e2e` suite',
     ],
   },
   {
@@ -174,6 +177,7 @@ const CONTRACTS = [
       '/verify-completion must have passed',
       'Step 3 - Present options',
       'Option 2 - Push and open a draft PR',
+      "route/handler E2E coverage check",
     ],
   },
   // ── Post-merge skills ─────────────────────────────────────────────────────
