@@ -14,6 +14,8 @@
 
 const { expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
+// rcfc-s1: /products/confirm now requires a valid session-scoped CSRF token.
+const { getCsrfToken } = require('./fixtures/csrf');
 
 async function createProduct(request, name) {
   const draftRes = await request.post('/products/new', {
@@ -22,8 +24,9 @@ async function createProduct(request, name) {
   });
   expect(draftRes.status(), 'POST /products/new (draft)').toBe(200);
 
+  const csrfToken = await getCsrfToken(request, '/products/new', 'product creation page');
   const confirmRes = await request.post('/products/confirm', {
-    form: { name: name, description: 's1.1 E2E fixture product.' },
+    form: { name: name, description: 's1.1 E2E fixture product.', _csrf: csrfToken },
     maxRedirects: 0
   });
   expect(confirmRes.status(), 'POST /products/confirm should redirect to the product view').toBe(302);
