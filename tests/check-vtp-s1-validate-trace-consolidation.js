@@ -5,7 +5,7 @@ const path = require('path');
 const os = require('os');
 const { execFileSync, spawnSync } = require('child_process');
 
-let passed = 0; let failed = 0;
+let passed = 0; let failed = 0; let skipped = 0;
 function pass(name) { console.log(`  PASS: ${name}`); passed++; }
 function fail(name, err) { console.error(`  FAIL: ${name}: ${err.message || err}`); failed++; }
 
@@ -34,7 +34,7 @@ const ENV_OK = hasBash() && hasPython3();
   ];
   if (!ENV_OK) {
     console.log('  - AC3/AC2/AC1: skipped (bash/python3 not usable on this platform — validate manually)');
-    passed += 1;
+    skipped += 1;
   } else {
     for (const name of CHECK_NAMES) {
       try {
@@ -92,7 +92,7 @@ const ENV_OK = hasBash() && hasPython3();
 
         if (oldRun.status === null || /FileNotFoundError|Permission denied/.test(oldRun.stderr || '')) {
           console.log('  - AC1: skipped (pre-change baseline cannot run on this platform — validate via CI)');
-          passed += 1;
+          skipped += 1;
         } else {
           assert(oldReport && newReport, 'expected both runs to produce a report');
           const norm = (r) => ({
@@ -109,6 +109,7 @@ const ENV_OK = hasBash() && hasPython3();
     } catch (e) { fail('fullRun_producesEquivalentReport_toPreChangeBaseline', e); }
   }
 
-  console.log(`\n${passed} passed, ${failed} failed`);
+  console.log(`\n${passed} passed, ${failed} failed` +
+    (skipped > 0 ? `, ${skipped} skipped (bash/python3 unavailable)` : ''));
   process.exit(failed > 0 ? 1 : 0);
 })();

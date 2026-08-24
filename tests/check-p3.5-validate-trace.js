@@ -38,6 +38,7 @@ const root = path.join(__dirname, '..');
 
 let passed  = 0;
 let failed  = 0;
+let skipped = 0;
 const failures = [];
 
 function pass(name) {
@@ -83,7 +84,7 @@ function hasPwsh() {
   }
   if (!hasPwsh()) {
     process.stdout.write('      pwsh not available in this environment — skip\n');
-    pass(name);
+    skipped++;
     return;
   }
   try {
@@ -112,7 +113,7 @@ function hasPwsh() {
   }
   if (!hasPwsh()) {
     process.stdout.write('      pwsh not available in this environment — skip\n');
-    pass(name);
+    skipped++;
     return;
   }
 
@@ -232,7 +233,8 @@ function hasPwsh() {
 
 // ── Summary ───────────────────────────────────────────────────────────────────
 console.log('');
-console.log('check-p3.5-validate-trace: ' + passed + ' passed, ' + failed + ' failed');
+console.log('check-p3.5-validate-trace: ' + passed + ' passed, ' + failed + ' failed' +
+  (skipped > 0 ? ', ' + skipped + ' skipped (pwsh unavailable)' : ''));
 if (failed > 0) {
   console.error('FAILED:');
   failures.forEach(f => console.error('  - ' + f));
