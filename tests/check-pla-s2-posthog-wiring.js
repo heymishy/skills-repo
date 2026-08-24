@@ -169,9 +169,12 @@ function installJourneyStoreMock() {
 
 // Build a mock req for POST /api/journey
 function makeJourneyReq(session, bodyOverride) {
-  var formData = bodyOverride || 'featureName=My+Feature&startSkill=discovery&profileName=default';
+  // rcfc-s1: handlePostJourney now requires a valid session-scoped CSRF token
+  // (csrfToken on the session must match a _csrf field on the POST body).
+  var formData = bodyOverride || 'featureName=My+Feature&startSkill=discovery&profileName=default&_csrf=test-csrf-token';
+  var resolvedSession = Object.assign({ login: 'alice', tenantId: 'acme', role: 'user', accessToken: 'tok' }, session || {}, { csrfToken: 'test-csrf-token' });
   return {
-    session: session || { login: 'alice', tenantId: 'acme', role: 'user', accessToken: 'tok' },
+    session: resolvedSession,
     on: function(ev, fn) {
       if (ev === 'data') setTimeout(function() { fn(formData); }, 0);
       if (ev === 'end')  setTimeout(fn, 1);

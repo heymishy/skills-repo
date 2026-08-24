@@ -55,12 +55,13 @@ function mockReqGet({ skillName = SKILL, sessionId = SID, authed = true } = {}) 
 }
 
 function mockReqPost({ skillName = SKILL, sessionId = SID, authed = true } = {}) {
-  const bodyStr = '';
+  // rcfc-s1: handlePostCommitHtml now requires a valid session-scoped CSRF token.
+  const bodyStr = '_csrf=test-csrf-token';
   return {
     method:  'POST',
     params:  { name: skillName, id: sessionId },
     headers: { 'content-type': 'application/x-www-form-urlencoded' },
-    session: authed ? { accessToken: 'tok', userId: 'u1', login: 'tester' } : {},
+    session: authed ? { accessToken: 'tok', userId: 'u1', login: 'tester', csrfToken: 'test-csrf-token' } : {},
     on(event, cb) {
       if (event === 'data') cb(Buffer.from(bodyStr));
       if (event === 'end')  cb();

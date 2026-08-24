@@ -62,14 +62,18 @@ function mockReqGet(overrides) {
 }
 
 function mockReqPost(name, overrides) {
+  // rcfc-s1: handlePostSkillSessionHtml now requires a valid session-scoped CSRF
+  // token; pre-set req.body so csrfGuard's _readBody short-circuits instead of
+  // trying to read a live request stream this mock doesn't provide.
   return Object.assign({
-    session:   { accessToken: 'test-token', userId: 42, login: 'alice' },
+    session:   { accessToken: 'test-token', userId: 42, login: 'alice', csrfToken: 'test-csrf-token' },
     sessionId: 'test-sid',
     query:     {},
     headers:   { 'content-type': 'application/x-www-form-urlencoded' },
     method:    'POST',
     url:       '/api/skills/' + (name || 'discovery') + '/sessions',
-    params:    { name: name || 'discovery' }
+    params:    { name: name || 'discovery' },
+    body:      { _csrf: 'test-csrf-token' }
   }, overrides || {});
 }
 

@@ -99,6 +99,23 @@ async function getPlanState(request, cookie) {
   return resp.json();
 }
 
+/**
+ * rcfc-s1: GET `path` (carrying the manually-seeded session cookie, since this
+ * spec authenticates via a raw `cookie` header rather than a Playwright
+ * APIRequestContext's own cookie jar) and extract the session's real _csrf
+ * token from the rendered HTML's hidden field. Local variant of
+ * fixtures/csrf.js's getCsrfToken() that accepts a cookie header, needed
+ * because the shared helper always calls ctx.get(path) with no extra headers.
+ */
+async function getCsrfToken(request, path, cookie, label) {
+  const res = await request.get(path, { headers: { cookie } });
+  const html = await res.text();
+  const csrfMatch = html.match(/name="_csrf" value="([^"]*)"/);
+  const csrfToken = csrfMatch ? csrfMatch[1] : null;
+  expect(csrfToken, (label || path) + ' must embed a _csrf token').toBeTruthy();
+  return csrfToken;
+}
+
 async function postWebhook(request, event) {
   return request.post('/webhook/stripe', {
     headers: Object.assign(
@@ -238,9 +255,12 @@ test.describe('@mocked @billing bri-s3.5 billing journey', () => {
 
       // While paid: create two journeys — exceeding the nominal cap=1, allowed because paid+active.
       for (let i = 0; i < 2; i++) {
+        // rcfc-s1: /api/journey now requires a valid session-scoped CSRF token,
+        // embedded as a hidden field in the real /journey home page form.
+        const csrfToken = await getCsrfToken(request, '/journey', cookie, 'journey home page');
         const createResp = await request.post('/api/journey', {
           headers: { 'content-type': 'application/x-www-form-urlencoded', cookie },
-          data: 'featureName=' + encodeURIComponent('E2E cancel feature ' + i),
+          data: 'featureName=' + encodeURIComponent('E2E cancel feature ' + i) + '&_csrf=' + encodeURIComponent(csrfToken),
         });
         expect(createResp.status()).not.toBe(402);
       }
@@ -259,9 +279,10 @@ test.describe('@mocked @billing bri-s3.5 billing journey', () => {
 
       // Now attempting a third journey is blocked — restricted per the new (trial, cap=1) plan,
       // not left at the old (paid, unlimited) plan's access level.
+      const blockedCsrfToken = await getCsrfToken(request, '/journey', cookie, 'journey home page');
       const blockedResp = await request.post('/api/journey', {
         headers: { 'content-type': 'application/x-www-form-urlencoded', cookie },
-        data: 'featureName=' + encodeURIComponent('E2E cancel feature blocked'),
+        data: 'featureName=' + encodeURIComponent('E2E cancel feature blocked') + '&_csrf=' + encodeURIComponent(blockedCsrfToken),
       });
       expect(blockedResp.status()).toBe(402);
     });

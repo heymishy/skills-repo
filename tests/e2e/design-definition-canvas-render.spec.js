@@ -44,6 +44,9 @@
 
 const { withAuth } = require('./fixtures/auth');
 const { test, expect } = require('@playwright/test');
+// rcfc-s1: /api/journey and /api/journey/:id/gate-confirm now require a
+// valid session-scoped CSRF token on raw (non-page-driven) POSTs.
+const { getCsrfToken } = require('./fixtures/csrf');
 
 function sessionIdFromChatPath(pathname) {
   const m = pathname.match(/\/skills\/[^/]+\/sessions\/([^/]+)\/chat/);
@@ -88,8 +91,11 @@ async function submitTurnJson(page, skillName, sessionId) {
  * UI instead.
  */
 async function driveJourneyToStage(page, featureName, targetStage) {
+  // rcfc-s1: /api/journey now requires a valid session-scoped CSRF token,
+  // embedded as a hidden field in the real /journey home page form.
+  const createCsrfToken = await getCsrfToken(page.request, '/journey', 'journey home page');
   const createRes = await page.request.post('/api/journey', {
-    form: { featureName: featureName, startSkill: 'discovery' },
+    form: { featureName: featureName, startSkill: 'discovery', _csrf: createCsrfToken },
     maxRedirects: 0
   });
   expect(createRes.status(), 'POST /api/journey').toBe(303);
@@ -112,7 +118,14 @@ async function driveJourneyToStage(page, featureName, targetStage) {
     const turnResult = await submitTurnJson(page, skillName, sessionId);
     expect(turnResult.done, `${skillName} stage should complete via the mock gateway`).toBe(true);
 
-    const gateRes = await page.request.post(`/api/journey/${journeyId}/gate-confirm`, { maxRedirects: 0 });
+    // rcfc-s1: /api/journey/:id/gate-confirm now requires a valid
+    // session-scoped CSRF token, embedded as a hidden field in the real
+    // stage-review page's confirm form.
+    const gateCsrfToken = await getCsrfToken(page.request, `/journey/${journeyId}/stage-review`, 'stage-review page');
+    const gateRes = await page.request.post(`/api/journey/${journeyId}/gate-confirm`, {
+      form: { _csrf: gateCsrfToken },
+      maxRedirects: 0
+    });
     expect(gateRes.status(), `gate-confirm after ${skillName}`).toBe(303);
     location = gateRes.headers()['location'];
     skillName = STAGE_ORDER[i + 1];

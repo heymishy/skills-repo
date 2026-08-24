@@ -180,7 +180,7 @@ function _renderProductDashboard(products, login, navProducts, activeProductId, 
   });
 }
 
-function _renderProductNew(login, error, isAdmin) {
+function _renderProductNew(login, error, isAdmin, csrfToken) {
   var errorHtml = error ? '<div style="padding:12px;background:#fee;border:1px solid #fcc;border-radius:6px;color:#c33;margin-bottom:16px;font-size:14px">' + _escapeHtml(error) + '</div>' : '';
   var body = '<div style="max-width:560px">' +
     '<h1 style="margin:0 0 24px;font-size:24px">Create a product</h1>' +
@@ -197,6 +197,7 @@ function _renderProductNew(login, error, isAdmin) {
     '<div id="psh-drafts" style="display:none;margin-top:32px">' +
       '<h2 style="font-size:18px;margin:0 0 16px">Review and edit your context files</h2>' +
       '<form id="psh-confirm-form" method="POST" action="/products/confirm" style="display:flex;flex-direction:column;gap:20px">' +
+        _csrf.csrfField(csrfToken) +
         '<input type="hidden" id="psh-confirm-name" name="name">' +
         '<input type="hidden" id="psh-confirm-description" name="description">' +
         ['mission','roadmap','techStack','constraints','architectureGuardrails'].map(function(field) {
@@ -907,6 +908,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
           '<button type="button" id="psh-new-feature-btn" onclick="pshToggleNewFeaturePanel()" style="padding:8px 16px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:500;cursor:pointer">New feature</button>' +
           '<div id="psh-new-feature-panel" style="display:none;position:absolute;right:0;top:calc(100% + 6px);z-index:20;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:16px;min-width:290px;box-shadow:0 4px 14px rgba(0,0,0,.12)">' +
             '<form method="POST" action="/products/' + _escapeHtml(productId) + '/features" style="margin:0">' +
+              _csrf.csrfField(csrfToken) +
               // fdn-s1: optional at creation -- the "Rough idea" path is
               // explicitly for exploring before anything is named; renaming
               // stays available anytime afterward (see decisions.md).
@@ -2063,6 +2065,12 @@ async function handlePostProductNew(req, res, _next, pool, posthog) {
 }
 
 async function handlePostProductConfirm(req, res, _next, pool, posthog) {
+  // rcfc-s1 Task 3 -- CSRF guard first, matching handlePostGuardrailsForm /
+  // handlePostProductModule. csrfGuard reads and caches the body itself; the
+  // _readBody call below (unchanged) picks it up via its own req.body !==
+  // undefined short-circuit.
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
   req.body = await _readBody(req);
   var _pool = pool;
   var _ph = posthog || _posthog;
@@ -2212,7 +2220,7 @@ function handleGetProductNew(req, res) {
   var isAdmin = !!(req.session && isEffectivelyAdmin(req.session));
   var errorParam = req.query && req.query.error;
   var error = errorParam === 'plan_limit' ? 'Your plan allows 1 product. Upgrade to create more.' : null;
-  var html = _renderProductNew(login, error, isAdmin);
+  var html = _renderProductNew(login, error, isAdmin, _csrf.generateCsrfToken(req));
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -2910,6 +2918,12 @@ async function handlePostBoardAdvance(req, res, _next, pool, posthog) {
 }
 
 async function handlePostProductFeature(req, res, _next, pool, posthog) {
+  // rcfc-s1 Task 3 -- CSRF guard first, matching handlePostGuardrailsForm /
+  // handlePostProductModule. csrfGuard reads and caches the body itself; the
+  // _readBody call below (unchanged) picks it up via its own req.body !==
+  // undefined short-circuit.
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
   var _ph = posthog || _posthog;
   var tenantId = req.session && req.session.tenantId;
   var productId = req.params && req.params.id;

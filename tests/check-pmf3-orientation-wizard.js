@@ -130,14 +130,15 @@ queue.push(function() {
 // T3.4 — POST from-idea redirects to /skills/discovery/sessions?idea=<ideaId> (AC3)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T3.4: POST selection=from-idea redirects to discovery sessions with idea param (AC3)', function() {
+  return test('T3.4: POST selection=from-idea redirects to discovery sessions with idea param (AC3)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     var repoRoot = mkTmp('t3-4');
     writeFile(repoRoot, '.github/pipeline-state.json', JSON.stringify({ features: [] }));
     routes.setRepoRoot(repoRoot);
-    var req = { session: { accessToken: 'tok' }, body: { selection: 'from-idea', ideaId: 'idea-001' } };
+    // rcfc-s1: handlePostWizardSelection now requires a valid session-scoped CSRF token.
+    var req = { session: { accessToken: 'tok', csrfToken: 'test-csrf-token' }, body: { selection: 'from-idea', ideaId: 'idea-001', _csrf: 'test-csrf-token' } };
     var res = mockRes();
-    routes.handlePostWizardSelection(req, res);
+    await routes.handlePostWizardSelection(req, res);
     assert.strictEqual(res.statusCode, 302, 'Must redirect with 302; got: ' + res.statusCode);
     var location = res.headers.Location || res.headers.location || '';
     assert.ok(location.includes('/skills/discovery/sessions'),
@@ -217,15 +218,16 @@ queue.push(function() {
 // T3.8 — POST resume-session redirects to /skills/<skill>/sessions/<id>/chat (AC7)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T3.8: POST selection=resume-session redirects to skill session chat (AC7)', function() {
+  return test('T3.8: POST selection=resume-session redirects to skill session chat (AC7)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
-    var req = { session: { accessToken: 'tok' }, body: {
+    var req = { session: { accessToken: 'tok', csrfToken: 'test-csrf-token' }, body: {
       selection: 'resume-session',
       sessionId: 'sess-abc',
-      skillName: 'discovery'
+      skillName: 'discovery',
+      _csrf: 'test-csrf-token'
     }};
     var res = mockRes();
-    routes.handlePostWizardSelection(req, res);
+    await routes.handlePostWizardSelection(req, res);
     assert.strictEqual(res.statusCode, 302, 'Must redirect with 302; got: ' + res.statusCode);
     var location = res.headers.Location || res.headers.location || '';
     assert.ok(location === '/skills/discovery/sessions/sess-abc/chat',

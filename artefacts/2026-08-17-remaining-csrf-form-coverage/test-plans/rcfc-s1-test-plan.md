@@ -12,7 +12,7 @@
 | AC | Description | Unit | Integration | E2E | Manual | Gap type | Risk |
 |----|-------------|------|-------------|-----|--------|----------|------|
 | AC1 | Journey-flow forms (6 routes) rejected without token, succeed with valid token | — | 12 tests | — | — | — | 🟢 |
-| AC2 | Annotations + skill-session-form + skill-commit-form rejected without token, succeed with valid token (annotations also needs a prerequisite form-parsing fix) | — | 7 tests | — | — | — | 🟢 |
+| AC2 | Skill-session-form + skill-commit-form rejected without token, succeed with valid token (annotations route removed 2026-08-24 — JSON/fetch-only, no live form target, see decisions.md) | — | 4 tests | — | — | — | 🟢 |
 | AC3 | Products confirm + features rejected without token, succeed with valid token | — | 4 tests | — | — | — | 🟢 |
 | AC4 | Legacy login shell form rejected without token, succeeds with valid token once embedded | — | 3 tests | — | — | — | 🟢 |
 | AC5 | Full round-trip (render → extract real token → submit → validate) for every route in AC1–AC4 | — | (covered by the "succeeds with valid token" test in each AC above — no separate test file) | — | — | — | 🟢 |
@@ -39,7 +39,7 @@ None.
 | AC | Data needed | Source | Sensitive fields | Notes |
 |----|-------------|--------|-------------------|-------|
 | AC1 | A real authenticated session (seeded via this repo's established `seedTestSession`/`seed-multi-user-roles` test endpoints) with an active journey to exercise `gate-confirm`/`reference`/`reference-modal/skip`/`stories` | Synthetic | None | `journey.js`'s own existing test fixtures for journey creation are reused as setup, not duplicated |
-| AC2 | Same authenticated-session pattern; `annotations` additionally needs a real artefact file path fixture (mirrors existing `check-wuce8-annotation.js` fixture conventions) | Synthetic | None | |
+| AC2 | Same authenticated-session pattern | Synthetic | None | |
 | AC3 | Authenticated session with an existing product | Synthetic | None | |
 | AC4 | An UNauthenticated request to an unmatched route (to reach the fallback shell) | Synthetic | None | |
 
@@ -76,19 +76,14 @@ For **each** of `POST /journey/wizard`, `POST /api/journey`, `POST /api/journey/
 
 12 tests total (6 routes × 2 tests).
 
-### `tests/check-rcfc-s1-annotations-skills-csrf.js` — AC2 (3 routes + 1 prerequisite fix)
+### `tests/check-rcfc-s1-skills-sessions-csrf.js` — AC2 (2 routes)
 
-- **annotations-form-parsing-fix-verified**
-  - **Verifies:** the AC2 prerequisite fix (form-urlencoded body parsing added to `annotation.js`'s `_readBody`)
-  - **Precondition:** A real authenticated session, no CSRF concerns yet (this test predates/is independent of the CSRF wiring — proves the underlying parsing bug is fixed).
-  - **Action:** POST to `/api/artefacts/:slug/:file/annotations` with a `Content-Type: application/x-www-form-urlencoded` body (matching a genuine browser `<form>` submission), with a valid CSRF token already supplied.
-  - **Expected result:** The request is parsed correctly and reaches the annotation-creation logic (does not 400 "Invalid request body" the way the pre-story code does for this content type).
-  - **Edge case:** Yes — this is the regression guard for the specific pre-existing bug this story's investigation found; must be written to fail against the pre-fix code (400) and pass once fixed.
-- **annotations-rejected-without-csrf** / **annotations-full-round-trip** — same shape as the AC1 pattern above, verifies AC2 + AC5 for this route.
-- **skill-session-form-rejected-without-csrf** / **skill-session-form-full-round-trip** — same shape, for `POST /api/skills/:name/sessions` (form path specifically — the JSON path is explicitly out of scope, confirmed unaffected by a negative check that the JSON path's own existing behaviour is untouched).
+- **skill-session-form-rejected-without-csrf** / **skill-session-form-full-round-trip** — same shape as the AC1 pattern above, for `POST /api/skills/:name/sessions` (form path specifically — the JSON path is explicitly out of scope, confirmed unaffected by a negative check that the JSON path's own existing behaviour is untouched).
 - **skill-commit-form-rejected-without-csrf** / **skill-commit-form-full-round-trip** — same shape, for `POST /api/skills/:name/sessions/:id/commit` (form path specifically).
 
-7 tests total (1 prerequisite-fix test + 3 routes × 2 tests).
+4 tests total (2 routes × 2 tests).
+
+**Note (2026-08-24):** This file was originally named `check-rcfc-s1-annotations-skills-csrf.js` and additionally planned to cover `POST /api/artefacts/:slug/:file/annotations` (3 tests: a prerequisite form-parsing-fix regression guard plus reject/round-trip). The annotations route was removed after pre-implementation-plan investigation found it is a JSON/fetch-only API route with no live server-rendered `<form>` target — see `decisions.md`'s 2026-08-24 SCOPE reversal entry — and the file renamed to reflect its actual (narrower) scope.
 
 ### `tests/check-rcfc-s1-products-csrf.js` — AC3 (2 routes)
 
@@ -142,7 +137,7 @@ No Performance/Accessibility NFR tests — same rationale as `sec-perf-s3` (toke
 - `POST /webhook/stripe` and any `NODE_ENV==='test'`-gated endpoint — correctly excluded per `sec-perf-s3`'s own reasoning.
 - The JSON/fetch-only path for `POST /api/skills/:name/sessions` and `POST /api/skills/:name/sessions/:id/commit` — already protected by `SameSite=Strict`, per the story's own established scope boundary. Each relevant test above includes a negative check confirming the JSON path's behaviour is untouched by this story's changes.
 - A double-submit-header convention for JSON/fetch-only endpoints — separate, larger decision, not raised again here.
-- Any broader refactor of `annotation.js`'s body-reading logic beyond the minimal form-urlencoded support needed for AC2.
+- `POST /api/artefacts/:slug/:file/annotations` — removed 2026-08-24, JSON/fetch-only route with no live server-rendered `<form>` target (see `decisions.md`).
 
 ---
 

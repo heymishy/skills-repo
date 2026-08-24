@@ -39,6 +39,7 @@
 
 const { test, expect } = require('@playwright/test');
 const { testEndpointBypassHeaders, hasStubSecret, RATE_LIMIT_BYPASS_HEADER, STUB_SECRET } = require('./fixtures/staging-auth');
+const { getCsrfToken } = require('./fixtures/csrf');
 
 function uniqueEmail() {
   return 'e2e-test-fjcv-s1-' + Date.now() + '-' + Math.floor(Math.random() * 1e6) + '@example.test';
@@ -99,8 +100,12 @@ async function createFirstProduct(request, name) {
   });
   expect(draftRes.status()).toBe(200);
 
+  // rcfc-s1: /products/confirm now requires a valid session-scoped CSRF token,
+  // embedded as a hidden field in the real /products/new form.
+  const csrfToken = await getCsrfToken(request, '/products/new', 'products/new page');
+
   const confirmRes = await request.post('/products/confirm', {
-    form: { name: name, description: 'A product created by the fjcv-s1 E2E spec.' },
+    form: { name: name, description: 'A product created by the fjcv-s1 E2E spec.', _csrf: csrfToken },
     maxRedirects: 0
   });
   expect(confirmRes.status(), 'product confirm should redirect to the product view').toBe(302);
@@ -172,7 +177,14 @@ async function driveIdeateToCompletion(request, ideateSessionId) {
  * @returns {Promise<{journeyId: string, checkpoints: Object<string,string>}>}
  */
 async function driveFullJourneyToDoRComplete(request, featureName, startSkill) {
-  const createRes = await request.post('/api/journey', { form: { featureName: featureName, startSkill: startSkill }, maxRedirects: 0 });
+  // rcfc-s1: /api/journey and /api/journey/:id/gate-confirm now require a
+  // valid session-scoped CSRF token. The token is generated once per session
+  // and cached there (middleware/csrf.js's generateCsrfToken), so the single
+  // token fetched here from the /journey home page is valid for every
+  // gate-confirm call below too -- no need to re-fetch per call site.
+  const csrfToken = await getCsrfToken(request, '/journey', 'journey home page');
+
+  const createRes = await request.post('/api/journey', { form: { featureName: featureName, startSkill: startSkill, _csrf: csrfToken }, maxRedirects: 0 });
   expect(createRes.status(), 'POST /api/journey').toBe(303);
   const initialLocation = createRes.headers()['location'];
 
@@ -191,7 +203,7 @@ async function driveFullJourneyToDoRComplete(request, featureName, startSkill) {
     await driveIdeateToCompletion(request, sessionId);
     checkpoints.ideate = sessionId;
 
-    const gateRes = await request.post(`/api/journey/${journeyId}/gate-confirm`, { maxRedirects: 0 });
+    const gateRes = await request.post(`/api/journey/${journeyId}/gate-confirm`, { form: { _csrf: csrfToken }, maxRedirects: 0 });
     expect(gateRes.status(), 'gate-confirm after ideate').toBe(303);
     const nextLocation = gateRes.headers()['location'];
     skillName = 'discovery';
@@ -209,7 +221,7 @@ async function driveFullJourneyToDoRComplete(request, featureName, startSkill) {
     expect(turnResult.done, `${stage} stage should complete via the mock gateway`).toBe(true);
     checkpoints[stage] = sessionId;
 
-    const gateRes = await request.post(`/api/journey/${journeyId}/gate-confirm`, { maxRedirects: 0 });
+    const gateRes = await request.post(`/api/journey/${journeyId}/gate-confirm`, { form: { _csrf: csrfToken }, maxRedirects: 0 });
     expect(gateRes.status(), `gate-confirm after ${stage}`).toBe(303);
     const nextLocation = gateRes.headers()['location'];
 
@@ -222,7 +234,7 @@ async function driveFullJourneyToDoRComplete(request, featureName, startSkill) {
   expect(definitionTurn.done, 'definition stage should complete via the mock gateway').toBe(true);
   checkpoints.definition = sessionId;
 
-  const afterDefinitionGate = await request.post(`/api/journey/${journeyId}/gate-confirm`, { maxRedirects: 0 });
+  const afterDefinitionGate = await request.post(`/api/journey/${journeyId}/gate-confirm`, { form: { _csrf: csrfToken }, maxRedirects: 0 });
   expect(afterDefinitionGate.status()).toBe(303);
   const afterDefinitionLocation = afterDefinitionGate.headers()['location'];
   expect(afterDefinitionLocation, 'definition gate-confirm should auto-skip straight into a review session').toMatch(/^\/skills\/review\/sessions\/[0-9a-f-]+\/chat$/);
@@ -242,13 +254,13 @@ async function driveFullJourneyToDoRComplete(request, featureName, startSkill) {
     }
 
     expect(turnResult.done, `${stage} stage should complete via the mock gateway`).toBe(true);
-    const gateRes = await request.post(`/api/journey/${journeyId}/gate-confirm`, { maxRedirects: 0 });
+    const gateRes = await request.post(`/api/journey/${journeyId}/gate-confirm`, { form: { _csrf: csrfToken }, maxRedirects: 0 });
     expect(gateRes.status(), `gate-confirm after ${stage}`).toBe(303);
     perStoryLocation = gateRes.headers()['location'];
     perStorySessionId = sessionIdFromChatPath(perStoryLocation);
   }
 
-  const finalGateConfirmRes = await request.post(`/api/journey/${journeyId}/gate-confirm`, { maxRedirects: 0 });
+  const finalGateConfirmRes = await request.post(`/api/journey/${journeyId}/gate-confirm`, { form: { _csrf: csrfToken }, maxRedirects: 0 });
   expect(finalGateConfirmRes.status()).toBe(303);
   expect(finalGateConfirmRes.headers()['location']).toBe('/journey/' + journeyId + '/complete');
 

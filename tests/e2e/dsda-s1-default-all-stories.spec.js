@@ -28,6 +28,9 @@
 
 const { expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
+// rcfc-s1: /api/journey and /api/journey/:id/gate-confirm now require a
+// valid session-scoped CSRF token on raw (non-page-driven) POSTs.
+const { getCsrfToken } = require('./fixtures/csrf');
 
 function sessionIdFromChatPath(pathname) {
   const m = pathname.match(/\/skills\/[^/]+\/sessions\/([^/]+)\/chat/);
@@ -53,8 +56,11 @@ async function submitTurn(pageRequest, skillName, sessionId) {
  * gate-confirming definition, whose redirect lands on /journey/:id/stories.
  */
 async function driveJourneyToStoriesPage(pageRequest, featureName) {
+  // rcfc-s1: /api/journey now requires a valid session-scoped CSRF token,
+  // embedded as a hidden field in the real /journey home page form.
+  const createCsrfToken = await getCsrfToken(pageRequest, '/journey', 'journey home page');
   const createRes = await pageRequest.post('/api/journey', {
-    form: { featureName: featureName, startSkill: 'discovery' },
+    form: { featureName: featureName, startSkill: 'discovery', _csrf: createCsrfToken },
     maxRedirects: 0
   });
   expect(createRes.status(), 'POST /api/journey').toBe(303);
@@ -73,7 +79,14 @@ async function driveJourneyToStoriesPage(pageRequest, featureName) {
     const turnResult = await submitTurn(pageRequest, skillName, sessionId);
     expect(turnResult.done, `${stage} stage should complete via the mock gateway`).toBe(true);
 
-    const gateRes = await pageRequest.post(`/api/journey/${journeyId}/gate-confirm`, { maxRedirects: 0 });
+    // rcfc-s1: /api/journey/:id/gate-confirm now requires a valid
+    // session-scoped CSRF token, embedded as a hidden field in the real
+    // stage-review page's confirm form.
+    const gateCsrfToken = await getCsrfToken(pageRequest, `/journey/${journeyId}/stage-review`, 'stage-review page');
+    const gateRes = await pageRequest.post(`/api/journey/${journeyId}/gate-confirm`, {
+      form: { _csrf: gateCsrfToken },
+      maxRedirects: 0
+    });
     expect(gateRes.status(), `gate-confirm after ${stage}`).toBe(303);
     const nextLocation = gateRes.headers()['location'];
 
@@ -85,7 +98,14 @@ async function driveJourneyToStoriesPage(pageRequest, featureName) {
   // Complete 'definition' itself (the loop above breaks before submitting it).
   const definitionTurn = await submitTurn(pageRequest, skillName, sessionId);
   expect(definitionTurn.done, 'definition stage should complete via the mock gateway').toBe(true);
-  const afterDefinitionGate = await pageRequest.post(`/api/journey/${journeyId}/gate-confirm`, { maxRedirects: 0 });
+  // rcfc-s1: /api/journey/:id/gate-confirm now requires a valid
+  // session-scoped CSRF token, embedded as a hidden field in the real
+  // stage-review page's confirm form.
+  const afterDefinitionCsrfToken = await getCsrfToken(pageRequest, `/journey/${journeyId}/stage-review`, 'stage-review page');
+  const afterDefinitionGate = await pageRequest.post(`/api/journey/${journeyId}/gate-confirm`, {
+    form: { _csrf: afterDefinitionCsrfToken },
+    maxRedirects: 0
+  });
   expect(afterDefinitionGate.status()).toBe(303);
   expect(afterDefinitionGate.headers()['location']).toBe('/journey/' + journeyId + '/stories');
 

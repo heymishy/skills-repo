@@ -26,12 +26,13 @@ function fakeRes() {
 
 function fakeReq(session, body) {
   // Set req.body directly — _readFormBody short-circuits on req.body !== undefined.
+  // rcfc-s1: handlePostJourney now requires a valid session-scoped CSRF token.
   return {
-    session: session,
+    session: Object.assign({}, session, { csrfToken: 'test-csrf-token' }),
     params:  {},
     query:   {},
     url:     '/journey',
-    body:    body || { featureName: 'test feature' }
+    body:    Object.assign({ featureName: 'test feature' }, body || {}, { _csrf: 'test-csrf-token' })
   };
 }
 

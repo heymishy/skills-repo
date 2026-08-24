@@ -57,10 +57,12 @@ function makeRes() {
 }
 
 function authReq(extra) {
+  // rcfc-s1: handlePostGateConfirm/handlePostStories now require a valid
+  // session-scoped CSRF token.
   return Object.assign({
-    session: { accessToken: 'test-token', userId: 1, login: 'user' },
+    session: { accessToken: 'test-token', userId: 1, login: 'user', csrfToken: 'test-csrf-token' },
     params: {},
-    body: {}
+    body: { _csrf: 'test-csrf-token' }
   }, extra || {});
 }
 
@@ -202,7 +204,7 @@ queue.push(function() {
     assert.strictEqual(resGet._status, 200, 'Expected GET /journey/:id/stories to still return 200');
     assert.ok(resGet._body.includes('Story list for journey'), 'Expected the manual story-list page content');
 
-    var reqPost = authReq({ params: { journeyId: setup.journeyId }, body: { stories: 'dtra-manual.1\ndtra-manual.2' } });
+    var reqPost = authReq({ params: { journeyId: setup.journeyId }, body: { stories: 'dtra-manual.1\ndtra-manual.2', _csrf: 'test-csrf-token' } });
     var resPost = makeRes();
     await setup.journey.handlePostStories(reqPost, resPost);
     assert.strictEqual(resPost._status, 303, 'Expected POST /api/journey/:id/stories to still redirect');

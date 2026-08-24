@@ -98,6 +98,7 @@
 const { test, expect } = require('@playwright/test');
 const { STAGING_BASE_URL, signUpEmail } = require('./fixtures/staging-auth');
 const { topUpTestTenantCredits } = require('./fixtures/admin-credits-topup');
+const { getCsrfTokenOptional } = require('./fixtures/csrf');
 
 test.use({ baseURL: STAGING_BASE_URL });
 
@@ -142,8 +143,18 @@ async function createOwnProductContext(request, label) {
   });
   expect(draftRes.status(), 'products/new should succeed for a freshly authenticated tenant').toBe(200);
 
+  // rcfc-s1: /products/confirm requires a valid session-scoped CSRF token once
+  // this branch is deployed to real wuce-staging (@real-staging runs against
+  // whatever is *currently* deployed there, which lags this branch) —
+  // getCsrfTokenOptional() returns null pre-deploy (form omits _csrf, matching
+  // pre-rcfc-s1 behaviour) and a real token post-deploy.
+  const csrfToken = await getCsrfTokenOptional(request, '/products/new');
+
   const confirmRes = await request.post('/products/confirm', {
-    form: { name: 'B1 Product ' + label, description: 'Product created independently by the b1-formed-idea-outer-loop-story-map E2E spec.' },
+    form: Object.assign(
+      { name: 'B1 Product ' + label, description: 'Product created independently by the b1-formed-idea-outer-loop-story-map E2E spec.' },
+      csrfToken ? { _csrf: csrfToken } : {}
+    ),
     maxRedirects: 0
   });
   expect(confirmRes.status(), 'products/confirm should redirect to the product view').toBe(302);
@@ -186,8 +197,15 @@ function journeyIdFromChatHtml(html) {
  * @param {string} featureName
  */
 async function createFormedIdeaJourney(request, featureName) {
+  // rcfc-s1: see createOwnProductContext()'s comment above — same
+  // pre/post-deploy tolerance needed for @real-staging.
+  const csrfToken = await getCsrfTokenOptional(request, '/journey');
+
   const createRes = await request.post('/api/journey', {
-    form: { featureName: featureName, startSkill: 'discovery' },
+    form: Object.assign(
+      { featureName: featureName, startSkill: 'discovery' },
+      csrfToken ? { _csrf: csrfToken } : {}
+    ),
     maxRedirects: 0
   });
   expect(createRes.status(), 'POST /api/journey').toBe(303);
@@ -276,13 +294,22 @@ async function driveSkillToCompletion(request, skillName, sessionId, answerPool)
  * @param {string} journeyId
  */
 async function gateConfirmAndAdvance(request, journeyId) {
-  const gateRes = await request.post(`/api/journey/${journeyId}/gate-confirm`, { maxRedirects: 0 });
+  // rcfc-s1: see createOwnProductContext()'s comment above — same
+  // pre/post-deploy tolerance needed for @real-staging.
+  const gateCsrfToken = await getCsrfTokenOptional(request, `/journey/${journeyId}/stage-review`);
+  const gateRes = await request.post(`/api/journey/${journeyId}/gate-confirm`, {
+    form: gateCsrfToken ? { _csrf: gateCsrfToken } : {},
+    maxRedirects: 0
+  });
   expect(gateRes.status(), 'gate-confirm').toBe(303);
   let nextLocation = gateRes.headers()['location'];
 
   if (nextLocation && nextLocation.indexOf('/stories') !== -1 && !sessionIdFromChatPath(nextLocation)) {
+    // rcfc-s1: see createOwnProductContext()'s comment above — same
+    // pre/post-deploy tolerance needed for @real-staging.
+    const storiesCsrfToken = await getCsrfTokenOptional(request, `/journey/${journeyId}/stories`);
     const storiesRes = await request.post(`/api/journey/${journeyId}/stories`, {
-      form: { stories: 'b1-e2e-story.1' },
+      form: Object.assign({ stories: 'b1-e2e-story.1' }, storiesCsrfToken ? { _csrf: storiesCsrfToken } : {}),
       maxRedirects: 0
     });
     expect(storiesRes.status(), 'story list submission').toBe(303);
@@ -410,7 +437,13 @@ test.describe('b1-formed-idea-outer-loop-story-map @real-staging', () => {
     const dorResult = await driveSkillToCompletion(request, advance.skillName, advance.sessionId, FORMED_IDEA_ANSWERS);
     expect(dorResult.result.done, 'definition-of-ready should complete and reach a sign-off state').toBe(true);
 
-    const gateConfirmRes = await request.post(`/api/journey/${journey.journeyId}/gate-confirm`, { maxRedirects: 0 });
+    // rcfc-s1: see createOwnProductContext()'s comment above — same
+    // pre/post-deploy tolerance needed for @real-staging.
+    const finalGateCsrfToken = await getCsrfTokenOptional(request, `/journey/${journey.journeyId}/stage-review`);
+    const gateConfirmRes = await request.post(`/api/journey/${journey.journeyId}/gate-confirm`, {
+      form: finalGateCsrfToken ? { _csrf: finalGateCsrfToken } : {},
+      maxRedirects: 0
+    });
     expect(gateConfirmRes.status()).toBe(303);
     expect(gateConfirmRes.headers()['location']).toBe('/journey/' + journey.journeyId + '/complete');
 

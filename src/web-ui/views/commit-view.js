@@ -5,6 +5,7 @@
 
 const { escHtml } = require('../utils/html-shell');
 const { pill, btn } = require('./components');
+const _csrf = require('../middleware/csrf'); // rcfc-s1 Task 2
 
 /**
  * @param {object} data
@@ -14,6 +15,7 @@ const { pill, btn } = require('./components');
  * @param {string} [data.branchName]
  * @param {string} [data.defaultMessage]
  * @param {Array<string>} [data.reviewers]
+ * @param {string} [data.csrfToken]           rcfc-s1 Task 2: embedded in the commit form
  */
 function renderCommitPreview(data) {
   const reviewers = (data.reviewers || []).map(function(r) {
@@ -53,6 +55,7 @@ function renderCommitPreview(data) {
         '<pre class="sw-commit-pre" role="region" aria-label="Artefact preview">' + escHtml(data.artefactContent || '') + '</pre>',
       '</div>',
       '<form method="POST" action="' + escHtml(data.commitFormAction) + '">',
+        _csrf.csrfField(data.csrfToken),
         '<div class="sw-commit-meta">',
           '<h3>Commit details</h3>',
           '<div class="sw-commit-meta-grid">',
@@ -79,6 +82,7 @@ function renderCommitPreview(data) {
  * @param {string} [data.prUrl]
  * @param {string} [data.nextSkillName]
  * @param {string} [data.nextSkillLabel]
+ * @param {string} [data.csrfToken]        rcfc-s1 Task 2: embedded in the "Next up" new-session form
  */
 function renderCommitResult(data) {
   return [
@@ -111,6 +115,7 @@ function renderCommitResult(data) {
           '<div>',
             '<p><strong>Next up:</strong> ' + escHtml(data.nextSkillLabel || data.nextSkillName) + ' builds directly on this artefact.</p>',
             '<form method="POST" action="/api/skills/' + escHtml(data.nextSkillName) + '/sessions">' +
+              _csrf.csrfField(data.csrfToken) +
               btn('accent', 'Start ' + (data.nextSkillLabel || data.nextSkillName), { type: 'submit' }) +
             '</form>',
           '</div>',

@@ -255,10 +255,11 @@ async function main() {
       journeyRoute.setRegisterHtmlSession(function() {});
       journeyRoute.setLinkSessionToJourney(function() {});
 
+      // rcfc-s1: handlePostJourney now requires a valid session-scoped CSRF token.
       var req = {
-        session: { accessToken: 'tok', login: 'capped-user', tenantId: 'tenant-cap' },
+        session: { accessToken: 'tok', login: 'capped-user', tenantId: 'tenant-cap', csrfToken: 'test-csrf-token' },
         params: {}, query: {}, url: '/journey',
-        body: { featureName: 'New feature' }
+        body: { featureName: 'New feature', _csrf: 'test-csrf-token' }
       };
       var res = makeRes();
       await journeyRoute.handlePostJourney(req, res);
@@ -314,10 +315,11 @@ async function main() {
       journeyRoute.setRegisterHtmlSession(function() {});
       journeyRoute.setLinkSessionToJourney(function() {});
 
+      // rcfc-s1: handlePostJourney now requires a valid session-scoped CSRF token.
       var journeyReq = {
-        session: { accessToken: 'tok', login: 'paid-user', tenantId: 'tenant-it1' },
+        session: { accessToken: 'tok', login: 'paid-user', tenantId: 'tenant-it1', csrfToken: 'test-csrf-token' },
         params: {}, query: {}, url: '/journey',
-        body: { featureName: 'IT1 feature' }
+        body: { featureName: 'IT1 feature', _csrf: 'test-csrf-token' }
       };
       var journeyRes = makeRes();
       await journeyRoute.handlePostJourney(journeyReq, journeyRes);

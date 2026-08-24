@@ -40,6 +40,8 @@ const { test, expect, request: playwrightRequest } = require('@playwright/test')
 // dss-s1: only meaningful against real wuce-staging -- empty {} locally, so
 // this changes nothing about how this spec runs against the local harness.
 const { testEndpointBypassHeaders, namedIdentityStubHeaders } = require('./fixtures/staging-auth');
+// rcfc-s1: /products/confirm now requires a valid session-scoped CSRF token.
+const { getCsrfToken } = require('./fixtures/csrf');
 
 // nis-s1: the shared org that both alice and bob are members of. Renamed
 // with an e2e- prefix (was 'shared-org') -- the staging-safe named-identity
@@ -106,8 +108,12 @@ async function createProduct(ctx, name) {
   });
   expect(draftRes.status()).toBe(200);
 
+  // rcfc-s1: /products/confirm now requires a valid session-scoped CSRF token,
+  // embedded as a hidden field in the real /products/new form.
+  const csrfToken = await getCsrfToken(ctx, '/products/new', 'products/new page');
+
   const confirmRes = await ctx.post('/products/confirm', {
-    form: { name: name, description: 'bri-s3.3 multi-user fixture product.' },
+    form: { name: name, description: 'bri-s3.3 multi-user fixture product.', _csrf: csrfToken },
     maxRedirects: 0
   });
   expect(confirmRes.status()).toBe(302);

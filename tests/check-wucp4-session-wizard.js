@@ -106,15 +106,16 @@ queue.push(function() {
 // T4.3 — "new" selection → no activeFeatureSlug set on session (AC2)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T4.3: "new" selection leaves session.activeFeatureSlug unset (AC2)', function() {
+  return test('T4.3: "new" selection leaves session.activeFeatureSlug unset (AC2)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     assert.strictEqual(typeof routes.handlePostWizardSelection, 'function', 'handlePostWizardSelection must be exported');
     var repoRoot = mkTmp('t4-3');
     writeFile(repoRoot, '.github/pipeline-state.json', JSON.stringify({ features: [] }));
     routes.setRepoRoot(repoRoot);
-    var req = { session: { accessToken: 'tok' }, body: { selection: 'new' } };
+    // rcfc-s1: handlePostWizardSelection now requires a valid session-scoped CSRF token.
+    var req = { session: { accessToken: 'tok', csrfToken: 'test-csrf-token' }, body: { selection: 'new', _csrf: 'test-csrf-token' } };
     var res = mockRes();
-    routes.handlePostWizardSelection(req, res);
+    await routes.handlePostWizardSelection(req, res);
     assert.ok(!req.session.activeFeatureSlug, 'activeFeatureSlug must not be set for "new project" selection; got: ' + req.session.activeFeatureSlug);
   });
 });
@@ -123,14 +124,14 @@ queue.push(function() {
 // T4.4 — "new" selection → stageIndex set to 0 (AC2)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T4.4: "new" selection sets stageIndex to 0 (AC2)', function() {
+  return test('T4.4: "new" selection sets stageIndex to 0 (AC2)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     var repoRoot = mkTmp('t4-4');
     writeFile(repoRoot, '.github/pipeline-state.json', JSON.stringify({ features: [] }));
     routes.setRepoRoot(repoRoot);
-    var req = { session: { accessToken: 'tok' }, body: { selection: 'new' } };
+    var req = { session: { accessToken: 'tok', csrfToken: 'test-csrf-token' }, body: { selection: 'new', _csrf: 'test-csrf-token' } };
     var res = mockRes();
-    routes.handlePostWizardSelection(req, res);
+    await routes.handlePostWizardSelection(req, res);
     assert.strictEqual(req.session.stageIndex, 0, 'stageIndex must be 0 for new project; got: ' + req.session.stageIndex);
   });
 });
@@ -139,14 +140,14 @@ queue.push(function() {
 // T4.5 — "new" selection: no artefact listing for any feature (AC2 + wucp.1)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T4.5: "new" selection: wucp.1 context load does not scope to any feature (AC2)', function() {
+  return test('T4.5: "new" selection: wucp.1 context load does not scope to any feature (AC2)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     var repoRoot = mkTmp('t4-5');
     writeFile(repoRoot, '.github/pipeline-state.json', JSON.stringify({ features: [{ slug: 'some-feat', stage: 'definition' }] }));
     routes.setRepoRoot(repoRoot);
-    var req = { session: { accessToken: 'tok' }, body: { selection: 'new' } };
+    var req = { session: { accessToken: 'tok', csrfToken: 'test-csrf-token' }, body: { selection: 'new', _csrf: 'test-csrf-token' } };
     var res = mockRes();
-    routes.handlePostWizardSelection(req, res);
+    await routes.handlePostWizardSelection(req, res);
     // After "new" selection, session must not have an activeFeatureSlug
     assert.ok(!req.session.activeFeatureSlug, 'activeFeatureSlug must be absent after new project selection');
   });
@@ -273,15 +274,15 @@ queue.push(function() {
 // T4.12 — Feature selected: session.activeFeatureSlug set to selected slug (AC4)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T4.12: Feature selection sets session.activeFeatureSlug to selected slug (AC4)', function() {
+  return test('T4.12: Feature selection sets session.activeFeatureSlug to selected slug (AC4)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     var repoRoot = mkTmp('t4-12');
     var state = { features: [{ slug: 'feat-t412', stage: 'review', name: 'Feature T412' }] };
     writeFile(repoRoot, '.github/pipeline-state.json', JSON.stringify(state));
     routes.setRepoRoot(repoRoot);
-    var req = { session: { accessToken: 'tok' }, body: { featureSlug: 'feat-t412' } };
+    var req = { session: { accessToken: 'tok', csrfToken: 'test-csrf-token' }, body: { featureSlug: 'feat-t412', _csrf: 'test-csrf-token' } };
     var res = mockRes();
-    routes.handlePostWizardSelection(req, res);
+    await routes.handlePostWizardSelection(req, res);
     assert.strictEqual(req.session.activeFeatureSlug, 'feat-t412', 'session.activeFeatureSlug must be "feat-t412"; got: ' + req.session.activeFeatureSlug);
   });
 });
@@ -290,15 +291,15 @@ queue.push(function() {
 // T4.13 — Feature at "review" stage → stageIndex set to 3 (AC4)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T4.13: Feature at review stage → session.stageIndex set to 3 (AC4)', function() {
+  return test('T4.13: Feature at review stage → session.stageIndex set to 3 (AC4)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     var repoRoot = mkTmp('t4-13');
     var state = { features: [{ slug: 'feat-t413', stage: 'review' }] };
     writeFile(repoRoot, '.github/pipeline-state.json', JSON.stringify(state));
     routes.setRepoRoot(repoRoot);
-    var req = { session: { accessToken: 'tok' }, body: { featureSlug: 'feat-t413' } };
+    var req = { session: { accessToken: 'tok', csrfToken: 'test-csrf-token' }, body: { featureSlug: 'feat-t413', _csrf: 'test-csrf-token' } };
     var res = mockRes();
-    routes.handlePostWizardSelection(req, res);
+    await routes.handlePostWizardSelection(req, res);
     assert.strictEqual(req.session.stageIndex, 3, 'stageIndex must be 3 for review stage; got: ' + req.session.stageIndex);
   });
 });
@@ -307,15 +308,15 @@ queue.push(function() {
 // T4.14 — Feature at unknown stage → stageIndex falls back to 0 (AC4)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T4.14: Feature at unknown stage falls back to stageIndex 0 (AC4)', function() {
+  return test('T4.14: Feature at unknown stage falls back to stageIndex 0 (AC4)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     var repoRoot = mkTmp('t4-14');
     var state = { features: [{ slug: 'feat-t414', stage: 'nonexistent-stage-unique' }] };
     writeFile(repoRoot, '.github/pipeline-state.json', JSON.stringify(state));
     routes.setRepoRoot(repoRoot);
-    var req = { session: { accessToken: 'tok' }, body: { featureSlug: 'feat-t414' } };
+    var req = { session: { accessToken: 'tok', csrfToken: 'test-csrf-token' }, body: { featureSlug: 'feat-t414', _csrf: 'test-csrf-token' } };
     var res = mockRes();
-    routes.handlePostWizardSelection(req, res);
+    await routes.handlePostWizardSelection(req, res);
     assert.strictEqual(req.session.stageIndex, 0, 'stageIndex must fall back to 0 for unknown stage; got: ' + req.session.stageIndex);
   });
 });
@@ -351,16 +352,16 @@ queue.push(function() {
 // T4.16 — pipeline-state.json absent → proceeds as new project (AC5 + AC2)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T4.16: pipeline-state.json absent → proceeds as new project (AC5)', function() {
+  return test('T4.16: pipeline-state.json absent → proceeds as new project (AC5)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     var repoRoot = mkTmp('t4-16');
     // NO pipeline-state.json
     routes.setRepoRoot(repoRoot);
-    var req = { session: { accessToken: 'tok' }, body: { selection: 'new-from-absent-state' } };
+    var req = { session: { accessToken: 'tok', csrfToken: 'test-csrf-token' }, body: { selection: 'new-from-absent-state', _csrf: 'test-csrf-token' } };
     var res = mockRes();
     var threw = false;
     try {
-      routes.handlePostWizardSelection(req, res);
+      await routes.handlePostWizardSelection(req, res);
     } catch (e) {
       threw = true;
     }
@@ -435,15 +436,15 @@ queue.push(function() {
 // T4.20 — NFR security: slug not in allowlist rejected with HTTP 400 (NFR)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T4.20: NFR security — slug not in allowlist rejected with HTTP 400; session not mutated', function() {
+  return test('T4.20: NFR security — slug not in allowlist rejected with HTTP 400; session not mutated', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     var repoRoot = mkTmp('t4-20');
     var state = { features: [{ slug: 'valid-feat-t420', stage: 'definition' }] };
     writeFile(repoRoot, '.github/pipeline-state.json', JSON.stringify(state));
     routes.setRepoRoot(repoRoot);
-    var req = { session: { accessToken: 'tok' }, body: { featureSlug: 'injected-slug-not-in-allowlist' } };
+    var req = { session: { accessToken: 'tok', csrfToken: 'test-csrf-token' }, body: { featureSlug: 'injected-slug-not-in-allowlist', _csrf: 'test-csrf-token' } };
     var res = mockRes();
-    routes.handlePostWizardSelection(req, res);
+    await routes.handlePostWizardSelection(req, res);
     assert.strictEqual(res.statusCode, 400, 'must return 400 for slug not in allowlist; got ' + res.statusCode);
     assert.ok(!req.session.activeFeatureSlug, 'session must NOT be mutated with injected slug; got: ' + req.session.activeFeatureSlug);
   });

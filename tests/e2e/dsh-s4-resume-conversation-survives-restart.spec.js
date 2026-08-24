@@ -66,6 +66,9 @@
 
 const { test, expect } = require('@playwright/test');
 const { STAGING_BASE_URL, signUpEmail, testEndpointBypassHeaders } = require('./fixtures/staging-auth');
+// rcfc-s1: /products/confirm and /api/journey now require a valid
+// session-scoped CSRF token on raw (non-page-driven) POSTs.
+const { getCsrfTokenOptional } = require('./fixtures/csrf');
 
 test.use({ baseURL: STAGING_BASE_URL });
 
@@ -92,8 +95,18 @@ async function createOwnProduct(request, label) {
   });
   expect(draftRes.status(), 'products/new should succeed for a freshly authenticated tenant').toBe(200);
 
+  // rcfc-s1: /products/confirm requires a valid session-scoped CSRF token once
+  // this branch is deployed to real wuce-staging (@real-staging runs against
+  // whatever is *currently* deployed there, which lags this branch) —
+  // getCsrfTokenOptional() returns null pre-deploy (form omits _csrf, matching
+  // pre-rcfc-s1 behaviour) and a real token post-deploy.
+  const csrfToken = await getCsrfTokenOptional(request, '/products/new');
+
   const confirmRes = await request.post('/products/confirm', {
-    form: { name: productName, description: 'Product created by the dsh-s4 resume-conversation E2E spec.' },
+    form: Object.assign(
+      { name: productName, description: 'Product created by the dsh-s4 resume-conversation E2E spec.' },
+      csrfToken ? { _csrf: csrfToken } : {}
+    ),
     maxRedirects: 0
   });
   expect(confirmRes.status(), 'products/confirm should redirect to the product view').toBe(302);
@@ -111,8 +124,14 @@ async function createOwnProduct(request, label) {
  * @returns {Promise<{journeyId: string, sessionId: string, chatPath: string}>}
  */
 async function createFormedIdeaFeature(request, featureName) {
+  // rcfc-s1: see createOwnProduct()'s comment above — same pre/post-deploy
+  // tolerance needed for @real-staging.
+  const csrfToken = await getCsrfTokenOptional(request, '/journey');
   const createRes = await request.post('/api/journey', {
-    form: { featureName: featureName, startSkill: 'discovery' },
+    form: Object.assign(
+      { featureName: featureName, startSkill: 'discovery' },
+      csrfToken ? { _csrf: csrfToken } : {}
+    ),
     maxRedirects: 0
   });
   expect(createRes.status(), 'POST /api/journey (formed idea) should redirect to the new session').toBe(303);

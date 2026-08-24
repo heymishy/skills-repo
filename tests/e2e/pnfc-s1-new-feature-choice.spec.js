@@ -15,6 +15,7 @@
 
 const { test, expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
+const { getCsrfToken } = require('./fixtures/csrf');
 
 /**
  * Create a product via the real /products/new -> /products/confirm API path
@@ -31,8 +32,9 @@ async function createProduct(page, name) {
   });
   expect(draftRes.status(), 'products/new should succeed').toBe(200);
 
+  const csrfToken = await getCsrfToken(page.request, '/products/new', 'product creation page');
   const confirmRes = await page.request.post('/products/confirm', {
-    form: { name: name, description: 'Product created by the pnfc-s1 E2E spec.' },
+    form: { name: name, description: 'Product created by the pnfc-s1 E2E spec.', _csrf: csrfToken },
     maxRedirects: 0
   });
   expect(confirmRes.status(), 'products/confirm should redirect to the product view').toBe(302);

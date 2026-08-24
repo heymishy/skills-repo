@@ -3693,7 +3693,7 @@ async function router(req, res) {
     // Sign-in page (unauthenticated root)
     const { renderLoginPage } = require('./utils/html-shell');
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(renderLoginPage());
+    res.end(renderLoginPage(req)); // rcfc-s1 Task 4: thread req through for CSRF field embedding
   }
 }
 

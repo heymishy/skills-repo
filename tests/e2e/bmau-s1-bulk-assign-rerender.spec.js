@@ -26,6 +26,7 @@
 
 const { expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
+const { getCsrfToken } = require('./fixtures/csrf');
 
 function uniqueName(label) {
   return 'bmau-s1-' + label + '-' + Date.now();
@@ -46,12 +47,15 @@ withAuth('bulk-assigning checked features moves their rows into the target modul
   });
   expect(draftRes.status(), 'product draft creation').toBe(200);
 
-  // Neither /products/new (draft) nor /products/confirm require CSRF --
-  // matching bri-s3.4-cross-tenant-isolation-journey.spec.js's own
-  // createProduct() helper. /products/:id/features also has no CSRF check
-  // (handlePostProductFeature) -- only the module-mutating routes below do.
+  // rcfc-s1: /products/confirm now requires a valid session-scoped CSRF
+  // token, embedded as a hidden field in the real /products/new form. (The
+  // comment previously here, claiming /products/confirm and
+  // /products/:id/features had no CSRF check, predates rcfc-s1 -- both now
+  // require it, matching handlePostProductModule below.)
+  const newPageCsrf = await getCsrfToken(page.request, '/products/new', 'products/new page');
+
   const confirmRes = await page.request.post('/products/confirm', {
-    form: { name: productName, description: 'bmau-s1 E2E fixture product.' },
+    form: { name: productName, description: 'bmau-s1 E2E fixture product.', _csrf: newPageCsrf },
     maxRedirects: 0
   });
   expect(confirmRes.status(), 'product confirm should redirect to the product view').toBe(302);
@@ -68,14 +72,19 @@ withAuth('bulk-assigning checked features moves their rows into the target modul
   });
   expect(repoSeedRes.status(), 'repo seed fixture').toBe(200);
 
+  // rcfc-s1: /products/:id/features now requires a valid session-scoped CSRF
+  // token, embedded as a hidden field in the real product view page's "New
+  // feature" form.
+  const productViewCsrf = await getCsrfToken(page.request, '/products/' + productId, 'product view page');
+
   // Two features, created unclassified.
   const feature1Res = await page.request.post('/products/' + productId + '/features', {
-    form: { displayName: uniqueName('feature-a'), startSkill: 'discovery' },
+    form: { displayName: uniqueName('feature-a'), startSkill: 'discovery', _csrf: productViewCsrf },
     maxRedirects: 0
   });
   expect(feature1Res.status(), 'handlePostProductFeature redirects with 303 (See Other), not 302').toBe(303);
   const feature2Res = await page.request.post('/products/' + productId + '/features', {
-    form: { displayName: uniqueName('feature-b'), startSkill: 'discovery' },
+    form: { displayName: uniqueName('feature-b'), startSkill: 'discovery', _csrf: productViewCsrf },
     maxRedirects: 0
   });
   expect(feature2Res.status(), 'handlePostProductFeature redirects with 303 (See Other), not 302').toBe(303);

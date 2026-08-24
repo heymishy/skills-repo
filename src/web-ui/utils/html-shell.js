@@ -1,6 +1,7 @@
 'use strict';
 
 const { getVersionInfo } = require('./version-info');
+const { generateCsrfToken, csrfField } = require('../middleware/csrf'); // rcfc-s1 Task 4
 
 // html-shell.js — shared HTML shell renderer and canonical XSS-escaping utility.
 // Notion-calm design system inlined; consumed by every server-rendered route.
@@ -777,9 +778,12 @@ a { color: inherit; }
 /**
  * Render a standalone login page using the design system tokens but without the
  * sidebar nav (unauthenticated state has no user context).
+ * @param {object} req - must have req.session (rcfc-s1 Task 4: embeds a CSRF field
+ *   into the email sign-in/sign-up forms; see generateCsrfToken's own contract)
  * @returns {string} full HTML page
  */
-function renderLoginPage() {
+function renderLoginPage(req) {
+  const _csrfFieldHtml = csrfField(generateCsrfToken(req));
   const loginCss = `
 .sw-login-wrap {
   min-height: 100vh; display: flex; align-items: center; justify-content: center;
@@ -891,11 +895,13 @@ function renderLoginPage() {
           '</button>' +
         '</div>\n' +
         '<form id="email-signin-form" method="POST" action="/auth/email/login">' +
+          _csrfFieldHtml +
           '<input class="sw-login-input" type="email" name="email" placeholder="Email address" autocomplete="email" required aria-label="Email address">' +
           '<input class="sw-login-input" type="password" name="password" placeholder="Password" autocomplete="current-password" required aria-label="Password">' +
           '<button type="submit" class="sw-login-btn sw-login-btn--secondary">Sign in with email / password</button>' +
         '</form>\n' +
         '<form id="email-signup-form" method="POST" action="/auth/email/signup" style="display:none">' +
+          _csrfFieldHtml +
           '<input class="sw-login-input" type="email" name="email" placeholder="Email address" autocomplete="email" required aria-label="Email address">' +
           '<input class="sw-login-input" type="password" name="password" placeholder="Password (min 8 characters)" autocomplete="new-password" required aria-label="Password" minlength="8">' +
           '<button type="submit" class="sw-login-btn sw-login-btn--secondary">Create account</button>' +

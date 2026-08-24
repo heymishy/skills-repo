@@ -113,7 +113,7 @@ function fail(name, err) { console.error(`  [FAIL] ${name}: ${err.message || err
     const journeyStore = require('../src/web-ui/modules/journey-store');
     journeyStore._clearForTesting();
 
-    const req = { session: { tenantId: 'tz' }, params: { id: 'prod-xyz' } };
+    const req = { session: { tenantId: 'tz', csrfToken: 'test-csrf-token' }, params: { id: 'prod-xyz' }, body: { _csrf: 'test-csrf-token' } };
     const res = { status: function(c) { this._s=c; return this; }, json: function(b) { this._b=b; }, redirect: function(u) { this._redirect=u; }, _s:200, _b:null };
     await handlePostProductFeature(req, res, null, pool, ph);
 

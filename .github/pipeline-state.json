@@ -25307,22 +25307,55 @@
           "id": "rcfc-s1",
           "slug": "rcfc-s1",
           "name": "Extend CSRF token protection to the remaining server-rendered POST forms",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "none",
+          "prStatus": "draft",
           "testPlan": {
             "status": "written",
-            "totalTests": 26,
-            "passing": 0,
+            "totalTests": 23,
+            "passing": 23,
             "artefact": "artefacts/2026-08-17-remaining-csrf-form-coverage/test-plans/rcfc-s1-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-23T17:56:13.800Z"
+          "updatedAt": "2026-08-23T21:13:39.447Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/760",
+          "tasks": [
+            {
+              "id": 1,
+              "name": "Journey-flow forms CSRF wiring (AC1, 6 routes) — journey.js",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-17-remaining-csrf-form-coverage/plans/rcfc-s1-plan.md"
+            },
+            {
+              "id": 2,
+              "name": "Skill-session-form routes CSRF wiring (AC2, 2 routes) — skills.js, commit-view.js",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-17-remaining-csrf-form-coverage/plans/rcfc-s1-plan.md"
+            },
+            {
+              "id": 3,
+              "name": "Products routes CSRF wiring (AC3, 2 routes) — products.js",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-17-remaining-csrf-form-coverage/plans/rcfc-s1-plan.md"
+            },
+            {
+              "id": 4,
+              "name": "Legacy login shell CSRF field embedding (AC4, 1 route, 2 forms) — html-shell.js, server.js",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-17-remaining-csrf-form-coverage/plans/rcfc-s1-plan.md"
+            },
+            {
+              "id": 5,
+              "name": "Full-suite verification and draft PR",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-17-remaining-csrf-form-coverage/plans/rcfc-s1-plan.md"
+            }
+          ]
         }
       ],
       "metrics": [],

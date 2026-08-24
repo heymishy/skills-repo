@@ -69,10 +69,11 @@ function makeRes() {
 }
 
 function authReq(extra) {
+  // rcfc-s1: handlePostGateConfirm now requires a valid session-scoped CSRF token.
   return Object.assign({
-    session: { accessToken: 'test-token', userId: 1, login: 'user' },
+    session: { accessToken: 'test-token', userId: 1, login: 'user', csrfToken: 'test-csrf-token' },
     params: {},
-    body: {}
+    body: { _csrf: 'test-csrf-token' }
   }, extra || {});
 }
 

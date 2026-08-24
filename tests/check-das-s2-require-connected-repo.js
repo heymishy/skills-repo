@@ -112,7 +112,7 @@ function createProductPool(initialRows) {
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
 
     var pool = createProductPool([{ product_id: 'prod-ac1', tenant_id: 'tenant-ac1', repo_owner: null, repo_name: null }]);
-    var req = { params: { id: 'prod-ac1' }, session: { tenantId: 'tenant-ac1', login: 'octocat' } };
+    var req = { params: { id: 'prod-ac1' }, session: { tenantId: 'tenant-ac1', login: 'octocat', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
     var res = makeRes();
     await productsRoute.handlePostProductFeature(req, res, null, pool, { capture: function() {} });
 
@@ -140,7 +140,7 @@ function createProductPool(initialRows) {
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
 
     var pool = createProductPool([{ product_id: 'prod-ac2', tenant_id: 'tenant-ac2', repo_owner: null, repo_name: null }]);
-    var req1 = { params: { id: 'prod-ac2' }, session: { tenantId: 'tenant-ac2', login: 'octocat' } };
+    var req1 = { params: { id: 'prod-ac2' }, session: { tenantId: 'tenant-ac2', login: 'octocat', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
     var res1 = makeRes();
     await productsRoute.handlePostProductFeature(req1, res1, null, pool, { capture: function() {} });
     assert.ok(res1._status >= 400, 'first attempt must be blocked, got ' + res1._status);
@@ -148,7 +148,7 @@ function createProductPool(initialRows) {
     // Simulate a successful picker connection (mtrr-s2's existing write path)
     pool.setRepo('prod-ac2', 'tenant-ac2', 'acme', 'widgets');
 
-    var req2 = { params: { id: 'prod-ac2' }, session: { tenantId: 'tenant-ac2', login: 'octocat' } };
+    var req2 = { params: { id: 'prod-ac2' }, session: { tenantId: 'tenant-ac2', login: 'octocat', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
     var res2 = makeRes();
     await productsRoute.handlePostProductFeature(req2, res2, null, pool, { capture: function() {} });
 
@@ -172,7 +172,7 @@ function createProductPool(initialRows) {
     journeyStore.setJourneyFields(existing.journeyId, { productId: 'prod-ac3', tenantId: 'tenant-ac3' });
 
     var pool = createProductPool([{ product_id: 'prod-ac3', tenant_id: 'tenant-ac3', repo_owner: null, repo_name: null }]);
-    var req = { params: { id: 'prod-ac3' }, session: { tenantId: 'tenant-ac3', login: 'octocat' } };
+    var req = { params: { id: 'prod-ac3' }, session: { tenantId: 'tenant-ac3', login: 'octocat', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
     var res = makeRes();
     await productsRoute.handlePostProductFeature(req, res, null, pool, { capture: function() {} });
 
@@ -192,7 +192,7 @@ function createProductPool(initialRows) {
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
 
     var pool = createProductPool([{ product_id: 'prod-ac4', tenant_id: 'tenant-ac4', repo_owner: 'acme', repo_name: 'widgets' }]);
-    var req = { params: { id: 'prod-ac4' }, session: { tenantId: 'tenant-ac4', login: 'octocat' } };
+    var req = { params: { id: 'prod-ac4' }, session: { tenantId: 'tenant-ac4', login: 'octocat', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
     var res = makeRes();
     await productsRoute.handlePostProductFeature(req, res, null, pool, { capture: function() {} });
 
@@ -216,7 +216,7 @@ function createProductPool(initialRows) {
     // Blocked at the gate first.
     var blockedRes = makeRes();
     await productsRoute.handlePostProductFeature(
-      { params: { id: 'prod-it1' }, session: { tenantId: 'tenant-it1', login: 'octocat' } },
+      { params: { id: 'prod-it1' }, session: { tenantId: 'tenant-it1', login: 'octocat', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } },
       blockedRes, null, pool, { capture: function() {} }
     );
     assert.ok(blockedRes._status >= 400, 'expected initial block');
@@ -246,7 +246,7 @@ function createProductPool(initialRows) {
     // Real journey-start endpoint, retried.
     var successRes = makeRes();
     await productsRoute.handlePostProductFeature(
-      { params: { id: 'prod-it1' }, session: { tenantId: 'tenant-it1', login: 'octocat' } },
+      { params: { id: 'prod-it1' }, session: { tenantId: 'tenant-it1', login: 'octocat', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } },
       successRes, null, pool, { capture: function() {} }
     );
     assert.notStrictEqual(successRes._status, 409, 'expected the journey to create successfully end-to-end, got ' + successRes._status);
@@ -263,7 +263,7 @@ function createProductPool(initialRows) {
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
 
     var pool = createProductPool([{ product_id: 'prod-nfr1', tenant_id: 'tenant-nfr1', repo_owner: 'acme', repo_name: 'widgets' }]);
-    var req = { params: { id: 'prod-nfr1' }, session: { tenantId: 'tenant-nfr1', login: 'octocat' } };
+    var req = { params: { id: 'prod-nfr1' }, session: { tenantId: 'tenant-nfr1', login: 'octocat', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
     var res = makeRes();
     var start = Date.now();
     await productsRoute.handlePostProductFeature(req, res, null, pool, { capture: function() {} });
@@ -285,7 +285,7 @@ function createProductPool(initialRows) {
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
 
     var pool = createProductPool([{ product_id: 'prod-nfr2', tenant_id: 'tenant-nfr2', repo_owner: null, repo_name: null }]);
-    var req = { params: { id: 'prod-nfr2' }, session: { tenantId: 'tenant-nfr2', login: 'octocat' } };
+    var req = { params: { id: 'prod-nfr2' }, session: { tenantId: 'tenant-nfr2', login: 'octocat', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
     var res = makeRes();
     await productsRoute.handlePostProductFeature(req, res, null, pool, { capture: function() {} });
 

@@ -50,10 +50,12 @@ function makeRes() {
 }
 
 function authReq(extra) {
+  // rcfc-s1: handlePostStories/handlePostGateConfirm now require a valid
+  // session-scoped CSRF token.
   return Object.assign({
-    session: { accessToken: 'test-token', userId: 1, login: 'user' },
+    session: { accessToken: 'test-token', userId: 1, login: 'user', csrfToken: 'test-csrf-token' },
     params: {},
-    body: {}
+    body: { _csrf: 'test-csrf-token' }
   }, extra || {});
 }
 
@@ -128,7 +130,7 @@ queue.push(function() {
 
     var req = authReq({
       params: { journeyId: journeyId },
-      body: { stories: 'wgol.1\nwgol.2\nwgol.3' }
+      body: { stories: 'wgol.1\nwgol.2\nwgol.3', _csrf: 'test-csrf-token' }
     });
     var res = makeRes();
     await journey.handlePostStories(req, res);
@@ -157,7 +159,7 @@ queue.push(function() {
 
     var req = authReq({
       params: { journeyId: journeyId },
-      body: { stories: 'wgol.1\nwgol.2' }
+      body: { stories: 'wgol.1\nwgol.2', _csrf: 'test-csrf-token' }
     });
     var res = makeRes();
     await journey.handlePostStories(req, res);
@@ -208,7 +210,7 @@ queue.push(function() {
 
     var req = authReq({
       params: { journeyId: journeyId },
-      body: { stories: 'wgol.1\nwgol.2' }
+      body: { stories: 'wgol.1\nwgol.2', _csrf: 'test-csrf-token' }
     });
     var res = makeRes();
     await journey.handlePostStories(req, res);
@@ -239,7 +241,7 @@ queue.push(function() {
 
     var req = authReq({
       params: { journeyId: journeyId },
-      body: { stories: '../etc\n../../passwd\nvalid.1' }
+      body: { stories: '../etc\n../../passwd\nvalid.1', _csrf: 'test-csrf-token' }
     });
     var res = makeRes();
     await journey.handlePostStories(req, res);
@@ -265,7 +267,7 @@ queue.push(function() {
 
     var req = authReq({
       params: { journeyId: journeyId },
-      body: { stories: '   \n  \n' }
+      body: { stories: '   \n  \n', _csrf: 'test-csrf-token' }
     });
     var res = makeRes();
     await journey.handlePostStories(req, res);
@@ -288,7 +290,7 @@ queue.push(function() {
 
     var req = authReq({
       params: { journeyId: 'nonexistent-journey-6-8' },
-      body: { stories: 'valid.1\nvalid.2' }
+      body: { stories: 'valid.1\nvalid.2', _csrf: 'test-csrf-token' }
     });
     var res = makeRes();
     await journey.handlePostStories(req, res);

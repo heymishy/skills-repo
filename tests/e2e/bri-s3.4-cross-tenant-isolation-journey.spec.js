@@ -48,6 +48,22 @@ function uniqueEmail(label) {
 }
 
 /**
+ * rcfc-s1: GET `path` and extract the session's real _csrf token from the
+ * rendered HTML's hidden field, matching the convention already established
+ * by sec-perf-s3 (see the signup flow below). Shared here since this file
+ * now needs the same extraction at 3 call sites (signup, product confirm,
+ * journey creation).
+ */
+async function getCsrfToken(ctx, path, label) {
+  const res = await ctx.get(path);
+  const html = await res.text();
+  const csrfMatch = html.match(/name="_csrf" value="([^"]*)"/);
+  const csrfToken = csrfMatch ? csrfMatch[1] : null;
+  expect(csrfToken, label + ' must embed a _csrf token').toBeTruthy();
+  return csrfToken;
+}
+
+/**
  * Create a brand-new, independent Playwright APIRequestContext (its own
  * cookie jar) and sign up + complete onboarding as a fresh user within it.
  * Returns { ctx, email } — `ctx` carries the authenticated session cookie for
@@ -62,11 +78,7 @@ async function newTenantSession(label) {
   // sec-perf-s3: /auth/email/signup now requires a valid session-scoped CSRF token,
   // embedded as a hidden field in the real landing-page form. Load the landing page
   // first (establishes this context's own session + token) before posting signup.
-  const landingRes = await ctx.get('/');
-  const landingHtml = await landingRes.text();
-  const csrfMatch = landingHtml.match(/name="_csrf" value="([^"]*)"/);
-  const csrfToken = csrfMatch ? csrfMatch[1] : null;
-  expect(csrfToken, label + ' landing page must embed a _csrf token in the signup form').toBeTruthy();
+  const csrfToken = await getCsrfToken(ctx, '/', label + ' landing page');
 
   const signupHeaders = {};
   if (hasStubSecret()) signupHeaders[RATE_LIMIT_BYPASS_HEADER] = STUB_SECRET;
@@ -92,8 +104,12 @@ async function createProduct(ctx, name) {
   });
   expect(draftRes.status()).toBe(200);
 
+  // rcfc-s1: /products/confirm now requires a valid session-scoped CSRF token,
+  // embedded as a hidden field in the real /products/new form.
+  const csrfToken = await getCsrfToken(ctx, '/products/new', 'products/new page');
+
   const confirmRes = await ctx.post('/products/confirm', {
-    form: { name: name, description: 'bri-s3.4 cross-tenant isolation fixture product.' },
+    form: { name: name, description: 'bri-s3.4 cross-tenant isolation fixture product.', _csrf: csrfToken },
     maxRedirects: 0
   });
   expect(confirmRes.status(), 'product confirm should redirect to the product view').toBe(302);
@@ -104,8 +120,12 @@ async function createProduct(ctx, name) {
 
 /** Create a journey via the real (disk-store-backed) journey creation flow. Returns the journeyId. */
 async function createJourney(ctx, featureName) {
+  // rcfc-s1: /api/journey now requires a valid session-scoped CSRF token,
+  // embedded as a hidden field in the real /journey home page form.
+  const csrfToken = await getCsrfToken(ctx, '/journey', 'journey home page');
+
   const createRes = await ctx.post('/api/journey', {
-    form: { featureName: featureName, startSkill: 'discovery' },
+    form: { featureName: featureName, startSkill: 'discovery', _csrf: csrfToken },
     maxRedirects: 0
   });
   expect(createRes.status(), 'POST /api/journey').toBe(303);

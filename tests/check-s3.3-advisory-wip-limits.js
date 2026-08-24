@@ -194,7 +194,8 @@ queue.push(function() {
       return [];
     });
 
-    const req = { session: { tenantId: 'tenant-wip', accessToken: 'tok', login: 'user' }, params: { journeyId: journeyId } };
+    // rcfc-s1: handlePostBoardAdvance delegates to the now-CSRF-guarded handlePostGateConfirm
+    const req = { session: { tenantId: 'tenant-wip', accessToken: 'tok', login: 'user', csrfToken: 'test-csrf-token' }, params: { journeyId: journeyId }, body: { _csrf: 'test-csrf-token' } };
     const res = makeMockRes();
     await products.handlePostBoardAdvance(req, res, null, pool, null);
 
@@ -250,7 +251,8 @@ queue.push(function() {
     // Drag-drop (S3.1) is client-side HTML5 drag-and-drop that, on a valid
     // drop, calls this exact same POST /api/board/journey/:journeyId/advance
     // endpoint -- there is no separate backend mechanism to exercise.
-    const req = { session: { tenantId: 'tenant-wip-drag', accessToken: 'tok', login: 'user' }, params: { journeyId: journeyId } };
+    // rcfc-s1: handlePostBoardAdvance delegates to the now-CSRF-guarded handlePostGateConfirm
+    const req = { session: { tenantId: 'tenant-wip-drag', accessToken: 'tok', login: 'user', csrfToken: 'test-csrf-token' }, params: { journeyId: journeyId }, body: { _csrf: 'test-csrf-token' } };
     const res = makeMockRes();
     await products.handlePostBoardAdvance(req, res, null, pool, null);
 

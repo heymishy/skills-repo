@@ -62,8 +62,8 @@ function extractSidFromRedirect(res, skillName) {
 
     var req = {
       params: { id: 'prod-ideate-1' },
-      session: { tenantId: 'tenant-1', login: 'octocat' },
-      body: { startSkill: 'ideate' }
+      session: { tenantId: 'tenant-1', login: 'octocat', csrfToken: 'test-csrf-token' },
+      body: { startSkill: 'ideate', _csrf: 'test-csrf-token' }
     };
     var res = makeRes();
     var fakePool = { query: async function(sql) { if (String(sql).toUpperCase().indexOf("SELECT REPO_OWNER, REPO_NAME") !== -1) { return { rows: [{ repo_owner: "acme", repo_name: "widgets" }] }; } return { rows: [] }; } };
@@ -97,8 +97,8 @@ function extractSidFromRedirect(res, skillName) {
 
     var req = {
       params: { id: 'prod-discovery-1' },
-      session: { tenantId: 'tenant-1', login: 'octocat' },
-      body: { startSkill: 'discovery' }
+      session: { tenantId: 'tenant-1', login: 'octocat', csrfToken: 'test-csrf-token' },
+      body: { startSkill: 'discovery', _csrf: 'test-csrf-token' }
     };
     var res = makeRes();
     var fakePool = { query: async function(sql) { if (String(sql).toUpperCase().indexOf("SELECT REPO_OWNER, REPO_NAME") !== -1) { return { rows: [{ repo_owner: "acme", repo_name: "widgets" }] }; } return { rows: [] }; } };
@@ -127,10 +127,13 @@ function extractSidFromRedirect(res, skillName) {
 
     var req = {
       params: { id: 'prod-default-1' },
-      session: { tenantId: 'tenant-1', login: 'octocat' }
-      // no body at all -- exercises the pre-existing test-req shape used by
-      // check-jrf-s2-register-product-feature-journeys.js and
-      // check-psh-s4-navigation.js
+      session: { tenantId: 'tenant-1', login: 'octocat', csrfToken: 'test-csrf-token' },
+      // rcfc-s1: still no startSkill field (exercises the pre-existing
+      // test-req shape used by check-jrf-s2-register-product-feature-journeys.js
+      // and check-psh-s4-navigation.js) but now needs a body object carrying
+      // a valid _csrf token, since csrfGuard requires req.body to already be
+      // an object (not undefined) or it will try to read a real stream.
+      body: { _csrf: 'test-csrf-token' }
     };
     var res = makeRes();
     var fakePool = { query: async function(sql) { if (String(sql).toUpperCase().indexOf("SELECT REPO_OWNER, REPO_NAME") !== -1) { return { rows: [{ repo_owner: "acme", repo_name: "widgets" }] }; } return { rows: [] }; } };
@@ -157,8 +160,8 @@ function extractSidFromRedirect(res, skillName) {
 
     var req = {
       params: { id: 'prod-listing-1' },
-      session: { tenantId: 'tenant-1', login: 'octocat' },
-      body: { startSkill: 'ideate' }
+      session: { tenantId: 'tenant-1', login: 'octocat', csrfToken: 'test-csrf-token' },
+      body: { startSkill: 'ideate', _csrf: 'test-csrf-token' }
     };
     var res = makeRes();
     var fakePool = { query: async function(sql) { if (String(sql).toUpperCase().indexOf("SELECT REPO_OWNER, REPO_NAME") !== -1) { return { rows: [{ repo_owner: "acme", repo_name: "widgets" }] }; } return { rows: [] }; } };
@@ -198,10 +201,11 @@ function extractSidFromRedirect(res, skillName) {
     var journeyRoute = freshRequire(JOURNEY_ROUTE_PATH);
     journeyRoute.setRepoRoot(require('os').tmpdir());
 
+    // rcfc-s1: handlePostJourney now requires a valid session-scoped CSRF token.
     var req = {
-      session: { accessToken: 'test-token', tenantId: 'tenant-1', login: 'octocat' },
+      session: { accessToken: 'test-token', tenantId: 'tenant-1', login: 'octocat', csrfToken: 'test-csrf-token' },
       method: 'POST',
-      body: { featureName: 'AC5 regression check', startSkill: 'ideate', profileName: 'default' }
+      body: { featureName: 'AC5 regression check', startSkill: 'ideate', profileName: 'default', _csrf: 'test-csrf-token' }
     };
     var res = makeRes();
     await journeyRoute.handlePostJourney(req, res);

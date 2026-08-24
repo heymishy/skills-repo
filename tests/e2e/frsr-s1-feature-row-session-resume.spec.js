@@ -14,6 +14,7 @@
 
 const { test, expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
+const { getCsrfToken } = require('./fixtures/csrf');
 
 function uniqueLabel(tag) {
   return tag + '-' + Date.now() + '-' + Math.floor(Math.random() * 1e6);
@@ -26,8 +27,12 @@ async function createProduct(page, name) {
   });
   expect(draftRes.status(), 'products/new should succeed').toBe(200);
 
+  // rcfc-s1: /products/confirm now requires a valid session-scoped CSRF token,
+  // embedded as a hidden field in the real /products/new form.
+  const csrfToken = await getCsrfToken(page.request, '/products/new', 'products/new page');
+
   const confirmRes = await page.request.post('/products/confirm', {
-    form: { name: name, description: 'Product created by the frsr-s1 E2E spec.' },
+    form: { name: name, description: 'Product created by the frsr-s1 E2E spec.', _csrf: csrfToken },
     maxRedirects: 0
   });
   expect(confirmRes.status(), 'products/confirm should redirect to the product view').toBe(302);
@@ -39,8 +44,11 @@ async function createProduct(page, name) {
 async function createFeature(page, productId) {
   // handlePostProductFeature auto-generates the featureSlug (new-feature-<id>);
   // it does not read a featureName field.
+  // rcfc-s1: /products/:id/features now requires a valid session-scoped CSRF
+  // token, embedded as a hidden field in the real product-view page's form.
+  const csrfToken = await getCsrfToken(page.request, '/products/' + productId, 'product view page');
   const res = await page.request.post('/products/' + productId + '/features', {
-    form: { startSkill: 'discovery' },
+    form: { startSkill: 'discovery', _csrf: csrfToken },
     maxRedirects: 0
   });
   expect(res.status(), 'feature creation should redirect into a skill session').toBe(303);

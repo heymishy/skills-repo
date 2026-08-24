@@ -63,8 +63,8 @@ function extractSidFromRedirect(res) {
 
     var req = {
       params: { id: 'prod-1' },
-      session: { tenantId: 'tenant-1', login: 'octocat' },
-      body: { startSkill: 'discovery', displayName: 'Checkout redesign' }
+      session: { tenantId: 'tenant-1', login: 'octocat', csrfToken: 'test-csrf-token' },
+      body: { startSkill: 'discovery', displayName: 'Checkout redesign', _csrf: 'test-csrf-token' }
     };
     var res = makeRes();
     await productsRoute.handlePostProductFeature(req, res, null, { query: async function(sql) { if (String(sql).toUpperCase().indexOf("SELECT REPO_OWNER, REPO_NAME") !== -1) { return { rows: [{ repo_owner: "acme", repo_name: "widgets" }] }; } return { rows: [] }; } }, { capture: function() {} });
@@ -84,8 +84,8 @@ function extractSidFromRedirect(res) {
 
     var req = {
       params: { id: 'prod-1' },
-      session: { tenantId: 'tenant-1', login: 'octocat' },
-      body: { startSkill: 'discovery' }
+      session: { tenantId: 'tenant-1', login: 'octocat', csrfToken: 'test-csrf-token' },
+      body: { startSkill: 'discovery', _csrf: 'test-csrf-token' }
     };
     var res = makeRes();
     await productsRoute.handlePostProductFeature(req, res, null, { query: async function(sql) { if (String(sql).toUpperCase().indexOf("SELECT REPO_OWNER, REPO_NAME") !== -1) { return { rows: [{ repo_owner: "acme", repo_name: "widgets" }] }; } return { rows: [] }; } }, { capture: function() {} });
@@ -105,8 +105,8 @@ function extractSidFromRedirect(res) {
 
     var req = {
       params: { id: 'prod-1' },
-      session: { tenantId: 'tenant-1', login: 'octocat' },
-      body: { startSkill: 'discovery', displayName: '   ' }
+      session: { tenantId: 'tenant-1', login: 'octocat', csrfToken: 'test-csrf-token' },
+      body: { startSkill: 'discovery', displayName: '   ', _csrf: 'test-csrf-token' }
     };
     var res = makeRes();
     await productsRoute.handlePostProductFeature(req, res, null, { query: async function(sql) { if (String(sql).toUpperCase().indexOf("SELECT REPO_OWNER, REPO_NAME") !== -1) { return { rows: [{ repo_owner: "acme", repo_name: "widgets" }] }; } return { rows: [] }; } }, { capture: function() {} });
