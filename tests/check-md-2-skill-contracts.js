@@ -50,8 +50,17 @@ process.stdout.write('\n[md-2-skill-contracts] T1: skill-contracts passes after 
     `exit code: ${exitCode}\n${stdout}`
   );
   assert(
-    'T1.2 — output reports 183 contracts',
-    stdout.includes('183 contract'),
+    // s3fw-s1: was a hardcoded exact-count substring match ('N contract'),
+    // which needed updating on every unrelated story that added a
+    // check-skill-contracts.js required-string entry -- 3 times in one
+    // session alone (evcg-s1, psms-s1, and psms-s1's own merge with
+    // evcg-s1). Converted to the same tolerant >= threshold T3.2 below
+    // already uses, for the same reason T3.2 uses it.
+    'T1.2 — output reports at least 184 contracts (37+ skills × avg 4 + new entries, tolerant of unrelated later additions)',
+    (() => {
+      const m = stdout.match(/(\d+)\s+contract/);
+      return m && parseInt(m[1], 10) >= 184;
+    })(),
     stdout.trim().slice(-200)
   );
   assert(
