@@ -26623,7 +26623,7 @@
           "id": "psms-s1",
           "slug": "psms-s1",
           "name": "Close the silent tasks[] data-loss gap in pipeline-state.json checkpoint writes",
-          "stage": "definition-of-ready",
+          "stage": "verify-completion",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
@@ -26635,10 +26635,11 @@
             "artefact": "artefacts/2026-08-24-pipeline-state-merge-safety/test-plans/psms-s1-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "updatedAt": "2026-08-24T02:48:37.470Z"
+          "updatedAt": "2026-08-24T03:02:24.263Z",
+          "verifyStatus": "passed"
         }
       ],
       "metrics": [],
