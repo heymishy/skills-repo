@@ -26859,18 +26859,18 @@
     {
       "slug": "2026-08-25-board-view-nav-dead-end",
       "name": "Fix /dashboard?view=board silently dropping the Products nav section",
-      "stage": "verify-completion",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "id": "bvnd-s1",
           "slug": "bvnd-s1",
           "name": "Fix /dashboard?view=board silently dropping the Products nav section",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "none",
+          "prStatus": "draft",
           "testPlan": {
             "status": "written",
             "totalTests": 15,
@@ -26882,11 +26882,12 @@
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "verifyStatus": "passed",
-          "updatedAt": "2026-08-25T04:54:00.217Z"
+          "updatedAt": "2026-08-25T05:03:44.436Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/768"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-25T04:54:00.217Z",
+      "updatedAt": "2026-08-25T05:03:44.437Z",
       "track": "short",
       "guardrails": []
     }
