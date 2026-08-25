@@ -27009,9 +27009,9 @@
           "id": "pncg-s1",
           "slug": "pncg-s1",
           "name": "Wrap the Products-nav fetch in a shared helper and wire it to every page that is currently missing it",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "dodStatus": "not-started",
           "prStatus": "none",
           "testPlan": {
@@ -27024,13 +27024,22 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-25T19:45:31.776Z"
+          "updatedAt": "2026-08-25T20:12:43.056Z"
         }
       ],
       "metrics": [],
       "updatedAt": "2026-08-25T19:45:31.776Z",
       "track": "short",
-      "guardrails": []
+      "guardrails": [
+        {
+          "id": "web-ui-shared-shell-escaping",
+          "category": "pattern",
+          "label": "Shared shell / renderShell() reuse via new renderShellWithNav wrapper (web-ui-patterns.md)",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-25T20:12:50.751Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
