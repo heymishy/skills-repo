@@ -73,6 +73,27 @@ function makeRes() {
   });
 
   // ===========================================================================
+  // AC2 — Modules card + explanatory line shown at >1 features
+  // ===========================================================================
+
+  await test('modulesCardVisibleWithTwoFeatures (AC2)', function() {
+    var twoFeatures = [{ journey_id: 'j1' }, { journey_id: 'j2' }];
+    var html = productsRoute._renderProductView('Acme', 'p1', twoFeatures, 'x', null, false, null, null, [], TEST_CSRF);
+    assertTrue(html.indexOf('a1-create-form') !== -1, 'expected the create-module form to be present with 2 features');
+    assertTrue(html.indexOf('a1-modules-hint') !== -1, 'expected the explanatory hint element to be present');
+  });
+
+  await test('moduleCrudMarkupUnchangedWhenCardVisible (AC2, AC4 non-regression)', function() {
+    var twoFeatures = [{ journey_id: 'j1' }, { journey_id: 'j2' }];
+    var modules = [{ id: 'mod-1', name: 'Billing' }];
+    var html = productsRoute._renderProductView('Acme', 'p1', twoFeatures, 'x', null, false, null, null, modules, TEST_CSRF);
+    assertTrue(html.indexOf('data-module-id="mod-1"') !== -1, 'expected the existing module\'s rename/delete controls to be present');
+    assertTrue(html.indexOf('class="a1-rename-form"') !== -1, 'expected a rename form');
+    assertTrue(html.indexOf('class="a1-delete-btn"') !== -1, 'expected a delete control');
+    assertTrue(html.indexOf('name="_csrf" value="' + TEST_CSRF + '"') !== -1, 'expected CSRF fields to remain wired to the real token');
+  });
+
+  // ===========================================================================
   // Integration — handleGetProductView reflects the gate end to end
   // ===========================================================================
 
