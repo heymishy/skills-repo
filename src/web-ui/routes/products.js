@@ -929,7 +929,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     coverageHtml +
     acCoverageHtml +
     scaleGaugeHtml +
-    _renderModulesManagement(productId, modules, csrfToken) +
+    (features.length > 1 ? _renderModulesManagement(productId, modules, csrfToken) : '') +
     featuresSectionHtml +
     '<script>' +
     'function pshConfirmDeleteProduct(id){' +
