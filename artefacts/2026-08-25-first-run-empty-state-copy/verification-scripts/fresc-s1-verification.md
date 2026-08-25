@@ -68,7 +68,7 @@
 4. Switch to the board view (the "Board" toggle, or `/dashboard?view=board`) and read its empty-state message too.
 
 **Expected outcome:**
-> Both the list view and the board view show "No products yet", a short explanatory line describing what a product is (something like "A product is a connected GitHub repo — its epics, features, and journeys all live under it here"), and a "Create your first product →" button. The wording should match on both screens.
+> Both the list view and the board view show "No products yet", a short explanatory line describing what a product is ("A product organizes your epics, features, and journeys — you can connect a GitHub repo to it anytime."), and a "Create your first product →" button. The wording should match on both screens.
 
 **Result:** [ ] Pass  [ ] Fail
 **Notes:**
