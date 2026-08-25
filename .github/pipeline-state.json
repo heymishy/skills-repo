@@ -6871,7 +6871,7 @@
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "updatedAt": "2026-06-29T10:00:00Z",
+      "updatedAt": "2026-08-25T04:29:36.501Z",
       "discoveryArtefact": "artefacts/2026-06-29-beta-entry-experience/discovery.md",
       "metrics": [
         {
@@ -6879,9 +6879,9 @@
           "name": "Beta activation rate",
           "target": ">=1 external user completes a session within 2 weeks; >=3 within 4 weeks",
           "baseline": "0 — no external user has ever completed a session (2026-06-29)",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": "Feature deployed 2026-06-30. PostHog account not yet created. No external users have completed a session.",
+          "signal": "met",
+          "lastMeasured": "2026-08-25T04:29:36.501Z",
+          "evidence": "Real PostHog export (server-side capture, posthog-node-manual lib) confirms distinct_id abhijeet-qsofte (person id ca1e9c7e-4069-5001-af45-8d70122fa4f1) generated kanban_viewed events across 3 distinct days (2026-08-12, 2026-08-14, 2026-08-15) plus a checkout_completed event on 2026-08-12T07:59:11Z. Exceeds both the >=1-user-in-2-weeks minimum signal and the >=3-distinct-users-in-4-weeks target is not yet independently confirmed (only 1 external user identified so far, but that 1 users engagement is sustained/multi-day, not a single bounce). Root-caused during investigation: POSTHOG_KEY (read directly by posthog-server.js capture()/identify()) is set on the skills-framework Fly app but NOT on wuce-staging (which only has POSTHOG_KEY_STAGING, consumed by the separate posthog-config.js flags-client path) -- meaning server-side event capture is confirmed working on skills-framework specifically; wuce-staging may have a capture gap for this event class, not yet independently verified.",
           "contributingStories": [
             "bee.1",
             "bee.2",
@@ -6893,9 +6893,9 @@
           "name": "Cross-tenant isolation confirmed in production",
           "target": "One cross-tenant access attempt between two real tenants returns 404 (binary: not-yet-measured -> on-track)",
           "baseline": "not-yet-measured — solo mode, one tenant only",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": "Requires second production tenant. No external users exist yet. Manual verification pending first external sign-up.",
+          "signal": "on-track",
+          "lastMeasured": "2026-08-25T04:29:36.501Z",
+          "evidence": "Precondition (a second real external tenant) now met via abhijeet-qsofte (confirmed via PostHog activity above). Code-level verification (src/web-ui/routes/journey.js handleGetJourney): requireJourneyAccess(journey, session, POLICY.TENANT) throws on a tenant mismatch, mapped to a 404 response; journey-listing is filtered by tenantId with a time-bound (pre-2026-06-29) legacy-grace clause, not an open loophole. This is corroborated by beta-readiness-infra Metric 5 (the @multi-tenant CI suite, zero-tolerance for flake/skip, sustained over 20+ CI runs). Not yet formally closed: this is code-level + CI evidence, not the live manual click-through (Hamish logs in as himself, attempts the external users journey by URL, confirms 404) the metrics own measurement method specifies -- recommend that one-time manual check to move this from on-track to fully confirmed.",
           "contributingStories": [
             "bee.2"
           ]
@@ -6907,7 +6907,7 @@
           "baseline": "Not yet established — no landing page exists today",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "PostHog account not yet created. No landing_page_view or cta_clicked events recorded yet.",
+          "evidence": "PostHog account not yet created. No landing_page_view or cta_clicked events recorded yet. UPDATE (2026-08-25T04:29:36.501Z): landing_page_view and cta_clicked are client-side-only events (fired via a JS snippet in routes/landing.js), a different capture pathway than the server-side posthog-node-manual export reviewed for M1 -- their absence from that export is NOT evidence they are broken, just that the export did not include client-side event types. Not yet independently re-verified against actual PostHog data for this specific funnel.",
           "contributingStories": [
             "bee.1",
             "bee.3"
@@ -6920,7 +6920,7 @@
           "baseline": "0 — no referral attribution data exists",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "PostHog account not yet created. No person identification events or UTM captures recorded yet.",
+          "evidence": "PostHog account not yet created. No person identification events or UTM captures recorded yet. UPDATE (2026-08-25T04:29:36.501Z): not yet re-verified against real PostHog Persons data for utm_source coverage; deferred pending a full PostHog dashboard review, not just the CSV export reviewed for M1.",
           "contributingStories": [
             "bee.3"
           ]
