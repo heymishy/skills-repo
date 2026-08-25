@@ -2179,6 +2179,7 @@ async function getProductsNavSummary(pool, tenantId) {
 // html-shell.js must not require products.js, since products.js already
 // requires html-shell.js for renderShell.
 async function renderShellWithNav(pool, tenantId, opts) {
+  opts = opts || {};
   var navSummary = await getProductsNavSummary(pool, tenantId);
   var mergedOpts = Object.assign({}, opts, {
     products: navSummary.products,
