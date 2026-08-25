@@ -171,6 +171,7 @@ const CONTRACTS = [
       'Route/handler E2E coverage check',
       'cannot be verified pre-merge by design',
       'Do not run the full, unscoped `npm run test:e2e` suite',
+      'check whether an already-fresh same-session result exists',
     ],
   },
   {
