@@ -80,7 +80,7 @@ queue.push(function() {
 
     var req = authReq({ params: { journeyId: journeyId } });
     var res = makeRes();
-    await journey.handleGetStories(req, res);
+    await journey.handleGetStories(req, res, { query: async function() { return { rows: [] }; } });
 
     assert.strictEqual(res._status, 200, 'Expected 200, got ' + res._status);
     assert.ok(res._body.includes('<form'), 'Expected <form> in response body');

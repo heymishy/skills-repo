@@ -46,6 +46,10 @@ function writeFile(dir, relPath, content) {
   fs.writeFileSync(fullPath, content, 'utf8');
 }
 
+function mockPool() {
+  return { query: async function() { return { rows: [] }; } };
+}
+
 function mockRes() {
   var res = { statusCode: 200, body: null, headers: {} };
   res.status = function(code) { res.statusCode = code; return res; };
@@ -67,7 +71,7 @@ var queue = [];
 // T4.1 — GET /journey returns wizard HTML when no activeFeatureSlug in session (AC1)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T4.1: handleGetJourney returns wizard response when no activeFeatureSlug (AC1)', function() {
+  return test('T4.1: handleGetJourney returns wizard response when no activeFeatureSlug (AC1)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     assert.strictEqual(typeof routes.handleGetWizard, 'function', 'handleGetWizard must be exported');
     var repoRoot = mkTmp('t4-1');
@@ -75,7 +79,7 @@ queue.push(function() {
     routes.setRepoRoot(repoRoot);
     var req = { session: { accessToken: 'tok' } };
     var res = mockRes();
-    routes.handleGetWizard(req, res);
+    await routes.handleGetWizard(req, res, mockPool());
     assert.ok(res.statusCode < 400, 'wizard handler must return a success response; got ' + res.statusCode);
     var bodyStr = JSON.stringify(res.body || '') + (typeof res.body === 'string' ? res.body : '');
     var hasNew = bodyStr.toLowerCase().includes('new') || bodyStr.toLowerCase().includes('project');
@@ -88,14 +92,14 @@ queue.push(function() {
 // T4.2 — Wizard response does NOT contain journey stage content (AC1)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T4.2: Wizard response does not contain journey stage skill instructions (AC1)', function() {
+  return test('T4.2: Wizard response does not contain journey stage skill instructions (AC1)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     var repoRoot = mkTmp('t4-2');
     writeFile(repoRoot, '.github/pipeline-state.json', JSON.stringify({ features: [{ slug: 'feat-t42', stage: 'definition' }] }));
     routes.setRepoRoot(repoRoot);
     var req = { session: { accessToken: 'tok' } };
     var res = mockRes();
-    routes.handleGetWizard(req, res);
+    await routes.handleGetWizard(req, res, mockPool());
     var bodyStr = JSON.stringify(res.body || '') + (typeof res.body === 'string' ? res.body : '');
     // Journey stage content markers — must NOT appear in wizard response
     assert.ok(!bodyStr.includes('WEB UI PROTOCOL'), 'wizard must not include journey stage WEB UI PROTOCOL block');
@@ -157,7 +161,7 @@ queue.push(function() {
 // T4.6 — "existing" list excludes released features (AC3)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T4.6: Existing project list excludes released features (AC3)', function() {
+  return test('T4.6: Existing project list excludes released features (AC3)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     assert.strictEqual(typeof routes.handleGetWizard, 'function', 'handleGetWizard must be exported');
     var repoRoot = mkTmp('t4-6');
@@ -170,7 +174,7 @@ queue.push(function() {
     routes.setRepoRoot(repoRoot);
     var req = { session: { accessToken: 'tok' }, query: { view: 'existing' } };
     var res = mockRes();
-    routes.handleGetWizard(req, res);
+    await routes.handleGetWizard(req, res, mockPool());
     var bodyStr = JSON.stringify(res.body || '') + (typeof res.body === 'string' ? res.body : '');
     assert.ok(!bodyStr.includes('feat-released'), 'released feature must NOT appear in list; body: ' + bodyStr.substring(0, 200));
   });
@@ -180,7 +184,7 @@ queue.push(function() {
 // T4.7 — "existing" list excludes archived features (AC3)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T4.7: Existing project list excludes archived features (AC3)', function() {
+  return test('T4.7: Existing project list excludes archived features (AC3)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     var repoRoot = mkTmp('t4-7');
     var state = { features: [
@@ -191,7 +195,7 @@ queue.push(function() {
     routes.setRepoRoot(repoRoot);
     var req = { session: { accessToken: 'tok' }, query: { view: 'existing' } };
     var res = mockRes();
-    routes.handleGetWizard(req, res);
+    await routes.handleGetWizard(req, res, mockPool());
     var bodyStr = JSON.stringify(res.body || '') + (typeof res.body === 'string' ? res.body : '');
     assert.ok(!bodyStr.includes('feat-archived'), 'archived feature must NOT appear in list; body: ' + bodyStr.substring(0, 200));
   });
@@ -201,7 +205,7 @@ queue.push(function() {
 // T4.8 — Active feature appears in "existing" list with stage and health (AC3)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T4.8: Active feature appears in existing list with stage info (AC3)', function() {
+  return test('T4.8: Active feature appears in existing list with stage info (AC3)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     var repoRoot = mkTmp('t4-8');
     var state = { features: [
@@ -211,7 +215,7 @@ queue.push(function() {
     routes.setRepoRoot(repoRoot);
     var req = { session: { accessToken: 'tok' }, query: { view: 'existing' } };
     var res = mockRes();
-    routes.handleGetWizard(req, res);
+    await routes.handleGetWizard(req, res, mockPool());
     var bodyStr = JSON.stringify(res.body || '') + (typeof res.body === 'string' ? res.body : '');
     assert.ok(bodyStr.includes('feat-active-t48'), 'active feature slug must appear in list: ' + bodyStr.substring(0, 200));
     assert.ok(bodyStr.includes('review'), 'feature stage must appear in list');
@@ -222,7 +226,7 @@ queue.push(function() {
 // T4.9 — All features released/archived → "No active projects found" message (AC3 edge)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T4.9: All features released/archived → "No active projects found" message and New project action (AC3 edge)', function() {
+  return test('T4.9: All features released/archived → "No active projects found" message and New project action (AC3 edge)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     var repoRoot = mkTmp('t4-9');
     var state = { features: [
@@ -233,7 +237,7 @@ queue.push(function() {
     routes.setRepoRoot(repoRoot);
     var req = { session: { accessToken: 'tok' }, query: { view: 'existing' } };
     var res = mockRes();
-    routes.handleGetWizard(req, res);
+    await routes.handleGetWizard(req, res, mockPool());
     var bodyStr = JSON.stringify(res.body || '') + (typeof res.body === 'string' ? res.body : '');
     assert.ok(bodyStr.toLowerCase().includes('no active') || bodyStr.toLowerCase().includes('no pipeline') || bodyStr.toLowerCase().includes('start a new'),
       '"No active projects found" or similar message must appear when all features are released/archived; body: ' + bodyStr.substring(0, 200));
@@ -325,7 +329,7 @@ queue.push(function() {
 // T4.15 — pipeline-state.json absent → informational message, no error (AC5)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T4.15: pipeline-state.json absent → informational message, no error thrown (AC5)', function() {
+  return test('T4.15: pipeline-state.json absent → informational message, no error thrown (AC5)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     var repoRoot = mkTmp('t4-15');
     // NO pipeline-state.json in repoRoot
@@ -334,7 +338,7 @@ queue.push(function() {
     var res = mockRes();
     var threw = false;
     try {
-      routes.handleGetWizard(req, res);
+      await routes.handleGetWizard(req, res, mockPool());
     } catch (e) {
       threw = true;
     }
@@ -375,14 +379,14 @@ queue.push(function() {
 // T4.17 — Returning session with activeFeatureSlug set: wizard skipped (AC6)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T4.17: Returning session with activeFeatureSlug set — wizard skipped (AC6)', function() {
+  return test('T4.17: Returning session with activeFeatureSlug set — wizard skipped (AC6)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     var repoRoot = mkTmp('t4-17');
     routes.setRepoRoot(repoRoot);
     var req = { session: { accessToken: 'tok', activeFeatureSlug: 'active-feat-t417', stageIndex: 2 } };
     var res = mockRes();
     // handleGetJourney (or the wucp.4 update to it) should detect session.activeFeatureSlug and NOT show wizard
-    routes.handleGetWizard(req, res);
+    await routes.handleGetWizard(req, res, mockPool());
     var bodyStr = JSON.stringify(res.body || '') + (typeof res.body === 'string' ? res.body : '');
     // Wizard should not be shown if activeFeatureSlug is already set
     var showsWizard = bodyStr.toLowerCase().includes('new project') && bodyStr.toLowerCase().includes('existing project');
@@ -394,7 +398,7 @@ queue.push(function() {
 // T4.18 — Session expired (no activeFeatureSlug) → wizard shown again (AC6)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T4.18: Expired/new session (no activeFeatureSlug) → wizard shown again (AC6)', function() {
+  return test('T4.18: Expired/new session (no activeFeatureSlug) → wizard shown again (AC6)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     var repoRoot = mkTmp('t4-18');
     writeFile(repoRoot, '.github/pipeline-state.json', JSON.stringify({ features: [{ slug: 'feat-t418', stage: 'definition' }] }));
@@ -402,7 +406,7 @@ queue.push(function() {
     // No activeFeatureSlug — session is new or expired
     var req = { session: { accessToken: 'tok' } };
     var res = mockRes();
-    routes.handleGetWizard(req, res);
+    await routes.handleGetWizard(req, res, mockPool());
     assert.ok(res.statusCode < 400, 'handleGetWizard must return success for new/expired session; got ' + res.statusCode);
     // Same as T4.1 — wizard options must appear
     var bodyStr = JSON.stringify(res.body || '') + (typeof res.body === 'string' ? res.body : '');
@@ -415,7 +419,7 @@ queue.push(function() {
 // T4.19 — NFR performance: feature list rendered under 200ms (NFR)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T4.19: NFR performance — feature list read and response < 200ms', function() {
+  return test('T4.19: NFR performance — feature list read and response < 200ms', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     var repoRoot = mkTmp('t4-19');
     // 15 features
@@ -426,7 +430,7 @@ queue.push(function() {
     var start = Date.now();
     var req = { session: { accessToken: 'tok' }, query: { view: 'existing' } };
     var res = mockRes();
-    routes.handleGetWizard(req, res);
+    await routes.handleGetWizard(req, res, mockPool());
     var elapsed = Date.now() - start;
     assert.ok(elapsed < 200, 'handleGetWizard must respond in < 200ms for 15 features; took ' + elapsed + 'ms');
   });

@@ -192,7 +192,7 @@ queue.push(function() {
 
     var req = authReq({ params: { journeyId: journeyId } });
     var res = makeRes();
-    await journey.handleGetStories(req, res);
+    await journey.handleGetStories(req, res, { query: async function() { return { rows: [] }; } });
 
     assert.strictEqual(res._status, 200, 'expected 200, got ' + res._status);
     assert.ok(res._body.includes('<textarea'), 'expected a real <textarea> in the response');
@@ -235,7 +235,7 @@ queue.push(function() {
     // this is what an operator submitting "as-is" would actually POST.
     var getReq = authReq({ params: { journeyId: journeyId } });
     var getRes = makeRes();
-    await journey.handleGetStories(getReq, getRes);
+    await journey.handleGetStories(getReq, getRes, { query: async function() { return { rows: [] }; } });
     var taValueMatch = getRes._body.match(/<textarea[^>]*>([\s\S]*?)<\/textarea>/);
     assert.ok(taValueMatch, 'expected to find the pre-filled textarea value');
     var autoPopulatedValue = taValueMatch[1];
@@ -313,7 +313,7 @@ queue.push(function() {
 
     var req = authReq({ params: { journeyId: journeyId } });
     var res = makeRes();
-    await journey.handleGetStories(req, res);
+    await journey.handleGetStories(req, res, { query: async function() { return { rows: [] }; } });
 
     assert.strictEqual(res._status, 200, 'expected 200 (never blocks/errors), got ' + res._status);
     assert.ok(res._body.includes('<textarea'), 'expected the manual-entry textarea to still render');
@@ -337,7 +337,7 @@ queue.push(function() {
 
     var req = authReq({ params: { journeyId: journeyId } });
     var res = makeRes();
-    await journey.handleGetStories(req, res);
+    await journey.handleGetStories(req, res, { query: async function() { return { rows: [] }; } });
 
     assert.strictEqual(res._status, 200, 'expected 200, got ' + res._status);
     var taMatch = res._body.match(/<textarea[^>]*>([\s\S]*?)<\/textarea>/);

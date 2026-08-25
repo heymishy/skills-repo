@@ -215,7 +215,7 @@ async function main() {
     return test('route wiring: server.js registers GET /journey/:id -> handleGetJourneyById', function() {
       const src = fs.readFileSync(SERVER_PATH, 'utf8');
       assert.ok(/pathname\.match\(\/\^\\\/journey\\\/\[\^\/\]\+\$\/\)/.test(src), 'expected server.js to register a single-segment /journey/:id route');
-      assert.ok(/handleGetJourneyById\(req, res\)/.test(src), 'expected the route to call handleGetJourneyById');
+      assert.ok(/handleGetJourneyById\(req, res, _pshPool\)/.test(src), 'expected the route to call handleGetJourneyById with the pool argument (pncg-s1 threaded pool through this handler)');
     });
   });
 
