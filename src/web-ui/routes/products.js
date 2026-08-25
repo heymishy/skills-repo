@@ -2181,8 +2181,25 @@ async function handleGetDashboard(req, res, _next, pool) {
   // and org scope. Mirrors the exact ?view=board convention the removed
   // /features route used, per the story's Architecture Constraints.
   if (req.query && req.query.view === 'board') {
+    // bvnd-s1: the board branch previously omitted `products` from
+    // renderShell(), which silently drops the ENTIRE Products sidebar
+    // section (html-shell.js's renderProductsSection() hard-returns '' when
+    // products is falsy) -- including "See all products" and the "+ New
+    // product" button. Per pan-s1's own removal of the old top-level
+    // Dashboard/Home/Journeys/Skills nav items, that section is now the
+    // ONLY remaining route into /dashboard or /products/new, so a user
+    // landing on ?view=board with no products had no path forward at all.
+    // Live-confirmed against a real paying beta user (Abhijeet Singh) --
+    // see workspace/capture-log.md, 2026-08-25.
+    var boardNavSummary = await getProductsNavSummary(_pool, tenantId);
     var tenantColumns = await buildTenantKanbanColumns(_pool, tenantId);
     var tenantHtml = _kanbanView.renderKanban({ columns: tenantColumns });
+    if (boardNavSummary.products.length === 0 && boardNavSummary.noProductJourneyCount === 0) {
+      tenantHtml = '<div style="padding:48px 0;text-align:center;color:var(--muted)">' +
+          '<p style="font-size:18px;margin:0 0 16px">No products yet</p>' +
+          '<a href="/products/new" style="display:inline-block;padding:10px 20px;background:var(--accent);color:#fff;border-radius:6px;text-decoration:none;font-weight:500">Create your first product →</a>' +
+        '</div>' + tenantHtml;
+    }
     // kbsf-s1: renderKanban()'s <style> block references shared design-token
     // custom properties (var(--surface) etc.) that are only defined inside
     // renderShell()'s :root block -- must wrap here or every token resolves
@@ -2192,6 +2209,9 @@ async function handleGetDashboard(req, res, _next, pool) {
       bodyContent: tenantHtml,
       user: { login: req.session && req.session.login },
       active: 'dashboard',
+      products: boardNavSummary.products,
+      activeProductId: null,
+      noProductJourneyCount: boardNavSummary.noProductJourneyCount,
       isAdmin: isAdmin
     }));
     return;
