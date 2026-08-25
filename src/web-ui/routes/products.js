@@ -2780,6 +2780,7 @@ async function handleGetProductKanban(req, res, _next, pool, posthog) {
     bodyContent: html,
     user: { login: req.session && req.session.login },
     active: 'dashboard',
+    activeProductId: productId,
     isAdmin: isAdmin
   }));
 }
