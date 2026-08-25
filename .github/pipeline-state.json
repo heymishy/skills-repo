@@ -26925,6 +26925,76 @@
       "updatedAt": "2026-08-24T10:38:04.770Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-08-25-first-run-empty-state-copy",
+      "name": "Add orientation copy to two first-run empty states, and gate the Modules card on feature count",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "id": "fresc-s1",
+          "slug": "fresc-s1",
+          "name": "Add orientation copy to two first-run empty states, and gate the Modules card on feature count",
+          "stage": "branch-complete",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "dodStatus": "not-started",
+          "prStatus": "draft",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 8,
+            "passing": 8,
+            "artefact": "artefacts/2026-08-25-first-run-empty-state-copy/test-plans/fresc-s1-test-plan.md"
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-25T19:08:58.494Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Repair pre-existing Modules-card tests to use a 2-feature fixture",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-25-first-run-empty-state-copy/plans/fresc-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Gate the Modules card on features.length > 1 (AC1)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-25-first-run-empty-state-copy/plans/fresc-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Add explanatory line to the Modules card when visible (AC2)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-25-first-run-empty-state-copy/plans/fresc-s1-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Add explanatory line to the empty-products state, list and board view (AC3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-25-first-run-empty-state-copy/plans/fresc-s1-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/769"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-25T19:08:58.494Z",
+      "track": "short",
+      "guardrails": [
+        {
+          "id": "web-ui-shared-shell-escaping",
+          "category": "pattern",
+          "label": "Shared shell / escHtml() usage (web-ui-patterns.md)",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-25T07:54:37.601Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

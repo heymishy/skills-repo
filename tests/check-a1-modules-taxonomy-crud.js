@@ -466,7 +466,7 @@ function makeProductsOwnerPool(products) {
 
   await test('_renderProductView: renders an "Add module" form with a CSRF field matching the session token (fix-forward)', function() {
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
-    var html = productsRoute._renderProductView('Acme', 'p1', [], 'x', null, false, null, null, [], TEST_CSRF);
+    var html = productsRoute._renderProductView('Acme', 'p1', [{ journey_id: 'j1', featureSlug: 'feat-a' }, { journey_id: 'j2', featureSlug: 'feat-b' }], 'x', null, false, null, null, [], TEST_CSRF);
     assert.ok(/id="a1-create-form"/.test(html), 'expected the create-module form to be present');
     assert.ok(html.indexOf('name="_csrf" value="' + TEST_CSRF + '"') !== -1, 'expected the create form\'s CSRF field to carry the real session token');
     assert.ok(/Add module/.test(html), 'expected an Add module submit control');
@@ -475,7 +475,7 @@ function makeProductsOwnerPool(products) {
   await test('_renderProductView: renders a rename form and a delete control for each existing module, both wired to the real CSRF token (fix-forward)', function() {
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
     var modules = [{ id: 'mod-1', name: 'Billing' }, { id: 'mod-2', name: 'Governance' }];
-    var html = productsRoute._renderProductView('Acme', 'p1', [], 'x', null, false, null, null, modules, TEST_CSRF);
+    var html = productsRoute._renderProductView('Acme', 'p1', [{ journey_id: 'j1', featureSlug: 'feat-a' }, { journey_id: 'j2', featureSlug: 'feat-b' }], 'x', null, false, null, null, modules, TEST_CSRF);
     assert.ok(/data-module-id="mod-1"/.test(html) && /data-module-id="mod-2"/.test(html), 'expected both modules to have their own rename/delete controls');
     assert.ok(/class="a1-rename-form"/.test(html), 'expected a rename form per module');
     assert.ok(/class="a1-delete-btn"/.test(html), 'expected a delete control per module');
@@ -486,14 +486,14 @@ function makeProductsOwnerPool(products) {
   await test('_renderProductView: a module name containing HTML/script content is escaped in the management UI, never rendered raw (fix-forward, Security NFR)', function() {
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
     var modules = [{ id: 'mod-1', name: '<script>alert(1)</script>' }];
-    var html = productsRoute._renderProductView('Acme', 'p1', [], 'x', null, false, null, null, modules, TEST_CSRF);
+    var html = productsRoute._renderProductView('Acme', 'p1', [{ journey_id: 'j1', featureSlug: 'feat-a' }, { journey_id: 'j2', featureSlug: 'feat-b' }], 'x', null, false, null, null, modules, TEST_CSRF);
     assert.ok(html.indexOf('<script>alert(1)</script>') === -1, 'expected the raw script tag to never appear unescaped');
     assert.ok(html.indexOf('&lt;script&gt;') !== -1, 'expected the module name to be HTML-escaped');
   });
 
   await test('_renderProductView: zero modules renders the create form but no rename/delete controls (fix-forward, matches AC4\'s clean fallback)', function() {
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
-    var html = productsRoute._renderProductView('Acme', 'p1', [], 'x', null, false, null, null, [], TEST_CSRF);
+    var html = productsRoute._renderProductView('Acme', 'p1', [{ journey_id: 'j1', featureSlug: 'feat-a' }, { journey_id: 'j2', featureSlug: 'feat-b' }], 'x', null, false, null, null, [], TEST_CSRF);
     assert.ok(/id="a1-create-form"/.test(html), 'expected the create form to still be present with zero modules');
     assert.ok(!/class="a1-rename-form"/.test(html), 'expected zero rename forms when there are zero modules');
     assert.ok(!/class="a1-delete-btn"/.test(html), 'expected zero delete controls when there are zero modules');
@@ -503,14 +503,19 @@ function makeProductsOwnerPool(products) {
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
     modulesAdapter.setModulesAdapter(makeFakeModulesPool());
     var ownerPool = makeProductsOwnerPool([{ product_id: 'p1', tenant_id: 't1' }]);
-    // no rollup row, no journeys -- exercises the plain product-view path
+    // no rollup row; 2 journeys -- exercises the plain product-view path
     var fullPool = {
       query: async function(sql, params) {
         if (/SELECT name, tenant_id, repo_owner, repo_name FROM products/.test(sql)) {
           return { rows: [{ name: 'Acme', tenant_id: 't1', repo_owner: null, repo_name: null }] };
         }
         if (/FROM product_rollups/.test(sql)) { return { rows: [] }; }
-        if (/FROM journeys/.test(sql)) { return { rows: [] }; }
+        if (/FROM journeys/.test(sql)) {
+          return { rows: [
+            { journey_id: 'j1', feature_slug: 'feat-a', stage: 'discovery', display_name: null },
+            { journey_id: 'j2', feature_slug: 'feat-b', stage: 'discovery', display_name: null }
+          ] };
+        }
         return ownerPool.query(sql, params);
       }
     };

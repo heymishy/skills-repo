@@ -146,7 +146,8 @@ function _renderGroupedCoverageBreakdown(coverage) {
 function _renderProductDashboard(products, login, navProducts, activeProductId, noProductJourneyCount, isAdmin) {
   var cardsHtml = products.length === 0
     ? '<div style="padding:48px 0;text-align:center;color:var(--muted)">' +
-        '<p style="font-size:18px;margin:0 0 16px">No products yet</p>' +
+        '<p style="font-size:18px;margin:0 0 12px">No products yet</p>' +
+        '<p id="sw-products-empty-hint" style="font-size:14px;margin:0 0 20px;color:var(--muted)">A product organizes your epics, features, and journeys — you can connect a GitHub repo to it anytime.</p>' +
         '<a href="/products/new" style="display:inline-block;padding:10px 20px;background:var(--accent);color:#fff;border-radius:6px;text-decoration:none;font-weight:500">Create your first product →</a>' +
       '</div>'
     : products.map(function(p) {
@@ -653,7 +654,8 @@ function _renderModulesManagement(productId, modules, csrfToken) {
 
   return (
     '<div style="margin-top:20px;border:1px solid var(--line);border-radius:8px;padding:16px">' +
-      '<div style="font-size:14px;font-weight:600;margin-bottom:10px">Modules</div>' +
+      '<div style="font-size:14px;font-weight:600;margin-bottom:6px">Modules</div>' +
+      '<div id="a1-modules-hint" style="font-size:12px;color:var(--muted);margin-bottom:10px">Group related features together for easier organization in the features list below.</div>' +
       '<div id="a1-modules-error" role="alert" style="display:none;color:#ef4444;font-size:13px;margin-bottom:8px"></div>' +
       '<ul style="list-style:none;padding:0;margin:0 0 12px">' + rowsHtml + '</ul>' +
       '<form id="a1-create-form" style="display:flex;gap:8px;margin:0">' +
@@ -929,7 +931,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     coverageHtml +
     acCoverageHtml +
     scaleGaugeHtml +
-    _renderModulesManagement(productId, modules, csrfToken) +
+    (features.length > 1 ? _renderModulesManagement(productId, modules, csrfToken) : '') +
     featuresSectionHtml +
     '<script>' +
     'function pshConfirmDeleteProduct(id){' +
@@ -2196,7 +2198,8 @@ async function handleGetDashboard(req, res, _next, pool) {
     var tenantHtml = _kanbanView.renderKanban({ columns: tenantColumns });
     if (boardNavSummary.products.length === 0 && boardNavSummary.noProductJourneyCount === 0) {
       tenantHtml = '<div style="padding:48px 0;text-align:center;color:var(--muted)">' +
-          '<p style="font-size:18px;margin:0 0 16px">No products yet</p>' +
+          '<p style="font-size:18px;margin:0 0 12px">No products yet</p>' +
+          '<p id="sw-products-empty-hint" style="font-size:14px;margin:0 0 20px;color:var(--muted)">A product organizes your epics, features, and journeys — you can connect a GitHub repo to it anytime.</p>' +
           '<a href="/products/new" style="display:inline-block;padding:10px 20px;background:var(--accent);color:#fff;border-radius:6px;text-decoration:none;font-weight:500">Create your first product →</a>' +
         '</div>' + tenantHtml;
     }
@@ -3857,6 +3860,8 @@ function renderCommentThreadHtml(comments, resourceType, resourceId) {
 
 module.exports = {
   _renderProductView,
+  // fresc-s1 (AC3): exported for direct unit testing of the empty-products state copy
+  _renderProductDashboard,
   handlePostProductNew,
   handlePostProductConfirm,
   handleGetDashboard,
