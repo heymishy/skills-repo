@@ -33,6 +33,24 @@ function makeFakeModulesPool() {
   return { query: async function() { return { rows: [] }; } };
 }
 
+function makePool(journeyRows) {
+  return {
+    query: async function(sql) {
+      if (/SELECT name, tenant_id, repo_owner, repo_name FROM products/.test(sql)) {
+        return { rows: [{ name: 'Acme', tenant_id: 't1', repo_owner: null, repo_name: null }] };
+      }
+      if (/FROM product_rollups/.test(sql)) { return { rows: [] }; }
+      if (/FROM journeys/.test(sql)) { return { rows: journeyRows }; }
+      return { rows: [] };
+    }
+  };
+}
+
+function makeRes() {
+  var html = null;
+  return { html: function() { return html; }, writeHead: function() {}, end: function(b) { html = b; } };
+}
+
 (async function() {
   var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
   var modulesAdapter = require(MODULES_ADAPTER_PATH);
@@ -60,24 +78,6 @@ function makeFakeModulesPool() {
 
   await test('handleGetProductViewReflectsVisibilityGateEndToEnd (AC1)', async function() {
     modulesAdapter.setModulesAdapter(makeFakeModulesPool());
-
-    function makePool(journeyRows) {
-      return {
-        query: async function(sql) {
-          if (/SELECT name, tenant_id, repo_owner, repo_name FROM products/.test(sql)) {
-            return { rows: [{ name: 'Acme', tenant_id: 't1', repo_owner: null, repo_name: null }] };
-          }
-          if (/FROM product_rollups/.test(sql)) { return { rows: [] }; }
-          if (/FROM journeys/.test(sql)) { return { rows: journeyRows }; }
-          return { rows: [] };
-        }
-      };
-    }
-
-    function makeRes() {
-      var html = null;
-      return { html: function() { return html; }, writeHead: function() {}, end: function(b) { html = b; } };
-    }
 
     var reqZero = { params: { id: 'p1' }, session: { tenantId: 't1' } };
     var resZero = makeRes();
