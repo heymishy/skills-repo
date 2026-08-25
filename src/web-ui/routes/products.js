@@ -654,7 +654,7 @@ function _renderModulesManagement(productId, modules, csrfToken) {
   return (
     '<div style="margin-top:20px;border:1px solid var(--line);border-radius:8px;padding:16px">' +
       '<div style="font-size:14px;font-weight:600;margin-bottom:6px">Modules</div>' +
-      '<div id="a1-modules-hint" style="font-size:12px;color:var(--muted);margin-bottom:10px">Group related features together for easier organization on the Kanban and Roadmap views.</div>' +
+      '<div id="a1-modules-hint" style="font-size:12px;color:var(--muted);margin-bottom:10px">Group related features together for easier organization in the features list below.</div>' +
       '<div id="a1-modules-error" role="alert" style="display:none;color:#ef4444;font-size:13px;margin-bottom:8px"></div>' +
       '<ul style="list-style:none;padding:0;margin:0 0 12px">' + rowsHtml + '</ul>' +
       '<form id="a1-create-form" style="display:flex;gap:8px;margin:0">' +
