@@ -90,6 +90,7 @@ reference_dirs:
   - feedback
   - 2026-08-22-p4-enf-decision-test-fix
   - 2026-08-23-inner-loop-ceremony-optimisation
+  - 2026-08-25-market-scan-outer-inner-loop-concepts
 tracks_without_discovery:
   - short
   - defect
