@@ -503,7 +503,7 @@ function makeProductsOwnerPool(products) {
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
     modulesAdapter.setModulesAdapter(makeFakeModulesPool());
     var ownerPool = makeProductsOwnerPool([{ product_id: 'p1', tenant_id: 't1' }]);
-    // no rollup row; 2 journeys/features -- exercises the plain product-view path with the Modules-card visibility gate's ">1 feature" threshold met
+    // no rollup row; 2 journeys -- exercises the plain product-view path
     var fullPool = {
       query: async function(sql, params) {
         if (/SELECT name, tenant_id, repo_owner, repo_name FROM products/.test(sql)) {
