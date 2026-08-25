@@ -94,6 +94,24 @@ function makeRes() {
   });
 
   // ===========================================================================
+  // AC3 — Product empty-state explanatory line, list view and board view
+  // ===========================================================================
+
+  await test('productEmptyStateIncludesExplanatoryLine (AC3)', function() {
+    var html = productsRoute._renderProductDashboard([], 'login', [], null, 0, false);
+    assertTrue(html.indexOf('No products yet') !== -1, 'expected existing "No products yet" text to remain');
+    assertTrue(html.toLowerCase().indexOf('create your first product') !== -1, 'expected existing CTA link text to remain');
+    assertTrue(html.indexOf('sw-products-empty-hint') !== -1, 'expected the explanatory hint element to be present');
+  });
+
+  await test('productListNonEmptyStateUnaffected (AC3, non-regression)', function() {
+    var oneProduct = [{ product_id: 'p1', name: 'Acme', featureCount: 3, lastUpdated: null }];
+    var html = productsRoute._renderProductDashboard(oneProduct, 'login', [], null, 0, false);
+    assertTrue(html.indexOf('No products yet') === -1, 'expected empty-state text absent when a product exists');
+    assertTrue(html.indexOf('sw-products-empty-hint') === -1, 'expected the hint element absent when a product exists');
+  });
+
+  // ===========================================================================
   // Integration — handleGetProductView reflects the gate end to end
   // ===========================================================================
 
@@ -112,6 +130,20 @@ function makeRes() {
       { journey_id: 'j2', feature_slug: 'feat-b', stage: 'discovery', display_name: null }
     ]));
     assertTrue(resTwo.html().indexOf('a1-create-form') !== -1, 'expected Modules card present with 2 journeys/features');
+  });
+
+  await test('boardViewEmptyStateAlsoIncludesExplanatoryLine (AC3, shared-function regression check)', async function() {
+    var pool = {
+      query: async function(sql) {
+        if (sql.includes('FROM products')) { return { rows: [] }; }
+        if (sql.includes('product_id IS NULL')) { return { rows: [] }; }
+        return { rows: [] };
+      }
+    };
+    var req = { session: { tenantId: 'tenant-empty' }, query: { view: 'board' } };
+    var res = makeRes();
+    await productsRoute.handleGetDashboard(req, res, null, pool);
+    assertTrue(res.html().indexOf('sw-products-empty-hint') !== -1, 'expected the same explanatory hint to appear on the board-view empty state');
   });
 
   console.log('\n[fresc-s1] Results: ' + passed + ' passed, ' + failed + ' failed');

@@ -146,7 +146,8 @@ function _renderGroupedCoverageBreakdown(coverage) {
 function _renderProductDashboard(products, login, navProducts, activeProductId, noProductJourneyCount, isAdmin) {
   var cardsHtml = products.length === 0
     ? '<div style="padding:48px 0;text-align:center;color:var(--muted)">' +
-        '<p style="font-size:18px;margin:0 0 16px">No products yet</p>' +
+        '<p style="font-size:18px;margin:0 0 12px">No products yet</p>' +
+        '<p id="sw-products-empty-hint" style="font-size:14px;margin:0 0 20px;color:var(--muted)">A product is a connected GitHub repo — its epics, features, and journeys all live under it here.</p>' +
         '<a href="/products/new" style="display:inline-block;padding:10px 20px;background:var(--accent);color:#fff;border-radius:6px;text-decoration:none;font-weight:500">Create your first product →</a>' +
       '</div>'
     : products.map(function(p) {
@@ -2197,7 +2198,8 @@ async function handleGetDashboard(req, res, _next, pool) {
     var tenantHtml = _kanbanView.renderKanban({ columns: tenantColumns });
     if (boardNavSummary.products.length === 0 && boardNavSummary.noProductJourneyCount === 0) {
       tenantHtml = '<div style="padding:48px 0;text-align:center;color:var(--muted)">' +
-          '<p style="font-size:18px;margin:0 0 16px">No products yet</p>' +
+          '<p style="font-size:18px;margin:0 0 12px">No products yet</p>' +
+          '<p id="sw-products-empty-hint" style="font-size:14px;margin:0 0 20px;color:var(--muted)">A product is a connected GitHub repo — its epics, features, and journeys all live under it here.</p>' +
           '<a href="/products/new" style="display:inline-block;padding:10px 20px;background:var(--accent);color:#fff;border-radius:6px;text-decoration:none;font-weight:500">Create your first product →</a>' +
         '</div>' + tenantHtml;
     }
@@ -3858,6 +3860,8 @@ function renderCommentThreadHtml(comments, resourceType, resourceId) {
 
 module.exports = {
   _renderProductView,
+  // fresc-s1 (AC3): exported for direct unit testing of the empty-products state copy
+  _renderProductDashboard,
   handlePostProductNew,
   handlePostProductConfirm,
   handleGetDashboard,
