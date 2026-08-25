@@ -132,7 +132,7 @@ function makeRes() {
     assertTrue(resTwo.html().indexOf('a1-create-form') !== -1, 'expected Modules card present with 2 journeys/features');
   });
 
-  await test('boardViewEmptyStateAlsoIncludesExplanatoryLine (AC3, shared-function regression check)', async function() {
+  await test('boardViewEmptyStateAlsoIncludesExplanatoryLine (AC3, duplicated-block parity check)', async function() {
     var pool = {
       query: async function(sql) {
         if (sql.includes('FROM products')) { return { rows: [] }; }
