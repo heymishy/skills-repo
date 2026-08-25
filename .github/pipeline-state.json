@@ -27002,14 +27002,14 @@
     {
       "slug": "2026-08-26-products-nav-coverage-gap",
       "name": "Wrap the Products-nav fetch in a shared helper and wire it to every page that is currently missing it",
-      "stage": "test-plan",
+      "stage": "branch-setup",
       "health": "green",
       "stories": [
         {
           "id": "pncg-s1",
           "slug": "pncg-s1",
           "name": "Wrap the Products-nav fetch in a shared helper and wire it to every page that is currently missing it",
-          "stage": "definition-of-ready",
+          "stage": "branch-setup",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
@@ -27024,11 +27024,11 @@
           "acVerified": 0,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-25T20:12:43.056Z"
+          "updatedAt": "2026-08-25T20:33:58.377Z"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-25T19:45:31.776Z",
+      "updatedAt": "2026-08-25T20:33:58.517Z",
       "track": "short",
       "guardrails": [
         {
