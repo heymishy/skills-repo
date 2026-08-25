@@ -2781,7 +2781,7 @@ async function router(req, res) {
     // are not currently reachable via any live HTTP route") — wiring it here is
     // this story's AC1 completion: the wizard-ui flag now gates a real,
     // reachable page, not just a directly-testable handler function.
-    authGuard(req, res, async function() { await handleGetWizardBootstrapped(req, res); });
+    authGuard(req, res, async function() { await handleGetWizardBootstrapped(req, res, undefined, _pshPool); });
 
   } else if (pathname === '/journeys' && req.method === 'GET') {
     // bee.2 — first-run empty-state experience
@@ -2806,7 +2806,7 @@ async function router(req, res) {
     // and 302-redirects to /auth/github itself (same convention as the other
     // /journey/:id/* handlers below, none of which are authGuard-wrapped).
     req.params = { journeyId: pathname.split('/')[2] };
-    handleGetJourneyById(req, res);
+    await handleGetJourneyById(req, res, _pshPool);
 
   } else if (pathname.match(/^\/journey\/[^/]+\/resume$/) && req.method === 'GET') {
     // step4 — resume journey: create new session for current stage
@@ -2816,7 +2816,7 @@ async function router(req, res) {
   } else if (pathname.match(/^\/journey\/[^/]+\/stage-review$/) && req.method === 'GET') {
     // step5 — artefact review panel before gate-confirm
     req.params = { journeyId: pathname.split('/')[2] };
-    await handleGetStageReview(req, res);
+    await handleGetStageReview(req, res, _pshPool);
 
   } else if (pathname.match(/^\/journey\/[^/]+\/stage\/[^/]+$/) && req.method === 'GET') {
     // jsvr-s1 — step6 — read-only view of a completed stage's artefact.
@@ -2844,7 +2844,7 @@ async function router(req, res) {
   } else if (pathname.match(/^\/journey\/[^/]+\/reference$/) && req.method === 'GET') {
     // step7 — reference docs list + upload form
     req.params = { journeyId: pathname.split('/')[2] };
-    await handleGetReference(req, res);
+    await handleGetReference(req, res, _pshPool);
 
   } else if (pathname.match(/^\/api\/journey\/[^/]+\/reference$/) && req.method === 'POST') {
     // step7 — save reference doc
@@ -2858,7 +2858,7 @@ async function router(req, res) {
   } else if (pathname.match(/^\/journey\/[^/]+\/reference-modal$/) && req.method === 'GET') {
     // sdg.1 — strategy grounding modal (new-product upload gate)
     req.params = { journeyId: pathname.split('/')[2] };
-    authGuard(req, res, async () => { await handleGetReferenceModal(req, res); });
+    authGuard(req, res, async () => { await handleGetReferenceModal(req, res, _pshPool); });
 
   } else if (pathname.match(/^\/api\/journey\/[^/]+\/reference-upload$/) && req.method === 'POST') {
     // sdg.1 — reference file upload handler (JSON body: {files:[{name,size,contentBase64}]})
@@ -2909,7 +2909,7 @@ async function router(req, res) {
     // ougl.6 — per-story stage routing: story list entry form
     const journeyIdPart = pathname.split('/')[2];
     req.params = { journeyId: journeyIdPart };
-    await handleGetStories(req, res);
+    await handleGetStories(req, res, _pshPool);
 
   } else if (pathname.match(/^\/api\/journey\/[^/]+\/stories$/) && req.method === 'POST') {
     // ougl.6 — per-story stage routing: set story list + start test-plan

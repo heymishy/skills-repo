@@ -11,6 +11,7 @@ var _csrf = require('../middleware/csrf'); // d2 -- impersonation exit banner CS
 var { updateJourneyReferenceFiles } = require('../modules/journey-state-persistence');
 var _flagBootstrap = require('../modules/flag-bootstrap'); // bri-s1.3
 var _getProductsNavSummary = require('./products').getProductsNavSummary; // pan-s1 -- shared sidebar products summary
+var _renderShellWithNav = require('./products').renderShellWithNav; // pncg-s1 -- shared Products-nav render wrapper
 
 // Injectable adapters — defaults wire to real implementations
 var _journeyStore = require('../modules/journey-store');
@@ -610,7 +611,7 @@ function _renderMarkdown(text) {
  * GET /journey/:journeyId/stage-review
  * Shows the completed artefact from the active session for review before gate-confirm.
  */
-async function handleGetStageReview(req, res) {
+async function handleGetStageReview(req, res, pool) {
   if (!req.session || !req.session.accessToken) {
     res.writeHead(302, { Location: '/auth/github' });
     res.end();
@@ -718,7 +719,7 @@ async function handleGetStageReview(req, res) {
     '</div>'
   ].join('');
 
-  var html = renderShell({ title: 'Review: ' + stageLabel, bodyContent: body, user: { login: req.session.login || '' }, active: 'journey' });
+  var html = await _renderShellWithNav(pool, req.session.tenantId, { title: 'Review: ' + stageLabel, bodyContent: body, user: { login: req.session.login || '' }, active: 'journey' });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -1576,7 +1577,7 @@ async function handleGetJourneyResume(req, res) {
  * GET /journey/:journeyId/reference-modal (sdg.1)
  * Renders the strategy grounding upload modal.
  */
-async function handleGetReferenceModal(req, res) {
+async function handleGetReferenceModal(req, res, pool) {
   if (!req.session || !req.session.accessToken) {
     res.writeHead(302, { Location: '/auth/github' });
     res.end();
@@ -1662,7 +1663,7 @@ async function handleGetReferenceModal(req, res) {
   ].join('\n');
 
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-  res.end(renderShell({ title: 'Strategy grounding — ' + featureName, bodyContent: body, user: { login: req.session.login || '' }, active: 'journey' }));
+  res.end(await _renderShellWithNav(pool, req.session.tenantId, { title: 'Strategy grounding — ' + featureName, bodyContent: body, user: { login: req.session.login || '' }, active: 'journey' }));
 }
 
 /**
@@ -1744,7 +1745,7 @@ function _sanitiseRefFilename(raw) {
  * GET /journey/:journeyId/reference
  * Lists existing reference docs and shows an upload (paste) form.
  */
-async function handleGetReference(req, res) {
+async function handleGetReference(req, res, pool) {
   if (!req.session || !req.session.accessToken) {
     res.writeHead(302, { Location: '/auth/github' });
     res.end();
@@ -1837,7 +1838,7 @@ async function handleGetReference(req, res) {
     '</div>'
   ].join('');
 
-  var html = renderShell({ title: 'Reference docs — ' + featureName, bodyContent: body, user: { login: req.session.login || '' }, active: 'journey' });
+  var html = await _renderShellWithNav(pool, req.session.tenantId, { title: 'Reference docs — ' + featureName, bodyContent: body, user: { login: req.session.login || '' }, active: 'journey' });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -2423,7 +2424,7 @@ function extractStoryIdsFromDefinitionArtefact(md) {
 /**
  * GET /journey/:journeyId/stories — render story list entry form.
  */
-async function handleGetStories(req, res) {
+async function handleGetStories(req, res, pool) {
   if (!req.session || !req.session.accessToken) {
     res.writeHead(302, { Location: '/auth/github' });
     res.end();
@@ -2465,7 +2466,7 @@ async function handleGetStories(req, res) {
     '</form>',
     '</div>'
   ].join('');
-  var html = renderShell({ title: 'Stories', bodyContent: body, user: { login: req.session.login || '' } });
+  var html = await _renderShellWithNav(pool, req.session.tenantId, { title: 'Stories', bodyContent: body, user: { login: req.session.login || '' } });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -2794,7 +2795,7 @@ function _isSafeBoardBackLink(url) {
  * Registers the viewer/active-user count (S3.4/wsm.2) before redirecting,
  * so "who's looking at this" tracking survives the destination change.
  */
-function handleGetJourneyById(req, res) {
+async function handleGetJourneyById(req, res, pool) {
   if (!req.session || !req.session.accessToken) {
     res.writeHead(302, { Location: '/auth/github' });
     res.end();
@@ -2859,7 +2860,7 @@ function handleGetJourneyById(req, res) {
     '<p>Active viewers: ' + _getActiveViewerCount(journeyId) + '</p>',
     '</div>'
   ].join('');
-  var html = renderShell({ title: 'Journey', bodyContent: body, user: { login: login } });
+  var html = await _renderShellWithNav(pool, req.session.tenantId, { title: 'Journey', bodyContent: body, user: { login: login } });
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -3919,7 +3920,7 @@ function _readPipelineFeatures(root) {
   }
 }
 
-function handleGetWizard(req, res) {
+async function handleGetWizard(req, res, pool) {
   if (req.session && req.session.activeFeatureSlug) {
     res.writeHead(302, { Location: '/journey' });
     res.end();
@@ -3968,7 +3969,7 @@ function handleGetWizard(req, res) {
     }
     body2 += '</form>';
     res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end(renderShell({ title: 'Continue a feature', bodyContent: body2 }));
+    res.end(await _renderShellWithNav(pool, req.session && req.session.tenantId, { title: 'Continue a feature', bodyContent: body2 }));
     return;
   }
 
@@ -4017,7 +4018,7 @@ function handleGetWizard(req, res) {
         '</form>';
     }
     res.writeHead(200, { 'Content-Type': 'text/html' });
-    res.end(renderShell({ title: 'Resume a session', bodyContent: body3 }));
+    res.end(await _renderShellWithNav(pool, req.session && req.session.tenantId, { title: 'Resume a session', bodyContent: body3 }));
     return;
   }
 
@@ -4047,7 +4048,7 @@ function handleGetWizard(req, res) {
     '</div>\n' +
     '</div>';
   res.writeHead(200, { 'Content-Type': 'text/html' });
-  res.end(renderShell({ title: 'Project selection', bodyContent: body }));
+  res.end(await _renderShellWithNav(pool, req.session && req.session.tenantId, { title: 'Project selection', bodyContent: body }));
 }
 
 async function handlePostWizardSelection(req, res) {
@@ -4121,9 +4122,9 @@ async function handlePostWizardSelection(req, res) {
  * @param {object} res
  * @param {object} [deps] - forwarded to bootstrapFlags for testability
  */
-async function handleGetWizardBootstrapped(req, res, deps) {
+async function handleGetWizardBootstrapped(req, res, deps, pool) {
   await _flagBootstrap.bootstrapFlags(req, deps);
-  return handleGetWizard(req, res);
+  return handleGetWizard(req, res, pool);
 }
 
 module.exports = {
