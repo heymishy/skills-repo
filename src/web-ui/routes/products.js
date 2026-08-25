@@ -2171,6 +2171,23 @@ async function getProductsNavSummary(pool, tenantId) {
   return { products: withStats, noProductJourneyCount: noProductRows.length };
 }
 
+// pncg-s1: shared wrapper so every route handler that wants the persistent
+// Products sidebar doesn't have to remember to call getProductsNavSummary
+// and thread its 3 fields into renderShell itself -- forgetting this is
+// exactly the bug class this story fixes (see decisions.md, ARCH entry).
+// Lives here (not html-shell.js) to avoid a circular dependency:
+// html-shell.js must not require products.js, since products.js already
+// requires html-shell.js for renderShell.
+async function renderShellWithNav(pool, tenantId, opts) {
+  var navSummary = await getProductsNavSummary(pool, tenantId);
+  var mergedOpts = Object.assign({}, opts, {
+    products: navSummary.products,
+    activeProductId: opts.activeProductId || null,
+    noProductJourneyCount: navSummary.noProductJourneyCount
+  });
+  return _htmlShell.renderShell(mergedOpts);
+}
+
 async function handleGetDashboard(req, res, _next, pool) {
   var _pool = pool;
   var tenantId = req.session && req.session.tenantId;
@@ -3867,6 +3884,9 @@ module.exports = {
   handleGetDashboard,
   // pan-s1: shared products-for-sidebar summary, also consumed by routes/journey.js
   getProductsNavSummary,
+  // pncg-s1: shared renderShell + nav-fetch wrapper, also consumed by every
+  // other route file fixed by this story
+  renderShellWithNav,
   handleGetProductNew,
   handleGetProductView,
   handleGetProductRoadmap,
