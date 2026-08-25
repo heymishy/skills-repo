@@ -3304,7 +3304,7 @@ async function router(req, res) {
 
   } else if (pathname === '/products/new' && req.method === 'GET') {
     // psh-s3 — product creation form
-    authGuard(req, res, async () => { handleGetProductNew(req, res); });
+    authGuard(req, res, async () => { await handleGetProductNew(req, res, _pshPool); });
 
   } else if (pathname === '/products/new' && req.method === 'POST') {
     // psh-s3 — product creation: generate AI draft

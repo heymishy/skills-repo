@@ -181,7 +181,7 @@ function _renderProductDashboard(products, login, navProducts, activeProductId, 
   });
 }
 
-function _renderProductNew(login, error, isAdmin, csrfToken) {
+function _renderProductNew(login, error, isAdmin, csrfToken, navProducts, noProductJourneyCount) {
   var errorHtml = error ? '<div style="padding:12px;background:#fee;border:1px solid #fcc;border-radius:6px;color:#c33;margin-bottom:16px;font-size:14px">' + _escapeHtml(error) + '</div>' : '';
   var body = '<div style="max-width:560px">' +
     '<h1 style="margin:0 0 24px;font-size:24px">Create a product</h1>' +
@@ -238,7 +238,7 @@ function _renderProductNew(login, error, isAdmin, csrfToken) {
     '}' +
     '<\/script>' +
   '</div>';
-  return _htmlShell.renderShell({ title: 'New product', bodyContent: body, user: { login: login }, active: 'dashboard', crumbs: ['Products', 'New'], isAdmin: isAdmin });
+  return _htmlShell.renderShell({ title: 'New product', bodyContent: body, user: { login: login }, active: 'dashboard', crumbs: ['Products', 'New'], isAdmin: isAdmin, products: navProducts, noProductJourneyCount: noProductJourneyCount });
 }
 
 // a4 -- renders one epic (journey) row with two visually distinct
@@ -989,7 +989,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
  * text label alongside their colour class (NFR-Accessibility -- never
  * colour-only), reusing the existing sw-pill classes from html-shell.js.
  */
-function _renderRoadmapTab(productName, productId, login, roadmapEntries, isAdmin) {
+function _renderRoadmapTab(productName, productId, login, roadmapEntries, isAdmin, navProducts, noProductJourneyCount) {
   var listHtml = roadmapEntries.length === 0
     ? '<p style="color:var(--muted);font-size:14px">Nothing in early-stage discovery right now</p>'
     : '<ul class="sw-list">' +
@@ -1011,7 +1011,7 @@ function _renderRoadmapTab(productName, productId, login, roadmapEntries, isAdmi
     '</div>' +
     listHtml +
   '</div>';
-  return _htmlShell.renderShell({ title: 'Roadmap', bodyContent: body, user: { login: login }, active: 'dashboard', crumbs: [productName, 'Roadmap'], isAdmin: isAdmin });
+  return _htmlShell.renderShell({ title: 'Roadmap', bodyContent: body, user: { login: login }, active: 'dashboard', crumbs: [productName, 'Roadmap'], isAdmin: isAdmin, products: navProducts, activeProductId: productId, noProductJourneyCount: noProductJourneyCount });
 }
 
 /**
@@ -1076,7 +1076,8 @@ async function handleGetProductRoadmap(req, res, _next, pool) {
   if (res.json) {
     res.json({ roadmap: roadmapEntries });
   } else {
-    var html = _renderRoadmapTab(prodRow.name, productId, login, roadmapEntries, isAdmin);
+    var navSummary = await getProductsNavSummary(_pool, tenantId);
+    var html = _renderRoadmapTab(prodRow.name, productId, login, roadmapEntries, isAdmin, navSummary.products, navSummary.noProductJourneyCount);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
@@ -1297,7 +1298,7 @@ function _renderGuardrailsSection(guardrailsPiece, standardsPiece, productId, pe
  * @param {string} prefillContent - existing content to pre-fill, or '' for blank
  * @param {string} productName
  */
-function _renderGuardrailsForm(productId, path, prefillContent, productName, isAdmin) {
+function _renderGuardrailsForm(productId, path, prefillContent, productName, isAdmin, navProducts, noProductJourneyCount) {
   var isEdit = !!path;
   var body = '<div style="max-width:720px">' +
     '<h1 style="margin:0 0 24px;font-size:24px">' + (isEdit ? 'Edit' : 'Add') + ' guardrail or standard</h1>' +
@@ -1329,7 +1330,10 @@ function _renderGuardrailsForm(productId, path, prefillContent, productName, isA
     bodyContent: body,
     active: 'dashboard',
     crumbs: [productName, 'Guardrails & Standards', isEdit ? 'Edit' : 'Add'],
-    isAdmin: isAdmin
+    isAdmin: isAdmin,
+    products: navProducts,
+    activeProductId: productId,
+    noProductJourneyCount: noProductJourneyCount
   });
 }
 
@@ -1362,7 +1366,8 @@ async function handleGetGuardrailsForm(req, res, _next, pool) {
     prefillContent = piece.status === 'ok' ? piece.value : '';
   }
 
-  var html = _renderGuardrailsForm(productId, path, prefillContent, prodRow.name, isAdmin);
+  var navSummary = await getProductsNavSummary(_pool, tenantId);
+  var html = _renderGuardrailsForm(productId, path, prefillContent, prodRow.name, isAdmin, navSummary.products, navSummary.noProductJourneyCount);
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -2256,12 +2261,14 @@ async function handleGetDashboard(req, res, _next, pool) {
   }
 }
 
-function handleGetProductNew(req, res) {
+async function handleGetProductNew(req, res, pool) {
   var login = req.session && req.session.login;
+  var tenantId = req.session && req.session.tenantId;
   var isAdmin = !!(req.session && isEffectivelyAdmin(req.session));
   var errorParam = req.query && req.query.error;
   var error = errorParam === 'plan_limit' ? 'Your plan allows 1 product. Upgrade to create more.' : null;
-  var html = _renderProductNew(login, error, isAdmin, _csrf.generateCsrfToken(req));
+  var navSummary = await getProductsNavSummary(pool, tenantId);
+  var html = _renderProductNew(login, error, isAdmin, _csrf.generateCsrfToken(req), navSummary.products, navSummary.noProductJourneyCount);
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -2768,7 +2775,7 @@ async function handleGetProductKanban(req, res, _next, pool, posthog) {
   // kbsf-s1: wrap via renderShell so the shared design-token :root block
   // (defined in html-shell.js, not kanban-view.js) is present -- see tenant
   // scope's identical comment above for the full root-cause explanation.
-  _sendKanbanHtml(res, _htmlShell.renderShell({
+  _sendKanbanHtml(res, await renderShellWithNav(_pool, tenantId, {
     title: 'Kanban board',
     bodyContent: html,
     user: { login: req.session && req.session.login },
@@ -2839,7 +2846,7 @@ async function handleGetOrgKanban(req, res, _next, pool, posthog) {
   });
   // kbsf-s1: wrap via renderShell -- see product/tenant scope's identical
   // comment for the full root-cause explanation.
-  _sendKanbanHtml(res, _htmlShell.renderShell({
+  _sendKanbanHtml(res, await renderShellWithNav(_pool, tenantId, {
     title: 'Kanban board',
     bodyContent: html,
     user: { login: req.session && req.session.login },
