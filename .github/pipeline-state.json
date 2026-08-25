@@ -26929,18 +26929,18 @@
     {
       "slug": "2026-08-25-first-run-empty-state-copy",
       "name": "Add orientation copy to two first-run empty states, and gate the Modules card on feature count",
-      "stage": "branch-setup",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "id": "fresc-s1",
           "slug": "fresc-s1",
           "name": "Add orientation copy to two first-run empty states, and gate the Modules card on feature count",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "none",
+          "prStatus": "draft",
           "testPlan": {
             "status": "written",
             "totalTests": 8,
@@ -26951,7 +26951,7 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-25T10:06:54.428Z",
+          "updatedAt": "2026-08-25T19:08:58.494Z",
           "tasks": [
             {
               "id": "task-1",
@@ -26978,11 +26978,12 @@
               "file": "artefacts/2026-08-25-first-run-empty-state-copy/plans/fresc-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/769"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-25T08:09:24.194Z",
+      "updatedAt": "2026-08-25T19:08:58.494Z",
       "track": "short",
       "guardrails": [
         {
