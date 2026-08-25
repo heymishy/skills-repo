@@ -26998,6 +26998,39 @@
           "assessedAt": "2026-08-25T07:54:37.601Z"
         }
       ]
+    },
+    {
+      "slug": "2026-08-26-products-nav-coverage-gap",
+      "name": "Wrap the Products-nav fetch in a shared helper and wire it to every page that is currently missing it",
+      "stage": "test-plan",
+      "health": "green",
+      "stories": [
+        {
+          "id": "pncg-s1",
+          "slug": "pncg-s1",
+          "name": "Wrap the Products-nav fetch in a shared helper and wire it to every page that is currently missing it",
+          "stage": "test-plan",
+          "health": "green",
+          "dorStatus": "not-started",
+          "dodStatus": "not-started",
+          "prStatus": "none",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 8,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-26-products-nav-coverage-gap/test-plans/pncg-s1-test-plan.md"
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-08-25T19:45:31.776Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-25T19:45:31.776Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
