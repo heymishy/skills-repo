@@ -73,7 +73,7 @@ function freshModules() {
     });
     var req = mockReq({ query: { session_id: 'cs_test_pro' } });
     var res = mockRes();
-    await mods.billing.handleGetBillingSuccess(req, res);
+    await mods.billing.handleGetBillingSuccess(req, res, { query: async function() { return { rows: [] }; } });
 
     check('billing-success-renders-200-confirmation-not-redirect', res._statusCode === 200);
     check('billing-success-body-mentions-payment-success', typeof res._body === 'string' && /payment|success/i.test(res._body));
@@ -96,7 +96,7 @@ function freshModules() {
 
     var req = mockReq({ query: { session_id: 'cs_test_pro' } });
     var res = mockRes();
-    await mods.billing.handleGetBillingSuccess(req, res);
+    await mods.billing.handleGetBillingSuccess(req, res, { query: async function() { return { rows: [] }; } });
     await new Promise(function(r) { setTimeout(r, 10); });
 
     var phCall = calls.find(function(c) { return c.event === 'checkout_completed'; });
@@ -114,7 +114,7 @@ function freshModules() {
     });
     var req = mockReq({ query: { session_id: 'cs_test_free', plan_name: 'ENTERPRISE' } });
     var res = mockRes();
-    await mods.billing.handleGetBillingSuccess(req, res);
+    await mods.billing.handleGetBillingSuccess(req, res, { query: async function() { return { rows: [] }; } });
     check('client-suppliable-plan-name-ignored', typeof res._body === 'string' && /free/i.test(res._body) && !/enterprise/i.test(res._body));
   })();
 
@@ -125,7 +125,7 @@ function freshModules() {
     var req = mockReq({ query: {} });
     var res = mockRes();
     var threw = false;
-    try { await mods.billing.handleGetBillingSuccess(req, res); } catch (e) { threw = true; }
+    try { await mods.billing.handleGetBillingSuccess(req, res, { query: async function() { return { rows: [] }; } }); } catch (e) { threw = true; }
     check('missing-session-id-does-not-throw', !threw);
     check('missing-session-id-falls-back-to-dashboard-redirect', res._statusCode === 302 && res._headers['Location'] === '/dashboard');
   })();
@@ -139,7 +139,7 @@ function freshModules() {
     var req = mockReq({ query: { session_id: 'cs_broken' } });
     var res = mockRes();
     var threw = false;
-    try { await mods.billing.handleGetBillingSuccess(req, res); } catch (e) { threw = true; }
+    try { await mods.billing.handleGetBillingSuccess(req, res, { query: async function() { return { rows: [] }; } }); } catch (e) { threw = true; }
     check('retrieve-failure-does-not-throw', !threw);
     check('retrieve-failure-falls-back-to-dashboard-redirect', res._statusCode === 302 && res._headers['Location'] === '/dashboard');
   })();

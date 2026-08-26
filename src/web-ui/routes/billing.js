@@ -9,7 +9,13 @@ var stripeClient  = require('../modules/stripe-client');
 var creditsModule = require('../modules/credits');
 var tenantPlan    = require('../modules/tenant-plan'); // bri-s3.5
 var csrf          = require('../middleware/csrf'); // sec-perf-s3
-var { renderShell, escHtml } = require('../utils/html-shell'); // bsc-s1
+var { escHtml } = require('../utils/html-shell'); // bsc-s1
+// pncg-s1: renderShell's direct import was removed here -- handleGetBillingSuccess
+// (its only caller in this file) now goes through renderShellWithNav below,
+// which wraps renderShell itself. Shared Products-nav sidebar wrapper -- see
+// products.js's own renderShellWithNav docblock. products.js does not
+// require billing.js, so this creates no circular dependency.
+var { renderShellWithNav } = require('./products');
 
 // bsc-s1: human-readable label for a plan ID -- falls back to the raw ID
 // (title-cased) for any plan not explicitly listed here, so a newly-added
@@ -200,7 +206,7 @@ async function handlePostCheckout(req, res) {
  * Fires `checkout_completed` PostHog event fire-and-forget (AC6 — must not block redirect)
  * Responds 302 to /dashboard (AC6)
  */
-async function handleGetBillingSuccess(req, res) {
+async function handleGetBillingSuccess(req, res, pool) {
   // Auth guard: unauthenticated → redirect to root
   if (!req.session || !req.session.accessToken) {
     res.writeHead(302, { Location: '/' });
@@ -253,7 +259,7 @@ async function handleGetBillingSuccess(req, res) {
       '<p>You’re now on the ' + escHtml(planLabel) + ' plan.</p>' +
       '<p><a href="/dashboard" class="sw-btn sw-btn--primary">Continue to dashboard</a></p>' +
     '</div>';
-  var html = renderShell({
+  var html = await renderShellWithNav(pool, req.session.tenantId, {
     title:       'Payment successful',
     bodyContent: bodyContent,
     user:        { login: req.session.login || '' }

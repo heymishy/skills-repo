@@ -319,7 +319,10 @@ setImmediate(function() {
     // production value and must not be trusted (bsc-s1 AC1/AC2).
     var req6 = mockReq({ query: { session_id: 'cs_test_123', plan_name: 'starter' } });
     var res6 = mockRes();
-    await billing2.handleGetBillingSuccess(req6, res6);
+    // pncg-s1: handleGetBillingSuccess now threads a `pool` param through to
+    // renderShellWithNav's own getProductsNavSummary(pool, tenantId) call --
+    // empty rows is fine, this test doesn't assert on the Products nav section.
+    await billing2.handleGetBillingSuccess(req6, res6, { query: async function() { return { rows: [] }; } });
     check(
       'billing-success-renders-confirmation-page-naming-real-plan',
       res6._statusCode === 200 &&

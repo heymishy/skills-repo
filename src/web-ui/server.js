@@ -3062,7 +3062,7 @@ async function router(req, res) {
 
   } else if (pathname === '/billing/success' && req.method === 'GET') {
     // lab-s3.2 — Stripe Checkout success callback
-    await handleGetBillingSuccess(req, res);
+    await handleGetBillingSuccess(req, res, _pshPool);
 
   } else if (pathname === '/settings/billing' && req.method === 'GET') {
     // lab-s3.5 — Stripe Billing Portal redirect
