@@ -14,7 +14,12 @@ const { generateCsrfToken, csrfField, csrfGuard } = require('../middleware/csrf'
 // hand-rolling a bare <!DOCTYPE html> document -- same pattern kfd1's detail
 // pages and settings.js's Credits tab already use. adminCreditsPost, the CSRF
 // logic, and the underlying credits module are untouched by this story.
-const { renderShell } = require('../utils/html-shell');
+// pncg-s1: renderShell's direct import was removed here -- adminCreditsGet
+// (the only caller in this file) now goes through renderShellWithNav below,
+// which wraps renderShell itself. Shared Products-nav sidebar wrapper -- see
+// products.js's own renderShellWithNav docblock. products.js does not
+// require admin-credits.js, so this creates no circular dependency.
+const { renderShellWithNav } = require('./products');
 // tpac-s1: reuse tenant-plan.js's already-existing, already-tested
 // getPlanState/setPlanState directly -- no new plan-state logic, this story
 // only adds a new caller (an admin-facing UI + route) to a production-stable
@@ -61,7 +66,7 @@ function _readBody(req) {
 /**
  * GET /admin/credits — render admin credits page showing all tenant balances.
  */
-async function adminCreditsGet(req, res) {
+async function adminCreditsGet(req, res, pool) {
   const rows = await getAllTenantBalances();
   // sec-perf-s3 AC1: session-scoped CSRF token, embedded in every adjust form below.
   const csrfToken = generateCsrfToken(req);
@@ -137,7 +142,7 @@ async function adminCreditsGet(req, res) {
     '</table>',
   ].join('\n');
 
-  const html = renderShell({
+  const html = await renderShellWithNav(pool, req.session && req.session.tenantId, {
     title: 'Admin — Credits',
     bodyContent,
     user: req.session,

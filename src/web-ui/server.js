@@ -3156,7 +3156,7 @@ async function router(req, res) {
     let _raOk = false;
     await requireAdmin(req, res, () => { _raOk = true; });
     if (!_raOk) return;
-    await adminCreditsGet(req, res);
+    await adminCreditsGet(req, res, _pshPool);
 
   } else if (pathname === '/api/admin/credits/adjust' && req.method === 'POST') {
     // arl-s3 — admin credits adjustment (requireAdmin gate)

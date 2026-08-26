@@ -62,6 +62,14 @@ function makeRes() {
   return r;
 }
 
+// pncg-s1: adminCreditsGet now threads a `pool` param through to
+// renderShellWithNav's own getProductsNavSummary(pool, tenantId) call --
+// this mock only needs to satisfy that query shape (empty rows is fine,
+// these tests don't assert anything about the Products nav section itself).
+function makeMockNavPool() {
+  return { query: async function() { return { rows: [] }; } };
+}
+
 function makeTwoRowMockDb() {
   return {
     query: async function(sql) {
@@ -91,7 +99,7 @@ async function main() {
 
       var req = { session: { userId: 1, role: 'admin', login: 'alice' } };
       var res = makeRes();
-      await handler.adminCreditsGet(req, res);
+      await handler.adminCreditsGet(req, res, makeMockNavPool());
 
       assert.strictEqual(res._status, 200, 'Expected 200, got ' + res._status);
       // renderShell's known structure must be present.
@@ -115,7 +123,7 @@ async function main() {
 
       var req = { session: { userId: 1, role: 'admin', login: 'alice' } };
       var res = makeRes();
-      await handler.adminCreditsGet(req, res);
+      await handler.adminCreditsGet(req, res, makeMockNavPool());
 
       // Both tenant rows present with correct balances.
       assert.ok(res._body.includes('tenant-a'), 'Response must contain tenant-a');
@@ -147,7 +155,7 @@ async function main() {
 
       var req = { session: { userId: 1, role: 'admin', login: 'alice' } };
       var res = makeRes();
-      await handler.adminCreditsGet(req, res);
+      await handler.adminCreditsGet(req, res, makeMockNavPool());
 
       assert.ok(res._body.includes('href="/dashboard"'), 'Response must contain a nav link back to /dashboard');
     });

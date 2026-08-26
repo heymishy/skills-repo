@@ -54,6 +54,14 @@ function makeRes() {
   return r;
 }
 
+// pncg-s1: adminCreditsGet now threads a `pool` param through to
+// renderShellWithNav's own getProductsNavSummary(pool, tenantId) call --
+// this mock only needs to satisfy that query shape (empty rows is fine,
+// these tests don't assert anything about the Products nav section itself).
+function makeMockNavPool() {
+  return { query: async function() { return { rows: [] }; } };
+}
+
 // Standard multi-purpose mock adapter
 function makeMockDb(overrides) {
   return {
@@ -80,7 +88,7 @@ async function main() {
 
       var req = { session: { userId: 1, role: 'admin' } };
       var res = makeRes();
-      await handler.adminCreditsGet(req, res);
+      await handler.adminCreditsGet(req, res, makeMockNavPool());
 
       assert.strictEqual(res._status, 200, 'Expected 200, got ' + res._status);
       assert.ok(res._body.includes('tenant-a'), 'HTML must contain tenant-a');
@@ -268,7 +276,7 @@ async function main() {
 
       var req = { session: { userId: 1, role: 'admin' } };
       var res = makeRes();
-      await handler.adminCreditsGet(req, res);
+      await handler.adminCreditsGet(req, res, makeMockNavPool());
 
       assert.ok(!res._body.includes('<b>'), 'Raw <b> tag must not appear in output');
       assert.ok(res._body.includes('a&lt;b&gt;c'), 'tenant_id must be HTML-escaped');
@@ -331,7 +339,7 @@ async function main() {
         var called = false;
         requireAdmin(req, res, function() { called = true; });
         if (called) {
-          handler.adminCreditsGet(req, res).then(resolve).catch(resolve);
+          handler.adminCreditsGet(req, res, makeMockNavPool()).then(resolve).catch(resolve);
         } else {
           resolve();
         }
