@@ -167,6 +167,44 @@ function _readFormBody(req) {
   });
 }
 
+/**
+ * jspf-s1: shared disk-then-Postgres artefact resolver. Extends the
+ * already-proven alrf-s4/avpf-s1 fallback shape to the 4 read sites in this
+ * file that never checked Postgres for a completed stage's durable content.
+ * Disk is tried first, exactly as each of the 4 call sites already did on
+ * its own -- this preserves "disk is authoritative when it has content"
+ * (disk can be fresher than the last saveArtefact() call). Only when disk
+ * comes back empty does this fall through to Postgres, matching the
+ * try/catch-degrades-to-empty convention already established at this same
+ * file's own ~line 1502-1513 and ~2254-2264 resume-context rebuilds. Never
+ * throws -- a Postgres failure (no DATABASE_URL, connection error) simply
+ * degrades to '', leaving each call site free to apply its own next
+ * fallback (site 1's git-fetch) or its own existing empty-default behaviour
+ * (sites 2-4), unchanged.
+ * @param {string} repoRoot        - resolved via getRepoRoot(req) by the caller
+ * @param {string} artefactRelPath - artefact path relative to repoRoot
+ * @param {string} journeyId       - already access-checked by the caller
+ * @param {string} stageName       - skill_name to match in the artefacts table
+ * @returns {Promise<string>} resolved content, or '' if neither source has it
+ */
+async function resolveArtefactFromDiskOrPg(repoRoot, artefactRelPath, journeyId, stageName) {
+  var content = '';
+  if (artefactRelPath) {
+    var absPath = path.resolve(path.join(repoRoot, artefactRelPath));
+    try { content = fs.readFileSync(absPath, 'utf8'); } catch (_) {}
+  }
+  if (!content && process.env.DATABASE_URL && journeyId) {
+    try {
+      var pgArts = await require('../adapters/journey-store-pg').getArtefactsForJourney(journeyId);
+      var match = (pgArts || []).find(function(a) { return a.skill_name === stageName; });
+      if (match && match.content) content = match.content;
+    } catch (pgErr) {
+      console.error('[artefact] Postgres read (jspf-s1 fallback) failed:', pgErr.message);
+    }
+  }
+  return content || '';
+}
+
 function _renderJourneyHome(data) {
   var profiles     = data.profiles || ['default'];
   var activeProfile = data.activeProfile || 'default';
@@ -4131,6 +4169,7 @@ async function handleGetWizardBootstrapped(req, res, deps, pool) {
 }
 
 module.exports = {
+  resolveArtefactFromDiskOrPg, // jspf-s1
   handleGetJourney,
   handlePostJourney,
   handleDeleteJourney,
