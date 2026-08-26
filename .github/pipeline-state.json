@@ -27017,55 +27017,55 @@
           "testPlan": {
             "status": "written",
             "totalTests": 8,
-            "passing": 0,
+            "passing": 8,
             "artefact": "artefacts/2026-08-26-products-nav-coverage-gap/test-plans/pncg-s1-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-25T20:37:37.090Z",
+          "updatedAt": "2026-08-26T02:29:43.323Z",
           "tasks": [
             {
               "id": "task-1",
               "name": "Add the renderShellWithNav shared helper (AC1)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-26-products-nav-coverage-gap/plans/pncg-s1-plan.md"
             },
             {
               "id": "task-2",
               "name": "Wire products.js's own 5 call sites (AC2)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-26-products-nav-coverage-gap/plans/pncg-s1-plan.md"
             },
             {
               "id": "task-3",
               "name": "Thread pool through and wire journey.js's 6 handlers (AC2, AC3)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-26-products-nav-coverage-gap/plans/pncg-s1-plan.md"
             },
             {
               "id": "task-4",
               "name": "Wire settings.js and team-management.js (AC2)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-26-products-nav-coverage-gap/plans/pncg-s1-plan.md"
             },
             {
               "id": "task-5",
               "name": "Thread pool through and wire the remaining 5 files (AC2, AC3)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-26-products-nav-coverage-gap/plans/pncg-s1-plan.md"
             },
             {
               "id": "task-6",
               "name": "Write structural and functional coverage tests (AC2, AC3)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-26-products-nav-coverage-gap/plans/pncg-s1-plan.md"
             },
             {
               "id": "task-7",
               "name": "Full-suite regression run (AC4)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-26-products-nav-coverage-gap/plans/pncg-s1-plan.md"
             }
           ]
