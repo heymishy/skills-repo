@@ -27121,6 +27121,31 @@
       "metrics": [],
       "updatedAt": "2026-08-26T17:47:10.681Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-08-27-csrf-token-not-persisted-across-restart",
+      "name": "Persist a newly-generated CSRF token to Redis immediately, not never",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "id": "ctpr-s1",
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "dodStatus": "not-started",
+          "acTotal": 5,
+          "dorArtefact": "artefacts/2026-08-27-csrf-token-not-persisted-across-restart/dor/ctpr-s1-dor.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-08-27-csrf-token-not-persisted-across-restart/test-plans/ctpr-s1-test-plan.md"
+          },
+          "updatedAt": "2026-08-26T19:09:57.918Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-26T19:09:58.059Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
