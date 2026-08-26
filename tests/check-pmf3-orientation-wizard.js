@@ -45,6 +45,10 @@ function writeFile(dir, relPath, content) {
   fs.writeFileSync(fullPath, content, 'utf8');
 }
 
+function mockPool() {
+  return { query: async function() { return { rows: [] }; } };
+}
+
 function mockRes() {
   var res = { statusCode: 200, body: null, headers: {} };
   res.status = function(code) { res.statusCode = code; return res; };
@@ -66,14 +70,14 @@ var queue = [];
 // T3.1 — Step 1 renders three named options (AC1)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T3.1: Step 1 renders three option headings — new, existing, resume (AC1)', function() {
+  return test('T3.1: Step 1 renders three option headings — new, existing, resume (AC1)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     var repoRoot = mkTmp('t3-1');
     writeFile(repoRoot, '.github/pipeline-state.json', JSON.stringify({ features: [{ slug: 'feat-t31', stage: 'definition' }] }));
     routes.setRepoRoot(repoRoot);
     var req = { session: { accessToken: 'tok' } }; // no view param
     var res = mockRes();
-    routes.handleGetWizard(req, res);
+    await routes.handleGetWizard(req, res, mockPool());
     var body = typeof res.body === 'string' ? res.body : '';
     assert.ok(body.toLowerCase().includes('something new') || body.toLowerCase().includes('start something'),
       'Step 1 must include "Start something new" option; body: ' + body.substring(0, 300));
@@ -88,7 +92,7 @@ queue.push(function() {
 // T3.2 — Step 1 does NOT pre-render the feature list (AC1)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T3.2: Step 1 (no view param) does not render feature slug list in body (AC1)', function() {
+  return test('T3.2: Step 1 (no view param) does not render feature slug list in body (AC1)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     var repoRoot = mkTmp('t3-2');
     writeFile(repoRoot, '.github/pipeline-state.json', JSON.stringify({ features: [
@@ -97,7 +101,7 @@ queue.push(function() {
     routes.setRepoRoot(repoRoot);
     var req = { session: { accessToken: 'tok' } }; // no view param → Step 1
     var res = mockRes();
-    routes.handleGetWizard(req, res);
+    await routes.handleGetWizard(req, res, mockPool());
     var body = typeof res.body === 'string' ? res.body : '';
     assert.ok(!body.includes('feat-unique-t32-alpha'),
       'Step 1 must NOT render feature slug; slug should only appear in Step 2 (view=existing); body: ' + body.substring(0, 300));
@@ -108,7 +112,7 @@ queue.push(function() {
 // T3.3 — Step 2 renders feature CARDS (not plain li slugs) (AC4)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T3.3: Step 2 (view=existing) renders feature cards with class, not plain li slugs (AC4)', function() {
+  return test('T3.3: Step 2 (view=existing) renders feature cards with class, not plain li slugs (AC4)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     var repoRoot = mkTmp('t3-3');
     writeFile(repoRoot, '.github/pipeline-state.json', JSON.stringify({ features: [
@@ -117,7 +121,7 @@ queue.push(function() {
     routes.setRepoRoot(repoRoot);
     var req = { session: { accessToken: 'tok' }, query: { view: 'existing' } };
     var res = mockRes();
-    routes.handleGetWizard(req, res);
+    await routes.handleGetWizard(req, res, mockPool());
     var body = typeof res.body === 'string' ? res.body : '';
     assert.ok(body.includes('feat-pmf3-t3'),
       'Step 2 must include the feature slug; body: ' + body.substring(0, 300));
@@ -154,12 +158,12 @@ queue.push(function() {
 // T3.5 — Step 3: no active sessions → "No active sessions" message (AC6)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T3.5: Step 3 (view=resume) with no sessions → no-sessions message (AC6)', function() {
+  return test('T3.5: Step 3 (view=resume) with no sessions → no-sessions message (AC6)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     routes.setListHtmlSessions(function() { return []; }); // empty store
     var req = { session: { accessToken: 'tok' }, query: { view: 'resume' } };
     var res = mockRes();
-    routes.handleGetWizard(req, res);
+    await routes.handleGetWizard(req, res, mockPool());
     var body = typeof res.body === 'string' ? res.body : '';
     assert.ok(res.statusCode < 400, 'Must return success status; got: ' + res.statusCode);
     assert.ok(
@@ -175,7 +179,7 @@ queue.push(function() {
 // T3.6 — Step 3: session within 24h appears (AC6)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T3.6: Step 3 lists session with lastActivity within 24h (AC6)', function() {
+  return test('T3.6: Step 3 lists session with lastActivity within 24h (AC6)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     var now = Date.now();
     var mockSessions = [
@@ -184,7 +188,7 @@ queue.push(function() {
     routes.setListHtmlSessions(function() { return mockSessions; });
     var req = { session: { accessToken: 'tok' }, query: { view: 'resume' } };
     var res = mockRes();
-    routes.handleGetWizard(req, res);
+    await routes.handleGetWizard(req, res, mockPool());
     var body = typeof res.body === 'string' ? res.body : '';
     assert.ok(body.includes('discovery'),
       'Active session skillName must appear in Step 3 output; body: ' + body.substring(0, 300));
@@ -197,7 +201,7 @@ queue.push(function() {
 // T3.7 — Step 3: stale session (>24h) NOT shown (AC6)
 // ---------------------------------------------------------------------------
 queue.push(function() {
-  return test('T3.7: Step 3 does NOT list session with lastActivity older than 24h (AC6)', function() {
+  return test('T3.7: Step 3 does NOT list session with lastActivity older than 24h (AC6)', async function() {
     var routes = freshRequire(JOURNEY_PATH);
     var now = Date.now();
     var staleMs = 25 * 60 * 60 * 1000; // 25h ago
@@ -207,7 +211,7 @@ queue.push(function() {
     routes.setListHtmlSessions(function() { return mockSessions; });
     var req = { session: { accessToken: 'tok' }, query: { view: 'resume' } };
     var res = mockRes();
-    routes.handleGetWizard(req, res);
+    await routes.handleGetWizard(req, res, mockPool());
     var body = typeof res.body === 'string' ? res.body : '';
     assert.ok(!body.includes('sess-stale-t37'),
       'Stale session (>24h) must NOT appear in Step 3; body: ' + body.substring(0, 300));

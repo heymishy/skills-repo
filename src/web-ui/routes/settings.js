@@ -18,6 +18,7 @@
 // renders <a> links pointing at their existing routes. No new OAuth logic.
 
 var _htmlShell = require('../utils/html-shell');
+var { getProductsNavSummary } = require('./products'); // pncg-s1: fetch the Products-nav sidebar data (AC2), matching Task 2's real precedent (products.js's own handlers)
 var _identityLinks = require('../modules/identity-links');
 var _tenantPlan = require('../modules/tenant-plan'); // c2
 // c3 — reuses getAllTenantBalances/CSRF helpers exactly as admin-credits.js already
@@ -556,7 +557,23 @@ var _TAB_JS =
  * Render the full Settings page (AC1: wrapped in the shared shell, not a
  * bare fragment). Profile and Credits (c3) panels have real content;
  * Billing remains an empty container ready for C2.
- * @param {{user: object, linkedSet: Set<string>, isAdmin: boolean, creditsRows?: Array, csrfToken?: string, creditsError?: string, impersonation?: object}} opts
+ *
+ * pncg-s1 (AC2): threads the persistent Products-nav sidebar data through as
+ * two new OPTIONAL trailing-shaped opts fields (opts.navProducts /
+ * opts.noProductJourneyCount) instead of splitting this function into a
+ * separate body-builder -- this matches Task 2's real precedent exactly
+ * (products.js's _renderRoadmapTab/_renderGuardrailsForm/_renderProductNew,
+ * which each simply gained navProducts/noProductJourneyCount as new optional
+ * parameters, with no function splitting). Both fields are `undefined` for
+ * every pre-existing call site (none of which pass them), and
+ * renderShell()'s renderProductsSection() sub-function already hard-returns
+ * '' when `products` is falsy/undefined (html-shell.js: `if (!products)
+ * return '';`) -- so passing undefined here preserves the exact old
+ * behaviour with zero special-casing. This function stays synchronous, same
+ * as _renderRoadmapTab: it takes pre-fetched data, it does not fetch it
+ * itself. See decisions.md (pncg-s1, ARCH) for the full rationale, including
+ * why an earlier split-function attempt was reverted after review.
+ * @param {{user: object, linkedSet: Set<string>, isAdmin: boolean, creditsRows?: Array, csrfToken?: string, creditsError?: string, impersonation?: object, navProducts?: Array, noProductJourneyCount?: number}} opts
  * @returns {string} full HTML document
  */
 function renderSettingsPage(opts) {
@@ -568,7 +585,7 @@ function renderSettingsPage(opts) {
   var planState = opts.planState || { plan: 'trial', status: 'active' };
   var csrfToken = opts.csrfToken || '';
 
-  var body =
+  var body = (
     '<h1 class="sw-page-h1">Settings</h1>' +
     '<p class="sw-page-sub">Manage your identity, sign-in methods' + (isAdmin ? ', billing, and platform credits' : ' and billing') + '.</p>' +
     _TAB_CSS +
@@ -594,7 +611,8 @@ function renderSettingsPage(opts) {
     // impersonationAuditRows populated, so there is nothing to hide
     // client-side.
     (isAdmin ? renderImpersonationAuditTab(opts.impersonationAuditRows || [], !!opts.impersonationStartEnabled) : '') +
-    _TAB_JS;
+    _TAB_JS
+  );
 
   return _htmlShell.renderShell({
     title: 'Settings — Skills Platform',
@@ -605,7 +623,10 @@ function renderSettingsPage(opts) {
     isAdmin: isAdmin, // b2: forward the isAdmin this function already computes so the
                       // sidebar's Admin credits entry (gated the same way as the
                       // Credits tab above) shows consistently on this page too.
-    impersonation: opts.impersonation // d2 (AC1): forward so the shell can render the banner
+    impersonation: opts.impersonation, // d2 (AC1): forward so the shell can render the banner
+    // pncg-s1 (AC2): undefined on every pre-existing call site -- see docblock above.
+    products: opts.navProducts,
+    noProductJourneyCount: opts.noProductJourneyCount
   });
 }
 
@@ -718,7 +739,16 @@ function createSettingsHandlers(pool) {
     // the restyled form's client-side fetch handler (see renderCreditsTab)
     // surfaces a rejection inline without a page navigation, so there is no
     // server-side error state to thread through here on first render.
-    var html = renderSettingsPage({
+    // pncg-s1 (AC2): fetch the same Products-nav data products.js's own
+    // handlers already fetch (handleGetProductRoadmap et al.), then pass it
+    // straight into renderSettingsPage() as two new optional keys -- the
+    // exact parameter-threading pattern Task 2 used for
+    // _renderRoadmapTab/_renderGuardrailsForm/_renderProductNew. See
+    // decisions.md (pncg-s1, ARCH) for why this replaced an earlier
+    // split-function attempt.
+    var navSummary = await getProductsNavSummary(pool, tenantId);
+
+    var settingsBodyOpts = {
       user: user,
       linkedSet: linkedSet,
       isAdmin: isAdmin,
@@ -730,8 +760,11 @@ function createSettingsHandlers(pool) {
       impersonationStartEnabled: impersonationStartEnabled,
       billingError: billingErrorMessage,
       locale: personLocale,
-      localeSuccessMessage: localeSuccessMessage
-    });
+      localeSuccessMessage: localeSuccessMessage,
+      navProducts: navSummary.products,
+      noProductJourneyCount: navSummary.noProductJourneyCount
+    };
+    var html = renderSettingsPage(settingsBodyOpts);
 
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);

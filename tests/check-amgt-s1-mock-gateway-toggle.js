@@ -86,6 +86,14 @@ function makeRes() {
   return r;
 }
 
+// pncg-s1: adminMockGatewayGet now threads a `pool` param through to
+// renderShellWithNav's own getProductsNavSummary(pool, tenantId) call --
+// this mock only needs to satisfy that query shape (empty rows is fine,
+// these tests don't assert anything about the Products nav section itself).
+function makeMockNavPool() {
+  return { query: async function() { return { rows: [] }; } };
+}
+
 function makePostReq(session, bodyStr) {
   return {
     session: session,
@@ -151,7 +159,7 @@ async function main() {
 
       const req = { session: { userId: 1, role: 'admin', login: 'hamish' } };
       const res = makeRes();
-      await route.adminMockGatewayGet(req, res);
+      await route.adminMockGatewayGet(req, res, makeMockNavPool());
 
       assert.strictEqual(res._status, 200, 'Expected 200, got ' + res._status);
       const liveState = mockGateway.isMockGatewayEnabled();
@@ -163,7 +171,7 @@ async function main() {
       delete process.env.NODE_ENV;
       delete process.env.MOCK_LLM_GATEWAY;
       const res2 = makeRes();
-      await route.adminMockGatewayGet(req, res2);
+      await route.adminMockGatewayGet(req, res2, makeMockNavPool());
       assert.ok(res2._body.includes('OFF (real model calls)'), 'Page must reflect the new OFF state live, not a stale ON value');
     });
   });
@@ -208,7 +216,7 @@ async function main() {
       const route = freshAdminRoute();
       const req = { session: { userId: 1, role: 'admin', login: 'hamish' } };
       const res = makeRes();
-      await route.adminMockGatewayGet(req, res);
+      await route.adminMockGatewayGet(req, res, makeMockNavPool());
       assert.ok(
         /resets to the configured default on (the )?next server restart or redeploy|resets to the configured default/i.test(res._body),
         'Admin page must contain explicit copy describing the reset-on-restart behaviour'

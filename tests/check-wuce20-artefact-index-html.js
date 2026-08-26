@@ -44,6 +44,17 @@ function eq(actual, expected, label) {
 
 // ── Test helpers ──────────────────────────────────────────────────────────────
 
+// pncg-s1: handleGetFeatureArtefacts now threads a `pool` param (4th
+// positional, after featureSlug) through to renderShellWithNav's own
+// getProductsNavSummary(pool, tenantId) call on its HTML-negotiated success
+// branch -- this mock only needs to satisfy that query shape (empty rows is
+// fine, these tests don't assert on the Products nav section itself).
+// Harmless to pass on the JSON-branch calls too, since pool is never
+// touched there.
+function mockNavPool() {
+  return { query: async () => ({ rows: [] }) };
+}
+
 function mockRes() {
   const r = {
     statusCode: null,
@@ -105,7 +116,7 @@ console.log('\nT1 — Accept: text/html → 200 HTML with doctype');
   const req = mockReq();
   const res = mockRes();
   let threw = false;
-  try { await handleGetFeatureArtefacts(req, res, FEATURE_SLUG); }
+  try { await handleGetFeatureArtefacts(req, res, FEATURE_SLUG, mockNavPool()); }
   catch (e) { threw = true; console.log('  THREW:', e.message); }
   ok(!threw, 'T1.1: no exception');
   eq(res.statusCode, 200, 'T1.2: status 200');
@@ -121,7 +132,7 @@ console.log('\nT2 — HTML response contains renderShell nav');
   useStandardMock();
   const req = mockReq();
   const res = mockRes();
-  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG);
+  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG, mockNavPool());
   ok(res.body.includes('<nav aria-label="Main navigation">'), 'T2.1: nav with aria-label present');
 }
 
@@ -133,7 +144,7 @@ console.log('\nT3 — HTML response contains artefact list items');
   useStandardMock();
   const req = mockReq();
   const res = mockRes();
-  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG);
+  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG, mockNavPool());
   const liCount = (res.body.match(/<li /g) || []).length;
   ok(liCount >= 4, `T3.1: at least 4 <li elements (got ${liCount})`);
 }
@@ -146,7 +157,7 @@ console.log('\nT4 — label "Discovery" for type "discovery"');
   useStandardMock();
   const req = mockReq();
   const res = mockRes();
-  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG);
+  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG, mockNavPool());
   ok(res.body.includes('Discovery'), 'T4.1: "Discovery" label in body');
   ok(!res.body.includes('>discovery<'), 'T4.2: raw ">discovery<" not in body');
 }
@@ -159,7 +170,7 @@ console.log('\nT5 — label "Benefit Metric" for type "benefit-metric"');
   useStandardMock();
   const req = mockReq();
   const res = mockRes();
-  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG);
+  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG, mockNavPool());
   ok(res.body.includes('Benefit Metric'), 'T5.1: "Benefit Metric" label in body');
 }
 
@@ -171,7 +182,7 @@ console.log('\nT6 — label "Ready Check" for type "dor"');
   useStandardMock();
   const req = mockReq();
   const res = mockRes();
-  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG);
+  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG, mockNavPool());
   ok(res.body.includes('Ready Check'), 'T6.1: "Ready Check" label in body');
   ok(!res.body.includes('>dor<'), 'T6.2: raw ">dor<" not in body');
 }
@@ -184,7 +195,7 @@ console.log('\nT7 — label "Test Plan" for type "test-plan"');
   useStandardMock();
   const req = mockReq();
   const res = mockRes();
-  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG);
+  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG, mockNavPool());
   ok(res.body.includes('Test Plan'), 'T7.1: "Test Plan" label in body');
 }
 
@@ -196,7 +207,7 @@ console.log('\nT8 — Accept: application/json → JSON response unchanged');
   useStandardMock();
   const req = mockReq({ headers: { accept: 'application/json' } });
   const res = mockRes();
-  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG);
+  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG, mockNavPool());
   eq(res.statusCode, 200, 'T8.1: status 200');
   ok((res.headers['Content-Type'] || '').includes('application/json'), 'T8.2: Content-Type application/json');
   let parsed;
@@ -215,7 +226,7 @@ console.log('\nT9 — no Accept header → JSON response');
   useStandardMock();
   const req = mockReq({ headers: {} });
   const res = mockRes();
-  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG);
+  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG, mockNavPool());
   eq(res.statusCode, 200, 'T9.1: status 200');
   ok((res.headers['Content-Type'] || '').includes('application/json'), 'T9.2: Content-Type application/json');
   let threw = false;
@@ -235,7 +246,7 @@ console.log('\nT10 — XSS in artefact path metadata is escaped');
   }));
   const req = mockReq();
   const res = mockRes();
-  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG);
+  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG, mockNavPool());
   ok(!res.body.includes('<script>alert(1)</script>'), 'T10.1: unescaped <script> not in body');
   ok(res.body.includes('&lt;script&gt;'), 'T10.2: escaped &lt;script&gt; in body');
 }
@@ -248,7 +259,7 @@ console.log('\nT11 — zero artefacts → empty-state message, no <ul>');
   useEmptyMock();
   const req = mockReq();
   const res = mockRes();
-  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG);
+  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG, mockNavPool());
   eq(res.statusCode, 200, 'T11.1: status 200');
   ok(res.body.includes('No artefacts found'), 'T11.2: empty-state message in body');
   ok(!res.body.includes('<ul'), 'T11.3: no <ul element in body');
@@ -261,7 +272,7 @@ console.log('\nT12 \u2014 unauthenticated (browser) \u2192 302 redirect to /auth
 {
   const req = mockReq({ session: {} });
   const res = mockRes();
-  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG);
+  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG, mockNavPool());
   eq(res.statusCode, 302, 'T12.1: status 302');
   eq(res.headers['Location'], '/auth/github', 'T12.2: Location header /auth/github');
 }
@@ -274,7 +285,7 @@ console.log('\nT13 — artefact creation dates visible in HTML');
   useStandardMock();
   const req = mockReq();
   const res = mockRes();
-  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG);
+  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG, mockNavPool());
   ok(res.body.includes('2026-04-01'), 'T13.1: date 2026-04-01 in body');
   ok(res.body.includes('2026-04-02'), 'T13.2: date 2026-04-02 in body');
 }
@@ -287,7 +298,7 @@ console.log('\nT14 — artefact link href="/artefact/:slug/:type" per item');
   useStandardMock();
   const req = mockReq();
   const res = mockRes();
-  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG);
+  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG, mockNavPool());
   ok(res.body.includes(`href="/artefact/${FEATURE_SLUG}/discovery"`), 'T14.1: href for discovery artefact');
 }
 
@@ -329,7 +340,7 @@ console.log('\nT17 — audit log written with featureSlug and route on HTML requ
 
   const req = mockReq();
   const res = mockRes();
-  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG);
+  await handleGetFeatureArtefacts(req, res, FEATURE_SLUG, mockNavPool());
 
   const auditCall = logCalls.find((c) => c.event === 'feature_artefacts_accessed');
   ok(auditCall !== undefined, 'T17.1: feature_artefacts_accessed event logged');

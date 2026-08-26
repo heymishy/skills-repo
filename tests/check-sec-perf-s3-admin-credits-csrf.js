@@ -168,7 +168,10 @@ async function run() {
       var htmlChunks = [];
       getRes.writeHead = function(status, headers) { this._status = status; this._headers = headers; };
       getRes.end = function(body) { htmlChunks.push(body); };
-      await handler.adminCreditsGet(getReq, getRes);
+      // pncg-s1: adminCreditsGet now threads a `pool` param through to
+      // renderShellWithNav's own getProductsNavSummary(pool, tenantId) call --
+      // empty rows is fine, this test doesn't assert on the Products nav section.
+      await handler.adminCreditsGet(getReq, getRes, { query: async function() { return { rows: [] }; } });
       var html = htmlChunks.join('');
 
       // The GET handler must embed a real token tied to req.session (AC1/AC6).

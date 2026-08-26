@@ -162,7 +162,10 @@ async function main() {
       var handler = freshAdminCredits();
       var req = { session: { userId: 1, role: 'admin' } };
       var res = makeRes();
-      await handler.adminCreditsGet(req, res);
+      // pncg-s1: adminCreditsGet now threads a `pool` param through to
+      // renderShellWithNav's own getProductsNavSummary(pool, tenantId) call --
+      // empty rows is fine, this test doesn't assert on the Products nav section.
+      await handler.adminCreditsGet(req, res, { query: async function() { return { rows: [] }; } });
 
       assert.strictEqual(res._status, 200, 'Expected 200, got ' + res._status);
       // Balance still present (existing behaviour untouched).

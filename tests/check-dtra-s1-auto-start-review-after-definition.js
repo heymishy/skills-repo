@@ -200,7 +200,7 @@ queue.push(function() {
 
     var reqGet = authReq({ params: { journeyId: setup.journeyId } });
     var resGet = makeRes();
-    await setup.journey.handleGetStories(reqGet, resGet);
+    await setup.journey.handleGetStories(reqGet, resGet, { query: async function() { return { rows: [] }; } });
     assert.strictEqual(resGet._status, 200, 'Expected GET /journey/:id/stories to still return 200');
     assert.ok(resGet._body.includes('Story list for journey'), 'Expected the manual story-list page content');
 

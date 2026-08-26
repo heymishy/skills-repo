@@ -176,7 +176,11 @@ async function main() {
     var req = { session: { accessToken: 'tok', login: 'user' }, headers: { accept: 'text/html' } };
     var res = makeRes();
     await test('AC7a: delete button present, targeting the real journeyId', async function() {
-      await routes.handleGetFeatureArtefacts(req, res, 'x');
+      // pncg-s1: handleGetFeatureArtefacts now threads a `pool` param (4th
+      // positional, after featureSlug) through to renderShellWithNav's own
+      // getProductsNavSummary(pool, tenantId) call -- empty rows is fine,
+      // this test doesn't assert on the Products nav section itself.
+      await routes.handleGetFeatureArtefacts(req, res, 'x', { query: async function() { return { rows: [] }; } });
       assert.ok(res._body.indexOf('alrf-s10-delete-feature-btn') !== -1, 'expected the delete button element');
       assert.ok(res._body.indexOf('/api/journey/jid-alrf-s10-ac7') !== -1, 'expected the fetch target to reference the real journeyId');
     });

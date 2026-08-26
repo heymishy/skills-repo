@@ -186,7 +186,11 @@ console.log('\n[kfd1] AC3 — feature detail page design-system styling');
 
   const req = mockReq();
   const res = mockRes();
-  await handleGetFeatureArtefacts(req, res, 'feat');
+  // pncg-s1: handleGetFeatureArtefacts now threads a `pool` param (4th
+  // positional, after featureSlug) through to renderShellWithNav's own
+  // getProductsNavSummary(pool, tenantId) call -- empty rows is fine, this
+  // test doesn't assert on the Products nav section itself.
+  await handleGetFeatureArtefacts(req, res, 'feat', { query: async () => ({ rows: [] }) });
 
   assert(res.statusCode === 200, 'AC3a: status 200');
   // Note: bare substring checks would false-positive against the CSS rule
@@ -215,7 +219,11 @@ console.log('\n[kfd1] AC4 — single artefact page design-system styling');
 
   const req = mockReq();
   const res = mockRes();
-  await handleArtefactRoute(req, res, 'feat', 'discovery');
+  // pncg-s1: handleArtefactRoute now threads a `pool` param through to
+  // renderShellWithNav's own getProductsNavSummary(pool, tenantId) call on
+  // its success-render branch -- empty rows is fine, this test doesn't
+  // assert on the Products nav section itself.
+  await handleArtefactRoute(req, res, 'feat', 'discovery', { query: async () => ({ rows: [] }) });
 
   assert(res.statusCode === 200, 'AC4a: status 200');
   assert(res.body.includes('<!doctype html'), 'AC4b: response uses the shared HTML shell (renderShell), not a bare document');

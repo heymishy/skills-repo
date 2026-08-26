@@ -87,6 +87,15 @@ function mockReq(overrides) {
   }, overrides || {});
 }
 
+// pncg-s1: handleGetFeatureArtefacts now threads a `pool` param (4th
+// positional, after featureSlug) through to renderShellWithNav's own
+// getProductsNavSummary(pool, tenantId) call -- this mock only needs to
+// satisfy that query shape (empty rows is fine, these tests don't assert
+// on the Products nav section itself).
+function mockNavPool() {
+  return { query: async function() { return { rows: [] }; } };
+}
+
 function mockRes() {
   var _statusCode = null;
   var _headers = {};
@@ -125,7 +134,7 @@ await checkAsync('AC1: Resume conversation href points at /journey/:journeyId/st
 
   var req = mockReq();
   var res = mockRes();
-  await features.handleGetFeatureArtefacts(req, res, slug);
+  await features.handleGetFeatureArtefacts(req, res, slug, mockNavPool());
   var result = res._get();
 
   assert.strictEqual(result.statusCode, 200, 'expected 200, got: ' + result.statusCode);
@@ -156,7 +165,7 @@ await checkAsync('AC3: following the new href reaches dsh-s3\'s real handleGetJo
 
   var listReq = mockReq();
   var listRes = mockRes();
-  await features.handleGetFeatureArtefacts(listReq, listRes, slug);
+  await features.handleGetFeatureArtefacts(listReq, listRes, slug, mockNavPool());
   var listResult = listRes._get();
   assert.strictEqual(listResult.statusCode, 200, 'expected the artefact-index page to render, got: ' + listResult.statusCode);
 

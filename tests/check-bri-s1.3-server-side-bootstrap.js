@@ -38,6 +38,10 @@ function freshRoutes() {
   return require('../src/web-ui/routes/journey');
 }
 
+function mockPool() {
+  return { query: async function() { return { rows: [] }; } };
+}
+
 function fakeRes() {
   var res = {
     statusCode: null,
@@ -103,30 +107,30 @@ async function main() {
 
   queue.push(function() {
     console.log('\n[bri-s1.3] IT1 -- handleGetWizard renders the gated element when flag is true (AC1, AC4)');
-    return test('IT1: handleGetWizard renders gated element when req.session.flags["wizard-ui"] is true', function() {
+    return test('IT1: handleGetWizard renders gated element when req.session.flags["wizard-ui"] is true', async function() {
       var req = { session: { flags: { 'wizard-ui': true } } };
       var res = fakeRes();
-      routes.handleGetWizard(req, res);
+      await routes.handleGetWizard(req, res, mockPool());
       assert.ok(res.body.indexOf('id="wizard-canvas-gated"') !== -1, 'gated element must be present in initial HTML');
     });
   });
 
   queue.push(function() {
     console.log('\n[bri-s1.3] IT2 -- handleGetWizard omits the gated element when flag is false (AC1, AC4)');
-    return test('IT2: handleGetWizard omits gated element when req.session.flags["wizard-ui"] is false', function() {
+    return test('IT2: handleGetWizard omits gated element when req.session.flags["wizard-ui"] is false', async function() {
       var req = { session: { flags: { 'wizard-ui': false } } };
       var res = fakeRes();
-      routes.handleGetWizard(req, res);
+      await routes.handleGetWizard(req, res, mockPool());
       assert.ok(res.body.indexOf('id="wizard-canvas-gated"') === -1, 'gated element must be server-omitted, not present');
     });
   });
 
   queue.push(function() {
     console.log('\n[bri-s1.3] IT3 -- handleGetWizard defaults to gate-off when flags have not been bootstrapped yet (AC1, AC3)');
-    return test('IT3: handleGetWizard omits gated element when session.flags is unset', function() {
+    return test('IT3: handleGetWizard omits gated element when session.flags is unset', async function() {
       var req = { session: {} };
       var res = fakeRes();
-      routes.handleGetWizard(req, res);
+      await routes.handleGetWizard(req, res, mockPool());
       assert.ok(res.body.indexOf('id="wizard-canvas-gated"') === -1, 'unbootstrapped session must default to gate off');
     });
   });
@@ -138,7 +142,7 @@ async function main() {
     return test('IT4: handleGetWizardBootstrapped renders gated element with no preceding client-side fetch', async function() {
       var req = { session: {} };
       var res = fakeRes();
-      await routes.handleGetWizardBootstrapped(req, res, { isEnabled: function() { return Promise.resolve(true); } });
+      await routes.handleGetWizardBootstrapped(req, res, { isEnabled: function() { return Promise.resolve(true); } }, mockPool());
       assert.ok(res.body.indexOf('id="wizard-canvas-gated"') !== -1);
       assert.ok(res.body.indexOf("fetch('/api/flags')") === -1, 'no client-side flag fetch may precede the gated markup');
     });
@@ -152,8 +156,8 @@ async function main() {
       var req = { session: {} };
       var calls = 0;
       var deps = { isEnabled: function() { calls++; return Promise.resolve(true); } };
-      await routes.handleGetWizardBootstrapped(req, fakeRes(), deps);
-      await routes.handleGetWizardBootstrapped(req, fakeRes(), deps);
+      await routes.handleGetWizardBootstrapped(req, fakeRes(), deps, mockPool());
+      await routes.handleGetWizardBootstrapped(req, fakeRes(), deps, mockPool());
       assert.strictEqual(calls, 1, 'a PostHog toggle mid-session must not apply until the next session start');
     });
   });
@@ -167,7 +171,7 @@ async function main() {
       var res = fakeRes();
       var deps = { isEnabled: function() { return new Promise(function() { /* never resolves */ }); }, timeoutMs: 50 };
       var start = Date.now();
-      await routes.handleGetWizardBootstrapped(req, res, deps);
+      await routes.handleGetWizardBootstrapped(req, res, deps, mockPool());
       var elapsed = Date.now() - start;
       assert.ok(elapsed < 250, 'handleGetWizardBootstrapped must not hang; took ' + elapsed + 'ms');
       assert.ok(res.body.indexOf('id="wizard-canvas-gated"') === -1, 'must fall back to the safe default (gate off)');

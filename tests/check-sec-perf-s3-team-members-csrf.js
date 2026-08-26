@@ -176,7 +176,7 @@ async function run() {
       var session = { userId: 'u1', tenantId: 'acme', role: 'admin' };
       var getReq = mockReq({ session: session });
       var getRes = mockRes();
-      handlers.handleGetTeamMembers(getReq, getRes);
+      await handlers.handleGetTeamMembers(getReq, getRes);
       var token = extractCsrfValue(getRes.body);
       assert.ok(token, 'a _csrf token must be embedded in the rendered team members page HTML');
       assert.strictEqual(session.csrfToken, token, 'the embedded token must be the one stored on the session');

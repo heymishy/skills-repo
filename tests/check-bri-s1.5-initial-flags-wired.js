@@ -100,22 +100,22 @@ async function main() {
 
   queue.push(function() {
     console.log('\n[bri-s1.5] IT1 -- wizard-ui flag off omits the wizard-canvas gated element (AC1)');
-    return test('IT1: handleGetWizard omits #wizard-canvas-gated when req.session.flags["wizard-ui"] is false', function() {
+    return test('IT1: handleGetWizard omits #wizard-canvas-gated when req.session.flags["wizard-ui"] is false', async function() {
       var req = { session: { flags: {} } };
       req.session.flags[flagKeys.WIZARD_UI] = false;
       var res = mockRes();
-      handleGetWizard(req, res);
+      await handleGetWizard(req, res, { query: async function() { return { rows: [] }; } });
       assert.ok(!/wizard-canvas-gated/.test(String(res._raw)), 'gated element must not be present when flag is off');
     });
   });
 
   queue.push(function() {
     console.log('\n[bri-s1.5] IT2 -- wizard-ui flag on includes the wizard-canvas gated element (AC1)');
-    return test('IT2: handleGetWizard includes #wizard-canvas-gated when req.session.flags["wizard-ui"] is true', function() {
+    return test('IT2: handleGetWizard includes #wizard-canvas-gated when req.session.flags["wizard-ui"] is true', async function() {
       var req = { session: { flags: {} } };
       req.session.flags[flagKeys.WIZARD_UI] = true;
       var res = mockRes();
-      handleGetWizard(req, res);
+      await handleGetWizard(req, res, { query: async function() { return { rows: [] }; } });
       assert.ok(/wizard-canvas-gated/.test(String(res._raw)), 'gated element must be present when flag is on');
     });
   });
