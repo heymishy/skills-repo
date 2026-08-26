@@ -4112,15 +4112,18 @@ async function handlePostWizardSelection(req, res) {
 
 /**
  * bri-s1.3: session-start entry point — resolves all relevant flags server-side
- * (via bootstrapFlags) before delegating to the existing synchronous handleGetWizard
- * render. Kept as a separate export so every pre-existing synchronous caller of
- * handleGetWizard (check-wucp4-session-wizard.js, check-pmf3-orientation-wizard.js)
- * is unaffected — this is the function a live route registration should call so the
- * wizard canvas renders in its final gated state on first paint, with no client-side
- * flag fetch preceding it.
+ * (via bootstrapFlags) before delegating to handleGetWizard's render (pncg-s1:
+ * handleGetWizard is now async, since it threads pool through to the shared
+ * Products-nav helper — check-wucp4-session-wizard.js and
+ * check-pmf3-orientation-wizard.js were updated accordingly, not left
+ * synchronous). Kept as a separate export so the flag-resolution step is
+ * explicit — this is the function a live route registration should call so
+ * the wizard canvas renders in its final gated state on first paint, with no
+ * client-side flag fetch preceding it.
  * @param {object} req
  * @param {object} res
  * @param {object} [deps] - forwarded to bootstrapFlags for testability
+ * @param {object} pool - forwarded to handleGetWizard for the Products-nav fetch (pncg-s1)
  */
 async function handleGetWizardBootstrapped(req, res, deps, pool) {
   await _flagBootstrap.bootstrapFlags(req, deps);
