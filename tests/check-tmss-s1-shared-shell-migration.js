@@ -25,6 +25,13 @@ function mockReq() {
   return { session: { login: 'admin-user', tenantId: 'tenant-A', userId: 'admin-1', csrfToken: 'test-csrf-token' } };
 }
 
+// pncg-s1: handleGetTeamMembers/handleGetCreateInviteForm now wrap via the
+// shared renderShellWithNav() helper, which calls pool.query() to build the
+// Products sidebar section -- a real (mock) pool is required.
+function mockPool() {
+  return { query: async function () { return { rows: [] }; } };
+}
+
 function mockRes() {
   var _statusCode = null;
   var _headers = null;
@@ -40,10 +47,10 @@ function mockRes() {
 
 await checkAsyncOrSync('AC1: teamManagement_getTeamMembers_rendersViaSharedShell', async () => {
   var teamManagementRoutes = require(TEAM_MANAGEMENT_ROUTES_PATH);
-  var handlers = teamManagementRoutes.createTeamManagementHandlers({});
+  var handlers = teamManagementRoutes.createTeamManagementHandlers(mockPool());
   var req = mockReq();
   var res = mockRes();
-  handlers.handleGetTeamMembers(req, res);
+  await handlers.handleGetTeamMembers(req, res);
   var html = res._get().body;
 
   assert.ok(html.indexOf('class="sw-app"') !== -1, 'expected the shared shell wrapper (sw-app) to be present');
@@ -57,10 +64,10 @@ await checkAsyncOrSync('AC1: teamManagement_getTeamMembers_rendersViaSharedShell
 
 await checkAsyncOrSync('AC2: teamManagement_getCreateInviteForm_rendersViaSharedShell', async () => {
   var teamManagementRoutes = require(TEAM_MANAGEMENT_ROUTES_PATH);
-  var handlers = teamManagementRoutes.createTeamManagementHandlers({});
+  var handlers = teamManagementRoutes.createTeamManagementHandlers(mockPool());
   var req = mockReq();
   var res = mockRes();
-  handlers.handleGetCreateInviteForm(req, res);
+  await handlers.handleGetCreateInviteForm(req, res);
   var html = res._get().body;
 
   assert.ok(html.indexOf('class="sw-app"') !== -1, 'expected the shared shell wrapper (sw-app) to be present');
@@ -88,14 +95,14 @@ await checkAsyncOrSync('AC3: teamManagement_escapeHtmlRemoved_escHtmlUsedNoRegre
 
   var teamManagementRoutes = require(TEAM_MANAGEMENT_ROUTES_PATH);
   var teamManagement = require(path.join(ROOT, 'src', 'web-ui', 'modules', 'team-management'));
-  var handlers = teamManagementRoutes.createTeamManagementHandlers({});
+  var handlers = teamManagementRoutes.createTeamManagementHandlers(mockPool());
 
   var maliciousRole = '"><script>bad</script>';
   teamManagement.VALID_ROLES.push(maliciousRole);
   try {
     var req = mockReq();
     var res = mockRes();
-    handlers.handleGetTeamMembers(req, res);
+    await handlers.handleGetTeamMembers(req, res);
     var html = res._get().body;
 
     assert.ok(html.indexOf('<script>bad</script>') === -1, 'expected the malicious role value to NOT appear unescaped in the rendered HTML');
@@ -107,17 +114,17 @@ await checkAsyncOrSync('AC3: teamManagement_escapeHtmlRemoved_escHtmlUsedNoRegre
 
 await checkAsyncOrSync('AC4: teamManagement_csrfFieldUnchangedInBothForms', async () => {
   var teamManagementRoutes = require(TEAM_MANAGEMENT_ROUTES_PATH);
-  var handlers = teamManagementRoutes.createTeamManagementHandlers({});
+  var handlers = teamManagementRoutes.createTeamManagementHandlers(mockPool());
 
   var req1 = mockReq();
   var res1 = mockRes();
-  handlers.handleGetTeamMembers(req1, res1);
+  await handlers.handleGetTeamMembers(req1, res1);
   var html1 = res1._get().body;
   assert.ok(/<input type="hidden" name="_csrf" value="test-csrf-token">/.test(html1), 'expected an unchanged CSRF hidden field on /team/members');
 
   var req2 = mockReq();
   var res2 = mockRes();
-  handlers.handleGetCreateInviteForm(req2, res2);
+  await handlers.handleGetCreateInviteForm(req2, res2);
   var html2 = res2._get().body;
   assert.ok(/<input type="hidden" name="_csrf" value="test-csrf-token">/.test(html2), 'expected an unchanged CSRF hidden field on /team/invites/new');
 });

@@ -27,6 +27,13 @@ function mockReq() {
   return { session: { tenantId: 'tenant-A', userId: 'admin-1', csrfToken: 'test-csrf-token' } };
 }
 
+// pncg-s1: handleGetCreateInviteForm now wraps via the shared
+// renderShellWithNav() helper, which calls pool.query() to build the
+// Products sidebar section -- a real (mock) pool is required.
+function mockPool() {
+  return { query: async function () { return { rows: [] }; } };
+}
+
 function mockRes() {
   var _statusCode = null;
   var _headers = null;
@@ -43,10 +50,10 @@ function mockRes() {
 await checkAsyncOrSync('AC1: getCreateInviteForm_rendersLabelledFormWithRoleOptionsAndSubmitButton', async () => {
   var teamManagementRoutes = require(TEAM_MANAGEMENT_ROUTES_PATH);
   var teamManagement = require(path.join(ROOT, 'src', 'web-ui', 'modules', 'team-management'));
-  var handlers = teamManagementRoutes.createTeamManagementHandlers({});
+  var handlers = teamManagementRoutes.createTeamManagementHandlers(mockPool());
   var req = mockReq();
   var res = mockRes();
-  handlers.handleGetCreateInviteForm(req, res);
+  await handlers.handleGetCreateInviteForm(req, res);
   var html = res._get().body;
 
   assert.ok(/<label for="email">/.test(html), 'expected a labelled email field');
@@ -61,10 +68,10 @@ await checkAsyncOrSync('AC1: getCreateInviteForm_rendersLabelledFormWithRoleOpti
 
 await checkAsyncOrSync('AC4: getCreateInviteForm_everyInputHasLabelSubmitIsRealButton', async () => {
   var teamManagementRoutes = require(TEAM_MANAGEMENT_ROUTES_PATH);
-  var handlers = teamManagementRoutes.createTeamManagementHandlers({});
+  var handlers = teamManagementRoutes.createTeamManagementHandlers(mockPool());
   var req = mockReq();
   var res = mockRes();
-  handlers.handleGetCreateInviteForm(req, res);
+  await handlers.handleGetCreateInviteForm(req, res);
   var html = res._get().body;
 
   // Resolve every input/select id and confirm a matching label[for] exists --
@@ -90,10 +97,10 @@ await checkAsyncOrSync('AC4: getCreateInviteForm_everyInputHasLabelSubmitIsRealB
 
 await checkAsyncOrSync('AC2: getCreateInviteForm_formPostsToApiTeamInvitesWithCsrfAndCorrectFieldNames', async () => {
   var teamManagementRoutes = require(TEAM_MANAGEMENT_ROUTES_PATH);
-  var handlers = teamManagementRoutes.createTeamManagementHandlers({});
+  var handlers = teamManagementRoutes.createTeamManagementHandlers(mockPool());
   var req = mockReq();
   var res = mockRes();
-  handlers.handleGetCreateInviteForm(req, res);
+  await handlers.handleGetCreateInviteForm(req, res);
   var html = res._get().body;
 
   assert.ok(/<form method="POST" action="\/api\/team\/invites">/.test(html), 'expected the form to POST to the existing, unchanged /api/team/invites endpoint');
