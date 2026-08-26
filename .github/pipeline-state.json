@@ -27002,18 +27002,18 @@
     {
       "slug": "2026-08-26-products-nav-coverage-gap",
       "name": "Wrap the Products-nav fetch in a shared helper and wire it to every page that is currently missing it",
-      "stage": "branch-setup",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "id": "pncg-s1",
           "slug": "pncg-s1",
           "name": "Wrap the Products-nav fetch in a shared helper and wire it to every page that is currently missing it",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "none",
+          "prStatus": "draft",
           "testPlan": {
             "status": "written",
             "totalTests": 8,
@@ -27024,7 +27024,7 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-26T06:09:50.693Z",
+          "updatedAt": "2026-08-26T06:11:18.337Z",
           "tasks": [
             {
               "id": "task-1",
@@ -27069,11 +27069,12 @@
               "file": "artefacts/2026-08-26-products-nav-coverage-gap/plans/pncg-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/770"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-25T20:33:58.517Z",
+      "updatedAt": "2026-08-26T06:11:18.337Z",
       "track": "short",
       "guardrails": [
         {
