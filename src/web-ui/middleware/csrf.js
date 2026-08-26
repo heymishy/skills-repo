@@ -8,6 +8,7 @@
 // email signup/login — see artefacts/2026-07-01-security-perf-hardening/stories/sec-perf-s3.md).
 
 const crypto = require('crypto');
+const { persistSession } = require('./session');
 
 /**
  * Escape a string for safe embedding inside an HTML attribute value.
@@ -35,6 +36,7 @@ function generateCsrfToken(req) {
   }
   if (!req.session.csrfToken) {
     req.session.csrfToken = crypto.randomBytes(32).toString('hex');
+    persistSession(req.sessionId);
   }
   return req.session.csrfToken;
 }
