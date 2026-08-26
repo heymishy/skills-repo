@@ -823,6 +823,16 @@ async function handleGetJourneyStageView(req, res, pool) {
   var artefactAbsPath = path.resolve(path.join(repoRoot, artefactRelPath));
   try { artefactContent = fs.readFileSync(artefactAbsPath, 'utf8'); } catch (_) {}
 
+  // jspf-s1: Postgres fallback, checked before the git-fallback below.
+  // Postgres is faster (no external API call) and needs no connected repo,
+  // so checking it first is strictly better than the old disk -> git order.
+  // Only consulted when disk already came back empty (disk stays
+  // authoritative when it has content); the git-fallback below only runs
+  // if this also comes back empty.
+  if (!artefactContent) {
+    artefactContent = await resolveArtefactFromDiskOrPg(repoRoot, artefactRelPath, journeyId, stageName);
+  }
+
   // das-s1 (AC3/AC5): git-fallback when the local file is missing (e.g.
   // post-redeploy on a SaaS deployment with no persistent volume) -- fetches
   // the same content from the product's connected repo instead of showing
