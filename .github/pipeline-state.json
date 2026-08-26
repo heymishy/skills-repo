@@ -26997,7 +26997,8 @@
           "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-08-25T07:54:37.601Z"
         }
-      ]
+      ],
+      "lastImprove": "2026-08-26"
     },
     {
       "slug": "2026-08-26-products-nav-coverage-gap",
@@ -27088,7 +27089,8 @@
           "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-08-25T20:12:50.751Z"
         }
-      ]
+      ],
+      "lastImprove": "2026-08-26"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -27166,9 +27168,15 @@
         "type": "proposal-merge",
         "file": "workspace/proposals/2026-08-14-implementation-plan-improve-proposal.md",
         "summary": "wuce-self-serve-invites /improve: merged in finding (5), shared-dependency sweep step -- recurred 4x in this epic (wsi-s1/s4/s5/s6), consolidated into existing pending-review implementation-plan proposal rather than duplicating"
+      },
+      {
+        "date": "2026-08-26",
+        "type": "standards",
+        "file": ".github/standards/web-ui/web-ui-patterns.md",
+        "summary": "fresc-s1 + pncg-s1 /improve: renderShellWithNav() as standing fix for the recurring missing-Products-nav defect (3rd occurrence, 23 total sites now fixed across bvnd-s1/pncg-s1), parameter-threading preferred over function-splitting for existing render-helpers, hybrid structural+functional test strategy for many-site defects, comment/string-literal blind spot in source-parsing structural tests"
       }
     ],
-    "lastUpdated": "2026-08-16"
+    "lastUpdated": "2026-08-26"
   },
   "updatedAt": "2026-08-22T22:18:24.526Z"
 }

@@ -7,6 +7,8 @@
 | 2026-04-20 | 2026-04-19-skills-platform-phase4 | 24 | 25% | 0.75h (E2) | ~6h | +5.25h | 1h | 2 |
 | 2026-07-24 | 2026-07-24-interactive-kanban-boards (+3 triage fixes) | 11 | ~15% | — | ~1 session-day | — | ~0.5h | 1 |
 | 2026-08-16 | 2026-08-14-wuce-self-serve-invites | 6 | ~30% | — | ~6h (calendar-span fallback) | — | ~1h | 3 |
+| 2026-08-26 | 2026-08-25-first-run-empty-state-copy (fresc-s1) | 1 | ~25% | — | ~0.3h (git-log reconstruction) | — | — | 2 |
+| 2026-08-26 | 2026-08-26-products-nav-coverage-gap (pncg-s1) | 1 | ~20% | — | ~0.85h (git-log reconstruction) | — | — | 1 |
 
 ```yaml estimation-norms
 - date: "2026-04-12"
@@ -174,4 +176,44 @@ note: "null-path -- no E1/E2 recorded; seeds normalisation table only. 25% engag
   acsManualVerification: 0
   testMethod: "Node unit/integration tests (per-story check-*.js files), all re-run fresh at each story's DoD; plus one ad hoc real-browser (Chrome, staging deployment) accessibility/keyboard-navigation spot-check for wsi-s6, not part of the automated suite"
   note: "Null-path -- feature predates this session's /estimate usage entirely (no E1 at /discovery, no E2 at /definition); seeds normalisation table only. Six single-story slices delivered as one continuous inner-loop wave (branch-setup through branch-complete per story, DoD run in a batch across all 6 after the epic closed). Notable delivery pattern: a same-epic follow-up story (wsi-s6) was added directly from a prior story's own DoD finding (wsi-s1 shipped an API with no reachable UI) rather than being planned upfront -- worth watching whether this recurs enough across features to warrant treating 'DoD-discovered UI-reachability gap' as its own named risk category at /definition-of-ready for any story introducing a new admin-gated POST-only route. Distinguishing feature vs. prior agent-wave entries: this is the first entry where a live Chrome-in-browser review (against the real staging deployment, not a local static render) was run as an explicit post-DoD step and surfaced a real finding (styling inconsistency vs. the rest of the app) that no automated jsdom-style test could have caught -- see workspace/learnings.md and decisions.md for the shared-dependency-check-gap pattern this feature's retrospective also produced."
+- date: "2026-08-26"
+  feature: "2026-08-25-first-run-empty-state-copy"
+  storyCount: 1
+  engagementFraction: 0.25
+  totalSessionSpanH: 1.2
+  outerLoopEstimateH: null
+  outerLoopActualH: 0.3
+  outerLoopDeltaH: null
+  innerLoopHumanH: null
+  agentAutonomousH: 0.9
+  calendarDays: 2
+  outerLoopSessions: 2
+  focusHPerStory: 0.3
+  source: "git-log-reconstruction"
+  derivedBy: "scripts/parse-session-timing.js --summary returned no sessions in the 2026-08-25..2026-08-26 range (Claude Code session, no matching Copilot Chat JSONL). Fell back to tier-2 git-log reconstruction per skills/estimate/SKILL.md derivation-source priority order: pulled fresc-s1's real per-commit timestamps from the PR's own commit list (`gh pr view 769 --json commits`) rather than the cruder calendarDays x 2h fallback, since granular commit timestamps were available. Commits ran 09:09:51-10:07:05 UTC (0.95h), then an overnight gap of ~9h (operator break -- excluded as idle, matching the 'Merged' confirmation followed by a session date change), then 19:09:04-19:24:10 UTC (0.25h) for branch-complete through DoD. Total active span ~1.2h across 2 distinct work windows (outerLoopSessions: 2). engagementFraction (0.25) is a judgment estimate: operator sent 4x 'Yes please' pipeline-stage confirmations plus one real design input ('Maybe it's worth some description text as to what a product is here') that shaped AC3's empty-state copy -- more directive than a pure confirmation-only session, less than active co-design."
+  acCount: 4
+  acsAutomated: 4
+  acsManualVerification: 0
+  testMethod: "Node unit/integration tests (8 new check-fresc-s1-empty-state-clarity-copy.js tests) + repair of 5 pre-existing a1-modules-taxonomy-crud.js fixtures, full suite green"
+  note: "Null-path -- short-track story (test-plan -> DoR -> coding, bypassed discovery/benefit-metric/definition/review), so no E1/E2 forecast exists; seeds normalisation table only. Single-story feature bundling two beta-user feedback signals (Modules-card clarity, empty-products-state clarity) identified via direct operator-relayed user feedback rather than planned scope. Fastest full-pipeline story recorded to date in this table by outer-loop actual hours, consistent with its narrow single-file (products.js), single-concern scope and fully agent-autonomous subagent-execution wave (implementer + spec-compliance + code-quality dispatches, no review-driven rework needed)."
+- date: "2026-08-26"
+  feature: "2026-08-26-products-nav-coverage-gap"
+  storyCount: 1
+  engagementFraction: 0.2
+  totalSessionSpanH: 4.25
+  outerLoopEstimateH: null
+  outerLoopActualH: 0.85
+  outerLoopDeltaH: null
+  innerLoopHumanH: null
+  agentAutonomousH: 3.4
+  calendarDays: 1
+  outerLoopSessions: 3
+  focusHPerStory: 0.85
+  source: "git-log-reconstruction"
+  derivedBy: "scripts/parse-session-timing.js --summary returned no sessions in the 2026-08-26 range (Claude Code session, no matching Copilot Chat JSONL). Fell back to tier-2 git-log reconstruction using pncg-s1's real PR commit timestamps (`gh pr view 770 --json commits`) plus the story/DoR commits preceding branch-setup. Full span 19:45:48 UTC 2026-08-25 through 06:57:05 UTC 2026-08-26 (11h11m wall-clock), minus two clearly-idle gaps of ~3h40m and ~3h16m that align exactly with this session's two documented 'You've hit your session limit' interruptions (one during Task 3's code-quality review, one during the final cross-cutting review) -- both resumed via a fresh dispatch after the operator sent 'Continue'. Active time across the 3 remaining work windows totals ~4.25h (outerLoopSessions: 3). engagementFraction (0.2) is a judgment estimate: operator input was concentrated in one real scoping decision (the 4-option AC2-coverage choice, resolved via AskUserQuestion) and one W4 RISK-ACCEPT acknowledgement, with the remainder being 'Yes do full loop with subagents' / 'Continue' confirmations -- lower engagement than fresc-s1 despite a much larger diff, since the scope-defining choice was a single discrete decision rather than iterative design input."
+  acCount: 4
+  acsAutomated: 4
+  acsManualVerification: 0
+  testMethod: "Node unit/integration tests (3 unit tests for renderShellWithNav + a hybrid structural test covering 19 functions/22 sites via manifest-driven brace-depth source parsing + 4 functional integration tests) + 555/555 full regression suite + CI E2E route-coverage sweep across all 19 touched paths"
+  note: "Null-path -- short-track story, no E1/E2 forecast exists; seeds normalisation table only. Scope grew 22x from the single-page report that triggered it, via a deliberate pre-story audit -- see decisions.md's ARCH entry and workspace/learnings.md for the scope-explosion-handling pattern. Despite the largest diff (10 files, 22 call sites) of any entry in this table to date, focusHPerStory (0.85h) sits below wuce-self-serve-invites' 1.0h/story and well below Phase 4's 0.89h/story-for-complexity-heavy-novel-work baseline -- consistent with this being a mechanically repetitive fix (same defect, many sites) rather than a novel-design story, and with heavy subagent autonomy across all 7 tasks. Two self-caught process gaps (stale pipeline-state stage, uncommitted plan artefact) and one reverted-then-corrected implementation approach (settings.js) occurred during agent-autonomous time and are reflected in agentAutonomousH, not outerLoopFocusH -- they did not require additional operator engagement to resolve."
 ```
