@@ -3345,9 +3345,9 @@ async function handlePostSideTripClarify(req, res) {
     return;
   }
 
-  // Read discovery.md — tolerate missing file
-  var discoveryContent = '';
-  try { discoveryContent = fs.readFileSync(discoveryAbs, 'utf8'); } catch (_) {}
+  // Read discovery.md — tolerate missing file. jspf-s1: disk -> Postgres
+  // (no git-fallback tier here, per the story's Architecture Constraints).
+  var discoveryContent = await resolveArtefactFromDiskOrPg(repoRoot, discoveryRel, journeyId, 'discovery');
 
   // Create clarify session
   var sid = crypto.randomUUID();
