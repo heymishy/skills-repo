@@ -18,6 +18,7 @@
 // renders <a> links pointing at their existing routes. No new OAuth logic.
 
 var _htmlShell = require('../utils/html-shell');
+var { renderShellWithNav } = require('./products'); // pncg-s1: shared Products-nav sidebar wrapper
 var _identityLinks = require('../modules/identity-links');
 var _tenantPlan = require('../modules/tenant-plan'); // c2
 // c3 — reuses getAllTenantBalances/CSRF helpers exactly as admin-credits.js already
@@ -553,13 +554,18 @@ var _TAB_JS =
   '}</script>';
 
 /**
- * Render the full Settings page (AC1: wrapped in the shared shell, not a
- * bare fragment). Profile and Credits (c3) panels have real content;
- * Billing remains an empty container ready for C2.
+ * pncg-s1: body-only builder, factored out of renderSettingsPage() below so
+ * the real GET /settings handler (handleGetSettings) can wrap this body via
+ * the shared renderShellWithNav() helper (adds the persistent Products nav
+ * section, AC2) without making renderSettingsPage() itself async -- many
+ * pre-existing tests (check-c1/c2/c3/d3/si-s1/spft-s1/nia-s1/npwe-s1, etc.)
+ * call renderSettingsPage() directly and synchronously, treating its return
+ * value as a plain string. See decisions.md (pncg-s1, ARCH) for the full
+ * rationale.
  * @param {{user: object, linkedSet: Set<string>, isAdmin: boolean, creditsRows?: Array, csrfToken?: string, creditsError?: string, impersonation?: object}} opts
- * @returns {string} full HTML document
+ * @returns {string} HTML fragment (no <html>/<body> wrapper)
  */
-function renderSettingsPage(opts) {
+function _buildSettingsBody(opts) {
   opts = opts || {};
   var user = opts.user || {};
   var linkedSet = opts.linkedSet || new Set();
@@ -568,7 +574,7 @@ function renderSettingsPage(opts) {
   var planState = opts.planState || { plan: 'trial', status: 'active' };
   var csrfToken = opts.csrfToken || '';
 
-  var body =
+  return (
     '<h1 class="sw-page-h1">Settings</h1>' +
     '<p class="sw-page-sub">Manage your identity, sign-in methods' + (isAdmin ? ', billing, and platform credits' : ' and billing') + '.</p>' +
     _TAB_CSS +
@@ -594,7 +600,29 @@ function renderSettingsPage(opts) {
     // impersonationAuditRows populated, so there is nothing to hide
     // client-side.
     (isAdmin ? renderImpersonationAuditTab(opts.impersonationAuditRows || [], !!opts.impersonationStartEnabled) : '') +
-    _TAB_JS;
+    _TAB_JS
+  );
+}
+
+/**
+ * Render the full Settings page (AC1: wrapped in the shared shell, not a
+ * bare fragment). Profile and Credits (c3) panels have real content;
+ * Billing remains an empty container ready for C2.
+ *
+ * pncg-s1: kept synchronous and wrapping via _htmlShell.renderShell()
+ * directly (NOT renderShellWithNav()) so this function's existing
+ * pre-existing direct-call unit tests keep working unchanged -- the real
+ * GET /settings response (which does need the Products nav section, AC2)
+ * is produced by handleGetSettings() below calling _buildSettingsBody() +
+ * renderShellWithNav() itself instead of this function. See decisions.md.
+ * @param {{user: object, linkedSet: Set<string>, isAdmin: boolean, creditsRows?: Array, csrfToken?: string, creditsError?: string, impersonation?: object}} opts
+ * @returns {string} full HTML document
+ */
+function renderSettingsPage(opts) {
+  opts = opts || {};
+  var user = opts.user || {};
+  var isAdmin = !!opts.isAdmin;
+  var body = _buildSettingsBody(opts);
 
   return _htmlShell.renderShell({
     title: 'Settings — Skills Platform',
@@ -718,7 +746,7 @@ function createSettingsHandlers(pool) {
     // the restyled form's client-side fetch handler (see renderCreditsTab)
     // surfaces a rejection inline without a page navigation, so there is no
     // server-side error state to thread through here on first render.
-    var html = renderSettingsPage({
+    var settingsBodyOpts = {
       user: user,
       linkedSet: linkedSet,
       isAdmin: isAdmin,
@@ -731,6 +759,20 @@ function createSettingsHandlers(pool) {
       billingError: billingErrorMessage,
       locale: personLocale,
       localeSuccessMessage: localeSuccessMessage
+    };
+    // pncg-s1 (AC2): wrap via the shared Products-nav helper instead of
+    // renderSettingsPage() directly, so the persistent Products sidebar
+    // section (previously silently dropped on this page) is present -- see
+    // _buildSettingsBody()'s docblock and decisions.md for why the body was
+    // factored out rather than making renderSettingsPage() itself async.
+    var html = await renderShellWithNav(pool, tenantId, {
+      title: 'Settings — Skills Platform',
+      bodyContent: _buildSettingsBody(settingsBodyOpts),
+      user: user,
+      active: 'settings',
+      crumbs: ['Settings'],
+      isAdmin: isAdmin,
+      impersonation: impersonationOpts
     });
 
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });

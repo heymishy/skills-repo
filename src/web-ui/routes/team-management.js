@@ -14,6 +14,7 @@ var magicLinkStrategy = require('../auth/magic-link-strategy');
 var csrf = require('../middleware/csrf');
 var _posthog = require('../modules/posthog-server');
 var htmlShell = require('../utils/html-shell');
+var { renderShellWithNav } = require('./products'); // pncg-s1: shared Products-nav sidebar wrapper
 
 // Audit logger — replaced via setLogger() in tests and production bootstrap.
 // Mirrors account-linking.js's own _logger / setLogger convention exactly.
@@ -64,7 +65,7 @@ function createTeamManagementHandlers(pool) {
    * WCAG 2.1 AA NFR is verified manually per the test plan; native, labelled
    * form controls satisfy it informally, matching account-linking.js's page.
    */
-  function handleGetTeamMembers(req, res) {
+  async function handleGetTeamMembers(req, res) {
     var roleOptions = teamManagement.VALID_ROLES.map(function(r) {
       return '<option value="' + htmlShell.escHtml(r) + '">' + htmlShell.escHtml(r) + '</option>';
     }).join('');
@@ -82,7 +83,10 @@ function createTeamManagementHandlers(pool) {
       '<button type="submit">Add teammate</button>' +
       '</form>';
 
-    var html = htmlShell.renderShell({
+    // pncg-s1 (AC2): wrap via the shared Products-nav helper (instead of
+    // htmlShell.renderShell directly) so the persistent Products sidebar
+    // section, previously silently dropped on this page, is present.
+    var html = await renderShellWithNav(pool, req.session && req.session.tenantId, {
       title: 'Team members',
       bodyContent: bodyContent,
       user: req.session,
@@ -104,7 +108,7 @@ function createTeamManagementHandlers(pool) {
    * server-side. The form POSTs to wsi-s1's existing /api/team/invites
    * endpoint unchanged -- no new request shape (AC2).
    */
-  function handleGetCreateInviteForm(req, res) {
+  async function handleGetCreateInviteForm(req, res) {
     var roleOptions = teamManagement.VALID_ROLES.map(function(r) {
       return '<option value="' + htmlShell.escHtml(r) + '">' + htmlShell.escHtml(r) + '</option>';
     }).join('');
@@ -121,7 +125,10 @@ function createTeamManagementHandlers(pool) {
       '<button type="submit">Send invite</button>' +
       '</form>';
 
-    var html = htmlShell.renderShell({
+    // pncg-s1 (AC2): wrap via the shared Products-nav helper (instead of
+    // htmlShell.renderShell directly) so the persistent Products sidebar
+    // section, previously silently dropped on this page, is present.
+    var html = await renderShellWithNav(pool, req.session && req.session.tenantId, {
       title: 'Invite a teammate',
       bodyContent: bodyContent,
       user: req.session,
