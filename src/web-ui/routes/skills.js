@@ -2769,6 +2769,119 @@ async function handlePostCanvasEditHtml(req, res) {
 }
 
 /**
+ * lsbm-s1: Shared builder for the "1a /clarify" / "1b /estimate" (discovery)
+ * or "4a /estimate" (definition) sub-step affordance -- the markup and
+ * click-handler script shown alongside the plain "Continue ->" gate-confirm
+ * button once a journey-linked stage's last turn completes. Extracted
+ * (mechanically, byte-for-byte) from the full-render path below (ougl.4's
+ * `if (session.done && session.journeyId)` block) so the exact same output
+ * can also be embedded unconditionally at page load (see SUBSTEP_HTML/
+ * SUBSTEP_JS in _renderChatPage's unconditional script section) and injected
+ * live by showCommitLink() when a stage completes via the streaming
+ * response, not only on a full page reload. Pure function of its two
+ * arguments -- no other side effects.
+ * @param {string} skillName
+ * @param {string} journeyId
+ * @returns {{html: string, js: string}} js is the raw script body (no
+ *   surrounding <script>/</script> tags -- callers add those where needed).
+ *   Both are '' for any skillName with no sub-step affordance.
+ */
+function buildJourneySubStepAffordance(skillName, journeyId) {
+  var html = '';
+  var js = '';
+  if (skillName === 'discovery') {
+    var rawJourneyId = journeyId;
+    html = [
+      '<div class="sw-gate-substeps">',
+      '<span class="sw-gate-substep-lbl">Before proceeding:</span>',
+      '<a href="#" class="sw-gate-substep-btn sw-gate-substep-btn--rec" id="sw-clarify-btn" onclick="swLaunchClarify(event)" title="Resolve open assumptions before benefit-metric">',
+      '1a&#160; /clarify <span style="opacity:0.6;font-size:11px">(resolve assumptions)</span></a>',
+      '<button type="button" class="sw-gate-substep-btn" onclick="swToggleEstimate()" id="sw-estimate-btn" title="Log a rough time forecast for calibration">',
+      '1b&#160; /estimate <span style="opacity:0.6;font-size:11px">(time forecast)</span></button>',
+      '</div>',
+      '<div id="sw-estimate-panel" style="display:none">',
+      '<form id="sw-estimate-form" class="sw-est-form">',
+      '<div class="sw-est-field"><label>Focus hours</label><input name="focusHours" type="number" min="1" max="200" placeholder="4" required></div>',
+      '<div class="sw-est-field"><label>Complexity 1–5</label><input name="complexity" type="number" min="1" max="5" placeholder="2" required></div>',
+      '<div class="sw-est-field"><label>Scope stability</label><select name="scopeStability"><option>Stable</option><option>Likely stable</option><option>Uncertain</option><option>Volatile</option></select></div>',
+      '<div class="sw-est-field"><label>Notes</label><input name="notes" type="text" style="width:180px" placeholder="Context or assumptions…"></div>',
+      '<div class="sw-est-field"><label>&nbsp;</label><button type="submit" class="sw-gate-substep-btn sw-gate-substep-btn--rec">Log estimate</button></div>',
+      '</form>',
+      '</div>'
+    ].join('');
+    js = [
+      '(function(){',
+      '  function swLaunchClarify(e){',
+      '    e.preventDefault();',
+      '    var btn=document.getElementById("sw-clarify-btn");',
+      '    if(btn){btn.innerHTML="Opening /clarify…";btn.style.opacity="0.7";}',
+      '    fetch("/api/journey/' + escHtml(rawJourneyId) + '/side-trip/clarify",{method:"POST"})',
+      '      .then(function(r){return r.json();})',
+      '      .then(function(d){if(d.sideTripSessionId)window.location.href="/skills/clarify/sessions/"+d.sideTripSessionId+"/chat";})',
+      '      .catch(function(){if(btn){btn.innerHTML="1a /clarify (error — retry)";btn.style.opacity="1";}});',
+      '  }',
+      '  window.swLaunchClarify=swLaunchClarify;',
+      '  window.swToggleEstimate=function(){',
+      '    var p=document.getElementById("sw-estimate-panel");',
+      '    if(p)p.style.display=p.style.display==="none"?"block":"none";',
+      '  };',
+      '  var ef=document.getElementById("sw-estimate-form");',
+      '  if(ef)ef.addEventListener("submit",function(evt){',
+      '    evt.preventDefault();',
+      '    var data={};new FormData(ef).forEach(function(v,k){data[k]=v;});',
+      '    fetch("/api/journey/' + escHtml(rawJourneyId) + '/estimate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)})',
+      '      .then(function(r){',
+      '        var btn=document.getElementById("sw-estimate-btn");',
+      '        document.getElementById("sw-estimate-panel").style.display="none";',
+      '        if(r.ok){if(btn)btn.innerHTML="1b&#160; /estimate <span style=\\"opacity:0.6;font-size:11px\\">(&#x2713; logged)</span>";}',
+      '        else{if(btn)btn.innerHTML="1b&#160; /estimate <span style=\\"color:red;font-size:11px\\">(error)</span>";}',
+      '      });',
+      '  });',
+      '})();'
+    ].join('');
+  } else if (skillName === 'definition') {
+    var rawJourneyIdDef = journeyId;
+    html = [
+      '<div class="sw-gate-substeps">',
+      '<span class="sw-gate-substep-lbl">Optional:</span>',
+      '<button type="button" class="sw-gate-substep-btn" onclick="swToggleEstimate()" id="sw-estimate-btn" title="Refine your time estimate (E2)">',
+      '4a&#160; /estimate <span style="opacity:0.6;font-size:11px">(E2 — refine forecast)</span></button>',
+      '</div>',
+      '<div id="sw-estimate-panel" style="display:none">',
+      '<form id="sw-estimate-form" class="sw-est-form">',
+      '<div class="sw-est-field"><label>Focus hours</label><input name="focusHours" type="number" min="1" max="200" placeholder="4" required></div>',
+      '<div class="sw-est-field"><label>Complexity 1–5</label><input name="complexity" type="number" min="1" max="5" placeholder="2" required></div>',
+      '<div class="sw-est-field"><label>Scope stability</label><select name="scopeStability"><option>Stable</option><option>Likely stable</option><option>Uncertain</option><option>Volatile</option></select></div>',
+      '<div class="sw-est-field"><label>Notes</label><input name="notes" type="text" style="width:180px" placeholder="Context or assumptions…"></div>',
+      '<div class="sw-est-field"><label>&nbsp;</label><button type="submit" class="sw-gate-substep-btn sw-gate-substep-btn--rec">Log estimate</button></div>',
+      '</form>',
+      '</div>'
+    ].join('');
+    js = [
+      '(function(){',
+      '  window.swToggleEstimate=function(){',
+      '    var p=document.getElementById("sw-estimate-panel");',
+      '    if(p)p.style.display=p.style.display==="none"?"block":"none";',
+      '  };',
+      '  var ef=document.getElementById("sw-estimate-form");',
+      '  if(ef)ef.addEventListener("submit",function(evt){',
+      '    evt.preventDefault();',
+      '    var data={pass:"E2"};new FormData(ef).forEach(function(v,k){data[k]=v;});',
+      '    fetch("/api/journey/' + escHtml(rawJourneyIdDef) + '/estimate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)})',
+      '      .then(function(r){',
+      '        var btn=document.getElementById("sw-estimate-btn");',
+      '        document.getElementById("sw-estimate-panel").style.display="none";',
+      '        if(r.ok){if(btn)btn.innerHTML="4a&#160; /estimate <span style=\\"opacity:0.6;font-size:11px\\">(&#x2713; logged)</span>";}',
+      '        else{if(btn)btn.innerHTML="4a&#160; /estimate <span style=\\"color:red;font-size:11px\\">(error)</span>";}',
+      '      });',
+      '  });',
+      '})();'
+    ].join('');
+  }
+  return { html: html, js: js };
+}
+
+/**
  * Render the single-page chat UI HTML.
  * @param {string} skillName
  * @param {string} sessionId
@@ -2898,6 +3011,14 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
 
   var commitUrl = '/skills/' + encodedSkill + '/sessions/' + encodedId + '/commit-preview';
 
+  // lsbm-s1: build the /clarify + /estimate sub-step affordance unconditionally
+  // (like GATE_CONFIRM_URL/NEXT_STAGE_LABEL below), not only inside the
+  // session.done-gated full-render branch further down. This lets a live SSE
+  // "done" event (showCommitLink(), below) inject the exact same markup/
+  // behaviour without requiring a page reload. Empty for any session with no
+  // linked journey or any skillName with no sub-step affordance.
+  var _substepAff = session.journeyId ? buildJourneySubStepAffordance(skillName, session.journeyId) : { html: '', js: '' };
+
   // Inline script — DOM-update chat (no page reload).
   // Messages are appended directly; draft panel updates live when artefact arrives.
   var script = [
@@ -2921,6 +3042,19 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
     // Pre-compute gate-confirm URL server-side — avoids embedding /api/journey/ literal when no journey
     '  var GATE_CONFIRM_URL = "' + (session.journeyId ? escHtml('/api/journey/' + session.journeyId + '/gate-confirm') : '') + '";',
     '  var NEXT_STAGE_LABEL = "' + escHtml(session.journeyId ? ('Continue to ' + (_journeyStore.getNextStage(skillName) || 'next stage') + ' →') : '') + '";',
+    // lsbm-s1: sub-step affordance markup + its click-handler script,
+    // available unconditionally so showCommitLink() (below) can inject it
+    // live. SUBSTEP_JS is executed once immediately below (defines
+    // swLaunchClarify/swToggleEstimate and makes a first, harmless wiring
+    // attempt against #sw-estimate-form, which does not exist in the DOM yet
+    // at this point for a live/in-progress session -- SUBSTEP_JS is stored
+    // as a string too so showCommitLink() can re-run it after SUBSTEP_HTML
+    // is injected, at which point the wiring attempt succeeds).
+    '  var SUBSTEP_HTML = ' + JSON.stringify(_substepAff.html)
+      .replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026') + ';',
+    '  var SUBSTEP_JS = ' + JSON.stringify(_substepAff.js)
+      .replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026') + ';',
+    _substepAff.js,
     '  var CANVAS_EDIT_URL  = IS_DEFINITION ? (TURN_URL.replace("/turn", "/canvas-edit")) : "";',
     '  var submitBtn  = form.querySelector("button[type=\'submit\']");',
     '',
@@ -3515,6 +3649,23 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
     '    _commitLinkShown = true;',
     '    var foot = form.closest(".sw-chat-pane") && form.closest(".sw-chat-pane").querySelector(".sw-chat-foot");',
     '    if(!foot) return;',
+    // lsbm-s1: live injection of the /clarify + /estimate sub-step affordance
+    // -- inject SUBSTEP_HTML before the plain "Continue" form below (matching
+    // the full-render path's visual order), then explicitly (re-)attach the
+    // estimate form's submit listener by re-executing SUBSTEP_JS: the form
+    // (#sw-estimate-form) did not exist in the DOM when SUBSTEP_JS first ran
+    // at page load, so that earlier wiring attempt was a no-op -- it succeeds
+    // now that the element has just been inserted.
+    '    if (SUBSTEP_HTML) {',
+    '      foot.insertAdjacentHTML("beforeend", SUBSTEP_HTML);',
+    '      if (SUBSTEP_JS) {',
+    '        try {',
+    '          var _substepScript = document.createElement("script");',
+    '          _substepScript.textContent = SUBSTEP_JS;',
+    '          document.body.appendChild(_substepScript);',
+    '        } catch (e) { /* non-fatal: plain Continue button still renders below */ }',
+    '      }',
+    '    }',
     '    var wrap = document.createElement("div");',
     '    wrap.style.cssText = "padding:10px 12px 2px;display:flex;align-items:center;gap:10px;flex-wrap:wrap";',
     '    if(GATE_CONFIRM_URL) {',
@@ -4154,102 +4305,17 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
     } else {
       var nextStage = _journeyStore.getNextStage(skillName) || 'next stage';
 
-      // Build optional sub-step affordances for stages that have side trips
-      var subStepHtml = '';
-      var subStepJs = '';
-      if (skillName === 'discovery') {
-        var rawJourneyId = session.journeyId;
-        subStepHtml = [
-          '<div class="sw-gate-substeps">',
-          '<span class="sw-gate-substep-lbl">Before proceeding:</span>',
-          '<a href="#" class="sw-gate-substep-btn sw-gate-substep-btn--rec" id="sw-clarify-btn" onclick="swLaunchClarify(event)" title="Resolve open assumptions before benefit-metric">',
-          '1a&#160; /clarify <span style="opacity:0.6;font-size:11px">(resolve assumptions)</span></a>',
-          '<button type="button" class="sw-gate-substep-btn" onclick="swToggleEstimate()" id="sw-estimate-btn" title="Log a rough time forecast for calibration">',
-          '1b&#160; /estimate <span style="opacity:0.6;font-size:11px">(time forecast)</span></button>',
-          '</div>',
-          '<div id="sw-estimate-panel" style="display:none">',
-          '<form id="sw-estimate-form" class="sw-est-form">',
-          '<div class="sw-est-field"><label>Focus hours</label><input name="focusHours" type="number" min="1" max="200" placeholder="4" required></div>',
-          '<div class="sw-est-field"><label>Complexity 1–5</label><input name="complexity" type="number" min="1" max="5" placeholder="2" required></div>',
-          '<div class="sw-est-field"><label>Scope stability</label><select name="scopeStability"><option>Stable</option><option>Likely stable</option><option>Uncertain</option><option>Volatile</option></select></div>',
-          '<div class="sw-est-field"><label>Notes</label><input name="notes" type="text" style="width:180px" placeholder="Context or assumptions…"></div>',
-          '<div class="sw-est-field"><label>&nbsp;</label><button type="submit" class="sw-gate-substep-btn sw-gate-substep-btn--rec">Log estimate</button></div>',
-          '</form>',
-          '</div>'
-        ].join('');
-        subStepJs = [
-          '<script>',
-          '(function(){',
-          '  function swLaunchClarify(e){',
-          '    e.preventDefault();',
-          '    var btn=document.getElementById("sw-clarify-btn");',
-          '    if(btn){btn.innerHTML="Opening /clarify…";btn.style.opacity="0.7";}',
-          '    fetch("/api/journey/' + escHtml(rawJourneyId) + '/side-trip/clarify",{method:"POST"})',
-          '      .then(function(r){return r.json();})',
-          '      .then(function(d){if(d.sideTripSessionId)window.location.href="/skills/clarify/sessions/"+d.sideTripSessionId+"/chat";})',
-          '      .catch(function(){if(btn){btn.innerHTML="1a /clarify (error — retry)";btn.style.opacity="1";}});',
-          '  }',
-          '  window.swLaunchClarify=swLaunchClarify;',
-          '  window.swToggleEstimate=function(){',
-          '    var p=document.getElementById("sw-estimate-panel");',
-          '    if(p)p.style.display=p.style.display==="none"?"block":"none";',
-          '  };',
-          '  var ef=document.getElementById("sw-estimate-form");',
-          '  if(ef)ef.addEventListener("submit",function(evt){',
-          '    evt.preventDefault();',
-          '    var data={};new FormData(ef).forEach(function(v,k){data[k]=v;});',
-          '    fetch("/api/journey/' + escHtml(rawJourneyId) + '/estimate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)})',
-          '      .then(function(r){',
-          '        var btn=document.getElementById("sw-estimate-btn");',
-          '        document.getElementById("sw-estimate-panel").style.display="none";',
-          '        if(r.ok){if(btn)btn.innerHTML="1b&#160; /estimate <span style=\\"opacity:0.6;font-size:11px\\">(&#x2713; logged)</span>";}',
-          '        else{if(btn)btn.innerHTML="1b&#160; /estimate <span style=\\"color:red;font-size:11px\\">(error)</span>";}',
-          '      });',
-          '  });',
-          '})();',
-          '</script>'
-        ].join('');
-      } else if (skillName === 'definition') {
-        var rawJourneyIdDef = session.journeyId;
-        subStepHtml = [
-          '<div class="sw-gate-substeps">',
-          '<span class="sw-gate-substep-lbl">Optional:</span>',
-          '<button type="button" class="sw-gate-substep-btn" onclick="swToggleEstimate()" id="sw-estimate-btn" title="Refine your time estimate (E2)">',
-          '4a&#160; /estimate <span style="opacity:0.6;font-size:11px">(E2 — refine forecast)</span></button>',
-          '</div>',
-          '<div id="sw-estimate-panel" style="display:none">',
-          '<form id="sw-estimate-form" class="sw-est-form">',
-          '<div class="sw-est-field"><label>Focus hours</label><input name="focusHours" type="number" min="1" max="200" placeholder="4" required></div>',
-          '<div class="sw-est-field"><label>Complexity 1–5</label><input name="complexity" type="number" min="1" max="5" placeholder="2" required></div>',
-          '<div class="sw-est-field"><label>Scope stability</label><select name="scopeStability"><option>Stable</option><option>Likely stable</option><option>Uncertain</option><option>Volatile</option></select></div>',
-          '<div class="sw-est-field"><label>Notes</label><input name="notes" type="text" style="width:180px" placeholder="Context or assumptions…"></div>',
-          '<div class="sw-est-field"><label>&nbsp;</label><button type="submit" class="sw-gate-substep-btn sw-gate-substep-btn--rec">Log estimate</button></div>',
-          '</form>',
-          '</div>'
-        ].join('');
-        subStepJs = [
-          '<script>',
-          '(function(){',
-          '  window.swToggleEstimate=function(){',
-          '    var p=document.getElementById("sw-estimate-panel");',
-          '    if(p)p.style.display=p.style.display==="none"?"block":"none";',
-          '  };',
-          '  var ef=document.getElementById("sw-estimate-form");',
-          '  if(ef)ef.addEventListener("submit",function(evt){',
-          '    evt.preventDefault();',
-          '    var data={pass:"E2"};new FormData(ef).forEach(function(v,k){data[k]=v;});',
-          '    fetch("/api/journey/' + escHtml(rawJourneyIdDef) + '/estimate",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(data)})',
-          '      .then(function(r){',
-          '        var btn=document.getElementById("sw-estimate-btn");',
-          '        document.getElementById("sw-estimate-panel").style.display="none";',
-          '        if(r.ok){if(btn)btn.innerHTML="4a&#160; /estimate <span style=\\"opacity:0.6;font-size:11px\\">(&#x2713; logged)</span>";}',
-          '        else{if(btn)btn.innerHTML="4a&#160; /estimate <span style=\\"color:red;font-size:11px\\">(error)</span>";}',
-          '      });',
-          '  });',
-          '})();',
-          '</script>'
-        ].join('');
-      }
+      // lsbm-s1: sub-step affordances for stages that have side trips --
+      // markup/behaviour now built by the shared buildJourneySubStepAffordance,
+      // reusing the same _substepAff computed unconditionally earlier in this
+      // function (see SUBSTEP_HTML/SUBSTEP_JS above) rather than calling it
+      // again -- journeyId is guaranteed truthy here (this branch only runs
+      // when session.journeyId is set), so the two calls would always
+      // produce identical output. This is a mechanical extraction only --
+      // subStepHtml and subStepJs below are byte-identical to what was
+      // previously inlined.
+      var subStepHtml = _substepAff.html;
+      var subStepJs = _substepAff.js ? ('<script>' + _substepAff.js + '</script>') : '';
 
       journeyPanel = subStepHtml +
         '<div class="sw-journey-gate" style="padding:16px;margin-top:' + (subStepHtml ? '0' : '12px') + ';display:flex;align-items:center;gap:12px">' +
