@@ -27158,7 +27158,7 @@
       "stories": [
         {
           "id": "lsbm-s1",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "dorStatus": "signed-off",
           "prStatus": "none",
           "dodStatus": "not-started",
@@ -27167,9 +27167,12 @@
           "verificationScriptArtefact": "artefacts/2026-08-27-live-sidestep-buttons-missing/verification-scripts/lsbm-s1-verification.md",
           "testPlan": {
             "status": "written",
-            "artefact": "artefacts/2026-08-27-live-sidestep-buttons-missing/test-plans/lsbm-s1-test-plan.md"
+            "artefact": "artefacts/2026-08-27-live-sidestep-buttons-missing/test-plans/lsbm-s1-test-plan.md",
+            "totalTests": 12,
+            "passing": 12
           },
-          "updatedAt": "2026-08-26T20:12:17.944Z"
+          "updatedAt": "2026-08-26T20:48:55.723Z",
+          "acVerified": 6
         }
       ],
       "metrics": [],
