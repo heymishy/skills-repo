@@ -27125,15 +27125,15 @@
     {
       "slug": "2026-08-27-csrf-token-not-persisted-across-restart",
       "name": "Persist a newly-generated CSRF token to Redis immediately, not never",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "id": "ctpr-s1",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
-          "prStatus": "draft",
-          "dodStatus": "not-started",
+          "prStatus": "merged",
+          "dodStatus": "complete",
           "acTotal": 5,
           "dorArtefact": "artefacts/2026-08-27-csrf-token-not-persisted-across-restart/dor/ctpr-s1-dor.md",
           "testPlan": {
@@ -27142,12 +27142,12 @@
             "totalTests": 4,
             "passing": 4
           },
-          "updatedAt": "2026-08-26T19:24:28.805Z",
+          "updatedAt": "2026-08-26T20:01:31.421Z",
           "acVerified": 5
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-26T19:23:08.102Z",
+      "updatedAt": "2026-08-26T20:01:31.419Z",
       "track": "short"
     }
   ],
