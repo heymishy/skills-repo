@@ -27095,20 +27095,20 @@
     {
       "slug": "2026-08-26-journey-stage-view-postgres-fallback",
       "name": "Shared disk-then-Postgres artefact resolver, wired to all 4 journey.js sites missing it",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "id": "jspf-s1",
           "stage": "branch-complete",
           "dorStatus": "signed-off",
-          "prStatus": "none",
+          "prStatus": "draft",
           "dodStatus": "not-started",
           "acTotal": 8,
           "dorArtefact": "artefacts/2026-08-26-journey-stage-view-postgres-fallback/dor/jspf-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-26-journey-stage-view-postgres-fallback/dor/jspf-s1-dor-contract.md",
           "verificationScriptArtefact": "artefacts/2026-08-26-journey-stage-view-postgres-fallback/verification-scripts/jspf-s1-verification.md",
-          "updatedAt": "2026-08-26T08:50:57.495Z",
+          "updatedAt": "2026-08-26T08:52:06.325Z",
           "testPlan": {
             "status": "written",
             "artefact": "artefacts/2026-08-26-journey-stage-view-postgres-fallback/test-plans/jspf-s1-test-plan.md",
@@ -27119,7 +27119,7 @@
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-26T08:15:11.519Z",
+      "updatedAt": "2026-08-26T08:52:06.476Z",
       "track": "standard"
     }
   ],
