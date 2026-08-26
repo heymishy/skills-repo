@@ -25531,19 +25531,19 @@
     {
       "slug": "2026-08-21-canvas-maximise-and-bulk-assign-button-fixes",
       "name": "Fix read-only-view maximise ReferenceError and stuck bulk-assign button label (found during live-Chrome DoD review)",
-      "stage": "branch-setup",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "id": "cmba-s1",
           "slug": "cmba-s1",
           "name": "Fix the read-only-view maximise-button ReferenceError and the stuck \"Assigning…\" button label",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
-          "dodStatus": "not-started",
-          "prStatus": "draft",
-          "updatedAt": "2026-08-21T10:25:39.194Z",
+          "dodStatus": "complete",
+          "prStatus": "merged",
+          "updatedAt": "2026-08-26T07:57:02.125Z",
           "testPlan": {
             "status": "written",
             "totalTests": 5,
@@ -25586,7 +25586,7 @@
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-21T10:00:37.185Z",
+      "updatedAt": "2026-08-26T07:57:36.465Z",
       "track": "short",
       "guardrails": []
     },
@@ -25615,7 +25615,7 @@
     {
       "slug": "2026-08-21-viewer-role-no-enforcement",
       "name": "Viewer role has no actual write-blocking enforcement anywhere in the codebase (found while test-planning rbg-s1)",
-      "stage": "definition",
+      "stage": "definition-of-done",
       "health": "green",
       "discoveryStatus": "approved",
       "discoveryArtefact": "artefacts/2026-08-21-viewer-role-no-enforcement/discovery.md",
@@ -25652,7 +25652,7 @@
           ]
         }
       ],
-      "updatedAt": "2026-08-22T09:26:40.487Z",
+      "updatedAt": "2026-08-26T07:57:36.611Z",
       "track": "standard",
       "guardrails": [
         {
