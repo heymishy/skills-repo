@@ -27160,7 +27160,7 @@
           "id": "lsbm-s1",
           "stage": "branch-complete",
           "dorStatus": "signed-off",
-          "prStatus": "none",
+          "prStatus": "draft",
           "dodStatus": "not-started",
           "acTotal": 6,
           "dorArtefact": "artefacts/2026-08-27-live-sidestep-buttons-missing/dor/lsbm-s1-dor.md",
@@ -27171,7 +27171,7 @@
             "totalTests": 12,
             "passing": 12
           },
-          "updatedAt": "2026-08-26T20:48:55.723Z",
+          "updatedAt": "2026-08-26T20:50:06.433Z",
           "acVerified": 6
         }
       ],
