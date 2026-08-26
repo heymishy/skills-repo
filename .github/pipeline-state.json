@@ -27132,7 +27132,7 @@
           "id": "ctpr-s1",
           "stage": "branch-complete",
           "dorStatus": "signed-off",
-          "prStatus": "none",
+          "prStatus": "draft",
           "dodStatus": "not-started",
           "acTotal": 5,
           "dorArtefact": "artefacts/2026-08-27-csrf-token-not-persisted-across-restart/dor/ctpr-s1-dor.md",
@@ -27142,7 +27142,7 @@
             "totalTests": 4,
             "passing": 4
           },
-          "updatedAt": "2026-08-26T19:22:22.797Z",
+          "updatedAt": "2026-08-26T19:24:28.805Z",
           "acVerified": 5
         }
       ],
