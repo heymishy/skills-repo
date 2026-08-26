@@ -2495,8 +2495,9 @@ async function handleGetStories(req, res, pool) {
   if (definitionStage) {
     try {
       var repoRoot = getRepoRoot(req);
-      var artefactAbsPath = path.resolve(path.join(repoRoot, definitionStage.artefactPath));
-      var artefactContent = fs.readFileSync(artefactAbsPath, 'utf8');
+      // jspf-s1: disk -> Postgres (no git-fallback tier here, per the story's
+      // Architecture Constraints -- this route never had one).
+      var artefactContent = await resolveArtefactFromDiskOrPg(repoRoot, definitionStage.artefactPath, journeyId, 'definition');
       autoIds = extractStoryIdsFromDefinitionArtefact(artefactContent);
     } catch (_) { autoIds = []; }
   }
