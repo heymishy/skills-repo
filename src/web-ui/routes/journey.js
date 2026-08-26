@@ -785,6 +785,16 @@ async function handleGetJourneyStageView(req, res, pool) {
   var artefactAbsPath = path.resolve(path.join(repoRoot, artefactRelPath));
   try { artefactContent = fs.readFileSync(artefactAbsPath, 'utf8'); } catch (_) {}
 
+  // jspf-s1: Postgres fallback, checked before the git-fallback below.
+  // Postgres is faster (no external API call) and needs no connected repo,
+  // so checking it first is strictly better than the old disk -> git order.
+  // Only consulted when disk already came back empty (disk stays
+  // authoritative when it has content); the git-fallback below only runs
+  // if this also comes back empty.
+  if (!artefactContent) {
+    artefactContent = await resolveArtefactFromDiskOrPg(repoRoot, artefactRelPath, journeyId, stageName);
+  }
+
   // das-s1 (AC3/AC5): git-fallback when the local file is missing (e.g.
   // post-redeploy on a SaaS deployment with no persistent volume) -- fetches
   // the same content from the product's connected repo instead of showing
@@ -2369,6 +2379,56 @@ async function handlePostGateConfirm(req, res) {
 }
 
 /**
+ * jspf-s1: shared disk-then-Postgres artefact resolver. Extends the
+ * already-proven alrf-s4/avpf-s1 fallback shape to the 4 read sites in this
+ * file that never checked Postgres for a completed stage's durable content.
+ * Disk is tried first, exactly as each of the 4 call sites already did on
+ * its own -- this preserves "disk is authoritative when it has content"
+ * (disk can be fresher than the last saveArtefact() call). Only when disk
+ * comes back empty does this fall through to Postgres, matching the
+ * try/catch-degrades-to-empty convention already established at this same
+ * file's own resume-context rebuilds (see the "Build priorArtefacts"
+ * comments above handleGetJourneyResume's and handlePostGateConfirm's own
+ * Postgres reads). Never throws -- a Postgres failure (no DATABASE_URL,
+ * connection error) simply degrades to '', leaving each call site free to
+ * apply its own next fallback (site 1's git-fetch) or its own existing
+ * empty-default behaviour (sites 2-4), unchanged.
+ *
+ * Defined here (after handleGetJourneyResume's own sec4 in-memory fast-path
+ * check) rather than near the top of the file: as a hoisted function
+ * declaration its physical position has no effect on any call site earlier
+ * in the file, and check-sec4-early-return.js's AC4d asserts -- via a
+ * literal source-text search -- that handleGetJourneyResume's fast-path
+ * check precedes the first "DATABASE_URL" occurrence in this file, to keep
+ * that in-memory redirect's zero-I/O guarantee visibly intact in source. A
+ * defensive-but-unrelated Postgres reference earlier in the file would trip
+ * that same check for no behavioural reason -- keep this below it.
+ *
+ * @param {string} repoRoot        - resolved via getRepoRoot(req) by the caller
+ * @param {string} artefactRelPath - artefact path relative to repoRoot
+ * @param {string} journeyId       - already access-checked by the caller
+ * @param {string} stageName       - skill_name to match in the artefacts table
+ * @returns {Promise<string>} resolved content, or '' if neither source has it
+ */
+async function resolveArtefactFromDiskOrPg(repoRoot, artefactRelPath, journeyId, stageName) {
+  var content = '';
+  if (artefactRelPath) {
+    var absPath = path.resolve(path.join(repoRoot, artefactRelPath));
+    try { content = fs.readFileSync(absPath, 'utf8'); } catch (_) {}
+  }
+  if (!content && process.env.DATABASE_URL && journeyId) {
+    try {
+      var pgArts = await require('../adapters/journey-store-pg').getArtefactsForJourney(journeyId);
+      var match = (pgArts || []).find(function(a) { return a.skill_name === stageName; });
+      if (match && match.content) content = match.content;
+    } catch (pgErr) {
+      console.error('[artefact] Postgres read (jspf-s1 fallback) failed:', pgErr.message);
+    }
+  }
+  return content || '';
+}
+
+/**
  * dtra-s1 — shared review-session-start step, used by every path that begins
  * per-story review (definition-of-ready's "more stories" branch, the
  * auto-start-after-definition branch, and the manual /stories submit path)
@@ -2447,8 +2507,9 @@ async function handleGetStories(req, res, pool) {
   if (definitionStage) {
     try {
       var repoRoot = getRepoRoot(req);
-      var artefactAbsPath = path.resolve(path.join(repoRoot, definitionStage.artefactPath));
-      var artefactContent = fs.readFileSync(artefactAbsPath, 'utf8');
+      // jspf-s1: disk -> Postgres (no git-fallback tier here, per the story's
+      // Architecture Constraints -- this route never had one).
+      var artefactContent = await resolveArtefactFromDiskOrPg(repoRoot, definitionStage.artefactPath, journeyId, 'definition');
       autoIds = extractStoryIdsFromDefinitionArtefact(artefactContent);
     } catch (_) { autoIds = []; }
   }
@@ -2514,12 +2575,20 @@ async function handlePostStories(req, res) {
   // Build priorArtefacts from completed stages
   var repoRoot = getRepoRoot(req);
   var updatedJourney = _journeyStore.getJourney(journeyId);
-  var priorArtefacts = (updatedJourney.completedStages || []).map(function(stage) {
-    var stageAbsPath = path.resolve(path.join(repoRoot, stage.artefactPath));
-    var content = '';
-    try { content = fs.readFileSync(stageAbsPath, 'utf8'); } catch (_) {}
-    return { path: stage.artefactPath, content: content };
-  });
+  // jspf-s1: disk -> Postgres per stage (no git-fallback tier here, per the
+  // story's Architecture Constraints). This is the highest-severity of the
+  // 4 sites -- priorArtefacts is the actual context handed into the review
+  // session this endpoint kicks off, so a disk-miss here silently starts
+  // the next skill session with no knowledge of prior stage content. The
+  // synchronous .map() became a for-loop since each stage now needs an
+  // awaited Postgres lookup.
+  var completedStages = updatedJourney.completedStages || [];
+  var priorArtefacts = [];
+  for (var _psi = 0; _psi < completedStages.length; _psi++) {
+    var stage = completedStages[_psi];
+    var content = await resolveArtefactFromDiskOrPg(repoRoot, stage.artefactPath, journeyId, stage.skillName);
+    priorArtefacts.push({ path: stage.artefactPath, content: content });
+  }
   // Create review session for first story (review → test-plan → DoR per story)
   _startReviewSessionForJourney(res, journeyId, updatedJourney, priorArtefacts);
 }
@@ -3288,9 +3357,9 @@ async function handlePostSideTripClarify(req, res) {
     return;
   }
 
-  // Read discovery.md — tolerate missing file
-  var discoveryContent = '';
-  try { discoveryContent = fs.readFileSync(discoveryAbs, 'utf8'); } catch (_) {}
+  // Read discovery.md — tolerate missing file. jspf-s1: disk -> Postgres
+  // (no git-fallback tier here, per the story's Architecture Constraints).
+  var discoveryContent = await resolveArtefactFromDiskOrPg(repoRoot, discoveryRel, journeyId, 'discovery');
 
   // Create clarify session
   var sid = crypto.randomUUID();
@@ -4131,6 +4200,7 @@ async function handleGetWizardBootstrapped(req, res, deps, pool) {
 }
 
 module.exports = {
+  resolveArtefactFromDiskOrPg, // jspf-s1
   handleGetJourney,
   handlePostJourney,
   handleDeleteJourney,
