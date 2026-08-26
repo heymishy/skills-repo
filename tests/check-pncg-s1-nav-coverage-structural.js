@@ -155,6 +155,73 @@ function extractFunction(source, name) {
   };
 }
 
+/**
+ * Strip `//` line comments and `/* *\/` block comments from a source string,
+ * WITHOUT breaking string/template-literal content that happens to contain a
+ * `//` or `/*` sequence (e.g. a URL literal like 'https://example.com'). This
+ * reuses the same character-by-character string/template-tracking state
+ * machine as extractFunction() above, since that function already has to
+ * solve the identical "is this character really code, or is it inside a
+ * string/comment" problem to find the correct closing brace.
+ *
+ * String-literal CONTENT itself is not stripped or otherwise altered (e.g. a
+ * call site literally written as a string, like `var x = 'renderShellWithNav(';`,
+ * is an extremely unlikely false-positive path and out of scope here) -- only
+ * comments are removed.
+ *
+ * The original (unstripped) string passed in is never mutated; this returns
+ * a new string for use in substring/occurrence checks only.
+ * @param {string} source
+ * @returns {string}
+ */
+function stripComments(source) {
+  var result = '';
+  var inSingle = false, inDouble = false, inTemplate = false;
+  var inLineComment = false, inBlockComment = false;
+
+  for (var idx = 0; idx < source.length; idx++) {
+    var ch = source[idx];
+    var prevCh = source[idx - 1];
+
+    if (inLineComment) {
+      if (ch === '\n') { inLineComment = false; result += ch; }
+      continue;
+    }
+    if (inBlockComment) {
+      if (ch === '/' && prevCh === '*') { inBlockComment = false; }
+      continue;
+    }
+    if (inSingle) {
+      result += ch;
+      if (ch === '\\') { idx++; result += (source[idx] || ''); continue; }
+      if (ch === '\'') inSingle = false;
+      continue;
+    }
+    if (inDouble) {
+      result += ch;
+      if (ch === '\\') { idx++; result += (source[idx] || ''); continue; }
+      if (ch === '"') inDouble = false;
+      continue;
+    }
+    if (inTemplate) {
+      result += ch;
+      if (ch === '\\') { idx++; result += (source[idx] || ''); continue; }
+      if (ch === '`') inTemplate = false;
+      continue;
+    }
+
+    if (ch === '/' && source[idx + 1] === '/') { inLineComment = true; continue; }
+    if (ch === '/' && source[idx + 1] === '*') { inBlockComment = true; continue; }
+    if (ch === '\'') { inSingle = true; result += ch; continue; }
+    if (ch === '"') { inDouble = true; result += ch; continue; }
+    if (ch === '`') { inTemplate = true; result += ch; continue; }
+
+    result += ch;
+  }
+
+  return result;
+}
+
 function countOccurrences(haystack, needle) {
   var count = 0;
   var idx = 0;
@@ -235,7 +302,7 @@ var CATEGORY_B = [
         var source = readSource(entry.file);
         var extracted = extractFunction(source, entry.fn);
 
-        var actualCount = countOccurrences(extracted.body, 'renderShellWithNav(');
+        var actualCount = countOccurrences(stripComments(extracted.body), 'renderShellWithNav(');
         assertTrue(
           actualCount === entry.expectedCount,
           'expected exactly ' + entry.expectedCount + ' renderShellWithNav( call(s) in ' + entry.fn + ', found ' + actualCount
@@ -263,15 +330,17 @@ var CATEGORY_B = [
         var source = readSource(entry.file);
 
         var handler = extractFunction(source, entry.handlerFn);
+        var strippedHandlerBody = stripComments(handler.body);
         assertTrue(
-          handler.body.indexOf('getProductsNavSummary(') !== -1,
+          strippedHandlerBody.indexOf('getProductsNavSummary(') !== -1,
           entry.handlerFn + ' must call getProductsNavSummary( itself'
         );
 
         var renderHelper = extractFunction(source, entry.renderFn);
-        var shellCallIdx = renderHelper.body.indexOf('_htmlShell.renderShell(');
+        var strippedRenderHelperBody = stripComments(renderHelper.body);
+        var shellCallIdx = strippedRenderHelperBody.indexOf('_htmlShell.renderShell(');
         assertTrue(shellCallIdx !== -1, entry.renderFn + ' must call _htmlShell.renderShell( itself');
-        var shellCallOnward = renderHelper.body.slice(shellCallIdx);
+        var shellCallOnward = strippedRenderHelperBody.slice(shellCallIdx);
         assertTrue(shellCallOnward.indexOf('products:') !== -1, entry.renderFn + '\'s _htmlShell.renderShell( call must pass a `products:` key');
         assertTrue(shellCallOnward.indexOf('noProductJourneyCount:') !== -1, entry.renderFn + '\'s _htmlShell.renderShell( call must pass a `noProductJourneyCount:` key');
 
@@ -280,7 +349,7 @@ var CATEGORY_B = [
         // that silently re-adds one (making this row's classification stale)
         // is caught rather than silently ignored.
         assertTrue(
-          handler.body.indexOf('renderShellWithNav(') === -1,
+          strippedHandlerBody.indexOf('renderShellWithNav(') === -1,
           entry.handlerFn + ' is classified Category B (no renderShellWithNav( call expected) -- found one; the manifest classification may now be stale'
         );
       });
