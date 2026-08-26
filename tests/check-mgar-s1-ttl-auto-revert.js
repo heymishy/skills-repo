@@ -138,7 +138,10 @@ test('adminPage_offOverride_showsTTLAndRemainingTime', function() {
     const route = freshAdminRoute();
     const req = { session: { userId: 1, role: 'admin', login: 'hamish' } };
     const res = makeRes();
-    return route.adminMockGatewayGet(req, res).then(function() {
+    // pncg-s1: adminMockGatewayGet now threads a `pool` param through to
+    // renderShellWithNav's own getProductsNavSummary(pool, tenantId) call --
+    // empty rows is fine, this test doesn't assert on the Products nav section.
+    return route.adminMockGatewayGet(req, res, { query: async function() { return { rows: [] }; } }).then(function() {
       assert.ok(/auto-revert|auto revert/i.test(res._body), 'Admin page must mention auto-revert when the override is off');
       assert.ok(/30 minute/i.test(res._body), 'Admin page must state the TTL duration (30 minutes)');
       assert.ok(/remaining|left|expires in/i.test(res._body), 'Admin page must state approximate remaining time before auto-revert');

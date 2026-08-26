@@ -3179,7 +3179,7 @@ async function router(req, res) {
     let _raOk = false;
     await requireAdmin(req, res, () => { _raOk = true; });
     if (!_raOk) return;
-    await adminMockGatewayGet(req, res);
+    await adminMockGatewayGet(req, res, _pshPool);
 
   } else if (pathname === '/api/admin/mock-gateway/toggle' && req.method === 'POST') {
     // amgt-s1 — admin mock LLM gateway toggle flip (requireAdmin gate)

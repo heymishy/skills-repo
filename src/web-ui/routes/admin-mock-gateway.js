@@ -18,7 +18,12 @@ const mockLlmGateway = require('../modules/mock-llm-gateway');
 // sec-perf-s3: session-scoped CSRF (Cross-Site Request Forgery) protection —
 // identical mechanism to admin-credits.js, reused verbatim.
 const { generateCsrfToken, csrfField, csrfGuard } = require('../middleware/csrf');
-const { renderShell } = require('../utils/html-shell');
+// pncg-s1: renderShell's direct import was removed here -- adminMockGatewayGet
+// (the only caller in this file) now goes through renderShellWithNav below,
+// which wraps renderShell itself. Shared Products-nav sidebar wrapper -- see
+// products.js's own renderShellWithNav docblock. products.js does not
+// require admin-mock-gateway.js, so this creates no circular dependency.
+const { renderShellWithNav } = require('./products');
 
 /**
  * Escape HTML special characters to prevent XSS.
@@ -59,7 +64,7 @@ function _readBody(req) {
  * (AC1: a live call to isMockGatewayEnabled(), never a stale/cached value)
  * and a toggle form that flips it.
  */
-async function adminMockGatewayGet(req, res) {
+async function adminMockGatewayGet(req, res, pool) {
   // AC1: live call, not a cached value -- read at render time, every request.
   // mgar-s1: this call may itself auto-revert a stale "off" override as a
   // side effect (see isMockGatewayEnabled()'s TTL check) -- so the TTL/
@@ -106,7 +111,7 @@ async function adminMockGatewayGet(req, res) {
     '</form>'
   ].join('\n');
 
-  const html = renderShell({
+  const html = await renderShellWithNav(pool, req.session && req.session.tenantId, {
     title: 'Admin — Mock LLM Gateway',
     bodyContent,
     user: req.session,
