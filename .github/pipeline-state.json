@@ -27009,7 +27009,7 @@
           "id": "pncg-s1",
           "slug": "pncg-s1",
           "name": "Wrap the Products-nav fetch in a shared helper and wire it to every page that is currently missing it",
-          "stage": "subagent-execution",
+          "stage": "verify-completion",
           "health": "green",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
@@ -27024,7 +27024,7 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-26T05:45:37.091Z",
+          "updatedAt": "2026-08-26T06:09:50.693Z",
           "tasks": [
             {
               "id": "task-1",
@@ -27068,7 +27068,8 @@
               "tddState": "committed",
               "file": "artefacts/2026-08-26-products-nav-coverage-gap/plans/pncg-s1-plan.md"
             }
-          ]
+          ],
+          "verifyStatus": "passed"
         }
       ],
       "metrics": [],
