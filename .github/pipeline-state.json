@@ -27100,7 +27100,7 @@
       "stories": [
         {
           "id": "jspf-s1",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "dorStatus": "signed-off",
           "prStatus": "none",
           "dodStatus": "not-started",
@@ -27108,11 +27108,14 @@
           "dorArtefact": "artefacts/2026-08-26-journey-stage-view-postgres-fallback/dor/jspf-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-26-journey-stage-view-postgres-fallback/dor/jspf-s1-dor-contract.md",
           "verificationScriptArtefact": "artefacts/2026-08-26-journey-stage-view-postgres-fallback/verification-scripts/jspf-s1-verification.md",
-          "updatedAt": "2026-08-26T08:15:11.381Z",
+          "updatedAt": "2026-08-26T08:50:57.495Z",
           "testPlan": {
             "status": "written",
-            "artefact": "artefacts/2026-08-26-journey-stage-view-postgres-fallback/test-plans/jspf-s1-test-plan.md"
-          }
+            "artefact": "artefacts/2026-08-26-journey-stage-view-postgres-fallback/test-plans/jspf-s1-test-plan.md",
+            "totalTests": 17,
+            "passing": 17
+          },
+          "acVerified": 8
         }
       ],
       "metrics": [],
