@@ -2563,12 +2563,20 @@ async function handlePostStories(req, res) {
   // Build priorArtefacts from completed stages
   var repoRoot = getRepoRoot(req);
   var updatedJourney = _journeyStore.getJourney(journeyId);
-  var priorArtefacts = (updatedJourney.completedStages || []).map(function(stage) {
-    var stageAbsPath = path.resolve(path.join(repoRoot, stage.artefactPath));
-    var content = '';
-    try { content = fs.readFileSync(stageAbsPath, 'utf8'); } catch (_) {}
-    return { path: stage.artefactPath, content: content };
-  });
+  // jspf-s1: disk -> Postgres per stage (no git-fallback tier here, per the
+  // story's Architecture Constraints). This is the highest-severity of the
+  // 4 sites -- priorArtefacts is the actual context handed into the review
+  // session this endpoint kicks off, so a disk-miss here silently starts
+  // the next skill session with no knowledge of prior stage content. The
+  // synchronous .map() became a for-loop since each stage now needs an
+  // awaited Postgres lookup.
+  var completedStages = updatedJourney.completedStages || [];
+  var priorArtefacts = [];
+  for (var _psi = 0; _psi < completedStages.length; _psi++) {
+    var stage = completedStages[_psi];
+    var content = await resolveArtefactFromDiskOrPg(repoRoot, stage.artefactPath, journeyId, stage.skillName);
+    priorArtefacts.push({ path: stage.artefactPath, content: content });
+  }
   // Create review session for first story (review → test-plan → DoR per story)
   _startReviewSessionForJourney(res, journeyId, updatedJourney, priorArtefacts);
 }
