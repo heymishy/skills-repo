@@ -290,16 +290,22 @@ console.log('\nU1 — skillsListPage_showsProductsSidebar (AC1: Run a Skill list
     // handlers (artefacts/2026-08-17-remaining-csrf-form-coverage/) with no
     // connection to nav/Products wiring. Removed from this list rather than
     // left to trip on every future unrelated change to that file.
+    // pncg-s1: same precedent applied to routes/features.js,
+    // routes/admin-credits.js, and routes/admin-mock-gateway.js -- this is
+    // the DIRECT opposite of "unrelated": pncg-s1's entire purpose was to
+    // wire the persistent Products-nav sidebar into exactly these
+    // previously-excluded call sites (artefacts/2026-08-26-products-nav-
+    // coverage-gap/), closing the coverage gap this file's own npwe-s1 story
+    // deliberately left open at the time. Removed from this list rather than
+    // left to trip forever on the very fix this gap was tracked for.
+    // routes/dashboard.js remains untouched by pncg-s1 and stays frozen.
     // IT2.2/IT2.3 below (determinism + "no Products section" checks against
     // the live renderSettingsPage output) still hold unmodified -- only the
     // git-diff-against-origin/master freeze on the byte content of the file
     // itself no longer applies, for the same reason it stopped applying to
     // routes/artefact.js.
     const EXCLUDED_FILES = [
-      'src/web-ui/routes/features.js',
-      'src/web-ui/routes/dashboard.js',
-      'src/web-ui/routes/admin-credits.js',
-      'src/web-ui/routes/admin-mock-gateway.js'
+      'src/web-ui/routes/dashboard.js'
     ];
     const repoRoot = path.resolve(__dirname, '..');
     let diffOutput = '';
