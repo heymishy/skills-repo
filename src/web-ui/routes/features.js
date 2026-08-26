@@ -21,7 +21,13 @@ const {
 
 const { getRepoRoot } = require('../adapters/repo-root');
 
-const { renderShell, escHtml } = require('../utils/html-shell');
+const { escHtml } = require('../utils/html-shell');
+// pncg-s1: renderShell's direct import was removed here -- handleGetFeatureArtefacts
+// (its only caller in this file) now goes through renderShellWithNav below,
+// which wraps renderShell itself. Shared Products-nav sidebar wrapper -- see
+// products.js's own renderShellWithNav docblock. products.js does not
+// require features.js, so this creates no circular dependency.
+const { renderShellWithNav } = require('./products');
 const { generateCsrfToken, csrfField } = require('../middleware/csrf');
 const shellEscHtml = escHtml; // internal alias used by artefact-index handlers
 const { getLabel } = require('../utils/artefact-labels');
@@ -218,7 +224,7 @@ function renderArtefactIndexHtml(artefacts, featureSlug, resumeLookup) {
  *   Accept: application/json or absent → JSON unchanged (backward-compatible)
  * authGuard: unauthenticated html → 302 /auth/github; API → 401 NOT_AUTHENTICATED
  */
-async function handleGetFeatureArtefacts(req, res, featureSlug) {
+async function handleGetFeatureArtefacts(req, res, featureSlug, pool) {
   const token  = req.session && req.session.accessToken;
   const userId = req.session && req.session.userId;
 
@@ -299,7 +305,7 @@ async function handleGetFeatureArtefacts(req, res, featureSlug) {
       '})()<\/script>'
     ].join('') : '';
     const bodyContent = `<h1>${shellEscHtml(displayTitle)}</h1>\n${deleteSectionHtml}\n${listHtml}`;
-    const html = renderShell({
+    const html = await renderShellWithNav(pool, req.session.tenantId, {
       title:       `Artefacts — ${shellEscHtml(displayTitle)}`,
       bodyContent,
       user:        { login: req.session.login || '' }

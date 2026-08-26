@@ -63,6 +63,15 @@ function freshRequireAll() {
   };
 }
 
+// pncg-s1: handleGetFeatureArtefacts now threads a `pool` param (4th
+// positional, after featureSlug) through to renderShellWithNav's own
+// getProductsNavSummary(pool, tenantId) call -- this mock only needs to
+// satisfy that query shape (empty rows is fine, these tests don't assert
+// on the Products nav section itself).
+function mockNavPool() {
+  return { query: async function() { return { rows: [] }; } };
+}
+
 function mockRes() {
   var r = { statusCode: null, headers: {}, body: '' };
   r.writeHead = function(code, hdrs) { r.statusCode = code; if (hdrs) Object.assign(r.headers, hdrs); };
@@ -171,7 +180,7 @@ queue.push(function() {
 
     var req = mockReq();
     var res = mockRes();
-    await m.features.handleGetFeatureArtefacts(req, res, 'frsr-test-feature');
+    await m.features.handleGetFeatureArtefacts(req, res, 'frsr-test-feature', mockNavPool());
 
     assert.strictEqual(res.statusCode, 200, 'expected 200, got ' + res.statusCode);
     // dsh-s4: the resume link now points at dsh-s3's durable stage-view route
@@ -269,7 +278,7 @@ queue.push(function() {
 
     var req = mockReq();
     var res = mockRes();
-    await m.features.handleGetFeatureArtefacts(req, res, 'frsr-nfr-feature');
+    await m.features.handleGetFeatureArtefacts(req, res, 'frsr-nfr-feature', mockNavPool());
 
     assert.strictEqual(callCount, 1, 'expected exactly 1 call to getJourneyByFeatureSlug regardless of the ' + TEST_ARTEFACTS.length + ' artefact rows, got ' + callCount);
   });

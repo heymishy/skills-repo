@@ -57,7 +57,11 @@ async function main() {
     var req = { session: { accessToken: 'tok', login: 'user' }, headers: { accept: 'text/html' } };
     var res = makeRes();
     await test('AC1: redirect target is /products/product-abc, not /journey', async function() {
-      await routes.handleGetFeatureArtefacts(req, res, 'x');
+      // pncg-s1: handleGetFeatureArtefacts now threads a `pool` param (4th
+      // positional, after featureSlug) through to renderShellWithNav's own
+      // getProductsNavSummary(pool, tenantId) call -- empty rows is fine,
+      // this test doesn't assert on the Products nav section itself.
+      await routes.handleGetFeatureArtefacts(req, res, 'x', { query: async function() { return { rows: [] }; } });
       var body = res._get().body;
       assert.ok(body.indexOf('window.location.href="/products/product-abc"') !== -1, 'expected the redirect to target /products/product-abc, got: ' + body.slice(0, 400));
       assert.ok(body.indexOf('window.location.href="/journey"') === -1, 'expected the old /journey redirect to be gone');
@@ -76,7 +80,11 @@ async function main() {
     var req = { session: { accessToken: 'tok', login: 'user' }, headers: { accept: 'text/html' } };
     var res = makeRes();
     await test('AC3: redirect falls back to /journey, never /products/undefined', async function() {
-      await routes.handleGetFeatureArtefacts(req, res, 'x');
+      // pncg-s1: handleGetFeatureArtefacts now threads a `pool` param (4th
+      // positional, after featureSlug) through to renderShellWithNav's own
+      // getProductsNavSummary(pool, tenantId) call -- empty rows is fine,
+      // this test doesn't assert on the Products nav section itself.
+      await routes.handleGetFeatureArtefacts(req, res, 'x', { query: async function() { return { rows: [] }; } });
       var body = res._get().body;
       assert.ok(body.indexOf('window.location.href="/journey"') !== -1, 'expected the fallback redirect to /journey, got: ' + body.slice(0, 400));
       assert.ok(body.indexOf('/products/undefined') === -1, 'must never redirect to /products/undefined');

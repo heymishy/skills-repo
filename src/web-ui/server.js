@@ -2580,7 +2580,7 @@ async function router(req, res) {
   } else if (pathname.startsWith('/features/') && req.method === 'GET') {
     const featureSlug = pathname.slice('/features/'.length);
     authGuard(req, res, async () => {
-      await handleGetFeatureArtefacts(req, res, featureSlug);
+      await handleGetFeatureArtefacts(req, res, featureSlug, _pshPool);
     });
 
   } else if (pathname.startsWith('/api/artefacts/') && pathname.endsWith('/annotations') && req.method === 'POST') {
