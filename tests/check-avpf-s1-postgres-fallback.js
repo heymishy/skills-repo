@@ -53,6 +53,16 @@ function fakeJourneyStore(overrides) {
 
 const realJourneyStore = require('../src/web-ui/modules/journey-store');
 
+// pncg-s1: handleArtefactRoute now threads a `pool` param through to
+// renderShellWithNav's own getProductsNavSummary(pool, tenantId) call on its
+// 2 success-render branches -- this mock only needs to satisfy that query
+// shape (empty rows is fine, these tests don't assert on the Products nav
+// section itself). Harmless to pass on error-branch calls too, since pool
+// is never touched there.
+function mockNavPool() {
+  return { query: async () => ({ rows: [] }) };
+}
+
 // ════════════════════════════════════════════════════════════════════════════
 // AC1 — Postgres fallback renders content when GitHub 404s (same tenant)
 // ════════════════════════════════════════════════════════════════════════════
@@ -68,7 +78,7 @@ test('avpf1_postgresFallback_rendersContent_whenGithub404sAndSameTenant', async 
 
   const req = mockReq({ session: { accessToken: 'tok', userId: 1, tenantId: 't1' } });
   const res = mockRes();
-  await handleArtefactRoute(req, res, 'new-feature-32ded088', 'benefit-metric');
+  await handleArtefactRoute(req, res, 'new-feature-32ded088', 'benefit-metric', mockNavPool());
 
   setFetcher(fetchArtefact);
   setJourneyStore(realJourneyStore);
@@ -92,7 +102,7 @@ test('avpf2_githubContent_preferredAndUnchanged_whenGithubHasIt', async () => {
 
   const req = mockReq({ session: { accessToken: 'tok', userId: 1, tenantId: 't1' } });
   const res = mockRes();
-  await handleArtefactRoute(req, res, 'example-feature', 'discovery');
+  await handleArtefactRoute(req, res, 'example-feature', 'discovery', mockNavPool());
 
   setFetcher(fetchArtefact);
   setJourneyStore(realJourneyStore);
@@ -115,7 +125,7 @@ test('avpf3_notFoundPage_unchanged_whenNeitherSourceHasContent', async () => {
 
   const req = mockReq({ session: { accessToken: 'tok', userId: 1, tenantId: 't1' } });
   const res = mockRes();
-  await handleArtefactRoute(req, res, 'truly-unknown-feature', 'discovery');
+  await handleArtefactRoute(req, res, 'truly-unknown-feature', 'discovery', mockNavPool());
 
   setFetcher(fetchArtefact);
   setJourneyStore(realJourneyStore);
@@ -139,7 +149,7 @@ test('avpf4_degradesTo404_whenPostgresLookupThrows', async () => {
 
   let threw = false;
   try {
-    await handleArtefactRoute(req, res, 'some-feature', 'discovery');
+    await handleArtefactRoute(req, res, 'some-feature', 'discovery', mockNavPool());
   } catch (_e) {
     threw = true;
   }
@@ -165,7 +175,7 @@ test('avpf5_crossTenant_neverServesOtherTenantsContent', async () => {
 
   const req = mockReq({ session: { accessToken: 'tok', userId: 1, tenantId: 't1' } });
   const res = mockRes();
-  await handleArtefactRoute(req, res, 'someone-elses-feature', 'benefit-metric');
+  await handleArtefactRoute(req, res, 'someone-elses-feature', 'benefit-metric', mockNavPool());
 
   setFetcher(fetchArtefact);
   setJourneyStore(realJourneyStore);

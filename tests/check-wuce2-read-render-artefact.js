@@ -53,6 +53,16 @@ function mockReq(overrides) {
   return Object.assign({ session: {}, sessionId: 'test-sid', query: {}, headers: {} }, overrides || {});
 }
 
+// pncg-s1: handleArtefactRoute now threads a `pool` param through to
+// renderShellWithNav's own getProductsNavSummary(pool, tenantId) call on its
+// 2 success-render branches -- this mock only needs to satisfy that query
+// shape (empty rows is fine, these tests don't assert on the Products nav
+// section itself). Harmless to pass on error-branch calls too, since pool
+// is never touched there.
+function mockNavPool() {
+  return { query: async () => ({ rows: [] }) };
+}
+
 function mockRes() {
   return {
     statusCode: null,
@@ -160,7 +170,7 @@ test('T3.2 artefact route handler returns 404 page with "artefact not found" mes
   const req = mockReq({ session: { accessToken: 'gho_test_fixture_token_wuce1', userId: 99001 } });
   const res = mockRes();
 
-  await handleArtefactRoute(req, res, 'unknown-feature', 'discovery');
+  await handleArtefactRoute(req, res, 'unknown-feature', 'discovery', mockNavPool());
   setFetcher(fetchArtefact);
 
   assert(res.statusCode === 404, 'T3.2: status is 404');
@@ -220,7 +230,7 @@ test('T4.3 artefact route handler returns human-readable error and logs technica
 
   const req = mockReq({ session: { accessToken: 'gho_test_fixture_token_wuce1', userId: 99001 } });
   const res = mockRes();
-  await handleArtefactRoute(req, res, 'example-feature', 'discovery');
+  await handleArtefactRoute(req, res, 'example-feature', 'discovery', mockNavPool());
   setFetcher(fetchArtefact);
   setLogger({ info: () => {}, warn: () => {} });
 
@@ -262,7 +272,7 @@ test('IT1 GET /artefact/:slug/discovery returns 200 with rendered HTML for valid
   const req = mockReq({ session: { accessToken: 'gho_test_fixture_token_wuce1', userId: 99001 } });
   const res = mockRes();
 
-  await handleArtefactRoute(req, res, '2026-01-01-example-feature', 'discovery');
+  await handleArtefactRoute(req, res, '2026-01-01-example-feature', 'discovery', mockNavPool());
   setFetcher(fetchArtefact);
 
   assert(res.statusCode === 200, 'IT1: status is 200');
@@ -277,7 +287,7 @@ test('IT2 GET /artefact/:slug/discovery returns 404 page for unknown slug', asyn
   const req = mockReq({ session: { accessToken: 'gho_test_fixture_token_wuce1', userId: 99001 } });
   const res = mockRes();
 
-  await handleArtefactRoute(req, res, 'nonexistent-feature', 'discovery');
+  await handleArtefactRoute(req, res, 'nonexistent-feature', 'discovery', mockNavPool());
   setFetcher(fetchArtefact);
 
   assert(res.statusCode === 404, 'IT2: status is 404');
@@ -291,7 +301,7 @@ test('IT3 GET /artefact/:slug/discovery returns error page when GitHub API retur
   const req = mockReq({ session: { accessToken: 'gho_test_fixture_token_wuce1', userId: 99001 } });
   const res = mockRes();
 
-  await handleArtefactRoute(req, res, 'example-feature', 'discovery');
+  await handleArtefactRoute(req, res, 'example-feature', 'discovery', mockNavPool());
   setFetcher(fetchArtefact);
 
   assert(res.statusCode === 503, 'IT3: status is 503');
@@ -327,7 +337,7 @@ test('NFR3 artefact read event is logged with user ID, feature slug, artefact ty
 
   const req = mockReq({ session: { accessToken: 'gho_test_fixture_token_wuce1', userId: 99001 } });
   const res = mockRes();
-  await handleArtefactRoute(req, res, 'example-feature', 'discovery');
+  await handleArtefactRoute(req, res, 'example-feature', 'discovery', mockNavPool());
   setFetcher(fetchArtefact);
   setLogger({ info: () => {}, warn: () => {} });
 

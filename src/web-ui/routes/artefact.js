@@ -8,6 +8,12 @@ const { fetchArtefact, ArtefactNotFoundError, ArtefactFetchError } = require('..
 const { renderArtefactToHTML, extractMetadata }                    = require('../utils/markdown-renderer');
 const { renderShell, escHtml: shellEscHtml }                       = require('../utils/html-shell');
 const journeyStoreDefault                                          = require('../modules/journey-store');
+// pncg-s1: shared Products-nav sidebar wrapper -- see products.js's own
+// renderShellWithNav docblock. products.js does not require artefact.js, so
+// this creates no circular dependency. Only the 2 success-rendering
+// renderShell calls below are swapped -- the 404/error branches keep plain
+// renderShell, matching journey.js's own not-found-page precedent.
+const { renderShellWithNav }                                       = require('./products');
 
 // Replaceable dependencies for testing
 let _fetchArtefact = fetchArtefact;
@@ -41,7 +47,7 @@ function setLogger(logger) { _logger = logger; }
  * @param {string} slug         - feature slug, e.g. '2026-01-01-example-feature'
  * @param {string} artefactType - artefact type, e.g. 'discovery'
  */
-async function handleArtefactRoute(req, res, slug, artefactType) {
+async function handleArtefactRoute(req, res, slug, artefactType, pool) {
   // Auth guard — unauthenticated requests redirect to sign-in
   if (!req.session || !req.session.accessToken) {
     res.writeHead(302, { Location: '/' });
@@ -65,7 +71,7 @@ async function handleArtefactRoute(req, res, slug, artefactType) {
     });
 
     const bodyContent = `<div class="sw-doc">${html}</div>`;
-    const page = renderShell({
+    const page = await renderShellWithNav(pool, req.session.tenantId, {
       title:       `${shellEscHtml(artefactType)} — ${shellEscHtml(slug)}`,
       bodyContent,
       user:        { login: req.session.login || '' }
@@ -108,7 +114,7 @@ async function handleArtefactRoute(req, res, slug, artefactType) {
         });
 
         const bodyContent = `<div class="sw-doc">${html}</div>`;
-        const page = renderShell({
+        const page = await renderShellWithNav(pool, req.session.tenantId, {
           title:       `${shellEscHtml(artefactType)} — ${shellEscHtml(slug)}`,
           bodyContent,
           user:        { login: req.session.login || '' }

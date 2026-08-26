@@ -2519,7 +2519,7 @@ async function router(req, res) {
     const parts        = pathname.split('/').filter(Boolean);
     const slug         = parts[1];
     const artefactType = parts[2];
-    await handleArtefactRoute(req, res, slug, artefactType);
+    await handleArtefactRoute(req, res, slug, artefactType, _pshPool);
 
   } else if (pathname.match(/^\/api\/export\/[^/]+$/) && req.method === 'GET') {
     // rb-s4: machine-to-machine export for the bootstrap CLI's --from-saas
