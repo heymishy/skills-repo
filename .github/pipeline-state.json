@@ -27130,7 +27130,7 @@
       "stories": [
         {
           "id": "ctpr-s1",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "dorStatus": "signed-off",
           "prStatus": "none",
           "dodStatus": "not-started",
@@ -27138,9 +27138,12 @@
           "dorArtefact": "artefacts/2026-08-27-csrf-token-not-persisted-across-restart/dor/ctpr-s1-dor.md",
           "testPlan": {
             "status": "written",
-            "artefact": "artefacts/2026-08-27-csrf-token-not-persisted-across-restart/test-plans/ctpr-s1-test-plan.md"
+            "artefact": "artefacts/2026-08-27-csrf-token-not-persisted-across-restart/test-plans/ctpr-s1-test-plan.md",
+            "totalTests": 4,
+            "passing": 4
           },
-          "updatedAt": "2026-08-26T19:09:57.918Z"
+          "updatedAt": "2026-08-26T19:22:22.797Z",
+          "acVerified": 5
         }
       ],
       "metrics": [],
