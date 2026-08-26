@@ -3050,8 +3050,10 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
     // at this point for a live/in-progress session -- SUBSTEP_JS is stored
     // as a string too so showCommitLink() can re-run it after SUBSTEP_HTML
     // is injected, at which point the wiring attempt succeeds).
-    '  var SUBSTEP_HTML = ' + JSON.stringify(_substepAff.html) + ';',
-    '  var SUBSTEP_JS = ' + JSON.stringify(_substepAff.js) + ';',
+    '  var SUBSTEP_HTML = ' + JSON.stringify(_substepAff.html)
+      .replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026') + ';',
+    '  var SUBSTEP_JS = ' + JSON.stringify(_substepAff.js)
+      .replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026') + ';',
     _substepAff.js,
     '  var CANVAS_EDIT_URL  = IS_DEFINITION ? (TURN_URL.replace("/turn", "/canvas-edit")) : "";',
     '  var submitBtn  = form.querySelector("button[type=\'submit\']");',
@@ -4304,14 +4306,16 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
       var nextStage = _journeyStore.getNextStage(skillName) || 'next stage';
 
       // lsbm-s1: sub-step affordances for stages that have side trips --
-      // markup/behaviour now built by the shared buildJourneySubStepAffordance
-      // (also used unconditionally at page load, see _renderChatPage's
-      // SUBSTEP_HTML/SUBSTEP_JS section) instead of being inlined here a
-      // second time. This is a mechanical extraction only -- subStepHtml and
-      // subStepJs below are byte-identical to what was previously inlined.
-      var _fullRenderAff = buildJourneySubStepAffordance(skillName, session.journeyId);
-      var subStepHtml = _fullRenderAff.html;
-      var subStepJs = _fullRenderAff.js ? ('<script>' + _fullRenderAff.js + '</script>') : '';
+      // markup/behaviour now built by the shared buildJourneySubStepAffordance,
+      // reusing the same _substepAff computed unconditionally earlier in this
+      // function (see SUBSTEP_HTML/SUBSTEP_JS above) rather than calling it
+      // again -- journeyId is guaranteed truthy here (this branch only runs
+      // when session.journeyId is set), so the two calls would always
+      // produce identical output. This is a mechanical extraction only --
+      // subStepHtml and subStepJs below are byte-identical to what was
+      // previously inlined.
+      var subStepHtml = _substepAff.html;
+      var subStepJs = _substepAff.js ? ('<script>' + _substepAff.js + '</script>') : '';
 
       journeyPanel = subStepHtml +
         '<div class="sw-journey-gate" style="padding:16px;margin-top:' + (subStepHtml ? '0' : '12px') + ';display:flex;align-items:center;gap:12px">' +
