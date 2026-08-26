@@ -27153,7 +27153,7 @@
     {
       "slug": "2026-08-27-live-sidestep-buttons-missing",
       "name": "Show the /clarify and /estimate sub-step buttons live, not only after a page reload",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
@@ -27176,7 +27176,7 @@
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-26T20:12:18.077Z",
+      "updatedAt": "2026-08-26T20:49:10.976Z",
       "track": "short"
     }
   ],
