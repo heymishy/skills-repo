@@ -27149,6 +27149,32 @@
       "metrics": [],
       "updatedAt": "2026-08-26T20:01:31.419Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-08-27-live-sidestep-buttons-missing",
+      "name": "Show the /clarify and /estimate sub-step buttons live, not only after a page reload",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "id": "lsbm-s1",
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "dodStatus": "not-started",
+          "acTotal": 6,
+          "dorArtefact": "artefacts/2026-08-27-live-sidestep-buttons-missing/dor/lsbm-s1-dor.md",
+          "verificationScriptArtefact": "artefacts/2026-08-27-live-sidestep-buttons-missing/verification-scripts/lsbm-s1-verification.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-08-27-live-sidestep-buttons-missing/test-plans/lsbm-s1-test-plan.md"
+          },
+          "updatedAt": "2026-08-26T20:12:17.944Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-26T20:12:18.077Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
