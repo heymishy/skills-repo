@@ -27153,15 +27153,15 @@
     {
       "slug": "2026-08-27-live-sidestep-buttons-missing",
       "name": "Show the /clarify and /estimate sub-step buttons live, not only after a page reload",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "id": "lsbm-s1",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
-          "prStatus": "draft",
-          "dodStatus": "not-started",
+          "prStatus": "merged",
+          "dodStatus": "complete",
           "acTotal": 6,
           "dorArtefact": "artefacts/2026-08-27-live-sidestep-buttons-missing/dor/lsbm-s1-dor.md",
           "verificationScriptArtefact": "artefacts/2026-08-27-live-sidestep-buttons-missing/verification-scripts/lsbm-s1-verification.md",
@@ -27171,12 +27171,12 @@
             "totalTests": 12,
             "passing": 12
           },
-          "updatedAt": "2026-08-26T20:50:06.433Z",
+          "updatedAt": "2026-08-26T20:59:39.223Z",
           "acVerified": 6
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-26T20:49:10.976Z",
+      "updatedAt": "2026-08-26T20:59:39.222Z",
       "track": "short"
     }
   ],
