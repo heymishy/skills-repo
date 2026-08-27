@@ -2512,7 +2512,7 @@ async function router(req, res) {
     if (_pshPool) {
       authGuard(req, res, async () => { await _handleGetDashboard(req, res, null, _pshPool); });
     } else {
-      handleDashboard(req, res);
+      await handleDashboard(req, res);
     }
 
   } else if (pathname.match(/^\/artefact\/[^/]+\/[^/]+$/) && req.method === 'GET') {

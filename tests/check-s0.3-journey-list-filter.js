@@ -55,13 +55,15 @@ journeyRoute.setRepoRoot('/tmp/s03-test');
 
 var { handleGetJourney } = journeyRoute;
 
+(async function main() {
+
 // ── AC1: alice only sees her own journeys ─────────────────────────────────────
 
 console.log('\nAC1 — alice (tenantId=alice) sees only her journey');
-(function() {
+await (async function() {
   var req = fakeReq({ accessToken: 'tok', login: 'alice', tenantId: 'alice' });
   var res = fakeRes();
-  handleGetJourney(req, res);
+  await handleGetJourney(req, res);
   ok('alice-feature appears in response',     res._body.indexOf('alice-feature') !== -1);
   ok('bob-feature NOT in alice response',     res._body.indexOf('bob-feature')   === -1);
   ok('org-feature NOT in alice response',     res._body.indexOf('org-feature')   === -1);
@@ -71,10 +73,10 @@ console.log('\nAC1 — alice (tenantId=alice) sees only her journey');
 // ── AC2: bob only sees his own journeys ───────────────────────────────────────
 
 console.log('\nAC2 — bob (tenantId=bob) sees only his journey');
-(function() {
+await (async function() {
   var req = fakeReq({ accessToken: 'tok', login: 'bob', tenantId: 'bob' });
   var res = fakeRes();
-  handleGetJourney(req, res);
+  await handleGetJourney(req, res);
   ok('bob-feature appears in response',       res._body.indexOf('bob-feature')   !== -1);
   ok('alice-feature NOT in bob response',     res._body.indexOf('alice-feature') === -1);
   ok('org-feature NOT in bob response',       res._body.indexOf('org-feature')   === -1);
@@ -83,10 +85,10 @@ console.log('\nAC2 — bob (tenantId=bob) sees only his journey');
 // ── AC3: org member sees only org journeys ────────────────────────────────────
 
 console.log('\nAC3 — org user (tenantId=myorg) sees only org journey');
-(function() {
+await (async function() {
   var req = fakeReq({ accessToken: 'tok', login: 'alice', tenantId: 'myorg' });
   var res = fakeRes();
-  handleGetJourney(req, res);
+  await handleGetJourney(req, res);
   ok('org-feature appears in response',       res._body.indexOf('org-feature')   !== -1);
   ok('alice-feature NOT in org response',     res._body.indexOf('alice-feature') === -1);
   ok('bob-feature NOT in org response',       res._body.indexOf('bob-feature')   === -1);
@@ -95,14 +97,14 @@ console.log('\nAC3 — org user (tenantId=myorg) sees only org journey');
 // ── AC4: no tenantId (pre-s0.2 session) → all journeys shown (backward compat) ──
 
 console.log('\nAC4 — no tenantId → all journeys shown (backward compat for pre-s0.2 sessions)');
-(function() {
+await (async function() {
   // After s0.2 every new session has tenantId = user.login, so a missing tenantId
   // means a session created before s0.2 was deployed.  Skipping the filter for these
   // sessions (rather than showing an empty list) preserves continuity for existing
   // operators upgrading in place.
   var req = fakeReq({ accessToken: 'tok', login: 'ghost' });  // no tenantId
   var res = fakeRes();
-  handleGetJourney(req, res);
+  await handleGetJourney(req, res);
   ok('all journeys shown when tenantId absent (backward compat)',
     res._body.indexOf('alice-feature') !== -1
     && res._body.indexOf('bob-feature')   !== -1
@@ -113,12 +115,14 @@ console.log('\nAC4 — no tenantId → all journeys shown (backward compat for p
 // ── AC5: unauthenticated → redirect ──────────────────────────────────────────
 
 console.log('\nAC5 — unauthenticated GET /journey → 302');
-(function() {
+await (async function() {
   var req = fakeReq({});  // no accessToken
   var res = fakeRes();
-  handleGetJourney(req, res);
+  await handleGetJourney(req, res);
   ok('unauthenticated → 302', res._status === 302);
 })();
 
 console.log('\n--- Results:', passed, 'passed,', failed, 'failed ---');
 process.exit(failed > 0 ? 1 : 0);
+
+})();

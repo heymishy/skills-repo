@@ -62,12 +62,12 @@ var queue = [];
 
 // T3.1 — Auth GET /journey → 200 with form
 queue.push(function() {
-  return test('T3.1: Auth GET /journey → 200 with form pointing to /api/journey', function() {
+  return test('T3.1: Auth GET /journey → 200 with form pointing to /api/journey', async function() {
     var journey = freshRequireJourney();
     getStore()._clear();
     var req = authReq({ method: 'GET' });
     var res = makeRes();
-    journey.handleGetJourney(req, res);
+    await journey.handleGetJourney(req, res);
     assert.strictEqual(res._status, 200, 'Expected status 200, got ' + res._status);
     assert.ok(res._body.includes('<form'), 'Expected <form in response body');
     assert.ok(res._body.toLowerCase().includes('/api/journey'), 'Expected /api/journey action in form');
@@ -170,12 +170,12 @@ queue.push(function() {
 
 // T3.6 — HTML has "journey" in heading, no hidden inputs
 queue.push(function() {
-  return test('T3.6: GET /journey HTML has journey in heading and no hidden inputs', function() {
+  return test('T3.6: GET /journey HTML has journey in heading and no hidden inputs', async function() {
     var journey = freshRequireJourney();
     getStore()._clear();
     var req = authReq({ method: 'GET' });
     var res = makeRes();
-    journey.handleGetJourney(req, res);
+    await journey.handleGetJourney(req, res);
     assert.ok(
       res._body.toLowerCase().includes('journey'),
       'Expected "journey" in page content'

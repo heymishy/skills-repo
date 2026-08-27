@@ -59,13 +59,15 @@ journeyRoute.setRepoRoot('/tmp/jlfc-s1-test');
 
 var { handleGetJourney } = journeyRoute;
 
+(async function main() {
+
 // ── AC1: post-cutoff tenant-less journey excluded, even when owner matches ────
 
 console.log('\nAC1 — post-cutoff tenant-less journey excluded even when ownerId matches');
-(function() {
+await (async function() {
   var req = fakeReq({ accessToken: 'tok', login: 'kim', tenantId: 'kim-tenant' });
   var res = fakeRes();
-  handleGetJourney(req, res);
+  await handleGetJourney(req, res);
   ok('post-cutoff e2e-test-artifact feature NOT in response',
     res._body.indexOf('e2e-test-artifact') === -1);
   ok('200 response', res._status === 200);
@@ -74,10 +76,10 @@ console.log('\nAC1 — post-cutoff tenant-less journey excluded even when ownerI
 // ── AC2: pre-cutoff tenant-less journey still included when owner matches ─────
 
 console.log('\nAC2 — pre-cutoff tenant-less journey still included when ownerId matches');
-(function() {
+await (async function() {
   var req = fakeReq({ accessToken: 'tok', login: 'kim', tenantId: 'kim-tenant' });
   var res = fakeRes();
-  handleGetJourney(req, res);
+  await handleGetJourney(req, res);
   ok('pre-cutoff genuine-legacy-feature appears in response',
     res._body.indexOf('genuine-legacy-feature') !== -1);
 })();
@@ -85,13 +87,15 @@ console.log('\nAC2 — pre-cutoff tenant-less journey still included when ownerI
 // ── AC3: tenant-less journey with no createdAt still included ─────────────────
 
 console.log('\nAC3 — tenant-less journey with no createdAt still included when ownerId matches');
-(function() {
+await (async function() {
   var req = fakeReq({ accessToken: 'tok', login: 'kim', tenantId: 'kim-tenant' });
   var res = fakeRes();
-  handleGetJourney(req, res);
+  await handleGetJourney(req, res);
   ok('no-createdAt ancient-no-timestamp-feature appears in response',
     res._body.indexOf('ancient-no-timestamp-feature') !== -1);
 })();
 
 console.log('\n--- Results:', passed, 'passed,', failed, 'failed ---');
 process.exit(failed > 0 ? 1 : 0);
+
+})();

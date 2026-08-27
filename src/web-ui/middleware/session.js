@@ -134,11 +134,14 @@ function persistSession(id) {
   // lets Node consider the event loop "empty" and exit before the timer ever
   // fires if nothing else is scheduled, silently abandoning this race instead
   // of resolving it -- the opposite of what a durability fix should do.
+  let timer;
   const timeout = new Promise(function(resolve) {
-    setTimeout(resolve, _PERSIST_TIMEOUT_MS);
+    timer = setTimeout(resolve, _PERSIST_TIMEOUT_MS);
   });
 
-  return Promise.race([write, timeout]);
+  return Promise.race([write, timeout]).finally(function() {
+    clearTimeout(timer);
+  });
 }
 
 /**
