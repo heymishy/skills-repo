@@ -27,16 +27,23 @@ function _escapeHtml(str) {
  * Generate (or return the already-cached) CSRF token for this session.
  * Idempotent within a session — a token is generated once and reused for the
  * lifetime of the session, not regenerated on every page load.
+ *
+ * cpr-s1: async -- awaits persistSession's write (capped at ~500ms, see
+ * session.js) so a newly-minted token is durably persisted before this
+ * function returns, closing the race where the caller sends its response
+ * (embedding the token) before the fire-and-forget Redis write had landed.
+ * See artefacts/2026-08-27-csrf-persist-race-on-suspend/decisions.md.
+ *
  * @param {object} req - must have req.session
- * @returns {string} hex token
+ * @returns {Promise<string>} hex token
  */
-function generateCsrfToken(req) {
+async function generateCsrfToken(req) {
   if (!req || !req.session) {
     throw new Error('generateCsrfToken requires req.session to be set (session middleware must run first)');
   }
   if (!req.session.csrfToken) {
     req.session.csrfToken = crypto.randomBytes(32).toString('hex');
-    persistSession(req.sessionId);
+    await persistSession(req.sessionId);
   }
   return req.session.csrfToken;
 }
