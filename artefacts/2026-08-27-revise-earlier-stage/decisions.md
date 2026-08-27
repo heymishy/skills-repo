@@ -31,6 +31,15 @@
 ---
 
 ---
+**2026-08-28 | RISK-ACCEPT | definition-of-ready**
+**Decision:** Accept DoR Warning W4 (verification script reviewed by a domain expert) as unresolved pre-code for all 4 stories (res-s1, res-s2, res-s3, res-s4) — proceed to the coding agent without a pre-code human walkthrough of the 4 verification scripts.
+**Alternatives considered:** (1) Pause DoR and walk through all 4 scripts before signing off any story.
+**Rationale:** The verification scripts (`templates/ac-verification-script.md`) are explicitly designed to serve three moments without modification — pre-code sign-off, post-merge smoke test, and delivery review. Given solo-operator context and no separate domain expert available, the operator will use the scripts as the post-merge smoke test instead of a pre-code gate — this is one of the script's designed uses, not a workaround.
+**Made by:** Hamish King — Platform Owner
+**Revisit trigger:** If a post-merge smoke test run against any of the 4 scripts finds a scenario that reveals the AC itself was wrong (not just the implementation), treat that as evidence the pre-code walkthrough would have caught it — reconsider skipping W4 for future stories on this feature.
+---
+
+---
 
 ## Architecture Decision Records
 
