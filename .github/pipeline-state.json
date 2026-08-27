@@ -27316,14 +27316,14 @@
       "slug": "2026-08-27-revise-earlier-stage",
       "name": "Revise an Earlier Stage Mid-Journey",
       "stage": "review",
-      "health": "amber",
+      "health": "green",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "discoveryStatus": "approved",
-      "updatedAt": "2026-08-27T19:10:41.868Z",
+      "updatedAt": "2026-08-27T19:33:45.147Z",
       "metrics": [
         {
           "id": "M1",
@@ -27743,6 +27743,13 @@
           "reviewStatus": "has-findings",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-27-revise-earlier-stage/review/res-s4-review-1.md"
+        }
+      ],
+      "riskAcceptances": [
+        {
+          "id": "res-s4-1-M1",
+          "decision": "Missing STAGE_SEQUENCE anti-pattern reference + undefined flag-persistence mechanism accepted as-is; to be resolved at DoR/implementation time, not by a further story-text revision pass",
+          "date": "2026-08-27T19:33:37.702Z"
         }
       ]
     }
