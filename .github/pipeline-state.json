@@ -27198,12 +27198,12 @@
     {
       "slug": "2026-08-27-artefact-label-spacing-gap",
       "name": "Add a visible separator between an artefact's type label and its file link",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "stories": [
         {
           "id": "alsg-s1",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "dorStatus": "signed-off",
           "prStatus": "none",
           "dodStatus": "not-started",
@@ -27211,13 +27211,16 @@
           "dorArtefact": "artefacts/2026-08-27-artefact-label-spacing-gap/dor/alsg-s1-dor.md",
           "testPlan": {
             "status": "written",
-            "artefact": "artefacts/2026-08-27-artefact-label-spacing-gap/test-plans/alsg-s1-test-plan.md"
+            "artefact": "artefacts/2026-08-27-artefact-label-spacing-gap/test-plans/alsg-s1-test-plan.md",
+            "totalTests": 2,
+            "passing": 2
           },
-          "updatedAt": "2026-08-27T01:07:00.266Z"
+          "updatedAt": "2026-08-27T01:15:33.099Z",
+          "acVerified": 3
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-27T01:07:00.397Z",
+      "updatedAt": "2026-08-27T01:15:33.242Z",
       "track": "short"
     }
   ],
