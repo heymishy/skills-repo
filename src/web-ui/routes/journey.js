@@ -626,11 +626,21 @@ async function handleGetStageReview(req, res, pool) {
   }
 
   var session = getGetHtmlSession()(journey.activeSessionId);
-  if (!session || !session.done || !session.artefactContent) {
-    // aslr-s1: route through the existing resume endpoint instead of a raw
-    // session URL -- see the isActive step-nav branch in
-    // handleGetJourneyStageView for the full rationale.
+  if (!session) {
+    // aslr-s1: genuinely missing -- route through the existing resume
+    // endpoint for full recovery (Redis restore or a fresh session).
     res.writeHead(302, { Location: '/journey/' + encodeURIComponent(journey.featureSlug) + '/resume' });
+    res.end();
+    return;
+  }
+  if (!session.done || !session.artefactContent) {
+    // adsr-s1: exists but not ready for review yet -- link directly to it.
+    // Do NOT route through /resume here: handleGetJourneyResume always
+    // starts a FRESH session for a done predecessor, which would be wrong
+    // for this "not done yet" case anyway, and even for a done-but-no-
+    // artefact edge case would needlessly discard a session that already
+    // exists and is perfectly safe to view directly (kcrs-s1 precedent).
+    res.writeHead(302, { Location: '/skills/' + encodeURIComponent(session.skillName || journey.activeSkill || 'discovery') + '/sessions/' + encodeURIComponent(journey.activeSessionId) + '/chat' });
     res.end();
     return;
   }
@@ -775,10 +785,14 @@ async function handleGetJourneyStageView(req, res, pool) {
 
   if (!artefactRelPath) {
     // Stage exists but has no artefact yet — redirect to current chat.
-    // aslr-s1: route through the existing resume endpoint instead of a raw
-    // session URL -- see the isActive step-nav branch below for the full
-    // rationale.
-    res.writeHead(302, { Location: '/journey/' + encodeURIComponent(journey.featureSlug) + '/resume' });
+    // adsr-s1: link directly to the active session if it still exists in
+    // memory (done or not) -- only fall through to /resume when it doesn't
+    // exist at all, matching kcrs-s1's precedent in handleGetJourneyById.
+    var _noArtefactSession = journey.activeSessionId ? getGetHtmlSession()(journey.activeSessionId) : null;
+    var _noArtefactLocation = _noArtefactSession
+      ? '/skills/' + encodeURIComponent(_noArtefactSession.skillName || journey.activeSkill || 'discovery') + '/sessions/' + encodeURIComponent(journey.activeSessionId) + '/chat'
+      : '/journey/' + encodeURIComponent(journey.featureSlug) + '/resume';
+    res.writeHead(302, { Location: _noArtefactLocation });
     res.end();
     return;
   }
@@ -890,13 +904,20 @@ async function handleGetJourneyStageView(req, res, pool) {
       return '<li class="sn-step ' + cls + '"><a href="/journey/' + safeJourneyId + '/stage/' + encodeURIComponent(s.id) + '" class="sn-step-link">' + inner + '</a></li>';
     }
     if (isActive) {
-      // aslr-s1: route through the existing resume endpoint instead of a raw
-      // session URL -- handleGetJourneyResume already handles live/Redis-
-      // restorable/expired activeSessionId correctly (falling through to a
-      // fresh session seeded from prior artefacts in the expired case), so
-      // this link can never dead-end on a stale session the way a direct
-      // /skills/.../sessions/.../chat link could.
-      return '<li class="sn-step ' + cls + '"><a href="/journey/' + encodeURIComponent(journey.featureSlug) + '/resume" class="sn-step-link">' + inner + '</a></li>';
+      // aslr-s1 / adsr-s1: if the active session still exists in memory
+      // (done or not), link directly to it -- safe and idempotent, and
+      // critically avoids handleGetJourneyResume's own deliberate contract
+      // of always starting a FRESH session for a done predecessor (see its
+      // comment above, and kcrs-s1's identical precedent in
+      // handleGetJourneyById below). Only fall through to /resume when the
+      // session doesn't exist in memory at all -- that's the real dead-end
+      // aslr-s1 fixed, and /resume's fresh-session/Redis-restore fallback is
+      // exactly right for that case.
+      var _activeSession = _activeSid ? getGetHtmlSession()(_activeSid) : null;
+      var _activeHref = _activeSession
+        ? '/skills/' + encodeURIComponent(_activeSession.skillName || _activeSkill) + '/sessions/' + encodeURIComponent(_activeSid) + '/chat'
+        : '/journey/' + encodeURIComponent(journey.featureSlug) + '/resume';
+      return '<li class="sn-step ' + cls + '"><a href="' + _activeHref + '" class="sn-step-link">' + inner + '</a></li>';
     }
     return '<li class="sn-step ' + cls + '">' + inner + '</li>';
   }).join('');
@@ -930,13 +951,14 @@ async function handleGetJourneyStageView(req, res, pool) {
 
   var artefactHtml  = _renderMarkdown(artefactContent);
   var saveUrl = '/api/journey/' + safeJourneyId + '/stage/' + encodeURIComponent(stageName) + '/artefact';
-  // aslr-s1: route through the existing resume endpoint instead of a raw
-  // session URL -- see the isActive step-nav branch above for the full
-  // rationale (handleGetJourneyResume already handles live/Redis-restorable/
-  // expired activeSessionId correctly, so this link can never dead-end).
-  var currentChatUrl = _activeSid
-    ? '/journey/' + encodeURIComponent(journey.featureSlug) + '/resume'
-    : '/journey';
+  // aslr-s1 / adsr-s1: same existence-check-first pattern as the isActive
+  // step-nav branch above -- link directly to the active session if it still
+  // exists in memory (done or not), only falling through to /resume when it
+  // doesn't exist at all.
+  var _currentChatSession = _activeSid ? getGetHtmlSession()(_activeSid) : null;
+  var currentChatUrl = _currentChatSession
+    ? '/skills/' + encodeURIComponent(_currentChatSession.skillName || _activeSkill) + '/sessions/' + encodeURIComponent(_activeSid) + '/chat'
+    : (_activeSid ? '/journey/' + encodeURIComponent(journey.featureSlug) + '/resume' : '/journey');
 
   var body;
   if (_useChatSplit) {
