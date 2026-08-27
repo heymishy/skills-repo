@@ -27263,12 +27263,12 @@
     {
       "slug": "2026-08-27-chat-artefact-mobile-responsive",
       "name": "Stack the chat/artefact split-panel into a single column on mobile",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "id": "cams-s1",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
           "acTotal": 6,
           "dorArtefact": "artefacts/2026-08-27-chat-artefact-mobile-responsive/dor/cams-s1-dor.md",
@@ -27276,22 +27276,25 @@
             "status": "written",
             "artefact": "artefacts/2026-08-27-chat-artefact-mobile-responsive/test-plans/cams-s1-test-plan.md"
           },
-          "updatedAt": "2026-08-27T07:37:14.917Z"
+          "updatedAt": "2026-08-27T08:54:36.427Z",
+          "prStatus": "merged",
+          "acVerified": 6,
+          "dodStatus": "complete"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-27T07:37:14.917Z",
+      "updatedAt": "2026-08-27T08:54:36.129Z",
       "track": "short"
     },
     {
       "slug": "2026-08-27-aslr-s1-done-session-regression",
       "name": "Stop churning fresh sessions for an already-done stage",
-      "stage": "definition-of-ready",
-      "health": "red",
+      "stage": "definition-of-done",
+      "health": "green",
       "stories": [
         {
           "id": "adsr-s1",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "dorStatus": "signed-off",
           "acTotal": 7,
           "dorArtefact": "artefacts/2026-08-27-aslr-s1-done-session-regression/dor/adsr-s1-dor.md",
@@ -27299,11 +27302,14 @@
             "status": "written",
             "artefact": "artefacts/2026-08-27-aslr-s1-done-session-regression/test-plans/adsr-s1-test-plan.md"
           },
-          "updatedAt": "2026-08-27T08:26:25.921Z"
+          "updatedAt": "2026-08-27T08:54:46.117Z",
+          "prStatus": "merged",
+          "acVerified": 7,
+          "dodStatus": "complete"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-27T08:26:25.921Z",
+      "updatedAt": "2026-08-27T08:54:45.846Z",
       "track": "short"
     }
   ],
