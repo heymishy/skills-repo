@@ -40,6 +40,15 @@
 ---
 
 ---
+**2026-08-28 | RISK-ACCEPT | branch-setup**
+**Decision:** Acknowledge `tests/check-p3.5-validate-trace.js` as a pre-existing failure in the res-s1 worktree's baseline (561 files run, 1 failed) and proceed with implementation rather than blocking on it.
+**Alternatives considered:** (1) Investigate and fix this failure before proceeding with res-s1.
+**Rationale:** This exact file has already been independently documented as a known pre-existing flaky failure in this session's `cams-s1` and `adsr-s1` DoD artefacts ("1 known pre-existing flaky file, `check-p3.5-validate-trace.js`") — unrelated to this feature's own worktree or changes, and observed on a clean checkout before any res-s1 code was written.
+**Made by:** Hamish King — Platform Owner
+**Revisit trigger:** If this file starts failing in a way that correlates with this feature's own changes (not just a standalone flake), or if it blocks CI on the eventual PR.
+---
+
+---
 
 ## Architecture Decision Records
 
