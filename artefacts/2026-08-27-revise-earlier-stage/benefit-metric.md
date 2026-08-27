@@ -54,9 +54,9 @@
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Earlier-stage revisions completed without a journey restart | *(populated at /definition)* | Gap — pending story definition |
-| Materiality-suggestion acceptance rate | *(populated at /definition)* | Gap — pending story definition |
-| Recurrence of the original blocking pain | *(populated at /definition)* | Gap — pending story definition |
+| Earlier-stage revisions completed without a journey restart | res-s1, res-s2 (primary); res-s4 (secondary — closes the loop) | Covered |
+| Materiality-suggestion acceptance rate | res-s3, res-s4 | Covered |
+| Recurrence of the original blocking pain | res-s1, res-s2, res-s4 | Covered |
 
 ---
 
