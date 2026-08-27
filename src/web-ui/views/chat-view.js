@@ -406,6 +406,16 @@ function renderChat(data) {
       '.dm-mx{border:none;background:none;cursor:pointer;font-size:16px;color:var(--muted);padding:2px 6px;border-radius:4px;line-height:1;flex-shrink:0;font-family:inherit}',
       '.dm-mx:hover{color:var(--ink);background:var(--line)}',
       '.dm-mbd{overflow-y:auto;padding:20px 24px}',
+      /* cams-s1: stack the chat/artefact split-panel into a single column
+         below the same max-width:768px breakpoint html-shell.js's sidebar
+         drawer already uses. height:auto lets the page scroll naturally
+         instead of squeezing both panes into unreadable fixed-height,
+         half-width columns. */
+      '@media (max-width: 768px) {',
+        '.sw-chat { grid-template-columns: 1fr; height: auto; max-height: none; }',
+        '.sw-chat-pane { overflow: visible; }',
+        '.sw-chat-thread { overflow: visible; }',
+      '}',
     '</style>',
     (data.contextManifestHtml ||
       '<div id="context-manifest" role="region" aria-label="Loaded context files"' +
