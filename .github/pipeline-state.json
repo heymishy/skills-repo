@@ -27311,6 +27311,19 @@
       "metrics": [],
       "updatedAt": "2026-08-27T08:54:45.846Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-08-27-revise-earlier-stage",
+      "name": "Revise an Earlier Stage Mid-Journey",
+      "stage": "discovery",
+      "health": "green",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "discoveryStatus": "clarified",
+      "updatedAt": "2026-08-27T09:23:27.997Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
