@@ -627,9 +627,10 @@ async function handleGetStageReview(req, res, pool) {
 
   var session = getGetHtmlSession()(journey.activeSessionId);
   if (!session || !session.done || !session.artefactContent) {
-    var skillForRedirect = (session && session.skillName) || journey.activeSkill || 'discovery';
-    var sidForRedirect   = journey.activeSessionId || '';
-    res.writeHead(302, { Location: '/skills/' + encodeURIComponent(skillForRedirect) + '/sessions/' + encodeURIComponent(sidForRedirect) + '/chat' });
+    // aslr-s1: route through the existing resume endpoint instead of a raw
+    // session URL -- see the isActive step-nav branch in
+    // handleGetJourneyStageView for the full rationale.
+    res.writeHead(302, { Location: '/journey/' + encodeURIComponent(journey.featureSlug) + '/resume' });
     res.end();
     return;
   }
@@ -773,10 +774,11 @@ async function handleGetJourneyStageView(req, res, pool) {
   }
 
   if (!artefactRelPath) {
-    // Stage exists but has no artefact yet — redirect to current chat
-    var activeSkill = journey.activeSkill || 'discovery';
-    var activeSid = journey.activeSessionId || '';
-    res.writeHead(302, { Location: '/skills/' + encodeURIComponent(activeSkill) + '/sessions/' + encodeURIComponent(activeSid) + '/chat' });
+    // Stage exists but has no artefact yet — redirect to current chat.
+    // aslr-s1: route through the existing resume endpoint instead of a raw
+    // session URL -- see the isActive step-nav branch below for the full
+    // rationale.
+    res.writeHead(302, { Location: '/journey/' + encodeURIComponent(journey.featureSlug) + '/resume' });
     res.end();
     return;
   }
@@ -888,7 +890,13 @@ async function handleGetJourneyStageView(req, res, pool) {
       return '<li class="sn-step ' + cls + '"><a href="/journey/' + safeJourneyId + '/stage/' + encodeURIComponent(s.id) + '" class="sn-step-link">' + inner + '</a></li>';
     }
     if (isActive) {
-      return '<li class="sn-step ' + cls + '"><a href="/skills/' + encodeURIComponent(_activeSkill) + '/sessions/' + encodeURIComponent(_activeSid) + '/chat" class="sn-step-link">' + inner + '</a></li>';
+      // aslr-s1: route through the existing resume endpoint instead of a raw
+      // session URL -- handleGetJourneyResume already handles live/Redis-
+      // restorable/expired activeSessionId correctly (falling through to a
+      // fresh session seeded from prior artefacts in the expired case), so
+      // this link can never dead-end on a stale session the way a direct
+      // /skills/.../sessions/.../chat link could.
+      return '<li class="sn-step ' + cls + '"><a href="/journey/' + encodeURIComponent(journey.featureSlug) + '/resume" class="sn-step-link">' + inner + '</a></li>';
     }
     return '<li class="sn-step ' + cls + '">' + inner + '</li>';
   }).join('');
@@ -922,8 +930,12 @@ async function handleGetJourneyStageView(req, res, pool) {
 
   var artefactHtml  = _renderMarkdown(artefactContent);
   var saveUrl = '/api/journey/' + safeJourneyId + '/stage/' + encodeURIComponent(stageName) + '/artefact';
+  // aslr-s1: route through the existing resume endpoint instead of a raw
+  // session URL -- see the isActive step-nav branch above for the full
+  // rationale (handleGetJourneyResume already handles live/Redis-restorable/
+  // expired activeSessionId correctly, so this link can never dead-end).
   var currentChatUrl = _activeSid
-    ? '/skills/' + encodeURIComponent(_activeSkill || 'discovery') + '/sessions/' + encodeURIComponent(_activeSid) + '/chat'
+    ? '/journey/' + encodeURIComponent(journey.featureSlug) + '/resume'
     : '/journey';
 
   var body;

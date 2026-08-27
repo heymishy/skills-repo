@@ -10,7 +10,7 @@
 
 ## Contract review
 
-Fix target confirmed via direct source inspection: `journey.js:891`'s step-nav active-stage link is the only one of 8+ similar `journey.activeSessionId`-derived redirects that has no existence check or fallback. `handleGetJourneyResume` (`journey.js:1413-1580`) already implements the complete recovery chain needed and is already tested. The fix is a single `href` construction change. **✅ Contract review passed** — no ambiguity remains about scope.
+Fix target confirmed via direct source inspection: 4 of 10+ `journey.activeSessionId`-derived redirects in `journey.js` have no existence check or fallback (step-nav's `isActive` breadcrumb line 891, the "← Current stage" button's `currentChatUrl` line 931-933, `handleGetStageReview`'s fallback line 628-632, `handleGetJourneyStageView`'s own no-artefact-yet fallback line 775-779). `handleGetJourneyResume` (`journey.js:1413-1580`) already implements the complete recovery chain needed and is already tested. The fix is four mechanically-identical `href`/`Location` construction changes. **✅ Contract review passed** — no ambiguity remains about scope.
 
 ---
 
@@ -19,8 +19,8 @@ Fix target confirmed via direct source inspection: `journey.js:891`'s step-nav a
 | # | Check | Status | Notes |
 |---|-------|--------|-------|
 | H1 | User story is in As / Want / So format with a named persona | ✅ | "As an operator returning to an in-progress journey..." |
-| H2 | At least 3 ACs in Given / When / Then format | ✅ | 6 ACs, all Given/When/Then |
-| H3 | Every AC has at least one test in the test plan | ✅ | AC1-AC6 each have 1+ dedicated test (test plan numbers them AC1-AC7, one extra regression-suite test) |
+| H2 | At least 3 ACs in Given / When / Then format | ✅ | 8 ACs, all Given/When/Then |
+| H3 | Every AC has at least one test in the test plan | ✅ | AC1-AC8 each have 1+ dedicated or re-run test |
 | H4 | Out-of-scope section is populated | ✅ | 3 explicit exclusions, each with reasoning |
 | H5 | Benefit linkage field references a named metric | ✅ N/A (short-track direct correctness fix) | No formal benefit-metric artefact |
 | H6 | Complexity is rated | ✅ | Complexity 1, Scope stability Stable |
@@ -79,39 +79,48 @@ Make every test in the test plan pass. Do not add scope, behaviour, or
 structure beyond what the tests and ACs specify.
 
 Task order:
-1. src/web-ui/routes/journey.js: in the step-nav renderer's `isActive`
-   branch (around line 890-891), change the emitted href from
-   `/skills/' + encodeURIComponent(_activeSkill) + '/sessions/' +
-   encodeURIComponent(_activeSid) + '/chat'` to
-   `/journey/' + encodeURIComponent(journey.featureSlug) + '/resume'`.
-   `journey.featureSlug` is already in scope in this function (used two
-   lines earlier for `featureName`, around line 872) -- no new lookup
-   needed. Do NOT change the `isDone` branch (lines 887-889) -- it
-   already links correctly to the static artefact view.
+1. src/web-ui/routes/journey.js: change all FOUR raw
+   `/skills/' + skill + '/sessions/' + sid + '/chat'` constructions built
+   from `journey.activeSessionId` to `/journey/' +
+   encodeURIComponent(journey.featureSlug) + '/resume'`:
+   a. The step-nav renderer's `isActive` branch (~line 891).
+   b. `currentChatUrl`'s definition (~line 931-933), used by the
+      "← Current stage" button at ~lines 1013 and 1326 -- this is the
+      literal link clicked during live reproduction.
+   c. `handleGetStageReview`'s not-done/no-artefact fallback (~line
+      628-632).
+   d. `handleGetJourneyStageView`'s own no-artefact-yet fallback (~line
+      775-779).
+   `journey.featureSlug` is already in scope at every site. Do NOT change
+   the `isDone` branch (lines 887-889) -- it already links correctly to
+   the static artefact view.
 2. Do NOT modify handleGetJourneyResume (journey.js:1413-1580) or
    handleGetChatHtml's 404 handling (skills.js:4343-4358) -- both are
-   correct and tested as-is; this story only changes which endpoint one
-   link points to.
+   correct and tested as-is; this story only changes which endpoint these
+   four call sites point to.
 3. Write tests/check-aslr-s1-active-stage-link-resume.js covering
-   AC1-AC7 per the test plan:
-   - AC1: render the step-nav HTML, assert the active stage's href is
-     `/journey/<featureSlug>/resume`, not the raw session chat URL.
-   - AC2/AC3: re-run (don't duplicate) the existing coverage in
-     check-s0.2-resume-existing-session.js and
-     check-s0.4-resume-redis-session.js to confirm no regression --
-     these exercise the endpoint this story's link now points to.
-   - AC4/AC5 (the actual new behaviour): call GET
-     /journey/:featureSlug/resume for a journey whose activeSessionId
-     exists in NEITHER the in-memory session store NOR the (stubbed)
-     Redis adapter. Assert: (a) response is a 303 to a NEW session id's
-     chat URL, not a 404; (b) the journey record's activeSessionId now
-     equals that new session id, not the original stale one.
-   - AC6: render step-nav HTML for a journey with a completed
-     (non-active) stage; assert that stage's href is unchanged
+   AC1/AC5/AC6/AC7 per the test plan (AC2/AC3/AC4 are exercised via
+   existing, unmodified coverage in check-s0.2/check-s0.4 -- do not
+   duplicate them):
+   - AC1/AC5: render handleGetJourneyStageView's full page for a journey
+     with one completed non-viewed stage and an active stage with a
+     stale activeSessionId. Assert the active stage's step-nav href AND
+     the "Current stage" button's href both equal
+     /journey/<featureSlug>/resume, the old raw URL appears nowhere in
+     the page, and the completed stage's own link is unchanged
      (/journey/:journeyId/stage/:skillName).
+   - AC6: call handleGetStageReview directly with a stale/missing active
+     session; assert the 302 Location is /journey/<featureSlug>/resume.
+   - AC7: call handleGetJourneyStageView for a stage with no artefact
+     yet; assert the 302 Location is /journey/<featureSlug>/resume.
+     Update check-jsvr-s1-wire-stage-view-route.js's existing "unknown
+     stageName" edge-case assertion to match this new target (it
+     currently asserts the old raw URL).
 4. Re-run check-s0.1-resume-guard.js, check-s0.2-resume-existing-session.js,
-   check-s0.4-resume-redis-session.js, and any other test file that
-   asserts on journey.js's step-nav rendering (grep for "sn-step" or
+   check-s0.4-resume-redis-session.js, check-jsvr-s1-wire-stage-view-route.js,
+   check-frsr-s1-feature-row-session-resume.js,
+   check-dsh-s4-fix-resume-conversation-link.js, and any other test file
+   that asserts on journey.js's step-nav rendering (grep for "sn-step" or
    "_renderJourneyStageView" in tests/ to find them) to confirm no
    regression, then the full suite.
 
@@ -120,8 +129,8 @@ Constraints:
 - Do not touch handleGetJourneyResume's internal logic, its established
   "a done session always starts fresh" contract, or handleGetChatHtml's
   404 page.
-- This is a one-line href change plus new tests -- do not refactor the
-  surrounding step-nav rendering function beyond that line.
+- This is four mechanically-identical href/Location changes plus new
+  tests -- do not refactor the surrounding functions beyond that.
 - Architecture standards: read .github/architecture-guardrails.md before
   implementing. Do not introduce patterns listed as anti-patterns or
   violate named mandatory constraints or Active ADRs.

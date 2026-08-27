@@ -11,9 +11,10 @@
 
 Direct source inspection confirmed the exact blast radius before writing this plan:
 
-- **Exactly one unsafe call site.** Every `journey.activeSessionId`-based redirect across `journey.js`/`skills.js` was checked. `journey.js:1578,1717,2326,2376,2445` and `skills.js:1179` all create a brand-new session immediately before redirecting (always safe). `journey.js:2907` first verifies the session exists in memory (`_kcrsSession && _kcrsSession.done`) before using it (safe). `journey.js:891` — the step-nav "active stage" breadcrumb — is the only one that builds the URL from the stored ID with zero verification and zero fallback.
+- **Four unsafe call sites, all in `journey.js`.** Every `journey.activeSessionId`-based redirect across `journey.js`/`skills.js` was checked. `journey.js:478,1578,1717,2326,2376,2445` and `skills.js:1179` all create a brand-new session immediately before redirecting (always safe). `journey.js:2907` first verifies the session exists in memory (`_kcrsSession && _kcrsSession.done`) before using it (safe). Four build the raw chat URL from the stored `activeSessionId` with zero verification and zero fallback: the step-nav "active stage" breadcrumb (line 891), the "← Current stage" button's `currentChatUrl` (line 931-933, rendered at 1013/1326 — this is the literal link clicked during live reproduction), `handleGetStageReview`'s not-done fallback (line 628-632), and `handleGetJourneyStageView`'s own no-artefact-yet fallback (line 775-779).
 - **The fix target already exists and is already tested.** `handleGetJourneyResume` (`journey.js:1413-1580`) implements the full fallback chain: live session → immediate redirect; Redis-restorable → restore and redirect; neither → create a fresh session seeded with all completed prior-stage artefacts, link it to the journey, update `activeSessionId`, redirect. Existing coverage: `check-s0.1-resume-guard.js`, `check-s0.2-resume-existing-session.js`, `check-s0.4-resume-redis-session.js`.
-- **The change itself is a single `href` construction** inside the step-nav renderer's `isActive` branch (`journey.js:891`), from a raw `/skills/:skill/sessions/:id/chat` link to `/journey/:featureSlug/resume`. `journey.featureSlug` is already in scope two lines earlier in the same function (line 872).
+- **The change itself is four identical `href`/`Location` construction changes**, from a raw `/skills/:skill/sessions/:id/chat` URL to `/journey/:featureSlug/resume`. `journey.featureSlug` is already in scope at each of the four sites.
+- **One existing test's expectation is now outdated by design:** `check-jsvr-s1-wire-stage-view-route.js`'s "unknown stageName" edge-case test asserts the OLD raw-URL redirect target; it must be updated to assert the new `/resume` target (its intent — "this fallback is reachable and works" — is unchanged, only the specific target moves).
 
 ---
 
@@ -21,18 +22,20 @@ Direct source inspection confirmed the exact blast radius before writing this pl
 
 | AC | Description | Unit | Integration | E2E | Manual | Gap type | Risk |
 |----|-------------|------|-------------|-----|--------|----------|------|
-| AC1 | Live in-memory session: breadcrumb still reaches it | 1 test | — | — | — | — | 🟢 |
-| AC2 | Redis-restorable session: breadcrumb restores and continues | 1 test | — | — | — | — | 🟡 |
-| AC3 | Neither memory nor Redis: breadcrumb creates a fresh session, not a 404 | 1 test | — | — | — | — | 🔴 |
-| AC4 | Fresh session's ID is recorded as the journey's new `activeSessionId` | 1 test | — | — | — | — | 🟡 |
+| AC1 | Live in-memory session: all 4 sites still reach it | re-run existing suite | — | — | — | — | 🟢 |
+| AC2 | Redis-restorable session: restores and continues | re-run existing suite | — | — | — | — | 🟡 |
+| AC3 | Neither memory nor Redis: fresh session, not a 404 | 1 test per site (4 total, in `check-s0.2`/new file) | — | — | — | — | 🔴 |
+| AC4 | Fresh session's ID recorded as the journey's new `activeSessionId` | covered by AC3's tests | — | — | — | — | 🟡 |
 | AC5 | `isDone` branch links unchanged | 1 test | — | — | — | — | 🟢 |
-| AC6 | Existing resume-flow suite passes unchanged | — | — | — | — | — | 🟢 |
+| AC6 | `handleGetStageReview`'s fallback routes through `/resume` | 1 test | — | — | — | — | 🔴 |
+| AC7 | `handleGetJourneyStageView`'s own fallback routes through `/resume` | 1 test + update to `check-jsvr-s1`'s existing assertion | — | — | — | — | 🔴 |
+| AC8 | Existing resume/stage-view suites pass unchanged | — | — | — | — | — | 🟢 |
 
 ---
 
 ## Coverage gaps
 
-None — this is a single-function, single-line-of-construction change with an already-well-tested target endpoint. The only genuinely new behaviour (AC3/AC4) is directly testable by rendering the step-nav HTML and asserting the emitted `href`, then separately confirming `handleGetJourneyResume`'s own already-covered fallback behaviour is what that `href` leads to (not re-testing `handleGetJourneyResume` itself, which is out of scope — see below).
+None — this is a mechanically-repeated construction change across 4 sites in 2 functions, against an already-well-tested target endpoint. The genuinely new behaviour (AC3/AC4/AC6/AC7) is directly testable by rendering the step-nav HTML / calling the two fallback-containing handlers directly and asserting the emitted `href`/`Location`, then relying on `handleGetJourneyResume`'s own already-covered fallback behaviour for what that target does next (not re-testing `handleGetJourneyResume` itself, which is out of scope — see below).
 
 ---
 
@@ -47,42 +50,31 @@ None — this is a single-function, single-line-of-construction change with an a
 
 ## Unit Tests
 
-New tests added to `tests/check-aslr-s1-active-stage-link-resume.js`.
+New tests added to `tests/check-aslr-s1-active-stage-link-resume.js`. AC1-AC4 are exercised indirectly (via `check-s0.2`/`check-s0.4`'s existing, unmodified coverage of `handleGetJourneyResume` itself — this file only proves each of the four call sites now points AT that endpoint).
 
-### AC1: step-nav's active-stage link no longer points at the raw session URL
+### AC1/AC5: step-nav's active-stage link, "Current stage" button, and completed-stage link
 
-- **Action:** Render the step-nav HTML (via the same internal renderer `journey.js:891` belongs to, or by rendering a full stage-view page) for a journey with `activeSkill` set to a stage and `activeSessionId` set to some session ID.
-- **Expected result:** The active stage's `<a href="...">` is `/journey/<featureSlug>/resume`, NOT `/skills/<skill>/sessions/<id>/chat`.
+- **Action:** Render `handleGetJourneyStageView`'s full page (via a stage that has a completed artefact, so the early fallback isn't hit) for a journey with one completed, non-viewed stage (`ideate`) and an active stage (`benefit-metric`) whose `activeSessionId` is a stale ID.
+- **Expected result:** The active stage's step-nav `<a href="...">` and the "← Current stage" button's `href` are both `/journey/<featureSlug>/resume`; the old raw `/skills/.../sessions/<staleId>/chat` fragment appears nowhere in the page (AC1). The completed `ideate` stage's link is unchanged: `/journey/<journeyId>/stage/ideate` (AC5).
 
-### AC2 (regression guard, exercised via the existing resume endpoint): live in-memory session
+### AC3/AC4 (the fix, exercised via the existing resume endpoint's own coverage)
 
-- **Action:** Register an in-memory skill session matching the journey's `activeSessionId`, not done. Call `GET /journey/:featureSlug/resume`.
-- **Expected result:** 303 to `/skills/:skill/sessions/:id/chat` for that exact session — matches `check-s0.2-resume-existing-session.js`'s existing coverage; re-run to confirm no regression from this story's link change (which never touches `handleGetJourneyResume` itself).
+- Already covered by `check-s0.2-resume-existing-session.js`'s AC4 ("stale activeSessionId not in memory (post-deploy): create new session") and `check-s0.4-resume-redis-session.js` — re-run to confirm no regression, per AC8. Not re-tested here.
 
-### AC3: Redis-restorable session
+### AC6: `handleGetStageReview`'s fallback
 
-- **Action:** No in-memory session; fake Redis adapter returns turn data for `activeSessionId`. Call `GET /journey/:featureSlug/resume`.
-- **Expected result:** 303 into the restored session — matches `check-s0.4-resume-redis-session.js`'s existing coverage; re-run to confirm.
+- **Action:** Call `handleGetStageReview` directly for a journey whose active session is not in memory (`getGetHtmlSession` stubbed to return `null`).
+- **Expected result:** 302 to `/journey/<featureSlug>/resume`, not the old raw `/skills/.../sessions/<id>/chat` URL.
 
-### AC4 (the fix): neither memory nor Redis — fresh session created, not a 404
+### AC7: `handleGetJourneyStageView`'s own no-artefact-yet fallback
 
-- **Action:** `activeSessionId` set on the journey, but absent from both the in-memory store and the fake Redis adapter (simulating a genuinely evicted/expired session — the exact condition confirmed live on production 2026-08-27). Click-equivalent: follow the step-nav link's `href` from AC1, i.e. `GET /journey/:featureSlug/resume`.
-- **Expected result:** 303 to a **new** session ID's chat URL (different from the stale `activeSessionId`) — not a 404. The new session is seeded with `priorArtefacts` for every completed stage.
+- **Action:** Call `handleGetJourneyStageView` for the journey's active stage, which has no recorded artefact yet.
+- **Expected result:** 302 to `/journey/<featureSlug>/resume`. `check-jsvr-s1-wire-stage-view-route.js`'s existing "unknown stageName" edge-case assertion is updated to expect this same target instead of the old raw URL.
 
-### AC5: journey record updated with the new session ID
+### AC8 (regression guard): full existing resume/stage-view suite
 
-- **Action:** After AC4's flow completes, inspect the journey record (`_journeyStore.getJourney(journeyId)`).
-- **Expected result:** `activeSessionId` now equals the new session's ID, not the original stale one.
-
-### AC6: `isDone` branch unchanged
-
-- **Action:** Render the step-nav HTML for a journey with at least one completed (non-active) stage.
-- **Expected result:** That stage's link is still `/journey/:journeyId/stage/:skillName` — byte-identical to pre-fix behaviour.
-
-### AC7 (regression guard): full existing resume-flow suite
-
-- **Action:** Re-run `check-s0.1-resume-guard.js`, `check-s0.2-resume-existing-session.js`, `check-s0.4-resume-redis-session.js`.
-- **Expected result:** All pass unchanged — `handleGetJourneyResume` itself is not modified by this story.
+- **Action:** Re-run `check-s0.1-resume-guard.js`, `check-s0.2-resume-existing-session.js`, `check-s0.4-resume-redis-session.js`, `check-jsvr-s1-wire-stage-view-route.js`, `check-frsr-s1-feature-row-session-resume.js`, `check-dsh-s4-fix-resume-conversation-link.js`.
+- **Expected result:** All pass — `handleGetJourneyResume` itself is not modified by this story; `check-jsvr-s1`'s one updated assertion (AC7) is the only intentional change to an existing file.
 
 ---
 
