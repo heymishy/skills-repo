@@ -231,10 +231,11 @@ test('T5.1 server.js imports Google handler functions and registers /auth/google
 // T6 — Auth chooser template (Task 5 / AC6)
 // ═══════════════════════════════════════════════════════════════════════════
 
-test('T6.1 renderLoginPage includes "Continue with Google" button pointing to /auth/google', () => {
+test('T6.1 renderLoginPage includes "Continue with Google" button pointing to /auth/google', async () => {
   const { renderLoginPage } = require('../src/web-ui/utils/html-shell');
   // rcfc-s1 Task 4: renderLoginPage now requires req.session (embeds a CSRF field).
-  const html = renderLoginPage(mockReq());
+  // cpr-s1: renderLoginPage is now async (awaits generateCsrfToken's persist).
+  const html = await renderLoginPage(mockReq());
 
   assert(html.includes('/auth/google'), 'T6.1: login page contains /auth/google link');
   assert(html.includes('Continue with Google') || html.includes('Sign in with Google'),

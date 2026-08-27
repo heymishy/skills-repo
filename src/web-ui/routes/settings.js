@@ -684,7 +684,7 @@ function createSettingsHandlers(pool) {
     // can render the persistent banner.
     var imp = req.session && req.session.impersonation;
     var impersonationOpts = (imp && imp.active && imp.target)
-      ? { active: true, targetLogin: imp.target.login, targetTenantId: imp.target.tenantId, csrfToken: _csrf.generateCsrfToken(req) }
+      ? { active: true, targetLogin: imp.target.login, targetTenantId: imp.target.tenantId, csrfToken: await _csrf.generateCsrfToken(req) }
       : null;
 
     // c2: read the exact same source /billing/plan-state reads (tenantPlan.getPlanState)
@@ -694,7 +694,7 @@ function createSettingsHandlers(pool) {
     // Shared across the Billing (c2) and Credits (c3) tabs -- both forms post
     // back to server-gated routes and need a valid token; one token per page
     // load is sufficient and avoids generating it twice per request.
-    var csrfToken = _csrf.generateCsrfToken(req);
+    var csrfToken = await _csrf.generateCsrfToken(req);
 
     // bse-s1: read the billing-portal error code bpe-s1's redirect carries,
     // via this codebase's already-established req.query convention

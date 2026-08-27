@@ -336,7 +336,7 @@ async function handleGetJourney(req, res, _next, pool) {
   journeys = journeys.filter(function(j) { return j.productId == null; });
   journeys.sort(function(a, b) { return (b.createdAt ? new Date(b.createdAt).toISOString() : '').localeCompare(a.createdAt ? new Date(a.createdAt).toISOString() : ''); });
   var showNewForm = !!(req.query && req.query.new === '1');
-  var body = _renderJourneyHome({ profiles: profiles, activeProfile: activeProfile, journeys: journeys, showNewForm: showNewForm, csrfToken: _csrf.generateCsrfToken(req) });
+  var body = _renderJourneyHome({ profiles: profiles, activeProfile: activeProfile, journeys: journeys, showNewForm: showNewForm, csrfToken: await _csrf.generateCsrfToken(req) });
   // d2: this page previously never computed/passed isAdmin at all (defaulted
   // to false even for a genuine, non-impersonating admin) -- wired here using
   // the same isEffectivelyAdmin() helper as dashboard.js/settings.js so the
@@ -345,7 +345,7 @@ async function handleGetJourney(req, res, _next, pool) {
   var isAdmin = isEffectivelyAdmin(req.session);
   var imp = req.session.impersonation;
   var impersonation = (imp && imp.active && imp.target)
-    ? { active: true, targetLogin: imp.target.login, targetTenantId: imp.target.tenantId, csrfToken: _csrf.generateCsrfToken(req) }
+    ? { active: true, targetLogin: imp.target.login, targetTenantId: imp.target.tenantId, csrfToken: await _csrf.generateCsrfToken(req) }
     : null;
   // pan-s1: sidebar Products section, populated via the shared helper when a
   // pool is available (production wiring). Test callers that invoke this
@@ -713,7 +713,7 @@ async function handleGetStageReview(req, res, pool) {
       '<a href="' + escHtml(chatUrl) + '" class="sw-btn" style="border:1px solid var(--line);flex-shrink:0">← Back to session</a>',
       '<span class="sr-confirm-hint">Confirming saves this artefact and opens the next stage.</span>',
       '<form method="POST" action="/api/journey/' + safeJourneyId + '/gate-confirm" style="margin:0;flex-shrink:0">',
-        _csrf.csrfField(_csrf.generateCsrfToken(req)),
+        _csrf.csrfField(await _csrf.generateCsrfToken(req)),
         '<button type="submit" class="sw-btn sw-btn--primary">Confirm &amp; continue to ' + escHtml(nextLabel) + ' &#x2192;</button>',
       '</form>',
     '</div>'
@@ -1626,7 +1626,7 @@ async function handleGetReferenceModal(req, res, pool) {
       '<div class="rm-actions">',
         '<button id="rm-upload-btn" class="sw-btn sw-btn--primary" type="button">Upload and continue</button>',
         '<form method="POST" action="/api/journey/' + safeId + '/reference-modal/skip" style="margin:0">',
-          _csrf.csrfField(_csrf.generateCsrfToken(req)),
+          _csrf.csrfField(await _csrf.generateCsrfToken(req)),
           '<button class="rm-skip" type="submit">Skip — continue without files</button>',
         '</form>',
       '</div>',
@@ -1828,7 +1828,7 @@ async function handleGetReference(req, res, pool) {
       '<section class="rf-section">',
         '<h2>Add a reference doc</h2>',
         '<form method="POST" action="/api/journey/' + safeId + '/reference">',
-          _csrf.csrfField(_csrf.generateCsrfToken(req)),
+          _csrf.csrfField(await _csrf.generateCsrfToken(req)),
           '<div class="rf-form-row">',
             '<label class="rf-label" for="rf-name">Document name</label>',
             '<input id="rf-name" class="rf-input" name="filename" type="text" placeholder="e.g. solution-architecture or ux-wireframe" required>',
@@ -2521,7 +2521,7 @@ async function handleGetStories(req, res, pool) {
       ? '<p>Every story found in the definition artefact is pre-filled below. Edit the list if you want to add, remove, or reorder before starting review.</p>'
       : '<p>Enter one story slug per line. These will be processed through review, test-plan, and definition-of-ready.</p>',
     '<form method="POST" action="/api/journey/' + safeId + '/stories">',
-    _csrf.csrfField(_csrf.generateCsrfToken(req)),
+    _csrf.csrfField(await _csrf.generateCsrfToken(req)),
     '<textarea name="stories" rows="10" cols="50" placeholder="e.g. wgol.1&#10;wgol.2&#10;wgol.3">' + textareaValue + '</textarea>',
     '<br><button type="submit" class="sw-btn sw-btn--primary">Start per-story stages</button>',
     '</form>',
@@ -4026,7 +4026,7 @@ async function handleGetWizard(req, res, pool) {
     var body2 = '<h1>Continue an existing feature</h1>\n' +
       '<a href="/journey/wizard">← Back to options</a>\n' +
       '<form method="POST" action="/journey/wizard">\n' +
-      _csrf.csrfField(_csrf.generateCsrfToken(req)) + '\n' +
+      _csrf.csrfField(await _csrf.generateCsrfToken(req)) + '\n' +
       listHtml2 + '\n';
     if (features2 !== null && active2.length > 0) {
       body2 += '<select name="featureSlug">' +
@@ -4070,7 +4070,7 @@ async function handleGetWizard(req, res, pool) {
       sessionListHtml;
     if (activeSessions.length > 0) {
       body3 += '\n<form method="POST" action="/journey/wizard">\n' +
-        _csrf.csrfField(_csrf.generateCsrfToken(req)) + '\n' +
+        _csrf.csrfField(await _csrf.generateCsrfToken(req)) + '\n' +
         '<input type="hidden" name="selection" value="resume-session">\n' +
         '<select name="sessionId">' +
         activeSessions.map(function(s) {
@@ -4103,7 +4103,7 @@ async function handleGetWizard(req, res, pool) {
     '<div class="wiz-option">\n' +
     '<h2>Start something new</h2>\n' +
     '<form method="POST" action="/journey/wizard">\n' +
-    _csrf.csrfField(_csrf.generateCsrfToken(req)) + '\n' +
+    _csrf.csrfField(await _csrf.generateCsrfToken(req)) + '\n' +
     '<button type="submit" name="selection" value="new">Start a new feature</button>\n' +
     '</form>\n' +
     '</div>\n' +

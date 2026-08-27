@@ -1962,7 +1962,7 @@ async function handleGetProductGuardrailsView(req, res, _next, pool) {
 
   var pendingByPath = await _resolveAllPendingPrs(_pool, prodRow.repo_owner, prodRow.repo_name, token, tenantId, productId);
   var promotionByPath = await _resolvePendingPromotions(_pool, tenantId, productId);
-  var csrfToken = _csrf.generateCsrfToken(req);
+  var csrfToken = await _csrf.generateCsrfToken(req);
 
   var orgRow = await _fetchOrgRepoRow(_pool, prodRow.tenant_id);
   var orgGuardrailsPiece = { status: 'empty', value: null, errorMessage: null };
@@ -2268,7 +2268,7 @@ async function handleGetProductNew(req, res, pool) {
   var errorParam = req.query && req.query.error;
   var error = errorParam === 'plan_limit' ? 'Your plan allows 1 product. Upgrade to create more.' : null;
   var navSummary = await getProductsNavSummary(pool, tenantId);
-  var html = _renderProductNew(login, error, isAdmin, _csrf.generateCsrfToken(req), navSummary.products, navSummary.noProductJourneyCount);
+  var html = _renderProductNew(login, error, isAdmin, await _csrf.generateCsrfToken(req), navSummary.products, navSummary.noProductJourneyCount);
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(html);
 }
@@ -2347,7 +2347,7 @@ async function handleGetProductView(req, res, _next, pool) {
     // fix-forward (post-a1): the module-management form needs a CSRF token
     // to submit create/rename/delete, matching every other mutating form in
     // this app (settings.js's Credits/Billing tabs, etc.).
-    var csrfToken = _csrf.generateCsrfToken(req);
+    var csrfToken = await _csrf.generateCsrfToken(req);
     // fps-s1 (AC6): ONE batched artefact-count read for the whole render,
     // reusing s2.2's existing seam (same pattern already used for the
     // kanban board) -- never a per-row query. AC4: a failed/unavailable

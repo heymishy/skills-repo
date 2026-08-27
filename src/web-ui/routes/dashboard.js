@@ -76,7 +76,7 @@ async function handleGetActions(req, res) {
  * @param {object} req
  * @param {object} res
  */
-function handleDashboard(req, res) {
+async function handleDashboard(req, res) {
   // Auth check — redirect to /auth/github if no session token (AC2)
   if (!req.session || !req.session.accessToken) {
     res.writeHead(302, { Location: '/auth/github' });
@@ -100,7 +100,7 @@ function handleDashboard(req, res) {
   // it; this route only supplies the data.
   const imp = req.session.impersonation;
   const impersonation = (imp && imp.active && imp.target)
-    ? { active: true, targetLogin: imp.target.login, targetTenantId: imp.target.tenantId, csrfToken: csrf.generateCsrfToken(req) }
+    ? { active: true, targetLogin: imp.target.login, targetTenantId: imp.target.tenantId, csrfToken: await csrf.generateCsrfToken(req) }
     : null;
 
   // Audit log (per Coding Agent Instructions requirement)

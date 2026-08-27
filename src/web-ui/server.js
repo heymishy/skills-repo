@@ -2512,7 +2512,7 @@ async function router(req, res) {
     if (_pshPool) {
       authGuard(req, res, async () => { await _handleGetDashboard(req, res, null, _pshPool); });
     } else {
-      handleDashboard(req, res);
+      await handleDashboard(req, res);
     }
 
   } else if (pathname.match(/^\/artefact\/[^/]+\/[^/]+$/) && req.method === 'GET') {
@@ -3693,7 +3693,7 @@ async function router(req, res) {
     // Sign-in page (unauthenticated root)
     const { renderLoginPage } = require('./utils/html-shell');
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-    res.end(renderLoginPage(req)); // rcfc-s1 Task 4: thread req through for CSRF field embedding
+    res.end(await renderLoginPage(req)); // rcfc-s1 Task 4: thread req through for CSRF field embedding; cpr-s1: renderLoginPage is now async
   }
 }
 

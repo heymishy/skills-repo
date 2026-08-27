@@ -47,9 +47,9 @@ async function run() {
 
   // M1: generateCsrfToken creates a token on first call
   queue.push(function() {
-    return test('M1: generateCsrfToken creates a non-empty hex token', function() {
+    return test('M1: generateCsrfToken creates a non-empty hex token', async function() {
       var req = { session: {} };
-      var token = csrf.generateCsrfToken(req);
+      var token = await csrf.generateCsrfToken(req);
       assert.ok(token && token.length > 0, 'token must be non-empty');
       assert.ok(/^[a-f0-9]+$/.test(token), 'token must be hex');
       assert.strictEqual(req.session.csrfToken, token, 'token must be stored on req.session.csrfToken');
@@ -58,10 +58,10 @@ async function run() {
 
   // M2: idempotent within a session
   queue.push(function() {
-    return test('M2: generateCsrfToken is idempotent within a session', function() {
+    return test('M2: generateCsrfToken is idempotent within a session', async function() {
       var req = { session: {} };
-      var t1 = csrf.generateCsrfToken(req);
-      var t2 = csrf.generateCsrfToken(req);
+      var t1 = await csrf.generateCsrfToken(req);
+      var t2 = await csrf.generateCsrfToken(req);
       assert.strictEqual(t1, t2, 'second call must return the same token, not regenerate');
     });
   });

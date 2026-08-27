@@ -69,7 +69,7 @@ function _readBody(req) {
 async function adminCreditsGet(req, res, pool) {
   const rows = await getAllTenantBalances();
   // sec-perf-s3 AC1: session-scoped CSRF token, embedded in every adjust form below.
-  const csrfToken = generateCsrfToken(req);
+  const csrfToken = await generateCsrfToken(req);
 
   // tpac-s1 AC1: fetch each tenant's plan state alongside its credits balance.
   // getPlanState never throws (fails open to trial/active) -- see tenant-plan.js.

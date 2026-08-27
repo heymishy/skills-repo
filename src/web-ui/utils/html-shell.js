@@ -780,10 +780,15 @@ a { color: inherit; }
  * sidebar nav (unauthenticated state has no user context).
  * @param {object} req - must have req.session (rcfc-s1 Task 4: embeds a CSRF field
  *   into the email sign-in/sign-up forms; see generateCsrfToken's own contract)
- * @returns {string} full HTML page
+ * cpr-s1: async -- generateCsrfToken now awaits its Redis persist before
+ * resolving (see middleware/csrf.js); this 28th call site was missed by the
+ * original enumeration and is fixed here as part of the same story, since
+ * leaving it un-awaited would embed the string "[object Promise]" as the
+ * CSRF token on the login page, breaking every email/password login.
+ * @returns {Promise<string>} full HTML page
  */
-function renderLoginPage(req) {
-  const _csrfFieldHtml = csrfField(generateCsrfToken(req));
+async function renderLoginPage(req) {
+  const _csrfFieldHtml = csrfField(await generateCsrfToken(req));
   const loginCss = `
 .sw-login-wrap {
   min-height: 100vh; display: flex; align-items: center; justify-content: center;

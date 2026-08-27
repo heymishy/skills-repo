@@ -175,7 +175,7 @@ async function run() {
       var html = htmlChunks.join('');
 
       // The GET handler must embed a real token tied to req.session (AC1/AC6).
-      csrf.generateCsrfToken(session === getReq.session ? getReq : { session: session }); // ensure token exists if handler didn't generate it itself
+      await csrf.generateCsrfToken(session === getReq.session ? getReq : { session: session }); // ensure token exists if handler didn't generate it itself
       var token = extractCsrfValue(html) || session.csrfToken;
       assert.ok(token, 'a _csrf token must be embedded in the rendered admin credits page HTML');
 

@@ -101,18 +101,46 @@ function createSession() {
   return { id, session };
 }
 
+// cpr-s1: cap on how long persistSession will wait for the Redis write before
+// giving up and resolving anyway -- keeps the best-effort philosophy (a slow
+// or hung adapter must never block the caller indefinitely) while still
+// giving a normal-latency write a real chance to land before the caller
+// (generateCsrfToken) resolves and the response is sent.
+const _PERSIST_TIMEOUT_MS = 500;
+
 /**
  * Persist the current session to Redis (called after session fields are populated).
  * No-op when Redis adapter is not configured.
+ * Returns a promise that resolves once the write has landed (or failed/timed
+ * out -- this function never rejects; see cpr-s1 decisions.md, Option A).
+ * The returned promise resolves within ~_PERSIST_TIMEOUT_MS even if the
+ * underlying adapter write hangs, so callers may safely await it without
+ * risking an indefinitely-blocked response (AC4).
  * @param {string} id — session ID
+ * @returns {Promise<void>}
  */
 function persistSession(id) {
   const adapter = _activeRedis();
-  if (!adapter) return;
+  if (!adapter) return Promise.resolve();
   const data = _sessions.get(id);
-  if (!data) return;
-  adapter.writeSession(id, _sanitiseForRedis(data)).catch(function(err) {
+  if (!data) return Promise.resolve();
+
+  const write = adapter.writeSession(id, _sanitiseForRedis(data)).catch(function(err) {
     console.error('[session] Redis write error:', err.message);
+  });
+
+  // Deliberately NOT unref()'d: this timer is the fallback guarantee that
+  // generateCsrfToken's await settles even on a hung write. An unref'd timer
+  // lets Node consider the event loop "empty" and exit before the timer ever
+  // fires if nothing else is scheduled, silently abandoning this race instead
+  // of resolving it -- the opposite of what a durability fix should do.
+  let timer;
+  const timeout = new Promise(function(resolve) {
+    timer = setTimeout(resolve, _PERSIST_TIMEOUT_MS);
+  });
+
+  return Promise.race([write, timeout]).finally(function() {
+    clearTimeout(timer);
   });
 }
 

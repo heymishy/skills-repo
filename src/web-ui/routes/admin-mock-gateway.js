@@ -88,7 +88,7 @@ async function adminMockGatewayGet(req, res, pool) {
   }
 
   // sec-perf-s3 pattern: session-scoped CSRF token, embedded in the toggle form.
-  const csrfToken = generateCsrfToken(req);
+  const csrfToken = await generateCsrfToken(req);
 
   const bodyContent = [
     '<h1 class="sw-page-h1">Admin: Mock LLM Gateway</h1>',

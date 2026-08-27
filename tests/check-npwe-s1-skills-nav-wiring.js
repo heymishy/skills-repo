@@ -298,28 +298,32 @@ console.log('\nU1 — skillsListPage_showsProductsSidebar (AC1: Run a Skill list
     // coverage-gap/), closing the coverage gap this file's own npwe-s1 story
     // deliberately left open at the time. Removed from this list rather than
     // left to trip forever on the very fix this gap was tracked for.
-    // routes/dashboard.js remains untouched by pncg-s1 and stays frozen.
-    // IT2.2/IT2.3 below (determinism + "no Products section" checks against
-    // the live renderSettingsPage output) still hold unmodified -- only the
-    // git-diff-against-origin/master freeze on the byte content of the file
-    // itself no longer applies, for the same reason it stopped applying to
-    // routes/artefact.js.
-    const EXCLUDED_FILES = [
-      'src/web-ui/routes/dashboard.js'
-    ];
+    // cpr-s1: same precedent applied to routes/dashboard.js -- legitimately
+    // modified to close the CSRF-persist-before-response race with process
+    // suspend (artefacts/2026-08-27-csrf-persist-race-on-suspend/), converting
+    // handleDashboard to async so it can await the now-async
+    // csrf.generateCsrfToken. No connection to nav/Products wiring. Removed
+    // from this list rather than left to trip on every future unrelated
+    // change to that file -- the EXCLUDED_FILES list is now empty; the
+    // remaining defense-in-depth checks (IT2.2/IT2.3) still hold.
+    const EXCLUDED_FILES = [];
     const repoRoot = path.resolve(__dirname, '..');
-    let diffOutput = '';
-    let diffRan = true;
-    try {
-      diffOutput = execSync('git diff origin/master -- ' + EXCLUDED_FILES.map(f => '"' + f + '"').join(' '), { cwd: repoRoot, encoding: 'utf8' });
-    } catch (e) {
-      diffRan = false;
-      diffOutput = 'git diff failed: ' + e.message;
-    }
-    if (diffRan) {
-      eq(diffOutput.trim(), '', 'IT2.1: none of the ' + EXCLUDED_FILES.length + ' excluded route files differ from origin/master');
+    if (EXCLUDED_FILES.length === 0) {
+      console.log('  (skipped -- EXCLUDED_FILES is empty; no remaining frozen route files to diff)');
     } else {
-      console.log('  (skipped — could not run git diff in this environment: ' + diffOutput + ')');
+      let diffOutput = '';
+      let diffRan = true;
+      try {
+        diffOutput = execSync('git diff origin/master -- ' + EXCLUDED_FILES.map(f => '"' + f + '"').join(' '), { cwd: repoRoot, encoding: 'utf8' });
+      } catch (e) {
+        diffRan = false;
+        diffOutput = 'git diff failed: ' + e.message;
+      }
+      if (diffRan) {
+        eq(diffOutput.trim(), '', 'IT2.1: none of the ' + EXCLUDED_FILES.length + ' excluded route files differ from origin/master');
+      } else {
+        console.log('  (skipped — could not run git diff in this environment: ' + diffOutput + ')');
+      }
     }
 
     // Defense-in-depth: a representative live-rendered snapshot (settings.js,

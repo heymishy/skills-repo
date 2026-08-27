@@ -424,7 +424,7 @@ async function main() {
 
   queue.push(function() {
     console.log('\n[d2] T15 -- handleDashboard: impersonating a non-admin hides Admin credits + shows banner (AC1/AC2)');
-    return test('handleDashboard: non-admin target -> no Admin credits link, banner present', function() {
+    return test('handleDashboard: non-admin target -> no Admin credits link, banner present', async function() {
       var dashboard = freshRequire(DASHBOARD_PATH);
       var session = {
         accessToken: 'tok', userId: 1, login: 'bob', tenantId: 'tenant-bob', role: 'user',
@@ -432,7 +432,7 @@ async function main() {
       };
       var req = { session: session };
       var res = makeRes();
-      dashboard.handleDashboard(req, res);
+      await dashboard.handleDashboard(req, res);
 
       assert.strictEqual(res._status, 200);
       assert.ok(!res._body.includes('/admin/credits'), 'expected no Admin credits nav link while impersonating a non-admin');
@@ -443,7 +443,7 @@ async function main() {
 
   queue.push(function() {
     console.log('\n[d2] T16 -- handleDashboard: impersonating an admin shows Admin credits accurately (AC3)');
-    return test('handleDashboard: admin target -> Admin credits link IS present', function() {
+    return test('handleDashboard: admin target -> Admin credits link IS present', async function() {
       var dashboard = freshRequire(DASHBOARD_PATH);
       var session = {
         accessToken: 'tok', userId: 1, login: 'carol', tenantId: 'tenant-carol', role: 'admin',
@@ -451,7 +451,7 @@ async function main() {
       };
       var req = { session: session };
       var res = makeRes();
-      dashboard.handleDashboard(req, res);
+      await dashboard.handleDashboard(req, res);
 
       assert.ok(res._body.includes('/admin/credits'), 'expected Admin credits nav link when impersonating an admin');
     });
@@ -514,7 +514,7 @@ async function main() {
       var impersonation = { active: true, admin: { userId: 1, login: 'alice', tenantId: 'tenant-alice', role: 'admin' }, target: { id: 2, login: 'bob', tenantId: 'tenant-bob', role: 'user' }, auditId: 'audit-1' };
 
       var dashRes = makeRes();
-      dashboard.handleDashboard({ session: { accessToken: 'tok', userId: 1, login: 'bob', tenantId: 'tenant-bob', role: 'user', impersonation: impersonation } }, dashRes);
+      await dashboard.handleDashboard({ session: { accessToken: 'tok', userId: 1, login: 'bob', tenantId: 'tenant-bob', role: 'user', impersonation: impersonation } }, dashRes);
 
       var settingsRes = makeRes();
       await settingsHandlers.handleGetSettings({ session: { accessToken: 'tok', userId: 1, login: 'bob', tenantId: 'tenant-bob', role: 'user', impersonation: impersonation } }, settingsRes);
