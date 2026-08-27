@@ -139,6 +139,30 @@ await (async function() {
   await journeyRoute.handleGetJourneyStageReopen(fakeReq({ accessToken: 'tok', login: 'alice', tenantId: 'alice' }, { journeyId: jid, skillName: 'discovery' }), res2);
   ok('AC1: second reopen with an existing session redirects directly, no new session created', res2._status === 303 && registeredCalls.length === 1 &&
     res2._location === '/skills/discovery/sessions/' + registeredCalls[0].sid + '/chat');
+
+  // AC2 edge case: artefact file missing/unreadable -- must degrade to an
+  // empty priorArtefacts array (matching handleGetJourneyResume's own
+  // try/catch precedent for the same fs.readFileSync call), not crash the
+  // whole reopen. Uses a second, otherwise-identical stage whose
+  // artefactPath points at a file that was never written.
+  var slug2 = 'res-s1-reopen-missing-artefact-feature';
+  var created2 = journeyStore.createJourney(slug2, 'default');
+  var jid2 = created2.journeyId;
+  var missingArtefactPath = 'artefacts/' + slug2 + '/discovery.md'; // deliberately never written to disk
+  journeyStore.completeStage(jid2, 'discovery', missingArtefactPath, null, null);
+  journeyStore.setJourneyFields(jid2, { ownerId: 'alice', tenantId: 'alice' });
+
+  journeyRoute.setGetHtmlSession(function() { return null; });
+  var registeredCalls2 = [];
+  journeyRoute.setRegisterHtmlSession(function(sid, sessionPath, skillName, opts) {
+    registeredCalls2.push({ sid: sid, skillName: skillName, opts: opts });
+  });
+
+  var res3 = fakeRes();
+  await journeyRoute.handleGetJourneyStageReopen(fakeReq({ accessToken: 'tok', login: 'alice', tenantId: 'alice' }, { journeyId: jid2, skillName: 'discovery' }), res3);
+
+  ok('AC2 edge case: unreadable artefact does not crash the reopen', res3._status === 303 && /^\/skills\/discovery\/sessions\/.+\/chat$/.test(res3._location || ''));
+  ok('AC2 edge case: unreadable artefact degrades to an empty priorArtefacts array', registeredCalls2.length === 1 && registeredCalls2[0].opts.priorArtefacts.length === 0);
 })();
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
