@@ -363,7 +363,8 @@ async function runTests() {
   {
     const { renderLoginPage } = require('../src/web-ui/utils/html-shell');
     // rcfc-s1 Task 4: renderLoginPage now requires req.session (embeds a CSRF field).
-    const html = renderLoginPage(mockReq());
+    // cpr-s1: renderLoginPage is now async (awaits generateCsrfToken's persist).
+    const html = await renderLoginPage(mockReq());
     assert(typeof html === 'string' && html.length > 0, 'renderLoginPage returns non-empty HTML');
     assert(
       html.toLowerCase().includes('email') && html.toLowerCase().includes('password'),
