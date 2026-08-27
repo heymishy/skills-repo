@@ -1613,6 +1613,85 @@ async function handleGetJourneyResume(req, res) {
   res.end();
 }
 
+/**
+ * GET /journey/:journeyId/stage/:skillName/reopen
+ * res-s1 (AC1/AC2/AC3) — resolve or create a live, resumable session for a
+ * specific completed stage (not necessarily the journey's active stage),
+ * then redirect to its chat URL. Mirrors handleGetJourneyResume's shape but
+ * is scoped to one named stage instead of "the active stage". Re-checks for
+ * an existing session as a safety net (the step-nav's own render-time check
+ * could race a concurrent tab or a second click) before creating a new one.
+ */
+async function handleGetJourneyStageReopen(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var skillName = req.params && req.params.skillName;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<div class="sw-page-content"><p>Journey not found.</p><a href="/journey">Back to journeys</a></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<p>Not found.</p>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  var stageEntry = (journey.completedStages || []).find(function(cs) { return cs.skillName === skillName; });
+  if (!stageEntry) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<div class="sw-page-content"><p>Stage not completed yet.</p></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  // AC1 safety-net re-check: session may already exist despite the step-nav
+  // link having pointed here (a concurrent tab, or a race with the render).
+  if (stageEntry.sessionId) {
+    var existingSession = getGetHtmlSession()(stageEntry.sessionId);
+    if (existingSession) {
+      res.writeHead(303, { Location: '/skills/' + encodeURIComponent(existingSession.skillName || skillName) + '/sessions/' + encodeURIComponent(stageEntry.sessionId) + '/chat' });
+      res.end();
+      return;
+    }
+  }
+
+  // AC2: no live session — create a fresh one, injecting this stage's own
+  // artefact content as priorArtefacts (ADR-023: read fresh from disk).
+  var repoRoot = getRepoRoot(req);
+  var priorArtefacts = [];
+  if (stageEntry.artefactPath) {
+    var absPath = path.resolve(path.join(repoRoot, stageEntry.artefactPath));
+    try {
+      var content = fs.readFileSync(absPath, 'utf8');
+      priorArtefacts.push({ path: stageEntry.artefactPath, content: content });
+    } catch (_) {}
+  }
+
+  var sid = crypto.randomUUID();
+  var sessionPath = path.join(repoRoot, 'artefacts', journey.featureSlug, 'sessions', sid);
+  getRegisterHtmlSession()(sid, sessionPath, skillName, { productProfile: journey.productProfile || 'default', priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug });
+  getLinkSessionToJourney()(sid, journeyId);
+
+  // AC3: point this stage's completedStages entry at the new session so a
+  // future reopen uses the cheap existing-session path (AC1) instead.
+  _journeyStore.updateCompletedStageSessionId(journeyId, skillName, sid);
+
+  _posthog.capture(req.session.login || journey.ownerId || journeyId, 'earlier_stage_reopened', {
+    skillName:   skillName,
+    featureSlug: journey.featureSlug,
+    journeyId:   journeyId
+  }, { company: req.session.tenantId || journey.tenantId });
+
+  res.writeHead(303, { Location: '/skills/' + encodeURIComponent(skillName) + '/sessions/' + sid + '/chat' });
+  res.end();
+}
+
 // ---------------------------------------------------------------------------
 // sdg.1 — Strategy grounding modal (new-product upload gate)
 // ---------------------------------------------------------------------------
@@ -4269,6 +4348,7 @@ module.exports = {
   setNow,
   // wsm.3 — stage back-navigation and needs-review
   handleGetJourneyStageView,
+  handleGetJourneyStageReopen,
   handlePostJourneyStageArtefact,
   handleGetJourneyStage,
   handlePostJourneyRecommit,

@@ -9,6 +9,10 @@
 //
 // Run: node tests/check-res-s1-reopen-completed-stage-live-session.js
 
+var fs = require('fs');
+var path = require('path');
+var os = require('os');
+
 var passed = 0;
 var failed = 0;
 
@@ -16,6 +20,8 @@ function ok(label, cond) {
   if (cond) { console.log('  PASS:', label); passed++; }
   else       { console.error('  FAIL:', label); failed++; }
 }
+
+var tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'res-s1-'));
 
 var journeyStore = require('../src/web-ui/modules/journey-store');
 journeyStore._clear();
@@ -30,7 +36,7 @@ journeyStore._clear();
 // runs -- a pre-existing shape mismatch between the two modules, unrelated
 // to and out of scope for this story.
 
-(function main() {
+(async function main() {
 
 console.log('\nTask 1 — updateCompletedStageSessionId');
 (function() {
@@ -69,6 +75,70 @@ console.log('\nTask 1 — updateCompletedStageSessionId');
   try { journeyStore.updateCompletedStageSessionId(journeyStore.createJourney('res-s1-neg-feature', 'default').journeyId, 'not-a-real-stage', 'sid'); }
   catch (_) { threwOnUnknownStage = true; }
   ok('unknown skillName on a real journey does not throw', !threwOnUnknownStage);
+})();
+
+console.log('\nTask 2 — handleGetJourneyStageReopen handler');
+await (async function() {
+  var journeyRoute = require('../src/web-ui/routes/journey');
+  journeyRoute.setJourneyStoreModule(journeyStore);
+  journeyRoute.setRepoRoot(tmpDir);
+  journeyRoute.setLinkSessionToJourney(function() {});
+
+  function fakeRes() {
+    var r = { _status: null, _location: null };
+    r.writeHead = function(s, h) { r._status = s; if (h && h.Location) r._location = h.Location; };
+    r.end = function() {};
+    return r;
+  }
+  function fakeReq(session, params) {
+    return { session: session, params: params || {} };
+  }
+  function writeArtefact(relPath, content) {
+    var abs = path.join(tmpDir, relPath);
+    fs.mkdirSync(path.dirname(abs), { recursive: true });
+    fs.writeFileSync(abs, content, 'utf8');
+  }
+
+  var slug = 'res-s1-reopen-feature';
+  var created = journeyStore.createJourney(slug, 'default');
+  var jid = created.journeyId;
+  var artefactPath = 'artefacts/' + slug + '/discovery.md';
+  writeArtefact(artefactPath, '# Discovery\n\nOriginal content.');
+  journeyStore.completeStage(jid, 'discovery', artefactPath, null, null); // no sessionId -- simulates a pruned/pre-frsr-s1 session
+  journeyStore.setJourneyFields(jid, { ownerId: 'alice', tenantId: 'alice' });
+
+  // AC2: no live session exists -- expect a fresh one to be created
+  journeyRoute.setGetHtmlSession(function() { return null; });
+  var registeredCalls = [];
+  journeyRoute.setRegisterHtmlSession(function(sid, sessionPath, skillName, opts) {
+    registeredCalls.push({ sid: sid, skillName: skillName, opts: opts });
+  });
+
+  var req = fakeReq({ accessToken: 'tok', login: 'alice', tenantId: 'alice' }, { journeyId: jid, skillName: 'discovery' });
+  var res = fakeRes();
+  await journeyRoute.handleGetJourneyStageReopen(req, res);
+
+  ok('AC2: redirects (303) to a new chat session', res._status === 303 && /^\/skills\/discovery\/sessions\/.+\/chat$/.test(res._location || ''));
+  ok('AC2: a fresh session was registered for the "discovery" skill', registeredCalls.length === 1 && registeredCalls[0].skillName === 'discovery');
+  ok('AC2: priorArtefacts contains the stage\'s own artefact content read from disk', registeredCalls.length === 1 &&
+    registeredCalls[0].opts.priorArtefacts.length === 1 &&
+    registeredCalls[0].opts.priorArtefacts[0].path === artefactPath &&
+    registeredCalls[0].opts.priorArtefacts[0].content === '# Discovery\n\nOriginal content.');
+
+  var updatedJourney = journeyStore.getJourney(jid);
+  var updatedEntry = updatedJourney.completedStages.find(function(cs) { return cs.skillName === 'discovery'; });
+  ok('AC3: completedStages sessionId updated to the new session', updatedEntry.sessionId && updatedEntry.sessionId === registeredCalls[0].sid);
+  ok('AC3: completedStages artefactPath unchanged', updatedEntry.artefactPath === artefactPath);
+
+  // AC1 (safety-net re-check): session now exists -- a second reopen call
+  // must NOT create another fresh session.
+  journeyRoute.setGetHtmlSession(function(sid) {
+    return sid === registeredCalls[0].sid ? { skillName: 'discovery', turns: [] } : null;
+  });
+  var res2 = fakeRes();
+  await journeyRoute.handleGetJourneyStageReopen(fakeReq({ accessToken: 'tok', login: 'alice', tenantId: 'alice' }, { journeyId: jid, skillName: 'discovery' }), res2);
+  ok('AC1: second reopen with an existing session redirects directly, no new session created', res2._status === 303 && registeredCalls.length === 1 &&
+    res2._location === '/skills/discovery/sessions/' + registeredCalls[0].sid + '/chat');
 })();
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
