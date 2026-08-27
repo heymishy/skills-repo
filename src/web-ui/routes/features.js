@@ -137,7 +137,7 @@ function renderArtefactItem(artefact) {
   const name    = artefact.name    || '';
   const viewUrl = artefact.viewUrl || '#';
   return `<li class="artefact-list__item">` +
-    `<span class="artefact-list__type">${escHtml(type)}</span>` +
+    `<span class="artefact-list__type">${escHtml(type)}: </span>` +
     `<a class="artefact-list__link" href="${escHtml(viewUrl)}">${escHtml(name)}</a>` +
     `</li>`;
 }
