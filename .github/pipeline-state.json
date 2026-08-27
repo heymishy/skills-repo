@@ -27182,17 +27182,27 @@
     {
       "slug": "2026-08-27-csrf-persist-race-on-suspend",
       "name": "Close the race between persisting a new CSRF token and the process suspending mid-write",
-      "stage": "discovery",
+      "stage": "definition-of-ready",
       "health": "green",
       "stories": [
         {
           "id": "cpr-s1",
-          "stage": "test-plan",
-          "updatedAt": "2026-08-27T00:59:35.974Z"
+          "stage": "definition-of-ready",
+          "updatedAt": "2026-08-27T03:31:43.188Z",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "dodStatus": "not-started",
+          "acTotal": 6,
+          "dorArtefact": "artefacts/2026-08-27-csrf-persist-race-on-suspend/dor/cpr-s1-dor.md",
+          "verificationScriptArtefact": "artefacts/2026-08-27-csrf-persist-race-on-suspend/verification-scripts/cpr-s1-verification.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-08-27-csrf-persist-race-on-suspend/test-plans/cpr-s1-test-plan.md"
+          }
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-27T00:59:35.973Z",
+      "updatedAt": "2026-08-27T03:31:43.327Z",
       "track": "short"
     },
     {
