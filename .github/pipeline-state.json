@@ -27259,6 +27259,29 @@
       "metrics": [],
       "updatedAt": "2026-08-27T07:28:17.939Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-08-27-chat-artefact-mobile-responsive",
+      "name": "Stack the chat/artefact split-panel into a single column on mobile",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "id": "cams-s1",
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "acTotal": 6,
+          "dorArtefact": "artefacts/2026-08-27-chat-artefact-mobile-responsive/dor/cams-s1-dor.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-08-27-chat-artefact-mobile-responsive/test-plans/cams-s1-test-plan.md"
+          },
+          "updatedAt": "2026-08-27T07:37:14.917Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-27T07:37:14.917Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
