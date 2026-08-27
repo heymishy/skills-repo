@@ -182,7 +182,7 @@ function createOrgConversionHandlers(pool) {
     // unmodified function runs end-to-end and produces the exact same
     // Stripe redirect a normal /welcome plan-selection flow would.
     var body = await _readBody(req);
-    var csrfToken = csrf.generateCsrfToken(req);
+    var csrfToken = await csrf.generateCsrfToken(req);
     req.body = Object.assign({}, body, {
       planId: (body && body.planId) || 'starter',
       _csrf: csrfToken

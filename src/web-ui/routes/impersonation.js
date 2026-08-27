@@ -85,7 +85,7 @@ function createImpersonationHandlers(pool) {
     var q = (req.query && req.query.q) || '';
     var candidates = await listImpersonationCandidates(pool);
     var results = filterUsers(candidates, q);
-    var csrfToken = csrf.generateCsrfToken(req);
+    var csrfToken = await csrf.generateCsrfToken(req);
 
     var rows = results.map(function(u) {
       var idAttr = _escapeHtml(u.personId);

@@ -71,7 +71,7 @@ function createTeamManagementHandlers(pool) {
     }).join('');
 
     // sec-perf-s3 AC2: session-scoped CSRF token, embedded in the add-teammate form below.
-    var csrfToken = csrf.generateCsrfToken(req);
+    var csrfToken = await csrf.generateCsrfToken(req);
 
     var bodyContent = '<h1>Team members</h1>' +
       '<form method="POST" action="/api/team/members">' +
@@ -113,7 +113,7 @@ function createTeamManagementHandlers(pool) {
       return '<option value="' + htmlShell.escHtml(r) + '">' + htmlShell.escHtml(r) + '</option>';
     }).join('');
 
-    var csrfToken = csrf.generateCsrfToken(req);
+    var csrfToken = await csrf.generateCsrfToken(req);
 
     var bodyContent = '<h1>Invite a teammate</h1>' +
       '<form method="POST" action="/api/team/invites">' +

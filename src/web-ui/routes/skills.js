@@ -1139,7 +1139,7 @@ async function handleGetSkillsHtml(req, res) {
       timestamp: new Date().toISOString()
     });
 
-    const html = _renderSkillsList(skills, user, _nav, _csrf.generateCsrfToken(req));
+    const html = _renderSkillsList(skills, user, _nav, await _csrf.generateCsrfToken(req));
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   } catch (err) {
@@ -1543,7 +1543,7 @@ async function handleGetCommitPreviewHtml(req, res) {
     branchName:        preview.branchName      || 'main',
     defaultMessage:    preview.defaultMessage  || ('feat: ' + (preview.artefactPath || 'artefact')),
     reviewers:         preview.reviewers       || [],
-    csrfToken:         _csrf.generateCsrfToken(req)
+    csrfToken:         await _csrf.generateCsrfToken(req)
   });
 
   const html = renderShell({
@@ -1652,7 +1652,7 @@ async function handleGetResultHtml(req, res) {
     prUrl:        result.prUrl        || null,
     nextSkillName: result.nextSkillName || null,
     nextSkillLabel: result.nextSkillLabel || null,
-    csrfToken:    _csrf.generateCsrfToken(req)
+    csrfToken:    await _csrf.generateCsrfToken(req)
   });
 
   const html = renderShell({

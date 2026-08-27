@@ -81,7 +81,7 @@ async function handleRoot(req, res) {
   // token is a per-session anti-forgery nonce, not an access token or identity value
   // (see artefacts/2026-07-01-security-perf-hardening/stories/sec-perf-s3.md, Architecture
   // Constraints). The rest of the page remains the same static HTML as before this story.
-  var csrfToken = csrf.generateCsrfToken(req);
+  var csrfToken = await csrf.generateCsrfToken(req);
   var html = _LANDING_HTML.split('<!--CSRF_TOKEN-->').join(csrf.csrfField(csrfToken));
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
@@ -148,7 +148,7 @@ async function handleWelcome(req, res) {
   var plans = _buildPlanOptions();
 
   // sec-perf-s3 AC3: session-scoped CSRF token, embedded in each plan's checkout form below.
-  var csrfToken = csrf.generateCsrfToken(req);
+  var csrfToken = await csrf.generateCsrfToken(req);
 
   // AC6: fire plan_selected PostHog event — fire-and-forget (do NOT await).
   // Fires once per welcome page view by a first-login user; planName is the first

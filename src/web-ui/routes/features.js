@@ -297,7 +297,7 @@ async function handleGetFeatureArtefacts(req, res, featureSlug, pool) {
         'if(!btn)return;',
         'btn.addEventListener("click",function(){',
           'if(!confirm(' + JSON.stringify('Delete "' + displayTitle + '"? This permanently removes its artefacts and journey record. This cannot be undone.') + '))return;',
-          'fetch(' + JSON.stringify('/api/journey/' + journeyForPage.journeyId) + ',{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({_csrf:' + JSON.stringify(generateCsrfToken(req)) + '})})',
+          'fetch(' + JSON.stringify('/api/journey/' + journeyForPage.journeyId) + ',{method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({_csrf:' + JSON.stringify(await generateCsrfToken(req)) + '})})',
             '.then(function(r){if(!r.ok){return r.json().then(function(j){throw new Error((j&&j.error)||("Request failed ("+r.status+")"));});}return r.json();})',
             '.then(function(){window.location.href=' + JSON.stringify(deletePostRedirect) + ';})',
             '.catch(function(e){if(errEl){errEl.textContent=e.message;errEl.style.display="inline";}});',
