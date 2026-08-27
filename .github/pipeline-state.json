@@ -27315,15 +27315,47 @@
     {
       "slug": "2026-08-27-revise-earlier-stage",
       "name": "Revise an Earlier Stage Mid-Journey",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "track": "standard",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "discoveryStatus": "clarified",
-      "updatedAt": "2026-08-27T09:23:27.997Z"
+      "discoveryStatus": "approved",
+      "updatedAt": "2026-08-27T09:33:27.557Z",
+      "metrics": [
+        {
+          "id": "M1",
+          "name": "Earlier-stage revisions completed without a journey restart",
+          "target": "At least 1 real, non-test usage per week once live in beta, with the journey continuing to completion afterward",
+          "baseline": "0% -- capability does not exist today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "M2",
+          "name": "Materiality-suggestion acceptance rate",
+          "target": ">=70% acceptance once at least 10 genuine suggestions have been logged",
+          "baseline": "Not yet established -- feature does not exist today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "M3",
+          "name": "Recurrence of the original blocking pain",
+          "target": "0 further occurrences of this specific pain pattern reported after release",
+          "baseline": "2 known occurrences (Hamish, Abhi) before this feature existed",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

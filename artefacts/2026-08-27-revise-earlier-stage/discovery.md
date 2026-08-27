@@ -1,8 +1,8 @@
 # Discovery: Revise an Earlier Stage Mid-Journey
 
-**Status:** Clarified — awaiting approval
+**Status:** Approved
 **Created:** 2026-08-27
-**Approved by:** [Name + date — filled in after human review]
+**Approved by:** Hamish King — Platform Owner — 2026-08-27
 **Author:** Copilot
 
 ---
@@ -66,11 +66,11 @@ None identified.
 
 ## Reviewers
 
-- [Name — Role]
+- Hamish King — Platform Owner
 
 ## Approved By
 
-[Name — Role — Date]
+Hamish King — Platform Owner — 2026-08-27
 
 ---
 
