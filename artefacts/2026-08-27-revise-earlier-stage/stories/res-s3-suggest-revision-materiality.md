@@ -18,16 +18,17 @@ So that **I can decide whether downstream stages need attention without manually
 
 ## Architecture Constraints
 
-None identified beyond ADR-023 (the suggestion must be generated from the actual overwritten disk content from res-s2, not stale in-memory session state) — checked against `.github/architecture-guardrails.md`.
+- ADR-023 — the *new* (post-revision) content this story judges must be the actual overwritten disk content from res-s2, not stale in-memory session state.
+- **Pre-revision content handoff (added in review Run 1, fix for finding 1-H1):** res-s2's overwrite is destructive and retains no version — this story must NOT attempt to read "pre-revision content" from disk, since by the time this story runs it no longer exists there. The pre-revision content this story compares against is supplied directly by res-s2 (its AC5), captured in memory immediately before res-s2's write and handed forward within the same turn-handling flow. This story is a consumer of that handoff, not an independent source of "before" state.
 
 ## Dependencies
 
-- **Upstream:** res-s2 (there must be an overwritten artefact to judge)
+- **Upstream:** res-s2 (must have both completed its overwrite — AC1 — AND passed forward the pre-revision content it captured before writing — AC5)
 - **Downstream:** res-s4 consumes this suggestion
 
 ## Acceptance Criteria
 
-**AC1:** Given res-s2's overwrite completes for a reopened stage, When the system compares the new artefact content against the pre-revision content, Then a materiality judgment (material or minor) and a one-sentence rationale are presented to the operator in the chat session.
+**AC1:** Given res-s2 completes its overwrite and hands forward the pre-revision content it captured before writing (per res-s2 AC5), When the system compares that pre-revision content against the new (post-overwrite) artefact content, Then a materiality judgment (material or minor) and a one-sentence rationale are presented to the operator in the chat session.
 
 **AC2:** Given the revision changed the Problem Statement, MVP Scope boundary, or a named Constraint, When the materiality judgment runs, Then it returns "material" — these are the fields discovery's MVP scope names as the signal.
 
