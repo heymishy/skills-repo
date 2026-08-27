@@ -27729,21 +27729,21 @@
           "id": "res-s1",
           "slug": "res-s1-reopen-completed-stage-live-session",
           "name": "Reopen a completed stage's live session from the step-nav",
-          "stage": "implementation-plan",
+          "stage": "subagent-execution",
           "health": "green",
           "artefact": "artefacts/2026-08-27-revise-earlier-stage/stories/res-s1-reopen-completed-stage-live-session.md",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
           "prStatus": "none",
           "notes": "Epic 1: Reopen and revise an earlier completed stage (see epics/reopen-and-revise-earlier-stage.md for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-27T20:09:14.922Z",
+          "updatedAt": "2026-08-27T20:59:23.822Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-27-revise-earlier-stage/review/res-s1-review-1.md",
           "testPlan": {
             "status": "written",
-            "totalTests": 11,
-            "passing": 0,
+            "totalTests": 19,
+            "passing": 19,
             "artefact": "artefacts/2026-08-27-revise-earlier-stage/test-plans/res-s1-test-plan.md"
           },
           "acTotal": 4,
@@ -27757,13 +27757,13 @@
             {
               "id": "task-1",
               "name": "updateCompletedStageSessionId on the journey store",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-27-revise-earlier-stage/plans/res-s1-plan.md"
             },
             {
               "id": "task-2",
               "name": "handleGetJourneyStageReopen handler + route registration",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-27-revise-earlier-stage/plans/res-s1-plan.md"
             },
             {
