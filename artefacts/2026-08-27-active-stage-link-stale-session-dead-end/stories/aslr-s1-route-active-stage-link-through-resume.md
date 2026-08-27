@@ -23,14 +23,20 @@ if (isActive) {
 ```
 This links straight to `handleGetChatHtml` (`skills.js:4343`) for that exact session ID, with no existence check. `handleGetChatHtml` itself only recovers via `_getSessionOrRestore` (in-memory, then Redis) — if the session is in neither (evicted by `startSessionEviction`'s 7-day sweep, per `wsm-resume`'s AC6, or simply old enough that its Redis copy is gone too), it renders the bare 404 with no forward action, exactly matching `def-s1`'s own AC2 ("404 preserved for genuinely unknown sessions" — a deliberate, correct design choice for that handler in isolation).
 
-The fix is not to change that 404 page — it's to stop routing this one link into a code path that has no recovery option, when a code path with full recovery already exists one call away. `GET /journey/:featureSlug/resume` → `handleGetJourneyResume` (`journey.js:1413-1580`) already implements the complete fallback chain for exactly this situation: live in-memory session → redirect immediately (line 1502-1509); not in memory but Redis-restorable → restore and redirect (line 1539-1552); neither → **create a brand new session for the current stage, seeded with every completed prior stage's artefact content, linked to the journey, and redirect into it** (line 1555-1579). This is precisely "continue the process" — it already exists, it is already tested (`check-s0.1`, `check-s0.2`, `check-s0.4`), and it is already used as the entry point from the journey list's own "Continue →" link. The step-nav breadcrumb is the one place in the codebase that bypasses it and links directly to the raw, potentially-stale session URL instead.
+The fix is not to change that 404 page — it's to stop routing these links into a code path that has no recovery option, when a code path with full recovery already exists one call away. `GET /journey/:featureSlug/resume` → `handleGetJourneyResume` (`journey.js:1413-1580`) already implements the complete fallback chain for exactly this situation: live in-memory session → redirect immediately (line 1502-1509); not in memory but Redis-restorable → restore and redirect (line 1539-1552); neither → **create a brand new session for the current stage, seeded with every completed prior stage's artefact content, linked to the journey, and redirect into it** (line 1555-1579). This is precisely "continue the process" — it already exists, it is already tested (`check-s0.1`, `check-s0.2`, `check-s0.4`), and it is already used as the entry point from the journey list's own "Continue →" link.
 
-**Scope investigation (2026-08-27):** every other `journey.activeSessionId`-based redirect in `journey.js`/`skills.js` was checked and found safe — each one either just created a fresh session immediately before redirecting (`journey.js:1578,1717,2326,2376,2445`, `skills.js:1179`) or first verified the session exists in memory before using it (`journey.js:2907`'s `_kcrsSession && _kcrsSession.done` guard). `journey.js:891` is the single exception: the only place that constructs this URL from a stored ID with no verification and no fallback.
+**Scope investigation (2026-08-27):** every `journey.activeSessionId`-based redirect in `journey.js`/`skills.js` was checked. Most are safe — each either just created a fresh session immediately before redirecting (`journey.js:478,1578,1717,2326,2376,2445`, `skills.js:1179`) or first verified the session exists in memory before using it (`journey.js:2907`'s `_kcrsSession && _kcrsSession.done` guard). **Four are not**, all inside `journey.js`, all constructing this exact raw URL from a stored ID with no existence check and no fallback:
+1. **Line 891** — the step-nav's `isActive` breadcrumb link (the one directly reproduced live, above).
+2. **Line 931-933** (`currentChatUrl`) — the "← Current stage" button rendered on the stage-view page, used at lines 1013 and 1326. This is the literal link clicked during live reproduction — the "2. Discovery" breadcrumb from `read_page` output was this button, not line 891's list-item link, though both exhibit the identical bug and sit in the same function.
+3. **Line 628-632** (`handleGetStageReview`) — the "session not done/no artefact yet" fallback before showing the pre-gate-confirm review panel.
+4. **Line 775-779** (`handleGetJourneyStageView`'s own "no artefact yet" fallback) — reached when viewing a stage that has no artefact recorded yet (matches `check-jsvr-s1`'s existing "unknown stageName" edge-case test, whose expectation this story updates).
+
+All four are fixed identically: replace the raw `/skills/:skill/sessions/:id/chat` construction with `/journey/:featureSlug/resume`.
 
 ## Architecture Constraints
 
 - **Do not modify `handleGetChatHtml`'s 404 behaviour.** `def-s1`'s AC2 ("404 preserved for genuinely unknown sessions") and `frsr-s1`'s AC5 ("a clear, honest message... matching this repo's existing 'Session not found' pattern") both deliberately chose this as acceptable, honest behaviour for a session that is genuinely, permanently gone with no journey context available to recover from (e.g. a session reached directly by URL with no linked journey). This story does not revisit that choice — it only stops one specific journey-aware link from reaching that page unnecessarily, when a proper recovery path already exists for it.
-- **Do not modify `handleGetJourneyResume`.** It already correctly implements every fallback case needed (AC1-AC4 below exercise it, not extend it). This story changes exactly one `href` construction.
+- **Do not modify `handleGetJourneyResume`.** It already correctly implements every fallback case needed (AC1-AC4 below exercise it, not extend it). This story changes four `href`/`Location` constructions, all in `journey.js`, all to the same target.
 - **`journey.featureSlug` is already in scope at the point of construction** (`journey.js:872` already reads `journey.featureSlug` two lines above the affected code) — no new lookup or plumbing required.
 - **The `isDone` branch (line 887-889, completed stages) is untouched** — it already links to the safe, static `/journey/:journeyId/stage/:skillName` artefact view, which never depends on a live session existing.
 - **`handleGetJourneyResume`'s own established, twice-tested contract** ("a `done` session is NOT resumed here — this function always starts a fresh session for a done predecessor," per its own code comment at line 1492-1500) is preserved as-is; this story routes an additional caller into that existing contract, it does not change the contract itself.
@@ -42,17 +48,21 @@ The fix is not to change that 404 page — it's to stop routing this one link in
 
 ## Acceptance Criteria
 
-**AC1 (regression guard):** Given the journey navigator's active-stage breadcrumb is clicked, When the journey's `activeSessionId` is still live in memory, Then the operator lands in that exact session's chat page — same practical outcome as before this fix (now via one additional 303 redirect through `/journey/:featureSlug/resume`, not a behavioural change).
+**AC1 (regression guard):** Given any of the four affected links/redirects is followed, When the journey's `activeSessionId` is still live in memory, Then the operator lands in that exact session's chat page — same practical outcome as before this fix (now via one additional 303/302 redirect through `/journey/:featureSlug/resume`, not a behavioural change).
 
-**AC2 (regression guard):** Given the breadcrumb is clicked, When `activeSessionId`'s session is not in memory but is restorable from Redis, Then the operator's prior turns and draft artefact are restored and they land in the continued session — same outcome as before this fix.
+**AC2 (regression guard):** Given any of the four is followed, When `activeSessionId`'s session is not in memory but is restorable from Redis, Then the operator's prior turns and draft artefact are restored and they land in the continued session — same outcome as before this fix.
 
-**AC3 (the fix):** Given the breadcrumb is clicked, When `activeSessionId`'s session exists in neither memory nor Redis (evicted or expired), Then the operator lands in a **brand new** session for the journey's current stage, seeded with every completed prior stage's artefact content — not a "Session not found" dead end.
+**AC3 (the fix):** Given any of the four is followed, When `activeSessionId`'s session exists in neither memory nor Redis (evicted or expired), Then the operator lands in a **brand new** session for the journey's current stage, seeded with every completed prior stage's artefact content — not a "Session not found" dead end.
 
-**AC4:** Given AC3's new session is created, When the journey record is inspected afterward, Then `activeSessionId` has been updated to the new session's ID (via the existing `_journeyStore.setActiveSession` call already inside `handleGetJourneyResume`), so a subsequent breadcrumb click continues to work.
+**AC4:** Given AC3's new session is created, When the journey record is inspected afterward, Then `activeSessionId` has been updated to the new session's ID (via the existing `_journeyStore.setActiveSession` call already inside `handleGetJourneyResume`), so a subsequent click continues to work.
 
-**AC5 (regression guard):** Given the `isDone` step-nav branch (completed, non-active stages), When the navigator renders, Then those links are unchanged — still pointing to `/journey/:journeyId/stage/:skillName`, the static artefact view.
+**AC5 (regression guard):** Given the `isDone` step-nav branch (completed, non-active, non-viewed stages), When the navigator renders, Then those links are unchanged — still pointing to `/journey/:journeyId/stage/:skillName`, the static artefact view.
 
-**AC6 (regression guard):** Given the existing resume-flow test suite (`check-s0.1-resume-guard.js`, `check-s0.2-resume-existing-session.js`, `check-s0.4-resume-redis-session.js`, and any other test asserting on `journey.js`'s step-nav rendering), When re-run after this fix, Then all pass — `handleGetJourneyResume` itself is untouched; only the link at `journey.js:891` changes.
+**AC6 (the fix, `handleGetStageReview`):** Given `GET /journey/:journeyId/stage-review` is requested, When the active session is not done or not found, Then the fallback redirects to `/journey/:featureSlug/resume`, not a raw `/skills/.../sessions/.../chat` URL.
+
+**AC7 (the fix, `handleGetJourneyStageView`'s own fallback):** Given `GET /journey/:journeyId/stage/:stageName` is requested for a stage with no recorded artefact yet, When the handler falls back, Then it redirects to `/journey/:featureSlug/resume`, not a raw `/skills/.../sessions/.../chat` URL — updates `check-jsvr-s1-wire-stage-view-route.js`'s existing edge-case assertion to match.
+
+**AC8 (regression guard):** Given the existing resume-flow and stage-view test suites (`check-s0.1-resume-guard.js`, `check-s0.2-resume-existing-session.js`, `check-s0.4-resume-redis-session.js`, `check-jsvr-s1-wire-stage-view-route.js`, `check-frsr-s1-feature-row-session-resume.js`, `check-dsh-s4-fix-resume-conversation-link.js`), When re-run after this fix, Then all pass — `handleGetJourneyResume` itself is untouched; only the four call sites named above change (plus `check-jsvr-s1`'s own now-outdated assertion, updated in AC7).
 
 ## Out of Scope
 
@@ -69,7 +79,7 @@ The fix is not to change that 404 page — it's to stop routing this one link in
 
 ## Complexity Rating
 
-**Rating:** 1 — a single `href` construction change in one function, reusing an already-correct, already-tested existing endpoint. The scope investigation (confirming this is the only unsafe call site among 10+ similar-looking candidates) was the substantial part of this work and is already done, documented above.
+**Rating:** 1 — four mechanically-identical `href`/`Location` construction changes across two functions in one file, reusing an already-correct, already-tested existing endpoint. The scope investigation (confirming these are the only unsafe call sites among 10+ similar-looking candidates) was the substantial part of this work and is already done, documented above.
 **Scope stability:** Stable.
 
 ## Definition of Ready Pre-check

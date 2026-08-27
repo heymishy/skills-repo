@@ -159,7 +159,11 @@ async function main() {
     var res = mockRes();
     await router(req, res);
     var result = res._get();
-    check('AC1 edge case: unknown stageName 302-redirects to the active chat (handler\'s own fallback, now reachable)', result.statusCode === 302 && !!result.headers.Location && result.headers.Location.indexOf('/skills/benefit-metric/sessions/seed-sid-2/chat') !== -1);
+    // aslr-s1: this fallback now routes through the existing resume endpoint
+    // instead of a raw session URL, so it can never dead-end on a stale
+    // activeSessionId (the endpoint itself resolves live/Redis-restorable/
+    // expired sessions correctly).
+    check('AC1 edge case: unknown stageName 302-redirects through the resume endpoint (handler\'s own fallback, now reachable, and dead-end-proof per aslr-s1)', result.statusCode === 302 && result.headers.Location === '/journey/jsvr-s1-test-feature/resume');
   })();
 
   // ── AC2: unauthenticated request 302s to /auth/github, not the sign-in page body ──
