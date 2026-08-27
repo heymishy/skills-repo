@@ -123,8 +123,16 @@ await (async function() {
     res._body.indexOf(oldRawHrefFragment) === -1);
   ok('AC1b: the "Current stage" button also points at /journey/:featureSlug/resume',
     res._body.indexOf('Current stage') !== -1 && res._body.indexOf('href="' + expectedResumeHref + '"') !== -1);
-  ok('AC5: the completed, non-viewed stage (ideate) still links to the static artefact view, unchanged',
-    res._body.indexOf('href="/journey/' + encodeURIComponent(jid) + '/stage/ideate"') !== -1);
+  // res-s1 (2026-08-27): superseded by design -- the step-nav's "done" stage
+  // links now route directly into the live session, or into /reopen when no
+  // live session exists, instead of the static read-only view (see
+  // artefacts/2026-08-27-revise-earlier-stage/discovery.md's 2026-08-27
+  // clarification and the epic goal). "ideate" has no live session in this
+  // test (setGetHtmlSession above always returns null), so it now links to
+  // its /reopen route rather than the old static /stage/ideate view.
+  ok('AC5 (superseded by res-s1): the completed, non-viewed stage (ideate) with no live session now links to its reopen route, not the static artefact view',
+    res._body.indexOf('href="/journey/' + encodeURIComponent(jid) + '/stage/ideate/reopen"') !== -1 &&
+    res._body.indexOf('href="/journey/' + encodeURIComponent(jid) + '/stage/ideate"') === -1);
 })();
 
 // ── adsr-s1 AC1/AC2: step-nav link and "Current stage" button link directly

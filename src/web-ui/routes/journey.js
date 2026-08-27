@@ -900,8 +900,20 @@ async function handleGetJourneyStageView(req, res, pool) {
     var inner = '<span class="sn-num">' + escHtml(String(s.num)) + '</span>' +
       '<span class="sn-label">' + escHtml(s.label) + '</span>' +
       '<span class="sn-icon" aria-hidden="true">' + icon + '</span>';
-    if (isDone && !isViewing) {
-      return '<li class="sn-step ' + cls + '"><a href="/journey/' + safeJourneyId + '/stage/' + encodeURIComponent(s.id) + '" class="sn-step-link">' + inner + '</a></li>';
+    if (isDone) {
+      // res-s1: link directly to a live session when one exists for this
+      // specific completed stage (any stage, not just the active one, and
+      // including the stage currently being statically viewed here -- so
+      // that stage's own step-nav item offers a way into the live
+      // conversation too, not just other stages' entries); otherwise link
+      // to the reopen route, which creates a fresh session with this
+      // stage's own artefact injected as priorArtefacts.
+      var _doneStageEntry = (journey.completedStages || []).find(function(cs) { return cs.skillName === s.id; });
+      var _doneStageSession = _doneStageEntry && _doneStageEntry.sessionId ? getGetHtmlSession()(_doneStageEntry.sessionId) : null;
+      var _doneStageHref = _doneStageSession
+        ? '/skills/' + encodeURIComponent(_doneStageSession.skillName || s.id) + '/sessions/' + encodeURIComponent(_doneStageEntry.sessionId) + '/chat'
+        : '/journey/' + safeJourneyId + '/stage/' + encodeURIComponent(s.id) + '/reopen';
+      return '<li class="sn-step ' + cls + '"><a href="' + _doneStageHref + '" class="sn-step-link">' + inner + '</a></li>';
     }
     if (isActive) {
       // aslr-s1 / adsr-s1: if the active session still exists in memory

@@ -165,6 +165,53 @@ await (async function() {
   ok('AC2 edge case: unreadable artefact degrades to an empty priorArtefacts array', registeredCalls2.length === 1 && registeredCalls2[0].opts.priorArtefacts.length === 0);
 })();
 
+console.log('\nTask 3 — step-nav done-stage link');
+await (async function() {
+  var journeyRoute = require('../src/web-ui/routes/journey');
+  var { handleGetJourneyStageView } = journeyRoute;
+
+  function fakeRes() {
+    var r = { _status: null, _body: '' };
+    r.writeHead = function(s) { r._status = s; };
+    r.end = function(b) { r._body = b || ''; };
+    return r;
+  }
+  function writeArtefact(relPath, content) {
+    var abs = path.join(tmpDir, relPath);
+    fs.mkdirSync(path.dirname(abs), { recursive: true });
+    fs.writeFileSync(abs, content, 'utf8');
+  }
+
+  var slug = 'res-s1-stepnav-feature';
+  var created = journeyStore.createJourney(slug, 'default');
+  var jid = created.journeyId;
+
+  // "discovery" is done with a live session -- expect a direct chat link
+  var discoveryPath = 'artefacts/' + slug + '/discovery.md';
+  writeArtefact(discoveryPath, '# Discovery');
+  journeyStore.completeStage(jid, 'discovery', discoveryPath, null, 'live-sid');
+
+  // "benefit-metric" is done but its session is gone -- expect a /reopen link
+  var bmPath = 'artefacts/' + slug + '/benefit-metric.md';
+  writeArtefact(bmPath, '# Benefit Metric');
+  journeyStore.completeStage(jid, 'benefit-metric', bmPath, null, 'stale-sid');
+
+  journeyStore.setJourneyFields(jid, { ownerId: 'alice', tenantId: 'alice', activeSkill: 'definition' });
+
+  journeyRoute.setGetHtmlSession(function(sid) {
+    return sid === 'live-sid' ? { skillName: 'discovery', turns: [] } : null;
+  });
+
+  var req = { session: { accessToken: 'tok', login: 'alice', tenantId: 'alice' }, params: { journeyId: jid, stageName: 'discovery' } };
+  var res = fakeRes();
+  await handleGetJourneyStageView(req, res, null);
+
+  ok('AC1: done stage with a live session links directly to its chat', res._body.indexOf('/skills/discovery/sessions/live-sid/chat') !== -1);
+  ok('AC1: does NOT link to the static read-only view for that stage', res._body.indexOf('/journey/' + jid + '/stage/discovery"') === -1);
+  ok('AC2: done stage with no live session links to the reopen route', res._body.indexOf('/journey/' + jid + '/stage/benefit-metric/reopen') !== -1);
+  ok('AC4: a not-yet-completed stage (definition, active) is unaffected -- still an active-stage link, not a done-stage link', res._body.indexOf('sn-step--active') !== -1);
+})();
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);
 
