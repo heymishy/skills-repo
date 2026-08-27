@@ -36,6 +36,9 @@ console.log('\nTask 1 — updateCompletedStageSessionId');
 
   journeyStore.completeStage(jid, 'discovery', 'artefacts/' + slug + '/discovery.md', null, 'old-sid');
 
+  var _preUpdateEntry = journeyStore.getJourney(jid).completedStages.find(function(cs) { return cs.skillName === 'discovery'; });
+  var _completedAtBefore = _preUpdateEntry.completedAt;
+
   journeyStore.updateCompletedStageSessionId(jid, 'discovery', 'new-sid');
 
   var journey = journeyStore.getJourney(jid);
@@ -44,7 +47,7 @@ console.log('\nTask 1 — updateCompletedStageSessionId');
   ok('sessionId updated to the new session', entry.sessionId === 'new-sid');
   ok('skillName unchanged', entry.skillName === 'discovery');
   ok('artefactPath unchanged', entry.artefactPath === 'artefacts/' + slug + '/discovery.md');
-  ok('completedAt unchanged (not a re-completion)', !!entry.completedAt);
+  ok('completedAt unchanged (not a re-completion)', !!_completedAtBefore && entry.completedAt === _completedAtBefore);
   ok('journey.sessions map updated', journey.sessions['new-sid'] === 'discovery');
 })();
 
