@@ -27194,6 +27194,31 @@
       "metrics": [],
       "updatedAt": "2026-08-27T00:59:35.973Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-08-27-artefact-label-spacing-gap",
+      "name": "Add a visible separator between an artefact's type label and its file link",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "id": "alsg-s1",
+          "stage": "definition-of-ready",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "dodStatus": "not-started",
+          "acTotal": 3,
+          "dorArtefact": "artefacts/2026-08-27-artefact-label-spacing-gap/dor/alsg-s1-dor.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-08-27-artefact-label-spacing-gap/test-plans/alsg-s1-test-plan.md"
+          },
+          "updatedAt": "2026-08-27T01:07:00.266Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-27T01:07:00.397Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
