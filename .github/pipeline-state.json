@@ -27205,7 +27205,7 @@
           "id": "alsg-s1",
           "stage": "branch-complete",
           "dorStatus": "signed-off",
-          "prStatus": "none",
+          "prStatus": "draft",
           "dodStatus": "not-started",
           "acTotal": 3,
           "dorArtefact": "artefacts/2026-08-27-artefact-label-spacing-gap/dor/alsg-s1-dor.md",
@@ -27215,7 +27215,7 @@
             "totalTests": 2,
             "passing": 2
           },
-          "updatedAt": "2026-08-27T01:15:33.099Z",
+          "updatedAt": "2026-08-27T01:16:26.530Z",
           "acVerified": 3
         }
       ],
