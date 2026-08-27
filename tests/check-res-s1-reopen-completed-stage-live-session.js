@@ -9,10 +9,6 @@
 //
 // Run: node tests/check-res-s1-reopen-completed-stage-live-session.js
 
-var path = require('path');
-var fs   = require('fs');
-var os   = require('os');
-
 var passed = 0;
 var failed = 0;
 
@@ -21,10 +17,18 @@ function ok(label, cond) {
   else       { console.error('  FAIL:', label); failed++; }
 }
 
-var tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'check-res-s1-'));
-
 var journeyStore = require('../src/web-ui/modules/journey-store');
 journeyStore._clear();
+// No _diskAdapter is wired here -- this test exercises only the in-memory
+// _journeys map (journeyStore.updateCompletedStageSessionId's own guarded
+// `if (_diskAdapter)` branch is a no-op with no adapter set). Wiring a real
+// journeyDisk adapter to also assert the disk-persisted copy was attempted
+// but abandoned: journeyStore.createJourney's in-memory journey shape
+// (completedStages: []) does not match what journeyDisk.loadJourney/
+// updateStage expect on disk (stages: {}), so completeStage's own disk
+// write silently no-ops (wrapped in try/catch) before this function ever
+// runs -- a pre-existing shape mismatch between the two modules, unrelated
+// to and out of scope for this story.
 
 (function main() {
 
@@ -52,13 +56,19 @@ console.log('\nTask 1 — updateCompletedStageSessionId');
 })();
 
 (function() {
-  // Negative case: unknown journeyId or skillName — must not throw
-  var threw = false;
-  try {
-    journeyStore.updateCompletedStageSessionId('nonexistent-journey', 'discovery', 'sid');
-    journeyStore.updateCompletedStageSessionId(journeyStore.createJourney('res-s1-neg-feature', 'default').journeyId, 'not-a-real-stage', 'sid');
-  } catch (_) { threw = true; }
-  ok('unknown journeyId/skillName does not throw', !threw);
+  // Negative case: unknown journeyId — must not throw
+  var threwOnUnknownJourney = false;
+  try { journeyStore.updateCompletedStageSessionId('nonexistent-journey', 'discovery', 'sid'); }
+  catch (_) { threwOnUnknownJourney = true; }
+  ok('unknown journeyId does not throw', !threwOnUnknownJourney);
+})();
+
+(function() {
+  // Negative case: unknown skillName on a real journey — must not throw
+  var threwOnUnknownStage = false;
+  try { journeyStore.updateCompletedStageSessionId(journeyStore.createJourney('res-s1-neg-feature', 'default').journeyId, 'not-a-real-stage', 'sid'); }
+  catch (_) { threwOnUnknownStage = true; }
+  ok('unknown skillName on a real journey does not throw', !threwOnUnknownStage);
 })();
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');

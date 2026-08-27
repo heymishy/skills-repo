@@ -251,10 +251,10 @@ function updateCompletedStageSessionId(journeyId, skillName, sessionId) {
   if (!entry) return;
   entry.sessionId = sessionId;
   journey.sessions[sessionId] = skillName;
-  _pgWrite(journey);
   if (_diskAdapter) {
     try { _diskAdapter.updateStage(journey.featureSlug, skillName, { sessionId: sessionId }); } catch (_) {}
   }
+  _pgWrite(journey);
 }
 
 /**
