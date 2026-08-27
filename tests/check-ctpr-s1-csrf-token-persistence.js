@@ -66,7 +66,7 @@ async function run() {
 
   // AC1: a fresh generateCsrfToken call triggers exactly one persistSession-driven write
   queue.push(function() {
-    return test('AC1: generateCsrfToken persists a newly-minted token', function() {
+    return test('AC1: generateCsrfToken persists a newly-minted token', async function() {
       session._clearForTesting();
       var adapter = makeSpyAdapter();
       session.setRedisAdapterForTesting(adapter);
@@ -74,7 +74,7 @@ async function run() {
         var created = session.createSession();
         var req = { session: session.getSession(created.id), sessionId: created.id };
 
-        var token = csrf.generateCsrfToken(req);
+        var token = await csrf.generateCsrfToken(req);
 
         assert.strictEqual(adapter.calls.length, 1, 'exactly one Redis write must occur');
         assert.strictEqual(adapter.calls[0].id, created.id, 'write must target the session id');
@@ -88,7 +88,7 @@ async function run() {
 
   // AC2: calling generateCsrfToken again on the same session does not trigger a second write
   queue.push(function() {
-    return test('AC2: idempotent reuse does not re-persist', function() {
+    return test('AC2: idempotent reuse does not re-persist', async function() {
       session._clearForTesting();
       var adapter = makeSpyAdapter();
       session.setRedisAdapterForTesting(adapter);
@@ -96,8 +96,8 @@ async function run() {
         var created = session.createSession();
         var req = { session: session.getSession(created.id), sessionId: created.id };
 
-        var t1 = csrf.generateCsrfToken(req);
-        var t2 = csrf.generateCsrfToken(req);
+        var t1 = await csrf.generateCsrfToken(req);
+        var t2 = await csrf.generateCsrfToken(req);
 
         assert.strictEqual(t1, t2, 'token must be unchanged on reuse');
         assert.strictEqual(adapter.calls.length, 1, 'only the first, token-minting call may persist');
@@ -110,11 +110,11 @@ async function run() {
 
   // AC3: with no Redis adapter configured, generateCsrfToken behaves exactly as before this fix
   queue.push(function() {
-    return test('AC3: no-adapter case behaves exactly as before the fix', function() {
+    return test('AC3: no-adapter case behaves exactly as before the fix', async function() {
       session.setRedisAdapterForTesting(null);
       var req = { session: {} };
 
-      var token = csrf.generateCsrfToken(req);
+      var token = await csrf.generateCsrfToken(req);
 
       assert.ok(token && token.length > 0, 'token must be non-empty');
       assert.ok(/^[a-f0-9]+$/.test(token), 'token must be hex');
@@ -131,7 +131,7 @@ async function run() {
       try {
         var created = session.createSession();
         var req = { session: session.getSession(created.id), sessionId: created.id };
-        var mintedToken = csrf.generateCsrfToken(req);
+        var mintedToken = await csrf.generateCsrfToken(req);
 
         // Let persistSession's internal async write settle.
         await new Promise(function(r) { setImmediate(r); });
