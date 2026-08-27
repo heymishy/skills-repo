@@ -27178,6 +27178,22 @@
       "metrics": [],
       "updatedAt": "2026-08-26T20:59:39.222Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-08-27-csrf-persist-race-on-suspend",
+      "name": "Close the race between persisting a new CSRF token and the process suspending mid-write",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [
+        {
+          "id": "cpr-s1",
+          "stage": "test-plan",
+          "updatedAt": "2026-08-27T00:59:35.974Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-27T00:59:35.973Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
