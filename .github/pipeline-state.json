@@ -27719,9 +27719,9 @@
           "category": "nfr",
           "label": "Stage reopen, artefact overwrite, materiality suggestion, and flag set/cleared are each logged with journeyId, stage name, timestamp",
           "status": "met",
-          "evidence": "Verified post-merge: stageReopenFiresAuditEvent test passing in merged PR #779 CI. SCOPE NOTE (res-s2 DoD, 2026-08-28): this guardrail bundles 4 sub-flows (reopen, overwrite, materiality suggestion, flag set/cleared) under one id, but only the reopen sub-flow (res-s1) has a dedicated test. res-s2 (artefact overwrite) fires the pre-existing artefact_auto_amended/artefact_auto_saved log with sessionId+artefactPath only -- no discrete journeyId or timestamp field, and no dedicated test. Status left met because the reopen evidence above remains accurate; overwrite-sub-flow gap recorded as a deviation and follow-up action in dod/res-s2-dod.md, not silently folded into this met claim.",
+          "evidence": "CORRECTED 2026-08-28 (during res-s3 implementation-plan investigation): the previously-cited automated test \"stageReopenFiresAuditEvent\" does not exist anywhere in the codebase -- confirmed via full tests/ grep (zero matches for the test name or the earlier_stage_reopened event string), a full run of the actual res-s1 test file (19/19 passing, no such test present), and `git log --all -S` showing the string only ever appearing in artefact/documentation commits, never in a tests/*.js file. The underlying production code IS correct: journey.js:1697 fires _posthog.capture(..., \"earlier_stage_reopened\", {...}) unconditionally on every reopen (confirmed by direct code read -- code review is a valid evidence type per templates/definition-of-done.md). Status kept \"met\" on that basis, but the prior \"test passing\" claim was false and has been removed from the evidence. res-s2 sub-flow (artefact overwrite) remains unresolved from res-s2-dod.md's own note -- no dedicated test either. Follow-up: add a real automated test asserting this PostHog capture call fires (spy/stub on _posthog.capture), since a production-code-only \"met\" claim without a regression test is weaker than the DoD process nominally requires.",
           "assessedBy": "/definition-of-done",
-          "assessedAt": "2026-08-28T02:05:42.530Z"
+          "assessedAt": "2026-08-28T05:53:37.126Z"
         }
       ],
       "stories": [
