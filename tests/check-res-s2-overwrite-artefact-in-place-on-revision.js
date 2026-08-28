@@ -212,6 +212,147 @@ await (async function() {
   fs.rmSync(_escapeTargetDir, { recursive: true, force: true });
 })();
 
+console.log('\nTask 2 — duplicate-completion guard and materiality-check hook');
+
+await (async function() {
+  // AC1/AC3: revising an already-completed stage must NOT push a second
+  // completedStages entry.
+  process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
+  var routes = freshRoutes();
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+
+  routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
+    onFirstChunk(0);
+    onChunk(ARTEFACT_RESPONSE);
+    return Promise.resolve({ text: ARTEFACT_RESPONSE, usage: {} });
+  });
+
+  var slug = 'res-s2-duplicate-guard-feature';
+  var artefactRelPath = 'artefacts/' + slug + '/discovery.md';
+  var artefactAbsPath = path.join(_tmpRepoRoot, artefactRelPath);
+  fs.mkdirSync(path.dirname(artefactAbsPath), { recursive: true });
+  fs.writeFileSync(artefactAbsPath, '# Discovery\n\nOriginal.', 'utf8');
+
+  var created = journeyStore.createJourney(slug, 'default');
+  var jid = created.journeyId;
+  journeyStore.completeStage(jid, 'discovery', artefactRelPath, null, 'old-live-sid');
+
+  var sid = 'test-res-s2-t2-dupguard-' + Math.random().toString(36).slice(2);
+  routes._setHtmlSession(sid, {
+    skillName: 'discovery', sessionPath: '/tmp/t', systemPrompt: '# discovery', turns: [],
+    artefactContent: null, artefactPath: null, done: false, featureSlug: slug, journeyId: jid
+  });
+
+  var res = fakeRes();
+  await routes.handlePostTurnStreamHtml(
+    { session: { accessToken: 'tok', tenantId: 'org-a' }, params: { name: 'discovery', id: sid }, body: { answer: 'revise it' } },
+    res
+  );
+
+  var journeyAfter = journeyStore.getJourney(jid);
+  var discoveryEntries = journeyAfter.completedStages.filter(function(cs) { return cs.skillName === 'discovery'; });
+  ok('AC1/AC3: exactly one completedStages entry for discovery after a revision (no duplicate pushed)', discoveryEntries.length === 1);
+  ok('AC1: the artefact file was still overwritten with the revision', fs.readFileSync(artefactAbsPath, 'utf8').indexOf('Revised content.') !== -1);
+})();
+
+await (async function() {
+  // AC5: the materiality-check hook fires on a revision with the correct
+  // pre/post content pair, and does NOT fire on a stage's first-ever
+  // completion (nothing to compare against).
+  process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
+  var routes = freshRoutes();
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+
+  var hookCalls = [];
+  routes.setMaterialityCheckHook(function(payload) { hookCalls.push(payload); });
+
+  routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
+    onFirstChunk(0);
+    onChunk(ARTEFACT_RESPONSE);
+    return Promise.resolve({ text: ARTEFACT_RESPONSE, usage: {} });
+  });
+
+  // First-ever completion — hook must NOT fire.
+  var slugFirst = 'res-s2-hook-first-feature';
+  var sidFirst = 'test-res-s2-t2-hook-first-' + Math.random().toString(36).slice(2);
+  routes._setHtmlSession(sidFirst, {
+    skillName: 'discovery', sessionPath: '/tmp/t', systemPrompt: '# discovery', turns: [],
+    artefactContent: null, artefactPath: null, done: false, featureSlug: slugFirst,
+    journeyId: journeyStore.createJourney(slugFirst, 'default').journeyId
+  });
+  await routes.handlePostTurnStreamHtml(
+    { session: { accessToken: 'tok', tenantId: 'org-a' }, params: { name: 'discovery', id: sidFirst }, body: { answer: 'go' } },
+    fakeRes()
+  );
+  ok('AC5: hook does not fire on a stage\'s first-ever completion', hookCalls.length === 0);
+
+  // Revision — hook must fire with the correct pre/post pair.
+  var slugRevise = 'res-s2-hook-revise-feature';
+  var artefactRelPath = 'artefacts/' + slugRevise + '/discovery.md';
+  var artefactAbsPath = path.join(_tmpRepoRoot, artefactRelPath);
+  fs.mkdirSync(path.dirname(artefactAbsPath), { recursive: true });
+  fs.writeFileSync(artefactAbsPath, '# Discovery\n\nPre-revision text.', 'utf8');
+  var jidRevise = journeyStore.createJourney(slugRevise, 'default').journeyId;
+  journeyStore.completeStage(jidRevise, 'discovery', artefactRelPath, null, 'old-live-sid-2');
+
+  var sidRevise = 'test-res-s2-t2-hook-revise-' + Math.random().toString(36).slice(2);
+  routes._setHtmlSession(sidRevise, {
+    skillName: 'discovery', sessionPath: '/tmp/t', systemPrompt: '# discovery', turns: [],
+    artefactContent: null, artefactPath: null, done: false, featureSlug: slugRevise, journeyId: jidRevise
+  });
+  await routes.handlePostTurnStreamHtml(
+    { session: { accessToken: 'tok', tenantId: 'org-a' }, params: { name: 'discovery', id: sidRevise }, body: { answer: 'revise it' } },
+    fakeRes()
+  );
+
+  ok('AC5: hook fires exactly once on a revision', hookCalls.length === 1);
+  ok('AC5: hook receives the correct pre-revision content', hookCalls[0] && hookCalls[0].preRevisionContent === '# Discovery\n\nPre-revision text.');
+  ok('AC5: hook receives the correct post-revision content', hookCalls[0] && hookCalls[0].postRevisionContent.indexOf('Revised content.') !== -1);
+  ok('AC5: hook receives journeyId and skillName', hookCalls[0] && hookCalls[0].journeyId === jidRevise && hookCalls[0].skillName === 'discovery');
+})();
+
+await (async function() {
+  // AC2: a downstream read of the artefact path after a revision returns
+  // the new content, not the pre-revision content — simulating what a
+  // /trace-style disk re-read or a later stage's session would see.
+  process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
+  var routes = freshRoutes();
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+
+  routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
+    onFirstChunk(0);
+    onChunk(ARTEFACT_RESPONSE);
+    return Promise.resolve({ text: ARTEFACT_RESPONSE, usage: {} });
+  });
+
+  var slug = 'res-s2-downstream-read-feature';
+  var artefactRelPath = 'artefacts/' + slug + '/discovery.md';
+  var artefactAbsPath = path.join(_tmpRepoRoot, artefactRelPath);
+  fs.mkdirSync(path.dirname(artefactAbsPath), { recursive: true });
+  fs.writeFileSync(artefactAbsPath, '# Discovery\n\nOld content nobody should see again.', 'utf8');
+  var jid = journeyStore.createJourney(slug, 'default').journeyId;
+  journeyStore.completeStage(jid, 'discovery', artefactRelPath, null, 'old-live-sid-3');
+
+  var sid = 'test-res-s2-t2-downstream-' + Math.random().toString(36).slice(2);
+  routes._setHtmlSession(sid, {
+    skillName: 'discovery', sessionPath: '/tmp/t', systemPrompt: '# discovery', turns: [],
+    artefactContent: null, artefactPath: null, done: false, featureSlug: slug, journeyId: jid
+  });
+  await routes.handlePostTurnStreamHtml(
+    { session: { accessToken: 'tok', tenantId: 'org-a' }, params: { name: 'discovery', id: sid }, body: { answer: 'revise it' } },
+    fakeRes()
+  );
+
+  // Simulate an immediate downstream read (no delay) — proves the write
+  // completed synchronously before this point, not fire-and-forget.
+  var downstreamRead = fs.readFileSync(artefactAbsPath, 'utf8');
+  ok('AC2: downstream read immediately after the turn returns the new content', downstreamRead.indexOf('Revised content.') !== -1);
+  ok('AC2: downstream read does not return the pre-revision content', downstreamRead.indexOf('Old content nobody should see again.') === -1);
+})();
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 fs.rmSync(_tmpRepoRoot, { recursive: true, force: true });
 delete process.env.COPILOT_REPO_PATH;
