@@ -369,6 +369,76 @@ await (async function() {
   ok('AC5: the two pairs produce two DIFFERENT classifications (not a stub that always returns the same value)', materialResult.classification !== minorResult.classification);
 })();
 
+console.log('\nTask 5 — fix AC1 client-render gap and ADR-023 disk-canonicity deviation');
+
+await (async function() {
+  // Fix 1 (AC1): the browser-side SSE dispatcher must have a branch that
+  // handles evt.materialitySuggestion — confirmed missing at final review.
+  var fsClient = require('fs');
+  var skillsSrc = fsClient.readFileSync(path.resolve(__dirname, '../src/web-ui/routes/skills.js'), 'utf8');
+  ok('AC1 fix: client-side SSE dispatcher has a materialitySuggestion branch', /evt\.materialitySuggestion/.test(skillsSrc));
+  // The branch must actually render via appendBubble (per the story's
+  // Accessibility NFR: "existing chat message rendering — no new UI component"),
+  // not just reference the field name in a comment.
+  var dispatcherMatch = skillsSrc.match(/if\(evt\.materialitySuggestion\)\s*\{([\s\S]*?)\}/);
+  ok('AC1 fix: the materialitySuggestion branch calls appendBubble', !!dispatcherMatch && /appendBubble/.test(dispatcherMatch[1]));
+})();
+
+await (async function() {
+  // Fix 2 (ADR-023): the hook call site must read post-revision content back
+  // from disk, not from session.artefactContent directly.
+  process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
+  var routes = freshRoutes();
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+
+  var hookPayloads = [];
+  routes.setMaterialityCheckHook(function(payload) {
+    hookPayloads.push(payload);
+    return Promise.resolve({ classification: 'material', rationale: 'Test rationale.', suggestionId: 'suggestion-t5-1' });
+  });
+
+  var _artefactResponseT5 =
+    'Understood.\n\n---ARTEFACT-START---\n' + PRE_FIXTURE.replace('No new versioning mechanism.', 'A new dated-copy mechanism is required.') + '\n---ARTEFACT-END---\n---SLUG---\nres-s3-t5-feature';
+  routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
+    onFirstChunk(0);
+    onChunk(_artefactResponseT5);
+    return Promise.resolve({ text: _artefactResponseT5, usage: {} });
+  });
+
+  var slug = 'res-s3-t5-diskread-feature';
+  var artefactRelPath = 'artefacts/' + slug + '/discovery.md';
+  var artefactAbsPath = path.join(_tmpRepoRoot, artefactRelPath);
+  fs.mkdirSync(path.dirname(artefactAbsPath), { recursive: true });
+  fs.writeFileSync(artefactAbsPath, PRE_FIXTURE, 'utf8');
+
+  var jid = journeyStore.createJourney(slug, 'default').journeyId;
+  journeyStore.completeStage(jid, 'discovery', artefactRelPath, null, 'old-live-sid');
+
+  var sid = 'test-res-s3-t5-' + Math.random().toString(36).slice(2);
+  routes._setHtmlSession(sid, {
+    skillName: 'discovery', sessionPath: '/tmp/t', systemPrompt: '# discovery', turns: [],
+    artefactContent: null, artefactPath: null, done: false, featureSlug: slug, journeyId: jid
+  });
+
+  var res = fakeRes();
+  await routes.handlePostTurnStreamHtml(
+    { session: { accessToken: 'tok', tenantId: 'org-a' }, params: { name: 'discovery', id: sid }, body: { answer: 'revise it' } },
+    res
+  );
+
+  // The disk file is the source of truth after the write — assert the hook
+  // received exactly that content (this doesn't distinguish disk-read from
+  // in-memory today since they coincide by construction, but combined with
+  // the source-text check below it proves the FIX, not just the outcome).
+  var diskContentAfter = fs.readFileSync(artefactAbsPath, 'utf8');
+  ok('ADR-023 fix: hook receives content matching what is now on disk', hookPayloads.length === 1 && hookPayloads[0].postRevisionContent === diskContentAfter);
+
+  var skillsSrcForDiskCheck = fs.readFileSync(path.resolve(__dirname, '../src/web-ui/routes/skills.js'), 'utf8');
+  var hookCallBlock = skillsSrcForDiskCheck.match(/_materialitySuggestion = await _materialityCheckHook\(\{[\s\S]*?\}\);/);
+  ok('ADR-023 fix: hook call site reads postRevisionContent from disk, not session.artefactContent', !!hookCallBlock && /readFileSync/.test(hookCallBlock[0]) && !/postRevisionContent:\s*session\.artefactContent/.test(hookCallBlock[0]));
+})();
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 fs.rmSync(_tmpRepoRoot, { recursive: true, force: true });
 process.exit(failed > 0 ? 1 : 0);

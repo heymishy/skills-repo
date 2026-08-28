@@ -3812,6 +3812,11 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
     '                  if(submitBtn) submitBtn.disabled = false;',
     '                }',
     '              }',
+    '              if(evt.materialitySuggestion) {',
+    '                var ms = evt.materialitySuggestion;',
+    '                var msLabel = ms.classification === "material" ? "Material change" : "Minor change";',
+    '                appendBubble("assistant", "<strong>" + escHtmlClient(msLabel) + ":</strong> " + escHtmlClient(ms.rationale || ""));',
+    '              }',
     '              if(evt.lensComplete) {',
     '                handleLensComplete();',
     '              }',
@@ -5095,11 +5100,15 @@ async function handlePostTurnStreamHtml(req, res) {
           // as an SSE event before the final `done` write (AC1) — the D37
           // default no-op hook returns undefined, so _materialitySuggestion
           // stays null and no event is emitted when unwired.
+          // res-s3 Task 5 (ADR-023 fix): read the post-revision content back
+          // from disk rather than trusting session.artefactContent directly —
+          // matches this same function's existing disk-canonicity pattern
+          // (see the strategy-metrics block above, _diskArtefactContentAuto).
           _materialitySuggestion = await _materialityCheckHook({
             journeyId: session.journeyId,
             skillName: session.skillName,
             preRevisionContent: _preRevisionContent,
-            postRevisionContent: session.artefactContent
+            postRevisionContent: _autoAbsPath ? fs.readFileSync(_autoAbsPath, 'utf8') : session.artefactContent
           });
         } catch (_matErr) {
           console.warn(JSON.stringify({ event: 'materiality_check_hook_failed', sessionId: sessionId, error: _matErr.message }));
