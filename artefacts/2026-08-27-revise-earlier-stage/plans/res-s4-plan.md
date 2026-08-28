@@ -937,7 +937,7 @@ Expected output: `25 passed, 0 failed` (adjusted +1 for Task 2's post-review cou
 npm test
 ```
 
-Expected output: all tests passing (same 1 pre-existing flake). This is the SECOND res-s4 task to touch `handleGetJourneyStageReopen` after Task 3, and res-s1's own test file (`tests/check-res-s1-reopen-completed-stage-live-session.js`) directly exercises this same handler — re-confirm all 19 of its tests still pass, not just this story's own.
+Expected output: all tests passing (same 1 pre-existing flake). This is Task 4's own first (and only) touch to `handleGetJourneyStageReopen` — Task 3 touched a different pair of functions (`handleGetStageReview`/`handleGetJourneyStageView`), not this one. This handler was originally built by a sibling story, res-s1, whose own test file (`tests/check-res-s1-reopen-completed-stage-live-session.js`) directly exercises it — re-confirm all 19 of its tests still pass, not just this story's own.
 
 - [ ] **Step 6: Commit**
 
