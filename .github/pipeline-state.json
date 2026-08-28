@@ -27710,16 +27710,16 @@
           "category": "nfr",
           "label": "Resolved artefact write path must be validated (path.resolve + startsWith(repoRoot)) before writing",
           "status": "met",
-          "evidence": "res-s2 NFR profile row; verified by NFR test pathTraversalGuardBlocksResolvedPathOutsideRepoRoot",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-08-27T19:51:30.218Z"
+          "evidence": "Verified post-merge: 4 traversal tests passing in merged PR #780 CI (Lint, typecheck, test, build: SUCCESS), including the mutation-tested fs.mkdtempSync-based escape-target rewrite.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-28T04:59:56.381Z"
         },
         {
           "id": "NFR-audit-logging-reopen-flow",
           "category": "nfr",
           "label": "Stage reopen, artefact overwrite, materiality suggestion, and flag set/cleared are each logged with journeyId, stage name, timestamp",
           "status": "met",
-          "evidence": "Verified post-merge: stageReopenFiresAuditEvent test passing in merged PR #779 CI.",
+          "evidence": "Verified post-merge: stageReopenFiresAuditEvent test passing in merged PR #779 CI. SCOPE NOTE (res-s2 DoD, 2026-08-28): this guardrail bundles 4 sub-flows (reopen, overwrite, materiality suggestion, flag set/cleared) under one id, but only the reopen sub-flow (res-s1) has a dedicated test. res-s2 (artefact overwrite) fires the pre-existing artefact_auto_amended/artefact_auto_saved log with sessionId+artefactPath only -- no discrete journeyId or timestamp field, and no dedicated test. Status left met because the reopen evidence above remains accurate; overwrite-sub-flow gap recorded as a deviation and follow-up action in dod/res-s2-dod.md, not silently folded into this met claim.",
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-08-28T02:05:42.530Z"
         }
@@ -27783,14 +27783,14 @@
           "id": "res-s2",
           "slug": "res-s2-overwrite-artefact-in-place-on-revision",
           "name": "Overwrite a reopened stage's artefact in place on revision",
-          "stage": "branch-complete",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "artefact": "artefacts/2026-08-27-revise-earlier-stage/stories/res-s2-overwrite-artefact-in-place-on-revision.md",
           "dorStatus": "signed-off",
-          "dodStatus": "not-started",
-          "prStatus": "draft",
+          "dodStatus": "complete",
+          "prStatus": "merged",
           "notes": "Epic 1: Reopen and revise an earlier completed stage (see epics/reopen-and-revise-earlier-stage.md for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-28T04:16:07.561Z",
+          "updatedAt": "2026-08-28T04:59:56.381Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-27-revise-earlier-stage/review/res-s2-review-2.md",
@@ -27822,7 +27822,10 @@
             }
           ],
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/780"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/780",
+          "releaseReady": false,
+          "blocker": "DoD deviation: audit-logging NFR (artefact-overwrite sub-flow) has no dedicated test and the log event omits journeyId/explicit timestamp fields -- non-blocking, follow-up actions logged in dod/res-s2-dod.md.",
+          "dodArtefact": "artefacts/2026-08-27-revise-earlier-stage/dod/res-s2-dod.md"
         },
         {
           "id": "res-s3",
