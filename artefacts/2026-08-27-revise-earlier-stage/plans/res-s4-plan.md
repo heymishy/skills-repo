@@ -44,7 +44,7 @@ Modify:
 
 **Model class:** balanced
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/check-res-s4-operator-acts-on-materiality-suggestion.js`:
 
@@ -185,7 +185,7 @@ process.exit(failed > 0 ? 1 : 0);
 })();
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-res-s4-operator-acts-on-materiality-suggestion.js
@@ -193,7 +193,7 @@ node tests/check-res-s4-operator-acts-on-materiality-suggestion.js
 
 Expected output: `TypeError: journeyStore.getDownstreamStages is not a function` (and the `flaggedStages` assertions would also fail once that's fixed, since `_sanitise()` doesn't include the field yet)
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `src/web-ui/modules/journey-store.js`, find `createJourney`'s object literal (search for `sessions:       {}`):
 
@@ -261,7 +261,7 @@ Add `flaggedStages` to the same allowlist:
   };
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-res-s4-operator-acts-on-materiality-suggestion.js
@@ -269,7 +269,7 @@ node tests/check-res-s4-operator-acts-on-materiality-suggestion.js
 
 Expected output: `6 passed, 0 failed`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -277,7 +277,7 @@ npm test
 
 Expected output: all tests passing (baseline was 564 files, 1 pre-existing flake — `tests/check-p3.5-validate-trace.js`, already RISK-ACCEPTed at branch-setup, fourth occurrence in this feature)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/modules/journey-store.js src/web-ui/adapters/journey-store-pg.js tests/check-res-s4-operator-acts-on-materiality-suggestion.js
