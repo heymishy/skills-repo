@@ -39,7 +39,7 @@ See `res-s3-dor-contract.md`.
 | H-NFR3 | Data classification not blank | ✅ | Internal |
 | H-NFR-profile | NFR profile presence | ✅ | Profile exists |
 | H-GOV | Governance approval check | ✅ | Same discovery artefact — passes |
-| H-ADAPTER | Injectable adapter wiring | ✅ | No new adapter introduced |
+| H-ADAPTER | Injectable adapter wiring | ⚠️→✅ | **CORRECTED 2026-08-28:** originally read "No new adapter introduced" — incorrect. res-s2's `_materialityCheckHook`/`setMaterialityCheckHook` D37 adapter was introduced specifically for this story to wire. Corrected at implementation-plan investigation; AC5 added to the story to cover the mandatory wiring requirement (D37 rule #2). See decisions.md's 2026-08-28 ARCH entry (res-s3). |
 | H-INF | Infra-plan gate | ✅ | Not applicable |
 | H-MIG | Migration-review gate | ✅ | Not applicable |
 

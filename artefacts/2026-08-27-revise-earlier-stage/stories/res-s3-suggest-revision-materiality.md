@@ -36,6 +36,8 @@ So that **I can decide whether downstream stages need attention without manually
 
 **AC4:** Given the materiality suggestion is presented, When the operator's session log is inspected, Then the model's suggested classification is recorded (paired with the operator's later choice from res-s4) — satisfying the benefit-metric's measurement method.
 
+**AC5 (added 2026-08-28, implementation-plan investigation — D37 adapter rule, CLAUDE.md):** Given res-s2 introduced the `_materialityCheckHook`/`setMaterialityCheckHook` D37 adapter in `src/web-ui/routes/skills.js` specifically for this story to wire, When this story's implementation is complete, Then `setMaterialityCheckHook` is wired to this story's real materiality-check implementation in `server.js`, and the wiring is verified by a test asserting behavioural correctness — two different pre/post-revision content pairs resolve to two different, individually-correct classifications, not just that a function reference was assigned (CLAUDE.md D37 rule #4). This AC was missing from the original story and DoR sign-off; the DoR's H-ADAPTER check incorrectly read "No new adapter introduced" when res-s2's hook is exactly such an adapter. See `decisions.md`'s 2026-08-28 ARCH entry.
+
 ## Out of Scope
 
 - Acting on the suggestion (accepting, overriding) — that's res-s4.

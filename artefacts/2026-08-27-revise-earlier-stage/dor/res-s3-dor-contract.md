@@ -36,9 +36,15 @@ Immediately after res-s2's overwrite completes and hands forward the pre-revisio
 
 ## Estimated touch points
 
-Files: `src/web-ui/routes/journey.js` (chat-turn handler, extended)
-Services: model/LLM call for rationale generation only (not classification)
+**CORRECTED 2026-08-28 (implementation-plan investigation, same class of defect as res-s2's DoR contract — see decisions.md ARCH entry):** the original text below named `journey.js` as the chat-turn handler. Direct code investigation found the actual integration point res-s2 built for this story is `src/web-ui/routes/skills.js`'s `handlePostTurnStreamHtml` — specifically the `_materialityCheckHook`/`setMaterialityCheckHook` D37 adapter (lines ~1460–1467, hook call site ~5089–5102), which currently defaults to a no-op and is called but never awaited (a gap this story must also close — see decisions.md).
+
+Files: `src/web-ui/routes/skills.js` (hook call site: await the hook's return value, forward as an SSE event before the final `done` write — currently fire-and-forget), `src/web-ui/modules/materiality-check.js` (new — deterministic classifier, rationale generation, PostHog audit logging), `src/web-ui/server.js` (D37 wiring task: `setMaterialityCheckHook` → the new module's real implementation)
+Services: `_skillTurnExecutor` (reused D37 adapter, already wired for both production and test — NOT a new model-call mechanism) for rationale generation only (not classification); PostHog `_posthog.capture` (reused, same mechanism as res-s1's `earlier_stage_reopened` event) for AC4's audit log
 APIs: none new
+
+~~Files: `src/web-ui/routes/journey.js` (chat-turn handler, extended)~~
+~~Services: model/LLM call for rationale generation only (not classification)~~
+~~APIs: none new~~
 
 ## Schema dependency (H8-ext)
 

@@ -67,6 +67,15 @@
 ---
 
 ---
+**2026-08-28 | ARCH | implementation-plan (res-s3)**
+**Decision:** Correct res-s3's signed-off DoR contract (`dor/res-s3-dor-contract.md`) before writing its implementation plan — the "Estimated touch points" section named `src/web-ui/routes/journey.js` as the chat-turn handler file, the same authoring defect already found and fixed on res-s2's contract. Direct code investigation found the real integration point is `src/web-ui/routes/skills.js`'s `_materialityCheckHook`/`setMaterialityCheckHook` D37 adapter (introduced by res-s2 specifically for this story). A second, more significant defect was also found: the hook's existing call site (`skills.js` ~line 5089-5102) is fire-and-forget — `try { _materialityCheckHook({...}); } catch (_) {...}`, never awaited, its return value discarded — so even a correct materiality-check implementation could not actually reach the operator's chat response as AC1 requires ("presented ... in the same chat turn's response"). This story must also change the call site to await the hook and forward its result as an additional SSE event before the final `done` write. A third gap: the story had no AC covering the mandatory D37 wiring of `setMaterialityCheckHook` in `server.js`, and the DoR's H-ADAPTER check incorrectly read "No new adapter introduced" — added as AC5 to the story artefact (see story's own 2026-08-28 note).
+**Alternatives considered:** (1) Write the implementation plan against the original (incorrect) contract, as before. (2) Silently fix the hook call site and adapter wiring without adding an explicit AC or logging the H-ADAPTER discrepancy.
+**Rationale:** Same ADR-008 rationale as the res-s2 correction — the contract is the authoring defect to be corrected before planning, not bypassed. This is now the third occurrence of the "wrong file named in Estimated touch points" pattern across this feature's stories (res-s1's implementation plan required no contract correction; res-s2 and now res-s3 both did) — per the res-s2 entry's own revisit trigger, this confirms `/definition-of-ready`'s Contract Proposal step needs a stronger verification step (e.g. grep-confirm the named file actually contains the referenced function before sign-off) rather than accepting the proposal's stated touch points on faith. Flagging as a genuine `/improve` candidate now that the pattern has recurred a third time, not just a second.
+**Made by:** Claude (agent), continuing the operator's "yes please" instruction to proceed with /implementation-plan
+**Revisit trigger:** Raise this at the next `/improve` run regardless of whether it recurs a fourth time — three occurrences across three consecutive stories in one feature is sufficient signal on its own.
+---
+
+---
 
 ## Architecture Decision Records
 
