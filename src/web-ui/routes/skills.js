@@ -5108,7 +5108,7 @@ async function handlePostTurnStreamHtml(req, res) {
             journeyId: session.journeyId,
             skillName: session.skillName,
             preRevisionContent: _preRevisionContent,
-            postRevisionContent: _autoAbsPath ? fs.readFileSync(_autoAbsPath, 'utf8') : session.artefactContent
+            postRevisionContent: fs.readFileSync(_autoAbsPath, 'utf8')
           });
         } catch (_matErr) {
           console.warn(JSON.stringify({ event: 'materiality_check_hook_failed', sessionId: sessionId, error: _matErr.message }));

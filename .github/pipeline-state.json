@@ -27832,20 +27832,20 @@
           "slug": "res-s3-suggest-revision-materiality",
           "name": "Suggest whether a stage revision is material to downstream stages",
           "stage": "subagent-execution",
-          "health": "amber",
+          "health": "green",
           "artefact": "artefacts/2026-08-27-revise-earlier-stage/stories/res-s3-suggest-revision-materiality.md",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
           "prStatus": "none",
           "notes": "Epic 2: Materiality-aware downstream guidance (see epics/materiality-aware-downstream-guidance.md for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-28T07:55:53.984Z",
+          "updatedAt": "2026-08-28T08:15:29.349Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-27-revise-earlier-stage/review/res-s3-review-2.md",
           "testPlan": {
             "status": "written",
             "totalTests": 34,
-            "passing": 30,
+            "passing": 34,
             "artefact": "artefacts/2026-08-27-revise-earlier-stage/test-plans/res-s3-test-plan.md"
           },
           "acTotal": 5,
@@ -27883,11 +27883,10 @@
             {
               "id": "task-5",
               "name": "Fix AC1 client-render gap and ADR-023 disk-canonicity deviation (final review finding)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-27-revise-earlier-stage/plans/res-s3-plan.md"
             }
-          ],
-          "blocker": "Final cross-task review found AC1 not actually satisfied end-to-end (SSE event emitted server-side, no client-side consumer) and an ADR-023 disk-canonicity deviation. Task 5 added to fix both before /verify-completion."
+          ]
         },
         {
           "id": "res-s4",

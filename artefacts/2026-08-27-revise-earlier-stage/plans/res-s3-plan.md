@@ -817,7 +817,7 @@ git commit -m "feat(res-s3): wire setMaterialityCheckHook to the real materialit
 
 **Model class:** balanced
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/check-res-s3-suggest-revision-materiality.js`:
 
@@ -893,7 +893,7 @@ await (async function() {
 })();
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-res-s3-suggest-revision-materiality.js
@@ -901,7 +901,7 @@ node tests/check-res-s3-suggest-revision-materiality.js
 
 Expected output: `FAIL: AC1 fix: client-side SSE dispatcher has a materialitySuggestion branch` and `FAIL: ADR-023 fix: hook call site reads postRevisionContent from disk, not session.artefactContent`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 **Fix 1 (client-side render):** in `src/web-ui/routes/skills.js`, find the inlined client-script string array's `evt.lensComplete` branch (search for `'              if(evt.lensComplete) {',`):
 
@@ -951,7 +951,7 @@ Replace with (read the post-revision content back from disk, matching the establ
           });
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-res-s3-suggest-revision-materiality.js
@@ -959,7 +959,7 @@ node tests/check-res-s3-suggest-revision-materiality.js
 
 Expected output: `34 passed, 0 failed`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -967,7 +967,7 @@ npm test
 
 Expected output: all tests passing, including res-s1's 19/19 and res-s2's 19/19 (this task touches the same shared function again — must not regress either)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/skills.js tests/check-res-s3-suggest-revision-materiality.js
