@@ -369,6 +369,67 @@ await (async function() {
     !!definitionLi && !/sn-step--flagged/.test(definitionLi) && !/May need review/.test(definitionLi));
 })();
 
+console.log('\nTask 4 — flag clears on reopen (AC4)');
+
+await (async function() {
+  // Fresh-session-creation path: no live session exists yet.
+  var journeyRoute = freshJourneyRoutes();
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+  journeyRoute.setJourneyStoreModule(journeyStore);
+  journeyRoute.setRepoRoot(_tmpRepoRoot);
+  journeyRoute.setRegisterHtmlSession(function() {});
+  journeyRoute.setLinkSessionToJourney(function() {});
+  journeyRoute.setGetHtmlSession(function() { return null; });
+
+  var slug = 'res-s4-t4-fresh-feature';
+  var artefactRelPath = 'artefacts/' + slug + '/discovery.md';
+  var artefactAbsPath = path.join(_tmpRepoRoot, artefactRelPath);
+  fs.mkdirSync(path.dirname(artefactAbsPath), { recursive: true });
+  fs.writeFileSync(artefactAbsPath, '# Discovery', 'utf8');
+
+  var journey = journeyStore.createJourney(slug, 'default');
+  var jid = journey.journeyId;
+  journeyStore.completeStage(jid, 'discovery', artefactRelPath, null, 'old-sid');
+  journeyStore.setJourneyFields(jid, { flaggedStages: ['discovery', 'benefit-metric'] });
+
+  var res = fakeRes();
+  await journeyRoute.handleGetJourneyStageReopen(
+    fakeReq({ accessToken: 'tok' }, { journeyId: jid, skillName: 'discovery' }),
+    res
+  );
+
+  var journeyAfter = journeyStore.getJourney(jid);
+  ok('AC4: reopening a flagged stage (fresh-session path) clears its own flag', journeyAfter.flaggedStages.indexOf('discovery') === -1);
+  ok('AC4 negative control: an UNRELATED flagged stage remains flagged', journeyAfter.flaggedStages.indexOf('benefit-metric') !== -1);
+})();
+
+await (async function() {
+  // Early-return path: a live session ALREADY exists for the flagged stage.
+  var journeyRoute = freshJourneyRoutes();
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+  journeyRoute.setJourneyStoreModule(journeyStore);
+  journeyRoute.setRepoRoot(_tmpRepoRoot);
+  journeyRoute.setGetHtmlSession(function(sid) { return sid === 'live-sid' ? { skillName: 'discovery' } : null; });
+
+  var slug = 'res-s4-t4-existing-feature';
+  var journey = journeyStore.createJourney(slug, 'default');
+  var jid = journey.journeyId;
+  journeyStore.completeStage(jid, 'discovery', 'artefacts/' + slug + '/discovery.md', null, 'live-sid');
+  journeyStore.setJourneyFields(jid, { flaggedStages: ['discovery'] });
+
+  var res = fakeRes();
+  await journeyRoute.handleGetJourneyStageReopen(
+    fakeReq({ accessToken: 'tok' }, { journeyId: jid, skillName: 'discovery' }),
+    res
+  );
+
+  ok('AC4: the early-return (existing live session) path also redirects correctly', res._status === 303);
+  var journeyAfter = journeyStore.getJourney(jid);
+  ok('AC4: the flag clears on the early-return path too, not only the fresh-session path', journeyAfter.flaggedStages.indexOf('discovery') === -1);
+})();
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 fs.rmSync(_tmpRepoRoot, { recursive: true, force: true });
 process.exit(failed > 0 ? 1 : 0);

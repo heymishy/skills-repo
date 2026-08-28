@@ -1669,6 +1669,19 @@ async function handleGetJourneyStageReopen(req, res) {
     return;
   }
 
+  // res-s4 (AC4): clear this stage's own flag on reopen, if it was flagged --
+  // placed BEFORE the early-return check below so it fires whether or not a
+  // live session already exists (both are genuine "reopen" outcomes per
+  // res-s1's own AC1). An unrelated flagged stage is untouched.
+  if ((journey.flaggedStages || []).indexOf(skillName) !== -1) {
+    var _clearedFlags = journey.flaggedStages.filter(function(s) { return s !== skillName; });
+    _journeyStore.setJourneyFields(journeyId, { flaggedStages: _clearedFlags });
+    journey.flaggedStages = _clearedFlags;
+    _posthog.capture(req.session.login || journey.ownerId || journeyId, 'materiality_flag_cleared', {
+      journeyId: journeyId, stageName: skillName, timestamp: new Date().toISOString()
+    }, { company: req.session.tenantId || journey.tenantId });
+  }
+
   // AC1 safety-net re-check: session may already exist despite the step-nav
   // link having pointed here (a concurrent tab, or a race with the render).
   if (stageEntry.sessionId) {
