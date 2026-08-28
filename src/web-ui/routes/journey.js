@@ -900,8 +900,20 @@ async function handleGetJourneyStageView(req, res, pool) {
     var inner = '<span class="sn-num">' + escHtml(String(s.num)) + '</span>' +
       '<span class="sn-label">' + escHtml(s.label) + '</span>' +
       '<span class="sn-icon" aria-hidden="true">' + icon + '</span>';
-    if (isDone && !isViewing) {
-      return '<li class="sn-step ' + cls + '"><a href="/journey/' + safeJourneyId + '/stage/' + encodeURIComponent(s.id) + '" class="sn-step-link">' + inner + '</a></li>';
+    if (isDone) {
+      // res-s1: link directly to a live session when one exists for this
+      // specific completed stage (any stage, not just the active one, and
+      // including the stage currently being statically viewed here -- so
+      // that stage's own step-nav item offers a way into the live
+      // conversation too, not just other stages' entries); otherwise link
+      // to the reopen route, which creates a fresh session with this
+      // stage's own artefact injected as priorArtefacts.
+      var _doneStageEntry = (journey.completedStages || []).find(function(cs) { return cs.skillName === s.id; });
+      var _doneStageSession = _doneStageEntry && _doneStageEntry.sessionId ? getGetHtmlSession()(_doneStageEntry.sessionId) : null;
+      var _doneStageHref = _doneStageSession
+        ? '/skills/' + encodeURIComponent(_doneStageSession.skillName || s.id) + '/sessions/' + encodeURIComponent(_doneStageEntry.sessionId) + '/chat'
+        : '/journey/' + safeJourneyId + '/stage/' + encodeURIComponent(s.id) + '/reopen';
+      return '<li class="sn-step ' + cls + '"><a href="' + _doneStageHref + '" class="sn-step-link">' + inner + '</a></li>';
     }
     if (isActive) {
       // aslr-s1 / adsr-s1: if the active session still exists in memory
@@ -1610,6 +1622,85 @@ async function handleGetJourneyResume(req, res) {
   try { _journeyDisk.updateStage(featureSlug, currentStage, { status: 'active', sessionId: sid }, repoRoot); } catch (_) {}
 
   res.writeHead(303, { Location: '/skills/' + encodeURIComponent(currentStage) + '/sessions/' + sid + '/chat' + _resumeFromSuffix });
+  res.end();
+}
+
+/**
+ * GET /journey/:journeyId/stage/:skillName/reopen
+ * res-s1 (AC1/AC2/AC3) — resolve or create a live, resumable session for a
+ * specific completed stage (not necessarily the journey's active stage),
+ * then redirect to its chat URL. Mirrors handleGetJourneyResume's shape but
+ * is scoped to one named stage instead of "the active stage". Re-checks for
+ * an existing session as a safety net (the step-nav's own render-time check
+ * could race a concurrent tab or a second click) before creating a new one.
+ */
+async function handleGetJourneyStageReopen(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var skillName = req.params && req.params.skillName;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<div class="sw-page-content"><p>Journey not found.</p><a href="/journey">Back to journeys</a></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<p>Not found.</p>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  var stageEntry = (journey.completedStages || []).find(function(cs) { return cs.skillName === skillName; });
+  if (!stageEntry) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<div class="sw-page-content"><p>Stage not completed yet.</p></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  // AC1 safety-net re-check: session may already exist despite the step-nav
+  // link having pointed here (a concurrent tab, or a race with the render).
+  if (stageEntry.sessionId) {
+    var existingSession = getGetHtmlSession()(stageEntry.sessionId);
+    if (existingSession) {
+      res.writeHead(303, { Location: '/skills/' + encodeURIComponent(existingSession.skillName || skillName) + '/sessions/' + encodeURIComponent(stageEntry.sessionId) + '/chat' });
+      res.end();
+      return;
+    }
+  }
+
+  // AC2: no live session — create a fresh one, injecting this stage's own
+  // artefact content as priorArtefacts (ADR-023: read fresh from disk).
+  var repoRoot = getRepoRoot(req);
+  var priorArtefacts = [];
+  if (stageEntry.artefactPath) {
+    var absPath = path.resolve(path.join(repoRoot, stageEntry.artefactPath));
+    try {
+      var content = fs.readFileSync(absPath, 'utf8');
+      priorArtefacts.push({ path: stageEntry.artefactPath, content: content });
+    } catch (_) {}
+  }
+
+  var sid = crypto.randomUUID();
+  var sessionPath = path.join(repoRoot, 'artefacts', journey.featureSlug, 'sessions', sid);
+  getRegisterHtmlSession()(sid, sessionPath, skillName, { productProfile: journey.productProfile || 'default', priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug });
+  getLinkSessionToJourney()(sid, journeyId);
+
+  // AC3: point this stage's completedStages entry at the new session so a
+  // future reopen uses the cheap existing-session path (AC1) instead.
+  _journeyStore.updateCompletedStageSessionId(journeyId, skillName, sid);
+
+  _posthog.capture(req.session.login || journey.ownerId || journeyId, 'earlier_stage_reopened', {
+    skillName:   skillName,
+    featureSlug: journey.featureSlug,
+    journeyId:   journeyId
+  }, { company: req.session.tenantId || journey.tenantId });
+
+  res.writeHead(303, { Location: '/skills/' + encodeURIComponent(skillName) + '/sessions/' + sid + '/chat' });
   res.end();
 }
 
@@ -4269,6 +4360,7 @@ module.exports = {
   setNow,
   // wsm.3 — stage back-navigation and needs-review
   handleGetJourneyStageView,
+  handleGetJourneyStageReopen,
   handlePostJourneyStageArtefact,
   handleGetJourneyStage,
   handlePostJourneyRecommit,

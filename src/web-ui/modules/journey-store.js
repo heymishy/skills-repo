@@ -235,6 +235,29 @@ function completeStage(journeyId, skillName, artefactPath, usageSummary, session
 }
 
 /**
+ * res-s1 (AC3) — update a specific completedStages entry's sessionId after
+ * a reopen creates a fresh session for it. Only sessionId changes; the
+ * entry's skillName, artefactPath, and completedAt are left untouched, so
+ * a later reopen of the same stage can use the cheap existing-session path
+ * instead of creating another fresh session every time.
+ * @param {string} journeyId
+ * @param {string} skillName
+ * @param {string} sessionId
+ */
+function updateCompletedStageSessionId(journeyId, skillName, sessionId) {
+  var journey = _journeys.get(journeyId);
+  if (!journey) return;
+  var entry = (journey.completedStages || []).find(function(cs) { return cs.skillName === skillName; });
+  if (!entry) return;
+  entry.sessionId = sessionId;
+  journey.sessions[sessionId] = skillName;
+  if (_diskAdapter) {
+    try { _diskAdapter.updateStage(journey.featureSlug, skillName, { sessionId: sessionId }); } catch (_) {}
+  }
+  _pgWrite(journey);
+}
+
+/**
  * Get the next stage after the given stage name.
  * @param {string} currentStage
  * @returns {string|null}
@@ -435,6 +458,7 @@ module.exports = {
   getArtefactsForJourney,
   deleteJourney,
   completeStage,
+  updateCompletedStageSessionId,
   getNextStage,
   getJourneyStories,
   advanceToNextStory,
