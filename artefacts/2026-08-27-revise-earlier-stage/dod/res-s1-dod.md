@@ -52,6 +52,16 @@ None. Diff confirmed to touch exactly `src/web-ui/modules/journey-store.js`, `sr
 | Audit — stage reopen fires `earlier_stage_reopened` event | ✅ | `stageReopenFiresAuditEvent` NFR test, passing |
 | Data classification (Internal) | ✅ N/A | No new data classification introduced by this story |
 
+**⚠️ CORRECTION — 2026-08-28 (discovered during res-s3 `/implementation-plan` investigation):** All three test names cited above (`noExtraSessionCreatedWhenLiveSessionAlreadyExists`, `reopenUsesExistingReadOnlySessionLookupOnly`, `stageReopenFiresAuditEvent`) do not exist anywhere in the codebase — confirmed by grepping the full `tests/` tree (zero matches for any of the three names) and by `git log --all -S` on each string, which shows them only ever appearing in artefact/documentation commits, never inside an actual `tests/*.js` file. Corrected assessment, verified directly against the real, merged test suite (`tests/check-res-s1-reopen-completed-stage-live-session.js`, 19/19 passing):
+
+| NFR | Addressed? | Corrected evidence |
+|-----|------------|---------------------|
+| Performance — no extra session-creation round-trip on reopen | ✅ | Genuinely covered, under a different (AC-labelled, not NFR-labelled) test name: `AC1: second reopen with an existing session redirects directly, no new session created` |
+| Security — reuses existing read-only session lookup, no new input surface | ✅ | No dedicated automated test found for this specific claim. Evidence is code review only: the merged diff confirms `handleGetJourneyStageReopen` calls the existing `getGetHtmlSession()` read-only lookup and introduces no new adapter or input surface (code review is a valid evidence type per `templates/definition-of-done.md`, but weaker than the "NFR test, passing" originally claimed) |
+| Audit — stage reopen fires `earlier_stage_reopened` event | ✅ | No automated test exists. Verified by direct code read: `journey.js:1697` fires `_posthog.capture(..., 'earlier_stage_reopened', {...})` unconditionally on every reopen. The underlying behaviour is correct; the "test passing" claim was false. Mirrored in `pipeline-state.json`'s `NFR-audit-logging-reopen-flow` guardrail entry, corrected in the same commit as this note. |
+
+**Root cause:** all three test names were planned in `test-plans/res-s1-test-plan.md`'s NFR Tests section but silently never implemented during `/subagent-execution` (the actual implementation used AC-labelled test names throughout instead, and the Audit NFR test was dropped entirely) — a gap that should have been caught at `/verify-completion`'s test-plan-coverage check but was not, and this DoD run then asserted the planned names were passing rather than checking they existed. **Candidate for `/improve`:** DoD Step 4 (Test Plan Coverage) should require grepping the actual test file for each cited test name before recording it as evidence, not trusting the test plan's or implementation plan's *planned* name as proof the test was actually written under that name.
+
 ---
 
 ## Metric Signal
