@@ -41,7 +41,7 @@ Modify:
 
 **Model class:** balanced (pure deterministic logic, no integration surface)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `tests/check-res-s3-suggest-revision-materiality.js` with this header and Task 1's tests:
 
@@ -160,7 +160,7 @@ process.exit(failed > 0 ? 1 : 0);
 })();
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-res-s3-suggest-revision-materiality.js
@@ -168,7 +168,7 @@ node tests/check-res-s3-suggest-revision-materiality.js
 
 Expected output: `Error: Cannot find module '.../src/web-ui/modules/materiality-check.js'`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 Create `src/web-ui/modules/materiality-check.js`:
 
@@ -253,7 +253,7 @@ function generateRationale(classification, changedSections) {
 module.exports = { checkMateriality, generateRationale, TARGET_SECTIONS };
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-res-s3-suggest-revision-materiality.js
@@ -261,7 +261,7 @@ node tests/check-res-s3-suggest-revision-materiality.js
 
 Expected output: `7 passed, 0 failed`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -269,7 +269,7 @@ npm test
 
 Expected output: all tests passing (baseline was 563 files, 1 pre-existing flake — `tests/check-p3.5-validate-trace.js`, RISK-ACCEPTed at branch-setup)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/modules/materiality-check.js tests/check-res-s3-suggest-revision-materiality.js
@@ -430,7 +430,7 @@ module.exports = { checkMateriality, generateRationale, runMaterialityCheck, TAR
 node tests/check-res-s3-suggest-revision-materiality.js
 ```
 
-Expected output: `16 passed, 0 failed`
+Expected output: `18 passed, 0 failed` (Task 1 ended at 9, not the originally-planned 7 — a code-quality review after Task 1 added 2 exclusivity assertions; see commit `0c7a5359`. Task 2 itself still adds exactly 9 new assertions.)
 
 - [ ] **Step 5: Run full suite — no regressions**
 
@@ -682,7 +682,7 @@ Then, in the same function, immediately before the final SSE write (`res.write('
 node tests/check-res-s3-suggest-revision-materiality.js
 ```
 
-Expected output: `24 passed, 0 failed`
+Expected output: `26 passed, 0 failed` (adjusted +2 for Task 1's post-review count — see Task 2's Step 4 note above)
 
 - [ ] **Step 5: Run full suite — no regressions**
 
@@ -785,7 +785,7 @@ Add:
 node tests/check-res-s3-suggest-revision-materiality.js
 ```
 
-Expected output: `28 passed, 0 failed`
+Expected output: `30 passed, 0 failed` (adjusted +2 for Task 1's post-review count — see Task 2's Step 4 note above)
 
 - [ ] **Step 5: Run full suite — no regressions**
 
