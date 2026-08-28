@@ -27783,12 +27783,12 @@
           "id": "res-s2",
           "slug": "res-s2-overwrite-artefact-in-place-on-revision",
           "name": "Overwrite a reopened stage's artefact in place on revision",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "artefact": "artefacts/2026-08-27-revise-earlier-stage/stories/res-s2-overwrite-artefact-in-place-on-revision.md",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "none",
+          "prStatus": "draft",
           "notes": "Epic 1: Reopen and revise an earlier completed stage (see epics/reopen-and-revise-earlier-stage.md for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
           "updatedAt": "2026-08-28T04:16:07.561Z",
           "reviewStatus": "passed",
@@ -27821,7 +27821,8 @@
               "file": "artefacts/2026-08-27-revise-earlier-stage/plans/res-s2-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/780"
         },
         {
           "id": "res-s3",
@@ -27976,5 +27977,6 @@
     ],
     "lastUpdated": "2026-08-26"
   },
-  "updatedAt": "2026-08-22T22:18:24.526Z"
+  "updatedAt": "2026-08-22T22:18:24.526Z",
+  "lastUpdated": "2026-08-28T04:20:32.794Z"
 }
