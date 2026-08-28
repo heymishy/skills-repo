@@ -27783,30 +27783,46 @@
           "id": "res-s2",
           "slug": "res-s2-overwrite-artefact-in-place-on-revision",
           "name": "Overwrite a reopened stage's artefact in place on revision",
-          "stage": "branch-setup",
+          "stage": "branch-complete",
           "health": "green",
           "artefact": "artefacts/2026-08-27-revise-earlier-stage/stories/res-s2-overwrite-artefact-in-place-on-revision.md",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "none",
+          "prStatus": "draft",
           "notes": "Epic 1: Reopen and revise an earlier completed stage (see epics/reopen-and-revise-earlier-stage.md for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-28T02:56:13.847Z",
+          "updatedAt": "2026-08-28T04:16:07.561Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-27-revise-earlier-stage/review/res-s2-review-2.md",
           "testPlan": {
             "status": "written",
-            "totalTests": 10,
-            "passing": 0,
+            "totalTests": 19,
+            "passing": 19,
             "artefact": "artefacts/2026-08-27-revise-earlier-stage/test-plans/res-s2-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-08-27-revise-earlier-stage/dor/res-s2-dor.md",
           "dorContractArtefact": "artefacts/2026-08-27-revise-earlier-stage/dor/res-s2-dor-contract.md",
-          "dorSignedOffAt": "2026-08-27T19:49:41.432Z"
+          "dorSignedOffAt": "2026-08-27T19:49:41.432Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Path traversal guard, write-failure surfacing, pre-revision capture",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-27-revise-earlier-stage/plans/res-s2-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Duplicate-completion guard and materiality-check hook",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-27-revise-earlier-stage/plans/res-s2-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/780"
         },
         {
           "id": "res-s3",
@@ -27961,5 +27977,6 @@
     ],
     "lastUpdated": "2026-08-26"
   },
-  "updatedAt": "2026-08-22T22:18:24.526Z"
+  "updatedAt": "2026-08-22T22:18:24.526Z",
+  "lastUpdated": "2026-08-28T04:28:36.652Z"
 }

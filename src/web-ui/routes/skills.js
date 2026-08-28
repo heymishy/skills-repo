@@ -1452,6 +1452,20 @@ let _skillTurnGitCommit = function defaultSkillTurnGitCommit(artefactPath, commi
  */
 function setSkillTurnGitCommitAdapter(fn) { _skillTurnGitCommit = fn; }
 
+// res-s2: D37 exception (documented) — injectable hook for res-s3's
+// materiality check. Default is a no-op, not a throwing stub, because
+// res-s3 hasn't been built yet and this hook's whole purpose is to be
+// safely inert until something wires into it — matches the
+// _skillTurnGitCommit precedent immediately above for the same reasoning.
+let _materialityCheckHook = function defaultMaterialityCheckHook() {};
+
+/**
+ * Replace the materiality-check hook (for res-s3 to wire a real
+ * implementation, or for tests to assert it was called).
+ * @param {function({journeyId:string, skillName:string, preRevisionContent:?string, postRevisionContent:string}): void} fn
+ */
+function setMaterialityCheckHook(fn) { _materialityCheckHook = fn; }
+
 // mfc.1 — _nextQuestionExecutor and _sectionDraftExecutor retained as no-ops for backward compat (AC9).
 // They are not invoked in the model-first session flow.
 let _nextQuestionExecutor = function noOpNextQuestionExecutor() { return Promise.resolve(null); };
@@ -4990,14 +5004,43 @@ async function handlePostTurnStreamHtml(req, res) {
 
     // Auto-save artefact to disk
     var _autoRepoRoot = _getRepoPath();
+    var _resolvedRepoRoot = path.resolve(_autoRepoRoot);
     var _autoAbsPath = path.resolve(path.join(_autoRepoRoot, session.artefactPath));
+
+    // res-s2: path traversal guard (CLAUDE.md mandatory rule) — session.artefactPath
+    // is derived from session-stored featureSlug/skillName, which counts as a
+    // "session-stored slug" under that rule. This is a streaming SSE response,
+    // not a request/response endpoint, so the SSE-appropriate equivalent of an
+    // HTTP 400 rejection is an error event + ending the stream (headers/status
+    // are already committed by this point in an SSE response).
+    if (!_autoAbsPath.startsWith(_resolvedRepoRoot + path.sep)) {
+      // Security: never log the raw artefactPath value in production (CLAUDE.md path-traversal guard rule).
+      console.warn(JSON.stringify({ event: 'artefact_path_traversal_rejected', sessionId: sessionId }));
+      res.write('data: ' + JSON.stringify({ error: 'Could not save your revision — invalid artefact path.' }) + '\n\n');
+      res.end();
+      return;
+    }
+
     var _isAmendment = fs.existsSync(_autoAbsPath);
+    // res-s2 (AC5): capture the pre-revision content into memory BEFORE the
+    // write executes — this is the only point at which "before" content is
+    // still readable from disk. Handed forward to the materiality-check hook
+    // in Task 2 (this task only captures it; Task 2 consumes it).
+    var _preRevisionContent = null;
+    if (_isAmendment) {
+      try { _preRevisionContent = fs.readFileSync(_autoAbsPath, 'utf8'); } catch (_) {}
+    }
     try {
       fs.mkdirSync(path.dirname(_autoAbsPath), { recursive: true });
       fs.writeFileSync(_autoAbsPath, session.artefactContent, 'utf8');
       console.info(JSON.stringify({ event: _isAmendment ? 'artefact_auto_amended' : 'artefact_auto_saved', sessionId: sessionId, artefactPath: session.artefactPath }));
     } catch (_autoErr) {
+      // res-s2 (AC4): surface the failure to the operator instead of only
+      // logging it — the pre-fix behaviour silently swallowed this.
       console.warn(JSON.stringify({ event: 'artefact_disk_save_failed', sessionId: sessionId, error: _autoErr.message }));
+      res.write('data: ' + JSON.stringify({ error: 'Could not save your revision — please try again.' }) + '\n\n');
+      res.end();
+      return;
     }
     // Git commit (best-effort — git is not installed in Fly.io containers; failure is not an
     // error). Routed through the D37 adapter (stis-s1) so tests can stub it — see
@@ -5034,9 +5077,35 @@ async function handlePostTurnStreamHtml(req, res) {
     // Mark stage complete in journey so resume can load it as a prior artefact
     if (session.journeyId && !session._stageDone) {
       session._stageDone = true;
-      try { _journeyStore.completeStage(session.journeyId, session.skillName, session.artefactPath, null, sessionId); } catch (_) {}
+      // res-s2 (AC1/AC3): a reopened session revising an already-completed
+      // stage must NOT push a second completedStages entry — completeStage()
+      // unconditionally pushes, which would violate "no entry added" for a
+      // revision. Only the stage's first-ever completion calls completeStage();
+      // an existing entry means this is a revision, handled via the
+      // materiality-check hook instead (AC5).
+      var _revisionJourney = _journeyStore.getJourney(session.journeyId);
+      var _existingStageEntry = _revisionJourney && (_revisionJourney.completedStages || []).find(function(cs) { return cs.skillName === session.skillName; });
+
+      if (!_existingStageEntry) {
+        try { _journeyStore.completeStage(session.journeyId, session.skillName, session.artefactPath, null, sessionId); } catch (_) {}
+      } else {
+        try {
+          _materialityCheckHook({
+            journeyId: session.journeyId,
+            skillName: session.skillName,
+            preRevisionContent: _preRevisionContent,
+            postRevisionContent: session.artefactContent
+          });
+        } catch (_matErr) {
+          console.warn(JSON.stringify({ event: 'materiality_check_hook_failed', sessionId: sessionId, error: _matErr.message }));
+        }
+      }
+
       // Persist artefact content to Postgres so cross-device / post-deploy resume works.
       // (completeStage only writes the artefact path; content must be saved separately.)
+      // res-s2: runs on both first-completion and revision paths — Postgres
+      // is a persistence layer for artefact content, not a completion-event
+      // record, so a revision's new content must overwrite it there too.
       if (process.env.DATABASE_URL && session.artefactContent) {
         require('../adapters/journey-store-pg').saveArtefact(
           session.journeyId, session.skillName, session.artefactPath, session.artefactContent
@@ -5533,6 +5602,8 @@ module.exports = {
   handlePostTurnStreamHtml, setSkillTurnExecutorStreamAdapter,
   // stis-s1 — artefact-completion git-commit adapter setter
   setSkillTurnGitCommitAdapter,
+  // res-s2 — materiality-check hook setter
+  setMaterialityCheckHook,
   // dsq.1/dsq.2 — backward-compat no-op setters (AC9 — mfc.1)
   setNextQuestionExecutorAdapter,
   setSectionDraftExecutorAdapter,
