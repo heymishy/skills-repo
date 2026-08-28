@@ -189,6 +189,153 @@ await (async function() {
   ok('NFR: materiality check invokes zero additional skill-turn-executor calls', streamCalls === 0);
 })();
 
+console.log('\nTask 3 — hook awaited and forwarded as an SSE event');
+
+var ARTEFACT_RESPONSE =
+  'Understood.\n\n---ARTEFACT-START---\n' + PRE_FIXTURE.replace('No new versioning mechanism.', 'A new dated-copy mechanism is required.') + '\n---ARTEFACT-END---\n---SLUG---\nres-s3-fixture-feature';
+
+// Reuses the header's fakeRes() (already defines .events()) — do NOT define
+// a separate fakeResT3() here; that would duplicate identical SSE-mock logic
+// for no reason. (Corrected 2026-08-28 at code review of Task 1 — the plan
+// originally had this task define its own copy instead of reusing the
+// header's helper, which is exactly what made the header's fakeRes()
+// spuriously look like dead code from Task 1's own isolated point of view.)
+
+await (async function() {
+  // AC1 (integration): materiality suggestion fires immediately after the
+  // overwrite completes, in the SAME turn's SSE response.
+  process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
+  var routes = freshRoutes();
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+
+  routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
+    onFirstChunk(0);
+    onChunk(ARTEFACT_RESPONSE);
+    return Promise.resolve({ text: ARTEFACT_RESPONSE, usage: {} });
+  });
+
+  routes.setMaterialityCheckHook(function(payload) {
+    return Promise.resolve({ classification: 'material', rationale: 'Test rationale.', suggestionId: 'suggestion-t3-1' });
+  });
+
+  var slug = 'res-s3-t3-feature';
+  var artefactRelPath = 'artefacts/' + slug + '/discovery.md';
+  var artefactAbsPath = path.join(_tmpRepoRoot, artefactRelPath);
+  fs.mkdirSync(path.dirname(artefactAbsPath), { recursive: true });
+  fs.writeFileSync(artefactAbsPath, PRE_FIXTURE, 'utf8');
+
+  var jid = journeyStore.createJourney(slug, 'default').journeyId;
+  journeyStore.completeStage(jid, 'discovery', artefactRelPath, null, 'old-live-sid');
+
+  var sid = 'test-res-s3-t3-' + Math.random().toString(36).slice(2);
+  routes._setHtmlSession(sid, {
+    skillName: 'discovery', sessionPath: '/tmp/t', systemPrompt: '# discovery', turns: [],
+    artefactContent: null, artefactPath: null, done: false, featureSlug: slug, journeyId: jid
+  });
+
+  var res = fakeRes();
+  await routes.handlePostTurnStreamHtml(
+    { session: { accessToken: 'tok', tenantId: 'org-a' }, params: { name: 'discovery', id: sid }, body: { answer: 'revise it' } },
+    res
+  );
+
+  var events = res.events();
+  var materialityEvent = events.find(function(e) { return e && e.materialitySuggestion; });
+  ok('AC1: a materialitySuggestion SSE event was emitted', !!materialityEvent);
+  ok('AC1: the suggestion carries the real classification', materialityEvent && materialityEvent.materialitySuggestion.classification === 'material');
+  ok('AC1: the suggestion carries a rationale', materialityEvent && typeof materialityEvent.materialitySuggestion.rationale === 'string' && materialityEvent.materialitySuggestion.rationale.length > 0);
+
+  var doneEventIndex = events.findIndex(function(e) { return e && e.done === true; });
+  var materialityEventIndex = events.indexOf(materialityEvent);
+  ok('AC1: the materiality suggestion arrives in the SAME turn, before the final done event', materialityEventIndex !== -1 && doneEventIndex !== -1 && materialityEventIndex < doneEventIndex);
+})();
+
+await (async function() {
+  // AC4 (integration): the suggestionId returned to the client is the SAME
+  // key logged via PostHog, so res-s4 can join on it later.
+  process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
+  var routes = freshRoutes();
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+
+  routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
+    onFirstChunk(0);
+    onChunk(ARTEFACT_RESPONSE);
+    return Promise.resolve({ text: ARTEFACT_RESPONSE, usage: {} });
+  });
+
+  var hookPayloads = [];
+  routes.setMaterialityCheckHook(function(payload) {
+    hookPayloads.push(payload);
+    return Promise.resolve({ classification: 'material', rationale: 'Test rationale.', suggestionId: 'suggestion-t3-2' });
+  });
+
+  var slug = 'res-s3-t3-joinable-feature';
+  var artefactRelPath = 'artefacts/' + slug + '/discovery.md';
+  var artefactAbsPath = path.join(_tmpRepoRoot, artefactRelPath);
+  fs.mkdirSync(path.dirname(artefactAbsPath), { recursive: true });
+  fs.writeFileSync(artefactAbsPath, PRE_FIXTURE, 'utf8');
+
+  var jid = journeyStore.createJourney(slug, 'default').journeyId;
+  journeyStore.completeStage(jid, 'discovery', artefactRelPath, null, 'old-live-sid');
+
+  var sid = 'test-res-s3-t3-joinable-' + Math.random().toString(36).slice(2);
+  routes._setHtmlSession(sid, {
+    skillName: 'discovery', sessionPath: '/tmp/t', systemPrompt: '# discovery', turns: [],
+    artefactContent: null, artefactPath: null, done: false, featureSlug: slug, journeyId: jid
+  });
+
+  var res = fakeRes();
+  await routes.handlePostTurnStreamHtml(
+    { session: { accessToken: 'tok', tenantId: 'org-a' }, params: { name: 'discovery', id: sid }, body: { answer: 'revise it' } },
+    res
+  );
+
+  var materialityEvent = res.events().find(function(e) { return e && e.materialitySuggestion; });
+  ok('AC4: hook received the correct pre/post content pair (producer-side contract, matches res-s2 AC5)', hookPayloads.length === 1 && hookPayloads[0].preRevisionContent === PRE_FIXTURE);
+  ok('AC4: the client-visible suggestionId matches what the hook returned (joinable with res-s4)', materialityEvent && materialityEvent.materialitySuggestion.suggestionId === 'suggestion-t3-2');
+})();
+
+await (async function() {
+  // Regression guard: an UNWIRED hook (default no-op) must not emit any
+  // materiality event and must not break the existing turn/response flow.
+  process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
+  var routes = freshRoutes(); // fresh require -> hook resets to the D37 no-op default
+
+  routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
+    onFirstChunk(0);
+    onChunk(ARTEFACT_RESPONSE);
+    return Promise.resolve({ text: ARTEFACT_RESPONSE, usage: {} });
+  });
+
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+  var slug = 'res-s3-t3-unwired-feature';
+  var artefactRelPath = 'artefacts/' + slug + '/discovery.md';
+  var artefactAbsPath = path.join(_tmpRepoRoot, artefactRelPath);
+  fs.mkdirSync(path.dirname(artefactAbsPath), { recursive: true });
+  fs.writeFileSync(artefactAbsPath, PRE_FIXTURE, 'utf8');
+  var jid = journeyStore.createJourney(slug, 'default').journeyId;
+  journeyStore.completeStage(jid, 'discovery', artefactRelPath, null, 'old-live-sid');
+
+  var sid = 'test-res-s3-t3-unwired-' + Math.random().toString(36).slice(2);
+  routes._setHtmlSession(sid, {
+    skillName: 'discovery', sessionPath: '/tmp/t', systemPrompt: '# discovery', turns: [],
+    artefactContent: null, artefactPath: null, done: false, featureSlug: slug, journeyId: jid
+  });
+
+  var res = fakeRes();
+  await routes.handlePostTurnStreamHtml(
+    { session: { accessToken: 'tok', tenantId: 'org-a' }, params: { name: 'discovery', id: sid }, body: { answer: 'revise it' } },
+    res
+  );
+
+  var materialityEvent = res.events().find(function(e) { return e && e.materialitySuggestion; });
+  ok('Regression guard: unwired hook (default no-op) emits no materiality event', !materialityEvent);
+  ok('Regression guard: the turn still completes normally (done:true reached)', res.events().some(function(e) { return e && e.done === true; }));
+})();
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 fs.rmSync(_tmpRepoRoot, { recursive: true, force: true });
 process.exit(failed > 0 ? 1 : 0);

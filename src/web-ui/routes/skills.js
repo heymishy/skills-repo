@@ -5086,11 +5086,16 @@ async function handlePostTurnStreamHtml(req, res) {
       var _revisionJourney = _journeyStore.getJourney(session.journeyId);
       var _existingStageEntry = _revisionJourney && (_revisionJourney.completedStages || []).find(function(cs) { return cs.skillName === session.skillName; });
 
+      var _materialitySuggestion = null;
       if (!_existingStageEntry) {
         try { _journeyStore.completeStage(session.journeyId, session.skillName, session.artefactPath, null, sessionId); } catch (_) {}
       } else {
         try {
-          _materialityCheckHook({
+          // res-s3: await the hook and keep its result so it can be forwarded
+          // as an SSE event before the final `done` write (AC1) — the D37
+          // default no-op hook returns undefined, so _materialitySuggestion
+          // stays null and no event is emitted when unwired.
+          _materialitySuggestion = await _materialityCheckHook({
             journeyId: session.journeyId,
             skillName: session.skillName,
             preRevisionContent: _preRevisionContent,
@@ -5196,6 +5201,12 @@ async function handlePostTurnStreamHtml(req, res) {
         console.warn(JSON.stringify({ event: 'skill_session_redis_write_failed', sessionId: sessionId, error: _redisErr && _redisErr.message ? _redisErr.message : String(_redisErr) }));
       });
     }
+  }
+
+  // res-s3 (AC1): present the materiality suggestion in the same turn's
+  // response, before the final done event.
+  if (_materialitySuggestion && _materialitySuggestion.classification) {
+    res.write('data: ' + JSON.stringify({ materialitySuggestion: _materialitySuggestion }) + '\n\n');
   }
 
   res.write('data: ' + JSON.stringify({
