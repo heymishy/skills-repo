@@ -27831,14 +27831,14 @@
           "id": "res-s3",
           "slug": "res-s3-suggest-revision-materiality",
           "name": "Suggest whether a stage revision is material to downstream stages",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "artefact": "artefacts/2026-08-27-revise-earlier-stage/stories/res-s3-suggest-revision-materiality.md",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "none",
+          "prStatus": "draft",
           "notes": "Epic 2: Materiality-aware downstream guidance (see epics/materiality-aware-downstream-guidance.md for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-28T08:44:56.990Z",
+          "updatedAt": "2026-08-28T10:45:37.744Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-27-revise-earlier-stage/review/res-s3-review-2.md",
@@ -27887,7 +27887,8 @@
               "file": "artefacts/2026-08-27-revise-earlier-stage/plans/res-s3-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/781"
         },
         {
           "id": "res-s4",
