@@ -76,6 +76,15 @@
 ---
 
 ---
+**2026-08-28 | RISK-ACCEPT | subagent-execution (res-s3, final cross-task review)**
+**Decision:** Accept that `checkMateriality`'s deterministic section-diff classifies a pure wording/typo fix made WITHIN a target section (Problem Statement, MVP Scope, or Constraints) as "material" — even though AC3 as literally written says a wording-only change with "no scope or constraint impact" should be "minor." Proceed without changing the classifier.
+**Alternatives considered:** (1) Add sub-section-level semantic diffing (e.g. word-level diff plus a heuristic for "meaning-preserving" edits) to distinguish a genuine scope change from a same-section wording tweak. (2) Route only in-target-section changes through a model call to judge materiality, while keeping cross-section changes deterministic.
+**Rationale:** This is not a newly-discovered defect — it is the direct, foreseeable consequence of the DoR contract's own approved trade-off (deterministic section-diff instead of LLM judgment, chosen specifically to resolve the test-plan's flagged test-design risk about non-deterministic classification). Any change to text WITHIN a target section, however small, cannot be distinguished from a genuine scope change without either NLP-level semantic diffing (expensive, unreliable, exactly the flakiness the deterministic approach was chosen to avoid) or a model call (reintroducing the non-determinism the contract explicitly rejected). Both Task 1's test cases for AC3 correctly exercise wording-only changes only in a NON-target section ("Who It Affects") — this was not an oversight, it is the honest boundary of what a section-level deterministic diff can promise. The DoR contract's own Assumption #1 states the diff "checks section-level text... to avoid false 'material' positives on pure formatting changes within a section" — this wording overstates what was actually delivered (it does NOT avoid false positives on wording changes within a section, only in a section that already differs some other way) and should be read as describing intent, not a verified guarantee; this decision entry is the correction.
+**Made by:** Claude (agent), acting on a final cross-task reviewer's finding (Observation O1)
+**Revisit trigger:** If real usage shows operators are frequently surprised by "material" flags on what they consider trivial in-section wording edits (tracked via M2, the materiality-suggestion acceptance rate metric — a low acceptance rate specifically correlated with in-section wording-only revisions would be the signal), revisit with either of the two alternatives above as a follow-up story.
+---
+
+---
 
 ## Architecture Decision Records
 

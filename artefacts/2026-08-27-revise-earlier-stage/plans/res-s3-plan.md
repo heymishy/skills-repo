@@ -804,6 +804,178 @@ git commit -m "feat(res-s3): wire setMaterialityCheckHook to the real materialit
 
 ---
 
-## After all tasks: open the draft PR
+## Task 5: Fix AC1 client-render gap and ADR-023 disk-canonicity deviation (found at final cross-task review)
 
-Once all 4 tasks are committed and the full suite passes, run `/verify-completion` then `/branch-complete` per the standard inner-loop sequence. Per the DoR's Coding Agent Instructions: open a draft PR when tests pass — do not mark ready for review.
+**Why this task exists:** the final cross-task reviewer (run after Tasks 1-4 each individually passed spec + code-quality review) found two real defects that no single task's narrow review could see, because each is a mismatch ACROSS tasks/files rather than within one task's own diff:
+
+1. **AC1 is not actually satisfied end-to-end (HIGH).** Task 3 correctly emits a `materialitySuggestion` SSE event from the server (`skills.js:5209`), and its tests correctly assert against a mock `res` object that the event was written to the wire. But the BROWSER-SIDE SSE dispatcher (also inlined in `skills.js`, ~line 3756-3829) has no `evt.materialitySuggestion` branch — it silently drops the event inside a `try {} catch(_) {}`. AC1 requires the classification and rationale be "presented to the operator in the chat session"; today nothing renders. Confirmed independently (grep for `materialitySuggestion` across `src/` finds only the emit site and the test, zero client consumers) before writing this task.
+2. **ADR-023 / disk-canonicity deviation (MEDIUM).** `skills.js:5102` passes `postRevisionContent: session.artefactContent` — in-memory session state — to the hook. The story's own Architecture Constraints (line 21) explicitly requires the post-revision content be "the actual overwritten disk content from res-s2, not stale in-memory session state," and CLAUDE.md's disk-canonicity rule requires a write-then-read-back-from-disk sequence. The correct pattern already exists 40 lines above in the same function (`skills.js:5060`, `fs.readFileSync(_autoAbsPath, 'utf8')`) for an unrelated purpose. Today `session.artefactContent` and the disk content happen to coincide (the write at line 5035 writes that exact value verbatim), which is exactly why no test caught it — but it's still a real deviation from the story's own stated architecture constraint, worth fixing to prevent future drift.
+
+**Files:**
+- Modify: `src/web-ui/routes/skills.js` (two separate, small changes — the client-side dispatcher string array, and the hook-call site)
+- Test: `tests/check-res-s3-suggest-revision-materiality.js` (append this task's section)
+
+**Model class:** balanced
+
+- [ ] **Step 1: Write the failing test**
+
+Append to `tests/check-res-s3-suggest-revision-materiality.js`:
+
+```javascript
+console.log('\nTask 5 — fix AC1 client-render gap and ADR-023 disk-canonicity deviation');
+
+await (async function() {
+  // Fix 1 (AC1): the browser-side SSE dispatcher must have a branch that
+  // handles evt.materialitySuggestion — confirmed missing at final review.
+  var fsClient = require('fs');
+  var skillsSrc = fsClient.readFileSync(path.resolve(__dirname, '../src/web-ui/routes/skills.js'), 'utf8');
+  ok('AC1 fix: client-side SSE dispatcher has a materialitySuggestion branch', /evt\.materialitySuggestion/.test(skillsSrc));
+  // The branch must actually render via appendBubble (per the story's
+  // Accessibility NFR: "existing chat message rendering — no new UI component"),
+  // not just reference the field name in a comment.
+  var dispatcherMatch = skillsSrc.match(/if\(evt\.materialitySuggestion\)\s*\{([\s\S]*?)\}/);
+  ok('AC1 fix: the materialitySuggestion branch calls appendBubble', !!dispatcherMatch && /appendBubble/.test(dispatcherMatch[1]));
+})();
+
+await (async function() {
+  // Fix 2 (ADR-023): the hook call site must read post-revision content back
+  // from disk, not from session.artefactContent directly.
+  process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
+  var routes = freshRoutes();
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+
+  var hookPayloads = [];
+  routes.setMaterialityCheckHook(function(payload) {
+    hookPayloads.push(payload);
+    return Promise.resolve({ classification: 'material', rationale: 'Test rationale.', suggestionId: 'suggestion-t5-1' });
+  });
+
+  var _artefactResponseT5 =
+    'Understood.\n\n---ARTEFACT-START---\n' + PRE_FIXTURE.replace('No new versioning mechanism.', 'A new dated-copy mechanism is required.') + '\n---ARTEFACT-END---\n---SLUG---\nres-s3-t5-feature';
+  routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
+    onFirstChunk(0);
+    onChunk(_artefactResponseT5);
+    return Promise.resolve({ text: _artefactResponseT5, usage: {} });
+  });
+
+  var slug = 'res-s3-t5-diskread-feature';
+  var artefactRelPath = 'artefacts/' + slug + '/discovery.md';
+  var artefactAbsPath = path.join(_tmpRepoRoot, artefactRelPath);
+  fs.mkdirSync(path.dirname(artefactAbsPath), { recursive: true });
+  fs.writeFileSync(artefactAbsPath, PRE_FIXTURE, 'utf8');
+
+  var jid = journeyStore.createJourney(slug, 'default').journeyId;
+  journeyStore.completeStage(jid, 'discovery', artefactRelPath, null, 'old-live-sid');
+
+  var sid = 'test-res-s3-t5-' + Math.random().toString(36).slice(2);
+  routes._setHtmlSession(sid, {
+    skillName: 'discovery', sessionPath: '/tmp/t', systemPrompt: '# discovery', turns: [],
+    artefactContent: null, artefactPath: null, done: false, featureSlug: slug, journeyId: jid
+  });
+
+  var res = fakeRes();
+  await routes.handlePostTurnStreamHtml(
+    { session: { accessToken: 'tok', tenantId: 'org-a' }, params: { name: 'discovery', id: sid }, body: { answer: 'revise it' } },
+    res
+  );
+
+  // The disk file is the source of truth after the write — assert the hook
+  // received exactly that content (this doesn't distinguish disk-read from
+  // in-memory today since they coincide by construction, but combined with
+  // the source-text check below it proves the FIX, not just the outcome).
+  var diskContentAfter = fs.readFileSync(artefactAbsPath, 'utf8');
+  ok('ADR-023 fix: hook receives content matching what is now on disk', hookPayloads.length === 1 && hookPayloads[0].postRevisionContent === diskContentAfter);
+
+  var skillsSrcForDiskCheck = fs.readFileSync(path.resolve(__dirname, '../src/web-ui/routes/skills.js'), 'utf8');
+  var hookCallBlock = skillsSrcForDiskCheck.match(/_materialitySuggestion = await _materialityCheckHook\(\{[\s\S]*?\}\);/);
+  ok('ADR-023 fix: hook call site reads postRevisionContent from disk, not session.artefactContent', !!hookCallBlock && /readFileSync/.test(hookCallBlock[0]) && !/postRevisionContent:\s*session\.artefactContent/.test(hookCallBlock[0]));
+})();
+```
+
+- [ ] **Step 2: Run test — must fail**
+
+```bash
+node tests/check-res-s3-suggest-revision-materiality.js
+```
+
+Expected output: `FAIL: AC1 fix: client-side SSE dispatcher has a materialitySuggestion branch` and `FAIL: ADR-023 fix: hook call site reads postRevisionContent from disk, not session.artefactContent`
+
+- [ ] **Step 3: Write minimal implementation**
+
+**Fix 1 (client-side render):** in `src/web-ui/routes/skills.js`, find the inlined client-script string array's `evt.lensComplete` branch (search for `'              if(evt.lensComplete) {',`):
+
+```javascript
+    '              if(evt.lensComplete) {',
+    '                handleLensComplete();',
+    '              }',
+```
+
+Add a new branch immediately before it (so it renders before the lens-complete handler runs, keeping `done`'s existing branch — which already runs first per SSE emission order — untouched):
+
+```javascript
+    '              if(evt.materialitySuggestion) {',
+    '                var ms = evt.materialitySuggestion;',
+    '                var msLabel = ms.classification === "material" ? "Material change" : "Minor change";',
+    '                appendBubble("assistant", "<strong>" + escHtmlClient(msLabel) + ":</strong> " + escHtmlClient(ms.rationale || ""));',
+    '              }',
+    '              if(evt.lensComplete) {',
+    '                handleLensComplete();',
+    '              }',
+```
+
+**Fix 2 (disk-canonicity):** in the same file, find the hook call site (search for `_materialitySuggestion = await _materialityCheckHook`):
+
+```javascript
+          _materialitySuggestion = await _materialityCheckHook({
+            journeyId: session.journeyId,
+            skillName: session.skillName,
+            preRevisionContent: _preRevisionContent,
+            postRevisionContent: session.artefactContent
+          });
+```
+
+Replace with (read the post-revision content back from disk, matching the established pattern at line ~5060 in the same function):
+
+```javascript
+          // res-s3 Task 5 (ADR-023 fix): read the post-revision content back
+          // from disk rather than trusting session.artefactContent directly —
+          // matches this same function's existing disk-canonicity pattern
+          // (see the strategy-metrics block above, _diskArtefactContentAuto).
+          var _postRevisionDiskContent = _autoAbsPath ? fs.readFileSync(_autoAbsPath, 'utf8') : session.artefactContent;
+          _materialitySuggestion = await _materialityCheckHook({
+            journeyId: session.journeyId,
+            skillName: session.skillName,
+            preRevisionContent: _preRevisionContent,
+            postRevisionContent: _postRevisionDiskContent
+          });
+```
+
+- [ ] **Step 4: Run test — must pass**
+
+```bash
+node tests/check-res-s3-suggest-revision-materiality.js
+```
+
+Expected output: `34 passed, 0 failed`
+
+- [ ] **Step 5: Run full suite — no regressions**
+
+```bash
+npm test
+```
+
+Expected output: all tests passing, including res-s1's 19/19 and res-s2's 19/19 (this task touches the same shared function again — must not regress either)
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add src/web-ui/routes/skills.js tests/check-res-s3-suggest-revision-materiality.js
+git commit -m "fix(res-s3): render materiality suggestion client-side (AC1), read post-revision content from disk (ADR-023) — final review findings"
+```
+
+---
+
+## After all tasks (including Task 5): open the draft PR
+
+Once all 5 tasks are committed and the full suite passes, run `/verify-completion` then `/branch-complete` per the standard inner-loop sequence. Per the DoR's Coding Agent Instructions: open a draft PR when tests pass — do not mark ready for review.

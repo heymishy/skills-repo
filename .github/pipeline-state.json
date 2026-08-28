@@ -27832,19 +27832,19 @@
           "slug": "res-s3-suggest-revision-materiality",
           "name": "Suggest whether a stage revision is material to downstream stages",
           "stage": "subagent-execution",
-          "health": "green",
+          "health": "amber",
           "artefact": "artefacts/2026-08-27-revise-earlier-stage/stories/res-s3-suggest-revision-materiality.md",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
           "prStatus": "none",
           "notes": "Epic 2: Materiality-aware downstream guidance (see epics/materiality-aware-downstream-guidance.md for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-28T07:41:44.569Z",
+          "updatedAt": "2026-08-28T07:55:53.984Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-27-revise-earlier-stage/review/res-s3-review-2.md",
           "testPlan": {
             "status": "written",
-            "totalTests": 30,
+            "totalTests": 34,
             "passing": 30,
             "artefact": "artefacts/2026-08-27-revise-earlier-stage/test-plans/res-s3-test-plan.md"
           },
@@ -27879,8 +27879,15 @@
               "name": "D37 wiring: setMaterialityCheckHook (AC5)",
               "tddState": "committed",
               "file": "artefacts/2026-08-27-revise-earlier-stage/plans/res-s3-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Fix AC1 client-render gap and ADR-023 disk-canonicity deviation (final review finding)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-27-revise-earlier-stage/plans/res-s3-plan.md"
             }
-          ]
+          ],
+          "blocker": "Final cross-task review found AC1 not actually satisfied end-to-end (SSE event emitted server-side, no client-side consumer) and an ADR-023 disk-canonicity deviation. Task 5 added to fix both before /verify-completion."
         },
         {
           "id": "res-s4",
