@@ -157,6 +157,18 @@ await (async function() {
   // rule, code-quality review finding): a featureSlug crafted to resolve
   // outside the repo root must be rejected with an SSE error, and nothing
   // must be written anywhere outside the temp repo root.
+  //
+  // The escape target MUST be a real, writable sibling directory under
+  // os.tmpdir() — NOT some arbitrary deep "../../.." guess. A prior version
+  // of this test targeted a path under C:\Users\ that Windows refuses to
+  // create for a non-admin user (EPERM), so the assertions passed for the
+  // WRONG reason (the pre-existing generic write-failure handler caught an
+  // unrelated OS permission error, not the traversal guard). Proven vacuous
+  // by temporarily disabling the guard and observing the same test still
+  // pass. Using a genuinely writable sibling directory (created via
+  // fs.mkdtempSync, which only succeeds if it's actually writable) means
+  // the guard's startsWith check is the ONLY thing that can prevent the
+  // write — if it were absent, the write would succeed.
   process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
   var routes = freshRoutes();
   routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
@@ -164,8 +176,17 @@ await (async function() {
     onChunk(ARTEFACT_RESPONSE);
     return Promise.resolve({ text: ARTEFACT_RESPONSE, usage: {} });
   });
-  var _traversalSlug = '../../../../../../tmp/res-s2-traversal-escape';
-  var _dangerousAbsPath = path.resolve(path.join(_tmpRepoRoot, 'artefacts', _traversalSlug, 'discovery.md'));
+
+  var _escapeTargetDir = fs.mkdtempSync(path.join(os.tmpdir(), 'res-s2-escape-target-'));
+  var _traversalSlug = path.relative(path.join(_tmpRepoRoot, 'artefacts'), _escapeTargetDir);
+  var _dangerousAbsPath = path.join(_escapeTargetDir, 'discovery.md');
+
+  // Capture console.warn to assert the SPECIFIC rejection reason fired, not
+  // just "some error happened" — distinguishes the guard from the generic
+  // write-failure handler, which logs a different event name.
+  var _warnCalls = [];
+  var _originalWarn = console.warn;
+  console.warn = function(msg) { _warnCalls.push(msg); };
 
   var sid = 'test-res-s2-t1-traversal-' + Math.random().toString(36).slice(2);
   routes._setHtmlSession(sid, {
@@ -179,10 +200,16 @@ await (async function() {
     res
   );
 
+  console.warn = _originalWarn;
+
   var lastEvent = res.lastEvent();
+  var _traversalWarnFired = _warnCalls.some(function(m) { return typeof m === 'string' && m.indexOf('artefact_path_traversal_rejected') !== -1; });
+  ok('Path traversal: the specific traversal-rejection event fires (not the generic write-failure path)', _traversalWarnFired);
   ok('Path traversal: a traversal-shaped featureSlug surfaces an SSE error', lastEvent && typeof lastEvent.error === 'string');
   ok('Path traversal: stream ends after the rejection', res._ended === true);
-  ok('Path traversal: nothing was written to the resolved-outside-repo-root path', !fs.existsSync(_dangerousAbsPath));
+  ok('Path traversal: nothing was written to the resolved-outside-repo-root path (which IS writable — proven by mkdtempSync above)', !fs.existsSync(_dangerousAbsPath));
+
+  fs.rmSync(_escapeTargetDir, { recursive: true, force: true });
 })();
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
