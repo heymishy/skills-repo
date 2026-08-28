@@ -295,7 +295,7 @@ git commit -m "feat(res-s4): flaggedStages default, getDownstreamStages() helper
 
 **Model class:** deep-reasoning (new endpoint + modifies the shared inlined client script alongside res-s3's own recent changes to the same script — regression risk if not precisely scoped)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/check-res-s4-operator-acts-on-materiality-suggestion.js`, before the final `console.log('\n' + passed ...)` line:
 
@@ -417,7 +417,7 @@ await (async function() {
 })();
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-res-s4-operator-acts-on-materiality-suggestion.js
@@ -425,7 +425,7 @@ node tests/check-res-s4-operator-acts-on-materiality-suggestion.js
 
 Expected output: `TypeError: routes.handlePostMaterialityAction is not a function`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `src/web-ui/routes/skills.js`, add a new handler immediately after `handlePostAssumptionConfirm` (search for the closing `}` of that function, right before the `buildSystemPromptWithProductContext` comment block):
 
@@ -583,15 +583,15 @@ Add a new route immediately after it (before the next `} else if`):
 
 And add `handlePostMaterialityAction` to the destructured import from `./routes/skills` at the top of `server.js` (find the existing `handlePostAssumptionConfirm` in that destructure and add `handlePostMaterialityAction` directly after it).
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-res-s4-operator-acts-on-materiality-suggestion.js
 ```
 
-Expected output: `17 passed, 0 failed` (6 from Task 1 + 11 from Task 2)
+Expected output: `18 passed, 0 failed` (6 from Task 1 + 11 from Task 2 -- adjusted +1 for a code-quality-review-driven skillName-dynamism test added after the initial commit; see commit `49c9247a`)
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -599,7 +599,7 @@ npm test
 
 Expected output: all tests passing (same 1 pre-existing flake). Pay particular attention to res-s3's own test file (`check-res-s3-suggest-revision-materiality.js`, 34 tests) since this task modifies the same inlined client script res-s3's Task 5 last touched.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/skills.js src/web-ui/server.js tests/check-res-s4-operator-acts-on-materiality-suggestion.js
@@ -776,7 +776,7 @@ Replace with:
 node tests/check-res-s4-operator-acts-on-materiality-suggestion.js
 ```
 
-Expected output: `20 passed, 0 failed`
+Expected output: `21 passed, 0 failed` (adjusted +1 for Task 2's post-review count — see Task 2's Step 4 note above)
 
 - [ ] **Step 5: Run full suite — no regressions**
 
@@ -929,7 +929,7 @@ Insert the flag-clear logic between the `if (!stageEntry)` guard and the early-r
 node tests/check-res-s4-operator-acts-on-materiality-suggestion.js
 ```
 
-Expected output: `24 passed, 0 failed`
+Expected output: `25 passed, 0 failed` (adjusted +1 for Task 2's post-review count — see Task 2's Step 4 note above)
 
 - [ ] **Step 5: Run full suite — no regressions**
 
