@@ -4270,6 +4270,7 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
         { id: 'definition-of-ready', num: '7',   label: 'Ready',      optional: false, subStep: false }
       ];
       var _doneSet = new Set((_navJourney.completedStages || []).map(function(s) { return s.skillName; }));
+      var _flaggedSet = new Set(_navJourney.flaggedStages || []);
       var _costMap = {};
       (_navJourney.completedStages || []).forEach(function(s) { if (s.costUsd != null) { _costMap[s.skillName] = s.costUsd; } });
       var _activeSkill = _navJourney.activeSkill;
@@ -4288,14 +4289,21 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
           isDone = _doneSet.has(s.id);
           isActive = s.id === _activeSkill;
         }
+        // res-s4 (AC1): flag marker on the chat page's own step-nav strip --
+        // a THIRD render site distinct from journey.js's two (final-review
+        // finding F1). Sub-steps (clarify/estimate) are never members of
+        // STAGE_SEQUENCE, so _flaggedSet never matches them; isFlagged is
+        // still gated on !s.subStep for clarity, matching costLabel's guard.
+        var isFlagged = !s.subStep && _flaggedSet.has(s.id);
         var cls = s.subStep
           ? 'sn-step--sub ' + (isDone ? 'sn-step--sub-done' : 'sn-step--sub-pending')
-          : (isDone ? 'sn-step--done' : isActive ? 'sn-step--active' : 'sn-step--pending');
+          : (isDone ? 'sn-step--done' : isActive ? 'sn-step--active' : 'sn-step--pending') + (isFlagged ? ' sn-step--flagged' : '');
         var icon = isDone ? '✓' : (isActive ? '▶' : '◦');
         var costLabel = (!s.subStep && isDone && _costMap[s.id] != null) ? ' · $' + _costMap[s.id].toFixed(3) : '';
+        var flagMarker = isFlagged ? '<span class="sn-flag-marker">⚑ May need review</span>' : '';
         var inner = (s.subStep
           ? '<span class="sn-sub-label">' + escHtml(s.label) + '</span><span class="sn-icon" aria-hidden="true">' + icon + '</span>'
-          : '<span class="sn-num">' + escHtml(s.num) + '</span><span class="sn-label">' + escHtml(s.label) + '</span><span class="sn-icon" aria-hidden="true">' + icon + '</span>');
+          : '<span class="sn-num">' + escHtml(s.num) + '</span><span class="sn-label">' + escHtml(s.label) + '</span><span class="sn-icon" aria-hidden="true">' + icon + '</span>' + flagMarker);
         if (!s.subStep && isDone) {
           var titleAttr = 'View ' + escHtml(s.label) + ' artefact' + (costLabel ? ' (' + costLabel.trim() + ')' : '');
           return '<li class="sn-step ' + cls + '"><a href="/journey/' + _navJourneyId + '/stage/' + encodeURIComponent(s.id) + '" class="sn-step-link" title="' + titleAttr + '">' + inner + (costLabel ? '<span class="sn-cost">' + escHtml(costLabel) + '</span>' : '') + '</a></li>';
@@ -5636,7 +5644,13 @@ async function handlePostMaterialityAction(req, res) {
   var now = new Date().toISOString();
 
   if (action === 'flag' && journey) {
-    _journeyStore.setJourneyFields(journeyId, { flaggedStages: downstream });
+    // res-s4 (AC1/AC4 final-review finding O1): union with any existing
+    // flags rather than replacing wholesale -- a second flag action from a
+    // LATER stage must not silently discard an earlier stage's still-
+    // unresolved flags (AC4's only sanctioned way for a flag to disappear
+    // is the operator reopening and resolving that specific stage).
+    var _unionedFlags = Array.from(new Set((journey.flaggedStages || []).concat(downstream)));
+    _journeyStore.setJourneyFields(journeyId, { flaggedStages: _unionedFlags });
     downstream.forEach(function(stageName) {
       try {
         _posthog.capture(req.session.login || journey.ownerId || journeyId, 'materiality_flag_set', {

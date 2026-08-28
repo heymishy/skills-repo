@@ -948,6 +948,47 @@ git commit -m "feat(res-s4): clear a stage's flag when it is reopened (AC4)"
 
 ---
 
+## Task 5 (corrective, added post final-review 2026-08-29): third render site + flag-union fix
+
+The mandatory Step 3 final cross-task review (per `/subagent-execution`) found two genuine gaps across the completed 4-task implementation — see `decisions.md`'s 2026-08-29 ARCH entry for full rationale.
+
+- [x] **Step 1: F1 — add the flag marker to `_renderChatPage`'s step-nav strip in `src/web-ui/routes/skills.js`**
+
+The DoR contract correction (2026-08-28 ARCH entry) found and fixed two step-nav render sites in `journey.js`, but missed a THIRD, structurally-identical one in `skills.js`'s `_renderChatPage` — the chat page itself, the exact page the operator is looking at when they click the flag button. Added `_flaggedSet` (mirroring `journey.js`'s pattern) and folded `isFlagged`/`sn-step--flagged`/the `sn-flag-marker` span into the existing `_NAV_STAGES.map(...)` block, gated on `!s.subStep` (sub-steps `clarify`/`estimate` are never members of `STAGE_SEQUENCE`, so they can never be flagged). No new CSS rule added — `journey.js`'s own two sites also have none (the marker inherits `.sn-step--pending`'s existing opacity), so this stays consistent with the established (if imperfect) precedent rather than introducing new visual scope.
+
+- [x] **Step 2: O1 — union `flaggedStages` instead of replacing wholesale, in `handlePostMaterialityAction`**
+
+`downstream` was being assigned directly as the new `flaggedStages` value, silently discarding any earlier stage's still-unresolved flags on a second flag action from a later stage. Changed to `Array.from(new Set((journey.flaggedStages || []).concat(downstream)))`. AC4's own text is the only sanctioned way for a flag to disappear (the operator reopening and resolving that specific stage) — a second flag action must not be an implicit alternate way to clear unrelated flags.
+
+- [x] **Step 3: Add tests to `tests/check-res-s4-operator-acts-on-materiality-suggestion.js`**
+
+Two new tests appended after the existing Task 4 tests: (1) call `handleGetChatHtml` directly (via `routes._setHtmlSession` + a session with a flagged downstream stage) and assert the returned HTML contains `sn-step--flagged` and `May need review` — proving F1's render site actually emits the marker, not just that the two `journey.js` sites do. (2) call `handlePostMaterialityAction` twice against the same journey — once flagging from `discovery`, once flagging from a later stage — and assert the final `flaggedStages` is the UNION of both calls' downstream sets, not just the second call's, proving O1's fix.
+
+- [x] **Step 4: Run test — must pass**
+
+```bash
+node tests/check-res-s4-operator-acts-on-materiality-suggestion.js
+```
+
+Expected output: `27 passed, 0 failed` (25 existing + 2 new).
+
+- [x] **Step 5: Run full suite — no regressions**
+
+```bash
+npm test
+```
+
+Expected output: all tests passing (same 1 pre-existing flake, `tests/check-p3.5-validate-trace.js`, already RISK-ACCEPTed four times this feature).
+
+- [x] **Step 6: Commit**
+
+```bash
+git add src/web-ui/routes/skills.js tests/check-res-s4-operator-acts-on-materiality-suggestion.js artefacts/2026-08-27-revise-earlier-stage/decisions.md workspace/capture-log.md artefacts/2026-08-27-revise-earlier-stage/plans/res-s4-plan.md
+git commit -m "fix(res-s4): third step-nav render site + flag-union fix (final review F1/O1)"
+```
+
+---
+
 ## After all tasks: open the draft PR
 
-Once all 4 tasks are committed and the full suite passes, run `/verify-completion` then `/branch-complete` per the standard inner-loop sequence. Per the DoR's Coding Agent Instructions: open a draft PR when tests pass — do not mark ready for review.
+Once all 5 tasks are committed and the full suite passes, run `/verify-completion` then `/branch-complete` per the standard inner-loop sequence. Per the DoR's Coding Agent Instructions: open a draft PR when tests pass — do not mark ready for review.

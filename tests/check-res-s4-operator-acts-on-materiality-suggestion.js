@@ -430,6 +430,76 @@ await (async function() {
   ok('AC4: the flag clears on the early-return path too, not only the fresh-session path', journeyAfter.flaggedStages.indexOf('discovery') === -1);
 })();
 
+console.log('\nTask 5 (corrective) — third render site (F1) + flag-union fix (O1)');
+
+await (async function() {
+  // F1: skills.js's _renderChatPage is a THIRD step-nav render site, distinct
+  // from journey.js's two (already covered above) -- the final cross-task
+  // review found it had no flag-marker treatment at all.
+  var routes = freshSkillsRoutes();
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+
+  var jid = journeyStore.createJourney('res-s4-t5-chatpage-feature', 'default').journeyId;
+  journeyStore.setJourneyFields(jid, { flaggedStages: ['benefit-metric'] });
+  var sid = 'test-res-s4-t5-chatpage-' + Math.random().toString(36).slice(2);
+  routes._setHtmlSession(sid, {
+    skillName: 'discovery', sessionPath: '/tmp/t', systemPrompt: '# discovery', turns: [],
+    artefactContent: null, artefactPath: null, done: false, featureSlug: 'res-s4-t5-chatpage-feature', journeyId: jid
+  });
+
+  var res = fakeRes();
+  await routes.handleGetChatHtml(fakeReq({ accessToken: 'tok' }, { name: 'discovery', id: sid }), res);
+
+  var html = res._chunks.join('');
+  ok('F1: the chat page\'s own step-nav strip (a third render site) shows the flag marker', /sn-step--flagged/.test(html) && /May need review/.test(html));
+
+  var liRegex = /<li class="sn-step[^"]*">(?:(?!<li class="sn-step)[\s\S])*?<\/li>/g;
+  var stepLis = html.match(liRegex) || [];
+  var benefitLi = stepLis.find(function(li) { return /sn-label">Benefits<\/span>/.test(li); });
+  var discoveryLi = stepLis.find(function(li) { return /sn-label">Discovery<\/span>/.test(li); });
+  ok('F1: the marker tracks flaggedStages data (flagged stage carries it, active non-flagged stage does not)',
+    !!benefitLi && /sn-step--flagged/.test(benefitLi) &&
+    !!discoveryLi && !/sn-step--flagged/.test(discoveryLi));
+})();
+
+await (async function() {
+  // O1: a second flag action from a LATER stage must not discard an earlier
+  // stage's still-unresolved flags.
+  var routes = freshSkillsRoutes();
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+
+  var jid = journeyStore.createJourney('res-s4-t5-union-feature', 'default').journeyId;
+  var sid1 = 'test-res-s4-t5-union-a-' + Math.random().toString(36).slice(2);
+  routes._setHtmlSession(sid1, {
+    skillName: 'discovery', sessionPath: '/tmp/t', systemPrompt: '# discovery', turns: [],
+    artefactContent: null, artefactPath: null, done: false, featureSlug: 'res-s4-t5-union-feature', journeyId: jid
+  });
+  await routes.handlePostMaterialityAction(
+    fakeReq({ accessToken: 'tok', tenantId: 'org-a' }, { name: 'discovery', id: sid1 }, { action: 'flag', suggestionId: 's-a' }),
+    fakeRes()
+  );
+
+  var afterFirst = journeyStore.getJourney(jid).flaggedStages.slice();
+  ok('O1 setup: first flag action (from discovery) sets the full downstream set', afterFirst.indexOf('benefit-metric') !== -1 && afterFirst.indexOf('definition-of-ready') !== -1);
+
+  var sid2 = 'test-res-s4-t5-union-b-' + Math.random().toString(36).slice(2);
+  routes._setHtmlSession(sid2, {
+    skillName: 'definition-of-ready', sessionPath: '/tmp/t', systemPrompt: '# definition-of-ready', turns: [],
+    artefactContent: null, artefactPath: null, done: false, featureSlug: 'res-s4-t5-union-feature', journeyId: jid
+  });
+  await routes.handlePostMaterialityAction(
+    fakeReq({ accessToken: 'tok', tenantId: 'org-a' }, { name: 'definition-of-ready', id: sid2 }, { action: 'flag', suggestionId: 's-b' }),
+    fakeRes()
+  );
+
+  var afterSecond = journeyStore.getJourney(jid).flaggedStages.slice();
+  var expectedUnion = journeyStore.getDownstreamStages('discovery'); // definition-of-ready's own downstream is empty, so union == first call's set
+  ok('O1: a second flag action from a LATER stage does NOT discard the first call\'s flags (union, not replace)',
+    JSON.stringify(afterSecond.slice().sort()) === JSON.stringify(expectedUnion.slice().sort()));
+})();
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 fs.rmSync(_tmpRepoRoot, { recursive: true, force: true });
 process.exit(failed > 0 ? 1 : 0);
