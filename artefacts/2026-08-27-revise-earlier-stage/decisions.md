@@ -49,6 +49,15 @@
 ---
 
 ---
+**2026-08-28 | RISK-ACCEPT | branch-setup**
+**Decision:** Acknowledge `tests/check-p3.5-validate-trace.js` as a pre-existing failure in the res-s3 worktree's baseline (563 files run, 1 failed) and proceed with implementation rather than blocking on it — third recurrence of the same file in this feature.
+**Alternatives considered:** (1) Investigate and fix this failure before proceeding with res-s3.
+**Rationale:** Same file as the res-s1 branch-setup RISK-ACCEPT above; re-run standalone (`node tests/check-p3.5-validate-trace.js`) and passed cleanly (5/5), confirming a flake rather than a res-s3-worktree-specific regression, consistent with the prior two occurrences. Recorded separately rather than assumed-covered by the res-s1 entry so `/trace` sees an accurate per-story acknowledgement.
+**Made by:** Hamish King — Platform Owner
+**Revisit trigger:** Same as the res-s1 entry — if this file starts failing in a way that correlates with this feature's own changes, or blocks CI on res-s3's eventual PR. Given three occurrences across three different worktrees now, worth a genuine root-cause fix outside this feature rather than continuing to RISK-ACCEPT indefinitely.
+---
+
+---
 **2026-08-28 | ARCH | implementation-plan (res-s2)**
 **Decision:** Correct res-s2's signed-off DoR contract (`dor/res-s2-dor-contract.md`) before writing its implementation plan — the "Estimated touch points" section named `src/web-ui/routes/journey.js` as the chat-turn handler file; direct code investigation found the real artefact-completion/disk-write/`completeStage()` logic lives in `src/web-ui/routes/skills.js`'s `handlePostTurnStreamHtml`. Two previously-unidentified mechanisms were also discovered and added to the contract: (1) a duplicate-`completedStages`-entry risk — the existing code unconditionally calls `completeStage()` on a session's first artefact completion, which a reopened session (res-s1) would trigger again on a revision turn, violating AC1/AC3's "no entry added" requirement; (2) the existing disk-write-failure handling only logs to console, never surfacing to the operator, contradicting AC4 as literally written.
 **Alternatives considered:** (1) Write the implementation plan against the original (incorrect) contract and let a subagent discover the mismatch mid-task, the way res-s1's Task 3 plan/test inconsistency was discovered. (2) Silently fix the code without updating the contract.
