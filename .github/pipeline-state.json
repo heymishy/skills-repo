@@ -27783,21 +27783,21 @@
           "id": "res-s2",
           "slug": "res-s2-overwrite-artefact-in-place-on-revision",
           "name": "Overwrite a reopened stage's artefact in place on revision",
-          "stage": "implementation-plan",
+          "stage": "subagent-execution",
           "health": "green",
           "artefact": "artefacts/2026-08-27-revise-earlier-stage/stories/res-s2-overwrite-artefact-in-place-on-revision.md",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
           "prStatus": "none",
           "notes": "Epic 1: Reopen and revise an earlier completed stage (see epics/reopen-and-revise-earlier-stage.md for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-28T03:05:16.556Z",
+          "updatedAt": "2026-08-28T04:05:09.138Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-27-revise-earlier-stage/review/res-s2-review-2.md",
           "testPlan": {
             "status": "written",
-            "totalTests": 10,
-            "passing": 0,
+            "totalTests": 19,
+            "passing": 19,
             "artefact": "artefacts/2026-08-27-revise-earlier-stage/test-plans/res-s2-test-plan.md"
           },
           "acTotal": 5,
@@ -27811,13 +27811,13 @@
             {
               "id": "task-1",
               "name": "Path traversal guard, write-failure surfacing, pre-revision capture",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-27-revise-earlier-stage/plans/res-s2-plan.md"
             },
             {
               "id": "task-2",
               "name": "Duplicate-completion guard and materiality-check hook",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-27-revise-earlier-stage/plans/res-s2-plan.md"
             }
           ]
