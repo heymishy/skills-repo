@@ -286,7 +286,7 @@ git commit -m "feat(res-s3): deterministic section-diff materiality classifier"
 
 **Model class:** balanced
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/check-res-s3-suggest-revision-materiality.js`, before the final `console.log('\n' + passed ...)` line:
 
@@ -373,7 +373,7 @@ await (async function() {
 })();
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-res-s3-suggest-revision-materiality.js
@@ -381,7 +381,7 @@ node tests/check-res-s3-suggest-revision-materiality.js
 
 Expected output: `TypeError: mc.runMaterialityCheck is not a function`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `src/web-ui/modules/materiality-check.js`, add before the `module.exports` line:
 
@@ -424,7 +424,7 @@ And change the `module.exports` line to:
 module.exports = { checkMateriality, generateRationale, runMaterialityCheck, TARGET_SECTIONS };
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-res-s3-suggest-revision-materiality.js
@@ -432,7 +432,7 @@ node tests/check-res-s3-suggest-revision-materiality.js
 
 Expected output: `18 passed, 0 failed` (Task 1 ended at 9, not the originally-planned 7 — a code-quality review after Task 1 added 2 exclusivity assertions; see commit `0c7a5359`. Task 2 itself still adds exactly 9 new assertions.)
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -440,7 +440,7 @@ npm test
 
 Expected output: all tests passing (same 1 pre-existing flake as Task 1)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/modules/materiality-check.js tests/check-res-s3-suggest-revision-materiality.js
