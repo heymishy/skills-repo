@@ -27838,14 +27838,14 @@
           "dodStatus": "not-started",
           "prStatus": "none",
           "notes": "Epic 2: Materiality-aware downstream guidance (see epics/materiality-aware-downstream-guidance.md for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-28T07:29:34.873Z",
+          "updatedAt": "2026-08-28T07:41:44.569Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-27-revise-earlier-stage/review/res-s3-review-2.md",
           "testPlan": {
             "status": "written",
-            "totalTests": 26,
-            "passing": 26,
+            "totalTests": 30,
+            "passing": 30,
             "artefact": "artefacts/2026-08-27-revise-earlier-stage/test-plans/res-s3-test-plan.md"
           },
           "acTotal": 5,
@@ -27877,7 +27877,7 @@
             {
               "id": "task-4",
               "name": "D37 wiring: setMaterialityCheckHook (AC5)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-27-revise-earlier-stage/plans/res-s3-plan.md"
             }
           ]
