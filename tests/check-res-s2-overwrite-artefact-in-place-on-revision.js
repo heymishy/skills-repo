@@ -152,6 +152,39 @@ await (async function() {
   ok('AC3: file mtime unchanged (no write attempted)', afterStat.mtimeMs === beforeStat.mtimeMs);
 })();
 
+await (async function() {
+  // Path traversal guard (Architecture Constraints / CLAUDE.md mandatory
+  // rule, code-quality review finding): a featureSlug crafted to resolve
+  // outside the repo root must be rejected with an SSE error, and nothing
+  // must be written anywhere outside the temp repo root.
+  process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
+  var routes = freshRoutes();
+  routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
+    onFirstChunk(0);
+    onChunk(ARTEFACT_RESPONSE);
+    return Promise.resolve({ text: ARTEFACT_RESPONSE, usage: {} });
+  });
+  var _traversalSlug = '../../../../../../tmp/res-s2-traversal-escape';
+  var _dangerousAbsPath = path.resolve(path.join(_tmpRepoRoot, 'artefacts', _traversalSlug, 'discovery.md'));
+
+  var sid = 'test-res-s2-t1-traversal-' + Math.random().toString(36).slice(2);
+  routes._setHtmlSession(sid, {
+    skillName: 'discovery', sessionPath: '/tmp/t', systemPrompt: '# discovery', turns: [],
+    artefactContent: null, artefactPath: null, done: false, featureSlug: _traversalSlug
+  });
+
+  var res = fakeRes();
+  await routes.handlePostTurnStreamHtml(
+    { session: { accessToken: 'tok', tenantId: 'org-a' }, params: { name: 'discovery', id: sid }, body: { answer: 'hi' } },
+    res
+  );
+
+  var lastEvent = res.lastEvent();
+  ok('Path traversal: a traversal-shaped featureSlug surfaces an SSE error', lastEvent && typeof lastEvent.error === 'string');
+  ok('Path traversal: stream ends after the rejection', res._ended === true);
+  ok('Path traversal: nothing was written to the resolved-outside-repo-root path', !fs.existsSync(_dangerousAbsPath));
+})();
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 fs.rmSync(_tmpRepoRoot, { recursive: true, force: true });
 delete process.env.COPILOT_REPO_PATH;

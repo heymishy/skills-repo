@@ -5000,7 +5000,8 @@ async function handlePostTurnStreamHtml(req, res) {
     // HTTP 400 rejection is an error event + ending the stream (headers/status
     // are already committed by this point in an SSE response).
     if (!_autoAbsPath.startsWith(_resolvedRepoRoot + path.sep)) {
-      console.warn(JSON.stringify({ event: 'artefact_path_traversal_rejected', sessionId: sessionId, artefactPath: session.artefactPath }));
+      // Security: never log the raw artefactPath value in production (CLAUDE.md path-traversal guard rule).
+      console.warn(JSON.stringify({ event: 'artefact_path_traversal_rejected', sessionId: sessionId }));
       res.write('data: ' + JSON.stringify({ error: 'Could not save your revision — invalid artefact path.' }) + '\n\n');
       res.end();
       return;
