@@ -3867,6 +3867,10 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
     '  function attachMaterialityHandlers(bubbleEl, suggestionId) {',
     '    var flagBtn  = bubbleEl.querySelector(".btn-flag-downstream");',
     '    var leaveBtn = bubbleEl.querySelector(".btn-leave-as-is");',
+    '    function clearMaterialityStatus(actionsDiv) {',
+    '      var stale = actionsDiv.querySelectorAll(".materiality-error, .materiality-confirmed");',
+    '      for(var i=0;i<stale.length;i++) stale[i].remove();',
+    '    }',
     '    function doAction(action) {',
     '      fetch(materialityActionUrl(), {',
     '        method: "POST",',
@@ -3879,10 +3883,16 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
     '        if(flagBtn)  flagBtn.disabled  = true;',
     '        if(leaveBtn) leaveBtn.disabled = true;',
     '        var actionsDiv = bubbleEl.querySelector(".materiality-actions");',
-    '        if(actionsDiv) actionsDiv.insertAdjacentHTML("beforeend", \'<span class="materiality-confirmed">Recorded.</span>\');',
+    '        if(actionsDiv) {',
+    '          clearMaterialityStatus(actionsDiv);',
+    '          actionsDiv.insertAdjacentHTML("beforeend", \'<span class="materiality-confirmed">Recorded.</span>\');',
+    '        }',
     '      }).catch(function() {',
     '        var actionsDiv = bubbleEl.querySelector(".materiality-actions");',
-    '        if(actionsDiv) actionsDiv.insertAdjacentHTML("beforeend", \'<span class="materiality-error">Could not record — please try again.</span>\');',
+    '        if(actionsDiv) {',
+    '          clearMaterialityStatus(actionsDiv);',
+    '          actionsDiv.insertAdjacentHTML("beforeend", \'<span class="materiality-error">Could not record — please try again.</span>\');',
+    '        }',
     '      });',
     '    }',
     '    if(flagBtn)  flagBtn.addEventListener("click",  function(){ doAction("flag"); });',
@@ -5628,16 +5638,20 @@ async function handlePostMaterialityAction(req, res) {
   if (action === 'flag' && journey) {
     _journeyStore.setJourneyFields(journeyId, { flaggedStages: downstream });
     downstream.forEach(function(stageName) {
-      _posthog.capture(req.session.login || journey.ownerId || journeyId, 'materiality_flag_set', {
-        journeyId: journeyId, stageName: stageName, timestamp: now
-      }, { company: req.session.tenantId || journey.tenantId });
+      try {
+        _posthog.capture(req.session.login || journey.ownerId || journeyId, 'materiality_flag_set', {
+          journeyId: journeyId, stageName: stageName, timestamp: now
+        }, { company: req.session.tenantId || journey.tenantId });
+      } catch (_phFlagErr) { /* fire-and-forget: PostHog failure must not fail an already-applied flag */ }
     });
   }
 
   if (journey) {
-    _posthog.capture(req.session.login || journey.ownerId || journeyId, 'materiality_operator_choice_recorded', {
-      journeyId: journeyId, skillName: session.skillName, suggestionId: suggestionId || null, operatorAction: action
-    }, { company: req.session.tenantId || journey.tenantId });
+    try {
+      _posthog.capture(req.session.login || journey.ownerId || journeyId, 'materiality_operator_choice_recorded', {
+        journeyId: journeyId, skillName: session.skillName, suggestionId: suggestionId || null, operatorAction: action
+      }, { company: req.session.tenantId || journey.tenantId });
+    } catch (_phChoiceErr) { /* fire-and-forget: PostHog failure must not fail an already-recorded choice */ }
   }
 
   _json(res, 200, { action: action, flaggedStages: journey ? (journey.flaggedStages || []) : [] });

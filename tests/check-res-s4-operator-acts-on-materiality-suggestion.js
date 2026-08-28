@@ -170,8 +170,9 @@ await (async function() {
   ok('AC3: the choice event records the operator action as "flag"', choiceEvent && choiceEvent.properties.operatorAction === 'flag');
 
   var flagSetEvents = captured.filter(function(c) { return c.event === 'materiality_flag_set'; });
-  ok('NFR-Audit: one flag_set event per downstream stage, each with journeyId/stageName/timestamp', flagSetEvents.length === journeyStore.getDownstreamStages('discovery').length &&
-    flagSetEvents.every(function(e) { return e.properties.journeyId === jid && !!e.properties.stageName && !!e.properties.timestamp; }));
+  ok('NFR-Audit: one flag_set event per downstream stage, each with journeyId/stageName/timestamp, covering exactly the downstream stage set', flagSetEvents.length === journeyStore.getDownstreamStages('discovery').length &&
+    flagSetEvents.every(function(e) { return e.properties.journeyId === jid && !!e.properties.stageName && !!e.properties.timestamp; }) &&
+    JSON.stringify(flagSetEvents.map(function(e) { return e.properties.stageName; }).sort()) === JSON.stringify(journeyStore.getDownstreamStages('discovery').slice().sort()));
 })();
 
 await (async function() {
@@ -231,6 +232,36 @@ await (async function() {
     res
   );
   ok('Invalid action is rejected with 400', res._status === 400);
+})();
+
+await (async function() {
+  // AC1 regression guard: the handler must derive downstream stages from the
+  // session's own skillName, not a hardcoded 'discovery'. A session at
+  // 'definition' has a strictly shorter downstream list than one at
+  // 'discovery', so a hardcoded literal would fail this assertion.
+  var routes = freshSkillsRoutes();
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+
+  var jid = journeyStore.createJourney('res-s4-t2-skillname-feature', 'default').journeyId;
+  var sid = 'test-res-s4-t2-skillname-' + Math.random().toString(36).slice(2);
+  routes._setHtmlSession(sid, {
+    skillName: 'definition', sessionPath: '/tmp/t', systemPrompt: '# definition', turns: [],
+    artefactContent: null, artefactPath: null, done: false, featureSlug: 'res-s4-t2-skillname-feature', journeyId: jid
+  });
+
+  var res = fakeRes();
+  await routes.handlePostMaterialityAction(
+    fakeReq({ accessToken: 'tok', tenantId: 'org-a' }, { name: 'definition', id: sid }, { action: 'flag', suggestionId: 'suggestion-t2-3' }),
+    res
+  );
+
+  var journeyAfter = journeyStore.getJourney(jid);
+  var expectedDownstream = journeyStore.getDownstreamStages('definition');
+  ok('AC1: downstream stages are derived from session.skillName, not hardcoded to "discovery"',
+    expectedDownstream.length > 0 &&
+    JSON.stringify(expectedDownstream) !== JSON.stringify(journeyStore.getDownstreamStages('discovery')) &&
+    JSON.stringify(journeyAfter.flaggedStages) === JSON.stringify(expectedDownstream));
 })();
 
 await (async function() {
