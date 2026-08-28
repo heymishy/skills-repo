@@ -27921,14 +27921,14 @@
           "dodStatus": "not-started",
           "prStatus": "none",
           "notes": "Epic 2: Materiality-aware downstream guidance (see epics/materiality-aware-downstream-guidance.md for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-28T20:12:58.604Z",
+          "updatedAt": "2026-08-28T20:40:27.255Z",
           "reviewStatus": "has-findings",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-27-revise-earlier-stage/review/res-s4-review-1.md",
           "testPlan": {
             "status": "written",
             "totalTests": 25,
-            "passing": 21,
+            "passing": 25,
             "artefact": "artefacts/2026-08-27-revise-earlier-stage/test-plans/res-s4-test-plan.md"
           },
           "acTotal": 4,
@@ -27960,7 +27960,7 @@
             {
               "id": "task-4",
               "name": "Flag clears when a flagged stage is reopened",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-08-27-revise-earlier-stage/plans/res-s4-plan.md"
             }
           ]

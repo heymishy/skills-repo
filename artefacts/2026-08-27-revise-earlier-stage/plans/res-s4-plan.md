@@ -803,7 +803,7 @@ git commit -m "feat(res-s4): flag marker on both step-nav render sites (AC1, acc
 
 **Model class:** balanced
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/check-res-s4-operator-acts-on-materiality-suggestion.js`:
 
@@ -870,7 +870,7 @@ await (async function() {
 })();
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-res-s4-operator-acts-on-materiality-suggestion.js
@@ -878,7 +878,7 @@ node tests/check-res-s4-operator-acts-on-materiality-suggestion.js
 
 Expected output: `FAIL: AC4: reopening a flagged stage (fresh-session path) clears its own flag`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `src/web-ui/routes/journey.js`'s `handleGetJourneyStageReopen`, find the block right after `stageEntry` is confirmed to exist (search for `var stageEntry = (journey.completedStages || []).find`):
 
@@ -923,7 +923,7 @@ Insert the flag-clear logic between the `if (!stageEntry)` guard and the early-r
   if (stageEntry.sessionId) {
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-res-s4-operator-acts-on-materiality-suggestion.js
@@ -931,7 +931,7 @@ node tests/check-res-s4-operator-acts-on-materiality-suggestion.js
 
 Expected output: `25 passed, 0 failed` (adjusted +1 for Task 2's post-review count — see Task 2's Step 4 note above)
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -939,7 +939,7 @@ npm test
 
 Expected output: all tests passing (same 1 pre-existing flake). This is Task 4's own first (and only) touch to `handleGetJourneyStageReopen` — Task 3 touched a different pair of functions (`handleGetStageReview`/`handleGetJourneyStageView`), not this one. This handler was originally built by a sibling story, res-s1, whose own test file (`tests/check-res-s1-reopen-completed-stage-live-session.js`) directly exercises it — re-confirm all 19 of its tests still pass, not just this story's own.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/journey.js tests/check-res-s4-operator-acts-on-materiality-suggestion.js
