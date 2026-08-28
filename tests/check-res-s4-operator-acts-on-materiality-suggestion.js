@@ -321,7 +321,13 @@ await (async function() {
   var journey = journeyStore.createJourney(slug, 'default');
   var jid = journey.journeyId;
   journeyStore.setJourneyFields(jid, { activeSkill: 'definition', activeSessionId: 'sid-active' });
-  journeyStore.setJourneyFields(jid, { flaggedStages: ['review'] });
+  // Deliberately NOT 'review' -- a fixture flagging the stage that shares its
+  // id with this route's own name ("stage review") would still pass even if
+  // the implementation hardcoded isFlagged = (s.id === 'review') instead of
+  // genuinely reading journey.flaggedStages. 'test-plan' is thematically
+  // unrelated to this route, so the marker can only appear on it by actually
+  // consulting the flaggedStages data.
+  journeyStore.setJourneyFields(jid, { flaggedStages: ['test-plan'] });
 
   journeyRoute.setGetHtmlSession(function() {
     return { skillName: 'definition', done: true, artefactContent: '# Definition', turns: [] };
@@ -335,7 +341,32 @@ await (async function() {
   );
 
   var html = res._chunks.join('');
-  ok('AC1: handleGetStageReview ALSO renders a flag marker for the flagged stage (both render sites consistent)', /sn-step--flagged/.test(html) && /May need review/.test(html));
+
+  // Per-stage isolation: extract each stage's own <li> (same technique as
+  // the sibling handleGetJourneyStageView test's flaggedStepMatch above,
+  // generalized to select by stage label so we can pinpoint two different
+  // stages' <li> elements independently) and prove the marker tracks
+  // journey.flaggedStages data rather than a hardcoded stage id -- both that
+  // the flagged stage ('test-plan') carries it AND that a different, real,
+  // non-flagged stage ('definition', this journey's own activeSkill) does
+  // not. This specifically rules out the exact regression the code-quality
+  // review identified -- isFlagged = (s.id === 'review'), a hardcode that
+  // happens to match this route's own thematic name -- since 'review' is no
+  // longer the flagged fixture id, and also rules out an "always flag" (or
+  // a hardcode targeting any OTHER single id) regression via the negative
+  // control on 'definition'. Note: no single-fixture test can distinguish
+  // genuine data-driven flagging from a hardcode that coincidentally targets
+  // the exact same id the fixture flags (isFlagged = (s.id === 'test-plan')
+  // is pointwise identical to the real logic for this fixture) -- that
+  // limitation is inherent to any one-scenario test, not specific to this
+  // one, and was confirmed by mutation-testing both cases directly.
+  var liRegex = /<li class="sn-step[^"]*">(?:(?!<li class="sn-step)[\s\S])*?<\/li>/g;
+  var stepLis = html.match(liRegex) || [];
+  var testPlanLi = stepLis.find(function(li) { return /sn-label">Test Plan<\/span>/.test(li); });
+  var definitionLi = stepLis.find(function(li) { return /sn-label">Definition<\/span>/.test(li); });
+  ok('AC1: handleGetStageReview ALSO renders a flag marker for the flagged stage (both render sites consistent), and NOT for a different real, non-flagged stage (negative control)',
+    !!testPlanLi && /sn-step--flagged/.test(testPlanLi) && /May need review/.test(testPlanLi) &&
+    !!definitionLi && !/sn-step--flagged/.test(definitionLi) && !/May need review/.test(definitionLi));
 })();
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
