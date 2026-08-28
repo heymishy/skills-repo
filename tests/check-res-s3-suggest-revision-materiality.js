@@ -336,6 +336,39 @@ await (async function() {
   ok('Regression guard: the turn still completes normally (done:true reached)', res.events().some(function(e) { return e && e.done === true; }));
 })();
 
+console.log('\nTask 4 — D37 wiring: setMaterialityCheckHook (AC5)');
+
+await (async function() {
+  // AC5 / D37 rule #4: behavioural correctness, not just "a function got
+  // wired" — two different pre/post pairs must resolve to two different,
+  // individually-correct classifications through the REAL wired chain
+  // (server.js's setMaterialityCheckHook call -> materiality-check.js's
+  // real runMaterialityCheck -> skills.js's hook call site).
+  var fsServer = require('fs');
+  var serverSrc = fsServer.readFileSync(path.resolve(__dirname, '../src/web-ui/server.js'), 'utf8');
+  ok('AC5: server.js wires setMaterialityCheckHook to the real implementation', /setMaterialityCheckHook\(\s*runMaterialityCheck\s*\)/.test(serverSrc));
+
+  var mc = freshMaterialityCheck();
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+  var jid = journeyStore.createJourney('res-s3-t4-feature', 'default').journeyId;
+
+  var materialResult = await mc.runMaterialityCheck({
+    journeyId: jid, skillName: 'discovery',
+    preRevisionContent: PRE_FIXTURE,
+    postRevisionContent: PRE_FIXTURE.replace('No new versioning mechanism.', 'A new dated-copy mechanism is required.')
+  });
+  var minorResult = await mc.runMaterialityCheck({
+    journeyId: jid, skillName: 'discovery',
+    preRevisionContent: PRE_FIXTURE,
+    postRevisionContent: PRE_FIXTURE.replace('outer loop.', 'outer loop, end to end.')
+  });
+
+  ok('AC5: a scope-changing pair resolves to material through the wired chain', materialResult.classification === 'material');
+  ok('AC5: a wording-only pair resolves to minor through the wired chain', minorResult.classification === 'minor');
+  ok('AC5: the two pairs produce two DIFFERENT classifications (not a stub that always returns the same value)', materialResult.classification !== minorResult.classification);
+})();
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 fs.rmSync(_tmpRepoRoot, { recursive: true, force: true });
 process.exit(failed > 0 ? 1 : 0);

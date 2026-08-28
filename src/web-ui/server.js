@@ -373,6 +373,12 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   // _nextQuestionExecutorAdapter and _sectionDraftExecutorAdapter are no-ops (AC9 — mfc.1);
   // no wiring required.
 
+  // res-s3 / D37 mandatory separate wiring task — wire the real
+  // materiality-check implementation to res-s2's setMaterialityCheckHook adapter
+  const { setMaterialityCheckHook } = require('./routes/skills');
+  const { runMaterialityCheck } = require('./modules/materiality-check');
+  setMaterialityCheckHook(runMaterialityCheck);
+
   // wsm.1 — wire disk session persistence adapter and restore sessions on startup
   const _diskSessionStoreAdapter = require('./adapters/session-store');
   _setSessionStore(_diskSessionStoreAdapter);
