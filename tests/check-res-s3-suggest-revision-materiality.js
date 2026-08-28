@@ -77,6 +77,7 @@ await (async function() {
   var r1 = mc.checkMateriality(PRE_FIXTURE, postProblemChanged);
   ok('AC2: Problem Statement change classified as material', r1.classification === 'material');
   ok('AC2: changedSections names Problem Statement', r1.changedSections.indexOf('Problem Statement') !== -1);
+  ok('AC2: changedSections contains ONLY Problem Statement (no unrelated sections)', r1.changedSections.length === 1 && JSON.stringify(r1.changedSections) === JSON.stringify(['Problem Statement']));
 
   // AC2: Constraints changed -> material
   var postConstraintChanged = PRE_FIXTURE.replace(
@@ -86,6 +87,7 @@ await (async function() {
   var r2 = mc.checkMateriality(PRE_FIXTURE, postConstraintChanged);
   ok('AC2: Constraints change classified as material', r2.classification === 'material');
   ok('AC2: changedSections names Constraints', r2.changedSections.indexOf('Constraints') !== -1);
+  ok('AC2: changedSections contains ONLY Constraints (no unrelated sections)', r2.changedSections.length === 1 && JSON.stringify(r2.changedSections) === JSON.stringify(['Constraints']));
 })();
 
 await (async function() {
@@ -107,6 +109,7 @@ await (async function() {
 })();
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
+fs.rmSync(_tmpRepoRoot, { recursive: true, force: true });
 process.exit(failed > 0 ? 1 : 0);
 
 })();
