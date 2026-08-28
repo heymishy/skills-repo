@@ -49,6 +49,15 @@
 ---
 
 ---
+**2026-08-28 | ARCH | implementation-plan (res-s2)**
+**Decision:** Correct res-s2's signed-off DoR contract (`dor/res-s2-dor-contract.md`) before writing its implementation plan — the "Estimated touch points" section named `src/web-ui/routes/journey.js` as the chat-turn handler file; direct code investigation found the real artefact-completion/disk-write/`completeStage()` logic lives in `src/web-ui/routes/skills.js`'s `handlePostTurnStreamHtml`. Two previously-unidentified mechanisms were also discovered and added to the contract: (1) a duplicate-`completedStages`-entry risk — the existing code unconditionally calls `completeStage()` on a session's first artefact completion, which a reopened session (res-s1) would trigger again on a revision turn, violating AC1/AC3's "no entry added" requirement; (2) the existing disk-write-failure handling only logs to console, never surfacing to the operator, contradicting AC4 as literally written.
+**Alternatives considered:** (1) Write the implementation plan against the original (incorrect) contract and let a subagent discover the mismatch mid-task, the way res-s1's Task 3 plan/test inconsistency was discovered. (2) Silently fix the code without updating the contract.
+**Rationale:** ADR-008 states the contract is binding at pre-merge and, when contract and reality conflict, the contract is the authoring defect to be corrected — not silently bypassed or left stale. Correcting the contract before planning (rather than during implementation) means the coding agent's task descriptions are accurate from the start, avoiding a repeat of the res-s1 Task 3 pattern where an inaccurate plan was only caught by a subagent hitting a real test failure.
+**Made by:** Claude (agent), reviewed inline with the operator's "yes please continue" instruction
+**Revisit trigger:** If a future story's own contract review surfaces the same "wrong file named in Estimated touch points" pattern a third time, treat it as a signal that `/definition-of-ready`'s Contract Proposal step should include a stronger verification step (e.g. requiring the file path to be grep-confirmed to exist and contain the referenced function) before sign-off, not just after implementation begins.
+---
+
+---
 
 ## Architecture Decision Records
 
