@@ -27323,7 +27323,7 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "discoveryStatus": "approved",
-      "updatedAt": "2026-08-27T20:02:54.607Z",
+      "updatedAt": "2026-08-28T02:56:14.011Z",
       "metrics": [
         {
           "id": "M1",
@@ -27783,14 +27783,14 @@
           "id": "res-s2",
           "slug": "res-s2-overwrite-artefact-in-place-on-revision",
           "name": "Overwrite a reopened stage's artefact in place on revision",
-          "stage": "definition-of-ready",
+          "stage": "implementation-plan",
           "health": "green",
           "artefact": "artefacts/2026-08-27-revise-earlier-stage/stories/res-s2-overwrite-artefact-in-place-on-revision.md",
           "dorStatus": "signed-off",
           "dodStatus": "not-started",
           "prStatus": "none",
           "notes": "Epic 1: Reopen and revise an earlier completed stage (see epics/reopen-and-revise-earlier-stage.md for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-27T19:49:41.431Z",
+          "updatedAt": "2026-08-28T03:05:16.556Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-27-revise-earlier-stage/review/res-s2-review-2.md",
@@ -27806,7 +27806,21 @@
           "e2eToolingRequired": false,
           "dorArtefact": "artefacts/2026-08-27-revise-earlier-stage/dor/res-s2-dor.md",
           "dorContractArtefact": "artefacts/2026-08-27-revise-earlier-stage/dor/res-s2-dor-contract.md",
-          "dorSignedOffAt": "2026-08-27T19:49:41.432Z"
+          "dorSignedOffAt": "2026-08-27T19:49:41.432Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Path traversal guard, write-failure surfacing, pre-revision capture",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-27-revise-earlier-stage/plans/res-s2-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Duplicate-completion guard and materiality-check hook",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-27-revise-earlier-stage/plans/res-s2-plan.md"
+            }
+          ]
         },
         {
           "id": "res-s3",
