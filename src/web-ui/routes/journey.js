@@ -1677,9 +1677,11 @@ async function handleGetJourneyStageReopen(req, res) {
     var _clearedFlags = journey.flaggedStages.filter(function(s) { return s !== skillName; });
     _journeyStore.setJourneyFields(journeyId, { flaggedStages: _clearedFlags });
     journey.flaggedStages = _clearedFlags;
-    _posthog.capture(req.session.login || journey.ownerId || journeyId, 'materiality_flag_cleared', {
-      journeyId: journeyId, stageName: skillName, timestamp: new Date().toISOString()
-    }, { company: req.session.tenantId || journey.tenantId });
+    try {
+      _posthog.capture(req.session.login || journey.ownerId || journeyId, 'materiality_flag_cleared', {
+        journeyId: journeyId, stageName: skillName, timestamp: new Date().toISOString()
+      }, { company: req.session.tenantId || journey.tenantId });
+    } catch (_phFlagClearErr) { /* fire-and-forget: PostHog failure must not fail an already-applied flag clear */ }
   }
 
   // AC1 safety-net re-check: session may already exist despite the step-nav
