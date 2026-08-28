@@ -108,6 +108,87 @@ await (async function() {
   ok('AC3 edge case: single-character typo fix classified as minor', r2.classification === 'minor');
 })();
 
+console.log('\nTask 2 — orchestration: runMaterialityCheck (suggestion ID, PostHog audit log)');
+
+await (async function() {
+  var mc = freshMaterialityCheck();
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+  var jid = journeyStore.createJourney('res-s3-t2-feature', 'default').journeyId;
+
+  // AC1: the function receives and uses BOTH pre and post content — not
+  // just post, and not attempting to re-derive pre from disk.
+  var result = await mc.runMaterialityCheck({
+    journeyId: jid,
+    skillName: 'discovery',
+    preRevisionContent: PRE_FIXTURE,
+    postRevisionContent: PRE_FIXTURE.replace('No new versioning mechanism.', 'A new dated-copy mechanism is required.')
+  });
+  ok('AC1: classification reflects the real pre/post diff (material)', result.classification === 'material');
+  ok('AC1: rationale is a non-empty one-sentence string', typeof result.rationale === 'string' && result.rationale.length > 0 && result.rationale.indexOf('\n') === -1);
+  ok('AC4: a suggestionId is returned for later joining (res-s4)', typeof result.suggestionId === 'string' && result.suggestionId.length > 0);
+})();
+
+await (async function() {
+  // AC4: the suggestion is recorded via PostHog capture with a joinable key.
+  var mc = freshMaterialityCheck();
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+  var jid = journeyStore.createJourney('res-s3-t2-audit-feature', 'default').journeyId;
+
+  var posthogServer = require('../src/web-ui/modules/posthog-server');
+  var _originalCapture = posthogServer.capture;
+  var captured = [];
+  posthogServer.capture = function(distinctId, event, properties, groups) {
+    captured.push({ distinctId: distinctId, event: event, properties: properties, groups: groups });
+  };
+
+  var result;
+  try {
+    result = await mc.runMaterialityCheck({
+      journeyId: jid,
+      skillName: 'discovery',
+      preRevisionContent: PRE_FIXTURE,
+      postRevisionContent: PRE_FIXTURE.replace('outer loop.', 'outer loop, end to end.')
+    });
+  } finally {
+    posthogServer.capture = _originalCapture;
+  }
+
+  ok('AC4: exactly one PostHog capture call recorded', captured.length === 1);
+  ok('AC4: capture event is materiality_suggestion_generated', captured[0] && captured[0].event === 'materiality_suggestion_generated');
+  ok('AC4: capture properties include the same suggestionId returned to the caller', captured[0] && captured[0].properties.suggestionId === result.suggestionId);
+  ok('AC4: capture properties include journeyId and skillName for joining', captured[0] && captured[0].properties.journeyId === jid && captured[0].properties.skillName === 'discovery');
+  ok('AC4: capture properties include the classification', captured[0] && captured[0].properties.classification === 'minor');
+})();
+
+await (async function() {
+  // NFR: materiality check adds zero additional model/executor calls
+  // (comfortably within "at most one additional model turn").
+  var routes = freshRoutes();
+  var mc = freshMaterialityCheck();
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+  var jid = journeyStore.createJourney('res-s3-t2-nfr-feature', 'default').journeyId;
+
+  var streamCalls = 0;
+  routes.setSkillTurnExecutorStreamAdapter(function(systemPrompt, history, currentInput, token, onChunk, onThinkingChunk, onFirstChunk) {
+    streamCalls++;
+    onFirstChunk(0);
+    onChunk('ok');
+    return Promise.resolve({ text: 'ok', usage: {} });
+  });
+
+  await mc.runMaterialityCheck({
+    journeyId: jid,
+    skillName: 'discovery',
+    preRevisionContent: PRE_FIXTURE,
+    postRevisionContent: PRE_FIXTURE.replace('outer loop.', 'outer loop, end to end.')
+  });
+
+  ok('NFR: materiality check invokes zero additional skill-turn-executor calls', streamCalls === 0);
+})();
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 fs.rmSync(_tmpRepoRoot, { recursive: true, force: true });
 process.exit(failed > 0 ? 1 : 0);

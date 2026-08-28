@@ -11,6 +11,16 @@
 // Task 1 of 4 (res-s3 implementation plan): pure classification only. No
 // orchestration, no PostHog logging, no chat-turn handler wiring — those are
 // Tasks 2-4.
+//
+// Task 2 of 4: orchestration. runMaterialityCheck() wraps the Task 1
+// functions, mints a joinable suggestionId, and logs the suggestion via
+// PostHog (see routes/journey.js's earlier_stage_reopened event for the
+// existing capture pattern this follows). Still NOT wired into the
+// chat-turn handler — that's Task 3.
+
+var crypto = require('crypto');
+var _journeyStore = require('./journey-store');
+var _posthog = require('./posthog-server');
 
 // Target sections match discovery.md's real heading names (Problem Statement,
 // MVP Scope, Constraints) — confirmed against
@@ -78,4 +88,35 @@ function generateRationale(classification, changedSections) {
   return 'This looks like a minor change — no scope or constraint impact detected.';
 }
 
-module.exports = { checkMateriality: checkMateriality, generateRationale: generateRationale, TARGET_SECTIONS: TARGET_SECTIONS };
+/**
+ * Full orchestration for res-s2's _materialityCheckHook integration point
+ * (AC1/AC4). Classifies, generates a rationale, mints a joinable
+ * suggestionId, and logs the suggestion via PostHog.
+ * @param {{journeyId: string, skillName: string, preRevisionContent: string, postRevisionContent: string}} payload
+ * @returns {Promise<{classification: 'material'|'minor', rationale: string, suggestionId: string}>}
+ */
+async function runMaterialityCheck(payload) {
+  var preContent = payload.preRevisionContent || '';
+  var postContent = payload.postRevisionContent || '';
+  var result = checkMateriality(preContent, postContent);
+  var rationale = generateRationale(result.classification, result.changedSections);
+  var suggestionId = crypto.randomUUID();
+
+  var journey = payload.journeyId ? _journeyStore.getJourney(payload.journeyId) : null;
+  _posthog.capture(
+    (journey && journey.ownerId) || payload.journeyId || 'anonymous',
+    'materiality_suggestion_generated',
+    {
+      journeyId: payload.journeyId || null,
+      skillName: payload.skillName || null,
+      suggestionId: suggestionId,
+      classification: result.classification,
+      changedSections: result.changedSections
+    },
+    { company: journey ? journey.tenantId : null }
+  );
+
+  return { classification: result.classification, rationale: rationale, suggestionId: suggestionId };
+}
+
+module.exports = { checkMateriality: checkMateriality, generateRationale: generateRationale, runMaterialityCheck: runMaterialityCheck, TARGET_SECTIONS: TARGET_SECTIONS };
