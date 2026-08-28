@@ -457,7 +457,7 @@ git commit -m "feat(res-s3): runMaterialityCheck orchestration with PostHog audi
 
 **Model class:** deep-reasoning (touches the shared streaming handler used by every skill session — regression risk if the change is not precisely scoped to the existing `else` branch)
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/check-res-s3-suggest-revision-materiality.js`:
 
@@ -610,7 +610,7 @@ await (async function() {
 })();
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-res-s3-suggest-revision-materiality.js
@@ -618,7 +618,7 @@ node tests/check-res-s3-suggest-revision-materiality.js
 
 Expected output: `FAIL: AC1: a materialitySuggestion SSE event was emitted` (the hook's return value is currently discarded, not awaited)
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `src/web-ui/routes/skills.js`, locate the existing block (search for `_existingStageEntry`):
 
@@ -676,7 +676,7 @@ Then, in the same function, immediately before the final SSE write (`res.write('
 
 (`_materialitySuggestion` is declared with `var`, which is function-scoped in this codebase's existing style — it remains in scope from the block above down to the final SSE writes at the end of the function, matching how `fullText`/`_turnUsage` and other `var`-declared turn-scoped values are already used across this same function.)
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-res-s3-suggest-revision-materiality.js
@@ -684,7 +684,7 @@ node tests/check-res-s3-suggest-revision-materiality.js
 
 Expected output: `26 passed, 0 failed` (adjusted +2 for Task 1's post-review count — see Task 2's Step 4 note above)
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -692,7 +692,7 @@ npm test
 
 Expected output: all tests passing, including res-s1's 19/19 and res-s2's 19/19 (this task touches a block those tests also exercise — must not regress either)
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/skills.js tests/check-res-s3-suggest-revision-materiality.js
