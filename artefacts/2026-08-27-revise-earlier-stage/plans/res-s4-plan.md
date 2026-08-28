@@ -616,7 +616,7 @@ git commit -m "feat(res-s4): handlePostMaterialityAction endpoint, flag/leave-as
 
 **Model class:** balanced
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Append to `tests/check-res-s4-operator-acts-on-materiality-suggestion.js`:
 
@@ -685,7 +685,7 @@ await (async function() {
 })();
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 node tests/check-res-s4-operator-acts-on-materiality-suggestion.js
@@ -693,7 +693,7 @@ node tests/check-res-s4-operator-acts-on-materiality-suggestion.js
 
 Expected output: `FAIL: AC1: handleGetJourneyStageView renders a flag marker for the flagged stage`
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 In `src/web-ui/routes/journey.js`, in `handleGetJourneyStageView`'s step-nav loop (search for `var _doneSet = new Set((journey.completedStages || []).map(function(s) { return s.skillName; }));` — the SECOND occurrence in the file, inside `handleGetJourneyStageView`, around line 891):
 
@@ -770,7 +770,7 @@ Replace with:
   }).join('');
 ```
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 node tests/check-res-s4-operator-acts-on-materiality-suggestion.js
@@ -778,7 +778,7 @@ node tests/check-res-s4-operator-acts-on-materiality-suggestion.js
 
 Expected output: `21 passed, 0 failed` (adjusted +1 for Task 2's post-review count — see Task 2's Step 4 note above)
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -786,7 +786,7 @@ npm test
 
 Expected output: all tests passing (same 1 pre-existing flake). This task modifies step-nav rendering that res-s1's Task 3 also touched — re-confirm `tests/check-res-s1-reopen-completed-stage-live-session.js` (19 tests) still passes.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add src/web-ui/routes/journey.js tests/check-res-s4-operator-acts-on-materiality-suggestion.js
