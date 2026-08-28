@@ -27692,9 +27692,9 @@
           "category": "nfr",
           "label": "Materiality judgment adds at most one additional model turn",
           "status": "met",
-          "evidence": "res-s3 NFR profile row; verified by NFR test materialityJudgmentAddsAtMostOneTurnLatency",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-08-27T19:51:30.218Z"
+          "evidence": "Verified post-merge: NFR test asserts ZERO additional model/executor calls (exceeds the \"at most one\" target) -- rationale is a deterministic template derived from the diff, per the DoR contract correction. Passing in merged PR #781 CI.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-28T11:06:19.853Z"
         },
         {
           "id": "NFR-reused-session-lookup-no-new-surface",
@@ -27722,6 +27722,24 @@
           "evidence": "CORRECTED 2026-08-28 (during res-s3 implementation-plan investigation): the previously-cited automated test \"stageReopenFiresAuditEvent\" does not exist anywhere in the codebase -- confirmed via full tests/ grep (zero matches for the test name or the earlier_stage_reopened event string), a full run of the actual res-s1 test file (19/19 passing, no such test present), and `git log --all -S` showing the string only ever appearing in artefact/documentation commits, never in a tests/*.js file. The underlying production code IS correct: journey.js:1697 fires _posthog.capture(..., \"earlier_stage_reopened\", {...}) unconditionally on every reopen (confirmed by direct code read -- code review is a valid evidence type per templates/definition-of-done.md). Status kept \"met\" on that basis, but the prior \"test passing\" claim was false and has been removed from the evidence. res-s2 sub-flow (artefact overwrite) remains unresolved from res-s2-dod.md's own note -- no dedicated test either. Follow-up: add a real automated test asserting this PostHog capture call fires (spy/stub on _posthog.capture), since a production-code-only \"met\" claim without a regression test is weaker than the DoD process nominally requires.",
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-08-28T05:53:37.126Z"
+        },
+        {
+          "id": "NFR-materiality-hook-wiring-d37",
+          "category": "nfr",
+          "label": "setMaterialityCheckHook wired to the real materiality-check implementation, verified with a behavioural-correctness test (D37 rule #4)",
+          "status": "met",
+          "evidence": "Verified post-merge: 4 D37 wiring tests passing in merged PR #781 CI, including a test proving two different pre/post pairs resolve to two different, individually-correct classifications through the real wired chain.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-28T11:06:19.853Z"
+        },
+        {
+          "id": "NFR-materiality-accessibility-render",
+          "category": "nfr",
+          "label": "Materiality suggestion text follows existing chat message rendering (appendBubble) -- no new UI component",
+          "status": "met",
+          "evidence": "Verified post-merge: Task 5 fix confirmed by direct code trace to render via the existing appendBubble(role, html) helper, the same mechanism used for every other assistant message. Also closes the AC1 end-to-end gap found at final cross-task review.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-28T11:06:19.853Z"
         }
       ],
       "stories": [
@@ -27831,14 +27849,14 @@
           "id": "res-s3",
           "slug": "res-s3-suggest-revision-materiality",
           "name": "Suggest whether a stage revision is material to downstream stages",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "artefact": "artefacts/2026-08-27-revise-earlier-stage/stories/res-s3-suggest-revision-materiality.md",
           "dorStatus": "signed-off",
-          "dodStatus": "not-started",
-          "prStatus": "draft",
+          "dodStatus": "complete",
+          "prStatus": "merged",
           "notes": "Epic 2: Materiality-aware downstream guidance (see epics/materiality-aware-downstream-guidance.md for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-28T10:45:37.744Z",
+          "updatedAt": "2026-08-28T11:06:19.853Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-27-revise-earlier-stage/review/res-s3-review-2.md",
@@ -27888,7 +27906,9 @@
             }
           ],
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/781"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/781",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-27-revise-earlier-stage/dod/res-s3-dod.md"
         },
         {
           "id": "res-s4",
