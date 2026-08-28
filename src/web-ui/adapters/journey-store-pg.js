@@ -42,7 +42,10 @@ function _sanitise(journey) {
     // fdn-s1: this allowlist is the only thing standing between a field
     // working in-memory/on-disk and silently vanishing after a Postgres-
     // backed restart -- must be added explicitly, not inferred.
-    displayName:       journey.displayName        || null
+    displayName:       journey.displayName        || null,
+    // res-s4: same fdn-s1 rule applies -- flaggedStages must be listed here
+    // explicitly or it silently vanishes on a Postgres-backed restart.
+    flaggedStages:     journey.flaggedStages       || []
   };
   // Defensive: strip accessToken from any nested value (should never be there, but guard anyway)
   delete data.accessToken;
