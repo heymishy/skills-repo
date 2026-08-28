@@ -58,6 +58,15 @@
 ---
 
 ---
+**2026-08-28 | RISK-ACCEPT | branch-setup**
+**Decision:** Acknowledge `tests/check-p3.5-validate-trace.js` as a pre-existing failure in the res-s4 worktree's baseline (564 files run, 1 failed) and proceed with implementation rather than blocking on it — fourth recurrence of the same file in this feature, across all four of its stories.
+**Alternatives considered:** (1) Investigate and fix this failure before proceeding with res-s4 — the last story in this feature, so the final opportunity to close this out within the feature's own scope.
+**Rationale:** Same file as the three prior branch-setup RISK-ACCEPTs above; re-run standalone (`node tests/check-p3.5-validate-trace.js`) and passed cleanly (5/5), confirming a flake rather than a res-s4-worktree-specific regression, consistent with all prior occurrences. Recorded separately so `/trace` sees an accurate per-story acknowledgement. Given this is now four-for-four across every worktree created in this feature, this is no longer a marginal judgment call — it is a genuine, reproducible flake in the shared test infrastructure, independent of any of this feature's own code. Not fixed here because root-causing a shared, cross-feature test infrastructure flake is out of scope for a single feature's branch-setup step, and would itself need its own DoR-signed-off story per the artefact-first rule (it would touch `tests/` and possibly `scripts/`).
+**Made by:** Hamish King — Platform Owner
+**Revisit trigger:** This is the last story in this feature — no further branch-setup RISK-ACCEPT opportunities remain within `2026-08-27-revise-earlier-stage`. Recommend opening a dedicated short-track story (test-plan → DoR → coding agent) to root-cause and fix `tests/check-p3.5-validate-trace.js` outside this feature, given the 4/4 recurrence rate documented across `res-s1`, `res-s2` (implicitly, via the res-s1 entry's coverage), `res-s3`, and now `res-s4`.
+---
+
+---
 **2026-08-28 | ARCH | implementation-plan (res-s2)**
 **Decision:** Correct res-s2's signed-off DoR contract (`dor/res-s2-dor-contract.md`) before writing its implementation plan — the "Estimated touch points" section named `src/web-ui/routes/journey.js` as the chat-turn handler file; direct code investigation found the real artefact-completion/disk-write/`completeStage()` logic lives in `src/web-ui/routes/skills.js`'s `handlePostTurnStreamHtml`. Two previously-unidentified mechanisms were also discovered and added to the contract: (1) a duplicate-`completedStages`-entry risk — the existing code unconditionally calls `completeStage()` on a session's first artefact completion, which a reopened session (res-s1) would trigger again on a revision turn, violating AC1/AC3's "no entry added" requirement; (2) the existing disk-write-failure handling only logs to console, never surfacing to the operator, contradicting AC4 as literally written.
 **Alternatives considered:** (1) Write the implementation plan against the original (incorrect) contract and let a subagent discover the mismatch mid-task, the way res-s1's Task 3 plan/test inconsistency was discovered. (2) Silently fix the code without updating the contract.
