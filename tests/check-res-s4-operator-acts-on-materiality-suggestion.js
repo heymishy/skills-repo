@@ -129,6 +129,7 @@ await (async function() {
 })();
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
+fs.rmSync(_tmpRepoRoot, { recursive: true, force: true });
 process.exit(failed > 0 ? 1 : 0);
 
 })();
