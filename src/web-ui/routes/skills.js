@@ -3815,7 +3815,13 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
     '              if(evt.materialitySuggestion) {',
     '                var ms = evt.materialitySuggestion;',
     '                var msLabel = ms.classification === "material" ? "Material change" : "Minor change";',
-    '                appendBubble("assistant", "<strong>" + escHtmlClient(msLabel) + ":</strong> " + escHtmlClient(ms.rationale || ""));',
+    '                var msBubble = appendBubble("assistant",',
+    '                  "<strong>" + escHtmlClient(msLabel) + ":</strong> " + escHtmlClient(ms.rationale || "") +',
+    '                  \'<div class="materiality-actions">\' +',
+    '                    \'<button class="btn-flag-downstream" type="button" aria-label="Flag downstream stages">Flag downstream stages</button> \' +',
+    '                    \'<button class="btn-leave-as-is" type="button" aria-label="Leave as-is">Leave as-is</button>\' +',
+    '                  \'</div>\');',
+    '                attachMaterialityHandlers(msBubble, ms.suggestionId);',
     '              }',
     '              if(evt.lensComplete) {',
     '                handleLensComplete();',
@@ -3854,6 +3860,33 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
     '  var SESSION_ID_ENC = "' + encodeURIComponent(sessionId) + '";',
     '  function assumptionConfirmUrl(cardId) {',
     '    return "/api/skills/" + SKILL_NAME_ENC + "/sessions/" + SESSION_ID_ENC + "/assumption/" + encodeURIComponent(cardId) + "/confirm";',
+    '  }',
+    '  function materialityActionUrl() {',
+    '    return "/api/skills/" + SKILL_NAME_ENC + "/sessions/" + SESSION_ID_ENC + "/materiality-action";',
+    '  }',
+    '  function attachMaterialityHandlers(bubbleEl, suggestionId) {',
+    '    var flagBtn  = bubbleEl.querySelector(".btn-flag-downstream");',
+    '    var leaveBtn = bubbleEl.querySelector(".btn-leave-as-is");',
+    '    function doAction(action) {',
+    '      fetch(materialityActionUrl(), {',
+    '        method: "POST",',
+    '        headers: {"Content-Type": "application/json"},',
+    '        body: JSON.stringify({action: action, suggestionId: suggestionId})',
+    '      }).then(function(r) {',
+    '        if(!r.ok) throw new Error("Request failed: " + r.status);',
+    '        return r.json();',
+    '      }).then(function() {',
+    '        if(flagBtn)  flagBtn.disabled  = true;',
+    '        if(leaveBtn) leaveBtn.disabled = true;',
+    '        var actionsDiv = bubbleEl.querySelector(".materiality-actions");',
+    '        if(actionsDiv) actionsDiv.insertAdjacentHTML("beforeend", \'<span class="materiality-confirmed">Recorded.</span>\');',
+    '      }).catch(function() {',
+    '        var actionsDiv = bubbleEl.querySelector(".materiality-actions");',
+    '        if(actionsDiv) actionsDiv.insertAdjacentHTML("beforeend", \'<span class="materiality-error">Could not record — please try again.</span>\');',
+    '      });',
+    '    }',
+    '    if(flagBtn)  flagBtn.addEventListener("click",  function(){ doAction("flag"); });',
+    '    if(leaveBtn) leaveBtn.addEventListener("click", function(){ doAction("leave-as-is"); });',
     '  }',
     '  function attachCardHandlers(cardEl) {',
     '    var confirmBtn = cardEl.querySelector(".btn-confirm");',
@@ -5558,6 +5591,58 @@ async function handlePostAssumptionConfirm(req, res) {
   _json(res, 200, { cardId: cardId, state: cards[cardId].state });
 }
 
+/**
+ * res-s4: record the operator's response to a materiality suggestion —
+ * "flag" applies a visible marker to every downstream stage (AC1), or
+ * "leave-as-is" applies nothing (AC2). Either way the choice is logged
+ * paired with the original suggestionId so an acceptance rate can be
+ * computed later (AC3). Follows handlePostAssumptionConfirm's exact shape.
+ */
+async function handlePostMaterialityAction(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    _json(res, 401, { error: 'Not authenticated' });
+    return;
+  }
+
+  var sessionId = (req.params && req.params.id) || '';
+  var session = await _getSessionOrRestore(sessionId);
+  if (!session) {
+    _json(res, 404, { error: 'SESSION_NOT_FOUND' });
+    return;
+  }
+
+  var body = await _readBody(req);
+  var action = body && body.action;
+  var suggestionId = body && body.suggestionId;
+  if (action !== 'flag' && action !== 'leave-as-is') {
+    _json(res, 400, { error: 'INVALID_ACTION' });
+    return;
+  }
+
+  var _posthog = require('../modules/posthog-server');
+  var journeyId = session.journeyId;
+  var journey = journeyId ? _journeyStore.getJourney(journeyId) : null;
+  var downstream = journey ? _journeyStore.getDownstreamStages(session.skillName) : [];
+  var now = new Date().toISOString();
+
+  if (action === 'flag' && journey) {
+    _journeyStore.setJourneyFields(journeyId, { flaggedStages: downstream });
+    downstream.forEach(function(stageName) {
+      _posthog.capture(req.session.login || journey.ownerId || journeyId, 'materiality_flag_set', {
+        journeyId: journeyId, stageName: stageName, timestamp: now
+      }, { company: req.session.tenantId || journey.tenantId });
+    });
+  }
+
+  if (journey) {
+    _posthog.capture(req.session.login || journey.ownerId || journeyId, 'materiality_operator_choice_recorded', {
+      journeyId: journeyId, skillName: session.skillName, suggestionId: suggestionId || null, operatorAction: action
+    }, { company: req.session.tenantId || journey.tenantId });
+  }
+
+  _json(res, 200, { action: action, flaggedStages: journey ? (journey.flaggedStages || []) : [] });
+}
+
 // psh-s5 — inject product context sections into the skill system prompt
 // psh-s10 — also inject active standards section after product context
 async function buildSystemPromptWithProductContext(opts) {
@@ -5644,6 +5729,7 @@ module.exports = {
   extractCanvasBlocksFromTurns, buildReadOnlyCanvasScript,
   // iwu.4 — confirm/flag endpoint
   handlePostAssumptionConfirm,
+  handlePostMaterialityAction,
   // ssp.1 — server-side Step 1 pre-computation (exported for testing)
   computeStep1Summary,
   // cost tracking — compute USD cost from accumulated session.usage

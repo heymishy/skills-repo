@@ -128,6 +128,122 @@ await (async function() {
   pg._setPoolForTesting(null);
 })();
 
+console.log('\nTask 2 — handlePostMaterialityAction endpoint');
+
+await (async function() {
+  // AC1/AC3: "flag" action sets flaggedStages on the journey and records the
+  // choice paired with the suggestionId.
+  var routes = freshSkillsRoutes();
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+
+  var jid = journeyStore.createJourney('res-s4-t2-flag-feature', 'default').journeyId;
+  var sid = 'test-res-s4-t2-flag-' + Math.random().toString(36).slice(2);
+  routes._setHtmlSession(sid, {
+    skillName: 'discovery', sessionPath: '/tmp/t', systemPrompt: '# discovery', turns: [],
+    artefactContent: null, artefactPath: null, done: false, featureSlug: 'res-s4-t2-flag-feature', journeyId: jid
+  });
+
+  var captured = [];
+  var posthogServer = require('../src/web-ui/modules/posthog-server');
+  var _originalCapture = posthogServer.capture;
+  posthogServer.capture = function(distinctId, event, properties, groups) {
+    captured.push({ event: event, properties: properties });
+  };
+
+  var res = fakeRes();
+  try {
+    await routes.handlePostMaterialityAction(
+      fakeReq({ accessToken: 'tok', tenantId: 'org-a' }, { name: 'discovery', id: sid }, { action: 'flag', suggestionId: 'suggestion-t2-1' }),
+      res
+    );
+  } finally {
+    posthogServer.capture = _originalCapture;
+  }
+
+  var journeyAfter = journeyStore.getJourney(jid);
+  ok('AC1: "flag" action sets journey.flaggedStages to the downstream stages', JSON.stringify(journeyAfter.flaggedStages) === JSON.stringify(journeyStore.getDownstreamStages('discovery')));
+
+  var choiceEvent = captured.find(function(c) { return c.event === 'materiality_operator_choice_recorded'; });
+  ok('AC3: the operator choice is recorded via PostHog', !!choiceEvent);
+  ok('AC3: the choice event carries the same suggestionId as the original suggestion', choiceEvent && choiceEvent.properties.suggestionId === 'suggestion-t2-1');
+  ok('AC3: the choice event records the operator action as "flag"', choiceEvent && choiceEvent.properties.operatorAction === 'flag');
+
+  var flagSetEvents = captured.filter(function(c) { return c.event === 'materiality_flag_set'; });
+  ok('NFR-Audit: one flag_set event per downstream stage, each with journeyId/stageName/timestamp', flagSetEvents.length === journeyStore.getDownstreamStages('discovery').length &&
+    flagSetEvents.every(function(e) { return e.properties.journeyId === jid && !!e.properties.stageName && !!e.properties.timestamp; }));
+})();
+
+await (async function() {
+  // AC2: "leave-as-is" applies no flag, still records the choice.
+  var routes = freshSkillsRoutes();
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+
+  var jid = journeyStore.createJourney('res-s4-t2-leave-feature', 'default').journeyId;
+  var sid = 'test-res-s4-t2-leave-' + Math.random().toString(36).slice(2);
+  routes._setHtmlSession(sid, {
+    skillName: 'discovery', sessionPath: '/tmp/t', systemPrompt: '# discovery', turns: [],
+    artefactContent: null, artefactPath: null, done: false, featureSlug: 'res-s4-t2-leave-feature', journeyId: jid
+  });
+
+  var captured = [];
+  var posthogServer = require('../src/web-ui/modules/posthog-server');
+  var _originalCapture = posthogServer.capture;
+  posthogServer.capture = function(distinctId, event, properties) { captured.push({ event: event, properties: properties }); };
+
+  var res = fakeRes();
+  try {
+    await routes.handlePostMaterialityAction(
+      fakeReq({ accessToken: 'tok', tenantId: 'org-a' }, { name: 'discovery', id: sid }, { action: 'leave-as-is', suggestionId: 'suggestion-t2-2' }),
+      res
+    );
+  } finally {
+    posthogServer.capture = _originalCapture;
+  }
+
+  var journeyAfter = journeyStore.getJourney(jid);
+  ok('AC2: "leave-as-is" applies no flag', Array.isArray(journeyAfter.flaggedStages) && journeyAfter.flaggedStages.length === 0);
+
+  var choiceEvent = captured.find(function(c) { return c.event === 'materiality_operator_choice_recorded'; });
+  ok('AC2/AC3: "leave-as-is" is still recorded (not just a no-op)', !!choiceEvent && choiceEvent.properties.operatorAction === 'leave-as-is');
+
+  var flagSetEvents = captured.filter(function(c) { return c.event === 'materiality_flag_set'; });
+  ok('AC2: no flag_set events fire for leave-as-is', flagSetEvents.length === 0);
+})();
+
+await (async function() {
+  // Reject an invalid action — matches handlePostAssumptionConfirm's
+  // INVALID_ACTION precedent.
+  var routes = freshSkillsRoutes();
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+  var jid = journeyStore.createJourney('res-s4-t2-invalid-feature', 'default').journeyId;
+  var sid = 'test-res-s4-t2-invalid-' + Math.random().toString(36).slice(2);
+  routes._setHtmlSession(sid, {
+    skillName: 'discovery', sessionPath: '/tmp/t', systemPrompt: '# discovery', turns: [],
+    artefactContent: null, artefactPath: null, done: false, featureSlug: 'res-s4-t2-invalid-feature', journeyId: jid
+  });
+
+  var res = fakeRes();
+  await routes.handlePostMaterialityAction(
+    fakeReq({ accessToken: 'tok', tenantId: 'org-a' }, { name: 'discovery', id: sid }, { action: 'do-something-else', suggestionId: 'x' }),
+    res
+  );
+  ok('Invalid action is rejected with 400', res._status === 400);
+})();
+
+await (async function() {
+  // AC1 client-side: the materiality bubble's flag/leave-as-is buttons must
+  // exist and be wired via the same fetch-and-update pattern as assumption
+  // cards (attachCardHandlers precedent) -- verified via source inspection,
+  // consistent with how Task 5 of res-s3 verified its own client-side branch.
+  var skillsSrc = fs.readFileSync(SKILLS_PATH, 'utf8');
+  var materialityBranchMatch = skillsSrc.match(/if\(evt\.materialitySuggestion\)\s*\{([\s\S]*?)\n\s*\}/);
+  ok('AC1/AC2 client render: the materiality branch renders a flag button', !!materialityBranchMatch && /btn-flag-downstream/.test(materialityBranchMatch[1]));
+  ok('AC1/AC2 client render: the materiality branch renders a leave-as-is button', !!materialityBranchMatch && /btn-leave-as-is/.test(materialityBranchMatch[1]));
+})();
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 fs.rmSync(_tmpRepoRoot, { recursive: true, force: true });
 process.exit(failed > 0 ? 1 : 0);
