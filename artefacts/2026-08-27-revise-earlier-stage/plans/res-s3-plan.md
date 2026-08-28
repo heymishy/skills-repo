@@ -467,19 +467,12 @@ console.log('\nTask 3 — hook awaited and forwarded as an SSE event');
 var ARTEFACT_RESPONSE =
   'Understood.\n\n---ARTEFACT-START---\n' + PRE_FIXTURE.replace('No new versioning mechanism.', 'A new dated-copy mechanism is required.') + '\n---ARTEFACT-END---\n---SLUG---\nres-s3-fixture-feature';
 
-function fakeResT3() {
-  var r = { _chunks: [], _ended: false };
-  r.writeHead = function() {};
-  r.write = function(s) { r._chunks.push(s); };
-  r.end = function() { r._ended = true; };
-  r.events = function() {
-    return r._chunks.map(function(c) {
-      var m = c.match(/^data: (.*)\n\n$/);
-      return m ? JSON.parse(m[1]) : null;
-    }).filter(Boolean);
-  };
-  return r;
-}
+// Reuses the header's fakeRes() (already defines .events()) — do NOT define
+// a separate fakeResT3() here; that would duplicate identical SSE-mock logic
+// for no reason. (Corrected 2026-08-28 at code review of Task 1 — the plan
+// originally had this task define its own copy instead of reusing the
+// header's helper, which is exactly what made the header's fakeRes()
+// spuriously look like dead code from Task 1's own isolated point of view.)
 
 await (async function() {
   // AC1 (integration): materiality suggestion fires immediately after the
@@ -514,7 +507,7 @@ await (async function() {
     artefactContent: null, artefactPath: null, done: false, featureSlug: slug, journeyId: jid
   });
 
-  var res = fakeResT3();
+  var res = fakeRes();
   await routes.handlePostTurnStreamHtml(
     { session: { accessToken: 'tok', tenantId: 'org-a' }, params: { name: 'discovery', id: sid }, body: { answer: 'revise it' } },
     res
@@ -566,7 +559,7 @@ await (async function() {
     artefactContent: null, artefactPath: null, done: false, featureSlug: slug, journeyId: jid
   });
 
-  var res = fakeResT3();
+  var res = fakeRes();
   await routes.handlePostTurnStreamHtml(
     { session: { accessToken: 'tok', tenantId: 'org-a' }, params: { name: 'discovery', id: sid }, body: { answer: 'revise it' } },
     res
@@ -605,7 +598,7 @@ await (async function() {
     artefactContent: null, artefactPath: null, done: false, featureSlug: slug, journeyId: jid
   });
 
-  var res = fakeResT3();
+  var res = fakeRes();
   await routes.handlePostTurnStreamHtml(
     { session: { accessToken: 'tok', tenantId: 'org-a' }, params: { name: 'discovery', id: sid }, body: { answer: 'revise it' } },
     res
