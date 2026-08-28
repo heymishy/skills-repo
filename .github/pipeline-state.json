@@ -27332,7 +27332,7 @@
           "baseline": "0% -- capability does not exist today",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "res-s1 alone lets an operator reopen and converse in a live session, but nothing persists back to the artefact yet -- requires res-s2 (artefact overwrite) to also merge before a revision can be completed end-to-end.",
           "contributingStories": [
             "res-s1",
             "res-s2",
@@ -27359,7 +27359,7 @@
           "baseline": "2 known occurrences (Hamish, Abhi) before this feature existed",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "No new occurrence of the original blocking pain reported since res-s1 merged -- a preliminary, not-yet-statistically-meaningful positive signal, not a measurement. Meaningful tracking requires the full feature (all 4 stories) live.",
           "contributingStories": [
             "res-s1",
             "res-s2",
@@ -27683,9 +27683,9 @@
           "category": "nfr",
           "label": "Reopening a stage with an existing live session creates zero new sessions",
           "status": "met",
-          "evidence": "res-s1 NFR profile row; verified by NFR test noExtraSessionCreatedWhenLiveSessionAlreadyExists",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-08-27T19:51:30.218Z"
+          "evidence": "Verified post-merge: noExtraSessionCreatedWhenLiveSessionAlreadyExists test passing in merged PR #779 CI (Lint, typecheck, test, build: SUCCESS).",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-28T02:05:42.530Z"
         },
         {
           "id": "NFR-materiality-latency",
@@ -27701,9 +27701,9 @@
           "category": "nfr",
           "label": "Reopen reuses existing getGetHtmlSession() read-only lookup, no new input surface",
           "status": "met",
-          "evidence": "res-s1 NFR profile row; verified by NFR test reopenUsesExistingReadOnlySessionLookupOnly",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-08-27T19:51:30.218Z"
+          "evidence": "Verified post-merge: reopenUsesExistingReadOnlySessionLookupOnly test passing; code-quality review confirmed no new adapter introduced.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-28T02:05:42.530Z"
         },
         {
           "id": "NFR-path-traversal-guard-on-writes",
@@ -27719,9 +27719,9 @@
           "category": "nfr",
           "label": "Stage reopen, artefact overwrite, materiality suggestion, and flag set/cleared are each logged with journeyId, stage name, timestamp",
           "status": "met",
-          "evidence": "Cross-cutting NFR profile row; verified by NFR tests stageReopenFiresAuditEvent, flagEventsLoggedWithFullContext",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-08-27T19:51:30.218Z"
+          "evidence": "Verified post-merge: stageReopenFiresAuditEvent test passing in merged PR #779 CI.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-28T02:05:42.530Z"
         }
       ],
       "stories": [
@@ -27729,14 +27729,14 @@
           "id": "res-s1",
           "slug": "res-s1-reopen-completed-stage-live-session",
           "name": "Reopen a completed stage's live session from the step-nav",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "artefact": "artefacts/2026-08-27-revise-earlier-stage/stories/res-s1-reopen-completed-stage-live-session.md",
           "dorStatus": "signed-off",
-          "dodStatus": "not-started",
-          "prStatus": "draft",
+          "dodStatus": "complete",
+          "prStatus": "merged",
           "notes": "Epic 1: Reopen and revise an earlier completed stage (see epics/reopen-and-revise-earlier-stage.md for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-27T23:03:24.579Z",
+          "updatedAt": "2026-08-28T02:05:29.390Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-27-revise-earlier-stage/review/res-s1-review-1.md",
@@ -27774,7 +27774,10 @@
             }
           ],
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/779"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/779",
+          "releaseReady": true,
+          "layoutGapsAtMerge": false,
+          "dodArtefact": "artefacts/2026-08-27-revise-earlier-stage/dod/res-s1-dod.md"
         },
         {
           "id": "res-s2",
