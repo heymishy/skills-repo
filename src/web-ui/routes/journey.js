@@ -654,15 +654,18 @@ async function handleGetStageReview(req, res, pool) {
 
   // Stage navigator strip
   var _doneSet = new Set((journey.completedStages || []).map(function(s) { return s.skillName; }));
+  var _flaggedSet = new Set(journey.flaggedStages || []);
   var _stepsHtml = STAGE_META.map(function(s) {
     var isDone = _doneSet.has(s.id);
     var isActive = s.id === skillName;
-    var cls = isDone ? 'sn-step--done' : isActive ? 'sn-step--active' : 'sn-step--pending';
+    var isFlagged = _flaggedSet.has(s.id);
+    var cls = (isDone ? 'sn-step--done' : isActive ? 'sn-step--active' : 'sn-step--pending') + (isFlagged ? ' sn-step--flagged' : '');
     var icon = isDone ? '●' : isActive ? '▶' : '○';
     return '<li class="sn-step ' + cls + '">' +
       '<span class="sn-num">' + escHtml(String(s.num)) + '</span>' +
       '<span class="sn-label">' + escHtml(s.label) + '</span>' +
       '<span class="sn-icon" aria-hidden="true">' + icon + '</span>' +
+      (isFlagged ? '<span class="sn-flag-marker">⚑ May need review</span>' : '') +
       '</li>';
   }).join('');
   var navigatorHtml = [
@@ -889,17 +892,21 @@ async function handleGetJourneyStageView(req, res, pool) {
 
   // Navigator bar — done stages are clickable, active stage links back to chat
   var _doneSet = new Set((journey.completedStages || []).map(function(s) { return s.skillName; }));
+  var _flaggedSet = new Set(journey.flaggedStages || []);
   var _activeSkill = journey.activeSkill;
   var _activeSid = journey.activeSessionId || '';
   var _stepsHtml = STAGE_META.map(function(s) {
     var isDone = _doneSet.has(s.id);
     var isActive = s.id === _activeSkill;
     var isViewing = s.id === stageName;
-    var cls = isViewing ? 'sn-step--viewing' : isDone ? 'sn-step--done' : isActive ? 'sn-step--active' : 'sn-step--pending';
+    var isFlagged = _flaggedSet.has(s.id);
+    var cls = (isViewing ? 'sn-step--viewing' : isDone ? 'sn-step--done' : isActive ? 'sn-step--active' : 'sn-step--pending') + (isFlagged ? ' sn-step--flagged' : '');
     var icon = isDone || isViewing ? '●' : isActive ? '▶' : '○';
     var inner = '<span class="sn-num">' + escHtml(String(s.num)) + '</span>' +
       '<span class="sn-label">' + escHtml(s.label) + '</span>' +
-      '<span class="sn-icon" aria-hidden="true">' + icon + '</span>';
+      '<span class="sn-icon" aria-hidden="true">' + icon + '</span>' +
+      // res-s4 (AC1, Accessibility NFR): text label, not colour alone.
+      (isFlagged ? '<span class="sn-flag-marker">⚑ May need review</span>' : '');
     if (isDone) {
       // res-s1: link directly to a live session when one exists for this
       // specific completed stage (any stage, not just the active one, and

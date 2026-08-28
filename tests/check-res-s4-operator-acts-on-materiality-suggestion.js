@@ -275,6 +275,69 @@ await (async function() {
   ok('AC1/AC2 client render: the materiality branch renders a leave-as-is button', !!materialityBranchMatch && /btn-leave-as-is/.test(materialityBranchMatch[1]));
 })();
 
+console.log('\nTask 3 — flag marker on both step-nav render sites');
+
+await (async function() {
+  var journeyRoute = freshJourneyRoutes();
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+  journeyRoute.setJourneyStoreModule(journeyStore);
+  journeyRoute.setRepoRoot(_tmpRepoRoot);
+  journeyRoute.setGetHtmlSession(function() { return null; });
+
+  var slug = 'res-s4-t3-feature';
+  var journey = journeyStore.createJourney(slug, 'default');
+  var jid = journey.journeyId;
+  journeyStore.completeStage(jid, 'discovery', 'artefacts/' + slug + '/discovery.md', null, 'sid-discovery');
+  journeyStore.completeStage(jid, 'benefit-metric', 'artefacts/' + slug + '/benefit-metric.md', null, 'sid-bm');
+  journeyStore.setJourneyFields(jid, { flaggedStages: ['benefit-metric'] });
+
+  var artefactAbsPath = path.join(_tmpRepoRoot, 'artefacts', slug, 'discovery.md');
+  fs.mkdirSync(path.dirname(artefactAbsPath), { recursive: true });
+  fs.writeFileSync(artefactAbsPath, '# Discovery', 'utf8');
+
+  var res = fakeRes();
+  await journeyRoute.handleGetJourneyStageView(
+    fakeReq({ accessToken: 'tok' }, { journeyId: jid, stageName: 'discovery' }),
+    res
+  );
+
+  var html = res._chunks.join('');
+  ok('AC1: handleGetJourneyStageView renders a flag marker for the flagged stage', /sn-step--flagged/.test(html) && /May need review/.test(html));
+
+  var flaggedStepMatch = html.match(/<li class="sn-step[^"]*sn-step--flagged[^"]*"[\s\S]*?<\/li>/);
+  ok('Accessibility: the flag marker includes a text label, not colour alone', !!flaggedStepMatch && /May need review/.test(flaggedStepMatch[0]));
+})();
+
+await (async function() {
+  // Same fixture, but exercising handleGetStageReview's independent render.
+  var journeyRoute = freshJourneyRoutes();
+  var journeyStore = require('../src/web-ui/modules/journey-store');
+  journeyStore._clear();
+  journeyRoute.setJourneyStoreModule(journeyStore);
+  journeyRoute.setRepoRoot(_tmpRepoRoot);
+
+  var slug = 'res-s4-t3-review-feature';
+  var journey = journeyStore.createJourney(slug, 'default');
+  var jid = journey.journeyId;
+  journeyStore.setJourneyFields(jid, { activeSkill: 'definition', activeSessionId: 'sid-active' });
+  journeyStore.setJourneyFields(jid, { flaggedStages: ['review'] });
+
+  journeyRoute.setGetHtmlSession(function() {
+    return { skillName: 'definition', done: true, artefactContent: '# Definition', turns: [] };
+  });
+
+  var res = fakeRes();
+  await journeyRoute.handleGetStageReview(
+    fakeReq({ accessToken: 'tok' }, { journeyId: jid }),
+    res,
+    fakePool()
+  );
+
+  var html = res._chunks.join('');
+  ok('AC1: handleGetStageReview ALSO renders a flag marker for the flagged stage (both render sites consistent)', /sn-step--flagged/.test(html) && /May need review/.test(html));
+})();
+
 console.log('\n' + passed + ' passed, ' + failed + ' failed');
 fs.rmSync(_tmpRepoRoot, { recursive: true, force: true });
 process.exit(failed > 0 ? 1 : 0);
