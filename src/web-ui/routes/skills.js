@@ -4990,14 +4990,42 @@ async function handlePostTurnStreamHtml(req, res) {
 
     // Auto-save artefact to disk
     var _autoRepoRoot = _getRepoPath();
+    var _resolvedRepoRoot = path.resolve(_autoRepoRoot);
     var _autoAbsPath = path.resolve(path.join(_autoRepoRoot, session.artefactPath));
+
+    // res-s2: path traversal guard (CLAUDE.md mandatory rule) — session.artefactPath
+    // is derived from session-stored featureSlug/skillName, which counts as a
+    // "session-stored slug" under that rule. This is a streaming SSE response,
+    // not a request/response endpoint, so the SSE-appropriate equivalent of an
+    // HTTP 400 rejection is an error event + ending the stream (headers/status
+    // are already committed by this point in an SSE response).
+    if (!_autoAbsPath.startsWith(_resolvedRepoRoot + path.sep)) {
+      console.warn(JSON.stringify({ event: 'artefact_path_traversal_rejected', sessionId: sessionId, artefactPath: session.artefactPath }));
+      res.write('data: ' + JSON.stringify({ error: 'Could not save your revision — invalid artefact path.' }) + '\n\n');
+      res.end();
+      return;
+    }
+
     var _isAmendment = fs.existsSync(_autoAbsPath);
+    // res-s2 (AC5): capture the pre-revision content into memory BEFORE the
+    // write executes — this is the only point at which "before" content is
+    // still readable from disk. Handed forward to the materiality-check hook
+    // in Task 2 (this task only captures it; Task 2 consumes it).
+    var _preRevisionContent = null;
+    if (_isAmendment) {
+      try { _preRevisionContent = fs.readFileSync(_autoAbsPath, 'utf8'); } catch (_) {}
+    }
     try {
       fs.mkdirSync(path.dirname(_autoAbsPath), { recursive: true });
       fs.writeFileSync(_autoAbsPath, session.artefactContent, 'utf8');
       console.info(JSON.stringify({ event: _isAmendment ? 'artefact_auto_amended' : 'artefact_auto_saved', sessionId: sessionId, artefactPath: session.artefactPath }));
     } catch (_autoErr) {
+      // res-s2 (AC4): surface the failure to the operator instead of only
+      // logging it — the pre-fix behaviour silently swallowed this.
       console.warn(JSON.stringify({ event: 'artefact_disk_save_failed', sessionId: sessionId, error: _autoErr.message }));
+      res.write('data: ' + JSON.stringify({ error: 'Could not save your revision — please try again.' }) + '\n\n');
+      res.end();
+      return;
     }
     // Git commit (best-effort — git is not installed in Fly.io containers; failure is not an
     // error). Routed through the D37 adapter (stis-s1) so tests can stub it — see
