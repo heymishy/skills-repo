@@ -27332,7 +27332,7 @@
           "baseline": "0% -- capability does not exist today",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "res-s1 alone lets an operator reopen and converse in a live session, but nothing persists back to the artefact yet -- requires res-s2 (artefact overwrite) to also merge before a revision can be completed end-to-end.",
+          "evidence": "res-s4 (the last of M1's three contributing stories) merged 2026-08-29, completing the reopen->revise->persist->act mechanism end-to-end in the codebase. No real operator usage has occurred yet since merge -- mechanism completeness is a precondition for measurement, not a measurement itself.",
           "contributingStories": [
             "res-s1",
             "res-s2",
@@ -27346,7 +27346,7 @@
           "baseline": "Not yet established -- feature does not exist today",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "res-s4 (the second of M2's two contributing stories, after res-s3) merged 2026-08-29, closing the mechanical suggestion->choice->paired-log loop end-to-end. Requires >=10 genuine suggestions logged from real usage before a signal is meaningful; none have occurred yet.",
           "contributingStories": [
             "res-s3",
             "res-s4"
@@ -27359,7 +27359,7 @@
           "baseline": "2 known occurrences (Hamish, Abhi) before this feature existed",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "No new occurrence of the original blocking pain reported since res-s1 merged -- a preliminary, not-yet-statistically-meaningful positive signal, not a measurement. Meaningful tracking requires the full feature (all 4 stories) live.",
+          "evidence": "res-s4 (the last of M3's three contributing stories) merged 2026-08-29. No new occurrence of the original blocking pain reported since res-s1 merged -- still a preliminary, not-yet-statistically-meaningful positive signal, not a measurement. Full feature is now live in the codebase.",
           "contributingStories": [
             "res-s1",
             "res-s2",
@@ -27719,9 +27719,9 @@
           "category": "nfr",
           "label": "Stage reopen, artefact overwrite, materiality suggestion, and flag set/cleared are each logged with journeyId, stage name, timestamp",
           "status": "met",
-          "evidence": "CORRECTED 2026-08-28 (during res-s3 implementation-plan investigation): the previously-cited automated test \"stageReopenFiresAuditEvent\" does not exist anywhere in the codebase -- confirmed via full tests/ grep (zero matches for the test name or the earlier_stage_reopened event string), a full run of the actual res-s1 test file (19/19 passing, no such test present), and `git log --all -S` showing the string only ever appearing in artefact/documentation commits, never in a tests/*.js file. The underlying production code IS correct: journey.js:1697 fires _posthog.capture(..., \"earlier_stage_reopened\", {...}) unconditionally on every reopen (confirmed by direct code read -- code review is a valid evidence type per templates/definition-of-done.md). Status kept \"met\" on that basis, but the prior \"test passing\" claim was false and has been removed from the evidence. res-s2 sub-flow (artefact overwrite) remains unresolved from res-s2-dod.md's own note -- no dedicated test either. Follow-up: add a real automated test asserting this PostHog capture call fires (spy/stub on _posthog.capture), since a production-code-only \"met\" claim without a regression test is weaker than the DoD process nominally requires.",
+          "evidence": "CORRECTED 2026-08-28 (during res-s3 implementation-plan investigation): the previously-cited automated test \"stageReopenFiresAuditEvent\" does not exist anywhere in the codebase -- confirmed via full tests/ grep (zero matches for the test name or the earlier_stage_reopened event string), a full run of the actual res-s1 test file (19/19 passing, no such test present), and `git log --all -S` showing the string only ever appearing in artefact/documentation commits, never in a tests/*.js file. The underlying production code IS correct: journey.js:1697 fires _posthog.capture(..., \"earlier_stage_reopened\", {...}) unconditionally on every reopen (confirmed by direct code read -- code review is a valid evidence type per templates/definition-of-done.md). Status kept \"met\" on that basis, but the prior \"test passing\" claim was false and has been removed from the evidence. res-s2 sub-flow (artefact overwrite) remains unresolved from res-s2-dod.md's own note -- no dedicated test either. Follow-up: add a real automated test asserting this PostHog capture call fires (spy/stub on _posthog.capture), since a production-code-only \"met\" claim without a regression test is weaker than the DoD process nominally requires. res-s4 portion (2026-08-29): materiality_flag_set (one per downstream stage) and materiality_flag_cleared PostHog events both confirmed via tests asserting journeyId/stageName/timestamp are present on every event -- res-s4's own audit-logging AC is fully met with genuine test coverage, unlike the res-s1/res-s2 sub-flows noted above.",
           "assessedBy": "/definition-of-done",
-          "assessedAt": "2026-08-28T05:53:37.126Z"
+          "assessedAt": "2026-08-29T01:10:28.050Z"
         },
         {
           "id": "NFR-materiality-hook-wiring-d37",
@@ -27914,14 +27914,14 @@
           "id": "res-s4",
           "slug": "res-s4-operator-acts-on-materiality-suggestion",
           "name": "Act on a materiality suggestion without auto-triggering downstream changes",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "artefact": "artefacts/2026-08-27-revise-earlier-stage/stories/res-s4-operator-acts-on-materiality-suggestion.md",
           "dorStatus": "signed-off",
-          "dodStatus": "not-started",
-          "prStatus": "draft",
+          "dodStatus": "complete",
+          "prStatus": "merged",
           "notes": "Epic 2: Materiality-aware downstream guidance (see epics/materiality-aware-downstream-guidance.md for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-29T00:21:47.511Z",
+          "updatedAt": "2026-08-29T01:10:16.102Z",
           "reviewStatus": "has-findings",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-27-revise-earlier-stage/review/res-s4-review-1.md",
@@ -27977,7 +27977,8 @@
             }
           ],
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/782"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/782",
+          "releaseReady": true
         }
       ],
       "riskAcceptances": [
