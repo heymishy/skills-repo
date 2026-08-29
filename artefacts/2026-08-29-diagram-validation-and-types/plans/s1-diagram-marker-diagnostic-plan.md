@@ -83,7 +83,7 @@ await (async function() {
   var diag2 = routes.parseCanvasBlockDiagnostic(disallowedTypeMarker);
   ok('AC2: disallowed type returns ok:false with reason disallowed-type', diag2.ok === false && diag2.reason === 'disallowed-type');
   ok('AC2: disallowed type diagnostic names the value', diag2.detail.indexOf('not-a-real-type') !== -1);
-  ok('AC2: disallowed type diagnostic lists the allowlist', diag2.detail.indexOf('table') !== -1 && diag2.detail.indexOf('sequence') !== -1);
+  ok('AC2: disallowed type diagnostic lists the allowlist', diag2.detail.indexOf('table') !== -1 && diag2.detail.indexOf('drift-signal') !== -1);
 
   var allowedTypeMarker = '---CANVAS-JSON: {"type":"table","title":"x","content":{"headers":[],"rows":[]}}---';
   var diag3 = routes.parseCanvasBlockDiagnostic(allowedTypeMarker);
@@ -131,7 +131,8 @@ In `src/web-ui/routes/skills.js`, replace the existing `parseCanvasBlock` functi
 ```javascript
 function parseCanvasBlockDiagnostic(text) {
   var MARKER_RE = /---CANVAS-JSON:\s*(\{[\s\S]*?\})\s*---/;
-  var TYPE_ALLOW = ['cluster-tree', 'table', 'text', 'data-model', 'system-architecture', 'program-design', 'drift-signal', 'sequence'];
+  // 'sequence' is added by S5, not this story -- see S1's Out of Scope section.
+  var TYPE_ALLOW = ['cluster-tree', 'table', 'text', 'data-model', 'system-architecture', 'program-design', 'drift-signal'];
   var match = String(text).match(MARKER_RE);
   if (!match) {
     return { ok: false, reason: 'invalid-json', detail: 'No CANVAS-JSON marker body found in the given text' };
@@ -239,7 +240,7 @@ await (async function() {
 
   var raw = res.writtenData.join('');
   ok('AC1: a canvasDiagnostic SSE event is written for a malformed marker', raw.indexOf('canvasDiagnostic') !== -1);
-  ok('AC2: the diagnostic names the disallowed type and the allowlist', raw.indexOf('not-a-real-type') !== -1 && raw.indexOf('table') !== -1 && raw.indexOf('sequence') !== -1);
+  ok('AC2: the diagnostic names the disallowed type and the allowlist', raw.indexOf('not-a-real-type') !== -1 && raw.indexOf('table') !== -1 && raw.indexOf('drift-signal') !== -1);
 
   var logEvent = captured.find(function(c) { return c.evt === 'canvas_marker_diagnostic'; });
   ok('Audit: the diagnostic is logged via the existing _logger convention', !!logEvent && logEvent.data.reason === 'disallowed-type');
@@ -307,7 +308,15 @@ Expected output: `FAIL` on the `AC1`/`AC2`/`Audit` assertions — no `canvasDiag
 
 - [ ] **Step 3: Write minimal implementation**
 
-In `src/web-ui/routes/skills.js`, replace the canvas-marker scan loop inside `handlePostTurnStreamHtml` (currently ~line 4900-4922):
+In `src/web-ui/routes/skills.js`, add a small server-side escape helper just above `parseCanvasBlockDiagnostic` (the diagnostic's `detail` field embeds attacker/model-controlled text verbatim, e.g. a disallowed `type` value — `JSON.stringify` does not escape `<`/`>`/`&`, so without this the raw characters reach the SSE payload unescaped; see NFR-Security, `diagnosticTextIsEscapedBeforeSsePayload` in the test plan):
+
+```javascript
+function _escSseDiagnosticText(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+```
+
+Then replace the canvas-marker scan loop inside `handlePostTurnStreamHtml` (currently ~line 4900-4922):
 
 ```javascript
         // inc4: scan for canvas block markers
@@ -339,7 +348,7 @@ In `src/web-ui/routes/skills.js`, replace the canvas-marker scan loop inside `ha
             } catch (_diagLogErr) { /* logging must never break the stream */ }
             res.write('data: ' + JSON.stringify({ canvasDiagnostic: {
               reason: _cvDiag.reason,
-              detail: _cvDiag.detail
+              detail: _escSseDiagnosticText(_cvDiag.detail)
             } }) + '\n\n');
           }
         }

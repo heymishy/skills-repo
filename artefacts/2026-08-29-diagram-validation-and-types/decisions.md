@@ -85,6 +85,22 @@
 ---
 
 ---
+**2026-08-29 | SCOPE | subagent-execution (S1, Task 1)**
+**Decision:** Removed `'sequence'` from S1's `TYPE_ALLOW` implementation, which had been included by mistake in the implementation plan's own Task 1 code (both the shipped code and the plan artefact have been corrected).
+**Alternatives considered:** (1) Leave `'sequence'` in TYPE_ALLOW since it is harmless today (no skill emits it yet) and S5 would need to add it anyway.
+**Rationale:** S1's own story text (AC2, Out of Scope) is written against the *existing* 7-type allowlist; adding `'sequence'` is explicitly S5's scope, not S1's. This was a genuine drafting error in the implementation plan (introduced before this session's context-window summarization boundary), caught only by re-checking the subagent's diff against the story artefact rather than trusting the plan file at face value — the plan itself is not infallible just because it was reviewed at Step 4 of `/implementation-plan`. Left uncaught, S1 would have silently pre-enabled a type with no renderer until S5, and every future story reading this decisions.md or the plan artefact would see a scope boundary that didn't match the actual code.
+**Made by:** Claude (agent), during S1 subagent-execution, verifying Task 1's output
+**Revisit trigger:** None expected -- S5 will add `'sequence'` back to TYPE_ALLOW itself, as originally scoped.
+---
+
+---
+**2026-08-29 | ARCH | subagent-execution (S1, Task 2)**
+**Decision:** Add a server-side `_escSseDiagnosticText()` helper and apply it to the `canvasDiagnostic` SSE payload's `detail` field only (not the audit-log call, which keeps raw text).
+**Alternatives considered:** (1) Leave the SSE payload unescaped, on the reasoning that no other SSE emitter in this file (`chunk`, `conditionItem`, `draftChunk`, etc.) escapes its text either. (2) Escape at the `parseCanvasBlockDiagnostic` source instead of at the SSE-write call site.
+**Rationale:** The implementation-plan's own Task 2 test (`diagnosticTextIsEscapedBeforeSsePayload`, from S1's test plan's NFR-Security row) explicitly requires this, independent of what other SSE emitters in the file do — a real, deliberately-scoped NFR the plan's Step 3 code failed to satisfy when first drafted. Caught only because the dispatched subagent ran the test rather than assuming the plan's code was correct, and reported the literal failure instead of silently "fixing" it itself (which risked stepping on Task 3's own edit to the same `else` branch). Escaping only at the SSE-write call site (not at the source or in the audit log) keeps `_logger`'s recorded `detail` at full fidelity for debugging, while satisfying the NFR at the one point that actually reaches an untrusted rendering surface.
+**Made by:** Claude (agent), verifying and fixing S1 Task 2's subagent output
+**Revisit trigger:** If a future story needs the same escaping for another SSE emitter in this file, extract `_escSseDiagnosticText` into a shared, more generically-named helper at that point — do not do so speculatively now.
+---
 
 ## Architecture Decision Records
 
