@@ -970,7 +970,7 @@ Two new tests appended after the existing Task 4 tests: (1) call `handleGetChatH
 node tests/check-res-s4-operator-acts-on-materiality-suggestion.js
 ```
 
-Expected output: `27 passed, 0 failed` (25 existing + 2 new).
+Expected output: `29 passed, 0 failed` (25 existing + 4 new — 2 F1 assertions, 2 O1 assertions; corrected here from an earlier "27 (25 + 2)" estimate that undercounted the actual assertions written, per N3 from the re-run final review).
 
 - [x] **Step 5: Run full suite — no regressions**
 
