@@ -19,6 +19,7 @@ So that **a System Architecture or Program Design diagram using subgraphs to gro
 ## Architecture Constraints
 
 - Same as S3 — hand-rolled regex-based parsing, no new dependency, extends the existing parser rather than replacing it.
+- **Testing standards** (`.github/standards/testing/test-design-patterns.md`, added this session): a test asserting subgraph-aware parsing must be mutation-tested (temporarily revert the fix, confirm the test fails for the expected reason) before being trusted — same rationale as S3.
 
 ## Dependencies
 

@@ -28,13 +28,15 @@ So that **I understand exactly what went wrong instead of the diagram silently n
 
 ## Acceptance Criteria
 
-**AC1:** Given a `---CANVAS-JSON:...---` marker whose JSON payload has a syntax error, When the server-side turn-stream scanner (`handlePostTurnStreamHtml`'s canvas-marker scan loop) encounters it, Then a structured diagnostic naming the parse failure is emitted (via SSE or an equivalent surfaced record) — the marker is not silently dropped with zero signal, as it is today.
+**AC1:** Given a `---CANVAS-JSON:...---` marker whose JSON payload has a syntax error, When the server-side turn-stream scanner (`handlePostTurnStreamHtml`'s canvas-marker scan loop) encounters it, Then a structured diagnostic naming the parse failure is emitted via the SSE stream as a distinct event type (not folded into the existing `chunk`/`canvasBlock` event shapes) — the marker is not silently dropped with zero signal, as it is today.
 
 **AC2:** Given a marker with valid JSON but a `type` value not present in `parseCanvasBlock`'s `TYPE_ALLOW` list, When the scanner encounters it, Then the diagnostic names the specific disallowed value and the list of allowed types — not a generic parse failure message.
 
-**AC3:** Given a diagnostic has fired for a malformed marker, When the model's next attempt at the same diagram (within this story's one bounded retry) includes a corrected marker, Then the corrected marker renders normally; When a SECOND consecutive attempt for the same diagram also fails, Then no further retry occurs — the failure is surfaced to the operator as terminal.
+**AC3:** Given a diagnostic has fired for a malformed marker, When the model's next attempt at the same diagram — within the same turn, if the model continues generating after the diagnostic; otherwise the operator's next turn — includes a corrected marker, Then the corrected marker renders normally. This is this story's one bounded retry.
 
-**AC4:** Given a marker that parses correctly today (valid JSON, allowed type), When the scanner processes it after this story's changes, Then behaviour is unchanged — no diagnostic fires, and all 7 existing canvas-block types continue to render exactly as before.
+**AC4:** Given a diagnostic has fired for a malformed marker and a corrected attempt (per AC3) also fails, When this SECOND consecutive failure for the same diagram occurs, Then no further retry occurs — the failure is surfaced to the operator as terminal, and this is recorded as a distinct outcome from AC3's successful-retry case (not the same event re-fired).
+
+**AC5:** Given a marker that parses correctly today (valid JSON, allowed type), When the scanner processes it after this story's changes, Then behaviour is unchanged — no diagnostic fires, and all 7 existing canvas-block types continue to render exactly as before.
 
 ## Out of Scope
 

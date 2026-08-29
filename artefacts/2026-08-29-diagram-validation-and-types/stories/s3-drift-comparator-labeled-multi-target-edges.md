@@ -19,6 +19,7 @@ So that **a MATCHED or DIVERGED signal reflects the real diagram content, not an
 ## Architecture Constraints
 
 - Hand-rolled parsing only, no new npm dependency (stack constraint, `discovery.md`'s Constraints section) — extend the existing regex-based approach, do not introduce a mermaid AST parser library.
+- **Testing standards** (`.github/standards/testing/test-design-patterns.md`, added this session): a test asserting `parseFlowchartMermaid` correctly handles labeled/multi-target edges must be mutation-tested (temporarily revert the fix, confirm the test fails for the expected reason) before being trusted — a passing test alone doesn't prove the parser genuinely handles the new syntax rather than passing by coincidence.
 
 ## Dependencies
 

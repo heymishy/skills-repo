@@ -36,7 +36,7 @@ So that **an SSE turn exchange, a cache-fallback trace, or an auth handshake can
 
 **AC4:** Given the read-only stage-history view (`drh-s1`'s durable-turn-history rendering), When a session containing a sequence-type canvas block is resumed or viewed historically, Then it renders identically to the live-session view — proving the type was added to the single shared `_CANVAS_RENDER_FN_LINES` array, not a second parallel path.
 
-**AC5:** Given `parseCanvasBlock`'s `TYPE_ALLOW` list, When this story is complete, Then `"sequence"` is present in it — a `sequence`-type marker is no longer silently dropped as an unrecognized type.
+**AC5:** Given the updated `TYPE_ALLOW` list in `parseCanvasBlock`, When a `sequence`-type marker is parsed, Then it is not rejected as a disallowed type — a `sequence`-type marker is no longer silently dropped as unrecognized.
 
 ## Out of Scope
 
