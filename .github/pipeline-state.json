@@ -28291,7 +28291,7 @@
       "slug": "2026-08-30-fix-p35-validate-trace-timeout-flake",
       "name": "Increase check-p3.5-validate-trace.js's pwsh spawn timeout",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "epics": [],
       "stories": [
@@ -28299,29 +28299,32 @@
           "slug": "p35tf-s1",
           "id": "p35tf-s1",
           "name": "Increase pwsh spawn timeout to stop a full-suite-only flake",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "totalTests": 2,
-            "passing": 0,
+            "passing": 2,
             "artefact": "artefacts/2026-08-30-fix-p35-validate-trace-timeout-flake/test-plans/p35tf-s1-increase-pwsh-spawn-timeout-test-plan.md"
           },
           "acTotal": 3,
-          "acVerified": 0,
+          "acVerified": 3,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-30-fix-p35-validate-trace-timeout-flake/dor/p35tf-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-30-fix-p35-validate-trace-timeout-flake/dor/p35tf-s1-dor-contract.md",
           "dorSignedOffAt": "2026-08-29T21:47:14.679Z",
-          "updatedAt": "2026-08-29T21:47:14.679Z"
+          "updatedAt": "2026-08-29T22:02:21.998Z",
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/787"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-29T21:47:14.679Z"
+      "updatedAt": "2026-08-29T22:02:21.998Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
