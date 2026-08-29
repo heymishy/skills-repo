@@ -102,6 +102,15 @@
 **Revisit trigger:** If a future story needs the same escaping for another SSE emitter in this file, extract `_escSseDiagnosticText` into a shared, more generically-named helper at that point — do not do so speculatively now.
 ---
 
+---
+**2026-08-29 | RISK-ACCEPT | branch-setup (S2)**
+**Decision:** Acknowledge `tests/check-p3.5-validate-trace.js` as a pre-existing failure in S2's worktree baseline (566 files run, 1 failed) and proceed with implementation rather than blocking on it.
+**Alternatives considered:** (1) Investigate and fix this failure before proceeding with S2.
+**Rationale:** Same known, repo-wide flake already RISK-ACCEPTed 5 times across `revise-earlier-stage` (res-s1 through res-s4) and S1 of this feature. Re-run standalone (`node tests/check-p3.5-validate-trace.js`) and passed cleanly (5/5), confirming a flake rather than anything specific to this worktree.
+**Made by:** Hamish King — Platform Owner
+**Revisit trigger:** This is now the 6th occurrence across 3 unrelated features/stories (`revise-earlier-stage` ×4, S1 of this feature, S2 of this feature). The standing recommendation to root-cause this file with a dedicated short-track story is now overdue by a wide margin — every additional occurrence without action increases the risk that a REAL regression in this file gets waved through as "the known flake" without genuine investigation.
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded for this feature yet. -->
