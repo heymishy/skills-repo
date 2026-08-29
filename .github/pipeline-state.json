@@ -28011,9 +28011,10 @@
           "baseline": "0% -- no structured diagnostic mechanism exists today",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "S1 merged 2026-08-29 (PR #784) -- mechanism now exists for the marker-parsing failure mode, but no real operator session has hit a malformed marker in production yet.",
+          "evidence": "S1 (PR #784) + S2 (PR #785) both merged 2026-08-29 -- mechanism now mechanically covers both failure modes (marker-parsing, mermaid-syntax), but no real operator session has hit either in production yet.",
           "contributingStories": [
-            "s1-diagram-marker-diagnostic"
+            "s1-diagram-marker-diagnostic",
+            "s2-mermaid-syntax-diagnostic"
           ]
         },
         {
@@ -28053,9 +28054,9 @@
           "category": "nfr",
           "label": "Diagram render failures surface a structured diagnostic",
           "status": "met",
-          "evidence": "S1 merged (PR #784): marker-parsing diagnostic verified via 22/22 tests + E2E. S2 (mermaid-syntax) still pending to fully close this guardrail.",
+          "evidence": "S1 (PR #784) + S2 (PR #785) both merged: marker-parsing and mermaid-syntax diagnostics both verified via full test suites + E2E. Guardrail fully closed for this feature's scope.",
           "assessedBy": "/definition-of-done",
-          "assessedAt": "2026-08-29T09:03:14.614Z"
+          "assessedAt": "2026-08-29T19:10:21.305Z"
         },
         {
           "id": "NFR-drift-comparator-parsing-accuracy",
@@ -28141,12 +28142,12 @@
             {
               "slug": "s2-mermaid-syntax-diagnostic",
               "name": "Structured diagnostic for invalid mermaid syntax inside a diagram",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s2-mermaid-syntax-diagnostic-review-1.md",
-              "updatedAt": "2026-08-29T18:58:27.771Z",
+              "updatedAt": "2026-08-29T19:10:21.305Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
@@ -28188,8 +28189,11 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/785"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/785",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "layoutGapsAtMerge": false
             },
             {
               "slug": "s3-drift-comparator-labeled-multi-target-edges",
