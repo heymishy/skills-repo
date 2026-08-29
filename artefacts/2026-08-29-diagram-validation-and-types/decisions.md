@@ -112,6 +112,15 @@
 ---
 
 ---
+**2026-08-30 | RISK-ACCEPT | branch-setup (S3)**
+**Decision:** Acknowledge `tests/check-p3.5-validate-trace.js` as a pre-existing failure in S3's worktree baseline (567 files run, 1 failed) and proceed with implementation rather than blocking on it.
+**Alternatives considered:** (1) Investigate and fix this failure before proceeding with S3.
+**Rationale:** Same known, repo-wide flake, now RISK-ACCEPTed a 7th time across 4 unrelated features/stories (`revise-earlier-stage` ×4, S1/S2/S3 of this feature). Re-run standalone (`node tests/check-p3.5-validate-trace.js`) and passed cleanly (5/5), confirming a flake rather than anything specific to this worktree.
+**Made by:** Hamish King — Platform Owner
+**Revisit trigger:** 7 occurrences is no longer a "watch this" signal — it is a standing operational cost being paid every single story in this repo, silently, without anyone measuring it. Recommend a dedicated short-track story (`/test-plan → /definition-of-ready → coding agent`) be scheduled before S4/S5 of this feature, not deferred again.
+---
+
+---
 **2026-08-29 | ARCH | implementation-plan (S2)**
 **Decision:** `markDiagramRenderError` surfaces only the first line of mermaid's rejection/exception message (everything before the first `\n`), never the full raw message or stack trace. `tests/check-csd-s2-canvas-diagram-rendering.js` Unit 3 ("the error box never leaks the raw JS error message or a stack trace") is updated: its fixture's stack-trace lines (file/line references, `at ...` frames) remain asserted-absent, but its first-line reason text ("Syntax error in graph") is now asserted-present, since surfacing exactly that line is this story's own AC1.
 **Alternatives considered:** (1) Keep Unit 3's current behaviour fully intact (never show any part of the raw message) and build a pattern-matcher classifying known mermaid error shapes into pre-written safe messages instead. (2) Pause S2 and send it back to `/definition-of-ready` with the contract corrected before any code is written.
