@@ -27993,7 +27993,7 @@
     {
       "slug": "2026-08-29-diagram-validation-and-types",
       "name": "Diagram Validation, Drift Accuracy, and Archify-Inspired Diagram Types",
-      "stage": "definition",
+      "stage": "branch-setup",
       "discoveryStatus": "approved",
       "health": "green",
       "updatedAt": "2026-08-29T07:19:03.640Z",
@@ -28078,17 +28078,17 @@
         {
           "slug": "diagram-validation-drift-and-sequence-type",
           "name": "Operators can trust every canvas diagram renders correctly and every drift signal is accurate",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "s1-diagram-marker-diagnostic",
               "name": "Structured diagnostic for a malformed canvas diagram marker",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s1-diagram-marker-diagnostic-review-2.md",
-              "updatedAt": "2026-08-29T07:54:19.395Z",
+              "updatedAt": "2026-08-29T08:05:44.069Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 12,

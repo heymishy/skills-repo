@@ -58,6 +58,15 @@
 ---
 
 ---
+**2026-08-29 | RISK-ACCEPT | branch-setup (S1)**
+**Decision:** Acknowledge `tests/check-p3.5-validate-trace.js` as a pre-existing failure in the S1 worktree's baseline (565 files run, 1 failed) and proceed with implementation rather than blocking on it.
+**Alternatives considered:** (1) Investigate and fix this failure before proceeding with S1.
+**Rationale:** This exact file is already documented as a known, repo-wide flake — RISK-ACCEPTed 4 times across every worktree in the `revise-earlier-stage` feature (res-s1 through res-s4), and now confirmed a 5th time here in a completely different feature's own worktree. Re-run standalone (`node tests/check-p3.5-validate-trace.js`) and passed cleanly (5/5), confirming a flake rather than anything specific to this worktree or feature.
+**Made by:** Hamish King — Platform Owner
+**Revisit trigger:** Same as `revise-earlier-stage`'s own entries — if this file starts failing in a way that correlates with actual code changes, or blocks CI. Given 5 occurrences across two unrelated features now, this is a strong, standing signal that a dedicated short-track story to root-cause `tests/check-p3.5-validate-trace.js` is overdue — already recommended once in `revise-earlier-stage`'s own decisions.md and not yet actioned.
+---
+
+---
 
 ## Architecture Decision Records
 
