@@ -28083,12 +28083,12 @@
             {
               "slug": "s1-diagram-marker-diagnostic",
               "name": "Structured diagnostic for a malformed canvas diagram marker",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s1-diagram-marker-diagnostic-review-2.md",
-              "updatedAt": "2026-08-29T08:47:24.424Z",
+              "updatedAt": "2026-08-29T08:48:47.399Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 12,
@@ -28129,7 +28129,9 @@
                   "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s1-diagram-marker-diagnostic-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/784"
             },
             {
               "slug": "s2-mermaid-syntax-diagnostic",
