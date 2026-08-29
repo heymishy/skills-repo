@@ -28141,20 +28141,20 @@
             {
               "slug": "s2-mermaid-syntax-diagnostic",
               "name": "Structured diagnostic for invalid mermaid syntax inside a diagram",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s2-mermaid-syntax-diagnostic-review-1.md",
-              "updatedAt": "2026-08-29T09:20:35.775Z",
+              "updatedAt": "2026-08-29T18:57:21.693Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
-                "passing": 0,
+                "passing": 8,
                 "artefact": "artefacts/2026-08-29-diagram-validation-and-types/test-plans/s2-mermaid-syntax-diagnostic-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -28186,7 +28186,8 @@
                   "tddState": "not-started",
                   "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s2-mermaid-syntax-diagnostic-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "s3-drift-comparator-labeled-multi-target-edges",
