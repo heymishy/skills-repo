@@ -28291,7 +28291,7 @@
       "slug": "2026-08-30-fix-p35-validate-trace-timeout-flake",
       "name": "Increase check-p3.5-validate-trace.js's pwsh spawn timeout",
       "track": "short",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "epics": [],
       "stories": [
@@ -28299,7 +28299,7 @@
           "slug": "p35tf-s1",
           "id": "p35tf-s1",
           "name": "Increase pwsh spawn timeout to stop a full-suite-only flake",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -28317,14 +28317,17 @@
           "dorArtefact": "artefacts/2026-08-30-fix-p35-validate-trace-timeout-flake/dor/p35tf-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-30-fix-p35-validate-trace-timeout-flake/dor/p35tf-s1-dor-contract.md",
           "dorSignedOffAt": "2026-08-29T21:47:14.679Z",
-          "updatedAt": "2026-08-29T22:02:21.998Z",
+          "updatedAt": "2026-08-29T22:14:07.282Z",
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/787"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/787",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-30-fix-p35-validate-trace-timeout-flake/dod/p35tf-s1-dod.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-29T22:02:21.998Z"
+      "updatedAt": "2026-08-29T22:14:07.282Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
