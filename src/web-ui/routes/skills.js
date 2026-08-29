@@ -823,22 +823,42 @@ function parseConditionMarker(text) {
   }
 }
 
-function parseCanvasBlock(text) {
+// s1: the diagnostic's `detail` field embeds attacker/model-controlled text
+// (e.g. a disallowed `type` value) verbatim. JSON.stringify does not escape
+// `<`/`>`/`&`, so without this the raw characters would reach the SSE payload
+// unescaped (NFR-Security, diagnosticTextIsEscapedBeforeSsePayload).
+function _escSseDiagnosticText(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function parseCanvasBlockDiagnostic(text) {
   var MARKER_RE = /---CANVAS-JSON:\s*(\{[\s\S]*?\})\s*---/;
-  var match = String(text).match(MARKER_RE);
-  if (!match) { return null; }
   // csd-s1 introduced 'data-model' as the first of the `diagram`
   // content-block family. csd-s2 completes the family (ADR-026 -- shared
   // dispatch, no parallel path). csd-s6 adds 'drift-signal' (see
-  // src/modules/drift-comparator.js) the same way.
+  // src/modules/drift-comparator.js) the same way. 'sequence' is added by
+  // S5 (out of scope for this story -- see s1's own Out of Scope section).
   var TYPE_ALLOW = ['cluster-tree', 'table', 'text', 'data-model', 'system-architecture', 'program-design', 'drift-signal'];
-  try {
-    var parsed = JSON.parse(match[1]);
-    if (TYPE_ALLOW.indexOf(String(parsed.type || '')) === -1) { return null; }
-    return parsed;
-  } catch (_) {
-    return null;
+  var match = String(text).match(MARKER_RE);
+  if (!match) {
+    return { ok: false, reason: 'invalid-json', detail: 'No CANVAS-JSON marker body found in the given text' };
   }
+  var parsed;
+  try {
+    parsed = JSON.parse(match[1]);
+  } catch (parseErr) {
+    return { ok: false, reason: 'invalid-json', detail: 'JSON parse error: ' + parseErr.message };
+  }
+  var type = String(parsed.type || '');
+  if (TYPE_ALLOW.indexOf(type) === -1) {
+    return { ok: false, reason: 'disallowed-type', detail: 'Disallowed type "' + type + '" — allowed types: ' + TYPE_ALLOW.join(', ') };
+  }
+  return { ok: true, block: parsed };
+}
+
+function parseCanvasBlock(text) {
+  var result = parseCanvasBlockDiagnostic(text);
+  return result.ok ? result.block : null;
 }
 
 /**
@@ -3779,6 +3799,9 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
     '              if(evt.canvasBlock) {',
     '                appendCanvasBlock(evt.canvasBlock);',
     '              }',
+    '              if(evt.canvasDiagnostic) {',
+    '                console.warn("[canvas-diagnostic] " + evt.canvasDiagnostic.reason + ": " + evt.canvasDiagnostic.detail + (evt.canvasDiagnostic.terminal ? " (terminal -- no further retry)" : ""));',
+    '              }',
     '              if(evt.done !== undefined) {',
     '                if(evt.artefactContent) { partialDraft = ""; updateDraftPanel(evt.artefactContent); }',
     '                if(evt.done) {',
@@ -4908,14 +4931,41 @@ async function handlePostTurnStreamHtml(req, res) {
           var _cvMarkerFull = _cvScanBuf.slice(_cvStartIdx, _cvAfterEnd + _CANVAS_END.length);
           _cvCleanBuf += _cvScanBuf.slice(0, _cvStartIdx);
           _cvScanBuf   = _cvScanBuf.slice(_cvAfterEnd + _CANVAS_END.length);
-          var _cvParsed = parseCanvasBlock(_cvMarkerFull);
-          if (_cvParsed) {
+          var _cvDiag = parseCanvasBlockDiagnostic(_cvMarkerFull);
+          if (_cvDiag.ok) {
+            if (session._canvasFailureState) {
+              var _cvOkIdentity = (session.skillName || '') + '::' + (_cvDiag.block.title || '');
+              delete session._canvasFailureState[_cvOkIdentity];
+            }
             if (!session.canvasBlocks) { session.canvasBlocks = []; }
-            session.canvasBlocks.push(_cvParsed);
+            session.canvasBlocks.push(_cvDiag.block);
             res.write('data: ' + JSON.stringify({ canvasBlock: {
-              type:    _cvParsed.type    || '',
-              title:   _cvParsed.title   || '',
-              content: _cvParsed.content || {}
+              type:    _cvDiag.block.type    || '',
+              title:   _cvDiag.block.title   || '',
+              content: _cvDiag.block.content || {}
+            } }) + '\n\n');
+          } else {
+            // S1 (AC1, AC2): a malformed marker no longer vanishes silently --
+            // a structured diagnostic (reason + detail) is emitted via SSE and
+            // logged, instead of the loop simply continuing with no signal.
+            // S1 (AC3, AC4): track one bounded retry per diagram identity.
+            // Keyed on skillName+title since a malformed marker's own `type`
+            // may legitimately differ between the failed attempt and its
+            // correction (e.g. a typo'd type value) -- title is the stable
+            // identity the operator/model both understand as "the same diagram".
+            if (!session._canvasFailureState) { session._canvasFailureState = {}; }
+            var _cvIdentityMatch = _cvMarkerFull.match(/"title"\s*:\s*"([^"]*)"/);
+            var _cvIdentity = (session.skillName || '') + '::' + (_cvIdentityMatch ? _cvIdentityMatch[1] : '');
+            var _cvAlreadyFailed = !!session._canvasFailureState[_cvIdentity];
+            session._canvasFailureState[_cvIdentity] = true;
+
+            try {
+              _logger.info('canvas_marker_diagnostic', { reason: _cvDiag.reason, detail: _cvDiag.detail, terminal: _cvAlreadyFailed });
+            } catch (_diagLogErr) { /* logging must never break the stream */ }
+            res.write('data: ' + JSON.stringify({ canvasDiagnostic: {
+              reason: _cvDiag.reason,
+              detail: _escSseDiagnosticText(_cvDiag.detail),
+              terminal: _cvAlreadyFailed
             } }) + '\n\n');
           }
         }
@@ -5769,6 +5819,8 @@ module.exports = {
   parseConditionMarker,
   // inc4 — canvas output panel
   parseCanvasBlock,
+  // s1 — richer failure-shape diagnostic underlying parseCanvasBlock
+  parseCanvasBlockDiagnostic,
   // drh-s1 — recover diagram blocks from durable turn history for the
   // read-only stage-history view, and render them without the interactive
   // script's SSE/lens/confirm machinery

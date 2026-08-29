@@ -28078,31 +28078,60 @@
         {
           "slug": "diagram-validation-drift-and-sequence-type",
           "name": "Operators can trust every canvas diagram renders correctly and every drift signal is accurate",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "s1-diagram-marker-diagnostic",
               "name": "Structured diagnostic for a malformed canvas diagram marker",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s1-diagram-marker-diagnostic-review-2.md",
-              "updatedAt": "2026-08-29T07:54:19.395Z",
+              "updatedAt": "2026-08-29T08:48:47.399Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 12,
-                "passing": 0,
+                "passing": 12,
                 "artefact": "artefacts/2026-08-29-diagram-validation-and-types/test-plans/s1-diagram-marker-diagnostic-test-plan.md"
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-29-diagram-validation-and-types/dor/s1-diagram-marker-diagnostic-dor.md",
               "dorContractArtefact": "artefacts/2026-08-29-diagram-validation-and-types/dor/s1-diagram-marker-diagnostic-dor-contract.md",
-              "dorSignedOffAt": "2026-08-29T07:54:19.395Z"
+              "dorSignedOffAt": "2026-08-29T07:54:19.395Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "parseCanvasBlockDiagnostic — richer failure shape, parseCanvasBlock contract unchanged",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s1-diagram-marker-diagnostic-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Wire the diagnostic into the SSE scan loop + audit log",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s1-diagram-marker-diagnostic-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "One bounded retry — success and terminal-failure outcomes",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s1-diagram-marker-diagnostic-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Minimal client-side console listener (added at contract review)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s1-diagram-marker-diagnostic-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/784"
             },
             {
               "slug": "s2-mermaid-syntax-diagnostic",
