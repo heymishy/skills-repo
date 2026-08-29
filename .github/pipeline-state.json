@@ -28238,12 +28238,12 @@
             {
               "slug": "s4-drift-comparator-subgraphs",
               "name": "Drift-comparator recognizes subgraphs",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s4-drift-comparator-subgraphs-review-2.md",
-              "updatedAt": "2026-08-29T22:33:46.154Z",
+              "updatedAt": "2026-08-29T22:34:52.319Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -28266,7 +28266,9 @@
                   "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s4-drift-comparator-subgraphs-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/788"
             },
             {
               "slug": "s5-sequence-diagram-type",
