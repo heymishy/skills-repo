@@ -68,9 +68,9 @@ Not applicable — `context.yml` has `meta.regulated: false`, no compliance fram
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Diagram render-failure diagnosability | Pending — populated at `/definition` | Pending |
-| Drift-comparator parsing accuracy | Pending — populated at `/definition` | Pending |
-| New diagram type (sequence) adoption | Pending — populated at `/definition` | Pending |
+| Diagram render-failure diagnosability | S1 (marker-level), S2 (mermaid-syntax-level) | Covered |
+| Drift-comparator parsing accuracy | S3 (labeled/multi-target edges), S4 (subgraphs) | Covered |
+| New diagram type (sequence) adoption | S5 | Covered |
 
 ---
 
