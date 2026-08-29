@@ -150,6 +150,36 @@ async function run() {
     });
   });
 
+  // cptr-s1 AC1: a write slower than the OLD 500ms cap but within the NEW
+  // 8000ms cap must resolve via the real write landing, not via the timeout
+  // branch of persistSession's own Promise.race. This is the exact race
+  // cptr-s1 closes -- fly.toml's auto_stop_machines = 'suspend' sends no
+  // signal to the process before freezing it, so the only way to guarantee
+  // durability is for the response to genuinely wait for the real write.
+  queue.push(function() {
+    return test('cptr-s1 AC1: a 2000ms write (slower than the old 500ms cap) resolves via the real write, not a timeout', async function() {
+      session._clearForTesting();
+      var adapter = makeFakeRedis(2000);
+      session.setRedisAdapterForTesting(adapter);
+      try {
+        var created = session.createSession();
+        var req = { session: session.getSession(created.id), sessionId: created.id };
+
+        var start = Date.now();
+        var token = await csrf.generateCsrfToken(req);
+        var elapsedMs = Date.now() - start;
+
+        assert.ok(elapsedMs >= 2000, 'generateCsrfToken must have waited for the real 2000ms write, took only ' + elapsedMs + 'ms -- if this is under 2000ms, the OLD 500ms-capped race is still winning');
+        var stored = adapter.store.get(created.id);
+        assert.ok(stored, 'token must be present in the fake Redis store -- proves the real write landed, not just the timeout branch');
+        assert.strictEqual(stored.csrfToken, token, 'stored csrfToken must match the minted token');
+      } finally {
+        session.setRedisAdapterForTesting(null);
+        session._clearForTesting();
+      }
+    });
+  });
+
   // AC3: no Redis adapter configured -- resolves cleanly, no throw, no hang.
   queue.push(function() {
     return test('AC3: no-adapter case resolves cleanly with no throw', async function() {
@@ -186,6 +216,11 @@ async function run() {
   // AC4b: adapter's writeSession hangs forever -- generateCsrfToken still
   // resolves within a bounded time (proves the timeout cap, not just the
   // .catch()-based rejection path).
+  // cptr-s1: bound raised from "well under 2s" to "well under 9s" -- a
+  // declared, necessary consequence of raising _PERSIST_TIMEOUT_MS from
+  // 500ms to 8000ms (see cptr-s1's own story AC5 and decisions.md). The
+  // circuit-breaker property itself (must not hang forever) is unchanged;
+  // only the bound's value moved with the timeout constant it tests.
   queue.push(function() {
     return test('AC4b: a hanging Redis write still resolves generateCsrfToken within a bounded time', async function() {
       session._clearForTesting();
@@ -199,7 +234,7 @@ async function run() {
         var elapsedMs = Date.now() - start;
 
         assert.ok(token && token.length > 0, 'generateCsrfToken must still resolve with a valid token despite the write hanging');
-        assert.ok(elapsedMs < 2000, 'generateCsrfToken must resolve within a bounded time (well under 2s), took ' + elapsedMs + 'ms -- the timeout cap must have fired');
+        assert.ok(elapsedMs < 9000, 'generateCsrfToken must resolve within a bounded time (well under 9s, consistent with the new 8000ms cap), took ' + elapsedMs + 'ms -- the timeout cap must have fired');
       } finally {
         session.setRedisAdapterForTesting(null);
         session._clearForTesting();

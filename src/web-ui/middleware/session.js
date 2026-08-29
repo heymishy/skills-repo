@@ -101,12 +101,21 @@ function createSession() {
   return { id, session };
 }
 
-// cpr-s1: cap on how long persistSession will wait for the Redis write before
-// giving up and resolving anyway -- keeps the best-effort philosophy (a slow
-// or hung adapter must never block the caller indefinitely) while still
-// giving a normal-latency write a real chance to land before the caller
-// (generateCsrfToken) resolves and the response is sent.
-const _PERSIST_TIMEOUT_MS = 500;
+// cptr-s1 (raised from 500ms, cpr-s1's original value): cap on how long
+// persistSession will wait for the Redis write before giving up and
+// resolving anyway -- a LAST-RESORT CIRCUIT BREAKER for a genuinely
+// broken/hung Redis, not a routine race target. fly.toml sets
+// auto_stop_machines = 'suspend', which freezes the entire VM via a
+// Firecracker snapshot with NO signal sent to the process beforehand
+// (confirmed via Fly's own docs, https://fly.io/docs/reference/suspend-resume/)
+// -- there is no shutdown hook available to catch an abandoned write after
+// the fact. Fly can only suspend a machine once it looks genuinely idle (no
+// active request/response cycle), so the only way to close the race is to
+// make the response itself wait for the real write in the overwhelming
+// majority of cases. 8000ms is chosen as generously above realistic p99
+// Redis write latency while remaining a genuinely bounded wait -- see
+// artefacts/2026-08-30-csrf-persist-timeout-race/decisions.md.
+const _PERSIST_TIMEOUT_MS = 8000;
 
 /**
  * Persist the current session to Redis (called after session fields are populated).
