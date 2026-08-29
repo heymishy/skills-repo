@@ -28238,20 +28238,20 @@
             {
               "slug": "s4-drift-comparator-subgraphs",
               "name": "Drift-comparator recognizes subgraphs",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s4-drift-comparator-subgraphs-review-2.md",
-              "updatedAt": "2026-08-29T22:32:50.657Z",
+              "updatedAt": "2026-08-29T22:33:46.154Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0,
+                "passing": 5,
                 "artefact": "artefacts/2026-08-29-diagram-validation-and-types/test-plans/s4-drift-comparator-subgraphs-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -28265,7 +28265,8 @@
                   "tddState": "not-started",
                   "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s4-drift-comparator-subgraphs-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "s5-sequence-diagram-type",
