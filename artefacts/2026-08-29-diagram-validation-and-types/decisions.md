@@ -67,6 +67,24 @@
 ---
 
 ---
+**2026-08-29 | ARCH | implementation-plan (S1)**
+**Decision:** Introduce a new `parseCanvasBlockDiagnostic(text)` function that returns `{ok:true, block}` or `{ok:false, reason, detail}`; make `parseCanvasBlock(text)` a thin wrapper (`return r.ok ? r.block : null`) preserving its exact existing return contract for every current caller.
+**Alternatives considered:** (1) Change `parseCanvasBlock` itself to return a richer object instead of `null` on failure.
+**Rationale:** `parseCanvasBlock` has a second existing caller — `extractCanvasBlocksFromTurns` (durable-history reconstruction) — which does `if (parsed) { blocks.push(parsed); }`. A richer failure object would be truthy, so alternative (1) would silently push a diagnostic object into `blocks` as if it were a real canvas block on every historical parse failure — a real regression discovered only by reading the second call site, not by the story/test-plan alone (neither named this caller explicitly). The new-function approach keeps `parseCanvasBlock`'s contract byte-identical for `extractCanvasBlocksFromTurns` and every other existing caller, while giving the new SSE scan-loop call site (the only one that needs diagnostic detail) a distinct function to call instead.
+**Made by:** Claude (agent), during S1's implementation planning
+**Revisit trigger:** If a future story needs diagnostic detail from `extractCanvasBlocksFromTurns`'s own call site too, extend it to call `parseCanvasBlockDiagnostic` directly at that point — do not retrofit `parseCanvasBlock` itself.
+---
+
+---
+**2026-08-29 | DESIGN | implementation-plan (S1)**
+**Decision:** Reuse `skills.js`'s own pre-existing injectable `_logger`/`setLogger()` convention (already used throughout the file, e.g. `_logger.info('session_started', {...})`) for S1's diagnostic audit-log call, rather than importing `drift-comparator.js`'s separate `setLogger`/`_logEvent` mechanism as the DoR contract's wording implied.
+**Alternatives considered:** (1) Follow the DoR contract's literal wording and reuse `drift-comparator.js`'s logger convention instead.
+**Rationale:** `skills.js` already has its own established, actively-used logger convention in the same file S1 modifies — reusing it needs zero new imports and matches every other audit-log call site in this file. `drift-comparator.js`'s logger is a separate module's own convention, irrelevant here; the DoR contract's reference to it was imprecise, corrected during implementation planning rather than carried into the code.
+**Made by:** Claude (agent), during S1's implementation planning
+**Revisit trigger:** None expected — straightforward correction.
+---
+
+---
 
 ## Architecture Decision Records
 
