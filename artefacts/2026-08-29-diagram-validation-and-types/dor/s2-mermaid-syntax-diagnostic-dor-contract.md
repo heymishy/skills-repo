@@ -8,9 +8,9 @@
 
 ## What will be built
 
-- Modify `markDiagramRenderError` in the shared `_CANVAS_RENDER_FN_LINES` array (`src/web-ui/routes/skills.js`) to accept the mermaid rejection/exception reason as a parameter, and include it as visible text in the rendered `.cv-diagram-error-box`.
-- Update both call sites (the async `mermaid.run(...).catch(...)` path and the synchronous `try/catch` path, in both the live-session script and the read-only history script — both already share this function via `_CANVAS_RENDER_FN_LINES`) to pass the actual rejection reason/exception message through.
-- Add a `console.error` call capturing the specific reason, for developer diagnosis.
+- Modify `markDiagramRenderError` in the shared `_CANVAS_RENDER_FN_LINES` array (`src/web-ui/routes/skills.js`) to accept the mermaid rejection/exception reason as a parameter, extract only its **first line** (everything before the first `\n`), and include that as visible text in the rendered `.cv-diagram-error-box`. (Corrected 2026-08-29 during implementation planning — see decisions.md ARCH entry — from an earlier draft of this contract that described a full raw pass-through, found to conflict with `code-shape-diagrams`/csd-s2's existing `MC-SEC-01`-derived test forbidding any raw error/stack text in the error box.)
+- Update both call sites (the async `mermaid.run(...).catch(...)` path and the synchronous `try/catch` path, in both the live-session script and the read-only history script — both already share this function via `_CANVAS_RENDER_FN_LINES`) to pass the rejection reason/exception object through (first-line extraction happens inside `markDiagramRenderError` itself, not at the call sites).
+- Add a `console.error` call capturing the full original reason (not truncated) for developer diagnosis — the first-line truncation applies only to the DOM-visible text.
 
 ## What will NOT be built
 
