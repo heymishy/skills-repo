@@ -143,7 +143,7 @@ function parseErDiagramMermaid(mermaidSrc) {
 // ---------------------------------------------------------------------------
 
 const NODE_DECL_RE = /^([A-Za-z0-9_]+)\s*(?:\[\(([^)]*)\)\]|\[([^\]]*)\])\s*$/;
-const EDGE_RE = /^([A-Za-z0-9_]+)\s*-->\s*([A-Za-z0-9_]+)\s*$/;
+const EDGE_RE = /^([A-Za-z0-9_]+)\s*-->\s*(?:\|([^|]*)\|\s*)?([A-Za-z0-9_]+(?:\s*&\s*[A-Za-z0-9_]+)*)\s*$/;
 
 /**
  * Parse a mermaid `flowchart` string into `{nodes, edges}`, where edges carry
@@ -180,7 +180,13 @@ function parseFlowchartMermaid(mermaidSrc) {
 
     const edgeMatch = EDGE_RE.exec(line);
     if (edgeMatch) {
-      edgeIdPairs.push({ from: edgeMatch[1], to: edgeMatch[2] });
+      const label = edgeMatch[2] !== undefined ? edgeMatch[2].trim() : undefined;
+      const targets = edgeMatch[3].split('&').map(function(s) { return s.trim(); });
+      targets.forEach(function(targetId) {
+        const pair = { from: edgeMatch[1], to: targetId };
+        if (label !== undefined) { pair.label = label; }
+        edgeIdPairs.push(pair);
+      });
     }
   });
 
@@ -188,7 +194,9 @@ function parseFlowchartMermaid(mermaidSrc) {
 
   const nodes = Object.keys(idToLabel).map(function(id) { return { id: id, label: idToLabel[id] }; });
   const edges = edgeIdPairs.map(function(e) {
-    return { from: e.from, to: e.to, fromLabel: labelOf(e.from), toLabel: labelOf(e.to) };
+    const edge = { from: e.from, to: e.to, fromLabel: labelOf(e.from), toLabel: labelOf(e.to) };
+    if (e.label !== undefined) { edge.label = e.label; }
+    return edge;
   });
 
   return { nodes: nodes, edges: edges };

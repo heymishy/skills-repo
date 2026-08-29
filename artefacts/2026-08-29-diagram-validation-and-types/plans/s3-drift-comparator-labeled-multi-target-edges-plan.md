@@ -222,7 +222,7 @@ Temporarily revert `EDGE_RE` back to its original value (`/^([A-Za-z0-9_]+)\s*--
 node tests/check-s3-drift-comparator-labeled-multi-target-edges.js
 ```
 
-Expected output: the same 4 tests that failed in Step 2 fail again (AC1-label-capture, AC1-MATCHED, AC2, AC3), for the SAME underlying reason (the labeled/multi-target lines don't match `EDGE_RE` and produce zero edges) — not a different, coincidental failure mode. AC4 still passes. This confirms the tests genuinely exercise the regex change, not something else.
+Expected output (corrected 2026-08-30 after actually running this step — see below): **all 5 tests fail**, not 4. Reverting only `EDGE_RE` while leaving the Step 3 edge-matching block in place means `edgeMatch[3]` is `undefined` for the reverted 2-group regex, so `.split('&')` throws for any line the OLD regex still matches (including AC4's plain `A --> B`) — AC1-label-capture and AC2 still fail cleanly (0 edges, same as Step 2), while AC1-MATCHED, AC3, and now AC4 fail via a crash (`Cannot read properties of undefined (reading 'split')`) rather than a clean assertion mismatch. This is still a valid mutation-kill result — a crash is stronger evidence of genuine coupling between the tests and the code change, not weaker — but it is a different shape of failure than originally predicted here. Do not force the old prediction; report the actual result.
 
 Then restore the Step 3 `EDGE_RE` change and confirm `5 passed, 0 failed` again before proceeding.
 
