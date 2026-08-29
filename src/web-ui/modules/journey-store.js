@@ -81,7 +81,8 @@ function createJourney(featureSlug, productProfile) {
     completedAt:    null,
     stories:        [],
     currentStoryIndex: 0,
-    sessions:       {}
+    sessions:       {},
+    flaggedStages:  []
   };
   _journeys.set(journeyId, journey);
   if (_diskAdapter) {
@@ -266,6 +267,19 @@ function getNextStage(currentStage) {
   var idx = STAGE_SEQUENCE.indexOf(currentStage);
   if (idx === -1 || idx === STAGE_SEQUENCE.length - 1) return null;
   return STAGE_SEQUENCE[idx + 1];
+}
+
+/**
+ * res-s4: every stage after currentStage in STAGE_SEQUENCE — the single
+ * ordering source, reused rather than a second hardcoded list (named
+ * anti-pattern, previously caught in dtra-s1/dspw-s1).
+ * @param {string} currentStage
+ * @returns {string[]}
+ */
+function getDownstreamStages(currentStage) {
+  var idx = STAGE_SEQUENCE.indexOf(currentStage);
+  if (idx === -1) return [];
+  return STAGE_SEQUENCE.slice(idx + 1);
 }
 
 /**
@@ -460,6 +474,7 @@ module.exports = {
   completeStage,
   updateCompletedStageSessionId,
   getNextStage,
+  getDownstreamStages,
   getJourneyStories,
   advanceToNextStory,
   setStoryList,

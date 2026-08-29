@@ -654,15 +654,18 @@ async function handleGetStageReview(req, res, pool) {
 
   // Stage navigator strip
   var _doneSet = new Set((journey.completedStages || []).map(function(s) { return s.skillName; }));
+  var _flaggedSet = new Set(journey.flaggedStages || []);
   var _stepsHtml = STAGE_META.map(function(s) {
     var isDone = _doneSet.has(s.id);
     var isActive = s.id === skillName;
-    var cls = isDone ? 'sn-step--done' : isActive ? 'sn-step--active' : 'sn-step--pending';
+    var isFlagged = _flaggedSet.has(s.id);
+    var cls = (isDone ? 'sn-step--done' : isActive ? 'sn-step--active' : 'sn-step--pending') + (isFlagged ? ' sn-step--flagged' : '');
     var icon = isDone ? '●' : isActive ? '▶' : '○';
     return '<li class="sn-step ' + cls + '">' +
       '<span class="sn-num">' + escHtml(String(s.num)) + '</span>' +
       '<span class="sn-label">' + escHtml(s.label) + '</span>' +
       '<span class="sn-icon" aria-hidden="true">' + icon + '</span>' +
+      (isFlagged ? '<span class="sn-flag-marker">⚑ May need review</span>' : '') +
       '</li>';
   }).join('');
   var navigatorHtml = [
@@ -889,17 +892,21 @@ async function handleGetJourneyStageView(req, res, pool) {
 
   // Navigator bar — done stages are clickable, active stage links back to chat
   var _doneSet = new Set((journey.completedStages || []).map(function(s) { return s.skillName; }));
+  var _flaggedSet = new Set(journey.flaggedStages || []);
   var _activeSkill = journey.activeSkill;
   var _activeSid = journey.activeSessionId || '';
   var _stepsHtml = STAGE_META.map(function(s) {
     var isDone = _doneSet.has(s.id);
     var isActive = s.id === _activeSkill;
     var isViewing = s.id === stageName;
-    var cls = isViewing ? 'sn-step--viewing' : isDone ? 'sn-step--done' : isActive ? 'sn-step--active' : 'sn-step--pending';
+    var isFlagged = _flaggedSet.has(s.id);
+    var cls = (isViewing ? 'sn-step--viewing' : isDone ? 'sn-step--done' : isActive ? 'sn-step--active' : 'sn-step--pending') + (isFlagged ? ' sn-step--flagged' : '');
     var icon = isDone || isViewing ? '●' : isActive ? '▶' : '○';
     var inner = '<span class="sn-num">' + escHtml(String(s.num)) + '</span>' +
       '<span class="sn-label">' + escHtml(s.label) + '</span>' +
-      '<span class="sn-icon" aria-hidden="true">' + icon + '</span>';
+      '<span class="sn-icon" aria-hidden="true">' + icon + '</span>' +
+      // res-s4 (AC1, Accessibility NFR): text label, not colour alone.
+      (isFlagged ? '<span class="sn-flag-marker">⚑ May need review</span>' : '');
     if (isDone) {
       // res-s1: link directly to a live session when one exists for this
       // specific completed stage (any stage, not just the active one, and
@@ -1660,6 +1667,21 @@ async function handleGetJourneyStageReopen(req, res) {
     res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(renderShell({ title: 'Not Found', bodyContent: '<div class="sw-page-content"><p>Stage not completed yet.</p></div>', user: { login: req.session.login || '' } }));
     return;
+  }
+
+  // res-s4 (AC4): clear this stage's own flag on reopen, if it was flagged --
+  // placed BEFORE the early-return check below so it fires whether or not a
+  // live session already exists (both are genuine "reopen" outcomes per
+  // res-s1's own AC1). An unrelated flagged stage is untouched.
+  if ((journey.flaggedStages || []).indexOf(skillName) !== -1) {
+    var _clearedFlags = journey.flaggedStages.filter(function(s) { return s !== skillName; });
+    _journeyStore.setJourneyFields(journeyId, { flaggedStages: _clearedFlags });
+    journey.flaggedStages = _clearedFlags;
+    try {
+      _posthog.capture(req.session.login || journey.ownerId || journeyId, 'materiality_flag_cleared', {
+        journeyId: journeyId, stageName: skillName, timestamp: new Date().toISOString()
+      }, { company: req.session.tenantId || journey.tenantId });
+    } catch (_phFlagClearErr) { /* fire-and-forget: PostHog failure must not fail an already-applied flag clear */ }
   }
 
   // AC1 safety-net re-check: session may already exist despite the step-nav

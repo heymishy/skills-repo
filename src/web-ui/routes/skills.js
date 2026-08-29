@@ -3815,7 +3815,13 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
     '              if(evt.materialitySuggestion) {',
     '                var ms = evt.materialitySuggestion;',
     '                var msLabel = ms.classification === "material" ? "Material change" : "Minor change";',
-    '                appendBubble("assistant", "<strong>" + escHtmlClient(msLabel) + ":</strong> " + escHtmlClient(ms.rationale || ""));',
+    '                var msBubble = appendBubble("assistant",',
+    '                  "<strong>" + escHtmlClient(msLabel) + ":</strong> " + escHtmlClient(ms.rationale || "") +',
+    '                  \'<div class="materiality-actions">\' +',
+    '                    \'<button class="btn-flag-downstream" type="button" aria-label="Flag downstream stages">Flag downstream stages</button> \' +',
+    '                    \'<button class="btn-leave-as-is" type="button" aria-label="Leave as-is">Leave as-is</button>\' +',
+    '                  \'</div>\');',
+    '                attachMaterialityHandlers(msBubble, ms.suggestionId);',
     '              }',
     '              if(evt.lensComplete) {',
     '                handleLensComplete();',
@@ -3854,6 +3860,55 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
     '  var SESSION_ID_ENC = "' + encodeURIComponent(sessionId) + '";',
     '  function assumptionConfirmUrl(cardId) {',
     '    return "/api/skills/" + SKILL_NAME_ENC + "/sessions/" + SESSION_ID_ENC + "/assumption/" + encodeURIComponent(cardId) + "/confirm";',
+    '  }',
+    '  function materialityActionUrl() {',
+    '    return "/api/skills/" + SKILL_NAME_ENC + "/sessions/" + SESSION_ID_ENC + "/materiality-action";',
+    '  }',
+    '  function attachMaterialityHandlers(bubbleEl, suggestionId) {',
+    '    var flagBtn  = bubbleEl.querySelector(".btn-flag-downstream");',
+    '    var leaveBtn = bubbleEl.querySelector(".btn-leave-as-is");',
+    '    function clearMaterialityStatus(actionsDiv) {',
+    '      var stale = actionsDiv.querySelectorAll(".materiality-error, .materiality-confirmed");',
+    '      for(var i=0;i<stale.length;i++) stale[i].remove();',
+    '    }',
+    '    function doAction(action) {',
+    '      fetch(materialityActionUrl(), {',
+    '        method: "POST",',
+    '        headers: {"Content-Type": "application/json"},',
+    '        body: JSON.stringify({action: action, suggestionId: suggestionId})',
+    '      }).then(function(r) {',
+    '        if(!r.ok) throw new Error("Request failed: " + r.status);',
+    '        return r.json();',
+    '      }).then(function(data) {',
+    '        if(flagBtn)  flagBtn.disabled  = true;',
+    '        if(leaveBtn) leaveBtn.disabled = true;',
+    '        var actionsDiv = bubbleEl.querySelector(".materiality-actions");',
+    '        if(actionsDiv) {',
+    '          clearMaterialityStatus(actionsDiv);',
+    '          actionsDiv.insertAdjacentHTML("beforeend", \'<span class="materiality-confirmed">Recorded.</span>\');',
+    '        }',
+    '        // N1 fix: update THIS page\'s own step-nav strip in place -- the',
+    '        // operator is looking at it right now (F1\'s rationale), so it',
+    '        // must reflect the flag immediately, not just on next reload.',
+    '        if(data && Array.isArray(data.flaggedStages)) {',
+    '          data.flaggedStages.forEach(function(stageId) {',
+    '            var li = document.querySelector(\'.sn-steps li[data-stage-id="\' + stageId + \'"]\');',
+    '            if(li && li.className.indexOf("sn-step--flagged") === -1) {',
+    '              li.className += " sn-step--flagged";',
+    '              li.insertAdjacentHTML("beforeend", \'<span class="sn-flag-marker">\\u2691 May need review</span>\');',
+    '            }',
+    '          });',
+    '        }',
+    '      }).catch(function() {',
+    '        var actionsDiv = bubbleEl.querySelector(".materiality-actions");',
+    '        if(actionsDiv) {',
+    '          clearMaterialityStatus(actionsDiv);',
+    '          actionsDiv.insertAdjacentHTML("beforeend", \'<span class="materiality-error">Could not record — please try again.</span>\');',
+    '        }',
+    '      });',
+    '    }',
+    '    if(flagBtn)  flagBtn.addEventListener("click",  function(){ doAction("flag"); });',
+    '    if(leaveBtn) leaveBtn.addEventListener("click", function(){ doAction("leave-as-is"); });',
     '  }',
     '  function attachCardHandlers(cardEl) {',
     '    var confirmBtn = cardEl.querySelector(".btn-confirm");',
@@ -4227,6 +4282,7 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
         { id: 'definition-of-ready', num: '7',   label: 'Ready',      optional: false, subStep: false }
       ];
       var _doneSet = new Set((_navJourney.completedStages || []).map(function(s) { return s.skillName; }));
+      var _flaggedSet = new Set(_navJourney.flaggedStages || []);
       var _costMap = {};
       (_navJourney.completedStages || []).forEach(function(s) { if (s.costUsd != null) { _costMap[s.skillName] = s.costUsd; } });
       var _activeSkill = _navJourney.activeSkill;
@@ -4245,19 +4301,32 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
           isDone = _doneSet.has(s.id);
           isActive = s.id === _activeSkill;
         }
+        // res-s4 (AC1): flag marker on the chat page's own step-nav strip --
+        // a THIRD render site distinct from journey.js's two (final-review
+        // finding F1). Sub-steps (clarify/estimate) are never members of
+        // STAGE_SEQUENCE, so _flaggedSet never matches them; isFlagged is
+        // still gated on !s.subStep for clarity, matching costLabel's guard.
+        var isFlagged = !s.subStep && _flaggedSet.has(s.id);
         var cls = s.subStep
           ? 'sn-step--sub ' + (isDone ? 'sn-step--sub-done' : 'sn-step--sub-pending')
-          : (isDone ? 'sn-step--done' : isActive ? 'sn-step--active' : 'sn-step--pending');
+          : (isDone ? 'sn-step--done' : isActive ? 'sn-step--active' : 'sn-step--pending') + (isFlagged ? ' sn-step--flagged' : '');
         var icon = isDone ? '✓' : (isActive ? '▶' : '◦');
         var costLabel = (!s.subStep && isDone && _costMap[s.id] != null) ? ' · $' + _costMap[s.id].toFixed(3) : '';
+        var flagMarker = isFlagged ? '<span class="sn-flag-marker">⚑ May need review</span>' : '';
         var inner = (s.subStep
           ? '<span class="sn-sub-label">' + escHtml(s.label) + '</span><span class="sn-icon" aria-hidden="true">' + icon + '</span>'
-          : '<span class="sn-num">' + escHtml(s.num) + '</span><span class="sn-label">' + escHtml(s.label) + '</span><span class="sn-icon" aria-hidden="true">' + icon + '</span>');
+          : '<span class="sn-num">' + escHtml(s.num) + '</span><span class="sn-label">' + escHtml(s.label) + '</span><span class="sn-icon" aria-hidden="true">' + icon + '</span>' + flagMarker);
+        // res-s4 (N1 fix): data-stage-id lets the materiality flag handler
+        // update this <li> in place after a flag action, without a full page
+        // reload -- the operator is on THIS page when they click the button
+        // (F1's own rationale), so the marker must appear here immediately,
+        // not just on the next fresh render.
+        var stageIdAttr = ' data-stage-id="' + escHtml(s.id) + '"';
         if (!s.subStep && isDone) {
           var titleAttr = 'View ' + escHtml(s.label) + ' artefact' + (costLabel ? ' (' + costLabel.trim() + ')' : '');
-          return '<li class="sn-step ' + cls + '"><a href="/journey/' + _navJourneyId + '/stage/' + encodeURIComponent(s.id) + '" class="sn-step-link" title="' + titleAttr + '">' + inner + (costLabel ? '<span class="sn-cost">' + escHtml(costLabel) + '</span>' : '') + '</a></li>';
+          return '<li class="sn-step ' + cls + '"' + stageIdAttr + '><a href="/journey/' + _navJourneyId + '/stage/' + encodeURIComponent(s.id) + '" class="sn-step-link" title="' + titleAttr + '">' + inner + (costLabel ? '<span class="sn-cost">' + escHtml(costLabel) + '</span>' : '') + '</a></li>';
         }
-        return '<li class="sn-step ' + cls + '">' + inner + '</li>';
+        return '<li class="sn-step ' + cls + '"' + stageIdAttr + '>' + inner + '</li>';
       }).join('');
       navigatorHtml = [
         '<style>',
@@ -5558,6 +5627,68 @@ async function handlePostAssumptionConfirm(req, res) {
   _json(res, 200, { cardId: cardId, state: cards[cardId].state });
 }
 
+/**
+ * res-s4: record the operator's response to a materiality suggestion —
+ * "flag" applies a visible marker to every downstream stage (AC1), or
+ * "leave-as-is" applies nothing (AC2). Either way the choice is logged
+ * paired with the original suggestionId so an acceptance rate can be
+ * computed later (AC3). Follows handlePostAssumptionConfirm's exact shape.
+ */
+async function handlePostMaterialityAction(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    _json(res, 401, { error: 'Not authenticated' });
+    return;
+  }
+
+  var sessionId = (req.params && req.params.id) || '';
+  var session = await _getSessionOrRestore(sessionId);
+  if (!session) {
+    _json(res, 404, { error: 'SESSION_NOT_FOUND' });
+    return;
+  }
+
+  var body = await _readBody(req);
+  var action = body && body.action;
+  var suggestionId = body && body.suggestionId;
+  if (action !== 'flag' && action !== 'leave-as-is') {
+    _json(res, 400, { error: 'INVALID_ACTION' });
+    return;
+  }
+
+  var _posthog = require('../modules/posthog-server');
+  var journeyId = session.journeyId;
+  var journey = journeyId ? _journeyStore.getJourney(journeyId) : null;
+  var downstream = journey ? _journeyStore.getDownstreamStages(session.skillName) : [];
+  var now = new Date().toISOString();
+
+  if (action === 'flag' && journey) {
+    // res-s4 (AC1/AC4 final-review finding O1): union with any existing
+    // flags rather than replacing wholesale -- a second flag action from a
+    // LATER stage must not silently discard an earlier stage's still-
+    // unresolved flags (AC4's only sanctioned way for a flag to disappear
+    // is the operator reopening and resolving that specific stage).
+    var _unionedFlags = Array.from(new Set((journey.flaggedStages || []).concat(downstream)));
+    _journeyStore.setJourneyFields(journeyId, { flaggedStages: _unionedFlags });
+    downstream.forEach(function(stageName) {
+      try {
+        _posthog.capture(req.session.login || journey.ownerId || journeyId, 'materiality_flag_set', {
+          journeyId: journeyId, stageName: stageName, timestamp: now
+        }, { company: req.session.tenantId || journey.tenantId });
+      } catch (_phFlagErr) { /* fire-and-forget: PostHog failure must not fail an already-applied flag */ }
+    });
+  }
+
+  if (journey) {
+    try {
+      _posthog.capture(req.session.login || journey.ownerId || journeyId, 'materiality_operator_choice_recorded', {
+        journeyId: journeyId, skillName: session.skillName, suggestionId: suggestionId || null, operatorAction: action
+      }, { company: req.session.tenantId || journey.tenantId });
+    } catch (_phChoiceErr) { /* fire-and-forget: PostHog failure must not fail an already-recorded choice */ }
+  }
+
+  _json(res, 200, { action: action, flaggedStages: journey ? (journey.flaggedStages || []) : [] });
+}
+
 // psh-s5 — inject product context sections into the skill system prompt
 // psh-s10 — also inject active standards section after product context
 async function buildSystemPromptWithProductContext(opts) {
@@ -5644,6 +5775,7 @@ module.exports = {
   extractCanvasBlocksFromTurns, buildReadOnlyCanvasScript,
   // iwu.4 — confirm/flag endpoint
   handlePostAssumptionConfirm,
+  handlePostMaterialityAction,
   // ssp.1 — server-side Step 1 pre-computation (exported for testing)
   computeStep1Summary,
   // cost tracking — compute USD cost from accumulated session.usage
