@@ -27987,7 +27987,8 @@
           "decision": "Missing STAGE_SEQUENCE anti-pattern reference + undefined flag-persistence mechanism accepted as-is; to be resolved at DoR/implementation time, not by a further story-text revision pass",
           "date": "2026-08-27T19:33:37.702Z"
         }
-      ]
+      ],
+      "lastImprove": "2026-08-29"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -28071,9 +28072,33 @@
         "type": "standards",
         "file": ".github/standards/web-ui/web-ui-patterns.md",
         "summary": "fresc-s1 + pncg-s1 /improve: renderShellWithNav() as standing fix for the recurring missing-Products-nav defect (3rd occurrence, 23 total sites now fixed across bvnd-s1/pncg-s1), parameter-threading preferred over function-splitting for existing render-helpers, hybrid structural+functional test strategy for many-site defects, comment/string-literal blind spot in source-parsing structural tests"
+      },
+      {
+        "date": "2026-08-29",
+        "type": "standards",
+        "file": ".github/standards/testing/test-design-patterns.md",
+        "summary": "res-s4 /improve: NEW cross-cutting testing domain -- mutation-test a fix's own new test before trusting it; whole-file source-regex assertions are vacuous when the same string legitimately appears in both a producer and its consumer"
+      },
+      {
+        "date": "2026-08-29",
+        "type": "standards",
+        "file": ".github/standards/web-ui/web-ui-patterns.md",
+        "summary": "res-s4 /improve: client-side DOM patch (not full reload) for a POST action on a page with live in-progress state, following attachCardHandlers precedent; repo-wide grep (not file-scoped search) to inventory every render site of a shared component before a DoR contract"
+      },
+      {
+        "date": "2026-08-29",
+        "type": "guardrails",
+        "file": ".github/architecture-guardrails.md",
+        "summary": "res-s4 /improve: DOM-patch-vs-reload and render-site-inventory approved patterns; 3 anti-pattern rows (flag-on-never-reached-item resolution path, CSS-layout classification too narrow when DOM presence != visual reachability, fix-tests-pass != satisfies-real-user-action-sequence)"
+      },
+      {
+        "date": "2026-08-29",
+        "type": "proposal",
+        "file": "workspace/proposals/2026-08-29-verify-completion-improve-proposal.md",
+        "summary": "res-s4 /improve: propose a mandatory browser-check gate on /verify-completion for UI-rendering diffs, mirroring the existing E2E route-coverage check pattern -- two related findings (DoR CSS-layout classification, subagent-execution final-review trace step) deferred behind existing pending proposals on those skills rather than duplicated"
       }
     ],
-    "lastUpdated": "2026-08-26"
+    "lastUpdated": "2026-08-29"
   },
   "updatedAt": "2026-08-22T22:18:24.526Z",
   "lastUpdated": "2026-08-28T04:28:36.652Z"

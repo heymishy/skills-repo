@@ -58,5 +58,10 @@ standards:
     files:
       - .github/standards/security/security-standards.md
 
+  testing:
+    description: Cross-cutting test design patterns (test genuineness, mutation-testing discipline) — not tied to any one implementation domain
+    files:
+      - .github/standards/testing/test-design-patterns.md
+
 # Fallback: if a story has no domain tag, or its domain is not listed here,
 # no standards are injected. This is acceptable — not all stories need explicit standards.
