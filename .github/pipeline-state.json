@@ -28286,6 +28286,42 @@
           ]
         }
       ]
+    },
+    {
+      "slug": "2026-08-30-fix-p35-validate-trace-timeout-flake",
+      "name": "Increase check-p3.5-validate-trace.js's pwsh spawn timeout",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "p35tf-s1",
+          "id": "p35tf-s1",
+          "name": "Increase pwsh spawn timeout to stop a full-suite-only flake",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 2,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-30-fix-p35-validate-trace-timeout-flake/test-plans/p35tf-s1-increase-pwsh-spawn-timeout-test-plan.md"
+          },
+          "acTotal": 3,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-30-fix-p35-validate-trace-timeout-flake/dor/p35tf-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-30-fix-p35-validate-trace-timeout-flake/dor/p35tf-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-08-29T21:47:14.679Z",
+          "updatedAt": "2026-08-29T21:47:14.679Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-29T21:47:14.679Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
