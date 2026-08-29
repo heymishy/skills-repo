@@ -28022,10 +28022,12 @@
           "name": "Drift-comparator parsing accuracy",
           "target": "Dedicated passing fixtures for labeled edges, multi-target edges, and subgraphs, for both parser functions",
           "baseline": "0 -- no test fixtures exercise these cases today",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "signal": "on-track",
+          "lastMeasured": "2026-08-29",
+          "evidence": "S3 (PR #786) merged 2026-08-29 -- dedicated passing fixtures now exist for labeled edges and multi-target edges (2 of 3 named parsing gaps). Subgraphs (the 3rd) remain S4's scope.",
+          "contributingStories": [
+            "s3-drift-comparator-labeled-multi-target-edges"
+          ]
         },
         {
           "id": "m3",
@@ -28198,12 +28200,12 @@
             {
               "slug": "s3-drift-comparator-labeled-multi-target-edges",
               "name": "Drift-comparator recognizes labeled and multi-target edges",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s3-drift-comparator-labeled-multi-target-edges-review-2.md",
-              "updatedAt": "2026-08-29T19:33:04.833Z",
+              "updatedAt": "2026-08-29T21:29:50.949Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -28227,8 +28229,11 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/786"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/786",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "layoutGapsAtMerge": false
             },
             {
               "slug": "s4-drift-comparator-subgraphs",
