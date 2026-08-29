@@ -1,8 +1,8 @@
 # Discovery: Diagram Validation, Drift Accuracy, and Archify-Inspired Diagram Types
 
-**Status:** Clarified — awaiting approval
+**Status:** Approved
 **Created:** 2026-08-29
-**Approved by:** Pending
+**Approved by:** Hamish King — Platform Owner — 2026-08-29
 **Author:** Claude (agent)
 
 ---
@@ -75,7 +75,7 @@ No new technical dependency is needed for richer mermaid *rendering* — mermaid
 
 ## Approved By
 
-Pending
+Hamish King — Platform Owner — 2026-08-29
 
 ---
 

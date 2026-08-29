@@ -119,5 +119,8 @@
       "action": "HIGHEST SEVERITY FINDING THIS SESSION -- live authorization gap, not a test-coverage issue. Found while writing rbg-s1's test plan (attempting to ground AC2's 'viewer denied on write action' assertion in real code): bri-s3.3's own original AC3 ('viewer attempts any write action, denied') describes behaviour that was NEVER implemented anywhere in the codebase. Confirmed via full search of src/web-ui/middleware/ and every route file -- 'viewer' exists only as a stored value in team-management.js's VALID_ROLES; no middleware or route anywhere checks for or blocks it. The only real role gate in the entire codebase is requireAdmin (admin vs everyone else -- does not distinguish engineer/product/viewer). A person assigned 'viewer' (implying read-only) currently has identical write access to engineer/product roles. Unknown whether any real production tenant currently has a viewer-role person assigned -- NOT yet checked, operator recommended to verify this to gauge urgency. rbg-s1 was corrected in place (AC2 narrowed to test the boundary that genuinely exists -- viewer correctly denied as non-admin via requireAdmin, same mechanism as AC1 -- rather than the non-existent 'any write action' behaviour). This new gap was NOT folded into rbg-s1 (operator's explicit decision, discussed and agreed) -- instead routed through a real /discovery artefact (artefacts/2026-08-21-viewer-role-no-enforcement/discovery.md, status: Draft, awaiting approval) since 'which write actions specifically should viewer block' is a real product/design decision, not a bounded bug fix. Logged in workspace/dod-backlog-findings.md as F11.",
       "owner": "operator -- review and approve (or reject/redirect) the discovery artefact; also recommended to directly check production's team_memberships table for any existing viewer-role assignments before treating this as low-urgency"
     }
-  ]
+  ],
+  "estimate": {
+    "e1": null
+  }
 }
