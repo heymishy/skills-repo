@@ -3879,13 +3879,25 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
     '      }).then(function(r) {',
     '        if(!r.ok) throw new Error("Request failed: " + r.status);',
     '        return r.json();',
-    '      }).then(function() {',
+    '      }).then(function(data) {',
     '        if(flagBtn)  flagBtn.disabled  = true;',
     '        if(leaveBtn) leaveBtn.disabled = true;',
     '        var actionsDiv = bubbleEl.querySelector(".materiality-actions");',
     '        if(actionsDiv) {',
     '          clearMaterialityStatus(actionsDiv);',
     '          actionsDiv.insertAdjacentHTML("beforeend", \'<span class="materiality-confirmed">Recorded.</span>\');',
+    '        }',
+    '        // N1 fix: update THIS page\'s own step-nav strip in place -- the',
+    '        // operator is looking at it right now (F1\'s rationale), so it',
+    '        // must reflect the flag immediately, not just on next reload.',
+    '        if(data && Array.isArray(data.flaggedStages)) {',
+    '          data.flaggedStages.forEach(function(stageId) {',
+    '            var li = document.querySelector(\'.sn-steps li[data-stage-id="\' + stageId + \'"]\');',
+    '            if(li && li.className.indexOf("sn-step--flagged") === -1) {',
+    '              li.className += " sn-step--flagged";',
+    '              li.insertAdjacentHTML("beforeend", \'<span class="sn-flag-marker">\\u2691 May need review</span>\');',
+    '            }',
+    '          });',
     '        }',
     '      }).catch(function() {',
     '        var actionsDiv = bubbleEl.querySelector(".materiality-actions");',
@@ -4304,11 +4316,17 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
         var inner = (s.subStep
           ? '<span class="sn-sub-label">' + escHtml(s.label) + '</span><span class="sn-icon" aria-hidden="true">' + icon + '</span>'
           : '<span class="sn-num">' + escHtml(s.num) + '</span><span class="sn-label">' + escHtml(s.label) + '</span><span class="sn-icon" aria-hidden="true">' + icon + '</span>' + flagMarker);
+        // res-s4 (N1 fix): data-stage-id lets the materiality flag handler
+        // update this <li> in place after a flag action, without a full page
+        // reload -- the operator is on THIS page when they click the button
+        // (F1's own rationale), so the marker must appear here immediately,
+        // not just on the next fresh render.
+        var stageIdAttr = ' data-stage-id="' + escHtml(s.id) + '"';
         if (!s.subStep && isDone) {
           var titleAttr = 'View ' + escHtml(s.label) + ' artefact' + (costLabel ? ' (' + costLabel.trim() + ')' : '');
-          return '<li class="sn-step ' + cls + '"><a href="/journey/' + _navJourneyId + '/stage/' + encodeURIComponent(s.id) + '" class="sn-step-link" title="' + titleAttr + '">' + inner + (costLabel ? '<span class="sn-cost">' + escHtml(costLabel) + '</span>' : '') + '</a></li>';
+          return '<li class="sn-step ' + cls + '"' + stageIdAttr + '><a href="/journey/' + _navJourneyId + '/stage/' + encodeURIComponent(s.id) + '" class="sn-step-link" title="' + titleAttr + '">' + inner + (costLabel ? '<span class="sn-cost">' + escHtml(costLabel) + '</span>' : '') + '</a></li>';
         }
-        return '<li class="sn-step ' + cls + '">' + inner + '</li>';
+        return '<li class="sn-step ' + cls + '"' + stageIdAttr + '>' + inner + '</li>';
       }).join('');
       navigatorHtml = [
         '<style>',

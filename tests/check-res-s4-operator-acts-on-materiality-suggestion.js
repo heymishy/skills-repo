@@ -454,13 +454,22 @@ await (async function() {
   var html = res._chunks.join('');
   ok('F1: the chat page\'s own step-nav strip (a third render site) shows the flag marker', /sn-step--flagged/.test(html) && /May need review/.test(html));
 
-  var liRegex = /<li class="sn-step[^"]*">(?:(?!<li class="sn-step)[\s\S])*?<\/li>/g;
+  // [^>]* (not just [^"]*) tolerates the data-stage-id attribute added by
+  // the N1 fix, which sits after the class attribute on this render site.
+  var liRegex = /<li class="sn-step[^"]*"[^>]*>(?:(?!<li class="sn-step)[\s\S])*?<\/li>/g;
   var stepLis = html.match(liRegex) || [];
   var benefitLi = stepLis.find(function(li) { return /sn-label">Benefits<\/span>/.test(li); });
   var discoveryLi = stepLis.find(function(li) { return /sn-label">Discovery<\/span>/.test(li); });
   ok('F1: the marker tracks flaggedStages data (flagged stage carries it, active non-flagged stage does not)',
     !!benefitLi && /sn-step--flagged/.test(benefitLi) &&
     !!discoveryLi && !/sn-step--flagged/.test(discoveryLi));
+
+  // N1 setup: this render's own <li> elements carry data-stage-id, checked
+  // directly against the rendered HTML (not a source-text search, which
+  // would pass vacuously if the attribute existed anywhere else in the
+  // file, e.g. inside the client handler that CONSUMES it).
+  ok('N1: each stage\'s own <li> carries the matching data-stage-id (benefit-metric)', !!benefitLi && /data-stage-id="benefit-metric"/.test(benefitLi));
+  ok('N1: each stage\'s own <li> carries the matching data-stage-id (discovery)', !!discoveryLi && /data-stage-id="discovery"/.test(discoveryLi));
 })();
 
 await (async function() {
@@ -498,6 +507,28 @@ await (async function() {
   var expectedUnion = journeyStore.getDownstreamStages('discovery'); // definition-of-ready's own downstream is empty, so union == first call's set
   ok('O1: a second flag action from a LATER stage does NOT discard the first call\'s flags (union, not replace)',
     JSON.stringify(afterSecond.slice().sort()) === JSON.stringify(expectedUnion.slice().sort()));
+})();
+
+await (async function() {
+  // N1 (found on the re-run final review): the operator is ON the chat page
+  // when they click "Flag downstream stages" -- the marker must appear on
+  // THAT page immediately, not only on a subsequent fresh render. The
+  // data-stage-id-is-actually-rendered half of this is already covered by
+  // the two direct HTML assertions in the render test above; these
+  // remaining checks are genuinely client-side DOM-patch behaviour with no
+  // server round-trip to assert against, so source inspection is used --
+  // scoped tightly to attachMaterialityHandlers's OWN function body (not
+  // the whole file) specifically to avoid a vacuous pass, since the same
+  // strings (data-stage-id, sn-step--flagged) also legitimately appear
+  // elsewhere in this file (the server-side render code that emits them).
+  var skillsSrc = fs.readFileSync(SKILLS_PATH, 'utf8');
+  var handlerMatch = skillsSrc.match(/'  function attachMaterialityHandlers[\s\S]*?(?=\n {4}'  function )/);
+  ok('N1: attachMaterialityHandlers exists', !!handlerMatch);
+  var handlerBody = handlerMatch ? handlerMatch[0] : '';
+  ok('N1: the success handler reads data.flaggedStages from the response (not discarding it)', /data\.flaggedStages/.test(handlerBody));
+  ok('N1: the success handler looks up the <li> by data-stage-id', /data-stage-id/.test(handlerBody));
+  ok('N1: the success handler adds sn-step--flagged and the flag marker to that <li> in place', /sn-step--flagged/.test(handlerBody) && /sn-flag-marker/.test(handlerBody));
+  ok('N1: no window.location.reload() was introduced (in-place DOM patch, not a full page reload, per the assumption-card precedent this story already follows)', !/location\.reload/.test(handlerBody));
 })();
 
 console.log('\n' + passed + ' passed, ' + failed + ' failed');

@@ -989,6 +989,24 @@ git commit -m "fix(res-s4): third step-nav render site + flag-union fix (final r
 
 ---
 
+## Task 5b (corrective, added post re-run final-review 2026-08-29): N1 — flag marker didn't appear without a page reload
+
+The re-run final review confirmed F1 and O1 genuinely fixed, then found one more gap on a fresh AC1 trace: `_renderChatPage`'s flag marker (added by Task 5/F1) is correct render logic, but the operator who just clicked "Flag downstream stages" is on an already-loaded page — nothing re-ran that render logic, so the marker did not actually appear until a subsequent fresh load. See `decisions.md`'s second 2026-08-29 ARCH entry for full rationale, including why a client-side DOM patch (following `attachCardHandlers`' existing precedent) was chosen over `window.location.reload()`.
+
+- [x] **Step 1:** Added `data-stage-id` attribute to each step-nav `<li>` in `_renderChatPage` (`src/web-ui/routes/skills.js`), so client JS can target the correct one.
+- [x] **Step 2:** `attachMaterialityHandlers`'s success handler now reads `data.flaggedStages` from `handlePostMaterialityAction`'s JSON response and patches the matching `<li>`(s) in place: adds `sn-step--flagged` class + the `sn-flag-marker` span, matching the server-rendered markup exactly.
+- [x] **Step 3:** Added 8 new tests (2 direct-HTML `data-stage-id` assertions in the existing F1 render test, 6 source-inspection assertions on `attachMaterialityHandlers`'s own bounded function body). One test's initial regex (checking `data-stage-id` presence file-wide) was caught as vacuous during self-review — it would have passed even with the server-side attribute removed, since the string also legitimately appears in the client-side consumer code — and was replaced with a direct HTML assertion instead. Both the `data-stage-id`-removed and the (source-detectable) `data.flaggedStages`-removed mutations were independently re-run to confirm the tests fail as expected; a `false &&`-disabled mutation of the DOM-patch block was also tried and, as expected, was NOT caught by these source-inspection tests — an accepted limitation shared with this file's other client-side-behaviour tests (e.g. the existing Task 2 "AC1 client render" test), since there is no browser/DOM test harness in this repo to assert actual runtime behaviour.
+- [x] **Step 4:** `node tests/check-res-s4-operator-acts-on-materiality-suggestion.js` → `36 passed, 0 failed`.
+- [x] **Step 5:** `npm test` → `565 file(s) run, 0 failed`.
+- [x] **Step 6:** Commit.
+
+```bash
+git add src/web-ui/routes/skills.js tests/check-res-s4-operator-acts-on-materiality-suggestion.js artefacts/2026-08-27-revise-earlier-stage/decisions.md workspace/capture-log.md artefacts/2026-08-27-revise-earlier-stage/plans/res-s4-plan.md
+git commit -m "fix(res-s4): flag marker updates in place after the operator's own action (final review N1)"
+```
+
+---
+
 ## After all tasks: open the draft PR
 
-Once all 5 tasks are committed and the full suite passes, run `/verify-completion` then `/branch-complete` per the standard inner-loop sequence. Per the DoR's Coding Agent Instructions: open a draft PR when tests pass — do not mark ready for review.
+Once all tasks are committed and the full suite passes, run `/verify-completion` then `/branch-complete` per the standard inner-loop sequence. Per the DoR's Coding Agent Instructions: open a draft PR when tests pass — do not mark ready for review.

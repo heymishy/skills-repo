@@ -121,6 +121,15 @@
 ---
 
 ---
+**2026-08-29 | ARCH | subagent-execution (res-s4, re-run of final cross-task review)**
+**Decision:** Fix finding N1 from the re-run final review (which confirmed F1/O1 genuinely fixed, then found one new issue on a fresh pass): after a flag action, `_renderChatPage`'s own step-nav strip — the exact page the operator is looking at, F1's own stated rationale — did not show the marker until the page was next freshly loaded. Fixed by adding a `data-stage-id` attribute to each step-nav `<li>` (server-side, `skills.js`) and, client-side, reading `flaggedStages` from `handlePostMaterialityAction`'s response body and patching the matching `<li>`'s class/marker in place — following `attachCardHandlers`' existing DOM-patch precedent (the assumption-card mechanism this story was already told to mirror), not the `window.location.reload()` pattern used elsewhere in this codebase on static admin pages.
+**Alternatives considered:** (1) `window.location.reload()` on success — the more common pattern in this codebase (`products.js`, `settings.js`, `kanban-view.js`), but those are all static admin pages; this is a live chat page with an in-progress SSE conversation, and the codebase's own precedent for THIS exact page shape (`attachCardHandlers`, the assumption-card mechanism res-s4 was explicitly told to follow) already solves the identical problem without a reload. Using reload here would have been inconsistent with the precedent the story's own DoR contract cited. (2) Defer to a RISK-ACCEPT alongside O2 — rejected: unlike O2 (a genuine design question about scope), N1 is a straightforward implementation gap in code this same corrective task had just written, and leaving it would recreate exactly the "known AC gap deferred past DoD" pattern the original F1/O1 ARCH entry argued against.
+**Rationale:** AC1's own literal text ("displays a visible flag/marker") is satisfied on next render regardless, but a manual smoke test performed immediately after clicking the button — the realistic operator behaviour the ARCH entry for F1 was itself justified by — would show no marker without this fix. Consistency with `attachCardHandlers`' established DOM-patch pattern (rather than introducing a first-ever reload on this specific page) keeps the chat page's existing live-conversation UX intact.
+**Made by:** Claude (agent), acting on the re-run final cross-task reviewer's finding N1
+**Revisit trigger:** If a future story adds a genuinely large step-nav strip or many possible flagged stages such that a `querySelectorAll`/patch-per-id approach becomes a measurable performance concern (not expected at this scale — at most 8 stages), reconsider a single re-render of the whole nav strip instead of per-`<li>` patching.
+---
+
+---
 
 ## Architecture Decision Records
 
