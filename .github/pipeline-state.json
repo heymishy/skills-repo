@@ -27993,7 +27993,7 @@
     {
       "slug": "2026-08-29-diagram-validation-and-types",
       "name": "Diagram Validation, Drift Accuracy, and Archify-Inspired Diagram Types",
-      "stage": "branch-setup",
+      "stage": "definition",
       "discoveryStatus": "approved",
       "health": "green",
       "updatedAt": "2026-08-29T07:19:03.640Z",
@@ -28198,12 +28198,12 @@
             {
               "slug": "s3-drift-comparator-labeled-multi-target-edges",
               "name": "Drift-comparator recognizes labeled and multi-target edges",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s3-drift-comparator-labeled-multi-target-edges-review-2.md",
-              "updatedAt": "2026-08-29T19:19:24.041Z",
+              "updatedAt": "2026-08-29T19:22:30.165Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -28217,7 +28217,15 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-29-diagram-validation-and-types/dor/s3-drift-comparator-labeled-multi-target-edges-dor.md",
               "dorContractArtefact": "artefacts/2026-08-29-diagram-validation-and-types/dor/s3-drift-comparator-labeled-multi-target-edges-dor-contract.md",
-              "dorSignedOffAt": "2026-08-29T07:54:19.395Z"
+              "dorSignedOffAt": "2026-08-29T07:54:19.395Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "EDGE_RE recognizes labeled edges and multi-target edges (AC1, AC2, AC3, AC4)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s3-drift-comparator-labeled-multi-target-edges-plan.md"
+                }
+              ]
             },
             {
               "slug": "s4-drift-comparator-subgraphs",
