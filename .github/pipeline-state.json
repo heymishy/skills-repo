@@ -28328,6 +28328,42 @@
       ],
       "metrics": [],
       "updatedAt": "2026-08-29T22:14:07.282Z"
+    },
+    {
+      "slug": "2026-08-30-csrf-persist-timeout-race",
+      "name": "Increase the session-persist timeout to close the suspend race",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "cptr-s1",
+          "id": "cptr-s1",
+          "name": "Increase session-persist timeout to close the suspend race",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 2,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-30-csrf-persist-timeout-race/test-plans/cptr-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-30-csrf-persist-timeout-race/dor/cptr-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-30-csrf-persist-timeout-race/dor/cptr-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-08-29T23:09:09.895Z",
+          "updatedAt": "2026-08-29T23:09:09.895Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-29T23:09:09.895Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
