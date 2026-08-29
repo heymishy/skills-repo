@@ -111,6 +111,15 @@
 **Revisit trigger:** This is now the 6th occurrence across 3 unrelated features/stories (`revise-earlier-stage` ×4, S1 of this feature, S2 of this feature). The standing recommendation to root-cause this file with a dedicated short-track story is now overdue by a wide margin — every additional occurrence without action increases the risk that a REAL regression in this file gets waved through as "the known flake" without genuine investigation.
 ---
 
+---
+**2026-08-29 | ARCH | implementation-plan (S2)**
+**Decision:** `markDiagramRenderError` surfaces only the first line of mermaid's rejection/exception message (everything before the first `\n`), never the full raw message or stack trace. `tests/check-csd-s2-canvas-diagram-rendering.js` Unit 3 ("the error box never leaks the raw JS error message or a stack trace") is updated: its fixture's stack-trace lines (file/line references, `at ...` frames) remain asserted-absent, but its first-line reason text ("Syntax error in graph") is now asserted-present, since surfacing exactly that line is this story's own AC1.
+**Alternatives considered:** (1) Keep Unit 3's current behaviour fully intact (never show any part of the raw message) and build a pattern-matcher classifying known mermaid error shapes into pre-written safe messages instead. (2) Pause S2 and send it back to `/definition-of-ready` with the contract corrected before any code is written.
+**Rationale:** S2's DoR contract ("What will be built") described a literal raw pass-through of mermaid's rejection reason, discovered during implementation planning to directly conflict with an already-shipped test from a different feature (`code-shape-diagrams`/csd-s2, Unit 3) enforcing `MC-SEC-01` (mandatory constraint: no user-supplied content in innerHTML without sanitisation) via csd-s2's own AC2 ("not a raw error stack or stack trace"). First-line-only extraction satisfies both: mermaid's real parse errors are single-line human-readable descriptions by convention (e.g. "Parse error on line 3: ...unexpected token DOWN"); a genuine JS stack trace's frames (`at Parser.parseError (...)`, file:line references) always appear on subsequent lines in `Error.toString()` output, so truncating at the first `\n` reliably strips them while preserving exactly the human-readable reason S2's AC1 asks for. Escalated to the operator rather than decided unilaterally, given `MC-SEC-01` is a mandatory guardrail constraint and this changes an existing, already-merged security/UX decision, not just this story's own scope.
+**Made by:** Hamish King — Platform Owner (option selected via AskUserQuestion during S2 implementation planning)
+**Revisit trigger:** If a future mermaid version's error format changes such that the human-readable reason spans multiple lines, or a genuine stack-trace-shaped string appears entirely on one line, this first-line heuristic will need a more precise real classifier (see the declined alternative above).
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded for this feature yet. -->

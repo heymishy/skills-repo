@@ -27993,7 +27993,7 @@
     {
       "slug": "2026-08-29-diagram-validation-and-types",
       "name": "Diagram Validation, Drift Accuracy, and Archify-Inspired Diagram Types",
-      "stage": "branch-setup",
+      "stage": "definition",
       "discoveryStatus": "approved",
       "health": "green",
       "updatedAt": "2026-08-29T07:19:03.640Z",
@@ -28141,12 +28141,12 @@
             {
               "slug": "s2-mermaid-syntax-diagnostic",
               "name": "Structured diagnostic for invalid mermaid syntax inside a diagram",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s2-mermaid-syntax-diagnostic-review-1.md",
-              "updatedAt": "2026-08-29T09:13:40.048Z",
+              "updatedAt": "2026-08-29T09:20:35.775Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
@@ -28160,7 +28160,33 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-29-diagram-validation-and-types/dor/s2-mermaid-syntax-diagnostic-dor.md",
               "dorContractArtefact": "artefacts/2026-08-29-diagram-validation-and-types/dor/s2-mermaid-syntax-diagnostic-dor-contract.md",
-              "dorSignedOffAt": "2026-08-29T07:54:19.395Z"
+              "dorSignedOffAt": "2026-08-29T07:54:19.395Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "markDiagramRenderError surfaces mermaid's first-line reason, escaped, logged in full",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s2-mermaid-syntax-diagnostic-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "AC3 -- sibling diagram render isolation regression coverage",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s2-mermaid-syntax-diagnostic-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "AC4 -- successful renders unchanged across all 3 types regression coverage",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s2-mermaid-syntax-diagnostic-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Update csd-s2's Unit 3 test for the new first-line-reason-shown behaviour",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s2-mermaid-syntax-diagnostic-plan.md"
+                }
+              ]
             },
             {
               "slug": "s3-drift-comparator-labeled-multi-target-edges",
