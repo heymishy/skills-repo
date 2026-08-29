@@ -254,10 +254,10 @@ queue.push(function runUnit2() {
   });
 });
 
-// ── Unit 3 (AC2 edge case) — malformed mermaid syntax never exposes a raw stack trace ──
+// ── Unit 3 (AC2 edge case) — mermaid render failure shows its first-line reason, never a stack trace ──
 queue.push(function runUnit3() {
-  console.log('\n-- Unit 3 (AC2 edge case) -- malformedMermaidSyntaxNeverExposesRawStackTrace');
-  return test('the error box never leaks the raw JS error message or a stack trace, even when mermaid.run() rejects with one', async function() {
+  console.log('\n-- Unit 3 (AC2 edge case) -- mermaidRenderFailureShowsReasonNeverStackTrace');
+  return test('the error box shows the first-line reason but never leaks a stack trace, even when mermaid.run() rejects with one', async function() {
     const sid = uniqueId('u3');
     const text = 'Here is a broken diagram.\n\n' + diagramMarker('system-architecture', MALFORMED_MERMAID_SYNTAX) + '\n\nThoughts?';
     routes.setSkillTurnExecutorStreamAdapter(function(sp, hist, input, token, onChunk, onThinking, onFirstChunk) {
@@ -280,7 +280,11 @@ queue.push(function runUnit3() {
       const bodyText = block.querySelector('.canvas-block-body').textContent;
       assert.strictEqual(bodyText.indexOf('Parser.parseError'), -1, 'must never expose the raw stack trace text');
       assert.strictEqual(bodyText.indexOf('mermaid.min.js'), -1, 'must never expose the raw stack trace file reference');
-      assert.strictEqual(bodyText.indexOf('Syntax error in graph'), -1, 'must never expose the raw JS error message');
+      // csd/s2-of-diagram-validation-and-types (2026-08-29): the FIRST LINE of
+      // the rejection message is now deliberately shown -- this is that
+      // story's own AC1. Only the stack-trace lines (asserted absent above)
+      // are suppressed, per decisions.md ARCH entry 2026-08-29.
+      assert.notStrictEqual(bodyText.indexOf('Syntax error in graph'), -1, 'the human-readable first-line reason IS now shown (this story\'s own AC1) -- only the stack trace lines are suppressed');
 
       const errorBox = block.querySelector('.cv-diagram-error-box');
       assert.ok(errorBox, 'expected a labelled error box to still be present');
