@@ -28036,7 +28036,44 @@
         }
       ],
       "slicingStrategy": "walking-skeleton",
-      "guardrails": [],
+      "guardrails": [
+        {
+          "id": "ADR-026",
+          "category": "adr",
+          "label": "No parallel rendering path — single canvas-block dispatch",
+          "status": "met",
+          "evidence": "Referenced in S1, S2, S5 Architecture Constraints; Category E found no violations",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-29T07:54:19.395Z"
+        },
+        {
+          "id": "NFR-diagram-render-failure-diagnosability",
+          "category": "nfr",
+          "label": "Diagram render failures surface a structured diagnostic",
+          "status": "met",
+          "evidence": "S1 (marker-level) + S2 (mermaid-syntax-level) contracts reviewed and DoR signed off",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-29T07:54:19.395Z"
+        },
+        {
+          "id": "NFR-drift-comparator-parsing-accuracy",
+          "category": "nfr",
+          "label": "Drift-comparator parsers handle labeled/multi-target edges and subgraphs",
+          "status": "met",
+          "evidence": "S3 + S4 contracts reviewed and DoR signed off",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-29T07:54:19.395Z"
+        },
+        {
+          "id": "NFR-testing-standards-mutation-discipline",
+          "category": "pattern",
+          "label": "Mutation-testing discipline applied to new parsing/diagnostic tests",
+          "status": "met",
+          "evidence": "Referenced in all 5 stories' Architecture Constraints (S3/S4 added at review Run 2)",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-08-29T07:54:19.395Z"
+        }
+      ],
       "epics": [
         {
           "slug": "diagram-validation-drift-and-sequence-type",
@@ -28046,12 +28083,12 @@
             {
               "slug": "s1-diagram-marker-diagnostic",
               "name": "Structured diagnostic for a malformed canvas diagram marker",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s1-diagram-marker-diagnostic-review-2.md",
-              "updatedAt": "2026-08-29T07:46:43.993Z",
+              "updatedAt": "2026-08-29T07:54:19.395Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 12,
@@ -28061,17 +28098,21 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-29-diagram-validation-and-types/dor/s1-diagram-marker-diagnostic-dor.md",
+              "dorContractArtefact": "artefacts/2026-08-29-diagram-validation-and-types/dor/s1-diagram-marker-diagnostic-dor-contract.md",
+              "dorSignedOffAt": "2026-08-29T07:54:19.395Z"
             },
             {
               "slug": "s2-mermaid-syntax-diagnostic",
               "name": "Structured diagnostic for invalid mermaid syntax inside a diagram",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s2-mermaid-syntax-diagnostic-review-1.md",
-              "updatedAt": "2026-08-29T07:46:43.993Z",
+              "updatedAt": "2026-08-29T07:54:19.395Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
@@ -28081,17 +28122,21 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-29-diagram-validation-and-types/dor/s2-mermaid-syntax-diagnostic-dor.md",
+              "dorContractArtefact": "artefacts/2026-08-29-diagram-validation-and-types/dor/s2-mermaid-syntax-diagnostic-dor-contract.md",
+              "dorSignedOffAt": "2026-08-29T07:54:19.395Z"
             },
             {
               "slug": "s3-drift-comparator-labeled-multi-target-edges",
               "name": "Drift-comparator recognizes labeled and multi-target edges",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s3-drift-comparator-labeled-multi-target-edges-review-2.md",
-              "updatedAt": "2026-08-29T07:46:43.993Z",
+              "updatedAt": "2026-08-29T07:54:19.395Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -28101,17 +28146,21 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-29-diagram-validation-and-types/dor/s3-drift-comparator-labeled-multi-target-edges-dor.md",
+              "dorContractArtefact": "artefacts/2026-08-29-diagram-validation-and-types/dor/s3-drift-comparator-labeled-multi-target-edges-dor-contract.md",
+              "dorSignedOffAt": "2026-08-29T07:54:19.395Z"
             },
             {
               "slug": "s4-drift-comparator-subgraphs",
               "name": "Drift-comparator recognizes subgraphs",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s4-drift-comparator-subgraphs-review-2.md",
-              "updatedAt": "2026-08-29T07:46:43.993Z",
+              "updatedAt": "2026-08-29T07:54:19.395Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -28121,17 +28170,21 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-29-diagram-validation-and-types/dor/s4-drift-comparator-subgraphs-dor.md",
+              "dorContractArtefact": "artefacts/2026-08-29-diagram-validation-and-types/dor/s4-drift-comparator-subgraphs-dor-contract.md",
+              "dorSignedOffAt": "2026-08-29T07:54:19.395Z"
             },
             {
               "slug": "s5-sequence-diagram-type",
               "name": "Add the Sequence diagram type, conditionally emitted",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s5-sequence-diagram-type-review-2.md",
-              "updatedAt": "2026-08-29T07:46:43.993Z",
+              "updatedAt": "2026-08-29T07:54:19.395Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -28141,7 +28194,11 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-08-29-diagram-validation-and-types/dor/s5-sequence-diagram-type-dor.md",
+              "dorContractArtefact": "artefacts/2026-08-29-diagram-validation-and-types/dor/s5-sequence-diagram-type-dor-contract.md",
+              "dorSignedOffAt": "2026-08-29T07:54:19.395Z"
             }
           ]
         }
