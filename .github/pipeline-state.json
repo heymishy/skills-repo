@@ -28141,12 +28141,12 @@
             {
               "slug": "s2-mermaid-syntax-diagnostic",
               "name": "Structured diagnostic for invalid mermaid syntax inside a diagram",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s2-mermaid-syntax-diagnostic-review-1.md",
-              "updatedAt": "2026-08-29T18:57:21.693Z",
+              "updatedAt": "2026-08-29T18:58:27.771Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
@@ -28187,7 +28187,9 @@
                   "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s2-mermaid-syntax-diagnostic-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/785"
             },
             {
               "slug": "s3-drift-comparator-labeled-multi-target-edges",
