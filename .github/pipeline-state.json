@@ -28046,32 +28046,52 @@
             {
               "slug": "s1-diagram-marker-diagnostic",
               "name": "Structured diagnostic for a malformed canvas diagram marker",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s1-diagram-marker-diagnostic-review-1.md",
+              "updatedAt": "2026-08-29T07:33:02.157Z"
             },
             {
               "slug": "s2-mermaid-syntax-diagnostic",
               "name": "Structured diagnostic for invalid mermaid syntax inside a diagram",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s2-mermaid-syntax-diagnostic-review-1.md",
+              "updatedAt": "2026-08-29T07:33:02.157Z"
             },
             {
               "slug": "s3-drift-comparator-labeled-multi-target-edges",
               "name": "Drift-comparator recognizes labeled and multi-target edges",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s3-drift-comparator-labeled-multi-target-edges-review-1.md",
+              "updatedAt": "2026-08-29T07:33:02.157Z"
             },
             {
               "slug": "s4-drift-comparator-subgraphs",
               "name": "Drift-comparator recognizes subgraphs",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s4-drift-comparator-subgraphs-review-1.md",
+              "updatedAt": "2026-08-29T07:33:02.157Z"
             },
             {
               "slug": "s5-sequence-diagram-type",
               "name": "Add the Sequence diagram type, conditionally emitted",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s5-sequence-diagram-type-review-1.md",
+              "updatedAt": "2026-08-29T07:33:02.157Z"
             }
           ]
         }
