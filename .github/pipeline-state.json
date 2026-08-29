@@ -27989,6 +27989,20 @@
         }
       ],
       "lastImprove": "2026-08-29"
+    },
+    {
+      "slug": "2026-08-29-diagram-validation-and-types",
+      "name": "Diagram Validation, Drift Accuracy, and Archify-Inspired Diagram Types",
+      "stage": "discovery",
+      "discoveryStatus": "clarified",
+      "health": "green",
+      "updatedAt": "2026-08-29T06:45:59.399Z",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "stories": [],
+      "track": "standard"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
