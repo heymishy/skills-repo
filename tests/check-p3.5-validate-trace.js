@@ -36,6 +36,14 @@ const crypto = require('crypto');
 
 const root = path.join(__dirname, '..');
 
+// p35tf-s1: a real pwsh cold-start occasionally exceeds 30s once the full
+// suite (node scripts/run-all-tests.js) has been running for several minutes
+// under sustained load -- spawnSync's status:null/empty-stderr signature is
+// a timeout kill, not a real validate-trace.ps1 failure. 90s stays well
+// within run-all-tests.js's own 120s per-file outer timeout, so a genuinely
+// broken pwsh/validate-trace.ps1 still fails within a bounded time.
+const PWSH_SPAWN_TIMEOUT_MS = 90000;
+
 let passed  = 0;
 let failed  = 0;
 let skipped = 0;
@@ -91,7 +99,7 @@ function hasPwsh() {
     const result = cp.spawnSync(
       'pwsh',
       ['-NonInteractive', '-File', ps1, '--ci'],
-      { cwd: root, timeout: 30000, encoding: 'utf8' }
+      { cwd: root, timeout: PWSH_SPAWN_TIMEOUT_MS, encoding: 'utf8' }
     );
     if (result.status === 0) {
       pass(name);
@@ -139,7 +147,7 @@ function hasPwsh() {
     const result = cp.spawnSync(
       'pwsh',
       ['-NonInteractive', '-File', ps1Copy, '--ci'],
-      { cwd: tmpDir, timeout: 30000, encoding: 'utf8' }
+      { cwd: tmpDir, timeout: PWSH_SPAWN_TIMEOUT_MS, encoding: 'utf8' }
     );
     if (result.status !== 0) {
       pass(name);
