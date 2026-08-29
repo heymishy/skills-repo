@@ -388,3 +388,29 @@ Source: wsm.2 AC1/3/6, wsm.3 AC1/6, workspace/learnings.md D41, ADR-024.
 **Apply this to any future aggregate-percentage rollup, not just test/AC coverage** — the same three rules (blend, exclude, explicit-empty) generalise to any sum-based product-level metric computed from per-feature or per-story data.
 
 **Source:** product-rollup epic (2026-07-16-product-rollup), pr-s5 (test coverage) and pr-s6 (AC coverage) — same convention applied to both for consistency, per that feature's own discovery-time decision.
+
+---
+
+## Client-side DOM patch vs. full page reload after a POST action
+
+**Rule:** When adding a button-triggered POST action to a page that has live, in-progress client state (an open SSE conversation, an unsaved draft, an in-flight stream), default to patching the specific DOM element(s) in place from the response body — never `window.location.reload()`. Reserve `window.location.reload()` for static/administrative pages with no in-progress state to lose (this codebase's existing convention on pages like `products.js`, `settings.js`, `kanban-view.js`).
+
+**Why:** A reload is simpler to write, but on a page with live state it is destructive — it discards anything not yet persisted server-side (an unsent draft in a chat input, an open stream). The existing `attachCardHandlers` mechanism (assumption-card confirm/flag buttons on the live chat page) already solves this correctly: it reads the POST response's `state` field and updates only the affected card's class/attributes in place. When adding a new button-triggered action to the SAME page shape, follow that precedent, not the reload precedent used elsewhere.
+
+**Confirmed case:** res-s4's materiality flag/leave-as-is buttons initially followed `attachCardHandlers`' correct pattern for the endpoint response handling itself, but a final-review round found the flag marker's OWN render logic (a separate concern — the step-nav strip, not the button's own card) never actually re-ran after the click, because nothing told it to. Fixed by having the success handler read `flaggedStages` from the response and patch the matching `<li data-stage-id="...">` element directly — the `data-stage-id` attribute was added specifically to make this targeting possible, following the same "add the smallest DOM hook needed for a targeted patch" approach.
+
+**Companion rule — give the target element a stable, queryable hook.** If the element a client-side patch needs to update doesn't already have a unique, stable attribute to select it by (an id, a `data-*` attribute), add one as part of the same change — don't try to patch by fragile means (text content matching, DOM position/index).
+
+**Source:** res-s4 (`2026-08-27-revise-earlier-stage`), Task 5b / decisions.md 2026-08-29 ARCH entry ("N1" finding).
+
+---
+
+## Inventory every render site of a shared component before writing a DoR contract, repo-wide — not just within the files already under discussion
+
+**Rule:** When a DoR contract needs to identify "every place a shared UI component renders" (a step-nav strip, a card, a shared partial), search the ENTIRE repository for the component's own class name / structural marker — `grep -r` for the CSS class or the literal markup fragment — not just the files the story's other investigation already has open. A file-scoped or module-scoped search can correctly widen a contract from "one site" to "the sites in the files I'm already looking at" and still under-count.
+
+**Why:** This exact failure mode recurred within a single story. res-s4's DoR contract correction (2026-08-28) correctly found that `journey.js` has TWO independent render sites for the step-nav strip (not the one the original contract assumed) — a real improvement over the original. But the search that found those two stayed scoped to `journey.js`; it did not ask "does `.sn-step` render anywhere else in the codebase, in any file." A THIRD site, structurally identical, existed in `skills.js`'s own `_renderChatPage` — found only at the mandatory final cross-task review, when the reviewer explicitly re-asked the scoping question with no assumed file boundary.
+
+**Practical check:** `grep -rn "<class-or-marker-name>" src/` (or the repo's equivalent search) for the exact component being modified, before finalizing a DoR contract's touch-point list — not a search scoped to "the files this story's ACs mention."
+
+**Source:** res-s4 (`2026-08-27-revise-earlier-stage`), Task 5 / decisions.md 2026-08-29 ARCH entry ("F1" finding). A companion `/definition-of-ready` process proposal for this same finding is deferred behind an existing pending proposal on that skill — see `.github/architecture-guardrails.md`'s Anti-Patterns table.
