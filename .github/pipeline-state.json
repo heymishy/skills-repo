@@ -28011,8 +28011,10 @@
           "baseline": "0% -- no structured diagnostic mechanism exists today",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "S1 merged 2026-08-29 (PR #784) -- mechanism now exists for the marker-parsing failure mode, but no real operator session has hit a malformed marker in production yet.",
+          "contributingStories": [
+            "s1-diagram-marker-diagnostic"
+          ]
         },
         {
           "id": "m2",
@@ -28051,9 +28053,9 @@
           "category": "nfr",
           "label": "Diagram render failures surface a structured diagnostic",
           "status": "met",
-          "evidence": "S1 (marker-level) + S2 (mermaid-syntax-level) contracts reviewed and DoR signed off",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-08-29T07:54:19.395Z"
+          "evidence": "S1 merged (PR #784): marker-parsing diagnostic verified via 22/22 tests + E2E. S2 (mermaid-syntax) still pending to fully close this guardrail.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-29T09:03:14.614Z"
         },
         {
           "id": "NFR-drift-comparator-parsing-accuracy",
@@ -28083,12 +28085,12 @@
             {
               "slug": "s1-diagram-marker-diagnostic",
               "name": "Structured diagnostic for a malformed canvas diagram marker",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s1-diagram-marker-diagnostic-review-2.md",
-              "updatedAt": "2026-08-29T08:48:47.399Z",
+              "updatedAt": "2026-08-29T09:03:14.614Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 12,
@@ -28130,8 +28132,11 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/784"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/784",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "layoutGapsAtMerge": false
             },
             {
               "slug": "s2-mermaid-syntax-diagnostic",
