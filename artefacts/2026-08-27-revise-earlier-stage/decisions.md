@@ -130,6 +130,15 @@
 ---
 
 ---
+**2026-08-29 | RISK-ACCEPT | verify-completion (res-s4, route/handler E2E coverage check)**
+**Decision:** Accept `tests/e2e/dsda-s1-default-all-stories.spec.js`'s "AC3: the story-list textarea..." test as a pre-existing, unrelated failure and proceed with `/verify-completion` rather than treating it as a res-s4 regression.
+**Alternatives considered:** (1) Treat the failure as blocking and investigate/fix it as part of res-s4 — rejected once confirmed pre-existing (see rationale). (2) Skip the baseline confirmation and just note the failure as "probably pre-existing" without verifying — rejected as exactly the kind of unsupported claim `/verify-completion`'s own Iron Law exists to prevent.
+**Rationale:** The test's `driveJourneyToStoriesPage` helper expects a 303 redirect to `/journey/:id/stories` after gate-confirming the `definition` stage, but receives a redirect into `/skills/review/sessions/:id/chat` instead — a gate-confirm redirect-target defect unrelated to anything res-s4 touched (materiality flag actions, step-nav render markers, reopen-clear logic). Confirmed pre-existing, not a regression, by creating a temporary detached worktree at `origin/master`'s HEAD (`2c654132`, res-s4's own merge-base — i.e. the exact code res-s4 branched from) and running the identical spec there: it failed identically (same assertion, same redirect-target mismatch, different journey/session IDs only). This is genuine independent verification, not an assumption — per this session's own standing discipline of never trusting an unverified "probably pre-existing" claim.
+**Made by:** Claude (agent), during res-s4's `/verify-completion` route/handler E2E coverage check
+**Revisit trigger:** This defect (gate-confirm after `definition` redirecting into the next stage's chat session instead of the intermediate `/journey/:id/stories` page) is real and pre-existing on master, independent of this feature — worth a dedicated short-track story to root-cause and fix, distinct from the already-flagged `check-p3.5-validate-trace.js` flake (a different failure, different root cause, same "pre-existing, out of this feature's scope" disposition).
+---
+
+---
 
 ## Architecture Decision Records
 
