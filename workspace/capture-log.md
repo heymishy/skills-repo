@@ -1613,3 +1613,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: decision
   signal-text: "S5's AC1/AC2 (the model's conditional judgment about whether a feature genuinely warrants a Sequence diagram) were classified as gap type 'Untestable-by-nature' rather than given a unit/integration test -- this is a live-model behavioural judgment call, not a deterministic code path, so no automated test can assert what the model chooses to author. Handled via a manual verification scenario marked with the same high-attention marker normally reserved for CSS-layout-dependent gaps (exact positive AND negative scenario, explicit 'do not skip' framing), since this is arguably the single most important behaviour the story exists to validate, even though it isn't a browser-rendering concern. Real-world accuracy of this judgment is tracked post-launch via Benefit Metric 3 (sequence-type adoption), not at test-plan time."
   source: agent-auto
+
+- date: 2026-08-30
+  session-phase: implementation / 2026-08-30-journey-gate-confirm-missing-csrf (jgcc-s1)
+  signal-type: gap
+  signal-text: "Second real CSRF-related gap found in one session: cpr-s1/cptr-s1 fixed a token-persistence-timing race, and separately, journey.js/skills.js's in-chat gate-confirm form (skills.js's _renderChatPage, ougl.4 branch) was found to have NO _csrf field at all, causing every click of the 'Continue to next stage' button to 403 unconditionally -- a live, reproducible-on-first-click bug found via direct browser testing on wuce-staging, not a timing issue. Recommend a dedicated short-track story auditing every POST/PUT/DELETE form in src/web-ui/ for the same missing-_csrf-field pattern, rather than waiting for a third live incident."
+  source: agent-auto
