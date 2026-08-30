@@ -28570,7 +28570,7 @@
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-30-mock-gateway-scenario-selection/review/mgss-s1-review-1.md",
-          "updatedAt": "2026-08-30T07:52:18.028Z",
+          "updatedAt": "2026-08-30T08:47:39.339Z",
           "testPlan": {
             "status": "written",
             "totalTests": 14,
@@ -28630,8 +28630,10 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/797"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/797",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ]
     }
