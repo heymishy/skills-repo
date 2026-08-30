@@ -28655,7 +28655,7 @@
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-30-mock-scenario-per-stage-fallback/review/msps-s1-review-1.md",
-          "updatedAt": "2026-08-30T09:20:49.571Z",
+          "updatedAt": "2026-08-30T09:40:07.843Z",
           "testPlan": {
             "status": "written",
             "totalTests": 6,
@@ -28679,8 +28679,10 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/798"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/798",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ]
     }
