@@ -81,7 +81,12 @@ await (async function() {
   var renderRes = fakeRes();
   await routes.handleGetChatHtml(fakeReq(session, { name: 'discovery', id: sid }), renderRes);
   var html = renderRes._chunks.join('');
-  var csrfInputMatch = html.match(/<input type="hidden" name="_csrf" value="([^"]*)">/);
+  // sccf-s1: scope the match to the actual rendered <form>...</form> block --
+  // an unscoped match can also hit showCommitLink()'s JS source text (which
+  // contains a similar-looking "_csrf" substring as a string literal, not
+  // real HTML) elsewhere on the same page.
+  var formMatch = html.match(/<form method="POST" action="\/api\/journey\/[^"]*\/gate-confirm"[^>]*>([\s\S]*?)<\/form>/);
+  var csrfInputMatch = formMatch && formMatch[1].match(/<input type="hidden" name="_csrf" value="([^"]*)">/);
 
   // Simulate submitting the rendered form's own _csrf value back through the
   // real csrfGuard, against the SAME session object (matching how a real
