@@ -222,6 +222,23 @@ function _loadFixtureFile(stage, scenarioName) {
 }
 
 /**
+ * msps-s1: pure existence check for a (stage, scenarioName) fixture file --
+ * never throws, unlike _loadFixtureFile. Lets a caller (journey.js's
+ * _mockScenarioForStage) decide whether to apply a journey-wide scenario
+ * override for a given stage, or fall back to the default, without
+ * triggering the "No fixture found" throw that _loadFixtureFile/
+ * getMockResponse still correctly raise for a genuinely unrecognized
+ * scenario name requested directly.
+ * @param {string} stage
+ * @param {string} scenarioName
+ * @returns {boolean}
+ */
+function hasFixture(stage, scenarioName) {
+  const fileName = _fixtureFileName(stage, scenarioName);
+  return fs.existsSync(path.join(FIXTURE_DIR, fileName));
+}
+
+/**
  * Built-in mock gateway client — reads canned fixture JSON files from
  * tests/e2e/fixtures/llm-gateway/. Deterministic: identical
  * (stage, model, scenarioName, turnIndex) always returns an equal response
@@ -320,6 +337,7 @@ module.exports = {
   wireDefaultMockGatewayClient,
   isMockGatewayEnabled,
   getMockResponse,
+  hasFixture,
   inventoryFixtures,
   // amgt-s1
   setRuntimeMockGatewayOverride,

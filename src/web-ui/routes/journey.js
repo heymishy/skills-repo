@@ -104,19 +104,29 @@ var _mockLlmGateway = require('../modules/mock-llm-gateway'); // bri-s3.2
  * undefined otherwise, which htmlSubmitTurn treats as its 'success' default.
  *
  * mgss-s1: journey.e2eMockScenario, when set, generalizes this beyond the
- * single-stage 'failure' case -- it applies to EVERY stage of the journey
- * (any fixture name, not just 'failure'), and takes priority over
- * e2eForceFailStage when both happen to be set. This lets an operator
- * manually verifying ACs against a real deployment trigger a scenario like
- * 'diagram-showcase' across an entire journey (e.g. design AND definition),
- * not just force one named stage to fail.
+ * single-stage 'failure' case -- it applies to every stage of the journey
+ * that actually HAS a fixture for it (any fixture name, not just 'failure'),
+ * and takes priority over e2eForceFailStage when both happen to be set. This
+ * lets an operator manually verifying ACs against a real deployment trigger
+ * a scenario like 'diagram-showcase' across an entire journey (e.g. design
+ * AND definition), not just force one named stage to fail.
+ *
+ * msps-s1: a stage that has NO fixture for the requested e2eMockScenario
+ * (e.g. 'discovery' has no diagram-showcase.json -- only ideate/design/
+ * definition do) falls through to the normal 'success' default instead of
+ * letting getMockResponse throw "No fixture found" -- confirmed live via
+ * Chrome: applying the override unconditionally broke the very first stage
+ * of any normal outer-loop journey, before it could ever reach a stage that
+ * genuinely has the requested fixture.
  * @param {object} journey
  * @param {string} stageName
  * @returns {string|undefined}
  */
 function _mockScenarioForStage(journey, stageName) {
   if (!_mockLlmGateway.isMockGatewayEnabled()) return undefined;
-  if (journey && journey.e2eMockScenario) return journey.e2eMockScenario;
+  if (journey && journey.e2eMockScenario && _mockLlmGateway.hasFixture(stageName, journey.e2eMockScenario)) {
+    return journey.e2eMockScenario;
+  }
   if (journey && journey.e2eForceFailStage === stageName) return 'failure';
   return undefined;
 }
