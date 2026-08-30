@@ -115,9 +115,13 @@ queue.push(function runTask2() {
       capturedOptions = options;
     });
     try {
+      // msps-s1: 'discovery' has no discovery.diagram-showcase.json fixture,
+      // so it correctly falls back to 'success' (undefined here) as of the
+      // msps-s1 fix -- 'ideate' is used instead since ideate.diagram-showcase.json
+      // genuinely exists, keeping this test's assertion meaningful.
       const req = mockReq({
         featureName: 'mgss-s1 test feature ' + Date.now(),
-        startSkill: 'discovery',
+        startSkill: 'ideate',
         e2eMockScenario: 'diagram-showcase'
       });
       const res = noopRes();

@@ -28650,26 +28650,37 @@
           "slug": "msps-s1",
           "id": "msps-s1",
           "name": "Per-stage fixture-existence fallback",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-30-mock-scenario-per-stage-fallback/review/msps-s1-review-1.md",
-          "updatedAt": "2026-08-30T08:58:49.575Z",
+          "updatedAt": "2026-08-30T09:20:49.571Z",
           "testPlan": {
             "status": "written",
             "totalTests": 6,
-            "passing": 0,
+            "passing": 6,
             "artefact": "artefacts/2026-08-30-mock-scenario-per-stage-fallback/test-plans/msps-s1-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-30-mock-scenario-per-stage-fallback/dor/msps-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-30-mock-scenario-per-stage-fallback/dor/msps-s1-dor-contract.md",
-          "dorSignedOffAt": "2026-08-30T08:58:49.575Z"
+          "dorSignedOffAt": "2026-08-30T08:58:49.575Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Add hasFixture and wire into _mockScenarioForStage",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-30-mock-scenario-per-stage-fallback/plans/msps-s1-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/798"
         }
       ]
     }
