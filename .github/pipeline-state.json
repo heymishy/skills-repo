@@ -28729,21 +28729,21 @@
       "slug": "2026-08-31-sse-timeout-retry-resilience",
       "name": "Retry an LLM stream call once when it fails before any content has streamed",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
-      "updatedAt": "2026-08-30T19:41:17.236Z",
+      "updatedAt": "2026-08-30T20:06:33.243Z",
       "epics": [],
       "stories": [
         {
           "slug": "sstr-s1",
           "id": "sstr-s1",
           "name": "Retry on pre-first-chunk failure",
-          "stage": "implementation-plan",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-31-sse-timeout-retry-resilience/review/sstr-s1-review-1.md",
-          "updatedAt": "2026-08-30T20:04:14.799Z",
+          "updatedAt": "2026-08-30T20:06:24.757Z",
           "testPlan": {
             "status": "written",
             "totalTests": 6,
@@ -28765,7 +28765,9 @@
               "tddState": "completed",
               "file": "artefacts/2026-08-31-sse-timeout-retry-resilience/plans/sstr-s1-plan.md"
             }
-          ]
+          ],
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/800",
+          "prStatus": "draft"
         }
       ]
     }
