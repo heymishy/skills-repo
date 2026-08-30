@@ -102,12 +102,21 @@ var _mockLlmGateway = require('../modules/mock-llm-gateway'); // bri-s3.2
  * and never affects any other stage in the same journey (AC4 requires the
  * failure to be isolated to one deliberately incomplete stage). Returns
  * undefined otherwise, which htmlSubmitTurn treats as its 'success' default.
+ *
+ * mgss-s1: journey.e2eMockScenario, when set, generalizes this beyond the
+ * single-stage 'failure' case -- it applies to EVERY stage of the journey
+ * (any fixture name, not just 'failure'), and takes priority over
+ * e2eForceFailStage when both happen to be set. This lets an operator
+ * manually verifying ACs against a real deployment trigger a scenario like
+ * 'diagram-showcase' across an entire journey (e.g. design AND definition),
+ * not just force one named stage to fail.
  * @param {object} journey
  * @param {string} stageName
  * @returns {string|undefined}
  */
 function _mockScenarioForStage(journey, stageName) {
   if (!_mockLlmGateway.isMockGatewayEnabled()) return undefined;
+  if (journey && journey.e2eMockScenario) return journey.e2eMockScenario;
   if (journey && journey.e2eForceFailStage === stageName) return 'failure';
   return undefined;
 }
@@ -4348,6 +4357,7 @@ async function handleGetWizardBootstrapped(req, res, deps, pool) {
 
 module.exports = {
   resolveArtefactFromDiskOrPg, // jspf-s1
+  _mockScenarioForStage, // mgss-s1
   handleGetJourney,
   handlePostJourney,
   handleDeleteJourney,
