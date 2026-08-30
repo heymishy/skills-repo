@@ -28450,7 +28450,7 @@
       "slug": "2026-08-30-show-commit-link-missing-csrf",
       "name": "Add missing CSRF field to the live-injected gate-confirm form",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
       "epics": [],
       "stories": [
@@ -28458,29 +28458,32 @@
           "slug": "sccf-s1",
           "id": "sccf-s1",
           "name": "Add CSRF field to showCommitLink live-injected gate-confirm form",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "totalTests": 4,
-            "passing": 0,
+            "passing": 4,
             "artefact": "artefacts/2026-08-30-show-commit-link-missing-csrf/test-plans/sccf-s1-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 3,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-30-show-commit-link-missing-csrf/dor/sccf-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-30-show-commit-link-missing-csrf/dor/sccf-s1-dor-contract.md",
           "dorSignedOffAt": "2026-08-30T03:30:54.635Z",
-          "updatedAt": "2026-08-30T03:30:54.635Z"
+          "updatedAt": "2026-08-30T03:40:04.218Z",
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/792"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-30T03:30:54.635Z"
+      "updatedAt": "2026-08-30T03:40:04.218Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
