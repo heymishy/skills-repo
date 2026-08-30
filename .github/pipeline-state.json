@@ -28650,12 +28650,12 @@
           "slug": "msps-s1",
           "id": "msps-s1",
           "name": "Per-stage fixture-existence fallback",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-30-mock-scenario-per-stage-fallback/review/msps-s1-review-1.md",
-          "updatedAt": "2026-08-30T09:19:53.842Z",
+          "updatedAt": "2026-08-30T09:20:49.571Z",
           "testPlan": {
             "status": "written",
             "totalTests": 6,
@@ -28678,7 +28678,9 @@
               "file": "artefacts/2026-08-30-mock-scenario-per-stage-fallback/plans/msps-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/798"
         }
       ]
     }
