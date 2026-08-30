@@ -974,6 +974,8 @@ var _CANVAS_RENDER_FN_LINES = [
   '      bodyHtml = buildDiagramBodyHtml("System Architecture", content);',
   '    } else if (type === "program-design") {',
   '      bodyHtml = buildDiagramBodyHtml("Program Design", content);',
+  '    } else if (type === "sequence") {',
+  '      bodyHtml = buildDiagramBodyHtml("Sequence", content);',
   '    } else if (type === "drift-signal") {',
   '      var driftItems = content.items || [];',
   '      var driftItemsHtml = driftItems.map(function(it) {',
