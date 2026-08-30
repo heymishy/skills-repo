@@ -28636,6 +28636,42 @@
           "releaseReady": true
         }
       ]
+    },
+    {
+      "slug": "2026-08-30-mock-scenario-per-stage-fallback",
+      "name": "Fall back to success per-stage when a journey-wide mock scenario has no fixture for that stage",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "updatedAt": "2026-08-30T08:58:49.575Z",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "msps-s1",
+          "id": "msps-s1",
+          "name": "Per-stage fixture-existence fallback",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-30-mock-scenario-per-stage-fallback/review/msps-s1-review-1.md",
+          "updatedAt": "2026-08-30T08:58:49.575Z",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-30-mock-scenario-per-stage-fallback/test-plans/msps-s1-test-plan.md"
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-30-mock-scenario-per-stage-fallback/dor/msps-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-30-mock-scenario-per-stage-fallback/dor/msps-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-08-30T08:58:49.575Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
