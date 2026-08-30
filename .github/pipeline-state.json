@@ -28480,14 +28480,14 @@
             "artefact": "artefacts/2026-08-30-show-commit-link-missing-csrf/test-plans/sccf-s1-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 3,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-30-show-commit-link-missing-csrf/dor/sccf-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-30-show-commit-link-missing-csrf/dor/sccf-s1-dor-contract.md",
           "dorSignedOffAt": "2026-08-30T03:30:54.635Z",
-          "updatedAt": "2026-08-30T03:40:04.218Z",
+          "updatedAt": "2026-08-30T04:37:42.446Z",
           "verifyStatus": "passed",
           "prStatus": "draft",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/792"
