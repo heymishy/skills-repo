@@ -37,6 +37,11 @@ const _csrf                    = require('../middleware/csrf'); // rcfc-s1 Task 
 
 var { createLogger: _createPinoLogger } = require('../logger');
 var _pinoLogger = _createPinoLogger();
+// sstr-s1 -- test seam: the default test-mode pino destination is a no-op
+// sink (src/web-ui/logger.js), so tests asserting on emitted log events
+// (e.g. sse_retry_succeeded) need to swap in a real logger writing to a
+// capturable destination for the duration of one test.
+function _setPinoLogger(logger) { _pinoLogger = logger; }
 
 const MAX_ANSWER_LENGTH = 1000;
 
@@ -4775,6 +4780,8 @@ async function handlePostTurnStreamHtml(req, res) {
   var _DISPLAY_PARTIAL_RE = /---(?:ASSUMPTION|CONDITION|CANVAS)-JSON:/;
 
   var fullText = '';
+  var _sseRetried = false;
+  for (;;) {
   try {
     var _artefactAccum  = '';
     var _inArtefactMode = session._artefactInProgress === true;
@@ -5083,12 +5090,27 @@ async function handlePostTurnStreamHtml(req, res) {
     cache_read_tokens:    _tu.cache_read_tokens    || null,
     cache_creation_tokens: _tu.cache_creation_tokens || null
   }, 'LLM call complete');
+  if (_sseRetried) {
+    _turnLog.info({ event: 'sse_retry_succeeded' }, 'Retry succeeded');
+  }
+  break;
   } catch (err) {
+    if (!_sseRetried && _ttfbMs === null) {
+      _sseRetried = true;
+      _turnLog.warn({ event: 'sse_retry_attempt', error_message: (err && err.message) ? err.message : 'unknown' }, 'Retrying LLM call after pre-first-chunk failure');
+      continue;
+    }
     clearInterval(_keepaliveInterval);
+    if (_sseRetried) {
+      _turnLog.info({ event: 'sse_retry_exhausted' }, 'Retry also failed');
+    }
     _turnLog.error({ event: 'sse_error', error_message: (err && err.message) ? err.message : 'unknown' }, 'SSE stream error');
+    var _danglingIdx = session.turns.length - 1;
+    if (_danglingIdx >= 0 && session.turns[_danglingIdx].role === 'user') { session.turns.pop(); }
     res.write('data: ' + JSON.stringify({ error: 'Model error — please try again.' }) + '\n\n');
     res.end();
     return;
+  }
   }
   clearInterval(_keepaliveInterval);
   _turnLog.info({ event: 'sse_close', chunk_count: _chunkCount }, 'SSE stream closed');
@@ -5819,6 +5841,8 @@ module.exports = {
   setSessionStore,
   // wsm.2 — Redis skill session injectable, compact read/merge, eviction
   setSkillSessionRedisAdapter, readSessionFromRedis, mergeRedisSessionData, startSessionEviction,
+  // sstr-s1 — pino logger test seam (real logger + capturable destination)
+  _setPinoLogger,
   // ougl.2 — journey session link
   linkSessionToJourney,
   // mfc.3 — streaming turn handler + adapter setter
