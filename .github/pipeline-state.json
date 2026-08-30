@@ -28238,26 +28238,37 @@
             {
               "slug": "s4-drift-comparator-subgraphs",
               "name": "Drift-comparator recognizes subgraphs",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s4-drift-comparator-subgraphs-review-2.md",
-              "updatedAt": "2026-08-29T07:54:19.395Z",
+              "updatedAt": "2026-08-29T22:34:52.319Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0,
+                "passing": 5,
                 "artefact": "artefacts/2026-08-29-diagram-validation-and-types/test-plans/s4-drift-comparator-subgraphs-test-plan.md"
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-29-diagram-validation-and-types/dor/s4-drift-comparator-subgraphs-dor.md",
               "dorContractArtefact": "artefacts/2026-08-29-diagram-validation-and-types/dor/s4-drift-comparator-subgraphs-dor-contract.md",
-              "dorSignedOffAt": "2026-08-29T07:54:19.395Z"
+              "dorSignedOffAt": "2026-08-29T07:54:19.395Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Dedicated test coverage proving drift-comparator already handles subgraphs correctly (no production code change)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s4-drift-comparator-subgraphs-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/788"
             },
             {
               "slug": "s5-sequence-diagram-type",

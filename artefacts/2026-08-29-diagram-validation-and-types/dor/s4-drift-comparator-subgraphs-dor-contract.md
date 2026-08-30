@@ -8,9 +8,11 @@
 
 ## What will be built
 
-- Extend `parseFlowchartMermaid` in `src/modules/drift-comparator.js` to recognize `subgraph NAME ... end` blocks: node declarations inside the block are captured into the same flat `nodes` array as top-level declarations (subgraph membership is not tracked as a separate concept, since neither `compareProgramDesign` nor `compareSystemArchitecture` need it — they only diff nodes/edges, not grouping).
-- Ensure the line-by-line parsing loop correctly resumes top-level parsing after an `end` line, so nodes/edges declared after a subgraph closes are not mis-attributed.
-- No changes to `_diffNodesAndEdges`, `compareProgramDesign`, or `compareSystemArchitecture` — subgraph membership is invisible to them by design (AC3's MATCHED requirement falls out naturally from nodes/edges being flattened identically regardless of subgraph wrapping).
+**Corrected 2026-08-30 during implementation planning — see decisions.md ASSUMPTION entry.** Empirical testing against the current, unmodified `parseFlowchartMermaid` (4 scenarios: plain subgraph, quoted display-name header, a `direction` sub-line with edges crossing the subgraph boundary both ways, and combined with S3's labeled/multi-target edge syntax) found it ALREADY parses subgraphs correctly with zero code changes — `subgraph`/`end`/`direction` lines simply don't match `NODE_DECL_RE`/`EDGE_RE` and are silently skipped, while nested declarations are matched individually regardless of indentation. This story's actual deliverable:
+
+- **No production code change to `src/modules/drift-comparator.js`.**
+- Dedicated test coverage (`tests/check-s4-drift-comparator-subgraphs.js`) proving AC1-AC4 against the existing, already-correct implementation — this closes the benefit-metric's M2 target ("dedicated passing fixtures... for subgraphs"), which was about an untested gap, not a broken one.
+- The mutation-testing check (this story's own Architecture Constraint) is satisfied differently than S3's: since there is no fix to revert, the check instead temporarily introduces a deliberate, real bug into `parseFlowchartMermaid` itself (a naive "skip every line between `subgraph` and `end`" mutation — a plausible bug a less careful implementation might actually ship), confirms the new tests fail for that exact reason (nodes dropped), then reverts to the real, unmodified, already-correct code and confirms the tests pass again. This proves the tests have real detection power against the specific failure mode this story exists to guard against, not just confirmation of pre-existing correctness by coincidence.
 
 ## What will NOT be built
 

@@ -129,6 +129,16 @@
 **Revisit trigger:** If a future mermaid version's error format changes such that the human-readable reason spans multiple lines, or a genuine stack-trace-shaped string appears entirely on one line, this first-line heuristic will need a more precise real classifier (see the declined alternative above).
 ---
 
+---
+**2026-08-30 | ASSUMPTION | implementation-plan (S4)**
+**Decision:** No production code change to `parseFlowchartMermaid` is needed for S4 — empirically confirmed that `subgraph NAME ... end` blocks (including a `direction` sub-line, edges crossing the subgraph boundary in both directions, a quoted display-name subgraph header, and combined with S3's own labeled/multi-target edge syntax) already parse correctly today, with no code changes at all. `subgraph`/`end`/`direction` lines simply fail to match `NODE_DECL_RE`/`EDGE_RE` and are silently skipped by the existing per-line loop, while node/edge declarations nested inside a subgraph are matched individually regardless of indentation (the loop already `.trim()`s each line before matching, so indentation was never a factor). This story's real deliverable is dedicated test coverage proving this — matching the benefit-metric's own M2 target literally ("dedicated passing fixtures... for subgraphs"), which was about closing an untested gap, not necessarily a broken one.
+**Alternatives considered:** (1) Assume the DoR contract's framing is correct and search harder for a real parsing bug that must exist somewhere. (2) Add a redundant explicit `subgraph`/`end` recognition branch to the parsing loop purely for documentation/readability, even though it would be behaviourally a no-op.
+**Rationale:** 4 realistic test scenarios were run directly against the current, unmodified `parseFlowchartMermaid` via `node -e` before writing any plan or code, each confirming correct node capture, correct edge-endpoint resolution across the subgraph boundary, and a genuine MATCHED result from `compareProgramDesign` between a subgraph-grouped as-designed diagram and its flat as-built equivalent. Adding a no-op explicit branch (alternative 2) would only obscure that the behaviour was already correct by construction, and risks giving a false impression that this story fixed something. The story's own DoR contract ("Extend parseFlowchartMermaid... to recognize subgraph blocks") is corrected to reflect this — see the DoR contract file's own inline correction note.
+**Made by:** Claude (agent), during S4 implementation planning, via direct empirical testing before any code was written
+**Revisit trigger:** If a future mermaid feature or edge case is found where subgraph wrapping DOES cause incorrect parsing (e.g. nested subgraphs, explicitly out of this story's scope), that would be a genuine new gap, not a regression of this decision.
+---
+---
+
 ## Architecture Decision Records
 
 <!-- None recorded for this feature yet. -->
