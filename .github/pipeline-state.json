@@ -28565,12 +28565,12 @@
           "slug": "mgss-s1",
           "id": "mgss-s1",
           "name": "Mock-gateway scenario selection and fixture gaps",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-30-mock-gateway-scenario-selection/review/mgss-s1-review-1.md",
-          "updatedAt": "2026-08-30T07:50:54.840Z",
+          "updatedAt": "2026-08-30T07:52:18.028Z",
           "testPlan": {
             "status": "written",
             "totalTests": 14,
@@ -28629,7 +28629,9 @@
               "file": "artefacts/2026-08-30-mock-gateway-scenario-selection/plans/mgss-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/797"
         }
       ]
     }
