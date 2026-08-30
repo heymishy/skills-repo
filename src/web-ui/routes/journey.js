@@ -407,6 +407,11 @@ async function handlePostJourney(req, res) {
     var e2eForceFailStage = (_mockLlmGateway.isMockGatewayEnabled() && body.e2eForceFailStage)
       ? String(body.e2eForceFailStage).trim()
       : null;
+    // mgss-s1: journey-wide mock-gateway scenario override (see
+    // _mockScenarioForStage's own comment) -- same gating as e2eForceFailStage.
+    var e2eMockScenario = (_mockLlmGateway.isMockGatewayEnabled() && body.e2eMockScenario)
+      ? String(body.e2eMockScenario).trim()
+      : null;
 
     if (!featureName) {
       res.writeHead(303, { Location: '/journey?new=1#jh-new' });
@@ -444,7 +449,8 @@ async function handlePostJourney(req, res) {
     _journeyStore.setJourneyFields(journeyId, {
       ownerId:  req.session.login    || null,
       tenantId: req.session.tenantId || null,
-      e2eForceFailStage: e2eForceFailStage
+      e2eForceFailStage: e2eForceFailStage,
+      e2eMockScenario: e2eMockScenario
     });
     _posthog.capture(req.session.login || journeyId, 'journey_created', {
       featureSlug:    featureSlug,
@@ -475,7 +481,7 @@ async function handlePostJourney(req, res) {
     getRegisterHtmlSession()(sid, sessionPath, startSkill, {
       productProfile: profileName,
       featureSlug:    featureSlug,
-      mockScenarioName: _mockScenarioForStage({ e2eForceFailStage: e2eForceFailStage }, startSkill)
+      mockScenarioName: _mockScenarioForStage({ e2eForceFailStage: e2eForceFailStage, e2eMockScenario: e2eMockScenario }, startSkill)
     });
     getLinkSessionToJourney()(sid, journeyId);
     if (_journeyStore.setActiveSession) {
