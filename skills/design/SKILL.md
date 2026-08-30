@@ -130,6 +130,40 @@ Do not emit more than one `system-architecture` marker per /design session.
 
 ---
 
+## Canvas markers — Sequence diagram (S5)
+
+Unlike System Architecture (emitted unconditionally, exactly once per /design session), a Sequence
+diagram is **conditional**: emit one only when this feature's own subject matter genuinely involves
+a multi-step component interaction worth diagramming over time (e.g. an SSE turn exchange, a
+cache-fallback trace, an auth handshake) — not for every feature. If the feature's architecture is
+better expressed as static topology alone, do not emit a sequence marker; System Architecture
+already covers that case.
+
+When a genuine multi-step interaction is worth documenting, emit it during Step 2 (Solution
+architecture), using this format:
+
+```
+---CANVAS-JSON: {"type":"sequence","title":"<string>","content":{"mermaid":"<mermaid sequenceDiagram syntax>"}}---
+```
+
+Fields:
+- `type`: always `sequence` for this marker
+- `title`: short human-readable title (e.g. "Auth handshake sequence")
+- `content.mermaid`: Mermaid `sequenceDiagram` source showing the participants and the ordered
+  messages between them. Reuse the existing shared rendering mechanism (`buildDiagramBodyHtml` via
+  `renderCanvasBlock` — ADR-026) — do not introduce a new diagram format or a second rendering path.
+
+Worked example, for a feature adding a cache-fallback trace:
+
+```
+---CANVAS-JSON: {"type":"sequence","title":"Cache fallback sequence","content":{"mermaid":"sequenceDiagram\n    participant Client\n    participant Cache\n    participant DB\n    Client->>Cache: GET key\n    Cache-->>Client: miss\n    Client->>DB: GET key\n    DB-->>Client: value\n    Client->>Cache: SET key, value"}}---
+```
+
+Do not emit more than one `sequence` marker per /design session, and do not emit one at all when no
+genuine multi-step interaction exists for this feature.
+
+---
+
 ## Data Model diagram markers (csd-s4)
 
 When point 2 ("Data and state") surfaces new tables, columns, or

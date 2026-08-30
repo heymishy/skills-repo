@@ -837,8 +837,9 @@ function parseCanvasBlockDiagnostic(text) {
   // content-block family. csd-s2 completes the family (ADR-026 -- shared
   // dispatch, no parallel path). csd-s6 adds 'drift-signal' (see
   // src/modules/drift-comparator.js) the same way. 'sequence' is added by
-  // S5 (out of scope for this story -- see s1's own Out of Scope section).
-  var TYPE_ALLOW = ['cluster-tree', 'table', 'text', 'data-model', 'system-architecture', 'program-design', 'drift-signal'];
+  // S5, the same way (see this file's renderCanvasBlock dispatch and the
+  // live appendCanvasBlock isDiagramBlock gate, both below).
+  var TYPE_ALLOW = ['cluster-tree', 'table', 'text', 'data-model', 'system-architecture', 'program-design', 'drift-signal', 'sequence'];
   var match = String(text).match(MARKER_RE);
   if (!match) {
     return { ok: false, reason: 'invalid-json', detail: 'No CANVAS-JSON marker body found in the given text' };
@@ -973,6 +974,8 @@ var _CANVAS_RENDER_FN_LINES = [
   '      bodyHtml = buildDiagramBodyHtml("System Architecture", content);',
   '    } else if (type === "program-design") {',
   '      bodyHtml = buildDiagramBodyHtml("Program Design", content);',
+  '    } else if (type === "sequence") {',
+  '      bodyHtml = buildDiagramBodyHtml("Sequence", content);',
   '    } else if (type === "drift-signal") {',
   '      var driftItems = content.items || [];',
   '      var driftItemsHtml = driftItems.map(function(it) {',
@@ -4082,7 +4085,7 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
     // in the block) so that one malformed diagram's render failure is caught
     // and shown as its own labelled error box (AC2) without ever blocking or
     // masking a sibling diagram's successful render.
-    '    var isDiagramBlock = block && (block.type === "data-model" || block.type === "system-architecture" || block.type === "program-design");',
+    '    var isDiagramBlock = block && (block.type === "data-model" || block.type === "system-architecture" || block.type === "program-design" || block.type === "sequence");',
     '    if (isDiagramBlock && window.mermaid && typeof window.mermaid.run === "function" && appendedEl.querySelectorAll) {',
     '      var mermaidNodes = appendedEl.querySelectorAll(".mermaid");',
     '      Array.prototype.forEach.call(mermaidNodes, function(node) {',
