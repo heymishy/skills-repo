@@ -28743,15 +28743,15 @@
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-31-sse-timeout-retry-resilience/review/sstr-s1-review-1.md",
-          "updatedAt": "2026-08-30T19:50:28.710Z",
+          "updatedAt": "2026-08-30T20:04:14.799Z",
           "testPlan": {
             "status": "written",
             "totalTests": 6,
-            "passing": 0,
+            "passing": 6,
             "artefact": "artefacts/2026-08-31-sse-timeout-retry-resilience/test-plans/sstr-s1-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
@@ -28762,7 +28762,7 @@
             {
               "id": "task-1",
               "name": "Write failing tests then implement the retry loop",
-              "tddState": "not-started",
+              "tddState": "completed",
               "file": "artefacts/2026-08-31-sse-timeout-retry-resilience/plans/sstr-s1-plan.md"
             }
           ]
