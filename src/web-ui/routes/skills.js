@@ -3083,6 +3083,12 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
     // Pre-compute gate-confirm URL server-side — avoids embedding /api/journey/ literal when no journey
     '  var GATE_CONFIRM_URL = "' + (session.journeyId ? escHtml('/api/journey/' + session.journeyId + '/gate-confirm') : '') + '";',
     '  var NEXT_STAGE_LABEL = "' + escHtml(session.journeyId ? ('Continue to ' + (_journeyStore.getNextStage(skillName) || 'next stage') + ' →') : '') + '";',
+    // sccf-s1: the gate-confirm form showCommitLink() injects live (below)
+    // needs its own _csrf field, same as the server-rendered ougl.4 branch
+    // (jgcc-s1) -- without this, every session that completes its stage
+    // during the initial streaming turn (not a page reload) submits an
+    // empty _csrf value and 403s unconditionally.
+    '  var CSRF_TOKEN = "' + escHtml(csrfToken || '') + '";',
     // lsbm-s1: sub-step affordance markup + its click-handler script,
     // available unconditionally so showCommitLink() (below) can inject it
     // live. SUBSTEP_JS is executed once immediately below (defines
@@ -3712,6 +3718,7 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
     '    if(GATE_CONFIRM_URL) {',
     '      wrap.innerHTML = \'<span style="font-size:12px;color:var(--muted)">Artefact saved \u2713</span>\'',
     '        + \'<form method="POST" action="\' + GATE_CONFIRM_URL + \'" style="margin:0">\'',
+    '        + \'<input type="hidden" name="_csrf" value="\' + CSRF_TOKEN + \'">\'',
     '        + \'<button type="submit" class="sw-btn sw-btn--primary" style="font-size:14px">\' + (NEXT_STAGE_LABEL || "Continue \u2192") + \'</button></form>\';',
     '    } else {',
     '      wrap.innerHTML = \'<span style="font-size:14px;color:green;font-weight:600">Artefact saved \u2713</span>\';',
