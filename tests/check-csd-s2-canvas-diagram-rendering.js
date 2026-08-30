@@ -448,8 +448,8 @@ queue.push(function runAdditionalAdr026() {
     // helper name and would otherwise inflate the count.
     const nonCommentSrc = ROUTES_SRC.split('\n').filter(function(line) { return line.trim().indexOf('//') !== 0; }).join('\n');
     const helperMatches = nonCommentSrc.match(/buildDiagramBodyHtml\(/g) || [];
-    // 1 function definition + 3 call sites (data-model, system-architecture, program-design).
-    assert.strictEqual(helperMatches.length, 4, 'expected buildDiagramBodyHtml to be defined once and called from exactly the 3 diagram-type branches, found ' + helperMatches.length + ' occurrences');
+    // 1 function definition + 4 call sites (data-model, system-architecture, program-design, sequence [S5]).
+    assert.strictEqual(helperMatches.length, 5, 'expected buildDiagramBodyHtml to be defined once and called from exactly the 4 diagram-type branches, found ' + helperMatches.length + ' occurrences');
 
     const parseFnStart = ROUTES_SRC.indexOf('function parseCanvasBlock');
     const parseFnBody = ROUTES_SRC.slice(parseFnStart, parseFnStart + 800);
