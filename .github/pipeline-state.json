@@ -28037,7 +28037,7 @@
           "baseline": "0% -- the sequence type does not exist today",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "S5 (PR #796) merged 2026-08-30 -- mechanism live-confirmed via mocked diagram-showcase content in a real browser session, but no genuine (real-model, non-test) emission has occurred yet. AC1/AC2 (the model live-model judgment call) still needs a real-model verification -- see s5 DoD follow-up action 1.",
           "contributingStories": []
         }
       ],
@@ -28277,11 +28277,11 @@
               "slug": "s5-sequence-diagram-type",
               "name": "Add the Sequence diagram type, conditionally emitted",
               "stage": "branch-complete",
-              "health": "green",
+              "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s5-sequence-diagram-type-review-2.md",
-              "updatedAt": "2026-08-30T06:28:50.783Z",
+              "updatedAt": "2026-08-30T09:50:11.977Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -28335,8 +28335,11 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/796"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/796",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "AC1/AC2 need a real-model verification (operator, requires toggling mock gateway off)"
             }
           ]
         }
