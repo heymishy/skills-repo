@@ -28344,7 +28344,7 @@
       "slug": "2026-08-30-csrf-persist-timeout-race",
       "name": "Increase the session-persist timeout to close the suspend race",
       "track": "short",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "epics": [],
       "stories": [
@@ -28352,7 +28352,7 @@
           "slug": "cptr-s1",
           "id": "cptr-s1",
           "name": "Increase session-persist timeout to close the suspend race",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -28370,20 +28370,23 @@
           "dorArtefact": "artefacts/2026-08-30-csrf-persist-timeout-race/dor/cptr-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-30-csrf-persist-timeout-race/dor/cptr-s1-dor-contract.md",
           "dorSignedOffAt": "2026-08-29T23:09:09.895Z",
-          "updatedAt": "2026-08-29T23:20:35.669Z",
+          "updatedAt": "2026-08-30T04:43:17.389Z",
           "verifyStatus": "passed",
           "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/789"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/789",
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-08-30-csrf-persist-timeout-race/dod/cptr-s1-dod.md",
+          "dodCompletedAt": "2026-08-30T04:43:17.389Z"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-29T23:20:35.669Z"
+      "updatedAt": "2026-08-30T04:43:17.389Z"
     },
     {
       "slug": "2026-08-30-journey-gate-confirm-missing-csrf",
       "name": "Add the missing CSRF field to the in-chat gate-confirm button",
       "track": "short",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "epics": [],
       "stories": [
@@ -28391,7 +28394,7 @@
           "slug": "jgcc-s1",
           "id": "jgcc-s1",
           "name": "Add missing CSRF field to in-chat gate-confirm button",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -28409,20 +28412,23 @@
           "dorArtefact": "artefacts/2026-08-30-journey-gate-confirm-missing-csrf/dor/jgcc-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-30-journey-gate-confirm-missing-csrf/dor/jgcc-s1-dor-contract.md",
           "dorSignedOffAt": "2026-08-30T00:23:22.906Z",
-          "updatedAt": "2026-08-30T00:35:29.558Z",
+          "updatedAt": "2026-08-30T04:43:17.389Z",
           "verifyStatus": "passed",
           "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/790"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/790",
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-08-30-journey-gate-confirm-missing-csrf/dod/jgcc-s1-dod.md",
+          "dodCompletedAt": "2026-08-30T04:43:17.389Z"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-30T00:35:29.558Z"
+      "updatedAt": "2026-08-30T04:43:17.389Z"
     },
     {
       "slug": "2026-08-30-csrf-guard-diagnostic-logging",
       "name": "Temporary CSRF guard diagnostic logging",
       "track": "short",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "epics": [],
       "stories": [
@@ -28430,7 +28436,7 @@
           "slug": "csdl-s1",
           "id": "csdl-s1",
           "name": "Add temporary diagnostic logging to CSRF token generation and validation",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -28448,20 +28454,23 @@
           "dorArtefact": "artefacts/2026-08-30-csrf-guard-diagnostic-logging/dor/csdl-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-30-csrf-guard-diagnostic-logging/dor/csdl-s1-dor-contract.md",
           "dorSignedOffAt": "2026-08-30T01:05:23.382Z",
-          "updatedAt": "2026-08-30T01:16:29.424Z",
+          "updatedAt": "2026-08-30T04:43:17.389Z",
           "verifyStatus": "passed",
           "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/791"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/791",
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-08-30-csrf-guard-diagnostic-logging/dod/csdl-s1-dod.md",
+          "dodCompletedAt": "2026-08-30T04:43:17.389Z"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-30T01:16:29.424Z"
+      "updatedAt": "2026-08-30T04:43:17.389Z"
     },
     {
       "slug": "2026-08-30-show-commit-link-missing-csrf",
       "name": "Add missing CSRF field to the live-injected gate-confirm form",
       "track": "short",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "epics": [],
       "stories": [
@@ -28469,7 +28478,7 @@
           "slug": "sccf-s1",
           "id": "sccf-s1",
           "name": "Add CSRF field to showCommitLink live-injected gate-confirm form",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -28487,14 +28496,17 @@
           "dorArtefact": "artefacts/2026-08-30-show-commit-link-missing-csrf/dor/sccf-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-30-show-commit-link-missing-csrf/dor/sccf-s1-dor-contract.md",
           "dorSignedOffAt": "2026-08-30T03:30:54.635Z",
-          "updatedAt": "2026-08-30T04:37:42.446Z",
+          "updatedAt": "2026-08-30T04:43:17.389Z",
           "verifyStatus": "passed",
           "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/792"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/792",
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/2026-08-30-show-commit-link-missing-csrf/dod/sccf-s1-dod.md",
+          "dodCompletedAt": "2026-08-30T04:43:17.389Z"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-08-30T03:40:04.218Z"
+      "updatedAt": "2026-08-30T04:43:17.389Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
