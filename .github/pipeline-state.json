@@ -28565,12 +28565,12 @@
           "slug": "mgss-s1",
           "id": "mgss-s1",
           "name": "Mock-gateway scenario selection and fixture gaps",
-          "stage": "branch-setup",
+          "stage": "implementation-plan",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-30-mock-gateway-scenario-selection/review/mgss-s1-review-1.md",
-          "updatedAt": "2026-08-30T07:28:18.022Z",
+          "updatedAt": "2026-08-30T07:29:12.856Z",
           "testPlan": {
             "status": "written",
             "totalTests": 10,
@@ -28584,7 +28584,51 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-30-mock-gateway-scenario-selection/dor/mgss-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-30-mock-gateway-scenario-selection/dor/mgss-s1-dor-contract.md",
-          "dorSignedOffAt": "2026-08-30T07:19:30.961Z"
+          "dorSignedOffAt": "2026-08-30T07:19:30.961Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Generalize _mockScenarioForStage and export it",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-30-mock-gateway-scenario-selection/plans/mgss-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Thread e2eMockScenario through handlePostJourney",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-30-mock-gateway-scenario-selection/plans/mgss-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Query-param -> hidden field on New Feature page",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-30-mock-gateway-scenario-selection/plans/mgss-s1-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Unrecognized-scenario regression test",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-30-mock-gateway-scenario-selection/plans/mgss-s1-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Add sequence marker to design/definition diagram-showcase",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-30-mock-gateway-scenario-selection/plans/mgss-s1-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "Add clarify.success/failure fixtures",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-30-mock-gateway-scenario-selection/plans/mgss-s1-plan.md"
+            },
+            {
+              "id": "task-7",
+              "name": "NFR test, full-suite regression, draft PR",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-30-mock-gateway-scenario-selection/plans/mgss-s1-plan.md"
+            }
+          ]
         }
       ]
     }
