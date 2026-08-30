@@ -2929,7 +2929,7 @@ function buildJourneySubStepAffordance(skillName, journeyId) {
  * @param {object} session
  * @returns {string}
  */
-function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
+function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csrfToken) {
   navContext = navContext || {};
   var encodedSkill = encodeURIComponent(skillName);
   var encodedId    = encodeURIComponent(sessionId);
@@ -4438,6 +4438,7 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext) {
       journeyPanel = subStepHtml +
         '<div class="sw-journey-gate" style="padding:16px;margin-top:' + (subStepHtml ? '0' : '12px') + ';display:flex;align-items:center;gap:12px">' +
         '<form method="POST" action="/api/journey/' + safeJourneyId + '/gate-confirm" style="margin:0">' +
+        _csrf.csrfField(csrfToken) +
         '<button type="submit" class="sw-btn sw-btn--primary">Continue to ' + escHtml(nextStage) + ' &#x2192;</button>' +
         '</form>' +
         '<span style="font-size:12px;color:var(--muted)">Artefact saved — advance to next stage</span>' +
@@ -4505,8 +4506,12 @@ async function handleGetChatHtml(req, res) {
 
   // npwe-s1 -- resolved via the session we already have in hand (session.journeyId).
   var _nav = await _getSkillsNavContext(req, sessionId);
+  // jgcc-s1 -- the in-chat gate-confirm form (ougl.4) needs this to actually
+  // pass csrfGuard; previously omitted entirely, causing an unconditional
+  // 403 on every "Continue to next stage" click.
+  var _csrfToken = await _csrf.generateCsrfToken(req);
   // Initial turn is fired client-side via SSE to avoid blocking page render on LLM call
-  var html = _renderChatPage(skillName, sessionId, session, backUrl, _nav);
+  var html = _renderChatPage(skillName, sessionId, session, backUrl, _nav, _csrfToken);
   // Initialize PostHog on chat pages so $pageview fires and users are identified here too.
   // Without this, the entire active session is invisible to PostHog.
   var _phKey = process.env.POSTHOG_KEY || '';
