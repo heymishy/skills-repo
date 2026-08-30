@@ -10,8 +10,8 @@
 //
 // Coverage:
 //   AC1 (unit)        — ideate diagram-showcase has 3 valid markers (cluster-tree/table/text)
-//   AC2 (unit)        — design diagram-showcase has 2 valid markers (system-architecture/data-model)
-//   AC3 (unit)        — definition diagram-showcase has 2 valid markers (program-design/data-model)
+//   AC2 (unit)        — design diagram-showcase has 3 valid markers (system-architecture/data-model/sequence [mgss-s1])
+//   AC3 (unit)        — definition diagram-showcase has 3 valid markers (program-design/data-model/sequence [mgss-s1])
 //   AC4 (unit)        — existing success/failure fixtures byte-identical, unchanged
 //   AC5 (unit)        — inventoryFixtures reports the new files correctly
 //   AC6 (integration) — new fixture data renders correctly via the resume-history view
@@ -111,27 +111,34 @@ check('AC1: getMockResponse_ideateDiagramShowcase_hasThreeValidMarkers', () => {
 });
 
 // ── AC2: design diagram-showcase has 2 valid markers ──
-check('AC2: getMockResponse_designDiagramShowcase_hasTwoValidMarkers', () => {
+// mgss-s1 (2026-08-30): extended to 3 markers -- a `sequence` marker was
+// added alongside the pre-existing 2, closing S5's diagram-showcase gap.
+// The AC2 name/count below is updated to match; the pre-existing 2 markers'
+// own assertions are unchanged.
+check('AC2: getMockResponse_designDiagramShowcase_hasThreeValidMarkers', () => {
   var result = mockGateway.getMockResponse('design', 'mock', 'diagram-showcase');
   var blocks = skillsRoutes.extractCanvasBlocksFromTurns([{ role: 'assistant', content: result.text }]);
-  assert.strictEqual(blocks.length, 2, 'expected exactly 2 blocks, got ' + blocks.length);
-  assert.deepStrictEqual(blocks.map(function(b) { return b.type; }), ['system-architecture', 'data-model']);
+  assert.strictEqual(blocks.length, 3, 'expected exactly 3 blocks, got ' + blocks.length);
+  assert.deepStrictEqual(blocks.map(function(b) { return b.type; }), ['system-architecture', 'data-model', 'sequence']);
   blocks.forEach(function(b) {
     assert.ok(b.content && typeof b.content.mermaid === 'string' && b.content.mermaid.length > 0, 'expected real mermaid content for ' + b.type);
   });
   assert.ok(blocks[0].content.mermaid.indexOf('-->') !== -1, 'expected flowchart-shaped mermaid for system-architecture');
   assert.ok(blocks[1].content.mermaid.indexOf('erDiagram') !== -1, 'expected erDiagram-shaped mermaid for data-model');
+  assert.ok(blocks[2].content.mermaid.indexOf('sequenceDiagram') !== -1, 'expected sequenceDiagram-shaped mermaid for sequence');
 });
 
 // ── AC3: definition diagram-showcase has 2 valid markers ──
-check('AC3: getMockResponse_definitionDiagramShowcase_hasTwoValidMarkers', () => {
+// mgss-s1 (2026-08-30): extended to 3 markers, same rationale as AC2 above.
+check('AC3: getMockResponse_definitionDiagramShowcase_hasThreeValidMarkers', () => {
   var result = mockGateway.getMockResponse('definition', 'mock', 'diagram-showcase');
   var blocks = skillsRoutes.extractCanvasBlocksFromTurns([{ role: 'assistant', content: result.text }]);
-  assert.strictEqual(blocks.length, 2, 'expected exactly 2 blocks, got ' + blocks.length);
-  assert.deepStrictEqual(blocks.map(function(b) { return b.type; }), ['program-design', 'data-model']);
+  assert.strictEqual(blocks.length, 3, 'expected exactly 3 blocks, got ' + blocks.length);
+  assert.deepStrictEqual(blocks.map(function(b) { return b.type; }), ['program-design', 'data-model', 'sequence']);
   blocks.forEach(function(b) {
     assert.ok(b.content && typeof b.content.mermaid === 'string' && b.content.mermaid.length > 0, 'expected real mermaid content for ' + b.type);
   });
+  assert.ok(blocks[2].content.mermaid.indexOf('sequenceDiagram') !== -1, 'expected sequenceDiagram-shaped mermaid for sequence');
 });
 
 // ── AC4: existing success/failure fixtures byte-identical, unchanged ──
@@ -215,7 +222,7 @@ await checkAsync('AC6 (ideate): resumeHistoryView_ideateDiagramShowcase_rendersA
   });
 });
 
-await checkAsync('AC6 (design): resumeHistoryView_designDiagramShowcase_rendersBothTypes', async () => {
+await checkAsync('AC6 (design): resumeHistoryView_designDiagramShowcase_rendersAllThreeTypes', async () => {
   var fixture = mockGateway.getMockResponse('design', 'mock', 'diagram-showcase');
   var journey = makeCompletedJourneyFixture(
     'mds-s1-ac6-design-feature', 'design', 'artefacts/mds-s1-ac6-design-feature/design.md',
@@ -230,13 +237,15 @@ await checkAsync('AC6 (design): resumeHistoryView_designDiagramShowcase_rendersB
 
   assert.strictEqual(result.statusCode, 200, 'expected 200, got: ' + result.statusCode);
   var typeMatches = result.body.match(/"type":"/g) || [];
-  assert.strictEqual(typeMatches.length, 2, 'expected 2 embedded blocks in BLOCKS, got ' + typeMatches.length);
-  ['System Architecture', 'Data model'].forEach(function(title) {
+  // mgss-s1 (2026-08-30): design.diagram-showcase.json now carries a 3rd
+  // (sequence) marker -- see this file's AC2 update above.
+  assert.strictEqual(typeMatches.length, 3, 'expected 3 embedded blocks in BLOCKS, got ' + typeMatches.length);
+  ['System Architecture', 'Data model', 'Release gate evaluation sequence'].forEach(function(title) {
     assert.ok(result.body.indexOf(title) !== -1, 'expected embedded title "' + title + '" in the response body');
   });
 });
 
-await checkAsync('AC6 (definition): resumeHistoryView_definitionDiagramShowcase_rendersBothTypes', async () => {
+await checkAsync('AC6 (definition): resumeHistoryView_definitionDiagramShowcase_rendersAllThreeTypes', async () => {
   var fixture = mockGateway.getMockResponse('definition', 'mock', 'diagram-showcase');
   var journey = makeCompletedJourneyFixture(
     'mds-s1-ac6-definition-feature', 'definition', 'artefacts/mds-s1-ac6-definition-feature/definition.md',
@@ -251,8 +260,10 @@ await checkAsync('AC6 (definition): resumeHistoryView_definitionDiagramShowcase_
 
   assert.strictEqual(result.statusCode, 200, 'expected 200, got: ' + result.statusCode);
   var typeMatches = result.body.match(/"type":"/g) || [];
-  assert.strictEqual(typeMatches.length, 2, 'expected 2 embedded blocks in BLOCKS, got ' + typeMatches.length);
-  ['Program Design', 'Data model'].forEach(function(title) {
+  // mgss-s1 (2026-08-30): definition.diagram-showcase.json now carries a 3rd
+  // (sequence) marker -- see this file's AC3 update above.
+  assert.strictEqual(typeMatches.length, 3, 'expected 3 embedded blocks in BLOCKS, got ' + typeMatches.length);
+  ['Program Design', 'Data model', 'Release gate evaluation sequence'].forEach(function(title) {
     assert.ok(result.body.indexOf(title) !== -1, 'expected embedded title "' + title + '" in the response body');
   });
 });
