@@ -1,0 +1,15 @@
+{
+  "stage": "clarify",
+  "scenarioName": "success",
+  "model": "claude-sonnet-4.6",
+  "responses": [
+    {
+      "response": "**Discovery quality check — mock fixture feature:**\n\n- MVP scope: open-ended — no clear boundary\n- Success indicators: missing\n\nI've identified 2 gaps. I'll ask you about the most important one first.\n\n**Q: What is the concrete MVP boundary for this feature?**\nBlocking because: /definition cannot decompose stories without a bounded scope.\nOptions:\nA. Canned discovery flow completes without a real LLM call\nB. Canned discovery flow plus one downstream mocked stage\nC. Describe your own",
+      "usage": { "input_tokens": 210, "output_tokens": 95 }
+    },
+    {
+      "response": "**I've updated the MVP scope section as:**\n\"1. Canned discovery flow completes without a real LLM call.\"\n\nDoes that capture it? — Assuming yes.\n\n✅ **Clarification complete. 1 question resolved. discovery.md updated. Ready for /benefit-metric.**\n\nSections updated: MVP scope\nStatus: Clarified",
+      "usage": { "input_tokens": 180, "output_tokens": 70 }
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "stage": "clarify",
+  "scenarioName": "failure",
+  "model": "claude-sonnet-4.6",
+  "response": "❌ No discovery artefact found. Run /discovery first to create a structured artefact before I can clarify it.",
+  "usage": { "input_tokens": 60, "output_tokens": 28 }
+}

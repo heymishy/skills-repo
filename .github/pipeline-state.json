@@ -28565,26 +28565,73 @@
           "slug": "mgss-s1",
           "id": "mgss-s1",
           "name": "Mock-gateway scenario selection and fixture gaps",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-30-mock-gateway-scenario-selection/review/mgss-s1-review-1.md",
-          "updatedAt": "2026-08-30T07:19:30.961Z",
+          "updatedAt": "2026-08-30T07:52:18.028Z",
           "testPlan": {
             "status": "written",
-            "totalTests": 10,
-            "passing": 0,
+            "totalTests": 14,
+            "passing": 14,
             "artefact": "artefacts/2026-08-30-mock-gateway-scenario-selection/test-plans/mgss-s1-test-plan.md"
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-30-mock-gateway-scenario-selection/dor/mgss-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-30-mock-gateway-scenario-selection/dor/mgss-s1-dor-contract.md",
-          "dorSignedOffAt": "2026-08-30T07:19:30.961Z"
+          "dorSignedOffAt": "2026-08-30T07:19:30.961Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Generalize _mockScenarioForStage and export it",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-30-mock-gateway-scenario-selection/plans/mgss-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Thread e2eMockScenario through handlePostJourney",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-30-mock-gateway-scenario-selection/plans/mgss-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Query-param -> hidden field on New Feature page",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-30-mock-gateway-scenario-selection/plans/mgss-s1-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Unrecognized-scenario regression test",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-30-mock-gateway-scenario-selection/plans/mgss-s1-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Add sequence marker to design/definition diagram-showcase",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-30-mock-gateway-scenario-selection/plans/mgss-s1-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "Add clarify.success/failure fixtures",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-30-mock-gateway-scenario-selection/plans/mgss-s1-plan.md"
+            },
+            {
+              "id": "task-7",
+              "name": "NFR test, full-suite regression, draft PR",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-30-mock-gateway-scenario-selection/plans/mgss-s1-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/797"
         }
       ]
     }
