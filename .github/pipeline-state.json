@@ -28650,12 +28650,12 @@
           "slug": "msps-s1",
           "id": "msps-s1",
           "name": "Per-stage fixture-existence fallback",
-          "stage": "branch-setup",
+          "stage": "implementation-plan",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-30-mock-scenario-per-stage-fallback/review/msps-s1-review-1.md",
-          "updatedAt": "2026-08-30T09:07:33.006Z",
+          "updatedAt": "2026-08-30T09:08:05.112Z",
           "testPlan": {
             "status": "written",
             "totalTests": 6,
@@ -28669,7 +28669,15 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-30-mock-scenario-per-stage-fallback/dor/msps-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-30-mock-scenario-per-stage-fallback/dor/msps-s1-dor-contract.md",
-          "dorSignedOffAt": "2026-08-30T08:58:49.575Z"
+          "dorSignedOffAt": "2026-08-30T08:58:49.575Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Add hasFixture and wire into _mockScenarioForStage",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-30-mock-scenario-per-stage-fallback/plans/msps-s1-plan.md"
+            }
+          ]
         }
       ]
     }
