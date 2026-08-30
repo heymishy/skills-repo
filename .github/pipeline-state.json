@@ -28724,6 +28724,42 @@
           "dorSignedOffAt": "2026-08-30T19:08:53.055Z"
         }
       ]
+    },
+    {
+      "slug": "2026-08-31-sse-timeout-retry-resilience",
+      "name": "Retry an LLM stream call once when it fails before any content has streamed",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "updatedAt": "2026-08-30T19:41:17.236Z",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "sstr-s1",
+          "id": "sstr-s1",
+          "name": "Retry on pre-first-chunk failure",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-31-sse-timeout-retry-resilience/review/sstr-s1-review-1.md",
+          "updatedAt": "2026-08-30T19:41:17.236Z",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-31-sse-timeout-retry-resilience/test-plans/sstr-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-31-sse-timeout-retry-resilience/dor/sstr-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-31-sse-timeout-retry-resilience/dor/sstr-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-08-30T19:41:17.236Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
