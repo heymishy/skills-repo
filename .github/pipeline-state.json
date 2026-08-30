@@ -28702,26 +28702,37 @@
           "slug": "rssp-s1",
           "id": "rssp-s1",
           "name": "Remove /review's story-selection and category-selection prompts",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-31-review-skill-skip-selection-prompts/review/rssp-s1-review-1.md",
-          "updatedAt": "2026-08-30T19:08:53.055Z",
+          "updatedAt": "2026-08-30T19:27:58.306Z",
           "testPlan": {
             "status": "written",
             "totalTests": 4,
-            "passing": 0,
+            "passing": 4,
             "artefact": "artefacts/2026-08-31-review-skill-skip-selection-prompts/test-plans/rssp-s1-test-plan.md"
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-31-review-skill-skip-selection-prompts/dor/rssp-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-31-review-skill-skip-selection-prompts/dor/rssp-s1-dor-contract.md",
-          "dorSignedOffAt": "2026-08-30T19:08:53.055Z"
+          "dorSignedOffAt": "2026-08-30T19:08:53.055Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Write failing test then fix skills/review/SKILL.md",
+              "tddState": "committed",
+              "file": "artefacts/2026-08-31-review-skill-skip-selection-prompts/plans/rssp-s1-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/799"
         }
       ]
     },

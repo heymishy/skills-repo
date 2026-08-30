@@ -61,8 +61,9 @@ State what was found first:
 > This is a re-run for [n] stories. I'll produce a diff against the previous
 > report showing what changed.
 >
-> Review all stories, or a specific one?
-> Reply: all — or name the story
+> Reviewing all [n] stories, all 5 categories (A–E).
+
+**rssp-s1 (2026-08-31):** Never ask "review all stories, or a specific one?" and never ask "which review categories should I run?" — both were confirmed, twice over (2026-08-06, 2026-08-07), as unwanted friction: always run all 5 categories (A–E) against every story in scope, state it as a fact, and proceed directly into Step 2. **Exception:** if the operator has already explicitly named a specific story before this skill runs (told, not asked), honor that scope instead of defaulting to all stories — this rule removes the *unprompted* selection question, not the ability to act on an explicit instruction.
 
 Before Step 2, read `.github/context.yml` and apply policy overlays:
 
@@ -73,25 +74,7 @@ Before Step 2, read `.github/context.yml` and apply policy overlays:
 
 ---
 
-## Step 2 — Confirm review categories
-
-> **Which review categories should I run?**
->
-> A — Traceability: can every story be traced back to a metric and discovery?
-> B — Scope discipline: do stories stay within declared MVP and out-of-scope?
-> C — AC quality: are ACs testable, specific, Given/When/Then?
-> D — Completeness: are all template fields populated with real content?
-> E — Architecture compliance: do stories comply with guardrails, ADRs, and the pattern library?
->
-> 1. All five (default — recommended)
-> 2. C and D only (short-track stories)
-> 3. Custom — I'll specify
->
-> Reply: 1, 2, or 3
-
----
-
-## Step 3 — Run the review
+## Step 2 — Run the review
 
 ### Scoring scale (apply to all criteria)
 
