@@ -28406,6 +28406,42 @@
       ],
       "metrics": [],
       "updatedAt": "2026-08-30T00:35:29.558Z"
+    },
+    {
+      "slug": "2026-08-30-csrf-guard-diagnostic-logging",
+      "name": "Temporary CSRF guard diagnostic logging",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "csdl-s1",
+          "id": "csdl-s1",
+          "name": "Add temporary diagnostic logging to CSRF token generation and validation",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-30-csrf-guard-diagnostic-logging/test-plans/csdl-s1-test-plan.md"
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-30-csrf-guard-diagnostic-logging/dor/csdl-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-30-csrf-guard-diagnostic-logging/dor/csdl-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-08-30T01:05:23.382Z",
+          "updatedAt": "2026-08-30T01:05:23.382Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-08-30T01:05:23.382Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
