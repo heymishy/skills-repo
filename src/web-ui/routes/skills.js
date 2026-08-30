@@ -4085,7 +4085,7 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
     // in the block) so that one malformed diagram's render failure is caught
     // and shown as its own labelled error box (AC2) without ever blocking or
     // masking a sibling diagram's successful render.
-    '    var isDiagramBlock = block && (block.type === "data-model" || block.type === "system-architecture" || block.type === "program-design");',
+    '    var isDiagramBlock = block && (block.type === "data-model" || block.type === "system-architecture" || block.type === "program-design" || block.type === "sequence");',
     '    if (isDiagramBlock && window.mermaid && typeof window.mermaid.run === "function" && appendedEl.querySelectorAll) {',
     '      var mermaidNodes = appendedEl.querySelectorAll(".mermaid");',
     '      Array.prototype.forEach.call(mermaidNodes, function(node) {',
