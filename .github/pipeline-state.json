@@ -28276,12 +28276,12 @@
             {
               "slug": "s5-sequence-diagram-type",
               "name": "Add the Sequence diagram type, conditionally emitted",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s5-sequence-diagram-type-review-2.md",
-              "updatedAt": "2026-08-30T06:25:58.762Z",
+              "updatedAt": "2026-08-30T06:28:50.783Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -28334,7 +28334,9 @@
                   "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s5-sequence-diagram-type-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/796"
             }
           ]
         }
