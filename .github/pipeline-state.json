@@ -28023,10 +28023,11 @@
           "target": "Dedicated passing fixtures for labeled edges, multi-target edges, and subgraphs, for both parser functions",
           "baseline": "0 -- no test fixtures exercise these cases today",
           "signal": "on-track",
-          "lastMeasured": "2026-08-29",
-          "evidence": "S3 (PR #786) merged 2026-08-29 -- dedicated passing fixtures now exist for labeled edges and multi-target edges (2 of 3 named parsing gaps). Subgraphs (the 3rd) remain S4's scope.",
+          "lastMeasured": "2026-08-30",
+          "evidence": "S3 (PR #786) + S4 (PR #788) merged -- dedicated passing fixtures now exist for all 3 named parsing gaps (labeled edges, multi-target edges, subgraphs). Target fully met. S4 required no production code change -- empirical testing found subgraphs already parsed correctly; the story's deliverable was closing the untested-gap portion of this metric (see decisions.md ASSUMPTION entry, 2026-08-30).",
           "contributingStories": [
-            "s3-drift-comparator-labeled-multi-target-edges"
+            "s3-drift-comparator-labeled-multi-target-edges",
+            "s4-drift-comparator-subgraphs"
           ]
         },
         {
@@ -28065,9 +28066,9 @@
           "category": "nfr",
           "label": "Drift-comparator parsers handle labeled/multi-target edges and subgraphs",
           "status": "met",
-          "evidence": "S3 + S4 contracts reviewed and DoR signed off",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-08-29T07:54:19.395Z"
+          "evidence": "S3 (PR #786) + S4 (PR #788) both merged: dedicated passing fixtures verified via full test suite (572/572 files, 0 failures) for labeled edges, multi-target edges, and subgraphs. Guardrail fully closed for this feature's scope.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-08-30T05:42:30.108Z"
         },
         {
           "id": "NFR-testing-standards-mutation-discipline",
@@ -28243,7 +28244,7 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s4-drift-comparator-subgraphs-review-2.md",
-              "updatedAt": "2026-08-29T22:34:52.319Z",
+              "updatedAt": "2026-08-30T05:40:46.579Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -28267,8 +28268,10 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/788"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/788",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "s5-sequence-diagram-type",
