@@ -837,8 +837,9 @@ function parseCanvasBlockDiagnostic(text) {
   // content-block family. csd-s2 completes the family (ADR-026 -- shared
   // dispatch, no parallel path). csd-s6 adds 'drift-signal' (see
   // src/modules/drift-comparator.js) the same way. 'sequence' is added by
-  // S5 (out of scope for this story -- see s1's own Out of Scope section).
-  var TYPE_ALLOW = ['cluster-tree', 'table', 'text', 'data-model', 'system-architecture', 'program-design', 'drift-signal'];
+  // S5, the same way (see this file's renderCanvasBlock dispatch and the
+  // live appendCanvasBlock isDiagramBlock gate, both below).
+  var TYPE_ALLOW = ['cluster-tree', 'table', 'text', 'data-model', 'system-architecture', 'program-design', 'drift-signal', 'sequence'];
   var match = String(text).match(MARKER_RE);
   if (!match) {
     return { ok: false, reason: 'invalid-json', detail: 'No CANVAS-JSON marker body found in the given text' };
