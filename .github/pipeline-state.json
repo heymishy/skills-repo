@@ -28276,12 +28276,12 @@
             {
               "slug": "s5-sequence-diagram-type",
               "name": "Add the Sequence diagram type, conditionally emitted",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s5-sequence-diagram-type-review-2.md",
-              "updatedAt": "2026-08-29T07:54:19.395Z",
+              "updatedAt": "2026-08-30T06:02:16.811Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
