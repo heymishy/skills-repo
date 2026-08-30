@@ -181,6 +181,12 @@ function _renderJourneyHome(data) {
   var activeProfile = data.activeProfile || 'default';
   var journeys     = data.journeys || [];
   var showNewForm  = data.showNewForm;
+  // mgss-s1: hidden, E2E/operator-only override -- carries a ?mockScenario=
+  // query-param value through this page's own POST submission without any
+  // visible form control (see _mockScenarioForStage's own comment).
+  var mockScenarioField = data.mockScenario
+    ? '<input type="hidden" name="e2eMockScenario" value="' + escHtml(data.mockScenario) + '">'
+    : '';
 
   function stageLabel(stageId) {
     var m = STAGE_META.find(function(s) { return s.id === stageId; });
@@ -284,6 +290,7 @@ function _renderJourneyHome(data) {
             '<label class="jh-radio-label"><input type="radio" name="startSkill" value="discovery" checked> Formed idea — jump straight to discovery</label>',
           '</div>',
           profileField,
+          mockScenarioField,
           '<button type="submit" class="sw-btn sw-btn--primary jh-submit">Start journey →</button>',
         '</form>',
       '</section>',
@@ -345,7 +352,10 @@ async function handleGetJourney(req, res, _next, pool) {
   journeys = journeys.filter(function(j) { return j.productId == null; });
   journeys.sort(function(a, b) { return (b.createdAt ? new Date(b.createdAt).toISOString() : '').localeCompare(a.createdAt ? new Date(a.createdAt).toISOString() : ''); });
   var showNewForm = !!(req.query && req.query.new === '1');
-  var body = _renderJourneyHome({ profiles: profiles, activeProfile: activeProfile, journeys: journeys, showNewForm: showNewForm, csrfToken: await _csrf.generateCsrfToken(req) });
+  // mgss-s1: optional ?mockScenario=<name> query param, threaded through as a
+  // hidden form field (see _renderJourneyHome's own comment).
+  var mockScenario = (req.query && typeof req.query.mockScenario === 'string') ? req.query.mockScenario.trim() : '';
+  var body = _renderJourneyHome({ profiles: profiles, activeProfile: activeProfile, journeys: journeys, showNewForm: showNewForm, mockScenario: mockScenario, csrfToken: await _csrf.generateCsrfToken(req) });
   // d2: this page previously never computed/passed isAdmin at all (defaulted
   // to false even for a genuine, non-impersonating admin) -- wired here using
   // the same isEffectivelyAdmin() helper as dashboard.js/settings.js so the
