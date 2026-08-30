@@ -11,6 +11,20 @@ const crypto = require('crypto');
 const { persistSession } = require('./session');
 
 /**
+ * csdl-s1: temporary diagnostic helper -- truncate a value to its first 8 hex
+ * chars for logging, or return '(empty)' for a falsy value. Never logs a
+ * full token or full session id. See
+ * artefacts/2026-08-30-csrf-guard-diagnostic-logging/decisions.md -- this
+ * logging (and this helper) is meant to be removed once the underlying
+ * mismatch this is diagnosing is root-caused and fixed.
+ * @param {string} value
+ * @returns {string}
+ */
+function _prefix8(value) {
+  return value ? String(value).slice(0, 8) : '(empty)';
+}
+
+/**
  * Escape a string for safe embedding inside an HTML attribute value.
  * @param {string} str
  * @returns {string}
@@ -41,10 +55,20 @@ async function generateCsrfToken(req) {
   if (!req || !req.session) {
     throw new Error('generateCsrfToken requires req.session to be set (session middleware must run first)');
   }
-  if (!req.session.csrfToken) {
+  const wasNew = !req.session.csrfToken;
+  if (wasNew) {
     req.session.csrfToken = crypto.randomBytes(32).toString('hex');
     await persistSession(req.sessionId);
   }
+  // csdl-s1: temporary diagnostic logging -- see decisions.md. Never logs a
+  // full token or full session id, only 8-char prefixes.
+  console.info(JSON.stringify({
+    event: 'csrf_token_generate',
+    sessionIdPrefix: _prefix8(req.sessionId),
+    machineId: process.env.FLY_MACHINE_ID || 'unknown',
+    tokenPrefix: _prefix8(req.session.csrfToken),
+    wasNew: wasNew
+  }));
   return req.session.csrfToken;
 }
 
@@ -108,8 +132,20 @@ async function csrfGuard(req, res) {
 
   const submitted = body && body._csrf ? String(body._csrf) : '';
   const expected = (req.session && req.session.csrfToken) ? String(req.session.csrfToken) : '';
+  const match = !!submitted && !!expected && submitted === expected;
 
-  if (!submitted || !expected || submitted !== expected) {
+  // csdl-s1: temporary diagnostic logging -- see decisions.md. Never logs a
+  // full token or full session id, only 8-char prefixes.
+  console.info(JSON.stringify({
+    event: 'csrf_guard_check',
+    sessionIdPrefix: _prefix8(req.sessionId),
+    machineId: process.env.FLY_MACHINE_ID || 'unknown',
+    submittedPrefix: _prefix8(submitted),
+    expectedPrefix: _prefix8(expected),
+    match: match
+  }));
+
+  if (!match) {
     res.writeHead(403, { 'Content-Type': 'text/plain' });
     res.end('Forbidden');
     return false;
