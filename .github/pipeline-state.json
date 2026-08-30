@@ -28276,12 +28276,12 @@
             {
               "slug": "s5-sequence-diagram-type",
               "name": "Add the Sequence diagram type, conditionally emitted",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-29-diagram-validation-and-types/review/s5-sequence-diagram-type-review-2.md",
-              "updatedAt": "2026-08-30T06:02:16.811Z",
+              "updatedAt": "2026-08-30T06:08:11.049Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -28295,7 +28295,45 @@
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-08-29-diagram-validation-and-types/dor/s5-sequence-diagram-type-dor.md",
               "dorContractArtefact": "artefacts/2026-08-29-diagram-validation-and-types/dor/s5-sequence-diagram-type-dor-contract.md",
-              "dorSignedOffAt": "2026-08-29T07:54:19.395Z"
+              "dorSignedOffAt": "2026-08-29T07:54:19.395Z",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Add sequence to parseCanvasBlock TYPE_ALLOW (AC5)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s5-sequence-diagram-type-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Dispatch sequence through shared buildDiagramBodyHtml (AC3)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s5-sequence-diagram-type-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Include sequence in live isDiagramBlock gate (AC3 live parity)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s5-sequence-diagram-type-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Update csd-s2 ADR-026 occurrence count 4 -> 5",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s5-sequence-diagram-type-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Add Sequence diagram canvas-marker section to skills/design/SKILL.md (AC1, AC2)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s5-sequence-diagram-type-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "Full-suite regression run and draft PR",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-08-29-diagram-validation-and-types/plans/s5-sequence-diagram-type-plan.md"
+                }
+              ]
             }
           ]
         }
