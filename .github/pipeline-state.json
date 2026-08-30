@@ -28738,12 +28738,12 @@
           "slug": "sstr-s1",
           "id": "sstr-s1",
           "name": "Retry on pre-first-chunk failure",
-          "stage": "branch-setup",
+          "stage": "implementation-plan",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-31-sse-timeout-retry-resilience/review/sstr-s1-review-1.md",
-          "updatedAt": "2026-08-30T19:49:45.138Z",
+          "updatedAt": "2026-08-30T19:50:28.710Z",
           "testPlan": {
             "status": "written",
             "totalTests": 6,
@@ -28757,7 +28757,15 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-08-31-sse-timeout-retry-resilience/dor/sstr-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-08-31-sse-timeout-retry-resilience/dor/sstr-s1-dor-contract.md",
-          "dorSignedOffAt": "2026-08-30T19:41:17.236Z"
+          "dorSignedOffAt": "2026-08-30T19:41:17.236Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Write failing tests then implement the retry loop",
+              "tddState": "not-started",
+              "file": "artefacts/2026-08-31-sse-timeout-retry-resilience/plans/sstr-s1-plan.md"
+            }
+          ]
         }
       ]
     }
