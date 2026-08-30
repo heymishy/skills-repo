@@ -28551,6 +28551,42 @@
       ],
       "metrics": [],
       "updatedAt": "2026-08-30T04:43:17.389Z"
+    },
+    {
+      "slug": "2026-08-30-mock-gateway-scenario-selection",
+      "name": "Let an operator select any mock-gateway scenario when creating a feature, and close two fixture gaps",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "updatedAt": "2026-08-30T07:19:30.961Z",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "mgss-s1",
+          "id": "mgss-s1",
+          "name": "Mock-gateway scenario selection and fixture gaps",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-08-30-mock-gateway-scenario-selection/review/mgss-s1-review-1.md",
+          "updatedAt": "2026-08-30T07:19:30.961Z",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 10,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-30-mock-gateway-scenario-selection/test-plans/mgss-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-30-mock-gateway-scenario-selection/dor/mgss-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-30-mock-gateway-scenario-selection/dor/mgss-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-08-30T07:19:30.961Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
