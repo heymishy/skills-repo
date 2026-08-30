@@ -28702,12 +28702,12 @@
           "slug": "rssp-s1",
           "id": "rssp-s1",
           "name": "Remove /review's story-selection and category-selection prompts",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-31-review-skill-skip-selection-prompts/review/rssp-s1-review-1.md",
-          "updatedAt": "2026-08-30T19:26:56.220Z",
+          "updatedAt": "2026-08-30T19:27:58.306Z",
           "testPlan": {
             "status": "written",
             "totalTests": 4,
@@ -28730,7 +28730,9 @@
               "file": "artefacts/2026-08-31-review-skill-skip-selection-prompts/plans/rssp-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/799"
         }
       ]
     }
