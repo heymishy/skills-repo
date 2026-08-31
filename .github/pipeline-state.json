@@ -28786,27 +28786,27 @@
       "slug": "2026-08-31-definition-artefact-story-id-parsing",
       "name": "Recognize the H2-epic/H3-story (Format A) definition-artefact shape",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
-      "updatedAt": "2026-08-31T00:09:03.031Z",
+      "updatedAt": "2026-08-31T00:22:02.539Z",
       "epics": [],
       "stories": [
         {
           "slug": "daep-s1",
           "id": "daep-s1",
           "name": "Recognize Format A definition-artefact shape",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
-            "totalTests": 4,
-            "passing": 0,
+            "totalTests": 5,
+            "passing": 5,
             "artefact": "artefacts/2026-08-31-definition-artefact-story-id-parsing/test-plans/daep-s1-test-plan.md"
           },
           "acTotal": 3,
-          "acVerified": 0,
+          "acVerified": 3,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
@@ -28817,10 +28817,13 @@
             {
               "id": "task-1",
               "name": "Add Format A branch to extractStoryIdsFromDefinitionArtefact",
-              "tddState": "not-started",
+              "tddState": "completed",
               "file": "src/web-ui/routes/journey.js"
             }
-          ]
+          ],
+          "updatedAt": "2026-08-31T00:21:55.282Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/801",
+          "prStatus": "draft"
         }
       ]
     }
