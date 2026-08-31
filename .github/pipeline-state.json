@@ -28891,6 +28891,51 @@
       "epics": [],
       "stories": [],
       "discoveryArtefact": "artefacts/2026-08-31-web-ui-navigation-legibility/discovery.md"
+    },
+    {
+      "slug": "2026-08-31-listartefacts-postgres-merge-fix",
+      "name": "Merge local-disk and Postgres artefact lists instead of local-wins-if-nonempty",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "updatedAt": "2026-08-31T18:29:12.279Z",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "lpmf-s1",
+          "id": "lpmf-s1",
+          "name": "Merge local and Postgres artefact lists",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 5,
+            "artefact": "artefacts/2026-08-31-listartefacts-postgres-merge-fix/test-plans/lpmf-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-31-listartefacts-postgres-merge-fix/dor/lpmf-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-31-listartefacts-postgres-merge-fix/dor/lpmf-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-08-31T18:29:12.279Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Merge local and Postgres artefact lists in listArtefacts",
+              "tddState": "completed",
+              "file": "src/web-ui/adapters/artefact-list.js"
+            }
+          ],
+          "updatedAt": "2026-08-31T18:29:12.279Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/803",
+          "prStatus": "open"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
