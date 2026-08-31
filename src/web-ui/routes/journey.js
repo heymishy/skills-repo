@@ -2660,6 +2660,23 @@ function extractStoryIdsFromDefinitionArtefact(md) {
     });
     return ids;
   }
+  // daep-s1: Format A -- "## Epic N — Name" sections wrapping "### slug —
+  // Title" subsections (slug not required to contain a dot, e.g. "ep1-s1").
+  // Mirrors parseDefinitionArtefact's own Format A branch in skills.js exactly
+  // (split/match logic) for the AC5/dsda-s1 client-server parity requirement.
+  var hasEpicH2Sections = /^## Epic \d+/im.test(md);
+  if (hasEpicH2Sections) {
+    md.split(/\n## Epic /).slice(1).forEach(function(eb) {
+      var efl = eb.split('\n')[0];
+      if (!/^\d/.test(efl)) return;
+      eb.split(/\n### /).slice(1).forEach(function(sb) {
+        var sl = sb.split('\n')[0];
+        var idM = sl.match(/^([a-z][a-z0-9.-]*)/i);
+        if (idM) ids.push(idM[1].toLowerCase());
+      });
+    });
+    return ids;
+  }
   return ids;
 }
 
