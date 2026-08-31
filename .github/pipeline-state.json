@@ -28891,6 +28891,51 @@
       "epics": [],
       "stories": [],
       "discoveryArtefact": "artefacts/2026-08-31-web-ui-navigation-legibility/discovery.md"
+    },
+    {
+      "slug": "2026-08-31-webui-story-artefact-path-fix",
+      "name": "Align Web UI test-plan/DoR artefact save paths and Step-1 scanner with the canonical per-story convention",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "updatedAt": "2026-08-31T18:29:55.197Z",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "wsap-s1",
+          "id": "wsap-s1",
+          "name": "Align web UI story-scoped artefact paths",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 8,
+            "passing": 8,
+            "artefact": "artefacts/2026-08-31-webui-story-artefact-path-fix/test-plans/wsap-s1-test-plan.md"
+          },
+          "acTotal": 8,
+          "acVerified": 8,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-31-webui-story-artefact-path-fix/dor/wsap-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-31-webui-story-artefact-path-fix/dor/wsap-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-08-31T18:29:55.197Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Thread currentStoryId + story-scoped artefact save paths + scanner fix",
+              "tddState": "completed",
+              "file": "src/web-ui/routes/skills.js"
+            }
+          ],
+          "updatedAt": "2026-08-31T18:29:55.197Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/804",
+          "prStatus": "open"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
