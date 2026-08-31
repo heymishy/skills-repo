@@ -28891,6 +28891,51 @@
       "epics": [],
       "stories": [],
       "discoveryArtefact": "artefacts/2026-08-31-web-ui-navigation-legibility/discovery.md"
+    },
+    {
+      "slug": "2026-09-01-sse-reconnect-on-resume",
+      "name": "Client-side reconnect-on-resume for a dropped SSE turn, with idempotent server-side replay",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "updatedAt": "2026-08-31T19:07:05.832Z",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "srar-s1",
+          "id": "srar-s1",
+          "name": "Idempotent turn reconnect (attemptId guard)",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 8,
+            "passing": 8,
+            "artefact": "artefacts/2026-09-01-sse-reconnect-on-resume/test-plans/srar-s1-test-plan.md"
+          },
+          "acTotal": 8,
+          "acVerified": 8,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-09-01-sse-reconnect-on-resume/dor/srar-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-09-01-sse-reconnect-on-resume/dor/srar-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-08-31T19:07:05.832Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "attemptId idempotency guard + client retry/resume-reload",
+              "tddState": "completed",
+              "file": "src/web-ui/routes/skills.js"
+            }
+          ],
+          "updatedAt": "2026-08-31T19:07:05.832Z",
+          "prUrl": null,
+          "prStatus": "none"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

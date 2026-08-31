@@ -3734,7 +3734,7 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
     '    foot.appendChild(wrap);',
     '  }',
     '',
-    '  function sendTurn(answer, _isContinuation) {',
+    '  function sendTurn(answer, _isContinuation, _attemptId, _isRetry) {',
     '    if(submitBtn) submitBtn.disabled = true;',
     '    // Always show thinking dots — continuation turns still take time and need user feedback.',
     '    var thinkingDiv = appendBubble("assistant", \'<span class="sw-thinking"><span class="sw-dot"></span><span class="sw-dot"></span><span class="sw-dot"></span></span>\');',
@@ -3744,10 +3744,16 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
     '    var reasoningEl  = null;',
     '    var reasoningLen = 0;',
     '    var _continuationPending = false;',
+    // srar-s1: a stable attemptId per logical turn (reused across this
+    // function's own one auto-retry) lets the server tell a reconnect
+    // apart from a genuinely new turn, so a dropped connection (e.g. a
+    // Fly auto-suspend mid-request) can be safely retried without ever
+    // double-running the turn server-side.
+    '    var _attId = _attemptId || ((window.crypto && crypto.randomUUID) ? crypto.randomUUID() : (Date.now() + "-" + Math.random().toString(36).slice(2)));',
     '    fetch(STREAM_URL, {',
     '      method: "POST",',
     '      headers: {"Content-Type": "application/json"},',
-    '      body: JSON.stringify({answer: answer})',
+    '      body: JSON.stringify({answer: answer, attemptId: _attId})',
     '    }).then(function(r) {',
     '      if(!r.ok || !r.body) throw new Error("Stream failed");',
     '      var ct = r.headers.get("content-type") || "";',
@@ -3825,6 +3831,12 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
     '                console.warn("[canvas-diagnostic] " + evt.canvasDiagnostic.reason + ": " + evt.canvasDiagnostic.detail + (evt.canvasDiagnostic.terminal ? " (terminal -- no further retry)" : ""));',
     '              }',
     '              if(evt.done !== undefined) {',
+    // srar-s1: a duplicate/retried request that landed on an already-
+    // completed attempt gets told to resume rather than replayed stream
+    // content — reload so the existing session-restore path renders the
+    // full, correct state (including anything, like canvas blocks, that a
+    // partial re-stream would otherwise miss).
+    '                if(evt.resumed) { window.location.reload(); return; }',
     '                if(evt.artefactContent) { partialDraft = ""; updateDraftPanel(evt.artefactContent); }',
     '                if(evt.done) {',
     '                  // For continuation turns: surface the post-artefact summary (verdict,',
@@ -3892,6 +3904,13 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
     '      if(thinkingDiv) { thinkingDiv.remove(); thinkingDiv = null; }',
     '      if(streamDiv) { streamDiv.remove(); streamDiv = null; }',
     '      var expired = err && err.message === "session-expired";',
+    // srar-s1: one automatic reconnect attempt, reusing the same attemptId,
+    // for any non-auth failure — covers a Fly auto-suspend mid-request drop
+    // without risking an infinite retry loop or retrying a dead auth session.
+    '      if(!expired && !_isRetry) {',
+    '        setTimeout(function(){ sendTurn(answer, _isContinuation, _attId, true); }, 2000);',
+    '        return;',
+    '      }',
     '      var msg = expired',
     '        ? \'Session expired — <a href="/auth/github" style="color:inherit;font-weight:600;text-decoration:underline">sign in again</a>\'',
     '        : "Error — please try again.";',
@@ -4703,6 +4722,40 @@ async function handlePostTurnStreamHtml(req, res) {
     try { res.write(':\n\n'); } catch (_) {}
   }, 15000);
 
+  // srar-s1: idempotent reconnect guard. Fly's auto_stop_machines='suspend'
+  // can freeze a genuinely in-flight request mid-turn and later resume it in
+  // the same process, even after the client's own connection has already
+  // died and the browser has retried. A duplicate request carrying the same
+  // attemptId as an already-'complete' attempt is short-circuited here --
+  // before the LLM is called, before credits are deducted, before the
+  // turn/artefact pipeline runs -- so a client-side retry can never double
+  // any of that. A duplicate against a still-'in-flight' attempt (within a
+  // 60s staleness window) is told to wait rather than starting a second
+  // concurrent LLM call for this session; older than that, the original
+  // attempt almost certainly errored or crashed without reaching a success
+  // marker, so the retry proceeds as a fresh attempt instead of locking up
+  // forever. No attemptId in the request body (older/other callers) skips
+  // this guard entirely.
+  var _attemptId = (body && typeof body.attemptId === 'string' && body.attemptId) ? body.attemptId : null;
+  if (_attemptId && session._lastAttempt && session._lastAttempt.attemptId === _attemptId) {
+    if (session._lastAttempt.status === 'complete') {
+      res.write('data: ' + JSON.stringify({ done: true, resumed: true }) + '\n\n');
+      clearInterval(_keepaliveInterval);
+      res.end();
+      return;
+    }
+    if (session._lastAttempt.status === 'in-flight' && (Date.now() - session._lastAttempt.startedAt) < 60000) {
+      res.write('data: ' + JSON.stringify({ error: 'This turn is still processing — please wait a moment and try again.' }) + '\n\n');
+      clearInterval(_keepaliveInterval);
+      res.end();
+      return;
+    }
+    // stale in-flight (>60s) -- fall through and treat as a fresh attempt.
+  }
+  if (_attemptId) {
+    session._lastAttempt = { attemptId: _attemptId, status: 'in-flight', startedAt: Date.now() };
+  }
+
   // sdrg-s1: __init__ arriving for a session that is ALREADY done (artefact
   // already produced) must be a true no-op -- not just "skip the model call
   // silently" but "return the session's real existing state and touch
@@ -4736,6 +4789,7 @@ async function handlePostTurnStreamHtml(req, res) {
     // stage" commit link. done:true here would fire showCommitLink() before the skill session is
     // complete, causing gate-confirm to return 400 "Session not complete yet".
     res.write('data: ' + JSON.stringify({ done: false }) + '\n\n');
+    if (_attemptId) { session._lastAttempt = { attemptId: _attemptId, status: 'complete', startedAt: Date.now() }; }
     res.end();
     return;
   }
@@ -5403,6 +5457,11 @@ async function handlePostTurnStreamHtml(req, res) {
   if (done) {
     res.write('data: ' + JSON.stringify({ lensComplete: true }) + '\n\n');
   }
+
+  // srar-s1: mark this attempt complete only once the turn has genuinely
+  // finished -- a duplicate request with this same attemptId from here on
+  // short-circuits at the guard above instead of re-running anything.
+  if (_attemptId) { session._lastAttempt = { attemptId: _attemptId, status: 'complete', startedAt: Date.now() }; }
 
   res.end();
 }
