@@ -79,10 +79,11 @@ function deriveTypeFromPath(filePath) {
  * @returns {Promise<{ artefacts: Array, grouped: Object, noArtefacts: boolean }>}
  */
 async function listArtefacts(featureSlug, token, repoRoot, pgArtefactRows) {
+  let localArtefacts = null;
   if (repoRoot) {
     const localItems = listLocalArtefacts(repoRoot, featureSlug);
     if (localItems !== null) {
-      const artefacts = localItems.map((item) => {
+      localArtefacts = localItems.map((item) => {
         const relPath = path.relative(repoRoot, item.path).split(path.sep).join('/');
         return {
           name:    path.basename(item.path),
@@ -92,26 +93,28 @@ async function listArtefacts(featureSlug, token, repoRoot, pgArtefactRows) {
           viewUrl: `/artefacts/${encodeURIComponent(relPath)}`
         };
       });
-      if (artefacts.length > 0) {
-        const grouped = groupArtefactsByStage(artefacts);
-        return { artefacts, grouped, noArtefacts: false };
-      }
-      // Directory exists locally but is genuinely empty -- still worth
-      // checking Postgres below before giving up (a fresh container may
-      // have an empty artefacts/ dir baked in while Postgres has the real,
-      // durably-saved content from a prior container's sessions).
     }
-    // Directory doesn't exist locally at all — fall through.
+    // Directory doesn't exist locally at all -- localArtefacts stays null.
   }
 
-  if (Array.isArray(pgArtefactRows) && pgArtefactRows.length > 0) {
-    const artefacts = pgArtefactRows.map((row) => ({
-      name:    path.basename(row.artefact_path),
-      path:    row.artefact_path,
-      sha:     null,
-      type:    deriveTypeFromPath(row.artefact_path),
-      viewUrl: `/artefacts/${encodeURIComponent(row.artefact_path)}`
-    }));
+  const pgArtefacts = (Array.isArray(pgArtefactRows) && pgArtefactRows.length > 0)
+    ? pgArtefactRows.map((row) => ({
+        name:    path.basename(row.artefact_path),
+        path:    row.artefact_path,
+        sha:     null,
+        type:    deriveTypeFromPath(row.artefact_path),
+        viewUrl: `/artefacts/${encodeURIComponent(row.artefact_path)}`
+      }))
+    : [];
+
+  if ((localArtefacts && localArtefacts.length > 0) || pgArtefacts.length > 0) {
+    // lpmf-s1: merge instead of local-wins-if-nonempty -- local overlays
+    // Postgres by path so a stale/partial local checkout no longer hides
+    // artefacts that only exist in the durably-saved Postgres store.
+    const merged = new Map();
+    for (const item of pgArtefacts) merged.set(item.path, item);
+    for (const item of (localArtefacts || [])) merged.set(item.path, item);
+    const artefacts = Array.from(merged.values());
     const grouped = groupArtefactsByStage(artefacts);
     return { artefacts, grouped, noArtefacts: false };
   }
