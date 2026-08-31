@@ -28834,16 +28834,16 @@
       "slug": "2026-08-31-sse-disconnect-observability",
       "name": "Log a premature SSE client disconnect, distinguishable from a normal completion",
       "track": "short",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-08-31T02:12:25.360Z",
+      "updatedAt": "2026-08-31T04:48:15.677Z",
       "epics": [],
       "stories": [
         {
           "slug": "ssdo-s1",
           "id": "ssdo-s1",
           "name": "Log premature SSE client disconnect",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -28869,9 +28869,10 @@
               "file": "src/web-ui/routes/skills.js"
             }
           ],
-          "updatedAt": "2026-08-31T02:12:16.680Z",
+          "updatedAt": "2026-08-31T04:48:07.613Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/802",
-          "prStatus": "draft"
+          "prStatus": "merged",
+          "dodStatus": "complete"
         }
       ]
     }
