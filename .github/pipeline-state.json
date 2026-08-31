@@ -28693,21 +28693,21 @@
       "slug": "2026-08-31-review-skill-skip-selection-prompts",
       "name": "Remove /review's story-selection and category-selection prompts",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-08-30T19:08:53.055Z",
+      "updatedAt": "2026-08-31T00:58:48.612Z",
       "epics": [],
       "stories": [
         {
           "slug": "rssp-s1",
           "id": "rssp-s1",
           "name": "Remove /review's story-selection and category-selection prompts",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-31-review-skill-skip-selection-prompts/review/rssp-s1-review-1.md",
-          "updatedAt": "2026-08-30T19:27:58.306Z",
+          "updatedAt": "2026-08-31T00:58:39.991Z",
           "testPlan": {
             "status": "written",
             "totalTests": 4,
@@ -28731,8 +28731,9 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/799"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/799",
+          "dodStatus": "complete"
         }
       ]
     },
@@ -28740,21 +28741,21 @@
       "slug": "2026-08-31-sse-timeout-retry-resilience",
       "name": "Retry an LLM stream call once when it fails before any content has streamed",
       "track": "short",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-08-30T20:06:33.243Z",
+      "updatedAt": "2026-08-31T00:58:48.613Z",
       "epics": [],
       "stories": [
         {
           "slug": "sstr-s1",
           "id": "sstr-s1",
           "name": "Retry on pre-first-chunk failure",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-31-sse-timeout-retry-resilience/review/sstr-s1-review-1.md",
-          "updatedAt": "2026-08-30T20:06:24.757Z",
+          "updatedAt": "2026-08-31T00:58:40.136Z",
           "testPlan": {
             "status": "written",
             "totalTests": 6,
@@ -28778,7 +28779,8 @@
             }
           ],
           "prUrl": "https://github.com/heymishy/skills-repo/pull/800",
-          "prStatus": "draft"
+          "prStatus": "merged",
+          "dodStatus": "complete"
         }
       ]
     },
