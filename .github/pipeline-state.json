@@ -28834,27 +28834,27 @@
       "slug": "2026-08-31-sse-disconnect-observability",
       "name": "Log a premature SSE client disconnect, distinguishable from a normal completion",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "branch-complete",
       "health": "green",
-      "updatedAt": "2026-08-31T01:50:18.242Z",
+      "updatedAt": "2026-08-31T02:12:25.360Z",
       "epics": [],
       "stories": [
         {
           "slug": "ssdo-s1",
           "id": "ssdo-s1",
           "name": "Log premature SSE client disconnect",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
             "totalTests": 3,
-            "passing": 0,
+            "passing": 3,
             "artefact": "artefacts/2026-08-31-sse-disconnect-observability/test-plans/ssdo-s1-test-plan.md"
           },
           "acTotal": 3,
-          "acVerified": 0,
+          "acVerified": 3,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
@@ -28865,10 +28865,13 @@
             {
               "id": "task-1",
               "name": "Add res.on(close) disconnect logging to handlePostTurnStreamHtml",
-              "tddState": "not-started",
+              "tddState": "completed",
               "file": "src/web-ui/routes/skills.js"
             }
-          ]
+          ],
+          "updatedAt": "2026-08-31T02:12:16.680Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/802",
+          "prStatus": "draft"
         }
       ]
     }

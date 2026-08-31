@@ -4684,6 +4684,19 @@ async function handlePostTurnStreamHtml(req, res) {
   });
   _turnLog.info({ event: 'sse_open' }, 'SSE stream opened');
 
+  // ssdo-s1: if the connection closes before this handler itself ever called
+  // res.end() for this turn, log it -- otherwise a client/network-level
+  // disconnect leaves zero server-side trace beyond the sse_open line above.
+  // Guarded: many existing tests drive this handler against a minimal mock
+  // res object with no .on() method -- a real http.ServerResponse always has one.
+  if (typeof res.on === 'function') {
+    res.on('close', function() {
+      if (!res.writableEnded) {
+        try { _turnLog.warn({ event: 'sse_client_disconnect' }, 'SSE connection closed before the response completed'); } catch (_) {}
+      }
+    });
+  }
+
   // SSE keepalive — send a comment every 15s so browsers/proxies don't drop the connection
   // during long model responses where no chunks are emitted for extended periods.
   var _keepaliveInterval = setInterval(function() {
