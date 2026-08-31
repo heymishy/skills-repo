@@ -1629,3 +1629,33 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: pattern
   signal-text: "csdl-s1's temporary diagnostic logging (real staging logs, not further speculation) correctly identified the actual root cause on the first read: submittedPrefix was genuinely '(empty)' against a correctly-populated expectedPrefix, and flyctl machines list showed exactly ONE machine, directly refuting the multi-machine session-cache-drift theory that had been the leading unconfirmed hypothesis. The real bug was a THIRD, separate CSRF-field gap: showCommitLink() (skills.js) is a client-side JS function that live-injects its own copy of the gate-confirm form whenever a stage completes DURING the streaming response (not on a page reload) -- a code path jgcc-s1's fix never touched, since jgcc-s1 only fixed the server-rendered _renderChatPage branch. General lesson, reinforcing this session's own repeated pattern: every fix designed WITHOUT first gathering direct evidence (cptr-s1's original SIGTERM design, jgcc-s1's implicit single-code-path assumption) needed a follow-up correction; the one fix step preceded by real evidence-gathering (csdl-s1's logging, then reading the actual logs) identified the correct mechanism on the first attempt. This is now the THIRD real CSRF-field gap found in one session across two different bugs -- a dedicated audit of every client-side innerHTML-injected form in src/web-ui/ for the same missing-_csrf-field pattern is now clearly overdue, not just recommended."
   source: agent-auto
+
+- date: 2026-08-31
+  session-phase: post-dogfooding review / cross-channel-feature-continuity (first full web-UI-driven feature completed end to end)
+  signal-type: gap
+  signal-text: "UX feedback item 1: the 'Ref docs' panel (SKILL.md, default, mission.md, tech-stack.md, constraints.md, roadmap.md, each shown as a separate '✓ loaded' row) should be consolidated into a single collapsed indicator that expands on click to show what's loaded, rather than always rendering every file as its own row."
+  source: operator-manual
+
+- date: 2026-08-31
+  session-phase: post-dogfooding review / cross-channel-feature-continuity
+  signal-type: gap
+  signal-text: "UX feedback item 2: there is no view where an operator can list and individually open a feature's own epics, stories, test plans, DoR artefacts, etc. -- artefact browsing/drill-down for a feature's outer-loop history is missing or not discoverable in the current UX/CX."
+  source: operator-manual
+
+- date: 2026-08-31
+  session-phase: post-dogfooding review / cross-channel-feature-continuity
+  signal-type: gap
+  signal-text: "UX feedback item 3: the feature summary page needs a general improvement pass -- no specific defect named yet, flagged for a future UX review pass."
+  source: operator-manual
+
+- date: 2026-08-31
+  session-phase: post-dogfooding review / cross-channel-feature-continuity
+  signal-type: gap
+  signal-text: "UX feedback item 4: during a live session, the operator sometimes loses track of where the 'next stage' / continue action is and cannot find it -- a navigation/affordance discoverability gap, not yet tied to a specific screen or repro steps."
+  source: operator-manual
+
+- date: 2026-08-31
+  session-phase: post-dogfooding review / cross-channel-feature-continuity
+  signal-type: assumption-invalidated
+  signal-text: "UX feedback item 5: operator was unsure whether the new diagram types (s5, sequence) were surfaced during this session. Investigated: they were not, but this is expected, not a bug -- diagram emission (CANVAS-JSON blocks) is wired only into /design and /definition (csd-s3); /review (the skill session actually run) has never been a diagram-emitting skill. The new 'sequence' type itself is real and live in the shared rendering mechanism (s5), just not exercised by this particular session's skill. Confirming a diagram actually renders requires checking a /design or /definition session instead."
+  source: operator-manual
