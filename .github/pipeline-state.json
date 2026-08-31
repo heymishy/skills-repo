@@ -28936,6 +28936,96 @@
           "prStatus": "open"
         }
       ]
+    },
+    {
+      "slug": "2026-08-31-webui-story-artefact-path-fix",
+      "name": "Align Web UI test-plan/DoR artefact save paths and Step-1 scanner with the canonical per-story convention",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "updatedAt": "2026-08-31T18:29:55.197Z",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "wsap-s1",
+          "id": "wsap-s1",
+          "name": "Align web UI story-scoped artefact paths",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 8,
+            "passing": 8,
+            "artefact": "artefacts/2026-08-31-webui-story-artefact-path-fix/test-plans/wsap-s1-test-plan.md"
+          },
+          "acTotal": 8,
+          "acVerified": 8,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-31-webui-story-artefact-path-fix/dor/wsap-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-31-webui-story-artefact-path-fix/dor/wsap-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-08-31T18:29:55.197Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Thread currentStoryId + story-scoped artefact save paths + scanner fix",
+              "tddState": "completed",
+              "file": "src/web-ui/routes/skills.js"
+            }
+          ],
+          "updatedAt": "2026-08-31T18:29:55.197Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/804",
+          "prStatus": "open"
+        }
+      ]
+    },
+    {
+      "slug": "2026-08-31-listartefacts-postgres-merge-fix",
+      "name": "Merge local-disk and Postgres artefact lists instead of local-wins-if-nonempty",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "updatedAt": "2026-08-31T18:29:12.279Z",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "lpmf-s1",
+          "id": "lpmf-s1",
+          "name": "Merge local and Postgres artefact lists",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 5,
+            "artefact": "artefacts/2026-08-31-listartefacts-postgres-merge-fix/test-plans/lpmf-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-31-listartefacts-postgres-merge-fix/dor/lpmf-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-31-listartefacts-postgres-merge-fix/dor/lpmf-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-08-31T18:29:12.279Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Merge local and Postgres artefact lists in listArtefacts",
+              "tddState": "completed",
+              "file": "src/web-ui/adapters/artefact-list.js"
+            }
+          ],
+          "updatedAt": "2026-08-31T18:29:12.279Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/803",
+          "prStatus": "open"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

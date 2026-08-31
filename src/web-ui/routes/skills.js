@@ -2039,7 +2039,7 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
       '',
       'DO NOT output "Saved artefacts:", "Pipeline state updated ✅", or file-save confirmation lines — the server handles those automatically.',
       '',
-      'SLUG: Your slug MUST be exactly: ' + (_featureSlug ? '"' + _featureSlug + '-tp-[story-id]" (e.g. "' + _featureSlug + '-tp-sdg-1")' : '"[feature-slug]-tp-[story-id]"') + '. Do not shorten, rename, or reinterpret this value.',
+      'SLUG: Your slug MUST be exactly: ' + (_featureSlug ? '"' + _featureSlug + '"' : '"[feature-slug]"') + '. Do not shorten, rename, or reinterpret this value — the server determines the per-story save path automatically from the story you are working on.',
       '',
       'CRITICAL — SINGLE STORY ONLY: After your ---ARTEFACT-END--- marker, add one closing line: "Test plan saved for [story-id]. Start a new session for the next story." Then STOP. Do NOT continue to the next story. The operator will start a new session for each remaining story.'
     ].join('\n'));
@@ -2125,7 +2125,7 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
       '',
       'DO NOT output "Saved artefacts:" or "Pipeline state updated ✅" lines — the server handles those automatically when you produce the artefact block.',
       '',
-      'SLUG: Your slug MUST be exactly: ' + (_featureSlug ? '"' + _featureSlug + '-dor-[story-id]" (e.g. "' + _featureSlug + '-dor-sdg-1")' : '"[feature-slug]-dor-[story-id]"') + '. Do not shorten, rename, or reinterpret this value.',
+      'SLUG: Your slug MUST be exactly: ' + (_featureSlug ? '"' + _featureSlug + '"' : '"[feature-slug]"') + '. Do not shorten, rename, or reinterpret this value — the server determines the per-story save path automatically from the story you are working on.',
       '',
       'CRITICAL — SINGLE STORY ONLY: After your ---ARTEFACT-END--- marker, add exactly one closing line like "DoR saved for [story-id]. Start a new session to process the next story." Then STOP completely. Do NOT ask if the operator wants to continue. Do NOT generate DoR for the next story. The operator will start a new session for each story.'
     ].join('\n'));
@@ -2272,6 +2272,32 @@ var _STEP1_SUBDIR = {
   'definition-of-ready': 'dor'
 };
 
+// wsap-s1: canonical per-story artefact convention (skills/test-plan/SKILL.md,
+// skills/definition-of-ready/SKILL.md) -- artefacts/[feature]/[subdir]/[storyId][suffix].
+var _STORY_SCOPED_ARTEFACT = {
+  'test-plan':           { subdir: 'test-plans', suffix: '-test-plan.md' },
+  'definition-of-ready': { subdir: 'dor',        suffix: '-dor.md' }
+};
+
+/**
+ * Compute the artefact save path for a completed skill turn. Story-scoped
+ * skills (test-plan, definition-of-ready) save to a per-story file inside
+ * the canonical subdirectory when a storyId is known; otherwise (standalone
+ * sessions with no linked story, or any other skillName) falls back to the
+ * flat artefacts/[slug]/[skillName].md path, unchanged from prior behaviour.
+ * @param {string} slug
+ * @param {string} skillName
+ * @param {string} [storyId]
+ * @returns {string}
+ */
+function computeArtefactSavePath(slug, skillName, storyId) {
+  var scoped = _STORY_SCOPED_ARTEFACT[skillName];
+  if (scoped && storyId) {
+    return 'artefacts/' + slug + '/' + scoped.subdir + '/' + storyId + scoped.suffix;
+  }
+  return 'artefacts/' + slug + '/' + skillName + '.md';
+}
+
 /**
  * Compute the Step 1 story-list summary for content-heavy skills by reading the
  * filesystem directly — no LLM call required.
@@ -2294,44 +2320,44 @@ function computeStep1Summary(featureSlug, skillName, repoRoot) {
   var artefactsBase = path.resolve(path.join(root, 'artefacts'));
   var label = skillName === 'test-plan' ? 'test-plan' : skillName === 'review' ? 'review' : 'DoR';
 
-  // DoR artefacts: artefacts/[featureSlug]-dor-[storyId]/definition-of-ready.md
+  // wsap-s1: DoR artefacts: artefacts/[featureSlug]/dor/[storyId]-dor.md
+  // (canonical convention per skills/definition-of-ready/SKILL.md:349)
   if (skillName === 'definition-of-ready') {
-    var dorPrefix = featureSlug + '-dor-';
+    var dorSuffix = '-dor.md';
+    var dorDir = path.resolve(path.join(artefactsBase, featureSlug, 'dor'));
     var dorEntries = [];
-    try {
-      fs.readdirSync(artefactsBase).forEach(function(dir) {
-        if (!dir.startsWith(dorPrefix)) return;
-        var safeDir = path.resolve(path.join(artefactsBase, dir));
-        if (!safeDir.startsWith(artefactsBase + path.sep)) return;
-        if (fs.existsSync(path.join(safeDir, 'definition-of-ready.md'))) {
-          dorEntries.push(dir.slice(dorPrefix.length));
-        }
-      });
-    } catch (_) {}
-    if (dorEntries.length === 0) {
-      return '**Step 1 — Scope (pre-computed)**\n\nScanned `artefacts/` for `' + dorPrefix + '*` — no prior DoR artefacts found. All stories are pending.\n\n**Action:** Identify the first story in sequence from the HANDOFF CONTEXT above and proceed immediately to Step 2 for that story. Do not ask the operator which story to run.';
+    if (dorDir.startsWith(artefactsBase + path.sep)) {
+      try {
+        fs.readdirSync(dorDir).forEach(function(file) {
+          if (!file.endsWith(dorSuffix)) return;
+          dorEntries.push(file.slice(0, -dorSuffix.length));
+        });
+      } catch (_) {}
     }
-    return '**Step 1 — Scope (pre-computed)**\n\nScanned `artefacts/` for `' + dorPrefix + '*`\n\n**Completed DoR artefacts found:**\n' + dorEntries.map(function(s) { return '- ' + s + ' ✅'; }).join('\n') + '\n\n**Action:** From the HANDOFF CONTEXT story list, identify the first story in delivery sequence that is NOT in the completed list above. Proceed immediately to Step 2 for that story. Do not ask the operator which story to choose.';
+    if (dorEntries.length === 0) {
+      return '**Step 1 — Scope (pre-computed)**\n\nScanned `artefacts/' + featureSlug + '/dor/` for `*' + dorSuffix + '` — no prior DoR artefacts found. All stories are pending.\n\n**Action:** Identify the first story in sequence from the HANDOFF CONTEXT above and proceed immediately to Step 2 for that story. Do not ask the operator which story to run.';
+    }
+    return '**Step 1 — Scope (pre-computed)**\n\nScanned `artefacts/' + featureSlug + '/dor/` for `*' + dorSuffix + '`\n\n**Completed DoR artefacts found:**\n' + dorEntries.map(function(s) { return '- ' + s + ' ✅'; }).join('\n') + '\n\n**Action:** From the HANDOFF CONTEXT story list, identify the first story in delivery sequence that is NOT in the completed list above. Proceed immediately to Step 2 for that story. Do not ask the operator which story to choose.';
   }
 
-  // Test-plan artefacts: artefacts/[featureSlug]-tp-[storyId]/test-plan.md
+  // wsap-s1: Test-plan artefacts: artefacts/[featureSlug]/test-plans/[storyId]-test-plan.md
+  // (canonical convention per skills/test-plan/SKILL.md:226)
   if (skillName === 'test-plan') {
-    var tpPrefix = featureSlug + '-tp-';
+    var tpSuffix = '-test-plan.md';
+    var tpDir = path.resolve(path.join(artefactsBase, featureSlug, 'test-plans'));
     var tpEntries = [];
-    try {
-      fs.readdirSync(artefactsBase).forEach(function(dir) {
-        if (!dir.startsWith(tpPrefix)) return;
-        var safeDir = path.resolve(path.join(artefactsBase, dir));
-        if (!safeDir.startsWith(artefactsBase + path.sep)) return;
-        if (fs.existsSync(path.join(safeDir, 'test-plan.md'))) {
-          tpEntries.push(dir.slice(tpPrefix.length));
-        }
-      });
-    } catch (_) {}
-    if (tpEntries.length === 0) {
-      return '**Step 1 — Scope (pre-computed)**\n\nScanned `artefacts/` for `' + tpPrefix + '*` — no prior test-plan artefacts found. All stories are pending.\n\n**Action:** Identify the first story in sequence from the HANDOFF CONTEXT above and proceed immediately to Step 2 for that story. Do not ask the operator which story to run.';
+    if (tpDir.startsWith(artefactsBase + path.sep)) {
+      try {
+        fs.readdirSync(tpDir).forEach(function(file) {
+          if (!file.endsWith(tpSuffix)) return;
+          tpEntries.push(file.slice(0, -tpSuffix.length));
+        });
+      } catch (_) {}
     }
-    return '**Step 1 — Scope (pre-computed)**\n\nScanned `artefacts/` for `' + tpPrefix + '*`\n\n**Completed test-plan artefacts found:**\n' + tpEntries.map(function(s) { return '- ' + s + ' ✅'; }).join('\n') + '\n\n**Action:** From the HANDOFF CONTEXT story list, identify the first story in delivery sequence that is NOT in the completed list above. Proceed immediately to Step 2 for that story. Do not ask the operator which story to choose.';
+    if (tpEntries.length === 0) {
+      return '**Step 1 — Scope (pre-computed)**\n\nScanned `artefacts/' + featureSlug + '/test-plans/` for `*' + tpSuffix + '` — no prior test-plan artefacts found. All stories are pending.\n\n**Action:** Identify the first story in sequence from the HANDOFF CONTEXT above and proceed immediately to Step 2 for that story. Do not ask the operator which story to run.';
+    }
+    return '**Step 1 — Scope (pre-computed)**\n\nScanned `artefacts/' + featureSlug + '/test-plans/` for `*' + tpSuffix + '`\n\n**Completed test-plan artefacts found:**\n' + tpEntries.map(function(s) { return '- ' + s + ' ✅'; }).join('\n') + '\n\n**Action:** From the HANDOFF CONTEXT story list, identify the first story in delivery sequence that is NOT in the completed list above. Proceed immediately to Step 2 for that story. Do not ask the operator which story to choose.';
   }
 
   // Review: auto-save writes artefacts/[featureSlug]/review.md (not a subdirectory)
@@ -2415,6 +2441,15 @@ function linkSessionToJourney(sessionId, journeyId) {
   session.journeyId = journeyId;
   var journey = _journeyStore.getJourney(journeyId);
   if (journey && journey.featureSlug) session.featureSlug = journey.featureSlug;
+  // wsap-s1: thread the current story's ID into the session so story-scoped
+  // artefact skills (test-plan, definition-of-ready) can save/scan using the
+  // canonical artefacts/[feature]/[test-plans|dor]/[story-id]-*.md convention
+  // (skills/test-plan/SKILL.md, skills/definition-of-ready/SKILL.md) instead
+  // of a flat single file shared across every story in the feature.
+  if (journey && Array.isArray(journey.stories) && typeof journey.currentStoryIndex === 'number') {
+    var currentStory = journey.stories[journey.currentStoryIndex];
+    if (currentStory) session.currentStoryId = currentStory.id || currentStory.slug || null;
+  }
 }
 
 /**
@@ -2553,7 +2588,7 @@ async function htmlSubmitTurn(skillName, sessionId, rawAnswer, token, tenantId) 
     // session's real featureSlug must always win over the response's own
     // ---SLUG--- marker (see that comment for the full rationale).
     var slug = session.featureSlug || (slugMatch ? slugMatch[1].trim() : new Date().toISOString().slice(0, 10) + '-' + skillName);
-    session.artefactPath = 'artefacts/' + slug + '/' + session.skillName + '.md';
+    session.artefactPath = computeArtefactSavePath(slug, session.skillName, session.currentStoryId);
     session.done = true;
   }
 
@@ -5234,7 +5269,7 @@ async function handlePostTurnStreamHtml(req, res) {
     // or CLI usage), where session.featureSlug is never set and the model
     // deciding the slug is the intended, only mechanism.
     var slug = session.featureSlug || (slugMatch ? slugMatch[1].trim() : new Date().toISOString().slice(0, 10) + '-' + skillName);
-    session.artefactPath = 'artefacts/' + slug + '/' + (session.skillName || skillName) + '.md';
+    session.artefactPath = computeArtefactSavePath(slug, (session.skillName || skillName), session.currentStoryId);
     session.done = true;
 
     // Auto-save artefact to disk
