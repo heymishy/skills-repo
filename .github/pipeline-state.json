@@ -28786,16 +28786,16 @@
       "slug": "2026-08-31-definition-artefact-story-id-parsing",
       "name": "Recognize the H2-epic/H3-story (Format A) definition-artefact shape",
       "track": "short",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
-      "updatedAt": "2026-08-31T00:22:02.539Z",
+      "updatedAt": "2026-08-31T00:38:44.187Z",
       "epics": [],
       "stories": [
         {
           "slug": "daep-s1",
           "id": "daep-s1",
           "name": "Recognize Format A definition-artefact shape",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -28821,9 +28821,10 @@
               "file": "src/web-ui/routes/journey.js"
             }
           ],
-          "updatedAt": "2026-08-31T00:21:55.282Z",
+          "updatedAt": "2026-08-31T00:38:35.724Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/801",
-          "prStatus": "draft"
+          "prStatus": "merged",
+          "dodStatus": "complete"
         }
       ]
     }
