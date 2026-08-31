@@ -28829,6 +28829,48 @@
           "dodStatus": "complete"
         }
       ]
+    },
+    {
+      "slug": "2026-08-31-sse-disconnect-observability",
+      "name": "Log a premature SSE client disconnect, distinguishable from a normal completion",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "updatedAt": "2026-08-31T01:50:18.242Z",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "ssdo-s1",
+          "id": "ssdo-s1",
+          "name": "Log premature SSE client disconnect",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 3,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-31-sse-disconnect-observability/test-plans/ssdo-s1-test-plan.md"
+          },
+          "acTotal": 3,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-31-sse-disconnect-observability/dor/ssdo-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-31-sse-disconnect-observability/dor/ssdo-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-08-31T01:50:18.244Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Add res.on(close) disconnect logging to handlePostTurnStreamHtml",
+              "tddState": "not-started",
+              "file": "src/web-ui/routes/skills.js"
+            }
+          ]
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
