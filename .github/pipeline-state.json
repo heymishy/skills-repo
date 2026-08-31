@@ -28881,15 +28881,16 @@
       "name": "Web UI Navigation and Context Legibility",
       "track": "standard",
       "stage": "discovery",
-      "discoveryStatus": "clarified",
+      "discoveryStatus": "approved",
       "health": "green",
-      "updatedAt": "2026-08-31T08:35:11.454Z",
+      "updatedAt": "2026-08-31T08:48:52.616Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "epics": [],
-      "stories": []
+      "stories": [],
+      "discoveryArtefact": "artefacts/2026-08-31-web-ui-navigation-legibility/discovery.md"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

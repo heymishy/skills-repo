@@ -1,8 +1,8 @@
 # Discovery: Web UI Navigation and Context Legibility
 
-**Status:** Clarified — awaiting approval
+**Status:** Approved
 **Created:** 2026-08-31
-**Approved by:** Pending
+**Approved by:** Hamish King — Platform Owner — 2026-08-31
 **Author:** Claude (agent, with Hamish King)
 
 ---
@@ -55,11 +55,11 @@ The web UI is an Express-less Node.js HTTP server with a "no new npm dependencie
 
 ## Reviewers
 
-- [Name — Role]
+- None — solo operator session (contributor and approver are the same person, Hamish King, Platform Owner). No non-engineering reviewer available for this discovery; M3 (non-engineering outer loop attribution rate) is not measured for this feature.
 
 ## Approved By
 
-Pending
+Hamish King — Platform Owner — 2026-08-31
 
 ---
 
