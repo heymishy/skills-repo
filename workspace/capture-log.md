@@ -1659,3 +1659,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: assumption-invalidated
   signal-text: "UX feedback item 5: operator was unsure whether the new diagram types (s5, sequence) were surfaced during this session. Investigated: they were not, but this is expected, not a bug -- diagram emission (CANVAS-JSON blocks) is wired only into /design and /definition (csd-s3); /review (the skill session actually run) has never been a diagram-emitting skill. The new 'sequence' type itself is real and live in the shared rendering mechanism (s5), just not exercised by this particular session's skill. Confirming a diagram actually renders requires checking a /design or /definition session instead."
   source: operator-manual
+
+- date: 2026-08-31
+  session-phase: discovery / 2026-08-31-web-ui-navigation-legibility
+  signal-type: decision
+  signal-text: "During /discovery for the web-UI navigation/legibility feature (context panel collapse, artefact browser, persistent next-stage action), the operator explicitly deferred the feature summary page redesign (UX feedback item 3) out of this feature's MVP -- confirmed as out-of-scope with reason 'no specific defect named yet, deserves its own scoping pass.' Flagged here so it isn't lost: worth a dedicated UX review pass once specific defects on that page are identified, possibly informed by beta user feedback once it starts arriving."
+  source: operator-manual
