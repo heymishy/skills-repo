@@ -28875,6 +28875,21 @@
           "dodStatus": "complete"
         }
       ]
+    },
+    {
+      "slug": "2026-08-31-web-ui-navigation-legibility",
+      "name": "Web UI Navigation and Context Legibility",
+      "track": "standard",
+      "stage": "discovery",
+      "discoveryStatus": "clarified",
+      "health": "green",
+      "updatedAt": "2026-08-31T08:35:11.454Z",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": [],
+      "stories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
