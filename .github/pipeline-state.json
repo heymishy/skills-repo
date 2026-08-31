@@ -28781,6 +28781,48 @@
           "prStatus": "draft"
         }
       ]
+    },
+    {
+      "slug": "2026-08-31-definition-artefact-story-id-parsing",
+      "name": "Recognize the H2-epic/H3-story (Format A) definition-artefact shape",
+      "track": "short",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "updatedAt": "2026-08-31T00:09:03.031Z",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "daep-s1",
+          "id": "daep-s1",
+          "name": "Recognize Format A definition-artefact shape",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-31-definition-artefact-story-id-parsing/test-plans/daep-s1-test-plan.md"
+          },
+          "acTotal": 3,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-08-31-definition-artefact-story-id-parsing/dor/daep-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-08-31-definition-artefact-story-id-parsing/dor/daep-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-08-31T00:09:03.032Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Add Format A branch to extractStoryIdsFromDefinitionArtefact",
+              "tddState": "not-started",
+              "file": "src/web-ui/routes/journey.js"
+            }
+          ]
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
