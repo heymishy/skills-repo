@@ -2053,7 +2053,36 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
       '',
       'YOUR JOB: Review all pending stories in scope (identified in Step 1). Produce the complete review output — all stories, scoring table, and verdict — as a single artefact block.',
       '',
-      'ARTEFACT CONTENT: Put the entire review output (per-story findings, scoring table, overall verdict, and any HIGH/MEDIUM/LOW findings) inside the ---ARTEFACT-START--- / ---ARTEFACT-END--- markers. This is how the server saves the review to disk and advances the pipeline.',
+      'ARTEFACT CONTENT: Put the entire review output inside the ---ARTEFACT-START--- / ---ARTEFACT-END--- markers. This is how the server saves the review to disk and advances the pipeline. defs-s1/revs-s1: the server ALSO splits this artefact into individual per-story review files (artefacts/[feature]/review/[story-slug]-review-[N].md, matching what a CLI-driven /review session already produces) — this only works if each story\'s findings are grouped under its OWN "## Story: [story-slug]" heading, exactly as shown below. Group findings BY STORY, not by severity across all stories.',
+      '',
+      'REQUIRED STRUCTURE (repeat the "## Story:" block once per story reviewed):',
+      '',
+      '---ARTEFACT-START---',
+      '# Review Report',
+      '',
+      '## Story: [story-slug]',
+      '',
+      '### HIGH findings',
+      '[finding list, or "None."]',
+      '',
+      '### MEDIUM findings',
+      '[finding list, or "None."]',
+      '',
+      '### LOW findings',
+      '[finding list, or "None."]',
+      '',
+      '**Verdict:** PASS | FAIL',
+      '',
+      '## Story: [next-story-slug]',
+      '[... same structure, repeated once per story ...]',
+      '',
+      '## Overall Verdict',
+      '',
+      '**Verdict:** PASS | FAIL',
+      '[n] HIGH, [n] MEDIUM, [n] LOW across [n] stories.',
+      '---ARTEFACT-END---',
+      '',
+      'CRITICAL FORMAT RULE: the "## Story: [story-slug]" heading text must be EXACTLY the story slug (e.g. "## Story: ep1-s1"), nothing else on that line — this is how the server identifies where one story\'s findings end and the next begins.',
       '',
       'DO NOT output "Saved artefacts:", "Pipeline state updated ✅", or any file-write confirmation lines — the server handles those automatically.',
       '',
@@ -2067,23 +2096,34 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
     parts.push([
       '--- DEFINITION PROTOCOL (Web UI) ---',
       '',
-      'IMPORTANT: In this Web UI environment you cannot write individual artefact files to disk. The SKILL.md instructions to save epics to artefacts/[feature]/epics/ and stories to artefacts/[feature]/stories/ are replaced by a SINGLE consolidated artefact block that the server parses, stores in Postgres, and uses to render the story map panel.',
+      'IMPORTANT: In this Web UI environment you cannot write individual artefact files to disk. The SKILL.md instructions to save epics to artefacts/[feature]/epics/ and stories to artefacts/[feature]/stories/ are replaced by a SINGLE consolidated artefact block that the server parses, stores in Postgres, uses to render the story map panel, AND (defs-s1) splits into individual epic/story files matching templates/epic.md and templates/story.md — so include every field shown below, not just the ones you consider essential; a field you omit is filled with a generic placeholder in the split files instead of your own real content.',
       '',
       'YOUR JOB: Run the full definition process from SKILL.md — confirm slicing strategy, propose epic structure, decompose stories epic by epic. Continue exactly as the skill instructs.',
       '',
       'STORY IDs: Assign each story a machine-readable ID using the pattern "ep[epic-number]-s[story-number]" — e.g. ep1-s1, ep1-s2, ep2-s1, ep2-s2. Use these IDs consistently throughout the session and in the final artefact. Do not use numeric-only IDs like "1.1" or "2.3".',
       '',
-      'FINAL ARTEFACT: Immediately after the "Definition complete ✅" summary (once ALL epics and stories are confirmed), output the complete consolidated artefact in these EXACT markers:',
+      'FINAL ARTEFACT: Immediately after the "Definition complete ✅" summary (once ALL epics and stories are confirmed), output the complete consolidated artefact in these EXACT markers. Field order within a section does not matter — the server extracts each field by its label, not by position — but include every field shown:',
       '',
       '---ARTEFACT-START---',
       'Slicing strategy: [chosen strategy]',
       '',
       '## Epic 1 — [Epic Name]',
       '',
+      'Goal: [one paragraph — what the world looks like when this epic is complete]',
+      'Out of scope: [bullet list — at least 2 items]',
+      'Oversight: [Low|Medium|High]',
+      'Oversight rationale: [why this level]',
+      'Complexity: [1|2|3]',
+      'Scope stability: [Stable|Unstable]',
+      '',
       '### ep1-s1 — [Story Title]',
-      'Persona: [persona]',
+      'Persona: [named persona from the benefit-metric artefact]',
+      'Domain: [optional — one or more keys from .github/standards/index.yml, or omit entirely]',
       '',
       'So that [goal], I need [user need].',
+      '',
+      'Benefit linkage: [named metric from the benefit-metric artefact] — [one sentence: how completing this story moves it]',
+      'Architecture constraints: [ADR/guardrail/pattern references, or "None identified — checked against .github/architecture-guardrails.md"]',
       '',
       'Given [context],',
       'When [action],',
@@ -2093,9 +2133,10 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
       'Dependencies: [list or None]',
       'NFR: [list or None]',
       'Complexity: [1|2|3]',
+      'Scope stability: [Stable|Unstable]',
       '',
       '### ep1-s2 — [Story Title]',
-      '[...]',
+      '[... same fields as ep1-s1 ...]',
       '',
       '## Epic 2 — [Epic Name]',
       '',
@@ -5390,6 +5431,67 @@ async function handlePostTurnStreamHtml(req, res) {
             res.end();
             return;
           }
+        }
+
+        // defs-s1/revs-s1: additionally split this stage's consolidated
+        // artefact into individual files matching the CLI's own convention
+        // (artefacts/[feature]/epics|stories/[slug].md for definition,
+        // artefacts/[feature]/review/[slug]-review-[N].md for review) -- so
+        // a feature defined/reviewed through the web UI produces the same
+        // on-disk shape a CLI-driven session already does, surfaceable
+        // identically from either channel. Purely additive: the flat file
+        // above remains the canonical source for stage-completion/Postgres/
+        // story-map-panel purposes, unchanged. Best-effort -- a parse or
+        // write/commit failure here is logged and does not block the stage
+        // from completing, since the flat file already provides a durable,
+        // complete record.
+        try {
+          var _splitRepoRootResolved = path.resolve(_autoRepoRoot);
+          if (session.skillName === 'definition') {
+            var _defSplit = require('../utils/definition-artefact-splitter').splitDefinitionArtefact(session.artefactContent, slug);
+            var _defFiles = _defSplit.epics.map(function(e) { return { path: 'artefacts/' + slug + '/epics/' + e.slug + '.md', content: e.content }; })
+              .concat(_defSplit.stories.map(function(s) { return { path: 'artefacts/' + slug + '/stories/' + s.slug + '.md', content: s.content }; }));
+            for (var _di = 0; _di < _defFiles.length; _di++) {
+              var _df = _defFiles[_di];
+              var _dfAbsPath = path.resolve(path.join(_autoRepoRoot, _df.path));
+              if (!_dfAbsPath.startsWith(_splitRepoRootResolved + path.sep)) continue; // res-s2 path traversal guard
+              fs.mkdirSync(path.dirname(_dfAbsPath), { recursive: true });
+              fs.writeFileSync(_dfAbsPath, _df.content, 'utf8');
+              if (_dasOwnerRepo) {
+                try {
+                  await require('../adapters/artefact-commit-writer').commitArtefact(_df.path, _df.content, req.session.accessToken, _dasOwnerRepo.owner, _dasOwnerRepo.repo);
+                } catch (_splitCommitErr) {
+                  console.warn(JSON.stringify({ event: 'split_artefact_commit_failed', path: _df.path, error: _splitCommitErr.message }));
+                }
+              }
+            }
+          } else if (session.skillName === 'review') {
+            var _revSplit = require('../utils/review-artefact-splitter').splitReviewArtefact(session.artefactContent, function(storySlug) {
+              var _reviewDir = path.resolve(path.join(_autoRepoRoot, 'artefacts', slug, 'review'));
+              var _existingCount = 0;
+              try {
+                _existingCount = fs.readdirSync(_reviewDir).filter(function(f) { return f.indexOf(storySlug + '-review-') === 0; }).length;
+              } catch (_) {}
+              return _existingCount + 1;
+            });
+            for (var _ri = 0; _ri < _revSplit.length; _ri++) {
+              var _rf = _revSplit[_ri];
+              var _rfPath = 'artefacts/' + slug + '/review/' + _rf.storySlug + '-review-' + _rf.runNumber + '.md';
+              var _rfAbsPath = path.resolve(path.join(_autoRepoRoot, _rfPath));
+              if (!_rfAbsPath.startsWith(_splitRepoRootResolved + path.sep)) continue;
+              fs.mkdirSync(path.dirname(_rfAbsPath), { recursive: true });
+              fs.writeFileSync(_rfAbsPath, _rf.content, 'utf8');
+              if (_dasOwnerRepo) {
+                try {
+                  await require('../adapters/artefact-commit-writer').commitArtefact(_rfPath, _rf.content, req.session.accessToken, _dasOwnerRepo.owner, _dasOwnerRepo.repo);
+                } catch (_splitCommitErr) {
+                  console.warn(JSON.stringify({ event: 'split_artefact_commit_failed', path: _rfPath, error: _splitCommitErr.message }));
+                }
+              }
+            }
+          }
+        } catch (_splitErr) {
+          console.warn(JSON.stringify({ event: 'artefact_split_failed', skillName: session.skillName, error: _splitErr.message }));
         }
       }
 
