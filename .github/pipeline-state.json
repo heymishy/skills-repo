@@ -29414,9 +29414,9 @@
             {
               "slug": "ep1-s5",
               "name": "Error Handling and Graceful Degradation",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-09-01T20:29:53.880Z",
+              "updatedAt": "2026-09-01T21:15:29.523Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/new-feature-af17f555/review/ep1-s5-review-1.md",
@@ -29466,8 +29466,11 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/811"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/811",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "DoD deviation: operator-facing disclosure banner not implemented -- see dod/ep1-s5-dod.md"
             },
             {
               "slug": "ep1-s6",
