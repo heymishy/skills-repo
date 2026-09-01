@@ -29116,6 +29116,210 @@
           "prStatus": "open"
         }
       ]
+    },
+    {
+      "slug": "new-feature-af17f555",
+      "name": "Cross-Channel Feature Continuity",
+      "stage": "branch-setup",
+      "discoveryStatus": "approved",
+      "health": "green",
+      "updatedAt": "2026-09-01T09:36:07.765Z",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "stories": [],
+      "track": "standard",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Web UI Session Start Share",
+          "target": "Web UI accounts for >50% of outer loop session starts within 4 weeks of feature launch",
+          "baseline": "Unknown — to be established in first 2 weeks of post-launch measurement",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": "Measurement infrastructure (ep1-s6 PostHog instrumentation) not yet implemented — no session-share data collected yet.",
+          "contributingStories": [
+            "ep1-s1",
+            "ep1-s3",
+            "ep1-s4"
+          ]
+        },
+        {
+          "id": "m2",
+          "name": "Feature Discoverability — Load Success Rate",
+          "target": "≥95% of discovered features load and render successfully in the skill picker",
+          "baseline": "100% (new feature; no prior data)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": "Not yet measured — depends on ep1-s1 (feature discovery) and ep1-s5 (graceful degradation) shipping.",
+          "contributingStories": [
+            "ep1-s1",
+            "ep1-s5"
+          ]
+        },
+        {
+          "id": "m3",
+          "name": "Feature Continuity — Handoff Context Load Success",
+          "target": "≥98% of loaded features have all accessible prior artefacts injected cleanly",
+          "baseline": "100% (new feature; no baseline data yet)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": "Not yet measured — depends on ep1-s2 (artefact resolution) and ep1-s5 (graceful degradation) shipping. Directly relevant to this session's own dcuf-s1/darc-s1 fixes, which repaired the write-side of the artefact chain this metric measures the read-side of.",
+          "contributingStories": [
+            "ep1-s2",
+            "ep1-s5"
+          ]
+        }
+      ],
+      "slicingStrategy": "walking-skeleton",
+      "guardrails": [],
+      "epics": [
+        {
+          "slug": "cross-channel-feature-continuity",
+          "name": "Operators can continue a feature seamlessly between Claude Code and the Web UI",
+          "status": "in-progress",
+          "stories": [
+            {
+              "slug": "ep1-s1",
+              "name": "Feature Discovery from Pipeline-State Index",
+              "stage": "branch-setup",
+              "health": "green",
+              "updatedAt": "2026-09-01T09:36:02.924Z",
+              "reviewStatus": "not-applicable",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 10,
+                "passing": 0,
+                "artefact": "artefacts/new-feature-af17f555/test-plans/ep1-s1-test-plan.md"
+              },
+              "acTotal": 1,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": true,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/new-feature-af17f555/dor/ep1-s1-dor.md",
+              "dorSignedOffAt": "2026-05-16T00:00:00.000Z"
+            },
+            {
+              "slug": "ep1-s2",
+              "name": "Artefact Resolution and HANDOFF CONTEXT Population",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-09-01T09:20:51.225Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/new-feature-af17f555/review/ep1-s2-review-1.md",
+              "acTotal": 2,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 13,
+                "passing": 0
+              },
+              "acVerified": 0,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/new-feature-af17f555/dor/ep1-s2-dor.md",
+              "dorContractArtefact": "artefacts/new-feature-af17f555/dor/ep1-s2-dor-contract.md",
+              "dorSignedOffAt": "2026-09-01T00:00:00.000Z",
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
+            },
+            {
+              "slug": "ep1-s3",
+              "name": "Journey Record Backfill from CLI",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-09-01T09:22:21.331Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/new-feature-af17f555/review/ep1-s3-review-1.md",
+              "acTotal": 1,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 12,
+                "passing": 0
+              },
+              "acVerified": 0,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/new-feature-af17f555/dor/ep1-s3-dor.md",
+              "dorContractArtefact": "artefacts/new-feature-af17f555/dor/ep1-s3-dor-contract.md",
+              "dorSignedOffAt": "2026-09-01T00:00:00.000Z",
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
+            },
+            {
+              "slug": "ep1-s4",
+              "name": "Stage-Based Skill Routing and Navigation",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-09-01T09:23:53.038Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/new-feature-af17f555/review/ep1-s4-review-1.md",
+              "acTotal": 1,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 10,
+                "passing": 0
+              },
+              "acVerified": 0,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/new-feature-af17f555/dor/ep1-s4-dor.md",
+              "dorContractArtefact": "artefacts/new-feature-af17f555/dor/ep1-s4-dor-contract.md",
+              "dorSignedOffAt": "2026-09-01T00:00:00.000Z",
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": true
+            },
+            {
+              "slug": "ep1-s5",
+              "name": "Error Handling and Graceful Degradation",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-09-01T09:25:23.340Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/new-feature-af17f555/review/ep1-s5-review-1.md",
+              "acTotal": 1,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 11,
+                "passing": 0
+              },
+              "acVerified": 0,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/new-feature-af17f555/dor/ep1-s5-dor.md",
+              "dorContractArtefact": "artefacts/new-feature-af17f555/dor/ep1-s5-dor-contract.md",
+              "dorSignedOffAt": "2026-09-01T00:00:00.000Z",
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
+            },
+            {
+              "slug": "ep1-s6",
+              "name": "Audit Logging and PostHog Instrumentation",
+              "stage": "definition-of-ready",
+              "health": "green",
+              "updatedAt": "2026-09-01T09:26:49.548Z",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/new-feature-af17f555/review/ep1-s6-review-1.md",
+              "acTotal": 1,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 9,
+                "passing": 0
+              },
+              "acVerified": 0,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/new-feature-af17f555/dor/ep1-s6-dor.md",
+              "dorContractArtefact": "artefacts/new-feature-af17f555/dor/ep1-s6-dor-contract.md",
+              "dorSignedOffAt": "2026-09-01T00:00:00.000Z",
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
+            }
+          ]
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
