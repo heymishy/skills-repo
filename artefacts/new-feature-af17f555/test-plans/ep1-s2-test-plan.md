@@ -3,7 +3,9 @@
 **Story reference:** artefacts/new-feature-af17f555/stories/ep1-s2.md
 **Epic reference:** artefacts/new-feature-af17f555/epics/cross-channel-feature-continuity.md
 **Test plan author:** Claude Code (agent-authored, operator-directed)
-**Date:** 2026-09-01
+**Date:** 2026-09-01 (original) — **revised 2026-09-02**
+
+> ⚠️ **Revised 2026-09-02.** The original test plan below (targeting a new `resolveArtefacts()` function) is superseded — investigation before `/implementation-plan` found the mechanism already exists (`_KEY_DIRS` disk-scan in `buildSystemPrompt()`, `skills.js` ~line 1946-1982). See `decisions.md` and `stories/ep1-s2.md`'s Revision Note 2. Actual test plan for the real, much smaller change (adding `'epics'` and `'dor'` to `_KEY_DIRS`) is below the superseded content, in the **Revised Test Plan (2026-09-02)** section.
 
 ---
 
@@ -146,3 +148,49 @@
 ---
 
 *Written 2026-09-01 as part of getting the whole `new-feature-af17f555` feature to DoR-ready level, following the merge of `darc-s1` (PR #807) which fixed the Web UI write-side split this story's read-side resolution depends on.*
+
+---
+
+## Revised Test Plan (2026-09-02)
+
+**Scope:** A 2-item addition to `_KEY_DIRS` in `buildSystemPrompt()` (`src/web-ui/routes/skills.js`) — add `'epics'` and `'dor'`. No new module. See `decisions.md` (2026-09-02) for the full rationale.
+
+### Test Environment and Framework
+
+`npm test` (Node.js assert-based test helper), matching existing tests for this same function — see `tests/check-jcn-s1-journey-page-nav-products.js` for the established `mockReq`/fixture pattern this test will follow. No E2E required — server-side prompt construction only.
+
+### AC Coverage
+
+| AC | Description | Unit/Integration | Risk |
+|----|---|---|---|
+| AC2 | `epics/*.md` files are now injected into HANDOFF CONTEXT (the one confirmed gap) | 1 | 🟢 |
+| AC2 (adjacent) | `dor/*.md` files are now injected (backstop for the CLI-backfill flow's bogus flat `definition-of-ready.md` entry) | 1 | 🟢 |
+| AC1, AC2 (regression) | `stories/`, `review/`, `test-plans/`, `verification-scripts/` behaviour unchanged | 1 | 🟢 |
+
+### Tests
+
+**`epics/*.md` is now injected into the FEATURE ARTEFACTS block**
+- Precondition: fixture feature directory with one `epics/cross-channel-feature-continuity.md` file, `_featureSlug` set, no matching entry in `priorArtefacts`
+- Action: call `buildSystemPrompt()` (or the relevant internal helper directly, whichever `/implementation-plan` scopes as the test seam) for this fixture
+- Expected result: the output contains `--- ARTEFACT: artefacts/[slug]/epics/cross-channel-feature-continuity.md ---` followed by the file's content
+
+**`dor/*.md` is now injected into the FEATURE ARTEFACTS block**
+- Precondition: fixture feature directory with one `dor/ep1-s1-dor.md` file
+- Action: same as above
+- Expected result: output contains the corresponding `--- ARTEFACT: .../dor/ep1-s1-dor.md ---` block
+
+**Regression: existing `_KEY_DIRS` entries unaffected**
+- Precondition: fixture feature directory with files under `stories/`, `review/`, `test-plans/`, `verification-scripts/`
+- Action: same as above, before and after the `_KEY_DIRS` change
+- Expected result: identical output for these directories — the addition is purely additive, no existing behaviour changes
+
+### Out of Scope for This Revised Test Plan
+
+- Any test of `priorArtefacts`' own population logic in `journey.js` — unchanged by this story
+- Any test of the pre-existing `_KEY_DIRS` mechanism's dedup (`_priorSet`) or gating (`if (_featureSlug)`) logic — already covered by whatever pre-existing tests cover `buildSystemPrompt()`, not re-verified here beyond the regression test above
+
+### Test Gaps and Risks
+
+| Gap | Reason | Mitigation |
+|-----|--------|------------|
+| None | — | — |

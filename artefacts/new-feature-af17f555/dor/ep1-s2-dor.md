@@ -10,9 +10,13 @@
 
 ## Contract Proposal → Contract Review
 
-See `artefacts/new-feature-af17f555/dor/ep1-s2-dor-contract.md` for the full Contract Proposal.
+> ⚠️ **Contract revised 2026-09-02.** Investigation before `/implementation-plan` found the mechanism the original contract proposed to build already exists — see `dor/ep1-s2-dor-contract.md` for the revised contract and `decisions.md` for the full writeup. Original Contract Review below kept for the audit trail.
 
-**Contract review:** ✅ PASS — the proposed `resolveArtefacts(featureSlug, stage)` function directly implements the two ACs (single-file resolution without trusting a singular `*Artefact` field; multi-file resolution enumerating every file found), matches the revised `design.md` Component 2, and matches what `darc-s1` (PR #807, merged) actually writes on the other side of this same gap. No mismatch found.
+See `artefacts/new-feature-af17f555/dor/ep1-s2-dor-contract.md` for the full Contract Proposal (original + revised).
+
+**Original contract review (superseded):** ✅ PASS — the proposed `resolveArtefacts(featureSlug, stage)` function directly implements the two ACs (single-file resolution without trusting a singular `*Artefact` field; multi-file resolution enumerating every file found), matches the revised `design.md` Component 2, and matches what `darc-s1` (PR #807, merged) actually writes on the other side of this same gap. No mismatch found.
+
+**Revised contract review (2026-09-02):** ✅ PASS — the 2-item `_KEY_DIRS` addition directly closes the one confirmed gap (AC2's `epics/*.md` case) plus one adjacent related gap (`dor/`), without duplicating the already-working `stories/`/`review/`/`test-plans/` mechanism. No mismatch found.
 
 ---
 
@@ -76,64 +80,69 @@ Story has no `domain` field specified. Standards injection skipped.
 
 ## Coding Agent Instructions
 
+> ⚠️ Superseded 2026-09-02 — kept for the audit trail. See revised instructions below, matching the revised contract at `dor/ep1-s2-dor-contract.md`.
+
 ```
-STORY: ep1-s2 — Artefact Resolution and HANDOFF CONTEXT Population
+[SUPERSEDED 2026-09-01 VERSION]
+You will build a resolveArtefacts(featureSlug, stage) function...
+-- Superseded: this mechanism already existed. Do not build it. See below.
+```
 
-ACCEPTANCE CRITERIA:
-AC1 — Given a feature selected for a single-file stage (discovery, clarify,
-benefit-metric, design, or story-scoped test-plan/DoR via wsap-s1's
-subdirectory), when the session starts, then the artefact is read from disk
-via that stage's known path/subdirectory — never via a pipeline-state.json
-*Artefact singular-path field — and injected into HANDOFF CONTEXT without
-corruption or truncation.
+### Revised Coding Agent Instructions (2026-09-02)
 
-AC2 — Given a feature selected for a multi-file stage (definition -> epics/*.md
-+ stories/*.md; review -> review/*-review-*.md), when the session starts,
-then every file found in that stage's directory is injected into HANDOFF
-CONTEXT as its own prior artefact.
+```
+STORY: ep1-s2 — Artefact Resolution and HANDOFF CONTEXT Population (revised scope)
+
+ACCEPTANCE CRITERIA (unchanged from story, revised understanding of what's
+needed to satisfy them):
+AC1 -- single-file stages already resolve correctly via the existing
+priorArtefacts mechanism -- no change needed, verify with a regression test.
+AC2 -- multi-file stages (definition -> epics/*.md + stories/*.md; review ->
+review/*-review-*.md) must have every file injected into HANDOFF CONTEXT --
+already true for stories/ and review/ via the pre-existing _KEY_DIRS disk-scan
+in buildSystemPrompt() (skills.js ~line 1946-1982); epics/ is the one
+confirmed gap.
 
 SCOPE BOUNDARIES:
-- Do NOT change how artefacts are written (darc-s1, already merged, is the
-  write side)
-- Do NOT deduplicate multi-run review artefacts — include all runs
-- Do NOT touch journey record creation (ep1-s3) or stage routing (ep1-s4)
+- Do NOT build a new resolveArtefacts() function or module -- confirmed
+  unnecessary, see decisions.md (2026-09-02)
+- Do NOT change priorArtefacts' own population logic in journey.js
+- Do NOT change how artefacts are written (darc-s1, already merged)
 
-You will build a resolveArtefacts(featureSlug, stage) function that:
-1. For single-file stages, reads the known path
-2. For definition/review stages, lists the relevant directory and reads
-   every file found
-3. Returns [] (not an error) for a directory that doesn't exist yet
-4. Logs and excludes any file that fails to read
-5. Feeds the resulting array into the existing priorArtefacts mechanism
+You will make a 2-item change to _KEY_DIRS in buildSystemPrompt()
+(src/web-ui/routes/skills.js):
+1. Add 'epics' -- closes this story's own confirmed AC2 gap
+2. Add 'dor' -- adjacent gap found in the same investigation: the CLI-backfill
+   flow (ep1-s3) produces a bogus flat definition-of-ready.md priorArtefacts
+   entry with no real backstop, unlike test-plans (already covered)
 
-IMPLEMENTATION TASKS (suggest breaking into subtasks):
-1. Task 1: resolveArtefacts for single-file stages (regression-safe — matches
-   current behaviour for discovery/clarify/benefit-metric/design)
-2. Task 2: resolveArtefacts for story-scoped stages (test-plan, DoR) — wsap-s1
-   subdirectory convention
-3. Task 3: resolveArtefacts for multi-file stages (definition, review) —
-   directory scan
-4. Task 4: Error handling — missing directory, unreadable file
-5. Task 5: Wire into session-start HANDOFF CONTEXT construction, replacing
-   any remaining singular-*Artefact-field reads for these stages
+IMPLEMENTATION TASKS:
+1. Task 1: Add 'epics' and 'dor' to _KEY_DIRS
+2. Task 2: Regression test -- stories/, review/, test-plans/,
+   verification-scripts/ behaviour unchanged
+3. Task 3: New test -- epics/*.md and dor/*.md files now appear in HANDOFF
+   CONTEXT for a fixture feature that has them
 
 VERIFICATION:
-Run the test suite (13 tests from test plan).
+Run the test suite (revised test plan --
+artefacts/new-feature-af17f555/test-plans/ep1-s2-test-plan.md, revised
+2026-09-02).
 
 NFR TARGETS:
-- 100% of present, readable artefacts returned in test-time deterministic
-  checks (production ≥98% handoff success rate measured by ep1-s6)
+- 100% of present, readable artefacts in _KEY_DIRS directories injected
+- No regression to existing stories/review/test-plans/verification-scripts
+  behaviour
 
 ARCHITECTURE CONSTRAINTS (ADR-023):
-- Disk is canonical source; read fresh on every session start
-- Use Node.js built-in fs module; no new npm dependencies
+- Disk is canonical source; read fresh on every session start (unchanged --
+  this is what the existing mechanism already does)
 
 STANDARDS:
 No domain-specific standards injected for this story.
 
-NEXT STORY (after this PR merges):
-ep1-s3 — Journey Record Backfill from CLI (depends on this story's resolved
-stage data to infer completedStages)
+NEXT STORY:
+ep1-s4 -- Stage-Based Skill Routing and Navigation (independent of this
+story's change)
 ```
 
 ---

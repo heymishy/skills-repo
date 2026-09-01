@@ -2,39 +2,41 @@
 
 **Story reference:** artefacts/new-feature-af17f555/stories/ep1-s2.md
 **Assessed by:** Claude Code (agent, operator-directed — Hamish King)
-**Date:** 2026-09-01
+**Date:** 2026-09-01 (original) — **superseded 2026-09-02, see below**
 
 ---
 
-## What will be built
+> ⚠️ **Superseded 2026-09-02.** The contract below (a new `resolveArtefacts()` module) is kept verbatim for the audit trail. Investigation before `/implementation-plan` found the directory-scan mechanism this contract proposed to build **already exists** in `buildSystemPrompt()` (`src/web-ui/routes/skills.js` ~line 1946-1982), shipped by an unrelated commit years before this story existed. See `decisions.md` (2026-09-02) and `stories/ep1-s2.md`'s Revision Note 2 for the full investigation. **Revised contract follows.**
 
-A `resolveArtefacts(featureSlug, stage)` function in the Web UI backend implementing the directory-scan model from `design.md`'s revised Component 2:
+## Revised Contract Proposal (2026-09-02)
 
-1. For single-file stages (discovery, clarify, benefit-metric, design), resolve via the existing known singular path.
-2. For story-scoped stages (test-plan, definition-of-ready), resolve via the `wsap-s1` subdirectory convention (`test-plans/*.md`, `dor/*.md`).
-3. For multi-file stages (definition → `epics/*.md` + `stories/*.md`; review → `review/*-review-*.md`), resolve via `fs.readdirSync()` — every file found becomes one `{ path, content }` entry.
-4. Missing directories return `[]`, not an error. Unreadable files are logged and excluded.
-5. The resulting array feeds the existing `priorArtefacts` mechanism unchanged — `buildSystemPrompt()`/`registerHtmlSession()` require no modification.
+### What will be built
 
-## What will NOT be built
+A 2-item addition to the existing `_KEY_DIRS` constant in `buildSystemPrompt()` (`src/web-ui/routes/skills.js`, currently `['stories', 'review', 'test-plans', 'verification-scripts']`):
 
-- Any change to how artefacts are written (that is `darc-s1`'s scope, already merged in PR #807) — this story is read-side only.
-- Deduplication or "most recent run only" filtering for multi-run review artefacts — all runs are included; a HANDOFF CONTEXT size concern is explicitly deferred per the design doc's own note.
-- Any change to journey record creation (ep1-s3) or stage routing (ep1-s4) — this story only resolves artefact content, not journey state or navigation.
+1. Add `'epics'` — the one confirmed gap against this story's own AC2 (multi-file stage resolution): `epics/*.md` (the epic-level file `/definition` also produces alongside `stories/*.md`) is never scanned or injected today.
+2. Add `'dor'` — an adjacent, related gap found during the same investigation: the CLI-backfill flow (`ep1-s3`'s `backfillJourneyFromPipelineState`) produces a bogus flat `definition-of-ready.md` `priorArtefacts` entry with no real backstop, unlike `test-plans` (already in `_KEY_DIRS`).
 
-## How each AC will be verified
+No new module, function, or file is needed — the existing mechanism already: reads every file under the feature's artefact directory; for anything under a `_KEY_DIRS` entry, reads full content and injects it into HANDOFF CONTEXT unless already present in `priorArtefacts`; runs unconditionally for every skill and every session (new or resumed), including the CLI-backfilled-continue flow.
+
+### What will NOT be built
+
+- A new `resolveArtefacts()` function or module — superseded, not needed.
+- Any change to `priorArtefacts`'s own population logic (`journey.js`) — this story's fix is additive to the disk-scan backstop, not a change to the primary mechanism.
+- Any change to how artefacts are written (`darc-s1`'s scope, already merged) — this story remains read-side only.
+
+### How the AC will be verified
 
 | AC | Test approach | Type |
 |----|---------------|------|
-| AC1 (single-file stage resolution, no singular `*Artefact` field trusted) | Unit tests against fixture directories for each single-file stage + a deliberately-wrong `*Artefact` field to prove it's ignored | Unit |
-| AC2 (multi-file stage resolution, every file found) | Unit tests against fixture `epics/`/`stories/`/`review/` directories with multiple files, including multi-run-per-story | Unit + Integration |
+| AC1 (single-file stages — unaffected by this change, already correctly handled via `priorArtefacts`) | Regression test confirming no change to single-file-stage behaviour | Unit |
+| AC2 (multi-file stage resolution — `epics/`, and `dor/` as the adjacent fix) | Fixture test: a feature with `epics/*.md` and `dor/*.md` files, assert both now appear in the disk-scan output; regression test proving `stories/`/`review/`/`test-plans/` behaviour is unchanged | Unit + Integration |
 
-## Assumptions
+### Assumptions
 
-- The directory-scan model matches what `darc-s1` (merged, PR #807) now actually writes for `definition` and `review` — verified directly against that PR's merged code, not assumed.
-- `af17f555`'s own real `epics/`, `stories/`, `review/` directories (backfilled this session) are a valid, representative test fixture shape.
-- No change to `pipeline-state.schema.json` is required — `stage` is the only feature-level field this story's resolution logic reads (already present in schema).
+- The pre-existing `_KEY_DIRS` mechanism's dedup logic (`_priorSet.has(fullPath)`) and unconditional-scan gating (`if (_featureSlug)`) are correct and don't need modification — confirmed by the pre-implementation investigation, not assumed.
+- Adding `'dor'` to `_KEY_DIRS` is in scope for this story even though the original AC text scoped `dor` under "single-file... via story-scoped subdirectory" rather than the explicit multi-file bullet — justified because the CLI-backfill scenario this whole epic exists to fix is exactly the case where `dor`'s `priorArtefacts` entry is unreliable, matching this story's own NFR intent (≥98% handoff success rate) more than a literal AC-bullet reading would suggest.
 
-## Estimated touch points
+### Estimated touch points
 
-Files: new `resolveArtefacts` module (exact path TBD at `/implementation-plan` — likely `src/web-ui/utils/artefact-resolver.js`), `src/web-ui/routes/skills.js` (wiring into session-start HANDOFF CONTEXT construction). Services: none new. Depends on: ep1-s1 (`/api/features` — for feature selection, already at DoR-signed-off/branch-setup).
+Files: `src/web-ui/routes/skills.js` (`_KEY_DIRS` constant, one line). Services: none. Depends on: ep1-s1 (merged, PR #808 — the CLI-backfilled-continue flow this fix also backstops).
