@@ -2,8 +2,10 @@
 
 **Feature:** Cross-Channel Feature Continuity (new-feature-af17f555)
 **Story:** ep1-s1 — Feature Discovery from Pipeline-State Index
-**Status:** SIGNED OFF
-**Date:** 2026-05-16
+**Status:** SIGNED OFF (original 2026-05-16) — **contract revised 2026-09-01, re-affirmed**
+**Date:** 2026-05-16 (original) / 2026-09-01 (contract revision)
+
+> ⚠️ **Contract revised 2026-09-01.** The original Contract Review below (built around a new `/api/features` endpoint + a new skill-picker UI component) is **superseded** — kept verbatim for the audit trail, per this repo's traceability standard. The codebase moved on substantially in the 3.5 months since original sign-off: the Journeys page (`/journey`) now has a working, tested "Continue → session" mechanism that the original contract's author (production, 2026-05-16) had no way to know about. Before starting `/implementation-plan`, a fresh investigation (2026-09-01, this session) confirmed the original contract's premise was stale, and the operator chose to extend the Journeys page rather than build a parallel mechanism in `/skills`. See the **revised Contract Proposal** at `artefacts/new-feature-af17f555/dor/ep1-s1-dor-contract.md` and `decisions.md` for the full rationale. The hard-blocks table, oversight, and sign-off below remain valid against the revised contract — H3/H8 (test coverage) will be re-verified against the revised test plan before `/implementation-plan` proceeds.
 
 ---
 
@@ -43,6 +45,8 @@
 ---
 
 ## Contract Review — ep1-s1 — Feature Discovery from Pipeline-State Index
+
+> ⚠️ **Superseded 2026-09-01** — this Contract Review describes the original `/api/features` + skill-picker approach. See `dor/ep1-s1-dor-contract.md` for the current, revised contract (Journeys page extension). Kept below verbatim for the audit trail only.
 
 **What will be built:**
 A new HTTP endpoint `/api/features` in the web UI backend that reads `.github/pipeline-state.json`, filters features to exclude terminal stages (completed, archived, released), formats each feature with displayName, stageBadgeText, formattedDate, and continueButtonLabel, and returns the filtered list. A new UI component (feature list) in the skill picker will render this list and provide a "Continue" button for each feature. Selecting a feature triggers a POST to `/api/skills/[skill]/sessions?featureSlug=[slug]` to start a new session with the selected feature as context.
@@ -85,62 +89,93 @@ Story has no `domain` field specified. Standards injection skipped.
 
 ## Coding Agent Instructions
 
+> ⚠️ Superseded by the 2026-09-01 contract revision — kept for the audit trail. See the revised instructions block immediately below for what to actually build.
+
 ```
+[SUPERSEDED 2026-05-16 VERSION]
 STORY: ep1-s1 — Feature Discovery from Pipeline-State Index
+You will build a GET /api/features endpoint and a new feature list UI
+component in the skill picker (/skills), with Continue posting to
+POST /api/skills/[skill]/sessions?featureSlug=[slug].
+-- This entire approach is superseded. Do not build this. See below.
+```
+
+### Revised Coding Agent Instructions (2026-09-01)
+
+```
+STORY: ep1-s1 — Feature Discovery from Pipeline-State Index (revised scope)
 
 ACCEPTANCE CRITERIA:
-Given a connected repo with .github/pipeline-state.json containing at least one feature
-at stage ≠ [completed, archived, released],
-When I open the web UI skill picker,
-Then I see all non-terminal features listed with name, current stage badge,
-last modified date, and a "Continue" button.
+AC1 -- Given a connected repo with .github/pipeline-state.json containing at
+least one feature at stage != [completed, archived, released] that has no
+journey-store record yet, when I open the Journeys page (/journey), then
+that feature appears in the card list with name, stage badge, last-modified
+date (pipeline-state.json's updatedAt), and the existing "Continue ->" action.
+
+AC2 -- Given a feature at a terminal stage (completed, archived, released) in
+pipeline-state.json, when I open the Journeys page, then it does not appear.
 
 SCOPE BOUNDARIES:
-- Do NOT implement two-way sync or conflict resolution
-- Do NOT implement real-time polling or background discovery
-- Do NOT implement search, filtering, or sorting UI
-- Do NOT implement diff/comparison views between CLI and web UI versions
+- Do NOT touch /skills (the literal skill picker) -- confirmed dead end, see
+  decisions.md
+- Do NOT change handleGetJourneyResume's own session-creation logic -- reuse
+  it completely unchanged
+- Do NOT implement two-way sync/reconciliation when a feature exists in BOTH
+  journey-store and pipeline-state.json -- journey-store wins; pipeline-state
+  is only consulted for features journey-store has never heard of
+- Do NOT implement real-time polling, search, filtering, or sorting UI
 
-You will build a GET /api/features endpoint that:
-1. Reads .github/pipeline-state.json
-2. Filters out terminal-stage features (completed, archived, released)
-3. Formats each feature with { displayName, stageBadgeText, formattedDate, continueButtonLabel }
-4. Returns JSON array to client
+You will build a merge function (exact name/location at /implementation-plan)
+that:
+1. Calls the already-wired listFeatures() (adapters/feature-list.js) to read
+   .github/pipeline-state.json
+2. Filters to non-terminal stage (completed, archived, released excluded)
+3. Excludes any feature slug already present in the journey-store list
+   passed into _renderJourneyHome
+4. Returns synthesized card entries shaped identically to what
+   _renderJourneyHome already expects from journey-store entries
 
-You will add a feature list UI component in the skill picker that:
-1. Calls GET /api/features on page load
-2. Renders each feature as a card/list item with name, stage badge, date, and Continue button
-3. Handles Continue button clicks → POST /api/skills/[skill]/sessions?featureSlug=[slug]
-4. Gracefully degrades if /api/features returns empty or errors (shows "No in-progress features")
+You will wire this into _renderJourneyHome (journey.js) so the merged list
+renders through the SAME card template journey-store entries already use --
+no new card markup, no new Continue button variant.
 
 IMPLEMENTATION TASKS (suggest breaking into subtasks):
-1. Task 1: Implement /api/features endpoint (filter logic, file read, formatting)
-2. Task 2: Implement feature list UI component (HTML/CSS, fetch call, event handlers)
-3. Task 3: Wire feature selection to session start (POST redirect to session page)
-4. Task 4: Test harness setup (mock pipeline-state.json, E2E Playwright tests)
-5. Task 5: Error handling and logging (missing file, parse errors, network issues)
+1. Task 1: Merge function -- read pipeline-state.json via listFeatures(),
+   filter terminal stage, exclude journey-store-known slugs
+2. Task 2: Wire merge function into _renderJourneyHome's existing render path
+3. Task 3: Confirm Continue -> /journey/:slug/resume works unchanged for a
+   merged-in (journey-record-less) feature -- this is where ep1-s3's
+   backfillJourney should naturally fire on first click
+4. Task 4: Error handling -- pipeline-state.json unreachable/malformed
+   degrades gracefully (existing journey-store cards still render)
+5. Task 5: Test harness (mock pipeline-state.json + journey-store fixtures,
+   mixed-source rendering)
 
 VERIFICATION:
-Run the test suite (10 tests from test plan) plus the E2E verification scenarios.
+Run the test suite (revised test plan -- see
+artefacts/new-feature-af17f555/test-plans/ep1-s1-test-plan.md, revised
+2026-09-01) plus the AC verification script.
 
 NFR TARGETS:
-- Feature list fetch ≤2 seconds
-- ≥95% artefact load success rate (handled in ep1-s2; ep1-s1 scope is feature discovery only)
-- Terminal stages always filtered out
-- Graceful fallback if pipeline-state.json missing or malformed
+- Feature list fetch <=2 seconds
+- Terminal stages always filtered out, from both sources
+- Graceful fallback if pipeline-state.json missing or malformed -- journey-
+  store cards must still render even if the pipeline-state.json read fails
 
 ARCHITECTURE CONSTRAINTS (ADR-023, ADR-009):
-- Disk is canonical source; read fresh on every session start
+- Disk is canonical source; read fresh on every /journey page load
 - Use Node.js built-in fs module; no new npm dependencies
-- Injectable adapters pattern: if file reads are abstracted, default stub must throw (never return null)
+- Injectable adapters pattern: if file reads are abstracted, default stub
+  must throw (never return null)
 - GitHub OAuth token scope already verified; no new auth mechanism required
 
 STANDARDS:
 No domain-specific standards injected for this story.
 
 NEXT STORY (after this PR merges):
-ep1-s2 — Artefact Resolution and HANDOFF CONTEXT Population
-(depends on /api/features endpoint working)
+ep1-s2 -- Artefact Resolution and HANDOFF CONTEXT Population (independent of
+this story's UI change -- both read pipeline-state.json, neither calls the
+other)
 ```
 
 ---

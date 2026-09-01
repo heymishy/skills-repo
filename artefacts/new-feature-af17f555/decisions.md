@@ -34,6 +34,16 @@
 
 ---
 
+## 2026-09-01 — ep1-s1 retargeted from a new skill-picker feature to extending the existing Journeys page
+
+**Context:** Before starting `/implementation-plan` for `ep1-s1`, an investigation (this session) confirmed its original 2026-05-16 DoR contract was stale: the literal AC ("skill picker shows in-progress features, Continue posts to `/api/skills/[skill]/sessions?featureSlug=`") is satisfied nowhere in the current codebase, but the Journeys page (`/journey`) already has a working, tested "Continue →" mechanism (`journey.js`'s `handleGetJourneyResume`) that resumes a feature into a session — built on the Web UI's own internal journey-store rather than `pipeline-state.json`, with no terminal-stage filtering and a `createdAt` rather than last-modified date. A `pipeline-state.json`-reading adapter (`listFeatures()` in `adapters/feature-list.js`) already exists and is already shaped almost exactly right, but is wired nowhere.
+
+**Decision:** Operator explicitly chose (via `AskUserQuestion`, 2026-09-01) to extend the Journeys page — merge non-terminal, journey-store-unknown `pipeline-state.json` features into `_renderJourneyHome`'s existing card list, reusing the existing Continue action completely unchanged — over building a parallel mechanism in `/skills` (the literal, but functionally bare, skill picker).
+
+**Rationale:** Reuses a proven, already-tested UX pattern instead of fragmenting "continue a feature" into two mechanisms on two different pages. Also converges naturally with `ep1-s3` (Journey Record Backfill) — a CLI-only feature this story makes visible for the first time is exactly the case `ep1-s3`'s `backfillJourney` exists to handle on first Continue click, so the two stories now compose on the same page rather than needing to be wired together across two separate surfaces. `stories/ep1-s1.md`, `dor/ep1-s1-dor.md` (+ new `dor/ep1-s1-dor-contract.md`), and `test-plans/ep1-s1-test-plan.md` were all revised in place (original content kept, marked superseded) to reflect this — not silently rewritten, per this repo's traceability standard.
+
+---
+
 ## 2026-09-01 — Feature registration shape: epics-nested, direct initial-creation write
 
 **Context:** `new-feature-af17f555` had zero entry in `.github/pipeline-state.json` despite 8 completed outer-loop stages' worth of real artefacts already on disk (see `artefacts/2026-09-01-artefact-commit-durability-gap/discovery.md`).

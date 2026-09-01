@@ -29185,7 +29185,7 @@
               "name": "Feature Discovery from Pipeline-State Index",
               "stage": "branch-setup",
               "health": "green",
-              "updatedAt": "2026-09-01T09:36:02.924Z",
+              "updatedAt": "2026-09-01T09:52:23.597Z",
               "reviewStatus": "not-applicable",
               "highFindings": 0,
               "testPlan": {
@@ -29194,13 +29194,14 @@
                 "passing": 0,
                 "artefact": "artefacts/new-feature-af17f555/test-plans/ep1-s1-test-plan.md"
               },
-              "acTotal": 1,
+              "acTotal": 2,
               "acVerified": 0,
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/new-feature-af17f555/dor/ep1-s1-dor.md",
-              "dorSignedOffAt": "2026-05-16T00:00:00.000Z"
+              "dorSignedOffAt": "2026-05-16T00:00:00.000Z",
+              "dorContractArtefact": "artefacts/new-feature-af17f555/dor/ep1-s1-dor-contract.md"
             },
             {
               "slug": "ep1-s2",
