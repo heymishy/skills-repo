@@ -29475,9 +29475,9 @@
             {
               "slug": "ep1-s6",
               "name": "Audit Logging and PostHog Instrumentation",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-09-01T21:33:54.230Z",
+              "updatedAt": "2026-09-01T21:34:33.116Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/new-feature-af17f555/review/ep1-s6-review-1.md",
@@ -29532,7 +29532,8 @@
                   "tddState": "committed",
                   "file": "artefacts/new-feature-af17f555/plans/ep1-s6-plan.md"
                 }
-              ]
+              ],
+              "prStatus": "none"
             }
           ]
         }
