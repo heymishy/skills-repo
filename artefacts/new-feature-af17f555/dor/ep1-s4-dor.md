@@ -10,9 +10,11 @@
 
 ## Contract Proposal → Contract Review
 
-See `artefacts/new-feature-af17f555/dor/ep1-s4-dor-contract.md`.
+> ⚠️ **Contract corrected 2026-09-02.** Investigation before `/implementation-plan` confirmed this story is genuine new work (unlike `ep1-s1`/`ep1-s2`), but corrected two factual assumptions — no existing confirmation dialog to reuse, and the target page is `/journey`'s Continue flow, not a "skill session panel." See `dor/ep1-s4-dor-contract.md` for the corrected contract and `decisions.md` for the full writeup.
 
-**Contract review:** ✅ PASS — `getNextSkill`/`getValidBackwardTargets` plus the stage selector UI directly implement AC1's two parts (routing decision, stage selector with backward nav). No mismatch found.
+See `artefacts/new-feature-af17f555/dor/ep1-s4-dor-contract.md` (original + corrected).
+
+**Contract review:** ✅ PASS — `getNextSkill`/`getValidBackwardTargets` plus the corrected stage-selector-on-`/journey` design directly implement AC1's two parts (routing decision, stage selector with backward nav). No mismatch found against the corrected contract.
 
 ---
 
@@ -70,8 +72,17 @@ Story has no `domain` field specified. Standards injection skipped.
 
 ## Coding Agent Instructions
 
+> ⚠️ Corrected 2026-09-02 — kept for the audit trail. See revised instructions below, matching the corrected contract at `dor/ep1-s4-dor-contract.md`. Unlike `ep1-s1`/`ep1-s2`, investigation confirmed this IS genuinely new work — the routing table and confirm step below are real gaps, not already-built mechanisms.
+
 ```
-STORY: ep1-s4 — Stage-Based Skill Routing and Navigation
+[SUPERSEDED PARTIALLY — original instructions below assumed an existing
+confirmation dialog to reuse. None exists. See corrections below.]
+```
+
+### Revised Coding Agent Instructions (2026-09-02)
+
+```
+STORY: ep1-s4 — Stage-Based Skill Routing and Navigation (corrected)
 
 ACCEPTANCE CRITERIA:
 Given a feature at a known stage in pipeline-state.json with a journey record
@@ -84,28 +95,46 @@ available to any earlier stage; forward navigation only for later stages.
 
 SCOPE BOUNDARIES:
 - Do NOT auto-regenerate downstream artefacts on backward navigation
-- Do NOT modify the existing res-s1-s4 materiality-check display/approval
-  logic -- reuse it as-is
+- Do NOT modify materiality-check.js -- it already fires automatically
+  downstream of navigation (at artefact-save time inside a reopened
+  session), needs no changes
 - Do NOT implement custom/squad-specific routing overrides
+- Do NOT modify journey-store.js's getNextStage, or journey.js's
+  BACKFILL_STAGE_SEQUENCE/STAGE_INDEX -- the new getNextSkill is additive,
+  these existing differently-scoped lookups stay as they are
 
-You will build:
-1. getNextSkill(stage, contextFlags) -- pure routing-table function, both
-   conditional branches (spike no-build, test-plan skip)
+You will build (all new -- confirmed nothing pre-existing satisfies this):
+1. getNextSkill(pipelineStage, contextFlags) -- pure routing-table function
+   reading pipeline-state.json's stage vocabulary directly (not any of the
+   3 existing flat internal sequences), both conditional branches (spike
+   no-build, test-plan skip)
 2. getValidBackwardTargets(completedStages, currentStage) -- pure function
-3. A stage selector UI component: current + prior stages, later stages
-   disabled, confirmation dialog on backward click (reusing res-s1-s4),
-   keyboard-navigable (arrow keys + Enter)
+3. A stage selector wired into /journey's own Continue flow
+   (_renderJourneyHome / handleGetJourneyResume -- NOT a separate "skill
+   session panel"), reusing handleGetJourneyStageView's existing sn-bar
+   markup pattern (current/done clickable, future non-clickable) as its
+   structural basis
+4. A NEW minimal confirm-before-navigate interstitial -- "Move back to
+   [stage]? This will show you prior artefacts and any revisions since
+   then." -- server-rendered, matching this app's existing non-SPA pattern.
+   No confirmation dialog like this exists anywhere today; do not look for
+   one to reuse.
+5. Keyboard accessibility (arrow keys, Enter) -- confirmed absent from every
+   existing stage-list rendering; must be built new
 
 IMPLEMENTATION TASKS (suggest breaking into subtasks):
 1. Task 1: getNextSkill -- routing table + both conditional branches
 2. Task 2: getValidBackwardTargets
-3. Task 3: Stage selector UI component -- rendering + forward-nav disable
-4. Task 4: Wire backward-click into existing res-s1-s4 confirmation flow
+3. Task 3: Stage selector on /journey, reusing sn-bar's clickable/
+   non-clickable structural pattern
+4. Task 4: New confirm-before-navigate interstitial (server-rendered)
 5. Task 5: Keyboard accessibility (arrow keys, Enter)
-6. Task 6: E2E test harness (Playwright, 3 scenarios from test plan)
+6. Task 6: E2E test harness (Playwright, scenarios from test plan)
 
 VERIFICATION:
-Run the test suite (10 tests from test plan) plus the 3 E2E scenarios.
+Run the test suite (revised test plan --
+artefacts/new-feature-af17f555/test-plans/ep1-s4-test-plan.md, revised
+2026-09-02) plus the E2E scenarios.
 
 NFR TARGETS:
 - Routing table deterministic, covers all valid transitions
@@ -117,8 +146,9 @@ ARCHITECTURE CONSTRAINTS:
 - Stage field from pipeline-state.json is the routing input
 - Routing logic pure and testable (no side effects in getNextSkill/
   getValidBackwardTargets)
-- Backward navigation triggers the existing materiality check (res-s1-s4) --
-  do not build a new one
+- Backward navigation eventually feeds into the existing materiality-check
+  module unchanged (triggered automatically on save, not built by this
+  story) -- do not build a new materiality mechanism
 
 STANDARDS:
 No domain-specific standards injected for this story.

@@ -14,6 +14,16 @@
 
 ---
 
+## 2026-09-02 — ep1-s4 confirmed as genuine new work (unlike ep1-s1/ep1-s2), contract corrected on two points
+
+**Context:** Following the same pre-implementation investigation discipline that found `ep1-s1` and `ep1-s2` targeting already-existing mechanisms, investigated `ep1-s4` before `/implementation-plan` too. This time the verdict is different: **no pre-existing mechanism satisfies this story.** Three separate flat, non-branching stage-sequence lookups already exist (`journey-store.js`'s `getNextStage`, `journey.js`'s `BACKFILL_STAGE_SEQUENCE`, `STAGE_INDEX`), but none reads `.github/pipeline-state.json`'s `stage` field or implements the story's routing table's conditional branches (spike-skip, test-plan-optional). A rendered stage list with current/done-clickable and future-non-clickable entries (`sn-bar`, `handleGetJourneyStageView`) exists, but on the wrong page (a per-stage artefact-view page, not `/journey`'s own Continue flow) and with no confirm-before-navigate step.
+
+**Decision:** Proceed with real implementation as originally scoped, with two corrections to the original 2026-09-01 contract: (1) there is no existing "Move back to [stage]?" confirmation dialog to reuse — one must be built new (a minimal server-rendered interstitial, not a new gate mechanism); (2) the materiality-check module itself (`materiality-check.js`) needs no changes — it already fires automatically downstream of navigation, at artefact-save time inside a reopened session, which is why the story's own Out-of-Scope list correctly excludes it.
+
+**Rationale:** This is the first story in this epic's inner loop this session where investigation confirmed genuine new work rather than scope narrowing — worth recording explicitly so a reader of this decisions.md doesn't assume every story in this epic follows the "already exists" pattern `ep1-s1`/`ep1-s2` established. See `dor/ep1-s4-dor-contract.md`'s corrected section for the full revised build plan.
+
+---
+
 ## 2026-09-01 — Artefact resolution: directory-scan model, not singular pipeline-state.json fields
 
 **Context:** `design.md`'s Component 2 originally modeled every stage's prior-work artefact as a single file at a single `pipeline-state.json` path field (`storyArtefact`, `reviewArtefact`, etc.) — an assumption already false for CLI-driven `/definition` and `/review`, which split into multiple per-epic/per-story/per-run files.
