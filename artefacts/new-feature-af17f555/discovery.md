@@ -1,6 +1,6 @@
 # Discovery: Cross-Channel Feature Continuity
 
-**Status:** Draft
+**Status:** Approved
 
 **Date:** 2025-07-15
 
@@ -71,9 +71,9 @@ Risk: If Claude Code outer loops remain faster or more capable than the web UI f
 
 - Hamish King — Platform Owner — 2025-07-15
 
-**Reviewers:** Pending
+**Reviewers:** Hamish King — Platform Owner
 
-**Approved By:** Pending
+**Approved By:** Hamish King — Platform Owner — 2026-09-01 (see Revision Note below)
 
 ## /clarify Recommendation
 
@@ -81,6 +81,10 @@ This discovery contains 1 unconfirmed assumption that affects scope. Before proc
 
 [ASSUMPTION] The web UI's existing handoff context mechanism (the HANDOFF CONTEXT injection at session start) is sufficient for loading prior artefacts from a repo-discovered feature — unconfirmed, requires /clarify before scope is locked.
 
+## Revision Note (2026-09-01)
+
+`Status` and `Approved By` were backfilled 2026-09-01 as `Draft`/`Pending`, matching the raw rendered content pulled from the production journey record. This was factually stale even at backfill time: the feature had already progressed through `/benefit-metric`, `/design`, `/definition`, `/review`, `/test-plan`, and `/definition-of-ready` in production by then — none of which are reachable without discovery approval having occurred. CI's own `discovery_approved` trace-validation gate correctly caught this inconsistency once this feature's artefacts were registered in `pipeline-state.json` (this session, PR #808's CI run). Corrected here to `Approved`, with `Approved By` populated by the operator (Hamish King, Platform Owner) confirming what was already true in substance, rather than leaving a stale placeholder that blocks CI for a feature that has otherwise been fully delivered.
+
 ---
 
-*Backfilled 2026-09-01 from the production journey record (af17f555-dfa9-4f66-910b-32bec32d66b7) after confirming this stage's own GitHub commit never fired — see artefacts/2026-09-01-artefact-commit-durability-gap/discovery.md and the dcuf-s1 fix (PR #806). Reconstructed from the journey's rendered content; not a byte-identical copy of the original saved markdown source.*
+*Backfilled 2026-09-01 from the production journey record (af17f555-dfa9-4f66-910b-32bec32d66b7) after confirming this stage's own GitHub commit never fired — see artefacts/2026-09-01-artefact-commit-durability-gap/discovery.md and the dcuf-s1 fix (PR #806). Reconstructed from the journey's rendered content; not a byte-identical copy of the original saved markdown source. Status/Approved By corrected 2026-09-01 — see Revision Note above.*

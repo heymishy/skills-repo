@@ -29186,7 +29186,7 @@
               "stage": "branch-setup",
               "health": "green",
               "updatedAt": "2026-09-01T09:52:23.597Z",
-              "reviewStatus": "not-applicable",
+              "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
