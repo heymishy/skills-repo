@@ -44,6 +44,16 @@
 
 ---
 
+## 2026-09-01 — ep1-s1 scoped to `/journey` only; `/products/:id` has the same gap but is explicitly deferred
+
+**Context:** While reading the exact render/data-flow code for `/journey` before writing `/implementation-plan`, found that `/journey` (`journey.js`) only ever lists journeys with `productId == null` (`pan-s1`, AC4) — product-linked features get their own page, `/products/:id` (`handleGetProductView` in `products.js`), which reads a **direct Postgres `journeys` table query**, not journey-store's in-memory map `/journey` reads, and not `.github/pipeline-state.json` either. A CLI-only feature that's product-linked (the more common real-world case — `af17f555` itself is product-linked) would remain invisible on `/products/:id` even after this story ships, exactly the same blind spot this story fixes for `/journey`.
+
+**Decision:** `ep1-s1` (this session's implementation) is scoped to `/journey` only, matching the operator's already-given direction and the DoR contract already revised for it. The equivalent gap on `/products/:id` is real but explicitly **out of scope for this story** — not silently ignored, not silently folded in without re-confirming scope with the operator.
+
+**Rationale:** `/products/:id` uses a structurally different data source (direct SQL against Postgres `journeys`, bypassing journey-store entirely) and a separate render function (`_renderProductView`, no shared markup with `_renderJourneyHome`) — closing this gap there is a comparably-sized, separable piece of work, not a small addition to this story. Expanding today's implementation to cover it without re-confirming would silently double the scope the operator approved. Flagged here and in `workspace/capture-log.md` as a follow-up candidate — likely a new story (e.g. `ep1-s7` or a fast-follow), not a hidden addition to `ep1-s1`.
+
+---
+
 ## 2026-09-01 — Feature registration shape: epics-nested, direct initial-creation write
 
 **Context:** `new-feature-af17f555` had zero entry in `.github/pipeline-state.json` despite 8 completed outer-loop stages' worth of real artefacts already on disk (see `artefacts/2026-09-01-artefact-commit-durability-gap/discovery.md`).
