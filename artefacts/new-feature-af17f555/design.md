@@ -42,9 +42,11 @@ Stalled features are intentionally included — they represent paused work that 
 
 ### Component 2: Artefact Resolution from Pipeline-State Index
 
+> ⚠️ **REVISED 2026-09-01** — see the Revision Log at the end of this document. The original mechanism below (kept for the audit trail, struck through in spirit but left verbatim) assumed every stage's artefact is a single file at a single path. That assumption was already false for real CLI-driven features before this feature was even defined: `/definition` and `/review` split their output into individual per-epic/per-story/per-review files (`artefacts/[feature]/epics/*.md`, `stories/*.md`, `review/*-review-N.md`), not one file each. The **Revised mechanism** section below replaces this component's resolution process; the rest of this document (Components 1, 3, 4, UX, error states, NFRs) is unaffected and still accurate.
+
 **Pattern:** ADR-023 (disk canonical, always read fresh before handoff)
 
-**Mechanism:** `.github/pipeline-state.json` already carries an embedded artefact path index as standard fields:
+**Original mechanism (superseded — kept for audit trail):** `.github/pipeline-state.json` was assumed to carry an embedded artefact path index as **singular** standard fields:
 
 - `discoveryArtefact` — path to discovery.md
 - `benefitMetricArtefact` — path to benefit-metric.md
@@ -56,7 +58,7 @@ Stalled features are intentionally included — they represent paused work that 
 - `testPlanArtefact` — path to test-plan.md
 - (and others per schema)
 
-**Resolution process:**
+**Original resolution process (superseded):**
 
 1. Operator selects a feature from the in-progress list
 2. Web UI reads pipeline-state.json for that feature's stage and `*Artefact` path fields
@@ -65,11 +67,29 @@ Stalled features are intentionally included — they represent paused work that 
 5. Pass the resulting array into the existing `priorArtefacts` mechanism (skills.js line ~2457) — the same shape that journey-store.js's `completedStages.map()` already produces
 6. `buildSystemPrompt()` and `registerHtmlSession()` consume this array unchanged — no new code paths required
 
-**Error handling:**
+---
 
-- If an `*Artefact` path is populated but the file does not exist on disk, log a warning and exclude it from the array (do not block session start)
-- If a file exists but is unreadable (encoding error, permission denied), log and exclude
-- If all artefact reads fail, session still starts with empty prior context (graceful degradation)
+**Revised mechanism (2026-09-01):** Resolution is **directory-scan-based per stage**, not a single-path-field lookup, matching what `darc-s1`/`wsap-s1` actually produce on disk:
+
+| Stage | Resolution |
+|---|---|
+| discovery, clarify, benefit-metric, design | Single file, singular path field — original mechanism unchanged (these stages genuinely never split; nothing to fix). |
+| definition | Scan `artefacts/[feature]/epics/*.md` and `artefacts/[feature]/stories/*.md` — every file found is one prior artefact. No singular `storyArtefact`/`designArtefact`-style field is trusted for this stage. |
+| review | Scan `artefacts/[feature]/review/*-review-*.md` — every file found is one prior artefact (a story may have multiple run numbers; include all, most-recent-per-story if HANDOFF CONTEXT size becomes a concern — not expected at typical story counts). |
+| test-plan, definition-of-ready | Scan `artefacts/[feature]/test-plans/*.md` and `artefacts/[feature]/dor/*.md` respectively (already the `wsap-s1` convention). |
+
+**Revised resolution process:**
+
+1. Operator selects a feature from the in-progress list
+2. For each stage the feature has completed, resolve artefacts by the table above — a directory listing (`fs.readdirSync`) for split stages, a single path read for unsplit stages — never a `pipeline-state.json` `*Artefact` singular-path field for a split stage
+3. Construct a `{ path, content }` object per artefact found (unchanged shape from the original mechanism — only the *discovery* method changes, not what downstream code consumes)
+4. Pass the resulting array into the existing `priorArtefacts` mechanism, exactly as the original mechanism already did — `buildSystemPrompt()`/`registerHtmlSession()` need no further change beyond receiving a (possibly longer) array
+
+**Error handling (unchanged from the original mechanism, restated for the revised process):**
+
+- A directory that doesn't exist yet (stage not reached, or predates a splitter) is treated as zero artefacts for that stage, not an error — do not block session start
+- A file that exists but is unreadable (encoding error, permission denied) is logged and excluded
+- If all artefact reads fail across every stage, session still starts with empty prior context (graceful degradation, unchanged)
 
 ### Component 3: Journey Record Backfill
 
@@ -241,6 +261,16 @@ Visible at all times in the skill session panel:
 - [ ] Verify existing priorArtefacts array shape handles the new `{ path, content }` objects without modification
 - [ ] Test artefact resolution with pipeline-state.json records from live repos (at least 3 features with varying stage/artefact path patterns)
 - [ ] Confirm journey-disk.js schema supports `cliAdoptionTimestamp` and `cliAdoptionArtefactHashes` fields (or defer to implementation)
+
+## Revision Log
+
+### 2026-09-01 — Component 2 artefact resolution corrected from singular-path to directory-scan model
+
+**Why:** While backfilling this feature's own artefacts to git (see footer below), it became clear that `/definition` and `/review` had never produced a single file per stage on the CLI side — they split into individual per-epic/per-story/per-review files (`epics/*.md`, `stories/*.md`, `review/*-review-N.md`), a convention documented in `skills/definition/SKILL.md` and `skills/review/SKILL.md` since before this feature was even discovered. Component 2's original resolution process (`*Artefact` singular path fields in `pipeline-state.json`) could never have resolved these stages correctly — it would have silently found zero or one file where several existed. The Web UI side of this same gap (it wrote one consolidated `definition.md`/`review.md` instead of splitting) was fixed separately by `darc-s1` (PR #807), which also produced the two splitter utilities (`definition-artefact-splitter.js`, `review-artefact-splitter.js`) now used to backfill this feature's own `epics/`, `stories/`, and `review/` directories.
+
+**What changed:** Component 2 (`### Component 2: Artefact Resolution from Pipeline-State Index`) now specifies directory-scan resolution for `definition` and `review` stages instead of trusting singular `storyArtefact`/`reviewArtefact`-style fields. The original mechanism is retained inline (marked superseded) rather than deleted, per this repo's traceability standard — the story that motivated the fix, and the exact wrongness of the prior assumption, should remain readable in place rather than only in git history.
+
+**Related:** `stories/ep1-s2.md` (Artefact Resolution and HANDOFF CONTEXT Population) carries the same singular-field assumption in its acceptance criteria and receives a parallel revision. `artefacts/2026-09-01-definition-review-artefact-consistency/` (darc-s1) is the story that fixed the underlying Web UI write-side gap this revision accounts for on the read side.
 
 ---
 
