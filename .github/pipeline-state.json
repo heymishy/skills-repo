@@ -29477,7 +29477,7 @@
               "name": "Audit Logging and PostHog Instrumentation",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-09-01T21:34:33.116Z",
+              "updatedAt": "2026-09-01T21:35:31.274Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/new-feature-af17f555/review/ep1-s6-review-1.md",
@@ -29533,7 +29533,8 @@
                   "file": "artefacts/new-feature-af17f555/plans/ep1-s6-plan.md"
                 }
               ],
-              "prStatus": "none"
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/812"
             }
           ]
         }
