@@ -203,10 +203,34 @@ function _renderJourneyHome(data) {
     return m ? m.num + '. ' + m.label : stageId;
   }
 
-  function progressDots(stages) {
+  // ep1-s4: done-stage dots become keyboard-accessible links to the new
+  // confirm-back interstitial; everything else stays a plain, non-clickable
+  // span (future stages must never be jumpable-to directly).
+  //
+  // ep1-s4 bug fix: this function previously read `stages[s.id].status` from
+  // a `.stages` object that journey-disk.js's saveJourney()/updateStage()
+  // never reliably populates (saveJourney writes the in-memory journey-store
+  // shape verbatim, which has no `.stages` field at all -- only
+  // `completedStages`, an array; updateStage's own `journey.stages[stageName]
+  // = {}` mutation then throws on that missing field and is silently
+  // swallowed by its caller's try/catch). The dots were consequently never
+  // interactive for any journey created through the normal createJourney()/
+  // completeStage() API path -- confirmed via this story's own E2E spec.
+  // sn-bar (handleGetJourneyStageView, this same file) already reads the
+  // reliable field correctly (`journey.completedStages`, an array) -- this
+  // fix brings progressDots() onto that same, already-proven-correct pattern
+  // instead of inventing a new one. Not in scope to fix journey-disk.js's
+  // own `.stages` shape itself; this only stops relying on it.
+  function progressDots(completedStages, activeSkill, journeyId) {
+    var doneSet = new Set((completedStages || []).map(function(cs) { return cs.skillName; }));
     return STAGE_META.map(function(s) {
-      var st = stages && stages[s.id] && stages[s.id].status;
-      var cls = st === 'complete' ? 'jh-dot--done' : st === 'active' ? 'jh-dot--active' : s.optional ? 'jh-dot--optional' : '';
+      var isDone = doneSet.has(s.id);
+      var isActive = !isDone && s.id === activeSkill;
+      var cls = isDone ? 'jh-dot--done' : isActive ? 'jh-dot--active' : s.optional ? 'jh-dot--optional' : '';
+      if (isDone && journeyId) {
+        var backUrl = '/journey/' + encodeURIComponent(journeyId) + '/stage/' + encodeURIComponent(s.id) + '/confirm-back';
+        return '<a href="' + escHtml(backUrl) + '" class="jh-dot ' + cls + ' jh-dot--nav" data-stage-nav aria-label="Move back to ' + escHtml(s.label) + '" title="' + escHtml(s.label) + '"></a>';
+      }
       return '<span class="jh-dot ' + cls + '" title="' + escHtml(s.label) + '"></span>';
     }).join('');
   }
@@ -222,7 +246,7 @@ function _renderJourneyHome(data) {
             '<span class="jh-card__profile">◈ ' + escHtml(j.productProfile || 'default') + '</span>',
             '<span class="jh-card__date">' + escHtml((j.createdAt ? new Date(j.createdAt).toISOString() : '').slice(0, 10)) + '</span>',
           '</div>',
-          '<div class="jh-progress">' + progressDots(j.stages) + '</div>',
+          '<div class="jh-progress" role="group" aria-label="Journey stages — earlier stages open a Move back confirmation">' + progressDots(j.completedStages, j.activeSkill, j.journeyId) + '</div>',
         '</div>',
         '<a href="' + escHtml(resumeUrl) + '" class="jh-continue">Continue →</a>',
       '</div>'
@@ -259,6 +283,8 @@ function _renderJourneyHome(data) {
     '.jh-dot--done{background:#2da44e}',
     '.jh-dot--active{background:var(--accent,#0969da)}',
     '.jh-dot--optional{opacity:.4}',
+    '.jh-dot--nav{cursor:pointer;padding:0;border:none;display:inline-block}',
+    '.jh-dot--nav:focus{outline:2px solid var(--accent,#0969da);outline-offset:2px}',
     '.jh-continue{flex-shrink:0;font-size:13px;color:var(--accent,#0969da);font-weight:600;text-decoration:none;padding:6px 14px;border:1px solid var(--line);border-radius:6px;white-space:nowrap}',
     '.jh-continue:hover{background:var(--line)}',
     '.jh-new-section{border-top:1px solid var(--line);padding-top:24px}',
@@ -304,7 +330,26 @@ function _renderJourneyHome(data) {
           '<button type="submit" class="sw-btn sw-btn--primary jh-submit">Start journey →</button>',
         '</form>',
       '</section>',
-    '</div>'
+    '</div>',
+    // ep1-s4: arrow-key navigation between stage-nav dots within one card's
+    // progress row; Enter activates the focused dot (native <a> semantics
+    // already handle Enter — this only adds the arrow-key focus move).
+    '<script>(function(){',
+      'document.addEventListener("keydown", function(e){',
+        'if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;',
+        'var active = document.activeElement;',
+        'if (!active || !active.hasAttribute("data-stage-nav")) return;',
+        'var group = active.closest(".jh-progress");',
+        'if (!group) return;',
+        'var navs = Array.prototype.slice.call(group.querySelectorAll("[data-stage-nav]"));',
+        'var idx = navs.indexOf(active);',
+        'if (idx === -1) return;',
+        'var nextIdx = e.key === "ArrowRight" ? idx + 1 : idx - 1;',
+        'if (nextIdx < 0 || nextIdx >= navs.length) return;',
+        'e.preventDefault();',
+        'navs[nextIdx].focus();',
+      '});',
+    '})()<\/script>'
   ].join('');
 }
 
@@ -1684,6 +1729,53 @@ async function handleGetJourneyResume(req, res) {
  * an existing session as a safety net (the step-nav's own render-time check
  * could race a concurrent tab or a second click) before creating a new one.
  */
+/**
+ * ep1-s4: confirm-before-navigate interstitial for backward stage navigation
+ * from /journey's stage-dot links. No confirmation dialog like this existed
+ * anywhere before this story -- see decisions.md (2026-09-02).
+ */
+async function handleGetStageConfirmBack(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(302, { Location: '/auth/github' });
+    res.end();
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var stageName = req.params && req.params.stageName;
+  var journey = _journeyStore.getJourney(journeyId);
+  if (!journey) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<div class="sw-page-content"><p>Journey not found.</p><a href="/journey">Back to journeys</a></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<p>Not found.</p>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  var stageEntry = (journey.completedStages || []).find(function(cs) { return cs.skillName === stageName; });
+  if (!stageEntry) {
+    res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(renderShell({ title: 'Not Found', bodyContent: '<div class="sw-page-content"><p>Stage not completed yet.</p></div>', user: { login: req.session.login || '' } }));
+    return;
+  }
+
+  var stageLbl = (STAGE_META.find(function(s) { return s.id === stageName; }) || {}).label || stageName;
+  var reopenUrl = '/journey/' + encodeURIComponent(journeyId) + '/stage/' + encodeURIComponent(stageName) + '/reopen';
+  var body = [
+    '<div class="sw-page-content" style="max-width:480px">',
+      '<h1>Move back to ' + escHtml(stageLbl) + '?</h1>',
+      '<p>This will show you prior artefacts and any revisions since then.</p>',
+      '<a href="' + escHtml(reopenUrl) + '" class="sw-btn sw-btn--primary" style="margin-right:8px">Confirm</a>',
+      '<a href="/journey">Cancel</a>',
+    '</div>'
+  ].join('');
+  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+  res.end(renderShell({ title: 'Move back to ' + stageLbl, bodyContent: body, user: { login: req.session.login || '' } }));
+}
+
 async function handleGetJourneyStageReopen(req, res) {
   if (!req.session || !req.session.accessToken) {
     res.writeHead(302, { Location: '/auth/github' });
@@ -4230,6 +4322,49 @@ function _mergeStateFeaturesIntoJourneyList(journeys, repoRoot) {
 
 var BACKFILL_STAGE_SEQUENCE = ['ideate', 'discovery', 'benefit-metric', 'design', 'definition', 'review', 'test-plan', 'definition-of-ready'];
 
+var ROUTING_TABLE = {
+  'ideation':             function() { return 'discovery'; },
+  'discovery':            function(ctx) { return ctx.spikeRecommendation === 'no-build' ? 'terminal' : 'benefit-metric'; },
+  'spike':                function() { return 'benefit-metric'; },
+  'benefit-metric':       function() { return 'definition'; },
+  'definition':           function() { return 'review'; },
+  'review':               function(ctx) { return ctx.requiresTestPlan === false ? 'dor-gate' : 'test-plan'; },
+  'test-plan':            function() { return 'definition-of-ready'; },
+  'definition-of-ready':  function() { return 'dor-gate'; },
+  'dor-gate':             function() { return 'release'; }
+};
+
+/**
+ * ep1-s4: pure routing-table lookup -- given a pipeline-state.json stage
+ * value and optional context flags, returns the next appropriate skill (or
+ * 'terminal'/'release' for end states, or null for an unrecognized stage).
+ * @param {string} pipelineStage
+ * @param {{spikeRecommendation?: string, requiresTestPlan?: boolean}} [contextFlags]
+ * @returns {string|null}
+ */
+function getNextSkill(pipelineStage, contextFlags) {
+  var handler = ROUTING_TABLE[pipelineStage];
+  if (!handler) return null;
+  return handler(contextFlags || {});
+}
+
+var STAGE_ORDER_FOR_BACKWARD_NAV = ['ideate', 'discovery', 'spike', 'benefit-metric', 'design', 'definition', 'review', 'test-plan', 'definition-of-ready'];
+
+/**
+ * ep1-s4: every stage strictly earlier than currentStage that also appears
+ * in completedStages -- the set of valid backward-navigation targets.
+ * @param {string[]} completedStages
+ * @param {string} currentStage
+ * @returns {string[]}
+ */
+function getValidBackwardTargets(completedStages, currentStage) {
+  var currentIdx = STAGE_ORDER_FOR_BACKWARD_NAV.indexOf(currentStage);
+  if (currentIdx === -1) return [];
+  return STAGE_ORDER_FOR_BACKWARD_NAV.slice(0, currentIdx).filter(function(s) {
+    return completedStages.indexOf(s) !== -1;
+  });
+}
+
 /**
  * ep1-s3: create a journey record for a CLI-only feature the first time it's
  * needed (called from handleGetJourneyResume's "no record found" branch).
@@ -4262,8 +4397,14 @@ function backfillJourneyFromPipelineState(featureSlug, repoRoot) {
       cliAdoptionArtefactHashes[name] = crypto.createHash('sha256').update(content).digest('hex');
     } catch (_) { /* artefact doesn't exist yet at this stage — omit, not an error */ }
   });
+  // ep1-s4: feature.stage represents the LAST COMPLETED stage, not the next
+  // one to work on -- BACKFILL_STAGE_SEQUENCE[upToIdx] landed sessions back
+  // on already-finished work. getNextSkill() routes to the actual next
+  // stage; falls back to the old behaviour for a stage outside the routing
+  // table (e.g. an inner-loop stage like branch-complete).
+  var _nextSkill = getNextSkill(feature.stage, {}) || BACKFILL_STAGE_SEQUENCE[upToIdx];
   _journeyStore.setJourneyFields(journey.journeyId, {
-    activeSkill: BACKFILL_STAGE_SEQUENCE[upToIdx],
+    activeSkill: _nextSkill,
     cliAdoptionTimestamp: cliAdoptionTimestamp,
     cliAdoptionArtefactHashes: cliAdoptionArtefactHashes
   });
@@ -4492,6 +4633,9 @@ module.exports = {
   _mergeStateFeaturesIntoJourneyList, // ep1-s1
   TERMINAL_STAGES, // ep1-s1
   backfillJourneyFromPipelineState, // ep1-s3
+  getNextSkill, // ep1-s4
+  getValidBackwardTargets, // ep1-s4
+  handleGetStageConfirmBack, // ep1-s4
   handleGetJourney,
   handlePostJourney,
   handleDeleteJourney,
