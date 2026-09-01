@@ -29414,7 +29414,7 @@
             {
               "slug": "ep1-s5",
               "name": "Error Handling and Graceful Degradation",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "updatedAt": "2026-09-01T20:29:53.880Z",
               "reviewStatus": "passed",
@@ -29465,7 +29465,9 @@
                   "file": "artefacts/new-feature-af17f555/plans/ep1-s5-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/811"
             },
             {
               "slug": "ep1-s6",
