@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-09-02 — ep1-s5's disclosure banner deferred, consistent with ep1-s3's own precedent
+
+**Context:** `ep1-s5`'s AC/NFR names an operator-facing disclosure ("Feature history incomplete — some prior artefacts could not be loaded.") for when critical data is missing. Implementing this requires touching the chat-view rendering layer — a different surface from `journey.js`/`skills.js`'s server-side logging this story otherwise wraps, and not otherwise touched by any story in this epic this session.
+
+**Decision:** Implement the full error-catching/logging/graceful-degradation mechanics (all 3 named PostHog event types, all 5 named error conditions covered at their actual call sites) but defer the disclosure banner itself.
+
+**Rationale:** Matches the exact same judgment already applied to `ep1-s3`'s "Continuing from Claude Code" banner (`decisions.md`, implicit in that story's DoD) — the underlying functional mechanism (errors are now caught, logged, and degrade gracefully instead of crashing or silently vanishing) is delivered and independently valuable; the UI polish layer is a separable, smaller follow-up. Disclosed here and in the closing DoD, not silently dropped.
+
+---
+
 ## 2026-09-02 — ep1-s2 scope narrowed from a new resolution mechanism to a 2-item array fix
 
 **Context:** Before writing `/implementation-plan` for `ep1-s2`, investigated `buildSystemPrompt()` in `src/web-ui/routes/skills.js` and found its core mechanism already exists — a disk-scan block (lines ~1946-1982) shipped by an unrelated commit (`1b1d0682`, "phase-0: authorization guard module + route wiring") years before this story was written. It already reads every file under a feature's artefact directory and injects the full content of anything under `_KEY_DIRS = ['stories', 'review', 'test-plans', 'verification-scripts']` into HANDOFF CONTEXT, unconditionally, for every session (new or resumed) — including the exact CLI-backfilled-continue flow `ep1-s1`/`ep1-s3` shipped in PR #808. This already fully satisfies `ep1-s2`'s AC for `stories/` and `review/` multi-file resolution.
