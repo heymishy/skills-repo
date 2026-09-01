@@ -29345,7 +29345,7 @@
             {
               "slug": "ep1-s4",
               "name": "Stage-Based Skill Routing and Navigation",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "updatedAt": "2026-09-01T19:33:14.296Z",
               "reviewStatus": "passed",
@@ -29402,7 +29402,9 @@
                   "file": "artefacts/new-feature-af17f555/plans/ep1-s4-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/810"
             },
             {
               "slug": "ep1-s5",
