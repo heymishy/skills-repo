@@ -3,7 +3,9 @@
 **Story reference:** artefacts/new-feature-af17f555/stories/ep1-s4.md
 **Epic reference:** artefacts/new-feature-af17f555/epics/cross-channel-feature-continuity.md
 **Test plan author:** Claude Code (agent-authored, operator-directed)
-**Date:** 2026-09-01
+**Date:** 2026-09-01 (original) — **reviewed 2026-09-02, mostly unchanged**
+
+> ℹ️ **Reviewed 2026-09-02** alongside the `dor/ep1-s4-dor-contract.md` correction. Unlike `ep1-s1`/`ep1-s2`, investigation confirmed this story is genuine new work — the test plan below remains substantively valid. Two location/framing corrections only: (1) the stage selector target page is `/journey`'s own Continue flow (`_renderJourneyHome`/`handleGetJourneyResume`), reusing `handleGetJourneyStageView`'s existing `sn-bar` markup pattern as its structural basis — not a generic "skill session panel"; (2) the "Move back to [stage]?" confirmation in Scenario 1 below does not exist anywhere yet and must be built new as part of this story (a server-rendered interstitial, not client-side JS) — the E2E scenario's verification step is unchanged, only the implementation-side assumption about reusing an existing dialog is corrected. See `decisions.md` (2026-09-02).
 
 ---
 

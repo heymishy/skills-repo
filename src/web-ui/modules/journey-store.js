@@ -231,6 +231,17 @@ function completeStage(journeyId, skillName, artefactPath, usageSummary, session
   }
   if (_diskAdapter) {
     try { _diskAdapter.updateStage(journey.featureSlug, skillName, diskEntry); } catch (_) {}
+    // ep1-s4: updateStage() only ever touches disk's own separate .stages
+    // object -- it never had a way to reflect this in-memory completedStages
+    // array push. Every consumer that reads a journey via listJourneys()
+    // (disk-backed when _diskAdapter is wired, which is unconditional in
+    // server.js) was seeing completedStages frozen at whatever it was at
+    // journey creation -- confirmed empirically to always be []. A full
+    // saveJourney() of the current in-memory journey (already carries the
+    // correct completedStages) is the same reliable pattern createJourney()
+    // itself already uses; this just extends it to every subsequent
+    // completeStage() call too.
+    try { _diskAdapter.saveJourney(journey); } catch (_) {}
   }
   _pgWrite(journey);
 }

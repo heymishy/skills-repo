@@ -139,6 +139,16 @@ function journeyExists(featureSlug, repoRoot) {
 function updateStage(featureSlug, stageName, stageUpdate, repoRoot) {
   var journey = loadJourney(featureSlug, repoRoot);
   if (!journey) return null;
+  // ep1-s4: a journey saved via journey-store.js's createJourney() (its
+  // saveJourney() call writes the in-memory journey-store shape verbatim,
+  // which has no .stages field -- only completedStages, an array) has no
+  // .stages object at all. journey.stages[stageName] = {} on an undefined
+  // .stages used to throw here, silently swallowed by every caller's own
+  // try/catch -- meaning this function's own saveJourney() below was never
+  // reached for any journey-store-originated journey. Defensive init fixes
+  // that; does not change behaviour for a journey that already has .stages
+  // (the journey-disk.js-native creation path, _newJourney()).
+  if (!journey.stages) journey.stages = {};
   if (!journey.stages[stageName]) journey.stages[stageName] = {};
   Object.assign(journey.stages[stageName], stageUpdate);
   if (stageUpdate.status === 'complete' || stageUpdate.status === 'active') {
