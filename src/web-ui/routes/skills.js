@@ -1963,7 +1963,11 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
 
         // Load content from key artefact subdirectories not already in priorArtefacts
         var _priorSet = new Set((priorArtefacts || []).map(function(pa) { return pa.path; }));
-        var _KEY_DIRS = ['stories', 'review', 'test-plans', 'verification-scripts'];
+        // ep1-s2: 'epics' and 'dor' added 2026-09-02 -- epics/*.md was never
+        // scanned (this story's confirmed AC2 gap); dor/*.md has no other
+        // backstop for the CLI-backfill flow's bogus flat definition-of-ready.md
+        // priorArtefacts entry, unlike test-plans (already covered here).
+        var _KEY_DIRS = ['stories', 'review', 'test-plans', 'verification-scripts', 'epics', 'dor'];
         var _diskParts = [];
         _allFiles.forEach(function(relFile) {
           if (_KEY_DIRS.indexOf(relFile.split('/')[0]) === -1) { return; }

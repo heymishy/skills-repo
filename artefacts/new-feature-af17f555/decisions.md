@@ -4,6 +4,16 @@
 
 ---
 
+## 2026-09-02 — ep1-s2 scope narrowed from a new resolution mechanism to a 2-item array fix
+
+**Context:** Before writing `/implementation-plan` for `ep1-s2`, investigated `buildSystemPrompt()` in `src/web-ui/routes/skills.js` and found its core mechanism already exists — a disk-scan block (lines ~1946-1982) shipped by an unrelated commit (`1b1d0682`, "phase-0: authorization guard module + route wiring") years before this story was written. It already reads every file under a feature's artefact directory and injects the full content of anything under `_KEY_DIRS = ['stories', 'review', 'test-plans', 'verification-scripts']` into HANDOFF CONTEXT, unconditionally, for every session (new or resumed) — including the exact CLI-backfilled-continue flow `ep1-s1`/`ep1-s3` shipped in PR #808. This already fully satisfies `ep1-s2`'s AC for `stories/` and `review/` multi-file resolution.
+
+**Decision:** Scope `ep1-s2`'s implementation to exactly the one confirmed gap: add `'epics'` to `_KEY_DIRS` (epic-level `/definition` output was never scanned). Also add `'dor'` to the same list — a related, adjacent gap the same investigation surfaced: the CLI-backfill flow (`backfillJourneyFromPipelineState`) produces a bogus flat `definition-of-ready.md` `priorArtefacts` entry with no `dor/` directory backstop, unlike `test-plans` which already has one via this same mechanism.
+
+**Rationale:** No new resolution mechanism, module, or abstraction is needed — the pre-existing disk-scan already does exactly what a from-scratch build would have produced. Building a second, parallel resolver (as the story's original DoR contract implicitly assumed) would have duplicated working code. `stories/ep1-s2.md`'s Revision Note 2 records the investigation; `dor/ep1-s2-dor.md`/`dor/ep1-s2-dor-contract.md` and `test-plans/ep1-s2-test-plan.md` are revised in place with the original content marked superseded, not deleted, per this repo's traceability standard.
+
+---
+
 ## 2026-09-01 — Artefact resolution: directory-scan model, not singular pipeline-state.json fields
 
 **Context:** `design.md`'s Component 2 originally modeled every stage's prior-work artefact as a single file at a single `pipeline-state.json` path field (`storyArtefact`, `reviewArtefact`, etc.) — an assumption already false for CLI-driven `/definition` and `/review`, which split into multiple per-epic/per-story/per-run files.
