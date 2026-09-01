@@ -29138,7 +29138,7 @@
           "baseline": "Unknown — to be established in first 2 weeks of post-launch measurement",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "Measurement infrastructure (ep1-s6 PostHog instrumentation) not yet implemented — no session-share data collected yet. [DoD 2026-09-02] ep1-s1/ep1-s3 shipped (PR #808); measurement still blocked on ep1-s6 (PostHog instrumentation) not yet shipping.",
+          "evidence": "Measurement infrastructure (ep1-s6 PostHog instrumentation) not yet implemented — no session-share data collected yet. [DoD 2026-09-02] ep1-s1/ep1-s3 shipped (PR #808); measurement still blocked on ep1-s6 (PostHog instrumentation) not yet shipping. [DoD 2026-09-02] ep1-s4 shipped (PR #810); measurement still blocked on ep1-s6.",
           "contributingStories": [
             "ep1-s1",
             "ep1-s3",
@@ -29165,7 +29165,7 @@
           "baseline": "100% (new feature; no baseline data yet)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "Not yet measured — depends on ep1-s2 (artefact resolution) and ep1-s5 (graceful degradation) shipping. Directly relevant to this session's own dcuf-s1/darc-s1 fixes, which repaired the write-side of the artefact chain this metric measures the read-side of.",
+          "evidence": "Not yet measured — depends on ep1-s2 (artefact resolution) and ep1-s5 (graceful degradation) shipping. Directly relevant to this session's own dcuf-s1/darc-s1 fixes, which repaired the write-side of the artefact chain this metric measures the read-side of. [DoD 2026-09-02] ep1-s2 shipped (PR #809); measurement still blocked on ep1-s6.",
           "contributingStories": [
             "ep1-s2",
             "ep1-s5"
@@ -29244,7 +29244,7 @@
             {
               "slug": "ep1-s2",
               "name": "Artefact Resolution and HANDOFF CONTEXT Population",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "updatedAt": "2026-09-01T20:05:04.813Z",
               "reviewStatus": "passed",
@@ -29279,7 +29279,9 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/809"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/809",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "ep1-s3",
@@ -29345,8 +29347,8 @@
             {
               "slug": "ep1-s4",
               "name": "Stage-Based Skill Routing and Navigation",
-              "stage": "branch-complete",
-              "health": "green",
+              "stage": "definition-of-done",
+              "health": "amber",
               "updatedAt": "2026-09-01T20:18:01.082Z",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -29404,7 +29406,10 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/810"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/810",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "DoD deviation: multi-dot arrow-key traversal not independently E2E-tested (seeding infra limitation) -- see dod/ep1-s4-dod.md"
             },
             {
               "slug": "ep1-s5",
