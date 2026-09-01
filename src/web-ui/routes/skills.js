@@ -1976,7 +1976,13 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
           try {
             var fc = fs.readFileSync(path.join(featureArtefactsDir, relFile), 'utf8');
             _diskParts.push('--- ARTEFACT: ' + fullPath + ' ---\n' + fc + '\n--- END ARTEFACT ---');
-          } catch (_) {}
+          } catch (fileReadErr) {
+            // ep1-s5: log-and-exclude rather than silently drop -- an
+            // unreadable artefact should be observable, not invisible.
+            try {
+              console.log('[cross-channel] artefact_load_error ' + JSON.stringify({ featureSlug: _featureSlug, relFile: relFile, message: fileReadErr.message, timestamp: new Date().toISOString() }));
+            } catch (_) {}
+          }
         });
         if (_diskParts.length > 0) {
           parts.push('--- FEATURE ARTEFACTS ---\n\n' + _diskParts.join('\n\n') + '\n\n--- END FEATURE ARTEFACTS ---');
