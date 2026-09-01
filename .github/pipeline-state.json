@@ -29123,7 +29123,7 @@
       "stage": "branch-setup",
       "discoveryStatus": "approved",
       "health": "green",
-      "updatedAt": "2026-09-01T19:33:14.437Z",
+      "updatedAt": "2026-09-01T20:29:54.008Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -29414,25 +29414,60 @@
             {
               "slug": "ep1-s5",
               "name": "Error Handling and Graceful Degradation",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-09-01T09:25:23.340Z",
+              "updatedAt": "2026-09-01T20:29:53.880Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/new-feature-af17f555/review/ep1-s5-review-1.md",
               "acTotal": 1,
               "testPlan": {
                 "status": "written",
-                "totalTests": 11,
-                "passing": 0
+                "totalTests": 8,
+                "passing": 8
               },
-              "acVerified": 0,
+              "acVerified": 1,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/new-feature-af17f555/dor/ep1-s5-dor.md",
               "dorContractArtefact": "artefacts/new-feature-af17f555/dor/ep1-s5-dor-contract.md",
               "dorSignedOffAt": "2026-09-01T00:00:00.000Z",
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "_logCrossChannelError helper + wire into _readPipelineFeatures",
+                  "tddState": "committed",
+                  "file": "artefacts/new-feature-af17f555/plans/ep1-s5-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Fix uncaught-exception risk in backfill call site",
+                  "tddState": "committed",
+                  "file": "artefacts/new-feature-af17f555/plans/ep1-s5-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Log getNextSkill fallback (stage_routing_error)",
+                  "tddState": "committed",
+                  "file": "artefacts/new-feature-af17f555/plans/ep1-s5-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Wire logging into skills.js _KEY_DIRS per-file reads",
+                  "tddState": "committed",
+                  "file": "artefacts/new-feature-af17f555/plans/ep1-s5-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Full regression suite",
+                  "tddState": "committed",
+                  "file": "artefacts/new-feature-af17f555/plans/ep1-s5-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/811"
             },
             {
               "slug": "ep1-s6",

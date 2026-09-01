@@ -1573,7 +1573,17 @@ async function handleGetJourneyResume(req, res) {
   // backfill now so Continue doesn't dead-end in a 404 (ep1-s1's merged-in
   // cards depend on this).
   if (!diskJourney && !memJourney) {
-    memJourney = backfillJourneyFromPipelineState(featureSlug, repoRoot);
+    // ep1-s5: backfillJourneyFromPipelineState's own internal calls
+    // (journeyStore.createJourney/completeStage/setJourneyFields) were
+    // previously uncaught here -- an unexpected internal failure would have
+    // crashed this whole request instead of falling through to the existing
+    // graceful 404 branch below.
+    try {
+      memJourney = backfillJourneyFromPipelineState(featureSlug, repoRoot);
+    } catch (backfillErr) {
+      _logCrossChannelError('journey_backfill_error', { featureSlug: featureSlug, message: backfillErr.message });
+      memJourney = null;
+    }
   }
 
   // In Postgres mode the disk file never exists — synthesize disk-format from memory
@@ -4277,6 +4287,23 @@ var STAGE_INDEX = {
   'definition-of-done': 11
 };
 
+/**
+ * ep1-s5: fire-and-forget structured error logging + PostHog event for the
+ * 3 named cross-channel error types (artefact_load_error,
+ * journey_backfill_error, stage_routing_error). Never throws.
+ * @param {string} errorType
+ * @param {object} [context]
+ */
+function _logCrossChannelError(errorType, context) {
+  var ctx = context || {};
+  try {
+    console.log('[cross-channel] ' + errorType + ' ' + JSON.stringify(Object.assign({ timestamp: new Date().toISOString() }, ctx)));
+  } catch (_) {}
+  try {
+    _posthog.capture(ctx.featureSlug || 'system', errorType, Object.assign({ timestamp: new Date().toISOString() }, ctx));
+  } catch (_) { /* fire-and-forget — PostHog failure must not affect the caller */ }
+}
+
 function _readPipelineFeatures(root) {
   var stateFile = require('path').join(root || _repoRoot || '', '.github', 'pipeline-state.json');
   if (!require('fs').existsSync(stateFile)) { return null; }
@@ -4284,6 +4311,9 @@ function _readPipelineFeatures(root) {
     var state = JSON.parse(require('fs').readFileSync(stateFile, 'utf8'));
     return Array.isArray(state.features) ? state.features : [];
   } catch (e) {
+    // ep1-s5: a missing file (handled above, existsSync check) is not an
+    // error -- a genuinely present-but-unreadable/malformed file is.
+    _logCrossChannelError('artefact_load_error', { featureSlug: null, errorType: 'pipeline_state_unreadable', message: e.message });
     return null;
   }
 }
@@ -4402,7 +4432,15 @@ function backfillJourneyFromPipelineState(featureSlug, repoRoot) {
   // on already-finished work. getNextSkill() routes to the actual next
   // stage; falls back to the old behaviour for a stage outside the routing
   // table (e.g. an inner-loop stage like branch-complete).
-  var _nextSkill = getNextSkill(feature.stage, {}) || BACKFILL_STAGE_SEQUENCE[upToIdx];
+  var _nextSkill = getNextSkill(feature.stage, {});
+  if (!_nextSkill) {
+    // ep1-s5: getNextSkill has no routing-table entry for this stage (e.g.
+    // an inner-loop stage like branch-complete) -- not an error in itself,
+    // but worth observability so a real gap in the routing table doesn't
+    // stay silent forever behind this fallback.
+    _logCrossChannelError('stage_routing_error', { featureSlug: featureSlug, stage: feature.stage });
+    _nextSkill = BACKFILL_STAGE_SEQUENCE[upToIdx];
+  }
   _journeyStore.setJourneyFields(journey.journeyId, {
     activeSkill: _nextSkill,
     cliAdoptionTimestamp: cliAdoptionTimestamp,
@@ -4636,6 +4674,7 @@ module.exports = {
   getNextSkill, // ep1-s4
   getValidBackwardTargets, // ep1-s4
   handleGetStageConfirmBack, // ep1-s4
+  _logCrossChannelError, // ep1-s5
   handleGetJourney,
   handlePostJourney,
   handleDeleteJourney,
