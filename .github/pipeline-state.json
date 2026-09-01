@@ -29138,7 +29138,7 @@
           "baseline": "Unknown — to be established in first 2 weeks of post-launch measurement",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "Measurement infrastructure (ep1-s6 PostHog instrumentation) not yet implemented — no session-share data collected yet.",
+          "evidence": "Measurement infrastructure (ep1-s6 PostHog instrumentation) not yet implemented — no session-share data collected yet. [DoD 2026-09-02] ep1-s1/ep1-s3 shipped (PR #808); measurement still blocked on ep1-s6 (PostHog instrumentation) not yet shipping.",
           "contributingStories": [
             "ep1-s1",
             "ep1-s3",
@@ -29152,7 +29152,7 @@
           "baseline": "100% (new feature; no prior data)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "Not yet measured — depends on ep1-s1 (feature discovery) and ep1-s5 (graceful degradation) shipping.",
+          "evidence": "Not yet measured — depends on ep1-s1 (feature discovery) and ep1-s5 (graceful degradation) shipping. [DoD 2026-09-02] ep1-s1/ep1-s3 shipped (PR #808); measurement still blocked on ep1-s6 (PostHog instrumentation) not yet shipping.",
           "contributingStories": [
             "ep1-s1",
             "ep1-s5"
@@ -29183,8 +29183,8 @@
             {
               "slug": "ep1-s1",
               "name": "Feature Discovery from Pipeline-State Index",
-              "stage": "branch-complete",
-              "health": "green",
+              "stage": "definition-of-done",
+              "health": "amber",
               "updatedAt": "2026-09-01T19:00:39.969Z",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -29236,7 +29236,10 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/808"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/808",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "DoD deviations: 2 NFRs not fully evidenced (perf timing, stalled-feature test) -- see dod/ep1-s1-dod.md"
             },
             {
               "slug": "ep1-s2",
@@ -29264,8 +29267,8 @@
             {
               "slug": "ep1-s3",
               "name": "Journey Record Backfill from CLI",
-              "stage": "branch-complete",
-              "health": "green",
+              "stage": "definition-of-done",
+              "health": "amber",
               "updatedAt": "2026-09-01T19:00:40.117Z",
               "reviewStatus": "passed",
               "highFindings": 0,
@@ -29317,7 +29320,10 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/808"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/808",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "DoD deviation: session-header disclosure NFR not implemented -- see dod/ep1-s3-dod.md"
             },
             {
               "slug": "ep1-s4",
