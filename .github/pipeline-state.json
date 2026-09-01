@@ -29244,7 +29244,7 @@
             {
               "slug": "ep1-s2",
               "name": "Artefact Resolution and HANDOFF CONTEXT Population",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "updatedAt": "2026-09-01T19:19:18.294Z",
               "reviewStatus": "passed",
@@ -29277,7 +29277,9 @@
                   "file": "artefacts/new-feature-af17f555/plans/ep1-s2-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/809"
             },
             {
               "slug": "ep1-s3",
