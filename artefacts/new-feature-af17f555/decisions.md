@@ -54,6 +54,16 @@
 
 ---
 
+## 2026-09-01 — ep1-s1 and ep1-s3 implemented together (hard functional coupling discovered)
+
+**Context:** While designing `ep1-s1`'s wiring into `/journey`, found that `handleGetJourneyResume` (the handler behind every "Continue →" link, `journey.js:1501`) returns **HTTP 404** whenever neither a disk-mode nor an in-memory/Postgres journey record exists for the clicked `featureSlug`. This check runs unconditionally, before any session-start logic — it is not something `registerHtmlSession()`-level backfill (as `design.md` Component 3 and `ep1-s3`'s own story describe) can reach, because the request never gets that far. A CLI-only feature card added by `ep1-s1`'s merge would therefore render with a working-looking Continue button that 404s on click, for any feature `ep1-s3` hasn't already backfilled.
+
+**Decision:** Implement `ep1-s1` and `ep1-s3` together in this same worktree/branch/PR, not as two separately-shippable stories. `ep1-s3`'s core backfill logic is invoked directly inside `handleGetJourneyResume`'s existing "no record found" branch (in addition to, not instead of, its originally-designed `registerHtmlSession()` hook, which still matters for the case where a session starts via some other path than this resume link).
+
+**Rationale:** Shipping `ep1-s1` alone would ship a visible, clickable dead end — objectively worse than not shipping it, since it looks functional and isn't. `pipeline-state.json`'s `Dependencies` field for these two stories doesn't capture this (`ep1-s3` lists `ep1-s2`, not `ep1-s1`) — that field tracks the epic's authored logical build order, not this specific runtime coupling, which was only discoverable by reading `handleGetJourneyResume`'s actual code. Both stories already have independent, complete DoR sign-off from earlier in this session; combining their *implementation* doesn't retract either sign-off, it just means one PR closes both. Each story's own AC set remains separately verified against its own test plan.
+
+---
+
 ## 2026-09-01 — Feature registration shape: epics-nested, direct initial-creation write
 
 **Context:** `new-feature-af17f555` had zero entry in `.github/pipeline-state.json` despite 8 completed outer-loop stages' worth of real artefacts already on disk (see `artefacts/2026-09-01-artefact-commit-durability-gap/discovery.md`).
