@@ -360,6 +360,7 @@ async function handleGetJourney(req, res, _next, pool) {
   // without a product remain a fully supported, non-error case (e.g.
   // solo/personal-project use), not disallowed by this filter.
   journeys = journeys.filter(function(j) { return j.productId == null; });
+  journeys = _mergeStateFeaturesIntoJourneyList(journeys, repoRoot); // ep1-s1
   journeys.sort(function(a, b) { return (b.createdAt ? new Date(b.createdAt).toISOString() : '').localeCompare(a.createdAt ? new Date(a.createdAt).toISOString() : ''); });
   var showNewForm = !!(req.query && req.query.new === '1');
   // mgss-s1: optional ?mockScenario=<name> query param, threaded through as a
@@ -1521,6 +1522,13 @@ async function handleGetJourneyResume(req, res) {
   var memJourney = allJourneys.find(function(j) { return j.featureSlug === featureSlug; });
   if (!memJourney && diskJourney && diskJourney.journeyId) {
     memJourney = _journeyStore.getJourney(diskJourney.journeyId);
+  }
+
+  // ep1-s3: no record anywhere — if pipeline-state.json knows this feature,
+  // backfill now so Continue doesn't dead-end in a 404 (ep1-s1's merged-in
+  // cards depend on this).
+  if (!diskJourney && !memJourney) {
+    memJourney = backfillJourneyFromPipelineState(featureSlug, repoRoot);
   }
 
   // In Postgres mode the disk file never exists — synthesize disk-format from memory
@@ -4188,6 +4196,86 @@ function _readPipelineFeatures(root) {
   }
 }
 
+var TERMINAL_STAGES = ['completed', 'archived', 'released'];
+
+/**
+ * ep1-s1: merge non-terminal pipeline-state.json features that have no
+ * journey-store record yet into the existing journeys list, so they render
+ * on /journey through the SAME card template as journey-store entries.
+ * journey-store always wins when a slug exists in both — this only fills
+ * the gap for CLI-only features journey-store has never heard of.
+ * @param {Array} journeys — existing journey-store list (unmodified)
+ * @param {string} repoRoot
+ * @returns {Array} journeys + synthesized entries for CLI-only, non-terminal features
+ */
+function _mergeStateFeaturesIntoJourneyList(journeys, repoRoot) {
+  var features = _readPipelineFeatures(repoRoot);
+  if (!features) return journeys;
+  var knownSlugs = {};
+  journeys.forEach(function(j) { knownSlugs[j.featureSlug] = true; });
+  var synthesized = features
+    .filter(function(f) { return TERMINAL_STAGES.indexOf(f.stage) === -1; })
+    .filter(function(f) { return !knownSlugs[f.slug]; })
+    .map(function(f) {
+      return {
+        featureSlug:    f.slug,
+        currentStage:   f.stage,
+        productProfile: 'default',
+        createdAt:      f.updatedAt || '',
+        stages:         {}
+      };
+    });
+  return journeys.concat(synthesized);
+}
+
+var BACKFILL_STAGE_SEQUENCE = ['ideate', 'discovery', 'benefit-metric', 'design', 'definition', 'review', 'test-plan', 'definition-of-ready'];
+
+/**
+ * ep1-s3: create a journey record for a CLI-only feature the first time it's
+ * needed (called from handleGetJourneyResume's "no record found" branch).
+ * Idempotent — a second call for the same slug returns the existing record.
+ * Returns null if featureSlug isn't in pipeline-state.json (genuinely unknown slug).
+ * @param {string} featureSlug
+ * @param {string} repoRoot
+ * @returns {Object|null}
+ */
+function backfillJourneyFromPipelineState(featureSlug, repoRoot) {
+  var existing = _journeyStore.getJourneyByFeatureSlug(featureSlug);
+  if (existing) return existing;
+  var features = _readPipelineFeatures(repoRoot);
+  if (!features) return null;
+  var feature = features.find(function(f) { return f.slug === featureSlug; });
+  if (!feature) return null;
+
+  var journey = _journeyStore.createJourney(featureSlug, 'default');
+  var stageIdx = BACKFILL_STAGE_SEQUENCE.indexOf(feature.stage);
+  var upToIdx = stageIdx === -1 ? BACKFILL_STAGE_SEQUENCE.length - 1 : stageIdx;
+  for (var i = 0; i <= upToIdx; i++) {
+    _journeyStore.completeStage(journey.journeyId, BACKFILL_STAGE_SEQUENCE[i], 'artefacts/' + featureSlug + '/' + BACKFILL_STAGE_SEQUENCE[i] + '.md');
+  }
+  var cliAdoptionTimestamp = new Date().toISOString();
+  var cliAdoptionArtefactHashes = {};
+  ['discovery', 'clarify', 'benefit-metric', 'design'].forEach(function(name) {
+    var artefactPath = require('path').join(repoRoot, 'artefacts', featureSlug, name + '.md');
+    try {
+      var content = require('fs').readFileSync(artefactPath, 'utf8');
+      cliAdoptionArtefactHashes[name] = crypto.createHash('sha256').update(content).digest('hex');
+    } catch (_) { /* artefact doesn't exist yet at this stage — omit, not an error */ }
+  });
+  _journeyStore.setJourneyFields(journey.journeyId, {
+    activeSkill: BACKFILL_STAGE_SEQUENCE[upToIdx],
+    cliAdoptionTimestamp: cliAdoptionTimestamp,
+    cliAdoptionArtefactHashes: cliAdoptionArtefactHashes
+  });
+  try {
+    _posthog.capture(featureSlug, 'journey_backfilled_from_cli', {
+      featureSlug: featureSlug, stage: feature.stage, adoptionTimestamp: cliAdoptionTimestamp
+    });
+  } catch (_) { /* fire-and-forget — PostHog failure must not fail the backfill */ }
+  console.log('[journey] Backfilled journey for ' + featureSlug + ' from pipeline-state.json stage=' + feature.stage);
+  return _journeyStore.getJourney(journey.journeyId);
+}
+
 async function handleGetWizard(req, res, pool) {
   if (req.session && req.session.activeFeatureSlug) {
     res.writeHead(302, { Location: '/journey' });
@@ -4401,6 +4489,9 @@ async function handleGetWizardBootstrapped(req, res, deps, pool) {
 module.exports = {
   resolveArtefactFromDiskOrPg, // jspf-s1
   _mockScenarioForStage, // mgss-s1
+  _mergeStateFeaturesIntoJourneyList, // ep1-s1
+  TERMINAL_STAGES, // ep1-s1
+  backfillJourneyFromPipelineState, // ep1-s3
   handleGetJourney,
   handlePostJourney,
   handleDeleteJourney,
