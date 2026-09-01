@@ -5346,15 +5346,54 @@ async function handlePostTurnStreamHtml(req, res) {
     }
     // Mark stage complete in journey so resume can load it as a prior artefact
     if (session.journeyId && !session._stageDone) {
-      session._stageDone = true;
       // res-s2 (AC1/AC3): a reopened session revising an already-completed
       // stage must NOT push a second completedStages entry — completeStage()
       // unconditionally pushes, which would violate "no entry added" for a
       // revision. Only the stage's first-ever completion calls completeStage();
       // an existing entry means this is a revision, handled via the
-      // materiality-check hook instead (AC5).
+      // materiality-check hook instead (AC5). Computed here, before
+      // session._stageDone is set below, so the dcuf-s1 block immediately
+      // following can also use it to scope itself to first-completion only.
       var _revisionJourney = _journeyStore.getJourney(session.journeyId);
       var _existingStageEntry = _revisionJourney && (_revisionJourney.completedStages || []).find(function(cs) { return cs.skillName === session.skillName; });
+
+      // dcuf-s1: das-s1's GitHub-commit dual-write (ownerRepoForFeature +
+      // commitArtefact), moved here from journey.js's handlePostGateConfirm,
+      // where it was unreachable in practice -- gate-confirm's own
+      // `if (!session._stageDone)` guard always saw _stageDone already true,
+      // because THIS block sets it a few lines below for every real,
+      // live-chat-driven stage completion. This is the actual point a stage
+      // first completes in real usage; the commit must happen here.
+      // Scoped to first-completion only, matching das-s1's own AC4
+      // (repo-less/unresolved proceeds unchanged) and its explicit
+      // out-of-scope exclusion of revisions/edits.
+      if (!_existingStageEntry) {
+        var _dasOwnerRepo = null;
+        try {
+          _dasOwnerRepo = await require('../adapters/export-data-source').ownerRepoForFeature(session.featureSlug || slug, req.session.accessToken);
+        } catch (_dasResolveErr) {
+          _dasOwnerRepo = null; // das-s1 AC4: no connected repo / unresolved -- proceed unchanged
+        }
+        if (_dasOwnerRepo) {
+          try {
+            var _dasDiskContent = fs.readFileSync(_autoAbsPath, 'utf8'); // ADR-023 disk canonicity
+            await require('../adapters/artefact-commit-writer').commitArtefact(
+              session.artefactPath, _dasDiskContent, req.session.accessToken, _dasOwnerRepo.owner, _dasOwnerRepo.repo
+            );
+          } catch (_dasCommitErr) {
+            // das-s1 AC2: the stage is NOT marked complete -- session._stageDone
+            // stays unset so a retry re-attempts the commit -- and the operator
+            // sees a clear, actionable error rather than a silently "completed"
+            // stage with no durable backing.
+            res.write('data: ' + JSON.stringify({ error: 'Could not commit this stage\'s artefact to the connected repository — please try again.' }) + '\n\n');
+            clearInterval(_keepaliveInterval);
+            res.end();
+            return;
+          }
+        }
+      }
+
+      session._stageDone = true;
 
       var _materialitySuggestion = null;
       if (!_existingStageEntry) {
