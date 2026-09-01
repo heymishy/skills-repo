@@ -29183,25 +29183,58 @@
             {
               "slug": "ep1-s1",
               "name": "Feature Discovery from Pipeline-State Index",
-              "stage": "branch-setup",
+              "stage": "verify-completion",
               "health": "green",
               "updatedAt": "2026-09-01T09:52:23.597Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
-                "totalTests": 10,
-                "passing": 0,
+                "totalTests": 8,
+                "passing": 8,
                 "artefact": "artefacts/new-feature-af17f555/test-plans/ep1-s1-test-plan.md"
               },
               "acTotal": 2,
-              "acVerified": 0,
+              "acVerified": 2,
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/new-feature-af17f555/dor/ep1-s1-dor.md",
               "dorSignedOffAt": "2026-05-16T00:00:00.000Z",
-              "dorContractArtefact": "artefacts/new-feature-af17f555/dor/ep1-s1-dor-contract.md"
+              "dorContractArtefact": "artefacts/new-feature-af17f555/dor/ep1-s1-dor-contract.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "mergeStateFeaturesIntoJourneyList -- unit tests + impl",
+                  "tddState": "committed",
+                  "file": "artefacts/new-feature-af17f555/plans/ep1-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Integration test: handleGetJourney renders merged-in card",
+                  "tddState": "committed",
+                  "file": "artefacts/new-feature-af17f555/plans/ep1-s1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "backfillJourneyFromPipelineState -- unit tests + impl",
+                  "tddState": "committed",
+                  "file": "artefacts/new-feature-af17f555/plans/ep1-s1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Wire backfill into handleGetJourneyResume (closes 404 dead-end)",
+                  "tddState": "committed",
+                  "file": "artefacts/new-feature-af17f555/plans/ep1-s1-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Full regression suite",
+                  "tddState": "committed",
+                  "file": "artefacts/new-feature-af17f555/plans/ep1-s1-plan.md"
+                }
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "ep1-s2",
@@ -29229,7 +29262,7 @@
             {
               "slug": "ep1-s3",
               "name": "Journey Record Backfill from CLI",
-              "stage": "definition-of-ready",
+              "stage": "verify-completion",
               "health": "green",
               "updatedAt": "2026-09-01T09:22:21.331Z",
               "reviewStatus": "passed",
@@ -29238,16 +29271,49 @@
               "acTotal": 1,
               "testPlan": {
                 "status": "written",
-                "totalTests": 12,
-                "passing": 0
+                "totalTests": 10,
+                "passing": 10
               },
-              "acVerified": 0,
+              "acVerified": 1,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/new-feature-af17f555/dor/ep1-s3-dor.md",
               "dorContractArtefact": "artefacts/new-feature-af17f555/dor/ep1-s3-dor-contract.md",
               "dorSignedOffAt": "2026-09-01T00:00:00.000Z",
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "mergeStateFeaturesIntoJourneyList -- unit tests + impl",
+                  "tddState": "committed",
+                  "file": "artefacts/new-feature-af17f555/plans/ep1-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Integration test: handleGetJourney renders merged-in card",
+                  "tddState": "committed",
+                  "file": "artefacts/new-feature-af17f555/plans/ep1-s1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "backfillJourneyFromPipelineState -- unit tests + impl",
+                  "tddState": "committed",
+                  "file": "artefacts/new-feature-af17f555/plans/ep1-s1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Wire backfill into handleGetJourneyResume (closes 404 dead-end)",
+                  "tddState": "committed",
+                  "file": "artefacts/new-feature-af17f555/plans/ep1-s1-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Full regression suite",
+                  "tddState": "committed",
+                  "file": "artefacts/new-feature-af17f555/plans/ep1-s1-plan.md"
+                }
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "ep1-s4",
