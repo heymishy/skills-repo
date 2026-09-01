@@ -29185,7 +29185,7 @@
               "name": "Feature Discovery from Pipeline-State Index",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-09-01T09:52:23.597Z",
+              "updatedAt": "2026-09-01T19:00:39.969Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -29235,7 +29235,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/808"
             },
             {
@@ -29266,7 +29266,7 @@
               "name": "Journey Record Backfill from CLI",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-09-01T09:22:21.331Z",
+              "updatedAt": "2026-09-01T19:00:40.117Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/new-feature-af17f555/review/ep1-s3-review-1.md",
@@ -29316,7 +29316,7 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/808"
             },
             {
