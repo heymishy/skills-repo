@@ -29071,6 +29071,51 @@
           "prStatus": "open"
         }
       ]
+    },
+    {
+      "slug": "2026-09-01-definition-review-artefact-consistency",
+      "name": "Split the Web UI's consolidated definition and review artefacts into individual files matching the CLI convention",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "updatedAt": "2026-09-01T08:25:13.100Z",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "darc-s1",
+          "id": "darc-s1",
+          "name": "Split definition/review into individual files",
+          "stage": "branch-complete",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 5,
+            "artefact": "artefacts/2026-09-01-definition-review-artefact-consistency/test-plans/darc-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-09-01-definition-review-artefact-consistency/dor/darc-s1-dor.md",
+          "dorContractArtefact": "artefacts/2026-09-01-definition-review-artefact-consistency/dor/darc-s1-dor-contract.md",
+          "dorSignedOffAt": "2026-09-01T08:25:13.100Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Build definition/review artefact splitters and wire into turn completion",
+              "tddState": "completed",
+              "file": "src/web-ui/routes/skills.js"
+            }
+          ],
+          "updatedAt": "2026-09-01T08:25:13.100Z",
+          "prUrl": null,
+          "prStatus": "none"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
