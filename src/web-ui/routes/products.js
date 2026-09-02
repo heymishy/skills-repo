@@ -214,7 +214,9 @@ function _renderProductNew(login, error, isAdmin, csrfToken, navProducts, noProd
 // alone.
 function _renderEpicRow(f) {
   var color = f.health === 'red' ? '#ef4444' : f.health === 'amber' ? '#f59e0b' : f.health === 'unknown' ? 'var(--muted)' : '#22c55e';
-  var label = f.health === 'red' ? '✕ Blocked' : f.health === 'amber' ? '⚠ Warning' : f.health === 'unknown' ? '? Unknown' : '✓ Healthy';
+  // pdt-s3 (AC1): drop the "?" glyph -- it read with the same visual weight
+  // as the real ✓/⚠/✕ signal glyphs even though the color was already muted.
+  var label = f.health === 'red' ? '✕ Blocked' : f.health === 'amber' ? '⚠ Warning' : f.health === 'unknown' ? 'Unknown' : '✓ Healthy';
   return '<li style="padding:14px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center">' +
     '<div>' +
       '<div style="font-size:14px;font-weight:500">' + _escapeHtml(f.displayName || f.featureSlug || f.journey_id) + '</div>' +
@@ -293,7 +295,8 @@ function _renderModuleSection(name, id, groupFeatures, renderRowFn) {
 // HTML), pointing at its own more specific raw-markdown viewer.
 function _renderPvcItemRow(item, includeCheckbox) {
   var color = item.health === 'red' ? '#ef4444' : item.health === 'amber' ? '#f59e0b' : item.health === 'unknown' ? 'var(--muted)' : '#22c55e';
-  var label = item.health === 'red' ? '✕ Blocked' : item.health === 'amber' ? '⚠ Warning' : item.health === 'unknown' ? '? Unknown' : '✓ Healthy';
+  // pdt-s3 (AC1): drop the "?" glyph -- see _renderEpicRow's identical comment.
+  var label = item.health === 'red' ? '✕ Blocked' : item.health === 'amber' ? '⚠ Warning' : item.health === 'unknown' ? 'Unknown' : '✓ Healthy';
   var healthAttr = item.health === 'red' ? 'red' : item.health === 'amber' ? 'amber' : item.health === 'unknown' ? 'unknown' : 'green';
   var searchText = ((item.name || '') + ' ' + item.slug).toLowerCase();
   var displayName = item.name || item.slug;
@@ -717,10 +720,19 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
   csrfToken = csrfToken || '';
   featureModuleAssignments = featureModuleAssignments || {};
   artefactCountsByJourneyId = artefactCountsByJourneyId || {};
-  var HEALTH_LABELS = { green: '✓ Healthy', amber: '⚠ Warning', red: '✕ Blocked', unknown: '? Unknown' };
+  // pdt-s3 (AC1): drop the "?" glyph -- see _renderEpicRow's identical comment.
+  var HEALTH_LABELS = { green: '✓ Healthy', amber: '⚠ Warning', red: '✕ Blocked', unknown: 'Unknown' };
   var HEALTH_COLORS = { green: '#22c55e', amber: '#f59e0b', red: '#ef4444', unknown: 'var(--muted)' };
   var healthCounts = (rollupRow && rollupRow.health_counts) ? _parseJsonbField(rollupRow.health_counts, null) : null;
-  var overallSignal = healthCounts ? _productRollup.computeOverallHealthSignal(healthCounts) : null;
+  var overallSignal = healthCounts ? _productRollup.computeOverallHealthSignal(healthCounts) : 'unknown';
+  // pdt-s3 (AC3): computeOverallHealthSignal (product-rollup.js -- out of
+  // scope for this story) has no 'unknown' branch; it falls through to
+  // 'green' whenever red=0 and amber=0, even with zero real signal. Correct
+  // that presentation-layer gap locally, here only, without touching the
+  // shared computation function itself.
+  if (healthCounts && (healthCounts.green || 0) === 0 && (healthCounts.red || 0) === 0 && (healthCounts.amber || 0) === 0) {
+    overallSignal = 'unknown';
+  }
   var healthHtml = healthCounts
     ? '<div style="margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;font-size:13px">' +
         '<span style="font-weight:600;color:' + HEALTH_COLORS[overallSignal] + '">Overall: ' + _escapeHtml(HEALTH_LABELS[overallSignal]) + '</span>' +
@@ -728,7 +740,9 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
           return '<span style="color:' + HEALTH_COLORS[status] + '">' + _escapeHtml(HEALTH_LABELS[status]) + ': ' + _escapeHtml(String(healthCounts[status] || 0)) + '</span>';
         }).join('') +
       '</div>'
-    : '';
+    // pdt-s3 (AC3): no rollup data at all -- show an honest Unknown Overall
+    // line rather than silently omitting it entirely.
+    : '<div style="margin-top:12px;font-size:13px"><span style="font-weight:600;color:' + HEALTH_COLORS.unknown + '">Overall: ' + HEALTH_LABELS.unknown + '</span></div>';
   var testCoverage = (rollupRow && rollupRow.test_coverage) ? _parseJsonbField(rollupRow.test_coverage, null) : null;
   var coverageHtml;
   if (!testCoverage || testCoverage.noData || !Array.isArray(testCoverage.perFeature)) {
