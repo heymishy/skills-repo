@@ -334,8 +334,16 @@ test('products.js exports handlePostProductSync', function() {
       if (!/91\.7%/.test(html)) throw new Error('Expected the blended percentage 91.7% to appear in the rendered page');
       passed++; console.log('  [PASS] _renderProductView: renders the blended test-coverage percentage (AC1)');
 
-      if (!/\bs1\b/.test(html) || !/\bs2\b/.test(html)) throw new Error('Expected per-story breakdown entries (s1, s2) to appear in the rendered page');
-      passed++; console.log('  [PASS] _renderProductView: renders per-story test-coverage detail alongside the blended number (AC3)');
+      // pdt-s1 (AC1): the per-story breakdown this assertion originally checked
+      // (_renderGroupedCoverageBreakdown) was a static, non-interactive duplicate
+      // of data already shown in the interactive By Module/By Phase/All tabs --
+      // removed. This fixture has no modules/taxonomy, so the breakdown's own
+      // distinctive "slug: pct%" format no longer appears anywhere; only the
+      // blended summary percentage (asserted above) remains. (A bare \bs1\b/\bs2\b
+      // check would false-positive on an unrelated "pan-s1" CSS comment shipped
+      // by html-shell.js -- targeting the removed format directly instead.)
+      if (/s1: 90%/.test(html) || /s2: 100%/.test(html)) throw new Error('Expected the static per-story breakdown entries (s1: 90%, s2: 100%) to be gone (superseded by pdt-s1 AC1)');
+      passed++; console.log('  [PASS] _renderProductView: static per-story breakdown no longer renders, superseded by pdt-s1 AC1');
 
       // No-data state (AC4)
       var noDataJson = JSON.stringify({ blendedPercentage: null, noData: true, totalPassing: 0, totalTests: 0, perFeature: [] });
@@ -548,11 +556,16 @@ test('products.js exports handlePostProductSync', function() {
       var resGrouped = { writeHead: function() {}, end: function(body) { htmlGrouped = body; } };
       await productsRouteFresh.handleGetProductView(reqGrouped, resGrouped, null, mockPoolGrouped);
 
-      assert.ok(/Epic A/.test(htmlGrouped), 'expected the epic name to appear in the test-coverage breakdown');
-      assert.ok(/a1: 50%/.test(htmlGrouped), 'expected the epic-nested story under its epic');
-      assert.ok(/Other features/.test(htmlGrouped), 'expected an "Other features" heading for the ungrouped story');
-      assert.ok(/b1: 100%/.test(htmlGrouped), 'expected the flat-feature story under Other features');
-      passed++; console.log('  [PASS] _renderProductView: test-coverage breakdown groups by parent epic (F4)');
+      // pdt-s1 (AC1): the grouped-by-epic test-coverage breakdown this test
+      // originally verified (_renderGroupedCoverageBreakdown) was a static,
+      // non-interactive duplicate of data already shown in the interactive
+      // By Module/By Phase/All tabs -- removed entirely. This fixture has no
+      // modules/taxonomy either, so none of this text appears anywhere now;
+      // only the blended summary percentage (75%) remains.
+      assert.ok(!/Epic A/.test(htmlGrouped), 'expected the static per-epic breakdown heading to be gone (superseded by pdt-s1 AC1)');
+      assert.ok(!/a1: 50%/.test(htmlGrouped), 'expected the static per-epic breakdown detail to be gone (superseded by pdt-s1 AC1)');
+      assert.ok(/75%/.test(htmlGrouped), 'expected the blended summary percentage to still render');
+      passed++; console.log('  [PASS] _renderProductView: static per-epic test-coverage breakdown no longer renders, superseded by pdt-s1 AC1');
     } catch (err) {
       failed++; console.log('  [FAIL] grouped test-coverage rendering (F4) --', err.message);
     }
@@ -588,8 +601,14 @@ test('products.js exports handlePostProductSync', function() {
       await productsRouteFresh.handleGetProductView(reqOld, resOld, null, mockPoolOldShape);
 
       assert.ok(htmlOld, 'expected a rendered HTML response for an old-shape cached rollup row, got none (handler likely threw)');
-      assert.ok(/old1: 80%/.test(htmlOld), 'expected the flat perFeature list to still render for pre-F4 cached rows');
-      passed++; console.log('  [PASS] _renderProductView: falls back to the flat perFeature list for pre-F4 cached rollup rows with no groups/ungrouped');
+      // pdt-s1 (AC1): the flat perFeature fallback this test originally verified
+      // was part of the now-removed _renderGroupedCoverageBreakdown -- an
+      // old-shape cached row must still render cleanly (no throw, asserted
+      // above) with its blended summary percentage, just without any per-story
+      // breakdown text (static or flat), superseded by pdt-s1 AC1.
+      assert.ok(!/old1: 80%/.test(htmlOld), 'expected the static flat-fallback breakdown text to be gone (superseded by pdt-s1 AC1)');
+      assert.ok(/80%/.test(htmlOld), 'expected the blended summary percentage to still render for an old-shape cached row');
+      passed++; console.log('  [PASS] _renderProductView: old-shape cached rollup rows still render cleanly, static breakdown superseded by pdt-s1 AC1');
     } catch (err) {
       failed++; console.log('  [FAIL] old-shape test-coverage fallback rendering --', err.message);
     }
