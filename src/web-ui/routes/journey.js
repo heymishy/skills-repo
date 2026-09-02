@@ -1557,6 +1557,12 @@ async function handleGetJourneyResume(req, res) {
   var featureSlug = req.params && req.params.featureSlug;
   var repoRoot = getRepoRoot(req);
 
+  // ep1-s6: "feature selected" -- the operator has chosen to continue this
+  // feature (Continue link click reaching this handler). Fired before
+  // backfill/resolution so it captures the selection itself, not the
+  // outcome; stage isn't resolved yet at this point.
+  _logCrossChannelEvent('feature_selected', { featureSlug: featureSlug, operatorId: req.session.login || undefined });
+
   // Load from disk (present in disk-mode; absent in Postgres mode)
   var diskJourney = null;
   try { diskJourney = _journeyDisk.loadJourney(featureSlug, repoRoot); } catch (_) {}
@@ -1579,7 +1585,7 @@ async function handleGetJourneyResume(req, res) {
     // crashed this whole request instead of falling through to the existing
     // graceful 404 branch below.
     try {
-      memJourney = backfillJourneyFromPipelineState(featureSlug, repoRoot);
+      memJourney = backfillJourneyFromPipelineState(featureSlug, repoRoot, req.session.login);
     } catch (backfillErr) {
       _logCrossChannelError('journey_backfill_error', { featureSlug: featureSlug, message: backfillErr.message });
       memJourney = null;
@@ -1708,6 +1714,17 @@ async function handleGetJourneyResume(req, res) {
   var sessionPath = path.join(repoRoot, 'artefacts', featureSlug, 'sessions', sid);
 
   getRegisterHtmlSession()(sid, sessionPath, currentStage, { productProfile: productProfile, priorArtefacts: priorArtefacts, featureSlug: featureSlug });
+
+  // ep1-s6: "session started from CLI-progressed feature" -- only for a
+  // journey that actually originated from a CLI-side backfill
+  // (cliAdoptionTimestamp is only ever set by backfillJourneyFromPipelineState),
+  // not every session start. Fires after registerHtmlSession so it lands
+  // after that call's own nested "artefact loaded" event.
+  if (memJourney && memJourney.cliAdoptionTimestamp) {
+    _logCrossChannelEvent('session_started_from_cli_progressed_feature', {
+      featureSlug: featureSlug, stage: currentStage, operatorId: req.session.login || undefined
+    });
+  }
 
   if (journeyId) {
     getLinkSessionToJourney()(sid, journeyId);
@@ -1866,6 +1883,16 @@ async function handleGetJourneyStageReopen(req, res) {
     featureSlug: journey.featureSlug,
     journeyId:   journeyId
   }, { company: req.session.tenantId || journey.tenantId });
+
+  // ep1-s6: "stage navigation" -- unifies with the event above under the
+  // shared cross-channel shape, additionally capturing the FROM stage
+  // (journey.activeSkill, the stage the operator was on before this
+  // backward nav) alongside the TO stage (skillName) -- 'earlier_stage_reopened'
+  // above only ever captured the destination.
+  _logCrossChannelEvent('stage_navigation', {
+    featureSlug: journey.featureSlug, stage: skillName, fromStage: journey.activeSkill || null, toStage: skillName,
+    operatorId: req.session.login || undefined
+  });
 
   res.writeHead(303, { Location: '/skills/' + encodeURIComponent(skillName) + '/sessions/' + sid + '/chat' });
   res.end();
@@ -4288,20 +4315,43 @@ var STAGE_INDEX = {
 };
 
 /**
+ * ep1-s6: fire-and-forget structured logging + PostHog event, shared by
+ * every cross-channel event type -- the 6 named success events (feature
+ * discovered, feature selected, journey backfilled, artefact loaded,
+ * session started from CLI-progressed feature, stage navigation) and
+ * ep1-s5's 3 error events (artefact_load_error, journey_backfill_error,
+ * stage_routing_error), under one consistent shape rather than two
+ * divergent ones. Server log line is valid JSON immediately after the
+ * `[cross-channel] ` prefix (eventType is a field, not free text) so it can
+ * be parsed, not just grepped. `operatorId` is only included when the
+ * caller actually passes one -- never null-padded for a background/
+ * system-triggered event with no session. Never throws.
+ * @param {string} eventType
+ * @param {object} [context]
+ */
+function _logCrossChannelEvent(eventType, context) {
+  var ctx = context || {};
+  var payload = Object.assign({ eventType: eventType, timestamp: new Date().toISOString() }, ctx);
+  try {
+    console.log('[cross-channel] ' + JSON.stringify(payload));
+  } catch (_) {}
+  try {
+    _posthog.capture(ctx.operatorId || ctx.featureSlug || 'system', eventType, payload);
+  } catch (_) { /* fire-and-forget — PostHog failure must not affect the caller */ }
+}
+
+/**
  * ep1-s5: fire-and-forget structured error logging + PostHog event for the
  * 3 named cross-channel error types (artefact_load_error,
  * journey_backfill_error, stage_routing_error). Never throws.
+ * ep1-s6: now a thin wrapper over the shared _logCrossChannelEvent, so error
+ * and success events share one logging shape -- kept as its own named
+ * function since ep1-s5's call sites and tests already reference it.
  * @param {string} errorType
  * @param {object} [context]
  */
 function _logCrossChannelError(errorType, context) {
-  var ctx = context || {};
-  try {
-    console.log('[cross-channel] ' + errorType + ' ' + JSON.stringify(Object.assign({ timestamp: new Date().toISOString() }, ctx)));
-  } catch (_) {}
-  try {
-    _posthog.capture(ctx.featureSlug || 'system', errorType, Object.assign({ timestamp: new Date().toISOString() }, ctx));
-  } catch (_) { /* fire-and-forget — PostHog failure must not affect the caller */ }
+  _logCrossChannelEvent(errorType, context);
 }
 
 function _readPipelineFeatures(root) {
@@ -4347,6 +4397,14 @@ function _mergeStateFeaturesIntoJourneyList(journeys, repoRoot) {
         stages:         {}
       };
     });
+  // ep1-s6: "feature discovered" -- fires once per feature actually
+  // surfaced to the operator via this merge (a feature already known to
+  // journey-store isn't a new discovery). No operatorId -- this runs on
+  // every /journey page load, not scoped to one authenticated request's
+  // session at this call site.
+  synthesized.forEach(function(s) {
+    _logCrossChannelEvent('feature_discovered', { featureSlug: s.featureSlug, stage: s.currentStage });
+  });
   return journeys.concat(synthesized);
 }
 
@@ -4402,9 +4460,10 @@ function getValidBackwardTargets(completedStages, currentStage) {
  * Returns null if featureSlug isn't in pipeline-state.json (genuinely unknown slug).
  * @param {string} featureSlug
  * @param {string} repoRoot
+ * @param {string} [operatorId] — ep1-s6: absent for a background/system-triggered backfill
  * @returns {Object|null}
  */
-function backfillJourneyFromPipelineState(featureSlug, repoRoot) {
+function backfillJourneyFromPipelineState(featureSlug, repoRoot, operatorId) {
   var existing = _journeyStore.getJourneyByFeatureSlug(featureSlug);
   if (existing) return existing;
   var features = _readPipelineFeatures(repoRoot);
@@ -4452,6 +4511,10 @@ function backfillJourneyFromPipelineState(featureSlug, repoRoot) {
     });
   } catch (_) { /* fire-and-forget — PostHog failure must not fail the backfill */ }
   console.log('[journey] Backfilled journey for ' + featureSlug + ' from pipeline-state.json stage=' + feature.stage);
+  // ep1-s6: "journey backfilled" under the shared cross-channel event shape
+  // -- additive to the ep1-s3 event above (kept unchanged for its own
+  // existing test coverage), not a replacement.
+  _logCrossChannelEvent('journey_backfilled', { featureSlug: featureSlug, stage: feature.stage, operatorId: operatorId || undefined });
   return _journeyStore.getJourney(journey.journeyId);
 }
 
@@ -4675,6 +4738,7 @@ module.exports = {
   getValidBackwardTargets, // ep1-s4
   handleGetStageConfirmBack, // ep1-s4
   _logCrossChannelError, // ep1-s5
+  _logCrossChannelEvent, // ep1-s6
   handleGetJourney,
   handlePostJourney,
   handleDeleteJourney,

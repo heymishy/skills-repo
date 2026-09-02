@@ -29475,25 +29475,66 @@
             {
               "slug": "ep1-s6",
               "name": "Audit Logging and PostHog Instrumentation",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-09-01T09:26:49.548Z",
+              "updatedAt": "2026-09-01T21:35:31.274Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/new-feature-af17f555/review/ep1-s6-review-1.md",
               "acTotal": 1,
               "testPlan": {
                 "status": "written",
-                "totalTests": 9,
-                "passing": 0
+                "totalTests": 11,
+                "passing": 11
               },
-              "acVerified": 0,
+              "acVerified": 1,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/new-feature-af17f555/dor/ep1-s6-dor.md",
               "dorContractArtefact": "artefacts/new-feature-af17f555/dor/ep1-s6-dor-contract.md",
               "dorSignedOffAt": "2026-09-01T00:00:00.000Z",
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "verifyStatus": "passed",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Shared instrumentation helper",
+                  "tddState": "committed",
+                  "file": "artefacts/new-feature-af17f555/plans/ep1-s6-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Wire feature_discovered (ep1-s1)",
+                  "tddState": "committed",
+                  "file": "artefacts/new-feature-af17f555/plans/ep1-s6-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Wire feature_selected + artefact_loaded (ep1-s2)",
+                  "tddState": "committed",
+                  "file": "artefacts/new-feature-af17f555/plans/ep1-s6-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Wire journey_backfilled + session_started_from_cli_progressed_feature (ep1-s3)",
+                  "tddState": "committed",
+                  "file": "artefacts/new-feature-af17f555/plans/ep1-s6-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Wire stage_navigation (ep1-s4)",
+                  "tddState": "committed",
+                  "file": "artefacts/new-feature-af17f555/plans/ep1-s6-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "Unify ep1-s5 error events + full regression",
+                  "tddState": "committed",
+                  "file": "artefacts/new-feature-af17f555/plans/ep1-s6-plan.md"
+                }
+              ],
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/812"
             }
           ]
         }

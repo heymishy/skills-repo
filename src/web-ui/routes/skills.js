@@ -1969,6 +1969,11 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
         // priorArtefacts entry, unlike test-plans (already covered here).
         var _KEY_DIRS = ['stories', 'review', 'test-plans', 'verification-scripts', 'epics', 'dor'];
         var _diskParts = [];
+        // ep1-s6: shared cross-channel logging -- lazy require (matches this
+        // file's existing require('./journey') pattern elsewhere) avoids a
+        // top-of-file circular require between journey.js and skills.js.
+        var _logCrossChannelEvent = require('./journey')._logCrossChannelEvent;
+        var _artefactLoadStart = Date.now();
         _allFiles.forEach(function(relFile) {
           if (_KEY_DIRS.indexOf(relFile.split('/')[0]) === -1) { return; }
           var fullPath = 'artefacts/' + _featureSlug + '/' + relFile;
@@ -1979,14 +1984,19 @@ function buildSystemPrompt(skillName, sessionPath, repoRoot, priorArtefacts, ses
           } catch (fileReadErr) {
             // ep1-s5: log-and-exclude rather than silently drop -- an
             // unreadable artefact should be observable, not invisible.
-            try {
-              console.log('[cross-channel] artefact_load_error ' + JSON.stringify({ featureSlug: _featureSlug, relFile: relFile, message: fileReadErr.message, timestamp: new Date().toISOString() }));
-            } catch (_) {}
+            _logCrossChannelEvent('artefact_load_error', { featureSlug: _featureSlug, stage: skillName, relFile: relFile, message: fileReadErr.message });
           }
         });
         if (_diskParts.length > 0) {
           parts.push('--- FEATURE ARTEFACTS ---\n\n' + _diskParts.join('\n\n') + '\n\n--- END FEATURE ARTEFACTS ---');
         }
+        // ep1-s6: "artefact loaded" -- one event per system-prompt build that
+        // attempted a feature-artefact disk load, whether or not any files
+        // were actually found (artefactCount may legitimately be 0).
+        _logCrossChannelEvent('artefact_loaded', {
+          featureSlug: _featureSlug, stage: skillName,
+          artefactCount: _diskParts.length, loadTimeMs: Date.now() - _artefactLoadStart
+        });
       }
     } catch (_) {}
   }
