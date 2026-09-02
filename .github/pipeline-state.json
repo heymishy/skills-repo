@@ -29599,7 +29599,7 @@
         {
           "slug": "stage-completion-artefact-durability",
           "name": "Operators Can Trust That a Completed Stage's Artefact Is Durably Committed",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "acdg-s1",
@@ -29632,12 +29632,12 @@
             {
               "slug": "acdg-s2",
               "name": "Add a Distinguishable Durability Signal for Stage-Completion Commits",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/review/acdg-s2-review-1.md",
-              "updatedAt": "2026-09-02T07:12:12.077Z",
+              "updatedAt": "2026-09-02T07:32:13.218Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
@@ -29651,8 +29651,10 @@
               "dorArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/dor/acdg-s2-dor.md",
               "dorContractArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/dor/acdg-s2-dor-contract.md",
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/814"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/814",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         }
