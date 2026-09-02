@@ -4,15 +4,15 @@
 **Story:** acdg-s1
 **Test plan:** artefacts/2026-09-01-artefact-commit-durability-gap/test-plans/acdg-s1-test-plan.md
 **Status:** SIGNED OFF
-**Date:** 2026-09-02
+**Date:** 2026-09-02 — Revision 2, after root-cause investigation confirmed the real mechanism. Revision 1's sign-off is superseded — see `decisions.md`.
 
 ---
 
 ## Contract Proposal → Contract Review
 
-See `artefacts/2026-09-01-artefact-commit-durability-gap/dor/acdg-s1-dor-contract.md`.
+See `artefacts/2026-09-01-artefact-commit-durability-gap/dor/acdg-s1-dor-contract.md` (Revision 2).
 
-**Contract review:** ✅ PASS — the proposed implementation (investigate → fix the confirmed path → preserve AC4 → test all 4 outcome paths) directly aligns with every AC. No mismatch found.
+**Contract review:** ✅ PASS — the confirmed `journey.productId` cross-check directly implements AC1, AC2-revised, AC3-revised, AC4. No mismatch found.
 
 ---
 
@@ -21,22 +21,22 @@ See `artefacts/2026-09-01-artefact-commit-durability-gap/dor/acdg-s1-dor-contrac
 | # | Check | Result |
 |---|-------|--------|
 | H1 | User story in As / Want / So format with named persona | ✅ PASS |
-| H2 | At least 3 ACs in Given / When / Then format | ✅ PASS (5 ACs: AC1, AC2, AC2a, AC3, AC4) |
-| H3 | Every AC has test coverage in test plan | ✅ PASS (4 unit + 2 integration + 2 NFR covering AC1–AC3; AC4 covered via explicit DoD cross-reference gap entry, consistent with this template's own gap-handling convention) |
+| H2 | At least 3 ACs in Given / When / Then format | ✅ PASS (4 ACs: AC1, AC2-revised, AC3-revised, AC4) |
+| H3 | Every AC has test coverage in test plan | ✅ PASS (3 unit + 2 integration + 2 NFR covering AC1/AC2-revised/AC3-revised; AC4 satisfied directly by AC2-revised's own test) |
 | H4 | Out-of-scope section populated | ✅ PASS |
 | H5 | Benefit linkage references named metric | ✅ PASS (AC2 Guard Correctness) |
-| H6 | Complexity rated | ✅ PASS (Complexity: 2) |
-| H7 | No unresolved HIGH findings from review | ✅ PASS (0 HIGH; 2 MEDIUM both resolved same-session — see review report's Post-review resolution) |
+| H6 | Complexity rated | ✅ PASS (Complexity: 1, revised down from 2 — ambiguity resolved) |
+| H7 | No unresolved HIGH findings from review | ✅ PASS (Run 2: 0 HIGH, 0 MEDIUM, 1 LOW informational) |
 | H8 | Test plan has no uncovered ACs | ✅ PASS |
-| H8-ext | Schema dependency check | ✅ PASS — Dependencies lists "None" for upstream — no schema check required. |
-| H9 | Architecture Constraints populated; no Category E HIGH findings | ✅ PASS (0 HIGH in Category E; 1 LOW, informational — guardrails registry doesn't cover `src/web-ui/`) |
-| H-E2E | CSS-layout-dependent AC without E2E/RISK-ACCEPT | ✅ PASS — not applicable; no layout-dependent ACs, pure backend logic |
-| H-NFR | NFR profile or explicit story NFR field | ✅ PASS (NFR profile exists at `nfr-profile.md`) |
-| H-NFR2 | Compliance sign-off | ✅ PASS (not applicable — no named regulatory clause) |
+| H8-ext | Schema dependency check | ✅ PASS — Dependencies lists "None" for upstream — no schema check required |
+| H9 | Architecture Constraints populated; no Category E HIGH findings | ✅ PASS (0 HIGH; 1 LOW carried forward, informational — guardrails registry doesn't cover `src/web-ui/`) |
+| H-E2E | CSS-layout-dependent AC without E2E/RISK-ACCEPT | ✅ PASS — not applicable |
+| H-NFR | NFR profile or explicit story NFR field | ✅ PASS |
+| H-NFR2 | Compliance sign-off | ✅ PASS (not applicable) |
 | H-NFR3 | Data classification | ✅ PASS (Internal) |
-| H-NFR-profile | NFR profile presence | ✅ PASS (story NFRs populated, profile exists) |
-| H-GOV | Approved By section | ✅ PASS (discovery.md's Approved By: Hamish King — Platform Owner — 2026-09-02) |
-| H-ADAPTER | Injectable adapter wiring | ✅ PASS (no new injectable adapters introduced — `commitArtefact`/`ownerRepoForFeature` are plain module-export functions, not `setX()`-style adapters) |
+| H-NFR-profile | NFR profile presence | ✅ PASS |
+| H-GOV | Approved By section | ✅ PASS |
+| H-ADAPTER | Injectable adapter wiring | ✅ PASS (no new injectable adapters — `journey.productId` is an existing field read, not an adapter) |
 | H-INF | Infra-plan check | ✅ PASS (hasInfraTrack: false) |
 | H-MIG | Migration-review check | ✅ PASS (hasMigrationTrack: false) |
 
@@ -48,17 +48,17 @@ See `artefacts/2026-09-01-artefact-commit-durability-gap/dor/acdg-s1-dor-contrac
 
 | # | Check | Status |
 |---|-------|--------|
-| W1 | NFRs populated or explicitly "None" | ✅ ACKNOWLEDGED (populated) |
+| W1 | NFRs populated or explicitly "None" | ✅ ACKNOWLEDGED |
 | W2 | Scope stability declared | ✅ ACKNOWLEDGED (Stable) |
-| W3 | MEDIUM review findings | ✅ ACKNOWLEDGED — both 1-M1 and 1-M2 were resolved same-session by revising the story directly (not deferred), see review report |
-| W4 | Verification script reviewed by domain expert | ⚠️ ACKNOWLEDGED — not yet reviewed by a domain expert; RISK-ACCEPT basis matches every prior story in this repo's recent history (solo operator serves both roles) |
-| W5 | No UNCERTAIN gap-table items | ✅ ACKNOWLEDGED (gap table's one entry — AC4's DoD cross-reference — has an explicit handling decision, not left uncertain) |
+| W3 | MEDIUM review findings | ✅ NOT APPLICABLE (Run 2: none) |
+| W4 | Verification script reviewed by domain expert | ⚠️ ACKNOWLEDGED — same RISK-ACCEPT basis as every prior story this session |
+| W5 | No UNCERTAIN gap-table items | ✅ ACKNOWLEDGED (test plan's own gap table states "None") |
 
 ---
 
 ## Oversight Level
 
-**Epic-declared oversight:** Medium — tech lead awareness required (self-acknowledged by the operator, Hamish King, same basis as every story in the just-shipped `new-feature-af17f555` epic).
+**Epic-declared oversight:** Medium — self-acknowledged by the operator (Hamish King).
 
 ---
 
@@ -72,82 +72,98 @@ Story has no `domain` field specified. Standards injection skipped.
 
 ```
 STORY: acdg-s1 — Fix the Silent Artefact-Commit Failure in Stage-Completion (AC2 Guard)
+[Revision 2 -- the real mechanism is confirmed, no further investigation needed]
 
 ACCEPTANCE CRITERIA:
-AC1: Given a feature is linked to a repo-connected product and ownerRepoForFeature
-resolves successfully, When the subsequent commitArtefact call fails, Then
-completeStage() is NOT called and the operator receives the existing
-artefact-commit-failed error response. Implementation must first confirm
-whether commitArtefact genuinely throws (regression-protection AC) or
-swallows failures internally (the actual fix site, in that case).
+AC1 (regression-protection): Given a feature is linked to a repo-connected
+product and ownerRepoForFeature resolves successfully, When the subsequent
+commitArtefact call fails, Then completeStage() is NOT called and the
+operator receives the existing artefact-commit-failed error response.
+This path is already correct on unmodified code -- write the test, expect
+it to PASS before your change, and confirm that in the PR description.
 
-AC2: Given ownerRepoForFeature THROWS while resolving despite a genuinely
-valid link, When a stage is completed, Then the operator receives a clear
-error and completeStage() is NOT called.
+AC2-revised (the actual fix): Given a stage completes for a journey whose
+journey.productId is set, When ownerRepoForFeature throws for any reason,
+Then this is a genuine anomaly -- the operator receives a clear error and
+completeStage() is NOT called.
 
-AC2a: Given ownerRepoForFeature returns falsy WITHOUT throwing despite a
-genuinely valid link, When a stage is completed, Then the operator receives
-a clear error and completeStage() is NOT called.
+AC3-revised (regression-protection): Given a stage completes for a journey
+with NO productId set, When ownerRepoForFeature throws, Then the commit is
+skipped and completeStage() proceeds normally with no error -- unchanged
+behaviour.
 
-AC3: Given a feature's product genuinely has no connected repo, When a
-stage is completed, Then the commit is skipped and completeStage() proceeds
-normally with no error — unchanged regression-protected behaviour.
-
-AC4: Given the specific failure mode is confirmed during implementation,
-Then a named regression test exists that would have caught it — record
-which of AC1/AC2/AC2a's tests actually failed on unmodified code in the
-PR description and DoD.
+AC4: A dedicated regression test (AC2-revised's own test) demonstrates the
+fix reproduces and resolves the shape of new-feature-af17f555's own
+historical incident. Name this test explicitly in the PR description.
 
 SCOPE BOUNDARIES:
+- Do NOT modify export-data-source.js, artefact-commit-writer.js,
+  journey-store.js, or journey-store-pg.js -- all confirmed already
+  correct/sufficient
 - Do NOT backfill new-feature-af17f555's own 8 already-missing artefacts
 - Do NOT add a retry/backoff mechanism
-- Do NOT implement acdg-s2's logging signal — separate story
+- Do NOT implement acdg-s2's logging signal -- separate story
 
-INVESTIGATION STEP (do this first, before writing any fix):
-Read src/web-ui/adapters/artefact-commit-writer.js and
-src/web-ui/adapters/export-data-source.js in full. Determine which of the
-3 candidate failure sub-modes (AC1/AC2/AC2a) is the actual root cause.
-State the finding explicitly in the PR description before writing the fix.
+THE FIX (single, confirmed change):
+In journey.js's handlePostGateConfirm, the existing block:
+
+  try {
+    _dasOwnerRepo = await ownerRepoForFeature(journey.featureSlug, req.session.accessToken);
+  } catch (_dasResolveErr) {
+    _dasOwnerRepo = null; // AC4 (original): proceed unchanged
+  }
+
+becomes:
+
+  try {
+    _dasOwnerRepo = await ownerRepoForFeature(journey.featureSlug, req.session.accessToken);
+  } catch (_dasResolveErr) {
+    if (journey.productId) {
+      // genuine anomaly: the journey believes it's linked to a product,
+      // but resolution failed -- block and surface a clear error (AC2-revised)
+      res.writeHead(502, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({
+        error: 'artefact-commit-failed',
+        message: 'Could not resolve the connected repository for this feature. The stage has NOT been marked complete -- fix the underlying issue and try again.',
+        detail: _dasResolveErr && _dasResolveErr.message
+      }));
+      return;
+    }
+    _dasOwnerRepo = null; // genuinely no product link -- AC3-revised: proceed unchanged
+  }
 
 IMPLEMENTATION TASKS (suggest breaking into subtasks):
-1. Task 1: Read and understand ownerRepoForFeature and commitArtefact's
-   actual implementations; confirm the root cause
-2. Task 2: Write the 4 unit tests (AC1, AC2, AC2a, AC3) against CURRENT
-   (unmodified) code first — record which pass/fail before any fix
-3. Task 3: Implement the fix for the confirmed failure path
-4. Task 4: Write the 2 integration tests
-5. Task 5: Write the 2 NFR tests (call-order assertion; manual code-review
-   note for the security NFR, documented in the PR rather than automated)
-6. Task 6: Full regression suite + sibling regression (das-s1's own
+1. Task 1: Write the 3 unit tests (AC1, AC2-revised, AC3-revised) against
+   CURRENT (unmodified) code first -- record which pass/fail
+2. Task 2: Implement the fix exactly as specified above
+3. Task 3: Write the 2 integration tests
+4. Task 4: Write the 2 NFR tests
+5. Task 5: Full regression suite + sibling regression (das-s1's own
    existing behaviour, ep1-s1 through ep1-s6's own test suites, given this
    touches the same journey.js file)
 
 VERIFICATION:
-Run the test suite (8 tests from test plan). Confirm AC4 by naming the
-specific test(s) that failed on unmodified code in the PR description.
+Run the test suite (7 tests from test plan). Confirm AC1 passed on
+unmodified code (regression-protection) and AC2-revised failed on
+unmodified code, passed after the fix (the real fix).
 
 NFR TARGETS:
-- No meaningful latency increase (resolve-then-commit already synchronous)
+- No meaningful latency increase
 - No new credential handling
-- Fire-and-forget is NOT applicable to this story (that's acdg-s2's
-  logging layer) — this story's error responses ARE synchronous and
-  MUST block, unlike ep1-s5/ep1-s6's fire-and-forget logging pattern
+- This story's error path is synchronous and MUST block (unlike
+  ep1-s5/ep1-s6's fire-and-forget logging pattern -- not applicable here)
 
 ARCHITECTURE CONSTRAINTS:
-- Preserve das-s1's existing AC4 behaviour exactly — do not change the
-  genuine no-repo skip path
+- Preserve the exact AC3-revised (unset productId) behaviour -- do not
+  change it
 - No new npm dependencies
-- Open a draft PR when tests pass — do not mark ready for review
-- If investigation reveals a 4th failure sub-mode not covered by any
-  current AC, add a PR comment describing it and do not mark ready for
-  review — this needs a return to /definition, not a silent workaround
+- Open a draft PR when tests pass -- do not mark ready for review
 
 STANDARDS:
 No domain-specific standards injected for this story.
 
 NEXT STORY:
-acdg-s2 depends on this story's DoD completion — its "failed" event
-should log the real reason confirmed and fixed here.
+acdg-s2 depends on this story's DoD completion.
 
 Oversight level: Medium
 ```
@@ -174,4 +190,4 @@ After PR merge: run `/definition-of-done`.
 ## DoR Sign-Off
 
 **Oversight level:** Medium
-**Sign-off required:** No — Medium oversight requires tech lead awareness only, not a named sign-off (per `/definition-of-ready`'s own oversight-level rules). DoR artefact shared with the operator (Hamish King, Platform Owner) for awareness before proceeding.
+**Sign-off required:** No — Medium oversight requires tech lead awareness only, not a named sign-off. DoR artefact shared with the operator (Hamish King, Platform Owner) for awareness before proceeding.

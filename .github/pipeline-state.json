@@ -29605,24 +29605,24 @@
               "slug": "acdg-s1",
               "name": "Fix the Silent Artefact-Commit Failure in Stage-Completion (AC2 Guard)",
               "stage": "definition-of-ready",
-              "health": "amber",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/review/acdg-s1-review-1.md",
-              "updatedAt": "2026-09-02T06:04:32.192Z",
+              "reviewArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/review/acdg-s1-review-2.md",
+              "updatedAt": "2026-09-02T06:12:19.980Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 8,
+                "totalTests": 7,
                 "passing": 0
               },
-              "acTotal": 5,
+              "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
-              "dorStatus": "in-progress",
+              "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/dor/acdg-s1-dor.md",
               "dorContractArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/dor/acdg-s1-dor-contract.md",
-              "blocker": "Root-cause investigation found ownerRepoForFeature never returns falsy without throwing (AC2a unreachable) and the real distinguishing signal between AC2/AC3 does not exist as originally conceived -- touches the deferred journeys-table/journeyStore sync gap. Returning to /definition per operator decision 2026-09-02."
+              "blocker": ""
             },
             {
               "slug": "acdg-s2",

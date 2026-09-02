@@ -3,7 +3,7 @@
 **Story reference:** artefacts/2026-09-01-artefact-commit-durability-gap/stories/acdg-s1.md
 **Epic reference:** artefacts/2026-09-01-artefact-commit-durability-gap/epics/stage-completion-artefact-durability.md
 **Test plan author:** Claude (agent, operator-directed)
-**Date:** 2026-09-02
+**Date:** 2026-09-02 — **Revision 2**, rewritten after `/branch-setup`'s root-cause investigation confirmed the real mechanism (`journey.productId` cross-check) and invalidated Revision 1's AC2/AC2a split. See `decisions.md` for the full investigation trail.
 
 ---
 
@@ -11,11 +11,10 @@
 
 | AC | Description | Unit | Integration | E2E | Manual | Gap type | Risk |
 |----|-------------|------|-------------|-----|--------|----------|------|
-| AC1 | `commitArtefact` throws after a successful resolve → blocks completion, returns existing error | 1 | 1 | — | — | — | 🟢 |
-| AC2 | `ownerRepoForFeature` throws for a genuinely-linked product → blocks completion, clear error | 1 | 1 | — | — | — | 🟢 |
-| AC2a | `ownerRepoForFeature` resolves falsy (no throw) for a genuinely-linked product → blocks completion, clear error | 1 | — | — | — | — | 🟢 |
-| AC3 | Genuinely no repo linked → commit skipped, completion proceeds, no error (regression) | 1 | 1 | — | — | — | 🟢 |
-| AC4 | A named regression test exists for the confirmed historical failure mode | — | — | — | [DoD cross-reference] | Untestable-by-nature | 🟡 |
+| AC1 | `commitArtefact` throws after a successful resolve → blocks completion, returns existing error (regression-protection) | 1 | 1 | — | — | — | 🟢 |
+| AC2-revised | `journey.productId` set but `ownerRepoForFeature` throws → blocks completion, clear error (the real fix) | 1 | 1 | — | — | — | 🟢 |
+| AC3-revised | `journey.productId` unset, `ownerRepoForFeature` throws → commit skipped, completion proceeds, no error (regression-protection) | 1 | 1 | — | — | — | 🟢 |
+| AC4 | A named regression test reproduces the shape of the historical incident | — | — | — | [DoD cross-reference] | Untestable-by-nature | 🟡 |
 
 ---
 
@@ -23,7 +22,7 @@
 
 | Gap | AC | Gap type | Reason untestable in this repo's test runner | Handling |
 |-----|----|----------|--------------------------|---------|
-| Confirming which specific test (AC1, AC2, or AC2a) corresponds to the ACTUAL historical root cause | AC4 | Untestable-by-nature | AC4 is a meta/process assertion ("a regression test exists for the real bug"), not an independently automatable behaviour — its truth depends on which of AC1/AC2/AC2a's own results end up covering the real root cause, determined only during implementation | Verified at DoD by cross-referencing which test(s) genuinely failed on unmodified code (see TDD discipline note below), named explicitly in the story's DoD |
+| AC4 itself is a meta/process assertion, not an independently automatable behaviour | AC4 | Untestable-by-nature | Its truth is that AC2-revised's own test demonstrates the fix — there is no separate, additional test to write | Satisfied directly by AC2-revised's own test; named explicitly in the story's DoD as the evidence for AC4 |
 
 ---
 
@@ -38,10 +37,9 @@
 
 | AC | Data needed | Source | Sensitive fields | Notes |
 |----|-------------|--------|-----------------|-------|
-| AC1 | A fixture journey/session with a resolvable owner/repo; a monkey-patched `commitArtefact` that throws | Synthetic, in-test | None | Mirrors ep1-s5's `fs.readFileSync` monkey-patch technique, applied to `artefact-commit-writer.js`'s exported `commitArtefact` |
-| AC2 | A fixture journey/session; a monkey-patched `ownerRepoForFeature` that throws | Synthetic, in-test | None | Monkey-patch `export-data-source.js`'s exported `ownerRepoForFeature` |
-| AC2a | Same as AC2, but the monkey-patched `ownerRepoForFeature` resolves to `null`/`undefined` without throwing | Synthetic, in-test | None | |
-| AC3 | A fixture journey/session with `ownerRepoForFeature` resolving to `null` (real "no repo" behaviour, not mocked-as-error) | Synthetic, in-test | None | Regression-protection — must still pass unchanged |
+| AC1 | A fixture journey/session with a resolvable owner/repo; a monkey-patched `commitArtefact` that throws | Synthetic, in-test | None | Monkey-patch `artefact-commit-writer.js`'s exported `commitArtefact` |
+| AC2-revised | A fixture journey created with `productId` set (via `journeyStore.setJourneyFields`); a monkey-patched `ownerRepoForFeature` that throws | Synthetic, in-test | None | Monkey-patch `export-data-source.js`'s exported `ownerRepoForFeature` |
+| AC3-revised | A fixture journey with NO `productId` set; a monkey-patched `ownerRepoForFeature` that throws | Synthetic, in-test | None | Regression-protection — must still pass unchanged |
 
 ### PCI / sensitivity constraints
 
@@ -49,7 +47,7 @@ None — synthetic test data throughout; no real GitHub tokens, no real repo con
 
 ### Gaps
 
-None — all data available now via monkey-patching, matching this repo's established adapter-testing convention (no injectable-adapter seam currently exists on `ownerRepoForFeature`/`commitArtefact`, but both are `require()`'d as module exports at call time, making the same monkey-patch technique used for `posthog-server.capture` in `ep1-s5`/`ep1-s6` directly applicable).
+None — all data available now via monkey-patching, matching this repo's established adapter-testing convention.
 
 ---
 
@@ -59,50 +57,42 @@ None — all data available now via monkey-patching, matching this repo's establ
 - **Verifies:** AC1
 - **Precondition:** Fixture journey with a session at an active stage; `ownerRepoForFeature` monkey-patched to resolve `{owner: 'x', repo: 'y'}`; `commitArtefact` monkey-patched to throw
 - **Action:** Call `handlePostGateConfirm` (or the equivalent stage-completion request path) for this session
-- **Expected result:** Response status 502, body `{error: 'artefact-commit-failed', ...}`; `journeyStore.completeStage` is NOT called (assert via a spy/wrapped `completeStage`)
+- **Expected result:** Response status 502, body `{error: 'artefact-commit-failed', ...}`; `journeyStore.completeStage` is NOT called
 - **Edge case:** No
-- **TDD note:** This session's own code reading (`journey.js`'s existing try/catch around `commitArtefact`) suggests this path may already be correct on unmodified code — if this test PASSES before any implementation change, that confirms AC1 is a regression-protection test, not new-fix evidence, exactly as flagged in the story's own AC1 revision note. Record the actual pre-implementation result in the DoD.
+- **TDD note:** Confirmed via full code read of `artefact-commit-writer.js` that this path is already correct on unmodified code — `commitArtefact` is a proper injectable adapter that throws on any real failure, and `journey.js`'s existing try/catch already handles it. This test is expected to PASS on unmodified code — it is a regression-protection test, not new-fix evidence. Record this explicitly in the DoD.
 
-### ownerRepoForFeature throw (genuinely-linked product) blocks completion and returns a clear error
-- **Verifies:** AC2
-- **Precondition:** Fixture journey with a session at an active stage, backed by a feature genuinely linked to a repo-connected product; `ownerRepoForFeature` monkey-patched to throw
+### journey.productId set, ownerRepoForFeature throws → blocks completion and returns a clear error (the real fix)
+- **Verifies:** AC2-revised
+- **Precondition:** Fixture journey created via `journeyStore.createJourney` then `journeyStore.setJourneyFields(journeyId, {productId: 'some-product-id'})`; `ownerRepoForFeature` monkey-patched to throw `ExportNotFoundError`
 - **Action:** Call `handlePostGateConfirm` for this session
 - **Expected result:** Response is a clear, actionable error (not the existing silent-skip completion); `journeyStore.completeStage` is NOT called
 - **Edge case:** No
-- **TDD note:** Expected to FAIL on unmodified code — today's `catch (_dasResolveErr) { _dasOwnerRepo = null; }` swallows this and proceeds to complete the stage normally with no error. This is the primary candidate for the real historical root cause.
+- **TDD note:** Expected to FAIL on unmodified code — today's `catch (_dasResolveErr) { _dasOwnerRepo = null; }` swallows this regardless of `journey.productId`, and proceeds to complete the stage normally with no error. This is the confirmed real historical root cause — directly reproduces the shape of `new-feature-af17f555`'s own incident (created via `handlePostProductFeature`, which sets `productId` at creation time).
 
-### ownerRepoForFeature falsy-without-throw (genuinely-linked product) blocks completion and returns a clear error
-- **Verifies:** AC2a
-- **Precondition:** Same as above, but `ownerRepoForFeature` monkey-patched to resolve `null`/`undefined` directly (no throw) despite the product being genuinely linked
-- **Action:** Call `handlePostGateConfirm` for this session
-- **Expected result:** Response is a clear, actionable error; `journeyStore.completeStage` is NOT called
-- **Edge case:** Yes — this is the failure sub-mode `acdg-s1`'s own review (finding 1-M2) identified as having zero prior AC coverage
-- **TDD note:** Expected to FAIL on unmodified code — `if (_dasOwnerRepo)` evaluates false identically to the genuine-no-repo case (AC3), with no way to distinguish today.
-
-### Genuinely-no-repo product still skips cleanly with no error (regression)
-- **Verifies:** AC3
-- **Precondition:** Fixture journey with a session at an active stage, backed by a feature with no connected repo; `ownerRepoForFeature` resolves `null` (real behaviour, not simulated as an error)
+### journey.productId unset, ownerRepoForFeature throws → commit skipped, no error (regression)
+- **Verifies:** AC3-revised
+- **Precondition:** Fixture journey created via `journeyStore.createJourney` WITHOUT setting `productId` (the default state for any journey never linked to a product); `ownerRepoForFeature` monkey-patched to throw
 - **Action:** Call `handlePostGateConfirm` for this session
 - **Expected result:** No error response; `journeyStore.completeStage` IS called; stage marked complete exactly as before this story
 - **Edge case:** No
-- **TDD note:** Expected to PASS on unmodified code — this is a regression-protection test for AC4's original, unchanged design.
+- **TDD note:** Expected to PASS on unmodified code — this is a regression-protection test for the original, unchanged AC4 design (this story's fix only adds a NEW blocking branch when `productId` is set; the unset case is untouched).
 
 ---
 
 ## Integration Tests
 
-### Full gate-confirm request never marks a stage complete when the artefact commit genuinely fails
-- **Verifies:** AC1, AC2 (whichever is confirmed as the real root cause)
-- **Components involved:** `handlePostGateConfirm`, `journey-store.js`'s `completeStage`, `export-data-source.js`'s `ownerRepoForFeature`, `artefact-commit-writer.js`'s `commitArtefact`
-- **Precondition:** A real (in-memory) journey created via `journeyStore.createJourney`, with a real active session
-- **Action:** Send a full `handlePostGateConfirm` request with both adapter functions monkey-patched to simulate the confirmed failure mode
+### Full gate-confirm request never marks a stage complete when a linked feature's commit resolution fails
+- **Verifies:** AC2-revised
+- **Components involved:** `handlePostGateConfirm`, `journey-store.js`'s `completeStage`, `export-data-source.js`'s `ownerRepoForFeature`
+- **Precondition:** A real (in-memory) journey created via `journeyStore.createJourney` with `productId` set, with a real active session
+- **Action:** Send a full `handlePostGateConfirm` request with `ownerRepoForFeature` monkey-patched to throw
 - **Expected result:** The journey's `completedStages` array does NOT gain a new entry for this stage; a follow-up call to `journeyStore.getJourney` shows the stage still incomplete
 
-### Full gate-confirm request completes normally for a genuinely repo-less feature
-- **Verifies:** AC3
+### Full gate-confirm request completes normally for a genuinely unlinked feature
+- **Verifies:** AC3-revised
 - **Components involved:** Same as above
-- **Precondition:** Same as above, but `ownerRepoForFeature` resolves `null`
-- **Action:** Send a full `handlePostGateConfirm` request
+- **Precondition:** Same as above, but `productId` is never set on the journey
+- **Action:** Send a full `handlePostGateConfirm` request with `ownerRepoForFeature` monkey-patched to throw
 - **Expected result:** The journey's `completedStages` array DOES gain the new entry — unchanged from pre-story behaviour
 
 ---
@@ -111,13 +101,13 @@ None — all data available now via monkey-patching, matching this repo's establ
 
 ### Stage-completion sequencing is unchanged (resolve-then-commit still runs synchronously before completeStage)
 - **NFR addressed:** Performance
-- **Measurement method:** Call-order assertion — a test double records the order in which `ownerRepoForFeature`, `commitArtefact`, and `journeyStore.completeStage` are invoked; asserts the existing order is preserved (no new async round-trip inserted between them)
+- **Measurement method:** Call-order assertion — a test double records the order in which `ownerRepoForFeature`, `commitArtefact`, and `journeyStore.completeStage` are invoked; asserts the existing order is preserved
 - **Pass threshold:** Call order identical to pre-story behaviour
 - **Tool:** Node.js assert-based test helper (this repo's `npm test` runner)
 
 ### No new credential or full-artefact-content exposure
 - **NFR addressed:** Security
-- **Measurement method:** Not independently automated-testable as a negative property beyond code review — verified manually at DoD by diffing the actual PR against `journey.js`'s existing `req.session.accessToken` usage, confirming no new credential parameter or full artefact body is added to any error message or log line
+- **Measurement method:** Not independently automated-testable as a negative property beyond code review — verified manually at DoD by diffing the PR against `journey.js`'s existing `req.session.accessToken` usage, confirming no new credential parameter or full artefact body is added to any error message
 - **Pass threshold:** N/A — manual code-review confirmation, recorded in DoD
 - **Tool:** Manual code review
 
@@ -125,14 +115,12 @@ None — all data available now via monkey-patching, matching this repo's establ
 
 ## Out of Scope for This Test Plan
 
-- Testing `artefact-commit-writer.js`'s or `export-data-source.js`'s own internal implementation correctness beyond the specific throw/no-throw/resolve-null behaviours this story's ACs need — a full unit-test suite for those adapters (if one doesn't already exist) is a separate concern from this story's own bug fix.
+- Testing `artefact-commit-writer.js`'s or `export-data-source.js`'s own internal implementation correctness beyond the specific throw behaviours this story's ACs need — this story does not modify either file.
 - Testing `acdg-s2`'s durability-signal events — covered by that story's own test plan.
-- Live-staging/production verification that a real commit failure now correctly blocks — deferred to DoD's own manual smoke-test step, since forcing a genuine GitHub API failure in production is not something this test plan can safely simulate.
+- Live-staging/production verification that a real commit failure now correctly blocks — deferred to DoD's own manual smoke-test step.
 
 ---
 
 ## Test Gaps and Risks
 
-| Gap | Reason | Mitigation |
-|-----|--------|------------|
-| AC4's own truth depends on implementation-time findings | Which of AC1/AC2/AC2a's tests actually fail on unmodified code can only be confirmed once the tests are run against real code, before any fix is applied | Record each test's pre-implementation pass/fail result explicitly in the DoD — this IS the evidence AC4 requires, not a separate test |
+None — the mechanism is fully confirmed via direct code reading (`handlePostProductFeature`, `saveJourney`/`listJourneys`, `dfr-s1`'s own prior fix), not inference. See `decisions.md` for the full investigation trail.
