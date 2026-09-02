@@ -29178,7 +29178,7 @@
         {
           "slug": "cross-channel-feature-continuity",
           "name": "Operators can continue a feature seamlessly between Claude Code and the Web UI",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "ep1-s1",
@@ -29475,9 +29475,9 @@
             {
               "slug": "ep1-s6",
               "name": "Audit Logging and PostHog Instrumentation",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-09-01T21:35:31.274Z",
+              "updatedAt": "2026-09-02T00:26:24.707Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/new-feature-af17f555/review/ep1-s6-review-1.md",
@@ -29533,8 +29533,10 @@
                   "file": "artefacts/new-feature-af17f555/plans/ep1-s6-plan.md"
                 }
               ],
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/812"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/812",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         }
