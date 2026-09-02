@@ -29934,6 +29934,16 @@
           ]
         }
       ]
+    },
+    {
+      "slug": "2026-09-03-pipeline-state-archive-completed-features",
+      "id": "2026-09-03-pipeline-state-archive-completed-features",
+      "name": "Archive Completed Features Out of pipeline-state.json",
+      "stage": "discovery",
+      "health": "green",
+      "discoveryStatus": "clarified",
+      "updatedAt": "2026-09-02T22:46:59.377Z",
+      "track": "standard"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
