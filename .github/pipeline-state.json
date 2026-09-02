@@ -29609,7 +29609,7 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/review/acdg-s1-review-2.md",
-              "updatedAt": "2026-09-02T06:24:04.633Z",
+              "updatedAt": "2026-09-02T06:25:12.108Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -29624,7 +29624,8 @@
               "dorContractArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/dor/acdg-s1-dor-contract.md",
               "blocker": "",
               "verifyStatus": "passed",
-              "prStatus": "none"
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/813"
             },
             {
               "slug": "acdg-s2",
