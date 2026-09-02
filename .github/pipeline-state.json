@@ -29541,6 +29541,20 @@
           ]
         }
       ]
+    },
+    {
+      "slug": "2026-09-01-artefact-commit-durability-gap",
+      "name": "Completed Stages Can Silently Lack Durable Git Backing",
+      "stage": "discovery",
+      "discoveryStatus": "approved",
+      "health": "green",
+      "updatedAt": "2026-09-02T03:47:23.185Z",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "stories": [],
+      "track": "standard"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

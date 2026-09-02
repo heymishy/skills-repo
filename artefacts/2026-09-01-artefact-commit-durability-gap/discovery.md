@@ -1,51 +1,91 @@
-# Discovery: Completed stages can silently lack durable git backing even when the product is correctly repo-connected
+# Discovery: Completed Stages Can Silently Lack Durable Git Backing
 
-## Problem / Opportunity
+**Status:** Approved
+**Created:** 2026-09-01
+**Approved by:** Hamish King — Platform Owner — 2026-09-02
+**Author:** Claude (agent, with Hamish King)
 
-`das-s1` (shipped 2026-08-07, PR #674) added a dual-write: when a journey stage completes, its artefact is committed to the product's connected GitHub repo in addition to the existing local-disk write, specifically so "Resume conversation" survives a redeploy. Its own AC2 requires that a commit failure block `completeStage()` and surface a clear operator-facing error — never a silently "completed" stage with no durable backing.
+---
 
-Investigating a real production feature (`new-feature-af17f555`, "Parity across Claude code started outer loop and skills-framework Web ui"), the operator's premise was that its 8 completed-stage artefacts (DoR, Review, Test Plan, and prior stages) had committed to `heymishy/skills-repo` as expected, since the feature is genuinely listed under the `skills-framework` product on `/products/:id`, and that product's GitHub repository is confirmed set to `heymishy/skills-repo`.
+## Problem Statement
 
-Directly checked: `gh api repos/heymishy/skills-repo/contents/artefacts/new-feature-af17f555` returns **404**. `gh pr list --search af17f555` and a branch-name search both return nothing. `git log --all` across every local ref (after `git fetch --all`) shows zero commits touching `artefacts/new-feature-af17f555/*`, ever. The artefacts are real and readable via the Postgres-backed journey (`test-plan · 8 artefacts` on the product page, individual DoR/Review/Test-Plan artefact content viewable and resumable via the UI) — but none of it exists in git.
+`das-s1` (shipped 2026-08-07, PR #674) added a dual-write: when a journey stage completes, its artefact is committed to the product's connected GitHub repository in addition to the existing local-disk write, specifically so "Resume conversation" survives a redeploy. Its own AC2 requires that a commit failure block `completeStage()` and surface a clear operator-facing error — never a silently "completed" stage with no durable backing.
 
-This means: for at least this one real, currently-repo-connected feature, `das-s1`'s durability guarantee did not hold, and — per AC2's own contract — either (a) no error was ever surfaced despite that requirement, or (b) the commit was silently skipped as a designed no-op (AC4: "no connected repo... no error surfaced") under conditions that no longer hold true today.
+Investigating a real production feature (`new-feature-af17f555`) this session, the operator's premise was that its 8 completed-stage artefacts (Discovery, Benefit-Metric, Design, Definition, Review, Test Plan, DoR, and more) had committed to `heymishy/skills-repo` as expected, since the feature is genuinely listed under the `skills-framework` product and that product's GitHub repository is correctly set to `heymishy/skills-repo`. Direct checks (`gh api repos/heymishy/skills-repo/contents/artefacts/new-feature-af17f555` → 404; `gh pr list --search af17f555` → nothing; `git log --all` across every fetched ref → zero commits touching `artefacts/new-feature-af17f555/*`, ever) confirmed the artefacts never landed in git, despite being real, readable, and resumable via the Postgres-backed journey.
 
-## Investigation performed this session
+The root code-level cause is narrower than "the commit failed": `journey.js`'s stage-completion call site wraps `ownerRepoForFeature` resolution in a try/catch, and **any** failure — a genuinely repo-less product, a resolution error, a `journeys.product_id` that was different at that exact moment — is caught and silently treated identically to `das-s1`'s own designed "no connected repo, proceed unchanged" branch (AC4). There is no log line, no distinguishing signal, between "this product genuinely has no repo, so skipping is correct" and "resolution failed for a reason that should have surfaced an error." Per `das-s1`'s own AC2 contract, one of those two outcomes should never be silent — but today, from the outside, they are indistinguishable.
 
-- Confirmed via GitHub API (not local git) that `artefacts/new-feature-af17f555/` does not exist on `heymishy/skills-repo` at any commit, branch, or PR.
-- Confirmed via `git log --follow` that `das-s1`'s commit mechanism (`artefact-commit-writer.js`, wired into `journey.js`'s stage-completion path) was live and deployed well before this feature's stages completed (das-s1 merged 2026-08-07; this feature's DoR/Review/Test-Plan stages completed 2026-08-31, per this session's earlier investigation of the same feature).
-- Confirmed via the product page's own features list that `journeys.product_id` for this feature currently resolves to `skills-framework`, and that product's `repo_owner`/`repo_name` are set to `heymishy/skills-repo` — the exact fields `ownerRepoForFeature` (`export-data-source.js`) needs to succeed.
-- Read `journey.js`'s actual call site: `ownerRepoForFeature` is wrapped in try/catch, and ANY failure (including a `journeys.product_id` that was null/different at the moment the query ran) is caught and silently treated identically to "no connected repo, proceed unchanged" (AC4's designed behavior) — there is no log line, no distinguishing signal, between "this product genuinely has no repo" and "the resolution failed/was different at this specific moment."
-- **Not confirmed** (requires access this session did not have): the actual historical value of `journeys.product_id` and its `created_at`/updated timeline for this specific feature at the moment each of its 8 stages completed. No direct Postgres access was available (the `skills-repo-db` Fly app has zero running machines and is described elsewhere as unmanaged; the real DB is very likely Neon per `decisions.md` D3/D4, and no connection string was retrieved or used, deliberately, since that would mean handling production DB credentials directly). `flyctl logs` for `skills-framework` was checked but only returns a short recent window (machine-boot logs from a few hours ago) — nowhere near far enough back to cover 2026-08-31's actual stage-completion timestamps.
+## Who It Affects
 
-## Leading hypothesis (not yet proven)
+- **Developer / engineer** (per `product/mission.md`'s primary persona) running a real, repo-connected product's pipeline through the web UI, relying on `das-s1`'s own stated guarantee ("Resume conversation" survives a redeploy) without independently auditing GitHub after every stage completion.
+- **Tech lead / squad lead**, who signs off on Definition of Ready and is accountable for the artefact chain being real and durable — currently has no way to confirm that without a manual cross-repo check.
+- **Future incident investigation** (this session is the first concrete case): whoever investigates a "missing artefact" report next has no structural signal to consult, only the same manual GitHub cross-check performed this session.
 
-The feature was most likely created (or briefly sat) without a product association — or under a different, repo-less product — at the time its stages actually completed, and was reassigned to `skills-framework` afterward (whether via an explicit "move to product" action or some other mechanism). `das-s1`'s commit-on-completion only ever uses the product association that exists **at the instant a stage completes** — it has no retroactive/backfill mechanism (explicitly out of scope in its own story, which only excludes *re-committing edited* artefacts, not this case). Under that hypothesis, every one of those 8 stage-completions correctly and silently took the AC4 "no connected repo" branch, exactly as designed, and the *current* correct-looking product link is a red herring for anything that already happened.
+## Why Now
 
-The competing, more concerning hypothesis is that the commit was actually *attempted* and *failed* (revoked token scope, rate limit, API error) — which per AC2 should have blocked `completeStage()` and shown the operator an error. If that's what happened, either AC2's guard has a live bug, or the operator saw and dismissed 8 separate error messages without recalling it (unlikely enough to treat as a lower-probability branch, but not ruled out).
+This is a live, first-hand incident, not a hypothetical: it was found *during* dogfooding the very feature (`new-feature-af17f555`, Cross-Channel Feature Continuity) whose whole purpose was giving operators confidence that CLI and Web UI work stay in sync. A durability gap in the mechanism meant to back that confidence, discovered while building the feature that depends on it, is a direct trigger — not an abstract governance concern. `product/constraints.md` constraint #13 ("structural governance preferred over instructional... the test for any proposed governance requirement: can the CI gate verify this independently of what the agent says?") also applies directly here: today, nothing but a manual audit can verify durability held.
 
-## The gap that matters regardless of which hypothesis is true
+## MVP Scope
 
-Whichever explanation applies to this specific feature, the actual structural gap is the same: **there is currently no way to look at a completed stage and know, after the fact, whether it has durable git backing or not.** Both branches (genuine no-repo skip, and resolution failure) produce an identical, silent outcome today. An operator (or this agent) can only discover the gap by manually cross-checking GitHub — exactly what this session had to do by hand.
+**Expanded via /clarify (2026-09-02):** with the "genuinely no-repo" hypothesis ruled out for a confirmed, continuously-linked feature, this is now scope-confirmed as a real bug fix, not just an observability gap. Two coherent parts, one fix:
 
-## Audience / Users
+1. **Root-cause and fix `das-s1`'s AC2 guard.** Determine which failure mode actually occurred — `ownerRepoForFeature` failing to resolve despite a valid product link, or `commitArtefact` itself failing silently after a successful resolution — by reading both functions' current implementations (not yet done this session), then fix whichever path let a failure through without blocking `completeStage()` or surfacing an operator-facing error, restoring AC2's original contract.
+2. **Add a durable, checkable signal** at stage-completion time, stating explicitly whether a git commit was **attempted and succeeded**, **attempted and failed**, or **skipped because the product has no connected repo** — logged with enough context (`featureSlug`, `stageName`, `outcome`, `reason` when skipped/failed) to distinguish all three cases without a manual GitHub cross-check, so this class of gap is immediately detectable if it ever recurs despite the fix.
 
-- Any operator running a real, repo-connected product's pipeline through the web UI, relying on "Resume conversation" and cross-redeploy durability as `das-s1` promises.
-- Future incident investigation (this session's own experience is the first concrete case).
+This does not, by itself, fix any already-missing artefacts or add a backfill mechanism (see Out of Scope).
 
-## Consequences of inaction
+## Out of Scope
 
-- Silent durability loss risk: work that looks safely committed can in fact only exist in Postgres + ephemeral container disk, discoverable only by manual, after-the-fact GitHub cross-checking.
-- Erodes trust in `das-s1`'s own stated guarantee (AC2's "never a silently completed stage with no durable backing" is not actually verifiable today by anyone other than someone willing to do this session's manual investigation).
+- **Retroactive backfill/reconciliation** (committing already-completed stages' artefacts to git for features that already have this gap) — this discovery fixes the guard going forward; repairing already-affected features (including `new-feature-af17f555`'s own 8 artefacts) is a separate, bounded data-repair task, not a general backfill mechanism this discovery needs to build.
+- **An operator-facing UI indicator** for durability status — the MVP scope is a checkable server-side signal (log line, and a corresponding field the CI/assurance layer can assert against); a dashboard or in-UI badge is a natural follow-on but not required to close the detectability gap.
+- **Auditing or fixing every other stage-completion or artefact-write path** in the codebase for equivalent silent-failure patterns — this discovery is scoped to `das-s1`'s specific commit-on-completion mechanism, not a platform-wide error-handling audit.
+- **The immediate, one-off fix of manually committing `new-feature-af17f555`'s 8 already-completed artefacts to git** — this is a real, separate action item (see the original investigation notes) but is a one-time data-repair task, not part of this discovery's own scope or MVP.
 
-## Existing alternatives
+## Assumptions and Risks
 
-None — this is the only stage-completion durability mechanism in the codebase (`das-s1` itself, superseding nothing).
+**Resolved via /clarify (2026-09-02):** the operator confirmed `new-feature-af17f555` was linked to the `skills-framework` product for the entire period its 8 stages completed — it was never repo-less or linked to a different product. This **rules out** the "genuinely no-repo, correctly skipped" hypothesis and elevates the competing hypothesis to the leading explanation.
 
-## Desired outcome
+[ASSUMPTION] Given confirmed continuous product-linkage, the leading explanation is now that `ownerRepoForFeature` either (a) failed to resolve despite a valid link (e.g. a stale read, a timing/caching issue, or a genuine resolution bug), which `journey.js`'s current catch block treats identically to "no connected repo" (AC4's branch) rather than surfacing an error, or (b) resolved correctly but the subsequent `commitArtefact` call itself failed silently in a way that did not trigger AC2's block-and-error path. Either sub-case means `das-s1`'s own AC2 guard has a live bug — a failure occurred and did not block `completeStage()` or surface an operator-facing error, contrary to its own contract — unconfirmed which of (a) or (b), requires reading `ownerRepoForFeature`'s and `commitArtefact`'s actual implementations (not yet done this session) to narrow further.
 
-At minimum: a durable, checkable signal (log line at minimum; a UI indicator would close the loop for operators) recorded at stage-completion time stating explicitly whether a git commit was attempted, succeeded, or was skipped as repo-less — so this class of gap is detectable without a manual cross-repo audit. Separately, and pending the operator's own confirmation of the historical root cause (which needs DB access this session did not have): decide whether a retroactive backfill/reconciliation mechanism (commit any already-completed stage's artefact to git once/if a product later gains a repo connection) is worth building.
+**Risk if not addressed:** Silent durability loss continues undetected — work that looks safely committed can in fact only exist in Postgres plus ephemeral container disk, discoverable only by manual, after-the-fact GitHub cross-checking, exactly as this session had to do by hand. Given the "genuinely no-repo" explanation is now ruled out for at least this one confirmed case, this is stronger evidence than originally scoped that `das-s1`'s AC2 safety guard itself is not functioning as specified — this directly erodes `das-s1`'s own stated guarantee and, by extension, operator trust in "Resume conversation" surviving a redeploy.
 
-## Immediate, separate action item (not blocked by this discovery)
+## Directional Success Indicators
 
-The 8 artefacts for `new-feature-af17f555` should be manually committed to `heymishy/skills-repo` now to close the immediate durability gap for this one feature, independent of resolving the root cause. The operator deferred this in favor of investigating first — flagged here so it isn't lost.
+**Stage-completion durability signal coverage:** Baseline: `[UNKNOWN BASELINE]` — 0 of the 3 possible outcomes (attempted+succeeded, attempted+failed, skipped as repo-less) are currently distinguishable in any log or checkable record; today's true rate of each outcome across all stage completions is unknown precisely because nothing records it. Target: 100% of `completeStage()` calls that pass through `das-s1`'s commit mechanism emit one of the three distinguishable outcomes. Measured via: a dedicated test asserting the signal is emitted on every code path through the commit-on-completion call site (success, resolution failure, and genuine no-repo skip), plus a live grep of production logs post-deploy confirming real occurrences of at least the "skipped" and "succeeded" cases (the "failed" case may not occur in the observation window, which is acceptable — the assertion is that the code path exists and is tested, not that a failure occurs during initial monitoring).
+
+**Manual-audit elimination:** Baseline: the only way to know whether a specific completed stage has durable git backing today is the manual process this session performed (GitHub API content check, PR search, full-ref git log search). Target: the same question is answerable directly from the new signal (a log line, or a queryable field) without touching the GitHub API. Measured via: operator/agent can answer "does stage X of feature Y have durable git backing?" using only the new signal, verified against a known case (this session's own `new-feature-af17f555` finding, once its root cause is confirmed) as a manual cross-check.
+
+## Constraints
+
+- **Reuse, don't duplicate, the just-shipped cross-channel instrumentation.** `new-feature-af17f555`'s `ep1-s6` (merged PR #812, 2026-09-02) built exactly this shape of mechanism for a different set of events: `_logCrossChannelEvent(eventType, context)` in `src/web-ui/routes/journey.js` — fire-and-forget, `[cross-channel]`-prefixed structured JSON to stdout, plus a PostHog capture with the same base fields (`featureSlug`, `stage`, `eventType`, `timestamp`, `operatorId` when available) plus event-specific details. The distinguishing signal this discovery needs (attempted+succeeded / attempted+failed / skipped-as-repo-less) is the same shape of problem `ep1-s5`/`ep1-s6` already solved for artefact-load and journey-backfill errors — implementation should add new event types (e.g. `artefact_commit_succeeded`, `artefact_commit_failed`, `artefact_commit_skipped`) through that same shared helper rather than building a second, parallel logging mechanism. `das-s1`'s call site is in `journey.js` itself, so no cross-file require is even needed (unlike `ep1-s6`'s own `skills.js` → `journey.js` lazy-require pattern for the same helper).
+- No new npm dependencies (matches this repo's established pattern for logging/observability additions — see `ep1-s6`, `ep1-s5` in the just-shipped `new-feature-af17f555` epic, which added structured cross-channel logging with zero new dependencies).
+- Must preserve `das-s1`'s existing AC4 behaviour (genuinely repo-less products still skip the commit, no error) exactly as-is — only the AC2 path (a failure that should block and error) is being fixed, not AC4's designed skip.
+- `product/constraints.md` #13 (structural governance preferred over instructional) applies: the signal should be something a CI gate or automated check can assert against, not merely an instruction asking an agent to remember to check.
+- No direct production database access was available or used during this discovery's own investigation (deliberate — avoids handling production DB credentials outside an approved channel); any implementation depending on historical DB state (e.g. confirming which hypothesis is correct) needs the operator's own access or an approved read path.
+
+## Contributors
+
+- Hamish King — Platform Owner
+- Claude (agent) — investigation, discovery drafting
+
+## Reviewers
+
+- Hamish King — Platform Owner
+
+## Approved By
+
+- Hamish King — Platform Owner — 2026-09-02
+
+---
+
+## Clarification log
+
+[2026-09-02] Clarified via /clarify:
+- Q: Do you have any information about `new-feature-af17f555`'s product-linkage history around when its 8 stages completed? A: It was linked to `skills-framework` the whole time — rules out the "genuinely no-repo" hypothesis, elevates the AC2-guard-bug hypothesis to the leading explanation.
+- Q: Given this now points to a live bug in `das-s1`'s AC2 guard rather than just a missing observability signal, should finding and fixing that bug be in this discovery's own scope? A: Yes — find and fix the bug. MVP scope expanded accordingly (see MVP Scope).
+
+**One assumption remains open** (which of the two specific failure sub-modes — `ownerRepoForFeature` resolution failure vs. `commitArtefact` failure — actually occurred) — this requires reading the actual implementation code, not further operator clarification, and is deferred to `/definition`/implementation-plan investigation rather than blocking approval here.
+
+---
+
+**Next step:** Human review and approval → /benefit-metric
