@@ -33,7 +33,11 @@ withAuth('AC1: authenticated GET /features/:slug returns 200 text/html', async (
 
 withAuth('AC2: GET /features/:slug HTML page includes nav shell structure', async ({ page }) => {
   await page.goto(`/features/${TEST_SLUG}`);
-  const nav = page.locator('nav');
+  // pdt-s4: the page now legitimately has multiple <nav> landmarks (Products,
+  // Main navigation, Account navigation, and the new story-detail Breadcrumb)
+  // -- .first() keeps this test's original intent (some shell nav renders)
+  // without asserting there is exactly one nav on the page.
+  const nav = page.locator('nav').first();
   await expect(nav).toBeVisible();
   const html = await page.content();
   // Page should contain the slug or a title — not a bare JSON body

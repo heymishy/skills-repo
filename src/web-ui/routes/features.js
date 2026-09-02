@@ -170,6 +170,65 @@ function _resolveResumeLinksForFeature(journey) {
   return lookup;
 }
 
+// pdt-s4 (AC1, AC1a): resolves the breadcrumb context for a story detail
+// page. Two paths:
+//  - Direct: journeyForPage.productId already resolved (the common case,
+//    AC1) -- one minimal query to turn the ID into a display name.
+//  - Reverse lookup: journeyForPage has no productId (an epic-nested story
+//    slug, e.g. dic.5, is never itself a journeyStore feature slug -- AC1a)
+//    -- scan this tenant's already-synced taxonomy for a matching nested
+//    story item, giving Product + Phase/Epic together in one query.
+//    Explicitly tenant-scoped (bri-s3.4's own precedent in products.js) --
+//    never leak a match from another tenant's product.
+async function _resolveBreadcrumbContext(featureSlug, journeyForPage, pool, tenantId) {
+  if (journeyForPage && journeyForPage.productId) {
+    const direct = (await pool.query(
+      'SELECT name FROM products WHERE product_id = $1 AND tenant_id = $2',
+      [journeyForPage.productId, tenantId]
+    )).rows[0];
+    return direct ? { productId: journeyForPage.productId, productName: direct.name, epicName: null } : null;
+  }
+
+  const rows = (await pool.query(
+    'SELECT p.product_id, p.name, pr.taxonomy FROM product_rollups pr JOIN products p ON p.product_id = pr.product_id WHERE p.tenant_id = $1',
+    [tenantId]
+  )).rows;
+  for (let i = 0; i < rows.length; i++) {
+    const taxonomy = (typeof rows[i].taxonomy === 'string') ? JSON.parse(rows[i].taxonomy) : rows[i].taxonomy;
+    const groups = (taxonomy && taxonomy.groups) || [];
+    for (let g = 0; g < groups.length; g++) {
+      const items = groups[g].items || [];
+      for (let it = 0; it < items.length; it++) {
+        if (items[it].slug === featureSlug) {
+          return { productId: rows[i].product_id, productName: rows[i].name, epicName: groups[g].epicName };
+        }
+      }
+    }
+  }
+  return null;
+}
+
+// pdt-s4 (AC1, AC1a, AC2, AC3): renders the breadcrumb nav -- Product
+// (linked) › [Phase/Epic (plain text, no dedicated page)] › story title.
+// Degrades to a bare "Back to product list" link (reusing the existing
+// /dashboard href from _renderProductView's own breadcrumb) when neither
+// resolves -- never a silent failure or a broken/blank breadcrumb (AC1a).
+function _renderStoryBreadcrumb(context, displayTitle) {
+  if (!context || !context.productId) {
+    return '<nav aria-label="Breadcrumb" style="font-size:13px;color:var(--muted);margin-bottom:12px">' +
+      '<a href="/dashboard" style="color:var(--muted);text-decoration:none">Back to product list</a>' +
+    '</nav>';
+  }
+  const epicSegment = context.epicName
+    ? ' &rsaquo; <span>' + shellEscHtml(context.epicName) + '</span>'
+    : '';
+  return '<nav aria-label="Breadcrumb" style="font-size:13px;color:var(--muted);margin-bottom:12px">' +
+    '<a href="/products/' + shellEscHtml(context.productId) + '" style="color:var(--muted);text-decoration:none">' + shellEscHtml(context.productName) + '</a>' +
+    epicSegment +
+    ' &rsaquo; <span style="color:var(--ink)">' + shellEscHtml(displayTitle) + '</span>' +
+  '</nav>';
+}
+
 /**
  * Build HTML for a list of artefacts for the artefact index page (wuce.20).
  * Calls renderArtefactItem() for each item and inserts the creation date.
@@ -272,6 +331,8 @@ async function handleGetFeatureArtefacts(req, res, featureSlug, pool) {
       ? '<p class="artefact-list__empty">No artefacts found for this feature</p>'
       : renderArtefactIndexHtml(artefacts, featureSlug, resumeLookup);
     const displayTitle = (journeyForPage && journeyForPage.displayName) || featureSlug;
+    const breadcrumbContext = await _resolveBreadcrumbContext(featureSlug, journeyForPage, pool, req.session.tenantId);
+    const breadcrumbHtml = _renderStoryBreadcrumb(breadcrumbContext, displayTitle);
     // alrf-s10 — operator-requested: a real "Delete this feature" action, for
     // cleaning up stale/corrupted staging data (e.g. a feature whose
     // artefacts were mis-recorded under another feature's slug before
@@ -304,7 +365,7 @@ async function handleGetFeatureArtefacts(req, res, featureSlug, pool) {
         '});',
       '})()<\/script>'
     ].join('') : '';
-    const bodyContent = `<h1>${shellEscHtml(displayTitle)}</h1>\n${deleteSectionHtml}\n${listHtml}`;
+    const bodyContent = `${breadcrumbHtml}\n<h1>${shellEscHtml(displayTitle)}</h1>\n${deleteSectionHtml}\n${listHtml}`;
     const html = await renderShellWithNav(pool, req.session.tenantId, {
       title:       `Artefacts — ${shellEscHtml(displayTitle)}`,
       bodyContent,

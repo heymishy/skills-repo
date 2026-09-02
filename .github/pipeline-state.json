@@ -29666,7 +29666,7 @@
       "stage": "definition",
       "discoveryStatus": "approved",
       "health": "green",
-      "updatedAt": "2026-09-02T19:08:00.666Z",
+      "updatedAt": "2026-09-02T19:37:42.902Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -29707,7 +29707,7 @@
         {
           "slug": "dashboard-triage",
           "name": "Operators Can Scan a Large Product's Health at a Glance",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "pdt-s1",
@@ -29874,24 +29874,59 @@
             {
               "slug": "pdt-s4",
               "name": "Fix the Story-Detail Dead End With a Breadcrumb",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-02-product-dashboard-triage/review/pdt-s4-review-1.md",
-              "updatedAt": "2026-09-02T10:05:17.730Z",
+              "updatedAt": "2026-09-02T19:49:55.413Z",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 7,
-                "passing": 0
+                "passing": 7
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-09-02-product-dashboard-triage/dor/pdt-s4-dor.md",
-              "dorContractArtefact": "artefacts/2026-09-02-product-dashboard-triage/dor/pdt-s4-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-09-02-product-dashboard-triage/dor/pdt-s4-dor-contract.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Product breadcrumb segment for the common (direct-resolve) case (AC1)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-02-product-dashboard-triage/plans/pdt-s4-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Phase/Epic reverse lookup with graceful degradation (AC1a)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-02-product-dashboard-triage/plans/pdt-s4-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Clicking the product name navigates back to the product page (AC2, integration)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-02-product-dashboard-triage/plans/pdt-s4-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "No-artefacts case shows the breadcrumb, never a bare dead end (AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-02-product-dashboard-triage/plans/pdt-s4-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "NFR tests -- query-count discipline and keyboard navigability",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-02-product-dashboard-triage/plans/pdt-s4-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/818"
             }
           ]
         }
