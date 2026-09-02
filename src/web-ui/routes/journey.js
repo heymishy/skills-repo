@@ -2454,6 +2454,11 @@ async function handlePostGateConfirm(req, res) {
       _dasOwnerRepo = await require('../adapters/export-data-source').ownerRepoForFeature(journey.featureSlug, req.session.accessToken);
     } catch (_dasResolveErr) {
       if (journey.productId) {
+        // acdg-s2: distinguishable "failed" signal -- resolution-failure branch
+        _logCrossChannelEvent('artefact_commit_failed', {
+          featureSlug: journey.featureSlug, stage: session.skillName,
+          reason: (_dasResolveErr && _dasResolveErr.message) || 'resolution failed', operatorId: req.session.login || undefined
+        });
         res.writeHead(502, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
           error: 'artefact-commit-failed',
@@ -2462,6 +2467,11 @@ async function handlePostGateConfirm(req, res) {
         }));
         return;
       }
+      // acdg-s2: distinguishable "skipped" signal -- genuinely no product link
+      _logCrossChannelEvent('artefact_commit_skipped', {
+        featureSlug: journey.featureSlug, stage: session.skillName,
+        reason: 'no connected repo', operatorId: req.session.login || undefined
+      });
       _dasOwnerRepo = null; // genuinely no product link -- proceed unchanged
     }
     if (_dasOwnerRepo) {
@@ -2470,7 +2480,16 @@ async function handlePostGateConfirm(req, res) {
         await require('../adapters/artefact-commit-writer').commitArtefact(
           artefactRelPath, _dasDiskContent, req.session.accessToken, _dasOwnerRepo.owner, _dasOwnerRepo.repo
         );
+        // acdg-s2: distinguishable "succeeded" signal
+        _logCrossChannelEvent('artefact_commit_succeeded', {
+          featureSlug: journey.featureSlug, stage: session.skillName, operatorId: req.session.login || undefined
+        });
       } catch (_dasCommitErr) {
+        // acdg-s2: distinguishable "failed" signal -- commit-failure branch
+        _logCrossChannelEvent('artefact_commit_failed', {
+          featureSlug: journey.featureSlug, stage: session.skillName,
+          reason: (_dasCommitErr && _dasCommitErr.message) || 'commit failed', operatorId: req.session.login || undefined
+        });
         res.writeHead(502, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({
           error: 'artefact-commit-failed',

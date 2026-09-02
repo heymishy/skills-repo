@@ -12,9 +12,16 @@
 | AC | Description | Unit | Integration | E2E | Manual | Gap type | Risk |
 |----|-------------|------|-------------|-----|--------|----------|------|
 | AC1 | Commit succeeds → `artefact_commit_succeeded` event logged with base fields | 1 | — | — | — | — | 🟢 |
-| AC2 | Commit fails → `artefact_commit_failed` event logged with base fields + reason | 1 | — | — | — | — | 🟢 |
+| AC2 | Commit fails → `artefact_commit_failed` event logged with base fields + reason | 2 | — | — | — | — | 🟢 |
 | AC3 | Genuinely no repo → `artefact_commit_skipped` event logged with base fields + reason | 1 | — | — | — | — | 🟢 |
 | AC4 | All 3 events parse as valid JSON immediately after the `[cross-channel] ` prefix | 1 | — | — | — | — | 🟢 |
+
+<!-- Revised 2026-09-02: AC2 has 2 unit tests, not 1 -- the real journey.js
+     code has TWO distinct exit points that both produce a commit "failure"
+     (the original commitArtefact-throw path, and acdg-s1's own new
+     resolution-failure-with-productId-set path). Both are covered
+     separately since they're different code branches, even though they
+     map to the same event type. -->
 
 ---
 
