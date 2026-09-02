@@ -29663,16 +29663,38 @@
     {
       "slug": "2026-09-02-product-dashboard-triage",
       "name": "Product Dashboard Becomes Unreadable at Real-World Scale",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "discoveryStatus": "approved",
       "health": "green",
-      "updatedAt": "2026-09-02T09:37:23.285Z",
+      "updatedAt": "2026-09-02T09:39:34.524Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "stories": [],
-      "track": "standard"
+      "track": "standard",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Time to First Actionable Content",
+          "target": "First interactive content (search/filters) appears within the first screenful, zero scrolling",
+          "baseline": "~40 screens of static text before any interactive content",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Health-Signal Trustworthiness",
+          "target": "0% of Unknown items render as a colored/competing badge",
+          "baseline": "51% (115/224) Unknown items rendered as competing colored badges",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
