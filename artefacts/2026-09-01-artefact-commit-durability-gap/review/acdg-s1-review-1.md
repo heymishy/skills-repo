@@ -31,9 +31,15 @@ None.
 
 ---
 
+## Post-review resolution (2026-09-02, same session, before /test-plan)
+
+Both MEDIUM findings resolved by revising `acdg-s1.md` directly rather than deferring:
+- **1-M1** — AC1 now explicitly states the implementation must first confirm whether `commitArtefact` genuinely throws (making AC1 a regression-protection test) or swallows failures internally (making it the actual fix site, in `artefact-commit-writer.js`), rather than presenting AC1 as if it already tests the fix.
+- **1-M2** — added AC2a, covering the non-throwing falsy-return failure sub-mode that AC2 didn't reach, which is equally consistent with the discovery's own open assumption about the real root cause.
+
 ## Summary
 
-0 HIGH, 2 MEDIUM, 1 LOW.
+0 HIGH, 2 MEDIUM (both resolved same session, see Post-review resolution above), 1 LOW.
 **Outcome:** PASS
 
 ---
