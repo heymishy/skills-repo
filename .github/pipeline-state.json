@@ -29604,14 +29604,22 @@
             {
               "slug": "acdg-s1",
               "name": "Fix the Silent Artefact-Commit Failure in Stage-Completion (AC2 Guard)",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/review/acdg-s1-review-1.md",
+              "updatedAt": "2026-09-02T04:19:41.381Z"
             },
             {
               "slug": "acdg-s2",
               "name": "Add a Distinguishable Durability Signal for Stage-Completion Commits",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/review/acdg-s2-review-1.md",
+              "updatedAt": "2026-09-02T04:19:41.515Z"
             }
           ]
         }
