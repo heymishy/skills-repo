@@ -29632,24 +29632,26 @@
             {
               "slug": "acdg-s2",
               "name": "Add a Distinguishable Durability Signal for Stage-Completion Commits",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/review/acdg-s2-review-1.md",
-              "updatedAt": "2026-09-02T04:57:55.674Z",
+              "updatedAt": "2026-09-02T07:11:27.742Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 7,
-                "passing": 0
+                "totalTests": 8,
+                "passing": 8
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/dor/acdg-s2-dor.md",
-              "dorContractArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/dor/acdg-s2-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/dor/acdg-s2-dor-contract.md",
+              "verifyStatus": "passed",
+              "prStatus": "none"
             }
           ]
         }
