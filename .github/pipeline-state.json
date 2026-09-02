@@ -29545,16 +29545,48 @@
     {
       "slug": "2026-09-01-artefact-commit-durability-gap",
       "name": "Completed Stages Can Silently Lack Durable Git Backing",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "discoveryStatus": "approved",
       "health": "green",
-      "updatedAt": "2026-09-02T03:47:23.185Z",
+      "updatedAt": "2026-09-02T03:54:16.429Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "stories": [],
-      "track": "standard"
+      "track": "standard",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "AC2 Guard Correctness",
+          "target": "100% of 3 outcome paths (resolved+succeeded, resolved+failed, genuinely-no-repo) covered by passing regression tests",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Distinguishable Signal Coverage",
+          "target": "100% of das-s1 commit-writer code paths emit one of 3 distinguishable _logCrossChannelEvent outcomes",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Manual-Audit Elimination",
+          "target": "100% of stages completed post-fix are answerable from the signal alone, no GitHub API cross-check needed",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
