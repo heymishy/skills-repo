@@ -29681,7 +29681,7 @@
           "baseline": "~40 screens of static text before any interactive content",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "pdt-s1 removes the ~40-screen static duplicate list named in the baseline -- a real, structural contribution toward the target -- but full metric measurement requires pdt-s2 (triage strip) and pdt-s4 (breadcrumb) to also ship, per this metric own contributingStories list.",
+          "evidence": "pdt-s1 removed the ~40-screen static duplicate list and pdt-s2 added the first genuinely clickable, attention-directing content (the triage strip) -- two real structural contributions toward the target -- but full metric measurement still requires pdt-s4 (breadcrumb) to also ship, per this metric own contributingStories list.",
           "contributingStories": [
             "pdt-s1",
             "pdt-s2",
@@ -29707,7 +29707,7 @@
         {
           "slug": "dashboard-triage",
           "name": "Operators Can Scan a Large Product's Health at a Glance",
-          "status": "in-progress",
+          "status": "not-started",
           "stories": [
             {
               "slug": "pdt-s1",
@@ -29766,12 +29766,12 @@
             {
               "slug": "pdt-s2",
               "name": "Add a Triage Summary Strip for Blocked/Warning Counts",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-02-product-dashboard-triage/review/pdt-s2-review-1.md",
-              "updatedAt": "2026-09-02T18:04:24.705Z",
+              "updatedAt": "2026-09-02T18:59:04.298Z",
               "testPlan": {
                 "status": "all-passing",
                 "totalTests": 5,
@@ -29811,8 +29811,11 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/816"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/816",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "layoutGapsAtMerge": false
             },
             {
               "slug": "pdt-s3",
