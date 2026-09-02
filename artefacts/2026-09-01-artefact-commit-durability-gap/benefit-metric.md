@@ -60,9 +60,9 @@ This is a reliability/observability fix to an existing platform mechanism (`das-
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Metric 1 — AC2 Guard Correctness | TBD at /definition | Gap |
-| Metric 2 — Distinguishable Signal Coverage | TBD at /definition | Gap |
-| Metric 3 — Manual-Audit Elimination | TBD at /definition | Gap |
+| Metric 1 — AC2 Guard Correctness | acdg-s1 | Covered |
+| Metric 2 — Distinguishable Signal Coverage | acdg-s2 | Covered |
+| Metric 3 — Manual-Audit Elimination | acdg-s2 | Covered |
 
 ---
 

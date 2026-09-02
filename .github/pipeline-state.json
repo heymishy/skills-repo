@@ -29545,10 +29545,10 @@
     {
       "slug": "2026-09-01-artefact-commit-durability-gap",
       "name": "Completed Stages Can Silently Lack Durable Git Backing",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "discoveryStatus": "approved",
       "health": "green",
-      "updatedAt": "2026-09-02T03:54:16.429Z",
+      "updatedAt": "2026-09-02T04:14:25.123Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -29564,7 +29564,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "acdg-s1"
+          ]
         },
         {
           "id": "m2",
@@ -29574,7 +29576,9 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "acdg-s2"
+          ]
         },
         {
           "id": "m3",
@@ -29584,7 +29588,32 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "acdg-s2"
+          ]
+        }
+      ],
+      "slicingStrategy": "risk-first",
+      "guardrails": [],
+      "epics": [
+        {
+          "slug": "stage-completion-artefact-durability",
+          "name": "Operators Can Trust That a Completed Stage's Artefact Is Durably Committed",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "acdg-s1",
+              "name": "Fix the Silent Artefact-Commit Failure in Stage-Completion (AC2 Guard)",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "acdg-s2",
+              "name": "Add a Distinguishable Durability Signal for Stage-Completion Commits",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
         }
       ]
     }
