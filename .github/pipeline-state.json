@@ -29712,19 +29712,19 @@
             {
               "slug": "pdt-s1",
               "name": "Consolidate the Epic/Phase List",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-02-product-dashboard-triage/review/pdt-s1-review-1.md",
-              "updatedAt": "2026-09-02T10:22:25.292Z",
+              "updatedAt": "2026-09-02T10:42:08.255Z",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 7,
-                "passing": 0
+                "passing": 7
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
@@ -29746,16 +29746,17 @@
                 {
                   "id": "task-3",
                   "name": "Confirm the zero-groups empty state is preserved (AC4)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-02-product-dashboard-triage/plans/pdt-s1-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "NFR tests -- response size and keyboard operability",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-02-product-dashboard-triage/plans/pdt-s1-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "pdt-s2",
