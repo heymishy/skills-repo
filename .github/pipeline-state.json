@@ -29666,7 +29666,7 @@
       "stage": "definition",
       "discoveryStatus": "approved",
       "health": "green",
-      "updatedAt": "2026-09-02T10:17:06.720Z",
+      "updatedAt": "2026-09-02T17:53:22.916Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -29766,16 +29766,16 @@
             {
               "slug": "pdt-s2",
               "name": "Add a Triage Summary Strip for Blocked/Warning Counts",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-02-product-dashboard-triage/review/pdt-s2-review-1.md",
-              "updatedAt": "2026-09-02T10:05:17.426Z",
+              "updatedAt": "2026-09-02T17:55:57.863Z",
               "testPlan": {
-                "status": "written",
+                "status": "all-passing",
                 "totalTests": 5,
-                "passing": 0
+                "passing": 5
               },
               "acTotal": 3,
               "acVerified": 0,
@@ -29783,7 +29783,33 @@
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-09-02-product-dashboard-triage/dor/pdt-s2-dor.md",
-              "dorContractArtefact": "artefacts/2026-09-02-product-dashboard-triage/dor/pdt-s2-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-09-02-product-dashboard-triage/dor/pdt-s2-dor-contract.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Render the strip with real Blocked/Warning counts (AC1)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-02-product-dashboard-triage/plans/pdt-s2-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Wire the strip click-through into the existing filter mechanism (AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-02-product-dashboard-triage/plans/pdt-s2-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Confirm the zero-state message (AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-02-product-dashboard-triage/plans/pdt-s2-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "NFR tests -- no new query and keyboard operability",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-02-product-dashboard-triage/plans/pdt-s2-plan.md"
+                }
+              ]
             },
             {
               "slug": "pdt-s3",
