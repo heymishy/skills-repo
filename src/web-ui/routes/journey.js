@@ -2436,11 +2436,33 @@ async function handlePostGateConfirm(req, res) {
     // ._stageDone stays unset so a retry re-attempts the commit, and a
     // clear, actionable error is returned WITHOUT calling completeStage() --
     // never a silently "completed" stage with no durable backing.
+    //
+    // acdg-s1: a resolution failure is only a legitimate silent skip when
+    // this journey was never linked to a product in the first place
+    // (journey.productId unset). When productId IS set, the system itself
+    // believes this feature is linked -- a resolution failure in that case
+    // is a genuine anomaly (e.g. the journeys-table row backing this lookup
+    // is missing/stale, independent of the journeyStore's own in-memory
+    // record) and must block + surface a clear error, not silently
+    // disappear as if no product had ever been linked. This is the
+    // confirmed root cause of new-feature-af17f555's own missing artefacts:
+    // it was created via handlePostProductFeature (products.js), which
+    // sets productId at creation time, yet ownerRepoForFeature's separate
+    // journeys-table lookup failed and was silently swallowed here.
     var _dasOwnerRepo = null;
     try {
       _dasOwnerRepo = await require('../adapters/export-data-source').ownerRepoForFeature(journey.featureSlug, req.session.accessToken);
     } catch (_dasResolveErr) {
-      _dasOwnerRepo = null; // no connected repo, no linked product, or resolution unavailable -- AC4: proceed unchanged
+      if (journey.productId) {
+        res.writeHead(502, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({
+          error: 'artefact-commit-failed',
+          message: 'Could not resolve the connected repository for this feature. The stage has NOT been marked complete -- fix the underlying issue and try again.',
+          detail: _dasResolveErr && _dasResolveErr.message
+        }));
+        return;
+      }
+      _dasOwnerRepo = null; // genuinely no product link -- proceed unchanged
     }
     if (_dasOwnerRepo) {
       try {

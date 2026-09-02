@@ -29604,25 +29604,28 @@
             {
               "slug": "acdg-s1",
               "name": "Fix the Silent Artefact-Commit Failure in Stage-Completion (AC2 Guard)",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/review/acdg-s1-review-2.md",
-              "updatedAt": "2026-09-02T06:12:19.980Z",
+              "updatedAt": "2026-09-02T06:25:12.108Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
-                "passing": 0
+                "passing": 7
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/dor/acdg-s1-dor.md",
               "dorContractArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/dor/acdg-s1-dor-contract.md",
-              "blocker": ""
+              "blocker": "",
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/813"
             },
             {
               "slug": "acdg-s2",
