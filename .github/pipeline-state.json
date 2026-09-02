@@ -29712,26 +29712,42 @@
             {
               "slug": "pdt-s1",
               "name": "Consolidate the Epic/Phase List",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-09-02-product-dashboard-triage/review/pdt-s1-review-1.md",
+              "updatedAt": "2026-09-02T09:49:20.997Z"
             },
             {
               "slug": "pdt-s2",
               "name": "Add a Triage Summary Strip for Blocked/Warning Counts",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-09-02-product-dashboard-triage/review/pdt-s2-review-1.md",
+              "updatedAt": "2026-09-02T09:49:21.156Z"
             },
             {
               "slug": "pdt-s3",
               "name": "De-emphasize Unknown Health Visually",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-09-02-product-dashboard-triage/review/pdt-s3-review-1.md",
+              "updatedAt": "2026-09-02T09:49:21.307Z"
             },
             {
               "slug": "pdt-s4",
               "name": "Fix the Story-Detail Dead End With a Breadcrumb",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-09-02-product-dashboard-triage/review/pdt-s4-review-1.md",
+              "updatedAt": "2026-09-02T09:49:21.449Z"
             }
           ]
         }

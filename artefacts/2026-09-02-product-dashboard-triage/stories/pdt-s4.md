@@ -17,7 +17,9 @@ So that clicking into a story never leaves me at a dead end with no way back.
 
 ## Architecture Constraints
 
-- The `/features/:id` route handler needs to resolve and pass through the story's parent product/phase/epic context. This data is already available server-side — the story is always reached FROM a product-scoped list that already knows this context — this story threads it through to the detail page rather than computing anything new.
+- **[Revised after /review, confirmed via code reading]** `/features/:id` (`handleGetFeatureArtefacts`, `src/web-ui/routes/features.js`) takes only the slug from the URL — there is no upstream referrer/context passed through today; the route is directly bookmarkable/shareable and must resolve everything itself.
+- **Product segment — already trivially available:** `journeyForPage = _journeyStore.getJourneyByFeatureSlug(featureSlug)` already resolves `journeyForPage.productId` (the same field `alrf-s10`'s own delete-redirect logic already uses) — no new lookup needed for this part of the breadcrumb.
+- **Phase/Epic segment — genuinely new work:** a story-level identifier (e.g. `dic.5`, `pmf.1`) is not itself a `journeyStore` feature slug — it's a story ID nested inside some other feature's `epics[].stories[]` in `pipeline-state.json`. `getJourneyByFeatureSlug` does not resolve this case (confirmed live: navigating directly to `/features/dic.5` returns "No artefacts found" with `journeyForPage` unresolved). Resolving "which feature/epic does story ID X belong to" requires a genuinely new reverse lookup across `pipeline-state.json`'s `features[].epics[].stories[]` tree — there is no existing mechanism for this today.
 - No new npm dependencies.
 
 ## Dependencies
@@ -27,11 +29,13 @@ So that clicking into a story never leaves me at a dead end with no way back.
 
 ## Acceptance Criteria
 
-**AC1:** Given an operator clicks into a story from the product page, When the story detail page loads, Then it shows a breadcrumb reading "Product Name › Phase/Epic Name › Story ID".
+**AC1:** Given a story's feature slug resolves to a real journey with a `productId` (the common case — top-level features created via a product), When the operator loads its detail page, Then it shows a breadcrumb reading "Product Name › Story ID", using the already-available `journeyForPage.productId`.
 
-**AC2:** Given the breadcrumb is showing, When the operator clicks the product name in it, Then they are taken back to that product's page.
+**AC1a [Added after /review — Phase/Epic is separately-resolvable work, not bundled into AC1's guarantee]:** Given a story is a nested story ID within some other feature's `epics[].stories[]` (e.g. `dic.5`), When its detail page loads, Then the breadcrumb includes the resolved Phase/Epic name if a reverse lookup finds it, or gracefully omits that segment (falling back to AC1's Product-only breadcrumb, or a bare "Back to product list" link if even the product can't be resolved) — never a silent failure or a broken/blank breadcrumb.
 
-**AC3:** Given a story genuinely has no artefacts yet, When its detail page loads, Then it still shows the breadcrumb and an honest "No artefacts found for this feature yet" message — never a bare, context-free page as it does today.
+**AC2:** Given the breadcrumb is showing a Product segment, When the operator clicks the product name in it, Then they are taken back to that product's page.
+
+**AC3:** Given a story genuinely has no artefacts yet, When its detail page loads, Then it still shows whatever breadcrumb segments ARE resolvable (per AC1/AC1a) and an honest "No artefacts found for this feature yet" message — never a bare, context-free page as it does today.
 
 ## Out of Scope
 
@@ -46,7 +50,7 @@ So that clicking into a story never leaves me at a dead end with no way back.
 
 ## Complexity Rating
 
-**Rating:** 1
+**Rating:** 2 [Revised after /review, was 1 — the Phase/Epic breadcrumb segment requires genuinely new reverse-lookup logic across pipeline-state.json, not just threading through already-available context]
 **Scope stability:** Stable
 
 ## Definition of Ready Pre-check

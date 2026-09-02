@@ -30,7 +30,7 @@ So that I can scan a 40-group product in one screenful instead of scrolling past
 
 **AC1:** Given a product with N epic/phase groups, When the operator loads `/products/:id`, Then each group renders exactly once — the static, non-interactive text rendering is removed, leaving only the interactive grouped list.
 
-**AC2:** Given a product with any epic/phase group, When the page first loads, Then that group's individual story rows are NOT rendered until the operator clicks the group header — the group shows only its title, item count, and a rolled-up status indicator.
+**AC2 [Clarified after /review]:** Given a product with any epic/phase group, When the page first loads, Then that group's individual story rows are visually collapsed (not shown) until the operator clicks the group header — the group shows only its title, item count, and a rolled-up status indicator. This is a client-side visual toggle, not server-side lazy loading: all row data is already present in the server-rendered HTML (matching this story's own "no new data fetch" constraint), simply hidden by default. A native `<details>`/`<summary>` element is an acceptable, zero-JS implementation of this that also satisfies this story's own keyboard-accessibility NFR for free.
 
 **AC3:** Given a collapsed group, When the operator clicks its header, Then the group expands to show its individual story rows, displaying the same data as today's fully-expanded view (story ID, name, health, percentage).
 
