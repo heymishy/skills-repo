@@ -29604,12 +29604,12 @@
             {
               "slug": "acdg-s1",
               "name": "Fix the Silent Artefact-Commit Failure in Stage-Completion (AC2 Guard)",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/review/acdg-s1-review-1.md",
-              "updatedAt": "2026-09-02T04:48:11.160Z",
+              "updatedAt": "2026-09-02T04:57:55.532Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
@@ -29618,17 +29618,20 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": "false",
-              "e2eToolingRequired": "false"
+              "e2eToolingRequired": "false",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/dor/acdg-s1-dor.md",
+              "dorContractArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/dor/acdg-s1-dor-contract.md"
             },
             {
               "slug": "acdg-s2",
               "name": "Add a Distinguishable Durability Signal for Stage-Completion Commits",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/review/acdg-s2-review-1.md",
-              "updatedAt": "2026-09-02T04:48:11.331Z",
+              "updatedAt": "2026-09-02T04:57:55.674Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -29637,7 +29640,10 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": "false",
-              "e2eToolingRequired": "false"
+              "e2eToolingRequired": "false",
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/dor/acdg-s2-dor.md",
+              "dorContractArtefact": "artefacts/2026-09-01-artefact-commit-durability-gap/dor/acdg-s2-dor-contract.md"
             }
           ]
         }
