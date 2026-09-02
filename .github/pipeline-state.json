@@ -29820,19 +29820,19 @@
             {
               "slug": "pdt-s3",
               "name": "De-emphasize Unknown Health Visually",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-02-product-dashboard-triage/review/pdt-s3-review-1.md",
-              "updatedAt": "2026-09-02T19:08:10.006Z",
+              "updatedAt": "2026-09-02T19:16:38.404Z",
               "testPlan": {
                 "status": "all-passing",
                 "totalTests": 4,
                 "passing": 4
               },
               "acTotal": 3,
-              "acVerified": 0,
+              "acVerified": 3,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
@@ -29863,7 +29863,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-09-02-product-dashboard-triage/plans/pdt-s3-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "pdt-s4",
