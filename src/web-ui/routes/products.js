@@ -791,6 +791,33 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     });
   });
 
+  // pdt-s2 (AC1-AC3): triage summary strip -- the first clickable content
+  // above the feature list, showing Blocked/Warning counts. Reuses the
+  // existing pvc-health-chip class + pvcFilterByHealth(this) handler
+  // (defined in _renderConsolidatedFeaturesSection below) rather than
+  // building a second, parallel filter -- see the implementation plan's
+  // own Investigation note for why <button> (matching the real mechanism)
+  // rather than <a> (assumed by the DoR/test plan) is correct here.
+  var triageStripHtml = '';
+  if (healthCounts) {
+    var blockedCount = healthCounts.red || 0;
+    var warningCount = healthCounts.amber || 0;
+    if (blockedCount > 0 || warningCount > 0) {
+      triageStripHtml =
+        '<div class="pdt-triage-strip" style="display:flex;gap:10px;align-items:center;margin-bottom:16px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:8px;font-size:13px">' +
+          (blockedCount > 0
+            ? '<button type="button" class="pvc-health-chip" data-health-filter="red" onclick="pvcFilterByHealth(this)" style="border-color:#ef4444;color:#ef4444">✕ Blocked: ' + blockedCount + '</button>'
+            : '') +
+          (warningCount > 0
+            ? '<button type="button" class="pvc-health-chip" data-health-filter="amber" onclick="pvcFilterByHealth(this)" style="border-color:#f59e0b;color:#f59e0b">⚠ Warning: ' + warningCount + '</button>'
+            : '') +
+        '</div>';
+    } else {
+      triageStripHtml =
+        '<div class="pdt-triage-strip" style="margin-bottom:16px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:8px;font-size:13px;color:var(--muted)">✓ Nothing blocked</div>';
+    }
+  }
+
   var featuresSectionHtml = _renderConsolidatedFeaturesSection(mergedItems, modules, taxonomy, productId, csrfToken);
   var scaleGaugeHtml = _renderScaleGauge(features, modules, taxonomy);
 
@@ -915,6 +942,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     acCoverageHtml +
     scaleGaugeHtml +
     (features.length > 1 ? _renderModulesManagement(productId, modules, csrfToken) : '') +
+    triageStripHtml +
     featuresSectionHtml +
     '<script>' +
     'function pshConfirmDeleteProduct(id){' +
