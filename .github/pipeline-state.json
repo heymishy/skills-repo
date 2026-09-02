@@ -29659,6 +29659,20 @@
           ]
         }
       ]
+    },
+    {
+      "slug": "2026-09-02-product-dashboard-triage",
+      "name": "Product Dashboard Becomes Unreadable at Real-World Scale",
+      "stage": "discovery",
+      "discoveryStatus": "approved",
+      "health": "green",
+      "updatedAt": "2026-09-02T09:37:23.285Z",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "stories": [],
+      "track": "standard"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
