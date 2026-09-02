@@ -204,7 +204,10 @@ function freshRequire(p) {
     assert.ok(/grid-template-rows:\s*0fr/.test(html), 'expected the collapsed-state 0fr grid-template-rows rule');
     assert.ok(/transition:\s*grid-template-rows/.test(html), 'expected a real CSS transition on grid-template-rows, not an instant show/hide');
     assert.ok(/a4ToggleModule/.test(html), 'expected the expand/collapse toggle handler to be wired');
-    assert.ok(/aria-expanded="true"/.test(html) && /aria-controls=/.test(html), 'expected keyboard/screen-reader accessible expand state (NFR-Accessibility)');
+    // pdt-s1 (AC2): groups now start collapsed by default (aria-expanded="false")
+    // -- this assertion originally hardcoded the pre-pdt-s1 default of "true";
+    // updated to match the new, deliberately-changed default starting state.
+    assert.ok(/aria-expanded="false"/.test(html) && /aria-controls=/.test(html), 'expected keyboard/screen-reader accessible expand state (NFR-Accessibility)');
   });
 
   console.log('\n[a4] Results: ' + passed + ' passed, ' + failed + ' failed');

@@ -29666,7 +29666,7 @@
       "stage": "definition",
       "discoveryStatus": "approved",
       "health": "green",
-      "updatedAt": "2026-09-02T09:44:02.178Z",
+      "updatedAt": "2026-09-02T10:17:06.720Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -29712,12 +29712,12 @@
             {
               "slug": "pdt-s1",
               "name": "Consolidate the Epic/Phase List",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-02-product-dashboard-triage/review/pdt-s1-review-1.md",
-              "updatedAt": "2026-09-02T10:05:17.272Z",
+              "updatedAt": "2026-09-02T10:22:25.292Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -29729,7 +29729,33 @@
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-09-02-product-dashboard-triage/dor/pdt-s1-dor.md",
-              "dorContractArtefact": "artefacts/2026-09-02-product-dashboard-triage/dor/pdt-s1-dor-contract.md"
+              "dorContractArtefact": "artefacts/2026-09-02-product-dashboard-triage/dor/pdt-s1-dor-contract.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Remove the static Epics/Other-features duplicate breakdown (AC1)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-02-product-dashboard-triage/plans/pdt-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Default groups to collapsed with a rolled-up status indicator (AC2, AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-02-product-dashboard-triage/plans/pdt-s1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Confirm the zero-groups empty state is preserved (AC4)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-02-product-dashboard-triage/plans/pdt-s1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "NFR tests -- response size and keyboard operability",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-02-product-dashboard-triage/plans/pdt-s1-plan.md"
+                }
+              ]
             },
             {
               "slug": "pdt-s2",

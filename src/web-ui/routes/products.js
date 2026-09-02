@@ -103,45 +103,11 @@ function _parseJsonbField(value, fallback) {
   return (typeof value === 'string') ? JSON.parse(value) : value;
 }
 
-// Renders a test/AC-coverage breakdown grouped by parent epic (mirroring the
-// Epics/Other-features layout used for taxonomy below it), instead of one
-// flat list of every story code -- found unreadable at 100+ stories during
-// live staging verification (F4). Falls back to the flat perFeature list for
-// any pre-existing cached rollup row synced before groups/ungrouped existed.
-function _renderGroupedCoverageBreakdown(coverage) {
-  if (!Array.isArray(coverage.groups) || !Array.isArray(coverage.ungrouped)) {
-    return '<ul style="margin:6px 0 0;padding-left:18px">' +
-      coverage.perFeature.map(function(f) {
-        return '<li style="font-size:12px;color:var(--muted)">' + _escapeHtml(f.slug) + ': ' + _escapeHtml(String(f.percentage)) + '%</li>';
-      }).join('') +
-    '</ul>';
-  }
-
-  var epicsSectionHtml = coverage.groups.length > 0
-    ? '<h4 style="font-size:13px;margin:12px 0 4px">Epics</h4>' +
-      coverage.groups.map(function(g) {
-        return '<div style="margin-bottom:8px">' +
-          '<div style="font-size:12px;font-weight:600;color:var(--muted)">' + _escapeHtml(g.epicName || g.epicSlug) + '</div>' +
-          '<ul style="margin:2px 0 0;padding-left:18px">' +
-            g.items.map(function(item) {
-              return '<li style="font-size:12px;color:var(--muted)">' + _escapeHtml(item.slug) + ': ' + _escapeHtml(String(item.percentage)) + '%</li>';
-            }).join('') +
-          '</ul>' +
-        '</div>';
-      }).join('')
-    : '';
-
-  var ungroupedSectionHtml = coverage.ungrouped.length > 0
-    ? '<h4 style="font-size:13px;margin:12px 0 4px">Other features</h4>' +
-      '<ul style="margin:2px 0 0;padding-left:18px">' +
-        coverage.ungrouped.map(function(f) {
-          return '<li style="font-size:12px;color:var(--muted)">' + _escapeHtml(f.slug) + ': ' + _escapeHtml(String(f.percentage)) + '%</li>';
-        }).join('') +
-      '</ul>'
-    : '';
-
-  return epicsSectionHtml + ungroupedSectionHtml;
-}
+// pdt-s1 (AC1): the per-epic/per-story coverage breakdown that used to render
+// here (_renderGroupedCoverageBreakdown) duplicated the same story-ID/
+// percentage pairs already shown, interactively, in the By Module/By Phase/
+// All tabs below -- removed so each group renders exactly once. Only the
+// summary "Test coverage: X%" line remains (see coverageHtml below).
 
 function _renderProductDashboard(products, login, navProducts, activeProductId, noProductJourneyCount, isAdmin) {
   var cardsHtml = products.length === 0
@@ -273,14 +239,32 @@ function _renderEpicRow(f) {
 function _renderModuleSection(name, id, groupFeatures, renderRowFn) {
   renderRowFn = renderRowFn || _renderEpicRow;
   var sectionId = 'a4-mod-' + _escapeHtml(String(id));
+  // pdt-s1 (AC2): a rolled-up health signal for the collapsed group header,
+  // reusing the same red > amber > green precedence as the page-level
+  // "Overall:" line (_productRollup.computeOverallHealthSignal) rather than
+  // inventing new rollup logic -- so a collapsed group still communicates
+  // whether anything inside it needs attention.
+  var groupHealthCounts = { green: 0, amber: 0, red: 0, unknown: 0 };
+  groupFeatures.forEach(function(f) {
+    var h = f.health === 'red' ? 'red' : f.health === 'amber' ? 'amber' : f.health === 'unknown' ? 'unknown' : 'green';
+    groupHealthCounts[h]++;
+  });
+  var groupSignal = _productRollup.computeOverallHealthSignal(groupHealthCounts);
+  var groupSignalColor = groupSignal === 'red' ? '#ef4444' : groupSignal === 'amber' ? '#f59e0b' : '#22c55e';
+  var groupSignalLabel = groupSignal === 'red' ? '✕ Blocked' : groupSignal === 'amber' ? '⚠ Warning' : '✓ Healthy';
   return '<div class="a4-module-section" style="margin-bottom:10px;border:1px solid var(--line);border-radius:8px">' +
-    '<button type="button" class="a4-module-header" aria-expanded="true" aria-controls="' + sectionId + '" ' +
+    // pdt-s1 (AC2): starts collapsed (aria-expanded=false, --collapsed body
+    // class) -- a4ToggleModule's existing click handler (below) already
+    // toggles both correctly; only the DEFAULT starting state changes here.
+    '<button type="button" class="a4-module-header" aria-expanded="false" aria-controls="' + sectionId + '" ' +
       'onclick="a4ToggleModule(this)" ' +
       'style="width:100%;text-align:left;padding:12px 16px;background:none;border:none;cursor:pointer;font-size:14px;font-weight:600;color:var(--ink);display:flex;justify-content:space-between;align-items:center">' +
-      '<span>' + _escapeHtml(name) + ' <span class="a4-module-count" style="color:var(--muted);font-weight:400">(' + groupFeatures.length + ')</span></span>' +
+      '<span>' + _escapeHtml(name) + ' <span class="a4-module-count" style="color:var(--muted);font-weight:400">(' + groupFeatures.length + ')</span> ' +
+        '<span class="a4-module-signal" data-group-signal="' + groupSignal + '" style="font-size:12px;font-weight:500;color:' + groupSignalColor + '">' + groupSignalLabel + '</span>' +
+      '</span>' +
       '<span aria-hidden="true">▾</span>' +
     '</button>' +
-    '<div id="' + sectionId + '" class="a4-module-body a4-module-body--expanded">' +
+    '<div id="' + sectionId + '" class="a4-module-body a4-module-body--collapsed">' +
       '<div class="a4-module-body-inner">' +
         '<ul style="list-style:none;padding:0 16px 12px;margin:0">' +
           // bmau-s1: call with exactly 1 argument, not the raw renderRowFn
@@ -753,7 +737,6 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     coverageHtml =
       '<div style="margin-top:12px;font-size:13px">' +
         '<div>Test coverage: <strong>' + _escapeHtml(String(testCoverage.blendedPercentage)) + '%</strong></div>' +
-        _renderGroupedCoverageBreakdown(testCoverage) +
       '</div>';
   }
   var acCoverage = (rollupRow && rollupRow.ac_coverage) ? _parseJsonbField(rollupRow.ac_coverage, null) : null;
