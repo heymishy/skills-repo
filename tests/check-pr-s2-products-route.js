@@ -232,8 +232,11 @@ test('products.js exports handlePostProductSync', function() {
       var res = { writeHead: function() {}, end: function(body) { html = body; } };
       await productsRouteFresh.handleGetProductView(req, res, null, mockPool);
 
-      if (!/✓ Healthy/.test(html) || !/⚠ Warning/.test(html) || !/✕ Blocked/.test(html) || !/\? Unknown/.test(html)) {
-        throw new Error('Expected all four health labels (✓ Healthy / ⚠ Warning / ✕ Blocked / ? Unknown) in the rendered page');
+      // pdt-s3 (AC1): the Unknown label's "?" glyph was deliberately dropped
+      // (de-emphasis -- reduces visual competition with real signals) --
+      // updated from "? Unknown" to plain "Unknown".
+      if (!/✓ Healthy/.test(html) || !/⚠ Warning/.test(html) || !/✕ Blocked/.test(html) || !/Unknown/.test(html)) {
+        throw new Error('Expected all four health labels (✓ Healthy / ⚠ Warning / ✕ Blocked / Unknown) in the rendered page');
       }
       passed++; console.log('  [PASS] _renderProductView: renders all four health-status labels using the existing label convention (AC1)');
 
@@ -286,7 +289,9 @@ test('products.js exports handlePostProductSync', function() {
       var res = { writeHead: function() {}, end: function(body) { html = body; } };
       await productsRouteFresh.handleGetProductView(req, res, null, mockPool);
 
-      if (!/✓ Healthy/.test(html) || !/⚠ Warning/.test(html) || !/✕ Blocked/.test(html) || !/\? Unknown/.test(html)) {
+      // pdt-s3 (AC1): the Unknown label's "?" glyph was deliberately dropped --
+      // updated from "? Unknown" to plain "Unknown".
+      if (!/✓ Healthy/.test(html) || !/⚠ Warning/.test(html) || !/✕ Blocked/.test(html) || !/Unknown/.test(html)) {
         throw new Error('Expected all four health labels to still render exactly as before, with the extended (perFeature-bearing) health_counts shape (AC3)');
       }
       passed++; console.log('  [PASS] _renderProductView: renders the same four health-status labels unchanged with the extended health_counts shape (AC3)');
