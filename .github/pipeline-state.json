@@ -29695,7 +29695,7 @@
           "baseline": "51% (115/224) Unknown items rendered as competing colored badges",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "pdt-s3 directly implements Metric 2 own mechanism (moving Unknown from a competing-weight label to a de-emphasized one) and fixes a second, independently-discovered defect: the Overall summary line silently showed green Healthy with zero real health signal. Measurement is now possible on skills-framework staging (a live re-check confirming the 51%->0% competing-badge reduction was not performed in this session -- no active browser session -- recorded as not-yet-measured pending that check).",
           "contributingStories": [
             "pdt-s3"
           ]
@@ -29707,7 +29707,7 @@
         {
           "slug": "dashboard-triage",
           "name": "Operators Can Scan a Large Product's Health at a Glance",
-          "status": "in-progress",
+          "status": "not-started",
           "stories": [
             {
               "slug": "pdt-s1",
@@ -29820,12 +29820,12 @@
             {
               "slug": "pdt-s3",
               "name": "De-emphasize Unknown Health Visually",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-02-product-dashboard-triage/review/pdt-s3-review-1.md",
-              "updatedAt": "2026-09-02T19:17:35.947Z",
+              "updatedAt": "2026-09-02T19:28:47.745Z",
               "testPlan": {
                 "status": "all-passing",
                 "totalTests": 4,
@@ -29865,8 +29865,11 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/817"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/817",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "layoutGapsAtMerge": false
             },
             {
               "slug": "pdt-s4",
