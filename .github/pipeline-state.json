@@ -29681,7 +29681,7 @@
           "baseline": "~40 screens of static text before any interactive content",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "pdt-s1 removed the ~40-screen static duplicate list and pdt-s2 added the first genuinely clickable, attention-directing content (the triage strip) -- two real structural contributions toward the target -- but full metric measurement still requires pdt-s4 (breadcrumb) to also ship, per this metric own contributingStories list.",
+          "evidence": "All three contributing stories are now merged: pdt-s1 removed the static duplicate list, pdt-s2 added the triage strip as the first clickable attention-directing content, and pdt-s4 fixed the story-detail dead end with a breadcrumb. A live before/after measurement on skills-framework staging is the natural closing step for this metric, not performed in this session (no active browser session).",
           "contributingStories": [
             "pdt-s1",
             "pdt-s2",
@@ -29707,7 +29707,7 @@
         {
           "slug": "dashboard-triage",
           "name": "Operators Can Scan a Large Product's Health at a Glance",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "pdt-s1",
@@ -29874,12 +29874,12 @@
             {
               "slug": "pdt-s4",
               "name": "Fix the Story-Detail Dead End With a Breadcrumb",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-02-product-dashboard-triage/review/pdt-s4-review-1.md",
-              "updatedAt": "2026-09-02T19:49:55.413Z",
+              "updatedAt": "2026-09-02T20:19:05.166Z",
               "testPlan": {
                 "status": "all-passing",
                 "totalTests": 7,
@@ -29925,8 +29925,11 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/818"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/818",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "layoutGapsAtMerge": false
             }
           ]
         }
