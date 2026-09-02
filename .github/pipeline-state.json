@@ -29663,10 +29663,10 @@
     {
       "slug": "2026-09-02-product-dashboard-triage",
       "name": "Product Dashboard Becomes Unreadable at Real-World Scale",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "discoveryStatus": "approved",
       "health": "green",
-      "updatedAt": "2026-09-02T09:39:34.524Z",
+      "updatedAt": "2026-09-02T09:44:02.178Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -29682,7 +29682,11 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "pdt-s1",
+            "pdt-s2",
+            "pdt-s4"
+          ]
         },
         {
           "id": "m2",
@@ -29692,7 +29696,44 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "pdt-s3"
+          ]
+        }
+      ],
+      "slicingStrategy": "vertical-slice",
+      "guardrails": [],
+      "epics": [
+        {
+          "slug": "dashboard-triage",
+          "name": "Operators Can Scan a Large Product's Health at a Glance",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "pdt-s1",
+              "name": "Consolidate the Epic/Phase List",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "pdt-s2",
+              "name": "Add a Triage Summary Strip for Blocked/Warning Counts",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "pdt-s3",
+              "name": "De-emphasize Unknown Health Visually",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "pdt-s4",
+              "name": "Fix the Story-Detail Dead End With a Breadcrumb",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
         }
       ]
     }

@@ -49,8 +49,8 @@ This is a UX/information-architecture fix to an existing platform page (`/produc
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Metric 1 — Time to First Actionable Content | TBD at /definition | Gap |
-| Metric 2 — Health-Signal Trustworthiness | TBD at /definition | Gap |
+| Metric 1 — Time to First Actionable Content | pdt-s1, pdt-s2, pdt-s4 | Covered |
+| Metric 2 — Health-Signal Trustworthiness | pdt-s3 | Covered |
 
 ---
 
