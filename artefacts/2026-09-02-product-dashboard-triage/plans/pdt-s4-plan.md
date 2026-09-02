@@ -417,3 +417,12 @@ Expected output: all passing except the one pre-existing, unrelated `check-p3.5-
 git add tests/check-pdt-s4-story-breadcrumb.js
 git commit -m "test: add NFR tests for query-count discipline and breadcrumb keyboard-navigability (pdt-s4)"
 ```
+
+---
+
+## E2E route coverage (features.js is a route file) — found during /verify-completion
+
+Three local (non-`@real-staging`) Playwright specs reference `/features/:slug`: `tests/e2e/feature-navigation.spec.js`, `tests/e2e/frsr-s1-feature-row-session-resume.spec.js`, `tests/e2e/wuce20-artefact-index-html.spec.js`. Ran all three locally:
+
+- **Genuine regression, fixed:** `wuce20-artefact-index-html.spec.js`'s AC2 test used a bare `page.locator('nav')` expecting exactly one match (Playwright strict mode). The new breadcrumb adds a legitimate 4th `<nav>` landmark to the page, so the locator now matches 4 elements and throws a strict-mode violation. Fixed by scoping to `.first()`, preserving the test's original intent ("some shell nav renders") without asserting there is exactly one nav on the page.
+- **Pre-existing, unrelated, not fixed (out of this story's scope):** 4 other failures — two specs assert an unauthenticated redirect lands on `localhost:3000`, but this repo's actual Playwright config (`playwright.config.js`) runs the test server on `localhost:3999`; a stale hardcoded port expectation unrelated to any application code. Two more (`frsr-s1`'s own tests) fail with `feature creation should redirect into a skill session` — the response code even differs between consecutive runs (409 then 403), confirming non-deterministic local-environment flakiness (likely session/CSRF state pollution from prior test runs), not something this story's purely-additive `features.js` diff could cause. Confirmed via `git diff master..HEAD --stat`: the diff touches only `features.js` and new test/artefact files — no auth-redirect or feature-creation code.
