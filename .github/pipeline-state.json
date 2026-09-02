@@ -29874,19 +29874,19 @@
             {
               "slug": "pdt-s4",
               "name": "Fix the Story-Detail Dead End With a Breadcrumb",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-02-product-dashboard-triage/review/pdt-s4-review-1.md",
-              "updatedAt": "2026-09-02T19:37:52.536Z",
+              "updatedAt": "2026-09-02T19:48:49.917Z",
               "testPlan": {
                 "status": "all-passing",
                 "totalTests": 7,
                 "passing": 7
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "dorStatus": "signed-off",
@@ -29923,7 +29923,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-09-02-product-dashboard-triage/plans/pdt-s4-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             }
           ]
         }
