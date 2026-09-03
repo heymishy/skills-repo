@@ -30532,9 +30532,9 @@
           "slug": "aada-s1",
           "id": "aada-s1",
           "name": "Check archived directory fallback in listLocalArtefacts",
-          "stage": "branch-complete",
-          "health": "green",
-          "updatedAt": "2026-09-03T23:24:32.736Z",
+          "stage": "definition-of-done",
+          "health": "amber",
+          "updatedAt": "2026-09-03T23:51:57.075Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-artefact-lookup-archived-directory-fix/dor/aada-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-04-artefact-lookup-archived-directory-fix/dor/aada-s1-dor-contract.md",
@@ -30561,8 +30561,12 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/825"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/825",
+          "dodStatus": "complete",
+          "dodPath": "artefacts/2026-09-04-artefact-lookup-archived-directory-fix/dod/aada-s1-dod.md",
+          "releaseReady": false,
+          "blocker": "Production (skills-framework.fly.dev) not yet running this fix -- promote-to-prod requires a fresh manual approval for this specific merge commit (d33b76f9), verified via git-ancestor check against whatever commit is actually deployed. Non-urgent (read-path visibility fix, no data-loss risk)."
         }
       ]
     }

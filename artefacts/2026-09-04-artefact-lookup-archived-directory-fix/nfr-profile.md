@@ -2,8 +2,8 @@
 
 **Feature:** 2026-09-04-artefact-lookup-archived-directory-fix
 **Created:** 2026-09-04
-**Last updated:** 2026-09-04
-**Status:** Active
+**Last updated:** 2026-09-03
+**Status:** Verified at 2026-09-03 (DoD)
 
 ---
 
