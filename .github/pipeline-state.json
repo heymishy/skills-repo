@@ -30518,6 +30518,25 @@
           "releaseReady": true
         }
       ]
+    },
+    {
+      "slug": "2026-09-04-artefact-lookup-archived-directory-fix",
+      "id": "2026-09-04-artefact-lookup-archived-directory-fix",
+      "name": "Feature artefact lookup falls back to the archived directory when the primary path is gone",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "updatedAt": "2026-09-03T23:05:26.952Z",
+      "stories": [
+        {
+          "slug": "aada-s1",
+          "id": "aada-s1",
+          "name": "Check archived directory fallback in listLocalArtefacts",
+          "stage": "test-plan-complete",
+          "health": "green",
+          "updatedAt": "2026-09-03T23:05:34.477Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
