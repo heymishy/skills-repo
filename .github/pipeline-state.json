@@ -29990,9 +29990,9 @@
           "slug": "pst-s1",
           "id": "pst-s1",
           "name": "Make product sync fire-and-forget with client-side polling, instead of one long blocking request",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-09-03T03:20:22.676Z",
+          "updatedAt": "2026-09-03T03:21:56.610Z",
           "testPlan": {
             "status": "written",
             "totalTests": 7,
@@ -30042,7 +30042,9 @@
               "file": "artefacts/2026-09-03-product-sync-timeout-fix/plans/pst-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/819"
         }
       ],
       "guardrails": [
