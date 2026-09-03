@@ -2442,19 +2442,26 @@ async function handlePostProductSync(req, res, _next, pool, posthog) {
     return;
   }
 
-  try {
-    var rollup = await _productRollup.triggerProductSync(_pool, _pipelineStateFetchAdapter, {
-      productId: productId,
-      repoOwner: repoRow.repo_owner,
-      repoName: repoRow.repo_name,
-      accessToken: accessToken
-    });
-    if (res.status) { res.status(200).json({ synced: true, rollup: rollup }); }
-    else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ synced: true, rollup: rollup })); }
-  } catch (err) {
-    if (res.status) { res.status(502).json({ error: err.message }); }
-    else { res.writeHead(502, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: err.message })); }
-  }
+  // pst-s1 (AC1): respond immediately -- never block the HTTP response on the
+  // GitHub fetch + rollup computation, which can exceed the platform's own
+  // reverse-proxy timeout for large connected repos. triggerProductSync's own
+  // in-flight guard (_syncsInProgress) is set synchronously before its first
+  // await, so isSyncInProgress() already reflects "in progress" by the time
+  // this response is sent -- the client's first status poll will see it.
+  if (res.status) { res.status(202).json({ started: true }); }
+  else { res.writeHead(202, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ started: true })); }
+
+  // pst-s1 (AC3): no HTTP request is waiting to observe a background failure
+  // directly -- log it server-side so it stays diagnosable rather than
+  // becoming a silent, unhandled promise rejection.
+  _productRollup.triggerProductSync(_pool, _pipelineStateFetchAdapter, {
+    productId: productId,
+    repoOwner: repoRow.repo_owner,
+    repoName: repoRow.repo_name,
+    accessToken: accessToken
+  }).catch(function(err) {
+    console.error('[product-sync] background sync failed for product ' + productId + ':', err.message);
+  });
 }
 
 /**
