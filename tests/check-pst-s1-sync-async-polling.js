@@ -194,6 +194,21 @@ console.log('\n[pst-s1] AC1/AC3 -- sync route responds immediately and logs back
     } catch (err) { failed++; console.log('  [FAIL] AC4 frontend polling script --', err.message); }
   })();
 
+  console.log('\n[pst-s1] AC5 (regression guard) -- existing isSyncing-driven button-disable state on page load is unaffected');
+
+  await (async function() {
+    try {
+      delete require.cache[require.resolve(PRODUCTS_PATH)];
+      var productsRouteFresh = require(PRODUCTS_PATH);
+      var html = productsRouteFresh._renderProductView('Acme', 'p1', [], 'user1', null, true, null, null, [], 'csrf-token', {}, {}, [], 0, null, false);
+
+      if (!/disabled/i.test(html)) throw new Error('Expected the Refresh control to render disabled when isSyncing is true');
+      passed++; console.log('  [PASS] _renderProductView: Refresh control still renders disabled when isSyncing=true (AC5)');
+      if (!/Syncing…/.test(html)) throw new Error('Expected the "Syncing…" label when isSyncing is true');
+      passed++; console.log('  [PASS] _renderProductView: Refresh control still shows "Syncing…" label when isSyncing=true (AC5)');
+    } catch (err) { failed++; console.log('  [FAIL] AC5 regression guard --', err.message); }
+  })();
+
   console.log('\n[pst-s1] Results: ' + passed + ' passed, ' + failed + ' failed');
   process.exitCode = failed > 0 ? 1 : 0;
 })();
