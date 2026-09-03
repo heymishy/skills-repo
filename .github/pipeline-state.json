@@ -30095,17 +30095,17 @@
       "id": "2026-09-03-product-github-fetch-truncation-fix",
       "name": "Retry and diagnose GitHub Contents API fetch truncation for large connected repos",
       "track": "short",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-09-03T05:17:50.485Z",
+      "updatedAt": "2026-09-03T05:20:49.731Z",
       "stories": [
         {
           "slug": "pgft-s1",
           "id": "pgft-s1",
           "name": "Retry the GitHub Contents API fetch on transient/parse failure, with diagnostic error detail on exhaustion",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-09-03T05:19:38.778Z",
+          "updatedAt": "2026-09-03T05:20:49.732Z",
           "testPlan": {
             "status": "written",
             "totalTests": 5,
@@ -30114,7 +30114,48 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": "false",
-          "e2eToolingRequired": "false"
+          "e2eToolingRequired": "false",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-03-product-github-fetch-truncation-fix/dor/pgft-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-03-product-github-fetch-truncation-fix/dor/pgft-s1-dor-contract.md"
+        }
+      ],
+      "guardrails": [
+        {
+          "id": "H9-ARCH-CONSTRAINTS",
+          "category": "mandatory-constraint",
+          "label": "H9 Architecture Constraints",
+          "status": "met",
+          "evidence": "Populated: mock-fidelity fix scope, retry-class boundaries (network/parse retried, HTTP-status not). No review ran (short-track) so no Category E findings to check.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-03T05:20:49.732Z"
+        },
+        {
+          "id": "H-NFR-PROFILE",
+          "category": "nfr",
+          "label": "H-NFR NFR profile",
+          "status": "met",
+          "evidence": "artefacts/2026-09-03-product-github-fetch-truncation-fix/nfr-profile.md",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-03T05:20:49.732Z"
+        },
+        {
+          "id": "H-NFR2-COMPLIANCE",
+          "category": "compliance-framework",
+          "label": "H-NFR2 Compliance sign-off",
+          "status": "na",
+          "evidence": "No named regulatory clause",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-03T05:20:49.732Z"
+        },
+        {
+          "id": "H-NFR3-DATA-CLASS",
+          "category": "nfr",
+          "label": "H-NFR3 Data classification",
+          "status": "met",
+          "evidence": "Internal",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-03T05:20:49.733Z"
         }
       ]
     }
