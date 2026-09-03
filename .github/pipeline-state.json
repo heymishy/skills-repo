@@ -30482,12 +30482,35 @@
           "slug": "pefl-s1",
           "id": "pefl-s1",
           "name": "Feature name not epic name on grouped rows, default to By Phase when epics > 1",
-          "stage": "dor-signed-off",
+          "stage": "verify-completion",
           "health": "green",
           "updatedAt": "2026-09-03T20:57:10.142Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-product-page-epic-grouping-and-feature-label/dor/pefl-s1-dor.md",
-          "dorContractPath": "artefacts/2026-09-04-product-page-epic-grouping-and-feature-label/dor/pefl-s1-dor-contract.md"
+          "dorContractPath": "artefacts/2026-09-04-product-page-epic-grouping-and-feature-label/dor/pefl-s1-dor-contract.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 6
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "baseline": {
+            "totalFiles": 604,
+            "failed": 1,
+            "note": "Pre-existing failure tests/check-p3.5-validate-trace.js confirmed present on master before this branch existed -- same known baseline as pst-s1/pgft-s1/psbf-s1/ppg-s1/fal-s1."
+          },
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Feature name on By Phase rows + epic-count-aware defaultTab (AC1-AC5)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-04-product-page-epic-grouping-and-feature-label/plans/pefl-s1-plan.md"
+            }
+          ],
+          "verifyStatus": "passed"
         }
       ]
     }
