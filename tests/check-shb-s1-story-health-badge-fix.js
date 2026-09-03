@@ -154,10 +154,12 @@ function healthAttrForSlug(html, slug) {
       modules, 'csrf-token', featureModuleAssignments, {}, [], 0, null
     );
 
-    // Top rollup line
-    assert.ok(/Healthy: 1/.test(html), 'expected the top rollup to show Healthy: 1');
-    assert.ok(/Warning: 1/.test(html), 'expected the top rollup to show Warning: 1');
-    assert.ok(/Unknown: 0/.test(html), 'expected the top rollup to show Unknown: 0');
+    // Top rollup -- ppg-s1 consolidated these onto the health-filter chip
+    // bar with real counts (e.g. "Healthy (1)"), superseding the removed
+    // colon-format breakdown on the Overall line this test originally checked.
+    assert.ok(/Healthy \(1\)/.test(html), 'expected the health-filter chip bar to show Healthy (1)');
+    assert.ok(/Warning \(1\)/.test(html), 'expected the health-filter chip bar to show Warning (1)');
+    assert.ok(/Unknown \(0\)/.test(html), 'expected the health-filter chip bar to show Unknown (0)');
 
     // Row-level badges must agree with the rollup -- neither row shows Unknown
     assert.strictEqual(healthAttrForSlug(html, 's1'), 'green');

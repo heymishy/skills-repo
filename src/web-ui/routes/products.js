@@ -410,12 +410,18 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
   // real phase breakdown), unchanged By Module default otherwise.
   var defaultTab = modules.length === 0 ? 'phase' : 'module';
 
+  // ppg-s1 (AC2): with zero modules there is no bulk-assign bar to pair
+  // with, so the Unclassified section's own rows must use the plain
+  // renderer, not the checkbox-wrapped one -- otherwise it would show
+  // orphaned checkboxes with no functional control to use them with.
+  var _byModuleRowRenderer = modules.length > 0 ? _renderPvcItemRowWithCheckbox : _renderPvcItemRow;
+
   var byModuleHtml =
     '<div id="pvc-tab-panel-module" class="pvc-tab-panel' + (defaultTab === 'module' ? ' pvc-tab-panel--active' : '') + '" role="tabpanel" aria-labelledby="pvc-tab-module">' +
       // ppg-s1 (AC2): nothing to assign to when there are zero modules.
       (modules.length > 0 ? bulkAssignBarHtml : '') +
-      byModule.byModule.map(function(bucket) { return _renderModuleSection(bucket.moduleName, bucket.moduleId, bucket.items, _renderPvcItemRowWithCheckbox); }).join('') +
-      (byModule.unclassified.length > 0 ? _renderModuleSection('Unclassified', 'unclassified', byModule.unclassified, _renderPvcItemRowWithCheckbox) : '') +
+      byModule.byModule.map(function(bucket) { return _renderModuleSection(bucket.moduleName, bucket.moduleId, bucket.items, _byModuleRowRenderer); }).join('') +
+      (byModule.unclassified.length > 0 ? _renderModuleSection('Unclassified', 'unclassified', byModule.unclassified, _byModuleRowRenderer) : '') +
       noFeaturesInnerHtml +
     '</div>';
 
