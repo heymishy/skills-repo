@@ -29990,16 +29990,16 @@
           "slug": "pst-s1",
           "id": "pst-s1",
           "name": "Make product sync fire-and-forget with client-side polling, instead of one long blocking request",
-          "stage": "implementation-plan",
+          "stage": "verify-completion",
           "health": "green",
-          "updatedAt": "2026-09-03T03:08:33.405Z",
+          "updatedAt": "2026-09-03T03:20:22.676Z",
           "testPlan": {
             "status": "written",
             "totalTests": 7,
-            "passing": 0
+            "passing": 7
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "dorStatus": "signed-off",
@@ -30014,34 +30014,35 @@
             {
               "id": "task-1",
               "name": "Sync route responds immediately and logs background failures (AC1, AC3)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-03-product-sync-timeout-fix/plans/pst-s1-plan.md"
             },
             {
               "id": "task-2",
               "name": "Background success still writes product_rollups; fix outdated pr-s3 coupling (AC2)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-03-product-sync-timeout-fix/plans/pst-s1-plan.md"
             },
             {
               "id": "task-3",
               "name": "New sync-status endpoint, wired end to end (AC4 backend)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-03-product-sync-timeout-fix/plans/pst-s1-plan.md"
             },
             {
               "id": "task-4",
               "name": "Client polls for completion instead of waiting on one request (AC4 frontend)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-03-product-sync-timeout-fix/plans/pst-s1-plan.md"
             },
             {
               "id": "task-5",
               "name": "Regression guard for existing isSyncing button-disable state (AC5)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-03-product-sync-timeout-fix/plans/pst-s1-plan.md"
             }
-          ]
+          ],
+          "verifyStatus": "passed"
         }
       ],
       "guardrails": [
