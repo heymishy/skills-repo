@@ -978,14 +978,18 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     '}' +
     'async function pshTriggerSync(id){' +
       'var btn=document.getElementById(\'psh-refresh-btn\');' +
-      'var label=document.getElementById(\'psh-sync-label\');' +
       'btn.disabled=true;btn.textContent=\'Syncing…\';' +
       'try{' +
         'var r=await fetch(\'/products/\'+id+\'/sync\',{method:\'POST\'});' +
-        'if(r.ok){window.location.reload();}' +
-        'else{var j=await r.json();alert(j.error||\'Sync failed\');}' +
-      '}catch(e){alert(\'Sync failed: \'+e.message);}' +
-      'finally{btn.disabled=false;btn.textContent=\'Refresh\';}' +
+        'if(!r.ok){var j=await r.json();alert(j.error||\'Sync failed\');btn.disabled=false;btn.textContent=\'Refresh\';return;}' +
+        'var pshPoll=function(){' +
+          'fetch(\'/products/\'+id+\'/sync/status\').then(function(sr){return sr.json();}).then(function(sj){' +
+            'if(sj.inProgress){setTimeout(pshPoll,3000);}' +
+            'else{window.location.reload();}' +
+          '}).catch(function(){setTimeout(pshPoll,3000);});' +
+        '};' +
+        'setTimeout(pshPoll,3000);' +
+      '}catch(e){alert(\'Sync failed: \'+e.message);btn.disabled=false;btn.textContent=\'Refresh\';}' +
     '}' +
     'function pshToggleNewFeaturePanel(){var p=document.getElementById("psh-new-feature-panel");p.style.display=(p.style.display==="none"||!p.style.display)?"block":"none";}' +
     'function rpcShowCreateForm(){document.getElementById("rpc-create-panel").style.display="block";document.getElementById("rpc-connect-panel").style.display="none";var pp=document.getElementById("rpc-picker-panel");if(pp){pp.style.display="none";}}' +

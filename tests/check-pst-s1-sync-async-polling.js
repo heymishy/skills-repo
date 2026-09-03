@@ -172,6 +172,28 @@ console.log('\n[pst-s1] AC1/AC3 -- sync route responds immediately and logs back
     } catch (err) { failed++; console.log('  [FAIL] AC4 backend status endpoint --', err.message); }
   })();
 
+  console.log('\n[pst-s1] AC4 (frontend) -- rendered page includes real polling logic targeting the status endpoint');
+
+  await (async function() {
+    try {
+      delete require.cache[require.resolve(PRODUCTS_PATH)];
+      var productsRouteFresh = require(PRODUCTS_PATH);
+      var html = productsRouteFresh._renderProductView('Acme', 'p1', [], 'user1', null, false, null, null, [], 'csrf-token', {}, {}, [], 0, null, false);
+
+      if (!/pshTriggerSync/.test(html)) throw new Error('Expected the pshTriggerSync function to still be rendered');
+      passed++; console.log('  [PASS] _renderProductView: still renders pshTriggerSync');
+
+      if (!/\/sync\/status/.test(html)) throw new Error('Expected a fetch call targeting a .../sync/status-shaped URL in the rendered script');
+      passed++; console.log('  [PASS] _renderProductView: rendered script fetches the new sync/status endpoint (AC4)');
+
+      if (!/setTimeout\(/.test(html)) throw new Error('Expected a real polling construct (setTimeout), not a single one-shot fetch');
+      passed++; console.log('  [PASS] _renderProductView: rendered script contains a polling construct, not a one-shot fetch (AC4)');
+
+      if (!/window\.location\.reload\(\)/.test(html)) throw new Error('Expected a window.location.reload() call gated on the polled status');
+      passed++; console.log('  [PASS] _renderProductView: rendered script reloads the page once polling reports completion (AC4)');
+    } catch (err) { failed++; console.log('  [FAIL] AC4 frontend polling script --', err.message); }
+  })();
+
   console.log('\n[pst-s1] Results: ' + passed + ' passed, ' + failed + ' failed');
   process.exitCode = failed > 0 ? 1 : 0;
 })();
