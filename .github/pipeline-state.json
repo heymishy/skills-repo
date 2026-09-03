@@ -30482,9 +30482,9 @@
           "slug": "pefl-s1",
           "id": "pefl-s1",
           "name": "Feature name not epic name on grouped rows, default to By Phase when epics > 1",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-09-03T20:57:10.142Z",
+          "updatedAt": "2026-09-03T21:12:05.964Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-product-page-epic-grouping-and-feature-label/dor/pefl-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-04-product-page-epic-grouping-and-feature-label/dor/pefl-s1-dor-contract.md",
@@ -30510,7 +30510,9 @@
               "file": "artefacts/2026-09-04-product-page-epic-grouping-and-feature-label/plans/pefl-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/824"
         }
       ]
     }
