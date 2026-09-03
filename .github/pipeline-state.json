@@ -29982,17 +29982,17 @@
       "id": "2026-09-03-product-sync-timeout-fix",
       "name": "Make product sync fire-and-forget with client-side polling",
       "track": "short",
-      "stage": "definition-of-ready",
-      "health": "green",
-      "updatedAt": "2026-09-03T02:53:21.234Z",
+      "stage": "definition-of-done",
+      "health": "amber",
+      "updatedAt": "2026-09-03T04:40:15.263Z",
       "stories": [
         {
           "slug": "pst-s1",
           "id": "pst-s1",
           "name": "Make product sync fire-and-forget with client-side polling, instead of one long blocking request",
-          "stage": "branch-complete",
-          "health": "green",
-          "updatedAt": "2026-09-03T03:21:56.610Z",
+          "stage": "definition-of-done",
+          "health": "amber",
+          "updatedAt": "2026-09-03T04:40:15.262Z",
           "testPlan": {
             "status": "written",
             "totalTests": 7,
@@ -30043,8 +30043,12 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/819"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/819",
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "blocker": "Production (skills-framework.fly.dev) not yet running this fix -- promote-to-prod requires manual approval in GitHub Actions (workflow run 33715340515). Manual polling/reload smoke test also still pending (owner: Hamish King).",
+          "dodPath": "artefacts/2026-09-03-product-sync-timeout-fix/dod/pst-s1-dod.md"
         }
       ],
       "guardrails": [
@@ -30053,18 +30057,18 @@
           "category": "mandatory-constraint",
           "label": "H9 Architecture Constraints",
           "status": "met",
-          "evidence": "Populated: reuse of _syncsInProgress/isSyncInProgress, unchanged triggerProductSync logic. No review ran (short-track) so no Category E findings to check.",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-03T02:53:21.236Z"
+          "evidence": "Verified at DoD -- reuse of _syncsInProgress/isSyncInProgress confirmed unchanged in merged code",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-03T04:40:15.263Z"
         },
         {
           "id": "H-NFR-PROFILE",
           "category": "nfr",
           "label": "H-NFR NFR profile",
-          "status": "met",
-          "evidence": "artefacts/2026-09-03-product-sync-timeout-fix/nfr-profile.md",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-03T02:53:21.236Z"
+          "status": "not-met",
+          "evidence": "nfr-profile.md remains Active, not Verified -- one named gap (real-browser polling/reload timing manual smoke test) still open, owner Hamish King",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-03T04:40:15.263Z"
         },
         {
           "id": "H-NFR2-COMPLIANCE",
@@ -30072,17 +30076,17 @@
           "label": "H-NFR2 Compliance sign-off",
           "status": "na",
           "evidence": "No named regulatory clause",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-03T02:53:21.236Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-03T04:40:15.263Z"
         },
         {
           "id": "H-NFR3-DATA-CLASS",
           "category": "nfr",
           "label": "H-NFR3 Data classification",
           "status": "met",
-          "evidence": "Internal",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-03T02:53:21.236Z"
+          "evidence": "Internal classification confirmed unchanged",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-03T04:40:15.263Z"
         }
       ]
     }
