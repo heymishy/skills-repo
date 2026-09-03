@@ -135,6 +135,43 @@ console.log('\n[pst-s1] AC1/AC3 -- sync route responds immediately and logs back
     } catch (err) { failed++; console.log('  [FAIL] AC2 background write --', err.message); }
   })();
 
+  console.log('\n[pst-s1] AC4 (backend) -- GET /products/:id/sync/status reports in-flight state, tenant-scoped');
+
+  await (async function() {
+    try {
+      delete require.cache[require.resolve(PRODUCTS_PATH)];
+      var productsRouteFresh = require(PRODUCTS_PATH);
+
+      if (typeof productsRouteFresh.handleGetProductSyncStatus !== 'function') {
+        throw new Error('Expected products.js to export handleGetProductSyncStatus');
+      }
+      passed++; console.log('  [PASS] products.js exports handleGetProductSyncStatus');
+
+      var mockPool = {
+        query: async function(sql) {
+          if (/SELECT product_id, tenant_id FROM products/i.test(sql)) return { rows: [{ product_id: 'p-status', tenant_id: 't1' }] };
+          return { rows: [] };
+        }
+      };
+
+      // Wrong tenant -> 404, no leak of sync state across tenants
+      var wrongTenantReq = { params: { id: 'p-status' }, session: { tenantId: 't-other' } };
+      var wrongTenantStatus = null;
+      var wrongTenantRes = { status: function(c) { wrongTenantStatus = c; return { json: function() {} }; } };
+      await productsRouteFresh.handleGetProductSyncStatus(wrongTenantReq, wrongTenantRes, null, mockPool);
+      if (wrongTenantStatus !== 404) throw new Error('Expected 404 for a mismatched tenant, got ' + wrongTenantStatus);
+      passed++; console.log('  [PASS] handleGetProductSyncStatus: 404 for a product outside the caller\'s tenant (NFR-Security)');
+
+      // Correct tenant, no sync in progress -> inProgress:false
+      var req = { params: { id: 'p-status' }, session: { tenantId: 't1' } };
+      var jsonBody = null;
+      var res = { status: function() { return { json: function(b) { jsonBody = b; } }; } };
+      await productsRouteFresh.handleGetProductSyncStatus(req, res, null, mockPool);
+      if (jsonBody.inProgress !== false) throw new Error('Expected inProgress:false when no sync is running, got ' + JSON.stringify(jsonBody));
+      passed++; console.log('  [PASS] handleGetProductSyncStatus: reports inProgress:false when no sync is running (AC4)');
+    } catch (err) { failed++; console.log('  [FAIL] AC4 backend status endpoint --', err.message); }
+  })();
+
   console.log('\n[pst-s1] Results: ' + passed + ' passed, ' + failed + ' failed');
   process.exitCode = failed > 0 ? 1 : 0;
 })();

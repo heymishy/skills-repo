@@ -75,7 +75,7 @@ const { requireAdmin, setGetCurrentRole }                            = require('
 const { requireNonViewer, setLogger: setViewerGateLogger }           = require('./middleware/require-non-viewer'); // vrne-s1
 const { adminCreditsGet, adminCreditsPost, adminSetPlanPost }        = require('./routes/admin-credits');     // arl-s3 / tpac-s1
 const { adminMockGatewayGet, adminMockGatewayPost }                  = require('./routes/admin-mock-gateway'); // amgt-s1
-const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handleGetProductGuardrailsView, handleGetGuardrailsForm, handlePostGuardrailsForm, _trackPendingPr, handlePostRequestPromotion, handlePostOrgRepoSettings, handlePostProductSync, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules, handlePostApprovePromotion, handlePostRejectPromotion } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1 / wugs-s2 / wugs-s5 / wugs-s6 / wugs-s3 / wugs-s7 / wugs-s9 (smug-s1's handleGetProductStandardsTab removed, wugs-s11)
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handleGetProductGuardrailsView, handleGetGuardrailsForm, handlePostGuardrailsForm, _trackPendingPr, handlePostRequestPromotion, handlePostOrgRepoSettings, handlePostProductSync, handleGetProductSyncStatus, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules, handlePostApprovePromotion, handlePostRejectPromotion } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1 / wugs-s2 / wugs-s5 / wugs-s6 / wugs-s3 / wugs-s7 / wugs-s9 (smug-s1's handleGetProductStandardsTab removed, wugs-s11)
 const { setModulesAdapter } = require('./adapters/modules-adapter'); // a1
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
@@ -3370,6 +3370,11 @@ async function router(req, res) {
       if (!_rnvOk) return;
       await handlePostProductSync(req, res, null, _pshPool, null);
     });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/sync\/status$/) && req.method === 'GET') {
+    // pst-s1 -- lightweight poll target for the fire-and-forget sync trigger
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => { await handleGetProductSyncStatus(req, res, null, _pshPool); });
 
   } else if (pathname.match(/^\/products\/[^/]+\/repo$/) && req.method === 'POST') {
     // prc-s1.2 — connect (or re-connect) an existing GitHub repo to a product

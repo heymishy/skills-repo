@@ -2465,6 +2465,32 @@ async function handlePostProductSync(req, res, _next, pool, posthog) {
 }
 
 /**
+ * pst-s1 (AC4): GET /products/:id/sync/status -- lightweight status check the
+ * client polls after triggering a fire-and-forget sync (handlePostProductSync).
+ * Backed entirely by the existing isSyncInProgress guard -- no new
+ * state-tracking mechanism.
+ */
+async function handleGetProductSyncStatus(req, res, _next, pool) {
+  var _pool = pool;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+
+  var prodRow = (await _pool.query(
+    'SELECT product_id, tenant_id FROM products WHERE product_id = $1',
+    [productId]
+  )).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
+  }
+
+  var inProgress = _productRollup.isSyncInProgress(productId);
+  if (res.status) { res.status(200).json({ inProgress: inProgress }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ inProgress: inProgress })); }
+}
+
+/**
  * prc-s4.2: DELETE /products/:id — hard-delete a product and its wuce-side
  * data (journeys). The underlying GitHub repo is NEVER
  * touched by this handler -- no fetch()/https call of any kind is made here,
@@ -3944,6 +3970,7 @@ module.exports = {
   // wugs-s3: POST /settings/org-repo handler
   handlePostOrgRepoSettings,
   handlePostProductSync,
+  handleGetProductSyncStatus,
   handlePostProductFeature,
   handleGetProductKanban,
   handleGetOrgKanban,
