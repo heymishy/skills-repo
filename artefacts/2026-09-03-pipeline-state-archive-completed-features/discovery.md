@@ -1,6 +1,6 @@
 # Discovery: Archive Completed Features Out of pipeline-state.json
 
-**Status:** Clarified — awaiting approval
+**Status:** Approved
 **Created:** 2026-09-03
 **Approved by:** [Name + date — filled in after human review]
 **Author:** Claude Code (agent, operator-directed — Hamish King)
@@ -96,11 +96,11 @@ Risk: the CI gate (fails a PR if the live file exceeds the target ceiling) could
 
 ## Reviewers
 
-- [Name — Role]
+- Hamish King — Platform Owner
 
 ## Approved By
 
-[Name — Role — Date]
+Hamish King — Platform Owner — 2026-09-03
 
 ---
 

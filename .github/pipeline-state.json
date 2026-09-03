@@ -29939,11 +29939,43 @@
       "slug": "2026-09-03-pipeline-state-archive-completed-features",
       "id": "2026-09-03-pipeline-state-archive-completed-features",
       "name": "Archive Completed Features Out of pipeline-state.json",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
-      "discoveryStatus": "clarified",
-      "updatedAt": "2026-09-03T00:11:40.360Z",
-      "track": "standard"
+      "discoveryStatus": "approved",
+      "updatedAt": "2026-09-03T00:20:05.698Z",
+      "track": "standard",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Live pipeline-state.json size",
+          "target": "~500KB or below, ongoing",
+          "baseline": "1.34MB / 237 features",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Merge-conflict frequency on pipeline-state.json",
+          "target": "Zero new confirmed conflict-resolution commits in the 90 days post-launch",
+          "baseline": "6 confirmed conflict-resolution commits in repo history, including 1 same-session recurrence",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Time since last successful archive run (enforcement health)",
+          "target": "Never exceeds the cron interval by more than one missed cycle",
+          "baseline": "~113 days (last run 2026-05-13, never repeated)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
