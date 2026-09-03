@@ -30095,17 +30095,17 @@
       "id": "2026-09-03-product-github-fetch-truncation-fix",
       "name": "Retry and diagnose GitHub Contents API fetch truncation for large connected repos",
       "track": "short",
-      "stage": "branch-setup",
+      "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-09-03T05:29:45.018Z",
+      "updatedAt": "2026-09-03T05:20:49.731Z",
       "stories": [
         {
           "slug": "pgft-s1",
           "id": "pgft-s1",
           "name": "Retry the GitHub Contents API fetch on transient/parse failure, with diagnostic error detail on exhaustion",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-09-03T05:46:08.827Z",
+          "updatedAt": "2026-09-03T05:47:16.797Z",
           "testPlan": {
             "status": "written",
             "totalTests": 5,
@@ -30155,7 +30155,9 @@
             "failed": 1,
             "note": "Pre-existing failure tests/check-p3.5-validate-trace.js (ps1-exits-0-on-valid-repo-with-ci-flag) confirmed present on master before this branch existed -- environment-specific PowerShell script behavior, unrelated to pgft-s1 scope. Same known baseline as pst-s1."
           },
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/820"
         }
       ],
       "guardrails": [
