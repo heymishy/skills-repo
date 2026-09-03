@@ -30208,17 +30208,17 @@
       "id": "2026-09-03-product-sync-blob-fallback-diagnostics",
       "name": "Diagnose and fix GitHub Contents API content truncation via Git Blobs API fallback",
       "track": "short",
-      "stage": "definition-of-ready",
-      "health": "green",
-      "updatedAt": "2026-09-03T07:58:28.456Z",
+      "stage": "definition-of-done",
+      "health": "amber",
+      "updatedAt": "2026-09-03T08:37:01.861Z",
       "stories": [
         {
           "slug": "psbf-s1",
           "id": "psbf-s1",
           "name": "Detect truncated Contents API content, fall back to Git Blobs API, and record diagnostics to logs + PostHog",
-          "stage": "branch-complete",
-          "health": "green",
-          "updatedAt": "2026-09-03T08:21:02.972Z",
+          "stage": "definition-of-done",
+          "health": "amber",
+          "updatedAt": "2026-09-03T08:37:01.860Z",
           "testPlan": {
             "status": "written",
             "totalTests": 4,
@@ -30269,8 +30269,12 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/821"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/821",
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "blocker": "Production (skills-framework.fly.dev) not yet running this fix -- promote-to-prod requires a fresh manual approval for this specific merge commit (14f4e263), separate from the prior two. Once promoted, a live production test (watch flyctl logs + PostHog for product_sync_content_truncated) is the first genuinely direct confirmation of whether this 3-story incident chain has actually resolved the real issue.",
+          "dodPath": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/dod/psbf-s1-dod.md"
         }
       ],
       "guardrails": [
@@ -30279,27 +30283,27 @@
           "category": "mandatory-constraint",
           "label": "H9 Architecture Constraints",
           "status": "met",
-          "evidence": "Populated: retry-loop extraction, D37 adapter reuse, PostHog reuse. No review ran (short-track) so no Category E findings to check.",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-03T07:58:28.458Z"
+          "evidence": "Verified at DoD -- retry-loop extraction, D37 pattern reuse, PostHog reuse all confirmed correct in merged code",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-03T08:37:01.861Z"
         },
         {
           "id": "H-ADAPTER-BLOBS",
           "category": "mandatory-constraint",
           "label": "H-ADAPTER D37 wiring (realFetchBlobBySha)",
           "status": "met",
-          "evidence": "Stub throws, DoR ACs cover wiring, implementation plan names wiring as a separate task, AC2 test asserts differentiated correct content (D37 rule 4)",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-03T07:58:28.458Z"
+          "evidence": "Verified at DoD -- realFetchBlobBySha wired in server.js, dedicated wiring test passes, AC2 confirms differentiated correct fallback content",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-03T08:37:01.861Z"
         },
         {
           "id": "H-NFR-PROFILE",
           "category": "nfr",
           "label": "H-NFR NFR profile",
-          "status": "met",
-          "evidence": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/nfr-profile.md",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-03T07:58:28.458Z"
+          "status": "not-met",
+          "evidence": "nfr-profile.md remains Active, not Verified -- Availability NFR gap (does the Blobs API fallback resolve the real incident) not closeable until promote-to-prod + live production test, owner Hamish King",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-03T08:37:01.861Z"
         },
         {
           "id": "H-NFR2-COMPLIANCE",
@@ -30307,17 +30311,17 @@
           "label": "H-NFR2 Compliance sign-off",
           "status": "na",
           "evidence": "No named regulatory clause",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-03T07:58:28.458Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-03T08:37:01.861Z"
         },
         {
           "id": "H-NFR3-DATA-CLASS",
           "category": "nfr",
           "label": "H-NFR3 Data classification",
           "status": "met",
-          "evidence": "Internal",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-03T07:58:28.458Z"
+          "evidence": "Internal classification confirmed unchanged",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-03T08:37:01.861Z"
         }
       ]
     }
