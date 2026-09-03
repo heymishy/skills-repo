@@ -30095,17 +30095,17 @@
       "id": "2026-09-03-product-github-fetch-truncation-fix",
       "name": "Retry and diagnose GitHub Contents API fetch truncation for large connected repos",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "branch-setup",
       "health": "green",
-      "updatedAt": "2026-09-03T05:20:49.731Z",
+      "updatedAt": "2026-09-03T05:29:45.018Z",
       "stories": [
         {
           "slug": "pgft-s1",
           "id": "pgft-s1",
           "name": "Retry the GitHub Contents API fetch on transient/parse failure, with diagnostic error detail on exhaustion",
-          "stage": "implementation-plan",
+          "stage": "branch-setup",
           "health": "green",
-          "updatedAt": "2026-09-03T05:23:42.848Z",
+          "updatedAt": "2026-09-03T05:29:45.019Z",
           "testPlan": {
             "status": "written",
             "totalTests": 5,
@@ -30149,7 +30149,12 @@
               "tddState": "not-started",
               "file": "artefacts/2026-09-03-product-github-fetch-truncation-fix/plans/pgft-s1-plan.md"
             }
-          ]
+          ],
+          "baseline": {
+            "totalFiles": 599,
+            "failed": 1,
+            "note": "Pre-existing failure tests/check-p3.5-validate-trace.js (ps1-exits-0-on-valid-repo-with-ci-flag) confirmed present on master before this branch existed -- environment-specific PowerShell script behavior, unrelated to pgft-s1 scope. Same known baseline as pst-s1."
+          }
         }
       ],
       "guardrails": [
