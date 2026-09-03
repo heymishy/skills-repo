@@ -30208,17 +30208,17 @@
       "id": "2026-09-03-product-sync-blob-fallback-diagnostics",
       "name": "Diagnose and fix GitHub Contents API content truncation via Git Blobs API fallback",
       "track": "short",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "health": "green",
-      "updatedAt": "2026-09-03T07:55:24.954Z",
+      "updatedAt": "2026-09-03T07:58:28.456Z",
       "stories": [
         {
           "slug": "psbf-s1",
           "id": "psbf-s1",
           "name": "Detect truncated Contents API content, fall back to Git Blobs API, and record diagnostics to logs + PostHog",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-09-03T07:57:08.070Z",
+          "updatedAt": "2026-09-03T07:58:28.458Z",
           "testPlan": {
             "status": "written",
             "totalTests": 4,
@@ -30227,7 +30227,57 @@
           "acTotal": 4,
           "acVerified": 0,
           "hasLayoutDependentGaps": "false",
-          "e2eToolingRequired": "false"
+          "e2eToolingRequired": "false",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/dor/psbf-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/dor/psbf-s1-dor-contract.md"
+        }
+      ],
+      "guardrails": [
+        {
+          "id": "H9-ARCH-CONSTRAINTS",
+          "category": "mandatory-constraint",
+          "label": "H9 Architecture Constraints",
+          "status": "met",
+          "evidence": "Populated: retry-loop extraction, D37 adapter reuse, PostHog reuse. No review ran (short-track) so no Category E findings to check.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-03T07:58:28.458Z"
+        },
+        {
+          "id": "H-ADAPTER-BLOBS",
+          "category": "mandatory-constraint",
+          "label": "H-ADAPTER D37 wiring (realFetchBlobBySha)",
+          "status": "met",
+          "evidence": "Stub throws, DoR ACs cover wiring, implementation plan names wiring as a separate task, AC2 test asserts differentiated correct content (D37 rule 4)",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-03T07:58:28.458Z"
+        },
+        {
+          "id": "H-NFR-PROFILE",
+          "category": "nfr",
+          "label": "H-NFR NFR profile",
+          "status": "met",
+          "evidence": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/nfr-profile.md",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-03T07:58:28.458Z"
+        },
+        {
+          "id": "H-NFR2-COMPLIANCE",
+          "category": "compliance-framework",
+          "label": "H-NFR2 Compliance sign-off",
+          "status": "na",
+          "evidence": "No named regulatory clause",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-03T07:58:28.458Z"
+        },
+        {
+          "id": "H-NFR3-DATA-CLASS",
+          "category": "nfr",
+          "label": "H-NFR3 Data classification",
+          "status": "met",
+          "evidence": "Internal",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-03T07:58:28.458Z"
         }
       ]
     }
