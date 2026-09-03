@@ -30329,17 +30329,17 @@
       "id": "2026-09-03-product-page-module-gate-and-health-duplication-fix",
       "name": "Decouple the grouped/collapsed features UI from requiring custom Modules, and consolidate duplicate health-count displays",
       "track": "short",
-      "stage": "definition-of-ready",
-      "health": "green",
-      "updatedAt": "2026-09-03T09:08:40.318Z",
+      "stage": "definition-of-done",
+      "health": "amber",
+      "updatedAt": "2026-09-03T18:28:16.667Z",
       "stories": [
         {
           "slug": "ppg-s1",
           "id": "ppg-s1",
           "name": "Module-less products get the full grouped/collapsed/filterable features UI, and health counts render in one place, not three",
-          "stage": "branch-complete",
-          "health": "green",
-          "updatedAt": "2026-09-03T09:43:51.821Z",
+          "stage": "definition-of-done",
+          "health": "amber",
+          "updatedAt": "2026-09-03T18:28:16.666Z",
           "testPlan": {
             "status": "written",
             "totalTests": 6,
@@ -30372,8 +30372,12 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/822"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/822",
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "blocker": "Production (skills-framework.fly.dev) not yet running this fix -- promote-to-prod requires a fresh manual approval for this specific merge commit (b6c2f6ef). Non-urgent (UI/rendering fix, not a broken production feature) -- unlike the pst-s1/pgft-s1/psbf-s1 incident chain, no data-fetch risk.",
+          "dodPath": "artefacts/2026-09-03-product-page-module-gate-and-health-duplication-fix/dod/ppg-s1-dod.md"
         }
       ],
       "guardrails": [
@@ -30382,18 +30386,18 @@
           "category": "mandatory-constraint",
           "label": "H9 Architecture Constraints",
           "status": "met",
-          "evidence": "Populated: reuse of existing grouping functions unchanged, precise removal/consolidation scope. No review ran (short-track) so no Category E findings to check.",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-03T09:08:40.319Z"
+          "evidence": "Verified at DoD -- reuse of existing grouping functions confirmed unchanged in merged code, consolidation scope precise",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-03T18:28:16.667Z"
         },
         {
           "id": "H-NFR-PROFILE",
           "category": "nfr",
           "label": "H-NFR NFR profile",
           "status": "met",
-          "evidence": "artefacts/2026-09-03-product-page-module-gate-and-health-duplication-fix/nfr-profile.md",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-03T09:08:40.319Z"
+          "evidence": "nfr-profile.md -- no NFR gaps identified at DoR or during implementation; Accessibility NFR confirmed via passing tests",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-03T18:28:16.667Z"
         },
         {
           "id": "H-NFR2-COMPLIANCE",
@@ -30401,17 +30405,17 @@
           "label": "H-NFR2 Compliance sign-off",
           "status": "na",
           "evidence": "No named regulatory clause",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-03T09:08:40.319Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-03T18:28:16.667Z"
         },
         {
           "id": "H-NFR3-DATA-CLASS",
           "category": "nfr",
           "label": "H-NFR3 Data classification",
           "status": "met",
-          "evidence": "Internal",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-03T09:08:40.319Z"
+          "evidence": "Internal classification confirmed unchanged",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-03T18:28:16.667Z"
         }
       ]
     }
