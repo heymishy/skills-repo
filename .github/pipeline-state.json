@@ -30216,9 +30216,9 @@
           "slug": "psbf-s1",
           "id": "psbf-s1",
           "name": "Detect truncated Contents API content, fall back to Git Blobs API, and record diagnostics to logs + PostHog",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-09-03T08:19:44.496Z",
+          "updatedAt": "2026-09-03T08:21:02.972Z",
           "testPlan": {
             "status": "written",
             "totalTests": 4,
@@ -30268,7 +30268,9 @@
               "file": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/plans/psbf-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/821"
         }
       ],
       "guardrails": [
