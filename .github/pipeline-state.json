@@ -30532,9 +30532,12 @@
           "slug": "aada-s1",
           "id": "aada-s1",
           "name": "Check archived directory fallback in listLocalArtefacts",
-          "stage": "test-plan-complete",
+          "stage": "dor-signed-off",
           "health": "green",
-          "updatedAt": "2026-09-03T23:05:34.477Z"
+          "updatedAt": "2026-09-03T23:06:40.082Z",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-04-artefact-lookup-archived-directory-fix/dor/aada-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-04-artefact-lookup-archived-directory-fix/dor/aada-s1-dor-contract.md"
         }
       ]
     }
