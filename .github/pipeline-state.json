@@ -30468,6 +30468,25 @@
           "releaseReady": true
         }
       ]
+    },
+    {
+      "slug": "2026-09-04-product-page-epic-grouping-and-feature-label",
+      "id": "2026-09-04-product-page-epic-grouping-and-feature-label",
+      "name": "Grouped item rows show the parent feature name instead of repeating the epic group header, and epic-grouped view becomes the default when a product has more than one epic",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "updatedAt": "2026-09-03T20:55:10.452Z",
+      "stories": [
+        {
+          "slug": "pefl-s1",
+          "id": "pefl-s1",
+          "name": "Feature name not epic name on grouped rows, default to By Phase when epics > 1",
+          "stage": "test-plan-complete",
+          "health": "green",
+          "updatedAt": "2026-09-03T20:55:43.004Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
