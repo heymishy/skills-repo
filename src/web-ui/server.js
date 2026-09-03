@@ -56,7 +56,7 @@ const { setPlanStateAdapter }                                        = require('
 const { migrateProductRepoColumns }                                  = require('./modules/product-repo');  // prc-s1.1
 const { registerSelfAsProduct }                                       = require('./modules/platform-self-registration'); // pr-s1
 const { setRepoAdapter, realCheckRepoAccess }                        = require('./adapters/repo-adapter'); // prc-s1.2 (D37 separate task)
-const { setPipelineStateFetchAdapter, realFetchPipelineState }        = require('./adapters/pipeline-state-fetch-adapter'); // pr-s2
+const { setPipelineStateFetchAdapter, realFetchPipelineState, setPipelineStateBlobFetchAdapter, realFetchBlobBySha } = require('./adapters/pipeline-state-fetch-adapter'); // pr-s2, psbf-s1
 const { setFetchRepoPath, realFetchRepoPath }                        = require('./adapters/artefact-fetcher'); // wugs-s1
 const { createGuardrailPr, setGuardrailPrAdapter, realCreateGuardrailPr } = require('./adapters/guardrail-pr-adapter'); // wugs-s6
 const { handlePostConnectRepo }                                      = require('./routes/product-repo');   // prc-s1.2
@@ -195,6 +195,8 @@ if (process.env.NODE_ENV !== 'test') {
 if (process.env.NODE_ENV !== 'test') {
   setPipelineStateFetchAdapter(realFetchPipelineState);
   console.log('[pr-s2] pipeline-state fetch adapter wired');
+  setPipelineStateBlobFetchAdapter(realFetchBlobBySha);
+  console.log('[psbf-s1] pipeline-state blob fetch adapter wired');
 }
 
 // wugs-s1 / D37 mandatory separate wiring task -- wire the real GitHub
