@@ -30208,17 +30208,17 @@
       "id": "2026-09-03-product-sync-blob-fallback-diagnostics",
       "name": "Diagnose and fix GitHub Contents API content truncation via Git Blobs API fallback",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "branch-setup",
       "health": "green",
-      "updatedAt": "2026-09-03T07:58:28.456Z",
+      "updatedAt": "2026-09-03T08:07:32.012Z",
       "stories": [
         {
           "slug": "psbf-s1",
           "id": "psbf-s1",
           "name": "Detect truncated Contents API content, fall back to Git Blobs API, and record diagnostics to logs + PostHog",
-          "stage": "definition-of-ready",
+          "stage": "branch-setup",
           "health": "green",
-          "updatedAt": "2026-09-03T07:58:28.458Z",
+          "updatedAt": "2026-09-03T08:07:32.013Z",
           "testPlan": {
             "status": "written",
             "totalTests": 4,
@@ -30230,7 +30230,12 @@
           "e2eToolingRequired": "false",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/dor/psbf-s1-dor.md",
-          "dorContractPath": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/dor/psbf-s1-dor-contract.md"
+          "dorContractPath": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/dor/psbf-s1-dor-contract.md",
+          "baseline": {
+            "totalFiles": 600,
+            "failed": 1,
+            "note": "Pre-existing failure tests/check-p3.5-validate-trace.js confirmed present on master before this branch existed -- same known baseline as pst-s1/pgft-s1."
+          }
         }
       ],
       "guardrails": [
