@@ -69,5 +69,29 @@ test('with-modules: bulk-assign bar still renders (regression guard, AC6)', func
   assert.ok(/bmau-bar/.test(html), 'expected the bulk-assign bar to still render when >=1 module exists');
 });
 
+console.log('\n[ppg-s1] AC4 -- health counts appear once, on the interactive chip bar, with real counts');
+
+test('health-filter chips show real per-status counts; pdt-triage-strip is gone', function() {
+  var rollupRow = { health_counts: { green: 50, amber: 3, red: 1, unknown: 10 }, taxonomy: { groups: [], ungrouped: [{ slug: 'p1.1' }] }, test_coverage: null, ac_coverage: null, synced_at: null, dod_status_counts: null };
+  var html = productsRoute._renderProductView('Test Product', 'p1', [], 'tester', rollupRow, false, 'o', 'r', [], 'csrf-token', {}, {}, [], 0, null, false);
+  assert.ok(/Warning \(3\)/.test(html), 'expected the Warning chip to show its real count (3)');
+  assert.ok(/Blocked \(1\)/.test(html), 'expected the Blocked chip to show its real count (1)');
+  assert.ok(/Healthy \(50\)/.test(html), 'expected the Healthy chip to show its real count (50)');
+  assert.ok(/Unknown \(10\)/.test(html), 'expected the Unknown chip to show its real count (10)');
+  assert.ok(!/pdt-triage-strip/.test(html), 'expected the old separate triage-strip block to be gone');
+});
+
+console.log('\n[ppg-s1] AC5 -- Overall line shows only its single derived label, no repeated breakdown');
+
+test('Overall line contains only its own label, no per-status breakdown', function() {
+  var rollupRow = { health_counts: { green: 50, amber: 3, red: 1, unknown: 10 }, taxonomy: { groups: [], ungrouped: [{ slug: 'p1.1' }] }, test_coverage: null, ac_coverage: null, synced_at: null, dod_status_counts: null };
+  var html = productsRoute._renderProductView('Test Product', 'p1', [], 'tester', rollupRow, false, 'o', 'r', [], 'csrf-token', {}, {}, [], 0, null, false);
+  var overallMatch = html.match(/Overall: [^<]*<\/span>\s*<\/div>/);
+  assert.ok(overallMatch, 'expected an Overall line to render');
+  var overallDiv = html.match(/<div style="margin-top:12px;font-size:13px">[\s\S]{0,150}/)[0];
+  assert.ok(!/Blocked: 1/.test(overallDiv), 'expected no Blocked: N text inside the simplified Overall div');
+  assert.ok(!/Healthy: 50/.test(overallDiv), 'expected no Healthy: N text inside the simplified Overall div');
+});
+
 console.log('\n[ppg-s1] Results so far: ' + passed + ' passed, ' + failed + ' failed');
 process.exitCode = failed > 0 ? 1 : 0;

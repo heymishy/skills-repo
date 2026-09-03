@@ -368,11 +368,18 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
   // design. groupItemsByModule already has well-defined, already-tested
   // zero-modules behaviour (every item lands in `unclassified`), and
   // groupItemsByPhase has no module dependency at all -- both reused
-  // unchanged below. Only the true empty-state (no items at all,
-  // regardless of module count) still short-circuits here.
-  if (modules.length === 0 && items.length === 0) {
+  // unchanged below. The early-return now fires only for the exact same
+  // case it always did (zero modules AND zero items), narrowed further to
+  // exclude the case where real health_counts data exists despite a
+  // momentarily-empty item list (e.g. taxonomy not yet synced) -- a
+  // pre-existing pr-s4/a3 test fixture this fix must not break. A product
+  // WITH modules always rendered full tabs regardless of item count before
+  // this story, and still does -- this condition must not (and does not)
+  // apply to that case.
+  if (modules.length === 0 && items.length === 0 && !healthCounts) {
     return '<p style="color:var(--muted);font-size:14px">No features yet.</p>';
   }
+  var noFeaturesInnerHtml = items.length === 0 ? '<p style="color:var(--muted);font-size:14px;padding:8px 0">No features yet.</p>' : '';
 
   var byModule = _productRollup.groupItemsByModule(items, _pvcAssignmentMapFromItems(items), modules);
   var byPhase = _productRollup.groupItemsByPhase(items);
@@ -409,12 +416,14 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
       (modules.length > 0 ? bulkAssignBarHtml : '') +
       byModule.byModule.map(function(bucket) { return _renderModuleSection(bucket.moduleName, bucket.moduleId, bucket.items, _renderPvcItemRowWithCheckbox); }).join('') +
       (byModule.unclassified.length > 0 ? _renderModuleSection('Unclassified', 'unclassified', byModule.unclassified, _renderPvcItemRowWithCheckbox) : '') +
+      noFeaturesInnerHtml +
     '</div>';
 
   var byPhaseHtml =
     '<div id="pvc-tab-panel-phase" class="pvc-tab-panel' + (defaultTab === 'phase' ? ' pvc-tab-panel--active' : '') + '" role="tabpanel" aria-labelledby="pvc-tab-phase">' +
       byPhase.byPhase.map(function(p) { return _renderModuleSection(p.epicName, 'phase-' + _escapeHtml(p.epicName), p.items, _renderPvcItemRow); }).join('') +
       (byPhase.other.length > 0 ? _renderModuleSection('Other features', 'phase-other', byPhase.other, _renderPvcItemRow) : '') +
+      noFeaturesInnerHtml +
     '</div>';
 
   var allHtml =
@@ -422,10 +431,15 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
       // bmau-s1: explicit single-arg wrapper -- same Array.map() index-leak
       // fix as the zero-modules fallback above.
       '<ul style="list-style:none;padding:0;margin:0">' + items.map(function(item) { return _renderPvcItemRow(item); }).join('') + '</ul>' +
+      noFeaturesInnerHtml +
     '</div>';
 
   var healthChips = ['all', 'green', 'amber', 'red', 'unknown'].map(function(h) {
-    var label = h === 'all' ? 'All' : h === 'green' ? 'Healthy' : h === 'amber' ? 'Warning' : h === 'red' ? 'Blocked' : 'Unknown';
+    // ppg-s1 (AC4): icon-prefixed labels preserved from the removed
+    // per-status breakdown / pdt-s2's own triage-strip convention (matching
+    // HEALTH_LABELS in _renderProductView) -- Unknown stays icon-less,
+    // per pdt-s3's own deliberate "?" glyph removal.
+    var label = h === 'all' ? 'All' : h === 'green' ? '✓ Healthy' : h === 'amber' ? '⚠ Warning' : h === 'red' ? '✕ Blocked' : 'Unknown';
     // ppg-s1 (AC4): real per-status counts, consolidating what pdt-s2's own
     // separate triageStripHtml and the Overall line's own per-status
     // breakdown used to duplicate.
@@ -746,13 +760,12 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
   if (healthCounts && (healthCounts.green || 0) === 0 && (healthCounts.red || 0) === 0 && (healthCounts.amber || 0) === 0) {
     overallSignal = 'unknown';
   }
+  // ppg-s1 (AC5): per-status counts previously duplicated here are now
+  // shown once, with real counts, on the health-filter chip bar inside
+  // _renderConsolidatedFeaturesSection -- this line keeps only its own
+  // single derived label.
   var healthHtml = healthCounts
-    ? '<div style="margin-top:12px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;font-size:13px">' +
-        '<span style="font-weight:600;color:' + HEALTH_COLORS[overallSignal] + '">Overall: ' + _escapeHtml(HEALTH_LABELS[overallSignal]) + '</span>' +
-        ['green', 'amber', 'red', 'unknown'].map(function(status) {
-          return '<span style="color:' + HEALTH_COLORS[status] + '">' + _escapeHtml(HEALTH_LABELS[status]) + ': ' + _escapeHtml(String(healthCounts[status] || 0)) + '</span>';
-        }).join('') +
-      '</div>'
+    ? '<div style="margin-top:12px;font-size:13px"><span style="font-weight:600;color:' + HEALTH_COLORS[overallSignal] + '">Overall: ' + _escapeHtml(HEALTH_LABELS[overallSignal]) + '</span></div>'
     // pdt-s3 (AC3): no rollup data at all -- show an honest Unknown Overall
     // line rather than silently omitting it entirely.
     : '<div style="margin-top:12px;font-size:13px"><span style="font-weight:600;color:' + HEALTH_COLORS.unknown + '">Overall: ' + HEALTH_LABELS.unknown + '</span></div>';
@@ -818,33 +831,11 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     });
   });
 
-  // pdt-s2 (AC1-AC3): triage summary strip -- the first clickable content
-  // above the feature list, showing Blocked/Warning counts. Reuses the
-  // existing pvc-health-chip class + pvcFilterByHealth(this) handler
-  // (defined in _renderConsolidatedFeaturesSection below) rather than
-  // building a second, parallel filter -- see the implementation plan's
-  // own Investigation note for why <button> (matching the real mechanism)
-  // rather than <a> (assumed by the DoR/test plan) is correct here.
-  var triageStripHtml = '';
-  if (healthCounts) {
-    var blockedCount = healthCounts.red || 0;
-    var warningCount = healthCounts.amber || 0;
-    if (blockedCount > 0 || warningCount > 0) {
-      triageStripHtml =
-        '<div class="pdt-triage-strip" style="display:flex;gap:10px;align-items:center;margin-bottom:16px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:8px;font-size:13px">' +
-          (blockedCount > 0
-            ? '<button type="button" class="pvc-health-chip" data-health-filter="red" onclick="pvcFilterByHealth(this)" style="border-color:#ef4444;color:#ef4444">✕ Blocked: ' + blockedCount + '</button>'
-            : '') +
-          (warningCount > 0
-            ? '<button type="button" class="pvc-health-chip" data-health-filter="amber" onclick="pvcFilterByHealth(this)" style="border-color:#f59e0b;color:#f59e0b">⚠ Warning: ' + warningCount + '</button>'
-            : '') +
-        '</div>';
-    } else {
-      triageStripHtml =
-        '<div class="pdt-triage-strip" style="margin-bottom:16px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:8px;font-size:13px;color:var(--muted)">✓ Nothing blocked</div>';
-    }
-  }
-
+  // ppg-s1: pdt-s2's own separate triage-strip block (Blocked/Warning
+  // counts, clickable) removed -- its exact function is now served by the
+  // health-filter chip bar inside _renderConsolidatedFeaturesSection,
+  // which now carries real counts (AC4) and, after this story's own Task 1,
+  // renders on every product page regardless of module count.
   var featuresSectionHtml = _renderConsolidatedFeaturesSection(mergedItems, modules, taxonomy, productId, csrfToken, healthCounts);
   var scaleGaugeHtml = _renderScaleGauge(features, modules, taxonomy);
 
@@ -969,7 +960,6 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     acCoverageHtml +
     scaleGaugeHtml +
     (features.length > 1 ? _renderModulesManagement(productId, modules, csrfToken) : '') +
-    triageStripHtml +
     featuresSectionHtml +
     '<script>' +
     'function pshConfirmDeleteProduct(id){' +
