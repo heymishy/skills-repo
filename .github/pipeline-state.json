@@ -30216,16 +30216,16 @@
           "slug": "psbf-s1",
           "id": "psbf-s1",
           "name": "Detect truncated Contents API content, fall back to Git Blobs API, and record diagnostics to logs + PostHog",
-          "stage": "implementation-plan",
+          "stage": "verify-completion",
           "health": "green",
-          "updatedAt": "2026-09-03T08:09:34.141Z",
+          "updatedAt": "2026-09-03T08:19:44.496Z",
           "testPlan": {
             "status": "written",
             "totalTests": 4,
-            "passing": 0
+            "passing": 4
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "dorStatus": "signed-off",
@@ -30240,34 +30240,35 @@
             {
               "id": "task-1",
               "name": "Extract shared retry helper, add realFetchBlobBySha (D37 adapter)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/plans/psbf-s1-plan.md"
             },
             {
               "id": "task-2",
               "name": "syncProductRollup detects truncation, logs + captures to PostHog, falls back to Blobs API (AC1, AC2)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/plans/psbf-s1-plan.md"
             },
             {
               "id": "task-3",
               "name": "Fallback failure also captured, still reaches caller error handling (AC3)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/plans/psbf-s1-plan.md"
             },
             {
               "id": "task-4",
               "name": "Regression guard: non-truncated common case unaffected (AC4)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/plans/psbf-s1-plan.md"
             },
             {
               "id": "task-5",
               "name": "Wire the real Blobs adapter in server.js (D37 rule 3)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/plans/psbf-s1-plan.md"
             }
-          ]
+          ],
+          "verifyStatus": "passed"
         }
       ],
       "guardrails": [
