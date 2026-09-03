@@ -30482,9 +30482,9 @@
           "slug": "pefl-s1",
           "id": "pefl-s1",
           "name": "Feature name not epic name on grouped rows, default to By Phase when epics > 1",
-          "stage": "branch-complete",
-          "health": "green",
-          "updatedAt": "2026-09-03T21:12:05.964Z",
+          "stage": "definition-of-done",
+          "health": "amber",
+          "updatedAt": "2026-09-03T21:29:50.754Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-product-page-epic-grouping-and-feature-label/dor/pefl-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-04-product-page-epic-grouping-and-feature-label/dor/pefl-s1-dor-contract.md",
@@ -30511,8 +30511,12 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/824"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/824",
+          "dodStatus": "complete",
+          "dodPath": "artefacts/2026-09-04-product-page-epic-grouping-and-feature-label/dod/pefl-s1-dod.md",
+          "releaseReady": false,
+          "blocker": "Production (skills-framework.fly.dev) not yet running this fix -- promote-to-prod requires a fresh manual approval for this specific merge commit (7ec977b5). Non-urgent (UI-only readability fix, no correctness/data risk)."
         }
       ]
     }
