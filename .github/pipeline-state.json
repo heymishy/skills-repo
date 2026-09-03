@@ -30049,32 +30049,40 @@
       ],
       "guardrails": [
         {
-          "name": "H9 Architecture Constraints",
+          "id": "H9-ARCH-CONSTRAINTS",
           "category": "mandatory-constraint",
+          "label": "H9 Architecture Constraints",
           "status": "met",
-          "notes": "Populated: reuse of _syncsInProgress/isSyncInProgress, unchanged triggerProductSync logic. No review ran (short-track) so no Category E findings to check.",
-          "updatedAt": "2026-09-03T02:53:21.236Z"
+          "evidence": "Populated: reuse of _syncsInProgress/isSyncInProgress, unchanged triggerProductSync logic. No review ran (short-track) so no Category E findings to check.",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-03T02:53:21.236Z"
         },
         {
-          "name": "H-NFR NFR profile",
+          "id": "H-NFR-PROFILE",
           "category": "nfr",
+          "label": "H-NFR NFR profile",
           "status": "met",
-          "notes": "artefacts/2026-09-03-product-sync-timeout-fix/nfr-profile.md",
-          "updatedAt": "2026-09-03T02:53:21.236Z"
+          "evidence": "artefacts/2026-09-03-product-sync-timeout-fix/nfr-profile.md",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-03T02:53:21.236Z"
         },
         {
-          "name": "H-NFR2 Compliance sign-off",
+          "id": "H-NFR2-COMPLIANCE",
           "category": "compliance-framework",
+          "label": "H-NFR2 Compliance sign-off",
           "status": "na",
-          "notes": "No named regulatory clause",
-          "updatedAt": "2026-09-03T02:53:21.236Z"
+          "evidence": "No named regulatory clause",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-03T02:53:21.236Z"
         },
         {
-          "name": "H-NFR3 Data classification",
+          "id": "H-NFR3-DATA-CLASS",
           "category": "nfr",
+          "label": "H-NFR3 Data classification",
           "status": "met",
-          "notes": "Internal",
-          "updatedAt": "2026-09-03T02:53:21.236Z"
+          "evidence": "Internal",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-03T02:53:21.236Z"
         }
       ]
     }
