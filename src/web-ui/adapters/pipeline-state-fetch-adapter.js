@@ -45,19 +45,56 @@ function getPipelineStateFetchAdapter() {
 async function realFetchPipelineState(owner, repo, accessToken) {
   var apiBase = (process.env.GITHUB_API_BASE_URL || 'https://api.github.com').replace(/\/$/, '');
   var url = apiBase + '/repos/' + owner + '/' + repo + '/contents/.github/pipeline-state.json';
+  var maxAttempts = 3;
+  var lastErr = null;
 
-  var res = await fetch(url, {
-    headers: {
-      Authorization: 'Bearer ' + accessToken,
-      Accept: 'application/vnd.github+json'
+  for (var attempt = 1; attempt <= maxAttempts; attempt++) {
+    var res;
+    try {
+      res = await fetch(url, {
+        headers: {
+          Authorization: 'Bearer ' + accessToken,
+          Accept: 'application/vnd.github+json'
+        }
+      });
+    } catch (networkErr) {
+      // pgft-s1 (AC1): a transient network-layer failure (e.g. connection
+      // reset mid-transfer) -- retry rather than fail the whole sync outright.
+      lastErr = networkErr;
+      if (attempt < maxAttempts) { await _pgftDelay(attempt * 500); continue; }
+      throw lastErr;
     }
-  });
 
-  if (!res.ok) {
-    throw new Error('Failed to fetch pipeline-state.json: HTTP ' + res.status);
+    if (!res.ok) {
+      // pgft-s1 (AC3): a non-ok HTTP status (404/403/rate-limit) is not a
+      // transient condition -- fail immediately, matching pre-existing
+      // behaviour exactly, never retried.
+      throw new Error('Failed to fetch pipeline-state.json: HTTP ' + res.status);
+    }
+
+    var bodyText = await res.text();
+    try {
+      return JSON.parse(bodyText);
+    } catch (parseErr) {
+      // pgft-s1 (AC1/AC2): a syntactically truncated response body on an
+      // otherwise-ok response -- the most likely explanation is a dropped
+      // or truncated transfer for a large file. Retry, and if retries are
+      // exhausted, surface real diagnostic detail (AC2) instead of the bare
+      // "Unexpected end of JSON input" this used to throw.
+      var contentLength = (res.headers && res.headers.get) ? (res.headers.get('content-length') || 'absent') : 'unavailable';
+      lastErr = new Error(
+        'Failed to parse pipeline-state.json response: ' + parseErr.message +
+        ' (received ' + bodyText.length + ' bytes; Content-Length header: ' + contentLength + ')'
+      );
+      if (attempt < maxAttempts) { await _pgftDelay(attempt * 500); continue; }
+      throw lastErr;
+    }
   }
+  throw lastErr;
+}
 
-  return res.json();
+function _pgftDelay(ms) {
+  return new Promise(function(resolve) { setTimeout(resolve, ms); });
 }
 
 module.exports = {

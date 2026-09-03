@@ -141,7 +141,7 @@ test('realExportDataSource_noSelector_preservesExistingNotDorApprovedError', asy
   global.fetch = async (url) => {
     if (String(url).includes('/contents/.github/pipeline-state.json')) {
       const state = { version: '1', updated: new Date().toISOString(), programmes: [], features: [feature] };
-      return { ok: true, status: 200, json: async () => ({ content: Buffer.from(JSON.stringify(state)).toString('base64'), encoding: 'base64' }) };
+      return { ok: true, status: 200, headers: { get: () => null }, text: async () => JSON.stringify({ content: Buffer.from(JSON.stringify(state)).toString('base64'), encoding: 'base64' }) };
     }
     return { ok: false, status: 404, json: async () => ({ message: 'Not Found' }) };
   };
@@ -177,7 +177,7 @@ test('realExportDataSource_invalidSelector_throwsExportNotFoundError', async () 
   global.fetch = async (url) => {
     if (String(url).includes('/contents/.github/pipeline-state.json')) {
       const state = { version: '1', updated: new Date().toISOString(), programmes: [], features: [feature] };
-      return { ok: true, status: 200, json: async () => ({ content: Buffer.from(JSON.stringify(state)).toString('base64'), encoding: 'base64' }) };
+      return { ok: true, status: 200, headers: { get: () => null }, text: async () => JSON.stringify({ content: Buffer.from(JSON.stringify(state)).toString('base64'), encoding: 'base64' }) };
     }
     return { ok: false, status: 404, json: async () => ({ message: 'Not Found' }) };
   };
