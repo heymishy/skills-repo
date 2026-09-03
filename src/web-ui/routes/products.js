@@ -293,14 +293,20 @@ function _renderModuleSection(name, id, groupFeatures, renderRowFn) {
 // see features.js's renderArtefactIndexHtml). The discoveryArtefact
 // suffix link stays a separate, sibling <a> (nested anchors are invalid
 // HTML), pointing at its own more specific raw-markdown viewer.
-function _renderPvcItemRow(item, includeCheckbox) {
+function _renderPvcItemRow(item, includeCheckbox, preferFeatureName) {
   var color = item.health === 'red' ? '#ef4444' : item.health === 'amber' ? '#f59e0b' : item.health === 'unknown' ? 'var(--muted)' : '#22c55e';
   // pdt-s3 (AC1): drop the "?" glyph -- see _renderEpicRow's identical comment.
   var label = item.health === 'red' ? '✕ Blocked' : item.health === 'amber' ? '⚠ Warning' : item.health === 'unknown' ? 'Unknown' : '✓ Healthy';
   var healthAttr = item.health === 'red' ? 'red' : item.health === 'amber' ? 'amber' : item.health === 'unknown' ? 'unknown' : 'green';
   var searchText = ((item.name || '') + ' ' + item.slug).toLowerCase();
   var displayName = item.name || item.slug;
-  var subLabel = item.stage || item.epicName || '';
+  // pefl-s1: preferFeatureName is only ever passed truthy by the By Phase
+  // tab's own row renderer -- that tab's group header already shows the
+  // epic name, so falling back to item.epicName there would just repeat it
+  // on every child row. Every other call site (By Module, All, and every
+  // pre-existing test) omits this parameter, preserving today's exact
+  // epicName-fallback behaviour unchanged.
+  var subLabel = item.stage || (preferFeatureName ? item.featureName : item.epicName) || '';
   var discoveryLink = item.discoveryArtefact
     ? ' — <a href="/artefact/' + _escapeHtml(item.slug) + '/discovery" tabindex="0">' + _escapeHtml(item.discoveryArtefact) + '</a>'
     : '';
@@ -389,6 +395,10 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
   // meaningful visual effect; By Phase and All keep their existing,
   // unmodified row renderer.
   var _renderPvcItemRowWithCheckbox = function(item) { return _renderPvcItemRow(item, true); };
+  // pefl-s1: the By Phase tab's own row renderer -- shows the item's parent
+  // feature name instead of the epic name already shown in that tab's own
+  // group headers (see _renderPvcItemRow's preferFeatureName parameter).
+  var _renderPvcItemRowForPhase = function(item) { return _renderPvcItemRow(item, false, true); };
 
   var moduleOptionsHtml = modules.map(function(m) {
     return '<option value="' + _escapeHtml(m.id) + '">' + _escapeHtml(m.name) + '</option>';
@@ -408,7 +418,12 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
   // ppg-s1 (AC3, AC6): default tab is By Phase when there are zero custom
   // modules (a lone Unclassified bucket is a worse first view than the
   // real phase breakdown), unchanged By Module default otherwise.
-  var defaultTab = modules.length === 0 ? 'phase' : 'module';
+  // pefl-s1 (AC3, AC4): epic-group count takes priority -- a product with
+  // real multi-epic structure should lead with that view even if it also
+  // has custom Modules, since epic structure is always-present while Module
+  // classification is optional. Reuses byPhase (already computed above), no
+  // new call to groupItemsByPhase.
+  var defaultTab = byPhase.byPhase.length > 1 ? 'phase' : (modules.length === 0 ? 'phase' : 'module');
 
   // ppg-s1 (AC2): with zero modules there is no bulk-assign bar to pair
   // with, so the Unclassified section's own rows must use the plain
@@ -427,8 +442,8 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
 
   var byPhaseHtml =
     '<div id="pvc-tab-panel-phase" class="pvc-tab-panel' + (defaultTab === 'phase' ? ' pvc-tab-panel--active' : '') + '" role="tabpanel" aria-labelledby="pvc-tab-phase">' +
-      byPhase.byPhase.map(function(p) { return _renderModuleSection(p.epicName, 'phase-' + _escapeHtml(p.epicName), p.items, _renderPvcItemRow); }).join('') +
-      (byPhase.other.length > 0 ? _renderModuleSection('Other features', 'phase-other', byPhase.other, _renderPvcItemRow) : '') +
+      byPhase.byPhase.map(function(p) { return _renderModuleSection(p.epicName, 'phase-' + _escapeHtml(p.epicName), p.items, _renderPvcItemRowForPhase); }).join('') +
+      (byPhase.other.length > 0 ? _renderModuleSection('Other features', 'phase-other', byPhase.other, _renderPvcItemRowForPhase) : '') +
       noFeaturesInnerHtml +
     '</div>';
 

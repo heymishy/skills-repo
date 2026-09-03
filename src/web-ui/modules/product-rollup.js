@@ -292,7 +292,10 @@ function computeTaxonomyRollup(pipelineState) {
           // fal-s1: a story reference may be a bare string (schema-valid
           // Phase 1/2-style shape) rather than an object -- story.slug/.id
           // on a string evaluates to undefined, so handle that shape first.
-          return { slug: typeof story === 'string' ? story : (story.slug || story.id), featureSlug: feature.slug };
+          // pefl-s1: also carry the parent feature's own display name, so a
+          // By-Phase-grouped row can show "which feature is this" instead of
+          // repeating the epic name already shown in that group's own header.
+          return { slug: typeof story === 'string' ? story : (story.slug || story.id), featureSlug: feature.slug, featureName: feature.name };
         });
         groups.push({ epicSlug: epic.slug, epicName: epic.name, items: items });
       });
