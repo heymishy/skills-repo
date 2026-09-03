@@ -30432,9 +30432,9 @@
           "slug": "fal-s1",
           "id": "fal-s1",
           "name": "Feature artefact page resolves epic-nested stories (object and bare-string shaped) to their real feature directory before looking up artefacts",
-          "stage": "branch-complete",
-          "health": "green",
-          "updatedAt": "2026-09-03T19:29:32.446Z",
+          "stage": "definition-of-done",
+          "health": "amber",
+          "updatedAt": "2026-09-03T19:45:55.364Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-feature-artefact-lookup-epic-nested-fix/dor/fal-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-04-feature-artefact-lookup-epic-nested-fix/dor/fal-s1-dor-contract.md",
@@ -30461,8 +30461,12 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/823"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/823",
+          "dodStatus": "complete",
+          "dodPath": "artefacts/2026-09-04-feature-artefact-lookup-epic-nested-fix/dod/fal-s1-dod.md",
+          "releaseReady": false,
+          "blocker": "Production (skills-framework.fly.dev) not yet running this fix -- promote-to-prod requires a fresh manual approval for this specific merge commit (724eaa67). Non-urgent (read-path visibility fix restoring already-recorded artefacts, not a data-loss risk)."
         }
       ]
     }
