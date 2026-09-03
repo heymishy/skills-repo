@@ -30418,6 +30418,25 @@
           "assessedAt": "2026-09-03T18:28:16.667Z"
         }
       ]
+    },
+    {
+      "slug": "2026-09-04-feature-artefact-lookup-epic-nested-fix",
+      "id": "2026-09-04-feature-artefact-lookup-epic-nested-fix",
+      "name": "Resolve the real feature slug before artefact lookup, for every epic-nested story shape",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "updatedAt": "2026-09-03T18:52:24.671Z",
+      "stories": [
+        {
+          "slug": "fal-s1",
+          "id": "fal-s1",
+          "name": "Feature artefact page resolves epic-nested stories (object and bare-string shaped) to their real feature directory before looking up artefacts",
+          "stage": "test-plan-complete",
+          "health": "green",
+          "updatedAt": "2026-09-03T18:58:02.813Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
