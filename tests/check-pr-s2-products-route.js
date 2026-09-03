@@ -84,6 +84,10 @@ test('products.js exports handlePostProductSync', function() {
       await productsRouteFresh.handlePostProductSync(req, res, null, mockPool, null);
 
       passed++; console.log('  [PASS] handlePostProductSync: completes without throwing for a valid product with a connected repo');
+      // pst-s1: the response is now fire-and-forget (AC1) -- the background
+      // write is no longer guaranteed to have happened synchronously with
+      // the response. Wait briefly for it to settle before asserting.
+      await new Promise(function(r) { setTimeout(r, 20); });
       if (writtenRows.length !== 1) { throw new Error('Expected exactly one cache write, got ' + writtenRows.length); }
       passed++; console.log('  [PASS] handlePostProductSync: writes exactly one rollup cache row via triggerProductSync');
     } catch (err) {

@@ -978,14 +978,18 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     '}' +
     'async function pshTriggerSync(id){' +
       'var btn=document.getElementById(\'psh-refresh-btn\');' +
-      'var label=document.getElementById(\'psh-sync-label\');' +
       'btn.disabled=true;btn.textContent=\'Syncing…\';' +
       'try{' +
         'var r=await fetch(\'/products/\'+id+\'/sync\',{method:\'POST\'});' +
-        'if(r.ok){window.location.reload();}' +
-        'else{var j=await r.json();alert(j.error||\'Sync failed\');}' +
-      '}catch(e){alert(\'Sync failed: \'+e.message);}' +
-      'finally{btn.disabled=false;btn.textContent=\'Refresh\';}' +
+        'if(!r.ok){var j=await r.json();alert(j.error||\'Sync failed\');btn.disabled=false;btn.textContent=\'Refresh\';return;}' +
+        'var pshPoll=function(){' +
+          'fetch(\'/products/\'+id+\'/sync/status\').then(function(sr){return sr.json();}).then(function(sj){' +
+            'if(sj.inProgress){setTimeout(pshPoll,3000);}' +
+            'else{window.location.reload();}' +
+          '}).catch(function(){setTimeout(pshPoll,3000);});' +
+        '};' +
+        'setTimeout(pshPoll,3000);' +
+      '}catch(e){alert(\'Sync failed: \'+e.message);btn.disabled=false;btn.textContent=\'Refresh\';}' +
     '}' +
     'function pshToggleNewFeaturePanel(){var p=document.getElementById("psh-new-feature-panel");p.style.display=(p.style.display==="none"||!p.style.display)?"block":"none";}' +
     'function rpcShowCreateForm(){document.getElementById("rpc-create-panel").style.display="block";document.getElementById("rpc-connect-panel").style.display="none";var pp=document.getElementById("rpc-picker-panel");if(pp){pp.style.display="none";}}' +
@@ -2442,19 +2446,52 @@ async function handlePostProductSync(req, res, _next, pool, posthog) {
     return;
   }
 
-  try {
-    var rollup = await _productRollup.triggerProductSync(_pool, _pipelineStateFetchAdapter, {
-      productId: productId,
-      repoOwner: repoRow.repo_owner,
-      repoName: repoRow.repo_name,
-      accessToken: accessToken
-    });
-    if (res.status) { res.status(200).json({ synced: true, rollup: rollup }); }
-    else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ synced: true, rollup: rollup })); }
-  } catch (err) {
-    if (res.status) { res.status(502).json({ error: err.message }); }
-    else { res.writeHead(502, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: err.message })); }
+  // pst-s1 (AC1): respond immediately -- never block the HTTP response on the
+  // GitHub fetch + rollup computation, which can exceed the platform's own
+  // reverse-proxy timeout for large connected repos. triggerProductSync's own
+  // in-flight guard (_syncsInProgress) is set synchronously before its first
+  // await, so isSyncInProgress() already reflects "in progress" by the time
+  // this response is sent -- the client's first status poll will see it.
+  if (res.status) { res.status(202).json({ started: true }); }
+  else { res.writeHead(202, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ started: true })); }
+
+  // pst-s1 (AC3): no HTTP request is waiting to observe a background failure
+  // directly -- log it server-side so it stays diagnosable rather than
+  // becoming a silent, unhandled promise rejection.
+  _productRollup.triggerProductSync(_pool, _pipelineStateFetchAdapter, {
+    productId: productId,
+    repoOwner: repoRow.repo_owner,
+    repoName: repoRow.repo_name,
+    accessToken: accessToken
+  }).catch(function(err) {
+    console.error('[product-sync] background sync failed for product ' + productId + ':', err.message);
+  });
+}
+
+/**
+ * pst-s1 (AC4): GET /products/:id/sync/status -- lightweight status check the
+ * client polls after triggering a fire-and-forget sync (handlePostProductSync).
+ * Backed entirely by the existing isSyncInProgress guard -- no new
+ * state-tracking mechanism.
+ */
+async function handleGetProductSyncStatus(req, res, _next, pool) {
+  var _pool = pool;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+
+  var prodRow = (await _pool.query(
+    'SELECT product_id, tenant_id FROM products WHERE product_id = $1',
+    [productId]
+  )).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    if (res.status) { res.status(404).json({ error: 'not found' }); }
+    else { res.writeHead(404, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ error: 'not found' })); }
+    return;
   }
+
+  var inProgress = _productRollup.isSyncInProgress(productId);
+  if (res.status) { res.status(200).json({ inProgress: inProgress }); }
+  else { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ inProgress: inProgress })); }
 }
 
 /**
@@ -3937,6 +3974,7 @@ module.exports = {
   // wugs-s3: POST /settings/org-repo handler
   handlePostOrgRepoSettings,
   handlePostProductSync,
+  handleGetProductSyncStatus,
   handlePostProductFeature,
   handleGetProductKanban,
   handleGetOrgKanban,
