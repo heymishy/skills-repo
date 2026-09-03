@@ -66,6 +66,61 @@ console.log('\n[psbf-s1] D37 adapter -- realFetchBlobBySha exists, throws when u
     } catch (err) { failed++; console.log('  [FAIL] realFetchBlobBySha happy path --', err.message); }
   })();
 
+  console.log('\n[psbf-s1] AC1/AC2 -- truncation detected, logged + captured to PostHog, Blobs API fallback used');
+
+  await (async function() {
+    try {
+      var posthogModPath = path.resolve(__dirname, '../src/web-ui/modules/posthog-server.js');
+      delete require.cache[require.resolve(posthogModPath)];
+      var posthogMod = require(posthogModPath);
+      var captureExceptionCalls = [];
+      var originalCaptureException = posthogMod.captureException;
+      posthogMod.captureException = function() { captureExceptionCalls.push(Array.prototype.slice.call(arguments)); };
+
+      var adapterMod = freshAdapter();
+      var fullPipelineState = { features: [{ slug: 'full-feature-only-in-blob' }] };
+      var fullContentB64 = Buffer.from(JSON.stringify(fullPipelineState)).toString('base64');
+      var truncatedContentB64 = fullContentB64.slice(0, 20); // deliberately short
+
+      adapterMod.setPipelineStateFetchAdapter(async function() {
+        return { content: truncatedContentB64, encoding: 'base64', size: Buffer.from(fullContentB64, 'base64').length + 500, sha: 'blob-sha-1' };
+      });
+      var blobCalls = [];
+      adapterMod.setPipelineStateBlobFetchAdapter(async function(owner, repo, sha, token) {
+        blobCalls.push({ owner: owner, repo: repo, sha: sha, token: token });
+        return { content: fullContentB64, encoding: 'base64', size: Buffer.from(fullContentB64, 'base64').length, sha: sha };
+      });
+
+      var writtenParams = null;
+      var mockPool = {
+        query: async function(sql, params) {
+          if (/INSERT INTO product_rollups/i.test(sql)) { writtenParams = params; return { rows: [] }; }
+          return { rows: [] };
+        }
+      };
+
+      var rollupMod = freshRollup();
+      try {
+        await rollupMod.syncProductRollup(mockPool, adapterMod, { productId: 'p-trunc', repoOwner: 'acme', repoName: 'widgets', accessToken: 'fake-token' });
+
+        if (captureExceptionCalls.length < 1) throw new Error('Expected captureException to be called at least once for the detected truncation');
+        var firstCall = captureExceptionCalls[0];
+        var firstProps = firstCall[2] || {};
+        if (firstProps.fallbackAttempted !== false) throw new Error('Expected the first captureException call to have fallbackAttempted:false, got: ' + JSON.stringify(firstProps));
+        passed++; console.log('  [PASS] syncProductRollup: truncation detected and captured to PostHog before any fallback (AC1)');
+
+        if (blobCalls.length !== 1) throw new Error('Expected exactly 1 Blobs API call, got ' + blobCalls.length);
+        if (blobCalls[0].sha !== 'blob-sha-1') throw new Error('Expected the fallback to use the Contents API response\'s own sha, got: ' + blobCalls[0].sha);
+        passed++; console.log('  [PASS] syncProductRollup: Blobs API fallback called with the correct sha (AC2)');
+
+        if (!writtenParams || writtenParams.join('|').indexOf('full-feature-only-in-blob') === -1) throw new Error('Expected the written rollup to reflect the FULL (blob-fetched) content, not the truncated original');
+        passed++; console.log('  [PASS] syncProductRollup: rollup reflects the full Blobs-API content, not the truncated original (AC2)');
+      } finally {
+        posthogMod.captureException = originalCaptureException;
+      }
+    } catch (err) { failed++; console.log('  [FAIL] AC1/AC2 truncation + fallback --', err.message); }
+  })();
+
   console.log('\n[psbf-s1] Results so far: ' + passed + ' passed, ' + failed + ' failed');
   process.exitCode = failed > 0 ? 1 : 0;
 })();

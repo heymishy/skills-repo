@@ -13,6 +13,8 @@
 // stories are counted for such a feature; the empty top-level array
 // contributes nothing (AC4).
 
+var _posthog = require('./posthog-server');
+
 /**
  * @param {object} pipelineState - parsed pipeline-state.json content
  * @returns {Object<string, number>} count of stories at each dodStatus value
@@ -528,8 +530,61 @@ async function pruneOrphanedFeatureModuleAssignments(pool, productId, taxonomy) 
  */
 async function syncProductRollup(pool, adapterModule, opts) {
   var raw = await adapterModule.getPipelineStateFetchAdapter()(opts.repoOwner, opts.repoName, opts.accessToken);
-  var decoded = Buffer.from(raw.content, 'base64').toString('utf8');
-  var pipelineState = JSON.parse(decoded);
+  var decodedBuf = Buffer.from(raw.content, 'base64');
+  var truncated = typeof raw.size === 'number' && decodedBuf.length !== raw.size;
+
+  var pipelineState;
+  if (!truncated) {
+    try {
+      pipelineState = JSON.parse(decodedBuf.toString('utf8'));
+    } catch (parseErr) {
+      // psbf-s1 (AC1): an outright parse failure even when size matched (or
+      // was absent) -- treat the same as a detected mismatch, since the
+      // content is demonstrably not valid regardless of which signal caught it.
+      truncated = true;
+    }
+  }
+
+  if (truncated) {
+    // psbf-s1 (AC1): GitHub's Contents API only reliably returns complete
+    // `content` for files under ~1MB; larger files can arrive truncated on
+    // an otherwise-ok response. Log + capture BEFORE attempting the
+    // fallback, so the true frequency of this condition is observable
+    // even when the fallback then succeeds.
+    console.error('[psbf-s1] Contents API content truncated for product ' + opts.productId + ': reported size ' + raw.size + ', decoded length ' + decodedBuf.length);
+    _posthog.captureException(new Error('Contents API content truncated'), opts.productId, {
+      productId: opts.productId,
+      repoOwner: opts.repoOwner,
+      repoName: opts.repoName,
+      reportedSize: raw.size,
+      decodedLength: decodedBuf.length,
+      fallbackAttempted: false
+    });
+
+    try {
+      // psbf-s1 (AC2): fall back to the Git Blobs API, which has no such
+      // truncation ceiling, using the sha the Contents API response always
+      // includes regardless of file size.
+      var blobRaw = await adapterModule.getPipelineStateBlobFetchAdapter()(opts.repoOwner, opts.repoName, raw.sha, opts.accessToken);
+      var blobDecodedBuf = Buffer.from(blobRaw.content, 'base64');
+      pipelineState = JSON.parse(blobDecodedBuf.toString('utf8'));
+    } catch (fallbackErr) {
+      // psbf-s1 (AC3): the fallback itself also failed -- log + capture
+      // with a distinguishing property so this is immediately diagnosable
+      // as "the fallback failed", not another ambiguous truncation report.
+      console.error('[psbf-s1] Git Blobs API fallback failed for product ' + opts.productId + ':', fallbackErr.message);
+      _posthog.captureException(fallbackErr, opts.productId, {
+        productId: opts.productId,
+        repoOwner: opts.repoOwner,
+        repoName: opts.repoName,
+        reportedSize: raw.size,
+        decodedLength: decodedBuf.length,
+        fallbackAttempted: true
+      });
+      throw fallbackErr;
+    }
+  }
+
   var rollup = computeDodStatusRollup(pipelineState);
   var healthCounts = computeHealthCounts(pipelineState);
   var testCoverage = computeTestCoverageRollup(pipelineState);
