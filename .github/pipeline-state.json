@@ -29982,17 +29982,17 @@
       "id": "2026-09-03-product-sync-timeout-fix",
       "name": "Make product sync fire-and-forget with client-side polling",
       "track": "short",
-      "stage": "definition-of-ready",
+      "stage": "branch-setup",
       "health": "green",
-      "updatedAt": "2026-09-03T02:53:21.234Z",
+      "updatedAt": "2026-09-03T03:03:26.081Z",
       "stories": [
         {
           "slug": "pst-s1",
           "id": "pst-s1",
           "name": "Make product sync fire-and-forget with client-side polling, instead of one long blocking request",
-          "stage": "definition-of-ready",
+          "stage": "branch-setup",
           "health": "green",
-          "updatedAt": "2026-09-03T02:53:21.235Z",
+          "updatedAt": "2026-09-03T03:03:26.083Z",
           "testPlan": {
             "status": "written",
             "totalTests": 7,
@@ -30004,7 +30004,12 @@
           "e2eToolingRequired": "false",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-03-product-sync-timeout-fix/dor/pst-s1-dor.md",
-          "dorContractPath": "artefacts/2026-09-03-product-sync-timeout-fix/dor/pst-s1-dor-contract.md"
+          "dorContractPath": "artefacts/2026-09-03-product-sync-timeout-fix/dor/pst-s1-dor-contract.md",
+          "baseline": {
+            "totalFiles": 598,
+            "failed": 1,
+            "note": "Pre-existing failure tests/check-p3.5-validate-trace.js (ps1-exits-0-on-valid-repo-with-ci-flag) confirmed present on master too before this branch existed -- environment-specific PowerShell script behavior, unrelated to pst-s1 scope."
+          }
         }
       ],
       "guardrails": [
