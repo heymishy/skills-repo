@@ -30432,9 +30432,9 @@
           "slug": "fal-s1",
           "id": "fal-s1",
           "name": "Feature artefact page resolves epic-nested stories (object and bare-string shaped) to their real feature directory before looking up artefacts",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-09-03T19:25:50.277Z",
+          "updatedAt": "2026-09-03T19:29:32.446Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-feature-artefact-lookup-epic-nested-fix/dor/fal-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-04-feature-artefact-lookup-epic-nested-fix/dor/fal-s1-dor-contract.md",
@@ -30460,7 +30460,9 @@
               "file": "artefacts/2026-09-04-feature-artefact-lookup-epic-nested-fix/plans/fal-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/823"
         }
       ]
     }
