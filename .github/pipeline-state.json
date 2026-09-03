@@ -30202,6 +30202,34 @@
           "assessedAt": "2026-09-03T06:24:59.728Z"
         }
       ]
+    },
+    {
+      "slug": "2026-09-03-product-sync-blob-fallback-diagnostics",
+      "id": "2026-09-03-product-sync-blob-fallback-diagnostics",
+      "name": "Diagnose and fix GitHub Contents API content truncation via Git Blobs API fallback",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "updatedAt": "2026-09-03T07:55:24.954Z",
+      "stories": [
+        {
+          "slug": "psbf-s1",
+          "id": "psbf-s1",
+          "name": "Detect truncated Contents API content, fall back to Git Blobs API, and record diagnostics to logs + PostHog",
+          "stage": "test-plan",
+          "health": "green",
+          "updatedAt": "2026-09-03T07:57:08.070Z",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
