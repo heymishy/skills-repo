@@ -30432,12 +30432,37 @@
           "slug": "fal-s1",
           "id": "fal-s1",
           "name": "Feature artefact page resolves epic-nested stories (object and bare-string shaped) to their real feature directory before looking up artefacts",
-          "stage": "dor-signed-off",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-09-03T19:02:22.971Z",
+          "updatedAt": "2026-09-03T19:29:32.446Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-feature-artefact-lookup-epic-nested-fix/dor/fal-s1-dor.md",
-          "dorContractPath": "artefacts/2026-09-04-feature-artefact-lookup-epic-nested-fix/dor/fal-s1-dor-contract.md"
+          "dorContractPath": "artefacts/2026-09-04-feature-artefact-lookup-epic-nested-fix/dor/fal-s1-dor-contract.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 6
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "baseline": {
+            "totalFiles": 602,
+            "failed": 1,
+            "note": "Pre-existing failure tests/check-p3.5-validate-trace.js confirmed present on master before this branch existed -- same known baseline as pst-s1/pgft-s1/psbf-s1/ppg-s1."
+          },
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Fix both root causes together: bare-string slug extraction + real-feature-slug resolution for artefact lookup (AC1-AC5)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-04-feature-artefact-lookup-epic-nested-fix/plans/fal-s1-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/823"
         }
       ]
     }

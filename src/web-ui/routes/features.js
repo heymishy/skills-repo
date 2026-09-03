@@ -180,13 +180,24 @@ function _resolveResumeLinksForFeature(journey) {
 //    story item, giving Product + Phase/Epic together in one query.
 //    Explicitly tenant-scoped (bri-s3.4's own precedent in products.js) --
 //    never leak a match from another tenant's product.
-async function _resolveBreadcrumbContext(featureSlug, journeyForPage, pool, tenantId) {
+// fal-s1: shared resolver for both the breadcrumb (pdt-s4) and the
+// artefact-fetch path. journeyForPage.productId already resolving is the
+// fast path (a genuine top-level feature, the common case) -- no taxonomy
+// scan runs in that case, matching pdt-s4's own established NFR-Performance
+// behaviour. Otherwise runs the tenant-scoped reverse lookup across this
+// tenant's synced taxonomy once, returning the matched item's real
+// featureSlug alongside the breadcrumb's product/epic context. resolvedSlug
+// falls back to the raw featureSlug unchanged when nothing resolves, so
+// callers needing "the real slug to look artefacts up under" always get a
+// usable value.
+async function _resolveFeatureContext(featureSlug, journeyForPage, pool, tenantId) {
   if (journeyForPage && journeyForPage.productId) {
     const direct = (await pool.query(
       'SELECT name FROM products WHERE product_id = $1 AND tenant_id = $2',
       [journeyForPage.productId, tenantId]
     )).rows[0];
-    return direct ? { productId: journeyForPage.productId, productName: direct.name, epicName: null } : null;
+    const breadcrumb = direct ? { productId: journeyForPage.productId, productName: direct.name, epicName: null } : null;
+    return { breadcrumb: breadcrumb, resolvedSlug: featureSlug };
   }
 
   const rows = (await pool.query(
@@ -200,12 +211,15 @@ async function _resolveBreadcrumbContext(featureSlug, journeyForPage, pool, tena
       const items = groups[g].items || [];
       for (let it = 0; it < items.length; it++) {
         if (items[it].slug === featureSlug) {
-          return { productId: rows[i].product_id, productName: rows[i].name, epicName: groups[g].epicName };
+          return {
+            breadcrumb: { productId: rows[i].product_id, productName: rows[i].name, epicName: groups[g].epicName },
+            resolvedSlug: items[it].featureSlug || featureSlug
+          };
         }
       }
     }
   }
-  return null;
+  return { breadcrumb: null, resolvedSlug: featureSlug };
 }
 
 // pdt-s4 (AC1, AC1a, AC2, AC3): renders the breadcrumb nav -- Product
@@ -308,30 +322,60 @@ async function handleGetFeatureArtefacts(req, res, featureSlug, pool) {
   // row. fdn-s1: the same single lookup also supplies displayName, so it
   // isn't fetched a second time. alrf-s4: also feeds the Postgres artefact-
   // content fallback below, so this stays a single lookup for that too.
+  // fal-s1: journeyForPage (raw slug) still drives the fast-path check and
+  // displayTitle -- an epic-nested story's own slug is never itself a
+  // journeyStore feature, so this intentionally stays null/unresolved for
+  // that case, preserving the existing "shows the raw story ID" breadcrumb
+  // behaviour (a separate, out-of-scope enhancement to change).
   const journeyForPage = _journeyStore.getJourneyByFeatureSlug(featureSlug);
+  // fal-s1: resolve the real feature slug once -- reused for both the
+  // artefact fetch below and the breadcrumb render further down, so the
+  // taxonomy-scan query never runs twice for one request. Only run for the
+  // HTML branch: the JSON API response never renders a breadcrumb, and some
+  // existing callers (alrf-s4's own AC5/AC6 tests) invoke this handler with
+  // no pool at all for a JSON request -- confirmed via direct code reading
+  // that pool was previously only ever touched inside the acceptsHtml
+  // branch (via the old _resolveBreadcrumbContext), so keeping the taxonomy
+  // scan HTML-only preserves that exactly, no new risk for the JSON path.
+  let breadcrumbContext = null;
+  let resolvedSlug = featureSlug;
+  if (acceptsHtml) {
+    const resolved = await _resolveFeatureContext(featureSlug, journeyForPage, pool, req.session.tenantId);
+    breadcrumbContext = resolved.breadcrumb;
+    resolvedSlug = resolved.resolvedSlug;
+  }
+  // fal-s1: when the raw slug didn't resolve directly but the taxonomy scan
+  // found the real parent feature, re-fetch under that real slug so the
+  // Postgres artefact fallback and "Resume conversation" links use the
+  // story's real journey, not the (correctly) unresolved raw-slug lookup.
+  const artefactJourney = (resolvedSlug !== featureSlug) ? _journeyStore.getJourneyByFeatureSlug(resolvedSlug) : journeyForPage;
   let pgArtefactRows = [];
-  if (journeyForPage && journeyForPage.journeyId) {
+  if (artefactJourney && artefactJourney.journeyId) {
     try {
-      pgArtefactRows = await _journeyStore.getArtefactsForJourney(journeyForPage.journeyId);
+      pgArtefactRows = await _journeyStore.getArtefactsForJourney(artefactJourney.journeyId);
     } catch (_) { pgArtefactRows = []; }
   }
-  const { artefacts, grouped, noArtefacts } = await _listArtefacts(featureSlug, token, repoRoot, pgArtefactRows);
+  const { artefacts, grouped, noArtefacts } = await _listArtefacts(resolvedSlug, token, repoRoot, pgArtefactRows);
 
   // Audit log: userId, route, featureSlug, timestamp — no token
+  // fal-s1: logs the resolved real feature slug, so the audit trail
+  // reflects which artefacts were actually looked up.
   _logger.info('feature_artefacts_accessed', {
     userId,
     route: '/features/:slug',
-    featureSlug,
+    featureSlug: resolvedSlug,
     timestamp: new Date().toISOString()
   });
 
   if (acceptsHtml) {
-    const resumeLookup = noArtefacts ? {} : _resolveResumeLinksForFeature(journeyForPage);
+    const resumeLookup = noArtefacts ? {} : _resolveResumeLinksForFeature(artefactJourney);
+    // fal-s1: artefact view links (/artefact/:slug/:type) must point at the
+    // real feature directory slug -- the raw slug 404s for an epic-nested
+    // story, same class of bug this story fixes for the list lookup itself.
     const listHtml = noArtefacts
       ? '<p class="artefact-list__empty">No artefacts found for this feature</p>'
-      : renderArtefactIndexHtml(artefacts, featureSlug, resumeLookup);
+      : renderArtefactIndexHtml(artefacts, resolvedSlug, resumeLookup);
     const displayTitle = (journeyForPage && journeyForPage.displayName) || featureSlug;
-    const breadcrumbContext = await _resolveBreadcrumbContext(featureSlug, journeyForPage, pool, req.session.tenantId);
     const breadcrumbHtml = _renderStoryBreadcrumb(breadcrumbContext, displayTitle);
     // alrf-s10 — operator-requested: a real "Delete this feature" action, for
     // cleaning up stale/corrupted staging data (e.g. a feature whose
