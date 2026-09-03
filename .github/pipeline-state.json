@@ -30337,9 +30337,9 @@
           "slug": "ppg-s1",
           "id": "ppg-s1",
           "name": "Module-less products get the full grouped/collapsed/filterable features UI, and health counts render in one place, not three",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-09-03T09:42:35.188Z",
+          "updatedAt": "2026-09-03T09:43:51.821Z",
           "testPlan": {
             "status": "written",
             "totalTests": 6,
@@ -30371,7 +30371,9 @@
               "file": "artefacts/2026-09-03-product-page-module-gate-and-health-duplication-fix/plans/ppg-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/822"
         }
       ],
       "guardrails": [
