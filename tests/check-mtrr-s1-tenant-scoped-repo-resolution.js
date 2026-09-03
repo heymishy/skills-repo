@@ -138,7 +138,7 @@ function createMockGithubFetch(fixtures, opts) {
       if (!url.includes(repoFragment)) continue;
 
       if (url.includes('/contents/.github/pipeline-state.json')) {
-        return { ok: true, status: 200, json: async () => ({ content: b64(JSON.stringify(pipelineStateWith(fx))), encoding: 'base64' }) };
+        return { ok: true, status: 200, headers: { get: () => null }, text: async () => JSON.stringify({ content: b64(JSON.stringify(pipelineStateWith(fx))), encoding: 'base64' }) };
       }
       if (fx.dorArtefact && url.includes(`/contents/${fx.dorArtefact}`)) {
         return { ok: true, status: 200, json: async () => ({ content: b64(fx.artefactBody), encoding: 'base64' }) };

@@ -83,7 +83,8 @@ function createMockGithubFetch(fixtures, opts) {
       return {
         ok: true,
         status: 200,
-        json: async () => ({ content: b64(JSON.stringify(state)), encoding: 'base64' })
+        headers: { get: () => null },
+        text: async () => JSON.stringify({ content: b64(JSON.stringify(state)), encoding: 'base64' })
       };
     }
 
