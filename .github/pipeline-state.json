@@ -30583,9 +30583,12 @@
           "slug": "prlf-s1",
           "id": "prlf-s1",
           "name": "Use featureSlug in row links, fixing the real p3.3 collision for the primary navigation path",
-          "stage": "test-plan-complete",
+          "stage": "dor-signed-off",
           "health": "green",
-          "updatedAt": "2026-09-03T23:54:06.177Z"
+          "updatedAt": "2026-09-03T23:55:15.904Z",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-04-product-row-link-featureslug-fix/dor/prlf-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-04-product-row-link-featureslug-fix/dor/prlf-s1-dor-contract.md"
         }
       ]
     }
