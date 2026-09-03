@@ -30216,21 +30216,61 @@
           "slug": "psbf-s1",
           "id": "psbf-s1",
           "name": "Detect truncated Contents API content, fall back to Git Blobs API, and record diagnostics to logs + PostHog",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-09-03T07:58:28.458Z",
+          "updatedAt": "2026-09-03T08:21:02.972Z",
           "testPlan": {
             "status": "written",
             "totalTests": 4,
-            "passing": 0
+            "passing": 4
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/dor/psbf-s1-dor.md",
-          "dorContractPath": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/dor/psbf-s1-dor-contract.md"
+          "dorContractPath": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/dor/psbf-s1-dor-contract.md",
+          "baseline": {
+            "totalFiles": 600,
+            "failed": 1,
+            "note": "Pre-existing failure tests/check-p3.5-validate-trace.js confirmed present on master before this branch existed -- same known baseline as pst-s1/pgft-s1."
+          },
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Extract shared retry helper, add realFetchBlobBySha (D37 adapter)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/plans/psbf-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "syncProductRollup detects truncation, logs + captures to PostHog, falls back to Blobs API (AC1, AC2)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/plans/psbf-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Fallback failure also captured, still reaches caller error handling (AC3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/plans/psbf-s1-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Regression guard: non-truncated common case unaffected (AC4)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/plans/psbf-s1-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Wire the real Blobs adapter in server.js (D37 rule 3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/plans/psbf-s1-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/821"
         }
       ],
       "guardrails": [
