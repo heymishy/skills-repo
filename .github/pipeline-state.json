@@ -30095,17 +30095,17 @@
       "id": "2026-09-03-product-github-fetch-truncation-fix",
       "name": "Retry and diagnose GitHub Contents API fetch truncation for large connected repos",
       "track": "short",
-      "stage": "definition-of-ready",
-      "health": "green",
-      "updatedAt": "2026-09-03T05:20:49.731Z",
+      "stage": "definition-of-done",
+      "health": "amber",
+      "updatedAt": "2026-09-03T06:24:59.728Z",
       "stories": [
         {
           "slug": "pgft-s1",
           "id": "pgft-s1",
           "name": "Retry the GitHub Contents API fetch on transient/parse failure, with diagnostic error detail on exhaustion",
-          "stage": "branch-complete",
-          "health": "green",
-          "updatedAt": "2026-09-03T05:47:16.797Z",
+          "stage": "definition-of-done",
+          "health": "amber",
+          "updatedAt": "2026-09-03T06:24:59.726Z",
           "testPlan": {
             "status": "written",
             "totalTests": 5,
@@ -30156,8 +30156,12 @@
             "note": "Pre-existing failure tests/check-p3.5-validate-trace.js (ps1-exits-0-on-valid-repo-with-ci-flag) confirmed present on master before this branch existed -- environment-specific PowerShell script behavior, unrelated to pgft-s1 scope. Same known baseline as pst-s1."
           },
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/820"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/820",
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "blocker": "Production (skills-framework.fly.dev) not yet running this fix -- promote-to-prod requires a fresh manual approval for this specific merge commit (4477f8df), separate from the earlier approval that shipped pst-s1. Post-merge production log observation also pending once promoted.",
+          "dodPath": "artefacts/2026-09-03-product-github-fetch-truncation-fix/dod/pgft-s1-dod.md"
         }
       ],
       "guardrails": [
@@ -30166,18 +30170,18 @@
           "category": "mandatory-constraint",
           "label": "H9 Architecture Constraints",
           "status": "met",
-          "evidence": "Populated: mock-fidelity fix scope, retry-class boundaries (network/parse retried, HTTP-status not). No review ran (short-track) so no Category E findings to check.",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-03T05:20:49.732Z"
+          "evidence": "Verified at DoD -- mock-fidelity fix scope confirmed correct, retry-class boundaries confirmed unchanged in merged code",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-03T06:24:59.728Z"
         },
         {
           "id": "H-NFR-PROFILE",
           "category": "nfr",
           "label": "H-NFR NFR profile",
-          "status": "met",
-          "evidence": "artefacts/2026-09-03-product-github-fetch-truncation-fix/nfr-profile.md",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-03T05:20:49.732Z"
+          "status": "not-met",
+          "evidence": "nfr-profile.md remains Active, not Verified -- Availability NFR gap (does retry resolve production incident) not closeable until promote-to-prod + post-merge log observation, owner Hamish King",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-03T06:24:59.728Z"
         },
         {
           "id": "H-NFR2-COMPLIANCE",
@@ -30185,17 +30189,17 @@
           "label": "H-NFR2 Compliance sign-off",
           "status": "na",
           "evidence": "No named regulatory clause",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-03T05:20:49.732Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-03T06:24:59.728Z"
         },
         {
           "id": "H-NFR3-DATA-CLASS",
           "category": "nfr",
           "label": "H-NFR3 Data classification",
           "status": "met",
-          "evidence": "Internal",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-03T05:20:49.733Z"
+          "evidence": "Internal classification confirmed unchanged",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-03T06:24:59.728Z"
         }
       ]
     }
