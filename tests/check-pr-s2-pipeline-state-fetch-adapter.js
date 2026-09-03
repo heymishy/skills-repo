@@ -80,7 +80,8 @@ async function main() {
         return {
           ok: true,
           status: 200,
-          json: async function() { return { content: Buffer.from('{"features":[]}').toString('base64'), encoding: 'base64' }; }
+          headers: { get: function() { return null; } },
+          text: async function() { return JSON.stringify({ content: Buffer.from('{"features":[]}').toString('base64'), encoding: 'base64' }); }
         };
       };
       try {
@@ -144,7 +145,8 @@ async function main() {
         var isRepoA = url.indexOf('/repos/org-a/repo-a/') !== -1;
         return {
           ok: true, status: 200,
-          json: async function() { return { content: isRepoA ? repoAContent : repoBContent, encoding: 'base64' }; }
+          headers: { get: function() { return null; } },
+          text: async function() { return JSON.stringify({ content: isRepoA ? repoAContent : repoBContent, encoding: 'base64' }); }
         };
       };
       try {
