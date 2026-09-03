@@ -30532,9 +30532,9 @@
           "slug": "aada-s1",
           "id": "aada-s1",
           "name": "Check archived directory fallback in listLocalArtefacts",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-09-03T23:06:40.082Z",
+          "updatedAt": "2026-09-03T23:24:32.736Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-artefact-lookup-archived-directory-fix/dor/aada-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-04-artefact-lookup-archived-directory-fix/dor/aada-s1-dor-contract.md",
@@ -30560,7 +30560,9 @@
               "file": "artefacts/2026-09-04-artefact-lookup-archived-directory-fix/plans/aada-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/825"
         }
       ]
     }
