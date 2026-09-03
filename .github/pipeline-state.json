@@ -29976,6 +29976,34 @@
           "contributingStories": []
         }
       ]
+    },
+    {
+      "slug": "2026-09-03-product-sync-timeout-fix",
+      "id": "2026-09-03-product-sync-timeout-fix",
+      "name": "Make product sync fire-and-forget with client-side polling",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "updatedAt": "2026-09-03T02:44:01.611Z",
+      "stories": [
+        {
+          "slug": "pst-s1",
+          "id": "pst-s1",
+          "name": "Make product sync fire-and-forget with client-side polling, instead of one long blocking request",
+          "stage": "test-plan",
+          "health": "green",
+          "updatedAt": "2026-09-03T02:45:53.103Z",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 7,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
