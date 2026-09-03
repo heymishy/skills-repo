@@ -30337,16 +30337,16 @@
           "slug": "ppg-s1",
           "id": "ppg-s1",
           "name": "Module-less products get the full grouped/collapsed/filterable features UI, and health counts render in one place, not three",
-          "stage": "implementation-plan",
+          "stage": "verify-completion",
           "health": "green",
-          "updatedAt": "2026-09-03T09:17:42.749Z",
+          "updatedAt": "2026-09-03T09:42:35.188Z",
           "testPlan": {
             "status": "written",
             "totalTests": 6,
-            "passing": 0
+            "passing": 6
           },
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 6,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "dorStatus": "signed-off",
@@ -30361,16 +30361,17 @@
             {
               "id": "task-1",
               "name": "Decouple grouped/tabbed features UI from requiring custom Modules (AC1, AC2, AC3, AC6)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-03-product-page-module-gate-and-health-duplication-fix/plans/ppg-s1-plan.md"
             },
             {
               "id": "task-2",
               "name": "Consolidate health counts onto the single interactive chip bar (AC4, AC5)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-03-product-page-module-gate-and-health-duplication-fix/plans/ppg-s1-plan.md"
             }
-          ]
+          ],
+          "verifyStatus": "passed"
         }
       ],
       "guardrails": [
