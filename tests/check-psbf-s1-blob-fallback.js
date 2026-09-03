@@ -121,6 +121,92 @@ console.log('\n[psbf-s1] D37 adapter -- realFetchBlobBySha exists, throws when u
     } catch (err) { failed++; console.log('  [FAIL] AC1/AC2 truncation + fallback --', err.message); }
   })();
 
+  console.log('\n[psbf-s1] AC3 -- fallback failure also captured, still reaches the caller (regression guard for pst-s1)');
+
+  await (async function() {
+    try {
+      var posthogModPath = path.resolve(__dirname, '../src/web-ui/modules/posthog-server.js');
+      delete require.cache[require.resolve(posthogModPath)];
+      var posthogMod = require(posthogModPath);
+      var captureExceptionCalls = [];
+      var originalCaptureException = posthogMod.captureException;
+      posthogMod.captureException = function() { captureExceptionCalls.push(Array.prototype.slice.call(arguments)); };
+
+      var adapterMod = freshAdapter();
+      adapterMod.setPipelineStateFetchAdapter(async function() {
+        return { content: 'dHJ1bmM=', encoding: 'base64', size: 999999, sha: 'blob-sha-2' }; // deliberately truncated
+      });
+      adapterMod.setPipelineStateBlobFetchAdapter(async function() {
+        throw new Error('simulated Blobs API failure');
+      });
+
+      var mockPool = { query: async function() { return { rows: [] }; } };
+      var rollupMod = freshRollup();
+
+      try {
+        try {
+          await rollupMod.syncProductRollup(mockPool, adapterMod, { productId: 'p-fallback-fail', repoOwner: 'acme', repoName: 'widgets', accessToken: 'fake-token' });
+          throw new Error('Expected syncProductRollup to throw when the fallback also fails');
+        } catch (err) {
+          if (!/simulated Blobs API failure/.test(err.message)) throw new Error('Expected the fallback error to propagate, got: ' + err.message);
+        }
+        passed++; console.log('  [PASS] syncProductRollup: throws when the Blobs API fallback also fails, error propagates to caller (AC3)');
+
+        var fallbackCapture = captureExceptionCalls.find(function(c) { return c[2] && c[2].fallbackAttempted === true; });
+        if (!fallbackCapture) throw new Error('Expected a captureException call with fallbackAttempted:true, got: ' + JSON.stringify(captureExceptionCalls));
+        passed++; console.log('  [PASS] syncProductRollup: fallback failure captured with fallbackAttempted:true, distinguishable from the original truncation (AC3)');
+      } finally {
+        posthogMod.captureException = originalCaptureException;
+      }
+    } catch (err) { failed++; console.log('  [FAIL] AC3 fallback failure --', err.message); }
+  })();
+
+  console.log('\n[psbf-s1] AC4 (regression guard) -- non-truncated content: no fallback, no new log lines, unchanged behaviour');
+
+  await (async function() {
+    try {
+      var posthogModPath = path.resolve(__dirname, '../src/web-ui/modules/posthog-server.js');
+      delete require.cache[require.resolve(posthogModPath)];
+      var posthogMod = require(posthogModPath);
+      var captureExceptionCalls = [];
+      var originalCaptureException = posthogMod.captureException;
+      posthogMod.captureException = function() { captureExceptionCalls.push(arguments); };
+
+      var adapterMod = freshAdapter();
+      var normalContent = Buffer.from(JSON.stringify({ features: [] })).toString('base64');
+      adapterMod.setPipelineStateFetchAdapter(async function() {
+        return { content: normalContent, encoding: 'base64', size: Buffer.from(normalContent, 'base64').length, sha: 'sha-normal' };
+      });
+      var blobCallCount = 0;
+      adapterMod.setPipelineStateBlobFetchAdapter(async function() { blobCallCount++; return { content: normalContent, encoding: 'base64' }; });
+
+      var writeCount = 0;
+      var mockPool = { query: async function(sql) { if (/INSERT INTO product_rollups/i.test(sql)) writeCount++; return { rows: [] }; } };
+      var rollupMod = freshRollup();
+
+      try {
+        await rollupMod.syncProductRollup(mockPool, adapterMod, { productId: 'p-normal', repoOwner: 'acme', repoName: 'widgets', accessToken: 'fake-token' });
+        if (blobCallCount !== 0) throw new Error('Expected zero Blobs API calls for non-truncated content, got ' + blobCallCount);
+        if (captureExceptionCalls.length !== 0) throw new Error('Expected zero PostHog captures for non-truncated content, got ' + captureExceptionCalls.length);
+        if (writeCount !== 1) throw new Error('Expected exactly one rollup write, got ' + writeCount);
+        passed++; console.log('  [PASS] syncProductRollup: non-truncated content triggers zero fallback calls, zero PostHog captures, unchanged write (AC4)');
+      } finally {
+        posthogMod.captureException = originalCaptureException;
+      }
+    } catch (err) { failed++; console.log('  [FAIL] AC4 regression guard --', err.message); }
+  })();
+
+  console.log('\n[psbf-s1] D37 rule 3 -- server.js wires the real Blobs adapter implementation');
+  (function() {
+    try {
+      var fs = require('fs');
+      var SERVER_PATH = path.resolve(__dirname, '../src/web-ui/server.js');
+      var src = fs.readFileSync(SERVER_PATH, 'utf8');
+      if (!/setPipelineStateBlobFetchAdapter\(\s*realFetchBlobBySha/.test(src)) throw new Error('Expected server.js to wire setPipelineStateBlobFetchAdapter(realFetchBlobBySha)');
+      passed++; console.log('  [PASS] server.js wires setPipelineStateBlobFetchAdapter(realFetchBlobBySha) (D37 rule 3)');
+    } catch (err) { failed++; console.log('  [FAIL] D37 rule 3 wiring --', err.message); }
+  })();
+
   console.log('\n[psbf-s1] Results so far: ' + passed + ' passed, ' + failed + ' failed');
   process.exitCode = failed > 0 ? 1 : 0;
 })();
