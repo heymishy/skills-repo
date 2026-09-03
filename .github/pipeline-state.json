@@ -30432,9 +30432,12 @@
           "slug": "fal-s1",
           "id": "fal-s1",
           "name": "Feature artefact page resolves epic-nested stories (object and bare-string shaped) to their real feature directory before looking up artefacts",
-          "stage": "test-plan-complete",
+          "stage": "dor-signed-off",
           "health": "green",
-          "updatedAt": "2026-09-03T18:58:02.813Z"
+          "updatedAt": "2026-09-03T19:02:22.971Z",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-04-feature-artefact-lookup-epic-nested-fix/dor/fal-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-04-feature-artefact-lookup-epic-nested-fix/dor/fal-s1-dor-contract.md"
         }
       ]
     }
