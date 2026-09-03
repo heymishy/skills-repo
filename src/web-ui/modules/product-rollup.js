@@ -289,7 +289,10 @@ function computeTaxonomyRollup(pipelineState) {
           // computeHealthCounts only ever computes health at feature
           // granularity (see that function's own doc comment), so a story
           // item's own .slug never has a matching healthBySlug entry.
-          return { slug: story.slug || story.id, featureSlug: feature.slug };
+          // fal-s1: a story reference may be a bare string (schema-valid
+          // Phase 1/2-style shape) rather than an object -- story.slug/.id
+          // on a string evaluates to undefined, so handle that shape first.
+          return { slug: typeof story === 'string' ? story : (story.slug || story.id), featureSlug: feature.slug };
         });
         groups.push({ epicSlug: epic.slug, epicName: epic.name, items: items });
       });
