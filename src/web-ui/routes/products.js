@@ -361,14 +361,17 @@ function _renderPvcItemRow(item, includeCheckbox) {
 // (By Module / By Phase / All) plus health-filter chips and a search input,
 // all operating client-side over the same rendered item rows (data-health/
 // data-search attributes read by one small vanilla-JS filter function).
-function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId, csrfToken) {
-  if (modules.length === 0) {
-    // bmau-s1: explicit single-arg wrapper, not the bare _renderPvcItemRow
-    // reference -- see _renderModuleSection's identical fix/comment for why
-    // Array.map() would otherwise leak the index into includeCheckbox.
-    return items.length === 0
-      ? '<p style="color:var(--muted);font-size:14px">No features yet.</p>'
-      : '<ul style="list-style:none;padding:0;margin:0">' + items.map(function(item) { return _renderPvcItemRow(item); }).join('') + '</ul>';
+function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId, csrfToken, healthCounts) {
+  // ppg-s1: previously, modules.length === 0 skipped the entire tabbed/
+  // grouped/collapsed UI (pdt-s1) and fell back to one flat, ungrouped <ul>
+  // -- a product with zero custom Modules never benefited from any of that
+  // design. groupItemsByModule already has well-defined, already-tested
+  // zero-modules behaviour (every item lands in `unclassified`), and
+  // groupItemsByPhase has no module dependency at all -- both reused
+  // unchanged below. Only the true empty-state (no items at all,
+  // regardless of module count) still short-circuits here.
+  if (modules.length === 0 && items.length === 0) {
+    return '<p style="color:var(--muted);font-size:14px">No features yet.</p>';
   }
 
   var byModule = _productRollup.groupItemsByModule(items, _pvcAssignmentMapFromItems(items), modules);
@@ -395,15 +398,21 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
         'style="padding:6px 12px;border:1px solid var(--accent,#2563eb);border-radius:6px;background:none;color:var(--accent,#2563eb);font-size:12.5px;cursor:pointer">Assign to module</button>' +
     '</div>';
 
+  // ppg-s1 (AC3, AC6): default tab is By Phase when there are zero custom
+  // modules (a lone Unclassified bucket is a worse first view than the
+  // real phase breakdown), unchanged By Module default otherwise.
+  var defaultTab = modules.length === 0 ? 'phase' : 'module';
+
   var byModuleHtml =
-    '<div id="pvc-tab-panel-module" class="pvc-tab-panel pvc-tab-panel--active" role="tabpanel" aria-labelledby="pvc-tab-module">' +
-      bulkAssignBarHtml +
+    '<div id="pvc-tab-panel-module" class="pvc-tab-panel' + (defaultTab === 'module' ? ' pvc-tab-panel--active' : '') + '" role="tabpanel" aria-labelledby="pvc-tab-module">' +
+      // ppg-s1 (AC2): nothing to assign to when there are zero modules.
+      (modules.length > 0 ? bulkAssignBarHtml : '') +
       byModule.byModule.map(function(bucket) { return _renderModuleSection(bucket.moduleName, bucket.moduleId, bucket.items, _renderPvcItemRowWithCheckbox); }).join('') +
       (byModule.unclassified.length > 0 ? _renderModuleSection('Unclassified', 'unclassified', byModule.unclassified, _renderPvcItemRowWithCheckbox) : '') +
     '</div>';
 
   var byPhaseHtml =
-    '<div id="pvc-tab-panel-phase" class="pvc-tab-panel" role="tabpanel" aria-labelledby="pvc-tab-phase">' +
+    '<div id="pvc-tab-panel-phase" class="pvc-tab-panel' + (defaultTab === 'phase' ? ' pvc-tab-panel--active' : '') + '" role="tabpanel" aria-labelledby="pvc-tab-phase">' +
       byPhase.byPhase.map(function(p) { return _renderModuleSection(p.epicName, 'phase-' + _escapeHtml(p.epicName), p.items, _renderPvcItemRow); }).join('') +
       (byPhase.other.length > 0 ? _renderModuleSection('Other features', 'phase-other', byPhase.other, _renderPvcItemRow) : '') +
     '</div>';
@@ -417,7 +426,11 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
 
   var healthChips = ['all', 'green', 'amber', 'red', 'unknown'].map(function(h) {
     var label = h === 'all' ? 'All' : h === 'green' ? 'Healthy' : h === 'amber' ? 'Warning' : h === 'red' ? 'Blocked' : 'Unknown';
-    return '<button type="button" class="pvc-health-chip' + (h === 'all' ? ' pvc-health-chip--active' : '') + '" data-health-filter="' + h + '" onclick="pvcFilterByHealth(this)">' + _escapeHtml(label) + '</button>';
+    // ppg-s1 (AC4): real per-status counts, consolidating what pdt-s2's own
+    // separate triageStripHtml and the Overall line's own per-status
+    // breakdown used to duplicate.
+    var count = h === 'all' ? items.length : ((healthCounts && healthCounts[h]) || 0);
+    return '<button type="button" class="pvc-health-chip' + (h === 'all' ? ' pvc-health-chip--active' : '') + '" data-health-filter="' + h + '" onclick="pvcFilterByHealth(this)">' + _escapeHtml(label) + ' (' + count + ')</button>';
   }).join('');
 
   return (
@@ -444,8 +457,8 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
       '.pvc-item[hidden]{display:none!important}' +
     '</style>' +
     '<div class="pvc-tabs" role="tablist" aria-label="Features view">' +
-      '<button type="button" class="pvc-tab pvc-tab--active" id="pvc-tab-module" role="tab" aria-selected="true" onclick="pvcShowTab(\'module\')">By Module</button>' +
-      '<button type="button" class="pvc-tab" id="pvc-tab-phase" role="tab" aria-selected="false" onclick="pvcShowTab(\'phase\')">By Phase</button>' +
+      '<button type="button" class="pvc-tab' + (defaultTab === 'module' ? ' pvc-tab--active' : '') + '" id="pvc-tab-module" role="tab" aria-selected="' + (defaultTab === 'module' ? 'true' : 'false') + '" onclick="pvcShowTab(\'module\')">By Module</button>' +
+      '<button type="button" class="pvc-tab' + (defaultTab === 'phase' ? ' pvc-tab--active' : '') + '" id="pvc-tab-phase" role="tab" aria-selected="' + (defaultTab === 'phase' ? 'true' : 'false') + '" onclick="pvcShowTab(\'phase\')">By Phase</button>' +
       '<button type="button" class="pvc-tab" id="pvc-tab-all" role="tab" aria-selected="false" onclick="pvcShowTab(\'all\')">All</button>' +
     '</div>' +
     '<div class="pvc-filter-bar">' +
@@ -832,7 +845,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     }
   }
 
-  var featuresSectionHtml = _renderConsolidatedFeaturesSection(mergedItems, modules, taxonomy, productId, csrfToken);
+  var featuresSectionHtml = _renderConsolidatedFeaturesSection(mergedItems, modules, taxonomy, productId, csrfToken, healthCounts);
   var scaleGaugeHtml = _renderScaleGauge(features, modules, taxonomy);
 
   var syncedAtLabel = rollupRow ? _syncFreshness.formatSyncedAt(rollupRow.synced_at) : _syncFreshness.formatSyncedAt(null);

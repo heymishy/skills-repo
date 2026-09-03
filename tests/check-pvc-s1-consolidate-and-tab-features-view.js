@@ -226,9 +226,14 @@ function freshRequire(p) {
   });
 
   // ===========================================================================
-  // AC9 -- zero-module fallback preserved (no tabs, no filter bar)
+  // AC9 -- superseded by ppg-s1: zero modules now gets the FULL tabbed/
+  // filterable UI (this was the exact root cause of a real production gap --
+  // skills-framework itself had zero custom Modules and never benefited
+  // from pdt-s1's own redesign because of this original AC9 decision).
+  // The item must still appear, now via the tabs/grouped UI instead of a
+  // flat fallback.
   // ===========================================================================
-  await test('_renderProductView: zero modules renders the simple flat fallback, no tabs, no filter bar (AC9)', function() {
+  await test('_renderProductView: zero modules now renders the full tabbed/filterable UI, not a flat fallback (superseded by ppg-s1 AC1)', function() {
     modulesAdapter.setModulesAdapter({ query: async function() { return { rows: [] }; } });
     var rollupRow = {
       health_counts: {}, test_coverage: {}, ac_coverage: {},
@@ -236,9 +241,9 @@ function freshRequire(p) {
       synced_at: new Date().toISOString()
     };
     var html = productsRoute._renderProductView('Test Product', 'p1', [], 'login', rollupRow, false, 'o', 'r', [], 'csrf-tok', {});
-    assert.ok(html.indexOf('pvc-tabs') === -1, 'zero modules must not show tabs');
-    assert.ok(html.indexOf('pvc-filter-bar') === -1, 'zero modules must not show the filter bar');
-    assert.ok(html.indexOf('Tax One') !== -1, 'the item must still appear in the flat fallback list');
+    assert.ok(html.indexOf('pvc-tabs') !== -1, 'expected zero modules to now show tabs (superseded by ppg-s1)');
+    assert.ok(html.indexOf('pvc-filter-bar') !== -1, 'expected zero modules to now show the filter bar (superseded by ppg-s1)');
+    assert.ok(html.indexOf('Tax One') !== -1, 'the item must still appear, now via the tabbed/grouped UI');
   });
 
   await test('_renderProductView: zero modules and zero items renders "No features yet." without throwing', function() {
