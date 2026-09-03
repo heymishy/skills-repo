@@ -30103,9 +30103,9 @@
           "slug": "pgft-s1",
           "id": "pgft-s1",
           "name": "Retry the GitHub Contents API fetch on transient/parse failure, with diagnostic error detail on exhaustion",
-          "stage": "definition-of-ready",
+          "stage": "implementation-plan",
           "health": "green",
-          "updatedAt": "2026-09-03T05:20:49.732Z",
+          "updatedAt": "2026-09-03T05:23:42.848Z",
           "testPlan": {
             "status": "written",
             "totalTests": 5,
@@ -30117,7 +30117,39 @@
           "e2eToolingRequired": "false",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-03-product-github-fetch-truncation-fix/dor/pgft-s1-dor.md",
-          "dorContractPath": "artefacts/2026-09-03-product-github-fetch-truncation-fix/dor/pgft-s1-dor-contract.md"
+          "dorContractPath": "artefacts/2026-09-03-product-github-fetch-truncation-fix/dor/pgft-s1-dor-contract.md",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Retry on network error or JSON-parse failure, up to 3 total attempts (AC1)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-03-product-github-fetch-truncation-fix/plans/pgft-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Diagnostic detail (bytes received, Content-Length) when retries exhausted (AC2)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-03-product-github-fetch-truncation-fix/plans/pgft-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Non-ok HTTP response never retried, fails immediately unchanged (AC3)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-03-product-github-fetch-truncation-fix/plans/pgft-s1-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Fix now-outdated T3/T6 mock shape in pre-existing adapter test file",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-03-product-github-fetch-truncation-fix/plans/pgft-s1-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Regression guard for pst-s1 background-failure logging (AC4)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-03-product-github-fetch-truncation-fix/plans/pgft-s1-plan.md"
+            }
+          ]
         }
       ],
       "guardrails": [
