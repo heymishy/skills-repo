@@ -30569,6 +30569,25 @@
           "blocker": "Production (skills-framework.fly.dev) not yet running this fix -- promote-to-prod requires a fresh manual approval for this specific merge commit (d33b76f9), verified via git-ancestor check against whatever commit is actually deployed. Non-urgent (read-path visibility fix, no data-loss risk)."
         }
       ]
+    },
+    {
+      "slug": "2026-09-04-product-row-link-featureslug-fix",
+      "id": "2026-09-04-product-row-link-featureslug-fix",
+      "name": "Product page row links use the resolved feature slug, not the raw (potentially colliding) story slug",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "updatedAt": "2026-09-03T23:53:59.399Z",
+      "stories": [
+        {
+          "slug": "prlf-s1",
+          "id": "prlf-s1",
+          "name": "Use featureSlug in row links, fixing the real p3.3 collision for the primary navigation path",
+          "stage": "test-plan-complete",
+          "health": "green",
+          "updatedAt": "2026-09-03T23:54:06.177Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
