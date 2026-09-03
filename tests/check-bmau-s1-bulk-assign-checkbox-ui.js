@@ -104,7 +104,14 @@ function makeProductsOwnerPool(products) {
       { featureSlug: 'feat-3', displayName: 'Feature Three', stage: 'definition', journey_id: 'j3' }
     ];
     var html = productsRoute._renderProductView('Test Product', 'p1', features, 'login', null, false, 'o', 'r', [], TEST_CSRF, {});
-    assert.strictEqual((html.match(/bmau-item-checkbox/g) || []).length, 0, 'expected zero checkboxes anywhere with zero modules, regardless of item count/index');
+    // ppg-s1: zero modules now still renders the full tabbed UI (including
+    // its own <script> block, whose JS helper functions reference the
+    // ".bmau-item-checkbox" class name in selector strings) -- a bare
+    // substring match on "bmau-item-checkbox" now also matches those JS
+    // string literals, not just real rendered <input> elements. Narrowed
+    // to match only actual checkbox <input> elements, which is what this
+    // AC actually cares about.
+    assert.strictEqual((html.match(/<input type="checkbox" class="bmau-item-checkbox"/g) || []).length, 0, 'expected zero real checkbox <input> elements anywhere with zero modules, regardless of item count/index');
   });
 
   // ===========================================================================

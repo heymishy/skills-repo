@@ -443,12 +443,15 @@ function makeProductsOwnerPool(products) {
     assert.ok(html.indexOf('Unclassified') !== -1, 'expected feat-1 to land in Unclassified since nothing has been assigned yet');
   });
 
-  // pvc-s1 (superseding note): this test originally asserted the OLD taxonomy
-  // "Epics"-heading fallback for zero modules. pvc-s1 deliberately replaces
-  // that with the SAME simple flat-list fallback a4 established (no tabs, no
-  // "Epics"/"Other features" grouping at all) -- see pvc-s1's own AC9 and
-  // decisions.md. Updated here to match the new, intentional behaviour.
-  await test('handleGetProductView renders the simple flat-list fallback when zero modules exist (AC5/pvc-s1 AC9 regression safety)', async function() {
+  // pvc-s1/ppg-s1 (superseding note): this test originally asserted the OLD
+  // taxonomy "Epics"-heading fallback for zero modules, then pvc-s1
+  // replaced that with a simple flat-list fallback (no tabs at all). ppg-s1
+  // supersedes pvc-s1's own AC9 in turn -- that flat-list fallback was the
+  // exact root cause of a real production gap (skills-framework itself had
+  // zero custom Modules and never benefited from pdt-s1's own redesign).
+  // Zero modules now gets the full tabbed/grouped UI (By Phase default).
+  // Updated here to match this latest, intentional behaviour.
+  await test('handleGetProductView renders the full tabbed/grouped UI when zero modules exist (AC5/ppg-s1 AC1 supersedes pvc-s1 AC9)', async function() {
     var productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
     modulesAdapter.setModulesAdapter(makeFakeModulesPool());
 
@@ -477,9 +480,9 @@ function makeProductsOwnerPool(products) {
     var res = { writeHead: function() {}, end: function(b) { html = b; } };
     await productsRoute.handleGetProductView(req, res, null, mainPool);
 
-    assert.ok(html.indexOf('>Epics<') === -1, 'zero-modules fallback must NOT show the old grouped-by-phase Epics heading (pvc-s1 supersedes this)');
-    assert.ok(html.indexOf('pvc-tabs') === -1, 'zero-modules fallback must NOT show tabs');
-    assert.ok(html.indexOf('feat-1') !== -1 && html.indexOf('Feature Two') !== -1, 'both merged items must still appear in the flat fallback list');
+    assert.ok(html.indexOf('>Epics<') === -1, 'zero-modules view must NOT show the old grouped-by-phase Epics heading (pvc-s1 supersedes this)');
+    assert.ok(html.indexOf('pvc-tabs') !== -1, 'expected zero modules to now show tabs (ppg-s1 supersedes pvc-s1 AC9)');
+    assert.ok(html.indexOf('feat-1') !== -1 && html.indexOf('Feature Two') !== -1, 'both merged items must still appear, now via the tabbed/grouped UI');
   });
 
   // ===========================================================================
