@@ -181,8 +181,16 @@ function walkMdFiles(dir, acc) {
  * @returns {Array<{path:string, type:'file'}>|null}
  */
 function listLocalArtefacts(repoRoot, featureSlug) {
-  const featDir = path.join(repoRoot, 'artefacts', featureSlug);
-  if (!fs.existsSync(featDir)) return null;
+  let featDir = path.join(repoRoot, 'artefacts', featureSlug);
+  if (!fs.existsSync(featDir)) {
+    // aada-s1: a feature moved to artefacts/archived/<slug>/ by the
+    // archival pass still has real files -- validate-trace.sh/.ps1 already
+    // check this exact fallback path for trace-validation; this brings the
+    // web UI's own artefact-serving path in line with that convention.
+    const archivedDir = path.join(repoRoot, 'artefacts', 'archived', featureSlug);
+    if (!fs.existsSync(archivedDir)) return null;
+    featDir = archivedDir;
+  }
   const files = [];
   walkMdFiles(featDir, files);
   return files.map((f) => ({ path: f, type: 'file' }));
