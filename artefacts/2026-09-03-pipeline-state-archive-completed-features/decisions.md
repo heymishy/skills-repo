@@ -38,6 +38,30 @@
 **Revisit trigger:** None expected — this is a confirmed technical fact about existing code, not a judgment call likely to change. Would only be revisited if `pipeline-adapter.js` itself is rewritten to no longer render historical "done" cards for its own separate reasons.
 ---
 
+**2026-09-03 | ARCH | /clarify**
+**Decision:** This story explicitly supersedes and replaces `scripts/archive-completed-features.js` (the existing, previously-working archive mechanism) rather than building a new one alongside it. The existing archive file location, top-level `archive` pointer convention, and JSON shape are preserved unchanged; only the eligibility rule changes (stage+health → keep-N=30). The 21 features already archived by the old mechanism on 2026-05-13 require no migration.
+**Alternatives considered:** Building a fresh archive mechanism with a new file format/location, ignoring the old one entirely. Rejected once a fork-agent audit (dispatched during /clarify) found the old mechanism already exists, already ran successfully once, and already has downstream tooling reading its exact file shape — building something new would have duplicated working code and orphaned the 21 already-archived features in an old, now-inconsistent format.
+**Rationale:** Minimizes surface area of the change (same file, same pointer, same shape — only the writer's eligibility logic changes) and reuses proven-correct behaviour (the old script's copy-then-verify-then-remove sequence and idempotency handling are sound; only its *trigger* and *eligibility rule* were ever the problem).
+**Made by:** Hamish King (Platform Owner) — confirmed via /clarify AskUserQuestion ("Replace with keep-N design"), 2026-09-03.
+**Revisit trigger:** If a future initiative decides the archive file itself needs a structural change (e.g. splitting into dated/quarterly files, per this story's own deferred Out of Scope item), this decision's "preserve the existing shape" premise would need revisiting at that time.
+---
+
+**2026-09-03 | ARCH | /clarify**
+**Decision:** Bring an automated enforcement mechanism (scheduled GitHub Actions workflow + a CI gate backstop) into this story's own MVP scope, rather than leaving archiving as a manual/periodic process as originally drafted.
+**Alternatives considered:** A manual or periodically-run trigger (the original discovery draft's own MVP proposal) — explicitly rejected by the operator specifically because the prior archive mechanism failed this exact way: it was manual, ran once, and was silently forgotten for ~4 months with no one noticing until this discovery's own investigation surfaced it.
+**Rationale:** Operator instruction, directly grounded in the just-confirmed root cause of the prior mechanism's abandonment (purely manual trigger, no enforcement). A scheduled job removes the "someone has to remember" failure mode; the CI gate is a backstop in case the scheduled job itself silently stops working (exactly what would have caught the original mechanism's own dormancy months earlier).
+**Made by:** Hamish King (Platform Owner), 2026-09-03.
+**Revisit trigger:** If the cron cadence (weekly, still to be confirmed — see the open `[ASSUMPTION]` in discovery.md) proves too aggressive or too lax once real usage data exists post-launch.
+---
+
+**2026-09-03 | SCOPE | /clarify**
+**Decision:** Fully deprecate `dashboards/pipeline-viz.html` as part of this story's own scope — remove the HTML file, its three dedicated pre-commit/CI scripts (`check-viz-syntax.js`, `check-viz-behaviour.js`, `check-governance-sync.js`, plus the `viz-functions.js` module they test), and its references in `pages.yml`/`copilot-setup-steps.yml`.
+**Alternatives considered:** Keeping `pipeline-viz.html` alive and updating its own `mergeArchivedState()` function to the (unchanged) archive format — the original plan, before this decision, since that function already worked correctly. Rejected because the page itself has had zero real usage for ~5 months; maintaining archive-format compatibility for a page nobody opens is waste, not safety.
+**Rationale:** Operator instruction, based on real usage data (not available to the agent via code inspection alone — this is a product-usage fact, not a technical one): `pipeline-viz.html` has been fully superseded by the real product's own web UI (`src/web-ui/`, the multi-tenant `wuce` application this repo's own `skills-framework` product is dogfooded through) — genuinely replaced, not merely neglected. Confirmed via code investigation that deprecation is non-trivial (3 CI scripts run on every commit today, plus 2 workflow references) but bounded and fully enumerable. Scoped narrowly to `pipeline-viz.html` specifically — `dashboards/index.html`/`dashboards/pipeline.html` (served by `pipeline-adapter.js`) have not been named as superseded and remain in scope for the separate archive-awareness fix.
+**Made by:** Hamish King (Platform Owner), 2026-09-03.
+**Revisit trigger:** If `check-governance-sync.js`'s own validation purpose (keeping `governance-gates.yml` and a `DEFAULT_GOVERNANCE_GATES` constant in sync) turns out to still be needed independent of `pipeline-viz.html` — in which case that validation should be relocated, not deleted outright. Flagged as an open /definition-time judgment call in discovery.md, not resolved by this decision.
+---
+
 ---
 
 ## Architecture Decision Records
