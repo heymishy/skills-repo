@@ -52,11 +52,11 @@ None. The one named residual uncertainty from the test plan — whether the Blob
 | Performance — zero added latency for the common case | ✅ | AC4's own test asserts zero Blobs API calls when content is not truncated |
 | Performance — one extra round-trip when truncation is detected | ✅ | Acceptable since the whole sync runs in the background (`pst-s1`'s fire-and-forget design); confirmed by code review |
 | Security — no new external input or attack surface | ✅ | Same caller-supplied OAuth token (ADR-020) and tenant-scoped resolution reused |
-| Availability — sync success rate for `skills-framework` specifically | ⚠️ Partially evidenced | Detection + fallback *mechanism* proven correct (unit tests); whether it resolves the real production incident is not yet observable — **production does not have this fix yet** (see DoD Observations) |
+| Availability — sync success rate for `skills-framework` specifically | ✅ Confirmed | Live production log: `reported size 1355793, decoded length 0` (definitive root-cause confirmation) followed by a successful Blobs API fallback, no retry needed. Operator confirmed via live UI: fresh data, "Last synced just now". |
 | Data residency | ✅ N/A | No new data storage |
 | Compliance | ✅ N/A | No named regulatory clause |
 
-`nfr-profile.md` status remains `Active` (not `Verified`) — the Availability NFR's own Gap (does the Blobs API fallback resolve the real production incident) is not closeable until `promote-to-prod` is approved and a live test is run.
+`nfr-profile.md` status updated to `Verified at 2026-09-03` — all NFRs, including the Availability NFR's own Gap, are now confirmed.
 
 ---
 
@@ -68,13 +68,18 @@ Not applicable — short-track story, no formal benefit-metric artefact or `metr
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
-(Classified as "with deviations" not because of any scope or AC gap — there are none — but because the story's own core motivation, confirming the real production incident is resolved, remains genuinely unconfirmed until the two follow-up actions below happen. This mirrors the same honest classification `pgft-s1`'s own DoD used for the identical reason.)
+(Upgraded from the initial COMPLETE WITH DEVIATIONS classification once the two follow-up actions below were resolved same-day: promotion approved, and the live production test directly confirmed both the root cause and the fix. No scope or AC gap ever existed — the "with deviations" classification was solely about the then-unconfirmed production outcome, which is now confirmed.)
 
-**Follow-up actions:**
-1. **Approve `promote-to-prod`** in GitHub Actions (workflow run `33733672489`, job "Promote to production (manual approval required)") for this specific merge commit (`14f4e263`) — separate from the prior two approvals that shipped `pst-s1` and `pgft-s1`. `wuce-staging.fly.dev` is confirmed running this fix (deploy + `@mocked` smoke-test both passed); `skills-framework.fly.dev` (production — the deployment this entire 3-story incident chain was diagnosed against) is not. Owner: Hamish King.
-2. **The real test.** Once promoted, click "Refresh" on `skills-framework` in production. Watch `flyctl logs --app skills-framework` for either a clean sync (no truncation log at all — the file may have shrunk since the archive-completed-features initiative, or GitHub's own threshold behaviour may vary) or a `[psbf-s1] Contents API content truncated...` line followed by a successful fallback. Check PostHog for the `product_sync_content_truncated` `$exception` event with `fallbackAttempted: false` (detected, fallback then ran) versus `fallbackAttempted: true` (the fallback itself also failed — the one outcome this chain has not yet seen and would need genuine further investigation). This is the first point in the entire 3-story chain where the actual outcome is directly, unambiguously observable rather than inferred from a bare, unhelpful error message. Owner: Hamish King.
+**Follow-up actions:** None outstanding — both prior follow-up actions are now resolved.
+
+1. ~~Approve `promote-to-prod`~~ — **Done.** Approved by Hamish King; commit `14f4e263` is live on `skills-framework.fly.dev`.
+2. ~~The real test~~ — **Done, and confirmed successful.** Operator clicked "Refresh" in production immediately after promotion. Production logs show the definitive root-cause confirmation this entire 3-story chain was chasing:
+   ```
+   [psbf-s1] Contents API content truncated for product dd3fbea3-8cb5-46dd-97e1-8bd7725185e4: reported size 1355793, decoded length 0
+   ```
+   GitHub's Contents API returned a completely empty `content` field (not partial truncation — literally 0 bytes) for this 1.36MB file, exactly matching GitHub's documented ~1MB Contents API threshold behaviour. No subsequent fallback-failure log line — the Git Blobs API fallback fired once and succeeded on the first attempt. Operator confirmed via the live UI: "Last synced just now", real data (477 stories, 214 healthy / 27 warning, 95.1% test coverage, 81.4% AC coverage) — the product page that had shown a 45-day-stale snapshot through the entire incident is now genuinely current.
 
 ---
 
@@ -83,6 +88,7 @@ Not applicable — short-track story, no formal benefit-metric artefact or `metr
 1. **Third consecutive story in this chain to hit the identical deploy-topology gap — now clearly a systemic pattern, not incident-specific noise.** `pst-s1`, `pgft-s1`, and now `psbf-s1` have each required their own separate, manually-gated `promote-to-prod` approval, with no carry-forward between merges. Reiterating the `/improve` candidate raised in both prior DoDs, now with three data points instead of one or two: for a same-day, same-incident sequence of fast-follow short-track fixes, requiring a fresh manual production approval after every single merge adds real friction and real delay to resolving a live incident, without adding meaningful safety over (for example) a single approval covering "promote master to production" regardless of which commit triggered it. This is a genuine platform/process decision for the operator, not something to change unilaterally — but it has now recurred often enough in one session to be worth a deliberate decision rather than repeated ad-hoc friction.
 2. **This story is the empirical payoff of the whole incident chain's own layered diagnosability improvements.** `pst-s1`'s background-failure logging is what first surfaced this exact failure as distinguishable from a client-side timeout. `pgft-s1`'s retry+diagnostics, once live in production, definitively proved the failure was NOT where it was first assumed to be — narrowing the search to the one remaining unprotected parse call. `psbf-s1` both fixes that root cause AND adds the PostHog instrumentation that should prevent a fourth round of "reproduce, diagnose, guess, ship, re-test" for any *future* failure mode in this same sync path. Worth recording as a positive delivery-pattern example: each story's own diagnostic investment measurably shortened the next story's own investigation, rather than each fix being diagnosed from scratch.
 3. **`realFetchBlobBySha` is this story's own new D37 adapter** — confirmed via the DoR's own H-ADAPTER hard-block detail and the implementation's own dedicated wiring test (Task 5). No gap to record; noted here only for `/trace`'s own audit trail, since this is the first story in the chain to introduce a genuinely new adapter rather than modifying an existing one.
+4. **Root cause confirmed, same-day, with byte-level precision.** The production log line `reported size 1355793, decoded length 0` is the single most concrete piece of evidence in this entire 3-story chain: GitHub's Contents API did not partially truncate this repo's 1.36MB `pipeline-state.json` — it returned a completely empty `content` field on an otherwise-`ok:200` response, exactly matching GitHub's own documented ~1MB Contents API threshold behaviour (the "object media type, content field empty" case). Every earlier hypothesis in this chain (reverse-proxy timeout, outbound network truncation) was a reasonable, evidence-driven inference at the time it was made, but this is the first point where the actual mechanism was directly observed rather than inferred. The Blobs API fallback resolved it on the first attempt, no retry needed. This closes the incident: `pst-s1` (#819), `pgft-s1` (#820), and `psbf-s1` (#821) are now all DoD-complete, merged, promoted to production, and — uniquely for this last one — directly confirmed working against the real data that motivated the entire chain.
 
 ---
 

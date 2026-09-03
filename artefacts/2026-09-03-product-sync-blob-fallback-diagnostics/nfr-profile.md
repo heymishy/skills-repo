@@ -3,7 +3,7 @@
 **Feature:** 2026-09-03-product-sync-blob-fallback-diagnostics
 **Created:** 2026-09-03
 **Last updated:** 2026-09-03
-**Status:** Active
+**Status:** Verified at 2026-09-03
 
 ---
 
@@ -67,8 +67,10 @@
 
 ## Gaps and open questions
 
-| NFR area | Gap | Owner | Due |
-|----------|-----|-------|-----|
-| Availability | Whether the Blobs API fallback actually resolves the live incident is the direct thing this story exists to confirm — not closeable until post-merge production observation (see verification script Scenarios 1-2) | Hamish King | Post-merge, immediately after promote-to-prod for this story's merge commit |
+| NFR area | Gap | Owner | Due | Status |
+|----------|-----|-------|-----|--------|
+| Availability | Whether the Blobs API fallback actually resolves the live incident | Hamish King | Post-merge, immediately after promote-to-prod | **Closed 2026-09-03** — confirmed live in production. Log: `reported size 1355793, decoded length 0`, followed by a successful Blobs API fallback on the first attempt. Operator confirmed fresh data in the UI. |
+
+_No open gaps remain._
 
 _No compliance or data-residency gaps identified at 2026-09-03._

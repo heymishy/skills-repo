@@ -30209,16 +30209,16 @@
       "name": "Diagnose and fix GitHub Contents API content truncation via Git Blobs API fallback",
       "track": "short",
       "stage": "definition-of-done",
-      "health": "amber",
-      "updatedAt": "2026-09-03T08:37:01.861Z",
+      "health": "green",
+      "updatedAt": "2026-09-03T08:49:27.488Z",
       "stories": [
         {
           "slug": "psbf-s1",
           "id": "psbf-s1",
           "name": "Detect truncated Contents API content, fall back to Git Blobs API, and record diagnostics to logs + PostHog",
           "stage": "definition-of-done",
-          "health": "amber",
-          "updatedAt": "2026-09-03T08:37:01.860Z",
+          "health": "green",
+          "updatedAt": "2026-09-03T08:49:27.486Z",
           "testPlan": {
             "status": "written",
             "totalTests": 4,
@@ -30272,8 +30272,7 @@
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/821",
           "dodStatus": "complete",
-          "releaseReady": false,
-          "blocker": "Production (skills-framework.fly.dev) not yet running this fix -- promote-to-prod requires a fresh manual approval for this specific merge commit (14f4e263), separate from the prior two. Once promoted, a live production test (watch flyctl logs + PostHog for product_sync_content_truncated) is the first genuinely direct confirmation of whether this 3-story incident chain has actually resolved the real issue.",
+          "releaseReady": true,
           "dodPath": "artefacts/2026-09-03-product-sync-blob-fallback-diagnostics/dod/psbf-s1-dod.md"
         }
       ],
@@ -30300,10 +30299,10 @@
           "id": "H-NFR-PROFILE",
           "category": "nfr",
           "label": "H-NFR NFR profile",
-          "status": "not-met",
-          "evidence": "nfr-profile.md remains Active, not Verified -- Availability NFR gap (does the Blobs API fallback resolve the real incident) not closeable until promote-to-prod + live production test, owner Hamish King",
+          "status": "met",
+          "evidence": "nfr-profile.md updated to Verified at 2026-09-03 -- Availability NFR gap closed, confirmed live in production (reported size 1355793, decoded length 0, successful Blobs API fallback)",
           "assessedBy": "/definition-of-done",
-          "assessedAt": "2026-09-03T08:37:01.861Z"
+          "assessedAt": "2026-09-03T08:49:27.488Z"
         },
         {
           "id": "H-NFR2-COMPLIANCE",
