@@ -30089,6 +30089,34 @@
           "assessedAt": "2026-09-03T04:40:15.263Z"
         }
       ]
+    },
+    {
+      "slug": "2026-09-03-product-github-fetch-truncation-fix",
+      "id": "2026-09-03-product-github-fetch-truncation-fix",
+      "name": "Retry and diagnose GitHub Contents API fetch truncation for large connected repos",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "updatedAt": "2026-09-03T05:17:50.485Z",
+      "stories": [
+        {
+          "slug": "pgft-s1",
+          "id": "pgft-s1",
+          "name": "Retry the GitHub Contents API fetch on transient/parse failure, with diagnostic error detail on exhaustion",
+          "stage": "test-plan",
+          "health": "green",
+          "updatedAt": "2026-09-03T05:19:38.778Z",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
