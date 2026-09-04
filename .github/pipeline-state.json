@@ -30787,6 +30787,53 @@
           "dodStatus": "complete"
         }
       ]
+    },
+    {
+      "slug": "2026-09-04-staging-cold-start-correctness-gap",
+      "id": "2026-09-04-staging-cold-start-correctness-gap",
+      "name": "purge-e2e-tenants tolerates Neon cold-start and gets a scheduled backstop",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "updatedAt": "2026-09-04T08:25:18.317Z",
+      "stories": [
+        {
+          "slug": "stcs-s1",
+          "id": "stcs-s1",
+          "name": "purge-e2e-tenants cold-start retry and scheduled backstop",
+          "stage": "branch-complete",
+          "health": "green",
+          "updatedAt": "2026-09-04T08:25:18.317Z",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-04-staging-cold-start-correctness-gap/dor/stcs-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-04-staging-cold-start-correctness-gap/dor/stcs-s1-dor-contract.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 10,
+            "passing": 9
+          },
+          "acTotal": 6,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "baseline": {
+            "totalFiles": 610,
+            "failed": 1,
+            "note": "Pre-existing failure tests/check-p3.5-validate-trace.js confirmed present on master before this branch existed -- same known baseline as every prior story this session."
+          },
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "purge-e2e-tenants.js retry/timeout/logging + scheduled workflow (AC1-AC4)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-04-staging-cold-start-correctness-gap/stories/stcs-s1-purge-e2e-tenants-cold-start-retry-and-scheduled-backstop.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/831"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
