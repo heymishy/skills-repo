@@ -30931,6 +30931,54 @@
           "dodStatus": "complete"
         }
       ]
+    },
+    {
+      "slug": "2026-09-05-docker-artefacts-copy-fix",
+      "id": "2026-09-05-docker-artefacts-copy-fix",
+      "name": "Dockerfile production stage actually copies artefacts/ and .github/ into the image",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "amber",
+      "updatedAt": "2026-09-04T19:39:28.122Z",
+      "stories": [
+        {
+          "slug": "dcfx-s1",
+          "id": "dcfx-s1",
+          "name": "Dockerfile copy artefacts and github (corrects daga-s1)",
+          "stage": "branch-complete",
+          "health": "amber",
+          "updatedAt": "2026-09-04T19:39:28.122Z",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-05-docker-artefacts-copy-fix/dor/dcfx-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-05-docker-artefacts-copy-fix/dor/dcfx-s1-dor-contract.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 5
+          },
+          "acTotal": 5,
+          "acVerified": 4,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "baseline": {
+            "totalFiles": 613,
+            "failed": 1,
+            "note": "Pre-existing failure tests/check-p3.5-validate-trace.js confirmed present on master before this branch existed -- same known baseline as every prior story this session."
+          },
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Add missing COPY lines for artefacts/ and .github/ (AC1-AC3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-05-docker-artefacts-copy-fix/stories/dcfx-s1-dockerfile-copy-artefacts-and-github.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/833",
+          "blocker": "Corrects daga-s1 (already-merged, DoD-marked-COMPLETE story whose central claim was found false via a live production check on 2026-09-05). AC5 (does the live page actually work now) cannot be confirmed until this merges and a real production promotion happens -- health=amber until that live re-check passes."
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
