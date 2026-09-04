@@ -30690,9 +30690,12 @@
           "slug": "daga-s1",
           "id": "daga-s1",
           "name": "Include artefacts/ and .github/ in the Docker image (fixes aada-s1/fapg-s1 in production)",
-          "stage": "test-plan-complete",
+          "stage": "dor-signed-off",
           "health": "green",
-          "updatedAt": "2026-09-04T05:25:36.343Z"
+          "updatedAt": "2026-09-04T05:38:45.495Z",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-04-dockerignore-artefacts-and-github-exclusion-fix/dor/daga-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-04-dockerignore-artefacts-and-github-exclusion-fix/dor/daga-s1-dor-contract.md"
         }
       ]
     }
