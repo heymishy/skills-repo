@@ -30747,9 +30747,9 @@
           "slug": "sdsb-s1",
           "id": "sdsb-s1",
           "name": "Skip staging deploy for bookkeeping-only pushes",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-09-04T06:49:50.249Z",
+          "updatedAt": "2026-09-04T06:53:19.355Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-staging-deploy-skip-bookkeeping-pushes/dor/sdsb-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-04-staging-deploy-skip-bookkeeping-pushes/dor/sdsb-s1-dor-contract.md",
@@ -30761,7 +30761,29 @@
           "acTotal": 5,
           "acVerified": 3,
           "hasLayoutDependentGaps": "false",
-          "e2eToolingRequired": "false"
+          "e2eToolingRequired": "false",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/829",
+          "verifyStatus": "passed",
+          "baseline": {
+            "totalFiles": 609,
+            "failed": 1,
+            "note": "Pre-existing failure tests/check-p3.5-validate-trace.js confirmed present on master before this branch existed -- same known baseline as every prior story this session."
+          },
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "staging-deploy.yml paths-ignore addition (AC1-AC3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-04-staging-deploy-skip-bookkeeping-pushes/plans/sdsb-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "new governance test (AC1)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-04-staging-deploy-skip-bookkeeping-pushes/plans/sdsb-s1-plan.md"
+            }
+          ]
         }
       ]
     }
