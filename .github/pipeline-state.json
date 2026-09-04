@@ -30620,6 +30620,25 @@
           "blocker": "Production (skills-framework.fly.dev) not yet running this fix -- promote-to-prod requires a fresh manual approval for this specific merge commit (03d0ae84), verified via git-ancestor check against whatever commit is actually deployed. Non-urgent (navigation fix, no data-loss risk)."
         }
       ]
+    },
+    {
+      "slug": "2026-09-04-feature-artefact-page-story-grouping",
+      "id": "2026-09-04-feature-artefact-page-story-grouping",
+      "name": "The feature artefact page groups files by story within one page per feature, instead of one flat list per story slug",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "updatedAt": "2026-09-04T02:00:27.822Z",
+      "stories": [
+        {
+          "slug": "fapg-s1",
+          "id": "fapg-s1",
+          "name": "Group artefacts by story, one page per feature (read pipeline-state.json from local disk)",
+          "stage": "test-plan-complete",
+          "health": "green",
+          "updatedAt": "2026-09-04T02:00:35.203Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
