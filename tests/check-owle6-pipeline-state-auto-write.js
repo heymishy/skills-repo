@@ -198,6 +198,7 @@ async function main() {
   {
     var tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'owle6-t3-'));
     fs.mkdirSync(path.join(tmpDir, '.github'), { recursive: true });
+    fs.mkdirSync(path.join(tmpDir, '.git'), { recursive: true }); // daga-s1: marks this fixture as a real checkout
     fs.writeFileSync(path.join(tmpDir, '.github', 'pipeline-state.json'),
       makePipelineState([{ slug: 'existing-feature', name: 'Existing' }]), 'utf8');
 
@@ -222,6 +223,7 @@ async function main() {
   {
     var tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'owle6-t4-'));
     fs.mkdirSync(path.join(tmpDir, '.github'), { recursive: true });
+    fs.mkdirSync(path.join(tmpDir, '.git'), { recursive: true }); // daga-s1: marks this fixture as a real checkout
     var originalContent = makePipelineState([{ slug: 'feat-x', name: 'Feature X' }]);
     var statePath = path.join(tmpDir, '.github', 'pipeline-state.json');
     fs.writeFileSync(statePath, originalContent, 'utf8');
@@ -258,6 +260,7 @@ async function main() {
   {
     var tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'owle6-t5-'));
     fs.mkdirSync(path.join(tmpDir, '.github'), { recursive: true });
+    fs.mkdirSync(path.join(tmpDir, '.git'), { recursive: true }); // daga-s1: marks this fixture as a real checkout
     var statePath = path.join(tmpDir, '.github', 'pipeline-state.json');
     fs.writeFileSync(statePath, makePipelineState([]), 'utf8');
 
@@ -400,6 +403,7 @@ async function main() {
     var tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'owle6-t8-'));
     var stateDir = path.join(tmpDir, '.github');
     fs.mkdirSync(stateDir, { recursive: true });
+    fs.mkdirSync(path.join(tmpDir, '.git'), { recursive: true }); // daga-s1: marks this fixture as a real checkout
     var statePath = path.join(stateDir, 'pipeline-state.json');
     fs.writeFileSync(statePath, makePipelineState([]), 'utf8');
 
