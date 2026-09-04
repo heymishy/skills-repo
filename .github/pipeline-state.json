@@ -30583,9 +30583,9 @@
           "slug": "prlf-s1",
           "id": "prlf-s1",
           "name": "Use featureSlug in row links, fixing the real p3.3 collision for the primary navigation path",
-          "stage": "branch-complete",
-          "health": "green",
-          "updatedAt": "2026-09-04T00:29:59.295Z",
+          "stage": "definition-of-done",
+          "health": "amber",
+          "updatedAt": "2026-09-04T01:35:11.206Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-product-row-link-featureslug-fix/dor/prlf-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-04-product-row-link-featureslug-fix/dor/prlf-s1-dor-contract.md",
@@ -30612,8 +30612,12 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/826"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/826",
+          "dodStatus": "complete",
+          "dodPath": "artefacts/2026-09-04-product-row-link-featureslug-fix/dod/prlf-s1-dod.md",
+          "releaseReady": false,
+          "blocker": "Production (skills-framework.fly.dev) not yet running this fix -- promote-to-prod requires a fresh manual approval for this specific merge commit (03d0ae84), verified via git-ancestor check against whatever commit is actually deployed. Non-urgent (navigation fix, no data-loss risk)."
         }
       ]
     }
