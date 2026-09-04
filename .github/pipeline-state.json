@@ -30897,15 +30897,15 @@
           "slug": "ncdv-s1",
           "id": "ncdv-s1",
           "name": "Stream npm lifecycle-script output in slow jobs",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
-          "updatedAt": "2026-09-04T09:47:41.137Z",
+          "updatedAt": "2026-09-04T18:40:56.974Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-npm-ci-timing-diagnostic-visibility/dor/ncdv-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-04-npm-ci-timing-diagnostic-visibility/dor/ncdv-s1-dor-contract.md",
           "testPlan": {
             "status": "written",
-            "totalTests": 9,
+            "totalTests": 8,
             "passing": 8
           },
           "acTotal": 4,
@@ -30926,8 +30926,9 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "open",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/832"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/832",
+          "dodStatus": "complete"
         }
       ]
     }
