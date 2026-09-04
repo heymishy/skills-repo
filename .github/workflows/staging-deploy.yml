@@ -37,6 +37,18 @@ on:
   push:
     branches:
       - master
+    # sdsb-s1 - skip this whole workflow (deploy-staging, smoke-test,
+    # post-deploy-e2e-confirm, and the promote-to-prod approval request)
+    # when a push changes only pipeline bookkeeping paths (state, artefact,
+    # and pipeline-state.json updates), matching CLAUDE.md's own already-
+    # established "no PR required" bookkeeping-path list. GitHub Actions
+    # skips the entire run only when EVERY changed file matches one of
+    # these -- any push that also touches code still triggers the full
+    # pipeline exactly as before.
+    paths-ignore:
+      - 'workspace/**'
+      - 'artefacts/**'
+      - '.github/pipeline-state.json'
 
 jobs:
   deploy-staging:
