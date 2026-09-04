@@ -30676,6 +30676,25 @@
           "releaseReady": true
         }
       ]
+    },
+    {
+      "slug": "2026-09-04-dockerignore-artefacts-and-github-exclusion-fix",
+      "id": "2026-09-04-dockerignore-artefacts-and-github-exclusion-fix",
+      "name": "Production Docker image includes artefacts/ and .github/pipeline-state.json, so local-disk-based artefact features actually work",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "updatedAt": "2026-09-04T05:25:28.612Z",
+      "stories": [
+        {
+          "slug": "daga-s1",
+          "id": "daga-s1",
+          "name": "Include artefacts/ and .github/ in the Docker image (fixes aada-s1/fapg-s1 in production)",
+          "stage": "test-plan-complete",
+          "health": "green",
+          "updatedAt": "2026-09-04T05:25:36.343Z"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
