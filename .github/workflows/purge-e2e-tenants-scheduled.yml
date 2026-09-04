@@ -1,0 +1,47 @@
+name: Purge E2E Tenants (Scheduled)
+
+# stcs-s1 - a durable backstop for scripts/purge-e2e-tenants.js, independent
+# of any single CI job's own timeout budget. The CI-triggered purge steps in
+# staging-deploy.yml/e2e.yml race a cold Neon compute spin-up on every run
+# (staging's Postgres is a Neon serverless branch with its own independent
+# autosuspend -- see decisions.md, bri-s2.2-neon-staging-branch); a repeated
+# cold-start timeout there silently skips cleanup that run. This workflow
+# runs the same purge daily, on its own schedule, so orphaned e2e-test-
+# tenant data cannot accumulate unbounded just because every CI-triggered
+# attempt on a given day happened to race a cold database. Follows this
+# repo's own existing schedule: cron: precedent (improvement-agent-schedule.yml).
+
+on:
+  schedule:
+    - cron: '30 3 * * *'   # Daily 03:30 UTC -- offset from the Monday-only improvement-agent-schedule.yml run
+  workflow_dispatch:
+
+jobs:
+  purge:
+    name: Purge e2e-test- tenants (scheduled)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        # cpco-s1 pattern: this job never runs Playwright -- skip
+        # @playwright/test's own postinstall browser download entirely.
+        run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Purge e2e-test- tenants
+        run: node scripts/purge-e2e-tenants.js
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
