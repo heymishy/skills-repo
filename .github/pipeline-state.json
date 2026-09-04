@@ -30993,19 +30993,19 @@
           "slug": "ptvs-s1",
           "id": "ptvs-s1",
           "name": "promote-to-prod writes version stamp",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
-          "updatedAt": "2026-09-04T20:31:03.574Z",
+          "updatedAt": "2026-09-04T22:07:07.348Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-05-promote-to-prod-version-stamp/dor/ptvs-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-05-promote-to-prod-version-stamp/dor/ptvs-s1-dor-contract.md",
           "testPlan": {
             "status": "written",
             "totalTests": 6,
-            "passing": 5
+            "passing": 6
           },
           "acTotal": 6,
-          "acVerified": 5,
+          "acVerified": 6,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "baseline": {
@@ -31022,8 +31022,10 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "open",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/834"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/834",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ]
     }
