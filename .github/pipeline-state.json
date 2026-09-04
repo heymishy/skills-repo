@@ -30747,22 +30747,22 @@
           "slug": "sdsb-s1",
           "id": "sdsb-s1",
           "name": "Skip staging deploy for bookkeeping-only pushes",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
-          "updatedAt": "2026-09-04T06:53:19.355Z",
+          "updatedAt": "2026-09-04T07:36:15.260Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-staging-deploy-skip-bookkeeping-pushes/dor/sdsb-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-04-staging-deploy-skip-bookkeeping-pushes/dor/sdsb-s1-dor-contract.md",
           "testPlan": {
             "status": "written",
             "totalTests": 5,
-            "passing": 4
+            "passing": 5
           },
           "acTotal": 5,
           "acVerified": 3,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
-          "prStatus": "open",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/829",
           "verifyStatus": "passed",
           "baseline": {
@@ -30783,7 +30783,8 @@
               "tddState": "committed",
               "file": "artefacts/2026-09-04-staging-deploy-skip-bookkeeping-pushes/plans/sdsb-s1-plan.md"
             }
-          ]
+          ],
+          "dodStatus": "complete"
         }
       ]
     }
