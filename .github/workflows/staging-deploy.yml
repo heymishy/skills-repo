@@ -372,6 +372,28 @@ jobs:
       - uses: actions/checkout@v4
       - uses: superfly/flyctl-actions/setup-flyctl@master
 
+      # ptvs-s1: this job builds and deploys its own separate image (--app
+      # skills-framework) via its own separate flyctl deploy step below --
+      # deploy-staging's own version-stamp steps only ever ran for THAT
+      # job's own image, never this one, so GET /version on production
+      # always fell back to version-info.js's own DEV_FALLBACK regardless
+      # of what was actually deployed. Mirrors deploy-staging's exact
+      # steps/invocations; see scripts/write-version-file.js and
+      # scripts/write-learnings-count-file.js -- both use only Node
+      # built-ins, no npm ci needed.
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Write version stamp
+        run: node scripts/write-version-file.js
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+
+      - name: Write learnings count
+        run: node scripts/write-learnings-count-file.js
+
       - name: Deploy to production
         run: flyctl deploy --remote-only --config fly.toml --app skills-framework
         env:

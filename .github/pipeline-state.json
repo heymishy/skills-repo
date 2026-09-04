@@ -30979,6 +30979,53 @@
           "releaseReady": true
         }
       ]
+    },
+    {
+      "slug": "2026-09-05-promote-to-prod-version-stamp",
+      "id": "2026-09-05-promote-to-prod-version-stamp",
+      "name": "promote-to-prod writes the real version stamp before deploying",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "updatedAt": "2026-09-04T20:31:03.574Z",
+      "stories": [
+        {
+          "slug": "ptvs-s1",
+          "id": "ptvs-s1",
+          "name": "promote-to-prod writes version stamp",
+          "stage": "branch-complete",
+          "health": "green",
+          "updatedAt": "2026-09-04T20:31:03.574Z",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-05-promote-to-prod-version-stamp/dor/ptvs-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-05-promote-to-prod-version-stamp/dor/ptvs-s1-dor-contract.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 5
+          },
+          "acTotal": 6,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "baseline": {
+            "totalFiles": 614,
+            "failed": 1,
+            "note": "Pre-existing failure tests/check-p3.5-validate-trace.js confirmed present on master before this branch existed -- same known baseline as every prior story this session."
+          },
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Add version-stamp steps to promote-to-prod job (AC1-AC3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-05-promote-to-prod-version-stamp/stories/ptvs-s1-promote-to-prod-writes-version-stamp.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/834"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
