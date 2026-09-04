@@ -30801,19 +30801,19 @@
           "slug": "cpco-s1",
           "id": "cpco-s1",
           "name": "Skip unneeded Playwright downloads and cache Chromium",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
-          "updatedAt": "2026-09-04T08:11:43.880Z",
+          "updatedAt": "2026-09-04T08:59:34.548Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-ci-pipeline-install-cache-optimization/dor/cpco-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-04-ci-pipeline-install-cache-optimization/dor/cpco-s1-dor-contract.md",
           "testPlan": {
             "status": "written",
             "totalTests": 7,
-            "passing": 6
+            "passing": 7
           },
           "acTotal": 6,
-          "acVerified": 4,
+          "acVerified": 6,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "baseline": {
@@ -30830,8 +30830,9 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "open",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/830"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/830",
+          "dodStatus": "complete"
         }
       ]
     }
