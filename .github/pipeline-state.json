@@ -30692,7 +30692,7 @@
           "name": "Include artefacts/ and .github/ in the Docker image (fixes aada-s1/fapg-s1 in production)",
           "stage": "definition-of-done",
           "health": "amber",
-          "updatedAt": "2026-09-04T06:35:09.282Z",
+          "updatedAt": "2026-09-04T19:40:04.861Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-dockerignore-artefacts-and-github-exclusion-fix/dor/daga-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-04-dockerignore-artefacts-and-github-exclusion-fix/dor/daga-s1-dor-contract.md",
@@ -30730,7 +30730,7 @@
           "dodStatus": "complete",
           "dodPath": "artefacts/2026-09-04-dockerignore-artefacts-and-github-exclusion-fix/dod/daga-s1-dod.md",
           "releaseReady": false,
-          "blocker": "Production (skills-framework.fly.dev) not yet running this fix -- promote-to-prod requires a fresh manual approval for this specific merge commit (7b6d8d31), verified via git-ancestor check against whatever commit is actually deployed. This is the story that finally makes aada-s1/fapg-s1 actually work -- a real live-page check is the recommended confirmation once promoted, not just CI green."
+          "blocker": "Live authenticated production check (2026-09-05) confirmed this story's own central claim was FALSE: the feature artefact page still showed \"No artefacts found for this feature\" despite production promotion succeeding. Root cause: the Dockerfile's own production stage never had a COPY line for artefacts/ or .github/ at all -- .dockerignore alone (this story's own only change) was necessary but not sufficient. Real fix tracked separately as dcfx-s1 (PR #833) -- this story's own dodStatus stays complete (the .dockerignore + pipeline-state-writer.js changes it made are both still correct and needed), but releaseReady stays false until dcfx-s1 merges and its own live-page re-check passes."
         }
       ]
     },
