@@ -30690,9 +30690,9 @@
           "slug": "daga-s1",
           "id": "daga-s1",
           "name": "Include artefacts/ and .github/ in the Docker image (fixes aada-s1/fapg-s1 in production)",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-09-04T05:38:45.495Z",
+          "updatedAt": "2026-09-04T05:55:50.678Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-dockerignore-artefacts-and-github-exclusion-fix/dor/daga-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-04-dockerignore-artefacts-and-github-exclusion-fix/dor/daga-s1-dor-contract.md",
@@ -30724,7 +30724,9 @@
               "file": "artefacts/2026-09-04-dockerignore-artefacts-and-github-exclusion-fix/plans/daga-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/828"
         }
       ]
     }
