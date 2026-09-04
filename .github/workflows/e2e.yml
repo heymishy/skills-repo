@@ -55,10 +55,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
+        # cpco-s1: skip the postinstall browser download -- Chromium is
+        # installed explicitly (and now cached) two steps below.
         if: steps.e2e-config.outputs.e2e_enabled == 'true'
         run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Cache Playwright browsers
+        if: steps.e2e-config.outputs.e2e_enabled == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
 
       - name: Install Playwright browsers (Chromium only)
         if: steps.e2e-config.outputs.e2e_enabled == 'true'
@@ -155,10 +167,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
+        # cpco-s1: skip the postinstall browser download -- Chromium is
+        # installed explicitly (and now cached) two steps below.
         if: steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
         run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Cache Playwright browsers
+        if: steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
 
       - name: Install Playwright browsers (Chromium only)
         if: steps.scenario-a-config.outputs.scenario_a_enabled == 'true'
@@ -371,10 +395,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
+        # cpco-s1: skip the postinstall browser download -- Chromium is
+        # installed explicitly (and now cached) two steps below.
         if: steps.scenario-b-config.outputs.scenario_b_enabled == 'true'
         run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Cache Playwright browsers
+        if: steps.scenario-b-config.outputs.scenario_b_enabled == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
 
       - name: Install Playwright browsers (Chromium only)
         if: steps.scenario-b-config.outputs.scenario_b_enabled == 'true'

@@ -31,7 +31,11 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
+        # cpco-s1: this job never runs Playwright -- skip @playwright/test's
+        # own postinstall browser download entirely.
         run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
       - name: Lint
         run: npm run lint
