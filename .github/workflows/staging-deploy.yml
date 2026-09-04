@@ -117,7 +117,13 @@ jobs:
         # downloading all 3 browser engines here for a job that only ever
         # needs `pg`, per the deep-dive that measured this step at 7m01s
         # against a 39s flyctl deploy step).
-        run: npm ci
+        # ncdv-s1: --foreground-scripts streams lifecycle-script output (e.g.
+        # bcrypt's own node-gyp-build install step) to this log in real time
+        # instead of buffering it -- diagnostic-only, added after this exact
+        # step was observed taking 7m01s with npm's own cache reporting a hit
+        # and zero visible activity during the entire window. Does not change
+        # install behaviour or timing, only what gets logged.
+        run: npm ci --foreground-scripts
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
@@ -293,8 +299,11 @@ jobs:
       - name: Install dependencies
         # cpco-s1: skip the postinstall browser download -- Chromium is
         # installed explicitly (and now cached) two steps below.
+        # ncdv-s1: --foreground-scripts streams lifecycle-script output in
+        # real time -- diagnostic-only, added after this exact step was also
+        # observed taking 6m27s with the same silent, cache-hit pattern.
         if: steps.pmec-config.outputs.scenario_a_enabled == 'true' || steps.pmec-config.outputs.scenario_b_enabled == 'true'
-        run: npm ci
+        run: npm ci --foreground-scripts
         env:
           PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
