@@ -30583,12 +30583,35 @@
           "slug": "prlf-s1",
           "id": "prlf-s1",
           "name": "Use featureSlug in row links, fixing the real p3.3 collision for the primary navigation path",
-          "stage": "dor-signed-off",
+          "stage": "verify-completion",
           "health": "green",
           "updatedAt": "2026-09-03T23:55:15.904Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-product-row-link-featureslug-fix/dor/prlf-s1-dor.md",
-          "dorContractPath": "artefacts/2026-09-04-product-row-link-featureslug-fix/dor/prlf-s1-dor-contract.md"
+          "dorContractPath": "artefacts/2026-09-04-product-row-link-featureslug-fix/dor/prlf-s1-dor-contract.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 3,
+            "passing": 3
+          },
+          "acTotal": 3,
+          "acVerified": 3,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "baseline": {
+            "totalFiles": 606,
+            "failed": 1,
+            "note": "Pre-existing failure tests/check-p3.5-validate-trace.js confirmed present on master before this branch existed -- same known baseline as pst-s1/pgft-s1/psbf-s1/ppg-s1/fal-s1/pefl-s1/aada-s1."
+          },
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "featureSlug in row links, fixed real p3.3 collision (AC1-AC3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-04-product-row-link-featureslug-fix/plans/prlf-s1-plan.md"
+            }
+          ],
+          "verifyStatus": "passed"
         }
       ]
     }
