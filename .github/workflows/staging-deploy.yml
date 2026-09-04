@@ -112,7 +112,14 @@ jobs:
       # (see workspace/capture-log.md), so this step's own failure was never
       # actually reached in CI until that was fixed.
       - name: Install dependencies
+        # cpco-s1: this job never runs Playwright -- skip @playwright/test's
+        # own postinstall browser download entirely (it was previously
+        # downloading all 3 browser engines here for a job that only ever
+        # needs `pg`, per the deep-dive that measured this step at 7m01s
+        # against a 39s flyctl deploy step).
         run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
 
       - name: Seed staging database (bri-s2.4)
         run: node scripts/seed-staging.js
@@ -134,7 +141,23 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
+        # cpco-s1: skip @playwright/test's own postinstall browser download
+        # here too -- this job only ever needs Chromium, installed
+        # explicitly (and now cached) two steps below, so the postinstall's
+        # default all-3-browsers download was pure waste.
         run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Cache Playwright browsers
+        # cpco-s1: keyed on OS + the installed Playwright version (via
+        # package-lock.json's own hash) -- a cache hit skips the download
+        # below entirely; a miss (new Playwright version) downloads once and
+        # populates the cache for the next run.
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
 
       - name: Install Playwright browsers (Chromium only)
         run: npx playwright install --with-deps chromium
@@ -265,10 +288,22 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
+          cache: 'npm'
 
       - name: Install dependencies
+        # cpco-s1: skip the postinstall browser download -- Chromium is
+        # installed explicitly (and now cached) two steps below.
         if: steps.pmec-config.outputs.scenario_a_enabled == 'true' || steps.pmec-config.outputs.scenario_b_enabled == 'true'
         run: npm ci
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+
+      - name: Cache Playwright browsers
+        if: steps.pmec-config.outputs.scenario_a_enabled == 'true' || steps.pmec-config.outputs.scenario_b_enabled == 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('package-lock.json') }}
 
       - name: Install Playwright browsers (Chromium only)
         if: steps.pmec-config.outputs.scenario_a_enabled == 'true' || steps.pmec-config.outputs.scenario_b_enabled == 'true'
