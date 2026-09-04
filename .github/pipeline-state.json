@@ -31028,6 +31028,54 @@
           "releaseReady": true
         }
       ]
+    },
+    {
+      "slug": "2026-09-05-purge-e2e-tenants-batch-delete",
+      "id": "2026-09-05-purge-e2e-tenants-batch-delete",
+      "name": "purge-e2e-tenants uses batched deletes instead of per-tenant sequential loops",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "amber",
+      "updatedAt": "2026-09-04T22:34:53.775Z",
+      "stories": [
+        {
+          "slug": "pebd-s1",
+          "id": "pebd-s1",
+          "name": "Batch-delete purge-e2e-tenants (urgent -- real growing backlog)",
+          "stage": "branch-complete",
+          "health": "amber",
+          "updatedAt": "2026-09-04T22:34:53.775Z",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-05-purge-e2e-tenants-batch-delete/dor/pebd-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-05-purge-e2e-tenants-batch-delete/dor/pebd-s1-dor-contract.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 8,
+            "passing": 7
+          },
+          "acTotal": 6,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "baseline": {
+            "totalFiles": 615,
+            "failed": 1,
+            "note": "Pre-existing failure tests/check-p3.5-validate-trace.js confirmed present on master before this branch existed -- same known baseline as every prior story this session."
+          },
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "purgeTenantsBatch + chunking (AC1-AC3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-05-purge-e2e-tenants-batch-delete/stories/pebd-s1-batch-delete-purge-e2e-tenants.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/835",
+          "blocker": "Real, currently-growing production backlog (2260+ orphaned e2e-test- tenant rows in Neon as of this story) -- AC6 (does the fix actually clear it) confirmed only after merge and the next real purge run. health=amber until confirmed."
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

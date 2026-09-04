@@ -97,6 +97,58 @@ async function purgeTenant(db, tenantId) {
 }
 
 /**
+ * pebd-s1: hard-delete every wuce-side row for a WHOLE BATCH of tenants in
+ * one query per table (11 total), instead of purgeTenant's own 11-query-
+ * PER-TENANT approach. Uses Postgres's `= ANY($1::text[])` array-parameter
+ * syntax -- functionally equivalent to a large `IN (...)` list, but takes
+ * the whole tenantIds array as a single bound parameter rather than
+ * requiring one placeholder per value. Same table order, same explicit-
+ * per-table-deletes convention as purgeTenant -- this is the batched
+ * sibling of that function, not a replacement for it (purgeTenant itself
+ * stays untouched, still used directly by existing tests/callers).
+ * @param {object} db
+ * @param {string[]} tenantIds
+ * @returns {Promise<void>}
+ */
+async function purgeTenantsBatch(db, tenantIds) {
+  if (!tenantIds || tenantIds.length === 0) return;
+  await db.query(
+    'DELETE FROM artefacts WHERE journey_id IN (SELECT journey_id FROM journeys WHERE tenant_id = ANY($1::text[]))',
+    [tenantIds]
+  ).catch(() => {});
+  await db.query('DELETE FROM journeys WHERE tenant_id = ANY($1::text[])', [tenantIds]).catch(() => {});
+  await db.query('DELETE FROM products WHERE tenant_id = ANY($1::text[])', [tenantIds]).catch(() => {}); // cascades
+  await db.query('DELETE FROM credits WHERE tenant_id = ANY($1::text[])', [tenantIds]).catch(() => {});
+  await db.query('DELETE FROM credit_audit_log WHERE tenant_id = ANY($1::text[])', [tenantIds]).catch(() => {});
+  await db.query('DELETE FROM tenant_plan WHERE tenant_id = ANY($1::text[])', [tenantIds]).catch(() => {});
+  await db.query('DELETE FROM user_roles WHERE tenant_id = ANY($1::text[])', [tenantIds]).catch(() => {});
+  await db.query('DELETE FROM team_memberships WHERE tenant_id = ANY($1::text[])', [tenantIds]).catch(() => {});
+  await db.query(
+    'DELETE FROM impersonation_audit_log WHERE admin_tenant_id = ANY($1::text[]) OR target_tenant_id = ANY($1::text[])',
+    [tenantIds]
+  ).catch(() => {});
+  await db.query('DELETE FROM github_first_login WHERE github_user_id = ANY($1::text[])', [tenantIds]).catch(() => {});
+  await db.query('DELETE FROM users WHERE email = ANY($1::text[])', [tenantIds]).catch(() => {});
+}
+
+// pebd-s1: found via a real, active production data-hygiene problem
+// (2026-09-05): purgeE2eTenants's own per-tenant sequential loop (11
+// queries x N tenants) timed out repeatedly against a real 2260+-tenant
+// backlog, with no successful clearing mechanism running as a result.
+// Chunking bounds round-trip COUNT to ~11 queries per chunk regardless of
+// backlog size, rather than 11 queries per TENANT -- a 2260-tenant backlog
+// becomes ~12 chunks x 11 queries = ~132 round-trips instead of ~24,860.
+const BATCH_SIZE = 200;
+
+function chunk(arr, size) {
+  const out = [];
+  for (let i = 0; i < arr.length; i += size) {
+    out.push(arr.slice(i, i + size));
+  }
+  return out;
+}
+
+/**
  * Find and purge every e2e-test- tagged tenant. Safe to run repeatedly
  * (idempotent -- a tenant already gone is simply not found again).
  * @param {object} db
@@ -113,8 +165,10 @@ async function purgeE2eTenants(db, options) {
   if (typeof opts.onFound === 'function') {
     opts.onFound(tenantIds);
   }
-  for (const tenantId of tenantIds) {
-    await purgeTenant(db, tenantId);
+  // pebd-s1: batched, chunked deletes instead of a fully sequential
+  // per-tenant loop -- see purgeTenantsBatch's own doc comment.
+  for (const batch of chunk(tenantIds, BATCH_SIZE)) {
+    await purgeTenantsBatch(db, batch);
   }
   return { tenantCount: tenantIds.length, tenantIds };
 }
@@ -266,6 +320,8 @@ if (require.main === module) {
 module.exports = {
   purgeE2eTenants,
   purgeTenant,
+  purgeTenantsBatch,
+  BATCH_SIZE,
   findE2eTenantIds,
   setDbConnection,
   requireDbConnection,

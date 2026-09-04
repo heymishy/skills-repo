@@ -71,11 +71,39 @@ function makeFakeDb(seedRows) {
         });
         return { rowCount: before - tables[dTable].length };
       }
+      // pebd-s1: purgeE2eTenants now routes through purgeTenantsBatch's own
+      // `= ANY($1::text[])` array-parameter shape instead of one query per
+      // tenant -- this fixture's own regex only ever matched the single-`$1`
+      // shape above, so every batched DELETE silently fell through to the
+      // no-op catch-all below, breaking AC3a/AC3b (both call purgeE2eTenants,
+      // not purgeTenant directly). AC2's own purgeTenant-direct calls were
+      // unaffected. Found via this full-suite run, not anticipated by
+      // pebd-s1's own DoR contract -- fixed here, not worked around.
+      var anyMatch = /DELETE FROM (\w+) WHERE (\w+) = ANY\(\$1::text\[\]\)( OR (\w+) = ANY\(\$1::text\[\]\))?/.exec(sql);
+      if (anyMatch) {
+        var aTable = anyMatch[1];
+        var aCol = anyMatch[2];
+        var aCol2 = anyMatch[4];
+        var ids = params[0];
+        var aBefore = (tables[aTable] || []).length;
+        tables[aTable] = (tables[aTable] || []).filter(function(r) {
+          var matches = ids.indexOf(r[aCol]) !== -1 || (aCol2 && ids.indexOf(r[aCol2]) !== -1);
+          return !matches;
+        });
+        return { rowCount: aBefore - tables[aTable].length };
+      }
       var journeyArtefactMatch = /DELETE FROM artefacts WHERE journey_id IN \(SELECT journey_id FROM journeys WHERE tenant_id = \$1\)/.exec(sql);
       if (journeyArtefactMatch) {
         var jTenantId = params[0];
         var journeyIds = (tables.journeys || []).filter(function(j) { return j.tenant_id === jTenantId; }).map(function(j) { return j.journey_id; });
         tables.artefacts = (tables.artefacts || []).filter(function(a) { return journeyIds.indexOf(a.journey_id) === -1; });
+        return { rowCount: 0 };
+      }
+      var journeyArtefactBatchMatch = /DELETE FROM artefacts WHERE journey_id IN \(SELECT journey_id FROM journeys WHERE tenant_id = ANY\(\$1::text\[\]\)\)/.exec(sql);
+      if (journeyArtefactBatchMatch) {
+        var batchIds = params[0];
+        var batchJourneyIds = (tables.journeys || []).filter(function(j) { return batchIds.indexOf(j.tenant_id) !== -1; }).map(function(j) { return j.journey_id; });
+        tables.artefacts = (tables.artefacts || []).filter(function(a) { return batchJourneyIds.indexOf(a.journey_id) === -1; });
         return { rowCount: 0 };
       }
       return { rows: [], rowCount: 0 };
