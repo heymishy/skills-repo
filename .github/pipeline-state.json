@@ -30583,9 +30583,9 @@
           "slug": "prlf-s1",
           "id": "prlf-s1",
           "name": "Use featureSlug in row links, fixing the real p3.3 collision for the primary navigation path",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-09-03T23:55:15.904Z",
+          "updatedAt": "2026-09-04T00:29:59.295Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-product-row-link-featureslug-fix/dor/prlf-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-04-product-row-link-featureslug-fix/dor/prlf-s1-dor-contract.md",
@@ -30611,7 +30611,9 @@
               "file": "artefacts/2026-09-04-product-row-link-featureslug-fix/plans/prlf-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/826"
         }
       ]
     }
