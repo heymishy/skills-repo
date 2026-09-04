@@ -100,10 +100,19 @@ async function purgeTenant(db, tenantId) {
  * Find and purge every e2e-test- tagged tenant. Safe to run repeatedly
  * (idempotent -- a tenant already gone is simply not found again).
  * @param {object} db
+ * @param {{onFound?: (tenantIds: string[]) => void}} [options] stcs-s1: an
+ *   optional callback invoked with the found tenant ids as soon as the find
+ *   step completes, before the purge loop starts -- lets a caller (the CLI
+ *   entrypoint) capture progress for diagnostics if a later timeout fires
+ *   mid-purge, without duplicating this function's own loop.
  * @returns {Promise<{tenantCount: number, tenantIds: string[]}>}
  */
-async function purgeE2eTenants(db) {
+async function purgeE2eTenants(db, options) {
+  const opts = options || {};
   const tenantIds = await findE2eTenantIds(db);
+  if (typeof opts.onFound === 'function') {
+    opts.onFound(tenantIds);
+  }
   for (const tenantId of tenantIds) {
     await purgeTenant(db, tenantId);
   }
@@ -132,6 +141,60 @@ function withTimeout(promise, ms, label) {
   ]);
 }
 
+// stcs-s1: staging's Postgres is a Neon serverless branch (see decisions.md,
+// bri-s2.2-neon-staging-branch) with its own independent autosuspend,
+// separate from the already-documented Fly-app auto-suspend pattern
+// (workspace/capture-log.md, 2026-08-31). A cold Neon compute spin-up can
+// make the FIRST connection attempt fail even within connectionTimeoutMillis
+// -- retrying with backoff tolerates that one-time reactivation cost rather
+// than giving up immediately. Once connected, subsequent queries are fast,
+// so only the initial connect is retried here.
+async function connectWithRetry(connect, attempts, delaysMs) {
+  let lastErr;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await connect();
+    } catch (err) {
+      lastErr = err;
+      if (i < attempts - 1) {
+        await new Promise((resolve) => setTimeout(resolve, delaysMs[i]));
+      }
+    }
+  }
+  throw lastErr;
+}
+
+// stcs-s1: default kept deliberately below the CI step's own
+// timeout-minutes: 2 (120000ms, see staging-deploy.yml/e2e.yml's purge
+// step) so this script's own graceful timeout/cleanup path (which still
+// runs pool.end() and exits 0) always fires first -- the step-level kill
+// remains a true last-resort backstop, never the normal path.
+const DEFAULT_TIMEOUT_MS = 90000;
+
+function getConfiguredTimeoutMs() {
+  const raw = process.env.PURGE_E2E_TENANTS_TIMEOUT_MS;
+  const parsed = raw ? parseInt(raw, 10) : NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : DEFAULT_TIMEOUT_MS;
+}
+
+/**
+ * stcs-s1: builds the non-blocking failure log line, distinguishing "no
+ * tenants found yet" from "found N tenants, timed out partway through
+ * purging them" -- extracted as a pure function (rather than inlined in the
+ * CLI's catch block) so it is directly unit-testable without spawning a
+ * child process.
+ * @param {Error} err
+ * @param {string[]|null} foundTenantIds null if findE2eTenantIds had not
+ *   completed before the failure; the found array otherwise.
+ * @returns {string}
+ */
+function formatPurgeFailureMessage(err, foundTenantIds) {
+  if (foundTenantIds === null) {
+    return `purge-e2e-tenants failed (non-blocking), before any tenants were found: ${err.message}`;
+  }
+  return `purge-e2e-tenants failed (non-blocking), found ${foundTenantIds.length} tenant(s) but did not finish purging them: ${err.message}`;
+}
+
 if (require.main === module) {
   (async () => {
     // eslint-disable-next-line global-require
@@ -142,21 +205,44 @@ if (require.main === module) {
       connectionTimeoutMillis: 10000
     });
     setDbConnection(pool);
+    const timeoutMs = getConfiguredTimeoutMs();
     // --dry-run: read-only preview for an operator running this by hand
     // against real staging data (e.g. the one-off retroactive purge) --
     // lists what WOULD be deleted without deleting anything. CI's own
     // always()-gated cleanup steps never pass this flag.
     const isDryRun = process.argv.includes('--dry-run');
+    // stcs-s1: tracked outside the try block so the catch handler can report
+    // how far the operation got before a timeout fired (see below).
+    let foundTenantIds = null;
     try {
+      // stcs-s1: retry is a best-effort warm-up, not a hard gate -- if it
+      // never succeeds (e.g. a genuinely bad/unreachable DATABASE_URL, not
+      // just a cold Neon compute), fall through into the existing find/purge
+      // logic exactly as before this story. findE2eTenantIds's own per-query
+      // try/catch already tolerates connection failures gracefully (treating
+      // them the same as "table doesn't exist"), so a persistently broken
+      // connection must keep degrading to "nothing found," not abort with an
+      // error it previously never threw. Retrying here only ever ADDS a
+      // chance to recover from a transient cold start; it must never make a
+      // permanently-bad connection behave worse than it did before.
+      try {
+        await connectWithRetry(() => pool.query('SELECT 1'), 3, [2000, 4000]);
+      } catch (_) { /* handled below by the existing tolerant find/purge path */ }
       if (isDryRun) {
-        const tenantIds = await withTimeout(findE2eTenantIds(requireDbConnection()), 60000, 'findE2eTenantIds');
+        const tenantIds = await withTimeout(findE2eTenantIds(requireDbConnection()), timeoutMs, 'findE2eTenantIds');
         console.log(`[dry-run] Would purge ${tenantIds.length} e2e-test- tenant(s): ${tenantIds.join(', ') || '(none found)'}`);
         process.exitCode = 0;
         try { await withTimeout(pool.end(), 5000, 'pool.end'); } catch (_) {}
         process.exit(process.exitCode || 0);
         return;
       }
-      const summary = await withTimeout(purgeE2eTenants(requireDbConnection()), 60000, 'purgeE2eTenants');
+      const summary = await withTimeout(
+        purgeE2eTenants(requireDbConnection(), {
+          onFound: (tenantIds) => { foundTenantIds = tenantIds; }
+        }),
+        timeoutMs,
+        'purgeE2eTenants'
+      );
       console.log(`Purged ${summary.tenantCount} e2e-test- tenant(s): ${summary.tenantIds.join(', ') || '(none found)'}`);
       process.exitCode = 0;
     } catch (err) {
@@ -164,7 +250,11 @@ if (require.main === module) {
       // this is pure post-run hygiene, not a correctness gate -- a failure
       // must be visible in the log but must never be able to fail the job
       // that ran the actual tests. See CI wiring's own continue-on-error.
-      console.error('purge-e2e-tenants failed (non-blocking):', err.message);
+      // stcs-s1: report how far the run got, so "cold start, nothing found
+      // yet" is distinguishable from "found N tenants, timed out purging
+      // them" in CI logs -- a generic message could not previously tell
+      // these apart, hiding whether orphaned data is actually accumulating.
+      console.error(formatPurgeFailureMessage(err, foundTenantIds));
       process.exitCode = 0;
     } finally {
       try { await withTimeout(pool.end(), 5000, 'pool.end'); } catch (_) {}
@@ -173,4 +263,16 @@ if (require.main === module) {
   })();
 }
 
-module.exports = { purgeE2eTenants, purgeTenant, findE2eTenantIds, setDbConnection, requireDbConnection, E2E_TENANT_PREFIX };
+module.exports = {
+  purgeE2eTenants,
+  purgeTenant,
+  findE2eTenantIds,
+  setDbConnection,
+  requireDbConnection,
+  E2E_TENANT_PREFIX,
+  connectWithRetry,
+  getConfiguredTimeoutMs,
+  formatPurgeFailureMessage,
+  withTimeout,
+  DEFAULT_TIMEOUT_MS
+};
