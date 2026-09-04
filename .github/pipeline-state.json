@@ -30733,6 +30733,59 @@
           "blocker": "Production (skills-framework.fly.dev) not yet running this fix -- promote-to-prod requires a fresh manual approval for this specific merge commit (7b6d8d31), verified via git-ancestor check against whatever commit is actually deployed. This is the story that finally makes aada-s1/fapg-s1 actually work -- a real live-page check is the recommended confirmation once promoted, not just CI green."
         }
       ]
+    },
+    {
+      "slug": "2026-09-04-staging-deploy-skip-bookkeeping-pushes",
+      "id": "2026-09-04-staging-deploy-skip-bookkeeping-pushes",
+      "name": "Staging deploy workflow skips bookkeeping-only pushes to master",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "updatedAt": "2026-09-04T06:49:50.249Z",
+      "stories": [
+        {
+          "slug": "sdsb-s1",
+          "id": "sdsb-s1",
+          "name": "Skip staging deploy for bookkeeping-only pushes",
+          "stage": "branch-complete",
+          "health": "green",
+          "updatedAt": "2026-09-04T06:53:19.355Z",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-04-staging-deploy-skip-bookkeeping-pushes/dor/sdsb-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-04-staging-deploy-skip-bookkeeping-pushes/dor/sdsb-s1-dor-contract.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 4
+          },
+          "acTotal": 5,
+          "acVerified": 3,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/829",
+          "verifyStatus": "passed",
+          "baseline": {
+            "totalFiles": 609,
+            "failed": 1,
+            "note": "Pre-existing failure tests/check-p3.5-validate-trace.js confirmed present on master before this branch existed -- same known baseline as every prior story this session."
+          },
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "staging-deploy.yml paths-ignore addition (AC1-AC3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-04-staging-deploy-skip-bookkeeping-pushes/plans/sdsb-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "new governance test (AC1)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-04-staging-deploy-skip-bookkeeping-pushes/plans/sdsb-s1-plan.md"
+            }
+          ]
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
