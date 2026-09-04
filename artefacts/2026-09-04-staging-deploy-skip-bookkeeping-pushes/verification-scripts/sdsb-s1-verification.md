@@ -3,7 +3,7 @@
 **Story reference:** artefacts/2026-09-04-staging-deploy-skip-bookkeeping-pushes/stories/sdsb-s1-skip-staging-deploy-for-bookkeeping-only-pushes.md
 **Technical test plan:** artefacts/2026-09-04-staging-deploy-skip-bookkeeping-pushes/test-plans/sdsb-s1-test-plan.md
 **Script version:** 1
-**Verified by:** [name] | **Date:** [date] | **Context:** [ ] Pre-code  [ ] Post-merge  [ ] Demo
+**Verified by:** Claude Code (agent, operator-directed — Hamish King) | **Date:** 2026-09-04 | **Context:** [x] Post-merge
 
 ---
 
@@ -30,8 +30,8 @@
 **Expected outcome:**
 > No new "Staging Deploy" run appears for that commit's SHA -- the workflow was skipped entirely, not run-and-passed.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Confirmed with commit `b5626450` ("chore: definition-of-done sdsb-s1 -- COMPLETE"), touching only `.github/pipeline-state.json` and `artefacts/2026-09-04-staging-deploy-skip-bookkeeping-pushes/dod/`. `gh run list --branch master --workflow staging-deploy.yml --limit 3` showed the most recent run still anchored to the prior commit (`7bff10df`, the sdsb-s1 merge itself) — no run at all was created for `b5626450`. This is the first genuine bookkeeping-only push to land after the fix went live, so this is a real confirmation, not a synthetic test push.
 
 ---
 
@@ -46,8 +46,8 @@
 **Expected outcome:**
 > A new "Staging Deploy" run appears and runs its full `deploy-staging` -> `smoke-test` -> `promote-to-prod` (approval-gated) pipeline exactly as before this story.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Confirmed by `sdsb-s1`'s own merge commit (`7bff10df`), which touched `.github/workflows/staging-deploy.yml` and `tests/check-sdsb-s1-staging-deploy-paths-ignore.js` (real code, not bookkeeping-only). `gh run list` showed a full new "Staging Deploy" run (`33849246230`) triggered for that commit and progressed normally through `deploy-staging`.
 
 ---
 
@@ -55,10 +55,10 @@
 
 | Scenario | Result | Notes |
 |----------|--------|-------|
-| Scenario 1 | | |
-| Scenario 2 | | |
+| Scenario 1 | Pass | Confirmed via commit `b5626450` -- no run created |
+| Scenario 2 | Pass | Confirmed via commit `7bff10df` (the merge itself) -- full run triggered |
 
-**Overall verdict:** [ ] All pass — ready to proceed
+**Overall verdict:** [x] All pass — ready to proceed
 [ ] Failures found — log findings below before proceeding
 
 ---
