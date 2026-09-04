@@ -30634,9 +30634,9 @@
           "slug": "fapg-s1",
           "id": "fapg-s1",
           "name": "Group artefacts by story, one page per feature (read pipeline-state.json from local disk)",
-          "stage": "branch-complete",
-          "health": "green",
-          "updatedAt": "2026-09-04T02:24:20.949Z",
+          "stage": "definition-of-done",
+          "health": "amber",
+          "updatedAt": "2026-09-04T02:52:26.699Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-feature-artefact-page-story-grouping/dor/fapg-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-04-feature-artefact-page-story-grouping/dor/fapg-s1-dor-contract.md",
@@ -30669,8 +30669,12 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/827"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/827",
+          "dodStatus": "complete",
+          "dodPath": "artefacts/2026-09-04-feature-artefact-page-story-grouping/dod/fapg-s1-dod.md",
+          "releaseReady": false,
+          "blocker": "Production (skills-framework.fly.dev) not yet running this fix -- promote-to-prod requires a fresh manual approval for this specific merge commit (4d570296), verified via git-ancestor check against whatever commit is actually deployed. Non-urgent (UI grouping fix, no data-loss risk)."
         }
       ]
     }

@@ -3,7 +3,7 @@
 **Feature:** 2026-09-04-feature-artefact-page-story-grouping
 **Created:** 2026-09-04
 **Last updated:** 2026-09-04
-**Status:** Active
+**Status:** Verified at 2026-09-04 (DoD)
 
 ---
 
