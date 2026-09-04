@@ -30690,9 +30690,9 @@
           "slug": "daga-s1",
           "id": "daga-s1",
           "name": "Include artefacts/ and .github/ in the Docker image (fixes aada-s1/fapg-s1 in production)",
-          "stage": "branch-complete",
-          "health": "green",
-          "updatedAt": "2026-09-04T05:55:50.678Z",
+          "stage": "definition-of-done",
+          "health": "amber",
+          "updatedAt": "2026-09-04T06:35:09.282Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-dockerignore-artefacts-and-github-exclusion-fix/dor/daga-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-04-dockerignore-artefacts-and-github-exclusion-fix/dor/daga-s1-dor-contract.md",
@@ -30725,8 +30725,12 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/828"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/828",
+          "dodStatus": "complete",
+          "dodPath": "artefacts/2026-09-04-dockerignore-artefacts-and-github-exclusion-fix/dod/daga-s1-dod.md",
+          "releaseReady": false,
+          "blocker": "Production (skills-framework.fly.dev) not yet running this fix -- promote-to-prod requires a fresh manual approval for this specific merge commit (7b6d8d31), verified via git-ancestor check against whatever commit is actually deployed. This is the story that finally makes aada-s1/fapg-s1 actually work -- a real live-page check is the recommended confirmation once promoted, not just CI green."
         }
       ]
     }
