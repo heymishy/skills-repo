@@ -21,6 +21,8 @@ const {
 
 const { getRepoRoot } = require('../adapters/repo-root');
 
+const { getFeatureStoryStructure, groupArtefactsByStory } = require('../adapters/feature-story-structure');
+
 const { escHtml } = require('../utils/html-shell');
 // pncg-s1: renderShell's direct import was removed here -- handleGetFeatureArtefacts
 // (its only caller in this file) now goes through renderShellWithNav below,
@@ -263,6 +265,22 @@ function renderArtefactIndexHtml(artefacts, featureSlug, resumeLookup) {
   if (!artefacts || artefacts.length === 0) {
     return '<p class="artefact-list__empty">No artefacts found for this feature</p>';
   }
+  return _renderArtefactListByType(artefacts, featureSlug, resumeLookup);
+}
+
+/**
+ * fapg-s1: extracted from renderArtefactIndexHtml so both the unchanged
+ * single-story rendering and the new multi-story grouped rendering
+ * (renderGroupedArtefactIndexHtml) share one implementation of "render this
+ * flat artefact list, grouped by plain-language type label" -- no markup
+ * duplicated between them. Does not handle the empty-list case itself
+ * (callers decide what an empty list means in their own context).
+ * @param {Array} artefacts
+ * @param {string} featureSlug
+ * @param {Object<string, {skillName: string, sessionId: string, journeyId: string}>} [resumeLookup]
+ * @returns {string} HTML string
+ */
+function _renderArtefactListByType(artefacts, featureSlug, resumeLookup) {
   resumeLookup = resumeLookup || {};
 
   // Group artefacts by plain-language label
@@ -288,6 +306,52 @@ function renderArtefactIndexHtml(artefacts, featureSlug, resumeLookup) {
     }).join('');
     return `<div class="sw-card"><h2 class="sw-section-title">${shellEscHtml(label)}</h2><ul class="artefact-list">${items}</ul></div>`;
   }).join('');
+}
+
+/**
+ * fapg-s1: renders the multi-story (>=2 real stories) case -- feature-level
+ * artefacts once, at the top (via the same _renderArtefactListByType a
+ * single-story feature already uses), followed by an epic/story accordion
+ * using native <details>/<summary> (keyboard- and screen-reader-operable
+ * by default, no custom JS state). Each story's own artefacts are rendered
+ * via the same shared helper, so a story's own resume-conversation links
+ * (naturally rare for standard-track features -- see _resolveResumeLinksForFeature's
+ * own doc comment) render identically to how they already do today.
+ * @param {{featureLevel: Array, epics: Array<{epicName: string, epicSlug: string, stories: Array<{slug: string, artefacts: Array}>}>, flatStories: Array<{slug: string, artefacts: Array}>}} grouped
+ * @param {string} featureSlug
+ * @param {Object<string, {skillName: string, sessionId: string, journeyId: string}>} [resumeLookup]
+ * @returns {string} HTML string
+ */
+function renderGroupedArtefactIndexHtml(grouped, featureSlug, resumeLookup) {
+  const featureLevelHtml = grouped.featureLevel.length > 0
+    ? _renderArtefactListByType(grouped.featureLevel, featureSlug, resumeLookup)
+    : '';
+
+  function renderStory(story) {
+    if (story.artefacts.length === 0) return '';
+    return '<details class="story-row" style="margin:4px 0 4px 16px;padding:6px 10px;border:1px solid var(--line);border-radius:8px">' +
+      '<summary style="cursor:pointer;font-weight:500">' + shellEscHtml(story.slug) + '</summary>' +
+      '<div style="margin-top:8px">' + _renderArtefactListByType(story.artefacts, featureSlug, resumeLookup) + '</div>' +
+    '</details>';
+  }
+
+  const epicsHtml = grouped.epics.map((epic) => {
+    const storiesHtml = epic.stories.map(renderStory).join('');
+    if (!storiesHtml) return '';
+    return '<details class="epic" open style="margin:8px 0;padding:10px 14px;border:1px solid var(--line);border-radius:10px">' +
+      '<summary style="cursor:pointer;font-weight:600">' + shellEscHtml(epic.epicName || epic.epicSlug || '') + '</summary>' +
+      storiesHtml +
+    '</details>';
+  }).join('');
+
+  const flatStoriesHtml = grouped.flatStories.length > 0
+    ? '<details class="epic" open style="margin:8px 0;padding:10px 14px;border:1px solid var(--line);border-radius:10px">' +
+        '<summary style="cursor:pointer;font-weight:600">Stories</summary>' +
+        grouped.flatStories.map(renderStory).join('') +
+      '</details>'
+    : '';
+
+  return featureLevelHtml + epicsHtml + flatStoriesHtml;
 }
 
 /**
@@ -372,9 +436,23 @@ async function handleGetFeatureArtefacts(req, res, featureSlug, pool) {
     // fal-s1: artefact view links (/artefact/:slug/:type) must point at the
     // real feature directory slug -- the raw slug 404s for an epic-nested
     // story, same class of bug this story fixes for the list lookup itself.
-    const listHtml = noArtefacts
-      ? '<p class="artefact-list__empty">No artefacts found for this feature</p>'
-      : renderArtefactIndexHtml(artefacts, resolvedSlug, resumeLookup);
+    // fapg-s1: a feature with >=2 real stories (read from the local
+    // repoRoot/.github/pipeline-state.json, not a Postgres query -- see
+    // getFeatureStoryStructure's own doc comment) gets the grouped
+    // epic/story rendering; a feature with 0-1 stories (the common case)
+    // renders exactly as it always has, via the unchanged renderArtefactIndexHtml.
+    let listHtml;
+    if (noArtefacts) {
+      listHtml = '<p class="artefact-list__empty">No artefacts found for this feature</p>';
+    } else {
+      const storyStructure = getFeatureStoryStructure(repoRoot, resolvedSlug);
+      const totalStoryCount = storyStructure
+        ? storyStructure.epics.reduce((sum, e) => sum + e.storySlugs.length, 0) + storyStructure.flatStorySlugs.length
+        : 0;
+      listHtml = (storyStructure && totalStoryCount > 1)
+        ? renderGroupedArtefactIndexHtml(groupArtefactsByStory(artefacts, storyStructure), resolvedSlug, resumeLookup)
+        : renderArtefactIndexHtml(artefacts, resolvedSlug, resumeLookup);
+    }
     const displayTitle = (journeyForPage && journeyForPage.displayName) || featureSlug;
     const breadcrumbHtml = _renderStoryBreadcrumb(breadcrumbContext, displayTitle);
     // alrf-s10 — operator-requested: a real "Delete this feature" action, for
@@ -491,5 +569,6 @@ module.exports = {
   renderFeatureList,
   renderArtefactItem,
   renderArtefactIndexHtml,
+  renderGroupedArtefactIndexHtml,
   escHtml
 };

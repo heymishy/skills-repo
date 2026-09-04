@@ -30634,12 +30634,43 @@
           "slug": "fapg-s1",
           "id": "fapg-s1",
           "name": "Group artefacts by story, one page per feature (read pipeline-state.json from local disk)",
-          "stage": "dor-signed-off",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-09-04T02:02:10.396Z",
+          "updatedAt": "2026-09-04T02:24:20.949Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-feature-artefact-page-story-grouping/dor/fapg-s1-dor.md",
-          "dorContractPath": "artefacts/2026-09-04-feature-artefact-page-story-grouping/dor/fapg-s1-dor-contract.md"
+          "dorContractPath": "artefacts/2026-09-04-feature-artefact-page-story-grouping/dor/fapg-s1-dor-contract.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 8,
+            "passing": 8
+          },
+          "acTotal": 6,
+          "acVerified": 6,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "baseline": {
+            "totalFiles": 607,
+            "failed": 1,
+            "note": "Pre-existing failure tests/check-p3.5-validate-trace.js confirmed present on master before this branch existed -- same known baseline as pst-s1/pgft-s1/psbf-s1/ppg-s1/fal-s1/pefl-s1/aada-s1/prlf-s1."
+          },
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Story-structure reader and classification (AC1, AC3, AC4 data-layer)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-04-feature-artefact-page-story-grouping/plans/fapg-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Grouped rendering and route wiring (AC1, AC2, AC4, AC5, AC6 route-level)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-04-feature-artefact-page-story-grouping/plans/fapg-s1-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/827"
         }
       ]
     }
