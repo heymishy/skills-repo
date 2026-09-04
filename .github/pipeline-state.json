@@ -30835,6 +30835,53 @@
           "dodStatus": "complete"
         }
       ]
+    },
+    {
+      "slug": "2026-09-04-npm-ci-timing-diagnostic-visibility",
+      "id": "2026-09-04-npm-ci-timing-diagnostic-visibility",
+      "name": "Stream npm lifecycle-script output in the two slow staging-deploy.yml jobs",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "updatedAt": "2026-09-04T09:47:41.137Z",
+      "stories": [
+        {
+          "slug": "ncdv-s1",
+          "id": "ncdv-s1",
+          "name": "Stream npm lifecycle-script output in slow jobs",
+          "stage": "branch-complete",
+          "health": "green",
+          "updatedAt": "2026-09-04T09:47:41.137Z",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-04-npm-ci-timing-diagnostic-visibility/dor/ncdv-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-04-npm-ci-timing-diagnostic-visibility/dor/ncdv-s1-dor-contract.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 8
+          },
+          "acTotal": 4,
+          "acVerified": 3,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "baseline": {
+            "totalFiles": 611,
+            "failed": 1,
+            "note": "Pre-existing failure tests/check-p3.5-validate-trace.js confirmed present on master before this branch existed -- same known baseline as every prior story this session."
+          },
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "--foreground-scripts on the two slow npm ci steps (AC1-AC2)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-04-npm-ci-timing-diagnostic-visibility/stories/ncdv-s1-stream-npm-lifecycle-script-output-in-slow-jobs.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/832"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
