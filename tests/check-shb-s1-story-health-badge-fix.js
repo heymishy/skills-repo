@@ -29,7 +29,13 @@ var PRODUCT_ROLLUP_PATH = path.resolve(__dirname, '../src/web-ui/modules/product
 var PRODUCTS_ROUTE_PATH = path.resolve(__dirname, '../src/web-ui/routes/products.js');
 
 function healthAttrForSlug(html, slug) {
-  var re = new RegExp('data-health="([a-z]+)"[^>]*data-search="[^"]*"[^>]*>\\s*<a[^>]*href="/features/' + slug + '"');
+  // prlf-s1: anchor on data-search (still carries the raw story slug
+  // unchanged) rather than the row's own href -- prlf-s1 deliberately
+  // makes the href use item.featureSlug for epic-nested items (fixing a
+  // real slug collision across features), so href="/features/<storySlug>"
+  // is no longer a reliable way to locate an epic-nested story's own row.
+  var escapedSlug = slug.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  var re = new RegExp('data-health="([a-z]+)"[^>]*data-search="[^"]*' + escapedSlug + '[^"]*"');
   var m = re.exec(html);
   return m ? m[1] : null;
 }

@@ -320,8 +320,16 @@ function _renderPvcItemRow(item, includeCheckbox, preferFeatureName) {
         'aria-label="Rename ' + _escapeHtml(displayName) + '" ' +
         'style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0 4px">✎ Rename</button>'
     : '';
+  // prlf-s1: use the already-resolved featureSlug when present (epic-nested
+  // items, fal-s1/pefl-s1) instead of the raw story slug -- two different
+  // features can each have a story with the same slug (confirmed real
+  // collision: p3.3 exists under both skills-platform-phase3 and
+  // wuce-multi-tenancy), so linking via the ambiguous story slug risks
+  // landing on the wrong feature. Top-level items have no featureSlug field
+  // at all; their own slug already IS the real feature slug.
+  var linkSlug = item.featureSlug || item.slug;
   var innerHtml =
-    '<a class="pvc-item-link" href="/features/' + _escapeHtml(item.slug) + '" ' +
+    '<a class="pvc-item-link" href="/features/' + _escapeHtml(linkSlug) + '" ' +
       'aria-label="' + _escapeHtml(displayName) + ' — view artefacts and conversation history" ' +
       'style="display:flex;justify-content:space-between;align-items:center;text-decoration:none;color:inherit">' +
       '<div>' +
