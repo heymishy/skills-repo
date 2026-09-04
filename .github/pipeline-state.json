@@ -30801,19 +30801,19 @@
           "slug": "stcs-s1",
           "id": "stcs-s1",
           "name": "purge-e2e-tenants cold-start retry and scheduled backstop",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
-          "updatedAt": "2026-09-04T08:25:18.317Z",
+          "updatedAt": "2026-09-04T09:51:21.212Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-staging-cold-start-correctness-gap/dor/stcs-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-04-staging-cold-start-correctness-gap/dor/stcs-s1-dor-contract.md",
           "testPlan": {
             "status": "written",
             "totalTests": 10,
-            "passing": 9
+            "passing": 10
           },
           "acTotal": 6,
-          "acVerified": 5,
+          "acVerified": 6,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "baseline": {
@@ -30830,8 +30830,9 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "open",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/831"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/831",
+          "dodStatus": "complete"
         }
       ]
     },
