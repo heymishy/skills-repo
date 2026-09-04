@@ -30692,7 +30692,7 @@
           "name": "Include artefacts/ and .github/ in the Docker image (fixes aada-s1/fapg-s1 in production)",
           "stage": "definition-of-done",
           "health": "amber",
-          "updatedAt": "2026-09-04T06:35:09.282Z",
+          "updatedAt": "2026-09-04T19:40:04.861Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-dockerignore-artefacts-and-github-exclusion-fix/dor/daga-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-04-dockerignore-artefacts-and-github-exclusion-fix/dor/daga-s1-dor-contract.md",
@@ -30730,7 +30730,7 @@
           "dodStatus": "complete",
           "dodPath": "artefacts/2026-09-04-dockerignore-artefacts-and-github-exclusion-fix/dod/daga-s1-dod.md",
           "releaseReady": false,
-          "blocker": "Production (skills-framework.fly.dev) not yet running this fix -- promote-to-prod requires a fresh manual approval for this specific merge commit (7b6d8d31), verified via git-ancestor check against whatever commit is actually deployed. This is the story that finally makes aada-s1/fapg-s1 actually work -- a real live-page check is the recommended confirmation once promoted, not just CI green."
+          "blocker": "Live authenticated production check (2026-09-05) confirmed this story's own central claim was FALSE: the feature artefact page still showed \"No artefacts found for this feature\" despite production promotion succeeding. Root cause: the Dockerfile's own production stage never had a COPY line for artefacts/ or .github/ at all -- .dockerignore alone (this story's own only change) was necessary but not sufficient. Real fix tracked separately as dcfx-s1 (PR #833) -- this story's own dodStatus stays complete (the .dockerignore + pipeline-state-writer.js changes it made are both still correct and needed), but releaseReady stays false until dcfx-s1 merges and its own live-page re-check passes."
         }
       ]
     },
@@ -30929,6 +30929,54 @@
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/832",
           "dodStatus": "complete"
+        }
+      ]
+    },
+    {
+      "slug": "2026-09-05-docker-artefacts-copy-fix",
+      "id": "2026-09-05-docker-artefacts-copy-fix",
+      "name": "Dockerfile production stage actually copies artefacts/ and .github/ into the image",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "amber",
+      "updatedAt": "2026-09-04T19:39:28.122Z",
+      "stories": [
+        {
+          "slug": "dcfx-s1",
+          "id": "dcfx-s1",
+          "name": "Dockerfile copy artefacts and github (corrects daga-s1)",
+          "stage": "branch-complete",
+          "health": "amber",
+          "updatedAt": "2026-09-04T19:39:28.122Z",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-05-docker-artefacts-copy-fix/dor/dcfx-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-05-docker-artefacts-copy-fix/dor/dcfx-s1-dor-contract.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 5
+          },
+          "acTotal": 5,
+          "acVerified": 4,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "baseline": {
+            "totalFiles": 613,
+            "failed": 1,
+            "note": "Pre-existing failure tests/check-p3.5-validate-trace.js confirmed present on master before this branch existed -- same known baseline as every prior story this session."
+          },
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Add missing COPY lines for artefacts/ and .github/ (AC1-AC3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-05-docker-artefacts-copy-fix/stories/dcfx-s1-dockerfile-copy-artefacts-and-github.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/833",
+          "blocker": "Corrects daga-s1 (already-merged, DoD-marked-COMPLETE story whose central claim was found false via a live production check on 2026-09-05). AC5 (does the live page actually work now) cannot be confirmed until this merges and a real production promotion happens -- health=amber until that live re-check passes."
         }
       ]
     }

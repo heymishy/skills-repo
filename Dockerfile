@@ -43,6 +43,21 @@ COPY --chown=node:node --from=builder /app/src ./src/
 COPY --chown=node:node skills/ ./skills/
 COPY --chown=node:node product/ ./product/
 
+# dcfx-s1: daga-s1 removed the .dockerignore exclusions for artefacts/ and
+# .github/, on the premise that this alone would make both available at
+# runtime -- but .dockerignore only governs the build CONTEXT; it does not
+# put anything into the image by itself. This stage's own COPY commands are
+# an explicit allowlist, and neither directory ever had one, so daga-s1's
+# fix was necessary but not sufficient. Confirmed via a real, authenticated
+# production check (2026-09-05) that the archived-directory fallback
+# (aada-s1) and per-story accordion (fapg-s1) still did not work despite
+# daga-s1 being merged and DoD-marked-COMPLETE. .github/scripts/ stays out
+# of the image regardless, since .dockerignore's own existing exclusion for
+# that subpath (daga-s1, AC2) already keeps it out of the build context this
+# COPY draws from.
+COPY --chown=node:node artefacts/ ./artefacts/
+COPY --chown=node:node .github/ ./.github/
+
 # Build-identity stamp (commit SHA, originating PR #, deploy timestamp),
 # written by scripts/write-version-file.js immediately before `flyctl deploy`
 # in the staging-deploy workflow -- see src/web-ui/utils/version-info.js.
