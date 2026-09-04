@@ -37,9 +37,6 @@ tests/e2e/fixtures/*
 # 2026-07-25).
 .claude/
 
-# Pipeline artefacts — not required at runtime
-artefacts/
-
 # Development logs
 *.log
 npm-debug.log*
@@ -48,9 +45,6 @@ npm-debug.log*
 .vscode/
 .DS_Store
 Thumbs.db
-
-# CI configuration — not required at runtime
-.github/
 
 # Documentation — not required at runtime
 docs/

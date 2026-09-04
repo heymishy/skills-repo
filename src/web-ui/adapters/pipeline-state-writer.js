@@ -45,8 +45,26 @@ function validateStateUpdate(stateUpdate) {
 module.exports = function pipelineStateWriterFactory(repoRoot) {
   var statePath = path.join(repoRoot, '.github', 'pipeline-state.json');
   var tmpPath = statePath + '.tmp';
+  // daga-s1: .github/pipeline-state.json's own mere presence/readability is
+  // no longer a reliable "is this a real, governed checkout" signal now
+  // that the Docker image includes .github/ (see .dockerignore) so
+  // aada-s1/fapg-s1's own read-only artefact-page features can actually
+  // work in production. .git/ is what genuinely distinguishes a real,
+  // committable checkout from a deployed container's own baked image copy
+  // -- it stays excluded from the Docker image regardless of that change.
+  // Checked once here (factory-creation time, i.e. server startup), not
+  // per-call, since repoRoot does not change between calls.
+  var isRealCheckout = fs.existsSync(path.join(repoRoot, '.git'));
 
   return function pipelineStateWriter(featureSlug, storyId, stateUpdate) {
+    if (!isRealCheckout) {
+      throw new Error(
+        'pipeline-state-writer: ' + repoRoot + ' has no .git/ directory -- ' +
+        'not a real, governed checkout. Refusing to write; changes here ' +
+        'would never be durable (e.g. a deployed container).'
+      );
+    }
+
     // Validate before touching the file
     validateStateUpdate(stateUpdate);
 

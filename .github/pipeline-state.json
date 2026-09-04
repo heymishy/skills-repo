@@ -30690,12 +30690,43 @@
           "slug": "daga-s1",
           "id": "daga-s1",
           "name": "Include artefacts/ and .github/ in the Docker image (fixes aada-s1/fapg-s1 in production)",
-          "stage": "dor-signed-off",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-09-04T05:38:45.495Z",
+          "updatedAt": "2026-09-04T05:55:50.678Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-dockerignore-artefacts-and-github-exclusion-fix/dor/daga-s1-dor.md",
-          "dorContractPath": "artefacts/2026-09-04-dockerignore-artefacts-and-github-exclusion-fix/dor/daga-s1-dor-contract.md"
+          "dorContractPath": "artefacts/2026-09-04-dockerignore-artefacts-and-github-exclusion-fix/dor/daga-s1-dor-contract.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 6
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "baseline": {
+            "totalFiles": 608,
+            "failed": 1,
+            "note": "Pre-existing failure tests/check-p3.5-validate-trace.js confirmed present on master before this branch existed -- same known baseline as every prior story this session."
+          },
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "dockerignore fix (AC1-AC3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-04-dockerignore-artefacts-and-github-exclusion-fix/plans/daga-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "pipeline-state-writer precondition fix (AC4-AC5)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-04-dockerignore-artefacts-and-github-exclusion-fix/plans/daga-s1-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/828"
         }
       ]
     }

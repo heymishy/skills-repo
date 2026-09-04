@@ -50,7 +50,12 @@ function assertThrows(label, fn, messageFragment) {
 // ── Temp dir helpers ───────────────────────────────────────────────────────────
 
 function makeTempDir() {
-  return fs.mkdtempSync(path.join(os.tmpdir(), 'cdg7-test-'));
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'cdg7-test-'));
+  // daga-s1: pipelineStateWriterFactory (used by several tests below) now
+  // requires .git/ presence to treat this as a real checkout -- harmless
+  // for every other test in this file that doesn't touch the writer.
+  fs.mkdirSync(path.join(dir, '.git'), { recursive: true });
+  return dir;
 }
 
 function rmDir(dir) {
