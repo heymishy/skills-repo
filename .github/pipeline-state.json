@@ -30834,6 +30834,54 @@
           "prUrl": "https://github.com/heymishy/skills-repo/pull/831"
         }
       ]
+    },
+    {
+      "slug": "2026-09-04-ci-pipeline-install-cache-optimization",
+      "id": "2026-09-04-ci-pipeline-install-cache-optimization",
+      "name": "CI jobs skip unneeded Playwright browser downloads and cache the browsers they do need",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "updatedAt": "2026-09-04T08:11:43.880Z",
+      "stories": [
+        {
+          "slug": "cpco-s1",
+          "id": "cpco-s1",
+          "name": "Skip unneeded Playwright downloads and cache Chromium",
+          "stage": "definition-of-done",
+          "health": "green",
+          "updatedAt": "2026-09-04T08:59:34.548Z",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-04-ci-pipeline-install-cache-optimization/dor/cpco-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-04-ci-pipeline-install-cache-optimization/dor/cpco-s1-dor-contract.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 7,
+            "passing": 7
+          },
+          "acTotal": 6,
+          "acVerified": 6,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "baseline": {
+            "totalFiles": 610,
+            "failed": 1,
+            "note": "Pre-existing failure tests/check-p3.5-validate-trace.js confirmed present on master before this branch existed -- same known baseline as every prior story this session."
+          },
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD + cache across 5 workflow files (AC1-AC3)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-04-ci-pipeline-install-cache-optimization/stories/cpco-s1-skip-unneeded-playwright-downloads-and-cache-browsers.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/830",
+          "dodStatus": "complete"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
