@@ -30634,9 +30634,9 @@
           "slug": "fapg-s1",
           "id": "fapg-s1",
           "name": "Group artefacts by story, one page per feature (read pipeline-state.json from local disk)",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-09-04T02:02:10.396Z",
+          "updatedAt": "2026-09-04T02:24:20.949Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-04-feature-artefact-page-story-grouping/dor/fapg-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-04-feature-artefact-page-story-grouping/dor/fapg-s1-dor-contract.md",
@@ -30668,7 +30668,9 @@
               "file": "artefacts/2026-09-04-feature-artefact-page-story-grouping/plans/fapg-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/827"
         }
       ]
     }
