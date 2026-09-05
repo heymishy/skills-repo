@@ -31323,7 +31323,7 @@
       "stories": [
         {
           "id": "bsgm-s1",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "testPlan": {
             "status": "written",
             "totalTests": 8,
@@ -31332,7 +31332,7 @@
           "acTotal": 4,
           "acVerified": 3,
           "health": "green",
-          "updatedAt": "2026-09-05T11:38:23.329Z",
+          "updatedAt": "2026-09-05T19:58:10.509Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-05-bare-slug-story-grouping-fix/dor/bsgm-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-05-bare-slug-story-grouping-fix/dor/bsgm-s1-dor-contract.md",
