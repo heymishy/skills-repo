@@ -31142,28 +31142,69 @@
         {
           "slug": "page-and-nav-redesign",
           "name": "An operator or prospect reading a feature's artefact page sees one coherent, modern design end-to-end, and can reach it without a confusing hop",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "fpux.1",
               "name": "Unify /features/:slug's visual language across feature-level and per-story sections",
-              "stage": "branch-setup",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-05T06:15:15.837Z",
+              "updatedAt": "2026-09-05T06:55:21.802Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 8,
-                "passing": 0
+                "totalTests": 12,
+                "passing": 12
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
               "dorPath": "artefacts/2026-09-05-feature-page-ux-redesign/dor/fpux.1-dor.md",
-              "dorContractPath": "artefacts/2026-09-05-feature-page-ux-redesign/dor/fpux.1-dor-contract.md"
+              "dorContractPath": "artefacts/2026-09-05-feature-page-ux-redesign/dor/fpux.1-dor-contract.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Add sw-epic-group/sw-story-row shared CSS classes",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Use new classes in renderGroupedArtefactIndexHtml, hoist renderStory (AC1)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Regression guard -- delete-feature button unchanged (AC5)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "E2E -- visual consistency and light/dark theme (AC1, AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.1-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "E2E -- keyboard focus visibility and operability (AC3)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.1-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "E2E -- WCAG 2.1 AA contrast ratio (AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.1-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/836"
             },
             {
               "slug": "fpux.2",

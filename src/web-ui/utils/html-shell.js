@@ -709,6 +709,42 @@ a { color: inherit; }
 .sw-list li { padding: 12px 16px; display: flex; align-items: center; gap: 12px; }
 .sw-list li + li { border-top: 1px solid var(--line); }
 
+/* ── Epic/story accordion (fpux.1) ────────────────────────────────────────── */
+.sw-epic-group {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 8px; margin: 8px 0; padding: 10px 14px;
+}
+.sw-epic-group > summary {
+  cursor: pointer; font-size: 15px; font-weight: 600; color: var(--ink);
+  display: flex; align-items: center; gap: 6px;
+}
+.sw-epic-group > summary::marker,
+.sw-epic-group > summary::-webkit-details-marker { display: none; content: ''; }
+.sw-epic-group > summary::before {
+  content: '▸'; display: inline-block; transition: transform 0.15s ease;
+  font-size: 12px; color: var(--muted);
+}
+.sw-epic-group[open] > summary::before { transform: rotate(90deg); }
+.sw-epic-group > summary:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px;
+}
+.sw-story-row { margin: 4px 0 4px 16px; padding: 6px 10px; }
+.sw-story-row + .sw-story-row { border-top: 1px solid var(--line); }
+.sw-story-row > summary {
+  cursor: pointer; font-size: 14px; font-weight: 500; color: var(--ink);
+  display: flex; align-items: center; gap: 6px;
+}
+.sw-story-row > summary::marker,
+.sw-story-row > summary::-webkit-details-marker { display: none; content: ''; }
+.sw-story-row > summary::before {
+  content: '▸'; display: inline-block; transition: transform 0.15s ease;
+  font-size: 11px; color: var(--muted);
+}
+.sw-story-row[open] > summary::before { transform: rotate(90deg); }
+.sw-story-row > summary:focus-visible {
+  outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px;
+}
+
 /* ── Forms ──────────────────────────────────────────────────────────────────── */
 .sw-input, .sw-textarea {
   width: 100%; padding: 8px 10px; border: 1px solid var(--line);
