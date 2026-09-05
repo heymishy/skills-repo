@@ -31421,6 +31421,33 @@
       "metrics": [],
       "updatedAt": "2026-09-05T20:18:14.043Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-09-06-artefact-detail-link-resolution-fix",
+      "name": "Fix artefact detail links so nested and archived artefacts resolve instead of 404ing",
+      "stage": "test-plan",
+      "health": "green",
+      "stories": [
+        {
+          "id": "adlr-s1",
+          "slug": "adlr-s1",
+          "stage": "dor-signed-off",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-06-artefact-detail-link-resolution-fix/dor/adlr-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-06-artefact-detail-link-resolution-fix/dor/adlr-s1-dor-contract.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 12,
+            "passing": 0
+          },
+          "acTotal": 6,
+          "acVerified": 0
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-05T21:15:52.841Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

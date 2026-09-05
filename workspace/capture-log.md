@@ -1809,3 +1809,15 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: gap
   signal-text: "While scoping sri-s1, found that 2026-06-22-wuce-multi-tenancy's stories s0.1, s0.2, s0.3 (Epic: sprint-0-tenant-fixes) and s2.1 (Epic: sprint-2-preflight-gate) reference epics that were never created as epic artefact files (no sprint-0-tenant-fixes.md or sprint-2-preflight-gate.md exists under artefacts/2026-06-22-wuce-multi-tenancy/epics/) and never registered in pipeline-state.json's epics[] array at all -- unlike phase3/phase4-opus/mfc/wfp's missing-registration cases, there is no existing epic entry to add these 4 stories to. Not fixed as part of sri-s1 (operator decision, 2026-09-06) because closing this gap requires authoring two new epic artefacts from the story files' own content, which is content-authoring scope beyond a mechanical data-integrity fix. Needs its own dedicated scoping pass (or a decision to fold these 4 stories into an existing adjacent phase epic instead of creating new sprint-N epics)."
   source: agent-auto
+
+- date: 2026-09-06
+  session-phase: investigation for adlr-s1 (artefact-detail-link-resolution-fix)
+  signal-type: gap
+  signal-text: "While root-causing the 93.5%-of-artefact-links-404 defect, found a second, unrelated dead code path: listArtefacts (src/web-ui/adapters/artefact-list.js) builds a viewUrl field pointing at /artefacts/<encoded-full-path> (plural), but no route handler for that path pattern exists anywhere in server.js -- it is unreachable, unused dead code. Not the cause of the live symptom (features.js's _renderArtefactListByType never reads a.viewUrl, it rebuilds its own broken URL from the bare filename instead), so not fixed as part of adlr-s1. Worth a dedicated cleanup pass to either wire up the plural route properly or remove the dead viewUrl field and its computation."
+  source: agent-auto
+
+- date: 2026-09-06
+  session-phase: investigation for adlr-s1 (artefact-detail-link-resolution-fix)
+  signal-type: gap
+  signal-text: "While root-causing the same defect, found that GET /skills/:name/sessions/:id/result (the post-commit success page, rendered by renderCommitResult in commit-view.js) is currently unreachable in production for an unrelated, pre-existing reason: skills-adapter.js's getCommitResult is a D37 injectable adapter that is never wired via setGetCommitResult anywhere in server.js (confirmed via grep -- zero matches), so handleGetResultHtml's call always throws 'Adapter not wired' and the page renders a generic error before ever reaching the artefact link this session was investigating. Not fixed as part of adlr-s1 -- this is a genuine D37 wiring gap (per CLAUDE.md's own injectable-adapter rule: stub defaults must throw, which is working as designed; the gap is that the real implementation was apparently never wired), needing its own scoping pass to determine what the real getCommitResult implementation should do and wire it."
+  source: agent-auto
