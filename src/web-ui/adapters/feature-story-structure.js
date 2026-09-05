@@ -59,8 +59,16 @@ function getFeatureStoryStructure(repoRoot, featureSlug) {
       }))
     : [];
 
+  // sri-s1: the schema explicitly documents epic.stories[] as either full
+  // objects OR bare-string references to a story whose full tracking
+  // object lives in feature.stories[] ("Phase 3+ style") -- so the same
+  // slug legitimately appearing in both places is not a data error. Without
+  // this exclusion, groupArtefactsByStory renders that story's accordion
+  // twice: once under its epic, once again in the flat "Stories" section.
+  const epicSlugSet = new Set(epics.reduce((acc, e) => acc.concat(e.storySlugs), []));
+
   const flatStorySlugs = Array.isArray(feature.stories)
-    ? feature.stories.map(_storySlug).filter(Boolean)
+    ? feature.stories.map(_storySlug).filter(Boolean).filter((slug) => !epicSlugSet.has(slug))
     : [];
 
   return { epics, flatStorySlugs };

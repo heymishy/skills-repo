@@ -1727,28 +1727,59 @@
           "name": "Governance extractability — enforcement selection",
           "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e1-governance-extractability-enforcement-selection.md",
           "storyCount": 5,
-          "slug": "e1"
+          "slug": "e1",
+          "stories": [
+            "record-enforcement-adr",
+            "spike-a-governance-extractability",
+            "spike-b1-cli-mcp-enforcement",
+            "spike-b2-orchestration-schema-enforcement",
+            "synthesise-enforcement-recommendation"
+          ]
         },
         {
           "id": "e2",
           "name": "Distribution — zero-commit install",
           "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e2-distribution-zero-commit-install.md",
           "storyCount": 7,
-          "slug": "e2"
+          "slug": "e2",
+          "stories": [
+            "design-package-manifest",
+            "implement-context-yml-seeding",
+            "implement-lockfile-hash-verification",
+            "implement-sync-command",
+            "implement-zero-commit-install",
+            "spike-c-distribution-model",
+            "validate-install-sync-e2e"
+          ]
         },
         {
           "id": "e3",
           "name": "Non-technical participation",
           "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e3-non-technical-participation.md",
           "storyCount": 6,
-          "slug": "e3"
+          "slug": "e3",
+          "stories": [
+            "implement-teams-bot-scaffold",
+            "implement-teams-dor-approval",
+            "implement-teams-governance-output",
+            "implement-teams-pipeline-health",
+            "spike-d-teams-c7-fidelity",
+            "validate-teams-e2e-session"
+          ]
         },
         {
           "id": "e4",
           "name": "Readable governance — second-line audit",
           "artefact": "artefacts/2026-04-19-skills-platform-phase4-opus/epics/e4-readable-governance-second-line-audit.md",
           "storyCount": 5,
-          "slug": "e4"
+          "slug": "e4",
+          "stories": [
+            "design-readable-governance-format",
+            "implement-gate-verdict-narrative",
+            "implement-second-line-audit-export",
+            "implement-trace-plain-language",
+            "validate-readable-output-review"
+          ]
         }
       ],
       "regulated": false,
@@ -2149,7 +2180,12 @@
             "p3.1b",
             "p3.1c",
             "p3.1d",
-            "p3.1e"
+            "p3.1e",
+            "p3.18",
+            "p3.19",
+            "p3.20",
+            "p3.21",
+            "p3.22"
           ]
         },
         {
@@ -3901,6 +3937,15 @@
           "dodStatus": "complete",
           "releaseReady": true,
           "updatedAt": "2026-05-06"
+        },
+        {
+          "id": "mfc.2",
+          "slug": "mfc.2",
+          "name": "Chat UX improvements: scroll-to-bottom, live draft panel, remove question counter",
+          "epic": "mfc-epic-1",
+          "artefact": "artefacts/2026-05-05-web-ui-model-first-chat/stories/mfc.2-chat-ux-improvements.md",
+          "stage": "definition",
+          "health": "green"
         }
       ],
       "metrics": [
@@ -6003,7 +6048,8 @@
               "reviewStatus": "passed",
               "traceStatus": "not-run",
               "tasks": []
-            }
+            },
+            "wfp.11"
           ]
         }
       ],
