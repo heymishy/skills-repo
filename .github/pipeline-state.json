@@ -31452,6 +31452,33 @@
       "metrics": [],
       "updatedAt": "2026-09-05T21:15:52.841Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-09-06-feature-artefact-document-matrix",
+      "name": "Replace the multi-story artefact accordion with a compact feature-level table and document matrix",
+      "stage": "test-plan",
+      "health": "green",
+      "stories": [
+        {
+          "id": "fadm-s1",
+          "slug": "fadm-s1",
+          "stage": "dor-signed-off",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-06-feature-artefact-document-matrix/dor/fadm-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-06-feature-artefact-document-matrix/dor/fadm-s1-dor-contract.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 16,
+            "passing": 0
+          },
+          "acTotal": 7,
+          "acVerified": 0
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-05T22:48:39.421Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
