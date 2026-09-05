@@ -15,9 +15,7 @@ None.
 
 ## MEDIUM findings — resolve or acknowledge in /decisions
 
-- **[1-M1]** Category C (AC quality) — AC2 ("Given each confirmed entry point **from AC1**, When a user follows it end-to-end, Then it leads directly to...") explicitly depends on AC1 having already been run and its output ("confirmed entry points") already existing. This fails the `/definition` skill's own testability filter criterion (c): "cannot be evaluated independently without first running a prior AC." As written, AC2 cannot be verified in isolation — a test-plan author would need to first execute AC1's audit before AC2's scope is even known.
-  Risk if proceeding: `/test-plan` may either (a) silently collapse AC1+AC2 into one combined test (losing the independent-verification value both ACs are supposed to provide), or (b) write an AC2 test that re-derives the entry-point list itself, duplicating AC1's own work with a risk of the two lists silently diverging.
-  To acknowledge: run `/decisions`, category RISK-ACCEPT — or reword AC2 to restate the three named entry points directly (dashboard, product page, story DoD) instead of referencing "AC1", making it independently testable against the *discovery's* named list rather than AC1's *output*.
+- **[1-M1]** ✅ **RESOLVED (2026-09-05)** — Category C (AC quality) — AC2 originally read "Given each confirmed entry point **from AC1**...", explicitly depending on AC1 having already been run. This failed the `/definition` skill's own testability filter criterion (c): "cannot be evaluated independently without first running a prior AC." **Fix applied:** AC2 reworded to restate the three named entry points directly (dashboard, product page, story DoD resume link) from the discovery artefact, instead of referencing "AC1" — now independently testable against a fixed, known input rather than another AC's runtime output. See `stories/fpux.2-audit-and-fix-nav-path.md`.
 
 ---
 
@@ -35,5 +33,5 @@ None.
 
 ## Summary
 
-0 HIGH, 1 MEDIUM, 3 LOW.
+0 HIGH, 1 MEDIUM (resolved same-day), 3 LOW.
 **Outcome:** PASS

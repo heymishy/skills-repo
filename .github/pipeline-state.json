@@ -31157,10 +31157,10 @@
               "slug": "fpux.2",
               "name": "Audit and fix the navigation path into /features/:slug",
               "stage": "review",
-              "health": "amber",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-05T02:48:49.693Z"
+              "updatedAt": "2026-09-05T02:51:35.192Z"
             }
           ]
         }

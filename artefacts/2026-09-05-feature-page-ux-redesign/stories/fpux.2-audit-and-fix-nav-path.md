@@ -31,7 +31,7 @@ So that **the navigation experience itself doesn't undermine the polished page t
 
 **AC1:** Given the three entry points named in discovery (dashboard, a feature's product page, a story's own DoD "Resume conversation"/artefact link), When each is audited by tracing the actual route/link chain in `src/web-ui`, Then a documented, exhaustive list of every real entry point into `/features/:slug` exists in this story's own write-up (confirming the three, or naming any additional real entry point found, per the discovery's own Clarification log commitment to this audit).
 
-**AC2:** Given each confirmed entry point from AC1, When a user follows it end-to-end, Then it leads directly to the target feature's `/features/:slug` page — with no intermediate 404, unauthenticated redirect loop, or a landing page requiring an unexplained extra step to reach the intended feature.
+**AC2:** Given each of the three entry points named in discovery (the dashboard, a feature's product page, a story's own DoD resume/artefact link), When a user follows it end-to-end toward a target feature's `/features/:slug` page, Then it leads directly there — with no intermediate 404, unauthenticated redirect loop, or a landing page requiring an unexplained extra step to reach the intended feature.
 
 **AC3:** Given a dead-end, broken, or confusing hop is found during the AC1/AC2 audit, When this story is marked complete, Then that hop has been fixed in the relevant route/view file and re-verified to no longer reproduce — the audit does not stop at documentation if a real defect is found.
 
