@@ -62,7 +62,7 @@ Not applicable — no new uptime, RTO, or RPO target applies. This page's availa
 
 **Named sign-off required?**
 - [ ] Not required
-- [x] Yes — the WCAG 2.1 AA conformance check (fpux.1 AC3/AC4) requires explicit sign-off at `/definition-of-ready`, per `CLAUDE.md`'s CSS-layout-dependent AC classification rule (automated Playwright visual-regression test, or RISK-ACCEPT + manual smoke test — decision made at DoR, not left unclassified).
+- [x] Yes — **signed off by Hamish King (Platform Owner), 2026-09-05, at `/definition-of-ready`.** The WCAG 2.1 AA conformance approach (fpux.1 AC3/AC4, verified via Playwright E2E computed-style/contrast checks — see `test-plans/fpux.1-test-plan.md`) is confirmed as the compliance verification method for this NFR, per `CLAUDE.md`'s CSS-layout-dependent AC classification rule.
 
 _Compliance NFRs with named regulatory clauses require human sign-off before the story can proceed past `/definition-of-ready`. This is enforced as H-NFR in the DoR check._
 

@@ -2,7 +2,7 @@
 
 **Status:** Approved
 **Created:** 2026-09-05
-**Approved by:** Hamish King — Operator/Engineer — 2026-09-05
+**Approved by:** Hamish King — Platform Owner — 2026-09-05
 **Author:** Claude Code (agent, operator-directed — Hamish King)
 
 ---
@@ -65,7 +65,7 @@ Whether to extend the existing `.sw-card`/`.sw-section-title` tokens or introduc
 
 ## Approved By
 
-Hamish King — Operator/Engineer — 2026-09-05
+Hamish King — Platform Owner — 2026-09-05
 
 ---
 

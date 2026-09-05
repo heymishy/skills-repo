@@ -2,6 +2,15 @@
 
 ---
 
+## RISK-ACCEPT: W4 — AC verification scripts not walked through by a domain expert before DoR sign-off
+
+**Date:** 2026-09-05
+**Context:** `/definition-of-ready`'s W4 check requires the AC verification scripts (`fpux.1-verification.md`, `fpux.2-verification.md`) to be reviewed by a domain expert before sign-off. Neither has been walked through scenario-by-scenario in this session.
+**Decision:** Proceed to DoR sign-off without a pre-code walkthrough; the scripts remain available for use as the post-merge smoke test and delivery-review script (their other two designed purposes), and can still be walked through before implementation starts if desired.
+**Rationale:** Solo-operator context — the operator (also the sole domain expert) has been directly reviewing every upstream artefact (discovery, benefit-metric, design, epic, stories, review findings) throughout this same session, substantially reducing the risk this check exists to catch (a script drifting from what the operator actually wants). Risk accepted rather than adding a redundant review pass.
+
+---
+
 ## Visual-language direction resolved: incremental token extension, not a new visual language
 
 **Date:** 2026-09-05
