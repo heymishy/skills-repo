@@ -2,6 +2,15 @@
 
 ---
 
+## RISK-ACCEPT: pre-existing E2E failures found during fpux.1's route/handler coverage check
+
+**Date:** 2026-09-05
+**Context:** `/verify-completion`'s mandatory route/handler E2E coverage check (this diff touches `src/web-ui/routes/features.js`) ran the 3 existing local specs referencing `/features/:slug`. 4 of their tests failed: 2 in `feature-navigation.spec.js`/`wuce20-artefact-index-html.spec.js` expect a hardcoded `localhost:3000` redirect target while `playwright.config.js` runs the test server on `3999`; 2 in `frsr-s1-feature-row-session-resume.spec.js` fail feature creation with `409` instead of the expected `303` (redirect into a skill session).
+**Decision:** All 4 acknowledged as pre-existing, unrelated to `fpux.1`. Confirmed by running the identical spec directly against `master` (main checkout, not this branch) — the `frsr-s1` `409` failure reproduces byte-for-byte identically. The two spec files themselves were last modified by an unrelated prior story (`pdt-s4`, PR #818), predating this branch entirely — the `:3000` assertions were stale even then.
+**Rationale:** `fpux.1`'s diff touches only CSS classes and the grouped-rendering markup path (`renderGroupedArtefactIndexHtml`/`renderStory`) — it does not touch feature creation, redirect targets, or server port configuration. The 6 other tests across these same 3 spec files (including `wuce20`'s own AC1/AC2/AC4/AC5 HTML-rendering assertions, which DO exercise the code this story changed) passed cleanly, which is the actually-relevant coverage for this story's own diff.
+
+---
+
 ## RISK-ACCEPT: pre-existing baseline failures at branch-setup (fpux.1)
 
 **Date:** 2026-09-05
