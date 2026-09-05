@@ -31142,16 +31142,16 @@
         {
           "slug": "page-and-nav-redesign",
           "name": "An operator or prospect reading a feature's artefact page sees one coherent, modern design end-to-end, and can reach it without a confusing hop",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "fpux.1",
               "name": "Unify /features/:slug's visual language across feature-level and per-story sections",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-05T06:53:02.358Z",
+              "updatedAt": "2026-09-05T06:55:21.802Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 12,
@@ -31202,7 +31202,9 @@
                   "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.1-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/836"
             },
             {
               "slug": "fpux.2",
