@@ -31209,23 +31209,52 @@
             {
               "slug": "fpux.2",
               "name": "Audit and fix the navigation path into /features/:slug",
-              "stage": "branch-setup",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-05T07:07:08.510Z",
+              "updatedAt": "2026-09-05T07:34:59.465Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 4,
-                "passing": 0
+                "totalTests": 5,
+                "passing": 5
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorPath": "artefacts/2026-09-05-feature-page-ux-redesign/dor/fpux.2-dor.md",
-              "dorContractPath": "artefacts/2026-09-05-feature-page-ux-redesign/dor/fpux.2-dor-contract.md"
+              "dorContractPath": "artefacts/2026-09-05-feature-page-ux-redesign/dor/fpux.2-dor-contract.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Record AC1 audit findings in story artefact (4 entry points found)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.2-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "E2E -- all 4 entry points lead directly to /features/:slug (AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.2-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "AC3 -- no defect found, record outcome",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.2-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Update benefit-metric.md M3 row with real audit values (AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.2-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/837"
             }
           ]
         }

@@ -46,8 +46,8 @@ This is a straightforward product/UX-quality initiative — it does not test a h
 | Field | Value |
 |-------|-------|
 | **What we measure** | Click/decision count from `/dashboard` to a target feature's `/features/:slug` page via each real entry point (dashboard, product page, story DoD), and whether any entry point contains a dead-end or confusing hop. |
-| **Baseline** | Not yet established — no click-count audit has been performed. Per the discovery's own Clarification log, whether dashboard/product-page/story-DoD are the *exhaustive* real entry points is also unconfirmed; both will be established together during the `/definition` nav-path audit. |
-| **Target** | TBD — to be set once the `/definition` audit establishes the current baseline click count and confirms the full set of real entry points. Directionally: zero dead-end or confusing hops on any confirmed entry point. |
+| **Baseline** | 4 real entry points confirmed (dashboard row, product-page item, story-DoD redirect, kanban board card) — established 2026-09-05 via `fpux.2`'s own AC1 audit (`grep -rn "features/" src/web-ui/routes/*.js src/web-ui/views/*.js`). 0 dead-end hops found across all 4. |
+| **Target** | Maintained at 0 dead-end hops across all 4 confirmed entry points — met on first measurement, no further change needed unless a 5th entry point is added later. |
 | **Minimum validation signal** | Zero dead-end or broken hops on the three named entry points, even if the click-count itself isn't reduced further. |
 | **Measurement method** | Operator direct click-through review — once during `/definition` (to establish the baseline and target) and once post-implementation (to confirm). |
 | **Feedback loop** | If the `/definition` audit surfaces an entry point materially more important than the three named here (e.g. a link shared directly with prospects), that becomes an in-scope addition to this story's own nav-path work, not a separately deferred item — the discovery's MVP scope explicitly anticipated this via the Q4 clarification. |
