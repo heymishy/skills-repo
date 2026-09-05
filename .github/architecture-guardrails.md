@@ -17,7 +17,7 @@
   To evolve: update this file, open a PR, tag tech lead for review.
 -->
 
-**Last updated:** 2026-04-20
+**Last updated:** 2026-09-06
 **Maintained by:** Repo owner (solo)
 
 ---
@@ -1393,3 +1393,36 @@ Any mechanism that a live, authenticated SaaS user triggers directly through the
 #### Revisit trigger
 
 If a future mechanism is ambiguous between the two (e.g. triggered by both an operator's pipeline session AND a live tenant action), revisit whether a shared underlying module invoked from both a skill and a route handler is the right shape, rather than forcing the whole mechanism into one category.
+
+---
+
+### ADR-028: A derived structure needs exactly one canonical builder — every consumer reads from it, none re-derive it
+
+**Status:** Active
+**Date:** 2026-09-06
+**Story:** 2026-09-06-canonical-artefact-trace (discovery phase) — generalised from a same-session audit covering `bsgm-s1`, `sri-s1`, `adlr-s1`, `fadm-s1`
+**Decided by:** Hamish King, discovery-time promotion of a cross-cutting pattern found during delivery, not deferred to /improve
+
+#### Context
+
+Five separate bugs in one session (`bsgm-s1`, `sri-s1`, `adlr-s1`, `fadm-s1`, and an unfixed `2026-04-19-skills-platform-phase4` case) all traced back to the same root shape: "what artefacts exist for a feature, and which epic/story does each belong to" was independently re-derived in 10 different places — `pipeline-state.json`'s two schema shapes, `feature-story-structure.js`, `artefact-list.js`'s disk walk, `artefact-fetcher.js`'s GitHub-API resolution, `features.js`'s table/matrix rendering, 5 different label/subdirectory tables, and 3 separate `archived/`-prefix fallback implementations. None of the 10 shared a source. Each bug was fixed in isolation, in a different file, without addressing why the same class of defect kept recurring. A direct audit found ~90 of this repo's 260 features (~35%) have some live divergence between what `pipeline-state.json` believes exists and what's actually on disk — this is not a one-off, it is the predictable outcome of the pattern.
+
+#### Options considered
+
+| Option | Pros | Cons |
+|--------|------|------|
+| **One canonical builder per derived structure, every consumer reads from it (chosen)** — e.g. a single `buildArtefactTrace()` for feature/epic/story/artefact structure; new consumers are required to call it, not write their own traversal | Structural drift becomes impossible by construction — there is only one place the derivation logic lives, so a fix there fixes every consumer at once; a missing/inconsistent case becomes visible in one place instead of silently degrading differently in each of N places | Requires an explicit "does a canonical builder already exist for this?" check before writing a new derivation — easy to skip under time pressure, which is exactly how this got to 10 |
+| Continue fixing each divergence where it's found, story by story | Fast in the moment, no upfront design cost | Proven by this exact session to not converge — 5 stories fixed 5 symptoms of 1 cause; the 6th (`phase4`) was already waiting, undiscovered, the whole time |
+
+#### Decision
+
+Whenever a piece of derived structure or state (not raw stored data, but something computed *from* stored data by walking, joining, or interpreting it) is needed by more than one consumer, there must be exactly one canonical builder function that produces it, and every consumer — present and future — reads from that builder's output rather than re-deriving its own copy. Before adding a new piece of code that walks a directory, joins across data sources, or interprets a schema shape to answer a question another part of the codebase already answers, first check whether a canonical builder for that question already exists. If it does, use it. If it doesn't, and a second consumer of the same derived answer is now being written, extract the existing ad hoc logic into one canonical builder before adding the second copy — do not let a second independent derivation reach master. This applies beyond the artefact-trace case that surfaced it: any future "compute X by looking at Y" logic needed in two or more places is a candidate for this same rule.
+
+#### Consequences
+
+- **Easier:** a fix to a canonical builder immediately fixes every consumer; a new consumer gets the correct, complete behaviour (including edge cases like an `archived/` fallback or an unregistered-but-real record) for free, without needing to know those edge cases exist.
+- **Harder / more constrained:** a genuinely new consumer's author must find and understand the existing canonical builder before writing code, rather than writing the narrowest logic that satisfies their own immediate need — a small upfront cost, deliberately traded against the much larger cost this session already paid finding and fixing 5 independent copies of the same gap.
+
+#### Revisit trigger
+
+If a canonical builder's own generality starts forcing awkward compromises for a genuinely different consumer need (e.g. a consumer needs a materially different shape, not just a subset/view of the same one), revisit whether that consumer is really the same derived structure or a distinct one that deserves its own builder — this ADR does not mandate one builder per codebase, only one builder per genuinely-shared derived structure.
