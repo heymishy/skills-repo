@@ -31354,18 +31354,22 @@
         {
           "id": "sri-s1",
           "slug": "sri-s1",
-          "stage": "dor-signed-off",
+          "stage": "branch-complete",
           "health": "green",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-06-story-registration-integrity-fix/dor/sri-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-06-story-registration-integrity-fix/dor/sri-s1-dor-contract.md",
           "testPlan": {
             "status": "written",
-            "totalTests": 4,
-            "passing": 0
+            "totalTests": 10,
+            "passing": 10
           },
           "acTotal": 4,
-          "acVerified": 0
+          "acVerified": 4,
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/839",
+          "updatedAt": "2026-09-05T20:34:27.143Z",
+          "verifyStatus": "passed"
         }
       ],
       "metrics": [],
