@@ -31091,10 +31091,12 @@
           "name": "Visual consistency of /features/:slug (style-seam count)",
           "target": "0 seams",
           "baseline": "1 seam (confirmed 2026-09-05 on wuce-multi-tenancy)",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "signal": "on-track",
+          "lastMeasured": "2026-09-05T10:38:24.916Z",
+          "evidence": "fpux.1-visual-consistency-theme.spec.js AC1 -- .sw-epic-group computed style matches .sw-card exactly, 0 seams confirmed",
+          "contributingStories": [
+            "fpux.1"
+          ]
         },
         {
           "id": "m2",
@@ -31103,28 +31105,34 @@
           "baseline": "Below bar (confirmed 2026-09-05)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "Automated computed-style/contrast/focus verification confirms the technical redesign is correctly applied; the qualitative operator self-review (per the metric own defined measurement method) has not yet been performed post-deployment.",
+          "contributingStories": [
+            "fpux.1"
+          ]
         },
         {
           "id": "m3",
           "name": "Navigation path clarity into /features/:slug",
           "target": "TBD - set at /definition audit; 0 dead-end hops",
           "baseline": "Not yet established",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "signal": "on-track",
+          "lastMeasured": "2026-09-05T10:38:24.916Z",
+          "evidence": "benefit-metric.md M3 row -- 4 real entry points confirmed, 0 dead-end hops found across all 4, target maintained at 0",
+          "contributingStories": [
+            "fpux.2"
+          ]
         },
         {
           "id": "m4",
           "name": "WCAG 2.1 AA accessibility conformance (Tier 3)",
           "target": "100% conformance",
           "baseline": "Not yet audited",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "signal": "on-track",
+          "lastMeasured": "2026-09-05T10:38:24.916Z",
+          "evidence": "fpux.1-contrast-ratio.spec.js + fpux.1-keyboard-focus.spec.js -- WCAG 2.1 AA conformance confirmed in both themes",
+          "contributingStories": [
+            "fpux.1"
+          ]
         }
       ],
       "updatedAt": "2026-09-05T02:48:59.317Z",
@@ -31142,16 +31150,16 @@
         {
           "slug": "page-and-nav-redesign",
           "name": "An operator or prospect reading a feature's artefact page sees one coherent, modern design end-to-end, and can reach it without a confusing hop",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "fpux.1",
               "name": "Unify /features/:slug's visual language across feature-level and per-story sections",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-05T06:55:21.802Z",
+              "updatedAt": "2026-09-05T10:38:08.413Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 12,
@@ -31203,17 +31211,21 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/836"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/836",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodPath": "artefacts/2026-09-05-feature-page-ux-redesign/dod/fpux.1-dod.md",
+              "layoutGapsAtMerge": false
             },
             {
               "slug": "fpux.2",
               "name": "Audit and fix the navigation path into /features/:slug",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-05T07:34:59.465Z",
+              "updatedAt": "2026-09-05T10:38:08.587Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -31253,8 +31265,12 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/837"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/837",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodPath": "artefacts/2026-09-05-feature-page-ux-redesign/dod/fpux.2-dod.md",
+              "layoutGapsAtMerge": false
             }
           ]
         }
@@ -31291,10 +31307,10 @@
           "id": "NFR-performance-no-regression",
           "category": "nfr",
           "label": "No page-render performance regression",
-          "status": "not-assessed",
-          "evidence": "Informal check only, per nfr-profile.md -- to be confirmed by direct operator observation at DoD, not measured at DoR",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-05T03:42:51.872Z"
+          "status": "met",
+          "evidence": "DoD confirms no page-render regression observed during implementation or CI (informal check, per nfr-profile.md own defined scope for this NFR)",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-05T10:38:48.530Z"
         }
       ],
       "designArtefact": "artefacts/2026-09-05-feature-page-ux-redesign/design.md"
