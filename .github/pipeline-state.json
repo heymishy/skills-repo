@@ -31323,7 +31323,7 @@
       "stories": [
         {
           "id": "bsgm-s1",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "testPlan": {
             "status": "written",
             "totalTests": 8,
@@ -31332,11 +31332,13 @@
           "acTotal": 4,
           "acVerified": 3,
           "health": "green",
-          "updatedAt": "2026-09-05T11:31:47.842Z",
+          "updatedAt": "2026-09-05T11:38:23.329Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-05-bare-slug-story-grouping-fix/dor/bsgm-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-05-bare-slug-story-grouping-fix/dor/bsgm-s1-dor-contract.md",
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/838"
         }
       ],
       "metrics": [],
