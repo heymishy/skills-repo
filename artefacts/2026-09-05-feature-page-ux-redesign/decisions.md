@@ -2,6 +2,33 @@
 
 ---
 
+## RISK-ACCEPT: pre-existing timing-threshold flake found during fpux.2 full-suite run
+
+**Date:** 2026-09-05
+**Context:** `tests/check-rb-s5-optional-outer-loop-install.js` failed once during `fpux.2`'s Task 4 full-suite run (`outerLoopFlagOverheadUnder3Seconds`, a wall-clock threshold test) but passed 10/10 in isolation immediately after.
+**Decision:** Acknowledged as pre-existing/flaky, unrelated to this story (no touch to `rb-s5`'s own scope). Same class as `check-pcr-s1-test-runner.js` and `check-bri-s2.2-neon-staging-branch.js` found earlier in this feature's own delivery — timing-threshold tests flaking under full-suite parallel load in this local environment.
+**Rationale:** `fpux.2`'s diff (story/benefit-metric markdown updates, 2 new isolated test files) has no relationship to outer-loop install timing. Not blocking.
+
+---
+
+## RISK-ACCEPT: pre-existing E2E failures found during fpux.1's route/handler coverage check
+
+**Date:** 2026-09-05
+**Context:** `/verify-completion`'s mandatory route/handler E2E coverage check (this diff touches `src/web-ui/routes/features.js`) ran the 3 existing local specs referencing `/features/:slug`. 4 of their tests failed: 2 in `feature-navigation.spec.js`/`wuce20-artefact-index-html.spec.js` expect a hardcoded `localhost:3000` redirect target while `playwright.config.js` runs the test server on `3999`; 2 in `frsr-s1-feature-row-session-resume.spec.js` fail feature creation with `409` instead of the expected `303` (redirect into a skill session).
+**Decision:** All 4 acknowledged as pre-existing, unrelated to `fpux.1`. Confirmed by running the identical spec directly against `master` (main checkout, not this branch) — the `frsr-s1` `409` failure reproduces byte-for-byte identically. The two spec files themselves were last modified by an unrelated prior story (`pdt-s4`, PR #818), predating this branch entirely — the `:3000` assertions were stale even then.
+**Rationale:** `fpux.1`'s diff touches only CSS classes and the grouped-rendering markup path (`renderGroupedArtefactIndexHtml`/`renderStory`) — it does not touch feature creation, redirect targets, or server port configuration. The 6 other tests across these same 3 spec files (including `wuce20`'s own AC1/AC2/AC4/AC5 HTML-rendering assertions, which DO exercise the code this story changed) passed cleanly, which is the actually-relevant coverage for this story's own diff.
+
+---
+
+## RISK-ACCEPT: pre-existing baseline failures at branch-setup (fpux.1)
+
+**Date:** 2026-09-05
+**Context:** `/branch-setup` for `fpux.1` found 2 failing files out of 615 in the baseline test run: `tests/check-p3.5-validate-trace.js` (a long-standing, already-known pre-existing failure this session) and `tests/check-pcr-s1-test-runner.js` (a wall-clock performance-threshold test, `749.8ms/file` limit, measured `767–1321ms/file` depending on system load). A third, `tests/check-bri-s2.2-neon-staging-branch.js`, appeared once during Task 2's full-suite regression run (its own `IT1`/`IT2` are a 10-second connection-timing budget test) but passed cleanly 3/3 times when run in isolation immediately after.
+**Decision:** All three acknowledged as pre-existing/flaky, unrelated to this story, and not blocking. `check-pcr-s1-test-runner.js` confirmed failing on master itself (independent of this branch); `check-bri-s2.2-neon-staging-branch.js` confirmed passing in isolation every time, indicating a full-suite-parallel-load timing flake, not a real regression from this story's CSS/markup-only changes.
+**Rationale:** None of the three failures are caused by or related to `fpux.1`'s own scope (CSS/design-token changes to `features.js`/`html-shell.js`, zero touch to database/connection/trace-validation code). Blocking this story's implementation on unrelated, pre-existing, environment-load-sensitive tests would be process overhead with no quality value — matches this session's own established "verify the specific delta against baseline" convention.
+
+---
+
 ## RISK-ACCEPT: W4 — AC verification scripts not walked through by a domain expert before DoR sign-off
 
 **Date:** 2026-09-05

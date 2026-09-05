@@ -31209,11 +31209,11 @@
             {
               "slug": "fpux.2",
               "name": "Audit and fix the navigation path into /features/:slug",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-05T03:42:28.925Z",
+              "updatedAt": "2026-09-05T07:07:08.510Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
