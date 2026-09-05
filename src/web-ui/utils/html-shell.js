@@ -709,6 +709,37 @@ a { color: inherit; }
 .sw-list li { padding: 12px 16px; display: flex; align-items: center; gap: 12px; }
 .sw-list li + li { border-top: 1px solid var(--line); }
 
+/* ── Feature-level document table + story/epic document matrix (fadm-s1) ─── */
+.doc-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.doc-table td { padding: 8px 4px; border-bottom: 1px solid var(--line-2); vertical-align: middle; }
+.doc-table tr:last-child td { border-bottom: none; }
+.doc-table__type { color: var(--muted); font-size: 12px; width: 1%; white-space: nowrap; }
+.doc-table__link { color: var(--ink-2); text-decoration: none; font-weight: 500; }
+.doc-table__link:hover { color: var(--accent); text-decoration: underline; }
+.doc-table__date { color: var(--muted-2); font-size: 12px; text-align: right; white-space: nowrap; width: 1%; }
+.doc-table__resume-link { margin-left: 8px; font-size: 12px; }
+
+.doc-matrix-wrap { overflow-x: auto; }
+.doc-matrix { width: 100%; border-collapse: collapse; font-size: 12.5px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.doc-matrix th, .doc-matrix td { padding: 8px 9px; text-align: center; border-bottom: 1px solid var(--line-2); white-space: nowrap; }
+.doc-matrix thead th { font-size: 10.5px; font-weight: 650; letter-spacing: 0.3px;
+  text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--line); cursor: help; }
+.doc-matrix__story-col { text-align: left !important; font-weight: 600; }
+.doc-matrix tr:last-child td { border-bottom: none; }
+.doc-matrix tr:hover td { background: var(--line-2); }
+.doc-matrix__tick { color: var(--green); font-size: 14px; text-decoration: none;
+  display: inline-block; border-radius: 4px; padding: 2px 4px; }
+.doc-matrix__tick:hover { background: var(--accent-soft); }
+.doc-matrix__tick:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.doc-matrix__dash { color: var(--muted-2); }
+.doc-matrix__resume-link { margin-left: 2px; text-decoration: none; color: var(--muted); }
+.doc-matrix__divider td { background: var(--line-2); color: var(--muted); font-size: 11px;
+  font-weight: 650; text-transform: uppercase; letter-spacing: 0.3px; text-align: left !important; padding: 5px 9px; }
+.doc-matrix__epic-link { text-transform: none; font-weight: 500; margin-left: 8px; color: var(--muted); }
+.doc-matrix__epic-link:hover { color: var(--accent); }
+.doc-matrix__status-col { text-align: right !important; padding-right: 12px; }
+
 /* ── Epic/story accordion (fpux.1) ────────────────────────────────────────── */
 .sw-epic-group {
   background: var(--surface); border: 1px solid var(--line);
