@@ -2,6 +2,15 @@
 
 ---
 
+## RISK-ACCEPT: pre-existing baseline failures at branch-setup (fpux.1)
+
+**Date:** 2026-09-05
+**Context:** `/branch-setup` for `fpux.1` found 2 failing files out of 615 in the baseline test run: `tests/check-p3.5-validate-trace.js` (a long-standing, already-known pre-existing failure this session) and `tests/check-pcr-s1-test-runner.js` (a wall-clock performance-threshold test, `749.8ms/file` limit, measured `767–1321ms/file` depending on system load).
+**Decision:** Both acknowledged as pre-existing, unrelated to this story, and not blocking. Confirmed by running `check-pcr-s1-test-runner.js` directly on master (not just in the new worktree) — it fails there too, with an even larger overage (1321ms/file), proving it is a real, environment-load-dependent flake independent of anything in this branch.
+**Rationale:** Neither failure is caused by or related to `fpux.1`'s own scope (CSS/design-token changes to `features.js`/`html-shell.js`). Blocking this story's implementation on an unrelated, pre-existing, machine-load-sensitive performance test would be process overhead with no quality value — matches this session's own established "verify the specific delta against baseline" convention.
+
+---
+
 ## RISK-ACCEPT: W4 — AC verification scripts not walked through by a domain expert before DoR sign-off
 
 **Date:** 2026-09-05
