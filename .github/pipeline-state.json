@@ -31431,7 +31431,7 @@
         {
           "id": "adlr-s1",
           "slug": "adlr-s1",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-06-artefact-detail-link-resolution-fix/dor/adlr-s1-dor.md",
@@ -31442,11 +31442,11 @@
             "passing": 15
           },
           "acTotal": 6,
-          "acVerified": 5,
+          "acVerified": 6,
           "prStatus": "draft",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/840",
           "verifyStatus": "passed",
-          "updatedAt": "2026-09-05T21:33:32.251Z"
+          "updatedAt": "2026-09-05T21:58:24.891Z"
         }
       ],
       "metrics": [],
