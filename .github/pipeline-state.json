@@ -31344,6 +31344,33 @@
       "metrics": [],
       "updatedAt": "2026-09-05T11:03:57.624Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-09-06-story-registration-integrity-fix",
+      "name": "Fix epic/flat story render duplication and missing story registration",
+      "stage": "test-plan",
+      "health": "green",
+      "stories": [
+        {
+          "id": "sri-s1",
+          "slug": "sri-s1",
+          "stage": "dor-signed-off",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-06-story-registration-integrity-fix/dor/sri-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-06-story-registration-integrity-fix/dor/sri-s1-dor-contract.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 4,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-05T20:18:14.043Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
