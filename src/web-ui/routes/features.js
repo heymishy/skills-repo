@@ -322,32 +322,44 @@ function _renderArtefactListByType(artefacts, featureSlug, resumeLookup) {
  * @param {Object<string, {skillName: string, sessionId: string, journeyId: string}>} [resumeLookup]
  * @returns {string} HTML string
  */
+/**
+ * fpux.1: renders one story's own disclosure row inside the grouped
+ * epic/story accordion, using the .sw-story-row shared class (html-shell.js)
+ * instead of the old inline style="..." attributes -- fixes the visual seam
+ * against the feature-level .sw-card list above it.
+ * Hoisted out of renderGroupedArtefactIndexHtml (was a closure) so it is
+ * independently unit-testable and exported below.
+ * @param {{slug: string, artefacts: Array}} story
+ * @param {string} featureSlug
+ * @param {Object<string, {skillName: string, sessionId: string, journeyId: string}>} [resumeLookup]
+ * @returns {string} HTML string, or '' if the story has no artefacts
+ */
+function renderStory(story, featureSlug, resumeLookup) {
+  if (story.artefacts.length === 0) return '';
+  return '<details class="sw-story-row">' +
+    '<summary>' + shellEscHtml(story.slug) + '</summary>' +
+    '<div style="margin-top:8px">' + _renderArtefactListByType(story.artefacts, featureSlug, resumeLookup) + '</div>' +
+  '</details>';
+}
+
 function renderGroupedArtefactIndexHtml(grouped, featureSlug, resumeLookup) {
   const featureLevelHtml = grouped.featureLevel.length > 0
     ? _renderArtefactListByType(grouped.featureLevel, featureSlug, resumeLookup)
     : '';
 
-  function renderStory(story) {
-    if (story.artefacts.length === 0) return '';
-    return '<details class="story-row" style="margin:4px 0 4px 16px;padding:6px 10px;border:1px solid var(--line);border-radius:8px">' +
-      '<summary style="cursor:pointer;font-weight:500">' + shellEscHtml(story.slug) + '</summary>' +
-      '<div style="margin-top:8px">' + _renderArtefactListByType(story.artefacts, featureSlug, resumeLookup) + '</div>' +
-    '</details>';
-  }
-
   const epicsHtml = grouped.epics.map((epic) => {
-    const storiesHtml = epic.stories.map(renderStory).join('');
+    const storiesHtml = epic.stories.map((story) => renderStory(story, featureSlug, resumeLookup)).join('');
     if (!storiesHtml) return '';
-    return '<details class="epic" open style="margin:8px 0;padding:10px 14px;border:1px solid var(--line);border-radius:10px">' +
-      '<summary style="cursor:pointer;font-weight:600">' + shellEscHtml(epic.epicName || epic.epicSlug || '') + '</summary>' +
+    return '<details class="sw-epic-group" open>' +
+      '<summary>' + shellEscHtml(epic.epicName || epic.epicSlug || '') + '</summary>' +
       storiesHtml +
     '</details>';
   }).join('');
 
   const flatStoriesHtml = grouped.flatStories.length > 0
-    ? '<details class="epic" open style="margin:8px 0;padding:10px 14px;border:1px solid var(--line);border-radius:10px">' +
-        '<summary style="cursor:pointer;font-weight:600">Stories</summary>' +
-        grouped.flatStories.map(renderStory).join('') +
+    ? '<details class="sw-epic-group" open>' +
+        '<summary>Stories</summary>' +
+        grouped.flatStories.map((story) => renderStory(story, featureSlug, resumeLookup)).join('') +
       '</details>'
     : '';
 
@@ -570,5 +582,6 @@ module.exports = {
   renderArtefactItem,
   renderArtefactIndexHtml,
   renderGroupedArtefactIndexHtml,
+  renderStory,
   escHtml
 };
