@@ -74,7 +74,10 @@ function getFeatureStoryStructure(repoRoot, featureSlug) {
  * fal-s1, s3.1-drag-to-advance), so the authoritative slug list is
  * required to disambiguate correctly. Candidate slugs are checked
  * longest-first so e.g. a p3.1a-*.md file is never mis-attributed to a
- * shorter p3.1 group.
+ * shorter p3.1 group. bsgm-s1: a story's own bare "<slug>.md" definition
+ * file (no hyphen-suffix) is also matched via exact equality -- this
+ * carries no substring-ambiguity risk regardless of sort order, so it
+ * closes the gap without reopening the p3.1/p3.1a disambiguation above.
  * @param {Array<{path: string}>} artefacts
  * @param {{epics: Array<{epicName: string, epicSlug: string, storySlugs: string[]}>, flatStorySlugs: string[]}} storyStructure
  * @returns {{featureLevel: Array, epics: Array<{epicName: string, epicSlug: string, stories: Array<{slug: string, artefacts: Array}>}>, flatStories: Array<{slug: string, artefacts: Array}>}}
@@ -91,7 +94,7 @@ function groupArtefactsByStory(artefacts, storyStructure) {
 
   (artefacts || []).forEach((artefact) => {
     const basename = (artefact.path || '').split('/').pop() || '';
-    const matchedSlug = allSlugs.find((slug) => basename.indexOf(slug + '-') === 0);
+    const matchedSlug = allSlugs.find((slug) => basename.indexOf(slug + '-') === 0 || basename === slug + '.md');
     if (matchedSlug) {
       byStorySlug[matchedSlug].push(artefact);
     } else {
