@@ -31323,19 +31323,20 @@
       "stories": [
         {
           "id": "bsgm-s1",
-          "stage": "branch-setup",
+          "stage": "verify-completion",
           "testPlan": {
             "status": "written",
-            "totalTests": 5,
-            "passing": 0
+            "totalTests": 8,
+            "passing": 8
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 3,
           "health": "green",
-          "updatedAt": "2026-09-05T11:21:45.876Z",
+          "updatedAt": "2026-09-05T11:31:47.842Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-05-bare-slug-story-grouping-fix/dor/bsgm-s1-dor.md",
-          "dorContractPath": "artefacts/2026-09-05-bare-slug-story-grouping-fix/dor/bsgm-s1-dor-contract.md"
+          "dorContractPath": "artefacts/2026-09-05-bare-slug-story-grouping-fix/dor/bsgm-s1-dor-contract.md",
+          "verifyStatus": "passed"
         }
       ],
       "metrics": [],
