@@ -31078,6 +31078,22 @@
           "releaseReady": true
         }
       ]
+    },
+    {
+      "slug": "2026-09-05-feature-page-ux-redesign",
+      "name": "Feature-detail page UX redesign -- eliminate the .sw-card/plain-details style seam and review the nav path to reach it",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [],
+      "metrics": [],
+      "updatedAt": "2026-09-05T02:14:07.461Z",
+      "track": "standard",
+      "discoveryStatus": "approved",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "discoveryArtefact": "artefacts/2026-09-05-feature-page-ux-redesign/discovery.md",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
