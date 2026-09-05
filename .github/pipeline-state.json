@@ -31462,7 +31462,7 @@
         {
           "id": "fadm-s1",
           "slug": "fadm-s1",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-06-feature-artefact-document-matrix/dor/fadm-s1-dor.md",
@@ -31473,11 +31473,11 @@
             "passing": 27
           },
           "acTotal": 7,
-          "acVerified": 6,
+          "acVerified": 7,
           "prStatus": "draft",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/841",
           "verifyStatus": "passed",
-          "updatedAt": "2026-09-05T23:09:07.423Z"
+          "updatedAt": "2026-09-05T23:38:02.742Z"
         }
       ],
       "metrics": [],
