@@ -28,8 +28,8 @@ So that the page reads as one coherent structure instead of showing the same sto
 ## Acceptance Criteria
 
 - **AC1:** Given a story whose own definition file is named exactly `<slug>.md` (bare, no descriptive suffix), when `groupArtefactsByStory` classifies that feature's artefacts, then the story's own definition file is included in that story's own `artefacts` array (not `featureLevel`).
-- **AC2 (regression guard):** Given a story whose own definition file uses the descriptive-suffix convention (e.g. `<slug>-some-title.md`), when `groupArtefactsByStory` runs, then behaviour is unchanged from today — this fix adds a new match case, it does not alter the existing hyphen-prefix match.
-- **AC3 (regression guard):** Given two stories where one slug is a text-prefix of the other (e.g. `p3.1` and `p3.1a`), when both stories have artefacts, then `p3.1a`'s own artefacts (including a bare `p3.1a.md` if present) are never mis-attributed to `p3.1`'s group, and vice versa — the existing longest-first disambiguation is preserved for the new bare-filename case exactly as it already works for the hyphen-suffix case.
+- **AC2:** (regression guard) Given a story whose own definition file uses the descriptive-suffix convention (e.g. `<slug>-some-title.md`), when `groupArtefactsByStory` runs, then behaviour is unchanged from today — this fix adds a new match case, it does not alter the existing hyphen-prefix match.
+- **AC3:** (regression guard) Given two stories where one slug is a text-prefix of the other (e.g. `p3.1` and `p3.1a`), when both stories have artefacts, then `p3.1a`'s own artefacts (including a bare `p3.1a.md` if present) are never mis-attributed to `p3.1`'s group, and vice versa — the existing longest-first disambiguation is preserved for the new bare-filename case exactly as it already works for the hyphen-suffix case.
 - **AC4:** Given a live multi-story feature page with at least one bare-slug story file (e.g. `2026-09-02-product-dashboard-triage`), when the page is rendered post-fix, then that story's own definition file link appears inside its own accordion section (grouped with its other artefacts) and the feature-level flat list no longer shows it as an orphaned entry.
 
 ## Out of scope
@@ -41,3 +41,12 @@ So that the page reads as one coherent structure instead of showing the same sto
 ## Benefit linkage
 
 Closes a real, confirmed, repo-wide UX defect (37 affected features) discovered via direct live-production verification of the `feature-page-ux-redesign` epic (`fpux.1`/`fpux.2`) — not a hypothetical one. No formal benefit-metric artefact — short-track story, consistent with every other short-track delivery this session.
+
+## Architecture Constraints
+
+`groupArtefactsByStory` is a pure function with no I/O — no new architecture guardrail applies beyond the existing constraint it already documents in its own code comments: candidate slugs must be checked longest-first to prevent a longer slug's artefacts being mis-attributed to a shorter prefix slug (e.g. `p3.1a` vs `p3.1`). This story's own fix must preserve that existing constraint for the new bare-filename match case — verified directly by AC3's own regression-guard tests, not assumed. No ADR references this specific function; no new one is warranted for a 1-line, backward-compatible predicate extension.
+
+## Complexity Rating
+
+**Rating:** 1 (well understood, clear path — root cause and fix are both fully identified and confirmed via direct code reading before this story was written)
+**Scope stability:** Stable
