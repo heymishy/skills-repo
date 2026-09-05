@@ -72,10 +72,10 @@ This is a straightforward product/UX-quality initiative — it does not test a h
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Metric 1: Visual consistency | [Populated at /definition] | Gap — pending story creation |
-| Metric 2: Perceived design quality | [Populated at /definition] | Gap — pending story creation |
-| Metric 3: Navigation path clarity | [Populated at /definition] | Gap — pending story creation |
-| Tier 3: WCAG 2.1 AA conformance | [Populated at /definition] | Gap — pending story creation |
+| Metric 1: Visual consistency | fpux.1 | Covered |
+| Metric 2: Perceived design quality | fpux.1 | Covered |
+| Metric 3: Navigation path clarity | fpux.2 | Covered |
+| Tier 3: WCAG 2.1 AA conformance | fpux.1 | Covered |
 
 ---
 

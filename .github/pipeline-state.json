@@ -31082,7 +31082,7 @@
     {
       "slug": "2026-09-05-feature-page-ux-redesign",
       "name": "Feature-detail page UX redesign -- eliminate the .sw-card/plain-details style seam and review the nav path to reach it",
-      "stage": "benefit-metric",
+      "stage": "definition",
       "health": "green",
       "stories": [],
       "metrics": [
@@ -31127,7 +31127,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-09-05T02:20:13.385Z",
+      "updatedAt": "2026-09-05T02:38:45.301Z",
       "track": "standard",
       "discoveryStatus": "approved",
       "regulated": false,
@@ -31135,7 +31135,46 @@
       "discoveryArtefact": "artefacts/2026-09-05-feature-page-ux-redesign/discovery.md",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
-      "benefitMetricArtefact": "artefacts/2026-09-05-feature-page-ux-redesign/benefit-metric.md"
+      "benefitMetricArtefact": "artefacts/2026-09-05-feature-page-ux-redesign/benefit-metric.md",
+      "slicingStrategy": "vertical-slice",
+      "nfrProfileArtefact": "artefacts/2026-09-05-feature-page-ux-redesign/nfr-profile.md",
+      "epics": [
+        {
+          "slug": "page-and-nav-redesign",
+          "name": "An operator or prospect reading a feature's artefact page sees one coherent, modern design end-to-end, and can reach it without a confusing hop",
+          "status": "not-started",
+          "stories": [
+            {
+              "slug": "fpux.1",
+              "name": "Unify /features/:slug's visual language across feature-level and per-story sections",
+              "stage": "definition",
+              "health": "green"
+            },
+            {
+              "slug": "fpux.2",
+              "name": "Audit and fix the navigation path into /features/:slug",
+              "stage": "definition",
+              "health": "green"
+            }
+          ]
+        }
+      ],
+      "guardrails": [
+        {
+          "id": "MC-A11Y-01",
+          "category": "mandatory-constraint",
+          "label": "Interactive elements keyboard-accessible",
+          "status": "not-assessed",
+          "assessedBy": "/definition"
+        },
+        {
+          "id": "MC-A11Y-02",
+          "category": "mandatory-constraint",
+          "label": "Colour not sole indicator of status (icons/labels present)",
+          "status": "not-assessed",
+          "assessedBy": "/definition"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
