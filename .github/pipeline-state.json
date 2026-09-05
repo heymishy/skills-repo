@@ -31142,7 +31142,7 @@
         {
           "slug": "page-and-nav-redesign",
           "name": "An operator or prospect reading a feature's artefact page sees one coherent, modern design end-to-end, and can reach it without a confusing hop",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "fpux.1",
@@ -31168,11 +31168,11 @@
             {
               "slug": "fpux.2",
               "name": "Audit and fix the navigation path into /features/:slug",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-05T07:33:00.164Z",
+              "updatedAt": "2026-09-05T07:34:59.465Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -31211,7 +31211,9 @@
                   "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.2-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/837"
             }
           ]
         }
