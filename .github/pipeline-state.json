@@ -31147,20 +31147,38 @@
             {
               "slug": "fpux.1",
               "name": "Unify /features/:slug's visual language across feature-level and per-story sections",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-05T02:48:09.238Z"
+              "updatedAt": "2026-09-05T03:03:46.710Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 8,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": true
             },
             {
               "slug": "fpux.2",
               "name": "Audit and fix the navigation path into /features/:slug",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-05T02:51:35.192Z"
+              "updatedAt": "2026-09-05T03:05:37.825Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         }
