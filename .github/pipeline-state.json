@@ -31314,6 +31314,30 @@
         }
       ],
       "designArtefact": "artefacts/2026-09-05-feature-page-ux-redesign/design.md"
+    },
+    {
+      "slug": "2026-09-05-bare-slug-story-grouping-fix",
+      "name": "Fix groupArtefactsByStory to also match a story's own bare slug.md definition file, closing a 37-feature repo-wide UX duplication defect",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [
+        {
+          "id": "bsgm-s1",
+          "stage": "test-plan",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "health": "green",
+          "updatedAt": "2026-09-05T11:03:57.791Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-05T11:03:57.624Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
