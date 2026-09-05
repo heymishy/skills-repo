@@ -31147,11 +31147,11 @@
             {
               "slug": "fpux.1",
               "name": "Unify /features/:slug's visual language across feature-level and per-story sections",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-05T03:42:19.848Z",
+              "updatedAt": "2026-09-05T06:22:34.610Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
@@ -31163,7 +31163,45 @@
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
               "dorPath": "artefacts/2026-09-05-feature-page-ux-redesign/dor/fpux.1-dor.md",
-              "dorContractPath": "artefacts/2026-09-05-feature-page-ux-redesign/dor/fpux.1-dor-contract.md"
+              "dorContractPath": "artefacts/2026-09-05-feature-page-ux-redesign/dor/fpux.1-dor-contract.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Add sw-epic-group/sw-story-row shared CSS classes",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Use new classes in renderGroupedArtefactIndexHtml, hoist renderStory (AC1)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Regression guard -- delete-feature button unchanged (AC5)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "E2E -- visual consistency and light/dark theme (AC1, AC2)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.1-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "E2E -- keyboard focus visibility and operability (AC3)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.1-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "E2E -- WCAG 2.1 AA contrast ratio (AC4)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.1-plan.md"
+                }
+              ]
             },
             {
               "slug": "fpux.2",
