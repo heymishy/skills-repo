@@ -31127,7 +31127,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-09-05T02:38:45.301Z",
+      "updatedAt": "2026-09-05T02:43:30.956Z",
       "track": "standard",
       "discoveryStatus": "approved",
       "regulated": false,
@@ -31174,7 +31174,8 @@
           "status": "not-assessed",
           "assessedBy": "/definition"
         }
-      ]
+      ],
+      "designArtefact": "artefacts/2026-09-05-feature-page-ux-redesign/design.md"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

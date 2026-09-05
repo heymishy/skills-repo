@@ -2,6 +2,15 @@
 
 ---
 
+## Visual-language direction resolved: incremental token extension, not a new visual language
+
+**Date:** 2026-09-05
+**Context:** The optional `/design` pass (deferred from `/clarify`, run after `/definition` at the operator's request — "should go back and do /design") reviewed the existing `.sw-card`/`.sw-section-title` CSS in `html-shell.js` directly (subtle borders, 8px radius, muted uppercase section labels, accent focus rings on inputs).
+**Decision:** The redesign extends the existing token system via two new shared classes (`.sw-epic-group`, `.sw-story-row`) rather than introducing a materially new visual language. See `design.md`'s Key Technical Decisions table for the full rationale.
+**Rationale:** The existing token system was found already credible against the "Apple/SaaS-tier" bar — the defect is that one component (the epic/story accordion) never adopted it, not that the tokens themselves are inadequate. Inventing a second, parallel visual language would risk reintroducing the exact inconsistency this feature exists to remove. `fpux.1`'s Architecture Constraints and Complexity Rating were updated to reference this concrete design instead of an open question.
+
+---
+
 ## Visual-language direction deferred to an optional /design pass
 
 **Date:** 2026-09-05

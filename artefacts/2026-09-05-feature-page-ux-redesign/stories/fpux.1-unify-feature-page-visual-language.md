@@ -18,9 +18,10 @@ So that **the page does not read as visibly unfinished or inconsistent — a pla
 
 ## Architecture Constraints
 
-- **`html-shell.js` is the single canonical source** for shared HTML-shell functions and CSS design tokens — any new or extended class/token used by the epic/story accordion (currently inline-styled directly in `features.js`'s `renderGroupedArtefactIndexHtml`/`renderStory`) must be added to `html-shell.js`, not duplicated as page-local inline styles in `features.js`. (`.github/architecture-guardrails.md`, "single canonical source" pattern.)
-- **Both light and dark theme must be supported** — `html-shell.js` already defines `:root` (light) and `[data-theme="dark"]`/`prefers-color-scheme` (dark) token blocks; any new token or class this story adds must resolve correctly in both, matching the existing pattern (do not hardcode a color that only works in one theme).
-- **No CSS framework** — hand-authored CSS only, consistent with `product/tech-stack.md` (`src/web-ui` is raw Node `http.createServer()`, zero Express/React/Tailwind).
+- **Follow `design.md` exactly** — this story implements the two new shared classes specified there: `.sw-epic-group` (card-styled `<details>` wrapper for a phase/epic, matching `.sw-card`'s surface/border/radius) and `.sw-story-row` (list-row-styled `<details>` wrapper for a story, matching `.sw-list`'s divider convention), each with a CSS-rotated chevron and a visible `--accent` focus ring on `<summary>` (matching `.sw-input:focus`'s existing convention). No new tokens (colors, radii, spacing) — every value is a reference to an existing `:root`/`[data-theme]` token.
+- **`html-shell.js` is the single canonical source** for shared HTML-shell functions and CSS design tokens — `.sw-epic-group`/`.sw-story-row` must be added there, not duplicated as page-local inline styles in `features.js`. (`.github/architecture-guardrails.md`, "single canonical source" pattern.)
+- **Both light and dark theme must be supported** — `html-shell.js` already defines `:root` (light) and `[data-theme="dark"]`/`prefers-color-scheme` (dark) token blocks; the new classes must resolve correctly in both, per `design.md`'s Accessibility section.
+- **No CSS framework** — hand-authored CSS only, consistent with `product/tech-stack.md` (`src/web-ui` is raw Node `http.createServer()`, zero Express/React/Tailwind). The disclosure chevron is a CSS-drawn shape or Unicode glyph, never an icon-font/library dependency.
 - **Anti-pattern avoided:** this change is captured under this story's own artefact chain — not an ad-hoc, undocumented shell/token edit (`.github/architecture-guardrails.md` anti-pattern table, "Ad-hoc cross-cutting surface changes without a story").
 
 ## Dependencies
@@ -42,7 +43,7 @@ So that **the page does not read as visibly unfinished or inconsistent — a pla
 
 ## Out of Scope
 
-- A materially new visual language (new color palette, new type family) beyond extending the existing `html-shell.js` token system — deferred per the discovery's own Clarification log (no `/design` pass was run before this `/definition` session).
+- A materially new visual language (new color palette, new type family) beyond extending the existing `html-shell.js` token system — resolved by `/design` (`design.md`, Key Technical Decisions): the existing tokens are credible against the "Apple/SaaS-tier" bar, so this story extends them via `.sw-epic-group`/`.sw-story-row` rather than inventing a new visual identity.
 - Any change to `/features` (the list page), `/dashboard`, `/products/:id`, or other pages sharing similar patterns — out of scope per the epic's own Out of Scope section.
 - Automated axe-core or other accessibility-scanning tooling — not currently part of this repo's toolchain (`product/tech-stack.md`); AC3/AC4 are verified manually at this story's DoR/DoD unless tooling is confirmed available and wired in first (platform-availability gate, D2-platform).
 
@@ -55,8 +56,9 @@ So that **the page does not read as visibly unfinished or inconsistent — a pla
 
 ## Complexity Rating
 
-**Rating:** 2
+**Rating:** 1
 **Scope stability:** Stable
+**Note:** Downgraded from 2 (at `/definition`) to 1 after `/design` resolved the previously-open visual-language ambiguity with a concrete, fully-specified component design (`design.md`) — the implementation path is now well understood, not exploratory.
 
 ## Definition of Ready Pre-check
 

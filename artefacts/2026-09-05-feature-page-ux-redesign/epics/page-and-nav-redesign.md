@@ -36,7 +36,7 @@ flowchart LR
 - **Platform-wide design-system overhaul** — other pages (`/features` list, `/dashboard`, `/products/:id`, story detail pages, kanban board) are out of scope even where they share the same dated patterns; this epic fixes the feature-detail page and its direct entry points only. (Per discovery MVP scope.)
 - **Backend/data changes** — `getFeatureStoryStructure`, `groupArtefactsByStory`, `_listArtefacts`, and the underlying artefact/story data model are unchanged; this is a rendering/CX-layer epic only. (Per discovery MVP scope.)
 - **New functionality** — no new capabilities (inline editing, search/filter within the artefact list, the existing "Board" view toggle) are added. (Per discovery MVP scope.)
-- **A materially new visual language beyond the existing token system** — per the discovery's own Clarification log, the visual-language decision was deferred to an optional `/design` pass; since `/design` was not run before this `/definition` session, this epic defaults to the incremental path: extending the existing `html-shell.js` token system to eliminate the seam, not inventing a new visual identity.
+- **A materially new visual language beyond the existing token system** — resolved by `/design` (run after this epic's initial `/definition` pass, at the operator's request): the existing `html-shell.js` tokens were reviewed directly and found already credible against the "Apple/SaaS-tier" bar, so this epic takes the incremental path — extending the existing token system via two new shared classes (`.sw-epic-group`, `.sw-story-row`) — rather than inventing a new visual identity. See `design.md`.
 
 ## Benefit Metrics Addressed
 
@@ -59,8 +59,8 @@ flowchart LR
 
 ## Complexity Rating
 
-**Rating:** 2
-**Rationale:** Story 2 (nav audit) is well-understood (1); Story 1 (visual redesign within an existing token system) carries some ambiguity — the exact visual outcome that satisfies the subjective Metric 2 bar isn't fully specified in advance, even though the technical approach (extend existing tokens) is clear.
+**Rating:** 1
+**Rationale:** Both stories are now well-understood. Story 2 (nav audit) was rated 1 at `/definition`. Story 1 (visual redesign) was rated 2 at `/definition` pending a visual-language decision; running `/design` afterward resolved that ambiguity with a concrete, fully-specified component design (`design.md`), downgrading it to 1 as well.
 
 ## Scope Stability
 
