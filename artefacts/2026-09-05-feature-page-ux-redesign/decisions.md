@@ -2,6 +2,15 @@
 
 ---
 
+## RISK-ACCEPT: pre-existing timing-threshold flake found during fpux.2 full-suite run
+
+**Date:** 2026-09-05
+**Context:** `tests/check-rb-s5-optional-outer-loop-install.js` failed once during `fpux.2`'s Task 4 full-suite run (`outerLoopFlagOverheadUnder3Seconds`, a wall-clock threshold test) but passed 10/10 in isolation immediately after.
+**Decision:** Acknowledged as pre-existing/flaky, unrelated to this story (no touch to `rb-s5`'s own scope). Same class as `check-pcr-s1-test-runner.js` and `check-bri-s2.2-neon-staging-branch.js` found earlier in this feature's own delivery — timing-threshold tests flaking under full-suite parallel load in this local environment.
+**Rationale:** `fpux.2`'s diff (story/benefit-metric markdown updates, 2 new isolated test files) has no relationship to outer-loop install timing. Not blocking.
+
+---
+
 ## RISK-ACCEPT: pre-existing E2E failures found during fpux.1's route/handler coverage check
 
 **Date:** 2026-09-05
