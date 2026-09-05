@@ -31431,18 +31431,20 @@
         {
           "id": "adlr-s1",
           "slug": "adlr-s1",
-          "stage": "dor-signed-off",
+          "stage": "verify-completion",
           "health": "green",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-06-artefact-detail-link-resolution-fix/dor/adlr-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-06-artefact-detail-link-resolution-fix/dor/adlr-s1-dor-contract.md",
           "testPlan": {
             "status": "written",
-            "totalTests": 12,
-            "passing": 0
+            "totalTests": 15,
+            "passing": 15
           },
           "acTotal": 6,
-          "acVerified": 0
+          "acVerified": 5,
+          "verifyStatus": "passed",
+          "updatedAt": "2026-09-05T21:31:25.351Z"
         }
       ],
       "metrics": [],

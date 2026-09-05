@@ -2524,9 +2524,19 @@ async function router(req, res) {
     }
 
   } else if (pathname.match(/^\/artefact\/[^/]+\/[^/]+$/) && req.method === 'GET') {
-    const parts        = pathname.split('/').filter(Boolean);
-    const slug         = parts[1];
-    const artefactType = parts[2];
+    const parts = pathname.split('/').filter(Boolean);
+    const slug  = parts[1];
+    // adlr-s1: link generation now percent-encodes the artefact's full
+    // relative path (which may contain '/', encoded as %2F) into this single
+    // URL segment -- decode it back before it reaches fetchArtefact. A plain
+    // bare type name (no '%' sequences) decodes to itself unchanged, so this
+    // is fully backward-compatible with every existing link shape.
+    let artefactType;
+    try {
+      artefactType = decodeURIComponent(parts[2]);
+    } catch (_) {
+      artefactType = parts[2];
+    }
     await handleArtefactRoute(req, res, slug, artefactType, _pshPool);
 
   } else if (pathname.match(/^\/api\/export\/[^/]+$/) && req.method === 'GET') {

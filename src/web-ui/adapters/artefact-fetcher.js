@@ -84,10 +84,62 @@ async function fetchGithubContentsResponse(url, token, notFoundArgs, networkErro
   return response.json();
 }
 
+// adlr-s1: known artefact subdirectories, per CLAUDE.md's own documented
+// directory-tree convention. Only consulted as a last-resort fallback for a
+// bare, no-slash artefactType (a legacy link generated before this fix, or
+// any other caller not yet updated to pass the full relative path) -- a
+// correctly-generated link already contains its own subdirectory and never
+// reaches this probing loop.
+const ARTEFACT_SUBDIRS = [
+  'stories', 'epics', 'test-plans', 'verification-scripts',
+  'dor', 'plans', 'dod', 'trace', 'coverage', 'reference', 'research'
+];
+
+// Reduced timeout for exploratory subdirectory probes (AC5) -- these are
+// speculative guesses for a legacy bare-name input, not the common case, so
+// a slow/hung GitHub API response shouldn't make a genuinely-missing
+// artefact take minutes to 404. The direct attempts (both prefixes) still
+// use the caller's normal timeout, since those cover every correctly-
+// generated link and should get the full grace period.
+const FALLBACK_PROBE_TIMEOUT_MS = 3000;
+
+/**
+ * Attempt a single artefact fetch at one exact repo path, translating a 404
+ * into null (caller decides how to proceed) rather than throwing, so the
+ * resolution loop in fetchArtefact can try the next candidate on a miss
+ * without special-casing ArtefactNotFoundError at every call site.
+ * @returns {Promise<string|null>} decoded content, or null on 404
+ * @throws {ArtefactFetchError} on any non-404 error, network failure, or timeout
+ */
+async function _tryFetchAtPath(repoPath, targetRepo, token, featureSlug, artefactType, timeoutMs) {
+  const url = `${GITHUB_API_BASE}/repos/${targetRepo}/contents/${repoPath}`;
+  try {
+    const data = await fetchGithubContentsResponse(url, token, [featureSlug, artefactType], 'Network error fetching artefact', timeoutMs);
+    return Buffer.from(data.content.replace(/\n/g, ''), 'base64').toString('utf8');
+  } catch (err) {
+    if (err.name === 'ArtefactNotFoundError') return null;
+    throw err;
+  }
+}
+
 /**
  * Fetch a pipeline artefact from GitHub Contents API.
+ *
+ * adlr-s1: artefactType may now be a bare type name (e.g. 'discovery', for
+ * the 4 root-level artefact types, or a legacy link generated before this
+ * fix) or a path relative to the feature directory including its own
+ * subdirectory (e.g. 'dor/psh-s1-dor', what every correctly-generated link
+ * now carries). Resolution order: (1) the decoded path directly under
+ * artefacts/<slug>/, (2) the same path under artefacts/archived/<slug>/ --
+ * closing the gap where an archived feature's artefacts, including its 4
+ * root-level types, previously always 404'd -- and only if artefactType has
+ * no '/' (so a correctly-generated nested link never pays this cost), (3) a
+ * bounded probe of every known subdirectory under both prefixes, with a
+ * shorter per-attempt timeout, so an old bookmarked or externally-shared
+ * bare-name link still resolves instead of 404ing forever.
+ *
  * @param {string} featureSlug  - e.g. '2026-01-01-example-feature'
- * @param {string} artefactType - e.g. 'discovery'
+ * @param {string} artefactType - e.g. 'discovery' or 'dor/psh-s1-dor'
  * @param {string} token        - OAuth access token
  * @param {{owner: string, repo: string}} [repoOverride] - mtrr-s1: when
  *   supplied, fetches from this owner/repo instead of the single, deployment-
@@ -102,19 +154,32 @@ async function fetchGithubContentsResponse(url, token, notFoundArgs, networkErro
  *   in-app viewer) is unaffected and keeps using the env-var default.
  * @param {number} [timeoutMs] - wugs-s14: optional override of the shared
  *   helper's default request timeout; undefined falls through to
- *   fetchGithubContentsResponse's own 10000ms default.
+ *   fetchGithubContentsResponse's own 10000ms default. Applies to the two
+ *   direct attempts only -- the subdirectory-probing fallback (if reached)
+ *   always uses the shorter FALLBACK_PROBE_TIMEOUT_MS regardless.
  * @returns {Promise<string>} decoded markdown content
- * @throws {ArtefactNotFoundError} when the Contents API returns 404
+ * @throws {ArtefactNotFoundError} when every candidate path 404s
  * @throws {ArtefactFetchError}    on non-404 error, network failure, or timeout
  */
 async function fetchArtefact(featureSlug, artefactType, token, repoOverride, timeoutMs) {
-  const repoPath = `artefacts/${featureSlug}/${artefactType}.md`;
   const targetRepo = repoOverride ? `${repoOverride.owner}/${repoOverride.repo}` : GITHUB_REPO;
-  const url      = `${GITHUB_API_BASE}/repos/${targetRepo}/contents/${repoPath}`;
+  const prefixes = ['artefacts', 'artefacts/archived'];
 
-  const data    = await fetchGithubContentsResponse(url, token, [featureSlug, artefactType], 'Network error fetching artefact', timeoutMs);
-  const decoded = Buffer.from(data.content.replace(/\n/g, ''), 'base64').toString('utf8');
-  return decoded;
+  for (const prefix of prefixes) {
+    const result = await _tryFetchAtPath(`${prefix}/${featureSlug}/${artefactType}.md`, targetRepo, token, featureSlug, artefactType, timeoutMs);
+    if (result !== null) return result;
+  }
+
+  if (artefactType.indexOf('/') === -1) {
+    for (const prefix of prefixes) {
+      for (const dir of ARTEFACT_SUBDIRS) {
+        const result = await _tryFetchAtPath(`${prefix}/${featureSlug}/${dir}/${artefactType}.md`, targetRepo, token, featureSlug, artefactType, FALLBACK_PROBE_TIMEOUT_MS);
+        if (result !== null) return result;
+      }
+    }
+  }
+
+  throw new ArtefactNotFoundError(featureSlug, artefactType);
 }
 
 /**

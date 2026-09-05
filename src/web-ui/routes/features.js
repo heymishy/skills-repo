@@ -269,6 +269,31 @@ function renderArtefactIndexHtml(artefacts, featureSlug, resumeLookup) {
 }
 
 /**
+ * adlr-s1: derives an artefact's path relative to its own feature directory,
+ * regardless of whether it lives directly in the feature root (e.g.
+ * "discovery"), a subdirectory (e.g. "dor/psh-s1-dor"), or under the
+ * "archived/" prefix (e.g. "artefacts/archived/<slug>/dod/x-dod.md" ->
+ * "dod/x-dod"). listArtefacts (artefact-list.js) already returns a.path as
+ * a full repo-relative path in this shape for both its local-filesystem and
+ * Postgres branches -- this just extracts the part that matters for
+ * building the /artefact/:slug/:type URL, so the type segment carries
+ * enough information for fetchArtefact to resolve the real file directly
+ * instead of only ever finding the 4 root-level types. Finds the feature
+ * slug anywhere in the path (rather than assuming a fixed prefix depth) so
+ * it works identically for both the "artefacts/<slug>/..." and
+ * "artefacts/archived/<slug>/..." shapes without special-casing either.
+ * @param {string} fullPath
+ * @param {string} featureSlug
+ * @returns {string} e.g. "dor/psh-s1-dor", or "" if featureSlug isn't found in fullPath
+ */
+function _relativeArtefactPath(fullPath, featureSlug) {
+  const marker = featureSlug + '/';
+  const idx = fullPath.indexOf(marker);
+  if (idx === -1) return '';
+  return fullPath.slice(idx + marker.length).replace(/\.md$/, '');
+}
+
+/**
  * fapg-s1: extracted from renderArtefactIndexHtml so both the unchanged
  * single-story rendering and the new multi-story grouped rendering
  * (renderGroupedArtefactIndexHtml) share one implementation of "render this
@@ -294,8 +319,8 @@ function _renderArtefactListByType(artefacts, featureSlug, resumeLookup) {
 
   return groupOrder.map((label) => {
     const items = groups[label].map((a) => {
-      const fileSlug = (a.path || '').split('/').pop().replace(/\.md$/, '') || (a.type || '');
-      const viewUrl  = `/artefact/${featureSlug}/${fileSlug}`;
+      const relPath = _relativeArtefactPath(a.path || '', featureSlug) || (a.type || '');
+      const viewUrl  = `/artefact/${featureSlug}/${encodeURIComponent(relPath)}`;
       const base     = renderArtefactItem({ type: label, name: a.path || '', viewUrl });
       const date     = shellEscHtml(a.createdAt || '');
       const resumable = resumeLookup[a.path || ''];
