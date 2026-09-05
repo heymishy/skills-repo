@@ -31168,11 +31168,11 @@
             {
               "slug": "fpux.2",
               "name": "Audit and fix the navigation path into /features/:slug",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-05T03:42:28.925Z",
+              "updatedAt": "2026-09-05T07:09:51.423Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -31184,7 +31184,33 @@
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
               "dorPath": "artefacts/2026-09-05-feature-page-ux-redesign/dor/fpux.2-dor.md",
-              "dorContractPath": "artefacts/2026-09-05-feature-page-ux-redesign/dor/fpux.2-dor-contract.md"
+              "dorContractPath": "artefacts/2026-09-05-feature-page-ux-redesign/dor/fpux.2-dor-contract.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Record AC1 audit findings in story artefact (4 entry points found)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.2-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "E2E -- all 4 entry points lead directly to /features/:slug (AC2)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.2-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "AC3 -- no defect found, record outcome",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.2-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Update benefit-metric.md M3 row with real audit values (AC4)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.2-plan.md"
+                }
+              ]
             }
           ]
         }
