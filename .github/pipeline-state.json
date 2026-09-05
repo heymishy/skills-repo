@@ -31082,18 +31082,60 @@
     {
       "slug": "2026-09-05-feature-page-ux-redesign",
       "name": "Feature-detail page UX redesign -- eliminate the .sw-card/plain-details style seam and review the nav path to reach it",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "stories": [],
-      "metrics": [],
-      "updatedAt": "2026-09-05T02:14:07.461Z",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Visual consistency of /features/:slug (style-seam count)",
+          "target": "0 seams",
+          "baseline": "1 seam (confirmed 2026-09-05 on wuce-multi-tenancy)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Perceived design quality (Apple/SaaS-tier self-review rubric)",
+          "target": "Pass - 4-point rubric",
+          "baseline": "Below bar (confirmed 2026-09-05)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Navigation path clarity into /features/:slug",
+          "target": "TBD - set at /definition audit; 0 dead-end hops",
+          "baseline": "Not yet established",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m4",
+          "name": "WCAG 2.1 AA accessibility conformance (Tier 3)",
+          "target": "100% conformance",
+          "baseline": "Not yet audited",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "updatedAt": "2026-09-05T02:20:13.385Z",
       "track": "standard",
       "discoveryStatus": "approved",
       "regulated": false,
       "complianceProfile": "standard",
       "discoveryArtefact": "artefacts/2026-09-05-feature-page-ux-redesign/discovery.md",
       "complianceFrameworks": [],
-      "sensitiveDataCategories": []
+      "sensitiveDataCategories": [],
+      "benefitMetricArtefact": "artefacts/2026-09-05-feature-page-ux-redesign/benefit-metric.md"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
