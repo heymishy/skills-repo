@@ -31400,7 +31400,7 @@
         {
           "id": "sri-s1",
           "slug": "sri-s1",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-06-story-registration-integrity-fix/dor/sri-s1-dor.md",
@@ -31412,8 +31412,10 @@
           },
           "acTotal": 4,
           "acVerified": 4,
-          "verifyStatus": "passed",
-          "updatedAt": "2026-09-05T20:31:59.346Z"
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/839",
+          "updatedAt": "2026-09-05T20:34:27.143Z",
+          "verifyStatus": "passed"
         }
       ],
       "metrics": [],
