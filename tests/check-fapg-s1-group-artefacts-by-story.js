@@ -105,9 +105,9 @@ function makeTempRepoWithPipelineState(pipelineState) {
     assert.strictEqual(p34.artefacts.length, 1, 'expected p3.4 to own exactly its own 1 file');
   });
 
-  console.log('\n[fapg-s1] AC1 (route-level) -- multi-story feature renders feature-level artefacts once, then an epic/story accordion');
+  console.log('\n[fapg-s1] AC1 (route-level) -- multi-story feature renders feature-level artefacts once, then a document matrix (fadm-s1)');
 
-  await testAsync('handleGetFeatureArtefacts: multi-story feature renders the accordion', async function() {
+  await testAsync('handleGetFeatureArtefacts: multi-story feature renders the document matrix', async function() {
     var root = makeTempRepoWithPipelineState({
       features: [{
         slug: 'multi-x',
@@ -142,13 +142,16 @@ function makeTempRepoWithPipelineState(pipelineState) {
     var body = res._get().body;
     assert.ok(/discovery\.md/.test(body), 'expected the feature-level artefact to render');
     assert.ok((body.match(/discovery\.md/g) || []).length === 1, 'expected discovery.md to appear exactly once, not duplicated per story');
-    // fpux.1: renamed to the shared sw-epic-group/sw-story-row design-system
-    // classes (html-shell.js) to eliminate the visual seam against the
-    // feature-level .sw-card list above it -- the old bare "epic"/"story-row"
-    // classes were page-local and never styled. Behaviour (grouping, content)
-    // is unchanged; only the class names changed.
-    assert.ok(/class="sw-epic-group"/.test(body), 'expected an epic accordion section');
-    assert.ok(/class="sw-story-row"/.test(body), 'expected story-row accordion elements');
+    // fadm-s1: the epic/story accordion (fpux.1's sw-epic-group/sw-story-row,
+    // dedup-fixed by sri-s1) is superseded on this page by a compact
+    // feature-level table + clickable document matrix -- an interactively
+    // approved redesign, not a regression. The accordion's own CSS and
+    // renderStory() are intentionally left in place (fpux.1's own dedicated
+    // E2E/unit suite still exercises them against hand-authored fixtures,
+    // independent of this route), so this assertion updates to the new
+    // matrix markup rather than asserting the accordion is gone.
+    assert.ok(/class="doc-matrix"/.test(body), 'expected the document matrix to render');
+    assert.ok(/doc-matrix__divider/.test(body), 'expected an epic-divider row');
     assert.ok(/>p3\.3</.test(body), 'expected a p3.3 story row');
     assert.ok(/>p3\.4</.test(body), 'expected a p3.4 story row');
     fs.rmSync(root, { recursive: true, force: true });

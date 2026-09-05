@@ -293,6 +293,205 @@ function _relativeArtefactPath(fullPath, featureSlug) {
   return fullPath.slice(idx + marker.length).replace(/\.md$/, '');
 }
 
+// fadm-s1: fixed canonical ordering for known matrix columns -- any column
+// key not in this list (an artefact type this repo hasn't standardised on
+// yet) is appended afterwards, alphabetically, rather than dropped. Keeps
+// the matrix's own column order stable and predictable across features
+// that don't use every kind of document.
+const MATRIX_COLUMN_ORDER = ['story', 'dor', 'dor-contract', 'plan', 'review', 'test-plan', 'verification', 'dod', 'trace', 'coverage', 'reference', 'research'];
+const MATRIX_COLUMN_LABELS = {
+  'story': 'Story', 'dor': 'Ready check', 'dor-contract': 'Ready check contract',
+  'plan': 'Plan', 'review': 'Review', 'test-plan': 'Test plan', 'verification': 'Verification',
+  'dod': 'Definition of done', 'trace': 'Trace', 'coverage': 'Coverage',
+  'reference': 'Reference', 'research': 'Research'
+};
+const MATRIX_COLUMN_ABBREV = {
+  'story': 'Story', 'dor': 'RC', 'dor-contract': 'RCC', 'plan': 'Plan', 'review': 'Rev',
+  'test-plan': 'TP', 'verification': 'Ver', 'dod': 'DoD', 'trace': 'Trace',
+  'coverage': 'Cov', 'reference': 'Ref', 'research': 'Res'
+};
+
+/**
+ * fadm-s1: derives which document-matrix column an artefact belongs to.
+ * Folder name decides the column for every subdirectory except "dor" --
+ * that folder alone holds two materially different documents (a story's
+ * Definition of Ready and its own DoR Contract proposal), so within it the
+ * filename suffix disambiguates. This is intentionally independent of the
+ * existing shared deriveTypeFromPath/getLabel mapping (artefact-labels.js,
+ * artefact-list.js) -- that mapping serves the feature-level table's own
+ * Type column, which never needs this per-story disambiguation, and this
+ * story's own DoR contract explicitly keeps the two separate.
+ * @param {string} path a full or feature-relative artefact path
+ * @returns {string} a column key, e.g. "dor-contract", or the bare filename
+ *   stem for a document in an unrecognised subdirectory -- never dropped.
+ */
+function _deriveMatrixColumn(path) {
+  const parts = (path || '').split('/');
+  const basename = parts[parts.length - 1] || '';
+  const subDir = (parts.length >= 2 ? parts[parts.length - 2] : '').toLowerCase();
+  if (subDir === 'dor') {
+    return /-dor-contract\.md$/.test(basename) ? 'dor-contract' : 'dor';
+  }
+  const SUBDIR_KEY = {
+    'stories': 'story', 'dod': 'dod', 'plans': 'plan', 'test-plans': 'test-plan',
+    'review': 'review', 'verification-scripts': 'verification', 'trace': 'trace',
+    'coverage': 'coverage', 'reference': 'reference', 'research': 'research'
+  };
+  if (SUBDIR_KEY[subDir]) return SUBDIR_KEY[subDir];
+  return basename.replace(/\.md$/, '') || 'artefact';
+}
+
+function _matrixColumnLabel(key) {
+  return MATRIX_COLUMN_LABELS[key] || (key.charAt(0).toUpperCase() + key.slice(1));
+}
+
+function _matrixColumnAbbrev(key) {
+  return MATRIX_COLUMN_ABBREV[key] || _matrixColumnLabel(key);
+}
+
+/**
+ * fadm-s1: separates a feature's own epic documents (epics/<epicSlug>.md)
+ * out of the feature-level artefact list, keyed by epic slug, so the
+ * document matrix can link each one from its own epic-divider row instead
+ * of duplicating it as a feature-level table row or an orphaned matrix row
+ * (neither of which has a natural "story" to attach it to).
+ * @param {Array} featureLevelArtefacts
+ * @param {string} featureSlug
+ * @param {Array<{epicSlug: string}>} epics
+ * @returns {{epicDocs: Object<string, object>, remaining: Array}}
+ */
+function _extractEpicDocs(featureLevelArtefacts, featureSlug, epics) {
+  const epicSlugSet = new Set((epics || []).map((e) => e.epicSlug));
+  const epicDocs = {};
+  const remaining = [];
+  (featureLevelArtefacts || []).forEach((a) => {
+    const relPath = _relativeArtefactPath(a.path || '', featureSlug);
+    const m = relPath.match(/^epics\/(.+)$/);
+    if (m && epicSlugSet.has(m[1])) {
+      epicDocs[m[1]] = a;
+    } else {
+      remaining.push(a);
+    }
+  });
+  return { epicDocs, remaining };
+}
+
+/**
+ * fadm-s1: renders a feature's own root-level documents (discovery,
+ * benefit-metric, decisions, nfr-profile, and any other file directly in
+ * the feature root) as one compact table, replacing the old one-.sw-card-
+ * per-type rendering for the multi-story path. Preserves the existing
+ * resume-conversation affordance unchanged (AC6).
+ * @param {Array} artefacts
+ * @param {string} featureSlug
+ * @param {Object<string, {skillName: string, sessionId: string, journeyId: string}>} [resumeLookup]
+ * @returns {string} HTML string, or '' when there are no feature-level documents
+ */
+function _renderFeatureLevelTable(artefacts, featureSlug, resumeLookup) {
+  resumeLookup = resumeLookup || {};
+  if (!artefacts || artefacts.length === 0) return '';
+  const rows = artefacts.map((a) => {
+    const label = getLabel(a.type || '');
+    const relPath = _relativeArtefactPath(a.path || '', featureSlug) || (a.type || '');
+    const viewUrl = `/artefact/${featureSlug}/${encodeURIComponent(relPath)}`;
+    const date = shellEscHtml(a.createdAt || '');
+    const resumable = resumeLookup[a.path || ''];
+    const resumeLink = resumable
+      ? ` <a class="doc-table__resume-link" href="/journey/${encodeURIComponent(resumable.journeyId)}/stage/${encodeURIComponent(resumable.skillName)}">Resume conversation</a>`
+      : '';
+    return `<tr><td class="doc-table__type">${shellEscHtml(label)}</td>` +
+      `<td><a class="doc-table__link" href="${shellEscHtml(viewUrl)}">${shellEscHtml(a.path || '')}</a>${resumeLink}</td>` +
+      `<td class="doc-table__date">${date}</td></tr>`;
+  }).join('');
+  return `<div class="sw-card"><div class="sw-section-title">Feature</div>` +
+    `<table class="doc-table"><tbody>${rows}</tbody></table></div>`;
+}
+
+/**
+ * fadm-s1: renders every multi-story feature's story- and epic-level
+ * documents as one matrix -- rows are stories (grouped under a plain,
+ * non-interactive epic-divider row for epic-nested stories), columns are
+ * the union of document kinds actually present (AC2), each present cell a
+ * clickable checkmark linking straight to that document. Replaces the
+ * .sw-epic-group/.sw-story-row accordion (fpux.1, dedup-fixed by sri-s1)
+ * for this page -- that CSS and its own renderStory() function are left in
+ * place, not deleted, since fpux.1's own dedicated E2E/unit suite still
+ * exercises them directly against hand-authored fixtures, independent of
+ * this route (see fadm-s1 DoD Scope Deviations for the full reasoning).
+ * @param {{featureLevel: Array, epics: Array<{epicName: string, epicSlug: string, stories: Array<{slug: string, artefacts: Array}>}>, flatStories: Array<{slug: string, artefacts: Array}>}} grouped
+ * @param {string} featureSlug
+ * @param {Object<string, object>} epicDocs keyed by epic slug, from _extractEpicDocs
+ * @param {Object<string, {skillName: string, sessionId: string, journeyId: string}>} [resumeLookup]
+ * @returns {string} HTML string, or '' when there are no stories with any artefacts
+ */
+function renderArtefactMatrix(grouped, featureSlug, epicDocs, resumeLookup) {
+  resumeLookup = resumeLookup || {};
+  epicDocs = epicDocs || {};
+
+  const rowGroups = [];
+  (grouped.epics || []).forEach((epic) => {
+    const stories = (epic.stories || []).filter((s) => s.artefacts.length > 0);
+    if (stories.length > 0) {
+      rowGroups.push({ epicName: epic.epicName || epic.epicSlug || '', epicSlug: epic.epicSlug || null, stories });
+    }
+  });
+  const flatWithArtefacts = (grouped.flatStories || []).filter((s) => s.artefacts.length > 0);
+  if (flatWithArtefacts.length > 0) {
+    rowGroups.push({ epicName: rowGroups.length > 0 ? 'Stories' : null, epicSlug: null, stories: flatWithArtefacts });
+  }
+  if (rowGroups.length === 0) return '';
+
+  const presentKeys = new Set();
+  rowGroups.forEach((g) => g.stories.forEach((s) => s.artefacts.forEach((a) => presentKeys.add(_deriveMatrixColumn(a.path || '')))));
+  const columns = MATRIX_COLUMN_ORDER.filter((k) => presentKeys.has(k))
+    .concat(Array.from(presentKeys).filter((k) => MATRIX_COLUMN_ORDER.indexOf(k) === -1).sort());
+  const hasDodColumn = columns.indexOf('dod') !== -1;
+  const colCount = columns.length + 1 + (hasDodColumn ? 1 : 0);
+
+  const headHtml = '<thead><tr><th class="doc-matrix__story-col">Story</th>' +
+    columns.map((k) => `<th title="${shellEscHtml(_matrixColumnLabel(k))}">${shellEscHtml(_matrixColumnAbbrev(k))}</th>`).join('') +
+    (hasDodColumn ? '<th class="doc-matrix__status-col">Status</th>' : '') +
+    '</tr></thead>';
+
+  const bodyHtml = rowGroups.map((group) => {
+    let dividerHtml = '';
+    if (group.epicName) {
+      const epicDoc = group.epicSlug ? epicDocs[group.epicSlug] : null;
+      const epicLink = epicDoc
+        ? ` <a class="doc-matrix__epic-link" href="/artefact/${featureSlug}/${encodeURIComponent(_relativeArtefactPath(epicDoc.path || '', featureSlug))}">View epic doc</a>`
+        : '';
+      dividerHtml = `<tr class="doc-matrix__divider"><td colspan="${colCount}">${shellEscHtml(group.epicName)}${epicLink}</td></tr>`;
+    }
+
+    const storyRows = group.stories.map((story) => {
+      const byColumn = {};
+      story.artefacts.forEach((a) => { byColumn[_deriveMatrixColumn(a.path || '')] = a; });
+      const cells = columns.map((k) => {
+        const a = byColumn[k];
+        if (!a) return '<td class="doc-matrix__dash">–</td>';
+        const relPath = _relativeArtefactPath(a.path || '', featureSlug) || (a.type || '');
+        const viewUrl = `/artefact/${featureSlug}/${encodeURIComponent(relPath)}`;
+        const resumable = resumeLookup[a.path || ''];
+        const resumeLink = resumable
+          ? ` <a class="doc-matrix__resume-link" href="/journey/${encodeURIComponent(resumable.journeyId)}/stage/${encodeURIComponent(resumable.skillName)}" title="Resume conversation">↻</a>`
+          : '';
+        return `<td><a class="doc-matrix__tick" href="${shellEscHtml(viewUrl)}" title="Open document">✓</a>${resumeLink}</td>`;
+      }).join('');
+      const statusCell = hasDodColumn
+        ? (byColumn.dod
+            ? '<td class="doc-matrix__status-col"><span class="sw-pill sw-pill--nodot sw-pill--green">✓ Done</span></td>'
+            : '<td class="doc-matrix__status-col"><span class="sw-pill sw-pill--nodot sw-pill--neutral">In progress</span></td>')
+        : '';
+      return `<tr><td class="doc-matrix__story-col">${shellEscHtml(story.slug)}</td>${cells}${statusCell}</tr>`;
+    }).join('');
+
+    return dividerHtml + storyRows;
+  }).join('');
+
+  return `<div class="sw-section-title" style="margin-top:20px">Stories</div>` +
+    `<div class="doc-matrix-wrap"><table class="doc-matrix">${headHtml}<tbody>${bodyHtml}</tbody></table></div>`;
+}
+
 /**
  * fapg-s1: extracted from renderArtefactIndexHtml so both the unchanged
  * single-story rendering and the new multi-story grouped rendering
@@ -368,27 +567,10 @@ function renderStory(story, featureSlug, resumeLookup) {
 }
 
 function renderGroupedArtefactIndexHtml(grouped, featureSlug, resumeLookup) {
-  const featureLevelHtml = grouped.featureLevel.length > 0
-    ? _renderArtefactListByType(grouped.featureLevel, featureSlug, resumeLookup)
-    : '';
-
-  const epicsHtml = grouped.epics.map((epic) => {
-    const storiesHtml = epic.stories.map((story) => renderStory(story, featureSlug, resumeLookup)).join('');
-    if (!storiesHtml) return '';
-    return '<details class="sw-epic-group" open>' +
-      '<summary>' + shellEscHtml(epic.epicName || epic.epicSlug || '') + '</summary>' +
-      storiesHtml +
-    '</details>';
-  }).join('');
-
-  const flatStoriesHtml = grouped.flatStories.length > 0
-    ? '<details class="sw-epic-group" open>' +
-        '<summary>Stories</summary>' +
-        grouped.flatStories.map((story) => renderStory(story, featureSlug, resumeLookup)).join('') +
-      '</details>'
-    : '';
-
-  return featureLevelHtml + epicsHtml + flatStoriesHtml;
+  const { epicDocs, remaining } = _extractEpicDocs(grouped.featureLevel, featureSlug, grouped.epics);
+  const featureLevelHtml = _renderFeatureLevelTable(remaining, featureSlug, resumeLookup);
+  const matrixHtml = renderArtefactMatrix(grouped, featureSlug, epicDocs, resumeLookup);
+  return featureLevelHtml + matrixHtml;
 }
 
 /**
@@ -607,6 +789,8 @@ module.exports = {
   renderArtefactItem,
   renderArtefactIndexHtml,
   renderGroupedArtefactIndexHtml,
+  renderArtefactMatrix,
   renderStory,
-  escHtml
+  escHtml,
+  _deriveMatrixColumn
 };

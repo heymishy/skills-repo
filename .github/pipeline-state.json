@@ -31462,18 +31462,20 @@
         {
           "id": "fadm-s1",
           "slug": "fadm-s1",
-          "stage": "dor-signed-off",
+          "stage": "verify-completion",
           "health": "green",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-06-feature-artefact-document-matrix/dor/fadm-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-06-feature-artefact-document-matrix/dor/fadm-s1-dor-contract.md",
           "testPlan": {
             "status": "written",
-            "totalTests": 16,
-            "passing": 0
+            "totalTests": 27,
+            "passing": 27
           },
           "acTotal": 7,
-          "acVerified": 0
+          "acVerified": 6,
+          "verifyStatus": "passed",
+          "updatedAt": "2026-09-05T23:06:47.621Z"
         }
       ],
       "metrics": [],
