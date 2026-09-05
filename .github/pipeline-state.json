@@ -31151,11 +31151,11 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-05T06:22:34.610Z",
+              "updatedAt": "2026-09-05T06:38:55.661Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 8,
-                "passing": 0
+                "totalTests": 12,
+                "passing": 12
               },
               "acTotal": 5,
               "acVerified": 0,
@@ -31168,37 +31168,37 @@
                 {
                   "id": "task-1",
                   "name": "Add sw-epic-group/sw-story-row shared CSS classes",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.1-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Use new classes in renderGroupedArtefactIndexHtml, hoist renderStory (AC1)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.1-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "Regression guard -- delete-feature button unchanged (AC5)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.1-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "E2E -- visual consistency and light/dark theme (AC1, AC2)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.1-plan.md"
                 },
                 {
                   "id": "task-5",
                   "name": "E2E -- keyboard focus visibility and operability (AC3)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.1-plan.md"
                 },
                 {
                   "id": "task-6",
                   "name": "E2E -- WCAG 2.1 AA contrast ratio (AC4)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.1-plan.md"
                 }
               ]
