@@ -31,6 +31,12 @@ So that **the navigation experience itself doesn't undermine the polished page t
 
 **AC1:** Given the three entry points named in discovery (dashboard, a feature's product page, a story's own DoD "Resume conversation"/artefact link), When each is audited by tracing the actual route/link chain in `src/web-ui`, Then a documented, exhaustive list of every real entry point into `/features/:slug` exists in this story's own write-up (confirming the three, or naming any additional real entry point found, per the discovery's own Clarification log commitment to this audit).
 
+**AC1 audit result (2026-09-05):** 4 real entry points confirmed via `grep -rn "features/" src/web-ui/routes/*.js src/web-ui/views/*.js`:
+1. Dashboard list row (`features-view.js:58`)
+2. Product page feature-list item (`products.js:332`)
+3. Story-DoD/session-completion redirect (`journey.js:3267`, inside `handleGetJourneyById`)
+4. Kanban board card (`kanban-view.js:50`) — not named in discovery; in-scope per the discovery's own Clarification log Q4.
+
 **AC2:** Given each of the three entry points named in discovery (the dashboard, a feature's product page, a story's own DoD resume/artefact link), When a user follows it end-to-end toward a target feature's `/features/:slug` page, Then it leads directly there — with no intermediate 404, unauthenticated redirect loop, or a landing page requiring an unexplained extra step to reach the intended feature.
 
 **AC3:** Given a dead-end, broken, or confusing hop is found during the AC1/AC2 audit, When this story is marked complete, Then that hop has been fixed in the relevant route/view file and re-verified to no longer reproduce — the audit does not stop at documentation if a real defect is found.
