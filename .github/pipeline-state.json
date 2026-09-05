@@ -31042,19 +31042,19 @@
           "slug": "pebd-s1",
           "id": "pebd-s1",
           "name": "Batch-delete purge-e2e-tenants (urgent -- real growing backlog)",
-          "stage": "branch-complete",
-          "health": "amber",
-          "updatedAt": "2026-09-04T22:34:53.775Z",
+          "stage": "definition-of-done",
+          "health": "green",
+          "updatedAt": "2026-09-05T00:09:44.649Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-05-purge-e2e-tenants-batch-delete/dor/pebd-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-05-purge-e2e-tenants-batch-delete/dor/pebd-s1-dor-contract.md",
           "testPlan": {
             "status": "written",
             "totalTests": 8,
-            "passing": 7
+            "passing": 8
           },
           "acTotal": 6,
-          "acVerified": 5,
+          "acVerified": 6,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "baseline": {
@@ -31071,9 +31071,11 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "open",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/835",
-          "blocker": "Real, currently-growing production backlog (2260+ orphaned e2e-test- tenant rows in Neon as of this story) -- AC6 (does the fix actually clear it) confirmed only after merge and the next real purge run. health=amber until confirmed."
+          "blocker": "RESOLVED: AC6 confirmed via PR #835's own pre-merge Scenario A CI run against real staging Neon (2261 e2e-test- tenants purged in 36s, see dod/pebd-s1-dod.md). No open blocker.",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ]
     }
