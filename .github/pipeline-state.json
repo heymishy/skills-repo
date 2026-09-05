@@ -31147,18 +31147,18 @@
             {
               "slug": "fpux.1",
               "name": "Unify /features/:slug's visual language across feature-level and per-story sections",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-05T06:38:55.661Z",
+              "updatedAt": "2026-09-05T06:53:02.358Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 12,
                 "passing": 12
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
@@ -31201,7 +31201,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-09-05-feature-page-ux-redesign/plans/fpux.1-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "fpux.2",
