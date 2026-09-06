@@ -1839,3 +1839,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: decision
   signal-text: Test data strategy for all 6 canonical-artefact-trace stories set to Mixed - real on-disk fixtures (phase4, psh, this repo's own 2026-09-06-feature-artefact-document-matrix) for the common/registered cases, synthetic temp-directory fixtures (following the existing workspace/test-tmp-* convention) for edge cases with no real-world analog (not-yet-synced tenant, orphaned-registration). No CSS-layout-dependent gaps found across any of the 6 stories' ACs - all assertable via HTML-string checks on server-rendered output, consistent with fadm-s1's own established test convention.
   source: agent-auto
+
+- date: 2026-09-06
+  session-phase: definition-of-ready
+  signal-type: decision
+  signal-text: All 6 canonical-artefact-trace stories passed DoR with 19/19 hard blocks each and zero contract mismatches (Contract Proposal derived directly from already-reviewed ACs/test plans). Only warning W4 (verification script domain-expert review) applied to all 6, unmet for the same reason each time - scripts were authored this session alongside their test plans, not yet human-walked - handled as a single RISK-ACCEPT rather than 6 separate ones, since the underlying reason and mitigation were identical across all 6.
+  source: agent-auto
