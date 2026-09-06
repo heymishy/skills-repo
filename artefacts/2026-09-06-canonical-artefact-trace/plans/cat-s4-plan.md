@@ -39,7 +39,9 @@ Create:
 
 ---
 
-## Task 1: The trace→grouped adapter (AC1's foundation)
+## Task 1: The trace→grouped adapter (AC1's foundation) ✅ DONE (b60d4112, fixup 0fdbf17d)
+
+**Two-stage review:** spec compliance ✅ (rigorously independently re-derived both critical shape-mismatch fixes from first principles, not just trusted) | code quality — first pass found 1 **Critical** bug: `_adaptTraceArtefact` labeled every feature-root document ("discovery.md", "decisions.md", etc.) as the generic "Feature Level", since `resolveLabel('feature-level', ...)` has no matching key — invisible to AC4's own golden-fixture test because that fixture happens to have zero root-level files. Fixed in `0fdbf17d` by routing feature-level artefacts through the existing `labelFromPath(filename)` function instead → ✅ Approved.
 
 **Recommended model class:** deep-reasoning — this is the task with the two critical shape-mismatch fixes described above; a subtle mistake here breaks every other task silently.
 
