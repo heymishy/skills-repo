@@ -42,6 +42,28 @@ const readPipelineStateForSlug = (repoRoot, featureSlug) => {
   return feature || null;
 };
 
+// traceResult: the object buildArtefactTrace produces (status: 'found', with epics/stories/artefacts already populated); classifies each artefact as 'registered'/'unregistered' and each story as 'registered'/'orphaned-registration', returning a new object of the same shape with a `divergence` field added throughout
+const classifyDivergence = (traceResult) => {
+  if (traceResult.status !== 'found') {
+    // not-yet-synced / not-found: nothing to classify (AC3's own precedence
+    // is automatically satisfied here -- there is no per-document data yet).
+    return traceResult;
+  }
+
+  const artefacts = traceResult.artefacts.map((artefact) => Object.assign({}, artefact, {
+    divergence: artefact.storySlug ? 'registered' : 'unregistered'
+  }));
+
+  const stories = traceResult.stories.map((story) => {
+    const hasMatchingArtefact = artefacts.some((a) => a.storySlug === story.slug);
+    return Object.assign({}, story, {
+      divergence: hasMatchingArtefact ? 'registered' : 'orphaned-registration'
+    });
+  });
+
+  return Object.assign({}, traceResult, { artefacts, stories });
+};
+
 const buildArtefactTrace = (repoRoot, featureSlug) => {
   if (!fs.existsSync(repoRoot)) {
     return { status: 'not-yet-synced' };
@@ -103,49 +125,6 @@ const buildArtefactTrace = (repoRoot, featureSlug) => {
   });
 
   return { status: 'found', resolvedDir, epics, stories, artefacts };
-};
-
-/**
- * Classify every artefact and story in an already-built trace result as
- * 'registered', 'unregistered' (artefacts only), or 'orphaned-registration'
- * (stories only). Operates on the already-collected data from
- * buildArtefactTrace's own single pass -- performs no filesystem I/O and
- * adds no additional directory traversal (Performance NFR).
- * Declared as a `const` arrow function, matching this file's established
- * style, rather than a hoisted `function` declaration: a later wiring call
- * from within buildArtefactTrace (cat-s3 Task 3) is safe either way, since
- * buildArtefactTrace is only ever invoked by external callers after the
- * whole module -- including this const -- has finished evaluating, not
- * during its own definition. There is no temporal-dead-zone hazard to guard
- * against here.
- * @param {object} traceResult  the object buildArtefactTrace produces internally
- *   before returning (status: 'found', with epics/stories/artefacts already populated)
- * @param {object|null} feature  the raw pipeline-state feature object (unused
- *   directly here -- traceResult.stories/artefacts already reflect it -- kept
- *   as a parameter for forward compatibility with classification rules that
- *   may need fields not already surfaced on traceResult in a future story)
- * @returns {object} a new object, same shape as traceResult, with a
- *   `divergence` field added to every artefact and every story
- */
-const classifyDivergence = (traceResult, feature) => {
-  if (traceResult.status !== 'found') {
-    // not-yet-synced / not-found: nothing to classify (AC3's own precedence
-    // is automatically satisfied here -- there is no per-document data yet).
-    return traceResult;
-  }
-
-  const artefacts = traceResult.artefacts.map((artefact) => Object.assign({}, artefact, {
-    divergence: artefact.storySlug ? 'registered' : 'unregistered'
-  }));
-
-  const stories = traceResult.stories.map((story) => {
-    const hasMatchingArtefact = artefacts.some((a) => a.storySlug === story.slug);
-    return Object.assign({}, story, {
-      divergence: hasMatchingArtefact ? 'registered' : 'orphaned-registration'
-    });
-  });
-
-  return Object.assign({}, traceResult, { artefacts, stories });
 };
 
 module.exports = { buildArtefactTrace, classifyDivergence };

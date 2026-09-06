@@ -32,7 +32,7 @@ console.log('\n[cat-s3] AC4 -- correctly-matched document is marked registered w
     stories: [{ slug: 's1', name: 'Story 1' }],
     artefacts: [{ path: 'stories/s1-foo.md', type: 'stories', filename: 's1-foo.md', storySlug: 's1' }]
   };
-  var result = mod.classifyDivergence(trace, null);
+  var result = mod.classifyDivergence(trace);
   test('matched artefact classification is registered', function() {
     assert.strictEqual(result.artefacts[0].divergence, 'registered');
   });
@@ -49,7 +49,7 @@ console.log('\n[cat-s3] AC2 -- registered story with zero matching files is orph
     stories: [{ slug: 'ghost-s1', name: 'Ghost Story' }],
     artefacts: []
   };
-  var result = mod.classifyDivergence(trace, null);
+  var result = mod.classifyDivergence(trace);
   test('story with no matching artefacts is orphaned-registration', function() {
     assert.strictEqual(result.stories[0].divergence, 'orphaned-registration');
   });
@@ -63,7 +63,7 @@ console.log('\n[cat-s3] AC2 (non-conflation) -- orphaned-registration is never t
     stories: [{ slug: 'ghost-s1', name: 'Ghost Story' }],
     artefacts: [{ path: 'orphan.md', type: 'feature-level', filename: 'orphan.md', storySlug: null }]
   };
-  var result = mod.classifyDivergence(trace, null);
+  var result = mod.classifyDivergence(trace);
   test('orphaned story and unregistered artefact have distinct classification values', function() {
     assert.notStrictEqual(result.stories[0].divergence, result.artefacts[0].divergence);
     assert.strictEqual(result.stories[0].divergence, 'orphaned-registration');
