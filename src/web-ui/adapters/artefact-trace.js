@@ -1,24 +1,30 @@
 'use strict';
-var fs = require('fs');
-var path = require('path');
 
-function pathExists(p) {
-  try { fs.accessSync(p); return true; }
-  catch (_) { return false; }
-}
+// artefact-trace.js — buildArtefactTrace adapter (ADR-028, ADR-029)
+// The single canonical builder for a feature's artefact trace, derived from
+// real disk structure. ADR-028: exactly one builder for this derived
+// structure — other modules must call this rather than re-deriving it.
+// ADR-029: the local filesystem checkout is canonical for artefact content;
+// pipeline-state.json is enrichment only.
 
-function buildArtefactTrace(repoRoot, featureSlug) {
-  if (!pathExists(repoRoot)) {
+const fs = require('fs');
+const path = require('path');
+
+const buildArtefactTrace = (repoRoot, featureSlug) => {
+  if (!fs.existsSync(repoRoot)) {
     return { status: 'not-yet-synced' };
   }
 
-  var primaryDir = path.join(repoRoot, 'artefacts', featureSlug);
-  var archivedDir = path.join(repoRoot, 'artefacts', 'archived', featureSlug);
+  const primaryDir = path.join(repoRoot, 'artefacts', featureSlug);
+  const archivedDir = path.join(repoRoot, 'artefacts', 'archived', featureSlug);
 
-  var resolvedDir = null;
-  if (pathExists(primaryDir)) {
+  let resolvedDir = null;
+  // One fallback branch only (ADR-028) -- do not duplicate this logic in
+  // features.js, artefact-list.js, or artefact-fetcher.js; those modules
+  // should call buildArtefactTrace instead (cat-s4/cat-s5 wire this).
+  if (fs.existsSync(primaryDir)) {
     resolvedDir = primaryDir;
-  } else if (pathExists(archivedDir)) {
+  } else if (fs.existsSync(archivedDir)) {
     resolvedDir = archivedDir;
   }
 
@@ -27,7 +33,7 @@ function buildArtefactTrace(repoRoot, featureSlug) {
   }
 
   // Directory walk and pipeline-state cross-reference land in later tasks.
-  return { status: 'found', resolvedDir: resolvedDir, epics: [], stories: [], artefacts: [] };
-}
+  return { status: 'found', resolvedDir, epics: [], stories: [], artefacts: [] };
+};
 
-module.exports = { buildArtefactTrace: buildArtefactTrace, pathExists: pathExists };
+module.exports = { buildArtefactTrace };

@@ -50,5 +50,24 @@ console.log('\n[cat-s1] AC5 -- unsynced tenant checkout returns a distinct not-y
   });
 }
 
+console.log('\n[cat-s1] AC3 -- resolves a feature present only under artefacts/archived/');
+{
+  var fixtureRoot = path.join(os.tmpdir(), 'cat-s1-archived-fixture-' + Date.now());
+  var archivedFeatureDir = path.join(fixtureRoot, 'artefacts', 'archived', 'archived-only-feature');
+  fs.mkdirSync(archivedFeatureDir, { recursive: true });
+  fs.writeFileSync(path.join(archivedFeatureDir, 'discovery.md'), '# Discovery\n');
+
+  var result = mod.buildArtefactTrace(fixtureRoot, 'archived-only-feature');
+  test('resolves via the archived/ fallback', function() {
+    assert.strictEqual(result.status, 'found');
+  });
+  test('finds the file under the archived path', function() {
+    var found = result.artefacts.some(function(a) { return a.path.indexOf('discovery.md') !== -1; });
+    assert.ok(found, 'discovery.md should be present in artefacts[]');
+  });
+
+  fs.rmSync(fixtureRoot, { recursive: true, force: true });
+}
+
 console.log('\n[cat-s1] Results:', passed, 'passed,', failed, 'failed');
 if (failed > 0) process.exit(1);
