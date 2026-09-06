@@ -7,6 +7,7 @@
 
 var assert = require('assert');
 var path = require('path');
+var os = require('os');
 
 var TRACE_PATH = path.resolve(__dirname, '../src/web-ui/adapters/artefact-trace.js');
 var REPO_ROOT = path.resolve(__dirname, '..');
@@ -102,7 +103,9 @@ console.log('\n[cat-s3] AC1 -- real phase4 fixture: all files unregistered, no c
 {
   var classified;
   test('does not throw for a large real unregistered fixture', function() {
-    classified = mod.classifyDivergence(mod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4'));
+    // buildArtefactTrace now classifies internally (wired in this story), so
+    // this is a direct call -- no separate classifyDivergence(...) wrapper needed.
+    classified = mod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4');
   });
   test('every one of the real phase4 files is classified unregistered', function() {
     var allUnregistered = classified.artefacts.every(function(a) { return a.divergence === 'unregistered'; });
@@ -112,7 +115,6 @@ console.log('\n[cat-s3] AC1 -- real phase4 fixture: all files unregistered, no c
 
 console.log('\n[cat-s3] AC3 -- not-yet-synced status takes precedence, no per-document classification attempted');
 {
-  var os = require('os');
   var unsyncedRoot = path.join(os.tmpdir(), 'wuce-unsynced-cat-s3-' + Date.now());
   var result = mod.buildArtefactTrace(unsyncedRoot, 'any-slug');
   test('buildArtefactTrace itself returns not-yet-synced (classification never runs)', function() {
@@ -125,17 +127,19 @@ console.log('\n[cat-s3] AC3 -- not-yet-synced status takes precedence, no per-do
   });
 }
 
-console.log('\n[cat-s3] Integration -- buildArtefactTrace now returns pre-classified artefacts directly, no second walk');
+console.log('\n[cat-s3] Integration -- buildArtefactTrace now returns pre-classified artefacts directly');
 {
-  var start = process.hrtime.bigint();
+  // Timing is NOT re-asserted here -- cat-s1's own NFR test in
+  // check-cat-s1-core-trace-builder.js already covers the 50ms budget for
+  // buildArtefactTrace's full (now classify-inclusive) run against this same
+  // fixture; walkDir isn't exported, so there is no way to isolate
+  // "classification overhead on top of the walk" as a separate measurement,
+  // and duplicating the same threshold against the same fixture here would
+  // just be the same test twice under a different name.
   var directResult = mod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4');
-  var elapsedMs = Number(process.hrtime.bigint() - start) / 1e6;
   test('buildArtefactTrace output already has divergence classification (wired in)', function() {
     assert.ok(directResult.artefacts.length > 0);
     assert.ok(directResult.artefacts.every(function(a) { return a.divergence === 'unregistered'; }));
-  });
-  test('wiring classification in adds no meaningful overhead (still well under 50ms for 205 files)', function() {
-    assert.ok(elapsedMs < 50, 'expected < 50ms, got ' + elapsedMs.toFixed(1) + 'ms');
   });
 }
 

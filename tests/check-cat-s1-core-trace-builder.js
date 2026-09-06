@@ -243,6 +243,9 @@ console.log('\n[cat-s1] AC1 (regression guard) -- bare <slug>.md story files (no
 
 console.log('\n[cat-s1] NFR -- directory walk completes within 50ms for phase4-scale directory (205 files)');
 {
+  // Note (cat-s3): buildArtefactTrace now calls classifyDivergence internally
+  // before returning, so this measures the full wired walk+classify
+  // pipeline end-to-end, not a bare directory walk in isolation.
   var start = process.hrtime.bigint();
   mod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4');
   var elapsedMs = Number(process.hrtime.bigint() - start) / 1e6;
