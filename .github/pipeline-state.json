@@ -31681,19 +31681,19 @@
             {
               "slug": "cat-s3",
               "name": "Classify every divergence case the audit found, not just the common one",
-              "stage": "implementation-plan",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s3-review-1.md",
-              "updatedAt": "2026-09-06T09:39:07.679Z",
+              "updatedAt": "2026-09-06T20:23:42.342Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 10,
-                "passing": 0
+                "totalTests": 12,
+                "passing": 12
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s3-divergence-classification-test-plan.md",
@@ -31710,22 +31710,25 @@
                 {
                   "id": "task-1",
                   "name": "Core classification -- registered, unregistered, orphaned-registration (AC2, AC4)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s3-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Inference for unregistered documents (AC1)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s3-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "not-yet-synced precedence, wire into buildArtefactTrace, NFR (AC3)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s3-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/844"
             },
             {
               "slug": "cat-s4",
