@@ -71,18 +71,16 @@ console.log('\n[cat-s1] AC3 -- resolves a feature present only under artefacts/a
 
 console.log('\n[cat-s1] AC2 -- zero-registration feature returns every real file, none dropped');
 {
-  var phase4Result = mod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4');
+  var phase4Result;
+  test('does not throw despite zero pipeline-state.json registration', function() {
+    phase4Result = mod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4');
+  });
   test('status is found', function() {
     assert.strictEqual(phase4Result.status, 'found');
   });
   // 205 is the real, measured file count of this fixture as of 2026-09-06 -- re-count with a fresh find/Get-ChildItem if the fixture changes intentionally
   test('returns all 205 real files', function() {
     assert.strictEqual(phase4Result.artefacts.length, 205);
-  });
-  test('does not throw despite zero pipeline-state.json registration', function() {
-    assert.doesNotThrow(function() {
-      mod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4');
-    });
   });
 }
 
@@ -223,9 +221,9 @@ console.log('\n[cat-s1] NFR -- directory walk completes within 50ms for phase4-s
 console.log('\n[cat-s1] NFR -- no new unvalidated input surface (source review)');
 {
   var src = fs.readFileSync(TRACE_PATH, 'utf8');
-  test('featureSlug is never used in a shell/exec call', function() {
-    assert.ok(src.indexOf('exec(') === -1 && src.indexOf('execSync(') === -1,
-      'artefact-trace.js must not shell out with unvalidated input');
+  test('module never requires child_process (no shell-out surface introduced)', function() {
+    assert.ok(!/require\(\s*['"]child_process['"]\s*\)/.test(src),
+      'artefact-trace.js must not require(\'child_process\') -- no shell-out surface should exist');
   });
 }
 
