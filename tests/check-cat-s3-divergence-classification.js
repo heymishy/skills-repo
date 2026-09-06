@@ -110,5 +110,34 @@ console.log('\n[cat-s3] AC1 -- real phase4 fixture: all files unregistered, no c
   });
 }
 
+console.log('\n[cat-s3] AC3 -- not-yet-synced status takes precedence, no per-document classification attempted');
+{
+  var os = require('os');
+  var unsyncedRoot = path.join(os.tmpdir(), 'wuce-unsynced-cat-s3-' + Date.now());
+  var result = mod.buildArtefactTrace(unsyncedRoot, 'any-slug');
+  test('buildArtefactTrace itself returns not-yet-synced (classification never runs)', function() {
+    assert.strictEqual(result.status, 'not-yet-synced');
+  });
+  test('classifyDivergence passed a not-yet-synced result returns it unchanged', function() {
+    var classified = mod.classifyDivergence(result);
+    assert.strictEqual(classified.status, 'not-yet-synced');
+    assert.strictEqual(classified.artefacts, undefined);
+  });
+}
+
+console.log('\n[cat-s3] Integration -- buildArtefactTrace now returns pre-classified artefacts directly, no second walk');
+{
+  var start = process.hrtime.bigint();
+  var directResult = mod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4');
+  var elapsedMs = Number(process.hrtime.bigint() - start) / 1e6;
+  test('buildArtefactTrace output already has divergence classification (wired in)', function() {
+    assert.ok(directResult.artefacts.length > 0);
+    assert.ok(directResult.artefacts.every(function(a) { return a.divergence === 'unregistered'; }));
+  });
+  test('wiring classification in adds no meaningful overhead (still well under 50ms for 205 files)', function() {
+    assert.ok(elapsedMs < 50, 'expected < 50ms, got ' + elapsedMs.toFixed(1) + 'ms');
+  });
+}
+
 console.log('\n[cat-s3] Results:', passed, 'passed,', failed, 'failed');
 if (failed > 0) process.exit(1);

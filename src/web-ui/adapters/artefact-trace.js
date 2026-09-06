@@ -160,7 +160,7 @@ const buildArtefactTrace = (repoRoot, featureSlug) => {
     artefact.storySlug = match ? match.slug : null;
   });
 
-  return { status: 'found', resolvedDir, epics, stories, artefacts };
+  return classifyDivergence({ status: 'found', resolvedDir, epics, stories, artefacts });
 };
 
 module.exports = { buildArtefactTrace, classifyDivergence };
