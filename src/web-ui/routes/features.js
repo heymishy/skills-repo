@@ -23,6 +23,9 @@ const { getRepoRoot } = require('../adapters/repo-root');
 
 const { getFeatureStoryStructure, groupArtefactsByStory } = require('../adapters/feature-story-structure');
 
+const { buildArtefactTrace } = require('../adapters/artefact-trace');
+const { resolveLabel } = require('../utils/artefact-labels');
+
 const { escHtml } = require('../utils/html-shell');
 // pncg-s1: renderShell's direct import was removed here -- handleGetFeatureArtefacts
 // (its only caller in this file) now goes through renderShellWithNav below,
@@ -347,6 +350,79 @@ function _matrixColumnLabel(key) {
 
 function _matrixColumnAbbrev(key) {
   return MATRIX_COLUMN_ABBREV[key] || _matrixColumnLabel(key);
+}
+
+/**
+ * cat-s4: reconstructs a trace artefact into the shape the existing render
+ * functions (_renderFeatureLevelTable, renderArtefactMatrix, _extractEpicDocs)
+ * already expect -- these functions are NOT modified, only their data source is.
+ * Two non-obvious fixes here (see cat-s4-plan.md's own "Critical findings"
+ * section for the full reasoning):
+ *   1. path is reconstructed to `artefacts/<featureSlug>/<relPath>` because
+ *      _relativeArtefactPath searches for the literal featureSlug+'/' substring
+ *      -- a bare feature-relative path from buildArtefactTrace has no such
+ *      substring and would silently break every view link.
+ *   2. type is resolved via resolveLabel (cat-s2's canonical table) because
+ *      buildArtefactTrace's raw subdirectory key ('test-plans') is not the
+ *      same string the OLD pipeline's already-a-label type field held
+ *      ('Test Plan') -- getLabel(a.type) downstream would produce the wrong
+ *      fallback label if fed the raw key directly.
+ * @param {object} traceArtefact one entry from buildArtefactTrace's artefacts[]
+ * @param {string} featureSlug
+ * @returns {object} { path, type, divergence, inferredGroup, storySlug }
+ */
+function _adaptTraceArtefact(traceArtefact, featureSlug) {
+  return {
+    path: `artefacts/${featureSlug}/${traceArtefact.path}`,
+    type: resolveLabel(traceArtefact.type, traceArtefact.filename),
+    storySlug: traceArtefact.storySlug || null,
+    divergence: traceArtefact.divergence,
+    inferredGroup: traceArtefact.inferredGroup || null
+  };
+}
+
+/**
+ * cat-s4: converts buildArtefactTrace's classified {epics, stories, artefacts}
+ * into the {featureLevel, epics, flatStories} shape renderGroupedArtefactIndexHtml
+ * and renderArtefactMatrix already consume (feature-story-structure.js's own
+ * groupArtefactsByStory produced this same shape; this function replaces it
+ * as the ONE canonical source of that shape, per ADR-028).
+ * @param {object} trace  a 'found'-status result from buildArtefactTrace
+ * @param {string} featureSlug
+ * @returns {{featureLevel: Array, epics: Array, flatStories: Array}}
+ */
+function _buildGroupedFromTrace(trace, featureSlug) {
+  const featureLevel = [];
+  const byStorySlug = {};
+  trace.stories.forEach((story) => { byStorySlug[story.slug] = []; });
+
+  trace.artefacts.forEach((artefact) => {
+    const adapted = _adaptTraceArtefact(artefact, featureSlug);
+    if (adapted.storySlug && byStorySlug[adapted.storySlug]) {
+      byStorySlug[adapted.storySlug].push(adapted);
+    } else if (artefact.type === 'feature-level') {
+      featureLevel.push(adapted);
+    } else {
+      // Not attached to a real story, not a feature-root file -- Task 2/3
+      // extend this branch to route into inferred-group / unregistered
+      // buckets rather than silently dropping it. Placeholder for Task 1.
+      featureLevel.push(adapted);
+    }
+  });
+
+  const epicsBySlug = {};
+  trace.epics.forEach((epic) => { epicsBySlug[epic.slug] = { epicName: epic.name, epicSlug: epic.slug, stories: [] }; });
+  const flatStories = [];
+  trace.stories.forEach((story) => {
+    const storyEntry = { slug: story.slug, artefacts: byStorySlug[story.slug] || [], divergence: story.divergence };
+    if (story.epicSlug && epicsBySlug[story.epicSlug]) {
+      epicsBySlug[story.epicSlug].stories.push(storyEntry);
+    } else {
+      flatStories.push(storyEntry);
+    }
+  });
+
+  return { featureLevel, epics: Object.values(epicsBySlug), flatStories };
 }
 
 /**
@@ -792,5 +868,6 @@ module.exports = {
   renderArtefactMatrix,
   renderStory,
   escHtml,
-  _deriveMatrixColumn
+  _deriveMatrixColumn,
+  _buildGroupedFromTrace
 };
