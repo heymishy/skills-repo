@@ -210,5 +210,24 @@ console.log('\n[cat-s1] AC1 (regression guard) -- nested-hyphen story slugs use 
   fs.rmSync(fixtureRoot, { recursive: true, force: true });
 }
 
+console.log('\n[cat-s1] NFR -- directory walk completes within 50ms for phase4-scale directory (205 files)');
+{
+  var start = process.hrtime.bigint();
+  mod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4');
+  var elapsedMs = Number(process.hrtime.bigint() - start) / 1e6;
+  test('walk completes in under 50ms (measured: ' + elapsedMs.toFixed(1) + 'ms)', function() {
+    assert.ok(elapsedMs < 50, 'expected < 50ms, got ' + elapsedMs.toFixed(1) + 'ms');
+  });
+}
+
+console.log('\n[cat-s1] NFR -- no new unvalidated input surface (source review)');
+{
+  var src = fs.readFileSync(TRACE_PATH, 'utf8');
+  test('featureSlug is never used in a shell/exec call', function() {
+    assert.ok(src.indexOf('exec(') === -1 && src.indexOf('execSync(') === -1,
+      'artefact-trace.js must not shell out with unvalidated input');
+  });
+}
+
 console.log('\n[cat-s1] Results:', passed, 'passed,', failed, 'failed');
 if (failed > 0) process.exit(1);

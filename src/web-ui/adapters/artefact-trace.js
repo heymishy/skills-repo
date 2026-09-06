@@ -72,6 +72,8 @@ const buildArtefactTrace = (repoRoot, featureSlug) => {
   if (feature) {
     (feature.epics || []).forEach((epic) => {
       epics.push({ slug: epic.slug, name: epic.name });
+      // Nested-shape stories (feature.epics[].stories[]) key on `slug`, not `id` --
+      // that is the canonical field for this shape in pipeline-state.json.
       (epic.stories || []).forEach((story) => {
         stories.push({ slug: story.slug, name: story.name, epicSlug: epic.slug });
       });
@@ -80,6 +82,9 @@ const buildArtefactTrace = (repoRoot, featureSlug) => {
     // flat-shape stories have no epic to attribute to, unlike nested-shape
     // stories above where epicSlug is always a real string. This is a
     // deliberate contract for downstream consumers (cat-s2, cat-s4) to rely on.
+    // Flat-shape stories (feature.stories[]) key on `id`, the canonical field
+    // per this repo's `bin/skills advance <feature-slug> <story-id>` convention --
+    // `story.slug` is kept only as a fallback for older/looser flat records.
     (feature.stories || []).forEach((story) => {
       stories.push({ slug: story.id || story.slug, name: story.name });
     });
