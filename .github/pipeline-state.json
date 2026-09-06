@@ -31522,13 +31522,14 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-09-06T00:12:14.040Z",
+      "updatedAt": "2026-09-06T00:24:43.518Z",
       "discoveryArtefact": "artefacts/2026-09-06-canonical-artefact-trace/discovery.md",
       "discoveryStatus": "approved",
       "regulated": false,
       "complianceProfile": "standard",
       "track": "standard",
-      "benefitMetricArtefact": "artefacts/2026-09-06-canonical-artefact-trace/benefit-metric.md"
+      "benefitMetricArtefact": "artefacts/2026-09-06-canonical-artefact-trace/benefit-metric.md",
+      "designArtefact": "artefacts/2026-09-06-canonical-artefact-trace/design.md"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
