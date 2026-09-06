@@ -31623,19 +31623,19 @@
             {
               "slug": "cat-s2",
               "name": "Collapse five independent label tables into one shared, corrected table",
-              "stage": "implementation-plan",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s2-review-1.md",
-              "updatedAt": "2026-09-06T06:54:53.324Z",
+              "updatedAt": "2026-09-06T09:13:59.512Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 6,
-                "passing": 0
+                "totalTests": 39,
+                "passing": 39
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s2-unified-label-table-test-plan.md",
@@ -31652,28 +31652,31 @@
                 {
                   "id": "task-1",
                   "name": "Canonical label table -- all 14 subdirectories (AC1)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s2-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Column-key resolution -- reuse features.js's dor/dor-contract split (AC2)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s2-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "Update CLAUDE.md's directory-tree list (AC3)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s2-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "Redirect the other 3 old tables to the canonical source (AC4)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s2-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/843"
             },
             {
               "slug": "cat-s3",
