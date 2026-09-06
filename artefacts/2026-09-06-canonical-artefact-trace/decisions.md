@@ -75,6 +75,24 @@
 **Revisit trigger:** When `cat-s4`/`cat-s5` wire `features.js`/`artefact-fetcher.js` onto `buildArtefactTrace`, confirm whether `artefact-list.js`'s `walkMdFiles` becomes fully dead code (delete it) or still has a live caller (in which case, extract the shared util at that point).
 ---
 
+---
+**2026-09-06 | SCOPE | /subagent-execution (cat-s2 Task 4 review)**
+**Decision:** `plain-language-labels.js`'s `LABEL_MAP` keeps its own `dor: 'Ready Check'` entry as a separate literal, rather than being fully redirected to the canonical `artefact-labels.js` table, because `labelArtefactType(internalType)` (a real, protected-test-covered function) has no `filename` parameter and cannot be redirected the same way `labelFromPath` was. `LABEL_MAP['dor']` and the canonical table's `SUBDIR_LABELS['dor']` agree in value today but have no automated guard tying them together — a future edit to one without the other would silently diverge, reintroducing a smaller instance of the exact class of bug this story exists to close.
+**Alternatives considered:** Remove `dor` from `LABEL_MAP` entirely (rejected — breaks `tests/check-wuce6-feature-navigation.js`'s real, passing `labelArtefactType('dor') === 'Ready Check'` assertion, a protected test this story's own AC4 requires stay unchanged); change `labelArtefactType`'s signature to accept a filename so it could redirect like `labelFromPath` (rejected as out of scope for this task — a signature change to a function with its own existing callers is a larger, riskier change than this story's own scope, and this exact coincidental-overlap pattern — a bare-TYPE table and a subdirectory table both containing `'dor'` as separate literals — already pre-existed inside `artefact-labels.js` itself before this task, so this is one more instance of an accepted pattern, not a new one).
+**Rationale:** The duplication is small (one key), documented in-code at the point of duplication, and blocked from full unification by a real API constraint (no filename parameter) rather than laziness. Confirmed non-blocking by /subagent-execution's own spec-compliance review.
+**Made by:** Hamish King — Platform Owner (agent-identified during subagent-execution's spec review, operator informed)
+**Revisit trigger:** If `labelArtefactType` is ever given a filename parameter for an unrelated reason, redirect its `dor` (and any other coincidentally-overlapping) lookups through the canonical table at that point rather than leaving the duplication in place indefinitely.
+---
+
+---
+**2026-09-06 | SCOPE | /subagent-execution (cat-s2 final review)**
+**Decision:** `resolveColumnKey(subdir, filename)`'s non-`dor` behavior returns the subdirectory name lowercased as-is (e.g. `resolveColumnKey('stories', ...)` → `'stories'`), which does NOT match `features.js`'s own `_deriveMatrixColumn`'s `SUBDIR_KEY` mapping for the same subdirectories (e.g. `'stories'` → `'story'`, singular). This is honestly documented in `resolveColumnKey`'s own docstring ("only the dor/ case is delegated... every other subdirectory returns its own lowercased name") and not a cat-s2 defect — nothing in production calls `resolveColumnKey` for a non-`dor` subdirectory yet. Flagged here as a landmine for `cat-s4`/`cat-s5`: whichever story first wires `resolveColumnKey` into real matrix-column rendering must NOT assume its non-`dor` output already matches `features.js`'s existing matrix-column keys.
+**Alternatives considered:** Extend `resolveColumnKey` to fully mirror `_deriveMatrixColumn`'s complete `SUBDIR_KEY` table now (rejected — out of scope for cat-s2, whose AC2 only requires reusing the dor/dor-contract disambiguation specifically; extending column-key parity for all 14 subdirectories is a `cat-s4`-scoped rendering concern, not a cat-s2 labeling concern).
+**Rationale:** cat-s2's own AC2 text is narrowly scoped to the dor/dor-contract case; broadening it now would be scope creep into cat-s4's own territory.
+**Made by:** Hamish King — Platform Owner (agent-identified during subagent-execution's final review, operator informed)
+**Revisit trigger:** When cat-s4 wires `resolveColumnKey` into real matrix rendering, confirm whether its non-dor output needs to be reconciled with `_deriveMatrixColumn`'s `SUBDIR_KEY` table at that point.
+---
+
 ## Architecture Decision Records
 
 This feature's structural decisions were written directly as repo-level ADRs (not feature-scoped ones) since they constrain all future features, not just this one:

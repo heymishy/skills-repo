@@ -40,7 +40,9 @@ Create:
 
 ---
 
-## Task 1: Canonical label table — all 14 subdirectories (AC1)
+## Task 1: Canonical label table — all 14 subdirectories (AC1) ✅ DONE (997f8728, fixup 5fda05c0)
+
+**Two-stage review:** spec compliance ✅ (independently re-verified after fixup) | code quality — first pass found 3 Important issues (unused `SUBDIR_LABELS` export, no comment distinguishing `getLabel`/`resolveLabel`'s coincidentally-overlapping key domains, redundant "spikes/" test duplicating the loop) → fixed in `5fda05c0` → ✅ Approved
 
 **Recommended model class:** balanced.
 
@@ -200,7 +202,9 @@ git commit -m "feat(cat-s2): add canonical 14-subdirectory label table (resolveL
 
 ---
 
-## Task 2: Column-key resolution — reuse features.js's dor/dor-contract split (AC2)
+## Task 2: Column-key resolution — reuse features.js's dor/dor-contract split (AC2) ✅ DONE (c12c95ac)
+
+**Two-stage review:** spec compliance ✅ (independently re-derived the circular-dependency fix's correctness from require-cache semantics, not just trusted the report) | code quality ✅ Approved (1 Minor: docstring could note only dor/ delegates, other subdirs return the raw key — folded into Task 4). **Real deviation from the plan found and fixed:** the plan's assumption of "no existing dependency" between `artefact-labels.js` and `features.js` was wrong — `features.js` already requires `artefact-labels.js` for `getLabel`. A top-level require in the other direction (as the plan literally specified) would have created a real circular require. Fixed with a lazy require inside `resolveColumnKey()`'s function body, matching an existing precedented pattern already used elsewhere in this codebase (`routes/skills.js`, `adapters/session-turns-pg.js`).
 
 **Recommended model class:** balanced.
 
@@ -294,7 +298,9 @@ git commit -m "feat(cat-s2): add resolveColumnKey, reusing features.js's existin
 
 ---
 
-## Task 3: Update CLAUDE.md's directory-tree list (AC3)
+## Task 3: Update CLAUDE.md's directory-tree list (AC3) ✅ DONE (3271569b)
+
+**Review:** spec ✅ | quality ✅ Approved, 0 issues. Ordering of the 3 new entries confirmed to match `SUBDIR_LABELS`'s own key order from Task 1/2 (not alphabetical, but the more meaningful reference point).
 
 **Recommended model class:** fast/cheap.
 
@@ -338,7 +344,11 @@ git commit -m "docs(cat-s2): add review/, decisions/, spikes/ to CLAUDE.md's art
 
 ---
 
-## Task 4: Redirect the other 3 old tables to the canonical source (AC4)
+## Task 4: Redirect the other 3 old tables to the canonical source (AC4) ✅ DONE (44621fd6, fixup 0fd669ba)
+
+**Two-stage review:** spec compliance ✅ (first pass, plus re-verified after fixup — independently confirmed the `isKnownSubdir`/`listKnownSubdirs` export design is genuine and used, and the `dor` duplication judgment call is sound, logged as an accepted residual risk in decisions.md) | code quality — first pass found 2 Important test-coverage gaps (no direct test for `isKnownSubdir`/`listKnownSubdirs`/the order-sensitive `ARTEFACT_SUBDIRS` invariant; 7 of 8 migrated subdirectory names untested at the consumer level) → fixed in `0fd669ba` → ✅ Approved, with an explicit final assessment that the story's own ADR-028 goal is genuinely and durably achieved.
+
+**Real judgment call found and resolved during implementation:** the plan's literal instruction to remove `dor` from `plain-language-labels.js`'s `LABEL_MAP` would have broken a real, protected existing test (`check-wuce6-feature-navigation.js`'s `labelArtefactType('dor') === 'Ready Check'` assertion). Kept `dor` in both places (documented, accepted residual risk — see decisions.md) rather than silently breaking or editing a protected test.
 
 **Recommended model class:** deep-reasoning — must preserve exact existing behaviour for 3 real, currently-passing tests while removing duplicated literals.
 
@@ -472,6 +482,12 @@ git commit -m "refactor(cat-s2): redirect artefact-list.js, plain-language-label
 ```
 
 ---
+
+## Final review (Step 3, /subagent-execution) — ready, one forward note logged
+
+The mandatory final reviewer (full diff, all 4 ACs at once) confirmed: all 4 ACs genuinely implemented and tested, nothing extra beyond scope, all 39 story tests + 3 protected existing tests (14, 40, 57) pass, downstream wiring correctly deferred to cat-s4/cat-s5 (no route/rendering code yet calls `resolveLabel`/`resolveColumnKey`). No regression analogous to cat-s1's own final-review catch was found.
+
+One genuine forward-looking note logged in `decisions.md`: `resolveColumnKey`'s non-`dor` output (bare lowercased subdirectory name) does not match `features.js`'s own `_deriveMatrixColumn` `SUBDIR_KEY` mapping (e.g. `'stories'` vs `'story'`) — honestly documented, not a defect since nothing calls it for non-`dor` subdirs yet, but a landmine for whichever of `cat-s4`/`cat-s5` first wires real matrix rendering onto it.
 
 ## Post-implementation note for /verify-completion
 
