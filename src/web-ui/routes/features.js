@@ -412,17 +412,28 @@ function _buildGroupedFromTrace(trace, featureSlug) {
   const byStorySlug = {};
   trace.stories.forEach((story) => { byStorySlug[story.slug] = []; });
 
+  const inferredBuckets = {};
+  const unregisteredCatchAll = { slug: 'Unregistered', artefacts: [] };
+
   trace.artefacts.forEach((artefact) => {
     const adapted = _adaptTraceArtefact(artefact, featureSlug);
     if (adapted.storySlug && byStorySlug[adapted.storySlug]) {
       byStorySlug[adapted.storySlug].push(adapted);
-    } else if (artefact.type === 'feature-level') {
+    } else if (artefact.type === 'feature-level' && !artefact.inferredGroup) {
       featureLevel.push(adapted);
+    } else if (artefact.inferredGroup) {
+      // cat-s4 AC2: a document classified 'unregistered' but cat-s3 could
+      // still infer a group for it (e.g. by filename prefix) -- give it its
+      // own synthetic story bucket keyed by that inferred group instead of
+      // dumping it into featureLevel or a shared catch-all, so related
+      // unregistered documents still render together.
+      if (!inferredBuckets[artefact.inferredGroup]) inferredBuckets[artefact.inferredGroup] = { slug: artefact.inferredGroup, artefacts: [] };
+      inferredBuckets[artefact.inferredGroup].artefacts.push(adapted);
     } else {
-      // Not attached to a real story, not a feature-root file -- Task 2/3
-      // extend this branch to route into inferred-group / unregistered
-      // buckets rather than silently dropping it. Placeholder for Task 1.
-      featureLevel.push(adapted);
+      // Not attached to a real story, not a feature-root file, no inferred
+      // group -- cat-s4 AC2: still must render somewhere, visibly flagged,
+      // rather than being silently dropped. Shared catch-all bucket.
+      unregisteredCatchAll.artefacts.push(adapted);
     }
   });
 
@@ -437,6 +448,9 @@ function _buildGroupedFromTrace(trace, featureSlug) {
       flatStories.push(storyEntry);
     }
   });
+
+  Object.values(inferredBuckets).forEach((bucket) => flatStories.push(bucket));
+  if (unregisteredCatchAll.artefacts.length > 0) flatStories.push(unregisteredCatchAll);
 
   return { featureLevel, epics: Object.values(epicsBySlug), flatStories };
 }
@@ -491,8 +505,15 @@ function _renderFeatureLevelTable(artefacts, featureSlug, resumeLookup) {
     const resumeLink = resumable
       ? ` <a class="doc-table__resume-link" href="/journey/${encodeURIComponent(resumable.journeyId)}/stage/${encodeURIComponent(resumable.skillName)}">Resume conversation</a>`
       : '';
+    // cat-s4 AC2: a feature-root document classified 'unregistered' by
+    // cat-s3 still needs a visible, text-labeled pill here -- this table
+    // renders feature-level artefacts (which never attach to the story
+    // matrix below), so the matrix's own pill logic never reaches them.
+    const unregisteredPill = a.divergence === 'unregistered'
+      ? ' <span class="sw-pill sw-pill--nodot sw-pill--neutral" title="Not registered in pipeline-state.json">Unregistered</span>'
+      : '';
     return `<tr><td class="doc-table__type">${shellEscHtml(label)}</td>` +
-      `<td><a class="doc-table__link" href="${shellEscHtml(viewUrl)}">${shellEscHtml(a.path || '')}</a>${resumeLink}</td>` +
+      `<td><a class="doc-table__link" href="${shellEscHtml(viewUrl)}">${shellEscHtml(a.path || '')}</a>${resumeLink}${unregisteredPill}</td>` +
       `<td class="doc-table__date">${date}</td></tr>`;
   }).join('');
   return `<div class="sw-card"><div class="sw-section-title">Feature</div>` +
@@ -567,7 +588,10 @@ function renderArtefactMatrix(grouped, featureSlug, epicDocs, resumeLookup) {
         const resumeLink = resumable
           ? ` <a class="doc-matrix__resume-link" href="/journey/${encodeURIComponent(resumable.journeyId)}/stage/${encodeURIComponent(resumable.skillName)}" title="Resume conversation">↻</a>`
           : '';
-        return `<td><a class="doc-matrix__tick" href="${shellEscHtml(viewUrl)}" title="Open document">✓</a>${resumeLink}</td>`;
+        const unregisteredPill = a.divergence === 'unregistered'
+          ? ' <span class="sw-pill sw-pill--nodot sw-pill--neutral" title="Not registered in pipeline-state.json">Unregistered</span>'
+          : '';
+        return `<td><a class="doc-matrix__tick" href="${shellEscHtml(viewUrl)}" title="Open document">✓</a>${resumeLink}${unregisteredPill}</td>`;
       }).join('');
       const statusCell = hasDodColumn
         ? (byColumn.dod

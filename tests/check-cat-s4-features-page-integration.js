@@ -73,5 +73,42 @@ console.log('\n[cat-s4] Regression -- feature-level artefact mislabeling bug (fo
   });
 }
 
+console.log('\n[cat-s4] AC2 -- unregistered document with no inferredGroup gets its own labeled bucket with a visible Unregistered pill');
+{
+  var fakeTrace = {
+    status: 'found', epics: [], stories: [],
+    artefacts: [
+      { path: 'stray-notes.md', type: 'feature-level', filename: 'stray-notes.md', storySlug: null, divergence: 'unregistered', inferredGroup: null }
+    ]
+  };
+  var grouped = mod._buildGroupedFromTrace(fakeTrace, 'test-feature-y');
+  var html = mod.renderGroupedArtefactIndexHtml(grouped, 'test-feature-y', {});
+  test('rendered output contains a visible "Unregistered" pill', function() {
+    assert.ok(html.indexOf('Unregistered') !== -1, 'expected "Unregistered" text in rendered output');
+    assert.ok(html.indexOf('sw-pill') !== -1, 'expected the pill CSS class to be used');
+  });
+}
+
+console.log('\n[cat-s4] AC2 -- unregistered artefact with an inferredGroup renders inside that inferred grouping, still flagged');
+{
+  var fakeTrace = {
+    status: 'found', epics: [], stories: [],
+    artefacts: [
+      { path: 'phase4-story-3-notes.md', type: 'feature-level', filename: 'phase4-story-3-notes.md', storySlug: null, divergence: 'unregistered', inferredGroup: 'phase4-story-3' },
+      { path: 'phase4-story-3-plan.md', type: 'feature-level', filename: 'phase4-story-3-plan.md', storySlug: null, divergence: 'unregistered', inferredGroup: 'phase4-story-3' }
+    ]
+  };
+  var grouped = mod._buildGroupedFromTrace(fakeTrace, 'phase4-fixture');
+  test('both inferred-group artefacts land in the same synthetic story bucket', function() {
+    var inferredBucket = grouped.flatStories.find(function(s) { return s.slug === 'phase4-story-3'; });
+    assert.ok(inferredBucket, 'expected a synthetic story bucket keyed by the inferredGroup value');
+    assert.strictEqual(inferredBucket.artefacts.length, 2);
+  });
+  var html = mod.renderGroupedArtefactIndexHtml(grouped, 'phase4-fixture', {});
+  test('rendered output still shows Unregistered for the inferred-group artefacts', function() {
+    assert.ok(html.indexOf('Unregistered') !== -1);
+  });
+}
+
 console.log('\n[cat-s4] Results:', passed, 'passed,', failed, 'failed');
 if (failed > 0) process.exit(1);
