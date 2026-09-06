@@ -42,6 +42,64 @@ const readPipelineStateForSlug = (repoRoot, featureSlug) => {
   return feature || null;
 };
 
+// Derives inferredGroup assignments for unregistered artefacts from a shared filename prefix (dropping the final hyphen-segment) within the same type -- only assigned when >= 2 artefacts share the same prefix, otherwise null (never a fabricated single-member group).
+const inferGroups = (unregisteredArtefacts) => {
+  const derivePrefix = (filename) => {
+    const stem = filename.replace(/\.md$/, '');
+    const parts = stem.split('-');
+    if (parts.length <= 1) return null;
+    return parts.slice(0, -1).join('-');
+  };
+
+  const withPrefix = unregisteredArtefacts.map((artefact) => {
+    const prefix = derivePrefix(artefact.filename);
+    return { artefact, prefix, key: prefix && artefact.type + '::' + prefix };
+  });
+
+  const groupCounts = {};
+  withPrefix.forEach(({ prefix, key }) => {
+    if (!prefix) return;
+    groupCounts[key] = (groupCounts[key] || 0) + 1;
+  });
+
+  const assignments = {};
+  withPrefix.forEach(({ artefact, prefix, key }) => {
+    assignments[artefact.path] = prefix && groupCounts[key] >= 2 ? prefix : null;
+  });
+
+  return assignments;
+};
+
+// traceResult: the object buildArtefactTrace produces (status: 'found', with epics/stories/artefacts already populated); classifies each artefact as 'registered'/'unregistered' and each story as 'registered'/'orphaned-registration', returning a new object of the same shape with a `divergence` field added throughout
+const classifyDivergence = (traceResult) => {
+  if (traceResult.status !== 'found') {
+    // not-yet-synced / not-found: nothing to classify (AC3's own precedence
+    // is automatically satisfied here -- there is no per-document data yet).
+    return traceResult;
+  }
+
+  const unregisteredArtefacts = traceResult.artefacts.filter((a) => !a.storySlug);
+  const inferredGroupAssignments = inferGroups(unregisteredArtefacts);
+
+  const artefacts = traceResult.artefacts.map((artefact) => {
+    const divergence = artefact.storySlug ? 'registered' : 'unregistered';
+    const enriched = Object.assign({}, artefact, { divergence });
+    if (divergence === 'unregistered') {
+      enriched.inferredGroup = inferredGroupAssignments[artefact.path] || null;
+    }
+    return enriched;
+  });
+
+  const stories = traceResult.stories.map((story) => {
+    const hasMatchingArtefact = artefacts.some((a) => a.storySlug === story.slug);
+    return Object.assign({}, story, {
+      divergence: hasMatchingArtefact ? 'registered' : 'orphaned-registration'
+    });
+  });
+
+  return Object.assign({}, traceResult, { artefacts, stories });
+};
+
 const buildArtefactTrace = (repoRoot, featureSlug) => {
   if (!fs.existsSync(repoRoot)) {
     return { status: 'not-yet-synced' };
@@ -102,7 +160,7 @@ const buildArtefactTrace = (repoRoot, featureSlug) => {
     artefact.storySlug = match ? match.slug : null;
   });
 
-  return { status: 'found', resolvedDir, epics, stories, artefacts };
+  return classifyDivergence({ status: 'found', resolvedDir, epics, stories, artefacts });
 };
 
-module.exports = { buildArtefactTrace };
+module.exports = { buildArtefactTrace, classifyDivergence };

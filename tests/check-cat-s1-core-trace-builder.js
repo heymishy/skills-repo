@@ -239,10 +239,39 @@ console.log('\n[cat-s1] AC1 (regression guard) -- bare <slug>.md story files (no
       assert.strictEqual(file.storySlug, slug, slug + '.md should resolve storySlug ' + slug + ', got ' + file.storySlug);
     });
   });
+  // cat-s3: buildArtefactTrace now wires classifyDivergence into its own
+  // return path. This fixture (a nested-shape feature where each story also
+  // carries epicSlug, matched via the bare-<slug>.md path) was never
+  // exercised end-to-end for .divergence -- only storySlug resolution was
+  // asserted above. A reviewer manually confirmed pdt-s1..pdt-s4 all resolve
+  // to divergence: 'registered' but nothing committed locked that in.
+  test('bare pdt-s1.md artefact classifies divergence as registered', function() {
+    var file = bareSlugResult.artefacts.find(function(a) { return a.filename === 'pdt-s1.md'; });
+    assert.ok(file, 'expected pdt-s1.md to be present in artefacts[]');
+    assert.strictEqual(file.divergence, 'registered');
+  });
+  test('pdt-s1 story (with epicSlug set) classifies divergence as registered', function() {
+    var story = bareSlugResult.stories.find(function(s) { return s.slug === 'pdt-s1'; });
+    assert.ok(story, 'expected pdt-s1 story to be present in stories[]');
+    assert.strictEqual(story.divergence, 'registered');
+  });
+  test('all four bare-slug story files (pdt-s1..pdt-s4) classify divergence as registered, for both artefact and story', function() {
+    ['pdt-s1', 'pdt-s2', 'pdt-s3', 'pdt-s4'].forEach(function(slug) {
+      var file = bareSlugResult.artefacts.find(function(a) { return a.filename === slug + '.md'; });
+      assert.ok(file, 'expected ' + slug + '.md to be present in artefacts[]');
+      assert.strictEqual(file.divergence, 'registered', slug + '.md should classify divergence registered, got ' + file.divergence);
+      var story = bareSlugResult.stories.find(function(s) { return s.slug === slug; });
+      assert.ok(story, 'expected ' + slug + ' story to be present in stories[]');
+      assert.strictEqual(story.divergence, 'registered', slug + ' story should classify divergence registered, got ' + story.divergence);
+    });
+  });
 }
 
 console.log('\n[cat-s1] NFR -- directory walk completes within 50ms for phase4-scale directory (205 files)');
 {
+  // Note (cat-s3): buildArtefactTrace now calls classifyDivergence internally
+  // before returning, so this measures the full wired walk+classify
+  // pipeline end-to-end, not a bare directory walk in isolation.
   var start = process.hrtime.bigint();
   mod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4');
   var elapsedMs = Number(process.hrtime.bigint() - start) / 1e6;
