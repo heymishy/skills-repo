@@ -31541,12 +31541,12 @@
             {
               "slug": "cat-s1",
               "name": "Build the canonical artefact trace from real disk structure for any feature",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s1-review-1.md",
-              "updatedAt": "2026-09-06T02:44:46.537Z",
+              "updatedAt": "2026-09-06T02:50:14.112Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 13,
@@ -31565,6 +31565,38 @@
               "dorContractArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s1-dor-contract.md",
               "standardsInjected": [
                 "web-ui"
+              ],
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Path resolution -- not-found and not-yet-synced (AC4, AC5)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Archived-directory fallback -- one implementation, not three (AC3)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Directory walk -- every real file present, zero-registration case (AC2)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Pipeline-state cross-reference -- full-registration case (AC1)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s1-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "NFR tests and final regression pass",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s1-plan.md"
+                }
               ]
             },
             {
