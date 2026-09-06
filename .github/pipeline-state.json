@@ -31483,6 +31483,20 @@
       "metrics": [],
       "updatedAt": "2026-09-05T22:48:39.421Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-09-06-canonical-artefact-trace",
+      "name": "Canonical Artefact Trace",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [],
+      "metrics": [],
+      "updatedAt": "2026-09-06T00:06:48.154Z",
+      "discoveryArtefact": "artefacts/2026-09-06-canonical-artefact-trace/discovery.md",
+      "discoveryStatus": "clarified",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "track": "standard"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
