@@ -10,6 +10,23 @@
 const fs = require('fs');
 const path = require('path');
 
+const walkDir = (dir, base) => {
+  let results = [];
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  entries.forEach((entry) => {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      results = results.concat(walkDir(full, base));
+    } else if (entry.isFile()) {
+      const rel = path.relative(base, full).split(path.sep).join('/');
+      const parts = rel.split('/');
+      const type = parts.length > 1 ? parts[0] : 'feature-level';
+      results.push({ path: rel, type, filename: entry.name });
+    }
+  });
+  return results;
+};
+
 const buildArtefactTrace = (repoRoot, featureSlug) => {
   if (!fs.existsSync(repoRoot)) {
     return { status: 'not-yet-synced' };
@@ -32,8 +49,9 @@ const buildArtefactTrace = (repoRoot, featureSlug) => {
     return { status: 'not-found' };
   }
 
-  // Directory walk and pipeline-state cross-reference land in later tasks.
-  return { status: 'found', resolvedDir, epics: [], stories: [], artefacts: [] };
+  // pipeline-state cross-reference (epics/stories attribution) lands in a later task.
+  const artefacts = walkDir(resolvedDir, resolvedDir);
+  return { status: 'found', resolvedDir, epics: [], stories: [], artefacts };
 };
 
 module.exports = { buildArtefactTrace };

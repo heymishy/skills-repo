@@ -69,5 +69,21 @@ console.log('\n[cat-s1] AC3 -- resolves a feature present only under artefacts/a
   fs.rmSync(fixtureRoot, { recursive: true, force: true });
 }
 
+console.log('\n[cat-s1] AC2 -- zero-registration feature returns every real file, none dropped');
+{
+  var phase4Result = mod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4');
+  test('status is found', function() {
+    assert.strictEqual(phase4Result.status, 'found');
+  });
+  test('returns all 205 real files', function() {
+    assert.strictEqual(phase4Result.artefacts.length, 205);
+  });
+  test('does not throw despite zero pipeline-state.json registration', function() {
+    assert.doesNotThrow(function() {
+      mod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4');
+    });
+  });
+}
+
 console.log('\n[cat-s1] Results:', passed, 'passed,', failed, 'failed');
 if (failed > 0) process.exit(1);
