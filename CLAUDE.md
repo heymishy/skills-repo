@@ -143,7 +143,7 @@ All artefact templates are in `.github/templates/` — each skill references its
 
 ## Artefact storage
 
-All artefacts are saved to `artefacts/YYYY-MM-DD-[feature-slug]/` (date = discovery start; established by `/discovery`). Sub-directories follow the pattern: `stories/`, `epics/`, `test-plans/`, `verification-scripts/`, `dor/`, `plans/`, `dod/`, `trace/`, `coverage/`, `reference/`, `research/`. The full directory tree and naming convention live in `discovery/SKILL.md`.
+All artefacts are saved to `artefacts/YYYY-MM-DD-[feature-slug]/` (date = discovery start; established by `/discovery`). Sub-directories follow the pattern: `stories/`, `epics/`, `test-plans/`, `verification-scripts/`, `dor/`, `plans/`, `dod/`, `trace/`, `coverage/`, `reference/`, `research/`, `review/`, `decisions/`, `spikes/`. The full directory tree and naming convention live in `discovery/SKILL.md`.
 
 ---
 

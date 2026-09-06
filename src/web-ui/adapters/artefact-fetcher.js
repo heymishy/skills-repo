@@ -4,6 +4,8 @@
 // All artefact fetching goes through this module — no inline GitHub API calls in route handlers.
 // Resolves artefact paths via GitHub Contents API using the user's OAuth token.
 
+const { listKnownSubdirs } = require('../utils/artefact-labels');
+
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
 const GITHUB_REPO     = process.env.GITHUB_REPO || '';
 
@@ -90,10 +92,17 @@ async function fetchGithubContentsResponse(url, token, notFoundArgs, networkErro
 // any other caller not yet updated to pass the full relative path) -- a
 // correctly-generated link already contains its own subdirectory and never
 // reaches this probing loop.
-const ARTEFACT_SUBDIRS = [
-  'stories', 'epics', 'test-plans', 'verification-scripts',
-  'dor', 'plans', 'dod', 'trace', 'coverage', 'reference', 'research'
-];
+//
+// cat-s2: sourced from the canonical subdirectory label table
+// (utils/artefact-labels.js) instead of being separately maintained, closing
+// the 5-table divergence risk (ADR-028). This array's own scope is
+// unchanged by cat-s2 -- it historically excludes 'review', 'decisions',
+// and 'spikes' (the 3 subdirectories added to the canonical table after
+// this array was first written), so those 3 are filtered back out here
+// rather than silently widening what this fallback probes.
+const NOT_PROBED_AS_FALLBACK = ['review', 'decisions', 'spikes'];
+const ARTEFACT_SUBDIRS = listKnownSubdirs()
+  .filter((name) => !NOT_PROBED_AS_FALLBACK.includes(name));
 
 // Reduced timeout for exploratory subdirectory probes (AC5) -- these are
 // speculative guesses for a legacy bare-name input, not the common case, so
@@ -257,5 +266,5 @@ function getFetchRepoPath() {
 module.exports = {
   fetchArtefact, ArtefactNotFoundError, ArtefactFetchError,
   fetchRepoPath, setFetchRepoPath, getFetchRepoPath, realFetchRepoPath,
-  fetchGithubContentsResponse
+  fetchGithubContentsResponse, ARTEFACT_SUBDIRS
 };
