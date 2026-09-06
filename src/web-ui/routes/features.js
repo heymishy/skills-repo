@@ -25,6 +25,7 @@ const { getFeatureStoryStructure, groupArtefactsByStory } = require('../adapters
 
 const { buildArtefactTrace } = require('../adapters/artefact-trace');
 const { resolveLabel } = require('../utils/artefact-labels');
+const { labelFromPath } = require('../utils/plain-language-labels');
 
 const { escHtml } = require('../utils/html-shell');
 // pncg-s1: renderShell's direct import was removed here -- handleGetFeatureArtefacts
@@ -362,11 +363,24 @@ function _matrixColumnAbbrev(key) {
  *      _relativeArtefactPath searches for the literal featureSlug+'/' substring
  *      -- a bare feature-relative path from buildArtefactTrace has no such
  *      substring and would silently break every view link.
- *   2. type is resolved via resolveLabel (cat-s2's canonical table) because
- *      buildArtefactTrace's raw subdirectory key ('test-plans') is not the
- *      same string the OLD pipeline's already-a-label type field held
- *      ('Test Plan') -- getLabel(a.type) downstream would produce the wrong
- *      fallback label if fed the raw key directly.
+ *   2. type is resolved via resolveLabel (cat-s2's canonical table) for real
+ *      subdirectory artefacts, because buildArtefactTrace's raw subdirectory
+ *      key ('test-plans') is not the same string the OLD pipeline's
+ *      already-a-label type field held ('Test Plan') -- getLabel(a.type)
+ *      downstream would produce the wrong fallback label if fed the raw key
+ *      directly. For a feature-root file, buildArtefactTrace's walkDir sets
+ *      type to the literal sentinel 'feature-level' (not a real subdirectory
+ *      name), which has no entry in resolveLabel's table and would fall
+ *      through to a generic, identical "Feature Level" label for every root
+ *      file (discovery.md, decisions.md, etc. all indistinguishable) -- so
+ *      that case is resolved by filename instead, via labelFromPath, which
+ *      already correctly disambiguates root-level bare-type filenames
+ *      (discovery -> 'Discovery' via its own LABEL_MAP) and subdirectory-
+ *      shaped bare filenames (decisions -> 'Decisions' via the SUBDIR_LABELS
+ *      fallback it delegates to). This branch closes a real mislabeling bug
+ *      found in code review of the initial commit: every feature-level
+ *      artefact was resolving to the same meaningless "Feature Level" label
+ *      before this fix.
  * @param {object} traceArtefact one entry from buildArtefactTrace's artefacts[]
  * @param {string} featureSlug
  * @returns {object} { path, type, divergence, inferredGroup, storySlug }
@@ -374,7 +388,9 @@ function _matrixColumnAbbrev(key) {
 function _adaptTraceArtefact(traceArtefact, featureSlug) {
   return {
     path: `artefacts/${featureSlug}/${traceArtefact.path}`,
-    type: resolveLabel(traceArtefact.type, traceArtefact.filename),
+    type: traceArtefact.type === 'feature-level'
+      ? labelFromPath(traceArtefact.filename)
+      : resolveLabel(traceArtefact.type, traceArtefact.filename),
     storySlug: traceArtefact.storySlug || null,
     divergence: traceArtefact.divergence,
     inferredGroup: traceArtefact.inferredGroup || null

@@ -49,6 +49,28 @@ console.log('\n[cat-s4] AC1 (foundation) -- _buildGroupedFromTrace reconstructs 
     assert.strictEqual(grouped.featureLevel.length, 1);
     assert.strictEqual(grouped.featureLevel[0].path.indexOf('discovery.md') !== -1, true);
   });
+  test('feature-level artefact type is resolved by filename, not the raw "feature-level" sentinel', function() {
+    assert.notStrictEqual(grouped.featureLevel[0].type, 'Feature Level');
+    assert.strictEqual(grouped.featureLevel[0].type, 'Discovery');
+  });
+}
+
+console.log('\n[cat-s4] Regression -- feature-level artefact mislabeling bug (found in code review of the initial commit)');
+{
+  var fakeTraceDecisions = {
+    status: 'found',
+    epics: [],
+    stories: [],
+    artefacts: [
+      { path: 'decisions.md', type: 'feature-level', filename: 'decisions.md', storySlug: null, divergence: 'unregistered', inferredGroup: null }
+    ]
+  };
+  var groupedDecisions = mod._buildGroupedFromTrace(fakeTraceDecisions, 'test-feature-y');
+  test('feature-level "decisions.md" resolves to "Decisions" via labelFromPath\'s SUBDIR_LABELS fallback branch', function() {
+    assert.strictEqual(groupedDecisions.featureLevel.length, 1);
+    assert.notStrictEqual(groupedDecisions.featureLevel[0].type, 'Feature Level');
+    assert.strictEqual(groupedDecisions.featureLevel[0].type, 'Decisions');
+  });
 }
 
 console.log('\n[cat-s4] Results:', passed, 'passed,', failed, 'failed');
