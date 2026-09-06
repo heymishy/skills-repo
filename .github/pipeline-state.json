@@ -31498,8 +31498,13 @@
           "baseline": "~90 of 260 features (~35%)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "cat-s1 ships the canonical builder function only; no consumer wired onto it yet (cat-s4/cat-s5 do that wiring) -- divergence-rate measurement is not yet possible.",
+          "contributingStories": [
+            "cat-s1",
+            "cat-s2",
+            "cat-s3",
+            "cat-s4"
+          ]
         },
         {
           "id": "m2",
@@ -31508,8 +31513,13 @@
           "baseline": "5 in one session (bsgm-s1, sri-s1, adlr-s1, fadm-s1, phase4)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "cat-s1 ships the canonical builder function only; no consumer wired onto it yet (cat-s4/cat-s5 do that wiring) -- bug-recurrence measurement is not yet possible.",
+          "contributingStories": [
+            "cat-s1",
+            "cat-s2",
+            "cat-s5",
+            "cat-s6"
+          ]
         },
         {
           "id": "m3",
@@ -31519,7 +31529,10 @@
           "signal": "not-yet-measured",
           "lastMeasured": null,
           "evidence": null,
-          "contributingStories": []
+          "contributingStories": [
+            "cat-s3",
+            "cat-s4"
+          ]
         }
       ],
       "updatedAt": "2026-09-06T00:58:45.982Z",
@@ -31536,17 +31549,17 @@
         {
           "slug": "canonical-artefact-trace",
           "name": "Every operator sees a feature real artefact structure, even when registration is incomplete",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "cat-s1",
               "name": "Build the canonical artefact trace from real disk structure for any feature",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s1-review-1.md",
-              "updatedAt": "2026-09-06T06:20:46.994Z",
+              "updatedAt": "2026-09-06T06:46:14.871Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 23,
@@ -31601,7 +31614,11 @@
               "verifyStatus": "passed",
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/842",
-              "dodStatus": "not-started"
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dod/cat-s1-dod.md",
+              "layoutGapsAtMerge": false,
+              "layoutGapsRiskAccepted": false
             },
             {
               "slug": "cat-s2",
@@ -32084,8 +32101,9 @@
           "category": "nfr",
           "label": "Directory walk latency under 50ms for ~300 files",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-06T02:21:09.414Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-06T06:46:14.871Z",
+          "evidence": "Measured 17-24ms against real 205-file phase4 fixture across multiple runs"
         },
         {
           "id": "NFR-sec-tenant-isolation",
@@ -32102,6 +32120,15 @@
           "status": "met",
           "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-09-06T02:21:09.414Z"
+        },
+        {
+          "id": "NFR-sec-no-new-input-surface-cat-s1",
+          "category": "nfr",
+          "label": "No new unvalidated input surface (cat-s1)",
+          "status": "met",
+          "evidence": "Source-review test confirms module never requires child_process; independently re-verified by 2 reviewer subagents",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-06T06:46:14.871Z"
         }
       ]
     }

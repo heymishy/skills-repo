@@ -1845,3 +1845,15 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: decision
   signal-text: All 6 canonical-artefact-trace stories passed DoR with 19/19 hard blocks each and zero contract mismatches (Contract Proposal derived directly from already-reviewed ACs/test plans). Only warning W4 (verification script domain-expert review) applied to all 6, unmet for the same reason each time - scripts were authored this session alongside their test plans, not yet human-walked - handled as a single RISK-ACCEPT rather than 6 separate ones, since the underlying reason and mitigation were identical across all 6.
   source: agent-auto
+
+- date: 2026-09-06
+  session-phase: definition-of-done
+  signal-type: gap
+  signal-text: /definition-of-done for cat-s1 found the feature's pipeline-state.json metrics[] array had empty contributingStories for all 3 metrics, despite benefit-metric.md's own Metric Coverage Matrix having named story lists for each since /definition. Nothing in /definition's own skill file mechanically syncs the matrix table to metrics[].contributingStories -- it was a manual-authorship gap. Fixed here (populated to match the artefact). /improve candidate: check whether /definition should populate this field mechanically from the matrix it already writes.
+  source: agent-auto
+
+- date: 2026-09-06
+  session-phase: definition-of-done
+  signal-type: pattern
+  signal-text: cat-s1's mandatory final-review step (part of /subagent-execution, distinct from per-task reviews) caught a real, would-have-shipped AC1 regression that all 5 individual task-level reviews missed -- the new builder silently dropped bsgm-s1's own earlier fix for bare <slug>.md story files, which would have reintroduced a bug across 170 files/37 features once cat-s4/cat-s5 wired consumers onto it. This is direct evidence the whole-diff final review step earns its keep and should not be treated as a redundant/skippable ceremony step in future loop-design optimization passes (relevant to artefacts/2026-08-23-inner-loop-ceremony-optimisation's own commit-count/ceremony reduction work).
+  source: agent-auto
