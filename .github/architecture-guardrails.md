@@ -1426,3 +1426,36 @@ Whenever a piece of derived structure or state (not raw stored data, but somethi
 #### Revisit trigger
 
 If a canonical builder's own generality starts forcing awkward compromises for a genuinely different consumer need (e.g. a consumer needs a materially different shape, not just a subset/view of the same one), revisit whether that consumer is really the same derived structure or a distinct one that deserves its own builder — this ADR does not mandate one builder per codebase, only one builder per genuinely-shared derived structure.
+
+---
+
+### ADR-029: The local filesystem checkout is canonical for artefact content; `pipeline-state.json` is enrichment metadata, not the source of truth for what exists
+
+**Status:** Active
+**Date:** 2026-09-06
+**Story:** 2026-09-06-canonical-artefact-trace (discovery/review phase)
+**Decided by:** Hamish King, formalising a convention this codebase has followed informally since `feature-story-structure.js`'s own original authorship (`wuce.2`/`fapg-s1`), discovered to be an incorrect citation (that code's own comment cites "ADR-023," which documents an unrelated topic — no ADR for this principle existed before now) during this feature's own `/review` pass.
+
+#### Context
+
+Every story that has touched artefact discovery this session (`bsgm-s1`, `sri-s1`, `adlr-s1`, `fadm-s1`, and this feature's own discovery/design) has relied on the same unstated assumption: when determining what artefacts exist for a feature and how they're structured, the real files on the local filesystem checkout (`artefacts/<slug>/` or `artefacts/archived/<slug>/`) are the ground truth, and `pipeline-state.json`'s own `epics[]`/`stories[]` registration is enrichment metadata (names, groupings) layered on top — not itself authoritative over what files exist. This was never written down as a decision; it was inherited from `feature-story-structure.js`'s own code comment, which cites "ADR-023" for it — a real ADR number, but one that documents a completely different topic (journey-stage handoff schema). The miscitation was propagated, uncorrected, into this feature's own discovery, design, epic, and story artefacts before being caught during `/review`.
+
+#### Options considered
+
+| Option | Pros | Cons |
+|--------|------|------|
+| **Formalise as its own ADR (chosen)** — disk-first, `pipeline-state.json` as enrichment only | Gives this already-load-bearing principle a real, correctly-numbered citation; makes the convention discoverable for the next story that needs it, rather than relying on tribal knowledge encoded in one file's comment | None identified — this is documenting an existing, already-proven-correct convention, not introducing a new one |
+| Leave it as an informal convention, correct the comment to remove the false citation | Smaller change | Leaves the underlying principle itself undocumented anywhere a future story could cite it correctly — guarantees the same miscitation (or a fresh one) recurs |
+
+#### Decision
+
+The local filesystem checkout is canonical for "what artefact content exists for a feature." `pipeline-state.json`'s `epics[]`/`stories[]` registration provides names and groupings for that content when present, but its absence, incompleteness, or disagreement with disk never overrides what's actually on disk — a divergence is a data-quality gap to surface (per ADR-028's own canonical-trace builder), not grounds to trust the registration over the real files. This applies to any future code that needs to answer "what does this feature actually contain."
+
+#### Consequences
+
+- **Easier:** any future story needing to resolve "what exists for a feature" has one correct, citable ADR to reference, instead of re-deriving or miscopying the convention from existing code comments.
+- **Harder / more constrained:** confirms the archived-prefix, unregistered-content, and orphaned-registration handling this session's stories have already built must all resolve in disk's favour when disk and `pipeline-state.json` disagree — codified as a hard constraint, not an implicit assumption.
+
+#### Revisit trigger
+
+If a future deployment shape makes the local filesystem checkout genuinely unavailable or unreliable as a canonical source (e.g. a fully disk-less serverless runtime with no local checkout at all), revisit whether Postgres or another durable store should become canonical instead — this ADR assumes disk is reliably present, which `/clarify` on this same feature confirmed holds for this deployment's own dogfooding case but left genuinely open for the multi-tenant `WUCE_TENANT_ROOT_BASE` case.

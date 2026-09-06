@@ -56,8 +56,8 @@ What "done" looks like for the smallest useful slice: an operator opening `2026-
 
 ## Constraints
 
-- ADR-004 (no persistent agent runtime / no hosted service) — the canonical builder must remain request-time computation, not a cached/materialized background process.
-- ADR-023 ("disk is canonical") — already establishes the precedent this feature relies on; the canonical builder should be consistent with, not contradict, this existing decision.
+- `product/mission.md`'s own "not a persistent agent runtime" statement (no numbered ADR covers this specifically) — the canonical builder must remain request-time computation, not a cached/materialized background process.
+- ADR-029 ("disk is canonical for artefact content") — formalised during this feature's own `/review` pass, correcting a prior miscitation (see decisions.md) — already establishes the precedent this feature relies on; the canonical builder should be consistent with, not contradict, this decision.
 - Node.js CommonJS only, no new npm dependencies (from `product/tech-stack.md`'s standing platform constraint).
 - The update channel must never be severed (`product/constraints.md` #1) — not directly implicated, but worth naming since any change to shared adapter modules touches the distribution surface.
 - No breaking change to the existing `/artefact/:slug/:type` URL shape — `adlr-s1`'s link-encoding convention (already shipped, already load-bearing for every currently-generated link) must remain compatible.

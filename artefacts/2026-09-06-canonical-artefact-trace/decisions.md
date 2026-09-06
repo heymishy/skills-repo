@@ -49,9 +49,18 @@
 ---
 
 ---
+**2026-09-06 | ARCH | /review**
+**Decision:** Formalised "disk is canonical for artefact content" as a new repo-level ADR (**ADR-029**), correcting a citation error found during `cat-s1`'s own review: `feature-story-structure.js`'s code comment cites this principle as "ADR-023," but ADR-023 documents an unrelated topic (journey-stage handoff schema). No ADR for this principle existed before now — it had been an informally-followed convention since that file's original authorship. The same miscitation, propagated into this feature's own discovery.md, design.md, and `cat-s1`'s story, was corrected in place across all 4 affected files. Separately, "ADR-004 (no persistent agent runtime)" — also cited in the same 4 files — was found to be a second miscitation: ADR-004 documents an unrelated topic (`context.yml` as config source of truth); the actual source for "not a persistent agent runtime" is `product/mission.md`'s own "What the platform is not" section, not a numbered ADR at all. All references corrected to cite that source directly instead of a fabricated ADR number.
+**Alternatives considered:** Leave "disk is canonical" as an informal convention and just remove the false ADR-023 citation from the code comment (rejected — would leave the principle itself uncitable anywhere, guaranteeing the same or a fresh miscitation recurs the next time a story needs to reference it); leave "no persistent agent runtime" attributed to a specific ADR number by finding or inventing one (rejected — `product/mission.md` is the real, verifiable source; citing a number that doesn't say this would repeat the exact error just found).
+**Rationale:** Both principles are genuinely load-bearing across this session's own delivered work (`bsgm-s1`, `sri-s1`, `adlr-s1`, `fadm-s1` all depend on disk-canonicity reasoning) — they deserve correct, citable sources, not inherited miscitations. Caught only because `/review`'s own Category E (Architecture compliance) check requires verifying that a cited ADR/guardrail actually says what the story claims, rather than trusting the citation at face value.
+**Made by:** Hamish King — Platform Owner (agent-identified during /review, operator informed)
+**Revisit trigger:** None — this is a correction of fact, not a decision subject to reconsideration. `feature-story-structure.js`'s own code comment still has the original miscitation; correcting it is implementation work for `cat-s1`, not a `/definition`-stage or `/review`-stage action.
+---
 
 ## Architecture Decision Records
 
-This feature's structural decision was written directly as a repo-level ADR (not a feature-scoped one) since it constrains all future features, not just this one — see **ADR-028** in `.github/architecture-guardrails.md` ("A derived structure needs exactly one canonical builder — every consumer reads from it, none re-derive it"), added 2026-09-06 during this feature's own discovery, at the operator's explicit request.
+This feature's structural decisions were written directly as repo-level ADRs (not feature-scoped ones) since they constrain all future features, not just this one:
+- **ADR-028** in `.github/architecture-guardrails.md` ("A derived structure needs exactly one canonical builder — every consumer reads from it, none re-derive it"), added 2026-09-06 during this feature's own discovery, at the operator's explicit request.
+- **ADR-029** in `.github/architecture-guardrails.md` ("The local filesystem checkout is canonical for artefact content; `pipeline-state.json` is enrichment metadata, not the source of truth for what exists"), added 2026-09-06 during this feature's own `/review` pass, formalising a previously-uncited convention and correcting the miscitation logged above.
 
 ---

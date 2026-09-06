@@ -31522,7 +31522,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-09-06T00:39:43.814Z",
+      "updatedAt": "2026-09-06T00:58:45.982Z",
       "discoveryArtefact": "artefacts/2026-09-06-canonical-artefact-trace/discovery.md",
       "discoveryStatus": "approved",
       "regulated": false,
@@ -31541,38 +31541,56 @@
             {
               "slug": "cat-s1",
               "name": "Build the canonical artefact trace from real disk structure for any feature",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s1-review-1.md"
             },
             {
               "slug": "cat-s2",
               "name": "Collapse five independent label tables into one shared, corrected table",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s2-review-1.md"
             },
             {
               "slug": "cat-s3",
               "name": "Classify every divergence case the audit found, not just the common one",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s3-review-1.md"
             },
             {
               "slug": "cat-s4",
               "name": "The feature artefact-index page renders every document real status, using the canonical trace",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s4-review-1.md"
             },
             {
               "slug": "cat-s5",
               "name": "Opening any single document resolves through the canonical trace, not independent logic",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s5-review-1.md"
             },
             {
               "slug": "cat-s6",
               "name": "The two existing non-trace consumers of artefact fetching keep working unchanged",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s6-review-1.md"
             }
           ]
         }
@@ -31648,7 +31666,10 @@
           "id": "MC-A11Y-02",
           "category": "mandatory-constraint",
           "label": "Colour not sole indicator of gate status (icons/labels present)",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "cat-s3/cat-s4 Architecture Constraints cite this by id; the Unregistered indicator design uses a text label plus icon, never colour alone",
+          "assessedBy": "/review",
+          "assessedAt": "2026-09-06T00:58:45.982Z"
         },
         {
           "id": "ADR-001",
@@ -31883,6 +31904,24 @@
           "category": "adr",
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
           "status": "not-assessed"
+        },
+        {
+          "id": "ADR-028",
+          "category": "adr",
+          "label": "A derived structure needs exactly one canonical builder",
+          "status": "met",
+          "evidence": "cat-s1 is the direct implementation of this ADR; all 6 stories reviewed with 0 HIGH findings",
+          "assessedBy": "/review",
+          "assessedAt": "2026-09-06T00:58:45.982Z"
+        },
+        {
+          "id": "ADR-029",
+          "category": "adr",
+          "label": "Disk is canonical for artefact content",
+          "status": "met",
+          "evidence": "cat-s1/cat-s4/cat-s5 all implement disk-first resolution per this ADR; formalised during this same review pass",
+          "assessedBy": "/review",
+          "assessedAt": "2026-09-06T00:58:45.982Z"
         }
       ]
     }

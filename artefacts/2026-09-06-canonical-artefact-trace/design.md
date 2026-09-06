@@ -50,7 +50,7 @@ A single canonical builder, `buildArtefactTrace()`, replaces 10 independent plac
 
 | System | Interaction type | Direction | Notes |
 |--------|-----------------|-----------|-------|
-| Local filesystem (`artefacts/<slug>`, `artefacts/archived/<slug>`) | File read | In | Primary source, per ADR-023 ("disk is canonical") |
+| Local filesystem (`artefacts/<slug>`, `artefacts/archived/<slug>`) | File read | In | Primary source, per ADR-029 ("disk is canonical for artefact content") |
 | `WUCE_TENANT_ROOT_BASE` per-tenant disk checkout | File read | In | Multi-tenant SaaS case; needs the new "not yet synced" state (no populator/sync job found in `src/` or `scripts/` — confirmed via `/clarify`) |
 | `pipeline-state.json` (`features[].epics[].stories[]`, `features[].stories[]`) | File read | In | Both schema shapes (bare-string epic reference + full flat object — ADR-017) |
 | Postgres artefact rows (`journey-store.getArtefactsForJourney`) | DB read | In | Existing content-fallback merge, unchanged — confirmed in the audit as not a divergent structural source |
@@ -61,7 +61,7 @@ A single canonical builder, `buildArtefactTrace()`, replaces 10 independent plac
 
 ### Data and state
 
-No new tables, columns, or persistent state. The trace is computed fresh, request-time, from existing data sources — never cached or materialized (per ADR-004, no persistent runtime). No lifecycle beyond "computed, used, discarded" within a single request.
+No new tables, columns, or persistent state. The trace is computed fresh, request-time, from existing data sources — never cached or materialized (per `product/mission.md`'s own "not a persistent agent runtime" statement). No lifecycle beyond "computed, used, discarded" within a single request.
 
 ### Hosting and runtime
 
@@ -71,7 +71,7 @@ Runs entirely within the existing `src/web-ui/` Node.js server process. No new s
 
 | Decision | Choice made | Rationale |
 |----------|-------------|-----------|
-| Resolution order | Disk-first, `pipeline-state.json`-enriching | Makes gaps visible (per ADR-023) instead of silently degrading when registration is missing — the core problem this feature exists to fix |
+| Resolution order | Disk-first, `pipeline-state.json`-enriching | Makes gaps visible (per ADR-029) instead of silently degrading when registration is missing — the core problem this feature exists to fix |
 | Caching | None — request-time computation | Empirically measured: `phase4` (205 files) walks in 6ms, the entire `artefacts/` tree (4,955 files) in 229ms; caching would add invalidation complexity for no measurable benefit |
 | Label/subdirectory tables | Collapse 5 existing tables into 1 shared module | Sourced from and reconciled against `CLAUDE.md`'s own directory-tree convention — itself found incomplete (missing `review/`, `decisions/`, unaware of `spikes/`) and corrected as part of this consolidation |
 | Unregistered-document treatment | Always shown, always flagged — inference attempted but never implies false confidence | Resolved via `/clarify` Q2; conflating "inferred" with "confirmed registered" would recreate a milder version of the same problem |
@@ -125,8 +125,8 @@ WCAG 2.1 AA. The "Unregistered" pill uses a text label plus icon, never color al
 
 ## Constraints
 
-- ADR-004 (no persistent agent runtime) — request-time computation only.
-- ADR-023 ("disk is canonical") — the resolution-order decision directly implements this existing precedent.
+- `product/mission.md`'s own "not a persistent agent runtime" statement — request-time computation only.
+- ADR-029 ("disk is canonical for artefact content") — the resolution-order decision directly implements this precedent.
 - ADR-028 (one canonical builder per derived structure) — this feature is the first real application of the ADR it motivated.
 - Node.js CommonJS only, no new npm dependencies (`product/tech-stack.md`).
 - No breaking change to the existing `/artefact/:slug/:type` URL shape (`adlr-s1`'s link-encoding convention).

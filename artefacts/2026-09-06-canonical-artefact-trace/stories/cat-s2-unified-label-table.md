@@ -34,7 +34,7 @@ So that **the same document is labeled identically everywhere it appears, instea
 
 **AC3:** Given `CLAUDE.md`'s own directory-tree convention list, when this story is complete, then that list in `CLAUDE.md` itself is updated to include `review/`, `decisions/`, and `spikes/` — the documentation and the code's own table are kept in sync, not left to drift again.
 
-**AC4:** Given any existing test that asserts a specific label string produced by one of the 5 old tables (found via a full-repo grep before this story's implementation begins), when the shared table replaces the old one, then every such test either passes unchanged or is updated in place with an explicit note explaining why the label changed — no test is silently left failing or silently deleted.
+**AC4:** Given any existing test that asserts a specific label string produced by one of the 5 old tables, when the shared table replaces the old one, then every such test either passes unchanged or is updated in place with an explicit note explaining why the label changed — no test is silently left failing or silently deleted. (Implementation note: identify affected tests via a full-repo grep before starting this story's implementation — recorded here as guidance, not as part of the testable assertion above.)
 
 ## Out of Scope
 

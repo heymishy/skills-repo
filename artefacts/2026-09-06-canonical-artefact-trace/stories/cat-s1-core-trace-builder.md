@@ -18,8 +18,8 @@ So that **every future consumer reads the same, correct structure instead of ind
 
 ## Architecture Constraints
 
-- ADR-023: "disk is canonical" — this builder walks disk first, treating `pipeline-state.json` as enrichment, not the source of truth.
-- ADR-004: no persistent agent runtime — the builder is a request-time computation, never cached or materialized.
+- ADR-029: "disk is canonical for artefact content" — this builder walks disk first, treating `pipeline-state.json` as enrichment, not the source of truth. (Formalised during this feature's own `/review` pass, correcting a prior miscitation of this same principle as "ADR-023" — see decisions.md.)
+- `product/mission.md`'s own "not a persistent agent runtime" statement — the builder is a request-time computation, never cached or materialized.
 - ADR-028: one canonical builder per derived structure — this story is the ADR's first concrete implementation.
 
 ## Dependencies
