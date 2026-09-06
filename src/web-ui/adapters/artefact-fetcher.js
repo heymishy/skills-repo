@@ -266,5 +266,5 @@ function getFetchRepoPath() {
 module.exports = {
   fetchArtefact, ArtefactNotFoundError, ArtefactFetchError,
   fetchRepoPath, setFetchRepoPath, getFetchRepoPath, realFetchRepoPath,
-  fetchGithubContentsResponse
+  fetchGithubContentsResponse, ARTEFACT_SUBDIRS
 };

@@ -33,13 +33,12 @@ function setValidateRepositoryAccess(fn)   { _validateRepositoryAccess = fn; }
  */
 function deriveTypeFromPath(filePath) {
   const parts = filePath.split('/');
+  const fileName = parts[parts.length - 1];
   // If nested in a known subdirectory (e.g. dor/, stories/, test-plans/)
   if (parts.length >= 3) {
     const subDir = parts[parts.length - 2].toLowerCase();
-    const fileName = parts[parts.length - 1];
     if (isKnownSubdir(subDir)) return resolveLabel(subDir, fileName);
   }
-  const fileName = parts[parts.length - 1];
   return labelFromPath(fileName);
 }
 

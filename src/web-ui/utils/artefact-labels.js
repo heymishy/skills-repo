@@ -72,7 +72,13 @@ const SUBDIR_LABELS = {
  * domain that happens to overlap in some values. Update both tables when a
  * shared concept (e.g. "dor"/"Ready Check") changes in either place.
  * @param {string} subdir    e.g. "stories", "spikes"
- * @param {string} filename  e.g. "cat-s1-core-trace-builder.md"
+ * @param {string} filename  e.g. "cat-s1-core-trace-builder.md" -- currently
+ *   unused by this function's own logic (every subdir resolves to one fixed
+ *   label regardless of filename); kept in the signature for symmetry with
+ *   resolveColumnKey(subdir, filename), which DOES need it (dor/ disambiguates
+ *   dor-contract.md from plain dor.md), and so a future subdir needing
+ *   filename-level disambiguation for its label doesn't require a breaking
+ *   signature change at every call site.
  * @returns {string}
  */
 function resolveLabel(subdir, filename) {

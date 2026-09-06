@@ -11,6 +11,9 @@ var path = require('path');
 
 var LABELS_PATH = path.resolve(__dirname, '../src/web-ui/utils/artefact-labels.js');
 var FEATURES_PATH = path.resolve(__dirname, '../src/web-ui/routes/features.js');
+var FETCHER_PATH = path.resolve(__dirname, '../src/web-ui/adapters/artefact-fetcher.js');
+var ARTEFACT_LIST_PATH = path.resolve(__dirname, '../src/web-ui/adapters/artefact-list.js');
+var PLAIN_LABELS_PATH = path.resolve(__dirname, '../src/web-ui/utils/plain-language-labels.js');
 
 function freshRequire(p) {
   try { delete require.cache[require.resolve(p)]; } catch (_) {}
@@ -70,6 +73,62 @@ console.log('\n[cat-s2] AC2 -- resolveColumnKey reuses features.js\'s own _deriv
   });
 }
 
+console.log('\n[cat-s2] Task 4 -- isKnownSubdir() is true for all 14 known subdirs, false for an unknown one');
+{
+  test('isKnownSubdir returns true for every one of the 14 recognised subdirs', function() {
+    ALL_14_SUBDIRS.forEach(function(subdir) {
+      assert.strictEqual(labels.isKnownSubdir(subdir), true, 'expected true for ' + subdir);
+    });
+  });
+  test('isKnownSubdir returns false for an unrecognised subdir', function() {
+    assert.strictEqual(labels.isKnownSubdir('not-a-real-subdir'), false);
+  });
+}
+
+console.log('\n[cat-s2] Task 4 -- listKnownSubdirs() returns exactly the 14 known names');
+{
+  test('listKnownSubdirs matches ALL_14_SUBDIRS as a set', function() {
+    var got = labels.listKnownSubdirs().slice().sort();
+    var want = ALL_14_SUBDIRS.slice().sort();
+    assert.deepStrictEqual(got, want);
+  });
+}
+
+console.log('\n[cat-s2] Task 4 -- artefact-fetcher.js\'s ARTEFACT_SUBDIRS is sourced from the canonical table, filtered to its own historical 11-name scope');
+{
+  var fetcherMod = freshRequire(FETCHER_PATH);
+  var EXPECTED_11_SUBDIRS = [
+    'stories', 'epics', 'test-plans', 'verification-scripts', 'dor', 'plans',
+    'dod', 'trace', 'coverage', 'reference', 'research'
+  ];
+  test('ARTEFACT_SUBDIRS has exactly the expected 11 names, in the expected order (used as a sequential probe list, not a pure set)', function() {
+    assert.deepStrictEqual(fetcherMod.ARTEFACT_SUBDIRS, EXPECTED_11_SUBDIRS);
+  });
+  test('ARTEFACT_SUBDIRS excludes review, decisions, and spikes (would silently widen the fallback probe otherwise)', function() {
+    assert.strictEqual(fetcherMod.ARTEFACT_SUBDIRS.indexOf('review'), -1);
+    assert.strictEqual(fetcherMod.ARTEFACT_SUBDIRS.indexOf('decisions'), -1);
+    assert.strictEqual(fetcherMod.ARTEFACT_SUBDIRS.indexOf('spikes'), -1);
+  });
+}
+
+console.log('\n[cat-s2] Task 4 -- the 7 subdirectory names migrated off plain-language-labels.js\'s old LABEL_MAP resolve consistently at the consumer level');
+{
+  var artefactListMod = freshRequire(ARTEFACT_LIST_PATH);
+  var plainLabelsMod = freshRequire(PLAIN_LABELS_PATH);
+  var MIGRATED_SUBDIRS = ['test-plans', 'plans', 'dod', 'decisions', 'reference', 'research', 'coverage'];
+  MIGRATED_SUBDIRS.forEach(function(subdir) {
+    var fileName = 'example-' + subdir + '-file.md';
+    var expected = labels.resolveLabel(subdir, fileName);
+    test('deriveTypeFromPath(".../' + subdir + '/' + fileName + '") matches canonical resolveLabel', function() {
+      var filePath = 'artefacts/some-feature/' + subdir + '/' + fileName;
+      assert.strictEqual(artefactListMod.deriveTypeFromPath(filePath), expected);
+    });
+    test('labelFromPath("' + subdir + '") matches canonical resolveLabel', function() {
+      assert.strictEqual(plainLabelsMod.labelFromPath(subdir), expected);
+    });
+  });
+}
+
 console.log('\n[cat-s2] AC4 -- the 3 existing real tests referencing old label tables still pass unchanged');
 {
   var { execFileSync } = require('child_process');
@@ -81,7 +140,12 @@ console.log('\n[cat-s2] AC4 -- the 3 existing real tests referencing old label t
   existingTestFiles.forEach(function(file) {
     test(file + ' still exits 0 (all its own assertions pass)', function() {
       var result = execFileSync(process.execPath, [path.resolve(__dirname, '..', file)], { encoding: 'utf8' });
-      assert.ok(typeof result === 'string');
+      // execFileSync already throws on a non-zero exit code (the real
+      // pass/fail signal); this extra check guards against the file's own
+      // '✗' (cross-mark) failure marker appearing while it still
+      // somehow exits 0, which a bare `typeof result === 'string'`
+      // assertion would not catch.
+      assert.ok(result.indexOf('✗') === -1, 'expected no failure markers (✗) in output for ' + file);
     });
   });
 }
