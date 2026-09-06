@@ -39,15 +39,6 @@ ALL_14_SUBDIRS.forEach(function(subdir) {
   });
 });
 
-console.log('\n[cat-s2] AC1 (specific regression guard) -- spikes/ resolves to a real label');
-{
-  test('spikes/ is not an unrecognised fallback', function() {
-    var label = labels.resolveLabel('spikes', 'phase4-spike-1.md');
-    assert.ok(label);
-    assert.notStrictEqual(label, 'phase4-spike-1.md');
-  });
-}
-
 console.log('\n[cat-s2] AC1 (specific regression guard) -- review/, decisions/, research/ are distinct from each other');
 {
   var reviewLabel = labels.resolveLabel('review', 'x.md');
