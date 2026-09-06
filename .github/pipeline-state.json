@@ -31487,16 +31487,48 @@
     {
       "slug": "2026-09-06-canonical-artefact-trace",
       "name": "Canonical Artefact Trace",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "stories": [],
-      "metrics": [],
-      "updatedAt": "2026-09-06T00:09:26.585Z",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Registered-vs-disk divergence rate",
+          "target": "0% net-new divergence for any feature touched by the canonical builder",
+          "baseline": "~90 of 260 features (~35%)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Bugs of this class per session",
+          "target": "0 future instances touching more than one file",
+          "baseline": "5 in one session (bsgm-s1, sri-s1, adlr-s1, fadm-s1, phase4)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Unregistered documents visible without a bug report",
+          "target": "100% of unregistered documents visually flagged",
+          "baseline": "0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "updatedAt": "2026-09-06T00:12:14.040Z",
       "discoveryArtefact": "artefacts/2026-09-06-canonical-artefact-trace/discovery.md",
       "discoveryStatus": "approved",
       "regulated": false,
       "complianceProfile": "standard",
-      "track": "standard"
+      "track": "standard",
+      "benefitMetricArtefact": "artefacts/2026-09-06-canonical-artefact-trace/benefit-metric.md"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
