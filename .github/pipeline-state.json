@@ -31487,7 +31487,7 @@
     {
       "slug": "2026-09-06-canonical-artefact-trace",
       "name": "Canonical Artefact Trace",
-      "stage": "definition",
+      "stage": "branch-setup",
       "health": "green",
       "stories": [],
       "metrics": [
@@ -31541,12 +31541,12 @@
             {
               "slug": "cat-s1",
               "name": "Build the canonical artefact trace from real disk structure for any feature",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s1-review-1.md",
-              "updatedAt": "2026-09-06T02:21:09.414Z",
+              "updatedAt": "2026-09-06T02:44:46.537Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 13,
