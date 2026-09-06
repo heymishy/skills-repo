@@ -31498,7 +31498,7 @@
           "baseline": "~90 of 260 features (~35%)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "cat-s1 ships the canonical builder function only; no consumer wired onto it yet (cat-s4/cat-s5 do that wiring) -- divergence-rate measurement is not yet possible.",
+          "evidence": "cat-s2 ships the canonical label table and redirects 3 of 5 old tables internals to it; no route/rendering consumer reads resolveLabel/resolveColumnKey directly yet (cat-s4/cat-s5 do that wiring) -- divergence-rate measurement is not yet possible.",
           "contributingStories": [
             "cat-s1",
             "cat-s2",
@@ -31513,7 +31513,7 @@
           "baseline": "5 in one session (bsgm-s1, sri-s1, adlr-s1, fadm-s1, phase4)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "cat-s1 ships the canonical builder function only; no consumer wired onto it yet (cat-s4/cat-s5 do that wiring) -- bug-recurrence measurement is not yet possible.",
+          "evidence": "cat-s2 ships the canonical label table and redirects 3 of 5 old tables internals to it; no route/rendering consumer reads resolveLabel/resolveColumnKey directly yet (cat-s4/cat-s5 do that wiring) -- bug-recurrence measurement is not yet possible.",
           "contributingStories": [
             "cat-s1",
             "cat-s2",
@@ -31623,12 +31623,12 @@
             {
               "slug": "cat-s2",
               "name": "Collapse five independent label tables into one shared, corrected table",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s2-review-1.md",
-              "updatedAt": "2026-09-06T20:25:02.759Z",
+              "updatedAt": "2026-09-06T20:45:07.596Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 39,
@@ -31677,7 +31677,11 @@
               "verifyStatus": "passed",
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/843",
-              "dodStatus": "not-started"
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dod/cat-s2-dod.md",
+              "layoutGapsAtMerge": false,
+              "layoutGapsRiskAccepted": false
             },
             {
               "slug": "cat-s3",
@@ -32183,6 +32187,15 @@
           "evidence": "Source-review test confirms module never requires child_process; independently re-verified by 2 reviewer subagents",
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-09-06T06:46:14.871Z"
+        },
+        {
+          "id": "ADR-028-cat-s2",
+          "category": "adr",
+          "label": "One canonical builder per derived structure (cat-s2 label table)",
+          "status": "met",
+          "evidence": "5 label tables collapsed into 1 canonical source, verified by final review",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-06T20:45:07.596Z"
         }
       ]
     }
