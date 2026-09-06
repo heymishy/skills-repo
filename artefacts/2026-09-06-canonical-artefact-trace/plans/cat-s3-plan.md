@@ -348,7 +348,11 @@ git commit -m "feat(cat-s3): infer grouping for unregistered documents from shar
 
 ---
 
-## Task 3: not-yet-synced precedence, wiring into buildArtefactTrace, and NFR (AC3)
+## Task 3: not-yet-synced precedence, wiring into buildArtefactTrace, and NFR (AC3) ✅ DONE (79e53d7c, fixup abf9cc9a)
+
+**Two-stage review:** spec compliance ✅ (independently re-verified cat-s1's 23 tests have no deep-equality/key-set assertions that could break from additive fields, including the subtler variants — Object.keys length checks, JSON.stringify comparisons — not just the obvious deepStrictEqual case) | code quality — first pass found 1 Important issue (the new NFR timing test became a true duplicate of cat-s1's own once wiring made both call the same function on the same fixture, with stale comments on both sides claiming to measure different things) + 2 Minor (vestigial double-classify wrap, `require('os')` placement) → fixed in `abf9cc9a` → ✅ Approved, with an explicit final assessment that the three-state distinction is genuinely and durably delivered.
+
+Implementer's Step 7 self-check (all 4 ACs traced through the actual code, not just tests) and the final reviewer's own independent AC1-AC4 traceability check both confirm all 4 ACs satisfied.
 
 **Recommended model class:** balanced.
 
@@ -439,6 +443,12 @@ git commit -m "feat(cat-s3): wire classifyDivergence into buildArtefactTrace's o
 ```
 
 ---
+
+## Final review (Step 3, /subagent-execution) — one real gap found and closed
+
+The mandatory final reviewer (full diff, all 4 ACs at once, with specific attention to interactions between this story's new classification logic and `cat-s1`'s own bare-`<slug>.md` regression fix) found a genuine test-coverage gap: no test exercised `.divergence` on `cat-s1`'s own nested-shape, `epicSlug`-carrying, bare-slug-matched fixture (`2026-09-02-product-dashboard-triage`, `pdt-s1`..`pdt-s4`) through the full wired pipeline. The reviewer manually confirmed the actual behavior was already correct (all four resolve `registered`) — not a live bug — but nothing committed locked it in. Closed in commit `c1ce34d0`: 3 new assertions added to `cat-s1`'s own existing regression-guard block, confirming `divergence: 'registered'` for both artefacts and stories on this exact fixture. `cat-s1`'s test count: 23 → 26.
+
+Also noted for the record (not a defect): the final-review task brief assumed both `cat-s4` and `cat-s5` depend on `cat-s3`; the story's own Dependencies section names only `cat-s4` as downstream.
 
 ## Post-implementation note for /verify-completion
 
