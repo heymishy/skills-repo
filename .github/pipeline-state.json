@@ -31541,12 +31541,12 @@
             {
               "slug": "cat-s1",
               "name": "Build the canonical artefact trace from real disk structure for any feature",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s1-review-1.md",
-              "updatedAt": "2026-09-06T02:08:06.120Z",
+              "updatedAt": "2026-09-06T02:21:09.414Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 13,
@@ -31556,17 +31556,26 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s1-core-trace-builder-test-plan.md"
+              "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s1-core-trace-builder-test-plan.md",
+              "dorStatus": "signed-off",
+              "dorApprover": "Hamish King - Platform Owner",
+              "dorChannel": "medium-oversight-acknowledged",
+              "dorSignedOffAt": "2026-09-06T02:21:09.414Z",
+              "dorArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s1-dor.md",
+              "dorContractArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s1-dor-contract.md",
+              "standardsInjected": [
+                "web-ui"
+              ]
             },
             {
               "slug": "cat-s2",
               "name": "Collapse five independent label tables into one shared, corrected table",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s2-review-1.md",
-              "updatedAt": "2026-09-06T02:08:06.120Z",
+              "updatedAt": "2026-09-06T02:21:09.414Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -31576,17 +31585,26 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s2-unified-label-table-test-plan.md"
+              "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s2-unified-label-table-test-plan.md",
+              "dorStatus": "signed-off",
+              "dorApprover": "Hamish King - Platform Owner",
+              "dorChannel": "medium-oversight-acknowledged",
+              "dorSignedOffAt": "2026-09-06T02:21:09.414Z",
+              "dorArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s2-dor.md",
+              "dorContractArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s2-dor-contract.md",
+              "standardsInjected": [
+                "web-ui"
+              ]
             },
             {
               "slug": "cat-s3",
               "name": "Classify every divergence case the audit found, not just the common one",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s3-review-1.md",
-              "updatedAt": "2026-09-06T02:08:06.120Z",
+              "updatedAt": "2026-09-06T02:21:09.414Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
@@ -31596,17 +31614,26 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s3-divergence-classification-test-plan.md"
+              "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s3-divergence-classification-test-plan.md",
+              "dorStatus": "signed-off",
+              "dorApprover": "Hamish King - Platform Owner",
+              "dorChannel": "medium-oversight-acknowledged",
+              "dorSignedOffAt": "2026-09-06T02:21:09.414Z",
+              "dorArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s3-dor.md",
+              "dorContractArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s3-dor-contract.md",
+              "standardsInjected": [
+                "web-ui"
+              ]
             },
             {
               "slug": "cat-s4",
               "name": "The feature artefact-index page renders every document real status, using the canonical trace",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s4-review-1.md",
-              "updatedAt": "2026-09-06T02:08:06.120Z",
+              "updatedAt": "2026-09-06T02:21:09.414Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 13,
@@ -31616,17 +31643,26 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s4-features-page-integration-test-plan.md"
+              "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s4-features-page-integration-test-plan.md",
+              "dorStatus": "signed-off",
+              "dorApprover": "Hamish King - Platform Owner",
+              "dorChannel": "medium-oversight-acknowledged",
+              "dorSignedOffAt": "2026-09-06T02:21:09.414Z",
+              "dorArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s4-dor.md",
+              "dorContractArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s4-dor-contract.md",
+              "standardsInjected": [
+                "web-ui"
+              ]
             },
             {
               "slug": "cat-s5",
               "name": "Opening any single document resolves through the canonical trace, not independent logic",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s5-review-1.md",
-              "updatedAt": "2026-09-06T02:08:06.120Z",
+              "updatedAt": "2026-09-06T02:21:09.414Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 11,
@@ -31636,17 +31672,26 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s5-artefact-fetch-integration-test-plan.md"
+              "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s5-artefact-fetch-integration-test-plan.md",
+              "dorStatus": "signed-off",
+              "dorApprover": "Hamish King - Platform Owner",
+              "dorChannel": "medium-oversight-acknowledged",
+              "dorSignedOffAt": "2026-09-06T02:21:09.414Z",
+              "dorArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s5-dor.md",
+              "dorContractArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s5-dor-contract.md",
+              "standardsInjected": [
+                "web-ui"
+              ]
             },
             {
               "slug": "cat-s6",
               "name": "The two existing non-trace consumers of artefact fetching keep working unchanged",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s6-review-1.md",
-              "updatedAt": "2026-09-06T02:08:06.120Z",
+              "updatedAt": "2026-09-06T02:21:09.414Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -31656,7 +31701,16 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s6-regression-verification-test-plan.md"
+              "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s6-regression-verification-test-plan.md",
+              "dorStatus": "signed-off",
+              "dorApprover": "Hamish King - Platform Owner",
+              "dorChannel": "medium-oversight-acknowledged",
+              "dorSignedOffAt": "2026-09-06T02:21:09.414Z",
+              "dorArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s6-dor.md",
+              "dorContractArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s6-dor-contract.md",
+              "standardsInjected": [
+                "web-ui"
+              ]
             }
           ]
         }
@@ -31731,11 +31785,11 @@
         {
           "id": "MC-A11Y-02",
           "category": "mandatory-constraint",
-          "label": "Colour not sole indicator of gate status (icons/labels present)",
+          "label": "Color not sole indicator",
           "status": "met",
           "evidence": "cat-s3/cat-s4 Architecture Constraints cite this by id; the Unregistered indicator design uses a text label plus icon, never colour alone",
-          "assessedBy": "/review",
-          "assessedAt": "2026-09-06T00:58:45.982Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-06T02:21:09.414Z"
         },
         {
           "id": "ADR-001",
@@ -31974,11 +32028,11 @@
         {
           "id": "ADR-028",
           "category": "adr",
-          "label": "A derived structure needs exactly one canonical builder",
+          "label": "One canonical builder per derived structure",
           "status": "met",
           "evidence": "cat-s1 is the direct implementation of this ADR; all 6 stories reviewed with 0 HIGH findings",
-          "assessedBy": "/review",
-          "assessedAt": "2026-09-06T00:58:45.982Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-06T02:21:09.414Z"
         },
         {
           "id": "ADR-029",
@@ -31986,8 +32040,32 @@
           "label": "Disk is canonical for artefact content",
           "status": "met",
           "evidence": "cat-s1/cat-s4/cat-s5 all implement disk-first resolution per this ADR; formalised during this same review pass",
-          "assessedBy": "/review",
-          "assessedAt": "2026-09-06T00:58:45.982Z"
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-06T02:21:09.414Z"
+        },
+        {
+          "id": "NFR-perf-directory-walk",
+          "category": "nfr",
+          "label": "Directory walk latency under 50ms for ~300 files",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-06T02:21:09.414Z"
+        },
+        {
+          "id": "NFR-sec-tenant-isolation",
+          "category": "nfr",
+          "label": "Tenant isolation - no cross-tenant disk leakage",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-06T02:21:09.414Z"
+        },
+        {
+          "id": "NFR-avail-not-yet-synced",
+          "category": "nfr",
+          "label": "Graceful degradation for not-yet-synced tenant case",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-06T02:21:09.414Z"
         }
       ]
     }

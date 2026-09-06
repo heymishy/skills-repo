@@ -57,6 +57,15 @@
 **Revisit trigger:** None — this is a correction of fact, not a decision subject to reconsideration. `feature-story-structure.js`'s own code comment still has the original miscitation; correcting it is implementation work for `cat-s1`, not a `/definition`-stage or `/review`-stage action.
 ---
 
+---
+**2026-09-06 | RISK-ACCEPT | /definition-of-ready**
+**Decision:** DoR Warning W4 ("verification script reviewed by a domain expert") is acknowledged as unmet, not resolved, for all 6 stories (`cat-s1` through `cat-s6`) at sign-off time. The 6 AC verification scripts were written this session alongside their technical test plans but have not yet been walked through by a human before coding begins.
+**Alternatives considered:** Block DoR sign-off until each script is manually walked (rejected — the operator explicitly chose to proceed now and review later, and the scripts remain available as the pre-code sign-off artefact the operator can still exercise before or during implementation, per the AC verification script template's own "three moments" usage — pre-code, post-merge, demo — none of which require the pre-code moment to happen before DoR, only before coding is trusted as complete).
+**Rationale:** All 6 scripts were derived directly from reviewed, PASSed story ACs and their own already-reviewed technical test plans — the risk of a script describing incorrect behaviour is low, since it's a plain-language restatement of already-verified AC/test-plan content, not independently authored. The operator (Hamish King) is both the platform owner and the story author here; a domain-expert walkthrough by a different person isn't available in this solo-repo context regardless.
+**Made by:** Hamish King — Platform Owner (via /definition-of-ready, W4 handling option 1: "Acknowledge and proceed")
+**Revisit trigger:** If post-merge smoke testing using any of these 6 scripts (per their own "post-merge smoke test" usage moment) finds a scenario that doesn't match shipped behaviour, treat that as evidence this RISK-ACCEPT should have been a "review now" instead for future stories of similar shape.
+---
+
 ## Architecture Decision Records
 
 This feature's structural decisions were written directly as repo-level ADRs (not feature-scoped ones) since they constrain all future features, not just this one:
