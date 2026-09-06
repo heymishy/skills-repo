@@ -31743,12 +31743,12 @@
             {
               "slug": "cat-s4",
               "name": "The feature artefact-index page renders every document real status, using the canonical trace",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s4-review-1.md",
-              "updatedAt": "2026-09-06T02:21:09.414Z",
+              "updatedAt": "2026-09-06T21:01:14.558Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 13,
