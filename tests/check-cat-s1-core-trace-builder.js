@@ -116,8 +116,34 @@ console.log('\n[cat-s1] AC1 -- fully-registered feature attributes every epic, s
   });
 }
 
-console.log('\n[cat-s1] AC1 (regression guard) -- prefix-colliding story slugs do not cross-attribute');
+console.log('\n[cat-s1] AC1 -- flat feature.stories[] shape (no epics[]) still attributes stories and storySlug');
 {
+  // '2026-09-06-feature-artefact-document-matrix' is the flat-shape case
+  // ruled out for the epics[] test above: it is registered with only a
+  // feature-level stories[] array and no epics[] at all. That is exactly
+  // the shape this test needs to exercise the flat-shape branch.
+  var flatResult = mod.buildArtefactTrace(REPO_ROOT, '2026-09-06-feature-artefact-document-matrix');
+  test('status is found', function() {
+    assert.strictEqual(flatResult.status, 'found');
+  });
+  test('at least one story is attributed via the flat feature.stories[] branch', function() {
+    assert.ok(flatResult.stories.length > 0, 'expected at least one story');
+  });
+  test('at least one artefact resolves a storySlug via the flat-shape path', function() {
+    var storyFile = flatResult.artefacts.find(function(a) { return a.storySlug; });
+    assert.ok(storyFile, 'expected at least one artefact with a resolved storySlug, got none among ' + flatResult.artefacts.length + ' artefacts');
+  });
+}
+
+console.log('\n[cat-s1] AC1 (regression guard) -- hyphen-delimited prefix boundary: cat-s10-foo.md never attributes to cat-s1');
+{
+  // This guards the hyphen-delimited boundary check itself (artefact.filename.indexOf(story.slug + '-') === 0):
+  // without the trailing '-', a naive substring match would let 'cat-s1' incorrectly
+  // match 'cat-s10-foo.md' since 'cat-s10' starts with the characters 'cat-s1'.
+  // Note: this case does NOT depend on sort order -- 'cat-s1-' is never a literal
+  // prefix of 'cat-s10-foo.md' (index 6 is '0', not '-'), so cat-s1 was never a
+  // viable match regardless of array order. The sort-dependent case is covered
+  // separately below.
   var fixtureRoot = path.join(os.tmpdir(), 'cat-s1-prefix-fixture-' + Date.now());
   var slug = 'prefix-fixture';
   var storiesDir = path.join(fixtureRoot, 'artefacts', slug, 'stories');
@@ -140,6 +166,45 @@ console.log('\n[cat-s1] AC1 (regression guard) -- prefix-colliding story slugs d
     var file = result.artefacts.find(function(a) { return a.filename === 'cat-s10-foo.md'; });
     assert.ok(file, 'fixture file should be present');
     assert.strictEqual(file.storySlug, 'cat-s10');
+  });
+
+  fs.rmSync(fixtureRoot, { recursive: true, force: true });
+}
+
+console.log('\n[cat-s1] AC1 (regression guard) -- nested-hyphen story slugs use longest-prefix match, not insertion order');
+{
+  // This is the case the longest-prefix sort actually exists to protect against:
+  // two story slugs where one is a hyphen-extension of the other ('cat-s1' and
+  // 'cat-s1-extra') are BOTH literal hyphen-delimited prefixes of the same
+  // filename ('cat-s1-extra-foo.md'). Without sorting by descending slug length
+  // first, Array.prototype.find returns whichever candidate appears first in
+  // insertion order -- here 'cat-s1' (registered first) -- which is the wrong,
+  // shorter match. Verified manually: temporarily commenting out the
+  // `.sort(...)` call in artefact-trace.js makes this assertion fail
+  // (storySlug resolves to 'cat-s1' instead of 'cat-s1-extra'); restoring the
+  // sort makes it pass again.
+  var fixtureRoot = path.join(os.tmpdir(), 'cat-s1-nested-hyphen-fixture-' + Date.now());
+  var slug = 'nested-hyphen-fixture';
+  var storiesDir = path.join(fixtureRoot, 'artefacts', slug, 'stories');
+  fs.mkdirSync(storiesDir, { recursive: true });
+  fs.writeFileSync(path.join(storiesDir, 'cat-s1-extra-foo.md'), '# cat-s1-extra\n');
+  var stateDir = path.join(fixtureRoot, '.github');
+  fs.mkdirSync(stateDir, { recursive: true });
+  fs.writeFileSync(path.join(stateDir, 'pipeline-state.json'), JSON.stringify({
+    features: [{
+      slug: slug,
+      epics: [{ slug: 'e1', name: 'Epic', stories: [
+        { slug: 'cat-s1', name: 'Story 1' },
+        { slug: 'cat-s1-extra', name: 'Story 1 Extra' }
+      ] }]
+    }]
+  }));
+
+  var result = mod.buildArtefactTrace(fixtureRoot, slug);
+  test('cat-s1-extra-foo.md attributes to cat-s1-extra (longest match), never cat-s1', function() {
+    var file = result.artefacts.find(function(a) { return a.filename === 'cat-s1-extra-foo.md'; });
+    assert.ok(file, 'fixture file should be present');
+    assert.strictEqual(file.storySlug, 'cat-s1-extra');
   });
 
   fs.rmSync(fixtureRoot, { recursive: true, force: true });

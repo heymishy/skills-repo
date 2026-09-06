@@ -76,13 +76,21 @@ const buildArtefactTrace = (repoRoot, featureSlug) => {
         stories.push({ slug: story.slug, name: story.name, epicSlug: epic.slug });
       });
     });
+    // epicSlug is intentionally omitted (undefined) here, not set to null --
+    // flat-shape stories have no epic to attribute to, unlike nested-shape
+    // stories above where epicSlug is always a real string. This is a
+    // deliberate contract for downstream consumers (cat-s2, cat-s4) to rely on.
     (feature.stories || []).forEach((story) => {
       stories.push({ slug: story.id || story.slug, name: story.name });
     });
   }
 
-  // Longest-prefix match first, so 'cat-s10-foo.md' matches story 'cat-s10'
-  // rather than the shorter 'cat-s1' also being a valid (wrong) prefix match.
+  // Longest-prefix match first: needed when one story slug is itself a
+  // hyphen-extension of another (e.g. 'cat-s1' and 'cat-s1-extra'), since
+  // both are then valid hyphen-delimited prefixes of the same filename
+  // ('cat-s1-extra-foo.md'). Without this sort, Array.prototype.find below
+  // would return whichever candidate happens to appear first in
+  // pipeline-state.json's story order, not the more specific match.
   const sortedStories = stories.slice().sort((a, b) => (b.slug || '').length - (a.slug || '').length);
   artefacts.forEach((artefact) => {
     const match = sortedStories.find((story) => story.slug && artefact.filename.indexOf(story.slug + '-') === 0);
