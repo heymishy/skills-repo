@@ -31681,12 +31681,12 @@
             {
               "slug": "cat-s3",
               "name": "Classify every divergence case the audit found, not just the common one",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s3-review-1.md",
-              "updatedAt": "2026-09-06T09:31:55.540Z",
+              "updatedAt": "2026-09-06T09:39:07.679Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
@@ -31705,6 +31705,26 @@
               "dorContractArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s3-dor-contract.md",
               "standardsInjected": [
                 "web-ui"
+              ],
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Core classification -- registered, unregistered, orphaned-registration (AC2, AC4)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Inference for unregistered documents (AC1)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s3-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "not-yet-synced precedence, wire into buildArtefactTrace, NFR (AC3)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s3-plan.md"
+                }
               ]
             },
             {
