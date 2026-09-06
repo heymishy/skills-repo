@@ -1,8 +1,8 @@
 # Discovery: Canonical Artefact Trace
 
-**Status:** Clarified — awaiting approval
+**Status:** Approved
 **Created:** 2026-09-06
-**Approved by:** Pending
+**Approved by:** Hamish King — Platform Owner — 2026-09-06
 **Author:** Claude Code (agent, operator-directed — Hamish King)
 
 ---
@@ -72,7 +72,7 @@ What "done" looks like for the smallest useful slice: an operator opening `2026-
 
 ## Approved By
 
-Pending
+Hamish King — Platform Owner — 2026-09-06
 
 ---
 

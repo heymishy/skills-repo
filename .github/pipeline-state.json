@@ -31491,9 +31491,9 @@
       "health": "green",
       "stories": [],
       "metrics": [],
-      "updatedAt": "2026-09-06T00:06:48.154Z",
+      "updatedAt": "2026-09-06T00:09:26.585Z",
       "discoveryArtefact": "artefacts/2026-09-06-canonical-artefact-trace/discovery.md",
-      "discoveryStatus": "clarified",
+      "discoveryStatus": "approved",
       "regulated": false,
       "complianceProfile": "standard",
       "track": "standard"
