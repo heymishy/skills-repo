@@ -42,6 +42,43 @@ const readPipelineStateForSlug = (repoRoot, featureSlug) => {
   return feature || null;
 };
 
+// For artefacts with no registered story match, derive a plausible grouping
+// key from a shared filename prefix (dropping the final hyphen-segment,
+// treated as a free-text descriptor) -- e.g. 'phase4-story-3-notes.md' and
+// 'phase4-story-3-plan.md' both derive the prefix 'phase4-story-3'. Only
+// assigns inferredGroup when at least 2 unregistered artefacts share the
+// SAME derived prefix within the SAME type/subdir -- a single unmatched
+// file has no sibling to infer a grouping from, and is left with
+// inferredGroup: null rather than a fabricated single-member group.
+// This is a best-effort UX improvement only (resolved via /clarify) -- it
+// never upgrades an artefact's own divergence value away from 'unregistered'.
+const inferGroups = (unregisteredArtefacts) => {
+  const derivePrefix = (filename) => {
+    const stem = filename.replace(/\.md$/, '');
+    const parts = stem.split('-');
+    if (parts.length <= 1) return null;
+    return parts.slice(0, -1).join('-');
+  };
+
+  const groupCounts = {};
+  unregisteredArtefacts.forEach((artefact) => {
+    const prefix = derivePrefix(artefact.filename);
+    if (!prefix) return;
+    const key = artefact.type + '::' + prefix;
+    groupCounts[key] = (groupCounts[key] || 0) + 1;
+  });
+
+  const assignments = {};
+  unregisteredArtefacts.forEach((artefact) => {
+    const prefix = derivePrefix(artefact.filename);
+    if (!prefix) { assignments[artefact.path] = null; return; }
+    const key = artefact.type + '::' + prefix;
+    assignments[artefact.path] = groupCounts[key] >= 2 ? prefix : null;
+  });
+
+  return assignments;
+};
+
 // traceResult: the object buildArtefactTrace produces (status: 'found', with epics/stories/artefacts already populated); classifies each artefact as 'registered'/'unregistered' and each story as 'registered'/'orphaned-registration', returning a new object of the same shape with a `divergence` field added throughout
 const classifyDivergence = (traceResult) => {
   if (traceResult.status !== 'found') {
@@ -50,9 +87,17 @@ const classifyDivergence = (traceResult) => {
     return traceResult;
   }
 
-  const artefacts = traceResult.artefacts.map((artefact) => Object.assign({}, artefact, {
-    divergence: artefact.storySlug ? 'registered' : 'unregistered'
-  }));
+  const unregisteredArtefacts = traceResult.artefacts.filter((a) => !a.storySlug);
+  const inferredGroupAssignments = inferGroups(unregisteredArtefacts);
+
+  const artefacts = traceResult.artefacts.map((artefact) => {
+    const divergence = artefact.storySlug ? 'registered' : 'unregistered';
+    const enriched = Object.assign({}, artefact, { divergence });
+    if (divergence === 'unregistered') {
+      enriched.inferredGroup = inferredGroupAssignments[artefact.path] || null;
+    }
+    return enriched;
+  });
 
   const stories = traceResult.stories.map((story) => {
     const hasMatchingArtefact = artefacts.some((a) => a.storySlug === story.slug);

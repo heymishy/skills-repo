@@ -71,5 +71,47 @@ console.log('\n[cat-s3] AC2 (non-conflation) -- orphaned-registration is never t
   });
 }
 
+console.log('\n[cat-s3] AC1 -- unregistered document with a matching inferred pattern attaches to that grouping');
+{
+  var trace = {
+    status: 'found',
+    epics: [],
+    stories: [],
+    artefacts: [
+      { path: 'phase4-story-3-notes.md', type: 'feature-level', filename: 'phase4-story-3-notes.md', storySlug: null },
+      { path: 'phase4-story-3-plan.md', type: 'feature-level', filename: 'phase4-story-3-plan.md', storySlug: null },
+      { path: 'phase4-story-9-notes.md', type: 'feature-level', filename: 'phase4-story-9-notes.md', storySlug: null }
+    ]
+  };
+  var result = mod.classifyDivergence(trace);
+  test('both phase4-story-3 files are marked unregistered', function() {
+    assert.strictEqual(result.artefacts[0].divergence, 'unregistered');
+    assert.strictEqual(result.artefacts[1].divergence, 'unregistered');
+  });
+  test('both phase4-story-3 files share the same inferredGroup', function() {
+    assert.ok(result.artefacts[0].inferredGroup, 'expected an inferredGroup to be set');
+    assert.strictEqual(result.artefacts[0].inferredGroup, result.artefacts[1].inferredGroup);
+  });
+  test('phase4-story-9 (no sibling) has no inferredGroup, but is still present and unregistered', function() {
+    assert.strictEqual(result.artefacts[2].divergence, 'unregistered');
+    assert.strictEqual(result.artefacts[2].inferredGroup, null);
+  });
+}
+
+console.log('\n[cat-s3] AC1 -- real phase4 fixture: all files unregistered, no crash');
+{
+  var buildResult = mod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4');
+  var classified = mod.classifyDivergence(buildResult);
+  test('every one of the real phase4 files is classified unregistered', function() {
+    var allUnregistered = classified.artefacts.every(function(a) { return a.divergence === 'unregistered'; });
+    assert.ok(allUnregistered, 'expected every phase4 artefact to be unregistered');
+  });
+  test('does not throw for a large real unregistered fixture', function() {
+    assert.doesNotThrow(function() {
+      mod.classifyDivergence(mod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4'));
+    });
+  });
+}
+
 console.log('\n[cat-s3] Results:', passed, 'passed,', failed, 'failed');
 if (failed > 0) process.exit(1);
