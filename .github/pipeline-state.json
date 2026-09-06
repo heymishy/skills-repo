@@ -31546,7 +31546,7 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s1-review-1.md",
-              "updatedAt": "2026-09-06T06:05:40.608Z",
+              "updatedAt": "2026-09-06T06:20:46.994Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 23,
@@ -31599,18 +31599,19 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/842"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/842",
+              "dodStatus": "not-started"
             },
             {
               "slug": "cat-s2",
               "name": "Collapse five independent label tables into one shared, corrected table",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s2-review-1.md",
-              "updatedAt": "2026-09-06T02:21:09.414Z",
+              "updatedAt": "2026-09-06T06:19:48.504Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
