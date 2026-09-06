@@ -66,6 +66,15 @@
 **Revisit trigger:** If post-merge smoke testing using any of these 6 scripts (per their own "post-merge smoke test" usage moment) finds a scenario that doesn't match shipped behaviour, treat that as evidence this RISK-ACCEPT should have been a "review now" instead for future stories of similar shape.
 ---
 
+---
+**2026-09-06 | SCOPE | /subagent-execution (cat-s1 Task 3 review)**
+**Decision:** `cat-s1`'s new `walkDir` helper in `artefact-trace.js` duplicates `artefact-list.js`'s existing `walkMdFiles` recursion (same `fs.readdirSync(dir, {withFileTypes:true})` + directory/file branch + recurse pattern, differing only in output shape). Code-quality review flagged this as Important (a real ADR-028 instance) but explicitly recommended it as a follow-up, not a blocker. Accepted as a tracked follow-up rather than fixed inline in Task 3.
+**Alternatives considered:** Extract a shared `walkFiles` util now and refactor `artefact-list.js` to use it (rejected for Task 3 specifically — `artefact-list.js` is outside this task's own file map/scope, and touching it risks destabilizing existing, working, tested code for a consolidation that `cat-s4`/`cat-s5` will make moot anyway once they wire `features.js`/`artefact-fetcher.js` consumers onto `buildArtefactTrace` directly, at which point `artefact-list.js`'s own walk logic becomes dead code to remove, not merely share).
+**Rationale:** The duplication is pre-existing pattern debt (`walkMdFiles` already existed before this story), not a regression `cat-s1` introduced. Forcing the consolidation into `cat-s1` would expand Task 3's blast radius into a file `/implementation-plan`'s own file map never named, undermining "one clear responsibility per file, files that change together live together."
+**Made by:** Hamish King — Platform Owner (agent-identified during subagent-execution's code-quality review, operator informed)
+**Revisit trigger:** When `cat-s4`/`cat-s5` wire `features.js`/`artefact-fetcher.js` onto `buildArtefactTrace`, confirm whether `artefact-list.js`'s `walkMdFiles` becomes fully dead code (delete it) or still has a live caller (in which case, extract the shared util at that point).
+---
+
 ## Architecture Decision Records
 
 This feature's structural decisions were written directly as repo-level ADRs (not feature-scoped ones) since they constrain all future features, not just this one:

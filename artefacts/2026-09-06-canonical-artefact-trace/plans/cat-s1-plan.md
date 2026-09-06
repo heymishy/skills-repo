@@ -21,7 +21,9 @@ No existing files are modified by this story (additive only — `feature-story-s
 
 ---
 
-## Task 1: Path resolution — not-found and not-yet-synced (AC4, AC5)
+## Task 1: Path resolution — not-found and not-yet-synced (AC4, AC5) ✅ DONE (699bdb63)
+
+**Two-stage review:** spec compliance ✅ | code quality ✅ Approved (5 Minor notes: unused `pathExists` export, reinvents `fs.existsSync` vs. `artefact-list.js`'s convention, ES5 style vs. sibling adapters' ES6, no module header comment, future path-traversal-guard reminder for later route wiring — folded into Task 2's brief rather than a separate fix-review round, since none were Critical/Important)
 
 **Recommended model class:** fast/cheap — mechanical branch logic, no ambiguity.
 
@@ -170,7 +172,9 @@ git commit -m "feat(cat-s1): add not-found and not-yet-synced path resolution to
 
 ---
 
-## Task 2: Archived-directory fallback — one implementation, not three (AC3)
+## Task 2: Archived-directory fallback — one implementation, not three (AC3) ✅ DONE (69f5f630)
+
+**Two-stage review:** spec compliance ✅ | code quality ✅ Approved (0 issues)
 
 **Recommended model class:** fast/cheap.
 
@@ -250,7 +254,9 @@ git commit -m "test(cat-s1): add archived-directory fallback fixture ahead of di
 
 ---
 
-## Task 3: Directory walk — every real file present, zero-registration case (AC2)
+## Task 3: Directory walk — every real file present, zero-registration case (AC2) ✅ DONE (c18c3951)
+
+**Two-stage review:** spec compliance ✅ (phase4 now resolves via archived-fallback since an unrelated commit archived it mid-session — judged an acceptable substitution, AC2's behavior is branch-agnostic and AC3 already covers branch selection separately) | code quality ✅ with 1 Important (DRY vs. `artefact-list.js`'s `walkMdFiles`, logged in decisions.md as a follow-up for cat-s4/cat-s5, not fixed inline) + 3 Minor comment suggestions (folded into Task 4)
 
 **Recommended model class:** balanced.
 
@@ -344,7 +350,9 @@ git commit -m "feat(cat-s1): add recursive directory walk so every real file is 
 
 ---
 
-## Task 4: Pipeline-state cross-reference — full-registration case (AC1)
+## Task 4: Pipeline-state cross-reference — full-registration case (AC1) ✅ DONE (1bb77341, fixup 513f15e0)
+
+**Two-stage review:** spec compliance — first pass ❌ found 3 test-adequacy gaps (flat-shape coverage, sort-independent collision test, undocumented `epicSlug` asymmetry), all fixed in `513f15e0` and independently re-verified (reviewer reproduced the sort-dependency claim themselves, not just trusted the report) → ✅ | code quality ✅ Approved, 5 Minor polish notes (optional — extraction-into-helpers, one naming precision note, 2 clarifying comments, test-fixture-helper DRY). Fixture substituted from the plan's suggested `2026-09-06-feature-artefact-document-matrix` (found to have no `epics[]`) to `2026-07-01-landing-auth-billing` (3 real epics, resolves via primary path, closing the prior primary-path coverage gap flagged in Task 3's review).
 
 **Recommended model class:** deep-reasoning — matching heuristic has real ambiguity (per review finding 1-L1: exact field-naming/matching approach is not fully pinned by the AC text alone).
 
@@ -493,7 +501,9 @@ git commit -m "feat(cat-s1): cross-reference pipeline-state.json for epic/story 
 
 ---
 
-## Task 5: NFR tests and final regression pass
+## Task 5: NFR tests and final regression pass ✅ DONE (c0c6e537, fixup aadc13b9)
+
+**Two-stage review:** spec compliance ✅ (independent AC1-AC5 traceability re-check, all satisfied) | code quality — first pass found 2 Important issues (weak exec-string-match security check; dead-weight `doesNotThrow` assertion that could never independently fail) → fixed in `aadc13b9` → re-reviewed ✅ Approved, 0 issues. **All 5 story ACs + both NFRs independently verified twice across the task-level reviews.** Note: one implementer dispatch hit a session rate limit mid-fix; the orchestrating session verified the already-applied diff directly (ran both the file-level and full-suite tests itself) rather than losing the work, then committed it — re-review subagent confirmed the result was correct.
 
 **Recommended model class:** fast/cheap.
 
@@ -563,6 +573,14 @@ git commit -m "test(cat-s1): add NFR performance and input-surface checks, compl
 ```
 
 ---
+
+## Final review (Step 3, /subagent-execution) — found and fixed one real regression
+
+The mandatory final reviewer (full diff, all 5 ACs at once) found that `artefact-trace.js`'s story-attribution logic omitted the bare `<slug>.md` match arm that story `bsgm-s1` had added to `feature-story-structure.js` to fix a confirmed bug affecting 170 story files across 37 real features. None of the 5 task-level reviews caught this because the AC1 fixture used only hyphen-suffixed filenames. Reproduced directly against the real `2026-09-02-product-dashboard-triage` fixture (one of `bsgm-s1`'s own named affected features) — all 4 of its bare-slug files resolved to `storySlug: null` before the fix.
+
+**Fixed in commit `8ca84e64`:** added `|| artefact.filename === story.slug + '.md'` to the match predicate, mirroring `feature-story-structure.js` exactly. Regression test added against the same real fixture, empirically verified by the implementer (reverted the fix → 2 assertions failed with the predicted `null` result → restored → all pass). Final reviewer independently re-reproduced the original repro against the fix and confirmed all 4 files now resolve correctly. Test count: 20 → 23.
+
+This is the single most valuable catch of this story's entire execution — a defect that would have silently reintroduced a previously-fixed, audited bug into production once `cat-s4`/`cat-s5` wire consumers onto this "canonical" builder, precisely undermining the story's own stated purpose (Benefit Linkage: "so a future gap in this logic is fixed once, not rediscovered per consumer"). Caught only because the final review step compares the whole diff against all ACs together, rather than trusting 5 individually-passing task reviews.
 
 ## Post-implementation note for /verify-completion
 
