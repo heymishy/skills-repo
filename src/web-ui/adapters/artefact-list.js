@@ -8,6 +8,7 @@ const fs   = require('fs');
 const path = require('path');
 
 const { labelArtefactType, labelFromPath, groupArtefactsByStage } = require('../utils/plain-language-labels');
+const { resolveLabel, isKnownSubdir } = require('../utils/artefact-labels');
 
 // Injected dependencies — replaced in tests via setters
 let _fetchArtefactDirectory = async (/* owner, repo, featureSlug, token */) => null;
@@ -21,22 +22,12 @@ function setFetchArtefactDirectory(fn)     { _fetchArtefactDirectory = fn; }
 function setConfiguredRepositories(fn)     { _getConfiguredRepositories = fn; }
 function setValidateRepositoryAccess(fn)   { _validateRepositoryAccess = fn; }
 
-// Known subdirectory names that map directly to pipeline stage labels
-const SUBDIR_TYPE_MAP = {
-  'dor':            'Ready Check',
-  'stories':        'Stories',
-  'test-plans':     'Test Plan',
-  'plans':          'Plan',
-  'dod':            'Definition of Done',
-  'decisions':      'Decisions',
-  'reference':      'Reference',
-  'research':       'Research',
-  'coverage':       'Coverage'
-};
-
 /**
  * Derive artefact type from a file path within an artefacts directory.
  * Handles both flat files (e.g. "discovery.md") and nested paths (e.g. "dor/wuce.1-dor.md").
+ * cat-s2: sourced from the canonical subdirectory label table
+ * (utils/artefact-labels.js's resolveLabel/isKnownSubdir) instead of a
+ * separately-maintained SUBDIR_TYPE_MAP, closing the 5-table divergence risk.
  * @param {string} filePath  e.g. "artefacts/2026-05-02-test-feature/dor/wuce.1-dor.md"
  * @returns {string} plain-language label
  */
@@ -45,7 +36,8 @@ function deriveTypeFromPath(filePath) {
   // If nested in a known subdirectory (e.g. dor/, stories/, test-plans/)
   if (parts.length >= 3) {
     const subDir = parts[parts.length - 2].toLowerCase();
-    if (SUBDIR_TYPE_MAP[subDir]) return SUBDIR_TYPE_MAP[subDir];
+    const fileName = parts[parts.length - 1];
+    if (isKnownSubdir(subDir)) return resolveLabel(subDir, fileName);
   }
   const fileName = parts[parts.length - 1];
   return labelFromPath(fileName);

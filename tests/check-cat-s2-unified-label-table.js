@@ -70,5 +70,21 @@ console.log('\n[cat-s2] AC2 -- resolveColumnKey reuses features.js\'s own _deriv
   });
 }
 
+console.log('\n[cat-s2] AC4 -- the 3 existing real tests referencing old label tables still pass unchanged');
+{
+  var { execFileSync } = require('child_process');
+  var existingTestFiles = [
+    'tests/check-alrf-s4-postgres-artefact-fallback.js',
+    'tests/check-wuce20-artefact-index-html.js',
+    'tests/check-wuce6-feature-navigation.js'
+  ];
+  existingTestFiles.forEach(function(file) {
+    test(file + ' still exits 0 (all its own assertions pass)', function() {
+      var result = execFileSync(process.execPath, [path.resolve(__dirname, '..', file)], { encoding: 'utf8' });
+      assert.ok(typeof result === 'string');
+    });
+  });
+}
+
 console.log('\n[cat-s2] Results:', passed, 'passed,', failed, 'failed');
 if (failed > 0) process.exit(1);

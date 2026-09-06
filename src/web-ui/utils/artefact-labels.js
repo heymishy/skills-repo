@@ -84,11 +84,42 @@ function resolveLabel(subdir, filename) {
 }
 
 /**
+ * Return whether a subdirectory name is one of the 14 recognised artefact
+ * subdirectories in SUBDIR_LABELS. Cat-s2 Task 4: added as an intention-
+ * revealing membership check rather than re-exporting the raw SUBDIR_LABELS
+ * map (kept private -- see the comment above it) -- callers that need to know
+ * "is this a known subdir before I trust a fallback label" now go through
+ * this function instead of reading the table's shape directly.
+ * @param {string} subdir  e.g. "stories", "dor"
+ * @returns {boolean}
+ */
+function isKnownSubdir(subdir) {
+  var key = (subdir || '').toLowerCase();
+  return Object.prototype.hasOwnProperty.call(SUBDIR_LABELS, key);
+}
+
+/**
+ * Return the list of all 14 recognised subdirectory names (no label values).
+ * Cat-s2 Task 4: added so a consumer that needs the *set* of known
+ * subdirectory names (e.g. artefact-fetcher.js's ARTEFACT_SUBDIRS, which
+ * filters this down to its own historical 11-name scope) can derive it from
+ * the single canonical source without re-exporting the raw SUBDIR_LABELS map
+ * itself -- narrower than exposing the map's label values, consistent with
+ * isKnownSubdir() above.
+ * @returns {string[]}
+ */
+function listKnownSubdirs() {
+  return Object.keys(SUBDIR_LABELS);
+}
+
+/**
  * Resolve a matrix/table column key for a document, given its subdirectory
- * and filename. For dor/, delegates to features.js's own _deriveMatrixColumn
- * (already shipped by fadm-s1) to disambiguate dor-contract.md from plain
- * dor.md -- this logic is reused, never reimplemented (AC2's explicit
- * requirement; ADR-028).
+ * and filename. Only the dor/ case is delegated to features.js's
+ * disambiguation logic; every other subdirectory returns its own lowercased
+ * name as the key. For dor/, delegates to features.js's own
+ * _deriveMatrixColumn (already shipped by fadm-s1) to disambiguate
+ * dor-contract.md from plain dor.md -- this logic is reused, never
+ * reimplemented (AC2's explicit requirement; ADR-028).
  *
  * NOTE on the require() placement: features.js already does a top-level
  * `require('../utils/artefact-labels')` for getLabel (used at lines 394 and
@@ -116,4 +147,4 @@ function resolveColumnKey(subdir, filename) {
   return key || 'artefact';
 }
 
-module.exports = { getLabel, resolveLabel, resolveColumnKey };
+module.exports = { getLabel, resolveLabel, resolveColumnKey, isKnownSubdir, listKnownSubdirs };
