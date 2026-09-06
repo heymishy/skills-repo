@@ -100,16 +100,13 @@ console.log('\n[cat-s3] AC1 -- unregistered document with a matching inferred pa
 
 console.log('\n[cat-s3] AC1 -- real phase4 fixture: all files unregistered, no crash');
 {
-  var buildResult = mod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4');
-  var classified = mod.classifyDivergence(buildResult);
+  var classified;
+  test('does not throw for a large real unregistered fixture', function() {
+    classified = mod.classifyDivergence(mod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4'));
+  });
   test('every one of the real phase4 files is classified unregistered', function() {
     var allUnregistered = classified.artefacts.every(function(a) { return a.divergence === 'unregistered'; });
     assert.ok(allUnregistered, 'expected every phase4 artefact to be unregistered');
-  });
-  test('does not throw for a large real unregistered fixture', function() {
-    assert.doesNotThrow(function() {
-      mod.classifyDivergence(mod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4'));
-    });
   });
 }
 
