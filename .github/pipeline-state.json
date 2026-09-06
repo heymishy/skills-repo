@@ -31528,7 +31528,7 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
+          "evidence": "cat-s3 implements the classification logic but no UI renders it yet -- cat-s4 turns this into a visible flag.",
           "contributingStories": [
             "cat-s3",
             "cat-s4"
@@ -31686,12 +31686,12 @@
             {
               "slug": "cat-s3",
               "name": "Classify every divergence case the audit found, not just the common one",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s3-review-1.md",
-              "updatedAt": "2026-09-06T20:43:25.362Z",
+              "updatedAt": "2026-09-06T20:49:19.356Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 12,
@@ -31734,7 +31734,11 @@
               "verifyStatus": "passed",
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/844",
-              "dodStatus": "not-started"
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dod/cat-s3-dod.md",
+              "layoutGapsAtMerge": false,
+              "layoutGapsRiskAccepted": false
             },
             {
               "slug": "cat-s4",
@@ -32196,6 +32200,15 @@
           "evidence": "5 label tables collapsed into 1 canonical source, verified by final review",
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-09-06T20:45:07.596Z"
+        },
+        {
+          "id": "MC-A11Y-02-cat-s3",
+          "category": "mandatory-constraint",
+          "label": "Color not sole indicator (cat-s3 classification data)",
+          "status": "met",
+          "evidence": "Classification produces distinct string labels (registered/unregistered/orphaned-registration/not-yet-synced), not color-only signals -- satisfies the guardrail at the data layer ahead of cat-s4 rendering",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-06T20:49:19.356Z"
         }
       ]
     }
