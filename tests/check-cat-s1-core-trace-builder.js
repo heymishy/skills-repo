@@ -208,6 +208,39 @@ console.log('\n[cat-s1] AC1 (regression guard) -- nested-hyphen story slugs use 
   fs.rmSync(fixtureRoot, { recursive: true, force: true });
 }
 
+console.log('\n[cat-s1] AC1 (regression guard) -- bare <slug>.md story files (no hyphen suffix) resolve their own storySlug');
+{
+  // Real repo fixture, not synthetic: '2026-09-02-product-dashboard-triage' is
+  // one of the 37 features named in bsgm-s1's own original audit of this bug
+  // (170 story files repo-wide silently falling through to feature-level
+  // grouping because they have a bare <slug>.md filename with no hyphen
+  // suffix, e.g. 'pdt-s1.md' rather than 'pdt-s1-something.md').
+  // feature-story-structure.js's existing attribution logic (line ~105) has
+  // a `|| basename === slug + '.md'` match arm for exactly this case;
+  // artefact-trace.js's independent attribution logic must match the same
+  // behaviour per AC1 ("matching what getFeatureStoryStructure/
+  // groupArtefactsByStory already produce"). Confirmed on disk before use:
+  // primary path exists, and stories/ contains pdt-s1.md .. pdt-s4.md with
+  // no hyphen suffix; pipeline-state.json registers epics[0].stories with
+  // matching slugs pdt-s1 .. pdt-s4.
+  var bareSlugResult = mod.buildArtefactTrace(REPO_ROOT, '2026-09-02-product-dashboard-triage');
+  test('status is found', function() {
+    assert.strictEqual(bareSlugResult.status, 'found');
+  });
+  test('bare pdt-s1.md resolves storySlug to its own slug, not null', function() {
+    var file = bareSlugResult.artefacts.find(function(a) { return a.filename === 'pdt-s1.md'; });
+    assert.ok(file, 'expected pdt-s1.md to be present in artefacts[]');
+    assert.strictEqual(file.storySlug, 'pdt-s1');
+  });
+  test('all four bare-slug story files (pdt-s1..pdt-s4) resolve their own storySlug', function() {
+    ['pdt-s1', 'pdt-s2', 'pdt-s3', 'pdt-s4'].forEach(function(slug) {
+      var file = bareSlugResult.artefacts.find(function(a) { return a.filename === slug + '.md'; });
+      assert.ok(file, 'expected ' + slug + '.md to be present in artefacts[]');
+      assert.strictEqual(file.storySlug, slug, slug + '.md should resolve storySlug ' + slug + ', got ' + file.storySlug);
+    });
+  });
+}
+
 console.log('\n[cat-s1] NFR -- directory walk completes within 50ms for phase4-scale directory (205 files)');
 {
   var start = process.hrtime.bigint();

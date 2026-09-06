@@ -98,7 +98,7 @@ const buildArtefactTrace = (repoRoot, featureSlug) => {
   // pipeline-state.json's story order, not the more specific match.
   const sortedStories = stories.slice().sort((a, b) => (b.slug || '').length - (a.slug || '').length);
   artefacts.forEach((artefact) => {
-    const match = sortedStories.find((story) => story.slug && artefact.filename.indexOf(story.slug + '-') === 0);
+    const match = sortedStories.find((story) => story.slug && (artefact.filename.indexOf(story.slug + '-') === 0 || artefact.filename === story.slug + '.md'));
     artefact.storySlug = match ? match.slug : null;
   });
 
