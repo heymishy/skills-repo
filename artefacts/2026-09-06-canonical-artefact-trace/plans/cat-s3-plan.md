@@ -13,8 +13,9 @@
 
 ```
 Modify:
-  src/web-ui/adapters/artefact-trace.js       — add classifyDivergence(traceResult, feature),
-                                                 wire it into buildArtefactTrace's 'found' branch
+  src/web-ui/adapters/artefact-trace.js       — add classifyDivergence(traceResult), declared above
+                                                 buildArtefactTrace in the file, wire it into
+                                                 buildArtefactTrace's 'found' branch
 Create:
   tests/check-cat-s3-divergence-classification.js
 ```
@@ -23,7 +24,9 @@ Create:
 
 ---
 
-## Task 1: Core classification — registered, unregistered, orphaned-registration (AC2, AC4)
+## Task 1: Core classification — registered, unregistered, orphaned-registration (AC2, AC4) ✅ DONE (5afb75a7, fixup bdbc1464)
+
+**Two-stage review:** spec compliance ✅ (re-verified after fixup, confirmed pure refactor with byte-identical classification logic) | code quality — first pass found 2 Important issues: (1) unused `feature` parameter with no concrete task actually needing it — dropped entirely, `classifyDivergence` now takes just `traceResult`; (2) a TDZ-safety comment justified a fragile ordering invariant instead of removing it — fixed by declaring `classifyDivergence` above `buildArtefactTrace` as a fourth helper alongside `walkDir`/`readPipelineStateForSlug` → ✅ Approved. 4 Minor items left as documented, non-escalating nits (field-naming, test-header overclaim re: not-yet-synced coverage, one harmless redundant assertion, undocumented-but-fine O(stories×artefacts) scan).
 
 **Recommended model class:** balanced.
 
@@ -68,7 +71,7 @@ console.log('\n[cat-s3] AC4 -- correctly-matched document is marked registered w
     stories: [{ slug: 's1', name: 'Story 1' }],
     artefacts: [{ path: 'stories/s1-foo.md', type: 'stories', filename: 's1-foo.md', storySlug: 's1' }]
   };
-  var result = mod.classifyDivergence(trace, null);
+  var result = mod.classifyDivergence(trace);
   test('matched artefact classification is registered', function() {
     assert.strictEqual(result.artefacts[0].divergence, 'registered');
   });
@@ -85,7 +88,7 @@ console.log('\n[cat-s3] AC2 -- registered story with zero matching files is orph
     stories: [{ slug: 'ghost-s1', name: 'Ghost Story' }],
     artefacts: []
   };
-  var result = mod.classifyDivergence(trace, null);
+  var result = mod.classifyDivergence(trace);
   test('story with no matching artefacts is orphaned-registration', function() {
     assert.strictEqual(result.stories[0].divergence, 'orphaned-registration');
   });
@@ -99,7 +102,7 @@ console.log('\n[cat-s3] AC2 (non-conflation) -- orphaned-registration is never t
     stories: [{ slug: 'ghost-s1', name: 'Ghost Story' }],
     artefacts: [{ path: 'orphan.md', type: 'feature-level', filename: 'orphan.md', storySlug: null }]
   };
-  var result = mod.classifyDivergence(trace, null);
+  var result = mod.classifyDivergence(trace);
   test('orphaned story and unregistered artefact have distinct classification values', function() {
     assert.notStrictEqual(result.stories[0].divergence, result.artefacts[0].divergence);
     assert.strictEqual(result.stories[0].divergence, 'orphaned-registration');
@@ -131,15 +134,16 @@ Add to `src/web-ui/adapters/artefact-trace.js`, above `module.exports`:
  * buildArtefactTrace's own single pass -- performs no filesystem I/O and
  * adds no additional directory traversal (Performance NFR).
  * @param {object} traceResult  the object buildArtefactTrace produces internally
- *   before returning (status: 'found', with epics/stories/artefacts already populated)
- * @param {object|null} feature  the raw pipeline-state feature object (unused
- *   directly here -- traceResult.stories/artefacts already reflect it -- kept
- *   as a parameter for forward compatibility with classification rules that
- *   may need fields not already surfaced on traceResult in a future story)
+ *   before returning (status: 'found', with epics/stories/artefacts already populated) --
+ *   this is sufficient on its own; no separate pipeline-state/feature parameter is
+ *   needed since traceResult.stories/artefacts already reflect it (a `feature`
+ *   parameter was considered and dropped during Task 1's own code-quality review
+ *   as unused, speculative surface area -- add it back only when a real
+ *   classification rule genuinely needs a field not already on traceResult)
  * @returns {object} a new object, same shape as traceResult, with a
  *   `divergence` field added to every artefact and every story
  */
-function classifyDivergence(traceResult, feature) {
+function classifyDivergence(traceResult) {
   if (traceResult.status !== 'found') {
     // not-yet-synced / not-found: nothing to classify (AC3's own precedence
     // is automatically satisfied here -- there is no per-document data yet).
@@ -215,7 +219,7 @@ console.log('\n[cat-s3] AC1 -- unregistered document with a matching inferred pa
       { path: 'phase4-story-9-notes.md', type: 'feature-level', filename: 'phase4-story-9-notes.md', storySlug: null }
     ]
   };
-  var result = mod.classifyDivergence(trace, null);
+  var result = mod.classifyDivergence(trace);
   test('both phase4-story-3 files are marked unregistered', function() {
     assert.strictEqual(result.artefacts[0].divergence, 'unregistered');
     assert.strictEqual(result.artefacts[1].divergence, 'unregistered');
@@ -233,14 +237,14 @@ console.log('\n[cat-s3] AC1 -- unregistered document with a matching inferred pa
 console.log('\n[cat-s3] AC1 -- real phase4 fixture: all files unregistered, no crash');
 {
   var buildResult = mod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4');
-  var classified = mod.classifyDivergence(buildResult, null);
+  var classified = mod.classifyDivergence(buildResult);
   test('every one of the real phase4 files is classified unregistered', function() {
     var allUnregistered = classified.artefacts.every(function(a) { return a.divergence === 'unregistered'; });
     assert.ok(allUnregistered, 'expected every phase4 artefact to be unregistered');
   });
   test('does not throw for a large real unregistered fixture', function() {
     assert.doesNotThrow(function() {
-      mod.classifyDivergence(mod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4'), null);
+      mod.classifyDivergence(mod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4'));
     });
   });
 }
@@ -364,7 +368,7 @@ console.log('\n[cat-s3] AC3 -- not-yet-synced status takes precedence, no per-do
     assert.strictEqual(result.status, 'not-yet-synced');
   });
   test('classifyDivergence passed a not-yet-synced result returns it unchanged', function() {
-    var classified = mod.classifyDivergence(result, null);
+    var classified = mod.classifyDivergence(result);
     assert.strictEqual(classified.status, 'not-yet-synced');
     assert.strictEqual(classified.artefacts, undefined);
   });
@@ -404,10 +408,10 @@ In `buildArtefactTrace`'s final return statement, replace:
 with:
 
 ```js
-  return classifyDivergence({ status: 'found', resolvedDir, epics, stories, artefacts }, feature);
+  return classifyDivergence({ status: 'found', resolvedDir, epics, stories, artefacts });
 ```
 
-(`classifyDivergence` must be defined ABOVE `buildArtefactTrace` in the file, or hoisted via a `function` declaration rather than a `const` arrow function, for this call to work — check the current file's declaration order and adjust if needed; a `function classifyDivergence(...)` declaration is hoisted and safe to call before its textual definition, unlike a `const classifyDivergence = (...) => {}` arrow function.)
+`classifyDivergence` is declared ABOVE `buildArtefactTrace` in the file (per Task 1's own code-quality fix) — this removes any question about declaration order or hoisting entirely; no TDZ reasoning is needed since the call site textually comes after the definition.
 
 - [ ] **Step 4: Run test — must pass**
 
