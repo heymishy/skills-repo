@@ -31743,12 +31743,12 @@
             {
               "slug": "cat-s4",
               "name": "The feature artefact-index page renders every document real status, using the canonical trace",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s4-review-1.md",
-              "updatedAt": "2026-09-06T21:01:14.558Z",
+              "updatedAt": "2026-09-06T21:17:49.638Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 13,
@@ -31767,6 +31767,38 @@
               "dorContractArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s4-dor-contract.md",
               "standardsInjected": [
                 "web-ui"
+              ],
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "The trace-to-grouped adapter (AC1 foundation)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s4-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Unregistered pill rendering (AC2)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s4-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Orphaned-registration gap state (AC3)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s4-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Wire into handleGetFeatureArtefacts, routing gate change (AC4, AC5)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s4-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "NFR tests and final regression pass",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s4-plan.md"
+                }
               ]
             },
             {
