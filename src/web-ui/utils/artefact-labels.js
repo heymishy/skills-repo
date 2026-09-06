@@ -83,4 +83,37 @@ function resolveLabel(subdir, filename) {
     : 'Artefact';
 }
 
-module.exports = { getLabel, resolveLabel };
+/**
+ * Resolve a matrix/table column key for a document, given its subdirectory
+ * and filename. For dor/, delegates to features.js's own _deriveMatrixColumn
+ * (already shipped by fadm-s1) to disambiguate dor-contract.md from plain
+ * dor.md -- this logic is reused, never reimplemented (AC2's explicit
+ * requirement; ADR-028).
+ *
+ * NOTE on the require() placement: features.js already does a top-level
+ * `require('../utils/artefact-labels')` for getLabel (used at lines 394 and
+ * 514 there). A top-level `require('../routes/features')` here would create
+ * a genuine require cycle -- whichever of the two files finishes loading
+ * second would receive an incomplete module.exports ({}) from the other,
+ * since neither file assigns module.exports until after its top-of-file
+ * requires run. That would silently break getLabel() in features.js (if
+ * artefact-labels.js loads first) or _deriveMatrixColumn here (if
+ * features.js loads first), depending purely on load order. Requiring
+ * features.js lazily, inside the function body, sidesteps this: by the time
+ * resolveColumnKey() is actually invoked at runtime, both modules have
+ * already finished their initial load, so the require() call just returns
+ * the fully-populated module from cache.
+ * @param {string} subdir
+ * @param {string} filename
+ * @returns {string}
+ */
+function resolveColumnKey(subdir, filename) {
+  var key = (subdir || '').toLowerCase();
+  if (key === 'dor') {
+    var _deriveMatrixColumn = require('../routes/features')._deriveMatrixColumn;
+    return _deriveMatrixColumn(subdir + '/' + filename);
+  }
+  return key || 'artefact';
+}
+
+module.exports = { getLabel, resolveLabel, resolveColumnKey };

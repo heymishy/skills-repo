@@ -51,5 +51,24 @@ console.log('\n[cat-s2] AC1 (specific regression guard) -- review/, decisions/, 
   });
 }
 
+console.log('\n[cat-s2] AC2 -- dor-contract.md and plain dor.md resolve to two distinct column keys');
+{
+  var contractKey = labels.resolveColumnKey('dor', 'psh-s1-dor-contract.md');
+  var plainKey = labels.resolveColumnKey('dor', 'psh-s1-dor.md');
+  test('dor-contract and plain dor resolve to different keys', function() {
+    assert.notStrictEqual(contractKey, plainKey);
+  });
+}
+
+console.log('\n[cat-s2] AC2 -- resolveColumnKey reuses features.js\'s own _deriveMatrixColumn, not a reimplementation');
+{
+  var featuresMod = freshRequire(FEATURES_PATH);
+  test('resolveColumnKey(dor, x-dor-contract.md) agrees with features.js\'s _deriveMatrixColumn for the equivalent path', function() {
+    var viaLabels = labels.resolveColumnKey('dor', 'x-dor-contract.md');
+    var viaFeatures = featuresMod._deriveMatrixColumn('dor/x-dor-contract.md');
+    assert.strictEqual(viaLabels, viaFeatures);
+  });
+}
+
 console.log('\n[cat-s2] Results:', passed, 'passed,', failed, 'failed');
 if (failed > 0) process.exit(1);
