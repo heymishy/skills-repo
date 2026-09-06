@@ -1823,6 +1823,12 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   source: agent-auto
 
 - date: 2026-09-06
+  session-phase: /definition -- canonical-artefact-trace (6 stories, risk-first)
+  signal-type: pattern
+  signal-text: "Definition's own dta-s1 domain-tag check and D1 dependency-chain validation both passed cleanly for all 6 stories in one pass -- a useful signal that decomposing a well-audited, already-designed feature (discovery -> clarify -> design all completed conversationally with the operator before /definition started) produces stories with zero rework needed at decomposition time, versus features where /definition itself has to do first-pass scoping. Worth citing as evidence for the value of not skipping discovery/clarify/design even under time pressure, when the alternative (a bug fix jumping straight to short-track test-plan/DoR) works fine for bounded fixes but this feature's own cross-cutting, architecture-level scope (touching 5+ existing modules, motivating a new repo-level ADR) genuinely needed the full outer loop first."
+  source: agent-auto
+
+- date: 2026-09-06
   session-phase: post-deploy live verification for fadm-s1 (feature-artefact-document-matrix), operator report
   signal-type: gap
   signal-text: "Operator reported /features/2026-04-19-skills-platform-phase4 (a real, distinct, 205-file archived feature -- separate from 2026-04-19-skills-platform-phase4-opus, which sri-s1 partially registered) shows 'far too many stories'. Confirmed live (hasMatrix:false, hasDocTable:false): this page isn't using fadm-s1's new rendering at all -- it falls back to the old single-story flat listing (73 type-grouped card sections, up to 30 items each) because this feature has ZERO registration in pipeline-state.json (no epics[], no stories[] at all), so getFeatureStoryStructure returns null and totalStoryCount is 0. Same root-cause class as sri-s1's missing-registration fix, but far larger in scope: ~30 real work items (including a whole spikes/ folder) with no existing epic structure to register into at all -- unlike sri-s1's 4 cases, which only needed adding to already-known epics. Not fixed inline -- needs its own dedicated epic/story discovery and registration pass, not a quick data patch. Confirmed NOT a regression from fadm-s1: this feature has rendered this way (all files dumped under type headers, no per-story separation) since before fadm-s1 shipped, unaffected by fadm-s1's own code (which is only reached when a story structure IS registered)."

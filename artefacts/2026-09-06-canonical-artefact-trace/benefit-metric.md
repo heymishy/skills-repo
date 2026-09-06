@@ -56,9 +56,9 @@
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Registered-vs-disk divergence rate | TBD at /definition | Gap (expected — not yet defined) |
-| Bugs of this class per session | TBD at /definition | Gap (expected — not yet defined) |
-| Unregistered documents visible without a bug report | TBD at /definition | Gap (expected — not yet defined) |
+| Registered-vs-disk divergence rate | cat-s1, cat-s2, cat-s3, cat-s4 | Covered |
+| Bugs of this class per session | cat-s1, cat-s2, cat-s5, cat-s6 | Covered |
+| Unregistered documents visible without a bug report | cat-s3, cat-s4 | Covered |
 
 ---
 
