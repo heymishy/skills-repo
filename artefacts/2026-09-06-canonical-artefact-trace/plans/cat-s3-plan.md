@@ -194,7 +194,9 @@ git commit -m "feat(cat-s3): add classifyDivergence with core registered/unregis
 
 ---
 
-## Task 2: Inference for unregistered documents (AC1)
+## Task 2: Inference for unregistered documents (AC1) ✅ DONE (61f17531, fixup a2b48c15)
+
+**Two-stage review:** spec compliance ✅ (independent hand-trace of the 3-file fixture twice — once per commit — plus an explicit assessment that the heuristic's known limitations, e.g. cross-type siblings never grouping, are proportionate to the story's own "best-effort, never a substitute for registration" `/clarify` decision) | code quality — first pass found 1 Important issue: the same vacuous `doesNotThrow` pattern already found once in `cat-s1`'s own Task 5 recurred here (a redundant, unguarded-then-guarded double computation) → fixed in `a2b48c15`, plus 2 optional Minor fixes folded in (JSDoc condensed to match file convention, double `derivePrefix()` call eliminated) → ✅ Approved.
 
 **Recommended model class:** deep-reasoning — the "reasonable inference" logic has genuine design freedom the story deliberately leaves open (per `/clarify`'s own resolved decision: "attempt inference where possible... never imply false confidence").
 
