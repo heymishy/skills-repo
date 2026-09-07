@@ -365,7 +365,9 @@ git commit -m "feat(cat-s4): add visible Unregistered pill and inferred-group bu
 
 ---
 
-## Task 3: orphaned-registration gap state (AC3)
+## Task 3: orphaned-registration gap state (AC3) ✅ DONE (68bd09ff, fixup 204d2174)
+
+**Two-stage review:** spec compliance ✅ | code quality — first pass found 2 **Important** issues: (1) `colspan="${colCount - 1}"` produces invalid `colspan="0"` when `colCount === 1` (an all-orphaned page — confirmed live and already triggered by the task's own shipped test fixture, with real-world precedent in `.github/architecture-guardrails.md`'s reference to a fully-orphaned feature registration found in the audit); (2) the "distinct from the Unregistered pill" test never actually rendered an Unregistered pill in its own fixture, so it couldn't verify distinctness, and used a loose `||` disjunction instead of the exact shipped string → fixed in `204d2174` (guarded with `Math.max(1, colCount - 1)`; added a genuine combined fixture rendering both markers together with an explicit non-substring-overlap assertion; tightened the original assertion to the exact literal string) → re-reviewed, confirmed correct by independent re-derivation and a scan for the same unguarded-arithmetic pattern elsewhere in the file (none found) → ✅ Approved.
 
 **Recommended model class:** balanced.
 
