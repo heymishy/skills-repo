@@ -165,8 +165,33 @@ console.log('\n[cat-s4] AC3 -- orphaned-registration story shows a distinct gap 
     assert.ok(html.indexOf('ghost-s1') !== -1, 'expected the orphaned story slug to appear');
   });
   test('orphaned-registration gap marker is distinct from the Unregistered pill text', function() {
-    assert.ok(html.indexOf('No files found') !== -1 || html.indexOf('orphaned') !== -1 || html.indexOf('Registered, but') !== -1,
-      'expected a distinct gap-state message, got HTML with no recognisable gap marker');
+    assert.ok(html.indexOf('Registered, but no files found') !== -1,
+      'expected the exact gap-state message "Registered, but no files found", got HTML with no recognisable gap marker');
+  });
+}
+
+console.log('\n[cat-s4] AC3 -- combined fixture: orphaned-registration gap state and Unregistered pill are textually distinguishable side by side');
+{
+  var fakeCombinedTrace = {
+    status: 'found', epics: [],
+    stories: [
+      { slug: 'ghost-s2', name: 'Ghost Story Two', divergence: 'orphaned-registration' },
+      { slug: 'clean-s2', name: 'Clean Story Two', divergence: 'registered' }
+    ],
+    artefacts: [
+      { path: 'dor/clean-s2-dor-contract.md', type: 'dor', filename: 'clean-s2-dor-contract.md', storySlug: 'clean-s2', divergence: 'unregistered', inferredGroup: null }
+    ]
+  };
+  var groupedCombined = mod._buildGroupedFromTrace(fakeCombinedTrace, 'combined-feature');
+  var htmlCombined = mod.renderGroupedArtefactIndexHtml(groupedCombined, 'combined-feature', {});
+  test('combined fixture renders both the orphaned-registration gap message and the Unregistered pill, using distinct, non-overlapping text', function() {
+    assert.ok(htmlCombined.indexOf('Registered, but no files found') !== -1, 'expected the orphaned-registration gap message');
+    assert.ok(htmlCombined.indexOf('Unregistered') !== -1, 'expected the Unregistered pill text');
+    assert.strictEqual('Registered, but no files found'.indexOf('Unregistered'), -1, 'the two marker strings must not overlap as substrings');
+  });
+  test('combined fixture still shows both story slugs', function() {
+    assert.ok(htmlCombined.indexOf('ghost-s2') !== -1, 'expected the orphaned story slug to appear');
+    assert.ok(htmlCombined.indexOf('clean-s2') !== -1, 'expected the registered story slug to appear');
   });
 }
 

@@ -579,7 +579,7 @@ function renderArtefactMatrix(grouped, featureSlug, epicDocs, resumeLookup) {
     const storyRows = group.stories.map((story) => {
       if (story.artefacts.length === 0 && story.divergence === 'orphaned-registration') {
         return `<tr><td class="doc-matrix__story-col">${shellEscHtml(story.slug)}</td>` +
-          `<td colspan="${colCount - 1}" class="doc-matrix__dash" title="Registered in pipeline-state.json but no matching file found on disk">Registered, but no files found</td></tr>`;
+          `<td colspan="${Math.max(1, colCount - 1)}" class="doc-matrix__dash" title="Registered in pipeline-state.json but no matching file found on disk">Registered, but no files found</td></tr>`;
       }
       const byColumn = {};
       story.artefacts.forEach((a) => { byColumn[_deriveMatrixColumn(a.path || '')] = a; });
