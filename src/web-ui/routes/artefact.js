@@ -133,9 +133,21 @@ async function handleArtefactRoute(req, res, slug, artefactType, pool) {
         return;
       }
 
+      // cat-s5 AC3/AC4: distinguish an orphaned-registration 404 (registered
+      // in pipeline-state.json but genuinely has no matching file on disk)
+      // from a plain never-registered 404, but only after the postgres-
+      // fallback attempt above has also come up empty -- the fallback stays
+      // the first-tried content source either way (AC4: postgres-fallback
+      // contract unchanged). ArtefactNotFoundError's own class/constructor
+      // and the surrounding renderShell/writeHead/res.end calls are
+      // untouched; only the body text is now conditional on the new
+      // err.orphanedRegistration property.
+      const notFoundBody = err.orphanedRegistration
+        ? '<p>This document is registered but the file could not be found — it may have been renamed or removed.</p>'
+        : '<p>artefact not found</p>';
       const page = renderShell({
         title:       'Artefact Not Found',
-        bodyContent: '<p>artefact not found</p>',
+        bodyContent: notFoundBody,
         user:        { login: (req.session && req.session.login) || '' }
       });
       res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });

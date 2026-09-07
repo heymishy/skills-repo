@@ -184,6 +184,152 @@ console.log('\n[cat-s5] Task 2 review-fixup -- handleArtefactRoute actually wire
   });
 }
 
+console.log('\n[cat-s5] AC3 -- orphaned-registration link is flagged distinctly from a never-registered link');
+{
+  var tmpRoot = path.join(os.tmpdir(), 'cat-s5-orphan-' + Date.now());
+  var featureDir = path.join(tmpRoot, 'artefacts', 'ghost-feature');
+  fs.mkdirSync(featureDir, { recursive: true });
+  fs.mkdirSync(path.join(tmpRoot, '.github'), { recursive: true });
+  fs.writeFileSync(path.join(tmpRoot, '.github', 'pipeline-state.json'), JSON.stringify({
+    features: [{ slug: 'ghost-feature', stories: [{ id: 'ghost-s1', name: 'Ghost Story' }] }]
+  }), 'utf8');
+  // Deliberately no file matching ghost-s1 anywhere on disk -- an
+  // orphaned-registration story per cat-s3's own classification.
+
+  var fetcherMod = freshRequire(FETCHER_PATH);
+  var calls = [];
+  global.fetch = mockFetchOkPaths([], calls);
+  try {
+    await fetcherMod.fetchArtefact('ghost-feature', 'ghost-s1-notes', 'tok', undefined, undefined, tmpRoot);
+    test('should have thrown', function() { assert.fail('expected ArtefactNotFoundError'); });
+  } catch (err) {
+    test('throws ArtefactNotFoundError (AC4: same error class, unchanged constructor)', function() {
+      assert.strictEqual(err.name, 'ArtefactNotFoundError');
+    });
+    test('is flagged orphanedRegistration -- distinct from a genuinely never-registered path', function() {
+      assert.strictEqual(err.orphanedRegistration, true);
+    });
+  }
+
+console.log('\n[cat-s5] AC3 (non-conflation) -- a genuinely never-registered path is NOT flagged orphanedRegistration');
+  var calls2 = [];
+  global.fetch = mockFetchOkPaths([], calls2);
+  try {
+    await fetcherMod.fetchArtefact('ghost-feature', 'totally-unrelated-name', 'tok', undefined, undefined, tmpRoot);
+    test('should have thrown', function() { assert.fail('expected ArtefactNotFoundError'); });
+  } catch (err) {
+    test('throws ArtefactNotFoundError', function() { assert.strictEqual(err.name, 'ArtefactNotFoundError'); });
+    test('is NOT flagged orphanedRegistration -- an operator must be able to tell these two 404 causes apart', function() {
+      assert.notStrictEqual(err.orphanedRegistration, true);
+    });
+  }
+}
+
+console.log('\n[cat-s5] AC4 -- ArtefactNotFoundError constructor signature is unchanged');
+{
+  var fetcherMod = freshRequire(FETCHER_PATH);
+  var err = new fetcherMod.ArtefactNotFoundError('some-slug', 'some-type');
+  test('constructor still takes (featureSlug, artefactType) and sets the same properties', function() {
+    assert.strictEqual(err.featureSlug, 'some-slug');
+    assert.strictEqual(err.artefactType, 'some-type');
+    assert.strictEqual(err.name, 'ArtefactNotFoundError');
+  });
+  test('orphanedRegistration is undefined by default -- an additive property, not a constructor argument', function() {
+    assert.strictEqual(err.orphanedRegistration, undefined);
+  });
+}
+
+console.log('\n[cat-s5] AC3/AC4 (route-level) -- the distinguishing 404 message renders only after postgres-fallback also fails, via handleArtefactRoute\'s real branch');
+{
+  var routeMod = freshRequire(ARTEFACT_ROUTE_PATH);
+  var fetcherModForRoute = require(FETCHER_PATH);
+  routeMod.setFetcher(function() {
+    var err = new fetcherModForRoute.ArtefactNotFoundError('ghost-feature', 'ghost-s1-notes');
+    err.orphanedRegistration = true;
+    return Promise.reject(err);
+  });
+  routeMod.setJourneyStore({
+    getJourneyByFeatureSlug: function() { return null; },
+    getArtefactsForJourney: function() { return Promise.resolve([]); }
+  });
+  var body = '';
+  var statusCode = null;
+  var req = { session: { accessToken: 'tok', userId: 1, login: 'u', tenantId: 't1' } };
+  var res = {
+    writeHead: function(code) { statusCode = code; },
+    end: function(b) { body = b || ''; }
+  };
+  await routeMod.handleArtefactRoute(req, res, 'ghost-feature', 'ghost-s1-notes', {});
+  test('renders a 404 status', function() { assert.strictEqual(statusCode, 404); });
+  test('the orphaned-registration message is distinct from the plain "artefact not found" text', function() {
+    assert.notStrictEqual(body.indexOf('registered'), -1, 'expected the body to mention the registration, got: ' + body);
+  });
+}
+
+console.log('\n[cat-s5] AC3/AC4 (route-level, real chain, not stubbed) -- a real orphaned-registration fetchArtefact throw actually reaches the real handleArtefactRoute catch branch and renders the distinguishing message, with postgres-fallback genuinely tried first');
+{
+  // Task 2's own review finding showed a stubbed-fetcher route test can pass
+  // while the real fetchArtefact -> real handleArtefactRoute chain is never
+  // actually reachable in production (repoRoot was silently never wired
+  // through). The block above (per this plan's own Step 1) only proves
+  // handleArtefactRoute's OWN rendering logic given an ALREADY-flagged,
+  // stubbed error -- it never proves the real fetchArtefact (this task's new
+  // orphaned-registration detection) actually produces that flag, nor that
+  // the real, non-stubbed call chain carries it through to the real catch
+  // branch. This block closes that gap: real tmpRoot fixture, real
+  // buildArtefactTrace-backed fetchArtefact (not a stub), a journey store
+  // that genuinely returns no fallback content (so postgres-fallback is
+  // exercised and confirmed to run first, then come up empty), and a real,
+  // non-stubbed handleArtefactRoute call end to end.
+  var tmpRoot2 = path.join(os.tmpdir(), 'cat-s5-orphan-e2e-' + Date.now());
+  fs.mkdirSync(path.join(tmpRoot2, 'artefacts', 'ghost-feature-e2e'), { recursive: true });
+  fs.mkdirSync(path.join(tmpRoot2, '.github'), { recursive: true });
+  fs.writeFileSync(path.join(tmpRoot2, '.github', 'pipeline-state.json'), JSON.stringify({
+    features: [{ slug: 'ghost-feature-e2e', stories: [{ id: 'ghost-e2e-s1', name: 'Ghost E2E Story' }] }]
+  }), 'utf8');
+
+  var routeMod2 = freshRequire(ARTEFACT_ROUTE_PATH);
+  var fetcherModReal = require(FETCHER_PATH);
+  var repoRootAdapter2 = require(path.resolve(__dirname, '../src/web-ui/adapters/repo-root'));
+  repoRootAdapter2.setRepoRoot(tmpRoot2);
+
+  var calls3 = [];
+  global.fetch = mockFetchOkPaths([], calls3); // every candidate path 404s -- file genuinely absent
+
+  var postgresFallbackCalled = false;
+  routeMod2.setFetcher(fetcherModReal.fetchArtefact); // NOT stubbed -- the real implementation
+  routeMod2.setJourneyStore({
+    getJourneyByFeatureSlug: function() {
+      postgresFallbackCalled = true;
+      return null; // no journey -- postgres-fallback genuinely comes up empty
+    },
+    getArtefactsForJourney: function() { return Promise.resolve([]); }
+  });
+
+  var body2 = '';
+  var statusCode2 = null;
+  var req2 = { session: { accessToken: 'tok', userId: 1, login: 'u', tenantId: 't1' }, query: {}, headers: {} };
+  var res2 = {
+    writeHead: function(code) { statusCode2 = code; },
+    end: function(b) { body2 = b || ''; }
+  };
+  var navPool2 = { query: function() { return Promise.resolve({ rows: [] }); } };
+
+  await routeMod2.handleArtefactRoute(req2, res2, 'ghost-feature-e2e', 'ghost-e2e-s1-notes', navPool2);
+
+  repoRootAdapter2.setRepoRoot(null);
+
+  test('postgres-fallback was genuinely attempted before the distinguishing message rendered (AC4: fallback contract unchanged)', function() {
+    assert.strictEqual(postgresFallbackCalled, true);
+  });
+  test('real (non-stubbed) fetchArtefact + real handleArtefactRoute renders a 404 status for the real orphaned-registration case', function() {
+    assert.strictEqual(statusCode2, 404);
+  });
+  test('the real end-to-end chain renders the distinguishing orphaned-registration message, not the generic 404', function() {
+    assert.notStrictEqual(body2.indexOf('registered'), -1, 'expected the body to mention the registration, got: ' + body2);
+  });
+}
+
 }
 
 main().then(function() {

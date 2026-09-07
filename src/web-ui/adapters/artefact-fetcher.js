@@ -242,7 +242,29 @@ async function fetchArtefact(featureSlug, artefactType, token, repoOverride, tim
     }
   }
 
-  throw new ArtefactNotFoundError(featureSlug, artefactType);
+  // cat-s5 AC3/AC4: nothing resolved above -- before giving up, distinguish
+  // an orphaned-registration 404 (the requested name matches a story that
+  // cat-s3's own classifyDivergence marked 'orphaned-registration': registered
+  // in pipeline-state.json but with zero matching files on disk) from a
+  // genuinely never-registered path. Uses the exact same filename-attribution
+  // convention artefact-trace.js's own buildArtefactTrace already uses
+  // internally (`artefactType.indexOf(story.slug + '-') === 0 || artefactType
+  // === story.slug`), so this reuses an established convention rather than
+  // inventing new matching logic. AC4: ArtefactNotFoundError's constructor
+  // signature stays completely unchanged -- orphanedRegistration is set as a
+  // plain property AFTER construction, never passed as a constructor arg.
+  const finalErr = new ArtefactNotFoundError(featureSlug, artefactType);
+  if (repoRoot) {
+    const trace = buildArtefactTrace(repoRoot, featureSlug);
+    if (trace.status === 'found') {
+      const orphanedStory = trace.stories.find((s) =>
+        s.divergence === 'orphaned-registration' &&
+        (artefactType.indexOf(s.slug + '-') === 0 || artefactType === s.slug)
+      );
+      if (orphanedStory) finalErr.orphanedRegistration = true;
+    }
+  }
+  throw finalErr;
 }
 
 /**
