@@ -262,7 +262,9 @@ git commit -m "test(cat-s6): verify journey.js and export-data-source.js's real 
 
 ---
 
-## Task 2: four prior regression suites + full-suite baseline confirmation (AC3, AC4)
+## Task 2: four prior regression suites + full-suite baseline confirmation (AC3, AC4) ✅ DONE (aef76a63)
+
+**Result:** all 4 prior suites confirmed at their real, unchanged pass counts (bsgm-s1 8/8, sri-s1 10/10, adlr-s1 15/15 — unchanged across this entire epic's delivery, fadm-s1 27/27), each verified against its own actual reporting format (not assumed shared, per the story's own `tir-s5` lesson). Full suite: 628 files, only the known `check-p3.5-validate-trace.js` baseline failure, run twice for confirmation (no `check-pcr-s1-test-runner.js` flake this time, no third/new failure either time). **Sound engineering judgment applied**: the implementer correctly declined to embed a nested `run-all-tests.js` invocation inside the test file itself, since `check-cat-s6-regression-verification.js` is itself one of the files that script runs — doing so would recursively re-invoke the whole suite from within itself on every run. AC4 is instead verified by direct command execution outside the test file (matching how AC4 was verified throughout this whole epic), documented inline with a comment explaining the reasoning. Re-verified independently: 10/10 targeted tests, full suite 628/1-pre-existing-unrelated confirmed twice. Zero production files touched. **All 2 tasks of cat-s6 are now complete — this is the final story of the epic.**
 
 **Two-stage review:** not yet run.
 
