@@ -406,9 +406,11 @@ git commit -m "feat(cat-s5): resolve bare-name artefact links via the canonical 
 
 ---
 
-## Task 3: orphaned-registration distinct 404 (AC3, AC4)
+## Task 3: orphaned-registration distinct 404 (AC3, AC4) ✅ DONE (3a7560da)
 
-**Two-stage review:** not yet run.
+**Result:** implemented exactly per plan, reusing `artefact-trace.js`'s own filename-attribution predicate (correctly re-derived for the `.md`-stripped `artefactType` shape). AC4's constructor-unchanged requirement independently verified byte-identical against the pre-story baseline; postgres-fallback ordering independently traced and confirmed non-racing (single-threaded, fallback `return`s before the new branch is reachable). **The implementer, explicitly briefed on Task 2's route-wiring gap, judged the plan's own stubbed-fetcher route-level test insufficient on its own initiative and added a 4th test using the real, non-stubbed `fetchArtefact` end-to-end through the real `handleArtefactRoute`** — independently traced by review and confirmed genuinely real (only `global.fetch` and the journey store, both legitimate external boundaries, are mocked; `getRepoRoot`, `buildArtefactTrace`, and the orphaned-detection logic all run for real). This is exactly the rigor Task 2's fixup required, applied proactively this time. Re-verified independently: 22/22 targeted tests, 15/15 `adlr-s1` unchanged, full suite 627/1-pre-existing-unrelated. **2 Minor, non-blocking findings** (accepted as-is, not fixed): re-deriving the trace a second time in the not-found path (already flagged by this plan itself as acceptable), and the orphaned-story `.find()` doesn't replicate `artefact-trace.js`'s own longest-prefix-first disambiguation ordering for two stories with overlapping slug prefixes — low real-world likelihood, and even in that case a distinguishing message still renders, just possibly attributed to the wrong of two ghost stories internally (not exposed in the message text).
+
+**Two-stage review:** ✅ Approved.
 
 **Recommended model class:** deep-reasoning — must not disturb the existing postgres-fallback/error-page contract (AC4).
 
