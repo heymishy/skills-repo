@@ -31513,7 +31513,7 @@
           "baseline": "5 in one session (bsgm-s1, sri-s1, adlr-s1, fadm-s1, phase4)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "cat-s5 unifies /artefact/:slug/:type's resolution logic onto the same canonical trace /features/:slug (cat-s4) already uses -- the code-level fix this metric exists to validate is now shipped (merged 2026-09-07), but the metric itself requires observing whether a future bug-fix session needs to touch more than one independent implementation, which cannot be assessed at merge time.",
+          "evidence": "cat-s6 provides a distinct piece of evidence from cat-s5's own contribution: proof that cat-s5's fix itself did not introduce a NEW instance of this bug class in its two adjacent call sites (journey.js, export-data-source.js) -- both confirmed unaffected by direct test against the real functions. This closes the loop on the epic's own credibility argument, but the metric's own future-incidence measurement still requires elapsed observation time, which cannot be assessed at merge time.",
           "contributingStories": [
             "cat-s1",
             "cat-s2",
@@ -31868,12 +31868,12 @@
             {
               "slug": "cat-s6",
               "name": "The two existing non-trace consumers of artefact fetching keep working unchanged",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s6-review-1.md",
-              "updatedAt": "2026-09-07T18:47:19.288Z",
+              "updatedAt": "2026-09-07T18:48:47.609Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
@@ -31909,7 +31909,8 @@
               ],
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/847",
-              "dodStatus": "not-started"
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         }
@@ -32338,6 +32339,15 @@
           "evidence": "Source review confirms artefactType/featureSlug flow only into already-validated path template strings; no new eval/child_process introduced",
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-09-07T09:31:16.966Z"
+        },
+        {
+          "id": "NFR-sec-cross-tenant-isolation-cat-s6",
+          "category": "nfr",
+          "label": "mtrr-s1 cross-tenant isolation not weakened (cat-s6 regression verification)",
+          "status": "met",
+          "evidence": "export-data-source.js's repoOverride confirmed to resolve independently for two distinct tenants, zero cross-tenant URL leakage, via a direct test against the real realExportDataSource function",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-07T18:48:47.610Z"
         }
       ]
     }
