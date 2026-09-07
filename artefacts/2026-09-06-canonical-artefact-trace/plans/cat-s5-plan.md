@@ -585,7 +585,9 @@ git commit -m "feat(cat-s5): flag orphaned-registration 404s distinctly from nev
 
 ---
 
-## Task 4: NFR tests, AC4 contract verification, final regression pass
+## Task 4: NFR tests, AC4 contract verification, final regression pass ✅ DONE (0bbca6de)
+
+**Result:** test-only change, no implementation needed (as the plan predicted) — all 3 NFR assertions passed cleanly on the first run (single-request resolution at 0.1ms, well under the 100ms budget; no new `eval`/`child_process` surface; audit logging call-count/shape unchanged). Targeted file: 25/25. `adlr-s1` regression suite: 15/15 — confirmed genuinely unchanged across the ENTIRE story, from `/branch-setup`'s own baseline through all 4 tasks, never touched once. Full suite: 627 files/1 pre-existing-unrelated-failure/0 regressions, independently re-verified. **All 4 tasks of cat-s5 are now complete.**
 
 **Two-stage review:** not yet run.
 
