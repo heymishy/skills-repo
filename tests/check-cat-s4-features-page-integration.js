@@ -195,5 +195,33 @@ console.log('\n[cat-s4] AC3 -- combined fixture: orphaned-registration gap state
   });
 }
 
+console.log('\n[cat-s4] AC5 -- not-yet-synced feature shows a clear message, not a crash or empty page');
+{
+  var os = require('os');
+  var unsyncedRoot = path.join(os.tmpdir(), 'wuce-unsynced-cat-s4-' + Date.now());
+  var trace = mod._traceForRoute ? mod._traceForRoute(unsyncedRoot, 'any-slug') : require('../src/web-ui/adapters/artefact-trace').buildArtefactTrace(unsyncedRoot, 'any-slug');
+  test('buildArtefactTrace itself returns not-yet-synced for this fixture', function() {
+    assert.strictEqual(trace.status, 'not-yet-synced');
+  });
+}
+
+console.log('\n[cat-s4] AC4 -- fully-registered, non-divergent feature renders byte-identical to the pre-cat-s4 golden fixture');
+{
+  var traceMod = require('../src/web-ui/adapters/artefact-trace');
+  var trace = traceMod.buildArtefactTrace(REPO_ROOT, '2026-09-06-feature-artefact-document-matrix');
+  var grouped = mod._buildGroupedFromTrace(trace, '2026-09-06-feature-artefact-document-matrix');
+  var html = mod.renderGroupedArtefactIndexHtml(grouped, '2026-09-06-feature-artefact-document-matrix', {});
+  var fs = require('fs');
+  var goldenPath = path.resolve(__dirname, 'fixtures', 'cat-s4-golden-fadm-output.html');
+  test('golden fixture file exists (captured in Step 1 before this task changed anything)', function() {
+    assert.ok(fs.existsSync(goldenPath), 'expected the golden fixture captured in Step 1 at ' + goldenPath);
+  });
+  test('current output matches the golden pre-cat-s4 fixture byte-for-byte', function() {
+    if (!fs.existsSync(goldenPath)) return; // already flagged by the previous test
+    var golden = fs.readFileSync(goldenPath, 'utf8');
+    assert.strictEqual(html, golden);
+  });
+}
+
 console.log('\n[cat-s4] Results:', passed, 'passed,', failed, 'failed');
 if (failed > 0) process.exit(1);

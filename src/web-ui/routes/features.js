@@ -21,8 +21,6 @@ const {
 
 const { getRepoRoot } = require('../adapters/repo-root');
 
-const { getFeatureStoryStructure, groupArtefactsByStory } = require('../adapters/feature-story-structure');
-
 const { buildArtefactTrace } = require('../adapters/artefact-trace');
 const { resolveLabel } = require('../utils/artefact-labels');
 const { labelFromPath } = require('../utils/plain-language-labels');
@@ -775,22 +773,36 @@ async function handleGetFeatureArtefacts(req, res, featureSlug, pool) {
     // fal-s1: artefact view links (/artefact/:slug/:type) must point at the
     // real feature directory slug -- the raw slug 404s for an epic-nested
     // story, same class of bug this story fixes for the list lookup itself.
-    // fapg-s1: a feature with >=2 real stories (read from the local
-    // repoRoot/.github/pipeline-state.json, not a Postgres query -- see
-    // getFeatureStoryStructure's own doc comment) gets the grouped
-    // epic/story rendering; a feature with 0-1 stories (the common case)
-    // renders exactly as it always has, via the unchanged renderArtefactIndexHtml.
+    // cat-s4: routing is now driven by buildArtefactTrace (ADR-028), the
+    // single canonical trace builder -- not by story count. Any feature
+    // whose trace finds real documents on disk ('found') always renders via
+    // the grouped/matrix view now, replacing fapg-s1's old ">=2 real
+    // stories" threshold (which left 0-1-story and zero-registration
+    // features, e.g. phase4, stuck on the flat renderArtefactIndexHtml even
+    // though the epic exists specifically to fix that). feature-story-
+    // structure.js's own getFeatureStoryStructure/groupArtefactsByStory are
+    // no longer called from this file; the module remains on disk as
+    // (currently) dead code -- see cat-s4-plan.md Task 4.
     let listHtml;
     if (noArtefacts) {
       listHtml = '<p class="artefact-list__empty">No artefacts found for this feature</p>';
     } else {
-      const storyStructure = getFeatureStoryStructure(repoRoot, resolvedSlug);
-      const totalStoryCount = storyStructure
-        ? storyStructure.epics.reduce((sum, e) => sum + e.storySlugs.length, 0) + storyStructure.flatStorySlugs.length
-        : 0;
-      listHtml = (storyStructure && totalStoryCount > 1)
-        ? renderGroupedArtefactIndexHtml(groupArtefactsByStory(artefacts, storyStructure), resolvedSlug, resumeLookup)
-        : renderArtefactIndexHtml(artefacts, resolvedSlug, resumeLookup);
+      const trace = buildArtefactTrace(repoRoot, resolvedSlug);
+      if (trace.status === 'not-yet-synced') {
+        listHtml = '<p class="artefact-list__empty">Still syncing this feature\'s artefacts — check back shortly.</p>';
+      } else if (trace.status === 'found') {
+        const grouped = _buildGroupedFromTrace(trace, resolvedSlug);
+        listHtml = renderGroupedArtefactIndexHtml(grouped, resolvedSlug, resumeLookup);
+      } else {
+        // 'not-found' -- buildArtefactTrace found nothing on disk for this
+        // slug, even though _listArtefacts (above) returned some artefacts
+        // (e.g. Postgres-only rows with no local checkout backing them).
+        // Fall back to the pre-cat-s4 flat rendering for this narrow case --
+        // disk is canonical (ADR-029) for the grouped view, but content that
+        // only exists in Postgres still deserves to be shown, just not
+        // grouped/classified.
+        listHtml = renderArtefactIndexHtml(artefacts, resolvedSlug, resumeLookup);
+      }
     }
     const displayTitle = (journeyForPage && journeyForPage.displayName) || featureSlug;
     const breadcrumbHtml = _renderStoryBreadcrumb(breadcrumbContext, displayTitle);
