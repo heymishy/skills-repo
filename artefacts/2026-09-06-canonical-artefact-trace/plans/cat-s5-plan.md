@@ -51,7 +51,9 @@ Do NOT modify:
 
 ---
 
-## Task 1: `repoRoot` plumbing + golden-fixture regression guard (AC1)
+## Task 1: `repoRoot` plumbing + golden-fixture regression guard (AC1) ✅ DONE (be5b4e8e, fixup applied same-session)
+
+**Result:** signature change landed exactly as planned, additive and unused by `journey.js`/`export-data-source.js`. **A real async-structure defect was found and fixed directly (not via the two-stage review cycle — caught during direct verification before that review even ran):** the test file's original `.then()`-based structure never actually gated the exit code on test failure (see the "Important" note inline below, in this task's own Step 1 code block, for the full root-cause explanation and the fix). Restructured into an `async function main()` + `main().then(...)` pattern, verified correct by deliberately breaking an assertion and confirming the file now genuinely reports the failure and exits 1. All 3 test commands (targeted file, `adlr-s1` regression suite, full suite) re-confirmed passing after the fix. **This corrected pattern is now mandatory for every subsequent task's test code in this plan — see the note.**
 
 **Two-stage review:** not yet run.
 
@@ -102,24 +104,47 @@ function mockFetchOkPaths(okPaths, calls) {
   };
 }
 
+// All test bodies run inside this async function, awaited in sequence, so
+// the final Results/exit-code logic at the bottom of the file only runs
+// after every async assertion has actually executed -- EVERY LATER TASK IN
+// THIS STORY APPENDS ITS OWN NEW BLOCKS INSIDE THIS SAME FUNCTION, using
+// `await` before each `fetchArtefact(...)`/`handleArtefactRoute(...)` call,
+// NEVER a new top-level `.then()` chain placed after this function's closing
+// brace. A dangling, un-awaited `.then()` here would let the Results line
+// print and the exit-code gate evaluate before the promise resolves --
+// silently making the whole file's pass/fail reporting and CI gating
+// meaningless, since `failed` would still read its pre-assertion value no
+// matter what the async assertions actually found. (This exact mistake was
+// made and caught during Task 1's own two-stage review — see that task's
+// review note below before writing any of Tasks 2-4's test code.)
+async function main() {
+
 console.log('\n[cat-s5] AC1 -- correctly-encoded existing link resolves identically with repoRoot supplied (regression guard)');
 {
   var fetcherMod = freshRequire(FETCHER_PATH);
   var calls = [];
   global.fetch = mockFetchOkPaths(['artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s1-dor.md'], calls);
-  fetcherMod.fetchArtefact('2026-07-05-product-stds-hierarchy', 'dor/psh-s1-dor', 'tok', undefined, undefined, REPO_ROOT).then(function(content) {
-    test('content resolved, byte-identical to the no-repoRoot case', function() {
-      assert.ok(content.indexOf('content for') === 0);
-    });
-    test('exactly 1 fetch call -- repoRoot supplied does not change the slash-containing direct-path case', function() {
-      assert.strictEqual(calls.length, 1);
-    });
+  var content = await fetcherMod.fetchArtefact('2026-07-05-product-stds-hierarchy', 'dor/psh-s1-dor', 'tok', undefined, undefined, REPO_ROOT);
+  test('content resolved, byte-identical to the no-repoRoot case', function() {
+    assert.ok(content.indexOf('content for') === 0);
+  });
+  test('exactly 1 fetch call -- repoRoot supplied does not change the slash-containing direct-path case', function() {
+    assert.strictEqual(calls.length, 1);
   });
 }
 
-console.log('\n[cat-s5] Results:', passed, 'passed,', failed, 'failed');
-if (failed > 0) process.exit(1);
+}
+
+main().then(function() {
+  console.log('\n[cat-s5] Results:', passed, 'passed,', failed, 'failed');
+  process.exit(failed > 0 ? 1 : 0);
+}).catch(function(err) {
+  console.log('UNEXPECTED ERROR:', err.stack || err.message);
+  process.exit(1);
+});
 ```
+
+**Important — a real defect was found and fixed during this task's own execution (not by the reviewer, by direct verification while running the test):** the FIRST version of this test used a dangling `.then()` before the `Results`/`process.exit` lines, which ran unconditionally right after registering the promise, not after it resolved — meaning `failed` was always read as `0` regardless of the actual assertion outcomes, and the whole file's exit code could never be non-zero no matter what failed. Confirmed by deliberately breaking an assertion and observing the file still reported "0 passed, 0 failed" / exit 0. **Fixed by wrapping the entire test body in an `async function main()`, awaiting each async call directly, and moving the Results/exit logic into `main().then(...)`.** Verified the fix is real, not cosmetic, by deliberately breaking an assertion afterward and confirming it now correctly reports the failure and exits 1. **Every subsequent task in this plan must add its new test blocks INSIDE this same `main()` function, using `await`— not a new dangling `.then()` chain.**
 
 - [ ] **Step 2: Run test — must fail**
 
@@ -194,7 +219,7 @@ git commit -m "feat(cat-s5): add optional repoRoot parameter to fetchArtefact, a
 
 - [ ] **Step 1: Write the failing test**
 
-Append, before the `Results` log line. This uses the REAL `phase4` fixture (`2026-04-19-skills-platform-phase4`), specifically a real file under `spikes/` — a subdirectory `NOT_PROBED_AS_FALLBACK` explicitly excludes from the old static probe, so this is a genuine, currently-broken, real-world case, not a synthetic one:
+Append INSIDE the existing `async function main() { ... }` body (before its closing `}`, after Task 1's own block) — use `await`, per Task 1's own review note; do NOT add a new dangling `.then()` chain after `main`'s closing brace. This uses the REAL `phase4` fixture (`2026-04-19-skills-platform-phase4`), specifically a real file under `spikes/` — a subdirectory `NOT_PROBED_AS_FALLBACK` explicitly excludes from the old static probe, so this is a genuine, currently-broken, real-world case, not a synthetic one:
 
 ```js
 console.log('\n[cat-s5] AC2 -- bare legacy link to a real spikes/ file resolves via the trace, not the old excluded-subdirectory probe');
@@ -209,13 +234,12 @@ console.log('\n[cat-s5] AC2 -- bare legacy link to a real spikes/ file resolves 
     assert.ok(fs.existsSync(realSpikeFile), 'expected ' + realSpikeFile + ' to exist');
   });
   global.fetch = mockFetchOkPaths(['artefacts/archived/2026-04-19-skills-platform-phase4/spikes/spike-a-output.md'], calls);
-  fetcherMod.fetchArtefact('2026-04-19-skills-platform-phase4', 'spike-a-output', 'tok', undefined, undefined, REPO_ROOT).then(function(content) {
-    test('content resolved via the trace, not a 404', function() {
-      assert.ok(content.indexOf('content for') === 0);
-    });
-    test('resolved in a single confident attempt, not a multi-subdirectory probe', function() {
-      assert.strictEqual(calls.length, 1);
-    });
+  var content = await fetcherMod.fetchArtefact('2026-04-19-skills-platform-phase4', 'spike-a-output', 'tok', undefined, undefined, REPO_ROOT);
+  test('content resolved via the trace, not a 404', function() {
+    assert.ok(content.indexOf('content for') === 0);
+  });
+  test('resolved in a single confident attempt, not a multi-subdirectory probe', function() {
+    assert.strictEqual(calls.length, 1);
   });
 }
 
@@ -224,11 +248,10 @@ console.log('\n[cat-s5] AC2 (structural check) -- trace-based match takes priori
   var fetcherMod = freshRequire(FETCHER_PATH);
   var calls = [];
   global.fetch = mockFetchOkPaths(['artefacts/archived/2026-04-19-skills-platform-phase4/spikes/spike-a-output.md'], calls);
-  fetcherMod.fetchArtefact('2026-04-19-skills-platform-phase4', 'spike-a-output', 'tok', undefined, undefined, REPO_ROOT).then(function() {
-    test('no probe attempts against any OTHER known subdirectory were made', function() {
-      var nonSpikeProbes = calls.filter(function(u) { return u.indexOf('/spikes/') === -1; });
-      assert.strictEqual(nonSpikeProbes.length, 0, 'expected zero non-spikes probe attempts, got: ' + JSON.stringify(nonSpikeProbes));
-    });
+  await fetcherMod.fetchArtefact('2026-04-19-skills-platform-phase4', 'spike-a-output', 'tok', undefined, undefined, REPO_ROOT);
+  test('no probe attempts against any OTHER known subdirectory were made', function() {
+    var nonSpikeProbes = calls.filter(function(u) { return u.indexOf('/spikes/') === -1; });
+    assert.strictEqual(nonSpikeProbes.length, 0, 'expected zero non-spikes probe attempts, got: ' + JSON.stringify(nonSpikeProbes));
   });
 }
 
@@ -237,10 +260,9 @@ console.log('\n[cat-s5] AC2 (fall-through) -- trace has no match falls through t
   var fetcherMod = freshRequire(FETCHER_PATH);
   var calls = [];
   global.fetch = mockFetchOkPaths(['artefacts/2026-07-05-product-stds-hierarchy/dor/x-dor.md'], calls);
-  fetcherMod.fetchArtefact('2026-07-05-product-stds-hierarchy', 'x-dor', 'tok', undefined, undefined, REPO_ROOT).then(function(content) {
-    test('resolves via the old static probe when the trace has no filename match', function() {
-      assert.ok(content.indexOf('content for') === 0);
-    });
+  var content2 = await fetcherMod.fetchArtefact('2026-07-05-product-stds-hierarchy', 'x-dor', 'tok', undefined, undefined, REPO_ROOT);
+  test('resolves via the old static probe when the trace has no filename match', function() {
+    assert.ok(content2.indexOf('content for') === 0);
   });
 }
 
@@ -249,15 +271,16 @@ console.log('\n[cat-s5] AC2 (fall-through) -- no repoRoot supplied behaves exact
   var fetcherMod = freshRequire(FETCHER_PATH);
   var calls = [];
   global.fetch = mockFetchOkPaths(['artefacts/archived/2026-04-19-skills-platform-phase4/spikes/spike-a-output.md'], calls);
-  fetcherMod.fetchArtefact('2026-04-19-skills-platform-phase4', 'spike-a-output', 'tok').then(function() {
+  try {
+    await fetcherMod.fetchArtefact('2026-04-19-skills-platform-phase4', 'spike-a-output', 'tok');
     test('should have thrown -- spikes/ is excluded from the old static probe and no repoRoot was supplied', function() {
       assert.fail('expected ArtefactNotFoundError');
     });
-  }, function(err) {
+  } catch (err) {
     test('throws ArtefactNotFoundError exactly as it did before this story, when repoRoot is omitted', function() {
       assert.strictEqual(err.name, 'ArtefactNotFoundError');
     });
-  });
+  }
 }
 ```
 
@@ -377,7 +400,7 @@ git commit -m "feat(cat-s5): resolve bare-name artefact links via the canonical 
 
 - [ ] **Step 1: Write the failing test**
 
-Append, before the `Results` log line:
+Append INSIDE the existing `async function main() { ... }` body (before its closing `}`), using `await` per Task 1's established pattern — do NOT use a dangling `.then()` chain:
 
 ```js
 console.log('\n[cat-s5] AC3 -- orphaned-registration link is flagged distinctly from a never-registered link');
@@ -395,29 +418,30 @@ console.log('\n[cat-s5] AC3 -- orphaned-registration link is flagged distinctly 
   var fetcherMod = freshRequire(FETCHER_PATH);
   var calls = [];
   global.fetch = mockFetchOkPaths([], calls);
-  fetcherMod.fetchArtefact('ghost-feature', 'ghost-s1-notes', 'tok', undefined, undefined, tmpRoot).then(function() {
+  try {
+    await fetcherMod.fetchArtefact('ghost-feature', 'ghost-s1-notes', 'tok', undefined, undefined, tmpRoot);
     test('should have thrown', function() { assert.fail('expected ArtefactNotFoundError'); });
-  }, function(err) {
+  } catch (err) {
     test('throws ArtefactNotFoundError (AC4: same error class, unchanged constructor)', function() {
       assert.strictEqual(err.name, 'ArtefactNotFoundError');
     });
     test('is flagged orphanedRegistration -- distinct from a genuinely never-registered path', function() {
       assert.strictEqual(err.orphanedRegistration, true);
     });
-  }).then(function() {
+  }
 
 console.log('\n[cat-s5] AC3 (non-conflation) -- a genuinely never-registered path is NOT flagged orphanedRegistration');
-    var calls2 = [];
-    global.fetch = mockFetchOkPaths([], calls2);
-    return fetcherMod.fetchArtefact('ghost-feature', 'totally-unrelated-name', 'tok', undefined, undefined, tmpRoot).then(function() {
-      test('should have thrown', function() { assert.fail('expected ArtefactNotFoundError'); });
-    }, function(err) {
-      test('throws ArtefactNotFoundError', function() { assert.strictEqual(err.name, 'ArtefactNotFoundError'); });
-      test('is NOT flagged orphanedRegistration -- an operator must be able to tell these two 404 causes apart', function() {
-        assert.notStrictEqual(err.orphanedRegistration, true);
-      });
+  var calls2 = [];
+  global.fetch = mockFetchOkPaths([], calls2);
+  try {
+    await fetcherMod.fetchArtefact('ghost-feature', 'totally-unrelated-name', 'tok', undefined, undefined, tmpRoot);
+    test('should have thrown', function() { assert.fail('expected ArtefactNotFoundError'); });
+  } catch (err) {
+    test('throws ArtefactNotFoundError', function() { assert.strictEqual(err.name, 'ArtefactNotFoundError'); });
+    test('is NOT flagged orphanedRegistration -- an operator must be able to tell these two 404 causes apart', function() {
+      assert.notStrictEqual(err.orphanedRegistration, true);
     });
-  });
+  }
 }
 
 console.log('\n[cat-s5] AC4 -- ArtefactNotFoundError constructor signature is unchanged');
@@ -454,11 +478,10 @@ console.log('\n[cat-s5] AC3/AC4 (route-level) -- the distinguishing 404 message 
     writeHead: function(code) { statusCode = code; },
     end: function(b) { body = b || ''; }
   };
-  routeMod.handleArtefactRoute(req, res, 'ghost-feature', 'ghost-s1-notes', {}).then(function() {
-    test('renders a 404 status', function() { assert.strictEqual(statusCode, 404); });
-    test('the orphaned-registration message is distinct from the plain "artefact not found" text', function() {
-      assert.notStrictEqual(body.indexOf('registered'), -1, 'expected the body to mention the registration, got: ' + body);
-    });
+  await routeMod.handleArtefactRoute(req, res, 'ghost-feature', 'ghost-s1-notes', {});
+  test('renders a 404 status', function() { assert.strictEqual(statusCode, 404); });
+  test('the orphaned-registration message is distinct from the plain "artefact not found" text', function() {
+    assert.notStrictEqual(body.indexOf('registered'), -1, 'expected the body to mention the registration, got: ' + body);
   });
 }
 ```
@@ -553,7 +576,7 @@ git commit -m "feat(cat-s5): flag orphaned-registration 404s distinctly from nev
 
 - [ ] **Step 1: Write the failing test**
 
-Append, before the `Results` log line:
+Append INSIDE the existing `async function main() { ... }` body (before its closing `}`), using `await` per Task 1's established pattern:
 
 ```js
 console.log('\n[cat-s5] NFR -- no regression vs. adlr-s1\\'s existing bounded-probe performance for the common case');
@@ -562,12 +585,11 @@ console.log('\n[cat-s5] NFR -- no regression vs. adlr-s1\\'s existing bounded-pr
   var calls = [];
   global.fetch = mockFetchOkPaths(['artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s1-dor.md'], calls);
   var start = process.hrtime.bigint();
-  fetcherMod.fetchArtefact('2026-07-05-product-stds-hierarchy', 'dor/psh-s1-dor', 'tok', undefined, undefined, REPO_ROOT).then(function() {
-    var elapsedMs = Number(process.hrtime.bigint() - start) / 1e6;
-    test('resolves the common case in a single request, well under 100ms (measured: ' + elapsedMs.toFixed(1) + 'ms)', function() {
-      assert.strictEqual(calls.length, 1);
-      assert.ok(elapsedMs < 100, 'expected < 100ms, got ' + elapsedMs.toFixed(1) + 'ms');
-    });
+  await fetcherMod.fetchArtefact('2026-07-05-product-stds-hierarchy', 'dor/psh-s1-dor', 'tok', undefined, undefined, REPO_ROOT);
+  var elapsedMs = Number(process.hrtime.bigint() - start) / 1e6;
+  test('resolves the common case in a single request, well under 100ms (measured: ' + elapsedMs.toFixed(1) + 'ms)', function() {
+    assert.strictEqual(calls.length, 1);
+    assert.ok(elapsedMs < 100, 'expected < 100ms, got ' + elapsedMs.toFixed(1) + 'ms');
   });
 }
 
@@ -589,13 +611,12 @@ console.log('\n[cat-s5] NFR -- existing artefact_read audit logging fires identi
   routeMod.setJourneyStore({ getJourneyByFeatureSlug: function() { return null; }, getArtefactsForJourney: function() { return Promise.resolve([]); } });
   var req = { session: { accessToken: 'tok', userId: 42, login: 'u', tenantId: 't1' } };
   var res = { writeHead: function() {}, end: function() {} };
-  routeMod.handleArtefactRoute(req, res, 'some-feature', 'dor/some-dor', {}).then(function() {
-    test('exactly one artefact_read audit call, same shape as before this story', function() {
-      assert.strictEqual(logCalls.length, 1);
-      assert.strictEqual(logCalls[0].event, 'artefact_read');
-      assert.strictEqual(logCalls[0].data.featureSlug, 'some-feature');
-      assert.strictEqual(logCalls[0].data.artefactType, 'dor/some-dor');
-    });
+  await routeMod.handleArtefactRoute(req, res, 'some-feature', 'dor/some-dor', {});
+  test('exactly one artefact_read audit call, same shape as before this story', function() {
+    assert.strictEqual(logCalls.length, 1);
+    assert.strictEqual(logCalls[0].event, 'artefact_read');
+    assert.strictEqual(logCalls[0].data.featureSlug, 'some-feature');
+    assert.strictEqual(logCalls[0].data.artefactType, 'dor/some-dor');
   });
 }
 ```
