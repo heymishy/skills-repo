@@ -31868,12 +31868,12 @@
             {
               "slug": "cat-s6",
               "name": "The two existing non-trace consumers of artefact fetching keep working unchanged",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s6-review-1.md",
-              "updatedAt": "2026-09-06T02:21:09.414Z",
+              "updatedAt": "2026-09-07T09:46:40.361Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -31892,6 +31892,20 @@
               "dorContractArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s6-dor-contract.md",
               "standardsInjected": [
                 "web-ui"
+              ],
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "journey.js and export-data-source.js real-call-site verification (AC1, AC2)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s6-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Four prior regression suites + full-suite baseline confirmation (AC3, AC4)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s6-plan.md"
+                }
               ]
             }
           ]
