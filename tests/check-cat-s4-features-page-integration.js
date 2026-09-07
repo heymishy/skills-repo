@@ -223,5 +223,31 @@ console.log('\n[cat-s4] AC4 -- fully-registered, non-divergent feature renders b
   });
 }
 
+console.log('\n[cat-s4] NFR -- page render for phase4-scale (205 files) does not regress beyond the walk+classify budget');
+{
+  var traceMod = require('../src/web-ui/adapters/artefact-trace');
+  var start = process.hrtime.bigint();
+  var trace = traceMod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4');
+  var grouped = mod._buildGroupedFromTrace(trace, '2026-04-19-skills-platform-phase4');
+  mod.renderGroupedArtefactIndexHtml(grouped, '2026-04-19-skills-platform-phase4', {});
+  var elapsedMs = Number(process.hrtime.bigint() - start) / 1e6;
+  test('walk + classify + adapt + render completes well under 100ms for 205 files (measured: ' + elapsedMs.toFixed(1) + 'ms)', function() {
+    assert.ok(elapsedMs < 100, 'expected < 100ms, got ' + elapsedMs.toFixed(1) + 'ms');
+  });
+}
+
+console.log('\n[cat-s4] NFR -- Unregistered indicator never relies on color alone (MC-A11Y-02)');
+{
+  var fakeTrace = {
+    status: 'found', epics: [], stories: [],
+    artefacts: [{ path: 'x.md', type: 'feature-level', filename: 'x.md', storySlug: null, divergence: 'unregistered', inferredGroup: null }]
+  };
+  var grouped = mod._buildGroupedFromTrace(fakeTrace, 'a11y-check');
+  var html = mod.renderGroupedArtefactIndexHtml(grouped, 'a11y-check', {});
+  test('the Unregistered pill carries visible text, not a color-only indicator', function() {
+    assert.ok(/sw-pill[^>]*>[^<]*Unregistered/.test(html), 'expected visible "Unregistered" text inside the pill markup');
+  });
+}
+
 console.log('\n[cat-s4] Results:', passed, 'passed,', failed, 'failed');
 if (failed > 0) process.exit(1);
