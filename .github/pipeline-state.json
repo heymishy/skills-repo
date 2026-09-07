@@ -31563,13 +31563,13 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 23,
-                "passing": 23
+                "passing": 23,
+                "artefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s1-core-trace-builder-test-plan.md"
               },
               "acTotal": 5,
               "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s1-core-trace-builder-test-plan.md",
               "dorStatus": "signed-off",
               "dorApprover": "Hamish King - Platform Owner",
               "dorChannel": "medium-oversight-acknowledged",
@@ -31636,13 +31636,13 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 39,
-                "passing": 39
+                "passing": 39,
+                "artefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s2-unified-label-table-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s2-unified-label-table-test-plan.md",
               "dorStatus": "signed-off",
               "dorApprover": "Hamish King - Platform Owner",
               "dorChannel": "medium-oversight-acknowledged",
@@ -31703,13 +31703,13 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 12,
-                "passing": 12
+                "passing": 12,
+                "artefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s3-divergence-classification-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s3-divergence-classification-test-plan.md",
               "dorStatus": "signed-off",
               "dorApprover": "Hamish King - Platform Owner",
               "dorChannel": "medium-oversight-acknowledged",
@@ -31764,13 +31764,13 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 24,
-                "passing": 24
+                "passing": 24,
+                "artefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s4-features-page-integration-test-plan.md"
               },
               "acTotal": 5,
               "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s4-features-page-integration-test-plan.md",
               "dorStatus": "signed-off",
               "dorApprover": "Hamish King - Platform Owner",
               "dorChannel": "medium-oversight-acknowledged",
@@ -31834,13 +31834,13 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 25,
-                "passing": 25
+                "passing": 25,
+                "artefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s5-artefact-fetch-integration-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s5-artefact-fetch-integration-test-plan.md",
               "dorStatus": "signed-off",
               "dorApprover": "Hamish King - Platform Owner",
               "dorChannel": "medium-oversight-acknowledged",
@@ -31897,13 +31897,13 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
-                "passing": 10
+                "passing": 10,
+                "artefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s6-regression-verification-test-plan.md"
               },
               "acTotal": 4,
               "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s6-regression-verification-test-plan.md",
               "dorStatus": "signed-off",
               "dorApprover": "Hamish King - Platform Owner",
               "dorChannel": "medium-oversight-acknowledged",
