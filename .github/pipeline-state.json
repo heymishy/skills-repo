@@ -32374,6 +32374,22 @@
           "assessedAt": "2026-09-07T18:48:47.610Z"
         }
       ]
+    },
+    {
+      "slug": "2026-09-08-session-origin-badge",
+      "name": "Session-Origin Badge",
+      "track": "standard",
+      "stage": "discovery",
+      "discoveryStatus": "clarified",
+      "health": "green",
+      "updatedAt": "2026-09-07T23:28:16.819Z",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": [],
+      "stories": [],
+      "discoveryArtefact": "artefacts/2026-09-08-session-origin-badge/discovery.md"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
