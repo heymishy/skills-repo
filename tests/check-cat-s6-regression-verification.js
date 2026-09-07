@@ -13,7 +13,6 @@ var cp = require('child_process');
 var JOURNEY_PATH = path.resolve(__dirname, '../src/web-ui/routes/journey.js');
 var JOURNEY_STORE_PATH = path.resolve(__dirname, '../src/web-ui/modules/journey-store.js');
 var EXPORT_DATA_SOURCE_PATH = path.resolve(__dirname, '../src/web-ui/adapters/export-data-source.js');
-var FETCHER_PATH = path.resolve(__dirname, '../src/web-ui/adapters/artefact-fetcher.js');
 var REPO_ROOT = path.resolve(__dirname, '..');
 
 function freshRequire(p) {
