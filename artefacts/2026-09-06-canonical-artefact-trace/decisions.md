@@ -102,6 +102,15 @@
 **Revisit trigger:** If real GitHub OAuth credentials become available in a future session's sandbox, or if this repo's `NODE_ENV=test` fixture-fetcher override is ever made conditional/bypassable for a specific slug, re-attempt the literal manual browser walkthrough for `cat-s5` (and any future story touching `artefact-fetcher.js`) as a genuine post-merge smoke test.
 ---
 
+---
+**2026-09-07 | RISK-ACCEPT | /verify-completion (cat-s6)**
+**Decision:** `cat-s6`'s own AC verification script's Scenarios 1 and 2 (a real journey gate-confirm walkthrough, a real SaaS export trigger) require the exact same real, GitHub-credentialed `fetchArtefact` path as `cat-s5`'s own manual walkthrough — the identical `NODE_ENV=test` fixture-fetcher override and absent-credentials constraint logged in the entry directly above applies here without any new investigation needed, since this story deliberately touches the same call sites `cat-s5` changed. Scenarios 3 and 4, by contrast, ARE fully executable and were independently confirmed multiple times this session by direct command execution (`node tests/check-bsgm-s1-*.js` etc., `node scripts/run-all-tests.js`) — those two scenarios' RISK-ACCEPT does not apply; only Scenarios 1 and 2 are accepted here.
+**Alternatives considered:** Same as the `cat-s5` entry above — re-litigated briefly and reaches the identical conclusion, since the underlying constraint (sandbox has no real GitHub OAuth credentials, and `NODE_ENV=test` substitutes unrelated fixture content) is unchanged between the two stories.
+**Rationale:** `cat-s6`'s own AC1/AC2 tests (in `tests/check-cat-s6-regression-verification.js`) call the REAL `journey.js`/`export-data-source.js` functions directly (not a route/browser layer), reusing already-proven mock patterns from `das-s1`'s and `mtrr-s1`'s own test suites — independently traced by the mandatory final review to confirm both real call sites provably never reach `cat-s5`'s new trace-based code (both omit the `repoRoot` argument), which is exactly what AC1/AC2 need to prove. This is a stronger verification than the manual scenarios would have provided in this sandbox anyway, since a browser session here would hit the same unrelated fixture stub `cat-s5`'s own RISK-ACCEPT already identified.
+**Made by:** Hamish King — Platform Owner (agent-identified during /verify-completion, operator informed)
+**Revisit trigger:** Same trigger as the `cat-s5` entry above — if real GitHub credentials become available, or the fixture-fetcher override becomes bypassable, re-attempt Scenarios 1 and 2 as a genuine post-merge smoke test for both stories together (they exercise the same underlying constraint).
+---
+
 ## Architecture Decision Records
 
 This feature's structural decisions were written directly as repo-level ADRs (not feature-scoped ones) since they constrain all future features, not just this one:
