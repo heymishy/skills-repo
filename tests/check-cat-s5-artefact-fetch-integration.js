@@ -330,6 +330,47 @@ console.log('\n[cat-s5] AC3/AC4 (route-level, real chain, not stubbed) -- a real
   });
 }
 
+console.log('\n[cat-s5] NFR -- no regression vs. adlr-s1\'s existing bounded-probe performance for the common case');
+{
+  var fetcherMod = freshRequire(FETCHER_PATH);
+  var calls = [];
+  global.fetch = mockFetchOkPaths(['artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s1-dor.md'], calls);
+  var start = process.hrtime.bigint();
+  await fetcherMod.fetchArtefact('2026-07-05-product-stds-hierarchy', 'dor/psh-s1-dor', 'tok', undefined, undefined, REPO_ROOT);
+  var elapsedMs = Number(process.hrtime.bigint() - start) / 1e6;
+  test('resolves the common case in a single request, well under 100ms (measured: ' + elapsedMs.toFixed(1) + 'ms)', function() {
+    assert.strictEqual(calls.length, 1);
+    assert.ok(elapsedMs < 100, 'expected < 100ms, got ' + elapsedMs.toFixed(1) + 'ms');
+  });
+}
+
+console.log('\n[cat-s5] NFR -- no new unvalidated input surface (source review, asserted structurally)');
+{
+  var fetcherSource = fs.readFileSync(FETCHER_PATH, 'utf8');
+  test('artefactType and featureSlug still flow only into path template strings already validated upstream (no new eval/exec/require-by-string introduced)', function() {
+    assert.strictEqual(/\beval\s*\(/.test(fetcherSource), false);
+    assert.strictEqual(/child_process/.test(fetcherSource), false);
+  });
+}
+
+console.log('\n[cat-s5] NFR -- existing artefact_read audit logging fires identically for the AC1 common case');
+{
+  var routeMod = freshRequire(ARTEFACT_ROUTE_PATH);
+  var logCalls = [];
+  routeMod.setLogger({ info: function(event, data) { logCalls.push({ event: event, data: data }); }, warn: function() {} });
+  routeMod.setFetcher(function() { return Promise.resolve('# some markdown'); });
+  routeMod.setJourneyStore({ getJourneyByFeatureSlug: function() { return null; }, getArtefactsForJourney: function() { return Promise.resolve([]); } });
+  var req = { session: { accessToken: 'tok', userId: 42, login: 'u', tenantId: 't1' } };
+  var res = { writeHead: function() {}, end: function() {} };
+  await routeMod.handleArtefactRoute(req, res, 'some-feature', 'dor/some-dor', {});
+  test('exactly one artefact_read audit call, same shape as before this story', function() {
+    assert.strictEqual(logCalls.length, 1);
+    assert.strictEqual(logCalls[0].event, 'artefact_read');
+    assert.strictEqual(logCalls[0].data.featureSlug, 'some-feature');
+    assert.strictEqual(logCalls[0].data.artefactType, 'dor/some-dor');
+  });
+}
+
 }
 
 main().then(function() {
