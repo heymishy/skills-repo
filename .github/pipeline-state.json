@@ -31814,7 +31814,7 @@
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s5-review-1.md",
-              "updatedAt": "2026-09-07T09:23:00.607Z",
+              "updatedAt": "2026-09-07T09:29:35.483Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 25,
@@ -31860,8 +31860,9 @@
                   "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s5-plan.md"
                 }
               ],
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/846"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/846",
+              "dodStatus": "not-started"
             },
             {
               "slug": "cat-s6",
