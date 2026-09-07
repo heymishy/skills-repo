@@ -327,7 +327,9 @@ function _resolveViaTraceForBareName(repoRoot, featureSlug, artefactType) {
 }
 ```
 
-In `fetchArtefact`, insert the new call between the existing direct-path loop and the existing bare-name-probe `if` block:
+**Deviation applied during implementation (verified safe):** the trace-based call was placed BEFORE the existing direct-path loop, not between it and the static probe as originally written here — otherwise a bare name pays for 2 guaranteed-404 direct attempts before the trace check ever runs, producing 3 fetch calls instead of 1. Verified safe because `_resolveViaTraceForBareName`'s own guard clauses (`!repoRoot`, slash-containing `artefactType`) make it a complete no-op for every case this reordering could otherwise affect (AC1's own slash-containing case, and every caller that omits `repoRoot`); for a bare, root-level match with `repoRoot` supplied, the trace's own reconstructed path is byte-identical to what the old direct-path loop would have tried at the same prefix, so only call count/order changes, never final content.
+
+In `fetchArtefact`, insert the new call BEFORE the existing direct-path loop (not between it and the static probe — see the deviation note above):
 
 ```js
   for (const prefix of prefixes) {
@@ -385,6 +387,20 @@ Expected output: only the known pre-existing baseline failure.
 git add src/web-ui/adapters/artefact-fetcher.js tests/check-cat-s5-artefact-fetch-integration.js
 git commit -m "feat(cat-s5): resolve bare-name artefact links via the canonical trace before the static subdirectory probe"
 ```
+
+## Task 2 review finding — Critical, fix required before Task 3 (found at two-stage review, not caught by any of the 8 passing tests)
+
+**This is a genuine gap in this plan itself, not an implementer error.** Critical Finding #1 (top of this plan) correctly identified that `artefact.js`'s `handleArtefactRoute` needed to compute `repoRoot` via `getRepoRoot(req)` and pass it into `fetchArtefact` — but no task in this plan ever actually wrote that wiring step. `src/web-ui/routes/artefact.js:61` still calls `_fetchArtefact(slug, artefactType, token)` with only 3 arguments, so `repoRoot` is always `undefined` on every real request, and `_resolveViaTraceForBareName`'s very first guard clause (`!repoRoot`) means the entire trace-based resolution this task just built **can never fire in production**. All 8 of Task 2's tests pass only because they call `fetchArtefact`/`_resolveViaTraceForBareName` directly with a manually-supplied `repoRoot` — none of them exercise the real `handleArtefactRoute → fetchArtefact` call chain the way an actual HTTP request would. The plan's own manual walkthrough note below (`/artefact/2026-04-19-skills-platform-phase4/spike-a-output`) would have caught this at `/verify-completion` — the review caught it earlier instead.
+
+**Fix (apply as a fixup on top of `88876ba3`, same task):**
+
+1. In `src/web-ui/routes/artefact.js`, add the import: `const { getRepoRoot } = require('../adapters/repo-root');` (the exact module `features.js` already uses for the same purpose).
+2. In `handleArtefactRoute`, compute `repoRoot` right after the existing `const token = req.session.accessToken;` line: `const repoRoot = getRepoRoot(req);`
+3. Change the fetch call from `const markdown = await _fetchArtefact(slug, artefactType, token);` to `const markdown = await _fetchArtefact(slug, artefactType, token, undefined, undefined, repoRoot);` — passing `undefined` for the unused `repoOverride`/`timeoutMs` positions, matching `fetchArtefact`'s real parameter order.
+4. Add a genuine route-level integration test inside `main()` (mirroring `cat-s4`'s own AC5 route-level fix from earlier in this epic — a direct-call test proved insufficient there too, for the same reason): call `handleArtefactRoute` itself, with a `repoOverride`-free session and a real `repoRoot` pointing at this repo, requesting the real bare-name `spike-a-output` for the real `2026-04-19-skills-platform-phase4` feature, and assert the response body actually contains the real file's content — not just that `fetchArtefact` in isolation can resolve it.
+5. Confirm this new test FAILS before the fix (proving it would have caught the gap) and PASSES after.
+6. Re-run `tests/check-cat-s5-artefact-fetch-integration.js` (all 8 + the new test), `tests/check-adlr-s1-artefact-link-resolution.js` (15/15 unchanged — none of its fixtures call the real route with a real `repoRoot` either, so this wiring fix cannot affect them), and `node scripts/run-all-tests.js` (only the known pre-existing failure).
+7. Commit as a fixup: `git commit -m "fix(cat-s5): wire getRepoRoot(req) into handleArtefactRoute -- Task 2's trace-based resolution could never fire without this"`
 
 ---
 
