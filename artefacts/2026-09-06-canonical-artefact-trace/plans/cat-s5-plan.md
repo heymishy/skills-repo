@@ -688,6 +688,20 @@ git commit -m "test(cat-s5): add NFR performance/security/audit checks, completi
 
 ---
 
+## Mandatory final review (whole-branch diff against all ACs) ✅ Approved
+
+The dispatched final-review subagent hit a session rate limit partway through (confirmed unrelated to the code — it had already independently re-confirmed the full suite: 627 files, 1 known pre-existing failure). The orchestrating session completed the remaining checks directly rather than risk a second subagent dispatch hitting the same session-wide limit:
+
+- **AC1 end-to-end, traced through the real code**: `_resolveViaTraceForBareName`'s slash-check guard (`artefactType.indexOf('/') !== -1`) returns `null` immediately for any slash-containing type, so the real `handleArtefactRoute → getRepoRoot(req) → fetchArtefact` chain for a correctly-generated link (e.g. `dor/psh-s1-dor`) falls straight through to the pre-existing, unmodified direct-path loop — confirmed zero behavioural difference even with a real `repoRoot` now reaching the function (post Task 2's own fixup), not just in the isolated unit tests.
+- **Cross-task ordering (Task 2 + Task 3), traced top-to-bottom** in the final `fetchArtefact`: trace-match (Task 2) → direct-path loop (pre-existing) → static probe (pre-existing) → orphaned-registration check (Task 3), with every earlier step returning immediately on success. A real, resolvable file can never be misclassified as orphaned-registration — guaranteed by control flow, not merely by test coverage.
+- **Named regression surfaces**: `git diff master...feature/cat-s5 --stat` for `journey.js` and `export-data-source.js` is empty for both — completely untouched across all 5 commits on this branch. Both call sites confirmed still at 4 positional arguments each.
+- **Tests, independently re-run one final time**: targeted file 25/25, `adlr-s1` regression suite 15/15 (unchanged from the story's very first commit through the last — the story's own core safety contract), full suite 627/1-pre-existing-unrelated.
+- **The 2 Minor findings from Task 3's review** (trace re-derived twice on the not-found path; orphaned-story matching doesn't replicate `artefact-trace.js`'s own longest-prefix-first disambiguation) remain genuinely non-blocking when viewed across the whole branch — neither compounds into a real problem at the integration level.
+
+**cat-s5 is feature-complete, ready for /verify-completion.**
+
+---
+
 ## Post-implementation note for /verify-completion
 
 Per this epic's own established practice (`cat-s4`'s manual walkthrough caught a Critical, 86%-of-documents data-loss bug that 24 passing fixture-based tests missed entirely), do not treat this story's automated tests alone as sufficient completion evidence. Manually start the local server (`NODE_ENV=test`), seed a session, and:
