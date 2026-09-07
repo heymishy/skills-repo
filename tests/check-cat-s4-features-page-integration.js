@@ -110,5 +110,47 @@ console.log('\n[cat-s4] AC2 -- unregistered artefact with an inferredGroup rende
   });
 }
 
+console.log('\n[cat-s4] AC2 -- unregistered non-feature-level artefact with no story match and no inferredGroup lands in the shared "Unregistered" catch-all bucket');
+{
+  var fakeTrace = {
+    status: 'found', epics: [], stories: [],
+    artefacts: [
+      { path: 'dor/orphan.md', type: 'dor', filename: 'orphan.md', storySlug: null, divergence: 'unregistered', inferredGroup: null }
+    ]
+  };
+  var grouped = mod._buildGroupedFromTrace(fakeTrace, 'some-slug');
+  var catchAllBucket = grouped.flatStories.find(function(s) { return s.slug === 'Unregistered'; });
+  test('the orphaned dor/ artefact (not feature-level, no story match, no inferredGroup) lands in a flatStories bucket keyed "Unregistered"', function() {
+    assert.ok(catchAllBucket, 'expected a flatStories bucket with slug "Unregistered"');
+    assert.strictEqual(catchAllBucket.artefacts.length, 1);
+    assert.ok(catchAllBucket.artefacts[0].path.indexOf('dor/orphan.md') !== -1);
+  });
+  var html = mod.renderGroupedArtefactIndexHtml(grouped, 'some-slug', {});
+  test('rendered output still shows a visible "Unregistered" pill for the catch-all-bucket artefact', function() {
+    assert.ok(html.indexOf('Unregistered') !== -1, 'expected "Unregistered" text in rendered output');
+    assert.ok(html.indexOf('sw-pill') !== -1, 'expected the pill CSS class to be used');
+  });
+}
+
+console.log('\n[cat-s4] Regression -- a "registered" artefact never renders an Unregistered pill');
+{
+  var fakeTraceRegistered = {
+    status: 'found',
+    epics: [],
+    stories: [{ slug: 'clean-s1', name: 'Clean Story', epicSlug: null, divergence: 'registered' }],
+    artefacts: [
+      { path: 'dor/clean-s1-dor-contract.md', type: 'dor', filename: 'clean-s1-dor-contract.md', storySlug: 'clean-s1', divergence: 'registered', inferredGroup: null }
+    ]
+  };
+  var groupedRegistered = mod._buildGroupedFromTrace(fakeTraceRegistered, 'clean-feature');
+  var htmlRegistered = mod.renderGroupedArtefactIndexHtml(groupedRegistered, 'clean-feature', {});
+  test('a divergence:"registered" artefact produces no "Unregistered" pill text anywhere in the rendered output', function() {
+    assert.strictEqual(htmlRegistered.indexOf('Unregistered'), -1, 'did not expect "Unregistered" text for a fully-registered fixture, got: ' + htmlRegistered);
+  });
+  test('a divergence:"registered" artefact produces no sw-pill--neutral markup anywhere in the rendered output', function() {
+    assert.strictEqual(htmlRegistered.indexOf('sw-pill--neutral'), -1, 'did not expect sw-pill--neutral class for a fully-registered fixture, got: ' + htmlRegistered);
+  });
+}
+
 console.log('\n[cat-s4] Results:', passed, 'passed,', failed, 'failed');
 if (failed > 0) process.exit(1);
