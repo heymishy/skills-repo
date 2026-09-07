@@ -31743,19 +31743,19 @@
             {
               "slug": "cat-s4",
               "name": "The feature artefact-index page renders every document real status, using the canonical trace",
-              "stage": "implementation-plan",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s4-review-1.md",
-              "updatedAt": "2026-09-06T21:17:49.638Z",
+              "updatedAt": "2026-09-07T04:15:22.394Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 13,
-                "passing": 0
+                "totalTests": 24,
+                "passing": 24
               },
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s4-features-page-integration-test-plan.md",
@@ -31772,34 +31772,37 @@
                 {
                   "id": "task-1",
                   "name": "The trace-to-grouped adapter (AC1 foundation)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s4-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Unregistered pill rendering (AC2)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s4-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "Orphaned-registration gap state (AC3)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s4-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "Wire into handleGetFeatureArtefacts, routing gate change (AC4, AC5)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s4-plan.md"
                 },
                 {
                   "id": "task-5",
                   "name": "NFR tests and final regression pass",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s4-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/845"
             },
             {
               "slug": "cat-s5",
