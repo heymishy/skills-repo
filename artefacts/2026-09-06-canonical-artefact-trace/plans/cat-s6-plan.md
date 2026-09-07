@@ -32,9 +32,11 @@ Create:
 
 ---
 
-## Task 1: journey.js and export-data-source.js real-call-site verification (AC1, AC2)
+## Task 1: journey.js and export-data-source.js real-call-site verification (AC1, AC2) ✅ DONE (814eed64, fixup cb4ba195)
 
-**Two-stage review:** not yet run.
+**Result:** the test as given in this plan did NOT pass cleanly on the first run — 2 real mock-shape bugs were found IN THE PLAN'S OWN given test code (not in production), both correctly diagnosed as test-authoring gaps rather than `cat-s5` regressions: (1) the AC1 fixture omitted writing the artefact file to local disk before deleting it (the reference pattern, `das-s1`'s own `setupStageSession`, writes it first); (2) the AC2 fixture's pipeline-state.json mock only implemented `.json()`, but `realFetchPipelineState`'s underlying `_fetchWithRetry` helper actually reads via `.text()` — confirmed by direct code read and matched against `mtrr-s1`'s own `createMockGithubFetch` reference shape for the identical endpoint. Both fixes independently re-verified by review: neither failure could have masked a genuine `cat-s5` regression (fix #1's failure occurred before the code under test even ran; fix #2's target file was never touched by `cat-s5` and predates it entirely). Re-verified independently: 6/6 targeted tests, full suite 628/1-pre-existing-unrelated. Zero production files touched throughout. 1 Minor finding (unused `FETCHER_PATH` import) fixed in `cb4ba195`.
+
+**Two-stage review:** ✅ Approved.
 
 **Recommended model class:** balanced — low implementation complexity (test-only, story rating 1), but AC2's cross-tenant fixture correctness matters (mirrors `mtrr-s1`'s own security-relevant precedent).
 
