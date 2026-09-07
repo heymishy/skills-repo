@@ -122,6 +122,68 @@ console.log('\n[cat-s5] AC2 (fall-through) -- no repoRoot supplied behaves exact
   }
 }
 
+console.log('\n[cat-s5] Task 2 review-fixup -- handleArtefactRoute actually wires repoRoot into fetchArtefact end-to-end (real route, real content)');
+{
+  var routeMod = freshRequire(ARTEFACT_ROUTE_PATH);
+  var fetcherModForWiring = require(FETCHER_PATH);
+  var repoRootAdapter = require(path.resolve(__dirname, '../src/web-ui/adapters/repo-root'));
+  repoRootAdapter.setRepoRoot(REPO_ROOT);
+
+  // Same real fixture Task 2 already uses -- spikes/ is excluded from the
+  // old static probe, so this only resolves at all if repoRoot genuinely
+  // reaches fetchArtefact through handleArtefactRoute's real call chain.
+  var realSpikeFile = path.join(REPO_ROOT, 'artefacts', 'archived', '2026-04-19-skills-platform-phase4', 'spikes', 'spike-a-output.md');
+  var realSpikeContent = fs.readFileSync(realSpikeFile, 'utf8');
+
+  var calls = [];
+  // Mock the GitHub Contents API response with the REAL file's own content
+  // (not a synthetic "content for <url>" placeholder) -- the assertion below
+  // must prove real content actually rendered through the real route, not
+  // just that some mocked text made it through.
+  global.fetch = function(url) {
+    calls.push(url);
+    if (url.indexOf('artefacts/archived/2026-04-19-skills-platform-phase4/spikes/spike-a-output.md') !== -1) {
+      var body = { content: Buffer.from(realSpikeContent, 'utf8').toString('base64') };
+      return Promise.resolve({ status: 200, ok: true, json: function() { return Promise.resolve(body); } });
+    }
+    return Promise.resolve({ status: 404, ok: false, json: function() { return Promise.resolve({}); } });
+  };
+
+  // Deliberately NOT stubbing the fetcher -- routeMod's default _fetchArtefact
+  // is the real fetchArtefact (from artefact-fetcher.js), so this exercises
+  // the real handleArtefactRoute -> fetchArtefact call chain exactly as a
+  // genuine HTTP request would, not a mocked-fetcher unit test like Task 2's
+  // own 4 tests above.
+  routeMod.setFetcher(fetcherModForWiring.fetchArtefact);
+  routeMod.setJourneyStore({
+    getJourneyByFeatureSlug: function() { return null; },
+    getArtefactsForJourney: function() { return Promise.resolve([]); }
+  });
+
+  var req = { session: { accessToken: 'tok', userId: 1, login: 'u', tenantId: 't1' }, query: {}, headers: {} };
+  var statusCode = null;
+  var body = '';
+  var res = {
+    writeHead: function(code) { statusCode = code; },
+    end: function(b) { body = b || ''; }
+  };
+  var navPool = { query: function() { return Promise.resolve({ rows: [] }); } };
+
+  await routeMod.handleArtefactRoute(req, res, '2026-04-19-skills-platform-phase4', 'spike-a-output', navPool);
+
+  repoRootAdapter.setRepoRoot(null);
+
+  test('route-level request for the bare spikes/ link resolves (200, not a 404) -- proves repoRoot actually reached fetchArtefact', function() {
+    assert.strictEqual(statusCode, 200);
+  });
+  test('resolved in a single confident trace-based attempt through the real route, not the old excluded-subdirectory probe', function() {
+    assert.strictEqual(calls.length, 1);
+  });
+  test('rendered response body contains real content from the real spikes/ file, not mocked/synthetic text', function() {
+    assert.notStrictEqual(body.indexOf('Governance Logic Extractability'), -1, 'expected body to contain real file content, got length ' + body.length);
+  });
+}
+
 }
 
 main().then(function() {
