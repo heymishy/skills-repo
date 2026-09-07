@@ -31513,7 +31513,7 @@
           "baseline": "5 in one session (bsgm-s1, sri-s1, adlr-s1, fadm-s1, phase4)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "cat-s2 ships the canonical label table and redirects 3 of 5 old tables internals to it; no route/rendering consumer reads resolveLabel/resolveColumnKey directly yet (cat-s4/cat-s5 do that wiring) -- bug-recurrence measurement is not yet possible.",
+          "evidence": "cat-s5 unifies /artefact/:slug/:type's resolution logic onto the same canonical trace /features/:slug (cat-s4) already uses -- the code-level fix this metric exists to validate is now shipped (merged 2026-09-07), but the metric itself requires observing whether a future bug-fix session needs to touch more than one independent implementation, which cannot be assessed at merge time.",
           "contributingStories": [
             "cat-s1",
             "cat-s2",
@@ -31809,12 +31809,12 @@
             {
               "slug": "cat-s5",
               "name": "Opening any single document resolves through the canonical trace, not independent logic",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s5-review-1.md",
-              "updatedAt": "2026-09-07T09:29:35.483Z",
+              "updatedAt": "2026-09-07T09:31:16.964Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 25,
@@ -31862,7 +31862,8 @@
               ],
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/846",
-              "dodStatus": "not-started"
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "cat-s6",
@@ -32302,6 +32303,24 @@
           "evidence": "A genuine route-level test now exercises handleGetFeatureArtefacts's real not-yet-synced branch (added after mandatory final review found the original test only duplicated cat-s1/cat-s3 coverage)",
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-09-07T04:27:28.706Z"
+        },
+        {
+          "id": "ADR-028-cat-s5",
+          "category": "adr",
+          "label": "One canonical builder per derived structure (cat-s5 artefact-fetch integration)",
+          "status": "met",
+          "evidence": "/artefact/:slug/:type now consumes buildArtefactTrace/classifyDivergence instead of an independent static-subdirectory-probe implementation, verified via real (non-stubbed) end-to-end tests through handleArtefactRoute",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-07T09:31:16.966Z"
+        },
+        {
+          "id": "NFR-sec-no-new-input-surface-cat-s5",
+          "category": "nfr",
+          "label": "No new unvalidated input surface (cat-s5)",
+          "status": "met",
+          "evidence": "Source review confirms artefactType/featureSlug flow only into already-validated path template strings; no new eval/child_process introduced",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-07T09:31:16.966Z"
         }
       ]
     }
