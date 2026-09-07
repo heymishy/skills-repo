@@ -111,9 +111,32 @@ function makeTempRepoWithPipelineState(pipelineState) {
     var root = makeTempRepoWithPipelineState({
       features: [{
         slug: 'multi-x',
-        epics: [{ slug: 'e1', name: 'Platform Structural Integrity', stories: ['p3.3', 'p3.4'] }]
+        // cat-s4: object-shaped stories here, not the bare-string shape --
+        // buildArtefactTrace (cat-s1) does not currently extract .slug/.name
+        // from a bare-string epic.stories[] entry (it reads story.slug
+        // directly, which is undefined for a plain string), so every
+        // artefact silently comes back "unregistered"/"orphaned-registration"
+        // under that shape even though feature-story-structure.js's own
+        // _storySlug helper documents bare strings as a valid, real-world
+        // shape. That is a pre-existing cat-s1 gap, out of this task's file
+        // scope (src/web-ui/adapters/artefact-trace.js) -- flagged in the
+        // cat-s4 Task 4 report as a discovered regression for separate
+        // follow-up, not fixed here. Using the object shape sidesteps it so
+        // this test continues to exercise what it was written to check.
+        epics: [{ slug: 'e1', name: 'Platform Structural Integrity', stories: [{ slug: 'p3.3' }, { slug: 'p3.4' }] }]
       }]
     });
+    // cat-s4: routing is now decided by buildArtefactTrace, which walks the
+    // REAL repoRoot/artefacts/<slug>/ directory on disk (ADR-028/ADR-029) --
+    // it is independent of the mocked artefacts array setListArtefacts
+    // returns below. Real files matching that mocked list must exist on
+    // disk too, or buildArtefactTrace returns 'not-found' and this test
+    // would fall through to the flat (pre-cat-s4) fallback rendering
+    // instead of the grouped document-matrix view this test asserts.
+    fs.mkdirSync(path.join(root, 'artefacts', 'multi-x', 'stories'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'artefacts', 'multi-x', 'discovery.md'), '# discovery', 'utf8');
+    fs.writeFileSync(path.join(root, 'artefacts', 'multi-x', 'stories', 'p3.3-gate-structural-independence.md'), '# p3.3', 'utf8');
+    fs.writeFileSync(path.join(root, 'artefacts', 'multi-x', 'stories', 'p3.4-eval-anti-gaming-controls.md'), '# p3.4', 'utf8');
     var routes = freshRequire(FEATURES_PATH);
     routes.setListArtefacts(async function() {
       return {

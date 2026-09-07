@@ -140,7 +140,16 @@ await checkAsync('AC1: Resume conversation href points at /journey/:journeyId/st
   assert.strictEqual(result.statusCode, 200, 'expected 200, got: ' + result.statusCode);
 
   var expectedHref = '/journey/' + encodeURIComponent(fixture.journey.journeyId) + '/stage/' + encodeURIComponent('discovery');
-  var linkMatch = result.body.match(/<a class="artefact-list__resume-link" href="([^"]+)">Resume conversation<\/a>/);
+  // cat-s4: routing now sends any feature whose buildArtefactTrace finds
+  // real documents through the grouped/feature-level-table renderer
+  // (ADR-028) instead of the old flat renderArtefactIndexHtml -- this test's
+  // fixture (one real, unregistered feature-level artefact, no pipeline-
+  // state.json stories) is exactly that case now. The resume link's href
+  // and text are unaffected; only the wrapping <a>'s CSS class differs
+  // between the two renderers (artefact-list__resume-link in the old flat
+  // table, doc-table__resume-link in _renderFeatureLevelTable) -- accept
+  // either, since this AC is about the link's target, not its class.
+  var linkMatch = result.body.match(/<a class="(?:artefact-list|doc-table)__resume-link" href="([^"]+)">Resume conversation<\/a>/);
   assert.ok(linkMatch, 'expected a Resume conversation <a> tag in the rendered page');
   assert.strictEqual(linkMatch[1], expectedHref, 'expected the resume link href to exactly match ' + expectedHref + ', got: ' + linkMatch[1]);
 
@@ -169,7 +178,9 @@ await checkAsync('AC3: following the new href reaches dsh-s3\'s real handleGetJo
   var listResult = listRes._get();
   assert.strictEqual(listResult.statusCode, 200, 'expected the artefact-index page to render, got: ' + listResult.statusCode);
 
-  var linkMatch = listResult.body.match(/<a class="artefact-list__resume-link" href="([^"]+)">Resume conversation<\/a>/);
+  // cat-s4: see the matching comment in the AC1 test above -- same routing
+  // change, same either-class acceptance rationale.
+  var linkMatch = listResult.body.match(/<a class="(?:artefact-list|doc-table)__resume-link" href="([^"]+)">Resume conversation<\/a>/);
   assert.ok(linkMatch, 'expected a Resume conversation <a> tag in the rendered page');
   var hrefMatch = linkMatch[1].match(/^\/journey\/([^/]+)\/stage\/([^/]+)$/);
   assert.ok(hrefMatch, 'expected the href to match /journey/:journeyId/stage/:stageName, got: ' + linkMatch[1]);

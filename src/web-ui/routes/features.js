@@ -21,7 +21,9 @@ const {
 
 const { getRepoRoot } = require('../adapters/repo-root');
 
-const { getFeatureStoryStructure, groupArtefactsByStory } = require('../adapters/feature-story-structure');
+const { buildArtefactTrace } = require('../adapters/artefact-trace');
+const { resolveLabel } = require('../utils/artefact-labels');
+const { labelFromPath } = require('../utils/plain-language-labels');
 
 const { escHtml } = require('../utils/html-shell');
 // pncg-s1: renderShell's direct import was removed here -- handleGetFeatureArtefacts
@@ -350,6 +352,123 @@ function _matrixColumnAbbrev(key) {
 }
 
 /**
+ * cat-s4: reconstructs a trace artefact into the shape the existing render
+ * functions (_renderFeatureLevelTable, renderArtefactMatrix, _extractEpicDocs)
+ * already expect -- these functions are NOT modified, only their data source is.
+ * Two non-obvious fixes here (see cat-s4-plan.md's own "Critical findings"
+ * section for the full reasoning):
+ *   1. path is reconstructed to `artefacts/<featureSlug>/<relPath>` because
+ *      _relativeArtefactPath searches for the literal featureSlug+'/' substring
+ *      -- a bare feature-relative path from buildArtefactTrace has no such
+ *      substring and would silently break every view link.
+ *   2. type is resolved via resolveLabel (cat-s2's canonical table) for real
+ *      subdirectory artefacts, because buildArtefactTrace's raw subdirectory
+ *      key ('test-plans') is not the same string the OLD pipeline's
+ *      already-a-label type field held ('Test Plan') -- getLabel(a.type)
+ *      downstream would produce the wrong fallback label if fed the raw key
+ *      directly. For a feature-root file, buildArtefactTrace's walkDir sets
+ *      type to the literal sentinel 'feature-level' (not a real subdirectory
+ *      name), which has no entry in resolveLabel's table and would fall
+ *      through to a generic, identical "Feature Level" label for every root
+ *      file (discovery.md, decisions.md, etc. all indistinguishable) -- so
+ *      that case is resolved by filename instead, via labelFromPath, which
+ *      already correctly disambiguates root-level bare-type filenames
+ *      (discovery -> 'Discovery' via its own LABEL_MAP) and subdirectory-
+ *      shaped bare filenames (decisions -> 'Decisions' via the SUBDIR_LABELS
+ *      fallback it delegates to). This branch closes a real mislabeling bug
+ *      found in code review of the initial commit: every feature-level
+ *      artefact was resolving to the same meaningless "Feature Level" label
+ *      before this fix.
+ * @param {object} traceArtefact one entry from buildArtefactTrace's artefacts[]
+ * @param {string} featureSlug
+ * @returns {object} { path, type, divergence, inferredGroup, storySlug }
+ */
+function _adaptTraceArtefact(traceArtefact, featureSlug) {
+  return {
+    path: `artefacts/${featureSlug}/${traceArtefact.path}`,
+    type: traceArtefact.type === 'feature-level'
+      ? labelFromPath(traceArtefact.filename)
+      : resolveLabel(traceArtefact.type, traceArtefact.filename),
+    storySlug: traceArtefact.storySlug || null,
+    divergence: traceArtefact.divergence,
+    inferredGroup: traceArtefact.inferredGroup || null
+  };
+}
+
+// cat-s4: single shared label for the "not registered in pipeline-state.json"
+// signal -- used both as the synthetic catch-all bucket's slug and as the
+// visible pill text at both pill-rendering call sites below, so a future
+// rename only touches this one line.
+const UNREGISTERED_LABEL = 'Unregistered';
+
+/**
+ * cat-s4: converts buildArtefactTrace's classified {epics, stories, artefacts}
+ * into the {featureLevel, epics, flatStories} shape renderGroupedArtefactIndexHtml
+ * and renderArtefactMatrix already consume (feature-story-structure.js's own
+ * groupArtefactsByStory produced this same shape; this function replaces it
+ * as the ONE canonical source of that shape, per ADR-028).
+ * @param {object} trace  a 'found'-status result from buildArtefactTrace
+ * @param {string} featureSlug
+ * @returns {{featureLevel: Array, epics: Array, flatStories: Array<{slug: string, artefacts: Array, divergence?: string}>}}
+ *   flatStories holds three different kinds of bucket, all rendered by the
+ *   same matrix row logic: (1) real flat (non-epic-nested) stories, keyed by
+ *   their own story slug; (2) synthetic inferred-group buckets (cat-s4 AC2),
+ *   keyed by the shared filename-prefix cat-s3's inferGroups derived, for
+ *   unregistered artefacts that still cluster together; and (3) at most one
+ *   shared catch-all bucket keyed by the literal `UNREGISTERED_LABEL` slug,
+ *   holding every remaining unregistered, non-feature-level artefact that
+ *   matched no story and no inferred group -- present only when at least one
+ *   such artefact exists.
+ */
+function _buildGroupedFromTrace(trace, featureSlug) {
+  const featureLevel = [];
+  const byStorySlug = {};
+  trace.stories.forEach((story) => { byStorySlug[story.slug] = []; });
+
+  const inferredBuckets = {};
+  const unregisteredCatchAll = { slug: UNREGISTERED_LABEL, artefacts: [] };
+
+  trace.artefacts.forEach((artefact) => {
+    const adapted = _adaptTraceArtefact(artefact, featureSlug);
+    if (adapted.storySlug && byStorySlug[adapted.storySlug]) {
+      byStorySlug[adapted.storySlug].push(adapted);
+    } else if (artefact.type === 'feature-level' && !artefact.inferredGroup) {
+      featureLevel.push(adapted);
+    } else if (artefact.inferredGroup) {
+      // cat-s4 AC2: a document classified 'unregistered' but cat-s3 could
+      // still infer a group for it (e.g. by filename prefix) -- give it its
+      // own synthetic story bucket keyed by that inferred group instead of
+      // dumping it into featureLevel or a shared catch-all, so related
+      // unregistered documents still render together.
+      if (!inferredBuckets[artefact.inferredGroup]) inferredBuckets[artefact.inferredGroup] = { slug: artefact.inferredGroup, artefacts: [] };
+      inferredBuckets[artefact.inferredGroup].artefacts.push(adapted);
+    } else {
+      // Not attached to a real story, not a feature-root file, no inferred
+      // group -- cat-s4 AC2: still must render somewhere, visibly flagged,
+      // rather than being silently dropped. Shared catch-all bucket.
+      unregisteredCatchAll.artefacts.push(adapted);
+    }
+  });
+
+  const epicsBySlug = {};
+  trace.epics.forEach((epic) => { epicsBySlug[epic.slug] = { epicName: epic.name, epicSlug: epic.slug, stories: [] }; });
+  const flatStories = [];
+  trace.stories.forEach((story) => {
+    const storyEntry = { slug: story.slug, artefacts: byStorySlug[story.slug] || [], divergence: story.divergence };
+    if (story.epicSlug && epicsBySlug[story.epicSlug]) {
+      epicsBySlug[story.epicSlug].stories.push(storyEntry);
+    } else {
+      flatStories.push(storyEntry);
+    }
+  });
+
+  Object.values(inferredBuckets).forEach((bucket) => flatStories.push(bucket));
+  if (unregisteredCatchAll.artefacts.length > 0) flatStories.push(unregisteredCatchAll);
+
+  return { featureLevel, epics: Object.values(epicsBySlug), flatStories };
+}
+
+/**
  * fadm-s1: separates a feature's own epic documents (epics/<epicSlug>.md)
  * out of the feature-level artefact list, keyed by epic slug, so the
  * document matrix can link each one from its own epic-divider row instead
@@ -399,8 +518,15 @@ function _renderFeatureLevelTable(artefacts, featureSlug, resumeLookup) {
     const resumeLink = resumable
       ? ` <a class="doc-table__resume-link" href="/journey/${encodeURIComponent(resumable.journeyId)}/stage/${encodeURIComponent(resumable.skillName)}">Resume conversation</a>`
       : '';
+    // cat-s4 AC2: a feature-root document classified 'unregistered' by
+    // cat-s3 still needs a visible, text-labeled pill here -- this table
+    // renders feature-level artefacts (which never attach to the story
+    // matrix below), so the matrix's own pill logic never reaches them.
+    const unregisteredPill = a.divergence === 'unregistered'
+      ? ` <span class="sw-pill sw-pill--nodot sw-pill--neutral" title="Not registered in pipeline-state.json">${UNREGISTERED_LABEL}</span>`
+      : '';
     return `<tr><td class="doc-table__type">${shellEscHtml(label)}</td>` +
-      `<td><a class="doc-table__link" href="${shellEscHtml(viewUrl)}">${shellEscHtml(a.path || '')}</a>${resumeLink}</td>` +
+      `<td><a class="doc-table__link" href="${shellEscHtml(viewUrl)}">${shellEscHtml(a.path || '')}</a>${resumeLink}${unregisteredPill}</td>` +
       `<td class="doc-table__date">${date}</td></tr>`;
   }).join('');
   return `<div class="sw-card"><div class="sw-section-title">Feature</div>` +
@@ -430,12 +556,12 @@ function renderArtefactMatrix(grouped, featureSlug, epicDocs, resumeLookup) {
 
   const rowGroups = [];
   (grouped.epics || []).forEach((epic) => {
-    const stories = (epic.stories || []).filter((s) => s.artefacts.length > 0);
+    const stories = (epic.stories || []).filter((s) => s.artefacts.length > 0 || s.divergence === 'orphaned-registration');
     if (stories.length > 0) {
       rowGroups.push({ epicName: epic.epicName || epic.epicSlug || '', epicSlug: epic.epicSlug || null, stories });
     }
   });
-  const flatWithArtefacts = (grouped.flatStories || []).filter((s) => s.artefacts.length > 0);
+  const flatWithArtefacts = (grouped.flatStories || []).filter((s) => s.artefacts.length > 0 || s.divergence === 'orphaned-registration');
   if (flatWithArtefacts.length > 0) {
     rowGroups.push({ epicName: rowGroups.length > 0 ? 'Stories' : null, epicSlug: null, stories: flatWithArtefacts });
   }
@@ -464,18 +590,43 @@ function renderArtefactMatrix(grouped, featureSlug, epicDocs, resumeLookup) {
     }
 
     const storyRows = group.stories.map((story) => {
+      if (story.artefacts.length === 0 && story.divergence === 'orphaned-registration') {
+        return `<tr><td class="doc-matrix__story-col">${shellEscHtml(story.slug)}</td>` +
+          `<td colspan="${Math.max(1, colCount - 1)}" class="doc-matrix__dash" title="Registered in pipeline-state.json but no matching file found on disk">Registered, but no files found</td></tr>`;
+      }
       const byColumn = {};
-      story.artefacts.forEach((a) => { byColumn[_deriveMatrixColumn(a.path || '')] = a; });
+      story.artefacts.forEach((a) => {
+        const key = _deriveMatrixColumn(a.path || '');
+        (byColumn[key] = byColumn[key] || []).push(a);
+      });
+      // cat-s4 /verify-completion manual-walkthrough finding (Critical): a
+      // single (row, column) cell can legitimately hold more than one real
+      // artefact once >1 real story shares the same inferred/Unregistered
+      // catch-all row (Task 4's routing-gate change makes this newly
+      // possible; see cat-s4-plan.md's "manual walkthrough finding"
+      // section). byColumn now accumulates an array per key instead of
+      // overwriting, and every entry renders -- previously only the last
+      // artefact written to a shared cell survived, silently dropping every
+      // other one with no error (176/205 documents vanished for the real
+      // `2026-04-19-skills-platform-phase4` feature). A cell with exactly 1
+      // artefact still renders byte-identical markup to before (AC4's
+      // golden-fixture requirement).
       const cells = columns.map((k) => {
-        const a = byColumn[k];
-        if (!a) return '<td class="doc-matrix__dash">–</td>';
-        const relPath = _relativeArtefactPath(a.path || '', featureSlug) || (a.type || '');
-        const viewUrl = `/artefact/${featureSlug}/${encodeURIComponent(relPath)}`;
-        const resumable = resumeLookup[a.path || ''];
-        const resumeLink = resumable
-          ? ` <a class="doc-matrix__resume-link" href="/journey/${encodeURIComponent(resumable.journeyId)}/stage/${encodeURIComponent(resumable.skillName)}" title="Resume conversation">↻</a>`
-          : '';
-        return `<td><a class="doc-matrix__tick" href="${shellEscHtml(viewUrl)}" title="Open document">✓</a>${resumeLink}</td>`;
+        const artefactsForCell = byColumn[k];
+        if (!artefactsForCell || artefactsForCell.length === 0) return '<td class="doc-matrix__dash">–</td>';
+        const cellHtml = artefactsForCell.map((a) => {
+          const relPath = _relativeArtefactPath(a.path || '', featureSlug) || (a.type || '');
+          const viewUrl = `/artefact/${featureSlug}/${encodeURIComponent(relPath)}`;
+          const resumable = resumeLookup[a.path || ''];
+          const resumeLink = resumable
+            ? ` <a class="doc-matrix__resume-link" href="/journey/${encodeURIComponent(resumable.journeyId)}/stage/${encodeURIComponent(resumable.skillName)}" title="Resume conversation">↻</a>`
+            : '';
+          const unregisteredPill = a.divergence === 'unregistered'
+            ? ` <span class="sw-pill sw-pill--nodot sw-pill--neutral" title="Not registered in pipeline-state.json">${UNREGISTERED_LABEL}</span>`
+            : '';
+          return `<a class="doc-matrix__tick" href="${shellEscHtml(viewUrl)}" title="Open document">✓</a>${resumeLink}${unregisteredPill}`;
+        }).join(' ');
+        return `<td>${cellHtml}</td>`;
       }).join('');
       const statusCell = hasDodColumn
         ? (byColumn.dod
@@ -655,22 +806,36 @@ async function handleGetFeatureArtefacts(req, res, featureSlug, pool) {
     // fal-s1: artefact view links (/artefact/:slug/:type) must point at the
     // real feature directory slug -- the raw slug 404s for an epic-nested
     // story, same class of bug this story fixes for the list lookup itself.
-    // fapg-s1: a feature with >=2 real stories (read from the local
-    // repoRoot/.github/pipeline-state.json, not a Postgres query -- see
-    // getFeatureStoryStructure's own doc comment) gets the grouped
-    // epic/story rendering; a feature with 0-1 stories (the common case)
-    // renders exactly as it always has, via the unchanged renderArtefactIndexHtml.
+    // cat-s4: routing is now driven by buildArtefactTrace (ADR-028), the
+    // single canonical trace builder -- not by story count. Any feature
+    // whose trace finds real documents on disk ('found') always renders via
+    // the grouped/matrix view now, replacing fapg-s1's old ">=2 real
+    // stories" threshold (which left 0-1-story and zero-registration
+    // features, e.g. phase4, stuck on the flat renderArtefactIndexHtml even
+    // though the epic exists specifically to fix that). feature-story-
+    // structure.js's own getFeatureStoryStructure/groupArtefactsByStory are
+    // no longer called from this file; the module remains on disk as
+    // (currently) dead code -- see cat-s4-plan.md Task 4.
     let listHtml;
     if (noArtefacts) {
       listHtml = '<p class="artefact-list__empty">No artefacts found for this feature</p>';
     } else {
-      const storyStructure = getFeatureStoryStructure(repoRoot, resolvedSlug);
-      const totalStoryCount = storyStructure
-        ? storyStructure.epics.reduce((sum, e) => sum + e.storySlugs.length, 0) + storyStructure.flatStorySlugs.length
-        : 0;
-      listHtml = (storyStructure && totalStoryCount > 1)
-        ? renderGroupedArtefactIndexHtml(groupArtefactsByStory(artefacts, storyStructure), resolvedSlug, resumeLookup)
-        : renderArtefactIndexHtml(artefacts, resolvedSlug, resumeLookup);
+      const trace = buildArtefactTrace(repoRoot, resolvedSlug);
+      if (trace.status === 'not-yet-synced') {
+        listHtml = '<p class="artefact-list__empty">Still syncing this feature\'s artefacts — check back shortly.</p>';
+      } else if (trace.status === 'found') {
+        const grouped = _buildGroupedFromTrace(trace, resolvedSlug);
+        listHtml = renderGroupedArtefactIndexHtml(grouped, resolvedSlug, resumeLookup);
+      } else {
+        // 'not-found' -- buildArtefactTrace found nothing on disk for this
+        // slug, even though _listArtefacts (above) returned some artefacts
+        // (e.g. Postgres-only rows with no local checkout backing them).
+        // Fall back to the pre-cat-s4 flat rendering for this narrow case --
+        // disk is canonical (ADR-029) for the grouped view, but content that
+        // only exists in Postgres still deserves to be shown, just not
+        // grouped/classified.
+        listHtml = renderArtefactIndexHtml(artefacts, resolvedSlug, resumeLookup);
+      }
     }
     const displayTitle = (journeyForPage && journeyForPage.displayName) || featureSlug;
     const breadcrumbHtml = _renderStoryBreadcrumb(breadcrumbContext, displayTitle);
@@ -792,5 +957,6 @@ module.exports = {
   renderArtefactMatrix,
   renderStory,
   escHtml,
-  _deriveMatrixColumn
+  _deriveMatrixColumn,
+  _buildGroupedFromTrace
 };
