@@ -31577,7 +31577,11 @@
               "dorArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s1-dor.md",
               "dorContractArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s1-dor-contract.md",
               "standardsInjected": [
-                "web-ui"
+                {
+                  "id": "web-ui",
+                  "hash": "8c188790ec1c3808901cd26821ffabf9f1be9e16d5396dee25ea5c13ab6d7fc2",
+                  "path": ".github/standards/web-ui/web-ui-patterns.md"
+                }
               ],
               "tasks": [
                 {
@@ -31646,7 +31650,11 @@
               "dorArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s2-dor.md",
               "dorContractArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s2-dor-contract.md",
               "standardsInjected": [
-                "web-ui"
+                {
+                  "id": "web-ui",
+                  "hash": "8c188790ec1c3808901cd26821ffabf9f1be9e16d5396dee25ea5c13ab6d7fc2",
+                  "path": ".github/standards/web-ui/web-ui-patterns.md"
+                }
               ],
               "tasks": [
                 {
@@ -31709,7 +31717,11 @@
               "dorArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s3-dor.md",
               "dorContractArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s3-dor-contract.md",
               "standardsInjected": [
-                "web-ui"
+                {
+                  "id": "web-ui",
+                  "hash": "8c188790ec1c3808901cd26821ffabf9f1be9e16d5396dee25ea5c13ab6d7fc2",
+                  "path": ".github/standards/web-ui/web-ui-patterns.md"
+                }
               ],
               "tasks": [
                 {
@@ -31766,7 +31778,11 @@
               "dorArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s4-dor.md",
               "dorContractArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s4-dor-contract.md",
               "standardsInjected": [
-                "web-ui"
+                {
+                  "id": "web-ui",
+                  "hash": "8c188790ec1c3808901cd26821ffabf9f1be9e16d5396dee25ea5c13ab6d7fc2",
+                  "path": ".github/standards/web-ui/web-ui-patterns.md"
+                }
               ],
               "tasks": [
                 {
@@ -31832,7 +31848,11 @@
               "dorArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s5-dor.md",
               "dorContractArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s5-dor-contract.md",
               "standardsInjected": [
-                "web-ui"
+                {
+                  "id": "web-ui",
+                  "hash": "8c188790ec1c3808901cd26821ffabf9f1be9e16d5396dee25ea5c13ab6d7fc2",
+                  "path": ".github/standards/web-ui/web-ui-patterns.md"
+                }
               ],
               "tasks": [
                 {
@@ -31891,7 +31911,11 @@
               "dorArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s6-dor.md",
               "dorContractArtefact": "artefacts/2026-09-06-canonical-artefact-trace/dor/cat-s6-dor-contract.md",
               "standardsInjected": [
-                "web-ui"
+                {
+                  "id": "web-ui",
+                  "hash": "8c188790ec1c3808901cd26821ffabf9f1be9e16d5396dee25ea5c13ab6d7fc2",
+                  "path": ".github/standards/web-ui/web-ui-patterns.md"
+                }
               ],
               "tasks": [
                 {
