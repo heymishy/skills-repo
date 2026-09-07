@@ -166,11 +166,18 @@ async function _tryFetchAtPath(repoPath, targetRepo, token, featureSlug, artefac
  *   fetchGithubContentsResponse's own 10000ms default. Applies to the two
  *   direct attempts only -- the subdirectory-probing fallback (if reached)
  *   always uses the shorter FALLBACK_PROBE_TIMEOUT_MS regardless.
+ * @param {string} [repoRoot] - cat-s5: when supplied, enables trace-based
+ *   resolution of a bare (no-slash) artefactType via buildArtefactTrace,
+ *   before falling back to the static ARTEFACT_SUBDIRS probe (see Task 2).
+ *   Optional and additive -- omitted entirely by journey.js and
+ *   export-data-source.js's own call sites, which therefore see zero
+ *   behavioural change. Has no effect on a slash-containing artefactType,
+ *   which always resolves via the existing direct-path attempt unchanged.
  * @returns {Promise<string>} decoded markdown content
  * @throws {ArtefactNotFoundError} when every candidate path 404s
  * @throws {ArtefactFetchError}    on non-404 error, network failure, or timeout
  */
-async function fetchArtefact(featureSlug, artefactType, token, repoOverride, timeoutMs) {
+async function fetchArtefact(featureSlug, artefactType, token, repoOverride, timeoutMs, repoRoot) {
   const targetRepo = repoOverride ? `${repoOverride.owner}/${repoOverride.repo}` : GITHUB_REPO;
   const prefixes = ['artefacts', 'artefacts/archived'];
 
