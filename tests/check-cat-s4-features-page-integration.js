@@ -73,6 +73,62 @@ console.log('\n[cat-s4] Regression -- feature-level artefact mislabeling bug (fo
   });
 }
 
+console.log('\n[cat-s4] AC1 real-data regression -- /verify-completion manual walkthrough finding (Critical): phase4 (205 real on-disk documents, entirely unregistered) must not silently drop documents when multiple artefacts share a matrix cell');
+{
+  // Uses the REAL 2026-04-19-skills-platform-phase4 feature directory on
+  // disk (not a small synthetic fixture) -- this is AC1's own named
+  // acceptance scenario. The manual browser/curl walkthrough required by
+  // cat-s4-plan.md's "/verify-completion manual walkthrough finding --
+  // Critical" section found that the live page rendered only 29 document
+  // links for this feature even though 205 real files exist on disk: 176
+  // documents (86%) were silently dropped with no error. Root cause:
+  // renderArtefactMatrix's byColumn map did a plain overwrite
+  // (`byColumn[key] = a`) instead of accumulating, so when >1 real
+  // artefact shared the same (row, column) cell -- which only became
+  // possible once cat-s4's routing change let ~22 unregistered stories'
+  // worth of documents collapse into the same shared "Unregistered"
+  // catch-all row -- only the last artefact written to each cell survived.
+  var traceMod = require('../src/web-ui/adapters/artefact-trace');
+  var fsForWalk = require('fs');
+  var trace = traceMod.buildArtefactTrace(REPO_ROOT, '2026-04-19-skills-platform-phase4');
+  test('buildArtefactTrace resolves the real phase4 feature directory on disk', function() {
+    assert.strictEqual(trace.status, 'found', 'expected buildArtefactTrace to find the real phase4 feature on disk');
+    assert.ok(trace.resolvedDir, 'expected a resolvedDir on the trace result');
+  });
+
+  // Recursive walk matching buildArtefactTrace's own walkDir counting rule
+  // exactly (src/web-ui/adapters/artefact-trace.js): every file, in every
+  // subdirectory, no extension filter -- walkDir does not skip any
+  // subdirectory or filter by file extension, it counts every fs.Dirent
+  // where entry.isFile() is true.
+  function countRealFilesLikeWalkDir(dir) {
+    var total = 0;
+    fsForWalk.readdirSync(dir, { withFileTypes: true }).forEach(function(entry) {
+      var full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        total += countRealFilesLikeWalkDir(full);
+      } else if (entry.isFile()) {
+        total += 1;
+      }
+    });
+    return total;
+  }
+  var realFileCount = countRealFilesLikeWalkDir(trace.resolvedDir);
+
+  var grouped = mod._buildGroupedFromTrace(trace, '2026-04-19-skills-platform-phase4');
+  var html = mod.renderGroupedArtefactIndexHtml(grouped, '2026-04-19-skills-platform-phase4', {});
+  var hrefMatches = html.match(/href="\/artefact\/[^"]*"/g) || [];
+  var distinctHrefs = {};
+  hrefMatches.forEach(function(h) { distinctHrefs[h] = true; });
+  var distinctHrefCount = Object.keys(distinctHrefs).length;
+
+  test('rendered output contains exactly ' + realFileCount + ' distinct /artefact/ document links, matching the real on-disk file count (measured: ' + distinctHrefCount + ' links) -- no document silently dropped', function() {
+    assert.strictEqual(distinctHrefCount, realFileCount,
+      'expected ' + realFileCount + ' distinct document links (one per real on-disk file), got ' + distinctHrefCount +
+      ' -- ' + (realFileCount - distinctHrefCount) + ' document(s) missing from the rendered output');
+  });
+}
+
 console.log('\n[cat-s4] AC2 -- unregistered document with no inferredGroup gets its own labeled bucket with a visible Unregistered pill');
 {
   var fakeTrace = {

@@ -595,20 +595,38 @@ function renderArtefactMatrix(grouped, featureSlug, epicDocs, resumeLookup) {
           `<td colspan="${Math.max(1, colCount - 1)}" class="doc-matrix__dash" title="Registered in pipeline-state.json but no matching file found on disk">Registered, but no files found</td></tr>`;
       }
       const byColumn = {};
-      story.artefacts.forEach((a) => { byColumn[_deriveMatrixColumn(a.path || '')] = a; });
+      story.artefacts.forEach((a) => {
+        const key = _deriveMatrixColumn(a.path || '');
+        (byColumn[key] = byColumn[key] || []).push(a);
+      });
+      // cat-s4 /verify-completion manual-walkthrough finding (Critical): a
+      // single (row, column) cell can legitimately hold more than one real
+      // artefact once >1 real story shares the same inferred/Unregistered
+      // catch-all row (Task 4's routing-gate change makes this newly
+      // possible; see cat-s4-plan.md's "manual walkthrough finding"
+      // section). byColumn now accumulates an array per key instead of
+      // overwriting, and every entry renders -- previously only the last
+      // artefact written to a shared cell survived, silently dropping every
+      // other one with no error (176/205 documents vanished for the real
+      // `2026-04-19-skills-platform-phase4` feature). A cell with exactly 1
+      // artefact still renders byte-identical markup to before (AC4's
+      // golden-fixture requirement).
       const cells = columns.map((k) => {
-        const a = byColumn[k];
-        if (!a) return '<td class="doc-matrix__dash">–</td>';
-        const relPath = _relativeArtefactPath(a.path || '', featureSlug) || (a.type || '');
-        const viewUrl = `/artefact/${featureSlug}/${encodeURIComponent(relPath)}`;
-        const resumable = resumeLookup[a.path || ''];
-        const resumeLink = resumable
-          ? ` <a class="doc-matrix__resume-link" href="/journey/${encodeURIComponent(resumable.journeyId)}/stage/${encodeURIComponent(resumable.skillName)}" title="Resume conversation">↻</a>`
-          : '';
-        const unregisteredPill = a.divergence === 'unregistered'
-          ? ` <span class="sw-pill sw-pill--nodot sw-pill--neutral" title="Not registered in pipeline-state.json">${UNREGISTERED_LABEL}</span>`
-          : '';
-        return `<td><a class="doc-matrix__tick" href="${shellEscHtml(viewUrl)}" title="Open document">✓</a>${resumeLink}${unregisteredPill}</td>`;
+        const artefactsForCell = byColumn[k];
+        if (!artefactsForCell || artefactsForCell.length === 0) return '<td class="doc-matrix__dash">–</td>';
+        const cellHtml = artefactsForCell.map((a) => {
+          const relPath = _relativeArtefactPath(a.path || '', featureSlug) || (a.type || '');
+          const viewUrl = `/artefact/${featureSlug}/${encodeURIComponent(relPath)}`;
+          const resumable = resumeLookup[a.path || ''];
+          const resumeLink = resumable
+            ? ` <a class="doc-matrix__resume-link" href="/journey/${encodeURIComponent(resumable.journeyId)}/stage/${encodeURIComponent(resumable.skillName)}" title="Resume conversation">↻</a>`
+            : '';
+          const unregisteredPill = a.divergence === 'unregistered'
+            ? ` <span class="sw-pill sw-pill--nodot sw-pill--neutral" title="Not registered in pipeline-state.json">${UNREGISTERED_LABEL}</span>`
+            : '';
+          return `<a class="doc-matrix__tick" href="${shellEscHtml(viewUrl)}" title="Open document">✓</a>${resumeLink}${unregisteredPill}`;
+        }).join(' ');
+        return `<td>${cellHtml}</td>`;
       }).join('');
       const statusCell = hasDodColumn
         ? (byColumn.dod
