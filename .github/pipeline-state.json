@@ -31498,7 +31498,7 @@
           "baseline": "~90 of 260 features (~35%)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "cat-s2 ships the canonical label table and redirects 3 of 5 old tables internals to it; no route/rendering consumer reads resolveLabel/resolveColumnKey directly yet (cat-s4/cat-s5 do that wiring) -- divergence-rate measurement is not yet possible.",
+          "evidence": "cat-s4 is the first real rendering consumer of the canonical trace/label/divergence pipeline (merged 2026-09-07), but no divergence-rate comparison has been run across the ~260-feature corpus yet -- that is a separate measurement exercise, not blocked on any further code change.",
           "contributingStories": [
             "cat-s1",
             "cat-s2",
@@ -31528,7 +31528,7 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "cat-s3 implements the classification logic but no UI renders it yet -- cat-s4 turns this into a visible flag.",
+          "evidence": "The code-level precondition is now demonstrably met -- 205/205 real unregistered documents on the phase4 feature are visually flagged, confirmed by both automated test and a manual live-page check -- but the metric itself measures real-world bug-report absence over time, which cannot be assessed at merge time.",
           "contributingStories": [
             "cat-s3",
             "cat-s4"
@@ -31743,12 +31743,12 @@
             {
               "slug": "cat-s4",
               "name": "The feature artefact-index page renders every document real status, using the canonical trace",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s4-review-1.md",
-              "updatedAt": "2026-09-07T04:22:10.857Z",
+              "updatedAt": "2026-09-07T04:27:28.704Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 24,
@@ -31803,7 +31803,8 @@
               "verifyStatus": "passed",
               "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/845",
-              "dodStatus": "not-started"
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "cat-s5",
@@ -32245,6 +32246,33 @@
           "evidence": "Classification produces distinct string labels (registered/unregistered/orphaned-registration/not-yet-synced), not color-only signals -- satisfies the guardrail at the data layer ahead of cat-s4 rendering",
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-09-06T20:49:19.356Z"
+        },
+        {
+          "id": "MC-A11Y-02-cat-s4",
+          "category": "mandatory-constraint",
+          "label": "Color not sole indicator (cat-s4 rendering)",
+          "status": "met",
+          "evidence": "Unregistered .sw-pill carries visible text content, asserted via automated NFR test and independently re-confirmed against the real live page (205/205 phase4 documents)",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-07T04:27:28.706Z"
+        },
+        {
+          "id": "NFR-perf-page-render-byte-identical-cat-s4",
+          "category": "nfr",
+          "label": "Byte-identical page render for non-divergent features (AC4)",
+          "status": "met",
+          "evidence": "Golden-fixture comparison against the real 2026-09-06-feature-artefact-document-matrix feature passed on first attempt and through every subsequent fix cycle",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-07T04:27:28.706Z"
+        },
+        {
+          "id": "NFR-avail-not-yet-synced-cat-s4",
+          "category": "nfr",
+          "label": "Graceful degradation for not-yet-synced (route-level, cat-s4)",
+          "status": "met",
+          "evidence": "A genuine route-level test now exercises handleGetFeatureArtefacts's real not-yet-synced branch (added after mandatory final review found the original test only duplicated cat-s1/cat-s3 coverage)",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-07T04:27:28.706Z"
         }
       ]
     }
