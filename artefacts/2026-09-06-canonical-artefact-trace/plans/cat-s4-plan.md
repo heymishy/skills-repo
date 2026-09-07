@@ -228,7 +228,9 @@ git commit -m "feat(cat-s4): add _buildGroupedFromTrace adapter converting build
 
 ---
 
-## Task 2: "Unregistered" pill rendering (AC2)
+## Task 2: "Unregistered" pill rendering (AC2) ✅ DONE (604d86b2, fixup 08b0d4d5)
+
+**Two-stage review:** spec compliance ✅ (independently confirmed the pill needed adding to BOTH `_renderFeatureLevelTable` and `renderArtefactMatrix` — genuinely required, not scope creep, since `featureLevel` artefacts never reach the matrix) | code quality — first pass found 2 Important test-coverage gaps: the "no inferredGroup" test actually hit the pre-existing `featureLevel` branch, not the genuinely new `unregisteredCatchAll` branch (zero real coverage); no test confirmed pill absence for `registered` artefacts → fixed in `08b0d4d5` (test-only) → ✅ Approved. 2 Minor documentation items (JSDoc drift, dual semantic role of the 'Unregistered' string) carried forward as a low-priority reminder for Task 4's final review.
 
 **Recommended model class:** balanced.
 
