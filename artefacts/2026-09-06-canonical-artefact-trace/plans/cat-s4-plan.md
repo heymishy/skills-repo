@@ -474,7 +474,9 @@ git commit -m "feat(cat-s4): show a distinct gap state for orphaned-registration
 
 - [ ] **Step 1: CAPTURE THE GOLDEN FIXTURE FIRST — before any other change in this task**
 
-Before touching `handleGetFeatureArtefacts`, run the CURRENT (pre-this-task) route handler against the real, on-disk, fully-registered `2026-09-06-feature-artefact-document-matrix` feature (this repo's own dogfooding feature — 6 real stories, `cat-s1` through `cat-s6`) and save the exact HTML output to a fixture file for later comparison. Add this capture as a one-time script or an inline step — do not skip this. If you cannot exercise the real route handler directly (it needs `req`/`res`/`pool` objects), construct minimal mocks matching the existing test patterns already used elsewhere in this file's own test suite for `handleGetFeatureArtefacts` (search `tests/` for existing callers of this function for a template) — the goal is a byte-for-byte HTML snapshot of the `listHtml` portion specifically (the part `renderGroupedArtefactIndexHtml` produces), not the full page shell.
+Before touching `handleGetFeatureArtefacts`, run the CURRENT (pre-this-task) route handler against the real, on-disk, fully-registered `2026-09-06-feature-artefact-document-matrix` feature (this repo's own dogfooding feature) and save the exact HTML output to a fixture file for later comparison.
+
+**Correction (found at mandatory final review, not fixed retroactively since the captured fixture itself is correct — only this sentence's description was wrong):** the source feature actually has exactly 1 real story (`fadm-s1`), not "6 real stories, cat-s1 through cat-s6" as originally written here — that story count applies to the `cat-*` epic doing this rewrite, not to the golden-fixture source feature. The captured `tests/fixtures/cat-s4-golden-fadm-output.html` is a genuine, correct byte-for-byte capture of what that 1-story feature actually renders. Add this capture as a one-time script or an inline step — do not skip this. If you cannot exercise the real route handler directly (it needs `req`/`res`/`pool` objects), construct minimal mocks matching the existing test patterns already used elsewhere in this file's own test suite for `handleGetFeatureArtefacts` (search `tests/` for existing callers of this function for a template) — the goal is a byte-for-byte HTML snapshot of the `listHtml` portion specifically (the part `renderGroupedArtefactIndexHtml` produces), not the full page shell.
 
 - [ ] **Step 2: Write the failing test**
 
@@ -657,6 +659,14 @@ Expected output: only the known pre-existing baseline failure(s).
 git add tests/check-cat-s4-features-page-integration.js
 git commit -m "test(cat-s4): add NFR performance and accessibility checks, completing cat-s4's full AC coverage"
 ```
+
+---
+
+## Mandatory final review (whole-branch diff against all ACs) ✅ Approved (ab3bf2a8)
+
+Reviewed the cumulative diff (`b60d4112` through `fb6ecb1c`) against AC1-AC5 together, specifically for cross-task interaction gaps a single-task review wouldn't catch. Traced `buildArtefactTrace` against the real 205-file `2026-04-19-skills-platform-phase4` feature end-to-end and confirmed all 205 artefacts are accounted for across `featureLevel`/`epics`/`flatStories` (AC1 genuinely holds). Confirmed the Task 4 status-based routing gate (`'found'` → grouped renderer, `'not-found'` → old flat renderer for Postgres-only content with no disk backing) correctly and intentionally never suppresses Task 2/3's pill/gap-state markup, since the `'not-found'` fallback path has no divergence data to display in the first place. Confirmed `feature-story-structure.js` has zero remaining callers in `src/` (correctly left in place as dead code). Traced the already-logged out-of-scope `cat-s1` bare-string-story bug's effect through `cat-s4`'s own code and confirmed it degrades gracefully (renders the literal text "undefined" via `shellEscHtml`, no crash) rather than compounding into a second defect.
+
+Found and fixed in `ab3bf2a8`: 1 **Important** (AC5's original test called `buildArtefactTrace` directly, never exercising the real `handleGetFeatureArtefacts` `not-yet-synced` branch added in Task 4 — no test anywhere asserted the literal route-rendered message; fixed by adding a genuine route-level test using the existing `setListArtefacts`/`repo-root.setRepoRoot` mocking pattern) and 2 **Minor** (stale `_buildGroupedFromTrace` JSDoc not mentioning the Task 2 inferred-group/catch-all buckets; the literal string `'Unregistered'` duplicated 3× with no shared constant — both fixed by extracting `UNREGISTERED_LABEL` and refreshing the doc comment). Re-verified independently after the fix: targeted file 22/22, full suite 626 files/1 pre-existing-unrelated-failure/0 regressions. **cat-s4 is feature-complete, ready for /verify-completion.**
 
 ---
 
