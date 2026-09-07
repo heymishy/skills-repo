@@ -352,6 +352,14 @@ git commit -m "test(cat-s6): confirm the 4 prior regression suites and full test
 
 ---
 
+## Mandatory final review (whole-branch diff against all ACs) ✅ Approved
+
+Confirmed zero production files touched **per-commit** (not just cumulative) across all 3 commits on this branch. Traced AC1/AC2's guard-clause reasoning directly from the real code: both `journey.js:921` and `export-data-source.js:199` call `fetchArtefact` with only 4 positional arguments, leaving `repoRoot` (position 6) undefined — `artefact-fetcher.js`'s `cat-s5` trace logic is gated behind `if (!repoRoot) return null` / `if (repoRoot) {...}`, proving both call sites provably never reach `cat-s5`'s new code paths at all. This confirms the story's own tests are correctly proving "no regression in a provably-unreachable path," exactly as AC1/AC2 require. Re-verified `ownerRepoForFeature`'s real SQL matches the test's mock pool exactly, and `realFetchPipelineState`'s real `.text()`-based read confirms Task 1's mock-shape fix was correct, not a workaround. Fresh re-run of everything: targeted file 10/10, all 4 prior suites at their exact baselines (8/8, 10/10, 15/15, 27/27), full suite 628 files with 2 failures this run (`check-p3.5-validate-trace.js` AND `check-pcr-s1-test-runner.js`) — both are the exact 2 documented baseline failures AC4 itself explicitly anticipates ("0, 1, or both... may appear"), not a regression. Epic-wide `decisions.md` sanity pass: all 8 entries across the whole epic have explicit rationale and revisit triggers, nothing silently dropped. One process note (not a finding): the worktree's local `pipeline-state.json`/synced plan copy are uncommitted to the feature branch — this is the epic's own established, deliberate write-location pattern (worktree writes stay local until `/verify-completion`'s own checkpoint commits to master), not a gap.
+
+**cat-s6 is feature-complete, ready for /verify-completion — and with it, the entire 2026-09-06-canonical-artefact-trace epic (cat-s1 through cat-s6).**
+
+---
+
 ## Post-implementation note for /verify-completion
 
 This story is verification-only and has no UI/route surface of its own to manually walk through — its own "manual" equivalent IS the full-suite run itself (AC4), which already happens as part of `/verify-completion`'s own Step 1. No additional manual browser walkthrough is meaningful here, unlike `cat-s4`/`cat-s5`. If AC1 or AC2 surfaces a real defect in `journey.js` or `export-data-source.js` (not a test-authoring gap), stop immediately, do not attempt a fix within this story, and report it as a new finding requiring a separate follow-up story — per this story's own explicit Out of Scope section.
