@@ -8,6 +8,12 @@ const { fetchArtefact, ArtefactNotFoundError, ArtefactFetchError } = require('..
 const { renderArtefactToHTML, extractMetadata }                    = require('../utils/markdown-renderer');
 const { renderShell, escHtml: shellEscHtml }                       = require('../utils/html-shell');
 const journeyStoreDefault                                          = require('../modules/journey-store');
+// cat-s5 Task 2 review-fixup: without this, handleArtefactRoute never has a
+// local repoRoot to pass into fetchArtefact, so Task 2's trace-based
+// bare-name resolution can never fire on a real HTTP request -- see this
+// story's plan.md "Task 2 review finding" section. Mirrors features.js's own
+// identical `const repoRoot = getRepoRoot(req);` usage.
+const { getRepoRoot }                                               = require('../adapters/repo-root');
 // pncg-s1: shared Products-nav sidebar wrapper -- see products.js's own
 // renderShellWithNav docblock. products.js does not require artefact.js, so
 // this creates no circular dependency. Only the 2 success-rendering
@@ -56,9 +62,12 @@ async function handleArtefactRoute(req, res, slug, artefactType, pool) {
   }
 
   const token = req.session.accessToken;
+  // cat-s5 Task 2 review-fixup: repoRoot is required for Task 2's
+  // trace-based bare-name resolution inside fetchArtefact to engage at all.
+  const repoRoot = getRepoRoot(req);
 
   try {
-    const markdown = await _fetchArtefact(slug, artefactType, token);
+    const markdown = await _fetchArtefact(slug, artefactType, token, undefined, undefined, repoRoot);
     const meta     = extractMetadata(markdown);
     const html     = renderArtefactToHTML(markdown, meta);
 
@@ -124,9 +133,21 @@ async function handleArtefactRoute(req, res, slug, artefactType, pool) {
         return;
       }
 
+      // cat-s5 AC3/AC4: distinguish an orphaned-registration 404 (registered
+      // in pipeline-state.json but genuinely has no matching file on disk)
+      // from a plain never-registered 404, but only after the postgres-
+      // fallback attempt above has also come up empty -- the fallback stays
+      // the first-tried content source either way (AC4: postgres-fallback
+      // contract unchanged). ArtefactNotFoundError's own class/constructor
+      // and the surrounding renderShell/writeHead/res.end calls are
+      // untouched; only the body text is now conditional on the new
+      // err.orphanedRegistration property.
+      const notFoundBody = err.orphanedRegistration
+        ? '<p>This document is registered but the file could not be found — it may have been renamed or removed.</p>'
+        : '<p>artefact not found</p>';
       const page = renderShell({
         title:       'Artefact Not Found',
-        bodyContent: '<p>artefact not found</p>',
+        bodyContent: notFoundBody,
         user:        { login: (req.session && req.session.login) || '' }
       });
       res.writeHead(404, { 'Content-Type': 'text/html; charset=utf-8' });

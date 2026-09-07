@@ -5,6 +5,7 @@
 // Resolves artefact paths via GitHub Contents API using the user's OAuth token.
 
 const { listKnownSubdirs } = require('../utils/artefact-labels');
+const { buildArtefactTrace } = require('./artefact-trace');
 
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
 const GITHUB_REPO     = process.env.GITHUB_REPO || '';
@@ -132,20 +133,51 @@ async function _tryFetchAtPath(repoPath, targetRepo, token, featureSlug, artefac
 }
 
 /**
+ * cat-s5: for a bare (no-slash) artefactType, consult the canonical trace's
+ * real, dynamically-derived artefact list for an exact filename match,
+ * before falling back to the static ARTEFACT_SUBDIRS probe. Additive only --
+ * returns null (never throws) on any condition that should fall through to
+ * the existing behaviour unchanged: no repoRoot, trace not 'found', zero
+ * matches, or more than one match (an ambiguous bare name across
+ * subdirectories -- rare, and not worth resolving cleverly here since the
+ * old probe loop remains a safe, correct fallback for this one case).
+ * @returns {{repoPath: string}|null}
+ */
+function _resolveViaTraceForBareName(repoRoot, featureSlug, artefactType) {
+  if (!repoRoot || artefactType.indexOf('/') !== -1) return null;
+  const trace = buildArtefactTrace(repoRoot, featureSlug);
+  if (trace.status !== 'found') return null;
+  const matches = trace.artefacts.filter((a) => a.filename.replace(/\.md$/, '') === artefactType);
+  if (matches.length !== 1) return null;
+  const path = require('path');
+  const isArchived = trace.resolvedDir === path.join(repoRoot, 'artefacts', 'archived', featureSlug);
+  const prefix = isArchived ? 'artefacts/archived' : 'artefacts';
+  return { repoPath: `${prefix}/${featureSlug}/${matches[0].path}`, trace };
+}
+
+/**
  * Fetch a pipeline artefact from GitHub Contents API.
  *
  * adlr-s1: artefactType may now be a bare type name (e.g. 'discovery', for
  * the 4 root-level artefact types, or a legacy link generated before this
  * fix) or a path relative to the feature directory including its own
  * subdirectory (e.g. 'dor/psh-s1-dor', what every correctly-generated link
- * now carries). Resolution order: (1) the decoded path directly under
- * artefacts/<slug>/, (2) the same path under artefacts/archived/<slug>/ --
- * closing the gap where an archived feature's artefacts, including its 4
- * root-level types, previously always 404'd -- and only if artefactType has
- * no '/' (so a correctly-generated nested link never pays this cost), (3) a
- * bounded probe of every known subdirectory under both prefixes, with a
- * shorter per-attempt timeout, so an old bookmarked or externally-shared
- * bare-name link still resolves instead of 404ing forever.
+ * now carries). Resolution order: (0, cat-s5) when repoRoot is supplied and
+ * artefactType has no '/', consult the canonical trace (buildArtefactTrace)
+ * for an exact filename match and, if exactly one is found, fetch it
+ * directly in a single confident attempt -- this must run before step (1)
+ * below, not after, so a bare legacy name that the trace can resolve is
+ * fetched in one request rather than paying for two guaranteed-404 direct
+ * attempts first; it has no effect on a slash-containing artefactType or
+ * when repoRoot is omitted, both of which fall straight through unchanged.
+ * (1) the decoded path directly under artefacts/<slug>/, (2) the same path
+ * under artefacts/archived/<slug>/ -- closing the gap where an archived
+ * feature's artefacts, including its 4 root-level types, previously always
+ * 404'd -- and only if artefactType has no '/' (so a correctly-generated
+ * nested link never pays this cost), (3) a bounded probe of every known
+ * subdirectory under both prefixes, with a shorter per-attempt timeout, so
+ * an old bookmarked or externally-shared bare-name link still resolves
+ * instead of 404ing forever.
  *
  * @param {string} featureSlug  - e.g. '2026-01-01-example-feature'
  * @param {string} artefactType - e.g. 'discovery' or 'dor/psh-s1-dor'
@@ -166,13 +198,35 @@ async function _tryFetchAtPath(repoPath, targetRepo, token, featureSlug, artefac
  *   fetchGithubContentsResponse's own 10000ms default. Applies to the two
  *   direct attempts only -- the subdirectory-probing fallback (if reached)
  *   always uses the shorter FALLBACK_PROBE_TIMEOUT_MS regardless.
+ * @param {string} [repoRoot] - cat-s5: when supplied, enables trace-based
+ *   resolution of a bare (no-slash) artefactType via buildArtefactTrace,
+ *   before falling back to the static ARTEFACT_SUBDIRS probe (see Task 2).
+ *   Optional and additive -- omitted entirely by journey.js and
+ *   export-data-source.js's own call sites, which therefore see zero
+ *   behavioural change. Has no effect on a slash-containing artefactType,
+ *   which always resolves via the existing direct-path attempt unchanged.
  * @returns {Promise<string>} decoded markdown content
  * @throws {ArtefactNotFoundError} when every candidate path 404s
  * @throws {ArtefactFetchError}    on non-404 error, network failure, or timeout
  */
-async function fetchArtefact(featureSlug, artefactType, token, repoOverride, timeoutMs) {
+async function fetchArtefact(featureSlug, artefactType, token, repoOverride, timeoutMs, repoRoot) {
   const targetRepo = repoOverride ? `${repoOverride.owner}/${repoOverride.repo}` : GITHUB_REPO;
   const prefixes = ['artefacts', 'artefacts/archived'];
+
+  // cat-s5 AC2: trace-based resolution for a bare (no-slash) name, tried
+  // before the existing direct-path attempt and the old static-subdirectory
+  // probe -- see this plan's "Critical findings" #2. `_resolveViaTraceForBareName`
+  // returns null immediately (no side effects) whenever artefactType contains
+  // a '/', so a correctly-generated (slash-containing) link -- AC1's own case
+  // -- always falls straight through to the existing direct-path loop below,
+  // completely unaffected. It also returns null immediately when repoRoot is
+  // omitted, so journey.js/export-data-source.js and every adlr-s1 regression
+  // fixture (none of which pass repoRoot) see zero behavioural change either.
+  const traceMatch = _resolveViaTraceForBareName(repoRoot, featureSlug, artefactType);
+  if (traceMatch) {
+    const result = await _tryFetchAtPath(traceMatch.repoPath, targetRepo, token, featureSlug, artefactType, timeoutMs);
+    if (result !== null) return result;
+  }
 
   for (const prefix of prefixes) {
     const result = await _tryFetchAtPath(`${prefix}/${featureSlug}/${artefactType}.md`, targetRepo, token, featureSlug, artefactType, timeoutMs);
@@ -188,7 +242,29 @@ async function fetchArtefact(featureSlug, artefactType, token, repoOverride, tim
     }
   }
 
-  throw new ArtefactNotFoundError(featureSlug, artefactType);
+  // cat-s5 AC3/AC4: nothing resolved above -- before giving up, distinguish
+  // an orphaned-registration 404 (the requested name matches a story that
+  // cat-s3's own classifyDivergence marked 'orphaned-registration': registered
+  // in pipeline-state.json but with zero matching files on disk) from a
+  // genuinely never-registered path. Uses the exact same filename-attribution
+  // convention artefact-trace.js's own buildArtefactTrace already uses
+  // internally (`artefactType.indexOf(story.slug + '-') === 0 || artefactType
+  // === story.slug`), so this reuses an established convention rather than
+  // inventing new matching logic. AC4: ArtefactNotFoundError's constructor
+  // signature stays completely unchanged -- orphanedRegistration is set as a
+  // plain property AFTER construction, never passed as a constructor arg.
+  const finalErr = new ArtefactNotFoundError(featureSlug, artefactType);
+  if (repoRoot) {
+    const trace = buildArtefactTrace(repoRoot, featureSlug);
+    if (trace.status === 'found') {
+      const orphanedStory = trace.stories.find((s) =>
+        s.divergence === 'orphaned-registration' &&
+        (artefactType.indexOf(s.slug + '-') === 0 || artefactType === s.slug)
+      );
+      if (orphanedStory) finalErr.orphanedRegistration = true;
+    }
+  }
+  throw finalErr;
 }
 
 /**
