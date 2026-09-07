@@ -31809,19 +31809,19 @@
             {
               "slug": "cat-s5",
               "name": "Opening any single document resolves through the canonical trace, not independent logic",
-              "stage": "implementation-plan",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s5-review-1.md",
-              "updatedAt": "2026-09-07T04:47:56.368Z",
+              "updatedAt": "2026-09-07T09:23:00.607Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 11,
-                "passing": 0
+                "totalTests": 25,
+                "passing": 25
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s5-artefact-fetch-integration-test-plan.md",
@@ -31838,28 +31838,30 @@
                 {
                   "id": "task-1",
                   "name": "repoRoot plumbing + golden-fixture regression guard (AC1)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s5-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Trace-based bare-name resolution (AC2)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s5-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "Orphaned-registration distinct 404 (AC3, AC4)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s5-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "NFR tests, AC4 contract verification, final regression pass",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s5-plan.md"
                 }
-              ]
+              ],
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/846"
             },
             {
               "slug": "cat-s6",
