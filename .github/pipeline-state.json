@@ -31549,7 +31549,7 @@
         {
           "slug": "canonical-artefact-trace",
           "name": "Every operator sees a feature real artefact structure, even when registration is incomplete",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "cat-s1",
@@ -31868,19 +31868,19 @@
             {
               "slug": "cat-s6",
               "name": "The two existing non-trace consumers of artefact fetching keep working unchanged",
-              "stage": "implementation-plan",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s6-review-1.md",
-              "updatedAt": "2026-09-07T09:46:40.361Z",
+              "updatedAt": "2026-09-07T10:49:44.327Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 5,
-                "passing": 0
+                "totalTests": 10,
+                "passing": 10
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "testPlanArtefact": "artefacts/2026-09-06-canonical-artefact-trace/test-plans/cat-s6-regression-verification-test-plan.md",
@@ -31897,16 +31897,18 @@
                 {
                   "id": "task-1",
                   "name": "journey.js and export-data-source.js real-call-site verification (AC1, AC2)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s6-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Four prior regression suites + full-suite baseline confirmation (AC3, AC4)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-06-canonical-artefact-trace/plans/cat-s6-plan.md"
                 }
-              ]
+              ],
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/847"
             }
           ]
         }
