@@ -31809,12 +31809,12 @@
             {
               "slug": "cat-s5",
               "name": "Opening any single document resolves through the canonical trace, not independent logic",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-06-canonical-artefact-trace/review/cat-s5-review-1.md",
-              "updatedAt": "2026-09-06T02:21:09.414Z",
+              "updatedAt": "2026-09-07T04:44:12.400Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 11,
