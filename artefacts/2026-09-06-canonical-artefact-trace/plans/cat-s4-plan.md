@@ -582,7 +582,9 @@ git commit -m "feat(cat-s4): wire buildArtefactTrace into handleGetFeatureArtefa
 
 ---
 
-## Task 5: NFR tests and final regression pass
+## Task 5: NFR tests and final regression pass ✅ DONE (fb6ecb1c)
+
+**Result:** both NFR checks passed cleanly on the first run, no fixes needed — confirms Tasks 1-4 already satisfied the performance budget (measured 18.5-22.1ms vs. a 100ms budget for the 205-file `phase4` feature) and the accessibility requirement (Unregistered pill carries visible text, not color alone). Test-only change, 1 file. Targeted file: 21/21 passing (independently re-run). Full suite: 626 files, 1 pre-existing unrelated failure (`check-p3.5-validate-trace.js`), 0 regressions (independently re-run). **All 5 tasks of cat-s4 are now complete.**
 
 **Recommended model class:** fast/cheap.
 
