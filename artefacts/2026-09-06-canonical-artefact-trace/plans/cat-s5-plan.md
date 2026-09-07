@@ -207,9 +207,11 @@ git commit -m "feat(cat-s5): add optional repoRoot parameter to fetchArtefact, a
 
 ---
 
-## Task 2: trace-based bare-name resolution (AC2)
+## Task 2: trace-based bare-name resolution (AC2) ✅ DONE (88876ba3, critical fixup b9b8e1b8)
 
-**Two-stage review:** not yet run.
+**Result:** implementation deviated safely from the plan's own Step 3 layout (trace check moved before, not between, the direct-path loop — see the deviation note above, independently re-verified correct). **Two-stage review found 1 Critical issue not caught by any of the 8 originally-passing tests:** this plan's own Task 1 file map said `artefact.js` needed `getRepoRoot(req)` wiring, but no task ever actually wrote that step — `handleArtefactRoute` never passed `repoRoot` into `fetchArtefact`, so the entire trace-based resolution this task built could never fire on a real HTTP request. Fixed in `b9b8e1b8`: wired `getRepoRoot(req)` into `handleArtefactRoute`, added a genuine route-level integration test (real `fetchArtefact`, real repo root, real file content — not a mocked fetcher) that was confirmed to FAIL before the fix and PASS after, proving the test would have caught the original gap. Re-verified independently (not just trusting the implementer): 11/11 targeted tests, 15/15 `adlr-s1` regression suite unchanged, full suite 627 files/1 pre-existing-unrelated-failure/0 regressions. **AC2 now genuinely reachable in production, confirmed end-to-end.**
+
+**Two-stage review:** ✅ Approved (after the critical fixup above).
 
 **Recommended model class:** deep-reasoning — this is the task with the real new resolution logic; getting the fall-through conditions wrong could silently regress AC1 or change adlr-s1's own existing bare-name probe behaviour.
 
