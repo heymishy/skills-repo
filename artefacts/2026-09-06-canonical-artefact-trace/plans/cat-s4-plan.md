@@ -460,7 +460,11 @@ git commit -m "feat(cat-s4): show a distinct gap state for orphaned-registration
 
 ---
 
-## Task 4: Wire into handleGetFeatureArtefacts, not-yet-synced, routing gate change (AC4, AC5)
+## Task 4: Wire into handleGetFeatureArtefacts, not-yet-synced, routing gate change (AC4, AC5) ✅ DONE (4d69e4e2)
+
+**Result:** golden-fixture byte-identical assertion (AC4) passed on the first try, no adapter fixes needed — confirms Tasks 1-3's `_buildGroupedFromTrace`/`_adaptTraceArtefact` were correct. The intentional routing-gate change (Critical Finding #3) surfaced 2 pre-existing test fixtures that needed updating, not regressions in this task's own code: `check-fapg-s1-group-artefacts-by-story.js` (fixture wrote only `pipeline-state.json`, no matching real files on disk — now-canonical trace-based routing requires both) and `check-dsh-s4-fix-resume-conversation-link.js` (resume-link href/text unchanged, only the wrapping `<a>`'s CSS class differs between the old flat renderer and the now-used grouped feature-level table — widened the regex to accept either class). Every test file exercising `handleGetFeatureArtefacts` (12 files, grepped explicitly) re-run individually, all pass. Full suite: 626 files, 1 pre-existing unrelated failure (`check-p3.5-validate-trace.js`), 0 regressions — independently re-verified directly (not just trusting the implementer's report).
+
+**Discovered out-of-scope bug (logged, not fixed here):** while fixing the `fapg-s1` fixture, found that `buildArtefactTrace` (`src/web-ui/adapters/artefact-trace.js:136`, shipped and DoD'd in `cat-s1`, PR #842) reads `story.slug` directly for nested-shape stories — a bare-string `epic.stories[]` entry (e.g. `'p3.3'`, a shape `feature-story-structure.js`'s own `_storySlug` helper documents as valid) yields `slug: undefined`, so every artefact for that story silently misclassifies as unregistered/orphaned-registration instead of registered. Confirmed by direct code read, not just the implementer's claim. Logged to `workspace/capture-log.md` (2026-09-07, signal-type: gap) for a follow-up story against `cat-s1`'s own file — out of this task's file scope (`features.js`, not `artefact-trace.js`).
 
 **Recommended model class:** deep-reasoning — this is the highest-risk task (modifies the live route handler; AC4's byte-identical guarantee depends entirely on getting this exactly right).
 
