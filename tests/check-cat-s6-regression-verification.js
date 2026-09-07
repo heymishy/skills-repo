@@ -193,6 +193,35 @@ console.log('\n[cat-s6] AC2 -- export-data-source.js\'s real per-tenant repoOver
   }
 }
 
+console.log('\n[cat-s6] AC3 -- the four prior stories\' own regression suites report their expected, unchanged pass counts');
+{
+  // Filenames and pass counts confirmed by direct execution during this task
+  // (2026-09-07). All 4 files share the identical `console.log('Passed:', passed,
+  // ' Failed:', failed)` reporting format -- confirmed by reading each file's own
+  // final console.log lines, not assumed from adlr-s1's shape alone (tir-s5 lesson).
+  var suiteResults = [
+    { file: 'check-bsgm-s1-bare-slug-story-grouping.js', expectedPassing: 8 },
+    { file: 'check-sri-s1-story-registration-integrity.js', expectedPassing: 10 },
+    { file: 'check-adlr-s1-artefact-link-resolution.js', expectedPassing: 15 },
+    { file: 'check-fadm-s1-document-matrix.js', expectedPassing: 27 }
+  ];
+  suiteResults.forEach(function(s) {
+    var out = cp.execSync('node tests/' + s.file, { cwd: REPO_ROOT, encoding: 'utf8' });
+    test(s.file + ' reports exactly ' + s.expectedPassing + ' passing, 0 failing (unchanged baseline)', function() {
+      var passRe = new RegExp('Passed:\\s*' + s.expectedPassing + '\\s+Failed:\\s*0');
+      assert.ok(passRe.test(out), 'expected "Passed: ' + s.expectedPassing + '  Failed: 0" in output, got tail: ' + out.slice(-300));
+    });
+  });
+}
+
+// AC4 (the full-suite baseline check) is intentionally NOT re-run from inside
+// this file: check-cat-s6-regression-verification.js is itself one of the
+// files scripts/run-all-tests.js invokes, so embedding a nested full-suite
+// execSync call here would recursively re-run the entire suite from within
+// itself on every full-suite run. AC4 is verified directly by running
+// `node scripts/run-all-tests.js` (plan Task 2 Steps 3 and 6) and is reported
+// in this task's commit/report, not as an in-file assertion.
+
 }
 
 main().then(function() {
