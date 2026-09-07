@@ -195,13 +195,70 @@ console.log('\n[cat-s4] AC3 -- combined fixture: orphaned-registration gap state
   });
 }
 
-console.log('\n[cat-s4] AC5 -- not-yet-synced feature shows a clear message, not a crash or empty page');
+console.log('\n[cat-s4] AC5 (foundation) -- buildArtefactTrace itself returns not-yet-synced for a nonexistent repoRoot');
 {
   var os = require('os');
-  var unsyncedRoot = path.join(os.tmpdir(), 'wuce-unsynced-cat-s4-' + Date.now());
-  var trace = mod._traceForRoute ? mod._traceForRoute(unsyncedRoot, 'any-slug') : require('../src/web-ui/adapters/artefact-trace').buildArtefactTrace(unsyncedRoot, 'any-slug');
-  test('buildArtefactTrace itself returns not-yet-synced for this fixture', function() {
-    assert.strictEqual(trace.status, 'not-yet-synced');
+  var unsyncedRootDirect = path.join(os.tmpdir(), 'wuce-unsynced-cat-s4-' + Date.now());
+  var traceDirect = require('../src/web-ui/adapters/artefact-trace').buildArtefactTrace(unsyncedRootDirect, 'any-slug');
+  test('buildArtefactTrace itself returns not-yet-synced for this fixture (the underlying condition the route-level test below builds on)', function() {
+    assert.strictEqual(traceDirect.status, 'not-yet-synced');
+  });
+}
+
+function makeRes() {
+  var state = { status: 200, body: '' };
+  return {
+    writeHead: function(code) { state.status = code; },
+    end: function(body) { state.body = body || ''; },
+    _get: function() { return state; }
+  };
+}
+
+// AC5 route-level test is deferred to the end of the file (see
+// _runAc5RouteLevelTest below) so its async result can be awaited before the
+// final [cat-s4] Results line and exit-code decision -- everything else in
+// this file runs synchronously top-to-bottom.
+function _runAc5RouteLevelTest() {
+  console.log('\n[cat-s4] AC5 -- not-yet-synced feature renders the real user-facing message via the actual route branch (not a duplicate of cat-s1/cat-s3 direct-call coverage)');
+  var os = require('os');
+  var repoRootModule = require('../src/web-ui/adapters/repo-root');
+  // Deliberately never created on disk -- buildArtefactTrace's own
+  // `!fs.existsSync(repoRoot)` check (src/web-ui/adapters/artefact-trace.js)
+  // is what actually produces status: 'not-yet-synced'. A missing
+  // artefacts/<slug> subdirectory under an EXISTING repoRoot produces
+  // 'not-found' instead -- a different branch, already covered by the AC4
+  // fallback-rendering test below.
+  var unsyncedRoot = path.join(os.tmpdir(), 'cat-s4-unsynced-route-' + Date.now());
+
+  var routes = freshRequire(FEATURES_PATH);
+  routes.setListArtefacts(function() {
+    return Promise.resolve({
+      artefacts: [{ path: 'artefacts/any-slug/discovery.md', type: 'Discovery' }],
+      grouped: {}, noArtefacts: false
+    });
+  });
+  routes.setJourneyStoreModule({
+    getJourneyByFeatureSlug: function() { return null; },
+    getArtefactsForJourney: function() { return Promise.resolve([]); }
+  });
+  var pool = { query: function() { return Promise.resolve({ rows: [] }); } };
+  repoRootModule.setRepoRoot(unsyncedRoot);
+  var req = { session: { accessToken: 'tok', login: 'user', tenantId: 't1' }, headers: { accept: 'text/html' } };
+  var res = makeRes();
+
+  return routes.handleGetFeatureArtefacts(req, res, 'any-slug', pool).then(function() {
+    repoRootModule.setRepoRoot(null);
+    var body = res._get().body;
+    test('handleGetFeatureArtefacts renders the literal not-yet-synced message through its own real "if (trace.status === \'not-yet-synced\')" branch, not a re-derivation', function() {
+      assert.ok(
+        body.indexOf('Still syncing this feature\'s artefacts — check back shortly.') !== -1,
+        'expected the literal not-yet-synced message in the rendered response body, got: ' + body.slice(0, 800)
+      );
+    });
+  }, function(err) {
+    repoRootModule.setRepoRoot(null);
+    failed++;
+    console.log('  [FAIL] handleGetFeatureArtefacts AC5 route-level test threw --', (err && err.message) || err);
   });
 }
 
@@ -249,5 +306,7 @@ console.log('\n[cat-s4] NFR -- Unregistered indicator never relies on color alon
   });
 }
 
-console.log('\n[cat-s4] Results:', passed, 'passed,', failed, 'failed');
-if (failed > 0) process.exit(1);
+_runAc5RouteLevelTest().then(function() {
+  console.log('\n[cat-s4] Results:', passed, 'passed,', failed, 'failed');
+  if (failed > 0) process.exit(1);
+});

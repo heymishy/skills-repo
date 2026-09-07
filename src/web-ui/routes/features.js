@@ -395,6 +395,12 @@ function _adaptTraceArtefact(traceArtefact, featureSlug) {
   };
 }
 
+// cat-s4: single shared label for the "not registered in pipeline-state.json"
+// signal -- used both as the synthetic catch-all bucket's slug and as the
+// visible pill text at both pill-rendering call sites below, so a future
+// rename only touches this one line.
+const UNREGISTERED_LABEL = 'Unregistered';
+
 /**
  * cat-s4: converts buildArtefactTrace's classified {epics, stories, artefacts}
  * into the {featureLevel, epics, flatStories} shape renderGroupedArtefactIndexHtml
@@ -403,7 +409,16 @@ function _adaptTraceArtefact(traceArtefact, featureSlug) {
  * as the ONE canonical source of that shape, per ADR-028).
  * @param {object} trace  a 'found'-status result from buildArtefactTrace
  * @param {string} featureSlug
- * @returns {{featureLevel: Array, epics: Array, flatStories: Array}}
+ * @returns {{featureLevel: Array, epics: Array, flatStories: Array<{slug: string, artefacts: Array, divergence?: string}>}}
+ *   flatStories holds three different kinds of bucket, all rendered by the
+ *   same matrix row logic: (1) real flat (non-epic-nested) stories, keyed by
+ *   their own story slug; (2) synthetic inferred-group buckets (cat-s4 AC2),
+ *   keyed by the shared filename-prefix cat-s3's inferGroups derived, for
+ *   unregistered artefacts that still cluster together; and (3) at most one
+ *   shared catch-all bucket keyed by the literal `UNREGISTERED_LABEL` slug,
+ *   holding every remaining unregistered, non-feature-level artefact that
+ *   matched no story and no inferred group -- present only when at least one
+ *   such artefact exists.
  */
 function _buildGroupedFromTrace(trace, featureSlug) {
   const featureLevel = [];
@@ -411,7 +426,7 @@ function _buildGroupedFromTrace(trace, featureSlug) {
   trace.stories.forEach((story) => { byStorySlug[story.slug] = []; });
 
   const inferredBuckets = {};
-  const unregisteredCatchAll = { slug: 'Unregistered', artefacts: [] };
+  const unregisteredCatchAll = { slug: UNREGISTERED_LABEL, artefacts: [] };
 
   trace.artefacts.forEach((artefact) => {
     const adapted = _adaptTraceArtefact(artefact, featureSlug);
@@ -508,7 +523,7 @@ function _renderFeatureLevelTable(artefacts, featureSlug, resumeLookup) {
     // renders feature-level artefacts (which never attach to the story
     // matrix below), so the matrix's own pill logic never reaches them.
     const unregisteredPill = a.divergence === 'unregistered'
-      ? ' <span class="sw-pill sw-pill--nodot sw-pill--neutral" title="Not registered in pipeline-state.json">Unregistered</span>'
+      ? ` <span class="sw-pill sw-pill--nodot sw-pill--neutral" title="Not registered in pipeline-state.json">${UNREGISTERED_LABEL}</span>`
       : '';
     return `<tr><td class="doc-table__type">${shellEscHtml(label)}</td>` +
       `<td><a class="doc-table__link" href="${shellEscHtml(viewUrl)}">${shellEscHtml(a.path || '')}</a>${resumeLink}${unregisteredPill}</td>` +
@@ -591,7 +606,7 @@ function renderArtefactMatrix(grouped, featureSlug, epicDocs, resumeLookup) {
           ? ` <a class="doc-matrix__resume-link" href="/journey/${encodeURIComponent(resumable.journeyId)}/stage/${encodeURIComponent(resumable.skillName)}" title="Resume conversation">↻</a>`
           : '';
         const unregisteredPill = a.divergence === 'unregistered'
-          ? ' <span class="sw-pill sw-pill--nodot sw-pill--neutral" title="Not registered in pipeline-state.json">Unregistered</span>'
+          ? ` <span class="sw-pill sw-pill--nodot sw-pill--neutral" title="Not registered in pipeline-state.json">${UNREGISTERED_LABEL}</span>`
           : '';
         return `<td><a class="doc-matrix__tick" href="${shellEscHtml(viewUrl)}" title="Open document">✓</a>${resumeLink}${unregisteredPill}</td>`;
       }).join('');
