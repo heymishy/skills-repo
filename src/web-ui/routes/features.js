@@ -543,12 +543,12 @@ function renderArtefactMatrix(grouped, featureSlug, epicDocs, resumeLookup) {
 
   const rowGroups = [];
   (grouped.epics || []).forEach((epic) => {
-    const stories = (epic.stories || []).filter((s) => s.artefacts.length > 0);
+    const stories = (epic.stories || []).filter((s) => s.artefacts.length > 0 || s.divergence === 'orphaned-registration');
     if (stories.length > 0) {
       rowGroups.push({ epicName: epic.epicName || epic.epicSlug || '', epicSlug: epic.epicSlug || null, stories });
     }
   });
-  const flatWithArtefacts = (grouped.flatStories || []).filter((s) => s.artefacts.length > 0);
+  const flatWithArtefacts = (grouped.flatStories || []).filter((s) => s.artefacts.length > 0 || s.divergence === 'orphaned-registration');
   if (flatWithArtefacts.length > 0) {
     rowGroups.push({ epicName: rowGroups.length > 0 ? 'Stories' : null, epicSlug: null, stories: flatWithArtefacts });
   }
@@ -577,6 +577,10 @@ function renderArtefactMatrix(grouped, featureSlug, epicDocs, resumeLookup) {
     }
 
     const storyRows = group.stories.map((story) => {
+      if (story.artefacts.length === 0 && story.divergence === 'orphaned-registration') {
+        return `<tr><td class="doc-matrix__story-col">${shellEscHtml(story.slug)}</td>` +
+          `<td colspan="${colCount - 1}" class="doc-matrix__dash" title="Registered in pipeline-state.json but no matching file found on disk">Registered, but no files found</td></tr>`;
+      }
       const byColumn = {};
       story.artefacts.forEach((a) => { byColumn[_deriveMatrixColumn(a.path || '')] = a; });
       const cells = columns.map((k) => {

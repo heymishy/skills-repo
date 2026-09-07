@@ -152,5 +152,23 @@ console.log('\n[cat-s4] Regression -- a "registered" artefact never renders an U
   });
 }
 
+console.log('\n[cat-s4] AC3 -- orphaned-registration story shows a distinct gap state, not silently dropped');
+{
+  var fakeTrace = {
+    status: 'found', epics: [],
+    stories: [{ slug: 'ghost-s1', name: 'Ghost Story', divergence: 'orphaned-registration' }],
+    artefacts: []
+  };
+  var grouped = mod._buildGroupedFromTrace(fakeTrace, 'ghost-feature');
+  var html = mod.renderGroupedArtefactIndexHtml(grouped, 'ghost-feature', {});
+  test('orphaned-registration story still appears in the rendered output', function() {
+    assert.ok(html.indexOf('ghost-s1') !== -1, 'expected the orphaned story slug to appear');
+  });
+  test('orphaned-registration gap marker is distinct from the Unregistered pill text', function() {
+    assert.ok(html.indexOf('No files found') !== -1 || html.indexOf('orphaned') !== -1 || html.indexOf('Registered, but') !== -1,
+      'expected a distinct gap-state message, got HTML with no recognisable gap marker');
+  });
+}
+
 console.log('\n[cat-s4] Results:', passed, 'passed,', failed, 'failed');
 if (failed > 0) process.exit(1);
