@@ -36,20 +36,37 @@ function mockFetchOkPaths(okPaths, calls) {
   };
 }
 
+// All test bodies run inside this async function, awaited in sequence, so
+// the final Results/exit-code logic at the bottom of the file only runs
+// after every async assertion has actually executed -- future tasks in this
+// story append MORE `await`-based blocks inside this same function, never a
+// new unawaited top-level `.then()` chain (a dangling `.then()` here would
+// let the Results line print, and the exit-code gate evaluate, before the
+// promise resolves -- silently making this whole file's pass/fail reporting
+// and CI gating meaningless, since `failed` would still read 0 at that
+// point no matter what the async assertions actually found).
+async function main() {
+
 console.log('\n[cat-s5] AC1 -- correctly-encoded existing link resolves identically with repoRoot supplied (regression guard)');
 {
   var fetcherMod = freshRequire(FETCHER_PATH);
   var calls = [];
   global.fetch = mockFetchOkPaths(['artefacts/2026-07-05-product-stds-hierarchy/dor/psh-s1-dor.md'], calls);
-  fetcherMod.fetchArtefact('2026-07-05-product-stds-hierarchy', 'dor/psh-s1-dor', 'tok', undefined, undefined, REPO_ROOT).then(function(content) {
-    test('content resolved, byte-identical to the no-repoRoot case', function() {
-      assert.ok(content.indexOf('content for') === 0);
-    });
-    test('exactly 1 fetch call -- repoRoot supplied does not change the slash-containing direct-path case', function() {
-      assert.strictEqual(calls.length, 1);
-    });
+  var content = await fetcherMod.fetchArtefact('2026-07-05-product-stds-hierarchy', 'dor/psh-s1-dor', 'tok', undefined, undefined, REPO_ROOT);
+  test('content resolved, byte-identical to the no-repoRoot case', function() {
+    assert.ok(content.indexOf('content for') === 0);
+  });
+  test('exactly 1 fetch call -- repoRoot supplied does not change the slash-containing direct-path case', function() {
+    assert.strictEqual(calls.length, 1);
   });
 }
 
-console.log('\n[cat-s5] Results:', passed, 'passed,', failed, 'failed');
-if (failed > 0) process.exit(1);
+}
+
+main().then(function() {
+  console.log('\n[cat-s5] Results:', passed, 'passed,', failed, 'failed');
+  process.exit(failed > 0 ? 1 : 0);
+}).catch(function(err) {
+  console.log('UNEXPECTED ERROR:', err.stack || err.message);
+  process.exit(1);
+});
