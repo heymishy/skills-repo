@@ -32382,7 +32382,7 @@
       "stage": "benefit-metric",
       "discoveryStatus": "approved",
       "health": "green",
-      "updatedAt": "2026-09-08T00:53:58.224Z",
+      "updatedAt": "2026-09-08T02:16:44.558Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -32404,7 +32404,8 @@
           "evidence": null,
           "contributingStories": []
         }
-      ]
+      ],
+      "designArtefact": "artefacts/2026-09-08-session-origin-badge/design.md"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
