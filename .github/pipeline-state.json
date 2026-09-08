@@ -32514,15 +32514,15 @@
               "name": "Session-origin indicator on the org kanban board",
               "stage": "subagent-execution",
               "health": "green",
-              "updatedAt": "2026-09-08T23:19:58.234Z",
+              "updatedAt": "2026-09-08T23:30:24.293Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s3-review-1.md",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-09-08-session-origin-badge/test-plans/sob-s3-test-plan.md",
-                "totalTests": 5,
-                "passing": 0
+                "totalTests": 7,
+                "passing": 7
               },
               "verificationArtefact": "artefacts/2026-09-08-session-origin-badge/verification-scripts/sob-s3-verification.md",
               "acTotal": 5,
@@ -32544,6 +32544,9 @@
                 "tddState": "committed"
               },
               "task-2": {
+                "tddState": "committed"
+              },
+              "task-3": {
                 "tddState": "committed"
               }
             }
