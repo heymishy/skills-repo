@@ -343,6 +343,25 @@ function _renderKanbanColumns(data) {
           ? '<span class="kb-artefact-badge kb-artefact-badge--empty">no artefacts yet</span>'
           : '<span class="kb-artefact-badge">' + artefactCount + ' artefact' + (artefactCount === 1 ? '' : 's') + '</span>';
 
+      // sob-s3 (AC1, AC2) -- session-origin badge, same markup pattern as the
+      // artefact-count badge above. Only rendered when the caller (products.js's
+      // _enrichColumnsWithSessionOrigin, currently only wired for org kanban)
+      // actually computed a value -- other kanban scopes render with no badge,
+      // zero behaviour change for them. Required inline (not hoisted to a
+      // top-of-file require) because products.js requires this file
+      // (kanban-view.js) at top level, and features.js requires products.js at
+      // top level for renderShellWithNav -- a top-level require of features.js
+      // here would complete the cycle (features.js -> products.js ->
+      // kanban-view.js -> features.js) and, depending on load order, capture
+      // features.js's exports before its module.exports assignment runs.
+      // Node resolves this safely at call time since all three modules are
+      // already fully loaded by then (same pattern as products.js's own
+      // inline require of features.js).
+      var _sobMeta = card.sessionOrigin ? require('../routes/features.js').sessionOriginBadgeMeta(card.sessionOrigin) : null;
+      var sessionOriginBadge = _sobMeta
+        ? '<span data-sob-session-origin="' + escHtml(card.sessionOrigin) + '" class="kb-session-origin-badge" title="' + escHtml(_sobMeta.label) + '" aria-label="' + escHtml(_sobMeta.label) + '">' + _sobMeta.glyph + '</span>'
+        : '';
+
       var hasReadiness = typeof card.ready === 'boolean';
       // s1.2 (AC4) -- a real gate-confirm validation failure is a DIFFERENT
       // failure mode from the routine "session still in progress" not-ready
@@ -410,6 +429,7 @@ function _renderKanbanColumns(data) {
           (isDraggable ? ' draggable="true" ondragstart="kbDragStart(event)"' : '') + '>',
           '<div class="kb-card-title">' + escHtml(displayTitle) + '</div>',
           artefactBadge,
+          sessionOriginBadge,
           '<div class="kb-card-meta">',
             '<span class="kb-card-id">' + escHtml(card.id) + '</span>',
             ' · <span class="kb-health-label">' + escHtml(healthLabel) + '</span>',

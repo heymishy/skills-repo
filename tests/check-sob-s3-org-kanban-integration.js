@@ -72,6 +72,31 @@ async function testAsync(name, fn) {
     assert.ok(!/mergeFeatureSources|taxonomy/i.test(fnBody), 'handleGetOrgKanban must not merge in taxonomy-only (non-journey) rows -- its query is journeys-table-only by design (see decisions.md/story Architecture Constraints)');
   });
 
+  console.log('\n[sob-s3] AC1/AC2 (render-level) -- kanban-view renders the session-origin badge from card.sessionOrigin');
+  test('renderKanban outputs data-sob-session-origin for a card carrying sessionOrigin', function() {
+    const kanbanView = require('../src/web-ui/views/kanban-view.js');
+    const html = kanbanView.renderKanban({
+      columns: [{ stage: 'discovery', cards: [{ id: 'j1', title: 'Test', sessionOrigin: 'fully-session-backed' }] }]
+    });
+    assert.ok(html.includes('data-sob-session-origin="fully-session-backed"'), 'expected the session-origin badge to render on a card carrying sessionOrigin');
+  });
+
+  test('renderKanban outputs data-sob-session-origin for a card carrying the "mixed" tri-state (AC2, render-level -- not just Task 2\'s data-derivation coverage)', function() {
+    const kanbanView = require('../src/web-ui/views/kanban-view.js');
+    const html = kanbanView.renderKanban({
+      columns: [{ stage: 'discovery', cards: [{ id: 'j2', title: 'Test2', sessionOrigin: 'mixed' }] }]
+    });
+    assert.ok(html.includes('data-sob-session-origin="mixed"'), 'expected the mixed-state session-origin badge to render');
+  });
+
+  test('renderKanban renders no session-origin badge for a card without sessionOrigin (zero behaviour change for other callers)', function() {
+    const kanbanView = require('../src/web-ui/views/kanban-view.js');
+    const html = kanbanView.renderKanban({
+      columns: [{ stage: 'discovery', cards: [{ id: 'j3', title: 'Test3' }] }]
+    });
+    assert.ok(!html.includes('data-sob-session-origin'), 'expected no session-origin badge for a card the caller never enriched');
+  });
+
   console.log('\n--- sob-s3 full results ---');
   console.log('Passed:', passed, ' Failed:', failed);
   process.exit(failed > 0 ? 1 : 0);
