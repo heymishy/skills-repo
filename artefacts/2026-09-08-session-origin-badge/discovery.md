@@ -1,8 +1,8 @@
 # Discovery: Session-Origin Badge
 
-**Status:** Clarified
+**Status:** Approved
 **Created:** 2026-09-08
-**Approved by:** [Name + date — filled in after human review]
+**Approved by:** Hamish King — Platform Owner — 2026-09-08
 **Author:** Copilot
 
 ---
@@ -62,11 +62,11 @@ No unconfirmed assumptions requiring `/clarify` — the two open design question
 
 ## Reviewers
 
-- [Name — Role]
+- None — approved directly by the Platform Owner without a separate review pass
 
 ## Approved By
 
-[Name — Role — Date]
+Hamish King — Platform Owner — 2026-09-08
 
 ## Clarification log
 [2026-09-08] Clarified via /clarify:

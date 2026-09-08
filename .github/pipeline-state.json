@@ -32380,16 +32380,18 @@
       "name": "Session-Origin Badge",
       "track": "standard",
       "stage": "discovery",
-      "discoveryStatus": "clarified",
+      "discoveryStatus": "approved",
       "health": "green",
-      "updatedAt": "2026-09-07T23:28:16.819Z",
+      "updatedAt": "2026-09-08T00:09:49.591Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "epics": [],
       "stories": [],
-      "discoveryArtefact": "artefacts/2026-09-08-session-origin-badge/discovery.md"
+      "discoveryArtefact": "artefacts/2026-09-08-session-origin-badge/discovery.md",
+      "approvedAt": "2026-09-08",
+      "approvedBy": "Hamish King"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
