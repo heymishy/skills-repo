@@ -32466,9 +32466,9 @@
             {
               "slug": "sob-s2",
               "name": "Session-origin indicator on the /journey dashboard",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
-              "updatedAt": "2026-09-08T19:23:54.798Z",
+              "updatedAt": "2026-09-08T19:25:43.970Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s2-review-1.md",
@@ -32492,6 +32492,20 @@
                   "id": "web-ui",
                   "hash": "8c188790ec1c3808901cd26821ffabf9f1be9e16d5396dee25ea5c13ab6d7fc2",
                   "path": ".github/standards/web-ui/web-ui-patterns.md"
+                }
+              ],
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Wire session-origin indicator into _renderJourneyHome card template",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-08-session-origin-badge/plans/sob-s2-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Confirm test auto-discovery (verification only)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-08-session-origin-badge/plans/sob-s2-plan.md"
                 }
               ]
             },
