@@ -32466,17 +32466,17 @@
             {
               "slug": "sob-s2",
               "name": "Session-origin indicator on the /journey dashboard",
-              "stage": "branch-setup",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-09-08T05:46:07.692Z",
+              "updatedAt": "2026-09-08T20:51:16.900Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s2-review-1.md",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-09-08-session-origin-badge/test-plans/sob-s2-test-plan.md",
-                "totalTests": 5,
-                "passing": 0
+                "totalTests": 9,
+                "passing": 9
               },
               "verificationArtefact": "artefacts/2026-09-08-session-origin-badge/verification-scripts/sob-s2-verification.md",
               "acTotal": 5,
@@ -32492,6 +32492,20 @@
                   "id": "web-ui",
                   "hash": "8c188790ec1c3808901cd26821ffabf9f1be9e16d5396dee25ea5c13ab6d7fc2",
                   "path": ".github/standards/web-ui/web-ui-patterns.md"
+                }
+              ],
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Wire session-origin indicator into _renderJourneyHome card template",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-08-session-origin-badge/plans/sob-s2-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Confirm test auto-discovery (verification only)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-08-session-origin-badge/plans/sob-s2-plan.md"
                 }
               ]
             },
