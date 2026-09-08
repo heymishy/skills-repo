@@ -174,6 +174,27 @@ function _resolveResumeLinksForFeature(journey) {
   return lookup;
 }
 
+/**
+ * sob-s1: derives the tri-state session-origin classification for a
+ * feature/journey from its completed-stage sessionId presence.
+ * hasJourney is a required, explicit input -- NOT inferred from an empty
+ * completedStages array -- because a real journey with zero completed
+ * stages (nothing to classify yet -> null) and a feature with no real
+ * journey at all (definitely no session -> "no-session") both present as
+ * an empty array to a naive caller. See decisions.md, 2026-09-08.
+ * @param {{hasJourney: boolean, completedStages: Array<{sessionId?: string}>}} input
+ * @returns {"fully-session-backed"|"mixed"|"no-session"|null}
+ */
+function deriveSessionOrigin(input) {
+  if (!input.hasJourney) return 'no-session';
+  var stages = input.completedStages || [];
+  if (stages.length === 0) return null;
+  var withSession = stages.filter(function(s) { return !!(s && s.sessionId); }).length;
+  if (withSession === 0) return 'no-session';
+  if (withSession === stages.length) return 'fully-session-backed';
+  return 'mixed';
+}
+
 // pdt-s4 (AC1, AC1a): resolves the breadcrumb context for a story detail
 // page. Two paths:
 //  - Direct: journeyForPage.productId already resolved (the common case,
@@ -958,5 +979,6 @@ module.exports = {
   renderStory,
   escHtml,
   _deriveMatrixColumn,
-  _buildGroupedFromTrace
+  _buildGroupedFromTrace,
+  deriveSessionOrigin
 };
