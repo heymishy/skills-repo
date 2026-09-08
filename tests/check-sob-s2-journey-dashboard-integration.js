@@ -159,7 +159,9 @@ await testAsync('a real journey with completedStages: [] renders NO data-sob-ses
 console.log('\n[sob-s2] AC5 -- no new query introduced (call-count check on listJourneys / _mergeStateFeaturesIntoJourneyList)');
 await testAsync('listJourneys and _mergeStateFeaturesIntoJourneyList are each still called exactly once per /journey render', async function() {
   const realJourneyStore = require('../src/web-ui/modules/journey-store');
+  const realMerge = journeyRoutes._mergeStateFeaturesIntoJourneyList;
   let listJourneysCallCount = 0;
+  let mergeCallCount = 0;
 
   const scratchRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'sob-s2-ac5-'));
   // No pipeline-state.json written -- _mergeStateFeaturesIntoJourneyList
@@ -183,7 +185,14 @@ await testAsync('listJourneys and _mergeStateFeaturesIntoJourneyList are each st
       }];
     }
   });
-  journeyRoutes._sobResetMergeCallCount();
+  // Inject a counting spy through the injectable seam (setMergeStateFeaturesIntoJourneyList,
+  // mirroring setJourneyStoreModule) that delegates to the real implementation
+  // so the render stays genuine -- the actual merge still happens, this only
+  // observes how many times it was invoked.
+  journeyRoutes.setMergeStateFeaturesIntoJourneyList(function(journeys, repoRoot) {
+    mergeCallCount++;
+    return realMerge(journeys, repoRoot);
+  });
 
   try {
     const req = mockReq({});
@@ -193,11 +202,12 @@ await testAsync('listJourneys and _mergeStateFeaturesIntoJourneyList are each st
 
     assert.strictEqual(result.statusCode, 200, 'expected a 200 render, got: ' + result.statusCode);
     assert.strictEqual(listJourneysCallCount, 1, 'listJourneys should be called exactly once per render, was called ' + listJourneysCallCount + ' times');
-    assert.strictEqual(journeyRoutes._sobGetMergeCallCount(), 1, '_mergeStateFeaturesIntoJourneyList should be called exactly once per render, was called ' + journeyRoutes._sobGetMergeCallCount() + ' times');
+    assert.strictEqual(mergeCallCount, 1, '_mergeStateFeaturesIntoJourneyList should be called exactly once per render, was called ' + mergeCallCount + ' times');
   } finally {
     // restore real adapters so this test file has no side effects on any
     // other check-*.js file run in the same process by scripts/run-all-tests.js
     journeyRoutes.setJourneyStoreModule(realJourneyStore);
+    journeyRoutes.setMergeStateFeaturesIntoJourneyList(null);
     journeyRoutes.setRepoRoot(null);
   }
 });

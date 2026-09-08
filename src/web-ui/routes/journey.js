@@ -432,7 +432,7 @@ async function handleGetJourney(req, res, _next, pool) {
   // without a product remain a fully supported, non-error case (e.g.
   // solo/personal-project use), not disallowed by this filter.
   journeys = journeys.filter(function(j) { return j.productId == null; });
-  journeys = _mergeStateFeaturesIntoJourneyList(journeys, repoRoot); // ep1-s1
+  journeys = _mergeStateFeaturesIntoJourneyListFn(journeys, repoRoot); // ep1-s1
   journeys.sort(function(a, b) { return (b.createdAt ? new Date(b.createdAt).toISOString() : '').localeCompare(a.createdAt ? new Date(a.createdAt).toISOString() : ''); });
   var showNewForm = !!(req.query && req.query.new === '1');
   // mgss-s1: optional ?mockScenario=<name> query param, threaded through as a
@@ -4438,18 +4438,6 @@ function _readPipelineFeatures(root) {
 
 var TERMINAL_STAGES = ['completed', 'archived', 'released'];
 
-// sob-s2 AC5: minimal call-count instrumentation for
-// _mergeStateFeaturesIntoJourneyList. Added because it's invoked directly
-// inside handleGetJourney (not through an injectable adapter like
-// _journeyStore), so there is no existing seam a test can use to assert "no
-// new call was introduced" by this story's change. This is the narrowest
-// seam that provides that -- a counter incremented at the top of the real
-// function, plus a getter/reset pair for tests, restored per-test by the
-// caller. Not exercised or referenced by any production code path.
-var _sobMergeCallCount = 0;
-function _sobGetMergeCallCount() { return _sobMergeCallCount; }
-function _sobResetMergeCallCount() { _sobMergeCallCount = 0; }
-
 /**
  * ep1-s1: merge non-terminal pipeline-state.json features that have no
  * journey-store record yet into the existing journeys list, so they render
@@ -4461,7 +4449,6 @@ function _sobResetMergeCallCount() { _sobMergeCallCount = 0; }
  * @returns {Array} journeys + synthesized entries for CLI-only, non-terminal features
  */
 function _mergeStateFeaturesIntoJourneyList(journeys, repoRoot) {
-  _sobMergeCallCount++; // sob-s2 AC5: narrow call-count seam, see comment near its declaration
   var features = _readPipelineFeatures(repoRoot);
   if (!features) return journeys;
   var knownSlugs = {};
@@ -4488,6 +4475,19 @@ function _mergeStateFeaturesIntoJourneyList(journeys, repoRoot) {
   });
   return journeys.concat(synthesized);
 }
+
+// sob-s2 AC5: injectable seam for _mergeStateFeaturesIntoJourneyList,
+// mirroring this file's existing _journeyStore / setJourneyStoreModule
+// adapter idiom (D37/ADR-009's "real-by-default, test-injectable" shape --
+// not a stub-throws adapter, matching the reasoning already established for
+// _getSessionOriginBulk in sob-s1/products.js). handleGetJourney calls
+// through this reference rather than the real function directly, so a test
+// can inject a counting spy that delegates to the real implementation and
+// prove the route handler calls it exactly once per render. Defaults to the
+// real implementation above; passing a falsy value to the setter restores
+// the real implementation rather than leaving the seam unset.
+var _mergeStateFeaturesIntoJourneyListFn = _mergeStateFeaturesIntoJourneyList;
+function setMergeStateFeaturesIntoJourneyList(fn) { _mergeStateFeaturesIntoJourneyListFn = fn || _mergeStateFeaturesIntoJourneyList; }
 
 var BACKFILL_STAGE_SEQUENCE = ['ideate', 'discovery', 'benefit-metric', 'design', 'definition', 'review', 'test-plan', 'definition-of-ready'];
 
@@ -4815,8 +4815,7 @@ module.exports = {
   _mergeStateFeaturesIntoJourneyList, // ep1-s1
   TERMINAL_STAGES, // ep1-s1
   _renderJourneyHome, // sob-s2 -- exported for direct testing, mirrors sob-s1's _renderConsolidatedFeaturesSection precedent
-  _sobGetMergeCallCount, // sob-s2 AC5
-  _sobResetMergeCallCount, // sob-s2 AC5
+  setMergeStateFeaturesIntoJourneyList, // sob-s2 AC5 -- injectable seam, mirrors setJourneyStoreModule
   backfillJourneyFromPipelineState, // ep1-s3
   getNextSkill, // ep1-s4
   getValidBackwardTargets, // ep1-s4
