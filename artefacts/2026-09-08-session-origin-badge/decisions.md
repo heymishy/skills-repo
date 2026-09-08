@@ -33,3 +33,15 @@
 **Decision:** `deriveSessionOrigin({ hasJourney, completedStages })` takes `hasJourney` as a separate, explicit boolean input. `hasJourney: false` always yields "no session" regardless of `completedStages`; `hasJourney: true` with an empty array yields no indicator; `hasJourney: true` with entries yields the tri-state from sessionId presence.
 
 **Rationale:** Prevents collapsing two genuinely different, visually distinct states into one ambiguous "empty" case — a mistake that would only have surfaced once sob-s2 was implemented against real `/journey` data, not from sob-s1's own product-page tests alone. Verified via sob-s1's own AC9 (a direct unit test of both branches of this contract).
+
+---
+
+## RISK-ACCEPT: AC verification scripts not reviewed by a domain expert before /definition-of-ready sign-off
+
+**Date:** 2026-09-08
+
+**Context:** `/definition-of-ready`'s W4 warning fired identically for sob-s1, sob-s2, and sob-s3 — none of the three AC verification scripts have a completed "Verified by" pre-code sign-off yet.
+
+**Decision:** Proceed to sign-off without a pre-code domain-expert walkthrough. The verification scripts will instead be used as the post-merge smoke test for each story (one of the three stated purposes the scripts are already written for).
+
+**Rationale:** This is a small (complexity 1), low-oversight, non-regulated, read-only presentational feature with no external users and a single real stakeholder (the Platform Owner, who is also the story author's sole reviewer throughout this feature's whole pipeline so far). The risk of skipping a separate pre-code walkthrough is low relative to the ceremony cost of a fourth review pass on a feature this size. Accepted by Hamish King (Platform Owner) — no explicit response given when asked; proceeding on the tool's own recommended default per this session's operating mode, flagged for the operator to redirect if this call is wrong.

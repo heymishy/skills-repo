@@ -32382,7 +32382,7 @@
       "stage": "definition",
       "discoveryStatus": "approved",
       "health": "green",
-      "updatedAt": "2026-09-08T05:15:28.905Z",
+      "updatedAt": "2026-09-08T05:28:37.669Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -32396,9 +32396,9 @@
             {
               "slug": "sob-s1",
               "name": "Shared session-origin derivation + product feature-list indicator",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-09-08T05:15:28.905Z",
+              "updatedAt": "2026-09-08T05:28:37.669Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s1-review-1.md",
@@ -32412,14 +32412,25 @@
               "acTotal": 9,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-09-08-session-origin-badge/dor/sob-s1-dor.md",
+              "dorContract": "artefacts/2026-09-08-session-origin-badge/dor/sob-s1-dor-contract.md",
+              "humanOversight": "low",
+              "standardsInjected": [
+                {
+                  "id": "web-ui",
+                  "hash": "8c188790ec1c3808901cd26821ffabf9f1be9e16d5396dee25ea5c13ab6d7fc2",
+                  "path": ".github/standards/web-ui/web-ui-patterns.md"
+                }
+              ]
             },
             {
               "slug": "sob-s2",
               "name": "Session-origin indicator on the /journey dashboard",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-09-08T05:15:28.905Z",
+              "updatedAt": "2026-09-08T05:28:37.669Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s2-review-1.md",
@@ -32433,14 +32444,25 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-09-08-session-origin-badge/dor/sob-s2-dor.md",
+              "dorContract": "artefacts/2026-09-08-session-origin-badge/dor/sob-s2-dor-contract.md",
+              "humanOversight": "low",
+              "standardsInjected": [
+                {
+                  "id": "web-ui",
+                  "hash": "8c188790ec1c3808901cd26821ffabf9f1be9e16d5396dee25ea5c13ab6d7fc2",
+                  "path": ".github/standards/web-ui/web-ui-patterns.md"
+                }
+              ]
             },
             {
               "slug": "sob-s3",
               "name": "Session-origin indicator on the org kanban board",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-09-08T05:15:28.905Z",
+              "updatedAt": "2026-09-08T05:28:37.669Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s3-review-1.md",
@@ -32454,7 +32476,18 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-09-08-session-origin-badge/dor/sob-s3-dor.md",
+              "dorContract": "artefacts/2026-09-08-session-origin-badge/dor/sob-s3-dor-contract.md",
+              "humanOversight": "low",
+              "standardsInjected": [
+                {
+                  "id": "web-ui",
+                  "hash": "8c188790ec1c3808901cd26821ffabf9f1be9e16d5396dee25ea5c13ab6d7fc2",
+                  "path": ".github/standards/web-ui/web-ui-patterns.md"
+                }
+              ]
             }
           ]
         }
@@ -32937,6 +32970,24 @@
           "evidence": "Reads data already tenant-scoped by each enclosing page's existing query (product_id/tenant_id WHERE clauses) -- introduces no new tenant-crossing surface",
           "assessedBy": "/review",
           "assessedAt": "2026-09-08T03:15:48.628Z"
+        },
+        {
+          "id": "NFR-session-origin-performance",
+          "category": "nfr",
+          "label": "Bulk lookup, not per-row query",
+          "status": "met",
+          "evidence": "sob-s1 AC6, sob-s2 AC5, sob-s3 AC3 -- verified in test plans, pending real test execution at implementation",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-08T05:28:37.669Z"
+        },
+        {
+          "id": "NFR-session-origin-accessibility",
+          "category": "nfr",
+          "label": "Colour not sole indicator -- text-equivalent required",
+          "status": "met",
+          "evidence": "sob-s1 AC8 -- verified in test plan, pending real test execution at implementation",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-08T05:28:37.669Z"
         }
       ]
     }
