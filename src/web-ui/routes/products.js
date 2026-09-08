@@ -504,8 +504,11 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
   var allHtml =
     '<div id="pvc-tab-panel-all" class="pvc-tab-panel" role="tabpanel" aria-labelledby="pvc-tab-all">' +
       // bmau-s1: explicit single-arg wrapper -- same Array.map() index-leak
-      // fix as the zero-modules fallback above.
-      '<ul style="list-style:none;padding:0;margin:0">' + items.map(function(item) { return _renderPvcItemRow(item, false, false, sessionOriginByJourneyId); }).join('') + '</ul>' +
+      // fix as the zero-modules fallback above. Reuses _renderPvcItemRowPlain
+      // (defined above) rather than re-inlining its body -- .map()'s extra
+      // (item, index, array) args are harmless since _renderPvcItemRowPlain
+      // only declares one parameter.
+      '<ul style="list-style:none;padding:0;margin:0">' + items.map(_renderPvcItemRowPlain).join('') + '</ul>' +
       noFeaturesInnerHtml +
     '</div>';
 

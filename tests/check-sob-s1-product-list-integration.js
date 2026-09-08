@@ -2,7 +2,7 @@
 'use strict';
 const assert = require('assert');
 const { getSessionOriginForJourneys } = require('../src/web-ui/adapters/journey-store-pg.js');
-const { _getSessionOriginBulk, setGetSessionOriginBulk, _renderConsolidatedFeaturesSection } = require('../src/web-ui/routes/products.js');
+const { _getSessionOriginBulk, setGetSessionOriginBulk, _renderConsolidatedFeaturesSection, handleGetProductView } = require('../src/web-ui/routes/products.js');
 
 let passed = 0, failed = 0;
 function test(name, fn) {
@@ -147,9 +147,50 @@ async function main() {
     });
   });
 
-  console.log('\n[sob-s1] AC6 note: _getSessionOriginBulk-called-exactly-once-per-render');
-  console.log('  AC6 evidence is by code inspection of handleGetProductView (see this task\'s');
-  console.log('  final report), not a new automated test at this layer -- not counted in totals.');
+  console.log('\n[sob-s1] handleGetProductView -- _getSessionOriginBulk called exactly once per render (AC6)');
+
+  await test('AC6: exactly one batched call to _getSessionOriginBulk regardless of journey count', async function() {
+    // Mirrors check-fps-s1-progress-proxy.js's own exactlyOneBatchedCallPerRender
+    // test for the sibling _getArtefactCountsBulk/setGetArtefactCountsBulk seam --
+    // same mock pool shape, same spy-via-injected-setter technique, same
+    // end-to-end call through handleGetProductView.
+    var callCount = 0;
+    var receivedJourneyIds = null;
+    setGetSessionOriginBulk(function(journeyIds) {
+      callCount++;
+      receivedJourneyIds = journeyIds;
+      return Promise.resolve({});
+    });
+
+    var journeyRows = [
+      { journey_id: 'j1', feature_slug: 'f1', stage: 'discovery' },
+      { journey_id: 'j2', feature_slug: 'f2', stage: 'discovery' },
+      { journey_id: 'j3', feature_slug: 'f3', stage: 'discovery' }
+    ];
+    var pool = {
+      query: async function(sql) {
+        if (/FROM products WHERE/.test(sql)) return { rows: [{ product_id: 'p1', name: 'P', tenant_id: 'tenant-1', repo_owner: null, repo_name: null }] };
+        if (/FROM journeys WHERE/.test(sql)) return { rows: journeyRows };
+        if (/product_rollup/.test(sql)) return { rows: [] };
+        return { rows: [] };
+      }
+    };
+    var req = { params: { id: 'p1' }, session: { tenantId: 'tenant-1', login: 'u' } };
+    var res = {
+      _status: null, _body: '',
+      writeHead: function(s) { res._status = s; },
+      end: function(b) { res._body += (b || ''); }
+    };
+
+    try {
+      await handleGetProductView(req, res, null, pool);
+      assert.strictEqual(res._status, 200, 'expected the render to actually succeed, not fail silently before reaching the bulk read');
+      assert.strictEqual(callCount, 1, 'expected exactly 1 batched call to _getSessionOriginBulk regardless of the ' + journeyRows.length + ' journeys, got ' + callCount);
+      assert.ok(Array.isArray(receivedJourneyIds), 'expected _getSessionOriginBulk to receive a journeyIds array');
+    } finally {
+      setGetSessionOriginBulk(null);
+    }
+  });
 
   console.log('\n--- sob-s1 product-list integration results ---');
   console.log('Passed:', passed, ' Failed:', failed);
