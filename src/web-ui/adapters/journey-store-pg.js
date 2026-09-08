@@ -138,6 +138,23 @@ async function getArtefactCountsForJourneys(journeyIds) {
   return map;
 }
 
+// sob-s1: sibling to getArtefactCountsForJourneys (s2.2) -- one batched
+// read for the whole page/board render, never one call per row. Returns
+// completedStages verbatim per journey (including each entry's sessionId,
+// if present) so deriveSessionOrigin can classify it -- not a count or
+// aggregate, the caller needs the raw per-stage detail.
+async function getSessionOriginForJourneys(journeyIds) {
+  const pool = _getPool();
+  if (!pool || !journeyIds || journeyIds.length === 0) return {};
+  const result = await pool.query(
+    "SELECT journey_id, data->'completedStages' AS completed_stages FROM journeys WHERE journey_id = ANY($1)",
+    [journeyIds]
+  );
+  const map = {};
+  result.rows.forEach(function(row) { map[row.journey_id] = row.completed_stages || []; });
+  return map;
+}
+
 /**
  * alrf-s10 — hard-delete a journey and all its artefact rows. artefacts.journey_id
  * has a plain FK to journeys(journey_id) with no ON DELETE clause (default
@@ -184,4 +201,4 @@ async function listJourneys() {
   });
 }
 
-module.exports = { saveJourney, listJourneys, migrateSchema, saveArtefact, getArtefactsForJourney, getArtefactCountsForJourneys, deleteJourney, _setPoolForTesting };
+module.exports = { saveJourney, listJourneys, migrateSchema, saveArtefact, getArtefactsForJourney, getArtefactCountsForJourneys, getSessionOriginForJourneys, deleteJourney, _setPoolForTesting };
