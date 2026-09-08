@@ -32396,9 +32396,9 @@
             {
               "slug": "sob-s1",
               "name": "Shared session-origin derivation + product feature-list indicator",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-09-08T18:26:25.620Z",
+              "updatedAt": "2026-09-08T18:35:29.662Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s1-review-1.md",
@@ -32456,7 +32456,9 @@
                   "file": "artefacts/2026-09-08-session-origin-badge/plans/sob-s1-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/848"
             },
             {
               "slug": "sob-s2",
