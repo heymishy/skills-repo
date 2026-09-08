@@ -12,6 +12,14 @@ var { updateJourneyReferenceFiles } = require('../modules/journey-state-persiste
 var _flagBootstrap = require('../modules/flag-bootstrap'); // bri-s1.3
 var _getProductsNavSummary = require('./products').getProductsNavSummary; // pan-s1 -- shared sidebar products summary
 var _renderShellWithNav = require('./products').renderShellWithNav; // pncg-s1 -- shared Products-nav render wrapper
+// sob-s2: reuses sob-s1's deriveSessionOrigin unchanged. Safe to hoist to a
+// normal top-level require -- unlike products.js's own inline-require case
+// for the identical situation (products.js requires features.js which in
+// turn requires products.js -- a genuine cycle), features.js does not
+// require journey.js anywhere, and journey.js already top-level-requires
+// products.js above with no cycle back through journey.js either (confirmed
+// by reading both files' require lists directly).
+var deriveSessionOrigin = require('./features.js').deriveSessionOrigin;
 
 // Injectable adapters — defaults wire to real implementations
 var _journeyStore = require('../modules/journey-store');
@@ -237,6 +245,24 @@ function _renderJourneyHome(data) {
 
   var cards = journeys.map(function(j) {
     var resumeUrl = '/journey/' + encodeURIComponent(j.featureSlug || '') + '/resume';
+    // sob-s2: reuses sob-s1's deriveSessionOrigin unchanged. hasJourney is
+    // true only when j actually carries a real completedStages array --
+    // synthesized entries from _mergeStateFeaturesIntoJourneyList never do
+    // (see decisions.md, 2026-09-08, for why this must be an explicit
+    // Array.isArray check, not an empty-array fallback).
+    var _sobOrigin = deriveSessionOrigin({
+      hasJourney: Array.isArray(j.completedStages),
+      completedStages: j.completedStages || []
+    });
+    var _sobLabelMap = {
+      'fully-session-backed': 'All completed stages driven through a live session — resumable',
+      'mixed': 'Some stages authored via CLI/agent, some through a live session — partially resumable',
+      'no-session': 'No live session — authored via CLI/agent'
+    };
+    var _sobGlyphMap = { 'fully-session-backed': '●', 'mixed': '◐', 'no-session': '○' };
+    var sessionOriginHtml = _sobOrigin
+      ? '<span data-sob-session-origin="' + _sobOrigin + '" class="sw-pill sw-pill--nodot" title="' + escHtml(_sobLabelMap[_sobOrigin]) + '" aria-label="' + escHtml(_sobLabelMap[_sobOrigin]) + '">' + _sobGlyphMap[_sobOrigin] + '</span>'
+      : '';
     return [
       '<div class="jh-card">',
         '<div class="jh-card__main">',
@@ -245,6 +271,7 @@ function _renderJourneyHome(data) {
             '<span class="jh-stage-badge">' + escHtml(stageLabel(j.currentStage || '')) + '</span>',
             '<span class="jh-card__profile">◈ ' + escHtml(j.productProfile || 'default') + '</span>',
             '<span class="jh-card__date">' + escHtml((j.createdAt ? new Date(j.createdAt).toISOString() : '').slice(0, 10)) + '</span>',
+            sessionOriginHtml,
           '</div>',
           '<div class="jh-progress" role="group" aria-label="Journey stages — earlier stages open a Move back confirmation">' + progressDots(j.completedStages, j.activeSkill, j.journeyId) + '</div>',
         '</div>',
@@ -4411,6 +4438,18 @@ function _readPipelineFeatures(root) {
 
 var TERMINAL_STAGES = ['completed', 'archived', 'released'];
 
+// sob-s2 AC5: minimal call-count instrumentation for
+// _mergeStateFeaturesIntoJourneyList. Added because it's invoked directly
+// inside handleGetJourney (not through an injectable adapter like
+// _journeyStore), so there is no existing seam a test can use to assert "no
+// new call was introduced" by this story's change. This is the narrowest
+// seam that provides that -- a counter incremented at the top of the real
+// function, plus a getter/reset pair for tests, restored per-test by the
+// caller. Not exercised or referenced by any production code path.
+var _sobMergeCallCount = 0;
+function _sobGetMergeCallCount() { return _sobMergeCallCount; }
+function _sobResetMergeCallCount() { _sobMergeCallCount = 0; }
+
 /**
  * ep1-s1: merge non-terminal pipeline-state.json features that have no
  * journey-store record yet into the existing journeys list, so they render
@@ -4422,6 +4461,7 @@ var TERMINAL_STAGES = ['completed', 'archived', 'released'];
  * @returns {Array} journeys + synthesized entries for CLI-only, non-terminal features
  */
 function _mergeStateFeaturesIntoJourneyList(journeys, repoRoot) {
+  _sobMergeCallCount++; // sob-s2 AC5: narrow call-count seam, see comment near its declaration
   var features = _readPipelineFeatures(repoRoot);
   if (!features) return journeys;
   var knownSlugs = {};
@@ -4774,6 +4814,9 @@ module.exports = {
   _mockScenarioForStage, // mgss-s1
   _mergeStateFeaturesIntoJourneyList, // ep1-s1
   TERMINAL_STAGES, // ep1-s1
+  _renderJourneyHome, // sob-s2 -- exported for direct testing, mirrors sob-s1's _renderConsolidatedFeaturesSection precedent
+  _sobGetMergeCallCount, // sob-s2 AC5
+  _sobResetMergeCallCount, // sob-s2 AC5
   backfillJourneyFromPipelineState, // ep1-s3
   getNextSkill, // ep1-s4
   getValidBackwardTargets, // ep1-s4
