@@ -32396,17 +32396,17 @@
             {
               "slug": "sob-s1",
               "name": "Shared session-origin derivation + product feature-list indicator",
-              "stage": "implementation-plan",
+              "stage": "subagent-execution",
               "health": "green",
-              "updatedAt": "2026-09-08T05:50:48.965Z",
+              "updatedAt": "2026-09-08T18:19:51.917Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s1-review-1.md",
               "testPlan": {
                 "status": "written",
                 "artefact": "artefacts/2026-09-08-session-origin-badge/test-plans/sob-s1-test-plan.md",
-                "totalTests": 11,
-                "passing": 0
+                "totalTests": 14,
+                "passing": 14
               },
               "verificationArtefact": "artefacts/2026-09-08-session-origin-badge/verification-scripts/sob-s1-verification.md",
               "acTotal": 9,
@@ -32428,31 +32428,31 @@
                 {
                   "id": "task-1",
                   "name": "deriveSessionOrigin pure function",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-08-session-origin-badge/plans/sob-s1-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "getSessionOriginForJourneys Postgres adapter",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-08-session-origin-badge/plans/sob-s1-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "_getSessionOriginBulk/setGetSessionOriginBulk seam",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-08-session-origin-badge/plans/sob-s1-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "Wire indicator into product feature-list rendering",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-08-session-origin-badge/plans/sob-s1-plan.md"
                 },
                 {
                   "id": "task-5",
                   "name": "Confirm test auto-discovery (verification only)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-08-session-origin-badge/plans/sob-s1-plan.md"
                 }
               ]
