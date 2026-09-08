@@ -53,6 +53,19 @@ async function _getArtefactCountsBulk(journeyIds) {
 }
 function setGetArtefactCountsBulk(fn) { _getArtefactCountsBulkFn = fn; }
 
+// sob-s1 -- injectable bulk session-origin reader, mirroring s2.2's
+// _getArtefactCountsBulk seam exactly. Defaults to a lazy require of
+// journey-store-pg.js's real getSessionOriginForJourneys -- ONE batched
+// query for the whole page render, never one call per row. This is the
+// "real-by-default, test-injectable" shape (NOT a D37 stub-throws
+// adapter) -- see sob-s1-dor.md's H-ADAPTER reasoning for why.
+var _getSessionOriginBulkFn = null;
+async function _getSessionOriginBulk(journeyIds) {
+  var fn = _getSessionOriginBulkFn || require('../adapters/journey-store-pg').getSessionOriginForJourneys;
+  return fn(journeyIds);
+}
+function setGetSessionOriginBulk(fn) { _getSessionOriginBulkFn = fn; }
+
 /**
  * s2.2 (AC4, AC5) -- enrich already-built STAGE_COLUMNS-shaped columns with
  * each card's artefact count, via exactly ONE bulk read for the whole board
@@ -4015,6 +4028,9 @@ module.exports = {
   setGetHtmlSessionsBulk,
   // s2.2: injectable bulk artefact-count reader, exported for test spying (AC4 NFR)
   setGetArtefactCountsBulk,
+  // sob-s1: injectable bulk session-origin reader, exported for direct unit testing and test spying
+  _getSessionOriginBulk,
+  setGetSessionOriginBulk,
   handleDeleteProduct,
   handlePostProductRepoCreate,
   handlePutProductEdit,
