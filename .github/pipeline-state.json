@@ -32514,7 +32514,7 @@
               "name": "Session-origin indicator on the org kanban board",
               "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-09-08T23:40:02.367Z",
+              "updatedAt": "2026-09-08T23:41:11.118Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s3-review-1.md",
@@ -32526,7 +32526,7 @@
               },
               "verificationArtefact": "artefacts/2026-09-08-session-origin-badge/verification-scripts/sob-s3-verification.md",
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -32548,7 +32548,9 @@
               },
               "task-3": {
                 "tddState": "committed"
-              }
+              },
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/850"
             }
           ]
         }
