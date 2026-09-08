@@ -32396,9 +32396,9 @@
             {
               "slug": "sob-s1",
               "name": "Shared session-origin derivation + product feature-list indicator",
-              "stage": "subagent-execution",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-09-08T18:19:51.917Z",
+              "updatedAt": "2026-09-08T18:26:25.620Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s1-review-1.md",
@@ -32410,7 +32410,7 @@
               },
               "verificationArtefact": "artefacts/2026-09-08-session-origin-badge/verification-scripts/sob-s1-verification.md",
               "acTotal": 9,
-              "acVerified": 0,
+              "acVerified": 9,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
@@ -32455,7 +32455,8 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-09-08-session-origin-badge/plans/sob-s1-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "sob-s2",
