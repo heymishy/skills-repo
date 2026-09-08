@@ -343,23 +343,27 @@ function _renderKanbanColumns(data) {
           ? '<span class="kb-artefact-badge kb-artefact-badge--empty">no artefacts yet</span>'
           : '<span class="kb-artefact-badge">' + artefactCount + ' artefact' + (artefactCount === 1 ? '' : 's') + '</span>';
 
-      // sob-s3 (AC1, AC2) -- session-origin badge, same markup pattern as the
-      // artefact-count badge above. Only rendered when the caller (products.js's
-      // _enrichColumnsWithSessionOrigin, currently only wired for org kanban)
-      // actually computed a value -- other kanban scopes render with no badge,
-      // zero behaviour change for them. Required inline (not hoisted to a
-      // top-of-file require) because products.js requires this file
-      // (kanban-view.js) at top level, and features.js requires products.js at
-      // top level for renderShellWithNav -- a top-level require of features.js
-      // here would complete the cycle (features.js -> products.js ->
-      // kanban-view.js -> features.js) and, depending on load order, capture
-      // features.js's exports before its module.exports assignment runs.
-      // Node resolves this safely at call time since all three modules are
-      // already fully loaded by then (same pattern as products.js's own
-      // inline require of features.js).
+      // sob-s3 (AC1, AC2) -- session-origin badge. Uses the shared sw-pill
+      // classes (defined globally in html-shell.js, loaded on this page via
+      // renderShellWithNav -- confirmed by reading handleGetOrgKanban's
+      // response path directly) so the badge is visually identical to sob-s1's
+      // product-list and sob-s2's journey-dashboard treatment (AC1's explicit
+      // requirement) -- NOT a new, unstyled kb-* class. Only rendered when the
+      // caller (products.js's _enrichColumnsWithSessionOrigin, currently only
+      // wired for org kanban) actually computed a value -- other kanban scopes
+      // render with no badge, zero behaviour change for them. Required inline
+      // (not hoisted to a top-of-file require) because products.js requires
+      // this file (kanban-view.js) at top level, and features.js requires
+      // products.js at top level for renderShellWithNav -- a top-level require
+      // of features.js here would complete the cycle (features.js ->
+      // products.js -> kanban-view.js -> features.js) and, depending on load
+      // order, capture features.js's exports before its module.exports
+      // assignment runs. Node resolves this safely at call time since all
+      // three modules are already fully loaded by then (same pattern as
+      // products.js's own inline require of features.js).
       var _sobMeta = card.sessionOrigin ? require('../routes/features.js').sessionOriginBadgeMeta(card.sessionOrigin) : null;
       var sessionOriginBadge = _sobMeta
-        ? '<span data-sob-session-origin="' + escHtml(card.sessionOrigin) + '" class="kb-session-origin-badge" title="' + escHtml(_sobMeta.label) + '" aria-label="' + escHtml(_sobMeta.label) + '">' + _sobMeta.glyph + '</span>'
+        ? '<span data-sob-session-origin="' + escHtml(card.sessionOrigin) + '" class="sw-pill sw-pill--nodot" title="' + escHtml(_sobMeta.label) + '" aria-label="' + escHtml(_sobMeta.label) + '">' + _sobMeta.glyph + '</span>'
         : '';
 
       var hasReadiness = typeof card.ready === 'boolean';
