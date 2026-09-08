@@ -32512,9 +32512,9 @@
             {
               "slug": "sob-s3",
               "name": "Session-origin indicator on the org kanban board",
-              "stage": "subagent-execution",
+              "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-09-08T23:30:24.293Z",
+              "updatedAt": "2026-09-08T23:40:02.367Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s3-review-1.md",
