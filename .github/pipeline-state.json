@@ -32391,14 +32391,14 @@
         {
           "slug": "session-origin-visibility",
           "name": "Operators can tell whether a feature has a real resumable session without opening it",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "sob-s1",
               "name": "Shared session-origin derivation + product feature-list indicator",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
-              "updatedAt": "2026-09-08T05:28:37.669Z",
+              "updatedAt": "2026-09-08T05:45:59.015Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s1-review-1.md",
@@ -32428,9 +32428,9 @@
             {
               "slug": "sob-s2",
               "name": "Session-origin indicator on the /journey dashboard",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
-              "updatedAt": "2026-09-08T05:28:37.669Z",
+              "updatedAt": "2026-09-08T05:46:07.692Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s2-review-1.md",
@@ -32460,9 +32460,9 @@
             {
               "slug": "sob-s3",
               "name": "Session-origin indicator on the org kanban board",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
-              "updatedAt": "2026-09-08T05:28:37.669Z",
+              "updatedAt": "2026-09-08T05:46:07.865Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s3-review-1.md",
