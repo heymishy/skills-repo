@@ -53,6 +53,19 @@ async function _getArtefactCountsBulk(journeyIds) {
 }
 function setGetArtefactCountsBulk(fn) { _getArtefactCountsBulkFn = fn; }
 
+// sob-s1 -- injectable bulk session-origin reader, mirroring s2.2's
+// _getArtefactCountsBulk seam exactly. Defaults to a lazy require of
+// journey-store-pg.js's real getSessionOriginForJourneys -- ONE batched
+// query for the whole page render, never one call per row. This is the
+// "real-by-default, test-injectable" shape (NOT a D37 stub-throws
+// adapter) -- see sob-s1-dor.md's H-ADAPTER reasoning for why.
+var _getSessionOriginBulkFn = null;
+async function _getSessionOriginBulk(journeyIds) {
+  var fn = _getSessionOriginBulkFn || require('../adapters/journey-store-pg').getSessionOriginForJourneys;
+  return fn(journeyIds);
+}
+function setGetSessionOriginBulk(fn) { _getSessionOriginBulkFn = fn; }
+
 /**
  * s2.2 (AC4, AC5) -- enrich already-built STAGE_COLUMNS-shaped columns with
  * each card's artefact count, via exactly ONE bulk read for the whole board
@@ -293,7 +306,8 @@ function _renderModuleSection(name, id, groupFeatures, renderRowFn) {
 // see features.js's renderArtefactIndexHtml). The discoveryArtefact
 // suffix link stays a separate, sibling <a> (nested anchors are invalid
 // HTML), pointing at its own more specific raw-markdown viewer.
-function _renderPvcItemRow(item, includeCheckbox, preferFeatureName) {
+function _renderPvcItemRow(item, includeCheckbox, preferFeatureName, sessionOriginByJourneyId) {
+  sessionOriginByJourneyId = sessionOriginByJourneyId || {};
   var color = item.health === 'red' ? '#ef4444' : item.health === 'amber' ? '#f59e0b' : item.health === 'unknown' ? 'var(--muted)' : '#22c55e';
   // pdt-s3 (AC1): drop the "?" glyph -- see _renderEpicRow's identical comment.
   var label = item.health === 'red' ? '✕ Blocked' : item.health === 'amber' ? '⚠ Warning' : item.health === 'unknown' ? 'Unknown' : '✓ Healthy';
@@ -328,6 +342,30 @@ function _renderPvcItemRow(item, includeCheckbox, preferFeatureName) {
   // landing on the wrong feature. Top-level items have no featureSlug field
   // at all; their own slug already IS the real feature slug.
   var linkSlug = item.featureSlug || item.slug;
+
+  // sob-s1: derive this row's session-origin state. hasJourney is true
+  // only when the item actually carries a journeyId (taxonomy-only items
+  // from mergeFeatureSources do not -- AC4). Required inline (not hoisted
+  // to a top-of-file require) because features.js itself requires this
+  // file (routes/products.js) for renderShellWithNav -- a top-level
+  // require('./features.js') here would create a require cycle. Node
+  // resolves this safely at call time since both modules are already
+  // fully loaded by then.
+  var _sobDeriveFn = require('./features.js').deriveSessionOrigin;
+  var _sobOrigin = _sobDeriveFn({
+    hasJourney: !!item.journeyId,
+    completedStages: item.journeyId ? (sessionOriginByJourneyId[item.journeyId] || []) : []
+  });
+  var _sobLabelMap = {
+    'fully-session-backed': 'All completed stages driven through a live session — resumable',
+    'mixed': 'Some stages authored via CLI/agent, some through a live session — partially resumable',
+    'no-session': 'No live session — authored via CLI/agent'
+  };
+  var _sobGlyphMap = { 'fully-session-backed': '●', 'mixed': '◐', 'no-session': '○' };
+  var sessionOriginHtml = _sobOrigin
+    ? ' <span data-sob-session-origin="' + _sobOrigin + '" class="sw-pill sw-pill--nodot" title="' + _escapeHtml(_sobLabelMap[_sobOrigin]) + '" aria-label="' + _escapeHtml(_sobLabelMap[_sobOrigin]) + '">' + _sobGlyphMap[_sobOrigin] + '</span>'
+    : '';
+
   var innerHtml =
     '<a class="pvc-item-link" href="/features/' + _escapeHtml(linkSlug) + '" ' +
       'aria-label="' + _escapeHtml(displayName) + ' — view artefacts and conversation history" ' +
@@ -339,6 +377,7 @@ function _renderPvcItemRow(item, includeCheckbox, preferFeatureName) {
       '<div style="display:flex;align-items:center;gap:12px">' +
         '<span data-a4-health style="font-size:12px;color:' + color + '">' + label + '</span>' +
         '<span data-a4-coverage style="font-size:12px;color:var(--muted)">' + _escapeHtml(item.coverageLabel || 'No test data yet') + '</span>' +
+        sessionOriginHtml +
       '</div>' +
     '</a>' +
     (discoveryLink || renameLink ? '<div style="font-size:12px;margin-top:2px">' + discoveryLink + renameLink + '</div>' : '');
@@ -375,7 +414,8 @@ function _renderPvcItemRow(item, includeCheckbox, preferFeatureName) {
 // (By Module / By Phase / All) plus health-filter chips and a search input,
 // all operating client-side over the same rendered item rows (data-health/
 // data-search attributes read by one small vanilla-JS filter function).
-function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId, csrfToken, healthCounts) {
+function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId, csrfToken, healthCounts, sessionOriginByJourneyId) {
+  sessionOriginByJourneyId = sessionOriginByJourneyId || {};
   // ppg-s1: previously, modules.length === 0 skipped the entire tabbed/
   // grouped/collapsed UI (pdt-s1) and fell back to one flat, ungrouped <ul>
   // -- a product with zero custom Modules never benefited from any of that
@@ -402,11 +442,17 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
   // it's the only view where "move into a new module's section" (AC3) is a
   // meaningful visual effect; By Phase and All keep their existing,
   // unmodified row renderer.
-  var _renderPvcItemRowWithCheckbox = function(item) { return _renderPvcItemRow(item, true); };
+  var _renderPvcItemRowWithCheckbox = function(item) { return _renderPvcItemRow(item, true, false, sessionOriginByJourneyId); };
   // pefl-s1: the By Phase tab's own row renderer -- shows the item's parent
   // feature name instead of the epic name already shown in that tab's own
   // group headers (see _renderPvcItemRow's preferFeatureName parameter).
-  var _renderPvcItemRowForPhase = function(item) { return _renderPvcItemRow(item, false, true); };
+  var _renderPvcItemRowForPhase = function(item) { return _renderPvcItemRow(item, false, true, sessionOriginByJourneyId); };
+  // sob-s1: plain (no checkbox) row renderer that still threads
+  // sessionOriginByJourneyId through -- used by the zero-modules
+  // "Unclassified" branch below, which previously passed the bare
+  // _renderPvcItemRow function reference directly (safe there because
+  // _renderModuleSection always invokes it as a single-arg call).
+  var _renderPvcItemRowPlain = function(item) { return _renderPvcItemRow(item, false, false, sessionOriginByJourneyId); };
 
   var moduleOptionsHtml = modules.map(function(m) {
     return '<option value="' + _escapeHtml(m.id) + '">' + _escapeHtml(m.name) + '</option>';
@@ -437,7 +483,7 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
   // with, so the Unclassified section's own rows must use the plain
   // renderer, not the checkbox-wrapped one -- otherwise it would show
   // orphaned checkboxes with no functional control to use them with.
-  var _byModuleRowRenderer = modules.length > 0 ? _renderPvcItemRowWithCheckbox : _renderPvcItemRow;
+  var _byModuleRowRenderer = modules.length > 0 ? _renderPvcItemRowWithCheckbox : _renderPvcItemRowPlain;
 
   var byModuleHtml =
     '<div id="pvc-tab-panel-module" class="pvc-tab-panel' + (defaultTab === 'module' ? ' pvc-tab-panel--active' : '') + '" role="tabpanel" aria-labelledby="pvc-tab-module">' +
@@ -458,8 +504,11 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
   var allHtml =
     '<div id="pvc-tab-panel-all" class="pvc-tab-panel" role="tabpanel" aria-labelledby="pvc-tab-all">' +
       // bmau-s1: explicit single-arg wrapper -- same Array.map() index-leak
-      // fix as the zero-modules fallback above.
-      '<ul style="list-style:none;padding:0;margin:0">' + items.map(function(item) { return _renderPvcItemRow(item); }).join('') + '</ul>' +
+      // fix as the zero-modules fallback above. Reuses _renderPvcItemRowPlain
+      // (defined above) rather than re-inlining its body -- .map()'s extra
+      // (item, index, array) args are harmless since _renderPvcItemRowPlain
+      // only declares one parameter.
+      '<ul style="list-style:none;padding:0;margin:0">' + items.map(_renderPvcItemRowPlain).join('') + '</ul>' +
       noFeaturesInnerHtml +
     '</div>';
 
@@ -771,7 +820,8 @@ function _unknownHealthCoverageLabel(item, artefactCountsByJourneyId) {
   return (item.stage || 'discovery') + ' · ' + countLabel;
 }
 
-function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navProducts, noProductJourneyCount, repoPickerResult, isAdmin) {
+function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navProducts, noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId) {
+  sessionOriginByJourneyId = sessionOriginByJourneyId || {};
   modules = modules || [];
   csrfToken = csrfToken || '';
   featureModuleAssignments = featureModuleAssignments || {};
@@ -865,7 +915,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
   // health-filter chip bar inside _renderConsolidatedFeaturesSection,
   // which now carries real counts (AC4) and, after this story's own Task 1,
   // renders on every product page regardless of module count.
-  var featuresSectionHtml = _renderConsolidatedFeaturesSection(mergedItems, modules, taxonomy, productId, csrfToken, healthCounts);
+  var featuresSectionHtml = _renderConsolidatedFeaturesSection(mergedItems, modules, taxonomy, productId, csrfToken, healthCounts, sessionOriginByJourneyId);
   var scaleGaugeHtml = _renderScaleGauge(features, modules, taxonomy);
 
   var syncedAtLabel = rollupRow ? _syncFreshness.formatSyncedAt(rollupRow.synced_at) : _syncFreshness.formatSyncedAt(null);
@@ -2419,6 +2469,26 @@ async function handleGetProductView(req, res, _next, pool) {
     } catch (_) {
       artefactCountsByJourneyId = {};
     }
+    // sob-s1 (AC4, AC6, review finding 1-M1): built from mergedItems (the
+    // real mergeFeatureSources output), NOT the raw rows array
+    // _getArtefactCountsBulk above uses -- mergedItems includes
+    // taxonomy-only entries with no journeyId at all. _renderProductView
+    // performs this exact same merge internally to build the array that
+    // actually gets rendered by _renderConsolidatedFeaturesSection; this is
+    // a second, cheap, pure call to the same deterministic merge so the
+    // async bulk-read can happen here (handleGetProductView) while
+    // _renderProductView/_renderConsolidatedFeaturesSection/_renderPvcItemRow
+    // all stay synchronous, preserving every existing caller/test's
+    // synchronous contract (AC7: exactly one call per render).
+    var sessionOriginByJourneyId = {};
+    try {
+      var _sobTaxonomy = (rollupRow && rollupRow.taxonomy) ? _parseJsonbField(rollupRow.taxonomy, null) : null;
+      var _sobMergedItems = _productRollup.mergeFeatureSources(_sobTaxonomy, features);
+      var _sobJourneyIds = _sobMergedItems.filter(function(item) { return !!item.journeyId; }).map(function(item) { return item.journeyId; });
+      sessionOriginByJourneyId = await _getSessionOriginBulk(_sobJourneyIds);
+    } catch (_) {
+      sessionOriginByJourneyId = {};
+    }
     var navSummary = await getProductsNavSummary(_pool, tenantId);
     // mtrr-s2 (AC1/AC3): only attempt the picker when there's no repo
     // connected yet and the session actually has a GitHub accessToken --
@@ -2434,7 +2504,7 @@ async function handleGetProductView(req, res, _next, pool) {
     if (!prodRow.repo_owner && !prodRow.repo_name && accessTokenForPicker) {
       repoPickerResult = await _repoPicker.getAccessibleRepos(accessTokenForPicker, _repoAdapter.listRepos);
     }
-    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navSummary.products, navSummary.noProductJourneyCount, repoPickerResult, isAdmin);
+    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navSummary.products, navSummary.noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
@@ -4015,6 +4085,9 @@ module.exports = {
   setGetHtmlSessionsBulk,
   // s2.2: injectable bulk artefact-count reader, exported for test spying (AC4 NFR)
   setGetArtefactCountsBulk,
+  // sob-s1: injectable bulk session-origin reader, exported for direct unit testing and test spying
+  _getSessionOriginBulk,
+  setGetSessionOriginBulk,
   handleDeleteProduct,
   handlePostProductRepoCreate,
   handlePutProductEdit,
@@ -4034,6 +4107,8 @@ module.exports = {
   STAGE_COLUMNS,
   // frsr-s1: exported for direct unit testing (AC1), same convention as kbc-s1's column builders
   _renderPvcItemRow,
+  // sob-s1: exported for direct unit testing of the session-origin indicator threading (AC4, AC5, AC7, AC8)
+  _renderConsolidatedFeaturesSection,
   // fdn-s1: exported for direct unit testing, same convention as _renderPvcItemRow
   _renderEpicRow,
   _aggregateJourneysByStage,
