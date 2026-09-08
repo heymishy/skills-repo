@@ -45,3 +45,15 @@
 **Decision:** Proceed to sign-off without a pre-code domain-expert walkthrough. The verification scripts will instead be used as the post-merge smoke test for each story (one of the three stated purposes the scripts are already written for).
 
 **Rationale:** This is a small (complexity 1), low-oversight, non-regulated, read-only presentational feature with no external users and a single real stakeholder (the Platform Owner, who is also the story author's sole reviewer throughout this feature's whole pipeline so far). The risk of skipping a separate pre-code walkthrough is low relative to the ceremony cost of a fourth review pass on a feature this size. Accepted by Hamish King (Platform Owner) — no explicit response given when asked; proceeding on the tool's own recommended default per this session's operating mode, flagged for the operator to redirect if this call is wrong.
+
+---
+
+## RISK-ACCEPT: Pre-existing baseline failure at /branch-setup (sob-s1)
+
+**Date:** 2026-09-08
+
+**Context:** `npm test` on the fresh `sob-s1` worktree (created from `master` at `6ce345b2`, zero modifications) shows 627/628 test files passing. The one failure, `tests/check-p3.5-validate-trace.js`, is `validate-trace.ps1 --ci` reporting `new-feature-af17f555`'s `discovery.md` is still "Draft" — a completely unrelated feature from 2026-09-01, not touched by this story or this feature in any way.
+
+**Decision:** Acknowledged as pre-existing and unrelated; proceeding with `sob-s1` implementation without fixing it.
+
+**Rationale:** Confirmed directly via `pwsh scripts/validate-trace.ps1 --ci` output — the single hard-fail is `discovery_approved: new-feature-af17f555: discovery.md status is still Draft`, an unrelated feature's own governance gap, not anything this feature's stories create or touch. Fixing another feature's discovery status is out of scope here and would require its own governance chain (an operator decision on that feature, not a side-effect of this one).
