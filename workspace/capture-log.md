@@ -1868,3 +1868,8 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: gap
   signal-text: buildArtefactTrace (cat-s1, adapters/artefact-trace.js:136, already merged/DoD'd via PR #842) reads story.slug directly for epic-nested stories, so a bare-string epic.stories[] entry (e.g. 'p3.3', a shape feature-story-structure.js's own _storySlug helper documents as valid) yields slug:undefined -- every artefact for that story silently classifies as unregistered/orphaned-registration instead of registered. Discovered while implementing cat-s4 Task 4 (wiring buildArtefactTrace into the live route handler) when tests/check-fapg-s1-group-artefacts-by-story.js's bare-string fixture broke under the new routing; sidestepped in that test by switching the fixture to object-shaped stories, not fixed in artefact-trace.js itself (out of cat-s4 Task 4 scope). Needs a follow-up story against cat-s1's own file.
   source: agent-auto
+- date: 2026-09-08
+  session-phase: design (2026-09-08-session-origin-badge)
+  signal-type: gap
+  signal-text: skills/design/SKILL.md has no "## State update -- mandatory final step" section at all, unlike every other pipeline skill (discovery, benefit-metric, clarify, etc.), each of which CLAUDE.md's own governing rule says must have one. Ran /design for session-origin-badge and had to infer a reasonable pipeline-state.json write (designArtefact field, updatedAt) by analogy to sibling skills rather than following an explicit instruction. /improve candidate: add a State update section to skills/design/SKILL.md matching the convention every other skill in the pipeline already follows.
+  source: agent-auto
