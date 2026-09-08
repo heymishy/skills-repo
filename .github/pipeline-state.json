@@ -32466,9 +32466,9 @@
             {
               "slug": "sob-s2",
               "name": "Session-origin indicator on the /journey dashboard",
-              "stage": "implementation-plan",
+              "stage": "subagent-execution",
               "health": "green",
-              "updatedAt": "2026-09-08T19:57:11.301Z",
+              "updatedAt": "2026-09-08T20:41:15.659Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s2-review-1.md",
@@ -32476,7 +32476,7 @@
                 "status": "written",
                 "artefact": "artefacts/2026-09-08-session-origin-badge/test-plans/sob-s2-test-plan.md",
                 "totalTests": 9,
-                "passing": 0
+                "passing": 9
               },
               "verificationArtefact": "artefacts/2026-09-08-session-origin-badge/verification-scripts/sob-s2-verification.md",
               "acTotal": 5,
@@ -32498,13 +32498,13 @@
                 {
                   "id": "task-1",
                   "name": "Wire session-origin indicator into _renderJourneyHome card template",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-08-session-origin-badge/plans/sob-s2-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Confirm test auto-discovery (verification only)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-08-session-origin-badge/plans/sob-s2-plan.md"
                 }
               ]
