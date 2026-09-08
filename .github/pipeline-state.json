@@ -32382,7 +32382,7 @@
       "stage": "definition",
       "discoveryStatus": "approved",
       "health": "green",
-      "updatedAt": "2026-09-08T03:15:48.628Z",
+      "updatedAt": "2026-09-08T05:15:28.905Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -32396,32 +32396,65 @@
             {
               "slug": "sob-s1",
               "name": "Shared session-origin derivation + product feature-list indicator",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-09-08T03:15:48.628Z",
+              "updatedAt": "2026-09-08T05:15:28.905Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s1-review-1.md"
+              "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s1-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-09-08-session-origin-badge/test-plans/sob-s1-test-plan.md",
+                "totalTests": 11,
+                "passing": 0
+              },
+              "verificationArtefact": "artefacts/2026-09-08-session-origin-badge/verification-scripts/sob-s1-verification.md",
+              "acTotal": 9,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "sob-s2",
               "name": "Session-origin indicator on the /journey dashboard",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-09-08T03:15:48.628Z",
+              "updatedAt": "2026-09-08T05:15:28.905Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s2-review-1.md"
+              "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s2-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-09-08-session-origin-badge/test-plans/sob-s2-test-plan.md",
+                "totalTests": 5,
+                "passing": 0
+              },
+              "verificationArtefact": "artefacts/2026-09-08-session-origin-badge/verification-scripts/sob-s2-verification.md",
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "sob-s3",
               "name": "Session-origin indicator on the org kanban board",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
-              "updatedAt": "2026-09-08T03:15:48.628Z",
+              "updatedAt": "2026-09-08T05:15:28.905Z",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s3-review-1.md"
+              "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s3-review-1.md",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-09-08-session-origin-badge/test-plans/sob-s3-test-plan.md",
+                "totalTests": 5,
+                "passing": 0
+              },
+              "verificationArtefact": "artefacts/2026-09-08-session-origin-badge/verification-scripts/sob-s3-verification.md",
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         }
