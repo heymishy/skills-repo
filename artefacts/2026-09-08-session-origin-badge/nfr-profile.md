@@ -3,7 +3,7 @@
 **Feature:** 2026-09-08-session-origin-badge
 **Created:** 2026-09-08
 **Last updated:** 2026-09-08
-**Status:** Active
+**Status:** Active — Verified at 2026-09-09 for Performance and Accessibility (sob-s1, product feature-list surface only; /journey and org kanban NFRs remain pending sob-s2/sob-s3)
 
 ---
 

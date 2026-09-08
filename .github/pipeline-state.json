@@ -32396,9 +32396,9 @@
             {
               "slug": "sob-s1",
               "name": "Shared session-origin derivation + product feature-list indicator",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-09-08T18:35:29.662Z",
+              "updatedAt": "2026-09-08T19:06:35.031Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s1-review-1.md",
@@ -32457,8 +32457,11 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/848"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/848",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-09-08-session-origin-badge/dod/sob-s1-dod.md"
             },
             {
               "slug": "sob-s2",
@@ -32540,8 +32543,10 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "sob-s1 merged (PR #848) -- product feature-list surface reaches the minimum validation signal (100% coverage, automated tests + CI green). Full metric target requires sob-s2 (/journey) and sob-s3 (org kanban), both still pending. No live operator walkthrough executed yet (deferred post-merge per DoR W4 RISK-ACCEPT).",
+          "contributingStories": [
+            "sob-s1"
+          ]
         }
       ],
       "designArtefact": "artefacts/2026-09-08-session-origin-badge/design.md",
