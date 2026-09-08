@@ -32512,9 +32512,9 @@
             {
               "slug": "sob-s3",
               "name": "Session-origin indicator on the org kanban board",
-              "stage": "branch-setup",
+              "stage": "subagent-execution",
               "health": "green",
-              "updatedAt": "2026-09-08T05:46:07.865Z",
+              "updatedAt": "2026-09-08T23:10:58.167Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s3-review-1.md",
@@ -32539,7 +32539,10 @@
                   "hash": "8c188790ec1c3808901cd26821ffabf9f1be9e16d5396dee25ea5c13ab6d7fc2",
                   "path": ".github/standards/web-ui/web-ui-patterns.md"
                 }
-              ]
+              ],
+              "task-1": {
+                "tddState": "committed"
+              }
             }
           ]
         }
