@@ -356,14 +356,9 @@ function _renderPvcItemRow(item, includeCheckbox, preferFeatureName, sessionOrig
     hasJourney: !!item.journeyId,
     completedStages: item.journeyId ? (sessionOriginByJourneyId[item.journeyId] || []) : []
   });
-  var _sobLabelMap = {
-    'fully-session-backed': 'All completed stages driven through a live session — resumable',
-    'mixed': 'Some stages authored via CLI/agent, some through a live session — partially resumable',
-    'no-session': 'No live session — authored via CLI/agent'
-  };
-  var _sobGlyphMap = { 'fully-session-backed': '●', 'mixed': '◐', 'no-session': '○' };
-  var sessionOriginHtml = _sobOrigin
-    ? ' <span data-sob-session-origin="' + _sobOrigin + '" class="sw-pill sw-pill--nodot" title="' + _escapeHtml(_sobLabelMap[_sobOrigin]) + '" aria-label="' + _escapeHtml(_sobLabelMap[_sobOrigin]) + '">' + _sobGlyphMap[_sobOrigin] + '</span>'
+  var _sobMeta = require('./features.js').sessionOriginBadgeMeta(_sobOrigin);
+  var sessionOriginHtml = _sobMeta
+    ? ' <span data-sob-session-origin="' + _sobOrigin + '" class="sw-pill sw-pill--nodot" title="' + _escapeHtml(_sobMeta.label) + '" aria-label="' + _escapeHtml(_sobMeta.label) + '">' + _sobMeta.glyph + '</span>'
     : '';
 
   var innerHtml =

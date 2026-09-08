@@ -195,6 +195,21 @@ function deriveSessionOrigin(input) {
   return 'mixed';
 }
 
+// sob-s3: single source of truth for the tri-state's display label + glyph.
+// Returns { label, glyph } or null (for a null/unrecognised origin) -- callers
+// build their own escaped <span> markup using their own local escHtml, since
+// this module must not assume a particular escaping convention (products.js
+// requires this file inline to avoid a require cycle; journey.js requires it
+// top-level -- both must still get identical label/glyph data).
+var SESSION_ORIGIN_META = {
+  'fully-session-backed': { label: 'All completed stages driven through a live session — resumable', glyph: '●' },
+  'mixed': { label: 'Some stages authored via CLI/agent, some through a live session — partially resumable', glyph: '◐' },
+  'no-session': { label: 'No live session — authored via CLI/agent', glyph: '○' }
+};
+function sessionOriginBadgeMeta(origin) {
+  return SESSION_ORIGIN_META[origin] || null;
+}
+
 // pdt-s4 (AC1, AC1a): resolves the breadcrumb context for a story detail
 // page. Two paths:
 //  - Direct: journeyForPage.productId already resolved (the common case,
@@ -980,5 +995,6 @@ module.exports = {
   escHtml,
   _deriveMatrixColumn,
   _buildGroupedFromTrace,
-  deriveSessionOrigin
+  deriveSessionOrigin,
+  sessionOriginBadgeMeta
 };
