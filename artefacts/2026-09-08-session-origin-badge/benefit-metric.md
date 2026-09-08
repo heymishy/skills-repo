@@ -34,7 +34,7 @@ This is a straightforward internal-tooling UX addition (a visibility indicator),
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| List-view session-origin visibility | [populated at /definition] | Gap — pending story creation |
+| List-view session-origin visibility | sob-s1 (product feature-list — hits minimum validation signal), sob-s2 (/journey), sob-s3 (org kanban) | Covered — full target reached once all 3 stories are DoD-complete; minimum signal reached at sob-s1 alone |
 
 ---
 
