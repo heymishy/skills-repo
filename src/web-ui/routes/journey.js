@@ -12,6 +12,14 @@ var { updateJourneyReferenceFiles } = require('../modules/journey-state-persiste
 var _flagBootstrap = require('../modules/flag-bootstrap'); // bri-s1.3
 var _getProductsNavSummary = require('./products').getProductsNavSummary; // pan-s1 -- shared sidebar products summary
 var _renderShellWithNav = require('./products').renderShellWithNav; // pncg-s1 -- shared Products-nav render wrapper
+// sob-s2: reuses sob-s1's deriveSessionOrigin unchanged. Safe to hoist to a
+// normal top-level require -- unlike products.js's own inline-require case
+// for the identical situation (products.js requires features.js which in
+// turn requires products.js -- a genuine cycle), features.js does not
+// require journey.js anywhere, and journey.js already top-level-requires
+// products.js above with no cycle back through journey.js either (confirmed
+// by reading both files' require lists directly).
+var deriveSessionOrigin = require('./features.js').deriveSessionOrigin;
 
 // Injectable adapters — defaults wire to real implementations
 var _journeyStore = require('../modules/journey-store');
@@ -237,6 +245,24 @@ function _renderJourneyHome(data) {
 
   var cards = journeys.map(function(j) {
     var resumeUrl = '/journey/' + encodeURIComponent(j.featureSlug || '') + '/resume';
+    // sob-s2: reuses sob-s1's deriveSessionOrigin unchanged. hasJourney is
+    // true only when j actually carries a real completedStages array --
+    // synthesized entries from _mergeStateFeaturesIntoJourneyList never do
+    // (see decisions.md, 2026-09-08, for why this must be an explicit
+    // Array.isArray check, not an empty-array fallback).
+    var _sobOrigin = deriveSessionOrigin({
+      hasJourney: Array.isArray(j.completedStages),
+      completedStages: j.completedStages || []
+    });
+    var _sobLabelMap = {
+      'fully-session-backed': 'All completed stages driven through a live session — resumable',
+      'mixed': 'Some stages authored via CLI/agent, some through a live session — partially resumable',
+      'no-session': 'No live session — authored via CLI/agent'
+    };
+    var _sobGlyphMap = { 'fully-session-backed': '●', 'mixed': '◐', 'no-session': '○' };
+    var sessionOriginHtml = _sobOrigin
+      ? '<span data-sob-session-origin="' + _sobOrigin + '" class="sw-pill sw-pill--nodot" title="' + escHtml(_sobLabelMap[_sobOrigin]) + '" aria-label="' + escHtml(_sobLabelMap[_sobOrigin]) + '">' + _sobGlyphMap[_sobOrigin] + '</span>'
+      : '';
     return [
       '<div class="jh-card">',
         '<div class="jh-card__main">',
@@ -245,6 +271,7 @@ function _renderJourneyHome(data) {
             '<span class="jh-stage-badge">' + escHtml(stageLabel(j.currentStage || '')) + '</span>',
             '<span class="jh-card__profile">◈ ' + escHtml(j.productProfile || 'default') + '</span>',
             '<span class="jh-card__date">' + escHtml((j.createdAt ? new Date(j.createdAt).toISOString() : '').slice(0, 10)) + '</span>',
+            sessionOriginHtml,
           '</div>',
           '<div class="jh-progress" role="group" aria-label="Journey stages — earlier stages open a Move back confirmation">' + progressDots(j.completedStages, j.activeSkill, j.journeyId) + '</div>',
         '</div>',
@@ -405,7 +432,7 @@ async function handleGetJourney(req, res, _next, pool) {
   // without a product remain a fully supported, non-error case (e.g.
   // solo/personal-project use), not disallowed by this filter.
   journeys = journeys.filter(function(j) { return j.productId == null; });
-  journeys = _mergeStateFeaturesIntoJourneyList(journeys, repoRoot); // ep1-s1
+  journeys = _mergeStateFeaturesIntoJourneyListFn(journeys, repoRoot); // ep1-s1
   journeys.sort(function(a, b) { return (b.createdAt ? new Date(b.createdAt).toISOString() : '').localeCompare(a.createdAt ? new Date(a.createdAt).toISOString() : ''); });
   var showNewForm = !!(req.query && req.query.new === '1');
   // mgss-s1: optional ?mockScenario=<name> query param, threaded through as a
@@ -4449,6 +4476,19 @@ function _mergeStateFeaturesIntoJourneyList(journeys, repoRoot) {
   return journeys.concat(synthesized);
 }
 
+// sob-s2 AC5: injectable seam for _mergeStateFeaturesIntoJourneyList,
+// mirroring this file's existing _journeyStore / setJourneyStoreModule
+// adapter idiom (D37/ADR-009's "real-by-default, test-injectable" shape --
+// not a stub-throws adapter, matching the reasoning already established for
+// _getSessionOriginBulk in sob-s1/products.js). handleGetJourney calls
+// through this reference rather than the real function directly, so a test
+// can inject a counting spy that delegates to the real implementation and
+// prove the route handler calls it exactly once per render. Defaults to the
+// real implementation above; passing a falsy value to the setter restores
+// the real implementation rather than leaving the seam unset.
+var _mergeStateFeaturesIntoJourneyListFn = _mergeStateFeaturesIntoJourneyList;
+function setMergeStateFeaturesIntoJourneyList(fn) { _mergeStateFeaturesIntoJourneyListFn = fn || _mergeStateFeaturesIntoJourneyList; }
+
 var BACKFILL_STAGE_SEQUENCE = ['ideate', 'discovery', 'benefit-metric', 'design', 'definition', 'review', 'test-plan', 'definition-of-ready'];
 
 var ROUTING_TABLE = {
@@ -4774,6 +4814,8 @@ module.exports = {
   _mockScenarioForStage, // mgss-s1
   _mergeStateFeaturesIntoJourneyList, // ep1-s1
   TERMINAL_STAGES, // ep1-s1
+  _renderJourneyHome, // sob-s2 -- exported for direct testing, mirrors sob-s1's _renderConsolidatedFeaturesSection precedent
+  setMergeStateFeaturesIntoJourneyList, // sob-s2 AC5 -- injectable seam, mirrors setJourneyStoreModule
   backfillJourneyFromPipelineState, // ep1-s3
   getNextSkill, // ep1-s4
   getValidBackwardTargets, // ep1-s4
