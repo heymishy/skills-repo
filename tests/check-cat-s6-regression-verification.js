@@ -203,7 +203,7 @@ console.log('\n[cat-s6] AC3 -- the four prior stories\' own regression suites re
     { file: 'check-bsgm-s1-bare-slug-story-grouping.js', expectedPassing: 8 },
     { file: 'check-sri-s1-story-registration-integrity.js', expectedPassing: 10 },
     { file: 'check-adlr-s1-artefact-link-resolution.js', expectedPassing: 15 },
-    { file: 'check-fadm-s1-document-matrix.js', expectedPassing: 27 }
+    { file: 'check-fadm-s1-document-matrix.js', expectedPassing: 32 } // dmcb-s1 added 5 real regression tests (T2, T3) for a live production bug fix
   ];
   suiteResults.forEach(function(s) {
     var out = cp.execSync('node tests/' + s.file, { cwd: REPO_ROOT, encoding: 'utf8' });

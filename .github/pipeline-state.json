@@ -33098,6 +33098,40 @@
           "assessedAt": "2026-09-08T05:28:37.669Z"
         }
       ]
+    },
+    {
+      "slug": "2026-09-09-doc-matrix-column-bugs",
+      "id": "2026-09-09-doc-matrix-column-bugs",
+      "name": "Document matrix spurious/duplicate column bugs (live production report)",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "updatedAt": "2026-09-09T08:45:35.530Z",
+      "stories": [
+        {
+          "slug": "dmcb-s1",
+          "id": "dmcb-s1",
+          "name": "Fix epic-doc spurious columns and duplicate Story column in the document matrix",
+          "stage": "branch-complete",
+          "health": "green",
+          "updatedAt": "2026-09-09T08:45:35.531Z",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-09-doc-matrix-column-bugs/dor/dmcb-s1-dor.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-09-09-doc-matrix-column-bugs/test-plans/dmcb-s1-test-plan.md",
+            "totalTests": 8,
+            "passing": 8
+          },
+          "acTotal": 3,
+          "acVerified": 3,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/852"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

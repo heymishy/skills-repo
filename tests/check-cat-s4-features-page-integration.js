@@ -362,6 +362,32 @@ console.log('\n[cat-s4] NFR -- Unregistered indicator never relies on color alon
   });
 }
 
+console.log('\n[dmcb-s1] T1 -- an epic document (type "epics") lands in featureLevel, not a story bucket or catch-all');
+{
+  var fakeTrace = {
+    status: 'found',
+    epics: [{ slug: 'e1-something', name: 'Epic One' }],
+    stories: [{ slug: 's1', name: 'Story One', epicSlug: 'e1-something', divergence: 'registered' }],
+    artefacts: [
+      { path: 'epics/e1-something.md', type: 'epics', filename: 'e1-something.md', storySlug: null, divergence: 'unregistered', inferredGroup: null },
+      { path: 'stories/s1.md', type: 'stories', filename: 's1.md', storySlug: 's1', divergence: 'registered', inferredGroup: null }
+    ]
+  };
+  var grouped = mod._buildGroupedFromTrace(fakeTrace, 'dmcb-fixture-1');
+  test('epic doc lands in featureLevel', function() {
+    assert.strictEqual(grouped.featureLevel.length, 1);
+    assert.ok(grouped.featureLevel[0].path.indexOf('epics/e1-something.md') !== -1);
+  });
+  test('epic doc is not attached to any story', function() {
+    var storyArtefactPaths = grouped.epics[0].stories[0].artefacts.map(function(a) { return a.path; });
+    assert.ok(storyArtefactPaths.every(function(p) { return p.indexOf('epics/e1-something') === -1; }));
+  });
+  test('epic doc does not land in the synthetic "Unregistered" catch-all bucket', function() {
+    var catchAll = grouped.flatStories.filter(function(s) { return s.slug === 'Unregistered'; });
+    assert.strictEqual(catchAll.length, 0, 'expected no Unregistered catch-all bucket -- the epic doc should have been claimed by featureLevel');
+  });
+}
+
 _runAc5RouteLevelTest().then(function() {
   console.log('\n[cat-s4] Results:', passed, 'passed,', failed, 'failed');
   if (failed > 0) process.exit(1);
