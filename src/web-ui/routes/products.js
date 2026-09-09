@@ -105,6 +105,49 @@ async function _enrichColumnsWithArtefactCounts(columns) {
   return columns;
 }
 
+/**
+ * sob-s3 (AC1-AC4) -- enrich already-built STAGE_COLUMNS-shaped columns with
+ * each card's session-origin tri-state, via exactly ONE bulk read for the
+ * whole board render (mirrors _enrichColumnsWithArtefactCounts exactly,
+ * reusing sob-s1's _getSessionOriginBulk seam -- never a second,
+ * independently-implemented bulk function, per AC3).
+ *
+ * AC4: if the bulk read throws, the board render must NOT fail -- cards are
+ * simply left without a sessionOrigin, so kanban-view.js's card renderer
+ * shows no badge at all (identical degrade-gracefully contract to
+ * _enrichColumnsWithArtefactCounts's own AC5).
+ * @param {Array} columns
+ * @returns {Promise<Array>}
+ */
+async function _enrichColumnsWithSessionOrigin(columns) {
+  var journeyIds = [];
+  (columns || []).forEach(function(col) {
+    (col.cards || []).forEach(function(c) { journeyIds.push(c.id); });
+  });
+  if (journeyIds.length === 0) return columns;
+
+  var stagesById;
+  try {
+    stagesById = await _getSessionOriginBulk(journeyIds);
+  } catch (e) {
+    return columns; // AC4 -- degrade gracefully, never break the board render
+  }
+
+  var _deriveFn = require('./features.js').deriveSessionOrigin;
+  (columns || []).forEach(function(col) {
+    (col.cards || []).forEach(function(c) {
+      // Every org-kanban card is journey-backed by construction (this
+      // story's own Architecture Constraints, confirmed by reading
+      // handleGetOrgKanban's query directly: no taxonomy merge) -- so
+      // hasJourney is always true here, unlike journey.js's sob-s2 case
+      // which had to handle synthesized (non-journey) entries too.
+      var origin = _deriveFn({ hasJourney: true, completedStages: (stagesById && stagesById[c.id]) || [] });
+      if (origin) c.sessionOrigin = origin;
+    });
+  });
+  return columns;
+}
+
 function _escapeHtml(str) {
   return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
@@ -356,14 +399,9 @@ function _renderPvcItemRow(item, includeCheckbox, preferFeatureName, sessionOrig
     hasJourney: !!item.journeyId,
     completedStages: item.journeyId ? (sessionOriginByJourneyId[item.journeyId] || []) : []
   });
-  var _sobLabelMap = {
-    'fully-session-backed': 'All completed stages driven through a live session — resumable',
-    'mixed': 'Some stages authored via CLI/agent, some through a live session — partially resumable',
-    'no-session': 'No live session — authored via CLI/agent'
-  };
-  var _sobGlyphMap = { 'fully-session-backed': '●', 'mixed': '◐', 'no-session': '○' };
-  var sessionOriginHtml = _sobOrigin
-    ? ' <span data-sob-session-origin="' + _sobOrigin + '" class="sw-pill sw-pill--nodot" title="' + _escapeHtml(_sobLabelMap[_sobOrigin]) + '" aria-label="' + _escapeHtml(_sobLabelMap[_sobOrigin]) + '">' + _sobGlyphMap[_sobOrigin] + '</span>'
+  var _sobMeta = require('./features.js').sessionOriginBadgeMeta(_sobOrigin);
+  var sessionOriginHtml = _sobMeta
+    ? ' <span data-sob-session-origin="' + _sobOrigin + '" class="sw-pill sw-pill--nodot" title="' + _escapeHtml(_sobMeta.label) + '" aria-label="' + _escapeHtml(_sobMeta.label) + '">' + _sobMeta.glyph + '</span>'
     : '';
 
   var innerHtml =
@@ -2992,6 +3030,7 @@ async function handleGetOrgKanban(req, res, _next, pool, posthog) {
   var columns = buildOrgKanbanColumns(productJourneyGroups);
   // s2.2 (AC4) -- enrich with artefact counts via one batched read, not per-card.
   await _enrichColumnsWithArtefactCounts(columns);
+  await _enrichColumnsWithSessionOrigin(columns); // sob-s3 (AC1-AC4)
 
   _ph.capture(tenantId || (req.session && req.session.login), 'kanban_viewed', {
     view: 'org',
@@ -4088,6 +4127,8 @@ module.exports = {
   // sob-s1: injectable bulk session-origin reader, exported for direct unit testing and test spying
   _getSessionOriginBulk,
   setGetSessionOriginBulk,
+  // sob-s3: org-kanban session-origin column enrichment, exported for direct unit testing (AC1-AC4)
+  _enrichColumnsWithSessionOrigin,
   handleDeleteProduct,
   handlePostProductRepoCreate,
   handlePutProductEdit,
