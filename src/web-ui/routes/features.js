@@ -468,7 +468,17 @@ function _buildGroupedFromTrace(trace, featureSlug) {
     const adapted = _adaptTraceArtefact(artefact, featureSlug);
     if (adapted.storySlug && byStorySlug[adapted.storySlug]) {
       byStorySlug[adapted.storySlug].push(adapted);
-    } else if (artefact.type === 'feature-level' && !artefact.inferredGroup) {
+    } else if ((artefact.type === 'feature-level' || artefact.type === 'epics') && !artefact.inferredGroup) {
+      // dmcb-s1: an artefact under artefacts/<feature>/epics/*.md is tagged
+      // type 'epics' by walkDir (the subdirectory name), not 'feature-level'
+      // -- it must still reach featureLevel so _extractEpicDocs (below) gets
+      // the chance to correctly claim it by path. Without this, every real
+      // epic document fell through to the shared "Unregistered" catch-all
+      // story bucket instead, and _deriveMatrixColumn (no SUBDIR_KEY entry
+      // for 'epics') then used each file's own basename as its column key --
+      // one spurious matrix column per epic document (confirmed live on
+      // production, 2026-06-22-wuce-multi-tenancy: 9 real epics, 9 spurious
+      // columns).
       featureLevel.push(adapted);
     } else if (artefact.inferredGroup) {
       // cat-s4 AC2: a document classified 'unregistered' but cat-s3 could
@@ -605,8 +615,13 @@ function renderArtefactMatrix(grouped, featureSlug, epicDocs, resumeLookup) {
 
   const presentKeys = new Set();
   rowGroups.forEach((g) => g.stories.forEach((s) => s.artefacts.forEach((a) => presentKeys.add(_deriveMatrixColumn(a.path || '')))));
-  const columns = MATRIX_COLUMN_ORDER.filter((k) => presentKeys.has(k))
-    .concat(Array.from(presentKeys).filter((k) => MATRIX_COLUMN_ORDER.indexOf(k) === -1).sort());
+  // dmcb-s1: 'story' is deliberately excluded here -- the hardcoded
+  // doc-matrix__story-col <th> below already covers it. Without this, any
+  // story whose own stories/<slug>.md file is among its artefacts (true for
+  // essentially every registered story) added a second, redundant "Story"
+  // column, confirmed live in production across every feature checked.
+  const columns = MATRIX_COLUMN_ORDER.filter((k) => k !== 'story' && presentKeys.has(k))
+    .concat(Array.from(presentKeys).filter((k) => k !== 'story' && MATRIX_COLUMN_ORDER.indexOf(k) === -1).sort());
   const hasDodColumn = columns.indexOf('dod') !== -1;
   const colCount = columns.length + 1 + (hasDodColumn ? 1 : 0);
 
@@ -669,7 +684,32 @@ function renderArtefactMatrix(grouped, featureSlug, epicDocs, resumeLookup) {
             ? '<td class="doc-matrix__status-col"><span class="sw-pill sw-pill--nodot sw-pill--green">✓ Done</span></td>'
             : '<td class="doc-matrix__status-col"><span class="sw-pill sw-pill--nodot sw-pill--neutral">In progress</span></td>')
         : '';
-      return `<tr><td class="doc-matrix__story-col">${shellEscHtml(story.slug)}</td>${cells}${statusCell}</tr>`;
+      // dmcb-s1: document(s) mapping to the 'story' column key (typically the
+      // story's own stories/<slug>.md definition file) are deliberately
+      // excluded from `columns` above so they don't render a second,
+      // redundant "Story" header -- but every document must still be
+      // reachable (AC1's own real-data regression guard: no document
+      // silently dropped). For a real per-slug story row this is normally
+      // exactly one file, folded into the name itself as a link. A synthetic
+      // bucket (the shared "Unregistered" catch-all, or an inferred-group
+      // bucket) can legitimately hold several 'story'-classified files with
+      // no natural single file to name-link to -- render every one of them
+      // as its own tick-link appended after the plain-text name instead of
+      // silently keeping only the first.
+      const storyDocs = byColumn.story || [];
+      var storyNameCell;
+      if (storyDocs.length === 1) {
+        storyNameCell = `<a class="doc-matrix__tick" href="${shellEscHtml(`/artefact/${featureSlug}/${encodeURIComponent(_relativeArtefactPath(storyDocs[0].path || '', featureSlug) || (storyDocs[0].type || ''))}`)}" title="Open story document">${shellEscHtml(story.slug)}</a>`;
+      } else if (storyDocs.length > 1) {
+        var extraLinks = storyDocs.map(function(d) {
+          var url = `/artefact/${featureSlug}/${encodeURIComponent(_relativeArtefactPath(d.path || '', featureSlug) || (d.type || ''))}`;
+          return `<a class="doc-matrix__tick" href="${shellEscHtml(url)}" title="Open document">✓</a>`;
+        }).join(' ');
+        storyNameCell = `${shellEscHtml(story.slug)} ${extraLinks}`;
+      } else {
+        storyNameCell = shellEscHtml(story.slug);
+      }
+      return `<tr><td class="doc-matrix__story-col">${storyNameCell}</td>${cells}${statusCell}</tr>`;
     }).join('');
 
     return dividerHtml + storyRows;

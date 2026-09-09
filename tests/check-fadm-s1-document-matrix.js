@@ -230,6 +230,67 @@ console.log('\n[fadm-s1] AC6 (regression guard) -- resume-conversation affordanc
   });
 }
 
+console.log('\n[dmcb-s1] T2 -- end-to-end via _buildGroupedFromTrace: epic documents do not explode into spurious matrix columns');
+{
+  var traceMod = require('../src/web-ui/adapters/artefact-trace');
+  var fakeTrace = {
+    status: 'found',
+    epics: [
+      { slug: 'phase-0-authorization-guard', name: 'Phase 0 -- Authorization Guard' },
+      { slug: 'phase-1-tenant-identity', name: 'Phase 1 -- Tenant Identity' }
+    ],
+    stories: [
+      { slug: 'p0.1', name: 'p0.1', epicSlug: 'phase-0-authorization-guard', divergence: 'registered' },
+      { slug: 'p1.1', name: 'p1.1', epicSlug: 'phase-1-tenant-identity', divergence: 'registered' }
+    ],
+    artefacts: [
+      { path: 'epics/phase-0-authorization-guard.md', type: 'epics', filename: 'phase-0-authorization-guard.md', storySlug: null, divergence: 'unregistered', inferredGroup: null },
+      { path: 'epics/phase-1-tenant-identity.md', type: 'epics', filename: 'phase-1-tenant-identity.md', storySlug: null, divergence: 'unregistered', inferredGroup: null },
+      { path: 'stories/p0.1.md', type: 'stories', filename: 'p0.1.md', storySlug: 'p0.1', divergence: 'registered', inferredGroup: null },
+      { path: 'dor/p0.1-dor.md', type: 'dor', filename: 'p0.1-dor.md', storySlug: 'p0.1', divergence: 'registered', inferredGroup: null },
+      { path: 'stories/p1.1.md', type: 'stories', filename: 'p1.1.md', storySlug: 'p1.1', divergence: 'registered', inferredGroup: null }
+    ]
+  };
+  var grouped = mod._buildGroupedFromTrace(fakeTrace, 'dmcb-fixture-2');
+  var html = mod.renderGroupedArtefactIndexHtml(grouped, 'dmcb-fixture-2', {});
+  test('no epic-name columns in the rendered header row', function() {
+    var theadOnly = html.match(/<thead>[\s\S]*?<\/thead>/)[0];
+    assert.ok(!/phase-0-authorization-guard/.test(theadOnly), 'expected no "phase-0-authorization-guard" column header in <thead>, found one');
+    assert.ok(!/phase-1-tenant-identity/.test(theadOnly), 'expected no "phase-1-tenant-identity" column header in <thead>, found one');
+  });
+  test('header row only contains known abbreviation columns (Story, RC, and nothing epic-shaped)', function() {
+    var headerMatch = html.match(/<thead>[\s\S]*?<\/thead>/);
+    assert.ok(headerMatch, 'expected a <thead> in the rendered matrix');
+    var thTexts = (headerMatch[0].match(/<th[^>]*>([^<]*)<\/th>/g) || []).map(function(t) { return t.replace(/<[^>]+>/g, ''); });
+    assert.deepStrictEqual(thTexts, ['Story', 'RC'], 'expected exactly [Story, RC] as headers, got: ' + JSON.stringify(thTexts));
+  });
+  test('each epic doc still links correctly from its own divider row', function() {
+    assert.ok(/doc-matrix__divider[\s\S]*?epics%2Fphase-0-authorization-guard/.test(html), 'expected phase-0 epic doc link in its divider row');
+    assert.ok(/doc-matrix__divider[\s\S]*?epics%2Fphase-1-tenant-identity/.test(html), 'expected phase-1 epic doc link in its divider row');
+  });
+}
+
+console.log('\n[dmcb-s1] T3 -- a story\'s own stories/<slug>.md file does not create a duplicate "Story" column');
+{
+  var html = mod.renderGroupedArtefactIndexHtml({
+    featureLevel: [], epics: [],
+    flatStories: [{ slug: 'x', artefacts: [{ path: 'artefacts/f/stories/x.md' }, { path: 'artefacts/f/dor/x-dor.md' }] }]
+  }, 'f', {});
+  test('exactly one doc-matrix__story-col header cell, not two', function() {
+    var count = (html.match(/doc-matrix__story-col/g) || []).length;
+    // one in <thead>, one in the <tbody> row's own story-name cell -- both
+    // legitimate uses of the class; the bug produced a THIRD, spurious <th>.
+    var theadMatches = (html.match(/<thead>[\s\S]*?<\/thead>/)[0].match(/doc-matrix__story-col/g) || []).length;
+    assert.strictEqual(theadMatches, 1, 'expected exactly one doc-matrix__story-col header cell in <thead>, got ' + theadMatches);
+  });
+  test('no second, redundant "Story" <th> anywhere in the header row', function() {
+    var headerMatch = html.match(/<thead>[\s\S]*?<\/thead>/);
+    var thTexts = (headerMatch[0].match(/<th[^>]*>([^<]*)<\/th>/g) || []).map(function(t) { return t.replace(/<[^>]+>/g, ''); });
+    var storyCount = thTexts.filter(function(t) { return t === 'Story'; }).length;
+    assert.strictEqual(storyCount, 1, 'expected exactly one "Story" header cell, got ' + storyCount + ' (' + JSON.stringify(thTexts) + ')');
+  });
+}
+
 console.log('\n--- fadm-s1 Results ---');
 console.log('Passed:', passed, ' Failed:', failed);
 process.exit(failed > 0 ? 1 : 0);
