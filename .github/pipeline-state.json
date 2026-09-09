@@ -33170,10 +33170,10 @@
           "id": "jasb-s1",
           "name": "Remove unconditional autofocus on journey's new-feature input",
           "storyPath": "artefacts/2026-09-10-journey-autofocus-scroll-trap/stories/jasb-s1-remove-unconditional-autofocus-on-journey-new-feature-input.md",
-          "stage": "subagent-execution",
+          "stage": "verify-completion",
           "health": "green",
           "acTotal": 3,
-          "acVerified": 0,
+          "acVerified": 3,
           "hasLayoutDependentGaps": "true",
           "e2eToolingRequired": "true",
           "testPlan": {
@@ -33204,7 +33204,8 @@
               "file": "artefacts/2026-09-10-journey-autofocus-scroll-trap/plans/jasb-s1-plan.md"
             }
           ],
-          "updatedAt": "2026-09-10T00:00:00.000Z"
+          "updatedAt": "2026-09-09T23:24:03.223Z",
+          "verifyStatus": "passed"
         }
       ],
       "metrics": [],
