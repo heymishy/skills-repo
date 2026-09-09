@@ -28927,9 +28927,9 @@
       "name": "Web UI Navigation and Context Legibility",
       "track": "standard",
       "stage": "discovery",
-      "discoveryStatus": "approved",
+      "discoveryStatus": "clarified",
       "health": "green",
-      "updatedAt": "2026-08-31T08:48:52.616Z",
+      "updatedAt": "2026-09-10T00:00:00.000Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -33135,6 +33135,38 @@
           "dodPath": "artefacts/2026-09-09-doc-matrix-column-bugs/dod/dmcb-s1-dod.md"
         }
       ]
+    },
+    {
+      "slug": "2026-09-10-journey-autofocus-scroll-trap",
+      "name": "Journey page's unconditional autofocus on the new-feature input auto-scrolls past the entire feature list on every load",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "jasb-s1",
+          "id": "jasb-s1",
+          "name": "Remove unconditional autofocus on journey's new-feature input",
+          "storyPath": "artefacts/2026-09-10-journey-autofocus-scroll-trap/stories/jasb-s1-remove-unconditional-autofocus-on-journey-new-feature-input.md",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 3,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": "true",
+          "e2eToolingRequired": "true",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 3,
+            "passing": 0
+          },
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-10-journey-autofocus-scroll-trap/dor/jasb-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-10-journey-autofocus-scroll-trap/dor/jasb-s1-dor-contract.md",
+          "updatedAt": "2026-09-10T00:00:00.000Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-10T00:00:00.000Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
