@@ -33148,7 +33148,7 @@
           "id": "jasb-s1",
           "name": "Remove unconditional autofocus on journey's new-feature input",
           "storyPath": "artefacts/2026-09-10-journey-autofocus-scroll-trap/stories/jasb-s1-remove-unconditional-autofocus-on-journey-new-feature-input.md",
-          "stage": "definition-of-ready",
+          "stage": "branch-setup",
           "health": "green",
           "acTotal": 3,
           "acVerified": 0,
@@ -33162,7 +33162,7 @@
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-10-journey-autofocus-scroll-trap/dor/jasb-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-10-journey-autofocus-scroll-trap/dor/jasb-s1-dor-contract.md",
-          "updatedAt": "2026-09-10T00:00:00.000Z"
+          "updatedAt": "2026-09-09T20:41:16.218Z"
         }
       ],
       "metrics": [],
