@@ -32519,7 +32519,7 @@
               "name": "Session-origin indicator on the org kanban board",
               "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-09-08T23:41:11.118Z",
+              "updatedAt": "2026-09-09T04:31:56.176Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s3-review-1.md",
@@ -32545,7 +32545,7 @@
                   "path": ".github/standards/web-ui/web-ui-patterns.md"
                 }
               ],
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/850",
               "tasks": [
                 {
@@ -32566,7 +32566,10 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-09-08-session-origin-badge/plans/sob-s3-plan.md"
                 }
-              ]
+              ],
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-09-08-session-origin-badge/dod/sob-s3-dod.md"
             }
           ]
         }
