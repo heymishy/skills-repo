@@ -32570,6 +32570,28 @@
               "dodStatus": "complete",
               "releaseReady": true,
               "dodArtefact": "artefacts/2026-09-08-session-origin-badge/dod/sob-s3-dod.md"
+            },
+            {
+              "slug": "sob-s4",
+              "name": "journey.js DRY completion + sw-pill--neutral badge tone",
+              "track": "short-track",
+              "stage": "definition-of-done",
+              "health": "green",
+              "updatedAt": "2026-09-09T05:54:50.603Z",
+              "testPlan": {
+                "status": "written",
+                "artefact": "artefacts/2026-09-08-session-origin-badge/test-plans/sob-s4-test-plan.md",
+                "totalTests": 4,
+                "passing": 4
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-09-08-session-origin-badge/dor/sob-s4-dor.md",
+              "humanOversight": "low",
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/851",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-09-08-session-origin-badge/dod/sob-s4-dod.md"
             }
           ]
         }
