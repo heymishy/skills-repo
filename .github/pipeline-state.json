@@ -32468,7 +32468,7 @@
               "name": "Session-origin indicator on the /journey dashboard",
               "stage": "verify-completion",
               "health": "green",
-              "updatedAt": "2026-09-08T20:53:20.629Z",
+              "updatedAt": "2026-09-09T04:20:04.319Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s2-review-1.md",
@@ -32508,8 +32508,11 @@
                   "file": "artefacts/2026-09-08-session-origin-badge/plans/sob-s2-plan.md"
                 }
               ],
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/849"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/849",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "dodArtefact": "artefacts/2026-09-08-session-origin-badge/dod/sob-s2-dod.md"
             },
             {
               "slug": "sob-s3",
