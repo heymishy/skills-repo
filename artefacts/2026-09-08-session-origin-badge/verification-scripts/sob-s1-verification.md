@@ -3,7 +3,7 @@
 **Story reference:** artefacts/2026-09-08-session-origin-badge/stories/sob-s1-shared-derivation-and-product-list-indicator.md
 **Technical test plan:** artefacts/2026-09-08-session-origin-badge/test-plans/sob-s1-test-plan.md
 **Script version:** 1
-**Verified by:** [name] | **Date:** [date] | **Context:** [ ] Pre-code  [ ] Post-merge  [ ] Demo
+**Verified by:** Claude Sonnet 5 (Chrome browser automation, DOM-level + visual inspection) | **Date:** 2026-09-09 | **Context:** [ ] Pre-code  [x] Post-merge  [ ] Demo
 
 ---
 
@@ -32,8 +32,8 @@
 **Expected outcome:**
 > That feature's row shows a small icon indicating every completed stage came from a real conversation. Hovering over it shows a tooltip explaining this in words (not just a colour).
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Confirmed on `wuce-staging`'s `skills-framework` product (real dogfood data): 9 of 630 feature-row badges show `data-sob-session-origin="fully-session-backed"`, glyph `●`, `title`/`aria-label` = "All completed stages driven through a live session — resumable". Also confirmed on `test product`, `Canned products`, `card issuing`, and `Women's mentorship` (100% fully-session-backed on those smaller demo products, consistent with their content being entirely chat-authored).
 
 ---
 
@@ -48,8 +48,8 @@
 **Expected outcome:**
 > That feature's row shows a visually distinct icon from Scenario 1, and its tooltip explains that some — not all — of its completed stages came from a real conversation.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** No live "mixed" feature found on the product-scoped pages checked (skills-framework, test product, Canned products, card issuing, Women's mentorship — all either 100% fully-session-backed or a mix of fully-session-backed/no-session, no "mixed" individual features present in this sample). A real "mixed" card WAS found and verified on `/journey` (see sob-s2-verification.md Scenario 2) — same underlying `deriveSessionOrigin`/`sessionOriginBadgeMeta` code path, confirmed correct there: `title`="Some stages authored via CLI/agent, some through a live session — partially resumable", glyph `◐`, class `sw-pill sw-pill--nodot` (identical to Scenario 1's fully-session-backed styling — same visual treatment, different glyph/tooltip, satisfying "visually distinct" via the glyph while confirming shared styling infrastructure). Not re-verified separately on the product page specifically, since no real mixed-state feature exists there today and the rendering code (`_renderPvcItemRow`) is identical to what's already confirmed.
 
 ---
 
@@ -64,8 +64,8 @@
 **Expected outcome:**
 > That row shows the "no session" icon — no live conversation exists for this feature to revisit.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Confirmed extensively on `skills-framework`: 621 of 630 feature-row badges show `data-sob-session-origin="no-session"`, glyph `○`, `title`/`aria-label` = "No live session — authored via CLI/agent" — matches this repo's own real delivery pattern (the vast majority of its own features are CLI/agent-authored). Both the AC3 case (real journey, no session) and AC4 case (taxonomy-only, no journey) render identically as required.
 
 ---
 
@@ -80,8 +80,8 @@
 **Expected outcome:**
 > There is no session-origin icon on that row at all — not a greyed-out or blank version of one, nothing. This is different from "no session" (Scenario 3), which does show an icon.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Confirmed via DOM inspection on `skills-framework`: `new-feature-aa349dd1` (stage: discovery, not yet completed) has zero elements matching `[data-sob-session-origin]` in its row — genuinely absent, not a blank/greyed variant. Distinct from Scenario 3's "no-session" state, which does render a visible `○` icon.
 
 ---
 
@@ -96,8 +96,8 @@
 **Expected outcome:**
 > The page still loads completely and normally. No error message. No broken layout. Simply no session-origin icons appear on any row until the underlying issue is fixed.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Per the script's own guidance, verified via the automated test (`check-sob-s1-product-list-integration.js`, AC7: "bulk-read failure (simulated by an empty fallback map) renders successfully with no indicators") rather than forcing a live failure on staging — not force-testable without engineering access to the running staging environment.
 
 ---
 
@@ -111,8 +111,8 @@
 **Expected outcome:**
 > Every icon shows a text tooltip explaining exactly what it means — you don't have to rely on colour or shape alone to tell them apart.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Confirmed programmatically across every live badge found on `skills-framework` (630 elements): 100% carry a non-empty `title` and `aria-label` attribute with the full plain-language explanation, not just a colour or bare glyph.
 
 ---
 
@@ -120,14 +120,14 @@
 
 | Scenario | Result | Notes |
 |----------|--------|-------|
-| Scenario 1 — Fully session-backed | | |
-| Scenario 2 — Mixed | | |
-| Scenario 3 — No session (real journey and CLI-only) | | |
-| Scenario 4 — No indicator (nothing completed yet) | | |
-| Edge case — Graceful degradation | | |
-| Edge case — Text-equivalent on every icon | | |
+| Scenario 1 — Fully session-backed | Pass | 9/630 badges live on skills-framework |
+| Scenario 2 — Mixed | Pass | Verified via /journey (identical code path) |
+| Scenario 3 — No session (real journey and CLI-only) | Pass | 621/630 badges live on skills-framework |
+| Scenario 4 — No indicator (nothing completed yet) | Pass | Confirmed zero-badge row (new-feature-aa349dd1) |
+| Edge case — Graceful degradation | Pass | Via automated test, per script's own guidance |
+| Edge case — Text-equivalent on every icon | Pass | 100% of 630 live badges have title+aria-label |
 
-**Overall verdict:** [ ] All pass — ready to proceed
+**Overall verdict:** [x] All pass — ready to proceed
 [ ] Failures found — log findings below before proceeding
 
 ---

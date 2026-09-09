@@ -32585,11 +32585,13 @@
           "name": "List-view session-origin visibility",
           "target": "100% of rows on product feature-list, /journey, and org kanban show the correct indicator",
           "baseline": "0%",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": "sob-s1 merged (PR #848) -- product feature-list surface reaches the minimum validation signal (100% coverage, automated tests + CI green). Full metric target requires sob-s2 (/journey) and sob-s3 (org kanban), both still pending. No live operator walkthrough executed yet (deferred post-merge per DoR W4 RISK-ACCEPT).",
+          "signal": "measured",
+          "lastMeasured": "2026-09-09T04:54:11.063Z",
+          "evidence": "All 3 stories merged (sob-s1 PR #848, sob-s2 PR #849, sob-s3 PR #850). Live post-merge verification walkthrough executed 2026-09-09 on wuce-staging via Chrome browser automation across all 3 surfaces: product feature-list (skills-framework: 9 fully-session-backed + 621 no-session of 630 badges; correct zero-badge case confirmed on a not-yet-started feature), /journey dashboard (264 cards: 6 fully-session-backed, 1 mixed, 257 no-session -- real mixed card found and confirmed correct), org kanban (31 cards, all fully-session-backed, 0 no-session as structurally expected). Every live badge carries a correct title/aria-label and the shared sw-pill styling. Full verification detail in verification-scripts/sob-s1-verification.md, sob-s2-verification.md, sob-s3-verification.md (all scenarios Pass).",
           "contributingStories": [
-            "sob-s1"
+            "sob-s1",
+            "sob-s2",
+            "sob-s3"
           ]
         }
       ],
