@@ -32545,17 +32545,28 @@
                   "path": ".github/standards/web-ui/web-ui-patterns.md"
                 }
               ],
-              "task-1": {
-                "tddState": "committed"
-              },
-              "task-2": {
-                "tddState": "committed"
-              },
-              "task-3": {
-                "tddState": "committed"
-              },
               "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/850"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/850",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Extract shared session-origin label/glyph map into features.js",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-08-session-origin-badge/plans/sob-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Add _enrichColumnsWithSessionOrigin, wire into handleGetOrgKanban only",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-08-session-origin-badge/plans/sob-s3-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Render the session-origin badge in kanban-view.js shared card renderer",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-08-session-origin-badge/plans/sob-s3-plan.md"
+                }
+              ]
             }
           ]
         }
