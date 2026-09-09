@@ -55,3 +55,15 @@ withAuth('AC2: /journey?new=1 still autofocuses and scrolls #jh-fname into view'
   await expect(input).toBeFocused();
   await expect(input).toBeInViewport();
 });
+
+// ── AC3 (regression guard): form submission is unaffected ──────────────────
+
+withAuth('AC3: the "Start a new feature" form still submits and starts a new journey', async ({ page }) => {
+  await page.goto('/journey');
+
+  await page.fill('#jh-fname', `jasb-s1-ac3-${Date.now()}`);
+  // "Formed idea — jump straight to discovery" is already checked by default.
+  await page.click('button.jh-submit');
+
+  await expect(page).toHaveURL(/\/skills\/discovery\/sessions\/[^/]+\/chat/);
+});
