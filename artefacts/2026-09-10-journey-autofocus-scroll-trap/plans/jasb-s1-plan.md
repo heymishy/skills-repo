@@ -190,7 +190,7 @@ git commit -m "test: add regression guard for journey ?new=1 autofocus behaviour
 **Files:**
 - Modify: `tests/e2e/jasb-s1-journey-autofocus-scroll.spec.js` (append this test; no other file changes — this story does not touch form submission behaviour at all)
 
-- [ ] **Step 1: Write the test**
+- [x] **Step 1: Write the test**
 
 ```javascript
 // Append to tests/e2e/jasb-s1-journey-autofocus-scroll.spec.js, after the AC2 test.
@@ -208,7 +208,7 @@ withAuth('AC3: the "Start a new feature" form still submits and starts a new jou
 });
 ```
 
-- [ ] **Step 2: Run test — expected to PASS already**
+- [x] **Step 2: Run test — expected to PASS already**
 
 ```bash
 npx playwright test tests/e2e/jasb-s1-journey-autofocus-scroll.spec.js -g "AC3"
@@ -216,9 +216,9 @@ npx playwright test tests/e2e/jasb-s1-journey-autofocus-scroll.spec.js -g "AC3"
 
 Expected output: `1 passed` — this is a regression guard. This story changes only the `autofocus` attribute's condition; the form's fields, validation, and `POST /api/journey` submit handler are untouched, so this test is expected to pass without any implementation change.
 
-- [ ] **Step 3: No implementation step** — nothing in this story's scope touches form submission.
+- [x] **Step 3: No implementation step** — nothing in this story's scope touches form submission.
 
-- [ ] **Step 4: Run full suite — no regressions**
+- [x] **Step 4: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -226,7 +226,7 @@ npm test
 
 Expected output: `632 file(s) run, 1 failed` — same single pre-existing baseline failure, no new failures.
 
-- [ ] **Step 5: Run the full new E2E spec together — all 3 ACs pass**
+- [x] **Step 5: Run the full new E2E spec together — all 3 ACs pass** — confirmed `3 passed`
 
 ```bash
 npx playwright test tests/e2e/jasb-s1-journey-autofocus-scroll.spec.js
@@ -234,7 +234,7 @@ npx playwright test tests/e2e/jasb-s1-journey-autofocus-scroll.spec.js
 
 Expected output: `3 passed`
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit** — `b5beb4f1`
 
 ```bash
 git add tests/e2e/jasb-s1-journey-autofocus-scroll.spec.js
