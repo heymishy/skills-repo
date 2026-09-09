@@ -57,6 +57,19 @@ async function main() {
       'expected a no-session indicator for a taxonomy-only item with no journeyId');
   });
 
+  await test('sob-s4: the badge carries the sw-pill--neutral tone modifier, not just sw-pill sw-pill--nodot', async function() {
+    var items = [{
+      slug: 'tax-2',
+      name: 'Taxonomy-only Feature 2',
+      health: 'green',
+      coverageLabel: 'No test data yet',
+      source: 'taxonomy'
+    }];
+    var html = _renderConsolidatedFeaturesSection(items, [], null, 'p1', 'csrf-tok', null, {});
+    assert.ok(html.indexOf('class="sw-pill sw-pill--nodot sw-pill--neutral"') !== -1,
+      'expected the session-origin badge to carry sw-pill--neutral so it actually gets a background colour (the base .sw-pill rule alone paints nothing)');
+  });
+
   await test('AC5: journey-backed item with zero completed stages renders no session-origin indicator', async function() {
     var items = [{
       slug: 'jrn-1',

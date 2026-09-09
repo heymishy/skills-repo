@@ -110,6 +110,20 @@ await testAsync('a fully session-backed real journey renders data-sob-session-or
   assert.ok(html.indexOf('data-sob-session-origin="fully-session-backed"') !== -1, 'expected fully-session-backed indicator in rendered HTML');
 });
 
+await testAsync('sob-s4: the badge carries the sw-pill--neutral tone modifier, not just sw-pill sw-pill--nodot', async function() {
+  const html = journeyRoutes._renderJourneyHome({
+    journeys: [{
+      featureSlug: 'sob-s4-tone-fixture',
+      currentStage: 'definition',
+      productProfile: 'default',
+      createdAt: '2026-09-08T00:00:00.000Z',
+      completedStages: [{ skillName: 'discovery', sessionId: 's1' }]
+    }]
+  });
+  assert.ok(html.indexOf('class="sw-pill sw-pill--nodot sw-pill--neutral"') !== -1,
+    'expected the session-origin badge to carry sw-pill--neutral so it actually gets a background colour');
+});
+
 console.log('\n[sob-s2] AC2 (render-level) -- mixed journey card');
 await testAsync('a mixed real journey renders data-sob-session-origin="mixed"', async function() {
   const html = journeyRoutes._renderJourneyHome({

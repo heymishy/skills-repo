@@ -20,6 +20,7 @@ var _renderShellWithNav = require('./products').renderShellWithNav; // pncg-s1 -
 // products.js above with no cycle back through journey.js either (confirmed
 // by reading both files' require lists directly).
 var deriveSessionOrigin = require('./features.js').deriveSessionOrigin;
+var sessionOriginBadgeMeta = require('./features.js').sessionOriginBadgeMeta;
 
 // Injectable adapters — defaults wire to real implementations
 var _journeyStore = require('../modules/journey-store');
@@ -254,14 +255,9 @@ function _renderJourneyHome(data) {
       hasJourney: Array.isArray(j.completedStages),
       completedStages: j.completedStages || []
     });
-    var _sobLabelMap = {
-      'fully-session-backed': 'All completed stages driven through a live session — resumable',
-      'mixed': 'Some stages authored via CLI/agent, some through a live session — partially resumable',
-      'no-session': 'No live session — authored via CLI/agent'
-    };
-    var _sobGlyphMap = { 'fully-session-backed': '●', 'mixed': '◐', 'no-session': '○' };
-    var sessionOriginHtml = _sobOrigin
-      ? '<span data-sob-session-origin="' + _sobOrigin + '" class="sw-pill sw-pill--nodot" title="' + escHtml(_sobLabelMap[_sobOrigin]) + '" aria-label="' + escHtml(_sobLabelMap[_sobOrigin]) + '">' + _sobGlyphMap[_sobOrigin] + '</span>'
+    var _sobMeta = sessionOriginBadgeMeta(_sobOrigin);
+    var sessionOriginHtml = _sobMeta
+      ? '<span data-sob-session-origin="' + _sobOrigin + '" class="sw-pill sw-pill--nodot sw-pill--neutral" title="' + escHtml(_sobMeta.label) + '" aria-label="' + escHtml(_sobMeta.label) + '">' + _sobMeta.glyph + '</span>'
       : '';
     return [
       '<div class="jh-card">',

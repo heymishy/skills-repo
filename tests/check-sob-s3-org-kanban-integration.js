@@ -81,6 +81,15 @@ async function testAsync(name, fn) {
     assert.ok(html.includes('data-sob-session-origin="fully-session-backed"'), 'expected the session-origin badge to render on a card carrying sessionOrigin');
   });
 
+  test('sob-s4: the badge carries the sw-pill--neutral tone modifier, not just sw-pill sw-pill--nodot', function() {
+    const kanbanView = require('../src/web-ui/views/kanban-view.js');
+    const html = kanbanView.renderKanban({
+      columns: [{ stage: 'discovery', cards: [{ id: 'j3', title: 'Test3', sessionOrigin: 'fully-session-backed' }] }]
+    });
+    assert.ok(html.includes('class="sw-pill sw-pill--nodot sw-pill--neutral"'),
+      'expected the session-origin badge to carry sw-pill--neutral so it actually gets a background colour');
+  });
+
   test('renderKanban outputs data-sob-session-origin for a card carrying the "mixed" tri-state (AC2, render-level -- not just Task 2\'s data-derivation coverage)', function() {
     const kanbanView = require('../src/web-ui/views/kanban-view.js');
     const html = kanbanView.renderKanban({
