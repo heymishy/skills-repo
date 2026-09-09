@@ -43,3 +43,15 @@ withAuth('AC1: /journey loads scrolled to top, not auto-scrolled to the bottom',
   const activeElementId = await page.evaluate(() => document.activeElement && document.activeElement.id);
   expect(activeElementId).not.toBe('jh-fname');
 });
+
+// ── AC2: explicit "+ New feature" entry point is unchanged ─────────────────
+
+withAuth('AC2: /journey?new=1 still autofocuses and scrolls #jh-fname into view', async ({ page, request }) => {
+  await seedStage(request, `jasb-s1-ac2-scenario2-${Date.now()}`, 'discovery');
+
+  await page.goto('/journey?new=1');
+
+  const input = page.locator('#jh-fname');
+  await expect(input).toBeFocused();
+  await expect(input).toBeInViewport();
+});
