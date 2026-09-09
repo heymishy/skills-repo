@@ -29,7 +29,7 @@ Modify:
 - Create: `tests/e2e/jasb-s1-journey-autofocus-scroll.spec.js` (this task writes the file's header, the shared `seedManyJourneys` helper, and the AC1 test only — AC2/AC3 tests are added to the same file by Tasks 2 and 3)
 - Modify: `src/web-ui/routes/journey.js`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 ```javascript
 // tests/e2e/jasb-s1-journey-autofocus-scroll.spec.js
@@ -79,7 +79,7 @@ withAuth('AC1: /journey loads scrolled to top, not auto-scrolled to the bottom',
 });
 ```
 
-- [ ] **Step 2: Run test — must fail**
+- [x] **Step 2: Run test — must fail**
 
 ```bash
 npx playwright test tests/e2e/jasb-s1-journey-autofocus-scroll.spec.js -g "AC1"
@@ -87,7 +87,7 @@ npx playwright test tests/e2e/jasb-s1-journey-autofocus-scroll.spec.js -g "AC1"
 
 Expected output: `1 failed` — `expect(scrollY).toBe(0)` fails because `window.scrollY` is a large positive number (the page has auto-scrolled to bring the unconditionally-autofocused `#jh-fname` input into view).
 
-- [ ] **Step 3: Write minimal implementation**
+- [x] **Step 3: Write minimal implementation**
 
 ```javascript
 // src/web-ui/routes/journey.js — line 344, inside handleGetJourney's
@@ -102,7 +102,7 @@ Expected output: `1 failed` — `expect(scrollY).toBe(0)` fails because `window.
 
 Apply this as a direct edit to the existing line 344 of `src/web-ui/routes/journey.js` — do not restructure the surrounding array, do not touch line 338's own `showNewForm` conditional (which already exists and is reused here unchanged).
 
-- [ ] **Step 4: Run test — must pass**
+- [x] **Step 4: Run test — must pass**
 
 ```bash
 npx playwright test tests/e2e/jasb-s1-journey-autofocus-scroll.spec.js -g "AC1"
@@ -110,7 +110,7 @@ npx playwright test tests/e2e/jasb-s1-journey-autofocus-scroll.spec.js -g "AC1"
 
 Expected output: `1 passed`
 
-- [ ] **Step 5: Run full suite — no regressions**
+- [x] **Step 5: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -118,7 +118,7 @@ npm test
 
 Expected output: `632 file(s) run, 1 failed` — only the pre-existing, already-acknowledged `tests/check-p3.5-validate-trace.js` baseline failure (see `artefacts/2026-09-10-journey-autofocus-scroll-trap/decisions.md`), no new failures.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit** — `64402401`
 
 ```bash
 git add tests/e2e/jasb-s1-journey-autofocus-scroll.spec.js src/web-ui/routes/journey.js
@@ -140,7 +140,7 @@ highlight-styling condition."
 **Files:**
 - Modify: `tests/e2e/jasb-s1-journey-autofocus-scroll.spec.js` (append this test; no other file changes — Task 1's fix already fully satisfies this AC)
 
-- [ ] **Step 1: Write the test**
+- [x] **Step 1: Write the test**
 
 ```javascript
 // Append to tests/e2e/jasb-s1-journey-autofocus-scroll.spec.js, after the AC1 test.
@@ -158,7 +158,7 @@ withAuth('AC2: /journey?new=1 still autofocuses and scrolls #jh-fname into view'
 });
 ```
 
-- [ ] **Step 2: Run test — expected to PASS already**
+- [x] **Step 2: Run test — expected to PASS already**
 
 ```bash
 npx playwright test tests/e2e/jasb-s1-journey-autofocus-scroll.spec.js -g "AC2"
@@ -166,9 +166,9 @@ npx playwright test tests/e2e/jasb-s1-journey-autofocus-scroll.spec.js -g "AC2"
 
 Expected output: `1 passed` — this is a regression guard, not a RED test. Task 1's fix (`autofocus` gated on `showNewForm`) already makes `?new=1` behave exactly as it did before this story; this test proves that explicitly rather than leaving it unverified.
 
-- [ ] **Step 3: No implementation step** — Task 1's fix already covers this AC completely.
+- [x] **Step 3: No implementation step** — Task 1's fix already covers this AC completely.
 
-- [ ] **Step 4: Run full suite — no regressions**
+- [x] **Step 4: Run full suite — no regressions**
 
 ```bash
 npm test
@@ -176,7 +176,7 @@ npm test
 
 Expected output: `632 file(s) run, 1 failed` — same single pre-existing baseline failure as Task 1, no new failures.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit** — `4e160b82`, strengthened in follow-up commit `ba3fd2fd` (code-quality fix: seed count forces genuine scroll, scenario numbering corrected)
 
 ```bash
 git add tests/e2e/jasb-s1-journey-autofocus-scroll.spec.js
