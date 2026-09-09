@@ -33106,7 +33106,7 @@
       "track": "short",
       "stage": "branch-complete",
       "health": "green",
-      "updatedAt": "2026-09-09T08:45:35.530Z",
+      "updatedAt": "2026-09-09T09:53:10.454Z",
       "stories": [
         {
           "slug": "dmcb-s1",
@@ -33133,6 +33133,28 @@
           "dodStatus": "complete",
           "releaseReady": true,
           "dodPath": "artefacts/2026-09-09-doc-matrix-column-bugs/dod/dmcb-s1-dod.md"
+        },
+        {
+          "slug": "dmcb-s2",
+          "id": "dmcb-s2",
+          "name": "Multi-artefact cell blows out its column width",
+          "stage": "branch-complete",
+          "health": "green",
+          "updatedAt": "2026-09-09T09:53:10.452Z",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-09-doc-matrix-column-bugs/dor/dmcb-s2-dor.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-09-09-doc-matrix-column-bugs/test-plans/dmcb-s2-test-plan.md",
+            "totalTests": 5,
+            "passing": 5
+          },
+          "acTotal": 3,
+          "acVerified": 3,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "verifyStatus": "passed",
+          "prStatus": "draft"
         }
       ]
     }

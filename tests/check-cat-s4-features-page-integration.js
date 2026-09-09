@@ -129,6 +129,50 @@ console.log('\n[cat-s4] AC1 real-data regression -- /verify-completion manual wa
   });
 }
 
+console.log('\n[dmcb-s2] T1 -- a cell with 2+ artefacts joins them with <br>, not a plain space (avoids blowing out the column width)');
+{
+  var fakeTrace = {
+    status: 'found', epics: [], stories: [],
+    artefacts: [
+      { path: 'reference/doc-a.md', type: 'reference', filename: 'doc-a.md', storySlug: null, divergence: 'unregistered', inferredGroup: null },
+      { path: 'reference/doc-b.md', type: 'reference', filename: 'doc-b.md', storySlug: null, divergence: 'unregistered', inferredGroup: null },
+      { path: 'reference/doc-c.md', type: 'reference', filename: 'doc-c.md', storySlug: null, divergence: 'unregistered', inferredGroup: null }
+    ]
+  };
+  var grouped = mod._buildGroupedFromTrace(fakeTrace, 'dmcb-s2-fixture');
+  var catchAllBucket = grouped.flatStories.find(function(s) { return s.slug === 'Unregistered'; });
+  test('all 3 reference/ artefacts land in the same "Unregistered" catch-all bucket (same row)', function() {
+    assert.ok(catchAllBucket, 'expected a flatStories bucket with slug "Unregistered"');
+    assert.strictEqual(catchAllBucket.artefacts.length, 3);
+  });
+  var html = mod.renderGroupedArtefactIndexHtml(grouped, 'dmcb-s2-fixture', {});
+  test('the 3 artefacts render joined by <br>, not a plain space, in their shared cell', function() {
+    var brCount = (html.match(/<br>/g) || []).length;
+    assert.strictEqual(brCount, 2, 'expected 2 <br> tags joining 3 entries (n-1 separators), got ' + brCount);
+  });
+  test('all 3 document links still render (no document dropped by the new separator)', function() {
+    assert.strictEqual((html.match(/href="\/artefact\/[^"]*"/g) || []).length, 3);
+  });
+}
+
+console.log('\n[dmcb-s2] T2 (regression guard) -- a cell with exactly 1 artefact is byte-identical to before this fix (no <br>)');
+{
+  var fakeTrace = {
+    status: 'found', epics: [], stories: [],
+    artefacts: [
+      { path: 'reference/doc-a.md', type: 'reference', filename: 'doc-a.md', storySlug: null, divergence: 'unregistered', inferredGroup: null }
+    ]
+  };
+  var grouped = mod._buildGroupedFromTrace(fakeTrace, 'dmcb-s2-single-fixture');
+  var html = mod.renderGroupedArtefactIndexHtml(grouped, 'dmcb-s2-single-fixture', {});
+  test('a single-artefact cell contains no <br>', function() {
+    assert.strictEqual((html.match(/<br>/g) || []).length, 0, 'expected no <br> for a single-artefact cell');
+  });
+  test('the single document link still renders', function() {
+    assert.strictEqual((html.match(/href="\/artefact\/[^"]*"/g) || []).length, 1);
+  });
+}
+
 console.log('\n[cat-s4] AC2 -- unregistered document with no inferredGroup gets its own labeled bucket with a visible Unregistered pill');
 {
   var fakeTrace = {
