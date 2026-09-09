@@ -401,7 +401,7 @@ function _renderPvcItemRow(item, includeCheckbox, preferFeatureName, sessionOrig
   });
   var _sobMeta = require('./features.js').sessionOriginBadgeMeta(_sobOrigin);
   var sessionOriginHtml = _sobMeta
-    ? ' <span data-sob-session-origin="' + _sobOrigin + '" class="sw-pill sw-pill--nodot" title="' + _escapeHtml(_sobMeta.label) + '" aria-label="' + _escapeHtml(_sobMeta.label) + '">' + _sobMeta.glyph + '</span>'
+    ? ' <span data-sob-session-origin="' + _sobOrigin + '" class="sw-pill sw-pill--nodot sw-pill--neutral" title="' + _escapeHtml(_sobMeta.label) + '" aria-label="' + _escapeHtml(_sobMeta.label) + '">' + _sobMeta.glyph + '</span>'
     : '';
 
   var innerHtml =

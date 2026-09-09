@@ -363,7 +363,7 @@ function _renderKanbanColumns(data) {
       // products.js's own inline require of features.js).
       var _sobMeta = card.sessionOrigin ? require('../routes/features.js').sessionOriginBadgeMeta(card.sessionOrigin) : null;
       var sessionOriginBadge = _sobMeta
-        ? '<span data-sob-session-origin="' + escHtml(card.sessionOrigin) + '" class="sw-pill sw-pill--nodot" title="' + escHtml(_sobMeta.label) + '" aria-label="' + escHtml(_sobMeta.label) + '">' + _sobMeta.glyph + '</span>'
+        ? '<span data-sob-session-origin="' + escHtml(card.sessionOrigin) + '" class="sw-pill sw-pill--nodot sw-pill--neutral" title="' + escHtml(_sobMeta.label) + '" aria-label="' + escHtml(_sobMeta.label) + '">' + _sobMeta.glyph + '</span>'
         : '';
 
       var hasReadiness = typeof card.ready === 'boolean';
