@@ -33114,7 +33114,7 @@
           "name": "Fix epic-doc spurious columns and duplicate Story column in the document matrix",
           "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-09-09T08:45:35.531Z",
+          "updatedAt": "2026-09-09T09:27:40.309Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-09-doc-matrix-column-bugs/dor/dmcb-s1-dor.md",
           "testPlan": {
@@ -33128,8 +33128,11 @@
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/852"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/852",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodPath": "artefacts/2026-09-09-doc-matrix-column-bugs/dod/dmcb-s1-dod.md"
         }
       ]
     }
