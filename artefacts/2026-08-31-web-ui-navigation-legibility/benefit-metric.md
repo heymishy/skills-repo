@@ -71,9 +71,9 @@ This feature is a **plausible contributor** to an existing Tier 1 metric already
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| M1 — Time-to-orientation | TBD at /definition | Gap (pre-/definition) |
-| M2 — Next-stage-action findability | TBD at /definition | Gap (pre-/definition) |
-| M3 — Cross-channel dashboard discoverability | TBD at /definition | Gap (pre-/definition) |
+| M1 — Time-to-orientation | `wnl-s1` (context-manifest collapse), `wnl-s2` (persistent next-stage action) | Covered |
+| M2 — Next-stage-action findability | `wnl-s2` (persistent next-stage action) | Covered |
+| M3 — Cross-channel dashboard discoverability | `wnl-s3` (dashboard no-product entry point) | Covered |
 | Web UI Session Start Share (linked) | N/A — tracked under `cross-channel-feature-continuity` | Linked, not owned here |
 
 ---
