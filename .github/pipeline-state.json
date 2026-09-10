@@ -28944,28 +28944,28 @@
               "slug": "wnl-s1",
               "name": "Collapse the always-expanded \"Ref docs\" context manifest into a single summary indicator",
               "stage": "review",
-              "health": "amber",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-10T01:47:05.443Z"
+              "updatedAt": "2026-09-10T02:38:55.506Z"
             },
             {
               "slug": "wnl-s2",
               "name": "Make the \"Continue to next stage\" action persistently reachable regardless of scroll position",
               "stage": "review",
-              "health": "amber",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-10T01:47:31.401Z"
+              "updatedAt": "2026-09-10T02:39:07.499Z"
             },
             {
               "slug": "wnl-s3",
               "name": "No-product, CLI-authored features are reachable within one click from the /dashboard landing page",
               "stage": "review",
-              "health": "amber",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-10T01:48:12.702Z"
+              "updatedAt": "2026-09-10T02:39:21.334Z"
             }
           ]
         }
@@ -29231,9 +29231,9 @@
           "category": "adr",
           "label": "Evaluation and write-back workflows must be separate triggers with separate permission scopes",
           "status": "na",
-          "evidence": "Not applicable to this feature's real scope (ADR-009 governs CI evaluation/write-back trigger separation) -- found mis-cited in all 3 stories' Architecture Constraints for an unrelated \"no new npm dependencies\" claim; flagged as review finding 1-M2 in each story, not treated as a real guardrail evaluation for this feature",
+          "evidence": "Not applicable to this feature's real scope (ADR-009 governs CI evaluation/write-back trigger separation) -- was mis-cited in all 3 stories' Architecture Constraints for an unrelated no-new-npm-dependencies claim at review Run 1 (findings 1-M2 each); corrected in all 3 stories to cite product/tech-stack.md and MC-SELF-02 instead, confirmed resolved at review Run 2.",
           "assessedBy": "/review",
-          "assessedAt": "2026-09-10T01:49:50.451Z"
+          "assessedAt": "2026-09-10T02:39:29.952Z"
         },
         {
           "id": "ADR-010",

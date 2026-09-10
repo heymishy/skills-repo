@@ -28,3 +28,12 @@ Per this repo's standing rule (`CLAUDE.md`, "decisions.md is mandatory for featu
 **Context:** Whether the per-feature artefact browser (epics, stories, test plans, DoR) needs a new data store or index, or can read directly from disk.
 **Decision:** Direct disk reads, matching this codebase's existing ADR-023 "disk is canonical" pattern.
 **Rationale:** Reuses an already-proven pattern used throughout this session's own fixes; no evidence yet that any feature has enough artefacts to need an index for performance — can revisit if that changes. Confirmed by the operator via `/clarify`, 2026-08-31.
+
+---
+
+## Decision: `wnl-s3`'s dashboard no-product entry point shows no numeric count
+
+**Date:** 2026-09-10
+**Context:** `/review` (Run 1) flagged a real design-consistency risk: the discovery's own "Minimum viable form" language described a "No product (N)" entry point, but `wnl-s3`'s own Out of Scope explicitly defers fixing the sidebar's separate, Postgres-only `noProductJourneyCount`. Showing a count on the new dashboard entry point (correctly including not-yet-backfilled CLI features) risked visibly disagreeing with the sidebar's own, still-undercounting number on the same page load.
+**Decision:** The dashboard entry point indicates presence only (e.g. "No product work →"), no "(N)" count — a small, deliberate refinement of the discovery's literal MVP wording, not a scope change. Reachability (the actual capability this story and M3 exist to deliver) is unaffected.
+**Rationale:** Avoids shipping a visible two-different-numbers-on-one-screen inconsistency without requiring the sidebar's own fix as a prerequisite for this story. Found and resolved during `/review` (finding 1-M1 on `wnl-s3`), not deferred silently.
