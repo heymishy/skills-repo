@@ -28938,16 +28938,16 @@
         {
           "slug": "web-ui-navigation-legibility",
           "name": "Operators can always tell where they are, what exists, and how to get there — regardless of which channel produced it",
-          "status": "not-started",
+          "status": "complete",
           "stories": [
             {
               "slug": "wnl-s1",
               "name": "Collapse the always-expanded \"Ref docs\" context manifest into a single summary indicator",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-10T09:46:55.306Z",
+              "updatedAt": "2026-09-10T17:38:22.383Z",
               "acTotal": 6,
               "acVerified": 6,
               "hasLayoutDependentGaps": "false",
@@ -28968,18 +28968,20 @@
                   "file": "artefacts/2026-08-31-web-ui-navigation-legibility/plans/wnl-s1-plan.md"
                 }
               ],
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/856",
-              "branch": "feature/wnl-s1"
+              "branch": "feature/wnl-s1",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "wnl-s2",
               "name": "Make the \"Continue to next stage\" action persistently reachable regardless of scroll position",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-10T09:46:55.306Z",
+              "updatedAt": "2026-09-10T17:38:28.516Z",
               "acTotal": 5,
               "acVerified": 5,
               "hasLayoutDependentGaps": "true",
@@ -29012,18 +29014,20 @@
                   "file": "tests/e2e/wnl-s2-journey-gate-sticky.spec.js"
                 }
               ],
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/857",
-              "branch": "feature/wnl-s2"
+              "branch": "feature/wnl-s2",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "wnl-s3",
               "name": "No-product, CLI-authored features are reachable within one click from the /dashboard landing page",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-10T04:39:56.030Z",
+              "updatedAt": "2026-09-10T17:38:33.342Z",
               "acTotal": 6,
               "acVerified": 6,
               "hasLayoutDependentGaps": "false",
@@ -29056,9 +29060,11 @@
                   "file": "artefacts/2026-08-31-web-ui-navigation-legibility/plans/wnl-s3-plan.md"
                 }
               ],
-              "prStatus": "draft",
+              "prStatus": "merged",
               "prUrl": "https://github.com/heymishy/skills-repo/pull/855",
-              "branch": "feature/wnl-s3"
+              "branch": "feature/wnl-s3",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         }
@@ -29074,8 +29080,10 @@
           "baseline": "Not yet established -- measuring on first 5 real return-to-session events",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "wnl-s1 shipped 2026-09-10; no real return-to-session usage data yet",
+          "contributingStories": [
+            "wnl-s1"
+          ]
         },
         {
           "id": "m2",
@@ -29084,8 +29092,10 @@
           "baseline": "1 confirmed incident (2026-08-31)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "wnl-s2 shipped 2026-09-10; 4-week no-incident observation window not yet elapsed",
+          "contributingStories": [
+            "wnl-s2"
+          ]
         },
         {
           "id": "m3",
@@ -29094,8 +29104,10 @@
           "baseline": "2 confirmed incidents in one session (2026-09-10)",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "wnl-s3 shipped 2026-09-10; 4-week no-incident observation window not yet elapsed",
+          "contributingStories": [
+            "wnl-s3"
+          ]
         }
       ],
       "slicingStrategy": "vertical-slice",
