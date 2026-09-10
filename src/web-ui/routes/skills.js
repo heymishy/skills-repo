@@ -2678,7 +2678,8 @@ async function htmlSubmitTurn(skillName, sessionId, rawAnswer, token, tenantId) 
  * @returns {string}
  */
 function buildContextManifestHtml(files) {
-  var items = (files || []).map(function(f) {
+  var list = files || [];
+  var items = list.map(function(f) {
     var p = (typeof f === 'string') ? f : f.path;
     var status = (typeof f === 'string') ? 'ok' : (f.status || 'ok');
     var basename = path.basename(p);
@@ -2693,11 +2694,34 @@ function buildContextManifestHtml(files) {
       ' <span style="font-size:10px">loaded</span></span>';
   });
   var inner = items.length > 0
-    ? items.join('\n  ')
+    ? items.join('\n    ')
     : '<span id="context-manifest-empty" style="font-size:12px;color:var(--muted)">no context loaded</span>';
-  return '<div id="context-manifest" role="region" aria-label="Loaded context files"' +
-    ' style="padding:6px 16px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:var(--bg)">' +
-    '\n  ' + inner + '\n</div>';
+
+  // wnl-s1: collapsed-by-default summary -- the always-expanded chip-per-file
+  // list previously occupied permanent vertical space on every session page
+  // load. The summary line lets an operator confirm context loaded correctly
+  // at a glance without needing to expand the (unchanged) per-file detail below.
+  var total = list.length;
+  var missing = list.filter(function(f) {
+    var status = (typeof f === 'string') ? 'ok' : (f.status || 'ok');
+    return status === 'warn';
+  }).length;
+  var loadedCount = total - missing;
+  var summaryText;
+  if (total === 0) {
+    summaryText = 'No context loaded';
+  } else if (missing > 0) {
+    summaryText = 'Context loaded (' + loadedCount + ' of ' + total + ' file' + (total === 1 ? '' : 's') + ') \u26a0';
+  } else {
+    summaryText = 'Context loaded (' + total + ' file' + (total === 1 ? '' : 's') + ') \u2713';
+  }
+
+  return '<details id="context-manifest" aria-label="Loaded context files"' +
+    ' style="padding:6px 16px;border-bottom:1px solid var(--line);background:var(--bg)">' +
+    '\n  <summary style="cursor:pointer;font-size:12px;list-style:none">' + escHtml(summaryText) + '</summary>' +
+    '\n  <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px">' +
+    '\n    ' + inner + '\n  </div>' +
+    '\n</details>';
 }
 
 // ── dic.2: parsePhaseModel injectable adapter (D37) ───────────────────────
