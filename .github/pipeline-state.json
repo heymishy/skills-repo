@@ -28943,11 +28943,11 @@
             {
               "slug": "wnl-s1",
               "name": "Collapse the always-expanded \"Ref docs\" context manifest into a single summary indicator",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-10T03:28:32.811Z",
+              "updatedAt": "2026-09-10T04:45:07.173Z",
               "acTotal": 6,
               "acVerified": 0,
               "hasLayoutDependentGaps": "false",
@@ -28955,11 +28955,19 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
-                "passing": 0
+                "passing": 8
               },
               "dorStatus": "signed-off",
               "dorPath": "artefacts/2026-08-31-web-ui-navigation-legibility/dor/wnl-s1-dor.md",
-              "dorContractPath": "artefacts/2026-08-31-web-ui-navigation-legibility/dor/wnl-s1-dor-contract.md"
+              "dorContractPath": "artefacts/2026-08-31-web-ui-navigation-legibility/dor/wnl-s1-dor-contract.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "AC1-AC6 -- collapse context manifest into <details>/<summary>",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-31-web-ui-navigation-legibility/plans/wnl-s1-plan.md"
+                }
+              ]
             },
             {
               "slug": "wnl-s2",
