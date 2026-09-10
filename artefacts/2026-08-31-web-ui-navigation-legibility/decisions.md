@@ -47,3 +47,13 @@ Per this repo's standing rule (`CLAUDE.md`, "decisions.md is mandatory for featu
 **Context:** DoR for `wnl-s1`, `wnl-s2`, and `wnl-s3` each flagged W4 — none of the 3 AC verification scripts have been reviewed by a separate domain expert before sign-off.
 **Decision:** Proceed without a separate pre-code review of any of the 3 scripts.
 **Rationale:** All 3 stories are low-complexity (rating 1, 1, 2) reusing already-established, already-live patterns (native `<details>`, `.sw-imp-banner`'s sticky technique, `_mergeStateFeaturesIntoJourneyList` per ADR-028). Each story's ACs were independently scrutinised twice via `/review` (Run 1 finding real issues, Run 2 confirming clean). `wnl-s3`'s own test plan additionally names a specific test (`entry-point-shown-for-cli-only-unbackfilled-feature`) explicitly designed to catch a shallow/naive implementation by construction. Operator (Hamish King) directed all 3 stories through the pipeline directly in-session.
+
+---
+
+## RISK-ACCEPT: `wnl-s2` baseline — 2 pre-existing failures, both confirmed unrelated
+
+**Date:** 2026-09-10
+**Category:** RISK-ACCEPT (branch-setup/subagent-execution baseline, `wnl-s2`)
+**Context:** Full `npm test` on the `wnl-s2` worktree (branch `feature/wnl-s2`) shows 2 of 633 files failing: `tests/check-p3.5-validate-trace.js` and `tests/check-pcr-s1-test-runner.js`.
+**Decision:** Acknowledge both as pre-existing/environmental and proceed — neither is fixed as part of this story.
+**Rationale:** `check-p3.5-validate-trace.js` is the same known, pre-existing baseline failure documented across every story this session (e.g. `jasb-s1`'s own decisions.md). `check-pcr-s1-test-runner.js` failed only under full-suite load (756.1ms/file vs. a 749.8ms/file threshold, 0.8% over) — re-run in isolation, it passes cleanly (14/14 checks). Neither file's own subject matter (trace validation, test-runner performance) has any relation to `wnl-s2`'s scope (`.sw-journey-gate` sticky positioning in `src/web-ui/routes/skills.js`). Separately, this worktree's initial checkout was found missing a tracked file (`workspace/learnings.md`, confirmed via `git status` showing it as locally-deleted despite being tracked) — restored via `git checkout HEAD -- workspace/learnings.md`; this was the actual cause of 4 further apparent failures (`check-lccf-s1`, `check-lcdf-s1`, `check-lphf-s4`, and a duplicate learnings-count assertion), all confirmed passing after the restore, not a code defect.

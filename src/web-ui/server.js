@@ -2092,6 +2092,44 @@ async function router(req, res) {
     return;
   }
 
+  // wnl-s2 E2E: seed a "done" skill-session chat with an active journey gate
+  // (session.done + session.journeyId both set), so the Playwright spec can
+  // drive the real GET /skills/:name/sessions/:id/chat render path and
+  // observe the live .sw-journey-gate control's own sticky-scroll behaviour
+  // -- mirrors seed-definition-session's own _setHtmlSession pattern above,
+  // parameterised on skillName/turnCount since this story's own AC1 needs a
+  // page taller than the viewport to distinguish "stayed sticky" from
+  // "nothing to scroll past".
+  if (pathname === '/test/seed-journey-gate-session' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    const { _setHtmlSession } = require('./routes/skills');
+    let body = '';
+    for await (const chunk of req) body += chunk;
+    let parsed = {};
+    try { parsed = JSON.parse(body || '{}'); } catch (_) { parsed = {}; }
+    const skillName = parsed.skillName || 'discovery';
+    const turnCount = Number.isInteger(parsed.turnCount) ? parsed.turnCount : 1;
+    const _uid = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    const _sessionId = 'wnl-s2-e2e-' + _uid;
+    const turns = [];
+    for (let i = 0; i < turnCount; i++) {
+      turns.push({ role: 'user', content: 'Test question ' + i + ' — ' + 'padding '.repeat(40) });
+      turns.push({ role: 'assistant', content: 'Test answer ' + i + ' — ' + 'padding '.repeat(40) });
+    }
+    _setHtmlSession(_sessionId, {
+      skillName:      skillName,
+      sessionPath:    null,
+      systemPrompt:   'test',
+      turns:          turns,
+      artefactContent: '# Test artefact\n\nContent.',
+      artefactPath:   'artefacts/wnl-s2-e2e-test/' + skillName + '.md',
+      done:           true,
+      journeyId:      'wnl-s2-e2e-journey-' + _uid,
+    });
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ sessionId: _sessionId }));
+    return;
+  }
+
   // csd-s1 E2E (AC2): seed an /ideate session with a hand-authored data-model
   // diagram block pre-populated in session.canvasBlocks, so the Playwright
   // spec can drive the real GET /skills/ideate/sessions/:id/chat render path

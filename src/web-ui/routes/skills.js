@@ -4566,7 +4566,7 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
       var subStepJs = _substepAff.js ? ('<script>' + _substepAff.js + '</script>') : '';
 
       journeyPanel = subStepHtml +
-        '<div class="sw-journey-gate" style="padding:16px;margin-top:' + (subStepHtml ? '0' : '12px') + ';display:flex;align-items:center;gap:12px">' +
+        '<div class="sw-journey-gate" style="padding:16px;margin-top:' + (subStepHtml ? '0' : '12px') + ';display:flex;align-items:center;gap:12px;position:sticky;bottom:0;background:var(--bg);border-top:1px solid var(--line);z-index:500">' +
         '<form method="POST" action="/api/journey/' + safeJourneyId + '/gate-confirm" style="margin:0">' +
         _csrf.csrfField(csrfToken) +
         '<button type="submit" class="sw-btn sw-btn--primary">Continue to ' + escHtml(nextStage) + ' &#x2192;</button>' +
