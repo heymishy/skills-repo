@@ -28943,29 +28943,56 @@
             {
               "slug": "wnl-s1",
               "name": "Collapse the always-expanded \"Ref docs\" context manifest into a single summary indicator",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-10T02:38:55.506Z"
+              "updatedAt": "2026-09-10T03:16:17.859Z",
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "false",
+              "e2eToolingRequired": "false",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 8,
+                "passing": 0
+              }
             },
             {
               "slug": "wnl-s2",
               "name": "Make the \"Continue to next stage\" action persistently reachable regardless of scroll position",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-10T02:39:07.499Z"
+              "updatedAt": "2026-09-10T03:17:09.493Z",
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "true",
+              "e2eToolingRequired": "true",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "passing": 0
+              }
             },
             {
               "slug": "wnl-s3",
               "name": "No-product, CLI-authored features are reachable within one click from the /dashboard landing page",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-10T02:39:21.334Z"
+              "updatedAt": "2026-09-10T03:18:02.021Z",
+              "acTotal": 6,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": "false",
+              "e2eToolingRequired": "false",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0
+              }
             }
           ]
         }
