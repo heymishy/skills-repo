@@ -3,7 +3,7 @@
 **Feature:** 2026-09-10-journey-autofocus-scroll-trap
 **Created:** 2026-09-10
 **Last updated:** 2026-09-10
-**Status:** Draft — DoR preparation
+**Status:** Verified at 2026-09-10 (DoD)
 
 ---
 
