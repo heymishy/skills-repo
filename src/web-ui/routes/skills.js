@@ -3842,7 +3842,7 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
     '      }',
     '    }',
     '    var wrap = document.createElement("div");',
-    '    wrap.style.cssText = "padding:10px 12px 2px;display:flex;align-items:center;gap:10px;flex-wrap:wrap";',
+    '    wrap.style.cssText = "padding:10px 12px 2px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;position:sticky;bottom:0;background:var(--bg);border-top:1px solid var(--line);z-index:500";',
     '    if(GATE_CONFIRM_URL) {',
     '      wrap.innerHTML = \'<span style="font-size:12px;color:var(--muted)">Artefact saved \u2713</span>\'',
     '        + \'<form method="POST" action="\' + GATE_CONFIRM_URL + \'" style="margin:0">\'',
