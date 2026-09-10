@@ -1,0 +1,9 @@
+{
+  "story": "jgls-s1",
+  "prUrl": "https://github.com/heymishy/skills-repo/pull/858",
+  "verifyStatus": "passed",
+  "acVerified": 3,
+  "acTotal": 3,
+  "testsPassing": "11/11 new + full baseline 636 files run, 1 known pre-existing failure (check-p3.5-validate-trace.js)",
+  "verifiedAt": "2026-09-11"
+}
