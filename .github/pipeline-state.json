@@ -33709,6 +33709,38 @@
       ],
       "metrics": [],
       "updatedAt": "2026-09-10T00:00:00.000Z"
+    },
+    {
+      "slug": "2026-09-11-journey-gate-live-completion-sticky-gap",
+      "name": "The journey-gate Continue to next stage control is not sticky when it appears via a live turn completion",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "jgls-s1",
+          "id": "jgls-s1",
+          "name": "Fix showCommitLink() live-completion gate missing sticky positioning",
+          "storyPath": "artefacts/2026-09-11-journey-gate-live-completion-sticky-gap/stories/jgls-s1-fix-live-completion-gate-not-sticky.md",
+          "stage": "branch-setup",
+          "health": "green",
+          "acTotal": 3,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": "true",
+          "e2eToolingRequired": "false",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 3,
+            "passing": 0
+          },
+          "updatedAt": "2026-09-10T19:03:27.299Z",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-11-journey-gate-live-completion-sticky-gap/dor/jgls-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-11-journey-gate-live-completion-sticky-gap/dor/jgls-s1-dor-contract.md"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-10T19:02:26.048Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
