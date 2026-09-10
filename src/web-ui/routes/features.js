@@ -665,6 +665,18 @@ function renderArtefactMatrix(grouped, featureSlug, epicDocs, resumeLookup) {
       const cells = columns.map((k) => {
         const artefactsForCell = byColumn[k];
         if (!artefactsForCell || artefactsForCell.length === 0) return '<td class="doc-matrix__dash">–</td>';
+        // dmcb-s2: a cell holding 2+ artefacts (the shared "Unregistered"
+        // catch-all bucket, or an inferred-group bucket) previously joined
+        // them with a plain space -- .doc-matrix td's own white-space:nowrap
+        // rule then rendered the whole group on one unbroken line, and since
+        // HTML tables size a column to its single widest cell, one crowded
+        // row forced the ENTIRE column wide (confirmed live: a 3-artefact Ref
+        // cell blew the column out to 369px vs. 37-49px for every other
+        // column). <br> forces a real line break regardless of
+        // white-space:nowrap (that property only governs wrapping at spaces
+        // in text content, not explicit <br> elements) -- no CSS change
+        // needed. A single-artefact cell (the overwhelming majority) is
+        // untouched.
         const cellHtml = artefactsForCell.map((a) => {
           const relPath = _relativeArtefactPath(a.path || '', featureSlug) || (a.type || '');
           const viewUrl = `/artefact/${featureSlug}/${encodeURIComponent(relPath)}`;
@@ -676,7 +688,7 @@ function renderArtefactMatrix(grouped, featureSlug, epicDocs, resumeLookup) {
             ? ` <span class="sw-pill sw-pill--nodot sw-pill--neutral" title="Not registered in pipeline-state.json">${UNREGISTERED_LABEL}</span>`
             : '';
           return `<a class="doc-matrix__tick" href="${shellEscHtml(viewUrl)}" title="Open document">✓</a>${resumeLink}${unregisteredPill}`;
-        }).join(' ');
+        }).join(artefactsForCell.length > 1 ? '<br>' : ' ');
         return `<td>${cellHtml}</td>`;
       }).join('');
       const statusCell = hasDodColumn

@@ -33106,7 +33106,7 @@
       "track": "short",
       "stage": "branch-complete",
       "health": "green",
-      "updatedAt": "2026-09-09T08:45:35.530Z",
+      "updatedAt": "2026-09-09T09:53:10.454Z",
       "stories": [
         {
           "slug": "dmcb-s1",
@@ -33133,6 +33133,28 @@
           "dodStatus": "complete",
           "releaseReady": true,
           "dodPath": "artefacts/2026-09-09-doc-matrix-column-bugs/dod/dmcb-s1-dod.md"
+        },
+        {
+          "slug": "dmcb-s2",
+          "id": "dmcb-s2",
+          "name": "Multi-artefact cell blows out its column width",
+          "stage": "branch-complete",
+          "health": "green",
+          "updatedAt": "2026-09-09T09:53:10.452Z",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-09-doc-matrix-column-bugs/dor/dmcb-s2-dor.md",
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/2026-09-09-doc-matrix-column-bugs/test-plans/dmcb-s2-test-plan.md",
+            "totalTests": 5,
+            "passing": 5
+          },
+          "acTotal": 3,
+          "acVerified": 3,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "verifyStatus": "passed",
+          "prStatus": "draft"
         }
       ]
     },
@@ -33148,21 +33170,44 @@
           "id": "jasb-s1",
           "name": "Remove unconditional autofocus on journey's new-feature input",
           "storyPath": "artefacts/2026-09-10-journey-autofocus-scroll-trap/stories/jasb-s1-remove-unconditional-autofocus-on-journey-new-feature-input.md",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "acTotal": 3,
-          "acVerified": 0,
+          "acVerified": 3,
           "hasLayoutDependentGaps": "true",
           "e2eToolingRequired": "true",
           "testPlan": {
             "status": "written",
             "totalTests": 3,
-            "passing": 0
+            "passing": 3
           },
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-10-journey-autofocus-scroll-trap/dor/jasb-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-10-journey-autofocus-scroll-trap/dor/jasb-s1-dor-contract.md",
-          "updatedAt": "2026-09-10T00:00:00.000Z"
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "AC1 -- gate autofocus on showNewForm (primary fix)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-10-journey-autofocus-scroll-trap/plans/jasb-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "AC2 -- regression guard: ?new=1 autofocus preserved",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-10-journey-autofocus-scroll-trap/plans/jasb-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "AC3 -- regression guard: new-feature form submission unaffected",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-10-journey-autofocus-scroll-trap/plans/jasb-s1-plan.md"
+            }
+          ],
+          "updatedAt": "2026-09-10T00:11:26.000Z",
+          "verifyStatus": "passed",
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/854"
         }
       ],
       "metrics": [],
