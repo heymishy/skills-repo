@@ -33170,7 +33170,7 @@
           "id": "jasb-s1",
           "name": "Remove unconditional autofocus on journey's new-feature input",
           "storyPath": "artefacts/2026-09-10-journey-autofocus-scroll-trap/stories/jasb-s1-remove-unconditional-autofocus-on-journey-new-feature-input.md",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "acTotal": 3,
           "acVerified": 3,
@@ -33204,8 +33204,10 @@
               "file": "artefacts/2026-09-10-journey-autofocus-scroll-trap/plans/jasb-s1-plan.md"
             }
           ],
-          "updatedAt": "2026-09-09T23:24:03.223Z",
-          "verifyStatus": "passed"
+          "updatedAt": "2026-09-10T00:01:15.438Z",
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/854"
         }
       ],
       "metrics": [],
