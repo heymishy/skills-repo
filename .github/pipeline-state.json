@@ -33722,7 +33722,7 @@
           "id": "jgls-s1",
           "name": "Fix showCommitLink() live-completion gate missing sticky positioning",
           "storyPath": "artefacts/2026-09-11-journey-gate-live-completion-sticky-gap/stories/jgls-s1-fix-live-completion-gate-not-sticky.md",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 3,
           "acVerified": 3,
@@ -33733,14 +33733,16 @@
             "totalTests": 3,
             "passing": 3
           },
-          "updatedAt": "2026-09-10T19:14:43.602Z",
+          "updatedAt": "2026-09-10T21:53:34.642Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-11-journey-gate-live-completion-sticky-gap/dor/jgls-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-11-journey-gate-live-completion-sticky-gap/dor/jgls-s1-dor-contract.md",
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/858",
-          "branch": "feature/jgls-s1"
+          "branch": "feature/jgls-s1",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
