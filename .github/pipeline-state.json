@@ -28985,23 +28985,46 @@
             {
               "slug": "wnl-s3",
               "name": "No-product, CLI-authored features are reachable within one click from the /dashboard landing page",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-10T03:28:44.041Z",
+              "updatedAt": "2026-09-10T04:39:56.030Z",
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 0
+                "passing": 6
               },
               "dorStatus": "signed-off",
               "dorPath": "artefacts/2026-08-31-web-ui-navigation-legibility/dor/wnl-s3-dor.md",
-              "dorContractPath": "artefacts/2026-08-31-web-ui-navigation-legibility/dor/wnl-s3-dor-contract.md"
+              "dorContractPath": "artefacts/2026-08-31-web-ui-navigation-legibility/dor/wnl-s3-dor-contract.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "_hasUnbackfilledCliFeatures(repoRoot) -- reuse _mergeStateFeaturesIntoJourneyList per ADR-028",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-31-web-ui-navigation-legibility/plans/wnl-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Thread hasNoProductWork into _renderProductDashboard / handleGetDashboard; render presence-only entry point",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-31-web-ui-navigation-legibility/plans/wnl-s3-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "tests/check-wnl-s3-dashboard-no-product-entry.js -- AC1-AC6",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-31-web-ui-navigation-legibility/plans/wnl-s3-plan.md"
+                }
+              ],
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/855",
+              "branch": "feature/wnl-s3"
             }
           ]
         }
