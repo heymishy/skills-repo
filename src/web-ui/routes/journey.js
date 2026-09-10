@@ -341,7 +341,7 @@ function _renderJourneyHome(data) {
           _csrf.csrfField(data.csrfToken),
           '<div class="jh-form-row">',
             '<label class="jh-label" for="jh-fname">Feature name</label>',
-            '<input id="jh-fname" class="jh-input" name="featureName" type="text" placeholder="e.g. Impact matrix tool" required autofocus>',
+            '<input id="jh-fname" class="jh-input" name="featureName" type="text" placeholder="e.g. Impact matrix tool" required' + (showNewForm ? ' autofocus' : '') + '>',
           '</div>',
           '<div class="jh-form-row">',
             '<label class="jh-label">Where are you starting from?</label>',

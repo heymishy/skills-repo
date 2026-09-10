@@ -28927,9 +28927,9 @@
       "name": "Web UI Navigation and Context Legibility",
       "track": "standard",
       "stage": "discovery",
-      "discoveryStatus": "approved",
+      "discoveryStatus": "clarified",
       "health": "green",
-      "updatedAt": "2026-08-31T08:48:52.616Z",
+      "updatedAt": "2026-09-10T00:00:00.000Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -33157,6 +33157,61 @@
           "prStatus": "draft"
         }
       ]
+    },
+    {
+      "slug": "2026-09-10-journey-autofocus-scroll-trap",
+      "name": "Journey page's unconditional autofocus on the new-feature input auto-scrolls past the entire feature list on every load",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "jasb-s1",
+          "id": "jasb-s1",
+          "name": "Remove unconditional autofocus on journey's new-feature input",
+          "storyPath": "artefacts/2026-09-10-journey-autofocus-scroll-trap/stories/jasb-s1-remove-unconditional-autofocus-on-journey-new-feature-input.md",
+          "stage": "branch-complete",
+          "health": "green",
+          "acTotal": 3,
+          "acVerified": 3,
+          "hasLayoutDependentGaps": "true",
+          "e2eToolingRequired": "true",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 3,
+            "passing": 3
+          },
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-10-journey-autofocus-scroll-trap/dor/jasb-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-10-journey-autofocus-scroll-trap/dor/jasb-s1-dor-contract.md",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "AC1 -- gate autofocus on showNewForm (primary fix)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-10-journey-autofocus-scroll-trap/plans/jasb-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "AC2 -- regression guard: ?new=1 autofocus preserved",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-10-journey-autofocus-scroll-trap/plans/jasb-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "AC3 -- regression guard: new-feature form submission unaffected",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-10-journey-autofocus-scroll-trap/plans/jasb-s1-plan.md"
+            }
+          ],
+          "updatedAt": "2026-09-10T00:01:15.438Z",
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/854"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-10T00:00:00.000Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
