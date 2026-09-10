@@ -28943,44 +28943,78 @@
             {
               "slug": "wnl-s1",
               "name": "Collapse the always-expanded \"Ref docs\" context manifest into a single summary indicator",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-10T03:28:32.811Z",
+              "updatedAt": "2026-09-10T09:46:55.306Z",
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": "false",
               "testPlan": {
                 "status": "written",
                 "totalTests": 8,
-                "passing": 0
+                "passing": 8
               },
               "dorStatus": "signed-off",
               "dorPath": "artefacts/2026-08-31-web-ui-navigation-legibility/dor/wnl-s1-dor.md",
-              "dorContractPath": "artefacts/2026-08-31-web-ui-navigation-legibility/dor/wnl-s1-dor-contract.md"
+              "dorContractPath": "artefacts/2026-08-31-web-ui-navigation-legibility/dor/wnl-s1-dor-contract.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "AC1-AC6 -- collapse context manifest into <details>/<summary>",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-08-31-web-ui-navigation-legibility/plans/wnl-s1-plan.md"
+                }
+              ],
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/856",
+              "branch": "feature/wnl-s1"
             },
             {
               "slug": "wnl-s2",
               "name": "Make the \"Continue to next stage\" action persistently reachable regardless of scroll position",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-10T03:28:38.485Z",
+              "updatedAt": "2026-09-10T09:46:55.306Z",
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": "true",
               "e2eToolingRequired": "true",
               "testPlan": {
                 "status": "written",
-                "totalTests": 5,
-                "passing": 0
+                "totalTests": 6,
+                "passing": 6
               },
               "dorStatus": "signed-off",
               "dorPath": "artefacts/2026-08-31-web-ui-navigation-legibility/dor/wnl-s2-dor.md",
-              "dorContractPath": "artefacts/2026-08-31-web-ui-navigation-legibility/dor/wnl-s2-dor-contract.md"
+              "dorContractPath": "artefacts/2026-08-31-web-ui-navigation-legibility/dor/wnl-s2-dor-contract.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "AC1/AC3/AC5 -- position:sticky;bottom:0 on .sw-journey-gate",
+                  "tddState": "committed",
+                  "file": "src/web-ui/routes/skills.js"
+                },
+                {
+                  "id": "task-2",
+                  "name": "AC2/AC4 -- gate-confirm form + sub-step markup regression coverage",
+                  "tddState": "committed",
+                  "file": "tests/check-wnl-s2-journey-gate-sticky.js"
+                },
+                {
+                  "id": "task-3",
+                  "name": "AC1/AC3/AC5 -- Playwright E2E scroll/layout verification",
+                  "tddState": "committed",
+                  "file": "tests/e2e/wnl-s2-journey-gate-sticky.spec.js"
+                }
+              ],
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/857",
+              "branch": "feature/wnl-s2"
             },
             {
               "slug": "wnl-s3",
@@ -28989,7 +29023,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-10T09:53:18.236Z",
+              "updatedAt": "2026-09-10T04:39:56.030Z",
               "acTotal": 6,
               "acVerified": 6,
               "hasLayoutDependentGaps": "false",
@@ -29022,9 +29056,9 @@
                   "file": "artefacts/2026-08-31-web-ui-navigation-legibility/plans/wnl-s3-plan.md"
                 }
               ],
-              "branch": "feature/wnl-s3",
               "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/855"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/855",
+              "branch": "feature/wnl-s3"
             }
           ]
         }
