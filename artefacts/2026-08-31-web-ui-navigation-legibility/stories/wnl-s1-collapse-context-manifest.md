@@ -38,7 +38,7 @@ So that **I can see at a glance that context is loaded correctly without every s
 
 **AC4:** Given at least one context file has a `missing` status (the existing `warn` chip case), When the collapsed summary renders, Then the summary itself visibly indicates a problem exists (e.g. "Context loaded (4 of 5 files) ⚠") rather than looking identical to the all-loaded case — an operator must not have to expand the panel just to learn something failed to load.
 
-**AC5 (regression guard):** Given the existing per-file chip markup (`chip-ok`/`chip-warn` classes, `escHtml()`-escaped basenames, ✓/⚠ symbols, "loaded"/"missing" labels), When the panel is expanded, Then that markup is byte-for-byte unchanged from what `buildContextManifestHtml()` produces today — this story changes only the collapsed/expanded wrapping, not the per-file rendering itself.
+**AC5:** (regression guard) Given the existing per-file chip markup (`chip-ok`/`chip-warn` classes, `escHtml()`-escaped basenames, ✓/⚠ symbols, "loaded"/"missing" labels), When the panel is expanded, Then that markup is byte-for-byte unchanged from what `buildContextManifestHtml()` produces today — this story changes only the collapsed/expanded wrapping, not the per-file rendering itself.
 
 **AC6:** Given the collapse toggle, When operated via keyboard only (no mouse), Then it can be focused and activated (Tab + Enter/Space) exactly as a native `<details>/<summary>` element supports by default — no custom keyboard handling required, but must not be broken by any added styling/JS.
 

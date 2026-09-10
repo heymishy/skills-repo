@@ -28943,11 +28943,11 @@
             {
               "slug": "wnl-s1",
               "name": "Collapse the always-expanded \"Ref docs\" context manifest into a single summary indicator",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-10T03:16:17.859Z",
+              "updatedAt": "2026-09-10T03:28:32.811Z",
               "acTotal": 6,
               "acVerified": 0,
               "hasLayoutDependentGaps": "false",
@@ -28956,16 +28956,19 @@
                 "status": "written",
                 "totalTests": 8,
                 "passing": 0
-              }
+              },
+              "dorStatus": "signed-off",
+              "dorPath": "artefacts/2026-08-31-web-ui-navigation-legibility/dor/wnl-s1-dor.md",
+              "dorContractPath": "artefacts/2026-08-31-web-ui-navigation-legibility/dor/wnl-s1-dor-contract.md"
             },
             {
               "slug": "wnl-s2",
               "name": "Make the \"Continue to next stage\" action persistently reachable regardless of scroll position",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-10T03:17:09.493Z",
+              "updatedAt": "2026-09-10T03:28:38.485Z",
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": "true",
@@ -28974,16 +28977,19 @@
                 "status": "written",
                 "totalTests": 5,
                 "passing": 0
-              }
+              },
+              "dorStatus": "signed-off",
+              "dorPath": "artefacts/2026-08-31-web-ui-navigation-legibility/dor/wnl-s2-dor.md",
+              "dorContractPath": "artefacts/2026-08-31-web-ui-navigation-legibility/dor/wnl-s2-dor-contract.md"
             },
             {
               "slug": "wnl-s3",
               "name": "No-product, CLI-authored features are reachable within one click from the /dashboard landing page",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-10T03:18:02.021Z",
+              "updatedAt": "2026-09-10T03:28:44.041Z",
               "acTotal": 6,
               "acVerified": 0,
               "hasLayoutDependentGaps": "false",
@@ -28992,7 +28998,10 @@
                 "status": "written",
                 "totalTests": 6,
                 "passing": 0
-              }
+              },
+              "dorStatus": "signed-off",
+              "dorPath": "artefacts/2026-08-31-web-ui-navigation-legibility/dor/wnl-s3-dor.md",
+              "dorContractPath": "artefacts/2026-08-31-web-ui-navigation-legibility/dor/wnl-s3-dor-contract.md"
             }
           ]
         }

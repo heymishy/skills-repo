@@ -39,9 +39,9 @@ So that **I don't have to already know to look at the left-hand sidebar's "No pr
 
 **AC4:** Given a tenant has zero no-product work of either kind (no Postgres no-product journeys, no unmatched pipeline-state features), When the operator loads `/dashboard`, Then no "No product" entry point is shown — the dashboard body is not cluttered with an empty-state link that leads nowhere useful.
 
-**AC5 (regression guard):** Given a tenant with one or more real products, When `/dashboard` renders, Then the existing product cards (name, feature count, last-updated date, link to `/products/:id`) render exactly as they do today — this story adds one new entry point, it does not change existing product-card rendering.
+**AC5:** (regression guard) Given a tenant with one or more real products, When `/dashboard` renders, Then the existing product cards (name, feature count, last-updated date, link to `/products/:id`) render exactly as they do today — this story adds one new entry point, it does not change existing product-card rendering.
 
-**AC6 (regression guard):** Given the sidebar's own existing "No product" link (`renderProductsSection`, `html-shell.js:118`), When this story's dashboard-body entry point ships, Then the sidebar's own link and count continue to render exactly as before — this story adds a second path to the same destination, it does not remove or alter the first.
+**AC6:** (regression guard) Given the sidebar's own existing "No product" link (`renderProductsSection`, `html-shell.js:118`), When this story's dashboard-body entry point ships, Then the sidebar's own link and count continue to render exactly as before — this story adds a second path to the same destination, it does not remove or alter the first.
 
 ## Out of Scope
 

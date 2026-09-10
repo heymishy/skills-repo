@@ -36,7 +36,7 @@ So that **I never have to hunt back through session history to find how to advan
 
 **AC3:** Given a short session where the chat content is shorter than the viewport height, When the page renders, Then the gate control still appears in its normal position at the end of the content (not floating awkwardly mid-page) — sticky positioning must not visually misplace the control when there's nothing to scroll past.
 
-**AC4 (regression guard):** Given the sub-step affordance HTML (`subStepHtml`/`subStepJs`, rendered immediately before the journey gate for stages with side trips), When the sticky gate renders, Then the sub-step affordance's own existing behaviour and appearance are unaffected — this story changes only the journey-gate div's positioning, not the sub-step markup or logic.
+**AC4:** (regression guard) Given the sub-step affordance HTML (`subStepHtml`/`subStepJs`, rendered immediately before the journey gate for stages with side trips), When the sticky gate renders, Then the sub-step affordance's own existing behaviour and appearance are unaffected — this story changes only the journey-gate div's positioning, not the sub-step markup or logic.
 
 **AC5:** Given the sticky gate control is visible at the bottom of the viewport, When other page content is scrolled behind it, Then no interactive element (links, buttons, form fields elsewhere on the page) becomes permanently hidden or unreachable behind the sticky control — verified by checking the control's height/z-index doesn't create a dead zone over content that needs to remain clickable.
 

@@ -37,3 +37,13 @@ Per this repo's standing rule (`CLAUDE.md`, "decisions.md is mandatory for featu
 **Context:** `/review` (Run 1) flagged a real design-consistency risk: the discovery's own "Minimum viable form" language described a "No product (N)" entry point, but `wnl-s3`'s own Out of Scope explicitly defers fixing the sidebar's separate, Postgres-only `noProductJourneyCount`. Showing a count on the new dashboard entry point (correctly including not-yet-backfilled CLI features) risked visibly disagreeing with the sidebar's own, still-undercounting number on the same page load.
 **Decision:** The dashboard entry point indicates presence only (e.g. "No product work →"), no "(N)" count — a small, deliberate refinement of the discovery's literal MVP wording, not a scope change. Reachability (the actual capability this story and M3 exist to deliver) is unaffected.
 **Rationale:** Avoids shipping a visible two-different-numbers-on-one-screen inconsistency without requiring the sidebar's own fix as a prerequisite for this story. Found and resolved during `/review` (finding 1-M1 on `wnl-s3`), not deferred silently.
+
+---
+
+## RISK-ACCEPT: `wnl-s1`/`wnl-s2`/`wnl-s3` verification scripts not yet reviewed by a separate domain expert
+
+**Date:** 2026-09-10
+**Category:** RISK-ACCEPT (DoR Warning W4, all 3 stories)
+**Context:** DoR for `wnl-s1`, `wnl-s2`, and `wnl-s3` each flagged W4 — none of the 3 AC verification scripts have been reviewed by a separate domain expert before sign-off.
+**Decision:** Proceed without a separate pre-code review of any of the 3 scripts.
+**Rationale:** All 3 stories are low-complexity (rating 1, 1, 2) reusing already-established, already-live patterns (native `<details>`, `.sw-imp-banner`'s sticky technique, `_mergeStateFeaturesIntoJourneyList` per ADR-028). Each story's ACs were independently scrutinised twice via `/review` (Run 1 finding real issues, Run 2 confirming clean). `wnl-s3`'s own test plan additionally names a specific test (`entry-point-shown-for-cli-only-unbackfilled-feature`) explicitly designed to catch a shallow/naive implementation by construction. Operator (Hamish King) directed all 3 stories through the pipeline directly in-session.
