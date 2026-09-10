@@ -22,6 +22,7 @@ var _agencyClientComments = require('../modules/agency-client-comments'); // sto
 var _artefactFetcher = require('../adapters/artefact-fetcher'); // wugs-s2 — reuses wugs-s1's fetchRepoPath (ADR-012)
 var _guardrailPrAdapter = require('../adapters/guardrail-pr-adapter'); // wugs-s6 review fix — GuardrailPrConflictError for the write-adapter try/catch
 var { isEffectivelyAdmin } = require('../modules/impersonation'); // wugs-s9 — DoR-specified effective-role check, matching credits-guard.js's exact pattern
+var _journeyStoreModule = require('../modules/journey-store'); // wnl-s3 — reused (not requiring routes/journey.js at module scope, which would be circular) to list existing journeys for _hasUnbackfilledCliFeatures
 
 // s1.1 -- injectable bulk session-store reader. Defaults to a lazy require of
 // skills.js's real _getHtmlSessionsBulk (mirrors the same lazy-getter shape
@@ -165,7 +166,7 @@ function _parseJsonbField(value, fallback) {
 // All tabs below -- removed so each group renders exactly once. Only the
 // summary "Test coverage: X%" line remains (see coverageHtml below).
 
-function _renderProductDashboard(products, login, navProducts, activeProductId, noProductJourneyCount, isAdmin) {
+function _renderProductDashboard(products, login, navProducts, activeProductId, noProductJourneyCount, isAdmin, hasNoProductWork) {
   var cardsHtml = products.length === 0
     ? '<div style="padding:48px 0;text-align:center;color:var(--muted)">' +
         '<p style="font-size:18px;margin:0 0 12px">No products yet</p>' +
@@ -181,12 +182,23 @@ function _renderProductDashboard(products, login, navProducts, activeProductId, 
           (p.lastUpdated ? '<div style="font-size:12px;color:var(--muted);margin-top:4px">Last updated ' + _escapeHtml(new Date(p.lastUpdated).toLocaleDateString()) + '</div>' : '') +
         '</a>';
       }).join('');
+  // wnl-s3: presence-only entry point (no numeric count -- decisions.md,
+  // 2026-09-10) for no-product work, shown whenever the caller determined
+  // any exists (real Postgres no-product journeys OR unbackfilled CLI-only
+  // pipeline-state.json features -- see _hasUnbackfilledCliFeatures).
+  // Links to the existing /journey no-product list -- no new view (AC3).
+  var noProductEntryHtml = hasNoProductWork
+    ? '<a href="/journey" style="display:block;padding:20px;background:var(--surface);border:1px solid var(--line);border-radius:8px;text-decoration:none;color:var(--ink);margin-bottom:12px">' +
+        '<span style="font-size:16px;font-weight:600">No product work →</span>' +
+      '</a>'
+    : '';
   var body = '<div style="max-width:720px">' +
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">' +
       '<h1 style="margin:0;font-size:24px">Products</h1>' +
       (products.length > 0 ? '<a href="/products/new" style="padding:8px 16px;background:var(--accent);color:#fff;border-radius:6px;text-decoration:none;font-size:14px;font-weight:500">New product</a>' : '') +
     '</div>' +
     cardsHtml +
+    noProductEntryHtml +
     '<div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--line)">' +
       '<a href="/org/kanban" style="font-size:14px;color:var(--muted);text-decoration:none">View org kanban →</a>' +
     '</div>' +
@@ -2343,6 +2355,40 @@ async function renderShellWithNav(pool, tenantId, opts) {
   return _htmlShell.renderShell(mergedOpts);
 }
 
+/**
+ * wnl-s3: whether any non-terminal pipeline-state.json feature exists with
+ * no matching journey-store record at all -- a feature authored entirely
+ * via Claude Code CLI that has never had a real web-UI session/journey
+ * created for it yet (so it necessarily has no product assigned either,
+ * since product assignment happens on the journey record). Reuses
+ * journey.js's own canonical _mergeStateFeaturesIntoJourneyList (ADR-028:
+ * one canonical builder per derived structure) rather than re-deriving
+ * the same "what no-product work exists" answer independently -- a
+ * naive Postgres-only noProductJourneyCount check misses exactly this
+ * case, which is the root cause this story exists to fix.
+ * Lazy-requires ./journey inside the function body (not at module
+ * scope) because journey.js itself requires products.js at module scope
+ * (getProductsNavSummary/renderShellWithNav) -- a top-level require here
+ * would be circular.
+ * @param {string} repoRoot
+ * @returns {boolean}
+ */
+function _hasUnbackfilledCliFeatures(repoRoot) {
+  var allJourneys = [];
+  try {
+    allJourneys = _journeyStoreModule.listJourneys ? _journeyStoreModule.listJourneys(repoRoot) : [];
+  } catch (_) {
+    allJourneys = [];
+  }
+  var merged;
+  try {
+    merged = require('./journey')._mergeStateFeaturesIntoJourneyList(allJourneys, repoRoot);
+  } catch (_) {
+    return false;
+  }
+  return merged.length > allJourneys.length;
+}
+
 async function handleGetDashboard(req, res, _next, pool) {
   var _pool = pool;
   var tenantId = req.session && req.session.tenantId;
@@ -2404,7 +2450,9 @@ async function handleGetDashboard(req, res, _next, pool) {
   if (res.json) {
     res.json({ products: cards, showCta: cards.length === 0 });
   } else {
-    var html = _renderProductDashboard(cards, login, navSummary.products, null, navSummary.noProductJourneyCount, isAdmin);
+    var repoRoot = _repoRootAdapter.getRepoRoot(req);
+    var hasNoProductWork = navSummary.noProductJourneyCount > 0 || _hasUnbackfilledCliFeatures(repoRoot);
+    var html = _renderProductDashboard(cards, login, navSummary.products, null, navSummary.noProductJourneyCount, isAdmin, hasNoProductWork);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
@@ -4091,6 +4139,8 @@ module.exports = {
   _renderProductView,
   // fresc-s1 (AC3): exported for direct unit testing of the empty-products state copy
   _renderProductDashboard,
+  // wnl-s3: exported for direct unit testing of the no-product-work detection
+  _hasUnbackfilledCliFeatures,
   handlePostProductNew,
   handlePostProductConfirm,
   handleGetDashboard,
