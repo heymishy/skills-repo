@@ -28926,7 +28926,7 @@
       "slug": "2026-08-31-web-ui-navigation-legibility",
       "name": "Web UI Navigation and Context Legibility",
       "track": "standard",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "discoveryStatus": "clarified",
       "health": "green",
       "updatedAt": "2026-09-10T00:00:00.000Z",
@@ -28936,7 +28936,40 @@
       "sensitiveDataCategories": [],
       "epics": [],
       "stories": [],
-      "discoveryArtefact": "artefacts/2026-08-31-web-ui-navigation-legibility/discovery.md"
+      "discoveryArtefact": "artefacts/2026-08-31-web-ui-navigation-legibility/discovery.md",
+      "benefitMetricArtefact": "artefacts/2026-08-31-web-ui-navigation-legibility/benefit-metric.md",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Time-to-orientation after returning to a long-running session",
+          "target": "Under 3 seconds, 0 scroll actions",
+          "baseline": "Not yet established -- measuring on first 5 real return-to-session events",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Next-stage-action findability",
+          "target": "0 'couldn't find next stage' incidents across 4 weeks post-ship",
+          "baseline": "1 confirmed incident (2026-08-31)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Cross-channel feature discoverability from the dashboard",
+          "target": "0 'couldn't find a no-product feature from /dashboard' incidents across 4 weeks post-ship",
+          "baseline": "2 confirmed incidents in one session (2026-09-10)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     },
     {
       "slug": "2026-09-01-sse-reconnect-on-resume",
