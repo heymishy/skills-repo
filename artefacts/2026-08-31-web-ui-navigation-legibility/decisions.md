@@ -47,3 +47,13 @@ Per this repo's standing rule (`CLAUDE.md`, "decisions.md is mandatory for featu
 **Context:** DoR for `wnl-s1`, `wnl-s2`, and `wnl-s3` each flagged W4 — none of the 3 AC verification scripts have been reviewed by a separate domain expert before sign-off.
 **Decision:** Proceed without a separate pre-code review of any of the 3 scripts.
 **Rationale:** All 3 stories are low-complexity (rating 1, 1, 2) reusing already-established, already-live patterns (native `<details>`, `.sw-imp-banner`'s sticky technique, `_mergeStateFeaturesIntoJourneyList` per ADR-028). Each story's ACs were independently scrutinised twice via `/review` (Run 1 finding real issues, Run 2 confirming clean). `wnl-s3`'s own test plan additionally names a specific test (`entry-point-shown-for-cli-only-unbackfilled-feature`) explicitly designed to catch a shallow/naive implementation by construction. Operator (Hamish King) directed all 3 stories through the pipeline directly in-session.
+
+---
+
+## RISK-ACCEPT: pre-existing iwu2-right-panel-layout.spec.js failures (7/7), confirmed unrelated to wnl-s1
+
+**Date:** 2026-09-10
+**Category:** RISK-ACCEPT (verify-completion, mandatory route/handler E2E coverage check, wnl-s1)
+**Context:** `wnl-s1` touches `src/web-ui/routes/skills.js`, triggering the mandatory route/handler E2E coverage check. `tests/e2e/iwu2-right-panel-layout.spec.js` exercises the same skill-session chat page and was run locally: all 7 tests fail with an identical `expect(sessionRes.status()).toBe(201)` (received 400) at session creation, before any HTML rendering occurs.
+**Decision:** Acknowledge as pre-existing and proceed — do not fix as part of this story.
+**Rationale:** Ran the identical spec at the pre-fix commit (`ef9bc0ff`, via a temporary worktree) before assuming this was unrelated. Result: the exact same 7 tests fail identically at the pre-fix baseline, same error, same line. This is a session-creation API failure unrelated to `buildContextManifestHtml()` or any HTML the context manifest renders. `tests/e2e/dsh-s4-resume-conversation-survives-restart.spec.js` (the other spec checked) passes its 2 local tests cleanly; its one failure is `@real-staging`-tagged and depends on live staging state, not locally verifiable by design. Fixing `iwu2`'s session-creation failure is out of scope for this story; worth its own follow-up.
