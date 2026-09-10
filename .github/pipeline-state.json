@@ -28943,20 +28943,29 @@
             {
               "slug": "wnl-s1",
               "name": "Collapse the always-expanded \"Ref docs\" context manifest into a single summary indicator",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-09-10T01:47:05.443Z"
             },
             {
               "slug": "wnl-s2",
               "name": "Make the \"Continue to next stage\" action persistently reachable regardless of scroll position",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-09-10T01:47:31.401Z"
             },
             {
               "slug": "wnl-s3",
               "name": "No-product, CLI-authored features are reachable within one click from the /dashboard landing page",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-09-10T01:48:12.702Z"
             }
           ]
         }
@@ -29002,7 +29011,10 @@
           "id": "MC-SEC-01",
           "category": "mandatory-constraint",
           "label": "No user-supplied content in innerHTML without sanitisation",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "All 3 stories explicitly preserve existing escHtml()/_escapeHtml() usage unchanged (wnl-s1 AC5, wnl-s2 Architecture Constraints, wnl-s3 Architecture Constraints) -- no violations found",
+          "assessedBy": "/review",
+          "assessedAt": "2026-09-10T01:49:50.451Z"
         },
         {
           "id": "MC-SEC-02",
@@ -29062,13 +29074,19 @@
           "id": "MC-A11Y-01",
           "category": "mandatory-constraint",
           "label": "Interactive elements keyboard-accessible",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "All 3 stories explicitly address keyboard accessibility (wnl-s1 AC6, wnl-s2 AC5, wnl-s3 plain <a> links) -- no violations found",
+          "assessedBy": "/review",
+          "assessedAt": "2026-09-10T01:49:50.451Z"
         },
         {
           "id": "MC-A11Y-02",
           "category": "mandatory-constraint",
           "label": "Colour not sole indicator of gate status (icons/labels present)",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "wnl-s1 AC4 explicitly requires a non-colour discriminator on the collapsed-summary warning state -- no violations found",
+          "assessedBy": "/review",
+          "assessedAt": "2026-09-10T01:49:50.451Z"
         },
         {
           "id": "ADR-001",
@@ -29212,7 +29230,10 @@
           "id": "ADR-009",
           "category": "adr",
           "label": "Evaluation and write-back workflows must be separate triggers with separate permission scopes",
-          "status": "not-assessed"
+          "status": "na",
+          "evidence": "Not applicable to this feature's real scope (ADR-009 governs CI evaluation/write-back trigger separation) -- found mis-cited in all 3 stories' Architecture Constraints for an unrelated \"no new npm dependencies\" claim; flagged as review finding 1-M2 in each story, not treated as a real guardrail evaluation for this feature",
+          "assessedBy": "/review",
+          "assessedAt": "2026-09-10T01:49:50.451Z"
         },
         {
           "id": "ADR-010",
