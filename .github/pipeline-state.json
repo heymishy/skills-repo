@@ -14937,7 +14937,7 @@
           "slug": "icrh-s1",
           "name": "Hydrate the ideate canvas from restored session.canvasBlocks on page load/session-resume",
           "stage": "definition-of-done",
-          "health": "amber",
+          "health": "green",
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
           "testPlan": {
@@ -14947,14 +14947,14 @@
             "artefact": "artefacts/2026-07-23-ideate-canvas-resume-hydration-fix/test-plans/icrh-s1-test-plan.md"
           },
           "acTotal": 6,
-          "acVerified": 5,
+          "acVerified": 6,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": true,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-23-ideate-canvas-resume-hydration-fix/dor/icrh-s1-dor.md",
           "dorSignedOffAt": "2026-07-23T10:00:14.661Z",
           "prStatus": "merged",
-          "updatedAt": "2026-08-17T12:07:42.378Z",
+          "updatedAt": "2026-09-11T08:23:06.169Z",
           "notes": "Root cause: tests/e2e/a4-ideate-session-resume.spec.js AC2/AC3 failed against real wuce-staging (CI run 29996127983, job 89170114731, PR #568) -- resumed session showed zero .canvas-block elements despite turn 1 rendering blocks pre-close. Data layer proven correct (tests/check-a4-session-store-state.js, 5/5 passing, unmodified). Actual gap: _renderChatPage never read session.canvasBlocks to seed initial HTML/hydration payload -- .canvas-block elements were only ever created reactively via live SSE canvasBlock events. Fix: new canvasBlocksInitScript (window.__SW_INITIAL_CANVAS_BLOCKS__) mirroring the existing __SW_INITIAL_ARTEFACT__ pattern, plus a client-side hydration call reusing the existing appendCanvasBlock function unmodified. AC1-AC5 verified locally (15/15 new unit tests passing, RED confirmed pre-fix, GREEN post-fix; full npm test shows zero new regressions vs tests/known-baseline-failures.json). Merged via PR #569.",
           "dodStatus": "complete",
           "releaseReady": false,
@@ -25557,18 +25557,20 @@
     {
       "slug": "2026-08-18-canvas-fix-staging-verification-gap",
       "name": "Close icrh-s1's and icv-s1's unconfirmed real-staging E2E verification (found during DoD review)",
-      "stage": "definition",
+      "stage": "definition-of-done",
       "health": "amber",
       "stories": [
         {
           "id": "csvg-s1",
           "slug": "csvg-s1",
           "name": "Close icrh-s1's and icv-s1's unconfirmed real-staging E2E verification",
-          "stage": "definition",
+          "stage": "definition-of-done",
           "health": "amber",
           "dorStatus": "not-started",
-          "dodStatus": "not-started",
-          "prStatus": "none"
+          "dodStatus": "complete",
+          "prStatus": "none",
+          "dodArtefact": "artefacts/2026-08-18-canvas-fix-staging-verification-gap/dod/csvg-s1-dod.md",
+          "updatedAt": "2026-09-11T08:24:29.565Z"
         }
       ],
       "metrics": [],
