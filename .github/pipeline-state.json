@@ -33796,21 +33796,25 @@
           "id": "gcw-s1",
           "name": "Wire grant/comment routes + add missing CSRF protection",
           "storyPath": "artefacts/2026-09-11-agency-grant-comment-wiring/stories/gcw-s1-wire-grant-and-comment-routes.md",
-          "stage": "branch-setup",
+          "stage": "branch-complete",
           "health": "green",
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 6,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "testPlan": {
             "status": "written",
             "totalTests": 15,
-            "passing": 0
+            "passing": 15
           },
-          "updatedAt": "2026-09-11T05:39:41.885Z",
+          "updatedAt": "2026-09-11T05:53:29.590Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-11-agency-grant-comment-wiring/dor/gcw-s1-dor.md",
-          "dorContractPath": "artefacts/2026-09-11-agency-grant-comment-wiring/dor/gcw-s1-dor-contract.md"
+          "dorContractPath": "artefacts/2026-09-11-agency-grant-comment-wiring/dor/gcw-s1-dor-contract.md",
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/860",
+          "branch": "feature/gcw-s1"
         }
       ],
       "metrics": [],
