@@ -25342,10 +25342,18 @@
           "slug": "csgc-s1",
           "name": "Add regression test for story-extraction and investigate the unexplained gate-confirm 400",
           "stage": "definition",
-          "health": "amber",
-          "dorStatus": "not-started",
+          "health": "green",
+          "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "none"
+          "prStatus": "open",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 7,
+            "passing": 7
+          },
+          "acTotal": 3,
+          "acVerified": 3,
+          "updatedAt": "2026-09-11T09:24:06.356Z"
         }
       ],
       "metrics": [],
