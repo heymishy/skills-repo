@@ -12902,8 +12902,8 @@
               "slug": "d2",
               "name": "Persistent viewing-as banner, exit flow, and permission-scoped visibility",
               "stage": "definition-of-done",
-              "health": "amber",
-              "updatedAt": "2026-08-17T05:30:59.377Z",
+              "health": "green",
+              "updatedAt": "2026-09-11T20:29:14.326Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -12925,7 +12925,7 @@
               "prNumber": 538,
               "dodStatus": "complete",
               "releaseReady": false,
-              "blocker": "COMPLETE WITH DEVIATIONS: AC1 fails live -- impersonation banner does not render on /dashboard (handleGetDashboard in products.js never threads req.session.impersonation). Follow-up story ibg-s1 (2026-08-17-impersonation-banner-dashboard-gap) created, queued for /test-plan.",
+              "blocker": "",
               "dodArtefact": "artefacts/2026-07-21-web-ui-experience-redesign/dod/d2-dod.md"
             },
             {
@@ -14596,8 +14596,8 @@
               "slug": "b2-ci-gate-scenario-b-coverage-mapping",
               "name": "Add Scenario B to the CI-blocking gate and publish the spec-to-journey-step coverage mapping",
               "stage": "definition-of-done",
-              "health": "amber",
-              "updatedAt": "2026-08-17T05:53:30.946Z",
+              "health": "green",
+              "updatedAt": "2026-09-11T20:29:44.131Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -14618,7 +14618,7 @@
               "prNumber": 567,
               "dodStatus": "complete",
               "releaseReady": false,
-              "blocker": "COMPLETE WITH DEVIATIONS: AC1 fails live -- \"Scenario B E2E (staging)\" is not in the master ruleset required_status_checks (confirmed via gh api), so a broken Scenario B step does not actually block PR merge. Follow-up story sbrc-s1 (2026-08-17-scenario-b-not-required-check) created, queued for /test-plan.",
+              "blocker": "",
               "dodArtefact": "artefacts/2026-07-23-e2e-core-journey-coverage/dod/b2-ci-gate-scenario-b-coverage-mapping-dod.md"
             },
             {
@@ -22132,7 +22132,7 @@
           "id": "bmau-s1",
           "name": "Bulk-assign checkbox UI",
           "stage": "definition-of-done",
-          "health": "amber",
+          "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-10-bulk-module-assignment-ui-gap/review/bmau-s1-review-1.md",
@@ -22149,7 +22149,7 @@
           "acVerified": 5,
           "hasLayoutDependentGaps": true,
           "e2eToolingRequired": true,
-          "updatedAt": "2026-08-20T12:35:35.388Z",
+          "updatedAt": "2026-09-11T20:28:46.145Z",
           "prStatus": "merged",
           "dodStatus": "complete",
           "releaseReady": true,
@@ -29947,8 +29947,8 @@
               "slug": "ep1-s4",
               "name": "Stage-Based Skill Routing and Navigation",
               "stage": "definition-of-done",
-              "health": "amber",
-              "updatedAt": "2026-09-01T20:18:01.082Z",
+              "health": "green",
+              "updatedAt": "2026-09-11T20:28:46.288Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/new-feature-af17f555/review/ep1-s4-review-1.md",
@@ -30008,7 +30008,7 @@
               "prUrl": "https://github.com/heymishy/skills-repo/pull/810",
               "dodStatus": "complete",
               "releaseReady": false,
-              "blocker": "DoD deviation: multi-dot arrow-key traversal not independently E2E-tested (seeding infra limitation) -- see dod/ep1-s4-dod.md"
+              "blocker": ""
             },
             {
               "slug": "ep1-s5",

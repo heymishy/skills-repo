@@ -13,7 +13,7 @@
 
 | AC | Satisfied? | Evidence | Verification method | Deviation |
 |----|-----------|----------|---------------------|-----------|
-| AC1: persistent banner on "any page in the app" | ❌ | Live Chrome check, 2026-08-17: banner correctly renders on `/settings` (and other `dashboard.js`/`settings.js`-routed pages); **does not render on `/dashboard`**, the Products landing page and likely the most-visited page in the app | Manual, real impersonation session started and reproduced twice | **Real, confirmed gap — see below** |
+| AC1: persistent banner on "any page in the app" | ✅ | **Closed 2026-09-11 by `ibg-s1`** (PR #861, merged): threaded `req.session.impersonation` into `handleGetDashboard`'s `renderShell()` call, matching `dashboard.js`/`settings.js`'s existing pattern. `ibg-s1`'s own DoD live-verified this directly: a real impersonation session on `wuce-staging.fly.dev` showed the banner on both `/dashboard` and `/dashboard?view=board` with real `getComputedStyle`-confirmed styling. Original gap (2026-08-17): banner rendered on `/settings` but not on `/dashboard`, the Products landing page and most-visited page in the app. | Live Chrome check (`ibg-s1`'s own DoD) | None — closed |
 | AC2: non-admin target hides admin-only items | ✅ | `check-d2-banner-exit-permission-visibility.js`, part of 24/24 | Automated test, re-run fresh 2026-08-17 | None |
 | AC3: admin target shows admin-only items accurately | ✅ | Same file | Automated test, re-run fresh | None |
 | AC4: "Exit impersonation" reverts identity, banner disappears, no leftover session state | ✅ | Live-verified 2026-08-17: clicked "Exit impersonation" from the `/settings` banner, redirected to `/dashboard`, confirmed real identity (`heymishy`) and full product list restored, no banner, no leftover impersonation UI anywhere | Manual, live Chrome check | None |
@@ -60,11 +60,11 @@ Date measured: 2026-08-17
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
 **Follow-up actions:**
-- [Owner: coding agent, via next `/test-plan` run] `ibg-s1` (2026-08-17-impersonation-banner-dashboard-gap): thread `req.session.impersonation` into `handleGetDashboard`'s `renderShell()` call in `products.js`, matching the existing pattern in `dashboard.js`/`settings.js`. Story already written; needs `/test-plan` → `/definition-of-ready` → dispatch.
-- [Owner: Hamish King] Consider whether other `renderShell()` call sites across the 11 route files identified (only 5 of 11 currently reference `impersonation` at all) warrant a broader audit beyond this one confirmed instance — flagged, not scoped into `ibg-s1` itself to keep that fix small and bounded.
+- ~~`ibg-s1` (2026-08-17-impersonation-banner-dashboard-gap): thread `req.session.impersonation` into `handleGetDashboard`'s `renderShell()` call in `products.js`~~ — **Done (2026-09-11).** PR #861 merged, live Chrome-verified — see AC1 row above.
+- [Owner: Hamish King] Consider whether other `renderShell()` call sites across the 11 route files identified (only 5 of 11 currently reference `impersonation` at all) warrant a broader audit beyond this one confirmed instance — flagged, not scoped into `ibg-s1` itself to keep that fix small and bounded. Still open.
 
 ---
 

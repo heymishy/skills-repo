@@ -12,7 +12,7 @@
 
 | AC | Satisfied? | Evidence | Verification method | Deviation |
 |----|-----------|----------|---------------------|-----------|
-| AC1 (broken Scenario B step blocks merge) | ❌ | Live check via `gh api repos/heymishy/skills-repo/rulesets/14979696`: `required_status_checks` lists only `"Run assurance gate"` and `"Scenario A E2E (staging)"` — `"Scenario B E2E (staging)"` is absent | Manual, direct GitHub API check, 2026-08-17 | **Real, confirmed gap — see below** |
+| AC1 (broken Scenario B step blocks merge) | ✅ | **Closed by `sbrc-s1`** (2026-09-12 pipeline-state correction; fix itself landed earlier): `gh api repos/heymishy/skills-repo/rulesets/14979696` now lists `"Run assurance gate"`, `"Scenario A E2E (staging)"`, and `"Scenario B E2E (staging)"` in `required_status_checks`. Original gap (2026-08-17): the third entry was absent. | Live GitHub API check (`sbrc-s1`'s own DoD) | None — closed |
 | AC2 (clean PRs pass both jobs, neither blocks) | ✅ | Both jobs run and pass on every PR (confirmed via `si-s1`/`si-s2` today) | Continuous CI evidence | None |
 | AC3 (coverage mapping doc lists every journey step) | ✅ | `artefacts/2026-07-23-e2e-core-journey-coverage/coverage/spec-to-journey-step-mapping.md` exists | Direct file inspection, 2026-08-17 | None found in a lightweight check |
 | AC4 (mapping cross-checked against real spec files) | ✅ (not deeply re-audited) | `check-b2-ci-gate-config.js` includes coverage-mapping assertions, 15/15 (1 skipped — see AC1) | Automated test, re-run fresh 2026-08-17 | Not independently re-derived line-by-line in this lightweight pass |
@@ -52,10 +52,10 @@ No formal benefit-metric artefact exists for this feature. No metric signal to r
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
 **Follow-up actions:**
-- [Owner: coding agent, via next `/test-plan` run] `sbrc-s1` (2026-08-17-scenario-b-not-required-check): add `"Scenario B E2E (staging)"` to the master ruleset's `required_status_checks`, matching the pattern `a5` already established for Scenario A. Story already written; needs `/test-plan` → `/definition-of-ready` → dispatch.
+- ~~`sbrc-s1` (2026-08-17-scenario-b-not-required-check): add `"Scenario B E2E (staging)"` to the master ruleset's `required_status_checks`~~ — **Done.** Live-verified via `gh api`, see AC1 row above.
 
 ---
 
