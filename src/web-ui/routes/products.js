@@ -166,7 +166,7 @@ function _parseJsonbField(value, fallback) {
 // All tabs below -- removed so each group renders exactly once. Only the
 // summary "Test coverage: X%" line remains (see coverageHtml below).
 
-function _renderProductDashboard(products, login, navProducts, activeProductId, noProductJourneyCount, isAdmin, hasNoProductWork) {
+function _renderProductDashboard(products, login, navProducts, activeProductId, noProductJourneyCount, isAdmin, hasNoProductWork, impersonation) {
   var cardsHtml = products.length === 0
     ? '<div style="padding:48px 0;text-align:center;color:var(--muted)">' +
         '<p style="font-size:18px;margin:0 0 12px">No products yet</p>' +
@@ -211,7 +211,8 @@ function _renderProductDashboard(products, login, navProducts, activeProductId, 
     products: navProducts,
     activeProductId: activeProductId,
     noProductJourneyCount: noProductJourneyCount,
-    isAdmin: isAdmin
+    isAdmin: isAdmin,
+    impersonation: impersonation
   });
 }
 
@@ -2394,6 +2395,15 @@ async function handleGetDashboard(req, res, _next, pool) {
   var tenantId = req.session && req.session.tenantId;
   var login = req.session && req.session.login;
   var isAdmin = !!(req.session && isEffectivelyAdmin(req.session));
+  // ibg-s1 (AC1): forward the active impersonation state (if any) so
+  // renderShell can surface the persistent banner on /dashboard, matching
+  // dashboard.js's handleDashboard -- this route previously never read
+  // req.session.impersonation at all, so the banner silently never rendered
+  // here even while impersonating.
+  var _imp = req.session && req.session.impersonation;
+  var impersonation = (_imp && _imp.active && _imp.target)
+    ? { active: true, targetLogin: _imp.target.login, targetTenantId: _imp.target.tenantId, csrfToken: await _csrf.generateCsrfToken(req) }
+    : null;
 
   // kbc-s1 (AC4): GET /dashboard?view=board -- tenant-scope kanban board,
   // aggregating every journey across every product this tenant owns onto
@@ -2433,7 +2443,8 @@ async function handleGetDashboard(req, res, _next, pool) {
       products: boardNavSummary.products,
       activeProductId: null,
       noProductJourneyCount: boardNavSummary.noProductJourneyCount,
-      isAdmin: isAdmin
+      isAdmin: isAdmin,
+      impersonation: impersonation
     }));
     return;
   }
@@ -2452,7 +2463,7 @@ async function handleGetDashboard(req, res, _next, pool) {
   } else {
     var repoRoot = _repoRootAdapter.getRepoRoot(req);
     var hasNoProductWork = navSummary.noProductJourneyCount > 0 || _hasUnbackfilledCliFeatures(repoRoot);
-    var html = _renderProductDashboard(cards, login, navSummary.products, null, navSummary.noProductJourneyCount, isAdmin, hasNoProductWork);
+    var html = _renderProductDashboard(cards, login, navSummary.products, null, navSummary.noProductJourneyCount, isAdmin, hasNoProductWork, impersonation);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
