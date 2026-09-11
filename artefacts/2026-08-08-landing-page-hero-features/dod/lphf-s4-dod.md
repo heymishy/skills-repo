@@ -58,10 +58,10 @@ Date measured: null
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
 **Follow-up actions:**
-1. **Owner: next session.** Create a short-track story to fix the real root cause behind AC1's current failure — e.g. bundle `workspace/learnings.md` into the deploy image (if appropriate), or compute the count at build/deploy time and bake it into the served HTML rather than relying on a runtime file read that structurally cannot succeed in the deployed environment. Operator confirmed this resolution path (create a follow-up story) on 2026-08-09. This is a different, more durable fix than `lccf-s1`'s fail-open safety net, which correctly prioritized stopping the crash but was never intended as the permanent answer to "what number does this card show."
+1. ~~Create a short-track story to fix the real root cause behind AC1's current failure — compute the count at build/deploy time and bake it into the served HTML...~~ — **Done.** `lcdf-s1` (`artefacts/2026-08-09-learnings-count-deploy-fix/`) merged, DoD complete: build-time script computes the real count and the deployed app now displays the baked build-time value rather than the structurally-broken runtime read. AC1 closed for real, not just via `lccf-s1`'s fail-open safety net.
 
 ---
 

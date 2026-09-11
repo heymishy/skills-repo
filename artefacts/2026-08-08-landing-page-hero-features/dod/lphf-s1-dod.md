@@ -58,10 +58,10 @@ Date measured: null
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
 **Follow-up actions:**
-1. **Owner: next session.** Create a short-track story to compare the two golden-trace candidates for real, choose one, delete the loser's content and the `ACTIVE_CANDIDATE` toggle mechanism entirely — closing AC3 as originally specified. Operator confirmed this resolution path (create a follow-up story) on 2026-08-09.
+1. ~~Create a short-track story to compare the two golden-trace candidates for real, choose one, delete the loser's content...~~ — **Done.** `gtcl-s1` (`artefacts/2026-08-09-golden-trace-candidate-lockin/`) merged, DoD complete: `kanban` selected as winner (decisions.md D4), losing candidate's content fully deleted and verified via automated test. AC3 closed as originally specified.
 
 ---
 
