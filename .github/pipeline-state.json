@@ -33796,7 +33796,7 @@
           "id": "gcw-s1",
           "name": "Wire grant/comment routes + add missing CSRF protection",
           "storyPath": "artefacts/2026-09-11-agency-grant-comment-wiring/stories/gcw-s1-wire-grant-and-comment-routes.md",
-          "stage": "definition-of-ready",
+          "stage": "branch-setup",
           "health": "green",
           "acTotal": 6,
           "acVerified": 0,
@@ -33807,7 +33807,10 @@
             "totalTests": 15,
             "passing": 0
           },
-          "updatedAt": "2026-09-11T05:01:17.471Z"
+          "updatedAt": "2026-09-11T05:39:41.885Z",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-11-agency-grant-comment-wiring/dor/gcw-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-11-agency-grant-comment-wiring/dor/gcw-s1-dor-contract.md"
         }
       ],
       "metrics": [],

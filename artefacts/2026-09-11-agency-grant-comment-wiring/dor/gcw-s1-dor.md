@@ -139,4 +139,4 @@ Oversight level: Medium
 
 **Oversight level:** Medium — mirrors `asa-s1`'s own rationale (touches the tenant-isolation/grant boundary ADR-025 governs), even though this story's own scope is mechanical wiring of already-tested handlers plus one well-precedented security addition.
 **Sign-off required:** Yes
-**Signed off by:** Pending — operator directed short-track scoping ("Short track") but has not yet reviewed this specific implementation plan (9-route URL scheme, CSRF-addition scope, pool reuse). Confirm before `/branch-setup`.
+**Signed off by:** Hamish King (operator) — confirmed the implementation plan (9-route URL scheme, CSRF-addition scope, pool reuse) directly in-session, 2026-09-11.
