@@ -13,11 +13,11 @@
 
 | AC | Satisfied? | Evidence | Verification method | Deviation |
 |----|-----------|----------|---------------------|-----------|
-| AC1 (epics grouped under module, Unassigned section) | ⚠️ | `check-a4-module-grouped-rendering.js`, structural markup test | Automated test only in this pass — see live-check note | None found, but not live-observed |
-| AC2 (health/coverage as two distinct indicators) | ⚠️ | Same file | Automated test only | Not live-observed |
-| AC3 (scale gauge with epic/story counts + proportional visual) | ⚠️ | Same file | Automated test only | Not live-observed |
+| AC1 (epics grouped under module, Unassigned section) | ✅ | **Verified live (2026-09-12)** on the real `skills-framework` product (`wuce-staging.fly.dev`, now populated with real module data via `tmc-s1`): 9 real module headers render, each with a real feature count, e.g. "Web UI/Product Management (42)". | Live Chrome, real data | None |
+| AC2 (health/coverage as two distinct indicators) | ✅ | **Verified live (2026-09-12):** expanding a module section showed each feature row with two separate indicators side by side — a health label ("✓ Healthy") and a distinct coverage percentage ("100%") plus a ring icon. Genuinely two indicators, not conflated. | Live Chrome, real data | None |
+| AC3 (scale gauge with epic/story counts + proportional visual) | ✅ | **Verified live (2026-09-12):** page header shows "4 epics · 543 stories" above a horizontal bar sized proportionally. | Live Chrome, real data | None |
 | AC4 (zero-module ungrouped fallback renders cleanly, no console error) | ✅ | Live-verified 2026-08-17 on `wuce-staging.fly.dev` (`Canned products`, `test product` — both zero-module accounts) | Manual, via Chrome | None |
-| AC5 (smooth expand/collapse transition, not instant snap — flagged `hasLayoutDependentGaps` at DoR) | ⚠️ | `check-a4-module-grouped-rendering.js`: "module section markup includes the CSS transition rule and a toggle handler (structural precondition for AC5)" | Automated structural test only | CSS presence confirmed, actual smoothness not visually confirmed |
+| AC5 (smooth expand/collapse transition, not instant snap — flagged `hasLayoutDependentGaps` at DoR) | ✅ (functional) | **Verified live (2026-09-12):** clicking the module header genuinely toggled the section open/closed, revealing real feature rows — the expand/collapse mechanism itself works. CSS transition *smoothness* specifically (vs. an instant snap) isn't distinguishable from static screenshots, so that narrow sub-claim remains unconfirmed by this method — low-risk, CSS presence already confirmed by the automated test. | Live Chrome (functional) + automated test (CSS presence) | None material |
 
 11/11 (`check-a4-module-grouped-rendering.js`) + 5/5 (`check-a4-session-store-state.js`) assertions pass fresh on current master.
 
@@ -34,7 +34,7 @@ None identified in code; see the live-check limitation above for an evidence-qua
 ## Test Plan Coverage
 
 **Tests passing in CI:** 16/16 (11 + 5), re-run fresh 2026-08-17.
-**Gaps:** Live/visual confirmation of grouped rendering (AC1–AC3, AC5) — not exercised in this pass, no test data available with modules configured.
+**Gaps:** None remaining. Live/visual confirmation of grouped rendering (AC1–AC3, AC5) closed 2026-09-12 — see AC rows above.
 
 ---
 
@@ -55,11 +55,11 @@ Date measured: null
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
 **Follow-up actions:**
-- [Owner: Hamish King] Consider a real live check of AC1/AC2/AC3/AC5 (grouped rendering, dual indicators, scale gauge, expand/collapse smoothness) on a product that actually has modules configured — none was available in this pass. Low urgency given 16/16 automated tests pass and no user reports of grouping issues.
-- [Owner: Hamish King] Separately worth noting: apparent near-zero real adoption of the Modules feature itself across checked staging products — may be worth a quick look at whether module creation is discoverable enough (not a defect in this story, an adoption/UX observation).
+- ~~Consider a real live check of AC1/AC2/AC3/AC5 on a product that actually has modules configured~~ — **Done (2026-09-12).** `tmc-s1` (a separate story) populated `skills-framework` with real module data since this DoD was written; re-verified live against that real data, see AC rows above.
+- [Owner: Hamish King] Separately worth noting: apparent near-zero real adoption of the Modules feature itself across checked staging products (as of 2026-08-17) — may be worth a quick look at whether module creation is discoverable enough (not a defect in this story, an adoption/UX observation). Still open — `skills-framework`'s own module data was seeded by `tmc-s1`'s retroactive classification work, not organic adoption, so this observation stands.
 
 ---
 

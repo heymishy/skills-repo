@@ -82,10 +82,10 @@ None shipped. Confirmed via diff review of the merged PR: no markdown/preview re
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
 **Follow-up actions:**
-1. When `wugs-s6`'s implementation plan is written, explicitly add a task to wire `POST /products/:id/guardrails/form` in `server.js`, passing the real `guardrailPrAdapter` as `handlePostGuardrailsForm`'s `writeAdapter` parameter — `wugs-s6`'s own AC5/AC6 only cover wiring `setGuardrailPrAdapter` itself, not this connection. Already logged as a GAP-FLAG in `decisions.md` (2026-08-12).
+1. ~~When `wugs-s6`'s implementation plan is written, explicitly add a task to wire `POST /products/:id/guardrails/form`...~~ — **Done.** `wugs-s6` shipped and wired the POST route for real. Re-verified 2026-09-12 by reading current `src/web-ui/server.js:3533-3563` directly: the POST route exists (not a 404), its own code comment reads *"wugs-s6 — submission handler for the create/edit form (wugs-s5), now wired to a real write adapter. Closes the gap wugs-s5 flagged in decisions.md"*, and the handler chain (`authGuard` → `requireNonViewer` → a real `writeAdapterForRequest` closure calling `createGuardrailPr` via the production-wired `setGuardrailPrAdapter`) is genuine production code, not a D37 stub. The specific claim "form 404s on submit" is now definitively false. Not independently confirmed via an actual live submission (would open a real GitHub PR against a real repo, out of scope for a routine re-verification pass) — source evidence alone is conclusive for the narrow claim this blocker made.
 
 ---
 

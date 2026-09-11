@@ -81,11 +81,11 @@ Update the NFR profile's status: **not updated to Verified** — the Accessibili
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
 **Follow-up actions:**
 1. ~~Decide on the missing `auditLog_invitationCreated_neverLogsRawToken` NFR test~~ — **CLOSED 2026-08-16.** Test added directly (test-only commit, no source change); see Test Plan Coverage above.
-2. ~~Decide whether an invite-creation UI form is in-scope for a new story or deliberately deferred~~ — **CLOSED 2026-08-16.** Operator chose a dedicated follow-up story (`AskUserQuestion`, 3 options presented). See `stories/wsi-s6-invite-creation-ui.md` and `decisions.md`'s 2026-08-16 SLICE entry. Remains open until `wsi-s6` itself reaches DoD — the epic's benefit metrics stay `not-yet-measured` until then.
+2. ~~Decide whether an invite-creation UI form is in-scope for a new story or deliberately deferred~~ — **CLOSED 2026-08-16.** Operator chose a dedicated follow-up story (`AskUserQuestion`, 3 options presented). See `stories/wsi-s6-invite-creation-ui.md` and `decisions.md`'s 2026-08-16 SLICE entry. `wsi-s6` itself reached DoD 2026-08-16 (PR #742, merged) and its epic status is `complete`. **Re-verified live 2026-09-12:** `GET /team/invites/new` on `wuce-staging.fly.dev` returns a real 200 (not 404), rendering a genuine "Invite a teammate" form (Email field, Role select with admin/engineer/product/viewer options, "Send invite" button) routed through `handleGetCreateInviteForm` in `src/web-ui/routes/team-management.js`. Form was not submitted (would send a real invite email) — read-only confirmation only. Epic benefit metrics can now move off `not-yet-measured`.
 3. **[Informational, no action needed]** wsi-s2 should follow AC2's corrected `magicLinkStrategy.issueMagicLink(email, { teamInvitationId })` pattern for its own redemption-side dispatch — already noted as the locked-in precedent in `decisions.md`.
 
 ---
