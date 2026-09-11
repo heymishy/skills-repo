@@ -33760,7 +33760,7 @@
           "id": "asa-s1",
           "name": "Standalone org self-activation as Agency",
           "storyPath": "artefacts/2026-09-11-agency-self-activation/stories/asa-s1-standalone-org-can-self-activate-as-agency.md",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 5,
           "acVerified": 5,
@@ -33771,14 +33771,16 @@
             "totalTests": 5,
             "passing": 5
           },
-          "updatedAt": "2026-09-11T04:33:30.595Z",
+          "updatedAt": "2026-09-11T06:33:06.078Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-11-agency-self-activation/dor/asa-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-11-agency-self-activation/dor/asa-s1-dor-contract.md",
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/859",
-          "branch": "feature/asa-s1"
+          "branch": "feature/asa-s1",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
@@ -33796,7 +33798,7 @@
           "id": "gcw-s1",
           "name": "Wire grant/comment routes + add missing CSRF protection",
           "storyPath": "artefacts/2026-09-11-agency-grant-comment-wiring/stories/gcw-s1-wire-grant-and-comment-routes.md",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 6,
           "acVerified": 6,
@@ -33807,14 +33809,16 @@
             "totalTests": 15,
             "passing": 15
           },
-          "updatedAt": "2026-09-11T05:53:29.590Z",
+          "updatedAt": "2026-09-11T06:33:06.241Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-11-agency-grant-comment-wiring/dor/gcw-s1-dor.md",
           "dorContractPath": "artefacts/2026-09-11-agency-grant-comment-wiring/dor/gcw-s1-dor-contract.md",
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/860",
-          "branch": "feature/gcw-s1"
+          "branch": "feature/gcw-s1",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],

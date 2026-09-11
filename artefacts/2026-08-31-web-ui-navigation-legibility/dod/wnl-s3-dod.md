@@ -49,6 +49,8 @@ None. The merged diff is scoped to `_hasUnbackfilledCliFeatures(repoRoot)` (new,
 
 **Gaps (tests not implemented):** None.
 
+**Post-merge live Chrome verification (backfilled 2026-09-11 — see DoD Observation #3):** Performed on `wuce-staging.fly.dev` after deploy, using a real tenant with a genuine no-product-work case (this exact feature, before it had a Postgres `journeys` row). Confirmed "No product work →" rendered on `/dashboard` (AC1/AC2 — the real-world case, not just the construction-designed unit fixture) and clicking it correctly landed on `/journey` (AC3), matching the destination the sidebar's own "No product" link provides. No gap found — this is a confirmation, not a correction (contrast `wnl-s2`'s own backfilled note).
+
 ---
 
 ## NFR Status
@@ -86,6 +88,7 @@ None. The merged diff is scoped to `_hasUnbackfilledCliFeatures(repoRoot)` (new,
 
 1. This story's `pipeline-state.json` bookkeeping needed two rounds of post-hoc correction this session: (a) the resumed subagent-execution run's own bookkeeping stalled at `stage: "branch-setup"` despite real, independently-verified work completing (fixed on master directly, `cf957f05`); (b) the feature branch's own separate copy of the same `tasks[]` array used a different, schema-invalid field shape (`{description, status, tddState}` instead of `{id, name, tddState, file}`), which passed local review but caused a real CI failure on PR #855 ("Validate traceability chain" — schema_valid check) after the PR was opened. Fixed directly on the branch (`10466308`) and verified locally via `bash scripts/validate-trace.sh --ci` before pushing. Both are logged as `/improve` candidates in `workspace/capture-log.md` — epic-nested story state bookkeeping (cdg.6) needs a schema-conformance check run on the branch's own copy, not just master's, before a PR is considered ready.
 2. No NFR gaps or guardrail entries were absent at delivery time.
+3. **Backfilled 2026-09-11:** a repo-wide stocktake of DoD verification methods found that live Chrome verification had actually been performed for this story shortly after this DoD was originally written — but the confirmation was never written back into this artefact. Logged as a process gap at `/improve` (same finding as `wnl-s1`/`jasb-s1`/`asa-s1`/`gcw-s1`'s own DoDs).
 
 ---
 

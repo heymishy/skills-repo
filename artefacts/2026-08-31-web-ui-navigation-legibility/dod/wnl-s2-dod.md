@@ -48,6 +48,8 @@ None. The merged diff touches only the `.sw-journey-gate` div's `style` attribut
 
 **Mandatory route/handler E2E coverage check (verify-completion):** Grepped all `tests/e2e/*.spec.js` for the literal string `sw-journey-gate` — only this story's own new spec references it; the six other chat-page E2E specs assert nothing about this div, so the CSS-only change carries no cross-spec risk (RISK-ACCEPT logged in `decisions.md`, 2026-09-10). `tests/check-lsbm-s1-live-substep-injection.js` (the one suite with a documented literal-string dependency on `.sw-journey-gate`) re-confirmed passing on merged master: 12/12.
 
+**Post-merge live Chrome verification found a real gap, not a confirmation (backfilled 2026-09-11 — see DoD Observation #3):** Live verification on `wuce-staging.fly.dev` found that the sticky fix above is genuinely correct for the path it tests (a page reload of an already-done session), but a **second, separate code path** — `showCommitLink()` in `skills.js`, the client-side function that renders the same gate control when a turn completes *live* — never received the fix. `/journey/:slug/resume`, the actual link every operator clicks from the journey list, always creates a fresh session and fires its turn live, so the majority of real usage hit the unfixed path. Neither this story's E2E spec nor its unit suite exercised that second path (the E2E spec seeds an already-done session directly). This gap was fixed separately as `jgls-s1` (artefacts/2026-09-11-journey-gate-live-completion-sticky-gap), merged and live-verified 2026-09-10. This DoD's own AC1/AC3/AC5 rows above remain accurate for what they actually tested — the gap was in test *coverage*, not in a false claim within this artefact.
+
 ---
 
 ## NFR Status
@@ -73,9 +75,13 @@ None. The merged diff touches only the `.sw-journey-gate` div's `style` attribut
 
 ## Outcome
 
-**COMPLETE**
+**COMPLETE WITH DEVIATIONS** (updated 2026-09-11 — see Test Plan Coverage's live-verification note and DoD Observation #3)
 
-**Follow-up actions:** None required to close this story. Revisit M2's signal at the 4-week mark post-ship (~2026-10-08) — no automated incident tracking exists for this metric, so this requires a manual operator check-in.
+All 5 written ACs were satisfied for the path they actually described and tested. The deviation is a test-plan coverage gap, not a false AC claim: neither the E2E spec nor the unit suite exercised the client-side `showCommitLink()` rendering path, which turned out to be the majority real-usage path (`/journey/:slug/resume`). That gap let a real defect through undetected by this story's own (passing) test suite.
+
+**Follow-up actions:**
+1. ~~Fix `showCommitLink()`'s missing sticky positioning~~ — done, `jgls-s1` (merged and live-verified 2026-09-10).
+2. Revisit M2's signal at the 4-week mark post-ship (~2026-10-08) — no automated incident tracking exists for this metric, so this requires a manual operator check-in. The 4-week window should arguably restart from `jgls-s1`'s own deploy date, not this story's, since the fix wasn't actually complete until then.
 
 ---
 
@@ -83,6 +89,7 @@ None. The merged diff touches only the `.sw-journey-gate` div's `style` attribut
 
 1. This story's own branch (`feature/wnl-s2`) went through two separate merge-conflict resolutions against master post-implementation, each time because master's own copy of `pipeline-state.json` had independently advanced (once from `wnl-s1`/`wnl-s3`'s post-merge bookkeeping corrections, once from `wnl-s1`/`wnl-s3` actually merging while this PR was still open) — both times auto-resolved cleanly by taking master's copy in full (confirmed via diff review each time that master's version was a strict superset, no content loss). No functional risk, but worth noting as a real friction point in the cdg.6 epic-nested-story pattern when 3 sibling stories in the same epic ship in parallel.
 2. No NFR gaps or guardrail entries were absent at delivery time.
+3. **Backfilled 2026-09-11:** a repo-wide stocktake of DoD verification methods found that this story's own DoD had never recorded its post-merge live Chrome verification — which is a more consequential omission than the equivalent gap in `wnl-s1`/`wnl-s3`/`jasb-s1`'s own DoDs, because this one actually *found a real defect* (see Test Plan Coverage section above) rather than confirming success. Had this been written back into the artefact at the time, the connection between `wnl-s2` and its own follow-up fix (`jgls-s1`) would have been traceable from this document alone, not only from conversation history. Logged as a process gap at `/improve`, with this specific case as the sharpest illustration of why it matters: a DoD that omits a failed live check, then gets silently followed by a separate fix story, reads — to a future person opening only this file — as if the story shipped clean the first time.
 
 ---
 

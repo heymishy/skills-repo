@@ -50,6 +50,8 @@ None. The change is scoped exactly to `buildContextManifestHtml()` (`src/web-ui/
 
 **Mandatory route/handler E2E coverage check (verify-completion):** `tests/e2e/iwu2-right-panel-layout.spec.js` (7 tests) fails identically at the pre-fix baseline commit (`ef9bc0ff`) — confirmed pre-existing and unrelated to this story (RISK-ACCEPT logged in `decisions.md`, 2026-09-10). Full baseline `npm test` on the `wnl-s1` worktree: 633 files run, 1 failed (`tests/check-p3.5-validate-trace.js`, known pre-existing failure documented across every story this session).
 
+**Post-merge live Chrome verification (backfilled 2026-09-11 — see DoD Observation #3):** Performed on `wuce-staging.fly.dev` after deploy. Direct DOM inspection via `javascript_tool` (not just `get_page_text`): `document.getElementById('context-manifest').tagName === 'DETAILS'`, no `open` attribute, `<summary>` text "Context loaded (8 files) ✓" — confirmed against a real, live skill session, both via a direct page reload and via `/journey/:slug/resume`. This is independent, live confirmation of AC1/AC3/AC4/AC6 beyond the automated unit suite.
+
 ---
 
 ## NFR Status
@@ -85,6 +87,7 @@ None. The change is scoped exactly to `buildContextManifestHtml()` (`src/web-ui/
 
 1. This story's `pipeline-state.json` bookkeeping went through an unusually involved recovery path this session: the dispatched implementer fork's own bookkeeping stalled at `stage: "implementation-plan"` despite real, independently-verified work completing; corrected on master directly (`46d36f15`), which then required resolving real merge conflicts against the branch's stale copy (`f081c4ee`) before the PR could merge cleanly. Logged as an `/improve` candidate in `workspace/capture-log.md` — epic-nested story state bookkeeping (cdg.6) needs a tighter loop when a branch and master diverge on the same story block mid-session.
 2. No NFR gaps or guardrail entries were absent at delivery time — the feature-level NFR profile fully covered this story at DoR sign-off.
+3. **Backfilled 2026-09-11:** a repo-wide stocktake of DoD verification methods found that live Chrome verification had actually been performed for this story shortly after this DoD was originally written — but the confirmation was never written back into this artefact. Logged as a process gap at `/improve`: live-verify, then immediately update the DoD, rather than letting a later, unrelated task (in this case, the investigation that produced `asa-s1`/`gcw-s1`) push the update out indefinitely.
 
 ---
 
