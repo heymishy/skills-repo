@@ -1,0 +1,9 @@
+{
+  "story": "gcw-s1",
+  "prUrl": "https://github.com/heymishy/skills-repo/pull/860",
+  "verifyStatus": "passed",
+  "acVerified": 6,
+  "acTotal": 6,
+  "testsPassing": "14/14 new + sibling suites unaffected (story2: 15/15, story5: 13/13, story3: 18/18, asa-s1: 8/8) + full baseline 638 files run, 1 known pre-existing failure (check-p3.5-validate-trace.js)",
+  "verifiedAt": "2026-09-11"
+}
