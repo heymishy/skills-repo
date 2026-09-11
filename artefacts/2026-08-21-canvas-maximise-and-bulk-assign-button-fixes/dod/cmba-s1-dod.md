@@ -14,7 +14,7 @@
 | AC1 | ✅ | `readOnlyRender_swToggleCanvasFs_isDefined`, `readOnlyRender_buttonMarkupCallsRealFunction` — fresh run on master 2026-08-26, 2/2 pass | Automated test | None |
 | AC2 | ✅ | `readOnlyRender_swToggleArtefactFs_isDefined` — fresh run, pass | Automated test | None |
 | AC3 | ✅ | `liveSessionRender_allThreeFunctionsAndLiveOnlyContent_stillPresent` (6 assertions: all 3 toggle functions, SSE-pump helper, Cmd/Ctrl+Enter handler, input form) — fresh run, pass | Automated test | None |
-| AC4 | ✅ | `bmauAssignToModule_successHandler_resetsButtonLabel` — fresh run, pass; `check-bmau-s1-bulk-assign-checkbox-ui.js` (5/5) re-run clean, confirming no regression to the adjacent checkbox/selection logic this fix sits next to | Automated test | None |
+| AC4 | ✅ | `bmauAssignToModule_successHandler_resetsButtonLabel` — fresh run, pass; `check-bmau-s1-bulk-assign-checkbox-ui.js` (5/5) re-run clean, confirming no regression to the adjacent checkbox/selection logic this fix sits next to. **Verified live (2026-09-12):** real click on `skills-framework`'s real bulk-assign UI on `wuce-staging.fly.dev` — checked a real feature checkbox, clicked "Assign to module" (same-module target, safe no-op), confirmed a real `POST .../modules/bulk-assign` → 200 via network inspection, and confirmed the button read "Assign to module"/`disabled:false` immediately after, not stuck on "Assigning…". | Automated test + live Chrome | None |
 
 **Test file:** `tests/check-cmba-s1-readonly-maximise-and-stuck-label.js` — 15/15 passing on a fresh run against current master (2026-08-26), 4 days and two unrelated feature merges (`fresc-s1`, `pncg-s1`) after this story's own merge, confirming no drift.
 
