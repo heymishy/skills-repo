@@ -25559,10 +25559,18 @@
           "slug": "vcb-s1",
           "name": "Backfill rpc-s1's missing accessibility test and jrf-s1's narrower-than-required regression pass",
           "stage": "definition",
-          "health": "amber",
-          "dorStatus": "not-started",
+          "health": "green",
+          "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "none"
+          "prStatus": "open",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 3,
+            "passing": 3
+          },
+          "acTotal": 3,
+          "acVerified": 3,
+          "updatedAt": "2026-09-11T09:10:08.946Z"
         }
       ],
       "metrics": [],

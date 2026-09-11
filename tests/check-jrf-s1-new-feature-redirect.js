@@ -20,6 +20,7 @@
 
 const assert = require('assert');
 const path = require('path');
+const { execFileSync } = require('child_process');
 
 let passed = 0;
 let failed = 0;
@@ -198,7 +199,7 @@ Promise.resolve()
       assert.strictEqual(res.headers.Location, '/auth/github', 'Should redirect to auth endpoint');
     });
   }))
-  .then(() => test('IT5: Regression — no new failures introduced', function() {
+  .then(() => test('IT5: Regression — no new failures introduced (isolated handler calls)', function() {
     // Verify that multiple authenticated requests work independently
     const req1 = {
       session: { accessToken: 'token-a', login: 'user1@test.com', tenantId: 'tenant-1' },
@@ -219,6 +220,45 @@ Promise.resolve()
         assert.notStrictEqual(res1.headers.Location, res2.headers.Location, 'Should create different sessions');
       });
     });
+  }))
+  .then(() => test('IT6 (vcb-s1 AC2): Regression — every test file that exercises the REAL production handlePostProductFeature passes', function() {
+    // vcb-s1: this story's original IT5 only re-invokes handlePostProductFeatureFixed,
+    // a hand-copied reimplementation local to this file -- it never calls the real
+    // production handler (products.js's handlePostProductFeature) at all, and the DoR
+    // contract's own Coding Agent Instructions required "run the existing test suite
+    // in full and confirm the baseline failure count is unchanged." Running the FULL
+    // 639-file npm test suite from inside a checked-in test file would reintroduce the
+    // exact CPU-contention/recursion anti-pattern this repo already found and removed
+    // once (check-md-3-adr.js, fixed by mar-s1, 2026-08-08) -- so this widens IT5 to a
+    // clearly-scoped, correctly-baselined subset instead, per the story's own
+    // Architecture Constraints: every test file (found via
+    // `grep -rl "handlePostProductFeature" tests/*.js`) that actually exercises the
+    // real production handler this story's fix targets, not a hand-copied stand-in.
+    const relatedFiles = [
+      'check-das-s2-require-connected-repo.js',
+      'check-fdn-s1-feature-display-name.js',
+      'check-jrf-s2-register-product-feature-journeys.js',
+      'check-npwe-s1-skills-nav-wiring.js',
+      'check-pan-s1-product-aware-navigation.js',
+      'check-pnfc-s1-product-feature-choice.js',
+      'check-product-feature-cap-bypass.js',
+      'check-psh-s4-navigation.js',
+      'check-rcfc-s1-products-csrf.js'
+    ];
+    const ROOT = path.join(__dirname, '..');
+    const results = relatedFiles.map(function(f) {
+      try {
+        execFileSync(process.execPath, [path.join(ROOT, 'tests', f)], { stdio: 'pipe', env: Object.assign({}, process.env, { NODE_ENV: 'test' }) });
+        return { file: f, ok: true };
+      } catch (e) {
+        return { file: f, ok: false, output: (e.stdout || e.message || '').toString().slice(0, 300) };
+      }
+    });
+    const failedFiles = results.filter(function(r) { return !r.ok; });
+    if (failedFiles.length > 0) {
+      throw new Error('Regression in real handlePostProductFeature call sites: ' + failedFiles.map(function(r) { return r.file + ' -- ' + r.output; }).join(' | '));
+    }
+    assert.strictEqual(failedFiles.length, 0, 'all ' + relatedFiles.length + ' real-handler test files must pass with zero new regressions');
   }))
   .then(() => {
     console.log('\n─────────────────────────────────────────');
