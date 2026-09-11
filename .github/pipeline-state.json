@@ -6455,10 +6455,10 @@
           "acTotal": 6,
           "acVerified": 6,
           "dodStatus": "complete",
-          "health": "amber",
+          "health": "green",
           "releaseReady": true,
           "dodArtefact": "artefacts/2026-06-17-kanban-feature-detail-cx/dod/kfd1-dod.md",
-          "updatedAt": "2026-08-17T11:55:15.680Z"
+          "updatedAt": "2026-09-11T07:52:00.584Z"
         }
       ],
       "metrics": [],
@@ -25441,18 +25441,20 @@
     {
       "slug": "2026-08-17-kfd1-visual-verification-gap",
       "name": "Execute or RISK-ACCEPT kfd1's unexecuted CSS-layout visual verification (found during kfd1 DoD review)",
-      "stage": "definition",
-      "health": "amber",
+      "stage": "definition-of-done",
+      "health": "green",
       "stories": [
         {
           "id": "kvvg-s1",
           "slug": "kvvg-s1",
           "name": "Execute kfd1's unexecuted manual visual-verification scenarios, or log an explicit RISK-ACCEPT",
-          "stage": "definition",
-          "health": "amber",
+          "stage": "definition-of-done",
+          "health": "green",
           "dorStatus": "not-started",
-          "dodStatus": "not-started",
-          "prStatus": "none"
+          "dodStatus": "complete",
+          "prStatus": "none",
+          "updatedAt": "2026-09-11T07:53:28.877Z",
+          "dodArtefact": "artefacts/2026-08-17-kfd1-visual-verification-gap/dod/kvvg-s1-dod.md"
         }
       ],
       "metrics": [],
@@ -30532,7 +30534,7 @@
           "name": "Make product sync fire-and-forget with client-side polling, instead of one long blocking request",
           "stage": "definition-of-done",
           "health": "amber",
-          "updatedAt": "2026-09-03T04:40:15.262Z",
+          "updatedAt": "2026-09-11T07:47:26.108Z",
           "testPlan": {
             "status": "written",
             "totalTests": 7,
@@ -30587,7 +30589,7 @@
           "prUrl": "https://github.com/heymishy/skills-repo/pull/819",
           "dodStatus": "complete",
           "releaseReady": false,
-          "blocker": "Production (skills-framework.fly.dev) not yet running this fix -- promote-to-prod requires manual approval in GitHub Actions (workflow run 33715340515). Manual polling/reload smoke test also still pending (owner: Hamish King).",
+          "blocker": "Production (skills-framework.fly.dev) not yet running this fix -- promote-to-prod requires manual approval in GitHub Actions (workflow run 33715340515). Manual polling/reload smoke test completed 2026-09-11 (live Chrome verification against wuce-staging.fly.dev); only the production promotion remains outstanding.",
           "dodPath": "artefacts/2026-09-03-product-sync-timeout-fix/dod/pst-s1-dod.md"
         }
       ],
@@ -30605,10 +30607,10 @@
           "id": "H-NFR-PROFILE",
           "category": "nfr",
           "label": "H-NFR NFR profile",
-          "status": "not-met",
-          "evidence": "nfr-profile.md remains Active, not Verified -- one named gap (real-browser polling/reload timing manual smoke test) still open, owner Hamish King",
+          "status": "met",
+          "evidence": "nfr-profile.md updated to Verified 2026-09-11 -- the named gap (real-browser polling/reload timing) was closed via live Chrome verification against wuce-staging.fly.dev, see dod/pst-s1-dod.md DoD Observation #2",
           "assessedBy": "/definition-of-done",
-          "assessedAt": "2026-09-03T04:40:15.263Z"
+          "assessedAt": "2026-09-11T00:00:00.000Z"
         },
         {
           "id": "H-NFR2-COMPLIANCE",

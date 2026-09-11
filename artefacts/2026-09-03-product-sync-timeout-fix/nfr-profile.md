@@ -2,8 +2,8 @@
 
 **Feature:** 2026-09-03-product-sync-timeout-fix
 **Created:** 2026-09-03
-**Last updated:** 2026-09-03
-**Status:** Active
+**Last updated:** 2026-09-11
+**Status:** Verified — the one named gap below (real-browser polling/reload timing) was closed via live Chrome verification against `wuce-staging.fly.dev` on 2026-09-11; see `dod/pst-s1-dod.md` DoD Observation #2 for full evidence. Production (`skills-framework.fly.dev`) has not yet received this fix — a deploy-gate/release-readiness matter, not an NFR gap.
 
 ---
 
@@ -67,8 +67,8 @@
 
 ## Gaps and open questions
 
-| NFR area | Gap | Owner | Due |
-|----------|-----|-------|-----|
-| Accessibility | The "Syncing…" polling state's real-browser timing behaviour (does it genuinely poll at the intended interval, does it genuinely reload) is verified manually, not by an automated accessibility scan — matches the same DOM-behaviour gap already named in the test plan, not a separate accessibility-specific gap | Hamish King | Post-merge smoke test, before this story's own DoD sign-off |
+| NFR area | Gap | Owner | Due | Status |
+|----------|-----|-------|-----|--------|
+| Accessibility | ~~The "Syncing…" polling state's real-browser timing behaviour (does it genuinely poll at the intended interval, does it genuinely reload) is verified manually, not by an automated accessibility scan~~ | Hamish King | Post-merge smoke test, before this story's own DoD sign-off | **Closed 2026-09-11** — confirmed live: immediate 202 response + disabled "Syncing…" state within 300ms, real polling requests observed, self-initiated document reload on completion with updated counts. The one sub-case not live-timed (mid-sync reload, AC5's regression guard) was confirmed via direct code-path inspection instead, since this environment's real sync completes faster than the tool round-trip — see `dod/pst-s1-dod.md` DoD Observation #2. |
 
 _No compliance or data-residency gaps identified at 2026-09-03._
