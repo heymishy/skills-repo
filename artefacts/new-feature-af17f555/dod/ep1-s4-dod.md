@@ -53,7 +53,7 @@ Neither fix touches behaviour outside what this story's own AC required to be de
 | NFR | Addressed? | Evidence |
 |-----|------------|---------|
 | Routing table deterministic, covers all valid transitions | ✅ | 14 unit tests across every table entry + both conditional branches |
-| Backward nav keyboard-accessible | ⚠️ | Tab/Enter fully verified; arrow-key movement verified only for the single-dot boundary case — see Test Plan Coverage gap above |
+| Backward nav keyboard-accessible | ✅ | Tab/Enter fully verified. **Multi-dot arrow-key traversal verified live (2026-09-12):** found a real journey on `wuce-staging.fly.dev` with 7 completed-stage nav dots; real `ArrowRight`/`ArrowLeft` key presses (genuine trusted keyboard events, not synthetic `dispatchEvent`) walked focus correctly through all 7 dots forward to "Ready" (clamping cleanly, no wrap/error), then all the way back to "Discovery" (clamping cleanly there too) — exactly the multi-dot scenario the test-seeding gap below prevented from being exercised in CI. |
 | No UI block if a prior stage is missing from `completedStages` | ✅ | `getValidBackwardTargets` unit tests cover a gap in `completedStages`; disk-persistence fix ensures this data is now reliably present in the first place |
 | Stage selector updates on every skill transition | ✅ | Server-rendered on every `/journey` page load — no client-side caching to go stale |
 
@@ -72,7 +72,7 @@ Neither fix touches behaviour outside what this story's own AC required to be de
 **COMPLETE WITH DEVIATIONS**
 
 **Follow-up actions:**
-1. Consider a dedicated E2E test for multi-dot arrow-key traversal once test-seeding infrastructure supports creating a journey with 2+ completed stages in one call (owner: platform team, low priority).
+1. ~~Consider a dedicated E2E test for multi-dot arrow-key traversal once test-seeding infrastructure supports creating a journey with 2+ completed stages in one call~~ — **Closed (2026-09-12)** with a real live-Chrome verification against an actual 7-dot journey on staging, see the NFR row above. A dedicated E2E test in CI (matching the test-seeding gap this action originally named) remains optional, low priority — the behaviour itself is now confirmed correct against real data, not just theoretically untested.
 2. Optional: consider whether the disk-persistence bug fix (item 2 under Scope Deviations) warrants its own retrospective story artefact for standalone bug-tracking purposes, given its severity (affected every journey created via the normal API path) and that it predates this session entirely. Not required — already covered by this story's own governed chain — but flagged in case the operator wants a dedicated paper trail.
 3. Metric signal will remain `not-yet-measured` until `ep1-s6` ships.
 
