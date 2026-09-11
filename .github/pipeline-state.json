@@ -33882,6 +33882,35 @@
       ],
       "metrics": [],
       "updatedAt": "2026-09-11T05:01:12.821Z"
+    },
+    {
+      "slug": "2026-09-12-nonstream-turn-persist-gap",
+      "name": "Add the missing session_turns write to the non-streaming turn handler (found during dsh-s3 web-UI cohesion review)",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "id": "ntpg-s1",
+          "slug": "ntpg-s1",
+          "name": "Add the missing session_turns durable write to the non-streaming turn handler",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "prStatus": "open",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 5,
+            "passing": 5
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "updatedAt": "2026-09-11T19:18:44.230Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-11T19:18:22.801Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
