@@ -25302,18 +25302,20 @@
     {
       "slug": "2026-08-17-scenario-b-not-required-check",
       "name": "Add \"Scenario B E2E (staging)\" to master's required status checks (found during b2 DoD review)",
-      "stage": "definition",
-      "health": "amber",
+      "stage": "definition-of-done",
+      "health": "green",
       "stories": [
         {
           "id": "sbrc-s1",
           "slug": "sbrc-s1",
           "name": "Add \"Scenario B E2E (staging)\" to master's required status checks",
-          "stage": "definition",
-          "health": "amber",
-          "dorStatus": "not-started",
-          "dodStatus": "not-started",
-          "prStatus": "none"
+          "stage": "definition-of-done",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "dodStatus": "complete",
+          "prStatus": "none",
+          "dodArtefact": "artefacts/2026-08-17-scenario-b-not-required-check/dod/sbrc-s1-dod.md",
+          "updatedAt": "2026-09-11T09:48:56.056Z"
         }
       ],
       "metrics": [],
