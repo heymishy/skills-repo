@@ -25280,18 +25280,18 @@
     {
       "slug": "2026-08-17-impersonation-banner-dashboard-gap",
       "name": "Thread impersonation state into the /dashboard route (found during d2 DoD review)",
-      "stage": "definition",
-      "health": "amber",
+      "stage": "definition-of-done",
+      "health": "green",
       "stories": [
         {
           "id": "ibg-s1",
           "slug": "ibg-s1",
           "name": "Thread impersonation state into the /dashboard route's renderShell call",
-          "stage": "definition",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
-          "dodStatus": "not-started",
-          "prStatus": "open",
+          "dodStatus": "complete",
+          "prStatus": "merged",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 14,
@@ -25299,7 +25299,9 @@
           },
           "acTotal": 4,
           "acVerified": 4,
-          "updatedAt": "2026-09-11T08:46:56.304Z"
+          "updatedAt": "2026-09-11T10:28:07.587Z",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-17-impersonation-banner-dashboard-gap/dod/ibg-s1-dod.md"
         }
       ],
       "metrics": [],
@@ -25334,18 +25336,18 @@
     {
       "slug": "2026-08-17-canvas-story-extraction-gate-confirm-gap",
       "name": "Story-extraction regression test and gate-confirm 400 investigation (found during canvas-render-and-story-extraction-fix DoD review)",
-      "stage": "definition",
-      "health": "amber",
+      "stage": "definition-of-done",
+      "health": "green",
       "stories": [
         {
           "id": "csgc-s1",
           "slug": "csgc-s1",
           "name": "Add regression test for story-extraction and investigate the unexplained gate-confirm 400",
-          "stage": "definition",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
-          "dodStatus": "not-started",
-          "prStatus": "open",
+          "dodStatus": "complete",
+          "prStatus": "merged",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 7,
@@ -25353,7 +25355,9 @@
           },
           "acTotal": 3,
           "acVerified": 3,
-          "updatedAt": "2026-09-11T09:24:06.356Z"
+          "updatedAt": "2026-09-11T10:28:07.874Z",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-17-canvas-story-extraction-gate-confirm-gap/dod/csgc-s1-dod.md"
         }
       ],
       "metrics": [],
@@ -25559,18 +25563,18 @@
     {
       "slug": "2026-08-18-verification-coverage-backfill",
       "name": "Backfill rpc-s1 accessibility test and jrf-s1 regression scope (found during DoD review)",
-      "stage": "definition",
-      "health": "amber",
+      "stage": "definition-of-done",
+      "health": "green",
       "stories": [
         {
           "id": "vcb-s1",
           "slug": "vcb-s1",
           "name": "Backfill rpc-s1's missing accessibility test and jrf-s1's narrower-than-required regression pass",
-          "stage": "definition",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
-          "dodStatus": "not-started",
-          "prStatus": "open",
+          "dodStatus": "complete",
+          "prStatus": "merged",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 3,
@@ -25578,7 +25582,9 @@
           },
           "acTotal": 3,
           "acVerified": 3,
-          "updatedAt": "2026-09-11T09:10:08.946Z"
+          "updatedAt": "2026-09-11T10:28:07.730Z",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-08-18-verification-coverage-backfill/dod/vcb-s1-dod.md"
         }
       ],
       "metrics": [],
@@ -26598,18 +26604,18 @@
     {
       "slug": "2026-08-22-copilot-skills-dirs-prod-gap",
       "name": "Verify and wire the correct skills directory for this repo's own production deployment (found during 33-failures cleanup)",
-      "stage": "branch-complete",
-      "health": "green",
+      "stage": "definition-of-done",
+      "health": "amber",
       "stories": [
         {
           "id": "csdg-s1",
           "slug": "csdg-s1",
           "name": "Verify and wire the correct skills directory for this repo's own production deployment",
-          "stage": "definition",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "dorStatus": "signed-off",
-          "dodStatus": "not-started",
-          "prStatus": "open",
+          "dodStatus": "complete",
+          "prStatus": "merged",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 4,
@@ -26617,7 +26623,10 @@
           },
           "acTotal": 5,
           "acVerified": 5,
-          "updatedAt": "2026-09-11T09:43:20.023Z"
+          "updatedAt": "2026-09-11T10:28:08.019Z",
+          "releaseReady": false,
+          "blocker": "Production (skills-framework.fly.dev) not yet running this fix -- promote-to-prod requires manual approval in GitHub Actions.",
+          "dodArtefact": "artefacts/2026-08-22-copilot-skills-dirs-prod-gap/dod/csdg-s1-dod.md"
         }
       ],
       "metrics": [],
