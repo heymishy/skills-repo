@@ -19763,7 +19763,7 @@
     {
       "slug": "2026-08-07-canvas-diagram-panel-layout-fix",
       "name": "Fix the design/definition canvas pane: artefact panel squeezes the diagram panel to near-zero height with no resize control, plus a pre-existing dead maximise-canvas button",
-      "stage": "definition",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
@@ -19771,12 +19771,12 @@
           "id": "cdpl-s1",
           "name": "Stop the artefact panel squeezing the diagram panel, and fix the dead maximise-canvas button",
           "stage": "definition-of-done",
-          "health": "amber",
+          "health": "green",
           "acTotal": 5,
           "acVerified": 5,
           "hasLayoutDependentGaps": true,
           "e2eToolingRequired": true,
-          "updatedAt": "2026-08-20T12:35:35.388Z",
+          "updatedAt": "2026-09-11T18:59:35.073Z",
           "testPlan": {
             "status": "written",
             "totalTests": 15,
