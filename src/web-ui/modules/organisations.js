@@ -196,10 +196,53 @@ async function convertOrganisationToStandalone(pool, orgId, logger) {
   return row;
 }
 
+/**
+ * Activate an organisation from org_type='standalone' to org_type='agency', IN
+ * PLACE on the SAME org_id row -- never a second, brand-new org
+ * (story-asa-s1, artefacts/2026-09-11-agency-self-activation, AC1). Mirrors
+ * convertOrganisationToStandalone's exact shape (single-statement, atomic
+ * UPDATE: no read-modify-write race is possible, and no other table is ever
+ * touched by this function -- AC4, agency_client_relationships /
+ * shared_access_grants remain unaffected, is satisfied by construction, not
+ * merely by convention).
+ *
+ * Idempotent-safe / one-way: the WHERE clause only ever matches a row that is
+ * currently org_type='standalone', so calling this twice (or racing a second
+ * caller), or calling it against an already-'agency' or 'client' org, can
+ * never produce more than one audit log entry and never affects an org that
+ * isn't currently standalone (AC3).
+ *
+ * @param {object} pool - pg-Pool-shaped object exposing query(sql, params)
+ * @param {string} orgId - the organisation's own org_id (never a
+ *   request-supplied value distinct from the authenticated session's own tenant)
+ * @param {{info: Function}} [logger] - injectable logger (defaults to console.log)
+ * @returns {Promise<{org_id: string, name: string, org_type: string, created_at: string}|null>}
+ *   the updated row, or null if the org was not currently org_type='standalone'
+ *   (already an agency/client, or does not exist) -- caller decides how to respond.
+ */
+async function activateOrganisationAsAgency(pool, orgId, logger) {
+  var log = logger || _defaultLogger;
+  var result = await pool.query(
+    "UPDATE organisations SET org_type = 'agency' WHERE org_id = $1 AND org_type = 'standalone' " +
+    'RETURNING org_id, name, org_type, created_at',
+    [orgId]
+  );
+  var row = result.rows.length ? result.rows[0] : null;
+  if (row) {
+    log.info(JSON.stringify({
+      event: 'organisation_activated_as_agency',
+      org_id: orgId,
+      timestamp: new Date().toISOString()
+    }));
+  }
+  return row;
+}
+
 module.exports = {
   migrateOrganisationsSchema,
   resolveOrganisationForTenant,
   backfillStandaloneOrganisations,
   createOrganisation,
-  convertOrganisationToStandalone
+  convertOrganisationToStandalone,
+  activateOrganisationAsAgency
 };
