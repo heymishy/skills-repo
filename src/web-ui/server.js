@@ -52,6 +52,7 @@ const { setVerifyCallback }                                          = require('
 const clientLoginModule                                              = require('./modules/client-login');  // story-4-dual-path-authentication
 const { createClientLoginHandlers }                                  = require('./routes/client-login');   // story-4-dual-path-authentication
 const { createOrgConversionHandlers }                                = require('./routes/org-conversion');   // story-6-conversion-to-independent
+const { createOrgActivationHandlers }                                = require('./routes/org-activation');  // story-asa-s1 -- closes the missing agency-activation gap
 const { setPlanStateAdapter }                                        = require('./modules/tenant-plan');   // jlc-s1
 const { migrateProductRepoColumns }                                  = require('./modules/product-repo');  // prc-s1.1
 const { registerSelfAsProduct }                                       = require('./modules/platform-self-registration'); // pr-s1
@@ -145,6 +146,7 @@ let _clientLoginHandlers = null;
 // Story 3 has resolved the Client-org session-shape ambiguity Story 2/5
 // flagged for their own handlers (see decisions.md).
 let _orgConversionHandlers = null;
+let _orgActivationHandlers = null;
 
 // Wire up console logger for auth events (login, logout, state_mismatch)
 const _ts = () => new Date().toISOString();
@@ -604,6 +606,13 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // same reuse pattern as every other pool-closure wired in this block.
     _orgConversionHandlers = createOrgConversionHandlers(_userRolesPool);
     console.log('[story-6-conversion-to-independent] org-conversion handlers wired');
+
+    // story-asa-s1 — wire the activation route handlers (closes the missing
+    // agency-activation gap in 2026-07-30-agency-client-organisations).
+    // Same reuse pattern as org-conversion.js immediately above: reuses
+    // _userRolesPool, no new schema, no new D37 adapter.
+    _orgActivationHandlers = createOrgActivationHandlers(_userRolesPool);
+    console.log('[story-asa-s1] org-activation handlers wired');
 
     // story-2-relationship-grants-enforcement — Auto-migrate
     // agency_client_relationships + shared_access_grants (AC1). Reuses
@@ -3730,6 +3739,24 @@ async function router(req, res) {
       res.end('Organisation conversion unavailable');
     } else {
       authGuard(req, res, async () => { await _orgConversionHandlers.handlePostConvertOrganisation(req, res); });
+    }
+
+  } else if (pathname === '/organisations/become-agency' && req.method === 'GET') {
+    // story-asa-s1 — confirmation form (NFR-Accessibility)
+    if (!_orgActivationHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Organisation activation unavailable');
+    } else {
+      authGuard(req, res, async () => { await _orgActivationHandlers.handleGetBecomeAgencyForm(req, res); });
+    }
+
+  } else if (pathname === '/organisations/become-agency' && req.method === 'POST') {
+    // story-asa-s1 — perform the activation (AC1)
+    if (!_orgActivationHandlers) {
+      res.writeHead(503, { 'Content-Type': 'text/plain' });
+      res.end('Organisation activation unavailable');
+    } else {
+      authGuard(req, res, async () => { await _orgActivationHandlers.handlePostBecomeAgency(req, res); });
     }
 
   } else if (pathname === '/invite/redeem' && req.method === 'GET') {

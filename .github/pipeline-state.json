@@ -33760,21 +33760,25 @@
           "id": "asa-s1",
           "name": "Standalone org self-activation as Agency",
           "storyPath": "artefacts/2026-09-11-agency-self-activation/stories/asa-s1-standalone-org-can-self-activate-as-agency.md",
-          "stage": "branch-setup",
+          "stage": "branch-complete",
           "health": "green",
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "testPlan": {
             "status": "written",
             "totalTests": 5,
-            "passing": 0
+            "passing": 5
           },
-          "updatedAt": "2026-09-11T04:20:14.093Z",
+          "updatedAt": "2026-09-11T04:33:30.595Z",
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-11-agency-self-activation/dor/asa-s1-dor.md",
-          "dorContractPath": "artefacts/2026-09-11-agency-self-activation/dor/asa-s1-dor-contract.md"
+          "dorContractPath": "artefacts/2026-09-11-agency-self-activation/dor/asa-s1-dor-contract.md",
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/859",
+          "branch": "feature/asa-s1"
         }
       ],
       "metrics": [],
