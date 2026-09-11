@@ -2651,6 +2651,28 @@ async function htmlSubmitTurn(skillName, sessionId, rawAnswer, token, tenantId) 
     var slug = session.featureSlug || (slugMatch ? slugMatch[1].trim() : new Date().toISOString().slice(0, 10) + '-' + skillName);
     session.artefactPath = computeArtefactSavePath(slug, session.skillName, session.currentStoryId);
     session.done = true;
+    // ntpg-s1: durably persist this stage's conversation turns, mirroring
+    // handlePostTurnStreamHtml's own dsh-s1 write exactly -- dsh-s1's AC1 was
+    // written generically ("a skill session reaches done"), not scoped to
+    // the streaming path only, but the write was only ever wired into the
+    // streaming handler. Any journey advanced via this non-streaming JSON
+    // API path (a common pattern for automation-driven journey completion)
+    // silently never got its turns saved, which silently disabled dsh-s3's
+    // chat-split read-only view and drh-s1's history-diagram rendering for
+    // those journeys with no error surfaced anywhere. Non-fatal, same as
+    // the streaming handler's own write -- a failure here must never block
+    // the rest of the completion flow.
+    if (session.journeyId && process.env.DATABASE_URL) {
+      var _ntpgJourney = _journeyStore.getJourney(session.journeyId);
+      require('../adapters/session-turns-pg').writeSessionTurns({
+        journeyId: session.journeyId,
+        tenantId: _ntpgJourney ? _ntpgJourney.tenantId : null,
+        skillName: session.skillName,
+        turns: session.turns.concat([{ role: 'assistant', content: response }])
+      }).catch(function(e) {
+        console.warn(JSON.stringify({ event: 'session_turns_pg_save_failed', sessionId: sessionId, error: e.message }));
+      });
+    }
   }
 
   session.turns.push({ role: 'assistant', content: response });
