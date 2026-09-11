@@ -54,8 +54,8 @@ No dedicated NFRs named beyond the correctness ACs above. Story's own "Notes" se
 **COMPLETE WITH DEVIATIONS**
 
 **Follow-up actions:**
-1. Follow-up story `csgc-s1` (`artefacts/2026-08-17-canvas-story-extraction-gate-confirm-gap/`) created 2026-08-17 to close AC3's regression-test gap and investigate the gate-confirm 400 — needs `/test-plan` → `/definition-of-ready` → dispatch.
-2. The outer-loop process deviation (bug-fix delivered without a pre-implementation DoR) is not being retroactively corrected — noted as an accepted, self-documented deviation consistent with this cluster's established convention.
+1. ~~Follow-up story `csgc-s1`... created 2026-08-17 to close AC3's regression-test gap and investigate the gate-confirm 400~~ — **Done.** `csgc-s1` merged, DoD complete (3/3 ACs, 7/7 tests), health green.
+2. The outer-loop process deviation (bug-fix delivered without a pre-implementation DoR) is not being retroactively corrected — noted as an accepted, self-documented deviation consistent with this cluster's established convention. Still stands as a recorded deviation, not an open task.
 
 ---
 

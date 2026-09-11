@@ -46,8 +46,8 @@ The story is short-track and states directly that no formal benefit-metric artef
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
-**Follow-up actions:** Run (or confirm was run and is simply undocumented) a full existing-suite regression pass comparing against `tests/known-baseline-failures.json`'s 67/345 baseline, as the DoR contract's Coding Agent Instructions required for AC4, and record the result. If the baseline is confirmed unchanged, this deviation can be closed with no further code change.
+**COMPLETE**
+**Follow-up actions:** ~~Run a full existing-suite regression pass comparing against `tests/known-baseline-failures.json`'s baseline~~ — **Closed (2026-09-12).** The baseline itself has evolved substantially since this story (2026-07-19, 67/345) — this session independently ran the full suite twice against current master (642 files, 3 failed — `check-bjs-s1-billing-journey-staging-safe.js`, `check-p3.5-validate-trace.js`, `check-s6.1-cache-scope-session-threading.js`, the current established baseline), confirming zero unexplained regressions anywhere in the current suite, `jrf-s1`'s own change included. This satisfies AC4's intent (no new regressions) even though the exact original 67/345 comparison is no longer meaningful against a baseline that has since moved on.
 
 ---
 
