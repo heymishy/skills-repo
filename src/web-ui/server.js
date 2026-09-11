@@ -53,6 +53,7 @@ const clientLoginModule                                              = require('
 const { createClientLoginHandlers }                                  = require('./routes/client-login');   // story-4-dual-path-authentication
 const { createOrgConversionHandlers }                                = require('./routes/org-conversion');   // story-6-conversion-to-independent
 const { createOrgActivationHandlers }                                = require('./routes/org-activation');  // story-asa-s1 -- closes the missing agency-activation gap
+const _gcwCsrf                                                       = require('./middleware/csrf'); // gcw-s1 -- csrfGuard for the newly-wired mutating grant/comment routes
 const { setPlanStateAdapter }                                        = require('./modules/tenant-plan');   // jlc-s1
 const { migrateProductRepoColumns }                                  = require('./modules/product-repo');  // prc-s1.1
 const { registerSelfAsProduct }                                       = require('./modules/platform-self-registration'); // pr-s1
@@ -76,7 +77,7 @@ const { requireAdmin, setGetCurrentRole }                            = require('
 const { requireNonViewer, setLogger: setViewerGateLogger }           = require('./middleware/require-non-viewer'); // vrne-s1
 const { adminCreditsGet, adminCreditsPost, adminSetPlanPost }        = require('./routes/admin-credits');     // arl-s3 / tpac-s1
 const { adminMockGatewayGet, adminMockGatewayPost }                  = require('./routes/admin-mock-gateway'); // amgt-s1
-const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handleGetProductGuardrailsView, handleGetGuardrailsForm, handlePostGuardrailsForm, _trackPendingPr, handlePostRequestPromotion, handlePostOrgRepoSettings, handlePostProductSync, handleGetProductSyncStatus, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules, handlePostApprovePromotion, handlePostRejectPromotion } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1 / wugs-s2 / wugs-s5 / wugs-s6 / wugs-s3 / wugs-s7 / wugs-s9 (smug-s1's handleGetProductStandardsTab removed, wugs-s11)
+const { handlePostProductNew, handlePostProductConfirm, handleGetDashboard: _handleGetDashboard, handleGetProductNew, handleGetProductView, handleGetProductRoadmap, handleGetProductGuardrailsView, handleGetGuardrailsForm, handlePostGuardrailsForm, _trackPendingPr, handlePostRequestPromotion, handlePostOrgRepoSettings, handlePostProductSync, handleGetProductSyncStatus, handlePostProductFeature, handleGetProductKanban, handleGetOrgKanban, handlePostBoardAdvance, handleDeleteProduct, handlePostProductRepoCreate, handlePutProductEdit, handleGetProductModules, handlePostProductModule, handlePutProductModule, handleDeleteProductModule, handlePutEpicModule, handlePostBulkAssignFeatureModules, handlePostApprovePromotion, handlePostRejectPromotion, handleCreateGrant, handleListSharedProducts, handleGetSharedProduct, handleMutateSharedProduct, handleRevokeGrant, handleCreateSharedComment, handleListSharedComments, handleCreateAgencyComment, handleListAgencyComments } = require('./routes/products'); // psh-s3 / psh-s4 / psh-s6 / psh-s7 / prc-s4.2 / prc-s2.1 / prc-s4.1 / pr-s3 / a1 / a2 / a5 / tmc-s1 / s1.1 / wugs-s2 / wugs-s5 / wugs-s6 / wugs-s3 / wugs-s7 / wugs-s9 (smug-s1's handleGetProductStandardsTab removed, wugs-s11) / gcw-s1 -- story-2/story-5's already-built grant/comment handlers, wired for the first time
 const { setModulesAdapter } = require('./adapters/modules-adapter'); // a1
 const { setGenerateProductDraft }                                    = require('./adapters/product-draft');      // psh-s3
 const { setCreateRepoAdapter, realCreateRepo }                       = require('./adapters/repo-adapter');       // prc-s2.1
@@ -3758,6 +3759,69 @@ async function router(req, res) {
     } else {
       authGuard(req, res, async () => { await _orgActivationHandlers.handlePostBecomeAgency(req, res); });
     }
+
+  } else if (pathname === '/api/agency/grants' && req.method === 'POST') {
+    // gcw-s1 — wire story-2's already-built, already-tested handleCreateGrant.
+    // CSRF-guarded, matching every other mutating route in products.js.
+    authGuard(req, res, async () => {
+      var csrfOk = await _gcwCsrf.csrfGuard(req, res);
+      if (!csrfOk) return;
+      await handleCreateGrant(req, res, _pshPool);
+    });
+
+  } else if (pathname.match(/^\/api\/agency\/grants\/[^/]+\/revoke$/) && req.method === 'POST') {
+    // gcw-s1 — wire story-2's already-built, already-tested handleRevokeGrant.
+    var _grantsRevokeParts = pathname.split('/');
+    req.params = { grantId: _grantsRevokeParts[4] };
+    authGuard(req, res, async () => { await handleRevokeGrant(req, res, _pshPool); });
+
+  } else if (pathname === '/api/agency/comments' && req.method === 'POST') {
+    // gcw-s1 — wire story-5's already-built, already-tested handleCreateAgencyComment.
+    // CSRF-guarded, matching every other mutating route in products.js.
+    authGuard(req, res, async () => {
+      var csrfOk = await _gcwCsrf.csrfGuard(req, res);
+      if (!csrfOk) return;
+      await handleCreateAgencyComment(req, res, _pshPool);
+    });
+
+  } else if (pathname.match(/^\/api\/agency\/comments\/[^/]+$/) && req.method === 'GET') {
+    // gcw-s1 — wire story-5's already-built, already-tested handleListAgencyComments.
+    var _agencyCommentsParts = pathname.split('/');
+    req.params = { id: _agencyCommentsParts[4] };
+    authGuard(req, res, async () => { await handleListAgencyComments(req, res, _pshPool); });
+
+  } else if (pathname === '/client/shared-products' && req.method === 'GET') {
+    // gcw-s1 — wire story-2's already-built, already-tested handleListSharedProducts.
+    authGuard(req, res, async () => { await handleListSharedProducts(req, res, _pshPool); });
+
+  } else if (pathname.match(/^\/client\/shared-products\/[^/]+$/) && req.method === 'GET') {
+    // gcw-s1 — wire story-2's already-built, already-tested handleGetSharedProduct.
+    var _sharedProductGetParts = pathname.split('/');
+    req.params = { id: _sharedProductGetParts[3] };
+    authGuard(req, res, async () => { await handleGetSharedProduct(req, res, _pshPool); });
+
+  } else if (pathname.match(/^\/client\/shared-products\/[^/]+$/) && (req.method === 'PUT' || req.method === 'POST' || req.method === 'DELETE')) {
+    // gcw-s1 — wire story-2's already-built, already-tested handleMutateSharedProduct
+    // (AC3: shared-access grants are read-only, this always 403s — no CSRF guard
+    // needed, no mutation is ever attempted against the pool).
+    var _sharedProductMutateParts = pathname.split('/');
+    req.params = { id: _sharedProductMutateParts[3] };
+    authGuard(req, res, async () => { handleMutateSharedProduct(req, res, _pshPool); });
+
+  } else if (pathname === '/client/comments' && req.method === 'POST') {
+    // gcw-s1 — wire story-5's already-built, already-tested handleCreateSharedComment.
+    // CSRF-guarded, matching every other mutating route in products.js.
+    authGuard(req, res, async () => {
+      var csrfOk = await _gcwCsrf.csrfGuard(req, res);
+      if (!csrfOk) return;
+      await handleCreateSharedComment(req, res, _pshPool);
+    });
+
+  } else if (pathname.match(/^\/client\/comments\/[^/]+$/) && req.method === 'GET') {
+    // gcw-s1 — wire story-5's already-built, already-tested handleListSharedComments.
+    var _sharedCommentsParts = pathname.split('/');
+    req.params = { id: _sharedCommentsParts[3] };
+    authGuard(req, res, async () => { await handleListSharedComments(req, res, _pshPool); });
 
   } else if (pathname === '/invite/redeem' && req.method === 'GET') {
     // story-3-self-service-provisioning — redeem an invitation link (AC3).
