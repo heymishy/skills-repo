@@ -12,15 +12,25 @@ function setLogger(logger) { _logger = logger; }
  * listAvailableSkills(repoPath) -> [{name, path}]
  *
  * Scans the skills directory for subdirectories containing a SKILL.md file.
- * Default skills dir: <repoPath>/.github/skills/
- * Override: COPILOT_SKILLS_DIRS env var
+ * Default resolution (csdg-s1): an explicit COPILOT_SKILLS_DIRS override
+ * always wins. Otherwise, prefer <repoPath>/skills/ when it exists -- this
+ * repo's own self-hosted deployment keeps its real skills there (root
+ * skills/, not .github/skills/, since pisd-s1 consolidated the two) -- and
+ * fall back to <repoPath>/.github/skills/ when root skills/ does not exist,
+ * preserving the documented consumer-repo bootstrap contract unchanged
+ * (post-/bootstrap repos install skills at .github/skills/ only).
  *
- * Returns an empty array (not an error) when the directory is missing or empty.
- * Only includes directories whose names match [a-z0-9-].
- * Returned paths are relative to repoPath (e.g. ".github/skills/discovery").
+ * Returns an empty array (not an error) when the resolved directory is
+ * missing or empty. Only includes directories whose names match [a-z0-9-].
+ * Returned paths are relative to repoPath (e.g. "skills/discovery" or
+ * ".github/skills/discovery").
  */
 function listAvailableSkills(repoPath) {
-  var skillsDirRel = process.env.COPILOT_SKILLS_DIRS || path.join('.github', 'skills');
+  var skillsDirRel = process.env.COPILOT_SKILLS_DIRS;
+  if (!skillsDirRel) {
+    var rootSkillsDir = path.join(repoPath, 'skills');
+    skillsDirRel = fs.existsSync(rootSkillsDir) ? 'skills' : path.join('.github', 'skills');
+  }
   var skillsDir = path.isAbsolute(skillsDirRel)
     ? skillsDirRel
     : path.join(repoPath, skillsDirRel);
