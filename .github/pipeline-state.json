@@ -25455,8 +25455,14 @@
           "dorStatus": "not-started",
           "dodStatus": "complete",
           "prStatus": "none",
-          "updatedAt": "2026-09-11T07:53:28.877Z",
-          "dodArtefact": "artefacts/2026-08-17-kfd1-visual-verification-gap/dod/kvvg-s1-dod.md"
+          "updatedAt": "2026-09-11T09:55:59.398Z",
+          "dodArtefact": "artefacts/2026-08-17-kfd1-visual-verification-gap/dod/kvvg-s1-dod.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 0,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-17-kfd1-visual-verification-gap/test-plans/kvvg-s1-test-plan.md"
+          }
         }
       ],
       "metrics": [],
@@ -25572,7 +25578,13 @@
           "dodStatus": "complete",
           "prStatus": "none",
           "dodArtefact": "artefacts/2026-08-18-canvas-fix-staging-verification-gap/dod/csvg-s1-dod.md",
-          "updatedAt": "2026-09-11T08:24:29.565Z"
+          "updatedAt": "2026-09-11T09:55:59.554Z",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 0,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-18-canvas-fix-staging-verification-gap/test-plans/csvg-s1-test-plan.md"
+          }
         }
       ],
       "metrics": [],
