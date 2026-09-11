@@ -25310,18 +25310,20 @@
     {
       "slug": "2026-08-17-scenario-b-not-required-check",
       "name": "Add \"Scenario B E2E (staging)\" to master's required status checks (found during b2 DoD review)",
-      "stage": "definition",
-      "health": "amber",
+      "stage": "definition-of-done",
+      "health": "green",
       "stories": [
         {
           "id": "sbrc-s1",
           "slug": "sbrc-s1",
           "name": "Add \"Scenario B E2E (staging)\" to master's required status checks",
-          "stage": "definition",
-          "health": "amber",
-          "dorStatus": "not-started",
-          "dodStatus": "not-started",
-          "prStatus": "none"
+          "stage": "definition-of-done",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "dodStatus": "complete",
+          "prStatus": "none",
+          "dodArtefact": "artefacts/2026-08-17-scenario-b-not-required-check/dod/sbrc-s1-dod.md",
+          "updatedAt": "2026-09-11T09:48:56.056Z"
         }
       ],
       "metrics": [],
@@ -25461,8 +25463,14 @@
           "dorStatus": "not-started",
           "dodStatus": "complete",
           "prStatus": "none",
-          "updatedAt": "2026-09-11T07:53:28.877Z",
-          "dodArtefact": "artefacts/2026-08-17-kfd1-visual-verification-gap/dod/kvvg-s1-dod.md"
+          "updatedAt": "2026-09-11T09:55:59.398Z",
+          "dodArtefact": "artefacts/2026-08-17-kfd1-visual-verification-gap/dod/kvvg-s1-dod.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 0,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-17-kfd1-visual-verification-gap/test-plans/kvvg-s1-test-plan.md"
+          }
         }
       ],
       "metrics": [],
@@ -25578,7 +25586,13 @@
           "dodStatus": "complete",
           "prStatus": "none",
           "dodArtefact": "artefacts/2026-08-18-canvas-fix-staging-verification-gap/dod/csvg-s1-dod.md",
-          "updatedAt": "2026-09-11T08:24:29.565Z"
+          "updatedAt": "2026-09-11T09:55:59.554Z",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 0,
+            "passing": 0,
+            "artefact": "artefacts/2026-08-18-canvas-fix-staging-verification-gap/test-plans/csvg-s1-test-plan.md"
+          }
         }
       ],
       "metrics": [],
