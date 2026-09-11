@@ -1,0 +1,18 @@
+{
+  "storyId": "ntpg-s1",
+  "prUrl": "https://github.com/heymishy/skills-repo/pull/865",
+  "verifyStatus": "passed",
+  "testPlan": {
+    "status": "all-passing",
+    "totalTests": 5,
+    "passing": 5
+  },
+  "acTotal": 4,
+  "acVerified": 4,
+  "fullSuite": {
+    "filesRun": 642,
+    "failed": 3,
+    "newFailures": 0,
+    "note": "3 failures match established pre-existing baseline: check-bjs-s1-billing-journey-staging-safe.js, check-p3.5-validate-trace.js, check-s6.1-cache-scope-session-threading.js"
+  }
+}
