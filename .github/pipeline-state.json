@@ -33747,6 +33747,35 @@
       ],
       "metrics": [],
       "updatedAt": "2026-09-10T19:02:26.048Z"
+    },
+    {
+      "slug": "2026-09-11-agency-self-activation",
+      "name": "A standalone organisation admin can self-activate it as an Agency",
+      "track": "short",
+      "stage": "test-plan",
+      "health": "green",
+      "stories": [
+        {
+          "slug": "asa-s1",
+          "id": "asa-s1",
+          "name": "Standalone org self-activation as Agency",
+          "storyPath": "artefacts/2026-09-11-agency-self-activation/stories/asa-s1-standalone-org-can-self-activate-as-agency.md",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0
+          },
+          "updatedAt": "2026-09-11T01:14:30.537Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-11T01:14:26.110Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
