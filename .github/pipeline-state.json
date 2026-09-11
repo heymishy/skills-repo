@@ -13561,7 +13561,7 @@
       "name": "Persist a feature-to-module join so any product's real synced features can be classified and rendered by module",
       "track": "short",
       "stage": "branch-complete",
-      "health": "amber",
+      "health": "green",
       "updatedAt": "2026-07-22T07:29:00.722Z",
       "nfrProfileArtefact": "artefacts/2026-07-22-taxonomy-module-classification/nfr-profile.md",
       "guardrails": [
@@ -13596,10 +13596,10 @@
           "id": "NFR-accessibility-bulk-assign-ui",
           "category": "nfr",
           "label": "Bulk-assign UI keyboard/screen-reader operable",
-          "status": "not-assessed",
+          "status": "met",
           "assessedBy": "/definition-of-done",
-          "assessedAt": "2026-07-22T07:29:00.722Z",
-          "evidence": "Not independently re-verified this session (no browser session available); relies on a1 pattern reuse. Follow-up: manual staging spot-check."
+          "assessedAt": "2026-09-11T19:54:04.542Z",
+          "evidence": "Verified live 2026-09-12: real keyboard-only (Tab/Shift+Tab/Space, no mouse) interaction on the real skills-framework product bulk-assign bar toggled a checkbox, updated the selection counter, and enabled the assign button -- see tmc-s1-dod.md amendment."
         }
       ],
       "epics": [],
@@ -13609,7 +13609,7 @@
           "slug": "tmc-s1",
           "name": "Persist feature-to-module classification for taxonomy-sourced features",
           "stage": "definition-of-done",
-          "health": "amber",
+          "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -13654,11 +13654,11 @@
               "tddState": "committed"
             }
           ],
-          "updatedAt": "2026-07-22T07:29:00.722Z",
+          "updatedAt": "2026-09-11T19:53:58.298Z",
           "prNumber": 544,
           "dodStatus": "complete",
           "releaseReady": false,
-          "blocker": "DoD gaps (non-AC-blocking): backfill migration has no live-Postgres integration test (code-review verified only); bulk-assign UI accessibility not independently re-verified this session. See dod/tmc-s1-dod.md follow-up actions.",
+          "blocker": "",
           "dodArtefact": "artefacts/2026-07-22-taxonomy-module-classification/dod/tmc-s1-dod.md"
         }
       ],

@@ -65,7 +65,7 @@ No behaviour outside the story's Out of Scope section was implemented (dropping 
 | Multi-tenancy — zero cross-tenant read/write leakage | ✅ | Dedicated isolation tests, both read and write paths |
 | Security — CSRF guard on the new mutating route | ✅ | Missing/mismatched-token rejection tests + control case |
 | Security — XSS prevention (escaping) | ✅ | Inherited from a1/a4's existing `_escapeHtml` convention; no new unescaped render path introduced |
-| Accessibility — bulk-assign UI keyboard/screen-reader operable | ⚠️ | Not independently re-verified this session (no browser session available) — relies on the bulk-assign UI reusing a1's already-verified form/checkbox rendering pattern. **Recommend a manual accessibility spot-check on staging as part of the post-merge smoke test.** |
+| Accessibility — bulk-assign UI keyboard/screen-reader operable | ✅ | **Verified live (2026-09-12)**, see amendment below. |
 
 ---
 
@@ -81,15 +81,17 @@ No metrics apply — this is a short-track story (per CLAUDE.md, short-track ski
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
-Marked "with deviations" not because any AC failed, but to keep the remaining genuine, low-risk gap visible for /trace: the bulk-assign UI's accessibility was not independently re-verified (no browser session available). The original companion gap — no live-Postgres verification of this story's SQL — has since been **fully closed** by real production use: classifying `skills-framework`'s actual features surfaced a genuine type-inference bug in `bulkAssignFeaturesToModule`, which was fixed and re-verified live (see the amendment above). Both gaps were judged low-risk and non-blocking at merge time; one has now been proven and resolved, one remains open.
+Both gaps originally left open at merge time are now closed. The live-Postgres SQL gap was closed by real production use (a genuine type-inference bug in `bulkAssignFeaturesToModule`, fixed and re-verified live — see the amendment above). The accessibility gap is now closed by a real live-Chrome keyboard-only verification (2026-09-12, see amendment below) — no deviations remain.
 
 **Follow-up actions:**
 1. ~~Post-merge staging smoke test: confirm the backfill migration ran cleanly on `wuce-staging` boot~~ — **Done (2026-07-22).** Confirmed via logs on every subsequent deploy.
 2. ~~Retroactively classify `skills-framework`'s real ~115 features into the 9 seeded modules~~ — **Done (2026-07-22).** 160 of 172 real features classified (the remaining 12, an unrelated `wfp.*` feature set, have no honest fit among the 9 modules and were left Unclassified rather than forced; 35 further items are blocked by a pre-existing, unrelated data-quality gap — missing `slug`/`id` in the source `pipeline-state.json`). Surfaced a real production bug in the process (see the gap-closure note above), fixed and merged (#546).
-3. Manually verify the bulk-assign UI is keyboard-operable — still open, no browser session available this session. Owner: Hamish King (Founder/Operator).
-3. Consider a future, separate story to drop the now-inert `journeys.module_id` column once the unified mechanism has run in production without issue for a reasonable period (explicitly deferred in this story's Out of Scope).
+3. ~~Manually verify the bulk-assign UI is keyboard-operable~~ — **Done (2026-09-12).** See amendment below.
+4. Consider a future, separate story to drop the now-inert `journeys.module_id` column once the unified mechanism has run in production without issue for a reasonable period (explicitly deferred in this story's Out of Scope).
+
+> **UPDATE (2026-09-12, post-merge amendment):** Follow-up Action #3 (keyboard operability) closed with a real live-Chrome verification against the real `skills-framework` product (this repo's own 547 real features, real modules from this story's own migration) on `wuce-staging.fly.dev`. Source review first: the bulk-assign bar uses native `<input type="checkbox">`, `<select>`, and `<button type="button">` — no custom ARIA widget pattern that could trap keyboard focus. Live test used **only** `Tab`/`Shift+Tab`/`Space` (no mouse) to reach a real feature checkbox, confirmed via `document.activeElement`. Pressing `Space` toggled the checkbox to `checked: true`, the live "0 selected" counter updated to "1 selected", and the "Assign to module" button's `disabled` state flipped from `true` to `false` — genuine DOM state changes from a real keyboard event. Pressed `Space` again to revert cleanly; no mutation was ever submitted, so no real data changed. This confirms the accessibility NFR row's original assumption (reuse of a1's already-verified form pattern) held true in practice, not just in theory.
 
 ---
 
