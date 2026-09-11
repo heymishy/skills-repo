@@ -25288,10 +25288,18 @@
           "slug": "ibg-s1",
           "name": "Thread impersonation state into the /dashboard route's renderShell call",
           "stage": "definition",
-          "health": "amber",
-          "dorStatus": "not-started",
+          "health": "green",
+          "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "none"
+          "prStatus": "open",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 14,
+            "passing": 14
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "updatedAt": "2026-09-11T08:46:56.304Z"
         }
       ],
       "metrics": [],
