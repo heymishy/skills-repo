@@ -33760,7 +33760,7 @@
           "id": "asa-s1",
           "name": "Standalone org self-activation as Agency",
           "storyPath": "artefacts/2026-09-11-agency-self-activation/stories/asa-s1-standalone-org-can-self-activate-as-agency.md",
-          "stage": "definition-of-ready",
+          "stage": "branch-setup",
           "health": "green",
           "acTotal": 5,
           "acVerified": 0,
@@ -33771,7 +33771,10 @@
             "totalTests": 5,
             "passing": 0
           },
-          "updatedAt": "2026-09-11T01:14:30.537Z"
+          "updatedAt": "2026-09-11T04:20:14.093Z",
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-11-agency-self-activation/dor/asa-s1-dor.md",
+          "dorContractPath": "artefacts/2026-09-11-agency-self-activation/dor/asa-s1-dor-contract.md"
         }
       ],
       "metrics": [],

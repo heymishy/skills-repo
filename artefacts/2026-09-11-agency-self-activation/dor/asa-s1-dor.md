@@ -137,4 +137,4 @@ Oversight level: Medium
 
 **Oversight level:** Medium — mirrors the original `2026-07-30-agency-client-organisations` epic's own stated rationale for its Story 2 (touches the tenant-isolation boundary ADR-025 governs), even though this story's own scope is narrow and closely mirrors an already-reviewed sibling pattern.
 **Sign-off required:** Yes
-**Signed off by:** Pending — operator directed short-track scoping ("Write a new short-track story to add it") but has not yet reviewed this specific implementation plan (route/function shape, admin-gate reuse, one-way `standalone`-only transition). Confirm before `/branch-setup`.
+**Signed off by:** Hamish King (operator) — confirmed the implementation plan (route/function shape, admin-gate reuse, one-way `standalone`-only transition) directly in-session, 2026-09-11.
