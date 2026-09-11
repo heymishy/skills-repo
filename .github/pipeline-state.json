@@ -33893,10 +33893,10 @@
           "id": "ntpg-s1",
           "slug": "ntpg-s1",
           "name": "Add the missing session_turns durable write to the non-streaming turn handler",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
-          "prStatus": "open",
+          "prStatus": "merged",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 5,
@@ -33904,7 +33904,10 @@
           },
           "acTotal": 4,
           "acVerified": 4,
-          "updatedAt": "2026-09-11T19:18:44.230Z"
+          "updatedAt": "2026-09-11T19:34:20.607Z",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-09-12-nonstream-turn-persist-gap/dod/ntpg-s1-dod.md"
         }
       ],
       "metrics": [],
