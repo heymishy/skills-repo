@@ -1,0 +1,9 @@
+{
+  "story": "asa-s1",
+  "prUrl": "https://github.com/heymishy/skills-repo/pull/859",
+  "verifyStatus": "passed",
+  "acVerified": 5,
+  "acTotal": 5,
+  "testsPassing": "8/8 new + sibling suites unaffected (story6: 13/13, story3: 18/18) + full baseline 637 files run, 1 known pre-existing failure (check-p3.5-validate-trace.js)",
+  "verifiedAt": "2026-09-11"
+}
