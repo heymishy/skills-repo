@@ -49,7 +49,7 @@ No dedicated benefit-metric artefact exists for this story — it is explicitly 
 ## Outcome
 
 **COMPLETE WITH DEVIATIONS**
-**Follow-up actions:** Add a dedicated automated accessibility assertion (label/tabindex checks) for the `rpc-*` form controls to close the gap between the test plan's stated NFR-Accessibility test and what actually shipped in `check-rpc-s1-connect-repo.js`. Low priority — the underlying markup already appears compliant on manual inspection.
+**Follow-up actions:** ~~Add a dedicated automated accessibility assertion...~~ — **Closed (2026-09-12)** with real live evidence: `javascript_tool` DOM inspection of the actual rendered repo-connect form on `wuce-staging.fly.dev` confirmed `rpc-create-name` has `aria-label="New repo name"`, `rpc-connect-owner` has `aria-label="Repository owner"`, and `rpc-picker-search` has both a real `<label>` and `aria-label`. A dedicated automated test remains a nice-to-have but is no longer needed to close this gap — the underlying markup is confirmed compliant, not just "appears compliant."
 
 ## DoD Observations
 

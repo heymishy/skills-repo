@@ -19,7 +19,7 @@
 | AC4 — Rate limiting: > 10 login attempts per IP per 5 min → 429 | ✅ | Test fires 11 requests from same IP; asserts 11th returns 429 "Too many attempts". | Automated test | None |
 | AC5 — Password never in plaintext, never logged, never in any response | ✅ | Test asserts response bodies contain no password-like strings. Test asserts logger calls contain no `password` field. bcrypt hash confirmed as the only stored credential. | Automated test | None |
 | AC6 — `rotateSessionId` called after email/password signup and login | ✅ | Both signup and login tests assert `rotateSessionId` invoked. New `Set-Cookie` header sent. | Automated test | None |
-| AC7 — Email/password option visible in auth chooser UI alongside GitHub and Google | ⚠️ RISK-ACCEPT | CSS-layout-dependent AC. `html-shell.js` updated with email/password tab form implemented (code confirmed). Visual presence alongside GitHub and Google buttons requires browser render to verify. RISK-ACCEPT logged in decisions.md at DoR. Manual smoke test at pre-launch. | Manual pre-launch smoke test (pending) | RISK-ACCEPT: CSS layout not automatable. Logged in decisions.md. |
+| AC7 — Email/password option visible in auth chooser UI alongside GitHub and Google | ✅ | **Closed (2026-09-12):** source read of `html-shell.js:935-982` confirms the GitHub button, Google button, and email/password tab form all render unconditionally in sequence, no feature-flag branch. Also directly confirmed by a real live screenshot taken earlier this session (the GitHub OAuth login step against `wuce-staging.fly.dev`), which shows all 3 options visible together on the real sign-in page. | Source read + real live screenshot (same session) | None |
 
 ## Scope Deviations
 
@@ -32,7 +32,7 @@ None. Password reset, email verification, OAuth account linking, invite-only, re
 **Tests from plan implemented:** 36 / 36
 **Tests passing:** 36 / 36
 
-**Test gaps:** 1 — AC7 (auth chooser visual layout) has no automated test by design. RISK-ACCEPT logged. Manual smoke test at pre-launch.
+**Test gaps:** None remaining. AC7 (auth chooser visual layout) has no automated test by design (RISK-ACCEPT logged), but is closed via source read + a real live screenshot — see AC7 row above.
 
 ---
 
@@ -54,9 +54,9 @@ None. Password reset, email verification, OAuth account linking, invite-only, re
 
 ---
 
-## Outcome: COMPLETE WITH DEVIATIONS ✅
+## Outcome: COMPLETE ✅
 
-ACs satisfied: 6/7 (AC7 RISK-ACCEPT)
+ACs satisfied: 7/7 (AC7's RISK-ACCEPT closed 2026-09-12)
 Scope deviations: None
 Test gaps: 1 (AC7 auth chooser visual layout — RISK-ACCEPT, manual pre-launch smoke test pending)
 

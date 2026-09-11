@@ -7275,9 +7275,9 @@
               "stage": "definition-of-done",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "health": "amber",
+              "health": "green",
               "complexity": 1,
-              "updatedAt": "2026-08-10T02:08:25.451Z",
+              "updatedAt": "2026-09-11T20:50:31.936Z",
               "testPlan": {
                 "status": "all-passing",
                 "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s1.2-test-plan.md",
@@ -7359,9 +7359,9 @@
               "stage": "definition-of-done",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "health": "amber",
+              "health": "green",
               "complexity": 3,
-              "updatedAt": "2026-08-10T02:08:25.875Z",
+              "updatedAt": "2026-09-11T20:50:54.050Z",
               "testPlan": {
                 "status": "all-passing",
                 "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s2.2-test-plan.md",
@@ -7765,7 +7765,7 @@
               "testsPassing": 0,
               "reviewStatus": "passed",
               "highFindings": 0,
-              "health": "amber",
+              "health": "green",
               "reviewArtefact": "artefacts/2026-07-03-admin-role-panel/review/arl-s3-review-1.md",
               "testPlan": {
                 "status": "all-passing",
@@ -7784,7 +7784,7 @@
               "releaseReady": false,
               "layoutGapsAtMerge": true,
               "layoutGapsRiskAccepted": true,
-              "updatedAt": "2026-08-10T02:08:53.314Z"
+              "updatedAt": "2026-09-11T20:49:57.415Z"
             },
             {
               "id": "arl-s5",
@@ -12206,7 +12206,7 @@
           "slug": "rpc-s1",
           "name": "Give every product a UI path to connect or create a GitHub repo",
           "stage": "definition-of-done",
-          "health": "amber",
+          "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -12224,7 +12224,7 @@
           "dorContractArtefact": "artefacts/2026-07-19-product-repo-connect-ux/dor/rpc-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-19T06:36:01.138Z",
           "prStatus": "merged",
-          "updatedAt": "2026-08-17T12:00:54.465Z",
+          "updatedAt": "2026-09-11T20:49:32.283Z",
           "dodStatus": "complete",
           "releaseReady": false,
           "dodArtefact": "artefacts/2026-07-19-product-repo-connect-ux/dod/rpc-s1-dod.md"

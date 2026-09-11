@@ -39,7 +39,7 @@ None found on review — implementation matches the story's stated out-of-scope 
 
 | NFR | Addressed? | Evidence |
 |-----|------------|---------|
-| Accessibility (ARIA on file input/errors) | ⚠️ | Not independently re-verified in this retroactive pass — no automated accessibility test found; flagged as unverified, not failed |
+| Accessibility (ARIA on file input/errors) | ✅ | **Closed (2026-09-12), source evidence:** `src/web-ui/routes/journey.js:1964` — the file input has `<label for="rm-file-input">` plus `aria-label="Upload one or more markdown strategy or data files"`, and the error container uses `role="alert" aria-live="polite"`, correct ARIA for a dynamic error state. |
 | Security — path traversal guard | ✅ | T7 explicitly covers this |
 | Character encoding — UTF-8 only | ✅ | T4 |
 | Error handling — invalid files don't block valid ones | ✅ | T8 |
