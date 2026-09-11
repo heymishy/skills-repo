@@ -221,6 +221,37 @@ function testIT4() {
   } catch (err) { fail('IT4: inline <script> block compiles without a SyntaxError (would have caught the missing-brace regression)', err); }
 }
 
+// NFR-Accessibility (vcb-s1 AC1) — every text input in the Connect-repo
+// affordance has a real, non-empty aria-label (or an associated <label
+// for="...">), matching this repo's existing NFR-Accessibility test
+// convention elsewhere (label/aria-label presence assertions against
+// rendered markup). rpc-s1's own test plan promised this test but shipped
+// without one; manual code review during the vcb-s1 DoD backlog pass
+// confirmed the underlying markup was already compliant -- this test closes
+// the coverage gap, not a defect.
+function testNfrAccessibility() {
+  console.log('NFR-Accessibility — Connect-repo form inputs have real labels/aria-labels');
+  try {
+    var html = products._renderProductView(
+      'Test Product', 'prod-123', [], 'testuser', null, false,
+      null, null // unconnected -- renders the full Connect-repo affordance
+    );
+    assert.ok(html.indexOf('id="rpc-connect-owner"') !== -1, 'expected the repo-owner input to be present to test');
+    assert.ok(/id="rpc-connect-owner"[^>]*aria-label="Repository owner"/.test(html), 'repo-owner input missing a real aria-label');
+    assert.ok(/id="rpc-connect-repo"[^>]*aria-label="Repository name"/.test(html), 'repo-name input missing a real aria-label');
+    assert.ok(/id="rpc-create-name"[^>]*aria-label="New repo name"/.test(html), 'create-repo-name input missing a real aria-label');
+    // Every aria-label found must be non-empty (a real accessible name, not a placeholder empty string).
+    var ariaLabels = html.match(/aria-label="([^"]*)"/g) || [];
+    var connectRepoAriaLabels = ariaLabels.filter(function(m) { return /Repository owner|Repository name|New repo name/.test(m); });
+    assert.ok(connectRepoAriaLabels.length === 3, 'expected exactly 3 Connect-repo aria-labels present, found ' + connectRepoAriaLabels.length);
+    connectRepoAriaLabels.forEach(function(m) {
+      var value = /aria-label="([^"]*)"/.exec(m)[1];
+      assert.ok(value.length > 0, 'aria-label must not be empty: ' + m);
+    });
+    pass('NFR-Accessibility: Connect-repo form inputs (owner, repo name, new-repo name) all have real, non-empty aria-labels');
+  } catch (err) { fail('NFR-Accessibility: Connect-repo form inputs (owner, repo name, new-repo name) all have real, non-empty aria-labels', err); }
+}
+
 (async function main() {
   testU1();
   testU2();
@@ -228,6 +259,7 @@ function testIT4() {
   await testIT2();
   testIT3();
   testIT4();
+  testNfrAccessibility();
   console.log(`\n[rpc-s1] Results: ${passed} passed, ${failed} failed`);
   process.exit(failed > 0 ? 1 : 0);
 })();
