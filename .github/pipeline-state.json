@@ -24659,7 +24659,7 @@
       "slug": "2026-08-16-nav-icon-affordance",
       "name": "Fix affordance mismatch on the sign-out control and theme-toggle button in the shared shell",
       "track": "short",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "epics": [],
       "stories": [
@@ -32885,7 +32885,7 @@
         {
           "slug": "session-origin-visibility",
           "name": "Operators can tell whether a feature has a real resumable session without opening it",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "sob-s1",
@@ -32960,9 +32960,9 @@
             {
               "slug": "sob-s2",
               "name": "Session-origin indicator on the /journey dashboard",
-              "stage": "verify-completion",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-09-09T04:20:04.319Z",
+              "updatedAt": "2026-09-11T06:56:10.662Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s2-review-1.md",
@@ -33011,9 +33011,9 @@
             {
               "slug": "sob-s3",
               "name": "Session-origin indicator on the org kanban board",
-              "stage": "verify-completion",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-09-09T04:31:56.176Z",
+              "updatedAt": "2026-09-11T06:56:10.824Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-09-08-session-origin-badge/review/sob-s3-review-1.md",

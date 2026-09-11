@@ -68,6 +68,8 @@ Feature-level NFR profile (`artefacts/2026-09-08-session-origin-badge/nfr-profil
 
 **Measurement-ready gate answer:** Not yet (full metric). Recording `not-yet-measured` for this story's own contribution.
 
+**Post-merge live verification, both historical and fresh (backfilled 2026-09-11 — see DoD Observation #5):** The RISK-ACCEPTed W4 walkthrough referenced above **was in fact executed** on 2026-09-09 (same day as this DoD's own "Date" field, just later) — full detail in `artefacts/2026-09-08-session-origin-badge/decisions.md`'s "Post-merge verification walkthrough executed (RISK-ACCEPT W4 closed)" entry — but that closure was never written back into this DoD file until now, the same category of gap found and fixed for `wnl-s2`/`wnl-s1`/`wnl-s3`/`jasb-s1` this session. Original 2026-09-09 result on `wuce-staging`: `skills-framework` product list, 630 live badges (9 fully-session-backed, 621 no-session), correct zero-badge case on a not-yet-started feature confirmed, every badge carrying a correct `title`. **Independently re-confirmed fresh on 2026-09-11** via `getComputedStyle`-rigor Chrome verification (applying the lesson `sob-s4` itself later established): still exactly 630 badges, exactly the same 621/9 split, all carrying `sw-pill--neutral` with a real resolved `backgroundColor: rgb(26, 26, 24)` (not just the class string present — the CSS genuinely resolves).
+
 ---
 
 ## Outcome
@@ -75,9 +77,9 @@ Feature-level NFR profile (`artefacts/2026-09-08-session-origin-badge/nfr-profil
 **COMPLETE**
 
 **Follow-up actions:**
-1. Complete sob-s2 and sob-s3 (both still pending) — the metric's full target requires all three surfaces.
-2. Execute the RISK-ACCEPTed post-merge manual verification-script walkthrough on `wuce-staging` (deferred from DoR's W4 finding) — ideally once all 3 stories are merged, so all three surfaces can be checked in one pass rather than three separate sessions.
-3. Optional, non-blocking polish item from the final reviewer: add a tone modifier class (e.g. `sw-pill--neutral`) to the new indicator's `sw-pill` span, matching every other `.sw-pill` usage in this codebase.
+1. ~~Complete sob-s2 and sob-s3~~ — done, both merged and DoD-complete.
+2. ~~Execute the RISK-ACCEPTed post-merge manual verification-script walkthrough on `wuce-staging`~~ — done, 2026-09-09 (see Metric Signal section above); independently re-confirmed 2026-09-11.
+3. ~~Add a tone modifier class (e.g. `sw-pill--neutral`)~~ — done, `sob-s4`.
 
 ---
 
@@ -87,3 +89,4 @@ Feature-level NFR profile (`artefacts/2026-09-08-session-origin-badge/nfr-profil
 2. **The mandatory final-review step earned its keep again.** It asked the spec-compliance reviewer's earlier deviation-verification question a second time, independently, and traced the real Postgres → `deriveSessionOrigin` data flow end-to-end rather than trusting the per-task reviews' own conclusions — consistent with this epic's own established pattern (see `canonical-artefact-trace`/`cat-s1`'s DoD observations) that this step catches things no individual task review can.
 3. **A subagent hit the "false-wait" failure mode twice during this story's execution** (waiting for a background-process notification that will never reach a subagent), despite the dispatch prompt's explicit warning both times. Recovered cleanly each time via a direct `SendMessage` correction. Consistent with this epic's own prior observation that this is a structurally recurring failure mode, not a rare one — worth continued attention in `/subagent-execution`'s own dispatch-prompt wording, though it already contains the strongest warning language established so far.
 4. **A subagent dispatch hit a session-wide rate limit mid-task with real, correct partial work already applied and verified in the worktree.** Rather than re-dispatching (risking the same limit), the orchestrating session independently verified the partial work (both fixes genuinely present and correct), ran the remaining verification steps directly, and completed the commit itself — the same recovery pattern already established earlier this epic for an unrelated story (`cat-s5`). Worth noting as a second independent confirmation this recovery approach is sound, not a one-off judgment call.
+5. **Backfilled 2026-09-11, following a repo-wide DoD-verification-method stocktake:** this DoD's own Metric Signal section, as originally written, said the W4 walkthrough "has not been executed as of this DoD" — true at the moment of writing, but the walkthrough ran later that same day and its results were logged in `decisions.md`, never propagated back here. The stocktake's triage specifically flagged this story as still showing an unexecuted RISK-ACCEPT; on inspection the RISK-ACCEPT was actually long closed — the DoD artefact itself was just stale. Re-confirmed fresh (not just copied from the historical record) before writing this update.

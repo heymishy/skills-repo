@@ -67,6 +67,8 @@ Feature-level NFR profile (`artefacts/2026-09-08-session-origin-badge/nfr-profil
 
 **Measurement-ready gate answer:** Not yet (full metric). Recording `not-yet-measured` for this story's own contribution.
 
+**Post-merge live verification, both historical and fresh (backfilled 2026-09-11 — see DoD Observation #4):** The RISK-ACCEPTed W4 walkthrough referenced above **was executed** on 2026-09-09 once all 3 stories merged, exactly as planned — full detail in `artefacts/2026-09-08-session-origin-badge/decisions.md`. `/journey` result at that time: 264 live cards (6 fully-session-backed, 1 real mixed card confirmed, 257 no-session). That closure was never written back into this DoD file until now. **Independently re-confirmed fresh on 2026-09-11** via `getComputedStyle`-rigor Chrome verification: 269 live cards now (262 no-session, 6 fully-session-backed, 1 mixed — the small growth from 264→269 is organic, new features created since 2026-09-09, not a discrepancy), all carrying `sw-pill--neutral` with a real resolved `backgroundColor: rgb(26, 26, 24)`.
+
 ---
 
 ## Outcome
@@ -74,10 +76,10 @@ Feature-level NFR profile (`artefacts/2026-09-08-session-origin-badge/nfr-profil
 **COMPLETE**
 
 **Follow-up actions:**
-1. Merge sob-s3 (PR #850, still open/draft) — the metric's full target requires all three surfaces.
-2. Execute the RISK-ACCEPTed post-merge manual verification-script walkthrough on `wuce-staging` (deferred from DoR's W4 finding) — once sob-s3 merges, so all three surfaces can be checked in one pass.
-3. Complete `journey.js`'s own half of the deferred DRY extraction (swap its inline `_sobLabelMap`/`_sobGlyphMap` for the now-merged `sessionOriginBadgeMeta` helper in `features.js`) — small, non-blocking, tracked in `decisions.md`.
-4. Update `artefacts/2026-09-08-session-origin-badge/nfr-profile.md` to record sob-s2's own NFR verification, mirroring sob-s1's DoD update.
+1. ~~Merge sob-s3~~ — done.
+2. ~~Execute the RISK-ACCEPTed post-merge manual verification-script walkthrough~~ — done, 2026-09-09; independently re-confirmed 2026-09-11 (see Metric Signal section above).
+3. ~~Complete `journey.js`'s own half of the deferred DRY extraction~~ — done, `sob-s4` (`_renderJourneyHome` now calls the shared `sessionOriginBadgeMeta` helper).
+4. ~~Update `nfr-profile.md`~~ — done, 2026-09-11.
 
 ---
 
@@ -86,3 +88,4 @@ Feature-level NFR profile (`artefacts/2026-09-08-session-origin-badge/nfr-profil
 1. **A PR can sit with zero CI dispatch and no obvious error message when it has an unresolved merge conflict with the target branch — this is easy to miss.** `gh pr checks` on a never-dispatched PR simply reports "no checks reported," which reads identically to "CI hasn't started yet" rather than surfacing the actual blocker (`mergeStateStatus: DIRTY`/`mergeable: CONFLICTING`). The operator caught this by directly asking "haven't CI actions run" rather than the orchestrating session noticing on its own — worth adding an explicit `gh pr view --json mergeable,mergeStateStatus` check to this repo's own `/branch-complete`/`/verify-completion` routine as a standard post-push sanity check, not just `gh pr checks`. `/improve` candidate.
 2. **This is the epic-nested story state bookkeeping gotcha (cdg.6/B2) manifesting as a real, blocking git conflict rather than a silent revert** — a variant this repo's own `CLAUDE.md` documents the silent-revert case for, but not this harder-to-miss conflicting-edit case. Both stem from the same root cause: a feature branch's own pipeline-state.json checkpoint commits diverging from a same-story-entry edit merged to master via a separate short-lived branch, without the feature branch ever rebasing. Worth strengthening the documented guidance to explicitly call out both failure shapes.
 3. **A genuine, never-committed decision entry ("Deferred: extract `_sobLabelMap`/`_sobGlyphMap`...") sat as an uncommitted local diff in the main checkout for the bulk of this feature's delivery**, surfacing only when a routine `git pull` on master would have silently discarded it. Recovered and committed directly (not force-discarded), with a note cross-referencing that sob-s3 had, in the meantime, independently re-derived and acted on the same decision from conversation context alone — confirming the decision was sound even though its written record was temporarily lost. Reinforces this session's own established discipline (never blind-discard uncommitted changes; verify before overwriting) rather than surfacing a new failure mode.
+4. **Backfilled 2026-09-11, following a repo-wide DoD-verification-method stocktake:** same pattern as `sob-s1`'s own DoD Observation #5 — the W4 walkthrough genuinely ran (2026-09-09, logged in `decisions.md`) but this artefact was never updated to say so, leaving it looking open when it was closed. Also closed 2 further follow-up actions (#3, #4 above) that were quietly completed by later work (`sob-s4`) without this DoD being told.

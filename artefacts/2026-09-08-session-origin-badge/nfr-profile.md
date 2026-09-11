@@ -2,8 +2,8 @@
 
 **Feature:** 2026-09-08-session-origin-badge
 **Created:** 2026-09-08
-**Last updated:** 2026-09-08
-**Status:** Active — Verified at 2026-09-09 for Performance and Accessibility (sob-s1, product feature-list surface only; /journey and org kanban NFRs remain pending sob-s2/sob-s3)
+**Last updated:** 2026-09-11
+**Status:** Verified at 2026-09-11 for Performance and Accessibility across all 3 surfaces (product feature-list, `/journey` dashboard, org kanban — sob-s1/sob-s2/sob-s3, plus sob-s4's own tone-modifier fix). Backfilled from the 2026-09-09 post-merge walkthrough (`decisions.md`) plus a fresh live re-confirmation on 2026-09-11 (getComputedStyle-verified, all 3 surfaces) — see sob-s1/sob-s2/sob-s3's own DoD artefacts for full detail.
 
 ---
 
