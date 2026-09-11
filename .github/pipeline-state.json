@@ -26598,18 +26598,26 @@
     {
       "slug": "2026-08-22-copilot-skills-dirs-prod-gap",
       "name": "Verify and wire the correct skills directory for this repo's own production deployment (found during 33-failures cleanup)",
-      "stage": "definition",
-      "health": "amber",
+      "stage": "branch-complete",
+      "health": "green",
       "stories": [
         {
           "id": "csdg-s1",
           "slug": "csdg-s1",
           "name": "Verify and wire the correct skills directory for this repo's own production deployment",
           "stage": "definition",
-          "health": "amber",
-          "dorStatus": "not-started",
+          "health": "green",
+          "dorStatus": "signed-off",
           "dodStatus": "not-started",
-          "prStatus": "none"
+          "prStatus": "open",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 4,
+            "passing": 4
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "updatedAt": "2026-09-11T09:43:20.023Z"
         }
       ],
       "metrics": [],

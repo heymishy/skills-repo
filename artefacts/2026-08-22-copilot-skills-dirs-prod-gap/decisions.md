@@ -1,0 +1,11 @@
+# Decisions: copilot-skills-dirs-prod-gap
+
+---
+**[2026-09-11] | DECISION | csdg-s1 investigation and fix approach**
+**Decision:** Fix `listAvailableSkills`'s default skills-directory resolution in code (prefer root `skills/` when it exists, fall back to `.github/skills/`) rather than setting `COPILOT_SKILLS_DIRS=skills` as a Fly secret on the `skills-framework` production app.
+**Context:** AC1 confirmed live (`flyctl secrets list -a skills-framework`) that `COPILOT_SKILLS_DIRS` is not set in production. AC2 confirmed live, with the operator's explicit in-session authorization to sign in to production via the existing GitHub OAuth session, that `POST /api/skills/benefit-metric/sessions` and `POST /api/skills/infra-definition/sessions` both return `400 SKILL_NOT_FOUND` for a real authenticated caller. Further investigation found `.github/skills/` no longer exists in this repo at all — `pisd-s1` (PR #753, 2026-08-22) had already consolidated every real skill, including `infra-definition`/`infra-plan`/`infra-review`, into root `skills/`. This removed the original tradeoff `csdg-s1`'s own AC4 worried about (regressing `.github/skills/`'s "distinct purpose") — there is nothing left there to protect.
+**Alternatives considered:** Set `COPILOT_SKILLS_DIRS=skills` as a Fly secret — rejected as the primary fix. It works, but (a) it is a hidden operational secret that could be lost or unset again with no code-level signal, unlike a self-documenting default in code; (b) it would require an agent to run `flyctl secrets set` against a live production deployment, a real infrastructure change better left to the operator even with prior authorization for the investigation itself.
+**Rationale:** The code fix closes this repo's own case unconditionally (no secret required) while leaving the documented consumer-repo bootstrap contract (`.github/skills/` only, no root `skills/`) completely unchanged, verified by dedicated tests (AC5). This is strictly safer than either alternative alone.
+**Made by:** Claude (agent) — investigation authorized in-session by the operator (Hamish King) via an AskUserQuestion approval ("Sign in on production myself")
+**Revisit trigger:** If a future deployment genuinely needs a skills directory outside both `skills/` and `.github/skills/`, `COPILOT_SKILLS_DIRS` remains available and still always wins over this default.
+---
