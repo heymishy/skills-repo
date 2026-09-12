@@ -1,0 +1,18 @@
+{
+  "storyId": "tgid-s1",
+  "prUrl": "https://github.com/heymishy/skills-repo/pull/866",
+  "verifyStatus": "passed",
+  "testPlan": {
+    "status": "all-passing",
+    "totalTests": 6,
+    "passing": 6
+  },
+  "acTotal": 4,
+  "acVerified": 4,
+  "fullSuite": {
+    "filesRun": 643,
+    "failed": 4,
+    "newFailures": 0,
+    "note": "3 failures match established pre-existing baseline (bjs-s1, p3.5, s6.1); the 4th (check-pcr-s1-test-runner.js) is a timing-budget flake confirmed unrelated and confirmed to fail identically on unmodified master"
+  }
+}
