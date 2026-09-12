@@ -9458,8 +9458,8 @@
               "slug": "bri-s1.4",
               "name": "Wire tenant-level flag targeting via PostHog group analytics",
               "stage": "definition-of-done",
-              "health": "amber",
-              "updatedAt": "2026-07-13T18:27:17.074Z",
+              "health": "green",
+              "updatedAt": "2026-09-12T07:25:13.593Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -9514,7 +9514,7 @@
               "dodStatus": "complete",
               "releaseReady": false,
               "dodArtefact": "artefacts/2026-07-09-beta-readiness-infra/dod/bri-s1.4-dod.md",
-              "blocker": "identifyTenantGroup() is fully built and unit-tested but never called from any live request path in src/ -- flag targeting itself still works via isEnabled()'s automatic group derivation, but PostHog dashboard group records are never populated. See bri-s1.4-dod.md Follow-up actions."
+              "blocker": ""
             },
             {
               "slug": "bri-s1.5",
@@ -13853,7 +13853,7 @@
           "slug": "wusl-s1",
           "name": "Consistent skill-session Redis fallback",
           "stage": "definition-of-done",
-          "health": "amber",
+          "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -13881,11 +13881,11 @@
               "tddState": "committed"
             }
           ],
-          "updatedAt": "2026-07-22T18:10:13.582Z",
+          "updatedAt": "2026-09-12T07:24:50.958Z",
           "prNumber": 549,
           "dodStatus": "complete",
           "releaseReady": false,
-          "blocker": "DoD gap (non-AC-blocking): 5 of 9 handler call sites verified via code review (shared-helper delegation) rather than individual automated tests. See dod/wusl-s1-dod.md follow-up actions.",
+          "blocker": "",
           "dodArtefact": "artefacts/2026-07-22-skill-session-redis-fallback/dod/wusl-s1-dod.md"
         }
       ],
@@ -16325,7 +16325,7 @@
               "slug": "csd-s2-canvas-diagram-rendering",
               "name": "Canvas rendering of the diagram content-block type",
               "stage": "definition-of-done",
-              "health": "amber",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -16343,9 +16343,9 @@
               "prStatus": "merged",
               "dodStatus": "complete",
               "releaseReady": true,
-              "blocker": "AC3 labelling asymmetry: \"As Designed\" side has no explicit prefix while \"As Built\" side does -- distinguishable but not symmetric. Not release-blocking. See csd-s2-dod.md.",
+              "blocker": "",
               "dodArtefact": "artefacts/2026-07-25-code-shape-diagrams/dod/csd-s2-canvas-diagram-rendering-dod.md",
-              "updatedAt": "2026-07-26T02:34:37.292Z"
+              "updatedAt": "2026-09-12T07:24:51.159Z"
             },
             {
               "slug": "csd-s3-design-produces-architecture-and-program-diagrams",

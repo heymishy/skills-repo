@@ -15,14 +15,14 @@
 |----|-----------|----------|---------------------|-----------|
 | AC1 | ✅ | All 3 types (`data-model`, `system-architecture`, `program-design`) render through one shared `buildDiagramBodyHtml()` helper, each with a visible `.cv-diagram-type-label` ("Data Model" / "System Architecture" / "Program Design") | Direct code review of `src/web-ui/routes/skills.js` (`buildDiagramBodyHtml`, confirmed the type-label div is present and type-specific); `tests/check-csd-s2-canvas-diagram-rendering.js` | None |
 | AC2 | ✅ | Malformed mermaid syntax produces a labelled, non-blank error box via `markDiagramRenderError()` — never mermaid's own stack-trace-shaped default output, never a raw JS error | Code review + `tests/e2e/csd-s2-canvas-diagram-rendering.spec.js` (real Chromium render of the malformed-diagram fixture) | None |
-| AC3 | ⚠️ | Diagrams are distinguished via the generic `canvas-block-title` span (populated from `block.title`), not a dedicated "As Designed"/"As Built" label mechanism. csd-s4's as-designed marker convention uses a plain title (e.g. "Data model"); csd-s5's as-built diagram uses `"As-built: Data model"`. The two ARE visually distinguishable in practice, but the AC's own wording implies a symmetric "As Designed" vs "As Built" label pair, and only one side carries an explicit prefix | Code review of `src/web-ui/routes/skills.js` line ~3394 (generic title rendering) cross-referenced against `skills/design/SKILL.md`'s csd-s4 marker docs and `src/modules/migration-schema-parser.js`'s csd-s5 title default | **Minor deviation**: the "As Designed" side has no explicit prefix, only the "As Built" side does. Distinguishable, but not symmetric. Recorded here rather than silently treated as fully met. |
+| AC3 | ✅ — **closed 2026-09-12 by `aldl-s1`** | `aldl-s1` (merged, DoD-complete) added an `"As designed: "` prefix to the System Architecture, Data Model, and Program Design marker title field-docs and worked examples in `skills/design/SKILL.md` and `skills/definition/SKILL.md`, symmetric with csd-s5's existing `"As-built: "` convention — the labelling asymmetry this AC originally flagged is now closed. | `aldl-s1`'s own DoD, 5 tests / 7 assertions | None — closed |
 | AC4 | ✅ | Existing keyboard navigation/focus order for other block types unaffected — diagram blocks use the same DOM structure (`canvas-block` wrapper) as cluster/table/text | Non-regression test in `tests/check-csd-s2-canvas-diagram-rendering.js`; no new tabindex/focus-trapping code introduced | None |
 
 ---
 
 ## Scope Deviations
 
-None beyond the AC3 note above (which is a deviation in labelling symmetry, not scope). The drift/match-diverged signal (csd-s6) and editable/interactive diagrams were correctly left out of this story.
+None. The AC3 labelling-symmetry deviation is closed — see AC3 row above. The drift/match-diverged signal (csd-s6) and editable/interactive diagrams were correctly left out of this story.
 
 ---
 
@@ -63,10 +63,10 @@ None beyond the AC3 note above (which is a deviation in labelling symmetry, not 
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
 **Follow-up actions:**
-- Consider symmetrizing the "As Designed" vs "As Built" title convention (e.g. have `/design`'s marker docs explicitly prefix "As designed: ") in a future small fix, so the AC3 labelling is symmetric rather than one-sided. Not release-blocking — the two are already distinguishable in practice.
+- ~~Consider symmetrizing the "As Designed" vs "As Built" title convention...~~ — **Done (`aldl-s1`, merged 2026-09-12).**
 
 ---
 

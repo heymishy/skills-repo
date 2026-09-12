@@ -15,9 +15,9 @@
 |----|-----------|----------|---------------------|-----------|
 | AC1 | ✅ | Two users in the same tenant calling `isEnabled()` with their respective session context receive the identical flag value | automated test | None |
 | AC2 | ✅ | A flag targeted at tenant X in PostHog returns `true` for a tenant-X user and `false` for a different tenant's user | automated test | None |
-| AC3 | ⚠️ | Unit-level: first-time group registration does not error; delayed/failed registration falls back to the safe default — fully true of the `identifyTenantGroup()` function in isolation | automated test (unit-level only) | **`identifyTenantGroup()` is never called from any live request path** — see Scope Deviations. The AC's own "when the group-identification call runs for the first time" premise never occurs in production, because nothing triggers that call |
+| AC3 | ✅ — **closed 2026-09-12 by `tgid-s1`** | `tgid-s1` (merged, DoD-complete) added the missing caller-level wiring: `identifyTenantGroup(tenantId)` is now called inside `bootstrapFlags()` (`flag-bootstrap.js`), bounded by the same `_withTimeout` wrapper already used for flag resolution, skipped when no `tenantId`, called once per session — exactly the call site this DoD's own Follow-up Action named. | `tgid-s1`'s own DoD, 6 tests passing (U1-U5, N1) | None — closed |
 | AC4 (Acceptance Criterion 4) | ✅ | Solo-tenant customer (today's default) uses the same per-tenant targeting mechanism with no special-casing — regression-proof | automated test | None |
-| D37 wiring task — real `groupIdentify()` wired | ⚠️ | I5: `adapter.groupIdentify("tenant", "acme")` invokes `client.groupIdentifyImmediate({groupType:"tenant", groupKey:"acme"})` — the **adapter-level** wiring is real | automated test | The adapter-to-PostHog-client wiring is real and correct; the **caller-level** wiring (something in the live app actually calling `identifyTenantGroup()`) does not exist. D37's own mandate requires the wiring to be "verified by a test or smoke check" that proves real behaviour, not just that a function reference resolves — I5 proves the adapter functions correctly if called, not that it is ever called |
+| D37 wiring task — real `groupIdentify()` wired | ✅ — **closed 2026-09-12 by `tgid-s1`** | I5: `adapter.groupIdentify("tenant", "acme")` invokes `client.groupIdentifyImmediate({groupType:"tenant", groupKey:"acme"})` — the adapter-level wiring was already real; `tgid-s1` closed the caller-level gap, so the full D37 chain (adapter correctness + caller existence) is now proven end-to-end. | `tgid-s1`'s own DoD | None — closed |
 
 **A deviation is any difference between implemented behaviour and the AC**, even if minor.
 
@@ -25,11 +25,7 @@
 
 ## Scope Deviations
 
-**Disclosed and reasoned in `decisions.md` (2026-07-11, DESIGN, implementation-plan):** this story implements the tenant-group-targeting mechanism and the D37 (injectable adapter rule) real-adapter wiring (`posthog-config.js`'s `groupIdentify`) in full, but does **not** add a live-request-handler call site that actually invokes `identifyTenantGroup()` during a real session — because bri-s1.3 (session-start bootstrap), the story that owns that call site, was not yet implemented at the time bri-s1.4 was built. The DoR contract's own Assumptions section anticipated exactly this ordering ("this story's wiring point is inside S1.3's existing bootstrap step"), with an explicit revisit trigger: "When S1.3 reaches implementation, confirm its bootstrap flow calls `identifyTenantGroup(...)` ahead of its own `isEnabled()` calls."
-
-**This DoD independently re-verified that revisit trigger against the current merged code rather than trusting the decisions.md note, per this pipeline's standing instruction to verify downstream wiring directly. Finding: the trigger was never actually closed.** `grep -rn "identifyTenantGroup" src/` shows the function is defined and exported from `posthog-flags.js` (line 128) and referenced only in comments elsewhere — it is not called from `flag-bootstrap.js` (bri-s1.3's bootstrap module, read in full — it only calls `isEnabled()`), not from any route handler, and not from `server.js` (which wires an inert `groupIdentify: async function() {}` no-op stub for the test-mode adapter, but never wires a call to the wrapper function `identifyTenantGroup()` itself). The only place `identifyTenantGroup` is referenced anywhere in `tests/` is its own unit test file (`check-bri-s1.4-tenant-level-targeting.js`), which calls it directly as a unit under test — not as part of an integration/E2E flow that exercises a real request.
-
-**Practical impact is partial, not total, because of how the mechanism was built:** `isEnabled()`'s own `_sanitizeContext`/`_withTenantGroup` logic (in `posthog-flags.js`) already auto-derives a `groups: { tenant: context.tenantId }` object on *every* flag-evaluation call, independent of whether `identifyTenantGroup()` was ever separately invoked — so AC1/AC2 (same flag value across tenant members; a tenant-targeted flag evaluates correctly per tenant) are still exercised correctly by the evaluate-flag call itself, and are genuinely covered by this story's passing tests. What is missing is the separate, explicit PostHog group *identify* event (`$groupidentify`) that AC3 describes registering — this is what would give PostHog's dashboard a populated group record (name, properties) for each tenant, which `decisions.md`'s ASSUMPTION entry (2026-07-09, validating the Group Analytics approach) treats as part of the intended mechanism, not an optional extra.
+None remaining. **Closed 2026-09-12 by `tgid-s1`** — see AC3/D37 rows above. Originally: this story implemented the tenant-group-targeting mechanism and the D37 (injectable adapter rule) real-adapter wiring (`posthog-config.js`'s `groupIdentify`) in full, but did not add a live-request-handler call site that actually invokes `identifyTenantGroup()` during a real session, because bri-s1.3 (session-start bootstrap), the story that owns that call site, was not yet implemented at the time bri-s1.4 was built. `tgid-s1` closed that gap directly.
 
 ---
 
@@ -69,10 +65,10 @@
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
 **Follow-up actions:**
-- **Action required, real gap, no owner yet assigned:** wire a call to `identifyTenantGroup(resolveTenantIdFromRequest(req))` into a live request path — the natural location is `flag-bootstrap.js`'s `bootstrapFlags()`, ahead of its `isEnabled()` calls, exactly as the DoR contract's own Assumptions section anticipated. Currently no route, handler, or bootstrap module calls it anywhere in `src/`. Flag evaluation targeting itself is not broken (see the practical-impact note above), but PostHog's Group Analytics dashboard will never show a populated group record for any tenant until this is wired — undermining part of the reason `decisions.md` validated adopting Group Analytics in the first place. This is a materially different, smaller-blast-radius gap than a broken AC, but it is a real, unresolved wiring gap, not a documentation nitpick.
+- ~~Action required, real gap: wire a call to identifyTenantGroup(...) into a live request path...~~ — **Done (`tgid-s1`, merged 2026-09-12).** Wired into `flag-bootstrap.js`'s `bootstrapFlags()`, exactly as this DoD's own Follow-up Action specified.
 
 ---
 

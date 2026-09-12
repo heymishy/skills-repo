@@ -14,7 +14,7 @@
 | AC | Satisfied? | Evidence | Verification method | Deviation |
 |----|-----------|----------|---------------------|-----------|
 | AC1 (extraction, chat-page-load unchanged) | ✅ | `handleGetChatHtml` restores from Redis on a cold Map, response is a real chat page not a 404 | automated test | None |
-| AC2 (9 handlers gain the same fallback) | ✅ | `handlePostAnswer`, `handleGetSessionState`, `handlePostTurnHtml`, `handlePostAssumptionConfirm` each individually tested (representative subset of the 9; the remaining 5 — `handleCommitArtefact`, `handlePostCanvasEditHtml`, `handlePostTurnStreamHtml`, `htmlSubmitTurn`, `htmlRecordAnswer` — share the identical code-shape fix applied via the same shared helper, verified by direct code review of each call site) | automated test + code review | See note below |
+| AC2 (9 handlers gain the same fallback) | ✅ — **closed 2026-09-12 by `wusl-s2`** | `handlePostAnswer`, `handleGetSessionState`, `handlePostTurnHtml`, `handlePostAssumptionConfirm` individually tested at this story's own merge; `wusl-s2` (merged, DoD-complete) added 4 dedicated tests for the remaining call sites (`handleCommitArtefact`, `handlePostCanvasEditHtml`, `handlePostTurnStreamHtml`, `htmlSubmitTurn`'s Redis-fallback behavior), and confirmed `htmlRecordAnswer` is dead code (`require(...).htmlRecordAnswer === undefined`, plus a full-repo grep) — correctly excluded rather than tested. All 9 original call sites are now either directly tested or confirmed unreachable. | automated tests (`wusl-s2`'s own suite) | None — closed |
 | AC3 (genuine double-miss unchanged) | ✅ | Session absent from both stores still returns `SESSION_NOT_FOUND` exactly as before | automated test | None |
 | AC4 (sync functions explicitly unconverted) | ✅ | Each of `_getHtmlSession`/`htmlGetNextQuestion`/`htmlGetCompletePage`/`htmlGetPreview`'s own distinct missing-session behavior confirmed unchanged, none consult Redis even when the stub adapter has real data for that session ID | automated test | None |
 
@@ -41,8 +41,7 @@ None beyond the story's own explicitly-declared exclusion of 5 synchronous acces
 | tests/check-iwu5-lens-complete.js (17 tests) | ✅ (pre-existing) | ✅ | Regression suite, unaffected |
 | Full suite | ✅ | ✅ (326/363, 37 pre-existing baseline failures) | Run 3 times across this story's lifecycle (initial implementation, post-rebase) — identical 37-file failing list every time |
 
-**Gaps (tests not implemented):**
-- Individual dedicated tests for `handleCommitArtefact`, `handlePostCanvasEditHtml`, `handlePostTurnStreamHtml`, `htmlSubmitTurn`, `htmlRecordAnswer`'s own Redis-fallback behavior — covered by code review (byte-identical call pattern) rather than individual automated tests. **Risk:** low — all 9 call sites delegate to the exact same, already-tested `_getSessionOrRestore` helper; a bug would need to be in how a SPECIFIC call site invokes the shared helper (e.g. a typo), which code review directly checked for. **Accepted**, not escalated to RISK-ACCEPT given the shared-helper architecture makes per-site divergence structurally unlikely.
+**Gaps (tests not implemented):** None remaining — **closed 2026-09-12 by `wusl-s2`** (4 dedicated tests + 1 dead-code exclusion, see AC2 row above).
 
 ---
 
@@ -64,12 +63,10 @@ No metrics apply — short-track story, parent feature's `metrics` array is empt
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
-
-Marked "with deviations" to keep the AC2/test-plan scope reduction (4 directly-tested handlers + code review for the remaining 5, rather than 9 fully independent tests) visible for /trace — not because any AC failed, but because the actual test coverage shape differs from the test plan's original per-handler ambition. Judged low-risk given the shared-helper architecture.
+**COMPLETE**
 
 **Follow-up actions:**
-1. If a future bug report ever traces to one of the 5 code-reviewed-only call sites (`handleCommitArtefact`, `handlePostCanvasEditHtml`, `handlePostTurnStreamHtml`, `htmlSubmitTurn`, `htmlRecordAnswer`), add a dedicated automated test for that specific site at that time — no proactive action needed otherwise. Owner: Hamish King (Founder/Operator), reactive.
+1. ~~If a future bug report ever traces to one of the 5 code-reviewed-only call sites...~~ — **Done proactively (`wusl-s2`, merged 2026-09-12)**, rather than waiting for a reactive bug report.
 2. The 5 excluded synchronous accessor functions remain a known, real (if lower-exposure) gap — revisit as a separate story if it proves to matter in practice. Owner: Hamish King.
 
 ---
