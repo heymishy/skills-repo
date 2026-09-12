@@ -19031,11 +19031,11 @@
               "slug": "rb-s5",
               "name": "Optionally install the full outer loop during bootstrap",
               "stage": "definition-of-done",
-              "health": "amber",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "reviewArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/review/rb-s5-review-1.md",
-              "updatedAt": "2026-08-22T07:04:16.619Z",
+              "updatedAt": "2026-09-12T04:12:55.336Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 10,
@@ -19054,7 +19054,7 @@
               "mergeCommit": "79b76c4b",
               "dodStatus": "complete",
               "releaseReady": false,
-              "blocker": "COMPLETE WITH DEVIATIONS: --with-outer-loop overhead NFR consistently ~24% over the 3000ms budget (3722ms/3776ms, re-confirmed twice). All functional behaviour correct. Possible confound: measured during an unusually resource-heavy session.",
+              "blocker": "",
               "dodArtefact": "artefacts/2026-08-05-repo-bootstrap-no-fork/dod/rb-s5-dod.md"
             }
           ]
@@ -19536,7 +19536,7 @@
           "id": "scr-s1",
           "name": "Unify skill-categorization into one source of truth and close the --with-outer-loop NFR gap",
           "stage": "definition-of-done",
-          "health": "amber",
+          "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-07-skill-categorization-reconciliation/review/scr-s1-review-1.md",
@@ -19551,7 +19551,7 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-08-20T08:58:01.769Z",
+          "updatedAt": "2026-09-12T04:12:55.504Z",
           "dorStatus": "signed-off",
           "prStatus": "merged",
           "mergeCommit": "0518aecf9b50f0ee1f04bb10e6b0d566782ca4dd",
@@ -34021,17 +34021,17 @@
     {
       "slug": "2026-09-12-outer-loop-bootstrap-perf-fix",
       "name": "Batch skill-metadata extraction to close the --with-outer-loop performance NFR gap",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "id": "obpf-s1",
           "slug": "obpf-s1",
           "name": "Batch skill-metadata extraction to close the --with-outer-loop performance NFR gap",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
-          "prStatus": "open",
+          "prStatus": "merged",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 3,
@@ -34039,7 +34039,10 @@
           },
           "acTotal": 4,
           "acVerified": 4,
-          "updatedAt": "2026-09-12T02:44:15.223Z"
+          "updatedAt": "2026-09-12T04:13:05.338Z",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-09-12-outer-loop-bootstrap-perf-fix/dod/obpf-s1-dod.md"
         }
       ],
       "metrics": [],

@@ -14,7 +14,7 @@
 | AC1 -- `check-assembly.js` derives `OUTER_LOOP_SKILLS`/`INNER_LOOP_SKILLS` from `SKILL_CATEGORIES` instead of hardcoding a duplicate | Yes | `check-scr-s1-skill-categorization-reconciliation.js` -- test `checkAssembly_derivesListsFromSkillCategories` | Unit (source-level inspection) | None |
 | AC2 -- a new `SKILL_CATEGORIES` entry is automatically picked up with zero `check-assembly.js` change | Yes | `check-scr-s1-skill-categorization-reconciliation.js` -- test `newCategoryEntry_automaticallyIncludedNoCodeChange` | Unit (synthetic fixture entry) | None |
 | AC3 -- `get_skill_triggers` called once per skill in the enabled branch, reused for both purposes | Yes | `check-scr-s1-skill-categorization-reconciliation.js` -- test `getSkillTriggers_calledOnceReusedForBothPurposes` | Unit (source-level / call-count check) | None |
-| AC4 -- `--with-outer-loop` overhead re-measured against the 3s budget, RISK-ACCEPT resolved or re-affirmed | Partially -- re-measurement done, budget still not met | `decisions.md` entry "Inner coding loop (scr-s1) -- AC4 honest result: NFR gap not closed": post-fix isolated measurement of the AC3 fix showed ~155ms average improvement (8 samples), but the full end-to-end `--with-outer-loop` overhead (5 runs: 3680ms, 3775ms, 3858ms, 3867ms, 5766ms, avg ~4189ms) still exceeds the 3-second budget | Manual/timing (wall-clock, same methodology as `rb-s5`) | AC4's literal text is satisfied as written (re-measure, then resolve-or-re-affirm) via honest re-affirmation of the RISK-ACCEPT, not a passing result -- this is a documented, accepted outcome, not a silent gap |
+| AC4 -- `--with-outer-loop` overhead re-measured against the 3s budget, RISK-ACCEPT resolved or re-affirmed | Yes -- **closed 2026-09-12 by `obpf-s1`** | This story's own root-cause attribution ("the dominant cost lies elsewhere in `runInit()`'s `--with-outer-loop` path... unprofiled") was exactly right. `obpf-s1` (PR #869, merged) profiled it, found ~60-70 subprocess spawns in the per-skill metadata extraction, and fixed it: `runInit({withOuterLoop:true})` now ~2.5-3s, real and reproducible. | Automated test (`obpf-s1`'s own DoD), re-run post-fix | None — closed |
 
 ---
 
@@ -30,7 +30,7 @@ None beyond what AC4 itself anticipated. The story's own AC4 text explicitly all
 
 | NFR | Status | Evidence |
 |-----|--------|----------|
-| Performance (`--with-outer-loop` adds no more than 3 seconds) | Fails, RISK-ACCEPT re-affirmed | `decisions.md`: post-fix avg ~4189ms across 5 runs, not meaningfully different from the pre-fix baseline (~4635ms single sample) or `rb-s5`'s original ~3.6-3.7s measurement |
+| Performance (`--with-outer-loop` adds no more than 3 seconds) | ✅ Closed by `obpf-s1` (2026-09-12) | Real root-cause fix, ~2.5-3s measured — see AC4 row above |
 | Security | None new (per story) | N/A |
 | Accessibility | Not applicable -- no UI surface (per story) | N/A |
 | Audit | None new (per story) | N/A |
@@ -41,8 +41,8 @@ No benefit-metric artefact is referenced by this story -- it is short-track and 
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
-**Follow-up actions:** A future story should profile `runInit()`'s full `--with-outer-loop` path end-to-end (not just the assembly script in isolation) to find the actual dominant cost contributor -- this is already named as the revisit trigger in `decisions.md` and is not a new gap introduced by this assessment.
+**COMPLETE**
+**Follow-up actions:** ~~A future story should profile `runInit()`'s full `--with-outer-loop` path end-to-end...~~ — **Done (2026-09-12).** `obpf-s1` did exactly this, confirming this story's own root-cause hypothesis and closing the gap for real.
 
 ## DoD Observations
 

@@ -12,15 +12,13 @@
 | AC | Satisfied? | Evidence | Verification method | Deviation |
 |----|-----------|----------|---------------------|-----------|
 | Functional ACs (outer-loop opt-in install, `context.yml` flag flip, instruction-file regeneration reflecting the flag) | ✅ | `check-rb-s5-optional-outer-loop-install.js`, 9/10 assertions — all functional behaviour confirmed working: skills registry seeded, 46 skills installed, harness-agnostic instruction files assembled and drift-checked clean, `outerLoop.enabled=true` flag set and reflected | Automated test, re-run fresh on current master 2026-08-17 (twice) | None functional |
-| NFR: `--with-outer-loop` overhead under 3000ms | ❌ | Re-run fresh twice: 3722ms, then 3776ms — consistently ~700-750ms over budget, not a one-off flake | Automated test, re-run fresh 2026-08-17 (x2) | **Pre-existing, already documented — see below** |
+| NFR: `--with-outer-loop` overhead under 3000ms | ✅ | **Closed 2026-09-12 by `obpf-s1`** (PR #869, merged): real root cause found (~60-70 subprocess spawns in `assemble-copilot-instructions.sh`'s per-skill metadata extraction, not the `scr-s1` double-call `scr-s1` itself had already ruled out as the dominant cost) and fixed. Real, isolated measurement: `runInit({withOuterLoop:true})` now ~2.5-3s, down from the ~3722-3776ms this DoD originally measured. `outerLoopFlagOverheadUnder3Seconds` now genuinely passes. | Automated test, re-run post-fix (`obpf-s1`'s own DoD) | None — closed |
 
 ---
 
 ## Scope Deviations
 
-**Timing NFR consistently over budget.** This is the same gap already recorded at merge time (`pipeline-state.json` already showed `testPlan.passing: 9` of `totalTests: 10` before this pass — not a new finding). Re-confirmed twice in this pass (3722ms, 3776ms), both consistently ~24% over the 3000ms budget, not a random one-off flake. All *functional* behaviour (the actual outer-loop installation, flag-flipping, and instruction-file regeneration) works correctly — only the timing threshold is missed.
-
-**Possible confound, noted honestly rather than assumed:** this test was re-run during an exceptionally long, resource-heavy session (multiple background coding agents, extensive git operations, many concurrent test runs across dozens of DoD-backlog stories in the same sitting). The timing margin is real and reproducible right now, but this session's own unusually high concurrent load on the machine is a plausible contributing factor that a clean-machine re-run might not reproduce as severely. Recorded as observed fact (2 consistent measurements), not as a definitive root cause.
+None remaining. **Timing NFR gap closed 2026-09-12 by `obpf-s1`** — see AC row above. Originally: this was the same gap recorded at merge time (`pipeline-state.json` already showed `testPlan.passing: 9` of `totalTests: 10` before this pass). Re-confirmed twice in this pass (3722ms, 3776ms), both consistently ~24% over the 3000ms budget. All functional behaviour was always correct — only the timing threshold was missed, and that threshold is now met.
 
 ---
 
@@ -35,7 +33,7 @@
 
 | NFR | Addressed? | Evidence |
 |-----|------------|---------|
-| Performance: `--with-outer-loop` overhead under 3000ms | ❌ | 3722ms / 3776ms measured, consistently ~24% over budget |
+| Performance: `--with-outer-loop` overhead under 3000ms | ✅ | Closed by `obpf-s1` (2026-09-12) — ~2.5-3s measured, real root-cause fix, see AC row above |
 
 ---
 
@@ -47,10 +45,10 @@ No formal benefit-metric artefact traced in this pass. No metric signal to recor
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
 **Follow-up actions:**
-- [Owner: Hamish King] If the 3-second budget matters in practice (e.g. it's advertised to users as a hard SLA rather than an internal target), consider re-measuring on a quiet/idle machine to separate "genuinely slow" from "this session's own heavy concurrent load inflated the number." Low urgency — the actual functional behaviour is correct; only a soft performance target is missed by a small, consistent margin.
+- ~~If the 3-second budget matters in practice, consider re-measuring on a quiet/idle machine...~~ — **Superseded (2026-09-12).** `obpf-s1` root-caused and fixed the actual dominant cost (subprocess-spawn volume, not machine load) — the gap is closed for real, not just re-measured under different conditions.
 
 ---
 
