@@ -33989,17 +33989,17 @@
     {
       "slug": "2026-09-12-as-designed-label-symmetry",
       "name": "Symmetric \"As designed:\" / \"As-built:\" diagram title prefixes",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "id": "aldl-s1",
           "slug": "aldl-s1",
           "name": "Symmetric As designed / As-built diagram title prefixes",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
-          "prStatus": "open",
+          "prStatus": "merged",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 7,
@@ -34007,7 +34007,10 @@
           },
           "acTotal": 4,
           "acVerified": 4,
-          "updatedAt": "2026-09-12T01:35:10.569Z"
+          "updatedAt": "2026-09-12T01:54:56.733Z",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-09-12-as-designed-label-symmetry/dod/aldl-s1-dod.md"
         }
       ],
       "metrics": [],
