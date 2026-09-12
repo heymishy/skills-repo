@@ -1,0 +1,18 @@
+{
+  "storyId": "r-trace-validation-archived-paths",
+  "prUrl": "https://github.com/heymishy/skills-repo/pull/872",
+  "verifyStatus": "passed",
+  "testPlan": {
+    "status": "all-passing",
+    "totalTests": 4,
+    "passing": 4
+  },
+  "acTotal": 3,
+  "acVerified": 3,
+  "fullSuite": {
+    "filesRun": 649,
+    "failed": 1,
+    "newFailures": 0,
+    "note": "1 failure matches established pre-existing baseline (ps1-exits-0-on-valid-repo-with-ci-flag, tests/check-p3.5-validate-trace.js, resource-contention flake)"
+  }
+}
