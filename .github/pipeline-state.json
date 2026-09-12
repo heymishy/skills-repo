@@ -34053,7 +34053,7 @@
     {
       "slug": "2026-09-12-ep1-s1-nfr-coverage-backfill",
       "name": "Dedicated tests for ep1-s1's two code-review-only NFRs",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
@@ -34081,6 +34081,37 @@
       ],
       "metrics": [],
       "updatedAt": "2026-09-12T04:43:45.616Z",
+      "track": "short",
+      "guardrails": []
+    },
+    {
+      "slug": "2026-09-12-res-s2-audit-log-fields",
+      "name": "Add journeyId and timestamp fields to the artefact-save/materiality-check audit log events",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "id": "ral-s1",
+          "slug": "ral-s1",
+          "name": "Add journeyId and timestamp fields to the artefact-save/materiality-check audit log events",
+          "stage": "branch-complete",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/871",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 4,
+            "passing": 4
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "updatedAt": "2026-09-12T06:30:00.000Z",
+          "verifyStatus": "passed"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-12T06:30:00.000Z",
       "track": "short",
       "guardrails": []
     }

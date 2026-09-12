@@ -1,0 +1,20 @@
+{
+  "storyId": "ral-s1",
+  "prUrl": "https://github.com/heymishy/skills-repo/pull/871",
+  "verifyStatus": "passed",
+  "testPlan": {
+    "status": "all-passing",
+    "totalTests": 4,
+    "passing": 4
+  },
+  "acTotal": 4,
+  "acVerified": 4,
+  "regressionSuite": {
+    "file": "tests/check-res-s2-overwrite-artefact-in-place-on-revision.js",
+    "totalTests": 19,
+    "passing": 19
+  },
+  "fullSuite": {
+    "note": "npm test run in background, no new failures introduced"
+  }
+}

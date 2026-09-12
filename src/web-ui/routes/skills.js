@@ -5410,7 +5410,7 @@ async function handlePostTurnStreamHtml(req, res) {
     try {
       fs.mkdirSync(path.dirname(_autoAbsPath), { recursive: true });
       fs.writeFileSync(_autoAbsPath, session.artefactContent, 'utf8');
-      console.info(JSON.stringify({ event: _isAmendment ? 'artefact_auto_amended' : 'artefact_auto_saved', sessionId: sessionId, artefactPath: session.artefactPath }));
+      console.info(JSON.stringify({ event: _isAmendment ? 'artefact_auto_amended' : 'artefact_auto_saved', sessionId: sessionId, artefactPath: session.artefactPath, journeyId: session.journeyId || null, timestamp: new Date().toISOString() }));
     } catch (_autoErr) {
       // res-s2 (AC4): surface the failure to the operator instead of only
       // logging it — the pre-fix behaviour silently swallowed this.
@@ -5583,7 +5583,7 @@ async function handlePostTurnStreamHtml(req, res) {
             postRevisionContent: fs.readFileSync(_autoAbsPath, 'utf8')
           });
         } catch (_matErr) {
-          console.warn(JSON.stringify({ event: 'materiality_check_hook_failed', sessionId: sessionId, error: _matErr.message }));
+          console.warn(JSON.stringify({ event: 'materiality_check_hook_failed', sessionId: sessionId, error: _matErr.message, journeyId: session.journeyId || null, timestamp: new Date().toISOString() }));
         }
       }
 
