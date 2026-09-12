@@ -89,6 +89,27 @@ If any AC is ❌:
 >
 > Reply: 1, 2, or 3
 
+### Verification strength — tag every AC's evidence, not just its pass/fail state
+
+A ✅ mark tells you an AC was checked; it doesn't tell you how rigorously. Record one of the following tags alongside each AC's evidence in the AC Coverage table:
+
+- `unit` — a test against mocked/stubbed dependencies
+- `integration-real-code` — exercises real, unmocked production code (a real handler, a real script) but not a live deployed environment
+- `live-verified` — confirmed against a real running instance (staging or production): a real browser session, a real API call, a real restart, etc.
+- `production-observed` — confirmed by directly observing production behaviour or data (a real dashboard, a real log, a real user report)
+
+**An AC whose only evidence is `unit` or `integration-real-code`, but whose actual claim is about an external, real-world effect — a third-party system receiving data, a UI element being visible/usable, a system surviving a real failure or restart — is not fully verified.** That evidence class proves the code runs; it does not prove the claimed real-world effect happened. (Source: two DoDs in the same session both closed `COMPLETE` on unit-test evidence alone for exactly this kind of claim — a PostHog group-identify call, and a session surviving a real machine restart. Both later needed a live re-check to actually confirm; one of the two also surfaced a real, separate blocker — a third-party feature-gate the code path had no way of detecting — that no unit test could ever have found.) When this mismatch exists: either perform the live check now, or mark the AC `⚠️` and record a Follow-up Action naming the specific evidence-class gap — never mark it ✅ on the strength of the weaker evidence alone.
+
+### UI-evidence gate (mandatory when an AC describes browser-observable behaviour)
+
+If an AC's satisfaction depends on how something looks or behaves in a browser — visibility, layout, interaction, an element being reachable or clickable at a real viewport — its verification-strength tag cannot be `unit` or `integration-real-code` alone. One of the following is required before the AC can be marked ✅:
+
+1. **A real browser check** — `/verify-completion`'s own live browser render check already produces this pre-merge; cite that evidence directly if it exists and nothing has changed since.
+2. **Playwright evidence** — a spec asserting the element's actual visible state (computed style, viewport visibility, or a screenshot comparison), not just DOM presence.
+3. **An explicit RISK-ACCEPT** in `decisions.md`, naming the gap — mirrors the CSS-layout-dependent gap audit already required in Step 4.
+
+If none of the three exists at DoD time, do not mark the AC ✅ — record it `⚠️` with a Follow-up Action naming the missing UI verification.
+
 ---
 
 ## Step 3 - Out-of-scope check
@@ -217,6 +238,8 @@ Save to `artefacts/[feature]/dod/[story-slug]-dod.md`.
 > ACs satisfied: [n/n]
 > Deviations: [None / n recorded]
 > Test gaps: [None / n gaps]
+> Verification strength: [n unit / n integration-real-code / n live-verified / n production-observed]
+> UI-evidence gate: [N/A — no browser-observable ACs] / [n ACs need a real browser check, Playwright evidence, or RISK-ACCEPT before ✅]
 >
 > [If COMPLETE WITH DEVIATIONS or INCOMPLETE:]
 > Follow-up actions: [list]

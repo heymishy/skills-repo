@@ -172,6 +172,9 @@ const CONTRACTS = [
       'cannot be verified pre-merge by design',
       'Do not run the full, unscoped `npm run test:e2e` suite',
       'check whether an already-fresh same-session result exists',
+      'Live browser render check',
+      'not merely DOM presence',
+      'Live browser render check: [N/A',
     ],
   },
   {
@@ -195,6 +198,10 @@ const CONTRACTS = [
       'CSS-layout-dependent',
       'COMPLETE WITH DEVIATIONS',
       'AC coverage table',
+      'Verification strength',
+      'production-observed',
+      'UI-evidence gate',
+      'Verification strength: [n unit',
     ],
   },
   {
