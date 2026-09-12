@@ -27914,13 +27914,13 @@
           "slug": "res-s2-overwrite-artefact-in-place-on-revision",
           "name": "Overwrite a reopened stage's artefact in place on revision",
           "stage": "released",
-          "health": "amber",
+          "health": "green",
           "artefact": "artefacts/2026-08-27-revise-earlier-stage/stories/res-s2-overwrite-artefact-in-place-on-revision.md",
           "dorStatus": "signed-off",
           "dodStatus": "complete",
           "prStatus": "merged",
           "notes": "Epic 1: Reopen and revise an earlier completed stage (see epics/reopen-and-revise-earlier-stage.md for full epic definition; ADR-017 flat structure -- epic recorded here informally, not as nesting).",
-          "updatedAt": "2026-08-29T02:05:43.915Z",
+          "updatedAt": "2026-09-12T07:11:21.970Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-08-27-revise-earlier-stage/review/res-s2-review-2.md",
@@ -27954,7 +27954,7 @@
           "verifyStatus": "passed",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/780",
           "releaseReady": true,
-          "blocker": "DoD deviation: audit-logging NFR (artefact-overwrite sub-flow) has no dedicated test and the log event omits journeyId/explicit timestamp fields -- non-blocking, follow-up actions logged in dod/res-s2-dod.md.",
+          "blocker": "",
           "dodArtefact": "artefacts/2026-08-27-revise-earlier-stage/dod/res-s2-dod.md"
         },
         {
@@ -34094,10 +34094,10 @@
           "id": "ral-s1",
           "slug": "ral-s1",
           "name": "Add journeyId and timestamp fields to the artefact-save/materiality-check audit log events",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
-          "prStatus": "open",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/871",
           "testPlan": {
             "status": "all-passing",
@@ -34106,8 +34106,11 @@
           },
           "acTotal": 4,
           "acVerified": 4,
-          "updatedAt": "2026-09-12T06:30:00.000Z",
-          "verifyStatus": "passed"
+          "updatedAt": "2026-09-12T07:11:07.776Z",
+          "verifyStatus": "passed",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-09-12-res-s2-audit-log-fields/dod/ral-s1-dod.md"
         }
       ],
       "metrics": [],

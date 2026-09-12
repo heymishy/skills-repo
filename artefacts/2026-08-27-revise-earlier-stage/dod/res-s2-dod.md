@@ -48,7 +48,7 @@ None. Diff confirmed to touch exactly `src/web-ui/routes/skills.js`, one new tes
 | NFR | Addressed? | Evidence |
 |-----|------------|---------|
 | Security — path traversal guard on artefact writes | ✅ | `pathTraversalGuardBlocksResolvedPathOutsideRepoRoot`-equivalent tests passing (`Path traversal: the specific traversal-rejection event fires`, 4 tests total); resolved path validated via `path.resolve` + `startsWith(repoRoot + path.sep)` before any write; raw path never logged on rejection (CLAUDE.md rule), only `sessionId` |
-| Security — audit logging (artefact-overwrite portion) | ⚠️ | The pre-existing `artefact_auto_amended`/`artefact_auto_saved` log fires on every overwrite with `sessionId` and `artefactPath` (which embeds the stage name and feature slug as part of the path string). It does **not** emit `journeyId` as a discrete field, and carries no explicit ISO timestamp field in the JSON payload (unlike the structured pino-style events elsewhere in this file). No dedicated test asserts on this event's shape for the overwrite path specifically — deviation from the NFR profile's literal wording ("logged with journeyId, stage name, and timestamp"), though the practical audit trail is not absent, just less structured than specified. See DoD Observation #2. |
+| Security — audit logging (artefact-overwrite portion) | ✅ — **closed 2026-09-12 by `ral-s1`** | `ral-s1` (merged, PR #871) added `journeyId` (or `null` when no journey) and an explicit ISO-8601 `timestamp` field to `artefact_auto_amended`/`artefact_auto_saved` and the sibling `materiality_check_hook_failed` event, plus a dedicated test asserting each event's shape for the overwrite path specifically. See `ral-s1-dod.md`. |
 | Performance | N/A | No performance NFR assigned to res-s2 in the feature's NFR profile (only res-s1 and res-s3 have performance rows) |
 | Data classification (Internal) | ✅ N/A | No new data classification introduced by this story |
 
@@ -67,10 +67,10 @@ None. Diff confirmed to touch exactly `src/web-ui/routes/skills.js`, one new tes
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
 **Follow-up actions:**
-1. Tighten `artefact_auto_amended`/`artefact_auto_saved` (and the sibling `materiality_check_hook_failed` log) to emit `journeyId` and an explicit ISO timestamp field directly, closing the audit-logging NFR gap noted above. Owner: next available implementation slot, not blocking res-s3/res-s4.
+1. ~~Tighten artefact_auto_amended/artefact_auto_saved (and the sibling materiality_check_hook_failed log) to emit journeyId and an explicit ISO timestamp field directly...~~ — **Done (`ral-s1`, merged 2026-09-12, PR #871).**
 2. Reconsider whether the single bundled `NFR-audit-logging-reopen-flow` guardrail ID (covering reopen + overwrite + materiality-suggestion + flag set/cleared as one requirement) should be split into per-sub-flow guardrail entries — only 1 of the 4 sub-flows it describes has ever been directly test-evidenced. Candidate for `/improve`.
 
 ---
