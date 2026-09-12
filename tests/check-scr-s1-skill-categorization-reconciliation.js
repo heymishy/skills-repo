@@ -114,10 +114,30 @@ test('newCategoryEntry_automaticallyIncludedNoCodeChange', () => {
 // Platform Layer section calls get_skill_triggers exactly once per skill,
 // reusing the result for both the presence check and the formatted output
 // (previously called twice).
+//
+// obpf-s1 (2026-09-12): superseded. get_skill_triggers/get_skill_description
+// no longer exist at all -- both were replaced by ONE batched awk call
+// (_load_outer_loop_skill_metadata) that populates SKILL_DESC/SKILL_TRIGGERS
+// for every outer-loop skill in a single pass, closing the actual dominant
+// cost behind rb-s5's own NFR gap (this fix's own "called once, not twice"
+// mitigation was real but small -- see
+// artefacts/2026-09-12-outer-loop-bootstrap-perf-fix/decisions.md for the
+// full root-cause profiling). Updated to assert the new invariant: zero
+// per-skill extraction calls remain in the enabled branch, and both arrays
+// are used for the formatted output.
 // ---------------------------------------------------------------------------
 
 test('getSkillTriggers_calledOnceReusedForBothPurposes', () => {
   const source = fs.readFileSync(assembleScriptPath, 'utf8');
+
+  assert.ok(
+    !/get_skill_triggers\s*\(\)\s*\{/.test(source) && !/get_skill_description\s*\(\)\s*\{/.test(source),
+    'get_skill_triggers/get_skill_description function definitions should no longer exist -- obpf-s1 replaced per-skill extraction with one batched awk call (a historical comment mentioning the old names by name is fine)'
+  );
+  assert.ok(
+    !/get_skill_triggers\s+"\$skill_file"/.test(source) && !/get_skill_description\s+"\$skill_file"/.test(source),
+    'no call site should invoke get_skill_triggers/get_skill_description -- both are gone, replaced by the SKILL_DESC/SKILL_TRIGGERS arrays'
+  );
 
   const coreLayerStart = source.indexOf('## Core Platform Layer');
   assert.ok(coreLayerStart !== -1, 'Core Platform Layer section should exist');
@@ -135,18 +155,43 @@ test('getSkillTriggers_calledOnceReusedForBothPurposes', () => {
     ? coreLayerSection.slice(enabledBranchStart, elseIdx)
     : coreLayerSection.slice(enabledBranchStart);
 
-  const callCount = (enabledBranch.match(/get_skill_triggers\s+"\$skill_file"/g) || []).length;
+  // The enabled branch must read from the batch-loaded arrays, not call any
+  // per-skill extraction function (there is none left to call).
+  assert.ok(
+    /\$\{SKILL_DESC\[\$skill\]\}/.test(enabledBranch),
+    'the enabled branch should read description from the batch-loaded SKILL_DESC array'
+  );
+  assert.ok(
+    /\$\{SKILL_TRIGGERS\[\$skill\]\}/.test(enabledBranch),
+    'the enabled branch should read triggers from the batch-loaded SKILL_TRIGGERS array'
+  );
+});
 
-  assert.strictEqual(
-    callCount, 1,
-    `get_skill_triggers should be called exactly once per skill in the Core Platform Layer's enabled branch and reused for both the presence check and the formatted output. Found ${callCount} call(s).`
+// ---------------------------------------------------------------------------
+// obpf-s1 (2026-09-12): the batched extraction helper exists and is called
+// exactly once at top level, not once per skill.
+// ---------------------------------------------------------------------------
+
+test('skillMetadataExtraction_batchedOncePerScriptRun_notOncePerSkill', () => {
+  const source = fs.readFileSync(assembleScriptPath, 'utf8');
+
+  assert.ok(
+    /_load_outer_loop_skill_metadata\(\)\s*\{/.test(source),
+    'a single _load_outer_loop_skill_metadata function should exist'
   );
 
-  // The stored result must actually be reused in the formatted-output line.
+  const topLevelCallCount = (source.match(/^_load_outer_loop_skill_metadata$/gm) || []).length;
+  assert.strictEqual(
+    topLevelCallCount, 1,
+    `_load_outer_loop_skill_metadata should be invoked exactly once at top level (batched for all skills), not once per skill. Found ${topLevelCallCount} top-level call(s).`
+  );
+
+  // The batched extraction must use exactly one awk invocation, not a loop
+  // spawning awk once per skill.
+  const awkCallCount = (source.match(/\bawk\s+'/g) || []).length;
   assert.ok(
-    /Triggers:.*\$\(echo "\$triggers"/.test(enabledBranch) ||
-    /Triggers:.*\$triggers/.test(enabledBranch),
-    'the formatted Triggers output line should reuse the stored $triggers variable rather than re-invoking get_skill_triggers'
+    awkCallCount <= 4,
+    `expected a small, fixed number of awk invocations (one for skill metadata, plus the pre-existing _vcs_type/_vcs_format/_outer_loop_enabled helpers), not one per outer-loop skill. Found ${awkCallCount}.`
   );
 });
 

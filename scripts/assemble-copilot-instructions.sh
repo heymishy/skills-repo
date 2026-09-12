@@ -153,29 +153,87 @@ INNER_LOOP_SKILLS=(
   "branch-complete"
 )
 
-# ── Helper: get skill description from SKILL.md frontmatter ───────────────────
-get_skill_description() {
-  local skill_file="$1"
-  if [[ ! -f "$skill_file" ]]; then
-    echo "(skill file not found)"
-    return
-  fi
-  # Extract the description field from YAML frontmatter
-  awk '/^description:/{found=1; gsub(/^description: *>? */,""); print; next}
-       found && /^  /{gsub(/^  /,""); printf " %s", $0; next}
-       found{exit}' "$skill_file" | sed 's/^ //'
-}
+# ── Helper: batch-load description + triggers for all outer-loop skills ───────
+# obpf-s1 (2026-09-12): the two per-skill helpers this replaced
+# (get_skill_description/get_skill_triggers) each spawned an awk subprocess
+# (plus sed/tr for reformatting) once per outer-loop skill, across two
+# separate loops in assemble() -- ~60-70 subprocess spawns for 8 outer-loop
+# skills. This was the actual dominant cost behind rb-s5's --with-outer-loop
+# NFR overage (measured ~4.9s of the ~5.7s total), which scr-s1 investigated
+# further but left "the dominant cost lies elsewhere... unprofiled" as out of
+# its own scope. Root-caused and fixed here: ONE batched awk invocation
+# processes every outer-loop skill file in a single pass (awk's own
+# FNR==1/FILENAME multi-file handling), using the exact same regex matching
+# rules as the two functions it replaces -- verified byte-for-byte identical
+# against all 8 real outer-loop skill files, including benefit-metric's and
+# decisions's malformed multi-line trigger blocks, before this change was
+# made. See artefacts/2026-09-12-outer-loop-bootstrap-perf-fix/decisions.md.
+declare -A SKILL_DESC
+declare -A SKILL_TRIGGERS
+_load_outer_loop_skill_metadata() {
+  local -a files=()
+  local -A file_to_skill=()
+  local skill skill_file
+  for skill in "${OUTER_LOOP_SKILLS[@]}"; do
+    skill_file="$SKILLS_DIR/$skill/SKILL.md"
+    [[ -f "$skill_file" ]] || continue
+    files+=("$skill_file")
+    file_to_skill["$skill_file"]="$skill"
+  done
+  [[ ${#files[@]} -eq 0 ]] && return
 
-# ── Helper: get skill triggers from SKILL.md frontmatter ──────────────────────
-get_skill_triggers() {
-  local skill_file="$1"
-  if [[ ! -f "$skill_file" ]]; then
-    return
-  fi
-  awk '/^triggers:/{found=1; next}
-       found && /^  - /{gsub(/^  - "/,""); gsub(/"$/,""); printf "    - %s\n", $0; next}
-       found && /^[a-z]/{exit}' "$skill_file"
+  local batch_output
+  batch_output="$(awk '
+    FNR==1 { if (NR>1) { print "@@ENDFILE@@" } print "@@FILE@@" FILENAME; in_desc=0; in_trig=0 }
+    /^description:/ { in_desc=1; in_trig=0; line=$0; sub(/^description: *>? */,"",line); print "@@DESCFIRST@@" line; next }
+    in_desc && /^  / { line=$0; sub(/^  /,"",line); print "@@DESCCONT@@" line; next }
+    in_desc { in_desc=0 }
+    /^triggers:/ { in_trig=1; in_desc=0; next }
+    in_trig && /^  - / { line=$0; sub(/^  - "/,"",line); sub(/"$/,"",line); print "@@TRIG@@" line; next }
+    in_trig && /^[a-z]/ { in_trig=0 }
+    END { print "@@ENDFILE@@" }
+  ' "${files[@]}")"
+
+  local cur_file="" cur_desc_first="" cur_skill=""
+  local -a cur_desc_cont=()
+  local -a cur_trig=()
+  local line
+
+  _flush_current_skill() {
+    [[ -z "$cur_skill" ]] && return
+    local joined_cont="" c t trig_joined=""
+    for c in "${cur_desc_cont[@]}"; do
+      if [[ -z "$joined_cont" ]]; then joined_cont="$c"; else joined_cont="$joined_cont $c"; fi
+    done
+    SKILL_DESC["$cur_skill"]="$cur_desc_first"$'\n'"$joined_cont"
+    for t in "${cur_trig[@]}"; do
+      trig_joined="$trig_joined    - $t"$'\n'
+    done
+    SKILL_TRIGGERS["$cur_skill"]="${trig_joined%$'\n'}"
+  }
+
+  while IFS= read -r line; do
+    if [[ "$line" == "@@FILE@@"* ]]; then
+      _flush_current_skill
+      cur_file="${line#@@FILE@@}"
+      cur_skill="${file_to_skill[$cur_file]}"
+      cur_desc_first=""
+      cur_desc_cont=()
+      cur_trig=()
+    elif [[ "$line" == "@@ENDFILE@@" ]]; then
+      _flush_current_skill
+      cur_file=""
+      cur_skill=""
+    elif [[ "$line" == "@@DESCFIRST@@"* ]]; then
+      cur_desc_first="${line#@@DESCFIRST@@}"
+    elif [[ "$line" == "@@DESCCONT@@"* ]]; then
+      cur_desc_cont+=("${line#@@DESCCONT@@}")
+    elif [[ "$line" == "@@TRIG@@"* ]]; then
+      cur_trig+=("${line#@@TRIG@@}")
+    fi
+  done <<< "$batch_output"
 }
+_load_outer_loop_skill_metadata
 
 # ── Build composition header ───────────────────────────────────────────────────
 DOMAIN_LABEL="[absent]"
@@ -235,9 +293,7 @@ Inner loop skills are available on demand via `/load [skill-name]`.
 
 DISCLOSURE_ENABLED
     for skill in "${OUTER_LOOP_SKILLS[@]}"; do
-      local skill_file="$SKILLS_DIR/$skill/SKILL.md"
-      local desc
-      desc="$(get_skill_description "$skill_file")"
+      local desc="${SKILL_DESC[$skill]}"
       echo "- **/$skill** — $desc"
     done
   else
@@ -309,20 +365,31 @@ CORE_HEADER
     for skill in "${OUTER_LOOP_SKILLS[@]}"; do
       local skill_file="$SKILLS_DIR/$skill/SKILL.md"
       if [[ -f "$skill_file" ]]; then
-        local desc
-        desc="$(get_skill_description "$skill_file")"
-        local triggers
-        triggers="$(get_skill_triggers "$skill_file")"
+        local desc="${SKILL_DESC[$skill]}"
+        local triggers="${SKILL_TRIGGERS[$skill]}"
         echo "#### /$skill"
         echo ""
-        echo "$desc" | sed 's/^ //'
+        # obpf-s1: pure-bash equivalent of the original `sed 's/^ //'` --
+        # strips one leading space per line, no subprocess spawn. desc/triggers
+        # now come from the batched extraction above, not a per-skill awk call.
+        local _dline _dout=""
+        while IFS= read -r _dline; do
+          _dout="$_dout${_dline# }"$'\n'
+        done <<< "$desc"
+        printf '%s' "${_dout%$'\n'}"
+        echo ""
         if [[ -n "$triggers" ]]; then
           echo ""
-          # scr-s1 (2026-08-07): reuse the already-computed $triggers value
-          # instead of re-invoking get_skill_triggers (a second subprocess
-          # spawn per outer-loop skill) -- root cause of rb-s5's --with-outer-loop
-          # NFR overage. See artefacts/2026-08-07-skill-categorization-reconciliation/decisions.md.
-          echo "Triggers: $(echo "$triggers" | tr '\n' ',' | sed 's/, *$//' | sed 's/^    - //g' | sed 's/    - /, /g')"
+          # obpf-s1: pure-bash equivalent of the original
+          # tr '\n' ',' | sed 's/, *$//' | sed 's/^    - //g' | sed 's/    - /, /g'
+          # pipeline -- joins "    - value" lines into "value, value, value".
+          local _tline _tval _tjoined=""
+          while IFS= read -r _tline; do
+            [[ -z "$_tline" ]] && continue
+            _tval="${_tline#    - }"
+            if [[ -z "$_tjoined" ]]; then _tjoined="$_tval"; else _tjoined="$_tjoined, $_tval"; fi
+          done <<< "$triggers"
+          echo "Triggers: $_tjoined"
         fi
         echo ""
       else
