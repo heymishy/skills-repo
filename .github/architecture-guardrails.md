@@ -1459,3 +1459,71 @@ The local filesystem checkout is canonical for "what artefact content exists for
 #### Revisit trigger
 
 If a future deployment shape makes the local filesystem checkout genuinely unavailable or unreliable as a canonical source (e.g. a fully disk-less serverless runtime with no local checkout at all), revisit whether Postgres or another durable store should become canonical instead — this ADR assumes disk is reliably present, which `/clarify` on this same feature confirmed holds for this deployment's own dogfooding case but left genuinely open for the multi-tenant `WUCE_TENANT_ROOT_BASE` case.
+
+---
+
+### ADR-030: Merged-PR state must be periodically reconciled against live GitHub, not trusted from self-reported `pipeline-state.json` fields alone
+
+**Status:** Active
+**Date:** 2026-09-13
+**Story:** 2026-09-12/13 pipeline-state DoD-triage sweep (`eatrl-s1`, `srmw-s1` retroactive DoDs)
+**Decided by:** Hamish King, from a pattern found twice in one sweep
+
+#### Context
+
+`eatrl-s1` (PR #573) and `srmw-s1` (PR #560) were both fully merged, fully working PRs — real fixes, real tests, real evidence — that sat with `prStatus: none`/`draft` and no DoD for roughly seven weeks. Each story's own merge commit correctly advanced `pipeline-state.json` to reflect the merge, but something afterward — most plausibly a later, unrelated PR's merge-conflict resolution on the same shared file picking the wrong side, the same class of corruption already named in `cdg.6`/B2 for epic-nested stories, but occurring here on flat stories via ordinary conflict resolution — reverted the fields back to a pre-merge state. This went undetected because the existing "is any merged PR missing a DoD" check reads `prStatus` from `pipeline-state.json` itself: the exact field that had silently gone wrong. The check reported a clean result while two real gaps sat in plain sight, discovered only when the operator happened to ask for a broader audit.
+
+#### Options considered
+
+| Option | Pros | Cons |
+|--------|------|------|
+| **Periodic reconciliation against live GitHub (chosen)** | Catches this class of corruption within one reconciliation run regardless of cause; does not depend on `pipeline-state.json`'s own internal consistency | Requires `gh` CLI availability and network access at reconciliation time; needs pagination/rate-limit handling on repos with many PRs |
+| Rely on manual/ad hoc audits only (status quo) | No new tooling | Proven this session to leave real gaps invisible for seven weeks — depends entirely on someone thinking to ask |
+| Eliminate the corruption at its source (better `pipeline-state.json` merge-conflict tooling) | Addresses root cause directly | This repo has iterated on merge-conflict reduction for this file multiple times (`pcr-s1` and others) without eliminating the class entirely; does not catch corruption from other causes (a bad manual edit, a bad rebase) |
+
+#### Decision
+
+A reconciliation check must run on a recurring cadence (session-start, or a scheduled job) that fetches merged PRs via `gh pr list --state merged --json number,mergedAt` and cross-references every story's recorded `prUrl` against that list. A story whose `prUrl` corresponds to a real merged PR, but whose own `prStatus`/`stage` says otherwise, is flagged as a reconciliation gap — treated with the same severity as "merged but DoD not complete," since it is a superset of that condition (the DoD-completeness check itself becomes unreliable once this can happen).
+
+#### Consequences
+
+- **Easier:** this class of gap becomes detectable within one reconciliation pass instead of an accidental discovery during an unrelated audit.
+- **Harder / more constrained:** the check has an external dependency (network, `gh` auth) that purely-local checks don't; needs to degrade gracefully (warn, don't hard-fail) when `gh` is unavailable.
+
+#### Revisit trigger
+
+If `pipeline-state.json` merge-conflict corruption is eliminated at the source (e.g. by moving story state to a database rather than a single shared JSON file — see ADR-029's own disk-vs-metadata framing), revisit whether this reconciliation step is still needed as a standing safeguard or was only ever compensating for that specific failure mode.
+
+---
+
+### ADR-031: A DoD's Follow-up Action that names a specific future fix must be recorded as a structured, closeable link back to the origin story — not prose alone
+
+**Status:** Active
+**Date:** 2026-09-13
+**Story:** 2026-09-12/13 pipeline-state DoD-triage sweep
+**Decided by:** Hamish King, from a pattern found five times in one sweep
+
+#### Context
+
+Five separate times in one sweep, a follow-up story (`tgid-s1`, `wusl-s2`, `aldl-s1`, `csd-s7`, `obpf-s1`) genuinely closed a gap another story's own DoD had self-reported (`bri-s1.4`, `wusl-s1`, `csd-s2`, `csd-s5`/`csd-s6`, `rb-s5`/`scr-s1` respectively) — but the origin story's own DoD text and `pipeline-state.json` health were never updated to reflect the closure. Each was discovered only via a broad, manually-run audit, not because anything in the pipeline prompted a check. A DoD's "Follow-up actions" section is free text in a markdown file that nothing re-scans; closing one depends entirely on whoever does the later work independently remembering to also open a different, older file and edit its DoD and health fields by hand.
+
+#### Options considered
+
+| Option | Pros | Cons |
+|--------|------|------|
+| **Structured, closeable follow-up registry (chosen)** | Makes an open follow-up a queryable, listable item instead of prose scattered across N files; closing one becomes a checklist step at `/definition-of-done` time, not something to remember | Adds one more mandatory field/step to `/definition-of-done`'s authoring process; requires a one-time backfill of existing DoDs' prose follow-ups into the new structure to have full historical coverage |
+| Leave as prose only, rely on periodic manual re-reading of all DoDs (status quo) | No new mechanism | This is exactly the untriggered, easily-ignored mechanism this whole ADR exists to fix — proven five times over in one sweep |
+| Fully automate closure detection via keyword/story-ID text-mining across all DoD files | No authoring-time discipline required | High false-positive/negative risk without a human confirming the match; a structured pointer set at authoring time is more reliable than inferring intent from prose after the fact |
+
+#### Decision
+
+Any DoD "Follow-up Action" that names a specific future fix (not "operator discretion" or "no action needed" items) must also be recorded in a structured, queryable registry, keyed by the origin story's ID, with at minimum: `originStory`, `description`, `raisedAt`. When a later story's own DoD documents closing a previously-recorded follow-up, `/definition-of-done` must check this registry for entries naming the current story and, as a mandatory step (not optional), update the origin story's own health and DoD text to reflect the closure — the same way this sweep did it manually, five times, by hand.
+
+#### Consequences
+
+- **Easier:** an open follow-up is a queryable backlog item; closing one is a checklist step baked into `/definition-of-done` itself, not a thing to remember unprompted.
+- **Harder / more constrained:** requires deciding where the registry lives (a `pipeline-state.json` field vs. a standalone file) and a one-time backfill pass over this repo's existing DoD history before it has full coverage — out of scope for this ADR itself, tracked as its own follow-up.
+
+#### Revisit trigger
+
+If the registry itself proves to have low signal — few follow-ups ever get raised through it, or it becomes just another file nobody checks — reconsider a lighter-weight or more automated mechanism instead.
