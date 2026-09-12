@@ -50,10 +50,10 @@ None. `/skills` (the literal skill picker) and `handleGetJourneyResume`'s own re
 
 | NFR | Addressed? | Evidence |
 |-----|------------|---------|
-| Feature list fetch ≤2 seconds | ⚠️ | Not explicitly measured with a timing test. Evidenced by implementation: synchronous local `fs.readFileSync` via the existing `_readPipelineFeatures` helper, the same mechanism every other local-disk read on this page already uses at production scale. No perf regression expected; not independently benchmarked. |
+| Feature list fetch ≤2 seconds | ✅ — **closed 2026-09-12 by `enfr-s1`** | `enfr-s1` (merged, DoD-complete) added a dedicated timing test against this repo's real, current `.github/pipeline-state.json` (272 features), confirming the merge completes well within the 2s budget. |
 | Graceful fallback if pipeline-state.json unreachable | ✅ | `graceful degradation: missing pipeline-state.json does not throw` — passing |
 | Terminal stages (completed, archived, released) excluded | ✅ | `AC2` test + `terminal-stage constant matches...` test — both passing |
-| Stalled features included | ⚠️ | No dedicated test. Evidenced by code review: `TERMINAL_STAGES = ['completed', 'archived', 'released']` does not include `'stalled'`, so a stalled feature is not filtered out by this story's merge logic. Not independently verified with a stalled-stage fixture. |
+| Stalled features included | ✅ — **closed 2026-09-12 by `enfr-s1`** | `enfr-s1` added a dedicated test asserting a `stalled`-stage feature with no journey-store record is included in the merged output. |
 
 ---
 
@@ -68,11 +68,11 @@ None. `/skills` (the literal skill picker) and `handleGetJourneyResume`'s own re
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
 **Follow-up actions:**
-1. Consider a dedicated timing test or manual measurement for the ≤2s feature-list-fetch NFR if this page's load time becomes a concern (owner: platform team, not blocking).
-2. Consider a dedicated stalled-feature-inclusion test to close the NFR evidence gap (owner: platform team, low priority — behaviour is correct by inspection).
+1. ~~Consider a dedicated timing test or manual measurement for the ≤2s feature-list-fetch NFR...~~ — **Done (`enfr-s1`, merged 2026-09-12).**
+2. ~~Consider a dedicated stalled-feature-inclusion test...~~ — **Done (`enfr-s1`, merged 2026-09-12).**
 3. Metric signals will remain `not-yet-measured` until `ep1-s6` ships and real Web UI adoption data accumulates.
 
 ---

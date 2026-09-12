@@ -92,3 +92,17 @@
 **Made by:** Hamish King (operator choice, after the agent explained why it could not perform either handoff itself)
 **Revisit trigger:** When the operator completes AC3 manually, record the full AC1-AC4 outcome in si-s3's DoD and close this entry.
 ---
+**[2026-09-12] | DESIGN | si-s1 DoD follow-up (pipeline-state audit)**
+**Decision:** Metric 2 (theme toggle relocation — no usage regression)'s target is retargeted from "within 20% of pre-relocation baseline" to an absolute floor: "post-relocation click rate is non-zero and stable over a 2-week measurement window," since no pre-relocation baseline was ever captured and the topbar control no longer exists to measure retroactively.
+**Alternatives considered:** (1) Retire Metric 2 entirely — rejected, the underlying question ("did relocating the control break usage?") is still worth answering even without a comparative baseline. (2) Leave the original 20%-of-baseline target on record despite it being permanently unevaluable — rejected, an artefact recording an impossible-to-meet target is worse than one honestly revised.
+**Rationale:** si-s1 shipped the relocation directly without running the 2-week topbar-baseline window `benefit-metric.md` originally called for — a metric-design gap, not a delivery defect (si-s1's own DoD flagged this transparently rather than fabricating a baseline). An absolute-floor target ("non-zero and stable") still answers the metric's real underlying question — did the relocation kill usage? — without requiring data that can no longer be collected.
+**Made by:** Hamish King (operator choice, via AskUserQuestion during 2026-09-12 pipeline-state audit follow-up sweep)
+**Revisit trigger:** None expected — this is a permanent retargeting, not a temporary workaround.
+---
+**[2026-09-12] | ARCH | si-s1 DoD follow-up (pipeline-state audit)**
+**Decision:** The small, dedicated `POST /settings/theme-toggle-clicked` route pattern (a new server route added specifically to satisfy a client-side-triggered analytics AC not anticipated by the original DoR contract) is accepted as a permanent, acceptable pattern for this codebase — no `/improve` process change is needed to make DoR contracts anticipate analytics-capture touch points in advance.
+**Alternatives considered:** Flagging this as an `/improve` backlog item to have `/definition`/DoR-contract-writing explicitly ask "does this story's ACs require an analytics-capture touch point?" — considered, but judged unnecessary overhead for a pattern that already resolves cleanly and visibly (via the coding agent flagging the DoR-contract/AC conflict transparently, as it did here) whenever it recurs.
+**Rationale:** The existing resolution (a small route matching the established `_posthog.capture()` server-side convention, transparently flagged rather than silently implemented) already works well and is unlikely to recur often enough to justify a standing process check. If it does recur with friction, this decision can be revisited then.
+**Made by:** Hamish King (operator choice, via AskUserQuestion during 2026-09-12 pipeline-state audit follow-up sweep)
+**Revisit trigger:** If this pattern recurs 3+ times across future stories, reconsider whether a generic `/api/track` beacon route (per the original 2026-08-17 decision's own revisit trigger) is warranted instead of a bespoke route per feature.
+---

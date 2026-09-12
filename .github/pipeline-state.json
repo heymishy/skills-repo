@@ -16402,7 +16402,7 @@
               "slug": "csd-s5-as-built-diagram-generation",
               "name": "As-built diagram generation via static migration-file parsing",
               "stage": "definition-of-done",
-              "health": "amber",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -16420,15 +16420,15 @@
               "prStatus": "merged",
               "dodStatus": "complete",
               "releaseReady": false,
-              "blocker": "AC2 only half-satisfied: System Architecture as-built generation was never built (no resolved decisions.md ARCH entry authorizing an extraction method). Program Design + Data Model as-built generation are complete. Needs a decisions.md entry + follow-up story. See csd-s5-dod.md.",
+              "blocker": "",
               "dodArtefact": "artefacts/2026-07-25-code-shape-diagrams/dod/csd-s5-as-built-diagram-generation-dod.md",
-              "updatedAt": "2026-07-26T02:34:37.292Z"
+              "updatedAt": "2026-09-12T05:55:38.570Z"
             },
             {
               "slug": "csd-s6-drift-signal",
               "name": "Drift signal - as-designed vs as-built comparison",
               "stage": "definition-of-done",
-              "health": "amber",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -16444,10 +16444,10 @@
               "dorArtefact": "artefacts/2026-07-25-code-shape-diagrams/dor/csd-s6-dor.md",
               "dorStatus": "signed-off",
               "prStatus": "merged",
-              "updatedAt": "2026-07-26T02:34:37.292Z",
+              "updatedAt": "2026-09-12T05:56:24.443Z",
               "dodStatus": "complete",
               "releaseReady": false,
-              "blocker": "AC3 comparison logic is implemented and tested but cannot exercise its full real-usage path until csd-s5's System Architecture as-built gap closes (same upstream gap as csd-s5's own blocker). See csd-s6-dod.md.",
+              "blocker": "",
               "dodArtefact": "artefacts/2026-07-25-code-shape-diagrams/dod/csd-s6-drift-signal-dod.md"
             },
             {
@@ -24886,8 +24886,8 @@
               "slug": "si-s1",
               "name": "Relocate the theme toggle into Settings",
               "stage": "definition-of-done",
-              "health": "amber",
-              "updatedAt": "2026-08-17T04:57:32.058Z",
+              "health": "green",
+              "updatedAt": "2026-09-12T06:52:29.939Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -24908,7 +24908,7 @@
               "prUrl": "https://github.com/heymishy/skills-repo/pull/749",
               "dodStatus": "complete",
               "releaseReady": false,
-              "blocker": "COMPLETE WITH DEVIATIONS: AC4 required a new server route not in the original DoR contract touch-points (documented, reasoned); m2 metric has no pre-relocation baseline to compare against (metric-design gap, not a delivery defect).",
+              "blocker": "",
               "dodArtefact": "artefacts/2026-08-17-settings-improvements/dod/si-s1-dod.md"
             },
             {
@@ -29790,8 +29790,8 @@
               "slug": "ep1-s1",
               "name": "Feature Discovery from Pipeline-State Index",
               "stage": "definition-of-done",
-              "health": "amber",
-              "updatedAt": "2026-09-01T19:00:39.969Z",
+              "health": "green",
+              "updatedAt": "2026-09-12T06:24:03.838Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -29845,7 +29845,7 @@
               "prUrl": "https://github.com/heymishy/skills-repo/pull/808",
               "dodStatus": "complete",
               "releaseReady": false,
-              "blocker": "DoD deviations: 2 NFRs not fully evidenced (perf timing, stalled-feature test) -- see dod/ep1-s1-dod.md"
+              "blocker": ""
             },
             {
               "slug": "ep1-s2",
@@ -34047,6 +34047,40 @@
       ],
       "metrics": [],
       "updatedAt": "2026-09-12T02:43:56.269Z",
+      "track": "short",
+      "guardrails": []
+    },
+    {
+      "slug": "2026-09-12-ep1-s1-nfr-coverage-backfill",
+      "name": "Dedicated tests for ep1-s1's two code-review-only NFRs",
+      "stage": "definition-of-done",
+      "health": "green",
+      "stories": [
+        {
+          "id": "enfr-s1",
+          "slug": "enfr-s1",
+          "name": "Dedicated tests for ep1-s1's two code-review-only NFRs",
+          "stage": "definition-of-done",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/870",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 2,
+            "passing": 2
+          },
+          "acTotal": 2,
+          "acVerified": 2,
+          "updatedAt": "2026-09-12T06:23:35.488Z",
+          "verifyStatus": "passed",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-09-12-ep1-s1-nfr-coverage-backfill/dod/enfr-s1-dod.md"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-12T04:43:45.616Z",
       "track": "short",
       "guardrails": []
     },

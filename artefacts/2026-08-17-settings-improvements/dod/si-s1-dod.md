@@ -79,11 +79,11 @@ Date measured: null
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
 **Follow-up actions:**
-- [Owner: Hamish King] No pre-relocation baseline exists for the theme-toggle click-rate metric (m2) — the 20%-of-baseline target cannot be evaluated. Consider whether m2's target needs revising to an absolute floor (e.g. "non-zero and stable click rate over first 2 weeks post-relocation") instead, since the comparative baseline this metric was designed around no longer exists.
-- [Owner: Hamish King] Confirm the AC4 server-route deviation (see Scope Deviations) is acceptable as a permanent pattern, or note it for `/improve` as a case where DoR contracts should more explicitly anticipate analytics-capture touch points.
+- ~~No pre-relocation baseline exists for the theme-toggle click-rate metric (m2)...~~ — **Done (2026-09-12).** Operator chose to revise m2's target to an absolute floor ("non-zero and stable click rate over a 2-week window") rather than retire it or leave an unevaluable target on record. See `decisions.md`'s 2026-09-12 DESIGN entry and `benefit-metric.md`'s revised Metric 2.
+- ~~Confirm the AC4 server-route deviation is acceptable as a permanent pattern...~~ — **Done (2026-09-12).** Operator confirmed the pattern is acceptable as-is; no `/improve` process change needed. See `decisions.md`'s 2026-09-12 ARCH entry.
 
 ---
 
