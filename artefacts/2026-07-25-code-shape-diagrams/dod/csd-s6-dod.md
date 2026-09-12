@@ -15,7 +15,7 @@
 |----|-----------|----------|---------------------|-----------|
 | AC1 | ✅ | `src/modules/drift-comparator.js` flags add/remove/rename for Data Model, plus a dedicated ADR-026 non-optimal-design check (Jaccard-similarity-based duplicate-entity detection) | 3 dedicated unit tests including the duplicate-entity edge case, plus a real integration test using csd-s5's real Data Model generator output against a real migration file | None |
 | AC2 | ✅ | Program Design drift restricted to call-stack/file-tree structural changes; a renamed local variable within an unchanged file structure does not trigger a flag | Dedicated tests for both directions (structural change flags, variable rename doesn't) | None |
-| AC3 | ⚠️ | Drift-comparison logic for System Architecture (new/removed service-call edges) is implemented and tested against fixture inputs | 2 dedicated unit tests (new/removed service call), both passing | **Deviation, inherited from csd-s5's own recorded gap, not a new one introduced here**: csd-s5 never built a real System Architecture as-built generator, so this AC's comparison LOGIC works and is tested, but the full real-usage path (real as-designed vs real as-built System Architecture diagram for an actual feature) cannot run end-to-end yet. The one integration test in this story necessarily uses Data Model (the type with a real generator) rather than System Architecture. |
+| AC3 | ✅ — **closed 2026-09-12 by `csd-s7`** | Drift-comparison logic for System Architecture (new/removed service-call edges) is implemented and tested against fixture inputs. `csd-s7` (merged 2026-07-26, DoD-complete) built the missing real generator (`src/modules/service-call-detector.js`), and its own AC5 confirms an end-to-end comparison against an as-designed diagram runs with no change to `drift-comparator.js`. | 2 dedicated unit tests (new/removed service call) plus `csd-s7`'s own AC5 end-to-end test, 9/9 passing | None — closed |
 | AC4 | ✅ | Explicit "Matches" signal shown per diagram type when no drift is detected — never silence | Dedicated test + the accessibility test below | None |
 | AC5 | ✅ | Diverged signal names the specific difference (e.g. table/column/relationship name, or the specific call-stack change) — never a bare "diverged" label | 3 dedicated tests, one per diagram type, each asserting the specific named difference appears in the signal | None |
 
@@ -23,7 +23,7 @@
 
 ## Scope Deviations
 
-None beyond AC3's inherited gap (recorded against csd-s5, not this story — this story correctly implemented everything askable given what csd-s5 actually built). Fully-automated safe/unsafe verdicts and auto-remediation were correctly left out, matching declared out-of-scope.
+None remaining. AC3's inherited gap (recorded against csd-s5, not this story) is **closed 2026-09-12** — see AC3 row above. Fully-automated safe/unsafe verdicts and auto-remediation were correctly left out, matching declared out-of-scope.
 
 ---
 
@@ -67,10 +67,10 @@ None beyond AC3's inherited gap (recorded against csd-s5, not this story — thi
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
 **Follow-up actions:**
-1. Same as csd-s5's follow-up #1: System Architecture as-built generation needs a `decisions.md` ARCH entry and a follow-up story before AC3's full real-usage path can be exercised end-to-end. This story's own comparison logic for System Architecture is ready and waiting for that upstream gap to close.
+1. ~~Same as csd-s5's follow-up #1: System Architecture as-built generation needs a decisions.md ARCH entry and a follow-up story...~~ — **Done (csd-s7, merged 2026-07-26).** This story's own comparison logic now has a real generator to exercise end-to-end.
 2. Once a real feature exists that has gone through `/design`→`/definition`→`/verify-completion`→this drift check, revisit all 4 epic-level metrics (P1, P2, P3, M1) for their first real measurement.
 
 ---

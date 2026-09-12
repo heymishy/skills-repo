@@ -14,7 +14,7 @@
 | AC | Satisfied? | Evidence | Verification method | Deviation |
 |----|-----------|----------|---------------------|-----------|
 | AC1 | ✅ | `src/modules/migration-schema-parser.js` statically parses `scripts/migrate-schema-*.js` (balanced-paren `CREATE TABLE` parsing, no live DB connection) and generates a mermaid `erDiagram` using the exact canvas content-block shape csd-s1/csd-s2 already render | `tests/check-csd-s5-as-built-diagram-generation.js` (10/10 passing), tested against REAL migration files in this repo, not only synthetic fixtures | None |
-| AC2 | ⚠️ | Program Design as-built covered via `src/modules/call-graph-extractor.js` (real `require()`-edge extraction). System Architecture as-built generation does **not** yet exist — no service-call-graph extractor was built | Code review confirms only Data Model + Program Design extraction exists; System Architecture as-built has no generator | **Deviation, explicitly flagged by the implementing agent, not discovered after the fact**: AC2 as literally written ("System Architecture and Program Design diagrams are generated") is only half-satisfied. `decisions.md`'s only resolved ARCH entry for csd-s5 covers Data Model via migration-file parsing — there is no resolved decision for a System Architecture as-built extraction method, so this gap traces back to an incomplete decision, not an implementation shortcut. |
+| AC2 | ✅ — **closed 2026-09-12 by `csd-s7`** | Program Design as-built covered via `src/modules/call-graph-extractor.js` (real `require()`-edge extraction). System Architecture as-built generation was originally missing at this story's own merge, but `csd-s7` (merged 2026-07-26, DoD-complete) built `src/modules/service-call-detector.js`, implementing the static `require()`-allowlist extraction method this DoD's own follow-up action asked for. | `csd-s7`'s own DoD (`csd-s7-dod.md`), 9/9 tests passing, ~3 weeks in production with no incidents as of its 2026-08-17 retroactive pass | None — closed |
 | AC3 | ✅ | Generated diagrams written to `artefacts/<featureSlug>/diagrams/as-built-data-model-<timestamp>.json` as versioned files — never overwritten, each generation call adds a new file | Integration test confirms a second call adds a new file rather than overwriting | None |
 | AC4 | ✅ | Malformed migration files throw `MigrationParseError` naming the file and specific problem; surfaced as a real HTTP 500 with the error message, never a silent empty/incorrect diagram | Unit test (module level) + integration test (through the real route handler via its D37-style adapter seam) | None |
 
@@ -22,7 +22,7 @@
 
 ## Scope Deviations
 
-**System Architecture as-built generation is not implemented** (see AC2 above). This is recorded as a gap requiring a follow-up decision + story, not a silent omission — the implementing agent flagged it explicitly in the PR description and the commit message, and `decisions.md` has no resolved ARCH entry authorizing a specific extraction method for this diagram type, so building one without a decision would have been scope invention rather than scope delivery.
+None remaining. **System Architecture as-built generation gap closed 2026-09-12** — see AC2 row above. At this story's own merge, the gap was recorded as requiring a follow-up decision + story rather than a silent omission; `csd-s7` (merged 2026-07-26) was exactly that follow-up, and its own DoD confirms it closed this epic's last open gap.
 
 ---
 
@@ -61,10 +61,10 @@
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
 **Follow-up actions:**
-1. **Decide and implement System Architecture as-built generation** (AC2's unmet half) — needs a `decisions.md` ARCH entry first (what constitutes "ground truth" for a service-call graph in this repo — likely an extension of `call-graph-extractor.js`'s require-edge approach, or something more structural), then a follow-up story. Owner: Hamish King.
+1. ~~Decide and implement System Architecture as-built generation (AC2's unmet half)...~~ — **Done (csd-s7, merged 2026-07-26).** `service-call-detector.js` implements the static `require()`-allowlist extraction method, per `decisions.md`'s 2026-07-26 ARCH entry.
 2. A pre-existing column-type-token mismatch between csd-s4's design convention and this module's `mapType()` function exists but was correctly sidestepped for this story's own AC1 (name-level matching only) — see csd-s6's DoD for where this surfaced and how it was handled.
 
 ---
