@@ -33957,17 +33957,17 @@
     {
       "slug": "2026-09-12-skill-session-redis-fallback-coverage-backfill",
       "name": "Dedicated Redis-fallback tests for the remaining wusl-s1 call sites",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "id": "wusl-s2",
           "slug": "wusl-s2",
           "name": "Dedicated Redis-fallback tests for the remaining wusl-s1 call sites",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
-          "prStatus": "open",
+          "prStatus": "merged",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 4,
@@ -33975,7 +33975,10 @@
           },
           "acTotal": 4,
           "acVerified": 4,
-          "updatedAt": "2026-09-12T00:58:12.656Z"
+          "updatedAt": "2026-09-12T01:11:43.569Z",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-09-12-skill-session-redis-fallback-coverage-backfill/dod/wusl-s2-dod.md"
         }
       ],
       "metrics": [],
