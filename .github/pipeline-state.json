@@ -16862,7 +16862,7 @@
       "slug": "2026-07-26-trace-validation-archived-path-fix",
       "name": "Resolve archived-feature paths in the test_plan_coverage trace-validation check",
       "track": "short",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "epics": [],
       "stories": [
@@ -16870,20 +16870,23 @@
           "id": "r-trace-validation-archived-paths",
           "slug": "r-trace-validation-archived-paths",
           "name": "Resolve archived-feature paths in test_plan_coverage (bash + PowerShell)",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 3,
           "acVerified": 3,
           "artefact": "artefacts/2026-07-26-trace-validation-archived-path-fix/stories/r-trace-validation-archived-paths.md",
           "notes": "Retrospective story. Fix already merged to master (commit f7aa0dad) via direct push -- itself a process gap (scripts/ requires PR per Platform change policy), tracked here rather than repeated. AC3 (test coverage) closed via PR #872.",
-          "prStatus": "draft",
-          "updatedAt": "2026-09-12T08:21:42.555Z",
+          "prStatus": "merged",
+          "updatedAt": "2026-09-12T09:14:00.221Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/872",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 4,
             "passing": 4
-          }
+          },
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-26-trace-validation-archived-path-fix/dod/r-trace-validation-archived-paths-dod.md"
         }
       ],
       "metrics": [],
