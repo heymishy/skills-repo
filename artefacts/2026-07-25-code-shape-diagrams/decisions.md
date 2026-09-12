@@ -72,6 +72,14 @@
 **Revisit trigger:** If the allowlist-based approach misses a real external service integration added in a future feature (e.g. a new payment provider, a new LLM vendor) — the allowlist will need extending, or a more general detection heuristic (any `require()` of a package not already in `package.json`'s own internal `src/` tree) may be worth considering at that point.
 ---
 
+**2026-09-12 | DESIGN | pipeline-state audit follow-up**
+**Decision:** `csd-s3` AC1/AC2's phrase "saved as part of the DoR artefact" is retroactively clarified to mean "saved as part of the artefact this skill itself produces" (`design.md` for `/design`'s System Architecture section, `definition.md` for `/definition`'s Program Design section) — not a literal file named "DoR artefact." The as-shipped behaviour (confirmed correct at merge time and unchanged since) already matches this clarified reading; only the AC's own wording was imprecise.
+**Alternatives considered:** (a) Leave the wording as-is with the deviation permanently recorded in `csd-s3-dod.md` — rejected because the DoD itself already recommended closing this gap, and the underlying behaviour needs no further verification, only the record needs correcting; (b) Edit the story file's AC1/AC2 text in place — rejected in favour of a `decisions.md` entry, since retroactively rewriting a merged story's historical AC text would make `/trace`'s own diff against the original PR harder to follow; the decision entry preserves both the original wording and its intended meaning.
+**Rationale:** Closes `csd-s3-dod.md`'s own named Follow-up Action with the minimal-footprint fix it already proposed (a wording clarification, not a code or test change) — no functional gap exists, confirmed by `csd-s3`'s own 36/36 passing test suite, unmodified.
+**Made by:** Claude Sonnet 5 (orchestrating agent), 2026-09-12 — session-wide pipeline-state audit, item flagged as one of 12 real-but-non-urgent scope gaps for operator prioritisation.
+**Revisit trigger:** None expected — this is a documentation-only clarification of already-correct, already-tested behaviour.
+---
+
 ## Architecture Decision Records
 
 <!-- No ADR-level entries yet for this feature — the three decisions above were judged log-entry weight, not full-ADR weight, at discovery stage. Revisit at /definition if any of them prove to have wider structural implications than currently understood. -->

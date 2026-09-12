@@ -13,8 +13,8 @@
 
 | AC | Satisfied? | Evidence | Verification method | Deviation |
 |----|-----------|----------|---------------------|-----------|
-| AC1 | ⚠️ | `skills/design/SKILL.md` gained a "Canvas markers — System Architecture diagram" section tied to Step 2 (Solution architecture); emits the `system-architecture` CANVAS-JSON marker. AC text says "saved as part of the DoR artefact" — neither `/design` nor `/definition` produces a literal file named a "DoR artefact"; the implementing agent interpreted this as "part of the artefact this skill itself produces" (`design.md`) and documented the interpretation explicitly in the PR | `tests/check-csd-s3-design-definition-diagram-instructions.js` (36/36 passing); direct code review of `skills/design/SKILL.md` | **Deviation**: AC wording ("DoR artefact") doesn't literally match either skill's real output file naming — a wording gap in the story/DoR, not a functional gap. Recorded rather than silently reconciled. |
-| AC2 | ⚠️ | Same pattern for Program Design, tied to `/definition`'s Step 4 (Story decomposition); same "DoR artefact" wording gap applies | `tests/check-csd-s3-design-definition-diagram-instructions.js` | Same wording deviation as AC1 |
+| AC1 | ✅ | `skills/design/SKILL.md` gained a "Canvas markers — System Architecture diagram" section tied to Step 2 (Solution architecture); emits the `system-architecture` CANVAS-JSON marker, saved as part of `design.md` (the artefact `/design` itself produces). AC text's "DoR artefact" phrase retroactively clarified via `decisions.md` (2026-09-12) to mean this — the implementing agent's original interpretation was correct; only the AC's own wording was imprecise. | `tests/check-csd-s3-design-definition-diagram-instructions.js` (36/36 passing); direct code review of `skills/design/SKILL.md` | None — wording clarified in decisions.md, no functional gap ever existed |
+| AC2 | ✅ | Same pattern for Program Design, tied to `/definition`'s Step 4 (Story decomposition), saved as part of `definition.md`. Same wording clarification applies. | `tests/check-csd-s3-design-definition-diagram-instructions.js` | None — see decisions.md |
 | AC3 | ✅ | Feature-granularity default documented explicitly: one diagram set per feature, refreshed as stories complete, not per-story unless the operator explicitly decides otherwise and records it in `decisions.md` | Test asserts the multi-epic/refresh-rule generalisation (not hardcoded to a fixed story count) | None |
 
 ---
@@ -60,10 +60,10 @@ None. Data Model diagrams (csd-s4) and as-built diagrams (csd-s5) were correctly
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
 **Follow-up actions:**
-- Consider a small wording fix to this story's AC1/AC2 text (or a `decisions.md` note) clarifying that "DoR artefact" means "the artefact this skill itself produces" rather than a literal file so named — cosmetic, not functionally blocking, but worth closing the wording gap for future readers.
+- ~~Consider a small wording fix to this story's AC1/AC2 text...~~ — **Done (2026-09-12).** See `decisions.md`'s 2026-09-12 DESIGN entry.
 
 ---
 

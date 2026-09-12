@@ -16351,7 +16351,7 @@
               "slug": "csd-s3-design-produces-architecture-and-program-diagrams",
               "name": "/design//definition produce System Architecture + Program Design diagrams",
               "stage": "definition-of-done",
-              "health": "amber",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -16367,10 +16367,10 @@
               "dorArtefact": "artefacts/2026-07-25-code-shape-diagrams/dor/csd-s3-dor.md",
               "dorStatus": "signed-off",
               "prStatus": "merged",
-              "updatedAt": "2026-07-26T02:34:37.292Z",
+              "updatedAt": "2026-09-12T01:20:22.557Z",
               "dodStatus": "complete",
               "releaseReady": true,
-              "blocker": "AC1/AC2 wording says \"saved as part of the DoR artefact\" -- neither skill produces a literal file so named; interpreted as the skill's own artefact. Cosmetic wording gap, not functional. See csd-s3-dod.md.",
+              "blocker": "",
               "dodArtefact": "artefacts/2026-07-25-code-shape-diagrams/dod/csd-s3-design-produces-architecture-and-program-diagrams-dod.md"
             },
             {
