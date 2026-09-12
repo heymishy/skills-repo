@@ -24886,8 +24886,8 @@
               "slug": "si-s1",
               "name": "Relocate the theme toggle into Settings",
               "stage": "definition-of-done",
-              "health": "amber",
-              "updatedAt": "2026-08-17T04:57:32.058Z",
+              "health": "green",
+              "updatedAt": "2026-09-12T06:52:29.939Z",
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
@@ -24908,7 +24908,7 @@
               "prUrl": "https://github.com/heymishy/skills-repo/pull/749",
               "dodStatus": "complete",
               "releaseReady": false,
-              "blocker": "COMPLETE WITH DEVIATIONS: AC4 required a new server route not in the original DoR contract touch-points (documented, reasoned); m2 metric has no pre-relocation baseline to compare against (metric-design gap, not a delivery defect).",
+              "blocker": "",
               "dodArtefact": "artefacts/2026-08-17-settings-improvements/dod/si-s1-dod.md"
             },
             {

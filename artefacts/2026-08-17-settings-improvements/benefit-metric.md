@@ -34,12 +34,12 @@ This is a straightforward product-improvement initiative closing real beta-user 
 
 | Field | Value |
 |-------|-------|
-| **What we measure** | Click-through rate on the theme toggle control, before (topbar) vs. after (Settings) relocation |
-| **Baseline** | Not yet established — no existing telemetry on topbar theme-toggle click frequency. Will capture a 2-week baseline window on the current topbar control before relocating it |
-| **Target** | Post-relocation click rate is within 20% of the pre-relocation baseline (comparable usage, not a silent drop-off) |
-| **Minimum validation signal** | Post-relocation click rate is non-zero and trending flat-to-up over the first 2 weeks after release — confirms users are finding it in its new location at all |
-| **Measurement method** | New click event on the relocated control (same PostHog convention), compared against the captured baseline window. Measured by the Platform owner, reviewed 2 weeks post-release |
-| **Feedback loop** | If click rate drops >20% and stays down past 2 weeks, the Platform owner considers a discoverability fix (e.g. a redirect/tooltip from the old topbar location) or reconsiders the relocation itself, per the risk already flagged in discovery |
+| **What we measure** | Click-through rate on the relocated theme toggle control (Settings > Profile tab, post-relocation) |
+| **Baseline** | **Revised 2026-09-12 (operator decision, ral/si follow-up sweep):** no pre-relocation baseline was ever captured — si-s1 shipped the relocation directly, without the 2-week topbar-baseline window this metric originally called for. That comparative baseline is now permanently unrecoverable (the topbar control no longer exists to measure). Retargeted to an absolute floor instead of a before/after comparison. |
+| **Target** | Post-relocation click rate is non-zero and stable (not trending toward zero) over the first 2 weeks of real measurement from whenever `enfr`/`ral`-style telemetry review next runs — confirms users are finding and using the control in its new location, without requiring a baseline that no longer exists to compare against |
+| **Minimum validation signal** | At least one real signed-in user (beyond ad-hoc agent/QA sessions) fires the relocated toggle's click event at least once within the first 2 weeks measured |
+| **Measurement method** | Existing click event on the relocated control (same PostHog convention, si-s1 AC4), reviewed by the Platform owner over any 2-week window post-release — no baseline comparison required |
+| **Feedback loop** | If the click rate is zero or trends to zero over 2 full weeks of real measurement, the Platform owner considers a discoverability fix (e.g. a redirect/tooltip from the old topbar location, if still remembered by users) or reconsiders the relocation itself, per the risk already flagged in discovery |
 
 ### Metric 3: Original beta-reported friction resolved
 
