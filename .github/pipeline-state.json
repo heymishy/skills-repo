@@ -14834,14 +14834,14 @@
           "id": "srmw-s1",
           "slug": "srmw-s1",
           "name": "Wire {stage, scenarioName} into handlePostTurnStreamHtml so MOCK_LLM_GATEWAY actually activates for the real chat UI streaming turn endpoint",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "totalTests": 5,
-            "passing": 0,
+            "passing": 5,
             "artefact": "artefacts/2026-07-23-streaming-route-mock-gateway-wiring/test-plans/srmw-s1-test-plan.md"
           },
           "acTotal": 5,
@@ -14852,8 +14852,11 @@
           "dorArtefact": "artefacts/2026-07-23-streaming-route-mock-gateway-wiring/dor/srmw-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-07-23-streaming-route-mock-gateway-wiring/dor/srmw-s1-dor-contract.md",
           "dorSignedOffAt": "2026-07-23T03:31:19.368Z",
-          "prStatus": "none",
-          "updatedAt": "2026-08-04T19:16:49.957Z"
+          "prStatus": "merged",
+          "updatedAt": "2026-09-12T08:02:55.463Z",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodArtefact": "artefacts/2026-07-23-streaming-route-mock-gateway-wiring/dod/srmw-s1-dod.md"
         }
       ],
       "updatedAt": "2026-08-04T19:16:49.956Z"
