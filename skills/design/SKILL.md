@@ -102,7 +102,9 @@ Solution Architecture > Overview subsection), using this format:
 
 Fields:
 - `type`: always `system-architecture` for this marker
-- `title`: short human-readable title (e.g. "System Architecture")
+- `title`: short human-readable title, prefixed `"As designed: "` for symmetry
+  with csd-s5's as-built diagram title convention (e.g. "As designed: System
+  architecture")
 - `content.mermaid`: Mermaid `flowchart` or `sequenceDiagram` source showing the
   components/services this feature touches and how they connect. Reuse
   csd-s2's existing rendering mechanism — do not introduce a new diagram
@@ -111,7 +113,7 @@ Fields:
 Worked example, for a feature adding one new service call:
 
 ```
----CANVAS-JSON: {"type":"system-architecture","title":"System Architecture","content":{"mermaid":"flowchart TD\n    WEBUI[Web UI]\n    NEWSVC[New Service]\n    POSTGRES[(Postgres)]\n    WEBUI --> NEWSVC\n    NEWSVC --> POSTGRES"}}---
+---CANVAS-JSON: {"type":"system-architecture","title":"As designed: System architecture","content":{"mermaid":"flowchart TD\n    WEBUI[Web UI]\n    NEWSVC[New Service]\n    POSTGRES[(Postgres)]\n    WEBUI --> NEWSVC\n    NEWSVC --> POSTGRES"}}---
 ```
 
 Feature granularity (AC3): this diagram is generated at **feature granularity
@@ -184,7 +186,9 @@ new marker shape when an existing one already covers this:
 
 Fields:
 - `type`: always `data-model` for this content-block
-- `title`: short human-readable title (e.g. "Data model")
+- `title`: short human-readable title, prefixed `"As designed: "` for symmetry
+  with csd-s5's as-built diagram title convention (e.g. "As designed: Data
+  model")
 - `content.mermaid`: a Mermaid `erDiagram` string describing entities, columns, and relationships
 
 ### What the diagram must include (AC1, AC2)
