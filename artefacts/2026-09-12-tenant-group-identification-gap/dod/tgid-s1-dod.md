@@ -64,7 +64,9 @@ No formal benefit-metric artefact exists for this story — short-track gap-clos
 
 No deviations, no test gaps. Closes a real, honestly self-disclosed gap from `bri-s1.4`'s own DoD (2026-07-09) — `identifyTenantGroup()` was fully built and unit-tested but never actually called from any live request path. Found via a full pipeline-state audit on 2026-09-12, not a new investigation from scratch.
 
-**Follow-up actions:** None required for this story's own scope.
+**Live-verified against real `wuce-staging`, 2026-09-13 (partial, operator-requested):** authenticated via real GitHub OAuth and requested `GET /journey/wizard` — the real route that calls `bootstrapFlags()` → `identifyTenantGroup(tenantId)`. Returned a clean 200 with real rendered content, confirming the code path executes in production without crashing. **This does not confirm PostHog itself received the group-identify call** — `identifyTenantGroup()` is deliberately silent on both success and failure (bri-s1.4 AC3: never crash the caller), so there is no server-side log or other observable signal to check. Confirming PostHog's actual receipt requires either PostHog's own dashboard (not accessed — no credentials available in this session) or temporary instrumentation (a code change, out of scope for verification). SSH-based env-var inspection was attempted as an alternative and correctly blocked by the safety classifier (dumping production secrets is not a reasonable verification method).
+
+**Follow-up actions:** None required for this story's own scope. If PostHog dashboard access becomes available, checking the `tenant` group list for a populated record would upgrade this story's evidence class from "code path executes cleanly" to "the analytics side-effect genuinely happened."
 
 ---
 
