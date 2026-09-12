@@ -34017,6 +34017,35 @@
       "updatedAt": "2026-09-12T01:34:55.480Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-09-12-outer-loop-bootstrap-perf-fix",
+      "name": "Batch skill-metadata extraction to close the --with-outer-loop performance NFR gap",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "id": "obpf-s1",
+          "slug": "obpf-s1",
+          "name": "Batch skill-metadata extraction to close the --with-outer-loop performance NFR gap",
+          "stage": "branch-complete",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "prStatus": "open",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 3,
+            "passing": 3
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "updatedAt": "2026-09-12T02:44:15.223Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-12T02:43:56.269Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

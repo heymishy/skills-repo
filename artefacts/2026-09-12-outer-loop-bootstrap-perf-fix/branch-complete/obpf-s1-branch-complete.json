@@ -1,0 +1,23 @@
+{
+  "storyId": "obpf-s1",
+  "prUrl": "https://github.com/heymishy/skills-repo/pull/869",
+  "verifyStatus": "passed",
+  "testPlan": {
+    "status": "all-passing",
+    "totalTests": 3,
+    "passing": 3
+  },
+  "acTotal": 4,
+  "acVerified": 4,
+  "fullSuite": {
+    "filesRun": 645,
+    "failed": 3,
+    "newFailures": 0,
+    "note": "3 failures match established pre-existing baseline (bjs-s1, p3.5, s6.1)"
+  },
+  "performanceEvidence": {
+    "preFixIsolatedMs": "5700-5900",
+    "postFixIsolatedMs": "2500-3000",
+    "note": "runInit({withOuterLoop:true}) measured in isolation, no concurrent load"
+  }
+}
