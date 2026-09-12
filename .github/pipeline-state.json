@@ -33953,6 +33953,35 @@
       "updatedAt": "2026-09-11T23:58:37.996Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-09-12-skill-session-redis-fallback-coverage-backfill",
+      "name": "Dedicated Redis-fallback tests for the remaining wusl-s1 call sites",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "id": "wusl-s2",
+          "slug": "wusl-s2",
+          "name": "Dedicated Redis-fallback tests for the remaining wusl-s1 call sites",
+          "stage": "branch-complete",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "prStatus": "open",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 4,
+            "passing": 4
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "updatedAt": "2026-09-12T00:58:12.656Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-12T00:57:55.386Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
