@@ -309,7 +309,9 @@ they call into one another. Emit it on its own line, using this format:
 
 Fields:
 - `type`: always `program-design` for this marker
-- `title`: short human-readable title (e.g. "Program Design")
+- `title`: short human-readable title, prefixed `"As designed: "` for symmetry
+  with csd-s5's as-built diagram title convention (e.g. "As designed: Program
+  design")
 - `content.mermaid`: Mermaid `flowchart` source showing the file-tree/call-stack
   shape implied by the epic/story sequencing above. Reuse csd-s2's existing
   rendering mechanism — do not introduce a new diagram format or a second
@@ -318,7 +320,7 @@ Fields:
 Worked example:
 
 ```
----CANVAS-JSON: {"type":"program-design","title":"Program Design","content":{"mermaid":"flowchart LR\n    ROUTE[routes/feature.js]\n    ADAPTER[adapters/feature-store.js]\n    ROUTE --> ADAPTER"}}---
+---CANVAS-JSON: {"type":"program-design","title":"As designed: Program design","content":{"mermaid":"flowchart LR\n    ROUTE[routes/feature.js]\n    ADAPTER[adapters/feature-store.js]\n    ROUTE --> ADAPTER"}}---
 ```
 
 Feature granularity (AC3): like the System Architecture diagram, this is
