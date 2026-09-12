@@ -33985,6 +33985,35 @@
       "updatedAt": "2026-09-12T00:57:55.386Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-09-12-as-designed-label-symmetry",
+      "name": "Symmetric \"As designed:\" / \"As-built:\" diagram title prefixes",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "id": "aldl-s1",
+          "slug": "aldl-s1",
+          "name": "Symmetric As designed / As-built diagram title prefixes",
+          "stage": "branch-complete",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "prStatus": "open",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 7,
+            "passing": 7
+          },
+          "acTotal": 4,
+          "acVerified": 4,
+          "updatedAt": "2026-09-12T01:35:10.569Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-12T01:34:55.480Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

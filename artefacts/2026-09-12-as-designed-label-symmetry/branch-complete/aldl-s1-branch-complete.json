@@ -1,0 +1,18 @@
+{
+  "storyId": "aldl-s1",
+  "prUrl": "https://github.com/heymishy/skills-repo/pull/868",
+  "verifyStatus": "passed",
+  "testPlan": {
+    "status": "all-passing",
+    "totalTests": 7,
+    "passing": 7
+  },
+  "acTotal": 4,
+  "acVerified": 4,
+  "fullSuite": {
+    "filesRun": 645,
+    "failed": 3,
+    "newFailures": 0,
+    "note": "3 failures match established pre-existing baseline (bjs-s1, p3.5, s6.1)"
+  }
+}
