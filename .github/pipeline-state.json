@@ -2448,9 +2448,9 @@
           "testPlanArtefact": "artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.4-eval-anti-gaming-controls-test-plan.md",
           "dorStatus": "blocked",
           "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.4-eval-anti-gaming-controls-dor.md",
-          "blocker": "p3.3 DoD-complete required — platform/suite.json host location established by p3.3",
-          "health": "red",
-          "updatedAt": "2026-04-18",
+          "blocker": "",
+          "health": "green",
+          "updatedAt": "2026-09-12T07:48:51.723Z",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.4-eval-anti-gaming-controls-review-1.md",
           "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.4-eval-anti-gaming-controls.md",
           "dodStatus": "complete",
@@ -2582,9 +2582,9 @@
           "testPlanArtefact": "artefacts/2026-04-14-skills-platform-phase3/test-plans/p3.12-squad-contribution-flow-test-plan.md",
           "dorStatus": "blocked",
           "dorArtefact": "artefacts/2026-04-14-skills-platform-phase3/dor/p3.12-squad-contribution-flow-dor.md",
-          "blocker": "p3.4 DoD-complete required — contribution guide references p3.4 anti-gaming requirements",
-          "health": "red",
-          "updatedAt": "2026-04-18",
+          "blocker": "",
+          "health": "green",
+          "updatedAt": "2026-09-12T07:48:51.899Z",
           "reviewArtefact": "artefacts/2026-04-14-skills-platform-phase3/review/p3.12-squad-contribution-flow-review-1.md",
           "artefact": "artefacts/2026-04-14-skills-platform-phase3/stories/p3.12-squad-contribution-flow.md",
           "dodStatus": "complete",
@@ -6596,9 +6596,10 @@
           "dorArtefact": "artefacts/2026-06-21-strategy-and-data-hub-dor-sdg-1/definition-of-ready.md",
           "prStatus": "merged",
           "health": "amber",
-          "updatedAt": "2026-07-30T08:54:10.702Z",
+          "updatedAt": "2026-09-12T07:50:20.450Z",
           "dodStatus": "complete",
-          "dodArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dod/sdg.1-dod.md"
+          "dodArtefact": "artefacts/2026-06-21-strategy-and-data-hub/dod/sdg.1-dod.md",
+          "blocker": "RISK-ACCEPT: accessibility NFR unverified (manual keyboard/screen-reader smoke test pending); missing benefit-metric.md flagged for /improve, not blocking. See dod/sdg.1-dod.md."
         },
         {
           "id": "sdg.2",
@@ -7387,7 +7388,7 @@
               "highFindings": 0,
               "health": "amber",
               "complexity": 2,
-              "updatedAt": "2026-08-10T02:08:26.015Z",
+              "updatedAt": "2026-09-12T07:50:20.624Z",
               "testPlan": {
                 "status": "all-passing",
                 "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s2.3-test-plan.md",
@@ -7405,7 +7406,8 @@
               "name": "/welcome onboarding — first-login detection + plan selection redirect",
               "prStatus": "merged",
               "dodStatus": "complete",
-              "releaseReady": false
+              "releaseReady": false,
+              "blocker": "RISK-ACCEPT: AC4 CSS-layout manual smoke test pending pre-launch (320px + 1280px viewports on /welcome). See dod/lab-s2.3-dod.md."
             }
           ],
           "slug": "lab-e2"
@@ -7523,7 +7525,7 @@
               "highFindings": 0,
               "health": "amber",
               "complexity": 1,
-              "updatedAt": "2026-08-10T02:08:33.365Z",
+              "updatedAt": "2026-09-12T07:50:20.795Z",
               "testPlan": {
                 "status": "all-passing",
                 "artefact": "artefacts/2026-07-01-landing-auth-billing/test-plans/lab-s3.5-test-plan.md",
@@ -7541,7 +7543,8 @@
               "name": "Billing portal + pre-launch Stripe ID swap checklist",
               "prStatus": "merged",
               "dodStatus": "complete",
-              "releaseReady": false
+              "releaseReady": false,
+              "blocker": "RISK-ACCEPT: AC5 live Stripe end-to-end manual smoke test pending pre-launch (check-prelaunch-stripe.js + price-change verification). See dod/lab-s3.5-dod.md."
             }
           ],
           "slug": "lab-e3"
@@ -14999,11 +15002,12 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-23-ideate-canvas-turn2-render-fix/dor/icv-s1-dor.md",
           "prStatus": "merged",
-          "updatedAt": "2026-08-17T12:07:42.378Z",
+          "updatedAt": "2026-09-12T07:50:20.958Z",
           "notes": "Root cause: tests/e2e/a3-product-feature-ideate-canvas.spec.js's AC3 failed against real wuce-staging (CI run 29996127983, job 89170114731, PR #568) -- canvas count frozen after turn 1, never growing after a genuine second turn. Actual cause: _renderChatPage's inline client script auto-fires a hidden 'continue' turn whenever a response has no literal '?' and no ARTEFACT marker (a10b32a3's nudge, correct for artefact-generating skills, wrong for /ideate which is conversational and never emits artefact markers) -- this fired an unbounded chain of hidden turns against the static mock fixture. Fixed with a single conditional gate (!IS_IDEATE &&) on the existing IS_IDEATE flag. 3/3 new unit tests passing (jsdom-driven, RED confirmed pre-fix, GREEN post-fix, plus a contrast case proving the original a10b32a3 nudge is untouched for non-ideate skills). Full npm test: zero new regressions. Rebased onto master (post-#569 merge) to resolve the shared skills.js edit; both fixes coexist cleanly. Merged via PR #570.",
           "dodStatus": "complete",
           "releaseReady": false,
-          "dodArtefact": "artefacts/2026-07-23-ideate-canvas-turn2-render-fix/dod/icv-s1-dod.md"
+          "dodArtefact": "artefacts/2026-07-23-ideate-canvas-turn2-render-fix/dod/icv-s1-dod.md",
+          "blocker": "AC3's second-turn-growth case needs one more operator-authorized real /ideate turn to confirm canvas grows 2->3 with exactly one more executor call. See dod/icv-s1-dod.md."
         }
       ]
     },
@@ -15075,11 +15079,12 @@
           "dorArtefact": "artefacts/2026-07-24-chat-message-text-truncation-fix/dor/cmtt-s1-dor.md",
           "dorSignedOffAt": "2026-07-23T18:09:19.306Z",
           "prStatus": "merged",
-          "updatedAt": "2026-08-17T12:07:42.378Z",
+          "updatedAt": "2026-09-12T07:50:21.120Z",
           "notes": "Root cause: tests/e2e/a4-ideate-session-resume.spec.js AC2/AC3 failed against real wuce-staging -- resumed chat thread showed user message truncated (\"call it Project: an internal tool...\" instead of the full \"Project-Codename-Falcon-detail-...: an internal tool...\"). Isolated and ruled out both lightMd (skills.js) and lightMarkdown (chat-view.js) directly with the exact failing input -- neither reproduces it. Actual root cause: sanitiseAnswer() (src/answer-sanitiser.js) CLI_FLAG regex /--?[a-z][w-]*/gi has no boundary check on what precedes the leading hyphen, so it matches and deletes an entire hyphenated compound-word span mid-sentence, at write time, before the turn is ever pushed to session.turns -- a real, permanent corruption of any user own stored chat history matching this shape, not a render-time or session-restore bug. Fix: added a negative lookbehind (?<![w-]) so a flag is only recognised at a genuine token boundary. Verified: 8/8 new unit tests passing (RED confirmed pre-fix including through the real htmlSubmitTurn() write path, GREEN post-fix); all pre-existing sanitiser tests (T4.3/T4.5/NFR3/T4.4 in tests/skill-launcher.test.js) still pass unmodified; full npm test run shows zero new regressions vs tests/known-baseline-failures.json (the one delta, check-s6.1-cache-scope-session-threading.js, independently reproduced as failing identically on origin/master before this fix -- a pre-existing baseline-file drift, not a regression introduced by this change). Merged via PR #571.",
           "dodStatus": "complete",
           "releaseReady": false,
-          "dodArtefact": "artefacts/2026-07-24-chat-message-text-truncation-fix/dod/cmtt-s1-dod.md"
+          "dodArtefact": "artefacts/2026-07-24-chat-message-text-truncation-fix/dod/cmtt-s1-dod.md",
+          "blocker": "AC6 needs a real-staging re-run once an unrelated billing/credit account blocker resolves (documented in decisions.md). See dod/cmtt-s1-dod.md."
         }
       ],
       "updatedAt": "2026-07-23T19:55:49.000Z"
@@ -25615,13 +25620,14 @@
           "dodStatus": "complete",
           "prStatus": "none",
           "dodArtefact": "artefacts/2026-08-18-canvas-fix-staging-verification-gap/dod/csvg-s1-dod.md",
-          "updatedAt": "2026-09-11T09:55:59.554Z",
+          "updatedAt": "2026-09-12T07:50:47.708Z",
           "testPlan": {
             "status": "written",
             "totalTests": 0,
             "passing": 0,
             "artefact": "artefacts/2026-08-18-canvas-fix-staging-verification-gap/test-plans/csvg-s1-test-plan.md"
-          }
+          },
+          "blocker": "icv-s1's remaining AC3 sub-case needs one more operator-authorized real turn (tracked in icv-s1's own DoD); srmw-s1 (mock-gateway wiring for real chat UI) remains signed-off-but-unimplemented, recommended as an actual implementation story. See dod/csvg-s1-dod.md."
         }
       ],
       "metrics": [],
