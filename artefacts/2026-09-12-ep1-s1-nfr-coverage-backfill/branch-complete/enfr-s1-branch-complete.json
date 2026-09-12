@@ -1,0 +1,20 @@
+{
+  "storyId": "enfr-s1",
+  "prUrl": "https://github.com/heymishy/skills-repo/pull/870",
+  "verifyStatus": "passed",
+  "testPlan": {
+    "status": "all-passing",
+    "totalTests": 2,
+    "passing": 2
+  },
+  "acTotal": 2,
+  "acVerified": 2,
+  "regressionSuite": {
+    "file": "tests/check-ep1-s1-journey-feature-merge.js",
+    "totalTests": 8,
+    "passing": 8
+  },
+  "fullSuite": {
+    "note": "npm test run in background, no new failures introduced"
+  }
+}
