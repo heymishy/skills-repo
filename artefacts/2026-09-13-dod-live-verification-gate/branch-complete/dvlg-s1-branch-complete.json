@@ -1,0 +1,23 @@
+{
+  "storyId": "dvlg-s1",
+  "prUrl": "https://github.com/heymishy/skills-repo/pull/873",
+  "verifyStatus": "passed",
+  "testPlan": {
+    "status": "all-passing",
+    "totalTests": 7,
+    "passing": 7
+  },
+  "acTotal": 5,
+  "acVerified": 5,
+  "regressionSuite": {
+    "file": "tests/check-evcg-s1-verify-completion-e2e-check.js",
+    "totalTests": 9,
+    "passing": 9
+  },
+  "fullSuite": {
+    "filesRun": 650,
+    "failed": 1,
+    "newFailures": 0,
+    "note": "1 failure matches established pre-existing baseline (tests/check-p3.5-validate-trace.js, resource-contention flake)"
+  }
+}
