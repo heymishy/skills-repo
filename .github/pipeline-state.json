@@ -15136,14 +15136,14 @@
           "id": "eatrl-s1",
           "slug": "eatrl-s1",
           "name": "Wire the existing staging rate-limit bypass header into admin-credits-topup.js login/signup calls",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "amber",
           "reviewStatus": "skipped-short-track",
           "highFindings": 0,
           "testPlan": {
-            "status": "written",
+            "status": "all-passing",
             "totalTests": 4,
-            "passing": 0,
+            "passing": 4,
             "artefact": "artefacts/2026-07-23-e2e-admin-topup-rate-limit-bypass/test-plans/eatrl-s1-test-plan.md"
           },
           "acTotal": 4,
@@ -15152,9 +15152,13 @@
           "e2eToolingRequired": true,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-07-23-e2e-admin-topup-rate-limit-bypass/dor/eatrl-s1-dor.md",
-          "prStatus": "none",
-          "updatedAt": "2026-08-04T19:16:50.421Z",
-          "notes": "Fix implemented: exported RATE_LIMIT_BYPASS_HEADER and STUB_SECRET from staging-auth.js and wired them into admin-credits-topup.js's _adminLogin()/_adminSignupOnce(), mirroring signUpEmail()'s pattern. Branch fix-forward-e2e-admin-topup-rate-limit-bypass, draft PR https://github.com/heymishy/skills-repo/pull/573. AC1 verified by code inspection. AC3 verified locally (36 failing files, all subset of the 68-entry known-baseline-failures.json, zero new regressions) and via CI (one CI-runner-only flake, tests/check-p4-enf-second-line.js, unrelated to this change -- untouched by the diff, passes standalone, reproduced twice in full-suite CI matching this repo's documented resource-contention flake pattern). AC2/AC4 verified via real CI (E2E_STAGING_AUTH_STUB_SECRET is a GitHub Actions secret unavailable locally, per this story's own documented test-plan contingency): scenario-b-staging-e2e 4/4 passed 0 skipped 0 failed (b1 AC1-3 no longer skip); scenario-a-staging-e2e 7 passed/3 skipped(a2 intentional manual-only)/1 failed -- a3 AC3 (the specific test that skipped on PR 572) now passes, and a4's combined AC2-AC3 test failed on a genuine, separate, out-of-scope session-resume turn-history assertion mismatch (not a rate-limit skip -- credits top-up and login succeeded). Fix confirmed working as designed: zero rate-limit-caused skips observed across both real CI jobs. Two unrelated findings recorded in decisions.md for follow-up (a4 session-resume defect; check-p4-enf-second-line.js baseline gap). health=amber reflects these two open, honestly-reported, out-of-scope findings -- not a defect in this story's own fix."
+          "prStatus": "merged",
+          "updatedAt": "2026-09-12T07:59:56.613Z",
+          "notes": "Fix implemented: exported RATE_LIMIT_BYPASS_HEADER and STUB_SECRET from staging-auth.js and wired them into admin-credits-topup.js's _adminLogin()/_adminSignupOnce(), mirroring signUpEmail()'s pattern. Branch fix-forward-e2e-admin-topup-rate-limit-bypass, draft PR https://github.com/heymishy/skills-repo/pull/573. AC1 verified by code inspection. AC3 verified locally (36 failing files, all subset of the 68-entry known-baseline-failures.json, zero new regressions) and via CI (one CI-runner-only flake, tests/check-p4-enf-second-line.js, unrelated to this change -- untouched by the diff, passes standalone, reproduced twice in full-suite CI matching this repo's documented resource-contention flake pattern). AC2/AC4 verified via real CI (E2E_STAGING_AUTH_STUB_SECRET is a GitHub Actions secret unavailable locally, per this story's own documented test-plan contingency): scenario-b-staging-e2e 4/4 passed 0 skipped 0 failed (b1 AC1-3 no longer skip); scenario-a-staging-e2e 7 passed/3 skipped(a2 intentional manual-only)/1 failed -- a3 AC3 (the specific test that skipped on PR 572) now passes, and a4's combined AC2-AC3 test failed on a genuine, separate, out-of-scope session-resume turn-history assertion mismatch (not a rate-limit skip -- credits top-up and login succeeded). Fix confirmed working as designed: zero rate-limit-caused skips observed across both real CI jobs. Two unrelated findings recorded in decisions.md for follow-up (a4 session-resume defect; check-p4-enf-second-line.js baseline gap). health=amber reflects these two open, honestly-reported, out-of-scope findings -- not a defect in this story's own fix.",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "blocker": "Two genuinely out-of-scope findings remain open: a4's session-resume turn-history defect, and check-p4-enf-second-line.js's CI-runner-only full-suite flake. Neither is caused by this story's own fix. See dod/eatrl-s1-dod.md.",
+          "dodArtefact": "artefacts/2026-07-23-e2e-admin-topup-rate-limit-bypass/dod/eatrl-s1-dod.md"
         }
       ],
       "updatedAt": "2026-08-04T19:16:50.419Z"
