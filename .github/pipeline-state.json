@@ -34063,7 +34063,7 @@
           "stage": "branch-complete",
           "health": "green",
           "dorStatus": "signed-off",
-          "prStatus": "open",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/870",
           "testPlan": {
             "status": "all-passing",
@@ -34072,7 +34072,7 @@
           },
           "acTotal": 2,
           "acVerified": 2,
-          "updatedAt": "2026-09-12T04:43:45.616Z",
+          "updatedAt": "2026-09-12T06:17:42.155Z",
           "verifyStatus": "passed"
         }
       ],
