@@ -19,6 +19,9 @@ var csrf = require('../middleware/csrf'); // sec-perf-s3
 var _goldenTrace = require('../content/golden-trace-content'); // lphf-s1
 var _learningsCount = require('../content/learnings-count'); // lphf-s4
 var _instructionHash = require('../content/instruction-hash'); // ccrh-s1
+var _posthogClientSnippet = require('../modules/posthog-client-snippet'); // rpiw-s1
+var _buildPostHogScript = _posthogClientSnippet.buildPostHogScript;
+var _buildClickCaptureScript = _posthogClientSnippet.buildClickCaptureScript;
 
 // HTML loaded once at module init — path uses __dirname, never request data (path traversal safe).
 // lphf-s1/lphf-s4: the golden-trace section and the real learnings count are
@@ -83,6 +86,19 @@ async function handleRoot(req, res) {
   // Constraints). The rest of the page remains the same static HTML as before this story.
   var csrfToken = await csrf.generateCsrfToken(req);
   var html = _LANDING_HTML.split('<!--CSRF_TOKEN-->').join(csrf.csrfField(csrfToken));
+
+  // rpiw-s1: additive client-side PostHog wiring on the route real
+  // unauthenticated visitors actually land on. This does NOT replace the
+  // server-side landing_page_viewed capture above -- loading the real
+  // posthog-js SDK here makes PostHog's own automatic $pageview autocapture
+  // fire with a real, alias-able per-visitor cookie ID, which is what
+  // actually lets an activation funnel later link to the logged-in user.
+  var posthogKey = process.env.POSTHOG_KEY || '';
+  if (posthogKey) {
+    var phScript = _buildPostHogScript(posthogKey, {}) +
+      _buildClickCaptureScript(posthogKey, 'a[href="/auth/github"]', 'cta_clicked');
+    html = html.replace('</body>', phScript + '</body>');
+  }
 
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.writeHead(200);

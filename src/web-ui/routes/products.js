@@ -1,6 +1,7 @@
 'use strict';
 
 var _posthog = require('../modules/posthog-server');
+var _posthogClientSnippet = require('../modules/posthog-client-snippet'); // rpiw-s1
 var _productDraft = require('../adapters/product-draft');
 var _htmlShell = require('../utils/html-shell');
 var _postHogFlags = require('../modules/posthog-flags'); // bri-s1.5 — shared isEnabled() (D37)
@@ -2464,6 +2465,20 @@ async function handleGetDashboard(req, res, _next, pool) {
     var repoRoot = _repoRootAdapter.getRepoRoot(req);
     var hasNoProductWork = navSummary.noProductJourneyCount > 0 || _hasUnbackfilledCliFeatures(repoRoot);
     var html = _renderProductDashboard(cards, login, navSummary.products, null, navSummary.noProductJourneyCount, isAdmin, hasNoProductWork, impersonation);
+
+    // rpiw-s1: identify() + login_completed on the route real authenticated
+    // users actually land on -- SECURITY: only login/tenantId are ever
+    // passed, never req.session.accessToken (matches journey.js's existing
+    // buildDashboardPostHogScript pattern, NFR-T1/T11).
+    var posthogKey = process.env.POSTHOG_KEY || '';
+    if (posthogKey) {
+      var phScript = _posthogClientSnippet.buildPostHogScript(posthogKey, {
+        identify: { login: login, tenantId: tenantId },
+        captureEvent: 'login_completed'
+      });
+      html = html.replace('</body>', phScript + '</body>');
+    }
+
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }

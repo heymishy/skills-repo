@@ -34207,6 +34207,36 @@
       "updatedAt": "2026-09-13T00:00:00.000Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-09-13-real-route-posthog-identity-wiring",
+      "name": "Wire real client-side PostHog identity tracking into the routes actually served in production",
+      "stage": "branch-complete",
+      "health": "amber",
+      "stories": [
+        {
+          "id": "rpiw-s1",
+          "slug": "rpiw-s1",
+          "name": "Wire real client-side PostHog identity tracking into the routes actually served in production",
+          "stage": "branch-complete",
+          "health": "amber",
+          "dorStatus": "signed-off",
+          "prStatus": "open",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 11,
+            "passing": 11
+          },
+          "acTotal": 6,
+          "acVerified": 6,
+          "updatedAt": "2026-09-13T00:00:00.000Z",
+          "verifyStatus": "passed"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-13T00:00:00.000Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
