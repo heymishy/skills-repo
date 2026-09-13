@@ -32,6 +32,7 @@ var _readSessionFromRedisFn = null;
 var _mergeRedisSessionDataFn = null;
 var _repoRoot = null;
 var _repoRootAdapter = require('../adapters/repo-root');
+var _repoFreshness = require('../adapters/repo-freshness'); // rclr-s1
 // dsh-s3: injectable so tests can stub the durable-turns read without a real
 // Postgres pool wired up; defaults to the real dsh-s2 read function.
 var _getTurnsForStageFn = require('../adapters/session-turns-pg').getTurnsForStage;
@@ -4419,6 +4420,11 @@ function _logCrossChannelError(errorType, context) {
 }
 
 function _readPipelineFeatures(root) {
+  try {
+    _repoFreshness.ensureRepoFresh(root || _repoRoot || '');
+  } catch (e) {
+    // rclr-s1: refresh must never block the read path below.
+  }
   var stateFile = require('path').join(root || _repoRoot || '', '.github', 'pipeline-state.json');
   if (!require('fs').existsSync(stateFile)) { return null; }
   try {
@@ -4818,6 +4824,7 @@ module.exports = {
   handleGetStageConfirmBack, // ep1-s4
   _logCrossChannelError, // ep1-s5
   _logCrossChannelEvent, // ep1-s6
+  _readPipelineFeatures, // rclr-s1 -- exported for direct testing, mirrors _renderJourneyHome precedent
   handleGetJourney,
   handlePostJourney,
   handleDeleteJourney,

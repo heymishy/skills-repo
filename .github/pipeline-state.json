@@ -34276,6 +34276,37 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "guardrails": []
+    },
+    {
+      "slug": "2026-09-13-repo-checkout-lazy-refresh",
+      "name": "Lazily refresh a tenant's local repo checkout on active web UI access",
+      "stage": "branch-complete",
+      "health": "amber",
+      "stories": [
+        {
+          "id": "rclr-s1",
+          "slug": "rclr-s1",
+          "name": "Lazily refresh a tenant's local repo checkout on active web UI access",
+          "stage": "branch-complete",
+          "health": "amber",
+          "dorStatus": "signed-off",
+          "prStatus": "open",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 8,
+            "passing": 8
+          },
+          "acTotal": 6,
+          "acVerified": 6,
+          "updatedAt": "2026-09-13T08:36:10.216Z",
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/878"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-13T00:00:00.000Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
