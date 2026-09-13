@@ -34152,10 +34152,10 @@
           "id": "dvlg-s1",
           "slug": "dvlg-s1",
           "name": "Require verification-strength tagging and a live UI-evidence gate at /verify-completion and /definition-of-done",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
-          "prStatus": "open",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/873",
           "testPlan": {
             "status": "all-passing",
@@ -34164,8 +34164,10 @@
           },
           "acTotal": 5,
           "acVerified": 5,
-          "updatedAt": "2026-09-13T00:00:00.000Z",
-          "verifyStatus": "passed"
+          "updatedAt": "2026-09-13T00:36:50.598Z",
+          "verifyStatus": "passed",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
