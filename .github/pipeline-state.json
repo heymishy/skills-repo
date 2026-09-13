@@ -34261,6 +34261,21 @@
       "updatedAt": "2026-09-13T00:00:00.000Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-09-13-analytics-observability-gaps",
+      "name": "Close the remaining PostHog observability gaps",
+      "stage": "discovery",
+      "health": "green",
+      "stories": [],
+      "metrics": [],
+      "updatedAt": "2026-09-13T00:00:00.000Z",
+      "track": "standard",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
