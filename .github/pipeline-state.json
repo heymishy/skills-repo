@@ -34218,10 +34218,10 @@
           "id": "rpiw-s1",
           "slug": "rpiw-s1",
           "name": "Wire real client-side PostHog identity tracking into the routes actually served in production",
-          "stage": "branch-complete",
-          "health": "amber",
+          "stage": "definition-of-done",
+          "health": "green",
           "dorStatus": "signed-off",
-          "prStatus": "open",
+          "prStatus": "merged",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 11,
@@ -34229,8 +34229,11 @@
           },
           "acTotal": 6,
           "acVerified": 6,
-          "updatedAt": "2026-09-13T00:00:00.000Z",
-          "verifyStatus": "passed"
+          "updatedAt": "2026-09-13T05:10:37.979Z",
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/876",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
