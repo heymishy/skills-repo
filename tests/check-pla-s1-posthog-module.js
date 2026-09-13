@@ -260,6 +260,87 @@ async function main() {
     });
   });
 
+  // ── Group H — E2E test identity suppression (paes-s1) ────────────────────────
+
+  queue.push(function() {
+    console.log('\n[pla-s1] H1 -- capture() suppressed for e2e-test- distinctId (AC1)');
+    return test('H1: capture() makes 0 https calls when distinctId starts with e2e-test-', function() {
+      var captured = installHttpsMock();
+      process.env.POSTHOG_KEY = 'test-key-pla-s1';
+      var posthog = freshPosthog();
+      posthog.capture('e2e-test-abc', 'stage_completed', {});
+      assert.strictEqual(captured.length, 0, 'Expected 0 captured requests for e2e-test- distinctId');
+    });
+  });
+
+  queue.push(function() {
+    console.log('\n[pla-s1] H2 -- capture() suppression is case-insensitive (AC1)');
+    return test('H2: capture() makes 0 https calls when distinctId is E2E-TEST-ABC (case-insensitive)', function() {
+      var captured = installHttpsMock();
+      process.env.POSTHOG_KEY = 'test-key-pla-s1';
+      var posthog = freshPosthog();
+      posthog.capture('E2E-TEST-ABC', 'stage_completed', {});
+      assert.strictEqual(captured.length, 0, 'Expected 0 captured requests regardless of case');
+    });
+  });
+
+  queue.push(function() {
+    console.log('\n[pla-s1] H3 -- capture() suppressed when a groups value is synthetic (AC2)');
+    return test('H3: capture() makes 0 https calls when groups.company is e2e-test- prefixed, even with a real distinctId', function() {
+      var captured = installHttpsMock();
+      process.env.POSTHOG_KEY = 'test-key-pla-s1';
+      var posthog = freshPosthog();
+      posthog.capture('real-user-1', 'stage_completed', {}, { company: 'e2e-test-tenant' });
+      assert.strictEqual(captured.length, 0, 'Expected 0 captured requests when a groups value is synthetic');
+    });
+  });
+
+  queue.push(function() {
+    console.log('\n[pla-s1] H4 -- identify() suppressed for e2e-test- distinctId (AC3)');
+    return test('H4: identify() makes 0 https calls when distinctId starts with e2e-test-', function() {
+      var captured = installHttpsMock();
+      process.env.POSTHOG_KEY = 'test-key-pla-s1';
+      var posthog = freshPosthog();
+      posthog.identify('e2e-test-abc', { $set: { login: 'e2e-test-abc' } });
+      assert.strictEqual(captured.length, 0, 'Expected 0 captured requests for e2e-test- distinctId');
+    });
+  });
+
+  queue.push(function() {
+    console.log('\n[pla-s1] H5 -- captureException() suppressed for e2e-test- distinctId (AC3)');
+    return test('H5: captureException() makes 0 https calls when distinctId starts with e2e-test-', function() {
+      var captured = installHttpsMock();
+      process.env.POSTHOG_KEY = 'test-key-pla-s1';
+      var posthog = freshPosthog();
+      posthog.captureException(new Error('boom'), 'e2e-test-abc', {});
+      assert.strictEqual(captured.length, 0, 'Expected 0 captured requests for e2e-test- distinctId');
+    });
+  });
+
+  queue.push(function() {
+    console.log('\n[pla-s1] H6 -- groupIdentify() suppressed for e2e-test- groupKey (AC4)');
+    return test('H6: groupIdentify() makes 0 https calls when groupKey starts with e2e-test-', function() {
+      var captured = installHttpsMock();
+      process.env.POSTHOG_KEY = 'test-key-pla-s1';
+      var posthog = freshPosthog();
+      posthog.groupIdentify('tenant', 'e2e-test-tenant', {});
+      assert.strictEqual(captured.length, 0, 'Expected 0 captured requests for e2e-test- groupKey');
+    });
+  });
+
+  queue.push(function() {
+    console.log('\n[pla-s1] H7 -- capture() still no-ops on POSTHOG_KEY-unset path for e2e-test- identity (AC6)');
+    return test('H7: capture() with e2e-test- distinctId and no POSTHOG_KEY still no-ops without throwing', function() {
+      var captured = installHttpsMock();
+      delete process.env.POSTHOG_KEY;
+      var posthog = freshPosthog();
+      assert.doesNotThrow(function() {
+        posthog.capture('e2e-test-abc', 'stage_completed', {});
+      });
+      assert.strictEqual(captured.length, 0, 'Expected 0 captured requests');
+    });
+  });
+
   // ── NFR Tests ─────────────────────────────────────────────────────────────────
 
   queue.push(function() {
