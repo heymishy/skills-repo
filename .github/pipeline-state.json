@@ -34178,8 +34178,8 @@
     {
       "slug": "2026-09-13-posthog-e2e-analytics-suppression",
       "name": "Suppress PostHog analytics capture for E2E/synthetic test traffic",
-      "stage": "branch-complete",
-      "health": "amber",
+      "stage": "definition-of-done",
+      "health": "green",
       "stories": [
         {
           "id": "paes-s1",
@@ -34206,10 +34206,10 @@
           "id": "paes-s2",
           "slug": "paes-s2",
           "name": "Suppress PostHog feature-flag-evaluation analytics noise for E2E/synthetic test traffic",
-          "stage": "branch-complete",
-          "health": "amber",
+          "stage": "definition-of-done",
+          "health": "green",
           "dorStatus": "signed-off",
-          "prStatus": "open",
+          "prStatus": "merged",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 8,
@@ -34217,8 +34217,11 @@
           },
           "acTotal": 5,
           "acVerified": 5,
-          "updatedAt": "2026-09-13T00:00:00.000Z",
-          "verifyStatus": "passed"
+          "updatedAt": "2026-09-13T07:37:10.747Z",
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/877",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
