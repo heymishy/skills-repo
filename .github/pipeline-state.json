@@ -34280,8 +34280,8 @@
     {
       "slug": "2026-09-13-repo-checkout-lazy-refresh",
       "name": "Lazily refresh a tenant's local repo checkout on active web UI access",
-      "stage": "branch-complete",
-      "health": "amber",
+      "stage": "definition-of-done",
+      "health": "green",
       "stories": [
         {
           "id": "rclr-s1",
@@ -34290,7 +34290,7 @@
           "stage": "branch-complete",
           "health": "amber",
           "dorStatus": "signed-off",
-          "prStatus": "open",
+          "prStatus": "merged",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 8,
@@ -34298,9 +34298,11 @@
           },
           "acTotal": 6,
           "acVerified": 6,
-          "updatedAt": "2026-09-13T08:36:10.216Z",
+          "updatedAt": "2026-09-13T18:03:03.090Z",
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/878"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/878",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
