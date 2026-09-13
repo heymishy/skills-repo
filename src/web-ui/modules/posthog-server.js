@@ -4,14 +4,33 @@ var PRIVACY_MODE = process.env.POSTHOG_PRIVACY_MODE === 'true';
 
 var https = require('https');
 
+// paes-s1 — synthetic E2E/test traffic must never reach the real PostHog project.
+// Reuses the same 'e2e-test-' prefix convention as E2E_TEST_EMAIL_PREFIX
+// (src/web-ui/routes/auth-email.js) and the synthetic 'e2e-test-gh-' logins
+// (src/web-ui/routes/auth-stub.js), so no new marker/env var is introduced.
+var E2E_TEST_IDENTITY_PREFIX = 'e2e-test-';
+
+function isE2ETestIdentity(value) {
+  return typeof value === 'string' && value.toLowerCase().indexOf(E2E_TEST_IDENTITY_PREFIX) === 0;
+}
+
+function hasE2ETestGroup(groups) {
+  if (!groups || typeof groups !== 'object') return false;
+  for (var k in groups) {
+    if (Object.prototype.hasOwnProperty.call(groups, k) && isE2ETestIdentity(groups[k])) return true;
+  }
+  return false;
+}
+
 /**
  * Fire-and-forget PostHog event capture from the server.
- * No-ops when POSTHOG_KEY is not set.
+ * No-ops when POSTHOG_KEY is not set, or when the identity is synthetic E2E test traffic.
  * Uses the US ingestion endpoint to match the client-side config.
  */
 function capture(distinctId, event, properties, groups) {
   var key = process.env.POSTHOG_KEY;
   if (!key) return;
+  if (isE2ETestIdentity(distinctId) || hasE2ETestGroup(groups)) return;
 
   var merged = Object.assign({ $lib: 'posthog-node-manual' }, properties || {});
   if (groups) { merged.$groups = groups; }
@@ -39,11 +58,12 @@ function capture(distinctId, event, properties, groups) {
 
 /**
  * Identify a user in PostHog.
- * No-ops when POSTHOG_KEY is not set.
+ * No-ops when POSTHOG_KEY is not set, or when the identity is synthetic E2E test traffic.
  */
 function identify(distinctId, props) {
   var key = process.env.POSTHOG_KEY;
   if (!key) return;
+  if (isE2ETestIdentity(distinctId)) return;
 
   var body = JSON.stringify({
     api_key: key,
@@ -68,11 +88,12 @@ function identify(distinctId, props) {
 
 /**
  * Identify a group in PostHog.
- * No-ops when POSTHOG_KEY is not set.
+ * No-ops when POSTHOG_KEY is not set, or when the group key is synthetic E2E test traffic.
  */
 function groupIdentify(groupType, groupKey, groupProps) {
   var key = process.env.POSTHOG_KEY;
   if (!key) return;
+  if (isE2ETestIdentity(groupKey)) return;
 
   var body = JSON.stringify({
     api_key: key,
@@ -102,11 +123,12 @@ function groupIdentify(groupType, groupKey, groupProps) {
 
 /**
  * Capture an exception in PostHog.
- * No-ops when POSTHOG_KEY is not set.
+ * No-ops when POSTHOG_KEY is not set, or when the identity is synthetic E2E test traffic.
  */
 function captureException(err, distinctId, extraProps) {
   var key = process.env.POSTHOG_KEY;
   if (!key) return;
+  if (isE2ETestIdentity(distinctId)) return;
 
   var baseProps = {
     $lib: 'posthog-node-manual',
