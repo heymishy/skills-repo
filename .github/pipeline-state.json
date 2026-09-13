@@ -34174,6 +34174,37 @@
       "updatedAt": "2026-09-13T00:00:00.000Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-09-13-posthog-e2e-analytics-suppression",
+      "name": "Suppress PostHog analytics capture for E2E/synthetic test traffic",
+      "stage": "branch-complete",
+      "health": "amber",
+      "stories": [
+        {
+          "id": "paes-s1",
+          "slug": "paes-s1",
+          "name": "Suppress PostHog analytics capture for E2E/synthetic test traffic",
+          "stage": "branch-complete",
+          "health": "amber",
+          "dorStatus": "signed-off",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/874",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 24,
+            "passing": 24
+          },
+          "acTotal": 6,
+          "acVerified": 6,
+          "updatedAt": "2026-09-13T00:00:00.000Z",
+          "verifyStatus": "passed"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-13T00:00:00.000Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
