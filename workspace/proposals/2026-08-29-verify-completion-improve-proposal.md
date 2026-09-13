@@ -45,11 +45,14 @@ anti_overfitting_gate: >
   change). The CSS-layout-dependent RISK-ACCEPT escape hatch already
   proven at B2 is the right shape to reuse, reducing the risk of this
   becoming an unconditional blocker.
-status: pending_review
+status: accepted
 created_at: 2026-08-29
+accepted_at: 2026-09-13
 skill_target: verify-completion
 source: improve
 ---
+
+**Applied 2026-09-13:** the "Live browser render check" section was added to `skills/verify-completion/SKILL.md`, mirroring the Route/handler E2E coverage check's exact conditional-step pattern as proposed. Sat unreviewed for ~2 weeks before being applied — itself direct evidence for the operator's own follow-on observation that DoD/process-improvement mechanisms need to be more triggered rather than optionally reviewed. See also ADR-030/ADR-031 in `.github/architecture-guardrails.md` and the corresponding `definition-of-done`/SKILL.md change, applied the same day.
 
 # Proposal: /verify-completion should gate on a real browser check for UI-rendering diffs, mirroring the E2E route-coverage check
 

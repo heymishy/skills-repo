@@ -34141,6 +34141,37 @@
       "updatedAt": "2026-09-12T06:30:00.000Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-09-13-dod-live-verification-gate",
+      "name": "Require verification-strength tagging and a live UI-evidence gate at /verify-completion and /definition-of-done",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "id": "dvlg-s1",
+          "slug": "dvlg-s1",
+          "name": "Require verification-strength tagging and a live UI-evidence gate at /verify-completion and /definition-of-done",
+          "stage": "branch-complete",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/873",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 7,
+            "passing": 7
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "updatedAt": "2026-09-13T00:00:00.000Z",
+          "verifyStatus": "passed"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-13T00:00:00.000Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

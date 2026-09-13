@@ -107,6 +107,23 @@ If the diff touches no route/handler file: state this explicitly ("Route/handler
 
 ---
 
+## Live browser render check (mandatory when the diff changes rendered UI output)
+
+Passing tests confirm the DOM contains the right markup; they do not confirm a user can actually see or use it. Automated tests and manual code-path tracing alone missed a real, visible defect that a live render would have caught immediately. (Source: `verify-completion-improve-proposal`, 2026-08-29 — `res-s4` shipped a flag marker correctly present in the DOM, confirmed by 36 passing tests and two review rounds, that was invisible without horizontal scroll at a normal viewport on one of its three render sites. No step in that story's pipeline had rendered the page.)
+
+**When this diff adds, removes, or changes markup, CSS, or client-side script that alters what is visually rendered or interactable in a browser:**
+
+1. State explicitly what changed visually, and where (which page/route, which element or component).
+2. Perform one of the following — this is not optional busywork; skip only via the documented RISK-ACCEPT path below:
+   - **Real browser check** — load the actual page rendering this diff's output (Claude-in-Chrome or equivalent) and confirm the changed element is visible and behaves as intended at a normal viewport width, plus any breakpoint the change specifically targets. State what was observed, not just that the page loaded.
+   - **Playwright evidence** — an existing or new spec that renders this exact element/page and asserts on its *visible* state (computed style, bounding-box/viewport-visibility check, or screenshot comparison) — not merely DOM presence, which the route/handler E2E check above already covers.
+   - **RISK-ACCEPT** — if neither is performed this session, log an explicit RISK-ACCEPT in `decisions.md`, per CLAUDE.md's B2 rule for CSS-layout-dependent ACs: name what's deferred and why, and add a post-deployment smoke-test item to `workspace/state.json`'s `pendingActions`. A CSS-layout-dependent AC with neither a real check nor a RISK-ACCEPT is an open gap, not a silently-deferred one.
+3. If the diff touches no rendered UI output (backend-only, CLI-only, docs-only, or a change with no visual effect): state this explicitly ("Live browser render check: N/A — no rendered UI output touched") and move on — do not run this check unconditionally.
+
+If the diff changes rendered UI output and neither a real check, Playwright evidence, nor a documented RISK-ACCEPT exists: stop. Do not proceed to Step 4 or `/branch-complete`.
+
+---
+
 ## Step 2 — Walk through the AC verification script
 
 Read `artefacts/[feature]/verification-scripts/[story-slug]-verification.md`.
@@ -153,6 +170,7 @@ If a commit exists that doesn't correspond to either:
 > ACs verified: [N]/[N]
 > Scope: [clean / N items noted in /decisions]
 > E2E route coverage: [N/A — no route/handler files touched] / [N local specs run, N/N passing] / [N @real-staging specs found — cannot verify locally, residual risk: file1.spec.js, file2.spec.js]
+> Live browser render check: [N/A — no rendered UI output touched] / [real browser check performed: what was observed] / [Playwright evidence: spec name] / [RISK-ACCEPT logged: decisions.md entry]
 >
 > Ready to run /branch-complete and open a draft PR.
 
@@ -187,6 +205,7 @@ If `check-trace-commit.js` exits 1 with a stale message, the hours-elapsed value
 | Build succeeds | Build command: exit 0 | Linter passing |
 | Bug fixed | Failing test now passes | Code was changed |
 | Implementation complete | All ACs ✅, all tests passing | "Looks right", subagent said done |
+| UI change renders correctly | Real browser check, Playwright visible-state assertion, or a logged RISK-ACCEPT | DOM presence in a jsdom/handler-level test alone |
 
 ---
 
