@@ -34201,6 +34201,24 @@
           "verifyStatus": "passed",
           "dodStatus": "complete",
           "releaseReady": true
+        },
+        {
+          "id": "paes-s2",
+          "slug": "paes-s2",
+          "name": "Suppress PostHog feature-flag-evaluation analytics noise for E2E/synthetic test traffic",
+          "stage": "branch-complete",
+          "health": "amber",
+          "dorStatus": "signed-off",
+          "prStatus": "open",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 8,
+            "passing": 8
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "updatedAt": "2026-09-13T00:00:00.000Z",
+          "verifyStatus": "passed"
         }
       ],
       "metrics": [],

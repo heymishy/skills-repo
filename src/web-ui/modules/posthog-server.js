@@ -159,4 +159,4 @@ function captureException(err, distinctId, extraProps) {
   req.end();
 }
 
-module.exports = { capture, identify, groupIdentify, captureException, PRIVACY_MODE };
+module.exports = { capture, identify, groupIdentify, captureException, PRIVACY_MODE, isE2ETestIdentity };

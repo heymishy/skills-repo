@@ -19,6 +19,17 @@
 // groupIdentify() implementation on the adapter (client.groupIdentifyImmediate()),
 // so posthog-flags.js's identifyTenantGroup() has a real PostHog Group Analytics
 // call to invoke, distinct from the evaluateFlag() wiring above (bri-s1.2).
+//
+// paes-s2 — this is a separate PostHog pathway from posthog-server.js's own
+// hand-rolled capture client (guarded against e2e-test- traffic by paes-s1).
+// posthog-node's isFeatureEnabled() auto-emits its own "Feature flag called"
+// event as a side effect, so evaluateFlag() below suppresses that side effect
+// (via sendFeatureFlagEvents: false) for e2e-test- identities without
+// skipping the flag evaluation itself -- E2E tests still need a real
+// evaluation result. groupIdentify() has no equivalent partial-suppression
+// option, so it skips the real call entirely for e2e-test- group keys.
+
+var _posthogServer = require('./posthog-server');
 
 /**
  * Resolve the PostHog API key for the given environment.
@@ -101,13 +112,22 @@ function initPostHogFlagsClient(envName, envVars, deps) {
     setAdapter({
       evaluateFlag: function(flagKey, context) {
         var distinctId = (context && context.tenantId) || 'anonymous';
-        return client.isFeatureEnabled(flagKey, distinctId, { groups: context && context.groups });
+        var options = { groups: context && context.groups };
+        if (_posthogServer.isE2ETestIdentity(distinctId)) {
+          options.sendFeatureFlagEvents = false;
+        }
+        return client.isFeatureEnabled(flagKey, distinctId, options);
       },
       // bri-s1.4 (D37 wiring) — registers a PostHog Group Analytics group for the given
       // tenant. groupIdentifyImmediate() is used (rather than the fire-and-forget
       // groupIdentify()) so callers (identifyTenantGroup() in posthog-flags.js) can await
       // completion and catch a failed/delayed registration (AC3).
+      // paes-s2: no-ops for an e2e-test- groupKey -- groupIdentifyImmediate() has no
+      // per-call event-suppression option, so the real call is skipped entirely.
       groupIdentify: function(groupType, groupKey) {
+        if (_posthogServer.isE2ETestIdentity(groupKey)) {
+          return Promise.resolve();
+        }
         return client.groupIdentifyImmediate({ groupType: groupType, groupKey: groupKey });
       }
     });

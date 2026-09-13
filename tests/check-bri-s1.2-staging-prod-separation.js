@@ -232,6 +232,110 @@ async function main() {
     });
   });
 
+  // ── paes-s2 — E2E-test identity suppression on the feature-flag pathway ────
+
+  function wireAdapter() {
+    var cfg = freshConfig();
+    var isFeatureEnabledCalls = [];
+    var groupIdentifyImmediateCalls = [];
+    function FakePostHogCtor() {
+      this.isFeatureEnabled = function(key, distinctId, options) {
+        isFeatureEnabledCalls.push({ key: key, distinctId: distinctId, options: options });
+        return Promise.resolve(true);
+      };
+      this.groupIdentifyImmediate = function(msg) {
+        groupIdentifyImmediateCalls.push(msg);
+        return Promise.resolve();
+      };
+    }
+    var setAdapterCalls = [];
+    cfg.initPostHogFlagsClient(
+      'staging',
+      { POSTHOG_KEY_STAGING: 'phc_test_staging' },
+      { PostHogClient: FakePostHogCtor, setPostHogFlagsAdapter: function(a) { setAdapterCalls.push(a); }, logger: { info: function() {}, error: function() {} } }
+    );
+    return { adapter: setAdapterCalls[0], isFeatureEnabledCalls: isFeatureEnabledCalls, groupIdentifyImmediateCalls: groupIdentifyImmediateCalls };
+  }
+
+  queue.push(function() {
+    console.log('\n[bri-s1.2] P1 -- evaluateFlag sets sendFeatureFlagEvents:false for an e2e-test- tenantId (paes-s2 AC1)');
+    return test('P1: evaluateFlag with tenantId e2e-test-abc calls isFeatureEnabled with sendFeatureFlagEvents:false', async function() {
+      var wired = wireAdapter();
+      await wired.adapter.evaluateFlag('some-flag', { tenantId: 'e2e-test-abc' });
+      assert.strictEqual(wired.isFeatureEnabledCalls.length, 1);
+      assert.strictEqual(wired.isFeatureEnabledCalls[0].options.sendFeatureFlagEvents, false);
+    });
+  });
+
+  queue.push(function() {
+    console.log('\n[bri-s1.2] P2 -- evaluateFlag suppression is case-insensitive (paes-s2 AC1)');
+    return test('P2: evaluateFlag with tenantId E2E-TEST-ABC also sets sendFeatureFlagEvents:false', async function() {
+      var wired = wireAdapter();
+      await wired.adapter.evaluateFlag('some-flag', { tenantId: 'E2E-TEST-ABC' });
+      assert.strictEqual(wired.isFeatureEnabledCalls[0].options.sendFeatureFlagEvents, false);
+    });
+  });
+
+  queue.push(function() {
+    console.log('\n[bri-s1.2] P3 -- evaluateFlag does not set sendFeatureFlagEvents for a real tenantId (paes-s2 AC2)');
+    return test('P3: evaluateFlag with tenantId real-tenant never sets sendFeatureFlagEvents', async function() {
+      var wired = wireAdapter();
+      await wired.adapter.evaluateFlag('some-flag', { tenantId: 'real-tenant' });
+      assert.strictEqual('sendFeatureFlagEvents' in wired.isFeatureEnabledCalls[0].options, false, 'sendFeatureFlagEvents must not be set at all for real traffic');
+    });
+  });
+
+  queue.push(function() {
+    console.log('\n[bri-s1.2] P4 -- evaluateFlag does not set sendFeatureFlagEvents when tenantId is absent (paes-s2 AC2)');
+    return test('P4: evaluateFlag with no tenantId (falls back to anonymous) never sets sendFeatureFlagEvents', async function() {
+      var wired = wireAdapter();
+      await wired.adapter.evaluateFlag('some-flag', {});
+      assert.strictEqual(wired.isFeatureEnabledCalls[0].distinctId, 'anonymous');
+      assert.strictEqual('sendFeatureFlagEvents' in wired.isFeatureEnabledCalls[0].options, false);
+    });
+  });
+
+  queue.push(function() {
+    console.log('\n[bri-s1.2] P5 -- groupIdentify never calls groupIdentifyImmediate for an e2e-test- groupKey (paes-s2 AC3)');
+    return test('P5: groupIdentify with groupKey e2e-test-tenant skips groupIdentifyImmediate entirely', async function() {
+      var wired = wireAdapter();
+      await wired.adapter.groupIdentify('tenant', 'e2e-test-tenant');
+      assert.strictEqual(wired.groupIdentifyImmediateCalls.length, 0);
+    });
+  });
+
+  queue.push(function() {
+    console.log('\n[bri-s1.2] P6 -- groupIdentify resolves without throwing for an e2e-test- groupKey (paes-s2 AC3)');
+    return test('P6: groupIdentify with groupKey e2e-test-tenant resolves cleanly', async function() {
+      var wired = wireAdapter();
+      await assert.doesNotReject(wired.adapter.groupIdentify('tenant', 'e2e-test-tenant'));
+    });
+  });
+
+  queue.push(function() {
+    console.log('\n[bri-s1.2] P7 -- groupIdentify still calls groupIdentifyImmediate for a real groupKey (paes-s2 AC4)');
+    return test('P7: groupIdentify with groupKey real-tenant calls groupIdentifyImmediate with the correct fields', async function() {
+      var wired = wireAdapter();
+      await wired.adapter.groupIdentify('tenant', 'real-tenant');
+      assert.strictEqual(wired.groupIdentifyImmediateCalls.length, 1);
+      assert.strictEqual(wired.groupIdentifyImmediateCalls[0].groupType, 'tenant');
+      assert.strictEqual(wired.groupIdentifyImmediateCalls[0].groupKey, 'real-tenant');
+    });
+  });
+
+  queue.push(function() {
+    console.log('\n[bri-s1.2] P8 -- isE2ETestIdentity is imported from posthog-server.js, not duplicated (paes-s2 AC5)');
+    return test('P8: posthog-config.js source does not redefine its own e2e-test- prefix-check literal', function() {
+      var fs = require('fs');
+      var path = require('path');
+      var src = fs.readFileSync(path.resolve(__dirname, '../src/web-ui/modules/posthog-config.js'), 'utf8');
+      assert.ok(src.indexOf("require('./posthog-server')") !== -1, 'expected posthog-config.js to import posthog-server.js');
+      assert.ok(src.indexOf('isE2ETestIdentity') !== -1, 'expected posthog-config.js to use the imported isE2ETestIdentity');
+      var literalPrefixDefs = (src.match(/['"]e2e-test-['"]/g) || []).length;
+      assert.strictEqual(literalPrefixDefs, 0, 'posthog-config.js must not define its own e2e-test- literal -- it should only call the imported isE2ETestIdentity');
+    });
+  });
+
   // ── Run queue sequentially ────────────────────────────────────────────────
 
   for (var i = 0; i < queue.length; i++) {
