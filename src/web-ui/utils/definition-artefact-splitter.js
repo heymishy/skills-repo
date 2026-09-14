@@ -67,15 +67,30 @@ function scanFields(block) {
  * @param {Array} sortedFields  from scanFields()
  * @param {string} name
  * @param {string} block
+ * @param {Array<number>} [excludeStarts]  document indices (from
+ *   findGapMatch()) where a special unlabeled prose region -- the AC block,
+ *   the "So that X, I need Y." sentence -- begins. A field's own section
+ *   never extends past the nearest such index, even when that index comes
+ *   before the next recognised field: without this, a field immediately
+ *   followed (in THIS document's actual field order) by one of those
+ *   unlabeled regions silently absorbs it into its own captured value,
+ *   and the region then also gets extracted a second time by whichever
+ *   dedicated scan (findGapMatch with the Given/So-that predicate) was
+ *   looking for it -- asf-s1: this produced a duplicated, orphaned
+ *   Given/When/Then block under whichever field happened to precede it.
  * @returns {string}  the field's full section (inline value plus any
- *   wrapped lines up to the next recognised field), trimmed
+ *   wrapped lines up to the next recognised field, or the nearest excluded
+ *   region if closer), trimmed
  */
-function sectionFor(sortedFields, name, block) {
+function sectionFor(sortedFields, name, block, excludeStarts) {
   const idx = sortedFields.findIndex(function(f) { return f.name === name; });
   if (idx === -1) return '';
   const field = sortedFields[idx];
   const next = sortedFields[idx + 1];
-  const end = next ? next.index : block.length;
+  let end = next ? next.index : block.length;
+  (excludeStarts || []).forEach(function(pos) {
+    if (pos > field.lineEnd && pos < end) end = pos;
+  });
   // A field's value can be entirely on its own line ("Dependencies: ep1-s2",
   // captured as inlineValue) or entirely on following lines ("Out of
   // scope:" with a bullet list after it, where inlineValue is empty) --
@@ -85,24 +100,71 @@ function sectionFor(sortedFields, name, block) {
   return [field.inlineValue, wrapped].filter(Boolean).join('\n\n').trim();
 }
 
+// asf-s1: matches the DEFINITION PROTOCOL (Web UI)'s instructed sentence
+// ("So that [goal], I need [user need]." -- skills.js's DEFINITION PROTOCOL
+// section) so the real "I want" content can be recovered instead of the
+// User Story template omitting that clause entirely. "I need" is optional
+// (non-capturing) because real model output sometimes phrases the second
+// clause without that literal phrase (e.g. "So that I don't have to choose
+// which skill to run next, the web UI automatically routes me..." -- no "I
+// need" present at all) -- group 2 still captures whatever mechanism text
+// follows the comma either way. Applied only to an already-isolated
+// so-that portion (see findSpecialRegions) -- anchored start-to-end so a
+// portion containing anything beyond this one sentence intentionally does
+// not match, degrading to the fallback placeholder rather than risking a
+// wrong split.
+const SO_THAT_I_WANT_RE = /^\*{0,2}So that\*{0,2}\s+(.+?),\s*(?:\*{0,2}I need\*{0,2}\s+)?(.+?)\.\s*$/is;
+
 /**
- * The AC block has no field label of its own -- it's the free-text
- * Given/When/Then prose between whichever intro field (Persona, Domain,
- * Benefit linkage) precedes it and whichever field follows it. Identified
- * by content (contains "Given"), not by an assumed position, so it's
- * correct regardless of which fields surround it in a given session's output.
+ * Locates the two kinds of unlabeled special prose a real definition
+ * artefact can contain: the "So that [goal], I need [need]." sentence, and
+ * the Given/When/Then AC block. Both are identified by content, not an
+ * assumed position, so this is correct regardless of which recognised
+ * fields surround them in a given session's output.
+ *
+ * Critically, both can appear in the SAME gap between two recognised
+ * fields -- this repo's own real production content does exactly this
+ * (Persona directly followed by both, before the next recognised field).
+ * asf-s1: naively regex-matching the whole gap for each pattern
+ * independently let the so-that sentence's own non-greedy match run all
+ * the way through the trailing AC block hunting for a satisfying final
+ * period, silently absorbing it. Since the AC block reliably starts at
+ * its own "Given" marker, a gap containing both is split there first --
+ * the so-that pattern is only ever tested against the portion BEFORE
+ * "Given", never the whole gap.
+ *
+ * The returned index for each region is used by sectionFor()'s
+ * excludeStarts so neither region can be silently absorbed into an
+ * adjacent labeled field's own captured section either.
+ *
  * @param {Array} sortedFields
  * @param {string} block
- * @returns {string}
+ * @returns {{acBlock: {text:string,index:number}|null, soThat: {text:string,index:number,goal:string,need:string}|null}}
  */
-function acBlockFor(sortedFields, block) {
+function findSpecialRegions(sortedFields, block) {
   const boundaries = [0].concat(sortedFields.map(function(f) { return f.lineEnd; }));
   const starts = sortedFields.map(function(f) { return f.index; }).concat([block.length]);
+  let acBlock = null;
+  let soThat = null;
   for (let i = 0; i < boundaries.length; i++) {
-    const gap = block.slice(boundaries[i], starts[i]).trim();
-    if (/\bGiven\b/i.test(gap)) return gap;
+    const rawGap = block.slice(boundaries[i], starts[i]);
+    const gap = rawGap.trim();
+    if (!gap) continue;
+    const gapStart = boundaries[i] + rawGap.indexOf(gap);
+    const givenMatch = gap.match(/^\*{0,2}Given\b/im);
+
+    const soThatPortion = givenMatch ? gap.slice(0, givenMatch.index).trim() : gap;
+    const acPortion = givenMatch ? gap.slice(givenMatch.index).trim() : '';
+
+    if (!acBlock && givenMatch) {
+      acBlock = { text: acPortion, index: gapStart + givenMatch.index };
+    }
+    if (!soThat && soThatPortion) {
+      const m = soThatPortion.match(SO_THAT_I_WANT_RE);
+      if (m) soThat = { text: soThatPortion, index: gapStart, goal: m[1].trim(), need: m[2].trim() };
+    }
   }
-  return '';
+  return { acBlock: acBlock, soThat: soThat };
 }
 
 function toSlug(text) {
@@ -172,16 +234,34 @@ function splitDefinitionArtefact(md, featureSlug) {
         return (f && f.inlineValue) ? f.inlineValue : (fallback || '');
       };
 
+      // asf-s1: locate both unlabeled special-prose regions FIRST so every
+      // sectionFor() call below can exclude them -- prevents either one
+      // from being silently absorbed into whichever labeled field happens
+      // to precede it in this document's actual field order.
+      const _special = findSpecialRegions(fields, storyBlock);
+      const acMatch = _special.acBlock;
+      const soThatMatch = _special.soThat;
+      const excludeStarts = [acMatch, soThatMatch].filter(Boolean).map(function(m) { return m.index; });
+      const sectionForExcl = function(name) { return sectionFor(fields, name, storyBlock, excludeStarts); };
+
       const persona = fieldValue('Persona', 'Platform user');
       const domain = fieldValue('Domain', '');
-      const architectureConstraints = sectionFor(fields, 'Architecture constraints', storyBlock) || NONE_IDENTIFIED;
-      const dependencies = sectionFor(fields, 'Dependencies', storyBlock) || 'None';
+      const architectureConstraints = sectionForExcl('Architecture constraints') || NONE_IDENTIFIED;
+      const dependencies = sectionForExcl('Dependencies') || 'None';
       const complexity = fieldValue('Complexity', '2');
       const scopeStability = fieldValue('Scope stability', 'Stable');
-      const benefitMetric = sectionFor(fields, 'Benefit linkage', storyBlock);
-      const acBlock = acBlockFor(fields, storyBlock) || NOT_SPECIFIED;
-      const outOfScope = sectionFor(fields, 'Out of scope', storyBlock) || NOT_SPECIFIED;
-      const nfr = sectionFor(fields, 'NFR', storyBlock) || 'None identified';
+      const benefitMetric = sectionForExcl('Benefit linkage');
+      const acBlock = (acMatch && acMatch.text) || NOT_SPECIFIED;
+      const outOfScope = sectionForExcl('Out of scope') || NOT_SPECIFIED;
+      const nfr = sectionForExcl('NFR') || 'None identified';
+      // asf-s1: the real "I want"/"So that" clauses, recovered from the
+      // model's own "So that [goal], I need [need]." sentence -- never
+      // reuse benefitMetric here, which is a different field (Benefit
+      // Linkage) that already gets its own section below; doing so
+      // previously produced verbatim-duplicated text and permanently
+      // omitted "I want" entirely.
+      const iWant = (soThatMatch && soThatMatch.need) || '[user need not specified by the definition session]';
+      const soThatGoal = (soThatMatch && soThatMatch.goal) || '[observable outcome not specified by the definition session]';
 
       const storySlug = storyId;
       const storyContent = [
@@ -195,7 +275,8 @@ function splitDefinitionArtefact(md, featureSlug) {
         '## User Story',
         '',
         'As a **' + persona + '**,',
-        'So that ' + (benefitMetric || '[observable outcome]') + '.',
+        'I want **' + iWant + '**,',
+        'So that **' + soThatGoal + '**.',
         '',
         '## Benefit Linkage',
         '',

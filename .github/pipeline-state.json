@@ -34560,6 +34560,33 @@
         }
       ],
       "updatedAt": "2026-09-14T19:05:32.175Z"
+    },
+    {
+      "slug": "2026-09-15-artefact-splitter-fidelity",
+      "name": "Artefact splitter fidelity fix",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "track": "short",
+      "stories": [
+        {
+          "id": "asf-s1",
+          "slug": "asf-s1",
+          "name": "Fix web-UI-to-CLI artefact splitter parity bugs (definition + review)",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 10,
+            "passing": 10
+          },
+          "acTotal": 6,
+          "acVerified": 6,
+          "updatedAt": "2026-09-14T19:36:53.378Z"
+        }
+      ],
+      "updatedAt": "2026-09-14T19:36:53.378Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
