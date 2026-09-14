@@ -34652,6 +34652,14 @@
           "stage": "definition-of-ready",
           "health": "green",
           "updatedAt": "2026-09-14T22:14:02.416Z"
+        },
+        {
+          "id": "wsd-s4",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "updatedAt": "2026-09-14T23:13:50.585Z"
         }
       ],
       "metrics": [],
