@@ -34592,7 +34592,7 @@
     {
       "slug": "2026-09-15-web-ui-pipeline-state-durability",
       "name": "Web UI Pipeline-State Durability",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "track": "standard",
       "discovery": {
@@ -34630,10 +34630,10 @@
           "id": "wsd-s2",
           "slug": "wsd-s2",
           "name": "GitHub-API-backed pipeline-state writer for the production container, wired by environment, with failure visibility",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
-          "prStatus": "none",
+          "prStatus": "merged",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -34641,11 +34641,13 @@
           },
           "acTotal": 5,
           "acVerified": 0,
-          "updatedAt": "2026-09-14T20:38:14.123Z"
+          "updatedAt": "2026-09-14T21:22:20.578Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/889",
+          "dodStatus": "complete"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-09-14T20:38:14.123Z"
+      "updatedAt": "2026-09-14T21:22:28.606Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
