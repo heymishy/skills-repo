@@ -34550,10 +34550,11 @@
           "stage": "definition-of-ready",
           "health": "green",
           "dorStatus": "signed-off",
-          "prStatus": "none",
+          "prStatus": "open",
           "acTotal": 4,
           "acVerified": 0,
-          "updatedAt": "2026-09-14T09:44:02.634Z"
+          "updatedAt": "2026-09-14T09:45:41.259Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/885"
         }
       ],
       "updatedAt": "2026-09-14T09:44:02.634Z"
