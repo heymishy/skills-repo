@@ -666,6 +666,21 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
           '}' +
         '});' +
       '}' +
+      // pflx-s3: a collapsed group's header count was set once at render
+      // time from its real, unfiltered membership -- filtering hid rows
+      // but never updated that number, so the list looked exactly the
+      // same size until a group was opened and counted by eye. Recompute
+      // every group's count from its currently-visible children on every
+      // filter pass.
+      'function pvcSyncGroupCounts(){' +
+        'document.querySelectorAll(".a4-module-section").forEach(function(section){' +
+          'var body=section.querySelector(".a4-module-body");' +
+          'var countEl=section.querySelector(".a4-module-count");' +
+          'if(!body||!countEl)return;' +
+          'var visible=body.querySelectorAll(".pvc-item:not([hidden])").length;' +
+          'countEl.textContent="("+visible+")";' +
+        '});' +
+      '}' +
       'function pvcApplyFilters(){' +
         'document.querySelectorAll(".pvc-item").forEach(function(el){' +
           'var healthOk = pvcCurrentHealth==="all" || el.getAttribute("data-health")===pvcCurrentHealth;' +
@@ -674,6 +689,7 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
           'if(healthOk && searchOk && stageOk){el.removeAttribute("hidden");}else{el.setAttribute("hidden","");}' +
         '});' +
         'pvcSyncGroupExpansion();' +
+        'pvcSyncGroupCounts();' +
       '}' +
       'function pvcFilterByHealth(btn){' +
         'pvcCurrentHealth=btn.getAttribute("data-health-filter");' +
