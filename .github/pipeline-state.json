@@ -34535,6 +34535,29 @@
         }
       ],
       "updatedAt": "2026-09-14T10:26:05.326Z"
+    },
+    {
+      "slug": "2026-09-14-production-always-on",
+      "name": "Production always-on machine",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "track": "short",
+      "stories": [
+        {
+          "id": "pao-s1",
+          "slug": "pao-s1",
+          "name": "Keep production single machine always running instead of scaling to zero",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "prStatus": "open",
+          "acTotal": 4,
+          "acVerified": 0,
+          "updatedAt": "2026-09-14T09:45:41.259Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/885"
+        }
+      ],
+      "updatedAt": "2026-09-14T09:44:02.634Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

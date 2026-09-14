@@ -126,11 +126,21 @@ test('T3a: [build] section matches fly.toml exactly', () => {
   assert.deepStrictEqual(staging.sections.build || {}, prod.sections.build || {});
 });
 
-test('T3b: [http_service] section (incl. concurrency) matches fly.toml exactly', () => {
-  assert.deepStrictEqual(
-    staging.sections.http_service || {},
-    prod.sections.http_service || {}
-  );
+test('T3b: [http_service] section (incl. concurrency) matches fly.toml exactly, except the documented min_machines_running divergence', () => {
+  // pao-s1 (artefacts/2026-09-14-production-always-on/decisions.md, 2026-09-14):
+  // production's min_machines_running was deliberately raised to 1 to eliminate
+  // Fly auto-suspend mid-SSE-stream disconnects during real operator work
+  // sessions -- explicitly scoped to production only. Staging stays at 0
+  // (lower-stakes, auto-deployed on every push for CI/E2E, no real operator
+  // sessions) -- see NFR3 below, which asserts staging's own value directly.
+  // Every other [http_service] key must still match exactly.
+  const ALLOWED_HTTP_SERVICE_DIVERGENT_KEYS = ['min_machines_running'];
+
+  const stagingHttp = Object.assign({}, staging.sections.http_service || {});
+  const prodHttp    = Object.assign({}, prod.sections.http_service || {});
+  ALLOWED_HTTP_SERVICE_DIVERGENT_KEYS.forEach((k) => { delete stagingHttp[k]; delete prodHttp[k]; });
+
+  assert.deepStrictEqual(stagingHttp, prodHttp);
   assert.deepStrictEqual(
     staging.sections['http_service.concurrency'] || {},
     prod.sections['http_service.concurrency'] || {}
@@ -218,14 +228,18 @@ test('T5/NFR2: fly.staging.toml contains no hardcoded secret-shaped values', () 
 // ---------------------------------------------------------------------------
 // NFR3 -- scale-to-zero config proxy for near-zero staging cost (AC3)
 // ---------------------------------------------------------------------------
-test('NFR3: scale-to-zero config present and matches fly.toml (cost proxy for AC3)', () => {
+test('NFR3: staging keeps its own scale-to-zero config (cost proxy for AC3) -- prod opted out per pao-s1', () => {
+  // pao-s1: production's min_machines_running is now 1 (always-on), so this
+  // assertion checks staging's own scale-to-zero posture directly rather than
+  // cross-equality with prod -- auto_stop_machines/auto_start_machines remain
+  // shared config (unaffected by pao-s1) and are still asserted equal below.
   const stagingHttp = staging.sections.http_service || {};
   const prodHttp = prod.sections.http_service || {};
 
   assert.strictEqual(stagingHttp.auto_stop_machines, 'suspend');
   assert.strictEqual(stagingHttp.min_machines_running, '0');
   assert.strictEqual(stagingHttp.auto_stop_machines, prodHttp.auto_stop_machines);
-  assert.strictEqual(stagingHttp.min_machines_running, prodHttp.min_machines_running);
+  assert.strictEqual(stagingHttp.auto_start_machines, prodHttp.auto_start_machines);
 });
 
 console.log(`\n[bri-s2.1] Results: ${passed} passed, ${failed} failed`);
