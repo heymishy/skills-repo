@@ -36,18 +36,20 @@ var STRING_FIELDS = [
 var USAGE = 'Usage: skills advance <feature-slug> <story-id> <field>=<value>...';
 
 /**
- * Advance pipeline-state.json fields for a given feature/story.
+ * Apply a pipeline-state advance mutation to an in-memory state object.
+ * Pure function over `state` — no disk I/O. `advance()` below is the thin
+ * file-based wrapper that reads/writes disk around this core (wsd-s1).
  *
+ * @param {object}   state        — parsed pipeline-state.json object (mutated in place on success)
  * @param {string}   featureSlug  — pipeline-state feature slug
  * @param {string}   storyId      — story id or slug
  * @param {string[]} rawFields    — array of "field=value" strings
- * @param {string}   repoRoot     — absolute path to repository root
- * @returns {{ exitCode: number, stdout: string, stderr: string }}
+ * @returns {{ exitCode: number, stdout: string, stderr: string, state: object, storyWasCreated: boolean }}
  */
-function advance(featureSlug, storyId, rawFields, repoRoot) {
+function applyAdvance(state, featureSlug, storyId, rawFields) {
   // ── Arg validation ────────────────────────────────────────────────────────
   if (!featureSlug || !storyId || !rawFields || rawFields.length === 0) {
-    return { exitCode: 8, stdout: '', stderr: USAGE };
+    return { exitCode: 8, stdout: '', stderr: USAGE, state: state, storyWasCreated: false };
   }
 
   // ── Parse field=value pairs ───────────────────────────────────────────────
@@ -60,6 +62,7 @@ function advance(featureSlug, storyId, rawFields, repoRoot) {
       return {
         exitCode: 8, stdout: '',
         stderr: 'Invalid argument \'' + raw + '\': expected field=value format. ' + USAGE,
+        state: state, storyWasCreated: false,
       };
     }
     var field = raw.slice(0, eqIdx);
@@ -67,17 +70,17 @@ function advance(featureSlug, storyId, rawFields, repoRoot) {
 
     // ── Prototype pollution guard (OWASP A03) ─────────────────────────────
     if (PROTO_BLOCKED.indexOf(field) !== -1) {
-      return { exitCode: 8, stdout: '', stderr: 'Rejected field name \'' + field + '\': prototype pollution risk.' };
+      return { exitCode: 8, stdout: '', stderr: 'Rejected field name \'' + field + '\': prototype pollution risk.', state: state, storyWasCreated: false };
     }
     // Validate dot-notation depth and segments
     if (field.indexOf('.') !== -1) {
       var parts = field.split('.');
       if (parts.length > 2) {
-        return { exitCode: 8, stdout: '', stderr: 'Field \'' + field + '\': only single-level dot-notation (parent.child) is supported.' };
+        return { exitCode: 8, stdout: '', stderr: 'Field \'' + field + '\': only single-level dot-notation (parent.child) is supported.', state: state, storyWasCreated: false };
       }
       for (var pi = 0; pi < parts.length; pi++) {
         if (PROTO_BLOCKED.indexOf(parts[pi]) !== -1) {
-          return { exitCode: 8, stdout: '', stderr: 'Rejected field segment \'' + parts[pi] + '\': prototype pollution risk.' };
+          return { exitCode: 8, stdout: '', stderr: 'Rejected field segment \'' + parts[pi] + '\': prototype pollution risk.', state: state, storyWasCreated: false };
         }
       }
     }
@@ -88,6 +91,7 @@ function advance(featureSlug, storyId, rawFields, repoRoot) {
         return {
           exitCode: 8, stdout: '',
           stderr: 'Invalid value \'' + value + '\' for boolean field \'' + field + '\'. Accepted values: true, false',
+          state: state, storyWasCreated: false,
         };
       }
     }
@@ -105,24 +109,11 @@ function advance(featureSlug, storyId, rawFields, repoRoot) {
       return {
         exitCode: 8, stdout: '',
         stderr: 'Invalid value \'' + v + '\' for field \'' + f + '\'. Allowed values: ' + allowed.join(', '),
+        state: state, storyWasCreated: false,
       };
     }
   }
 
-  // ── Path resolution + traversal guard (OWASP A01) ────────────────────────
-  var statePath = path.resolve(repoRoot, '.github', 'pipeline-state.json');
-  var rootWithSep = repoRoot.endsWith(path.sep) ? repoRoot : repoRoot + path.sep;
-  if (!statePath.startsWith(rootWithSep)) {
-    return { exitCode: 8, stdout: '', stderr: 'Error: path resolves outside repository root (OWASP A01)' };
-  }
-
-  // ── Read current state ────────────────────────────────────────────────────
-  var state;
-  try {
-    state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
-  } catch (err) {
-    return { exitCode: 8, stdout: '', stderr: 'Failed to read pipeline-state.json: ' + err.message };
-  }
   if (!Array.isArray(state.features)) state.features = [];
 
   // ── Find feature — exit 8 if not found (do NOT create) ───────────────────
@@ -133,6 +124,7 @@ function advance(featureSlug, storyId, rawFields, repoRoot) {
     return {
       exitCode: 8, stdout: '',
       stderr: 'Feature not found: \'' + featureSlug + '\'. Check pipeline-state.json.',
+      state: state, storyWasCreated: false,
     };
   }
 
@@ -221,35 +213,72 @@ function advance(featureSlug, storyId, rawFields, repoRoot) {
     }
   }
 
+  var fieldsStr = Object.keys(stateUpdate).map(function(k) { return k + '=' + stateUpdate[k]; }).join(' ');
+
+  // acv-s1: a no-match storyId silently creating a new flat record read
+  // identically to a real update ("Advanced: ..."), masking typos and
+  // stale references. Creation stays allowed — only made loudly visible.
+  if (storyWasCreated) {
+    return {
+      exitCode: 0,
+      stdout: 'Created NEW story record: ' + featureSlug + '/' + storyId + ' — ' + fieldsStr,
+      stderr: 'WARNING: no existing story matched id/slug "' + storyId + '" in feature "' +
+        featureSlug + '" (checked flat and epic-nested stories) — a new story record was created instead of updating an existing one. If this was a typo, fix the story id/slug and re-run.',
+      state: state, storyWasCreated: true,
+    };
+  }
+
+  return {
+    exitCode: 0,
+    stdout: 'Advanced: ' + featureSlug + '/' + storyId + ' — ' + fieldsStr,
+    stderr: '',
+    state: state, storyWasCreated: false,
+  };
+}
+
+/**
+ * Advance pipeline-state.json fields for a given feature/story.
+ * Thin file-I/O wrapper around applyAdvance()'s in-memory mutation core (wsd-s1).
+ *
+ * @param {string}   featureSlug  — pipeline-state feature slug
+ * @param {string}   storyId      — story id or slug
+ * @param {string[]} rawFields    — array of "field=value" strings
+ * @param {string}   repoRoot     — absolute path to repository root
+ * @returns {{ exitCode: number, stdout: string, stderr: string }}
+ */
+function advance(featureSlug, storyId, rawFields, repoRoot) {
+  // ── Path resolution + traversal guard (OWASP A01) ────────────────────────
+  var statePath = path.resolve(repoRoot, '.github', 'pipeline-state.json');
+  var rootWithSep = repoRoot.endsWith(path.sep) ? repoRoot : repoRoot + path.sep;
+  if (!statePath.startsWith(rootWithSep)) {
+    return { exitCode: 8, stdout: '', stderr: 'Error: path resolves outside repository root (OWASP A01)' };
+  }
+
+  // ── Read current state ────────────────────────────────────────────────────
+  var state;
+  try {
+    state = JSON.parse(fs.readFileSync(statePath, 'utf8'));
+  } catch (err) {
+    return { exitCode: 8, stdout: '', stderr: 'Failed to read pipeline-state.json: ' + err.message };
+  }
+  if (!Array.isArray(state.features)) state.features = [];
+
+  var result = applyAdvance(state, featureSlug, storyId, rawFields);
+  if (result.exitCode !== 0) {
+    return { exitCode: result.exitCode, stdout: result.stdout, stderr: result.stderr };
+  }
+
   // ── Atomic write (temp-file rename) ──────────────────────────────────────
   var tmpPath = statePath + '.tmp';
   try {
-    fs.writeFileSync(tmpPath, JSON.stringify(state, null, 2) + '\n', 'utf8');
+    fs.writeFileSync(tmpPath, JSON.stringify(result.state, null, 2) + '\n', 'utf8');
     fs.renameSync(tmpPath, statePath);
   } catch (err) {
     try { fs.unlinkSync(tmpPath); } catch (_) {}
     return { exitCode: 8, stdout: '', stderr: 'Failed to write pipeline-state.json: ' + err.message };
   }
 
-  var fieldsStr = Object.keys(stateUpdate).map(function(k) { return k + '=' + stateUpdate[k]; }).join(' ');
-
-  // acv-s1: a no-match storyId silently creating a new flat record read
-  // identically to a real update ("Advanced: ..."), masking typos and
-  // stale references. Creation stays allowed \u2014 only made loudly visible.
-  if (storyWasCreated) {
-    return {
-      exitCode: 0,
-      stdout: 'Created NEW story record: ' + featureSlug + '/' + storyId + ' \u2014 ' + fieldsStr,
-      stderr: 'WARNING: no existing story matched id/slug "' + storyId + '" in feature "' +
-        featureSlug + '" (checked flat and epic-nested stories) \u2014 a new story record was created instead of updating an existing one. If this was a typo, fix the story id/slug and re-run.',
-    };
-  }
-
-  return {
-    exitCode: 0,
-    stdout: 'Advanced: ' + featureSlug + '/' + storyId + ' \u2014 ' + fieldsStr,
-    stderr: '',
-  };
+  return { exitCode: result.exitCode, stdout: result.stdout, stderr: result.stderr };
 }
 
-module.exports = { advance: advance };
+module.exports = { advance: advance, applyAdvance: applyAdvance };
