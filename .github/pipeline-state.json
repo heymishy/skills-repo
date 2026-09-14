@@ -34328,8 +34328,8 @@
     {
       "slug": "2026-09-14-feature-slug-respects-display-name",
       "name": "Feature-creation via a product's New feature panel should build a human-readable featureSlug from the operator's given name",
-      "stage": "branch-complete",
-      "health": "amber",
+      "stage": "definition-of-done",
+      "health": "green",
       "stories": [
         {
           "id": "fsdn-s1",
@@ -34338,7 +34338,7 @@
           "stage": "branch-complete",
           "health": "amber",
           "dorStatus": "signed-off",
-          "prStatus": "open",
+          "prStatus": "merged",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 7,
@@ -34346,9 +34346,11 @@
           },
           "acTotal": 5,
           "acVerified": 5,
-          "updatedAt": "2026-09-14T00:39:17.312Z",
+          "updatedAt": "2026-09-14T01:53:19.423Z",
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/879"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/879",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
@@ -34359,8 +34361,8 @@
     {
       "slug": "2026-09-14-llm-agent-suspend-resume-fix",
       "name": "Eliminate stale-socket LLM call failures caused by Fly machine suspend/resume during a discovery session",
-      "stage": "branch-complete",
-      "health": "amber",
+      "stage": "definition-of-done",
+      "health": "green",
       "stories": [
         {
           "id": "lasr-s1",
@@ -34369,7 +34371,7 @@
           "stage": "branch-complete",
           "health": "amber",
           "dorStatus": "signed-off",
-          "prStatus": "open",
+          "prStatus": "merged",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 6,
@@ -34377,9 +34379,11 @@
           },
           "acTotal": 5,
           "acVerified": 5,
-          "updatedAt": "2026-09-14T00:45:23.892Z",
+          "updatedAt": "2026-09-14T01:53:27.590Z",
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/880"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/880",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
