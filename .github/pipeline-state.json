@@ -34588,6 +34588,62 @@
         }
       ],
       "updatedAt": "2026-09-14T19:36:53.378Z"
+    },
+    {
+      "slug": "2026-09-15-web-ui-pipeline-state-durability",
+      "name": "Web UI Pipeline-State Durability",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "track": "standard",
+      "discovery": {
+        "status": "approved",
+        "artefact": "artefacts/2026-09-15-web-ui-pipeline-state-durability/discovery.md",
+        "approvedBy": "Hamish King",
+        "approvedDate": "2026-09-15"
+      },
+      "benefit-metric": {
+        "status": "active",
+        "artefact": "artefacts/2026-09-15-web-ui-pipeline-state-durability/benefit-metric.md",
+        "definedAt": "2026-09-15"
+      },
+      "stories": [
+        {
+          "id": "wsd-s1",
+          "slug": "wsd-s1",
+          "name": "Extract cli-advance.js's mutation core into a reusable, state-object-based function",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "not-started"
+          },
+          "acTotal": 3,
+          "acVerified": 0,
+          "updatedAt": "2026-09-14T20:38:14.123Z"
+        },
+        {
+          "id": "wsd-s2",
+          "slug": "wsd-s2",
+          "name": "GitHub-API-backed pipeline-state writer for the production container, wired by environment, with failure visibility",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "not-started"
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "updatedAt": "2026-09-14T20:38:14.123Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-14T20:38:14.123Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
