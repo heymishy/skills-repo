@@ -10,3 +10,16 @@
 **Rationale:** The operator reviewed real Fly Cost Explorer billing data for this account before deciding: total spend across all apps was $0.69 for a ~31-35 day period, of which machine compute (CPU + RAM, both apps combined, currently running suspended-by-default) was $0.54. Against that baseline, the expected cost of one additional always-on 512MB shared-CPU-1x machine is low (single-digit dollars/month), a trade the operator judged clearly worth making given the now three-times-confirmed reliability and real-work-disruption cost of the alternative. This resolves the 2026-08-31 deferred decision.
 
 **Story:** artefacts/2026-09-14-production-always-on/stories/pao-s1-min-machines-running-one.md
+
+---
+
+## CI follow-up: staging-parity test updated, test-plan artefact retrofitted
+
+**Date:** 2026-09-14
+**Context:** Opening the PR for the above decision surfaced two CI gate failures neither this story's own DoR nor its test plan (at the time, none existed) had anticipated: (1) `tests/check-bri-s2.1-fly-staging-app.js` — a pre-existing governance test asserting `fly.toml`/`fly.staging.toml` parity — hard-fails on `min_machines_running` now legitimately differing between the two files; (2) the CI "Validate traceability chain" job's `test_plan_coverage` check hard-fails because this story's `pipeline-state.json` stage (`definition-of-ready`) requires a test-plan artefact to exist on disk, which this story's own DoR H8 had marked N/A without creating one.
+
+**Decision:** (1) Updated `check-bri-s2.1-fly-staging-app.js`'s T3b and NFR3 to allowlist `min_machines_running` as an intentionally divergent field (documented inline, referencing this decision) rather than adding `2026-09-14-production-always-on` to `.github/trace-validation.yml`'s `test_plan_exempt_features` list — that list is explicitly scoped ("features whose stories pre-date the trace validation system... adding test plan files retroactively is out of scope") to legacy debt, not new short-track stories, so using it here would have been a misuse of an exemption meant for a different problem. (2) Wrote `artefacts/2026-09-14-production-always-on/test-plans/pao-s1-test-plan.md`, retrofitted to describe the same AC1-AC4 verification approach the DoR had already reasoned about (static diff checks for AC1/AC2, manual post-deploy steps for AC3/AC4) — this satisfies the file-existence gate correctly rather than working around it.
+
+**Rationale:** Both fixes are direct, necessary, in-scope consequences of implementing exactly what this story already decided and got approved for (production/staging intentionally diverging on one field) — not new architectural decisions requiring a separate chain. Recorded here rather than silently fixed with no trace, per this repo's own decisions.md discipline.
+
+**Story:** artefacts/2026-09-14-production-always-on/stories/pao-s1-min-machines-running-one.md
