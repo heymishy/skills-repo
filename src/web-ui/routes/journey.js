@@ -2498,11 +2498,26 @@ async function handlePostGateConfirm(req, res) {
       });
       _dasOwnerRepo = null; // genuinely no product link -- proceed unchanged
     }
+    // wsd-s3: snapshot the session token and resolved owner/repo HERE, right
+    // where they are known-good (this exact request just used them
+    // successfully, or is about to, for the artefact commit below) -- rather
+    // than re-reading req.session.accessToken / _dasOwnerRepo again ~20
+    // lines further down at the pipeline-state-writer call. Live production
+    // verification of wsd-s2 found the later re-read observing a falsy
+    // token/owner/repo despite the artefact commit having just succeeded
+    // moments earlier in the very same request -- root cause not fully
+    // isolated, but snapshotting at first-known-good removes the gap
+    // entirely regardless of the exact mechanism.
+    var _pipelineStateContext = {
+      token: req.session.accessToken,
+      owner: _dasOwnerRepo && _dasOwnerRepo.owner,
+      repo:  _dasOwnerRepo && _dasOwnerRepo.repo,
+    };
     if (_dasOwnerRepo) {
       try {
         var _dasDiskContent = fs.readFileSync(absPath, 'utf8'); // ADR-023 disk canonicity -- read back what was just written, not session.artefactContent
         await require('../adapters/artefact-commit-writer').commitArtefact(
-          artefactRelPath, _dasDiskContent, req.session.accessToken, _dasOwnerRepo.owner, _dasOwnerRepo.repo
+          artefactRelPath, _dasDiskContent, _pipelineStateContext.token, _dasOwnerRepo.owner, _dasOwnerRepo.repo
         );
         // acdg-s2: distinguishable "succeeded" signal
         _logCrossChannelEvent('artefact_commit_succeeded', {
@@ -2558,15 +2573,14 @@ async function handlePostGateConfirm(req, res) {
     }
   }
 
-  // owle.6 / wsd-s2: notify pipeline-state writer (after disk write + completeStage).
+  // owle.6 / wsd-s2 / wsd-s3: notify pipeline-state writer (after disk write + completeStage).
   // `await`ed since the wired writer may now be the async GitHub-API writer
   // (production, where isRealCheckout is always false) rather than the
   // synchronous local-fs writer -- awaiting a non-promise (the local-fs
   // writer's return value) is a no-op, so this is safe for both. The 4th
-  // `context` argument carries the operator's own session token and the
-  // resolved owner/repo (already computed above for the artefact-commit
-  // dual-write, `_dasOwnerRepo`) -- the local-fs writer ignores it entirely;
-  // only the GitHub-API writer reads it.
+  // argument is `_pipelineStateContext`, snapshotted above at the point the
+  // session token and resolved owner/repo are known-good -- the local-fs
+  // writer ignores it entirely; only the GitHub-API writer reads it.
   var stateWriteSucceeded = false;
   try {
     var stateUpdate = {};
@@ -2582,11 +2596,9 @@ async function handlePostGateConfirm(req, res) {
     }
     var currentStory = journey.stories && journey.stories[journey.currentStoryIndex];
     var storyId = currentStory ? (currentStory.id || currentStory.slug || null) : null;
-    await _pipelineStateWriter(journey.featureSlug, storyId, stateUpdate, {
-      token: req.session.accessToken,
-      owner: _dasOwnerRepo && _dasOwnerRepo.owner,
-      repo:  _dasOwnerRepo && _dasOwnerRepo.repo,
-    });
+    // wsd-s3: use the snapshot captured above, not a fresh req.session.accessToken /
+    // _dasOwnerRepo read -- see the wsd-s3 comment at that snapshot's declaration.
+    await _pipelineStateWriter(journey.featureSlug, storyId, stateUpdate, _pipelineStateContext);
     stateWriteSucceeded = true;
   } catch (psErr) {
     console.error(JSON.stringify({ event: 'pipeline_state_write_failed', error: psErr.message }));
