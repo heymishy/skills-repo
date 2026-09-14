@@ -34390,6 +34390,56 @@
       "updatedAt": "2026-09-14T00:00:00.000Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-09-14-product-feature-list-filter-fixes",
+      "name": "Product feature list: auto-expand search matches and default to active features only",
+      "stage": "branch-complete",
+      "health": "amber",
+      "stories": [
+        {
+          "id": "pflx-s1",
+          "slug": "pflx-s1",
+          "name": "Auto-expand collapsed module/phase groups when a search match is inside them",
+          "stage": "branch-complete",
+          "health": "amber",
+          "dorStatus": "signed-off",
+          "prStatus": "open",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 5,
+            "passing": 5
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "updatedAt": "2026-09-14T02:53:07.750Z",
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/881"
+        },
+        {
+          "id": "pflx-s2",
+          "slug": "pflx-s2",
+          "name": "Default the product features list to active (non-definition-of-done) features only",
+          "stage": "branch-complete",
+          "health": "amber",
+          "dorStatus": "signed-off",
+          "prStatus": "open",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 6,
+            "passing": 6
+          },
+          "acTotal": 6,
+          "acVerified": 6,
+          "updatedAt": "2026-09-14T02:53:07.933Z",
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/881"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-14T00:00:00.000Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
