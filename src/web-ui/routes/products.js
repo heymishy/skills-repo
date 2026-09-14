@@ -679,6 +679,26 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
           'if(!body||!countEl)return;' +
           'var visible=body.querySelectorAll(".pvc-item:not([hidden])").length;' +
           'countEl.textContent="("+visible+")";' +
+          // pflx-s5: a group left at (0) by the current filter is still a
+          // header row with nothing behind it -- hide the whole section
+          // (header + body), not just the body pflx-s1 already collapses.
+          'if(visible===0){section.setAttribute("hidden","");}else{section.removeAttribute("hidden");}' +
+        '});' +
+        '["module","phase"].forEach(function(name){' +
+          'var panel=document.getElementById("pvc-tab-panel-"+name);' +
+          'if(!panel)return;' +
+          'var sections=panel.querySelectorAll(".a4-module-section");' +
+          'var anyVisible=Array.prototype.some.call(sections,function(s){return !s.hasAttribute("hidden");});' +
+          'var empty=panel.querySelector(".pvc-empty-state");' +
+          'if(!empty){' +
+            'empty=document.createElement("p");' +
+            'empty.className="pvc-empty-state";' +
+            'empty.style.cssText="color:var(--muted);font-size:14px;padding:8px 0";' +
+            'empty.textContent="No active features match.";' +
+            'empty.hidden=true;' +
+            'panel.appendChild(empty);' +
+          '}' +
+          'empty.hidden = !(sections.length>0 && !anyVisible);' +
         '});' +
       '}' +
       'function pvcApplyFilters(){' +
