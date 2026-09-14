@@ -2558,7 +2558,15 @@ async function handlePostGateConfirm(req, res) {
     }
   }
 
-  // owle.6: notify pipeline-state writer (after disk write + completeStage)
+  // owle.6 / wsd-s2: notify pipeline-state writer (after disk write + completeStage).
+  // `await`ed since the wired writer may now be the async GitHub-API writer
+  // (production, where isRealCheckout is always false) rather than the
+  // synchronous local-fs writer -- awaiting a non-promise (the local-fs
+  // writer's return value) is a no-op, so this is safe for both. The 4th
+  // `context` argument carries the operator's own session token and the
+  // resolved owner/repo (already computed above for the artefact-commit
+  // dual-write, `_dasOwnerRepo`) -- the local-fs writer ignores it entirely;
+  // only the GitHub-API writer reads it.
   var stateWriteSucceeded = false;
   try {
     var stateUpdate = {};
@@ -2574,7 +2582,11 @@ async function handlePostGateConfirm(req, res) {
     }
     var currentStory = journey.stories && journey.stories[journey.currentStoryIndex];
     var storyId = currentStory ? (currentStory.id || currentStory.slug || null) : null;
-    _pipelineStateWriter(journey.featureSlug, storyId, stateUpdate);
+    await _pipelineStateWriter(journey.featureSlug, storyId, stateUpdate, {
+      token: req.session.accessToken,
+      owner: _dasOwnerRepo && _dasOwnerRepo.owner,
+      repo:  _dasOwnerRepo && _dasOwnerRepo.repo,
+    });
     stateWriteSucceeded = true;
   } catch (psErr) {
     console.error(JSON.stringify({ event: 'pipeline_state_write_failed', error: psErr.message }));
