@@ -34522,7 +34522,7 @@
           "stage": "definition-of-ready",
           "health": "green",
           "dorStatus": "signed-off",
-          "prStatus": "open",
+          "prStatus": "merged",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 13,
@@ -34530,7 +34530,7 @@
           },
           "acTotal": 7,
           "acVerified": 7,
-          "updatedAt": "2026-09-14T10:35:10.102Z",
+          "updatedAt": "2026-09-14T18:44:48.248Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/886"
         }
       ],
@@ -34550,10 +34550,10 @@
           "stage": "definition-of-ready",
           "health": "green",
           "dorStatus": "signed-off",
-          "prStatus": "open",
+          "prStatus": "merged",
           "acTotal": 4,
           "acVerified": 0,
-          "updatedAt": "2026-09-14T09:45:41.259Z",
+          "updatedAt": "2026-09-14T18:44:48.031Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/885"
         }
       ],
