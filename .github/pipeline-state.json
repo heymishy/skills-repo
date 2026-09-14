@@ -34446,7 +34446,7 @@
           "stage": "branch-complete",
           "health": "amber",
           "dorStatus": "signed-off",
-          "prStatus": "open",
+          "prStatus": "merged",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 5,
@@ -34454,9 +34454,11 @@
           },
           "acTotal": 5,
           "acVerified": 5,
-          "updatedAt": "2026-09-14T06:04:21.966Z",
+          "updatedAt": "2026-09-14T06:32:51.677Z",
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/882"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/882",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
