@@ -64,7 +64,7 @@ function computeDodStatusRollup(pipelineState) {
  * correct granularity for this breakdown.
  *
  * @param {object} pipelineState - parsed pipeline-state.json content
- * @returns {{green: number, amber: number, red: number, unknown: number, perFeature: Array<{slug: string, name: string|undefined, health: 'green'|'amber'|'red'|'unknown'}>}}
+ * @returns {{green: number, amber: number, red: number, unknown: number, perFeature: Array<{slug: string, name: string|undefined, health: 'green'|'amber'|'red'|'unknown', stage: string|undefined}>}}
  */
 function computeHealthCounts(pipelineState) {
   var counts = { green: 0, amber: 0, red: 0, unknown: 0, perFeature: [] };
@@ -76,7 +76,12 @@ function computeHealthCounts(pipelineState) {
       health = 'unknown';
     }
     counts[health]++;
-    counts.perFeature.push({ slug: feature.slug, name: feature.name, health: health });
+    // pflx-s4: also surface the feature's own real stage alongside health --
+    // products.js's mergedItems only ever gets a .stage for journey-sourced
+    // items; taxonomy-only items (the majority of any product with real
+    // completed history) had no way to know they were done. Unmodified,
+    // never defaulted -- an absent stage stays undefined, never fabricated.
+    counts.perFeature.push({ slug: feature.slug, name: feature.name, health: health, stage: feature.stage });
   });
 
   return counts;

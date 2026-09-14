@@ -34459,6 +34459,24 @@
           "prUrl": "https://github.com/heymishy/skills-repo/pull/882",
           "dodStatus": "complete",
           "releaseReady": true
+        },
+        {
+          "id": "pflx-s4",
+          "slug": "pflx-s4",
+          "name": "Populate a real pipeline stage for taxonomy-sourced feature-list items, not just journey-sourced ones",
+          "stage": "branch-complete",
+          "health": "amber",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 5,
+            "passing": 5
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "updatedAt": "2026-09-14T00:00:00.000Z",
+          "verifyStatus": "passed"
         }
       ],
       "metrics": [],
