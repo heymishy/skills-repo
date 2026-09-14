@@ -369,6 +369,9 @@ function _renderPvcItemRow(item, includeCheckbox, preferFeatureName, sessionOrig
   // pdt-s3 (AC1): drop the "?" glyph -- see _renderEpicRow's identical comment.
   var label = item.health === 'red' ? '✕ Blocked' : item.health === 'amber' ? '⚠ Warning' : item.health === 'unknown' ? 'Unknown' : '✓ Healthy';
   var healthAttr = item.health === 'red' ? 'red' : item.health === 'amber' ? 'amber' : item.health === 'unknown' ? 'unknown' : 'green';
+  // pflx-s2: whether this item counts as "active" for the default filter --
+  // everything not yet at definition-of-done.
+  var activeAttr = item.stage !== 'definition-of-done';
   var searchText = ((item.name || '') + ' ' + item.slug).toLowerCase();
   var displayName = item.name || item.slug;
   // pefl-s1: preferFeatureName is only ever passed truthy by the By Phase
@@ -444,7 +447,7 @@ function _renderPvcItemRow(item, includeCheckbox, preferFeatureName, sessionOrig
   // By Phase tab, All tab) omits the 2nd argument entirely, producing
   // byte-identical output to before this story.
   if (includeCheckbox) {
-    return '<li class="pvc-item" data-health="' + healthAttr + '" data-search="' + _escapeHtml(searchText) + '" data-slug="' + _escapeHtml(item.slug) + '" ' +
+    return '<li class="pvc-item" data-health="' + healthAttr + '" data-active="' + activeAttr + '" data-search="' + _escapeHtml(searchText) + '" data-slug="' + _escapeHtml(item.slug) + '" ' +
       'style="padding:14px 0;border-bottom:1px solid var(--line);display:flex;align-items:flex-start;gap:10px">' +
       '<input type="checkbox" class="bmau-item-checkbox" data-slug="' + _escapeHtml(item.slug) + '" onchange="bmauUpdateSelection()" ' +
         'aria-label="Select ' + _escapeHtml(displayName) + ' for bulk module assignment" style="margin-top:16px;flex-shrink:0">' +
@@ -452,7 +455,7 @@ function _renderPvcItemRow(item, includeCheckbox, preferFeatureName, sessionOrig
     '</li>';
   }
 
-  return '<li class="pvc-item" data-health="' + healthAttr + '" data-search="' + _escapeHtml(searchText) + '" ' +
+  return '<li class="pvc-item" data-health="' + healthAttr + '" data-active="' + activeAttr + '" data-search="' + _escapeHtml(searchText) + '" ' +
     'style="padding:14px 0;border-bottom:1px solid var(--line)">' +
     innerHtml +
   '</li>';
@@ -577,6 +580,16 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
     return '<button type="button" class="pvc-health-chip' + (h === 'all' ? ' pvc-health-chip--active' : '') + '" data-health-filter="' + h + '" onclick="pvcFilterByHealth(this)">' + _escapeHtml(label) + ' (' + count + ')</button>';
   }).join('');
 
+  // pflx-s2: default the list to active (non-definition-of-done) features
+  // only -- a separate, AND-ed filter dimension from health/search, checked
+  // by default. Count shown so the toggle's effect is legible at a glance.
+  var doneCount = items.filter(function(i) { return i.stage === 'definition-of-done'; }).length;
+  var activeOnlyHtml =
+    '<label class="pvc-active-only">' +
+      '<input type="checkbox" id="pvc-active-only-checkbox" checked onchange="pvcToggleActiveOnly(this)"> ' +
+      'Active only <span class="pvc-active-only-count">(' + doneCount + ' completed hidden)</span>' +
+    '</label>';
+
   return (
     '<style>' +
       '.a4-module-body { display: grid; grid-template-rows: 1fr; transition: grid-template-rows 0.25s ease; overflow: hidden; }' +
@@ -593,6 +606,8 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
       '.pvc-health-chip{padding:5px 12px;font-family:inherit;font-size:12.5px;background:none;border:1px solid var(--line);border-radius:999px;color:var(--muted);cursor:pointer}' +
       '.pvc-health-chip--active{color:var(--ink);border-color:var(--ink)}' +
       '.pvc-search{flex:1;min-width:160px;padding:6px 10px;border:1px solid var(--line);border-radius:6px;font-size:13px;background:var(--surface);color:var(--ink)}' +
+      '.pvc-active-only{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted);white-space:nowrap;cursor:pointer}' +
+      '.pvc-active-only-count{color:var(--muted)}' +
       // !important: bmau-s1's checkbox-enabled rows set an inline
       // display:flex on the <li> itself (higher specificity than a plain
       // class+attribute selector) -- without !important here, a filtered-
@@ -608,6 +623,7 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
     '<div class="pvc-filter-bar">' +
       healthChips +
       '<input type="text" class="pvc-search" placeholder="Search features…" oninput="pvcFilterBySearch(this.value)">' +
+      activeOnlyHtml +
     '</div>' +
     byModuleHtml + byPhaseHtml + allHtml +
     '<script>' +
@@ -626,12 +642,38 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
       '}' +
       'var pvcCurrentHealth="all";' +
       'var pvcCurrentSearch="";' +
+      'var pvcHideDod=true;' +
+      // pflx-s1: a search match inside a collapsed module/phase group is
+      // otherwise invisible (the group clips it to zero height regardless of
+      // its own hidden state) -- expand any collapsed group that now
+      // contains a visible match, but only in response to search text (not
+      // health/active-only, which would force the whole list open by
+      // default). Only ever re-collapse a group THIS logic opened (tracked
+      // via data-auto-expanded) -- a group the operator opened manually is
+      // never touched.
+      'function pvcSyncGroupExpansion(){' +
+        'document.querySelectorAll(".a4-module-body").forEach(function(body){' +
+          'var hasVisibleMatch = !!body.querySelector(".pvc-item:not([hidden])");' +
+          'var header = document.querySelector(\'[aria-controls="\'+body.id+\'"]\');' +
+          'if(pvcCurrentSearch!=="" && hasVisibleMatch && body.classList.contains("a4-module-body--collapsed")){' +
+            'body.classList.remove("a4-module-body--collapsed");' +
+            'body.setAttribute("data-auto-expanded","true");' +
+            'if(header)header.setAttribute("aria-expanded","true");' +
+          '}else if(pvcCurrentSearch==="" && body.getAttribute("data-auto-expanded")==="true"){' +
+            'body.classList.add("a4-module-body--collapsed");' +
+            'body.removeAttribute("data-auto-expanded");' +
+            'if(header)header.setAttribute("aria-expanded","false");' +
+          '}' +
+        '});' +
+      '}' +
       'function pvcApplyFilters(){' +
         'document.querySelectorAll(".pvc-item").forEach(function(el){' +
           'var healthOk = pvcCurrentHealth==="all" || el.getAttribute("data-health")===pvcCurrentHealth;' +
           'var searchOk = pvcCurrentSearch==="" || el.getAttribute("data-search").indexOf(pvcCurrentSearch)!==-1;' +
-          'if(healthOk && searchOk){el.removeAttribute("hidden");}else{el.setAttribute("hidden","");}' +
+          'var stageOk = !pvcHideDod || el.getAttribute("data-active")==="true";' +
+          'if(healthOk && searchOk && stageOk){el.removeAttribute("hidden");}else{el.setAttribute("hidden","");}' +
         '});' +
+        'pvcSyncGroupExpansion();' +
       '}' +
       'function pvcFilterByHealth(btn){' +
         'pvcCurrentHealth=btn.getAttribute("data-health-filter");' +
@@ -643,6 +685,13 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
         'pvcCurrentSearch=value.toLowerCase();' +
         'pvcApplyFilters();' +
       '}' +
+      'function pvcToggleActiveOnly(el){' +
+        'pvcHideDod=el.checked;' +
+        'pvcApplyFilters();' +
+      '}' +
+      // pflx-s2: apply the active-only default the moment the page renders,
+      // not only after the operator's first interaction.
+      'pvcApplyFilters();' +
       // bmau-s1 -- AC2/AC4: track checked slugs, enable/disable the
       // "Assign to module" button and update its selected-count label.
       'function bmauUpdateSelection(){' +
