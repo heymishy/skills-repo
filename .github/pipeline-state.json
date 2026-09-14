@@ -34507,6 +34507,34 @@
       "updatedAt": "2026-09-14T00:00:00.000Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-09-14-llm-truncation-detection",
+      "name": "LLM truncation detection",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "track": "short",
+      "stories": [
+        {
+          "id": "ltd-s1",
+          "slug": "ltd-s1",
+          "name": "Detect max_tokens truncation explicitly and raise the output ceiling",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "prStatus": "open",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 13,
+            "passing": 13
+          },
+          "acTotal": 7,
+          "acVerified": 7,
+          "updatedAt": "2026-09-14T10:35:10.102Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/886"
+        }
+      ],
+      "updatedAt": "2026-09-14T10:26:05.326Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

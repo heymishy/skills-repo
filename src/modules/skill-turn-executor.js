@@ -39,7 +39,13 @@ const _copilotAgent   = new https.Agent({ keepAlive: false, maxSockets: 4 });
 
 const DEFAULT_MODEL      = 'gpt-4o';
 const DEFAULT_ANTHROPIC_MODEL = 'claude-sonnet-4.6';
-const DEFAULT_MAX_TOKENS = 16384;
+// ltd-s1: raised from 16384 after a 2026-09-14 production incident where a
+// test-plan generation call hit the old ceiling exactly ($ai_output_tokens:
+// 16384) mid-artefact. Not independently verified against a live upper bound
+// for the claude-haiku-4-5/claude-sonnet-4-6 model IDs this app uses -- if
+// invalid, the existing non-200 rejection path below already surfaces this
+// loudly (sse_error log) rather than failing silently. See decisions.md.
+const DEFAULT_MAX_TOKENS = 32768;
 const DEFAULT_TIMEOUT_MS = 90000;
 const ANTHROPIC_VERSION  = '2023-06-01';
 
@@ -144,6 +150,7 @@ function _callAnthropic(systemPrompt, history, currentInput, maxTokens, timeoutM
                 output_tokens:         (parsed.usage && parsed.usage.output_tokens)                 || 0,
                 cache_read_tokens:     (parsed.usage && parsed.usage.cache_read_input_tokens)       || 0,
                 cache_creation_tokens: (parsed.usage && parsed.usage.cache_creation_input_tokens)   || 0,
+                stop_reason:           parsed.stop_reason || null,
                 model:                 model
               }
             });
@@ -235,7 +242,7 @@ function _callAnthropicStream(systemPrompt, history, currentInput, maxTokens, ti
 
       let fullText = '';
       let buffer   = '';
-      let _usage   = { input_tokens: 0, output_tokens: 0, cache_read_tokens: 0, cache_creation_tokens: 0 };
+      let _usage   = { input_tokens: 0, output_tokens: 0, cache_read_tokens: 0, cache_creation_tokens: 0, stop_reason: null };
 
       const STREAM_IDLE_MS = parseInt(process.env.WUCE_STREAM_IDLE_MS || '60000', 10);
       let _idleTimer = setTimeout(function() {
@@ -265,9 +272,12 @@ function _callAnthropicStream(systemPrompt, history, currentInput, maxTokens, ti
               _usage.cache_creation_tokens = mu.cache_creation_input_tokens || 0;
               continue;
             }
-            // Capture output tokens from the final usage event
-            if (parsed.type === 'message_delta' && parsed.usage) {
-              _usage.output_tokens = parsed.usage.output_tokens || 0;
+            // Capture output tokens from the final usage event, plus the stop reason
+            // (ltd-s1: needed to detect a max_tokens truncation explicitly rather than
+            // relying solely on the client's "no literal ?" continuation heuristic).
+            if (parsed.type === 'message_delta') {
+              if (parsed.usage) { _usage.output_tokens = parsed.usage.output_tokens || 0; }
+              if (parsed.delta && parsed.delta.stop_reason) { _usage.stop_reason = parsed.delta.stop_reason; }
               continue;
             }
             if (parsed.type !== 'content_block_delta') continue;
