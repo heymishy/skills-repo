@@ -5,21 +5,20 @@
 **Domain:** web-ui
 ## User Story
 As a **Team collaborator with approval responsibility (same role as original sign-off)**,
-So that Reversibility with audit trail — completing this story closes the regression loop: regress → revise → re-approve → move forward..
+I want **to re-approve a stage after revising it post-regression, with the record linked to the original approval**,
+So that **the audit trail shows the full regress → revise → re-approve cycle, not just a fresh unrelated approval**.
 ## Benefit Linkage
 Reversibility with audit trail — completing this story closes the regression loop: regress → revise → re-approve → move forward.
 ## Architecture Constraints
 New feature_approvals record with a reApprovalOf field linking back to the original approval being re-done; decisions.md entry is appended with re-approval context.
-
-Given Susan has regressed Feature A1 to definition and made the necessary revisions,
-When the revised definition is ready and she clicks "Sign Off" at the definition stage,
-Then a new approval is recorded in feature_approvals with reApprovalOf: [original-approval-id], and a decisions.md entry is appended: "2025-01-30 — Definition re-approved by Susan (engineer) — updated: Architecture constraints for multi-tenancy added".
 ## Dependencies
 ep3-s1 (regression must have occurred); ep3-s2 (decisions.md entry)
 ## Acceptance Criteria
-Given Susan has regressed Feature A1 to definition and made the necessary revisions,
-When the revised definition is ready and she clicks "Sign Off" at the definition stage,
-Then a new approval is recorded in feature_approvals with reApprovalOf: [original-approval-id], and a decisions.md entry is appended: "2025-01-30 — Definition re-approved by Susan (engineer) — updated: Architecture constraints for multi-tenancy added".
+**AC1:** Given Susan has regressed Feature A1 to definition and made her revisions, When she clicks "Sign Off" at the definition stage, Then a new approval record is created in feature_approvals with reApprovalOf pointing at the original approval's id.
+
+**AC2:** Given the re-approval has been recorded, When the feature's state is checked, Then it has advanced past the definition stage again — the same state transition a first-time approval would trigger.
+
+**AC3:** Given the re-approval is complete, When decisions.md is inspected, Then a new entry has been appended describing the re-approval and what changed, distinct from (not overwriting) the original regression entry.
 ## Out of Scope
 - Requiring a different approver for re-approval (same as original for MVP)
 - Approval workflow changes based on prior regression

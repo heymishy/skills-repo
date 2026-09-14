@@ -5,21 +5,20 @@
 **Domain:** software-engineering
 ## User Story
 As a **Audit / compliance (implicit; entry is auto-generated)**,
-So that Reversibility with audit trail — completing this story ensures the regression is documented..
+I want **every regression to be automatically documented with who, why, and when**,
+So that **there's a durable, auditable record without relying on someone remembering to write it manually**.
 ## Benefit Linkage
 Reversibility with audit trail — completing this story ensures the regression is documented.
 ## Architecture Constraints
 decisions.md is already the canonical decisions register for the feature (created at discovery); new entries are appended with regression context (date, user, reason, stage reverted to); ADR-029 (disk is canonical — regression entry is written to disk, not just pipeline-state.json).
-
-Given Susan requests regression (see ep3-s1),
-When the regression is processed,
-Then a new entry is appended to artefacts/[feature]/decisions.md: date: 2025-01-30, session-phase: regression, decision: Regress to definition, reason: Definition is missing architecture constraints for multi-tenancy, actor: Susan (engineer), stageReverted: definition, timestamp: 2025-01-30T14:23:00Z
 ## Dependencies
 ep3-s1 (regression must occur); requires decisions.md to exist on the feature
 ## Acceptance Criteria
-Given Susan requests regression (see ep3-s1),
-When the regression is processed,
-Then a new entry is appended to artefacts/[feature]/decisions.md: date: 2025-01-30, session-phase: regression, decision: Regress to definition, reason: Definition is missing architecture constraints for multi-tenancy, actor: Susan (engineer), stageReverted: definition, timestamp: 2025-01-30T14:23:00Z
+**AC1:** Given Susan requests a regression (ep3-s1), When the regression is processed, Then a new entry is appended to artefacts/[feature]/decisions.md.
+
+**AC2:** Given the entry has been appended, When it is inspected, Then it contains date, session-phase: regression, decision, reason, actor, and stageReverted fields, all populated from the actual regression request (not placeholders).
+
+**AC3:** Given the regression has just completed, When decisions.md is read from disk, Then the new entry is present within 2 seconds of the regression completing — no delayed/batched write.
 ## Out of Scope
 - Editing decisions.md entries (append-only for MVP)
 - Signing off regression (no approval gate for MVP)

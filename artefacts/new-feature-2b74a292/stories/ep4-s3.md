@@ -5,21 +5,20 @@
 **Domain:** web-ui
 ## User Story
 As a **Organisation administrator**,
-So that Operational housekeeping (no direct metric linkage).
+I want **to mark a pod as archived instead of deleting it**,
+So that **unused pods stop cluttering active dropdowns, without losing the historical record of which features used them**.
 ## Benefit Linkage
 Operational housekeeping (no direct metric linkage)
 ## Architecture Constraints
 pods.status field is updated to "archived"; archived pods remain in pod_members and pod_assignments (not deleted); new pods are not offered in dropdowns if archived.
-
-Given the "Legacy Platform Pod" is no longer used,
-When an org admin navigates to Pod Manager and clicks "Archive" on that pod,
-Then the pod status is set to "archived", it no longer appears in the "Assign pod" dropdown, but existing features using it remain unchanged (members still listed for audit).
 ## Dependencies
 ep1-s1 (pods exist)
 ## Acceptance Criteria
-Given the "Legacy Platform Pod" is no longer used,
-When an org admin navigates to Pod Manager and clicks "Archive" on that pod,
-Then the pod status is set to "archived", it no longer appears in the "Assign pod" dropdown, but existing features using it remain unchanged (members still listed for audit).
+**AC1:** Given the "Legacy Platform Pod" is no longer used, When an org admin navigates to Pod Manager and clicks "Archive" on that pod, Then the action completes without requiring confirmation beyond the click (per NFR: archival is immediate).
+
+**AC2:** Given the pod has been archived, When its status is inspected, Then pods.status is "archived", and it no longer appears in the "Assign pod" dropdown for new assignments.
+
+**AC3:** Given features that were already using this pod before archival, When those features' collaborator/audit views are inspected, Then the pod's members are still listed there — archival does not remove or hide historical usage.
 ## Out of Scope
 - Bulk archival
 - Un-archiving a pod (deferred)

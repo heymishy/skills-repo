@@ -4,6 +4,8 @@
 **Run:** 1
 **Total Stories:** 12
 
+> **⚠️ SUPERSEDED (2026-09-15).** This is a legacy, non-canonical consolidated review file — the skill's actual per-story artefact location is `artefacts/[feature]/review/[story-slug]-review-[N].md` (see `skills/review/SKILL.md`). It sat alongside a *separate*, later run of per-story files (`review/ep*-review-1.md`, dated 2026-09-14) that inaccurately recorded PASS/no-findings on the same 13 stories despite every one of them still having only 1 AC — the exact defect *this* file correctly caught (as findings 1-H1 through 13-H1) but which was never fixed until now. All 13 stories have since been expanded to 3 ACs each and re-reviewed genuinely; see `review/[story-slug]-review-2.md` for the current, accurate PASS verdicts. Kept here for history — do not treat this file's FAIL verdict as current, and do not treat the intervening `review-1.md` PASS files as ever having been valid either.
+
 ---
 
 ## Story: ep1-s1

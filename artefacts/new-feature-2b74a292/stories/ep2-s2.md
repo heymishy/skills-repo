@@ -5,21 +5,20 @@
 **Domain:** web-ui
 ## User Story
 As a **Team collaborator (any role)**,
-So that Role-filtered visibility — completing this story delivers the core role-scoping feature..
+I want **to see only the pipeline stages relevant to my role by default**,
+So that **I'm not overwhelmed by stages that aren't mine to act on**.
 ## Benefit Linkage
 Role-filtered visibility — completing this story delivers the core role-scoping feature.
 ## Architecture Constraints
 role_definitions table defines stageVisibility per role (e.g. "product" role sees ["discovery", "benefit-metric", "definition"]); client-side filtering via JavaScript (no backend enforcement in MVP); ADR-027 (live SaaS mechanism is ordinary app code, not a SKILL.md skill).
-
-Given Susan (engineer) loads Feature A1,
-When the stage list renders,
-Then Susan sees by default: "test-plan", "review", "definition-of-ready", "coding" (engineer-filtered stages). A toggle "Show all stages" is available; when clicked, all stages appear.
 ## Dependencies
 ep1-s3 (feature must have role assignments for collaborators); requires role_definitions table with stageVisibility mapping
 ## Acceptance Criteria
-Given Susan (engineer) loads Feature A1,
-When the stage list renders,
-Then Susan sees by default: "test-plan", "review", "definition-of-ready", "coding" (engineer-filtered stages). A toggle "Show all stages" is available; when clicked, all stages appear.
+**AC1:** Given Susan (engineer) loads Feature A1, When the stage list renders, Then Susan sees by default only "test-plan", "review", "definition-of-ready", "coding" (her role's stageVisibility).
+
+**AC2:** Given Hamish (product) loads the same Feature A1, When the stage list renders, Then Hamish sees by default only "discovery", "benefit-metric", "definition" (his role's stageVisibility) — a different default view from Susan's, from the same underlying data.
+
+**AC3:** Given either collaborator's filtered default view, When they click "Show all stages", Then every stage in the pipeline becomes visible, and no previously-visible stage is hidden as a result of toggling.
 ## Out of Scope
 - Hiding stages (only filtering the default view)
 - Preventing a user from viewing all stages if they click "show all"

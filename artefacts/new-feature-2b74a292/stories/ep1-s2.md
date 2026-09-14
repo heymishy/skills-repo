@@ -5,21 +5,20 @@
 **Domain:** web-ui
 ## User Story
 As a **Product owner**,
-So that Synchronous team access — completing this story enables pod reuse across multiple features; the second step in the walking skeleton..
+I want **to assign an existing pod as the default team for a product**,
+So that **all new features in that product automatically inherit the team without per-feature setup**.
 ## Benefit Linkage
 Synchronous team access — completing this story enables pod reuse across multiple features; the second step in the walking skeleton.
 ## Architecture Constraints
 ADR-026 (canonical builders — getProductDefaultPod() is the single builder for this derived structure); ADR-025 (tenant scoping); new pod_assignments table with assignmentType: inherit-to-all-features.
-
-Given a product owner is in Product settings for "Payments",
-When they select "Set default pod" and choose "Core Platform Pod",
-Then the assignment is saved to pod_assignments (assignmentType: inherit-to-all-features), and all new features created in "Payments" show "Assigned pods: Core Platform Pod (3 members)" automatically.
 ## Dependencies
 ep1-s1 (pod must exist before assignment)
 ## Acceptance Criteria
-Given a product owner is in Product settings for "Payments",
-When they select "Set default pod" and choose "Core Platform Pod",
-Then the assignment is saved to pod_assignments (assignmentType: inherit-to-all-features), and all new features created in "Payments" show "Assigned pods: Core Platform Pod (3 members)" automatically.
+**AC1:** Given a product owner is in Product settings for "Payments", When they select "Set default pod" and choose "Core Platform Pod", Then the assignment is saved to pod_assignments (assignmentType: inherit-to-all-features), and Product settings shows "Default pod: Core Platform Pod (3 members)" immediately, with no page refresh needed.
+
+**AC2:** Given "Payments" now has default pod "Core Platform Pod", When a product owner creates a new feature under "Payments", Then the new feature shows "Assigned pods: Core Platform Pod (3 members)" automatically, with no manual assignment step.
+
+**AC3:** Given "Payments" already has existing features created before any default pod was set, When a product owner sets "Core Platform Pod" as the new default, Then none of those existing features' pod assignments change — only features created after this point inherit the new default.
 ## Out of Scope
 - Changing a product's default pod after features are created (deferred to Epic 4)
 - Unassigning a product's default pod (deferred)

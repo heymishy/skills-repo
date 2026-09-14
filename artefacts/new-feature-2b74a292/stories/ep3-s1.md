@@ -5,21 +5,20 @@
 **Domain:** web-ui
 ## User Story
 As a **Team collaborator (any role)**,
-So that Reversibility with audit trail — completing this story enables the regression flow..
+I want **to send the feature back to an earlier stage with a reason**,
+So that **the team can revisit and fix something without losing the audit trail of what was already approved**.
 ## Benefit Linkage
 Reversibility with audit trail — completing this story enables the regression flow.
 ## Architecture Constraints
 Feature stage is reset to the target stage; all downstream stages are marked as incomplete; prior feature_approvals records remain (not deleted, for audit); ADR-025 (tenant scoping — regression is a tenant-scoped operation).
-
-Given Susan is at the DoR stage of Feature A1 and realises the definition needs revision,
-When she clicks "Request Regression" and selects "definition" stage, enters reason "Definition is missing architecture constraints for multi-tenancy", and submits,
-Then the feature regresses to definition stage, DoR and later stages show "incomplete", the feature_approvals records for DoR and later are preserved (not deleted), and a new decisions.md entry is created: "2025-01-30 — Regression to definition requested by Susan (engineer) — reason: Definition is missing architecture constraints for multi-tenancy".
 ## Dependencies
 ep2-s3 (approval records exist)
 ## Acceptance Criteria
-Given Susan is at the DoR stage of Feature A1 and realises the definition needs revision,
-When she clicks "Request Regression" and selects "definition" stage, enters reason "Definition is missing architecture constraints for multi-tenancy", and submits,
-Then the feature regresses to definition stage, DoR and later stages show "incomplete", the feature_approvals records for DoR and later are preserved (not deleted), and a new decisions.md entry is created: "2025-01-30 — Regression to definition requested by Susan (engineer) — reason: Definition is missing architecture constraints for multi-tenancy".
+**AC1:** Given Susan is at the DoR stage of Feature A1, When she clicks "Request Regression", Then she is presented with a stage selector and a reason field, and submits her choice ("definition") with a reason.
+
+**AC2:** Given the regression request has been submitted, When it is processed, Then the feature's stage resets to "definition" and every stage between definition and DoR (inclusive of DoR) is marked "incomplete".
+
+**AC3:** Given the feature has regressed, When feature_approvals is inspected, Then the approval records for DoR and the stages after it still exist (not deleted) — preserved for audit even though those stages are now marked incomplete.
 ## Out of Scope
 - Approval gate for regression (auto-accept for MVP)
 - Partial regression (all-or-nothing per stage)

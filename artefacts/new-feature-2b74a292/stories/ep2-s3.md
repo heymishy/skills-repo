@@ -5,21 +5,20 @@
 **Domain:** web-ui
 ## User Story
 As a **Team collaborator with approval responsibility (product lead for discovery, tech lead for DoR, etc.)**,
-So that Sign-off and accountability — completing this story delivers formal approval and attribution..
+I want **to formally sign off my stage of the feature with a reason**,
+So that **there's a clear, attributable record of who approved what, and the feature advances**.
 ## Benefit Linkage
 Sign-off and accountability — completing this story delivers formal approval and attribution.
 ## Architecture Constraints
 New feature_approvals table (featureId, stageId, approverId, approvalTime, decision, reason); ADR-024 (GET /api/journey/:id response shape is canonical — approverId and approvalTime are added to the response); ADR-020 (authenticated user's token for write-back).
-
-Given Hamish (conductor) is at the discovery stage of Feature A1 and clicks "Sign Off",
-When a modal appears asking for approval reason and he enters "Discovery is complete; personas, pain points, and scope are locked" and clicks "Approve",
-Then the approval is recorded in feature_approvals, the feature advances to benefit-metric stage, and a decisions.md entry is auto-generated: "2025-01-30 — Discovery approved by Hamish (conductor) — reason: Discovery is complete; personas, pain points, and scope are locked".
 ## Dependencies
 ep2-s1 (presence/collaborators must be loaded); ep2-s2 (role-filtered visibility)
 ## Acceptance Criteria
-Given Hamish (conductor) is at the discovery stage of Feature A1 and clicks "Sign Off",
-When a modal appears asking for approval reason and he enters "Discovery is complete; personas, pain points, and scope are locked" and clicks "Approve",
-Then the approval is recorded in feature_approvals, the feature advances to benefit-metric stage, and a decisions.md entry is auto-generated: "2025-01-30 — Discovery approved by Hamish (conductor) — reason: Discovery is complete; personas, pain points, and scope are locked".
+**AC1:** Given Hamish (conductor) is at the discovery stage of Feature A1, When he clicks "Sign Off", Then a modal appears with a text field prompting for an approval reason and an "Approve" button.
+
+**AC2:** Given the modal is open and Hamish enters a reason and clicks "Approve", When the approval is submitted, Then it is recorded in feature_approvals (approverId, approvalTime, reason) and the feature advances from discovery to benefit-metric stage.
+
+**AC3:** Given the approval has been recorded, When decisions.md is inspected, Then a new entry has been auto-appended containing the date, approver, and the reason Hamish entered.
 ## Out of Scope
 - Approval workflows (e.g. require two sign-offs before advancing)
 - Conditional approvals (approve with requested-revision, blocking advance)
