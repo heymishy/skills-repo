@@ -34394,8 +34394,8 @@
     {
       "slug": "2026-09-14-product-feature-list-filter-fixes",
       "name": "Product feature list: auto-expand search matches and default to active features only",
-      "stage": "definition-of-done",
-      "health": "green",
+      "stage": "branch-complete",
+      "health": "amber",
       "stories": [
         {
           "id": "pflx-s1",
@@ -34438,6 +34438,25 @@
           "prUrl": "https://github.com/heymishy/skills-repo/pull/881",
           "dodStatus": "complete",
           "releaseReady": true
+        },
+        {
+          "id": "pflx-s3",
+          "slug": "pflx-s3",
+          "name": "Collapsed group counts reflect the currently-filtered item count, not the unfiltered total",
+          "stage": "branch-complete",
+          "health": "amber",
+          "dorStatus": "signed-off",
+          "prStatus": "open",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 5,
+            "passing": 5
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "updatedAt": "2026-09-14T06:04:21.966Z",
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/882"
         }
       ],
       "metrics": [],
