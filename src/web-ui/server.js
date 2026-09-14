@@ -38,6 +38,8 @@ const sessionManager                                                 = require('
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
 const { handleGetJourney, handlePostJourney, handleDeleteJourney, handleGetJourneyResume, handleGetJourneyById, handleGetStageReview, handleGetJourneyStageView, handleGetJourneyStageReopen, handleGetStageConfirmBack, handlePostJourneyStageArtefact, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, handlePutJourneyDisplayName, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handleGetWizardBootstrapped, handlePostWizardSelection, handleJourneys, setListJourneys } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2 / bri-s1.5 / s3.4 / fdn-s1 / jsvr-s1
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
+const pipelineStateGithubWriterFactory                               = require('./adapters/pipeline-state-github-writer'); // wsd-s2
+const { selectPipelineStateWriterFactory }                           = require('./adapters/pipeline-state-writer-selector'); // wsd-s2
 const { setToolExecutor }                                            = require('./modules/tool-executor'); // wucp.3
 const { setCreditsAdapter, getValidTenantIds }                       = require('./modules/credits');       // lab-s3.1 / story-1-organisation-entity
 const { migrateOrganisationsSchema, backfillStandaloneOrganisations } = require('./modules/organisations'); // story-1-organisation-entity
@@ -1494,13 +1496,22 @@ if (process.env.NODE_ENV !== 'test') {
   });
 }
 
-// owle.6: Wire pipeline-state auto-writer (runs on every gate-confirm success)
+// owle.6 / wsd-s2: Wire pipeline-state auto-writer (runs on every gate-confirm success).
+// Selects between the local-fs writer (real, git-backed checkouts -- local dev, CLI) and
+// the GitHub-API writer (the production container, where `.dockerignore` excludes `.git/`
+// so the local-fs writer's own isRealCheckout guard always throws) using the same signal
+// pipeline-state-writer.js's factory already computes internally -- duplicated here so
+// server.js can choose a factory without pipeline-state-writer.js needing to expose it.
 {
   const repoRootForAdapter = process.env.COPILOT_REPO_PATH || _path.resolve(__dirname, '../..');
   if (process.env.NODE_ENV === 'test') {
     setPipelineStateWriter(function() {}); // no-op in test mode
   } else {
-    setPipelineStateWriter(pipelineStateWriterFactory(repoRootForAdapter));
+    const chosenFactory = selectPipelineStateWriterFactory(repoRootForAdapter, {
+      localFs:   pipelineStateWriterFactory,
+      githubApi: pipelineStateGithubWriterFactory,
+    });
+    setPipelineStateWriter(chosenFactory(repoRootForAdapter));
   }
 }
 
