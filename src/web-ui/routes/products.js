@@ -3360,7 +3360,13 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
   var _journeyStore = require('../modules/journey-store');
   var created = _journeyStore.createJourney('pending', 'default');
   var journeyId = created.journeyId;
-  var featureSlug = 'new-feature-' + journeyId.slice(0, 8);
+  // fsdn-s1: build a human-readable slug from the operator's given name,
+  // consistent with handlePostJourney (routes/journey.js) -- fall back to
+  // the opaque hash-based slug only when no usable name was given.
+  var _slugifiedDisplayName = displayName ? require('./journey')._slugify(displayName) : '';
+  var featureSlug = _slugifiedDisplayName
+    ? (new Date().toISOString().slice(0, 10) + '-' + _slugifiedDisplayName)
+    : ('new-feature-' + journeyId.slice(0, 8));
   _journeyStore.setJourneyFields(journeyId, {
     featureSlug: featureSlug,
     displayName: displayName,

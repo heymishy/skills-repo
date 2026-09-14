@@ -4825,6 +4825,7 @@ module.exports = {
   _logCrossChannelError, // ep1-s5
   _logCrossChannelEvent, // ep1-s6
   _readPipelineFeatures, // rclr-s1 -- exported for direct testing, mirrors _renderJourneyHome precedent
+  _slugify, // fsdn-s1 -- exported so products.js can reuse the same slugify logic as handlePostJourney
   handleGetJourney,
   handlePostJourney,
   handleDeleteJourney,
