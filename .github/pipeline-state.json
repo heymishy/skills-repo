@@ -34324,6 +34324,37 @@
       "complianceFrameworks": [],
       "sensitiveDataCategories": [],
       "guardrails": []
+    },
+    {
+      "slug": "2026-09-14-feature-slug-respects-display-name",
+      "name": "Feature-creation via a product's New feature panel should build a human-readable featureSlug from the operator's given name",
+      "stage": "branch-complete",
+      "health": "amber",
+      "stories": [
+        {
+          "id": "fsdn-s1",
+          "slug": "fsdn-s1",
+          "name": "Feature-creation via a product's New feature panel should build a human-readable featureSlug from the operator's given name",
+          "stage": "branch-complete",
+          "health": "amber",
+          "dorStatus": "signed-off",
+          "prStatus": "open",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 7,
+            "passing": 7
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "updatedAt": "2026-09-14T00:39:17.312Z",
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/879"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-14T00:00:00.000Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
