@@ -21,10 +21,21 @@ const { buildCacheKey } = require('../web-ui/adapters/cache-key');
 // AND mockLlmGateway.isMockGatewayEnabled() is true — see functions below.
 const mockLlmGateway = require('../web-ui/modules/mock-llm-gateway');
 
-// Keep-alive agents — reuse TLS connections across turns instead of re-handshaking
-// each time. One agent per upstream host; maxSockets prevents runaway connections.
-const _anthropicAgent = new https.Agent({ keepAlive: true, maxSockets: 4 });
-const _copilotAgent   = new https.Agent({ keepAlive: true, maxSockets: 4 });
+// lasr-s1: keepAlive is deliberately OFF. These agents are shared, process-wide
+// singletons used across concurrent turns from possibly different tenants. This
+// app runs on Fly with auto_stop_machines='suspend'/min_machines_running=0 --
+// when the machine idle-suspends, any TCP socket pooled here goes stale, and
+// resuming reuses it as if it were still live, hanging until the request-level
+// timeout fires (observed live: `read ETIMEDOUT` + a 90s stall + a user-visible
+// error, root-caused via production logs 2026-09-14). Destroying only the stale
+// sockets on detected staleness was considered and rejected -- it would also
+// kill sockets actively in use by a different tenant's concurrent request
+// (this app has its own dedicated cross-tenant isolation gate). keepAlive:false
+// gives every request its own fresh, dedicated connection -- a small per-call
+// TCP+TLS handshake cost in exchange for removing this failure mode entirely.
+// One agent per upstream host; maxSockets prevents runaway connections.
+const _anthropicAgent = new https.Agent({ keepAlive: false, maxSockets: 4 });
+const _copilotAgent   = new https.Agent({ keepAlive: false, maxSockets: 4 });
 
 const DEFAULT_MODEL      = 'gpt-4o';
 const DEFAULT_ANTHROPIC_MODEL = 'claude-sonnet-4.6';
