@@ -34644,6 +34644,14 @@
           "updatedAt": "2026-09-14T21:22:20.578Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/889",
           "dodStatus": "complete"
+        },
+        {
+          "id": "wsd-s3",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "updatedAt": "2026-09-14T22:14:02.416Z"
         }
       ],
       "metrics": [],
