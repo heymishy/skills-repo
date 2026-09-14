@@ -34611,10 +34611,10 @@
           "id": "wsd-s1",
           "slug": "wsd-s1",
           "name": "Extract cli-advance.js's mutation core into a reusable, state-object-based function",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "dorStatus": "signed-off",
-          "prStatus": "none",
+          "prStatus": "merged",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -34622,7 +34622,8 @@
           },
           "acTotal": 3,
           "acVerified": 0,
-          "updatedAt": "2026-09-14T20:38:14.123Z"
+          "updatedAt": "2026-09-14T20:51:46.089Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/888"
         },
         {
           "id": "wsd-s2",
