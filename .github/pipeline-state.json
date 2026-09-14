@@ -34355,6 +34355,36 @@
       "updatedAt": "2026-09-14T00:00:00.000Z",
       "track": "short",
       "guardrails": []
+    },
+    {
+      "slug": "2026-09-14-llm-agent-suspend-resume-fix",
+      "name": "Eliminate stale-socket LLM call failures caused by Fly machine suspend/resume during a discovery session",
+      "stage": "branch-complete",
+      "health": "amber",
+      "stories": [
+        {
+          "id": "lasr-s1",
+          "slug": "lasr-s1",
+          "name": "Eliminate stale-socket LLM call failures caused by Fly machine suspend/resume during a discovery session",
+          "stage": "branch-complete",
+          "health": "amber",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 6,
+            "passing": 6
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "updatedAt": "2026-09-14T00:00:00.000Z",
+          "verifyStatus": "passed"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-14T00:00:00.000Z",
+      "track": "short",
+      "guardrails": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
