@@ -678,6 +678,24 @@ function _computeCostUsd(usage) {
   return Math.round(cost * 100000) / 100000; // 5 decimal places → $0.00001 resolution
 }
 
+/**
+ * ltd-s1: PostHog $ai_generation properties for a given stop_reason — always
+ * includes the plain `stop_reason` field; additionally flags $ai_is_error/
+ * $ai_error only when the turn was truncated by the provider's max_tokens
+ * ceiling, so a real truncation is visible in PostHog's own error surface
+ * instead of only in production logs.
+ * @param {string|null} stopReason
+ * @returns {object}
+ */
+function _truncationCaptureProps(stopReason) {
+  var props = { stop_reason: stopReason || null };
+  if (stopReason === 'max_tokens') {
+    props.$ai_is_error = true;
+    props.$ai_error    = 'max_tokens - response truncated';
+  }
+  return props;
+}
+
 // Skills where Haiku is proven unsafe regardless of operator overrides.
 // EXP-021: Haiku 0/22 on /discovery S-series — fabricates regulatory constraints
 // that are structurally compliant (pass automated gates) but content-wrong.
@@ -3988,7 +4006,10 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
     '                    if(_postText) { appendBubble("assistant", lightMd(_postText)); }',
     '                  }',
     '                  showCommitLink();',
-    '                } else if(!IS_IDEATE && streamText && streamText.indexOf("?") === -1) {',
+    // ltd-s1: evt.truncated is the authoritative real-stop_reason signal from the
+    // server; the "no literal ?" check below stays as a fallback heuristic for
+    // other incomplete-turn cases it still needs to catch on its own.
+    '                } else if(!IS_IDEATE && streamText && (evt.truncated || streamText.indexOf("?") === -1)) {',
     '                  // a10b32a3\'s auto-continue-when-no-"?" nudge exists for artefact-',
     '                  // generating skills (discovery/definition/etc.) whose system prompt',
     '                  // guarantees every turn ends in either an ARTEFACT block or a literal',
@@ -4790,7 +4811,7 @@ async function handlePostTurnHtml(req, res) {
     try {
       var _nsUsage = result && result.usage;
       var _phNs = require('../modules/posthog-server');
-      var _nsProps = {
+      var _nsProps = Object.assign({
         $ai_trace_id:                 session.journeyId || sessionId,
         $ai_span_id:                  require('crypto').randomUUID(),
         $ai_session_id:               (req.session.login || sessionId) + '-' + (session.journeyId || sessionId),
@@ -4804,7 +4825,7 @@ async function handlePostTurnHtml(req, res) {
         $ai_stream:                   false,
         $ai_total_cost_usd:           _computeCostUsd(_nsUsage || {}),
         role:                         req.session.role || 'user'
-      };
+      }, _truncationCaptureProps(_nsUsage && _nsUsage.stop_reason));
       _phNs.capture(req.session.login || sessionId, '$ai_generation', _nsProps, { company: req.session.tenantId });
     } catch (_phNsErr) { /* fire-and-forget: PostHog failure must not break the turn */ }
   }
@@ -5297,7 +5318,8 @@ async function handlePostTurnStreamHtml(req, res) {
     input_tokens:         _tu.input_tokens  || null,
     output_tokens:        _tu.output_tokens || null,
     cache_read_tokens:    _tu.cache_read_tokens    || null,
-    cache_creation_tokens: _tu.cache_creation_tokens || null
+    cache_creation_tokens: _tu.cache_creation_tokens || null,
+    stop_reason:          _tu.stop_reason || null
   }, 'LLM call complete');
   if (_sseRetried) {
     _turnLog.info({ event: 'sse_retry_succeeded' }, 'Retry succeeded');
@@ -5642,7 +5664,7 @@ async function handlePostTurnStreamHtml(req, res) {
     // pla-s2: emit $ai_generation for every streaming Anthropic turn (including init turns)
     var _tu2 = _turnUsage || {};
     var _phGen = require('../modules/posthog-server');
-    var _genProps = {
+    var _genProps = Object.assign({
       $ai_trace_id:                 session.journeyId || sessionId,
       $ai_span_id:                  require('crypto').randomUUID(),
       $ai_session_id:               (req.session.login || sessionId) + '-' + (session.journeyId || sessionId),
@@ -5657,7 +5679,7 @@ async function handlePostTurnStreamHtml(req, res) {
       $ai_stream:                   true,
       $ai_total_cost_usd:           _computeCostUsd(_tu2),
       role:                         req.session.role || 'user'
-    };
+    }, _truncationCaptureProps(_tu2.stop_reason));
     _phGen.capture(req.session.login || sessionId, '$ai_generation', _genProps, { company: req.session.tenantId });
   } catch (_phErr) { /* fire-and-forget: PostHog failure must not block SSE stream */ }
 
@@ -5692,7 +5714,10 @@ async function handlePostTurnStreamHtml(req, res) {
 
   res.write('data: ' + JSON.stringify({
     done: done,
-    artefactContent: done ? session.artefactContent : undefined
+    artefactContent: done ? session.artefactContent : undefined,
+    // ltd-s1: authoritative truncation signal (real stop_reason) for the client's
+    // auto-continue logic, alongside its existing "no literal ?" heuristic.
+    truncated: _tu.stop_reason === 'max_tokens'
   }) + '\n\n');
 
   // iwu.5: emit lensComplete event when artefact is produced
