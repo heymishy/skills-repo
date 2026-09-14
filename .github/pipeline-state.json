@@ -34511,7 +34511,7 @@
     {
       "slug": "2026-09-14-llm-truncation-detection",
       "name": "LLM truncation detection",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "health": "green",
       "track": "short",
       "stories": [
@@ -34519,7 +34519,7 @@
           "id": "ltd-s1",
           "slug": "ltd-s1",
           "name": "Detect max_tokens truncation explicitly and raise the output ceiling",
-          "stage": "definition-of-ready",
+          "stage": "definition-of-done",
           "health": "green",
           "dorStatus": "signed-off",
           "prStatus": "merged",
@@ -34530,34 +34530,36 @@
           },
           "acTotal": 7,
           "acVerified": 7,
-          "updatedAt": "2026-09-14T18:44:48.248Z",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/886"
+          "updatedAt": "2026-09-14T19:05:23.057Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/886",
+          "dodStatus": "complete"
         }
       ],
-      "updatedAt": "2026-09-14T10:26:05.326Z"
+      "updatedAt": "2026-09-14T19:05:32.180Z"
     },
     {
       "slug": "2026-09-14-production-always-on",
       "name": "Production always-on machine",
-      "stage": "definition-of-ready",
-      "health": "green",
+      "stage": "definition-of-done",
+      "health": "amber",
       "track": "short",
       "stories": [
         {
           "id": "pao-s1",
           "slug": "pao-s1",
           "name": "Keep production single machine always running instead of scaling to zero",
-          "stage": "definition-of-ready",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "dorStatus": "signed-off",
           "prStatus": "merged",
           "acTotal": 4,
           "acVerified": 0,
-          "updatedAt": "2026-09-14T18:44:48.031Z",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/885"
+          "updatedAt": "2026-09-14T19:05:22.872Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/885",
+          "dodStatus": "complete"
         }
       ],
-      "updatedAt": "2026-09-14T09:44:02.634Z"
+      "updatedAt": "2026-09-14T19:05:32.175Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
