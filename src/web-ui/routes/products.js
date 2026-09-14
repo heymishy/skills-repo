@@ -990,8 +990,16 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
   // No match falls back to 'unknown' health / an honest "No test data yet"
   // label -- never a fabricated value.
   var healthBySlug = {};
+  // pflx-s4: same source array, same key, as healthBySlug -- a real
+  // per-feature pipeline stage, used to fill in item.stage for taxonomy-only
+  // items (mergeFeatureSources never sets .stage for those). Only real,
+  // truthy stage values are recorded -- never overwrite with undefined.
+  var stageBySlug = {};
   if (healthCounts && Array.isArray(healthCounts.perFeature)) {
-    healthCounts.perFeature.forEach(function(hf) { healthBySlug[hf.slug] = hf.health; });
+    healthCounts.perFeature.forEach(function(hf) {
+      healthBySlug[hf.slug] = hf.health;
+      if (hf.stage) { stageBySlug[hf.slug] = hf.stage; }
+    });
   }
   var coverageBySlug = {};
   if (testCoverage && Array.isArray(testCoverage.perFeature)) {
@@ -1012,6 +1020,12 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     // ungrouped-taxonomy and journey-sourced cases, unchanged from before).
     var healthLookupKey = item.featureSlug || item.slug;
     var realHealth = healthBySlug.hasOwnProperty(healthLookupKey) ? healthBySlug[healthLookupKey] : 'unknown';
+    // pflx-s4: item.stage is already correctly populated for journey-sourced
+    // items (real-time, can be more current than pipeline-state.json) -- it
+    // always wins. Only fall back to the feature-level pipeline-state lookup
+    // when item.stage is genuinely absent (the taxonomy-only case). Absence
+    // of any match stays undefined -- never treated as done.
+    var realStage = item.stage || (stageBySlug.hasOwnProperty(healthLookupKey) ? stageBySlug[healthLookupKey] : undefined);
     var pct = coverageBySlug.hasOwnProperty(item.slug) ? coverageBySlug[item.slug] : null;
     // fps-s1: only the 'unknown' case (no real test/DoD signal at all) gets
     // a stage/artefact-count progress proxy instead of the bare "No test
@@ -1022,6 +1036,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
       : (pct + '%');
     return Object.assign({}, item, {
       health: realHealth,
+      stage: realStage,
       coverageLabel: coverageLabel,
       moduleId: featureModuleAssignments.hasOwnProperty(item.slug) ? featureModuleAssignments[item.slug] : null
     });
