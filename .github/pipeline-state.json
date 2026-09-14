@@ -34394,8 +34394,8 @@
     {
       "slug": "2026-09-14-product-feature-list-filter-fixes",
       "name": "Product feature list: auto-expand search matches and default to active features only",
-      "stage": "branch-complete",
-      "health": "amber",
+      "stage": "definition-of-done",
+      "health": "green",
       "stories": [
         {
           "id": "pflx-s1",
@@ -34467,7 +34467,7 @@
           "stage": "branch-complete",
           "health": "amber",
           "dorStatus": "signed-off",
-          "prStatus": "open",
+          "prStatus": "merged",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 5,
@@ -34475,9 +34475,11 @@
           },
           "acTotal": 5,
           "acVerified": 5,
-          "updatedAt": "2026-09-14T06:47:41.917Z",
+          "updatedAt": "2026-09-14T07:04:31.880Z",
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/883"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/883",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "metrics": [],
