@@ -34770,6 +34770,37 @@
         }
       ],
       "updatedAt": "2026-09-15T06:49:26.351Z"
+    },
+    {
+      "slug": "2026-09-15-per-skill-model-routing-config",
+      "id": "2026-09-15-per-skill-model-routing-config",
+      "name": "Centralize per-skill model routing into one config module with scoped override support",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "psrc-s1",
+          "id": "psrc-s1",
+          "name": "Centralize per-skill model routing",
+          "stage": "branch-complete",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-09-15-per-skill-model-routing-config/dor/psrc-s1-dor.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 25,
+            "passing": 25,
+            "artefact": "artefacts/2026-09-15-per-skill-model-routing-config/test-plans/psrc-s1-test-plan.md"
+          },
+          "acTotal": 5,
+          "acVerified": 5,
+          "prStatus": "none",
+          "updatedAt": "2026-09-15T07:44:57.777Z"
+        }
+      ],
+      "updatedAt": "2026-09-15T07:44:57.778Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
