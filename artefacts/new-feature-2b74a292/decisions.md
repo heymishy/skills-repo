@@ -33,3 +33,11 @@
 **Decision:** Amended `artefacts/new-feature-2b74a292/dor/ep1-s1-dor.md`'s Coding Agent Instructions to explicitly describe the two-panel picker structure and the "≥1 member beyond creator" gating rule, citing `design.md`'s "Pod Creation / Collaborator Picker" section and the reference wireframe directly, so the binding instructions block is self-sufficient without requiring the coding agent to separately discover and cross-reference design.md on its own.
 
 **Story:** ep1-s1 — no change to Acceptance Criteria; UI structure detail only, consistent with what design.md already specified.
+
+---
+
+## `ep1-s1` branch-setup baseline: 1 pre-existing failure acknowledged (2026-09-15)
+
+**Context:** `/branch-setup`'s clean-baseline check ran the full suite (668 files) before any `ep1-s1` code was written. 1 failure: `tests/check-p3.5-validate-trace.js` (`ps1-exits-0-on-valid-repo-with-ci-flag`), caused by a pre-existing, already-documented local Windows `python3` shim permission issue unrelated to this story — confirmed repeatedly earlier this session across multiple unrelated worktrees and branches.
+
+**Decision:** Acknowledged as pre-existing per `/branch-setup`'s own Step 5 options; proceeding to `/implementation-plan` without fixing it. Not `ep1-s1`'s concern — an environment-level gap, not a code defect in this feature.
