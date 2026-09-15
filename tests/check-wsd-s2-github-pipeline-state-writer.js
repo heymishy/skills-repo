@@ -92,6 +92,31 @@ function userHandler() {
   };
 }
 
+/**
+ * wsd-s5: mocks the Git Blobs API GET the writer now uses to fetch content
+ * BY sha, independent of the Contents API's own 1 MB inline-content ceiling.
+ * `stateBySha` maps a sha string to the state object that blob should decode to.
+ */
+function blobHandler(stateBySha) {
+  return (url) => {
+    const m = url.match(/\/git\/blobs\/([^/]+)$/);
+    if (m && Object.prototype.hasOwnProperty.call(stateBySha, m[1])) {
+      return jsonResponse(200, { content: b64(stateBySha[m[1]]), encoding: 'base64', sha: m[1] });
+    }
+    return null;
+  };
+}
+
+/** wsd-s5: catch-all blob handler for tests that don't care about the exact sha value. */
+function anyBlobHandler(state) {
+  return (url) => {
+    if (/\/git\/blobs\//.test(url)) {
+      return jsonResponse(200, { content: b64(state), encoding: 'base64' });
+    }
+    return null;
+  };
+}
+
 async function run() {
   console.log('\n[wsd-s2] GitHub-API pipeline-state writer tests\n');
 
@@ -140,9 +165,10 @@ async function run() {
     let putBody = null;
     const mock = installFetchMock([
       userHandler(),
+      blobHandler({ 'sha-abc': state }),
       (url, opts) => {
         if (/\/contents\/\.github\/pipeline-state\.json$/.test(url) && (!opts || opts.method === undefined)) {
-          return jsonResponse(200, { content: b64(state), sha: 'sha-abc' });
+          return jsonResponse(200, { sha: 'sha-abc' });
         }
         return null;
       },
@@ -172,9 +198,10 @@ async function run() {
     let putBody = null;
     const mock = installFetchMock([
       userHandler(),
+      blobHandler({ 'sha-abc': state }),
       (url, opts) => {
         if (/\/contents\//.test(url) && (!opts || opts.method === undefined)) {
-          return jsonResponse(200, { content: b64(state), sha: 'sha-abc' });
+          return jsonResponse(200, { sha: 'sha-abc' });
         }
         return null;
       },
@@ -206,11 +233,12 @@ async function run() {
     let putBody = null;
     const mock = installFetchMock([
       userHandler(),
+      blobHandler({ 'sha-abc': state1, 'sha-def': state2 }),
       (url, opts) => {
         if (/\/contents\//.test(url) && (!opts || opts.method === undefined)) {
           getCount++;
-          if (getCount === 1) return jsonResponse(200, { content: b64(state1), sha: 'sha-abc' });
-          return jsonResponse(200, { content: b64(state2), sha: 'sha-def' });
+          if (getCount === 1) return jsonResponse(200, { sha: 'sha-abc' });
+          return jsonResponse(200, { sha: 'sha-def' });
         }
         return null;
       },
@@ -244,11 +272,12 @@ async function run() {
     const putBodies = [];
     const mock = installFetchMock([
       userHandler(),
+      blobHandler({ 'sha-stale': staleState, 'sha-fresh': freshState }),
       (url, opts) => {
         if (/\/contents\//.test(url) && (!opts || opts.method === undefined)) {
           getCount++;
-          if (getCount === 1) return jsonResponse(200, { content: b64(staleState), sha: 'sha-stale' });
-          return jsonResponse(200, { content: b64(freshState), sha: 'sha-fresh' });
+          if (getCount === 1) return jsonResponse(200, { sha: 'sha-stale' });
+          return jsonResponse(200, { sha: 'sha-fresh' });
         }
         return null;
       },
@@ -281,9 +310,10 @@ async function run() {
     let putCount = 0;
     const mock = installFetchMock([
       userHandler(),
+      anyBlobHandler(state),
       (url, opts) => {
         if (/\/contents\//.test(url) && (!opts || opts.method === undefined)) {
-          return jsonResponse(200, { content: b64(state), sha: 'sha-' + Math.random() });
+          return jsonResponse(200, { sha: 'sha-' + Math.random() });
         }
         return null;
       },
@@ -358,9 +388,10 @@ async function run() {
     let putCalled = false;
     const mock = installFetchMock([
       userHandler(),
+      blobHandler({ 'sha-abc': state }),
       (url, opts) => {
         if (/\/contents\//.test(url) && (!opts || opts.method === undefined)) {
-          return jsonResponse(200, { content: b64(state), sha: 'sha-abc' });
+          return jsonResponse(200, { sha: 'sha-abc' });
         }
         return null;
       },
@@ -389,6 +420,56 @@ async function run() {
       assert('T9-posthog-captured', !!captured, 'expected failure-visibility PostHog capture to fire for a validation rejection too');
     } finally {
       posthogServer.captureException = originalCapture;
+      mock.restore();
+    }
+  })();
+
+  // ── T10 (wsd-s5): Contents API meta response has NO inline content (real
+  //    GitHub behaviour for any file over 1 MB, e.g. pipeline-state.json in
+  //    production, ~1.5 MB) — writer must still succeed via the Git Blobs API ──
+  await (async function T10() {
+    const state = makeFixtureState();
+    let putBody = null;
+    const mock = installFetchMock([
+      userHandler(),
+      blobHandler({ 'sha-big-file': state }),
+      (url, opts) => {
+        if (/\/contents\/\.github\/pipeline-state\.json$/.test(url) && (!opts || opts.method === undefined)) {
+          // wsd-s5: mirrors GitHub's real Contents API response shape for a
+          // file over 1 MB -- `content`/`encoding` are omitted entirely,
+          // only `sha`/`size`/`name` etc. are present. No `content` field
+          // at all here on purpose -- the pre-wsd-s5 writer's `body.content`
+          // read would see `undefined` and JSON.parse('') would throw
+          // exactly the "Unexpected end of JSON input" this story's own
+          // live production verification found.
+          return jsonResponse(200, { sha: 'sha-big-file', size: 1535145, name: 'pipeline-state.json' });
+        }
+        return null;
+      },
+      (url, opts) => {
+        if (/\/contents\/\.github\/pipeline-state\.json$/.test(url) && opts && opts.method === 'PUT') {
+          putBody = JSON.parse(opts.body);
+          return jsonResponse(200, { commit: { sha: 'newcommit' } });
+        }
+        return null;
+      },
+    ]);
+    try {
+      const writer = pipelineStateGithubWriterFactory();
+      let threw = false;
+      try {
+        await writer('test-feat', 's1', { dorStatus: 'signed-off' }, { token: 'tok', owner: 'acme', repo: 'proj' });
+      } catch (err) {
+        threw = true;
+        assert('T10-no-throw', false, `expected the writer to succeed for a large file with no inline content, but it threw: ${err && err.message}`);
+      }
+      if (!threw) {
+        assert('T10-no-throw', true, 'writer succeeded despite the Contents API response having no inline content field');
+        assert('T10-sha-match', putBody && putBody.sha === 'sha-big-file', `expected PUT sha to match the Contents API's sha, got "${putBody && putBody.sha}"`);
+        const decoded = JSON.parse(Buffer.from(putBody.content, 'base64').toString('utf8'));
+        assert('T10-field-change', decoded.features[0].stories[0].dorStatus === 'signed-off', 'expected the field change to be present in the PUT content, fetched via the blob endpoint');
+      }
+    } finally {
       mock.restore();
     }
   })();

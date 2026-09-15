@@ -118,16 +118,41 @@ function githubApiBase() {
   return (process.env.GITHUB_API_BASE_URL || 'https://api.github.com').replace(/\/$/, '');
 }
 
-/** GET .github/pipeline-state.json — content and sha captured together from ONE request. */
+/**
+ * GET .github/pipeline-state.json's sha (always present regardless of file
+ * size), then GET its content via the Git Blobs API using that exact sha.
+ *
+ * wsd-s5: the Contents API's own JSON response omits `content` (empty
+ * string) for any file over 1 MB -- pipeline-state.json is ~1.5 MB and
+ * growing, so the original single-GET design (`content` decoded straight
+ * from the Contents API response) silently received an empty string and
+ * `JSON.parse('')` threw "Unexpected end of JSON input" on every real
+ * production write, found via this story's own live verification. The Git
+ * Blobs API has no such ceiling (up to 100 MB) and, critically, is fetched
+ * BY the sha the Contents API just returned -- a git blob is immutable and
+ * content-addressed, so this second GET can never observe content that
+ * doesn't match that exact sha. This is safer than the original
+ * single-GET design's own race-avoidance goal, not a regression of it: the
+ * PUT below still uses this same sha, so a genuine concurrent write is
+ * still caught as a 409 exactly as before.
+ */
 async function fetchState(apiBase, owner, repo, authHeaders) {
-  var url = apiBase + '/repos/' + owner + '/' + repo + '/contents/' + STATE_PATH;
-  var res = await fetch(url, { headers: authHeaders });
-  if (!res.ok) {
-    throw new Error('Failed to fetch pipeline-state.json: ' + res.status);
+  var metaUrl = apiBase + '/repos/' + owner + '/' + repo + '/contents/' + STATE_PATH;
+  var metaRes = await fetch(metaUrl, { headers: authHeaders });
+  if (!metaRes.ok) {
+    throw new Error('Failed to fetch pipeline-state.json: ' + metaRes.status);
   }
-  var body = await res.json();
-  var content = Buffer.from(body.content, 'base64').toString('utf8');
-  return { state: JSON.parse(content), sha: body.sha };
+  var meta = await metaRes.json();
+  var sha = meta.sha;
+
+  var blobUrl = apiBase + '/repos/' + owner + '/' + repo + '/git/blobs/' + sha;
+  var blobRes = await fetch(blobUrl, { headers: authHeaders });
+  if (!blobRes.ok) {
+    throw new Error('Failed to fetch pipeline-state.json blob: ' + blobRes.status);
+  }
+  var blob = await blobRes.json();
+  var content = Buffer.from(blob.content, blob.encoding || 'base64').toString('utf8');
+  return { state: JSON.parse(content), sha: sha };
 }
 
 /** PUT the mutated state back with the sha captured by fetchState(). */
