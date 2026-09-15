@@ -34711,7 +34711,8 @@
       "slug": "2026-09-15-2026-09-15-e2e-web-ui-to-dor-proof",
       "id": "2026-09-15-2026-09-15-e2e-web-ui-to-dor-proof",
       "discoveryStatus": "complete",
-      "artefact": "artefacts/2026-09-15-2026-09-15-e2e-web-ui-to-dor-proof/discovery.md"
+      "artefact": "artefacts/2026-09-15-2026-09-15-e2e-web-ui-to-dor-proof/discovery.md",
+      "stage": "benefit-metric"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
