@@ -34672,6 +34672,11 @@
       ],
       "metrics": [],
       "updatedAt": "2026-09-14T21:22:28.606Z"
+    },
+    {
+      "slug": "2026-09-14-wsd-s2-live-verification-throwaway",
+      "id": "2026-09-14-wsd-s2-live-verification-throwaway",
+      "stage": "definition"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
