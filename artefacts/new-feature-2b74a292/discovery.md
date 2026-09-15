@@ -1,8 +1,9 @@
 # Discovery: Multi-User Collaboration and Role-Aware Sessions
 
-**Status:** Draft
+**Status:** Approved
 **Date:** 2025-01-30
 **Feature slug:** 2025-01-30-multi-user-role-sessions
+**Approved By:** Hamish King — Operator — 2026-09-15 (status corrected from stale "Draft" — the feature has already progressed through benefit-metric, design, definition (13 stories), review, and multiple definition-of-ready cycles this session, which is not possible without de-facto discovery approval; this closes a bookkeeping gap found while diagnosing an unrelated per-story routing bug on this same feature, `wsap-s2`)
 
 ---
 

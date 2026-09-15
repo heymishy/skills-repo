@@ -34692,14 +34692,18 @@
       "id": "2026-09-14-wsd-s2-live-verification-throwaway",
       "stage": "definition",
       "track": "short",
-      "updatedAt": "2026-09-15T03:08:41.709Z"
+      "updatedAt": "2026-09-15T04:12:02.332Z",
+      "name": "wsd-s2 live verification throwaway",
+      "health": "green"
     },
     {
       "slug": "new-feature-2b74a292",
       "id": "new-feature-2b74a292",
       "stage": "branch-complete",
-      "track": "standard",
-      "updatedAt": "2026-09-15T04:04:57.054Z"
+      "updatedAt": "2026-09-15T04:14:40.317Z",
+      "name": "Multi-User Role-Aware Synchronous Collaboration (Pods)",
+      "health": "amber",
+      "track": "standard"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
