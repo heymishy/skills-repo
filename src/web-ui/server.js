@@ -92,6 +92,8 @@ const { initPostHogFlagsClient }                                     = require('
 const { createTeamManagementHandlers }                               = require('./routes/team-management');       // tir-s3
 const { createGithubOrgBulkAddHandlers }                             = require('./routes/github-org-bulk-add');   // tir-s5
 const { setImpersonationAuditAdapter }                               = require('./adapters/impersonation-audit-adapter'); // d1
+const { handlePostPodsCreate, handleGetPods }                        = require('./routes/pods'); // ep1-s1
+const { migratePodsSchema }                                          = require('./modules/pod-store'); // ep1-s1
 const { createImpersonationHandlers }                                = require('./routes/impersonation');         // d1
 
 const PORT = process.env.PORT || 3000;
@@ -602,6 +604,11 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     }).catch(function(err) {
       console.error('[story-1-organisation-entity] organisations migration/backfill failed:', err.message);
     });
+
+    // ep1-s1 — Auto-migrate pods/pod_members schema.
+    migratePodsSchema(_userRolesPool).then(function() {
+      console.log('[ep1-s1] pods/pod_members schema ready');
+    }).catch(function(err) { console.error('[ep1-s1] pods schema migration failed:', err.message); });
 
     // story-6-conversion-to-independent — wire the conversion route handlers
     // (reuses the organisations table + user-roles.js's resolveRoleForPerson
@@ -3874,6 +3881,32 @@ async function router(req, res) {
   } else if (pathname === '/' && req.method === 'GET') {
     // lab-s1.2 — public landing page with PostHog event + auth redirect to /dashboard
     await handleRoot(req, res);
+
+  } else if (pathname === '/api/pods/create' && req.method === 'POST') {
+    // ep1-s1 — create a pod
+    // Task 8 fix: was `_userRolesPool`, a `const` block-scoped inside the
+    // `if (process.env.DATABASE_URL)` block starting at line ~430 -- out of
+    // scope here, so every call threw "ReferenceError: _userRolesPool is not
+    // defined" (confirmed via ep1-s1-pod-creation.spec.js AC1/AC2, both in
+    // NODE_ENV=test with no DATABASE_URL and, since the reference is a plain
+    // out-of-scope variable rather than a conditional, in the real-DATABASE_URL
+    // case too). `_pshPool` is the module-level pool reference (declared
+    // `let _pshPool = null;` near the top of this file) that both branches
+    // already populate -- the real Pool when DATABASE_URL is set, the
+    // createFakeTestDb() instance otherwise -- and is what every other
+    // route handler in this file uses for exactly this reason.
+    authGuard(req, res, async () => { await handlePostPodsCreate(req, res, _pshPool); });
+
+  } else if (pathname === '/api/pods' && req.method === 'GET') {
+    // ep1-s1 — list pods for the caller's tenant (Task 8 fix: see note above)
+    authGuard(req, res, async () => { await handleGetPods(req, res, _pshPool); });
+
+  } else if (pathname === '/admin/pods/manager' && req.method === 'GET') {
+    // ep1-s1 — Pod Manager UI
+    authGuard(req, res, async () => {
+      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.end(require('fs').readFileSync(require('path').join(__dirname, 'public', 'pod-manager.html'), 'utf8'));
+    });
 
   } else {
     // Sign-in page (unauthenticated root)
