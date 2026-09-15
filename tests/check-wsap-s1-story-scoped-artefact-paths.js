@@ -61,15 +61,26 @@ process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
 
 async function run() {
   // ── AC1: linkSessionToJourney sets session.currentStoryId ──
-  console.log('\n  AC1 -- linkSessionToJourney sets session.currentStoryId from journey.stories[currentStoryIndex]');
+  console.log('\n  AC1 -- linkSessionToJourney sets session.currentStoryId from journey.storyList[currentStoryIndex]');
   {
     // journey-store must be freshRequire'd BEFORE routes.js, so routes.js's
     // internal `require('../modules/journey-store')` resolves to this same
     // fresh instance instead of a stale, disconnected one.
+    //
+    // wsap-s2: setStoryList() + currentStoryIndex is the REAL production
+    // entry point per-story routing uses (setStoryList/advanceToNextStory/
+    // getCurrentStory in journey-store.js all read journey.storyList, never
+    // journey.stories). The original wsap-s1 version of this test set
+    // journey.stories directly via setJourneyFields -- a mock shape
+    // production code never actually produces, which is exactly why this
+    // test kept passing while linkSessionToJourney's own check on
+    // journey.stories was dead code for every real journey (found via live
+    // session investigation on new-feature-2b74a292).
     const journeyStore = freshRequire(JOURNEY_STORE_PATH);
     const routes = freshRequire(ROUTES_PATH);
     const journey = journeyStore.createJourney('wsap-ac1-feature');
-    journeyStore.setJourneyFields(journey.journeyId, { stories: [{ id: 's1' }, { id: 's2' }], currentStoryIndex: 1 });
+    journeyStore.setStoryList(journey.journeyId, ['s1', 's2']);
+    journeyStore.setJourneyFields(journey.journeyId, { currentStoryIndex: 1 });
     const sid = 'test-wsap-s1-a-' + Math.random().toString(36).slice(2);
     routes.registerHtmlSession(sid, '/tmp/t', 'test-plan', { featureSlug: 'wsap-ac1-feature' });
     routes.linkSessionToJourney(sid, journey.journeyId);
