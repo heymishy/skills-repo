@@ -34711,11 +34711,209 @@
     {
       "slug": "new-feature-2b74a292",
       "id": "new-feature-2b74a292",
-      "stage": "test-plan",
-      "updatedAt": "2026-09-15T04:14:40.317Z",
+      "stage": "definition-of-ready",
+      "updatedAt": "2026-09-15T09:06:33.504Z",
       "name": "Multi-User Role-Aware Synchronous Collaboration (Pods)",
-      "health": "amber",
-      "track": "standard"
+      "health": "green",
+      "track": "standard",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "ep1-s1",
+          "id": "ep1-s1",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep1-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep1-s1-dor.md",
+          "updatedAt": "2026-09-15T09:06:33.505Z"
+        },
+        {
+          "slug": "ep1-s2",
+          "id": "ep1-s2",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep1-s2-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep1-s2-dor.md",
+          "updatedAt": "2026-09-15T09:06:33.505Z"
+        },
+        {
+          "slug": "ep1-s3",
+          "id": "ep1-s3",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep1-s3-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep1-s3-dor.md",
+          "updatedAt": "2026-09-15T09:06:33.505Z"
+        },
+        {
+          "slug": "ep2-s1",
+          "id": "ep2-s1",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep2-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep2-s1-dor.md",
+          "updatedAt": "2026-09-15T09:06:33.505Z"
+        },
+        {
+          "slug": "ep2-s2",
+          "id": "ep2-s2",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep2-s2-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep2-s2-dor.md",
+          "updatedAt": "2026-09-15T09:06:33.505Z"
+        },
+        {
+          "slug": "ep2-s3",
+          "id": "ep2-s3",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep2-s3-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep2-s3-dor.md",
+          "updatedAt": "2026-09-15T09:06:33.505Z"
+        },
+        {
+          "slug": "ep2-s4",
+          "id": "ep2-s4",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep2-s4-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep2-s4-dor.md",
+          "updatedAt": "2026-09-15T09:06:33.505Z"
+        },
+        {
+          "slug": "ep3-s1",
+          "id": "ep3-s1",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep3-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep3-s1-dor.md",
+          "updatedAt": "2026-09-15T09:06:33.505Z"
+        },
+        {
+          "slug": "ep3-s2",
+          "id": "ep3-s2",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep3-s2-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep3-s2-dor.md",
+          "updatedAt": "2026-09-15T09:06:33.505Z"
+        },
+        {
+          "slug": "ep3-s3",
+          "id": "ep3-s3",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep3-s3-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep3-s3-dor.md",
+          "updatedAt": "2026-09-15T09:06:33.505Z"
+        },
+        {
+          "slug": "ep4-s1",
+          "id": "ep4-s1",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep4-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep4-s1-dor.md",
+          "updatedAt": "2026-09-15T09:06:33.505Z"
+        },
+        {
+          "slug": "ep4-s2",
+          "id": "ep4-s2",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep4-s2-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep4-s2-dor.md",
+          "updatedAt": "2026-09-15T09:06:33.505Z"
+        },
+        {
+          "slug": "ep4-s3",
+          "id": "ep4-s3",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "testPlan": {
+            "status": "written",
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep4-s3-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep4-s3-dor.md",
+          "updatedAt": "2026-09-15T09:06:33.505Z"
+        }
+      ]
     },
     {
       "slug": "2026-09-15-2026-09-15-e2e-web-ui-to-dor-proof",
