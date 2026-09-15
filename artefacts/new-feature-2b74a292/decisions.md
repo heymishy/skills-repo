@@ -1,5 +1,15 @@
 # Decisions: Multi-User Role-Aware Synchronous Collaboration
 
+## ep1-s1 Task 1 quality review: accept the ok()/eq() test-harness style as a documented deviation
+
+**Date:** 2026-09-16
+**Context:** During `/subagent-execution` for ep1-s1, the code-quality reviewer for Task 1 flagged that `tests/check-ep1-s1-pod-creation.js` uses a bare `ok()/eq()` + console-log-checkmark pattern, while most sibling test files in this story area (`check-arl-s1-user-roles.js`, `check-tir-s1-person-team-schema.js`, `check-si-s2-locale-preference.js`) use a `test(name, fn)` wrapper over `assert` with per-test try/catch isolation. This style was not the implementer's choice — it was copied verbatim from `artefacts/new-feature-2b74a292/plans/ep1-s1-plan.md`'s own Task 1 Step 1 code block, which is DoR-signed-off, and the same `ok()/eq()` pattern is used consistently across all 5 of this plan's test-writing tasks (Tasks 1, 2, 3, 4, 5 all append to the same file in this style).
+**Decision:** Accept the deviation for ep1-s1 rather than unilaterally rewriting the already-approved plan's test code mid-execution. The practical downside (a thrown error anywhere in `run()` aborts the whole file with no per-assertion isolation, unlike the `test()/assert` sibling convention) is real but low-severity for this story's test scope (in-memory fake-pool assertions, no I/O flakiness expected).
+**Rationale:** Rewriting the plan's test style now would touch 4 more not-yet-executed tasks' worth of already-signed-off plan content, a bigger change than this one quality-review finding warrants. A future story introducing a new test file in this area should default to the repo's dominant `test()/assert` convention rather than copying this one's style.
+**Story:** ep1-s1 — no change to Acceptance Criteria; test-harness style only, no behavioural impact. (The reviewer's other flagged item — the test file's header docstring claiming "tenant-isolation and member-insertion-atomicity" coverage — is NOT a defect: the plan's Task 5, appending to this same file, adds exactly those assertions later in this same story's execution.)
+
+---
+
 ## Incorporate the reference collaborator-picker wireframe into design.md
 
 **Date:** 2026-09-14
