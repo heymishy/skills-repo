@@ -29609,6 +29609,14 @@
           "updatedAt": "2026-08-31T18:29:55.197Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/804",
           "prStatus": "open"
+        },
+        {
+          "id": "wsap-s2",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "updatedAt": "2026-09-15T04:04:31.568Z"
         }
       ]
     },
@@ -34689,7 +34697,9 @@
     {
       "slug": "new-feature-2b74a292",
       "id": "new-feature-2b74a292",
-      "stage": "branch-complete"
+      "stage": "branch-complete",
+      "track": "standard",
+      "updatedAt": "2026-09-15T04:04:57.054Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

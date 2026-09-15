@@ -2520,14 +2520,28 @@ function linkSessionToJourney(sessionId, journeyId) {
   session.journeyId = journeyId;
   var journey = _journeyStore.getJourney(journeyId);
   if (journey && journey.featureSlug) session.featureSlug = journey.featureSlug;
-  // wsap-s1: thread the current story's ID into the session so story-scoped
-  // artefact skills (test-plan, definition-of-ready) can save/scan using the
-  // canonical artefacts/[feature]/[test-plans|dor]/[story-id]-*.md convention
+  // wsap-s1/wsap-s2: thread the current story's ID into the session so
+  // story-scoped artefact skills (test-plan, definition-of-ready) can
+  // save/scan using the canonical
+  // artefacts/[feature]/[test-plans|dor]/[story-id]-*.md convention
   // (skills/test-plan/SKILL.md, skills/definition-of-ready/SKILL.md) instead
   // of a flat single file shared across every story in the feature.
-  if (journey && Array.isArray(journey.stories) && typeof journey.currentStoryIndex === 'number') {
-    var currentStory = journey.stories[journey.currentStoryIndex];
-    if (currentStory) session.currentStoryId = currentStory.id || currentStory.slug || null;
+  //
+  // wsap-s2: per-story routing (setStoryList/advanceToNextStory/
+  // getCurrentStory in journey-store.js) populates journey.storyList -- an
+  // array of story ID strings -- not journey.stories, which is never
+  // populated anywhere in this codebase (confirmed: always []). wsap-s1's
+  // original check on journey.stories therefore always evaluated
+  // currentStory as undefined, so session.currentStoryId was NEVER set for
+  // any per-story feature, ever -- every story's review/test-plan/DoR
+  // artefact silently collapsed onto the same flat file, each story
+  // overwriting the last, and the operator saw what looked like an
+  // infinite review->test-plan->DoR loop (found via live session
+  // investigation on new-feature-2b74a292, a 13-story feature -- every
+  // click looked identical because the artefact path never changed).
+  if (journey && Array.isArray(journey.storyList) && typeof journey.currentStoryIndex === 'number') {
+    var currentStoryId = journey.storyList[journey.currentStoryIndex];
+    if (currentStoryId) session.currentStoryId = currentStoryId;
   }
 }
 
