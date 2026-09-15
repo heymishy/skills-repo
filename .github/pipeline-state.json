@@ -34711,7 +34711,7 @@
     {
       "slug": "new-feature-2b74a292",
       "id": "new-feature-2b74a292",
-      "stage": "test-plan",
+      "stage": "branch-complete",
       "updatedAt": "2026-09-15T04:14:40.317Z",
       "name": "Multi-User Role-Aware Synchronous Collaboration (Pods)",
       "health": "amber",
