@@ -22,6 +22,7 @@
     .modal-body { background: #fff; border-radius: 10px; padding: 24px; width: 720px; max-width: 92vw; }
     .modal-body label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
     #pod-name-input { width: 100%; padding: 8px; border: 1px solid #d0d0d5; border-radius: 6px; margin-bottom: 16px; box-sizing: border-box; }
+    #roster-search { width: 100%; padding: 6px 8px; border: 1px solid #d0d0d5; border-radius: 6px; margin-bottom: 8px; box-sizing: border-box; font-size: 0.85rem; }
     .picker { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
     .picker-panel { border: 1px solid #e2e2e5; border-radius: 8px; padding: 12px; min-height: 220px; }
     .picker-panel h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: #666; margin: 0 0 8px; }
@@ -58,7 +59,7 @@
       <div class="picker">
         <div class="picker-panel">
           <h3>Available</h3>
-          <input type="text" id="roster-search" placeholder="Search by name…" style="width:100%; padding:6px 8px; border:1px solid #d0d0d5; border-radius:6px; margin-bottom:8px; box-sizing:border-box; font-size:0.85rem;">
+          <input type="text" id="roster-search" placeholder="Search by name…">
           <div class="role-tabs" id="role-tabs"></div>
           <div id="available-roster"></div>
         </div>
@@ -99,6 +100,24 @@
     var successBanner = document.getElementById('success-banner');
     var rosterSearchInput = document.getElementById('roster-search');
 
+    // Safe DOM construction for a name + role-chip row -- avoids innerHTML
+    // string concatenation of user-supplied names. ORG_ROSTER is hardcoded
+    // demo data today, but this component is reused by ep4-s1/ep4-s2 against
+    // real org data later, so names must never be interpolated into markup.
+    function buildNameRoleSpan(name, roleId, suffixText) {
+      var wrap = document.createElement('span');
+      var nameText = document.createTextNode(name + ' ');
+      wrap.appendChild(nameText);
+      var chip = document.createElement('span');
+      chip.className = 'role-chip';
+      chip.textContent = roleId;
+      wrap.appendChild(chip);
+      if (suffixText) {
+        wrap.appendChild(document.createTextNode(' ' + suffixText));
+      }
+      return wrap;
+    }
+
     function renderRoster() {
       var el = document.getElementById('available-roster');
       el.innerHTML = '';
@@ -109,7 +128,7 @@
       }).forEach(function(u) {
           var row = document.createElement('div');
           row.className = 'roster-row';
-          row.innerHTML = '<span>' + u.name + ' <span class="role-chip">' + u.roleId + '</span></span>';
+          row.appendChild(buildNameRoleSpan(u.name, u.roleId));
           var btn = document.createElement('button');
           btn.className = 'add-btn';
           btn.textContent = 'Add';
@@ -159,7 +178,7 @@
           var m = selection[i];
           var row = document.createElement('div');
           row.className = 'roster-row';
-          row.innerHTML = '<span>' + m.name + ' <span class="role-chip">' + m.roleId + '</span></span>';
+          row.appendChild(buildNameRoleSpan(m.name, m.roleId));
           if (i > 0) { // creator (index 0) cannot be removed
             var btn = document.createElement('button');
             btn.className = 'remove-btn';
