@@ -5,10 +5,9 @@
 // optional 4th param lets tests pass a body directly instead of a real
 // request stream, mirroring _readBody's own existing req.body fast-path.
 //
-// AC1 only in this task -- AC2's duplicate-name guard is added in Task 3,
-// AC3's invalid-role guard is added in Task 4, each with its own failing
-// test first.
-const { createPod, listPods } = require('../modules/pod-store');
+// AC1 + AC2 so far -- AC3's invalid-role guard is added in Task 4, each
+// with its own failing test first.
+const { createPod, listPods, findPodByName } = require('../modules/pod-store');
 
 function _json(res, status, body) {
   res.writeHead(status, { 'Content-Type': 'application/json' });
@@ -29,7 +28,8 @@ async function _readBody(req) {
 }
 
 /**
- * POST /api/pods/create — AC1 happy path only (see Tasks 3/4 for AC2/AC3).
+ * POST /api/pods/create — AC1 happy path + AC2 duplicate-name rejection
+ * (see Task 4 for AC3's invalid-role guard).
  */
 async function handlePostPodsCreate(req, res, pool, presetBody) {
   const body = presetBody !== undefined ? presetBody : await _readBody(req);
@@ -39,6 +39,12 @@ async function handlePostPodsCreate(req, res, pool, presetBody) {
 
   if (!name) {
     return _json(res, 400, { error: 'Pod name is required' });
+  }
+
+  // AC2: duplicate name rejection -- check BEFORE any write.
+  const existing = await findPodByName(pool, tenantId, name);
+  if (existing) {
+    return _json(res, 400, { error: "A pod named '" + name + "' already exists" });
   }
 
   const createdBy = (req.session && (req.session.userId || req.session.login)) || null;

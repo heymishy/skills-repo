@@ -122,6 +122,28 @@ async function run() {
     ok(responseBody.podId, 'AC1: response includes a podId');
   }
 
+  // --- Part 3: routes/pods.js — AC2 duplicate name rejection ---
+  {
+    const { handlePostPodsCreate } = require('../src/web-ui/routes/pods');
+    const pool = makeFakePool();
+    const { migratePodsSchema } = require('../src/web-ui/modules/pod-store');
+    await migratePodsSchema(pool);
+
+    const req = { session: { tenantId: 'tenant-test-123' } };
+    const firstBody = { name: 'Core Platform Duplicate Test', members: [{ userId: 'hamish-uuid', roleId: 'conductor' }] };
+    await handlePostPodsCreate(req, { writeHead: function() {}, end: function() {} }, pool, firstBody);
+    eq(pool.pods.length, 1, 'AC2 setup: first pod created (count is 1)');
+
+    let statusCode = null, responseBody = null;
+    const res = { writeHead: function(s) { statusCode = s; }, end: function(p) { responseBody = JSON.parse(p); } };
+    await handlePostPodsCreate(req, res, pool, firstBody);
+
+    eq(statusCode, 400, 'AC2: duplicate name returns HTTP 400');
+    eq(responseBody.error, "A pod named 'Core Platform Duplicate Test' already exists", 'AC2: error message names the pod');
+    eq(pool.pods.length, 1, 'AC2: no new row written to pods (count still 1)');
+    eq(pool.podMembers.length, 1, 'AC2: no pod_members rows created by the rejected attempt');
+  }
+
   console.log(`\n[ep1-s1] ${passed} passed, ${failed} failed\n`);
   process.exit(failed === 0 ? 0 : 1);
 }
