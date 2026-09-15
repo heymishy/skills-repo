@@ -34721,64 +34721,66 @@
         {
           "slug": "ep1-s1",
           "id": "ep1-s1",
-          "stage": "implementation-plan",
+          "stage": "subagent-execution",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
-            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep1-s1-test-plan.md"
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep1-s1-test-plan.md",
+            "passing": 34,
+            "total": 34
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep1-s1-dor.md",
-          "updatedAt": "2026-09-15T09:54:21.573Z",
+          "updatedAt": "2026-09-15T20:52:36.910Z",
           "tasks": [
             {
               "id": "task-1",
               "name": "Pod store: schema + data access",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep1-s1-plan.md"
             },
             {
               "id": "task-2",
               "name": "POST /api/pods/create handler (AC1 happy path)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep1-s1-plan.md"
             },
             {
               "id": "task-3",
               "name": "AC2: duplicate pod name rejection",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep1-s1-plan.md"
             },
             {
               "id": "task-4",
               "name": "AC3: invalid role rejection",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep1-s1-plan.md"
             },
             {
               "id": "task-5",
               "name": "GET /api/pods: tenant isolation + atomicity",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep1-s1-plan.md"
             },
             {
               "id": "task-6",
               "name": "Wire into server.js",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep1-s1-plan.md"
             },
             {
               "id": "task-7",
               "name": "Pod Manager UI: two-panel picker",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep1-s1-plan.md"
             },
             {
               "id": "task-8",
               "name": "E2E spec + fake-test-db.js extension",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep1-s1-plan.md"
             }
           ]
