@@ -61,6 +61,9 @@ function createFakeTestDb() {
   // proving the row is NOT in the hot table -- a shared array would make that
   // distinction untestable.
   var sessionTurnsArchive = []; // { id, journey_id, tenant_id, skill_name, turns, created_at }
+  var pods = [];         // { pod_id, tenant_id, name, created_by, status } -- ep1-s1
+  var podMembers = [];   // { id, pod_id, user_id, role_id, status } -- ep1-s1
+  var nextPodMemberId = 1;
 
   function query(sql, params) {
     var s = _normalise(sql);
@@ -260,7 +263,57 @@ function createFakeTestDb() {
     }
 
     // ── startup migrations (CREATE TABLE / ALTER TABLE) — idempotent no-op ──
+    // NOTE: this catch-all also covers pods/pod_members's own
+    // "CREATE TABLE IF NOT EXISTS PODS"/"...POD_MEMBERS" bootstrap statements
+    // (migratePodsSchema, modules/pod-store.js) since both start with the
+    // literal "CREATE TABLE" prefix checked here -- no separate branch is
+    // added for them below, since one would be unreachable dead code.
     if (s.indexOf('CREATE TABLE') === 0 || s.indexOf('ALTER TABLE') === 0) {
+      return Promise.resolve({ rows: [] });
+    }
+
+    // ── pods / pod_members (ep1-s1) ─────────────────────────────────────
+    // Narrow support for the exact query shapes modules/pod-store.js issues
+    // (findPodByName, listPods, createPod). Real Postgres enforces
+    // UNIQUE(tenant_id, name) at the DB level (pod-store.js's createPod
+    // catches err.code === '23505' on that constraint) -- deliberately NOT
+    // simulated here, since routes/pods.js's AC2 duplicate-name rejection is
+    // checked at the application level via findPodByName BEFORE createPod is
+    // ever called, and that is the path this story's own E2E spec
+    // (tests/e2e/ep1-s1-pod-creation.spec.js) exercises.
+    if (s.indexOf('SELECT POD_ID, NAME FROM PODS') === 0) {
+      var findTenantId = p[0];
+      var findName = p[1];
+      var findMatch = pods.filter(function(r) { return r.tenant_id === findTenantId && r.name === findName; });
+      return Promise.resolve({ rows: findMatch.map(function(r) { return { pod_id: r.pod_id, name: r.name }; }) });
+    }
+    if (s.indexOf('SELECT POD_ID, NAME, CREATED_AT FROM PODS') === 0) {
+      var listTenantId = p[0];
+      var listMatch = pods
+        .filter(function(r) { return r.tenant_id === listTenantId; })
+        .map(function(r) { return { pod_id: r.pod_id, name: r.name, created_at: r.created_at }; });
+      return Promise.resolve({ rows: listMatch });
+    }
+    if (s.indexOf('INSERT INTO PODS') === 0) {
+      var newPodId = p[0];
+      var newPodTenantId = p[1];
+      var newPodName = p[2];
+      var newPodCreatedBy = p[3];
+      pods.push({
+        pod_id: newPodId,
+        tenant_id: newPodTenantId,
+        name: newPodName,
+        created_by: newPodCreatedBy,
+        status: 'active',
+        created_at: new Date().toISOString()
+      });
+      return Promise.resolve({ rows: [] });
+    }
+    if (s.indexOf('INSERT INTO POD_MEMBERS') === 0) {
+      var pmPodId = p[0];
+      var pmUserId = p[1];
+      var pmRoleId = p[2];
+      podMembers.push({ id: nextPodMemberId++, pod_id: pmPodId, user_id: pmUserId, role_id: pmRoleId, status: 'active' });
       return Promise.resolve({ rows: [] });
     }
 
@@ -428,6 +481,8 @@ function createFakeTestDb() {
       journeys = [];
       sessionTurns = [];
       sessionTurnsArchive = [];
+      pods = [];
+      podMembers = []; nextPodMemberId = 1;
     }
   };
 }
