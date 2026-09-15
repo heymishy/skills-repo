@@ -34807,7 +34807,7 @@
       "id": "2026-09-15-psrc-s1-sonnet-verify-3story",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/discovery.md",
-      "stage": "test-plan"
+      "stage": "branch-complete"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
