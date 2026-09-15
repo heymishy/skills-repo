@@ -25,6 +25,8 @@
     .picker { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
     .picker-panel { border: 1px solid #e2e2e5; border-radius: 8px; padding: 12px; min-height: 220px; }
     .picker-panel h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: #666; margin: 0 0 8px; }
+    .team-group-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: #666; margin: 12px 0 4px; }
+    .team-group-label:first-child { margin-top: 0; }
     .role-tabs { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
     .role-tab { padding: 2px 10px; border-radius: 999px; border: 1px solid #d0d0d5; background: #fff; font-size: 0.75rem; }
     .role-tab.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
@@ -56,6 +58,7 @@
       <div class="picker">
         <div class="picker-panel">
           <h3>Available</h3>
+          <input type="text" id="roster-search" placeholder="Search by name…" style="width:100%; padding:6px 8px; border:1px solid #d0d0d5; border-radius:6px; margin-bottom:8px; box-sizing:border-box; font-size:0.85rem;">
           <div class="role-tabs" id="role-tabs"></div>
           <div id="available-roster"></div>
         </div>
@@ -82,17 +85,28 @@
     var VALID_ROLES = ['conductor', 'engineer', 'architect', 'product'];
     var selection = []; // { userId, name, roleId } -- creator pre-included per design.md
 
+    // Combined roster filter state -- role tab and search term apply together,
+    // not as two separate un-combined passes. Tracked at module level so the
+    // search handler can read the active role tab without re-deriving it
+    // from the DOM.
+    var activeRoleFilter = null; // null = 'All'
+    var currentSearchTerm = '';
+
     var modal = document.getElementById('create-pod-modal');
     var nameInput = document.getElementById('pod-name-input');
     var saveBtn = document.getElementById('save-pod-btn');
     var errorBanner = document.getElementById('error-banner');
     var successBanner = document.getElementById('success-banner');
+    var rosterSearchInput = document.getElementById('roster-search');
 
-    function renderRoster(filterRole) {
+    function renderRoster() {
       var el = document.getElementById('available-roster');
       el.innerHTML = '';
-      ORG_ROSTER.filter(function(u) { return !filterRole || filterRole === 'All' || u.roleId === filterRole; })
-        .forEach(function(u) {
+      ORG_ROSTER.filter(function(u) {
+        var roleMatch = !activeRoleFilter || activeRoleFilter === 'All' || u.roleId === activeRoleFilter;
+        var searchMatch = !currentSearchTerm || u.name.toLowerCase().indexOf(currentSearchTerm.toLowerCase()) !== -1;
+        return roleMatch && searchMatch;
+      }).forEach(function(u) {
           var row = document.createElement('div');
           row.className = 'roster-row';
           row.innerHTML = '<span>' + u.name + ' <span class="role-chip">' + u.roleId + '</span></span>';
@@ -115,7 +129,8 @@
         tab.onclick = function() {
           document.querySelectorAll('.role-tab').forEach(function(t) { t.classList.remove('active'); });
           tab.classList.add('active');
-          renderRoster(r === 'All' ? null : r);
+          activeRoleFilter = r === 'All' ? null : r;
+          renderRoster();
         };
         el.appendChild(tab);
       });
@@ -124,18 +139,36 @@
     function renderTeam() {
       var el = document.getElementById('your-team');
       el.innerHTML = '';
-      selection.forEach(function(m, i) {
-        var row = document.createElement('div');
-        row.className = 'roster-row';
-        row.innerHTML = '<span>' + m.name + ' <span class="role-chip">' + m.roleId + '</span></span>';
-        if (i > 0) { // creator (index 0) cannot be removed
-          var btn = document.createElement('button');
-          btn.className = 'remove-btn';
-          btn.textContent = 'Remove';
-          btn.onclick = function() { selection.splice(i, 1); renderTeam(); updateGate(); };
-          row.appendChild(btn);
-        }
-        el.appendChild(row);
+      // Grouped by role per design.md ("the running selection, grouped by
+      // role"). Iterate VALID_ROLES for a stable order; skip roles with no
+      // selected members so no empty heading renders. Remove still splices
+      // the correct index out of the flat `selection` array -- look up each
+      // rendered member's index since we're iterating a derived grouping,
+      // not `selection` directly by index.
+      VALID_ROLES.forEach(function(role) {
+        var indexesForRole = [];
+        selection.forEach(function(m, i) { if (m.roleId === role) indexesForRole.push(i); });
+        if (indexesForRole.length === 0) return;
+
+        var label = document.createElement('p');
+        label.className = 'team-group-label';
+        label.textContent = role;
+        el.appendChild(label);
+
+        indexesForRole.forEach(function(i) {
+          var m = selection[i];
+          var row = document.createElement('div');
+          row.className = 'roster-row';
+          row.innerHTML = '<span>' + m.name + ' <span class="role-chip">' + m.roleId + '</span></span>';
+          if (i > 0) { // creator (index 0) cannot be removed
+            var btn = document.createElement('button');
+            btn.className = 'remove-btn';
+            btn.textContent = 'Remove';
+            btn.onclick = function() { selection.splice(i, 1); renderTeam(); updateGate(); };
+            row.appendChild(btn);
+          }
+          el.appendChild(row);
+        });
       });
       updateGate();
     }
@@ -156,14 +189,22 @@
       selection = [{ userId: 'me-uuid', name: 'You', roleId: 'conductor' }]; // creator pre-included by default
       nameInput.value = '';
       errorBanner.classList.remove('visible');
+      activeRoleFilter = null; // 'All'
+      currentSearchTerm = '';
+      rosterSearchInput.value = '';
       renderTabs();
-      renderRoster(null);
+      renderRoster();
       renderTeam();
       modal.classList.add('open');
     }
 
     document.getElementById('create-pod-btn').onclick = openModal;
     document.getElementById('cancel-pod-btn').onclick = function() { modal.classList.remove('open'); };
+
+    rosterSearchInput.oninput = function() {
+      currentSearchTerm = rosterSearchInput.value;
+      renderRoster();
+    };
 
     saveBtn.onclick = function() {
       var name = nameInput.value.trim();
