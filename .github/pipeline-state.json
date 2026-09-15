@@ -34685,6 +34685,11 @@
       "stage": "definition",
       "track": "short",
       "updatedAt": "2026-09-15T03:08:41.709Z"
+    },
+    {
+      "slug": "new-feature-2b74a292",
+      "id": "new-feature-2b74a292",
+      "stage": "test-plan"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
