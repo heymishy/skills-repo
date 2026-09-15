@@ -646,7 +646,6 @@ const { renderShell, escHtml }   = require('../utils/html-shell');
 const { renderCommitPreview, renderCommitResult, renderAlreadyCommitted } = require('../views/commit-view');
 const { renderChat: _renderChatView } = require('../views/chat-view');
 const skillsAdapter              = require('../adapters/skills');
-const { getActiveModel }         = require('../../modules/skill-turn-executor');
 
 // Pricing table — direct API rates per million tokens (Anthropic + common OpenAI models).
 // Cache read/write rates follow Anthropic's standard cache pricing (10% / 125% of input rate).
@@ -696,10 +695,12 @@ function _truncationCaptureProps(stopReason) {
   return props;
 }
 
-// Skills where Haiku is proven unsafe regardless of operator overrides.
-// EXP-021: Haiku 0/22 on /discovery S-series — fabricates regulatory constraints
-// that are structurally compliant (pass automated gates) but content-wrong.
-const HAIKU_BLOCKED_SKILLS = ['discovery'];
+// psrc-s1: per-skill model routing centralized in config/model-routing.js --
+// previously duplicated here and in the streaming turn handler below, with
+// nothing enforcing they stayed in sync. HAIKU_BLOCKED_SKILLS is re-exported
+// from there so existing references below keep working unchanged.
+const _modelRouting = require('../config/model-routing');
+const HAIKU_BLOCKED_SKILLS = _modelRouting.HAIKU_BLOCKED_SKILLS;
 
 function _isHaikuModel(modelId) {
   return !!(modelId && modelId.indexOf('haiku') !== -1);
@@ -708,19 +709,7 @@ function _isHaikuModel(modelId) {
 // Mirror the per-skill model routing from the turn handler so the chat-view label
 // shows the model that will actually be used, not the global default.
 function getModelForSkill(skillName) {
-  const SONNET_SKILLS = ['discovery', 'ideate'];
-  const fastModel = process.env.WUCE_FAST_MODEL;
-  if (fastModel) {
-    // Block Haiku even when WUCE_FAST_MODEL is set — fabrication risk is not prompt-tunable
-    if (_isHaikuModel(fastModel) && HAIKU_BLOCKED_SKILLS.indexOf(skillName) !== -1) {
-      return getActiveModel();
-    }
-    return fastModel;
-  }
-  if (SONNET_SKILLS.indexOf(skillName) === -1) {
-    return process.env.WUCE_HAIKU_MODEL || 'claude-haiku-4-5';
-  }
-  return getActiveModel();
+  return _modelRouting.getModelForSkill(skillName);
 }
 
 /**
@@ -5055,20 +5044,15 @@ async function handlePostTurnStreamHtml(req, res) {
     // EXP-045: thinking degrades /definition C2 propagation; EXP-042: thinking degrades /discovery
     // EXP-044: no Haiku/Sonnet gap on /ideate in current eval (eval gap noted in scorecard)
     // discovery + ideate require Sonnet; all other pipeline skills default to Haiku
-    // noThinking=true is already set above for all turns — non-Sonnet block sets model only.
-    var _SONNET_SKILLS = ['discovery', 'ideate'];
-    if (_SONNET_SKILLS.indexOf(session.skillName) === -1) {
-      _turnOptions.model = process.env.WUCE_HAIKU_MODEL || 'claude-haiku-4-5';
-    }
-    // WUCE_FAST_MODEL: blanket operator override for quick turns (takes precedence over skill routing).
-    // Exception: HAIKU_BLOCKED_SKILLS bypass this override — Haiku fabrication risk is not
-    // prompt-tunable (EXP-021: structurally-compliant artefacts with invented regulatory constraints).
-    var _fastModel = process.env.WUCE_FAST_MODEL;
-    if (_fastModel && rawAnswer !== 'continue' && session._artefactInProgress !== true) {
-      if (!(_isHaikuModel(_fastModel) && HAIKU_BLOCKED_SKILLS.indexOf(session.skillName) !== -1)) {
-        _turnOptions.model = _fastModel;
-      }
-    }
+    // noThinking=true is already set above for all turns.
+    // psrc-s1: centralized in config/model-routing.js (per-skill override support,
+    // eliminates the duplication that used to exist between this block and
+    // getModelForSkill() above). WUCE_FAST_MODEL's blanket override is applied
+    // inside the module too, gated by the same rawAnswer/_artefactInProgress
+    // guard this block always had (mid-artefact continuation turns don't
+    // switch model mid-generation).
+    var _allowBlanketOverride = (rawAnswer !== 'continue' && session._artefactInProgress !== true);
+    _turnOptions.model = _modelRouting.getModelForSkill(session.skillName, process.env, { allowBlanketOverride: _allowBlanketOverride });
     // s6.1: activate Decision 8 — thread tenantId/sessionId so the streaming path's
     // Anthropic prompt-cache scope comment is tenant-differentiated in production,
     // matching the non-streaming path (htmlSubmitTurn, above).
