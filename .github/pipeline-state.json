@@ -34648,26 +34648,29 @@
         {
           "id": "wsd-s3",
           "dorStatus": "signed-off",
-          "prStatus": "none",
-          "stage": "definition-of-ready",
+          "prStatus": "merged",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-09-14T22:14:02.416Z"
+          "updatedAt": "2026-09-15T03:08:09.917Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/890"
         },
         {
           "id": "wsd-s4",
           "dorStatus": "signed-off",
-          "prStatus": "none",
-          "stage": "definition-of-ready",
+          "prStatus": "merged",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-09-14T23:13:50.585Z"
+          "updatedAt": "2026-09-15T03:08:10.091Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/891"
         },
         {
           "id": "wsd-s5",
           "dorStatus": "signed-off",
-          "prStatus": "none",
-          "stage": "definition-of-ready",
+          "prStatus": "merged",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-09-15T00:21:28.471Z"
+          "updatedAt": "2026-09-15T03:08:10.263Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/892"
         }
       ],
       "metrics": [],
@@ -34676,7 +34679,9 @@
     {
       "slug": "2026-09-14-wsd-s2-live-verification-throwaway",
       "id": "2026-09-14-wsd-s2-live-verification-throwaway",
-      "stage": "definition"
+      "stage": "definition",
+      "track": "short",
+      "updatedAt": "2026-09-15T03:08:41.709Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
