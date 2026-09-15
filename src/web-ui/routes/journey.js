@@ -2700,9 +2700,21 @@ async function handlePostGateConfirm(req, res) {
   var nextStage = _journeyStore.getNextStage(session.skillName);
   console.info(JSON.stringify({ event: 'artefact_saved_to_disk', journeyId: journeyId, stage: session.skillName, featureSlug: journey.featureSlug }));
 
-  // Per-story stage sequence: review → test-plan → definition-of-ready
-  // review runs first (may change story scope); test-plan requires a passed review.
-  var PER_STORY_SEQ = ['review', 'test-plan', 'definition-of-ready'];
+  // Per-story stage sequence: test-plan → definition-of-ready.
+  // wsap-s3: review is NOT part of the per-story cycle -- it runs exactly
+  // once per feature (the review skill's own protocol already reviews every
+  // story in a single pass; see _startReviewSessionForJourney's callers at
+  // the feature-level 'nextStage === review' transition and the manual
+  // /stories submit path). The original design re-ran a full review pass
+  // before every single story's test-plan, matching neither CLAUDE.md's own
+  // documented pipeline table (review's entry condition is "stories exist",
+  // not "per story" -- only test-plan's row says "(per story)") nor
+  // operator expectation: it produced the visible cycle
+  // review -> test-plan -> DoR -> review -> test-plan -> DoR -> ... that
+  // was reported as looking like an infinite loop (found via live
+  // end-to-end verification, new-feature-2b74a292 and a fresh 2-story
+  // verification feature, both in production).
+  var PER_STORY_SEQ = ['test-plan', 'definition-of-ready'];
   var perStoryIdx = PER_STORY_SEQ.indexOf(session.skillName);
   var newSid, newSessionPath, perStoryNextStage;
 
@@ -2710,8 +2722,17 @@ async function handlePostGateConfirm(req, res) {
     // Story-mode: check for more stories; feature-mode: complete journey
     var nextStory = _journeyStore.advanceToNextStory(journeyId);
     if (nextStory) {
-      // More stories: create review session for next story (review → test-plan → DoR per story)
-      _startReviewSessionForJourney(res, journeyId, journey, priorArtefacts);
+      // More stories: go straight to test-plan for the next story -- review
+      // already covered every story in the single feature-level pass above.
+      newSid = crypto.randomUUID();
+      newSessionPath = path.join(os.tmpdir(), 'ougl-sessions', newSid + '-test-plan.md');
+      getRegisterHtmlSession()(newSid, newSessionPath, 'test-plan', { priorArtefacts: priorArtefacts, featureSlug: journey.featureSlug, mockScenarioName: _mockScenarioForStage(journey, 'test-plan') });
+      getLinkSessionToJourney()(newSid, journeyId);
+      if (_journeyStore.setActiveSession) {
+        _journeyStore.setActiveSession(journeyId, newSid, 'test-plan');
+      }
+      res.writeHead(303, { Location: '/skills/test-plan/sessions/' + newSid + '/chat' });
+      res.end();
     } else {
       // No more stories (or feature-mode): complete journey
       _journeyStore.markJourneyComplete(journeyId);
@@ -2841,10 +2862,14 @@ async function resolveArtefactFromDiskOrPg(repoRoot, artefactRelPath, journeyId,
 }
 
 /**
- * dtra-s1 — shared review-session-start step, used by every path that begins
- * per-story review (definition-of-ready's "more stories" branch, the
- * auto-start-after-definition branch, and the manual /stories submit path)
- * so there is exactly one place that creates/links/activates a review session.
+ * dtra-s1 — shared review-session-start step. wsap-s3: review now runs
+ * exactly ONCE per feature (not per story) -- the review skill's own
+ * protocol already reviews every story in a single pass. This function's
+ * only two remaining callers are the two feature-level, first-time
+ * transitions into per-story mode: the auto-start-after-definition branch
+ * (nextStage === 'review') and the manual /stories submit path. The
+ * definition-of-ready "more stories" branch no longer calls this -- it
+ * goes straight to test-plan for the next story instead.
  */
 function _startReviewSessionForJourney(res, journeyId, journey, priorArtefacts) {
   var newSid = crypto.randomUUID();

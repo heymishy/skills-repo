@@ -158,9 +158,12 @@ queue.push(function() {
   });
 });
 
-// T7.3 — DoR done + advanceToNextStory has next story → 303 to review for next story
+// T7.3 — DoR done + advanceToNextStory has next story → 303 to test-plan for next story.
+// wsap-s3: review no longer re-runs per story -- it already covered every
+// story in the single feature-level pass before the per-story cycle began.
+// The next story goes straight to test-plan.
 queue.push(function() {
-  return test('T7.3: DoR done + more stories → 303 to next story review session', async function() {
+  return test('T7.3: DoR done + more stories → 303 to next story test-plan session', async function() {
     var journey = freshRequireJourney();
     var store = getStore();
     store._clear();
@@ -204,8 +207,8 @@ queue.push(function() {
 
     assert.strictEqual(res._status, 303, 'Expected 303, got ' + res._status);
     assert.ok(
-      res._headers.Location && res._headers.Location.includes('/skills/review/sessions/'),
-      'Expected redirect to review session for next story, got: ' + res._headers.Location
+      res._headers.Location && res._headers.Location.includes('/skills/test-plan/sessions/'),
+      'Expected redirect to test-plan session for next story, got: ' + res._headers.Location
     );
   });
 });
