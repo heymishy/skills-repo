@@ -223,6 +223,43 @@ async function run() {
     eq(pool.podMembers.length, 0, 'AC3: no pod_members rows created');
   }
 
+  // --- Part 5: integration — tenant isolation + member-insertion atomicity ---
+  {
+    const { handlePostPodsCreate, handleGetPods } = require('../src/web-ui/routes/pods');
+    const pool = makeFakePool();
+    const { migratePodsSchema } = require('../src/web-ui/modules/pod-store');
+    await migratePodsSchema(pool);
+
+    const reqA = { session: { tenantId: 'tenant-A' } };
+    const reqB = { session: { tenantId: 'tenant-B' } };
+    await handlePostPodsCreate(reqA, { writeHead: function() {}, end: function() {} }, pool, { name: 'Platform A', members: [{ userId: 'u1', roleId: 'conductor' }] });
+    await handlePostPodsCreate(reqB, { writeHead: function() {}, end: function() {} }, pool, { name: 'Platform B', members: [{ userId: 'u2', roleId: 'conductor' }] });
+
+    let bodyA = null, bodyB = null;
+    await handleGetPods(reqA, { writeHead: function() {}, end: function(p) { bodyA = JSON.parse(p); } }, pool);
+    await handleGetPods(reqB, { writeHead: function() {}, end: function(p) { bodyB = JSON.parse(p); } }, pool);
+
+    eq(bodyA.pods.length, 1, 'Tenant isolation: tenant A sees exactly 1 pod');
+    eq(bodyA.pods[0].name, 'Platform A', "Tenant isolation: tenant A's pod is Platform A");
+    eq(bodyB.pods.length, 1, 'Tenant isolation: tenant B sees exactly 1 pod');
+    eq(bodyB.pods[0].name, 'Platform B', "Tenant isolation: tenant B's pod is Platform B");
+
+    // Both tenants can reuse the same pod name without conflict (isolated by tenant).
+    let sameNameStatus = null;
+    await handlePostPodsCreate(reqB, { writeHead: function(s) { sameNameStatus = s; }, end: function() {} }, pool, { name: 'Platform A', members: [{ userId: 'u3', roleId: 'conductor' }] });
+    eq(sameNameStatus, 200, 'Tenant isolation: tenant B can create a pod named "Platform A" (no cross-tenant collision)');
+
+    // Member-insertion atomicity: all 3 members land, no orphans.
+    const pool2 = makeFakePool();
+    await migratePodsSchema(pool2);
+    await handlePostPodsCreate({ session: { tenantId: 'tenant-test-123' } }, { writeHead: function() {}, end: function() {} }, pool2, {
+      name: 'Atomicity Test Pod',
+      members: [{ userId: 'a', roleId: 'conductor' }, { userId: 'b', roleId: 'engineer' }, { userId: 'c', roleId: 'engineer' }]
+    });
+    eq(pool2.pods.length, 1, 'Atomicity: exactly 1 pod row');
+    eq(pool2.podMembers.length, 3, 'Atomicity: all 3 member rows present, none orphaned');
+  }
+
   console.log(`\n[ep1-s1] ${passed} passed, ${failed} failed\n`);
   process.exit(failed === 0 ? 0 : 1);
 }
