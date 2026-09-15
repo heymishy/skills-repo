@@ -249,15 +249,25 @@ async function run() {
     await handlePostPodsCreate(reqB, { writeHead: function(s) { sameNameStatus = s; }, end: function() {} }, pool, { name: 'Platform A', members: [{ userId: 'u3', roleId: 'conductor' }] });
     eq(sameNameStatus, 200, 'Tenant isolation: tenant B can create a pod named "Platform A" (no cross-tenant collision)');
 
-    // Member-insertion atomicity: all 3 members land, no orphans.
-    const pool2 = makeFakePool();
-    await migratePodsSchema(pool2);
-    await handlePostPodsCreate({ session: { tenantId: 'tenant-test-123' } }, { writeHead: function() {}, end: function() {} }, pool2, {
-      name: 'Atomicity Test Pod',
+    // Multi-member insert-loop completeness (happy path only -- NOT a
+    // transactional-atomicity guarantee). createPod() in pod-store.js has
+    // no BEGIN/COMMIT/rollback around the pod insert + per-member insert
+    // loop; if an insert failed partway through, the pod row and any
+    // already-inserted members would NOT be rolled back. This story's plan
+    // does not specify a transactional-atomicity NFR, so that gap is
+    // knowingly out of scope here -- this test only proves the happy-path
+    // loop inserts every member when nothing fails, it does not prove
+    // failure-safety. A future story adding real atomicity would need a
+    // failure-injection test (e.g. make one member INSERT throw mid-loop)
+    // that this one deliberately does not attempt.
+    const poolMultiMember = makeFakePool();
+    await migratePodsSchema(poolMultiMember);
+    await handlePostPodsCreate({ session: { tenantId: 'tenant-test-123' } }, { writeHead: function() {}, end: function() {} }, poolMultiMember, {
+      name: 'Multi Member Test Pod',
       members: [{ userId: 'a', roleId: 'conductor' }, { userId: 'b', roleId: 'engineer' }, { userId: 'c', roleId: 'engineer' }]
     });
-    eq(pool2.pods.length, 1, 'Atomicity: exactly 1 pod row');
-    eq(pool2.podMembers.length, 3, 'Atomicity: all 3 member rows present, none orphaned');
+    eq(poolMultiMember.pods.length, 1, 'Insert-loop completeness: exactly 1 pod row');
+    eq(poolMultiMember.podMembers.length, 3, 'Insert-loop completeness: all 3 member rows present in the happy path');
   }
 
   console.log(`\n[ep1-s1] ${passed} passed, ${failed} failed\n`);
