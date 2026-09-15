@@ -41,3 +41,13 @@
 **Context:** `/branch-setup`'s clean-baseline check ran the full suite (668 files) before any `ep1-s1` code was written. 1 failure: `tests/check-p3.5-validate-trace.js` (`ps1-exits-0-on-valid-repo-with-ci-flag`), caused by a pre-existing, already-documented local Windows `python3` shim permission issue unrelated to this story — confirmed repeatedly earlier this session across multiple unrelated worktrees and branches.
 
 **Decision:** Acknowledged as pre-existing per `/branch-setup`'s own Step 5 options; proceeding to `/implementation-plan` without fixing it. Not `ep1-s1`'s concern — an environment-level gap, not a code defect in this feature.
+
+---
+
+## `ep1-s1` role validation: hardcoded list, not a `role_definitions` table (2026-09-15)
+
+**Context:** `ep1-s1`'s own DoR assumed "Organisation role definitions exist in a roles table or cache" — false; no such table exists anywhere in this codebase. `design.md`'s Data Model section does describe a `role_definitions` table (`tenantId`, `roleId`, `name`, `stageVisibility`, `canApproveStages`), but that richer shape is for stage-visibility filtering (a different, later concern — "engineer sees test-plan–coding" etc.) — not `ep1-s1`'s "create a pod with members + roles" scope. `design.md`'s own Open Question #5 already states the intended sequencing: "MVP hard-codes core roles (product, engineer, architect, designer, conductor); Phase 2 allows organisations to define custom roles."
+
+**Decision:** `ep1-s1` validates roles against a hardcoded constant (`conductor`, `engineer`, `architect`, `product` — matching this story's own already-signed-off AC3 test expectation exactly; `design.md`'s 5-role list includes "designer", a minor drift between artefacts not resolved here since it doesn't affect this story's scope). No `role_definitions` table is created by this story. When a future story introduces the real `role_definitions` table (stage-visibility, per-tenant custom roles), it should migrate this hardcoded list into seed rows rather than the reverse.
+
+**Story:** ep1-s1 — no change to Acceptance Criteria; implementation-detail simplification confirmed with the operator before writing the implementation plan.
