@@ -34660,6 +34660,14 @@
           "stage": "definition-of-ready",
           "health": "green",
           "updatedAt": "2026-09-14T23:13:50.585Z"
+        },
+        {
+          "id": "wsd-s5",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "updatedAt": "2026-09-15T00:21:28.471Z"
         }
       ],
       "metrics": [],
