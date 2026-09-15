@@ -34649,32 +34649,35 @@
           "id": "wsd-s3",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "stage": "branch-complete",
-          "health": "green",
-          "updatedAt": "2026-09-15T03:08:09.917Z",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/890"
+          "stage": "definition-of-done",
+          "health": "amber",
+          "updatedAt": "2026-09-15T03:10:49.380Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/890",
+          "dodStatus": "complete"
         },
         {
           "id": "wsd-s4",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
-          "updatedAt": "2026-09-15T03:08:10.091Z",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/891"
+          "updatedAt": "2026-09-15T03:10:49.760Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/891",
+          "dodStatus": "complete"
         },
         {
           "id": "wsd-s5",
           "dorStatus": "signed-off",
           "prStatus": "merged",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
-          "updatedAt": "2026-09-15T03:08:10.263Z",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/892"
+          "updatedAt": "2026-09-15T03:10:50.108Z",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/892",
+          "dodStatus": "complete"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-09-14T21:22:28.606Z"
+      "updatedAt": "2026-09-15T03:10:58.868Z"
     },
     {
       "slug": "2026-09-14-wsd-s2-live-verification-throwaway",
