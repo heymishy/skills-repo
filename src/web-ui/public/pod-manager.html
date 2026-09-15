@@ -1,0 +1,195 @@
+<!-- src/web-ui/public/pod-manager.html -->
+<!-- ep1-s1: Pod Manager -- two-panel collaborator picker per design.md's
+     "Pod Creation / Collaborator Picker" section (amended 2026-09-14),
+     adopted from reference/collaborators-picker-wireframe.html. Reused by
+     ep4-s1/ep4-s2 later -- built as a self-contained component from the
+     start, not a one-off. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Pod Manager</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 24px; background: #f7f7f8; color: #1a1a1a; }
+    h1 { font-size: 1.25rem; margin: 0 0 16px; }
+    .toolbar { margin-bottom: 16px; }
+    button { font: inherit; cursor: pointer; }
+    #create-pod-btn { padding: 8px 16px; background: #1a1a1a; color: #fff; border: none; border-radius: 6px; }
+    #pod-list { display: flex; flex-direction: column; gap: 8px; }
+    .pod-row { background: #fff; border: 1px solid #e2e2e5; border-radius: 8px; padding: 12px 16px; }
+    #create-pod-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); align-items: center; justify-content: center; }
+    #create-pod-modal.open { display: flex; }
+    .modal-body { background: #fff; border-radius: 10px; padding: 24px; width: 720px; max-width: 92vw; }
+    .modal-body label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
+    #pod-name-input { width: 100%; padding: 8px; border: 1px solid #d0d0d5; border-radius: 6px; margin-bottom: 16px; box-sizing: border-box; }
+    .picker { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px; }
+    .picker-panel { border: 1px solid #e2e2e5; border-radius: 8px; padding: 12px; min-height: 220px; }
+    .picker-panel h3 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; color: #666; margin: 0 0 8px; }
+    .role-tabs { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+    .role-tab { padding: 2px 10px; border-radius: 999px; border: 1px solid #d0d0d5; background: #fff; font-size: 0.75rem; }
+    .role-tab.active { background: #1a1a1a; color: #fff; border-color: #1a1a1a; }
+    .roster-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 4px; }
+    .role-chip { font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; background: #eef0ff; color: #3341c4; }
+    .add-btn, .remove-btn { font-size: 0.75rem; padding: 2px 8px; border: 1px solid #d0d0d5; border-radius: 6px; background: #fff; }
+    #error-banner { display: none; background: #fdecea; color: #a4262c; border: 1px solid #f2c1c1; border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; font-size: 0.85rem; }
+    #error-banner.visible { display: block; }
+    #save-pod-btn { padding: 8px 20px; background: #1a1a1a; color: #fff; border: none; border-radius: 6px; }
+    #save-pod-btn:disabled { background: #c8c8cc; cursor: not-allowed; }
+    #success-banner { display: none; background: #e6f4ea; color: #1e7e34; border: 1px solid #b6e4c3; border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; font-size: 0.85rem; }
+    #success-banner.visible { display: block; }
+  </style>
+</head>
+<body>
+  <h1>Pod Manager</h1>
+  <div id="success-banner"></div>
+  <div class="toolbar">
+    <button id="create-pod-btn">Create Pod</button>
+  </div>
+  <div id="pod-list"></div>
+
+  <div id="create-pod-modal">
+    <div class="modal-body">
+      <div id="error-banner"></div>
+      <label for="pod-name-input">Pod Name</label>
+      <input id="pod-name-input" type="text" placeholder="e.g. Core Platform">
+
+      <div class="picker">
+        <div class="picker-panel">
+          <h3>Available</h3>
+          <div class="role-tabs" id="role-tabs"></div>
+          <div id="available-roster"></div>
+        </div>
+        <div class="picker-panel">
+          <h3>Your team</h3>
+          <div id="your-team"></div>
+        </div>
+      </div>
+
+      <button id="save-pod-btn" disabled>Create Pod</button>
+      <button id="cancel-pod-btn">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    // Demo org roster -- a real deployment would fetch this from a users
+    // endpoint. Kept inline here since ep1-s1's scope is pod creation, not
+    // an org-directory API.
+    var ORG_ROSTER = [
+      { userId: 'hamish-uuid', name: 'Hamish', roleId: 'conductor' },
+      { userId: 'susan-uuid', name: 'Susan', roleId: 'engineer' },
+      { userId: 'darren-uuid', name: 'Darren', roleId: 'engineer' }
+    ];
+    var VALID_ROLES = ['conductor', 'engineer', 'architect', 'product'];
+    var selection = []; // { userId, name, roleId } -- creator pre-included per design.md
+
+    var modal = document.getElementById('create-pod-modal');
+    var nameInput = document.getElementById('pod-name-input');
+    var saveBtn = document.getElementById('save-pod-btn');
+    var errorBanner = document.getElementById('error-banner');
+    var successBanner = document.getElementById('success-banner');
+
+    function renderRoster(filterRole) {
+      var el = document.getElementById('available-roster');
+      el.innerHTML = '';
+      ORG_ROSTER.filter(function(u) { return !filterRole || filterRole === 'All' || u.roleId === filterRole; })
+        .forEach(function(u) {
+          var row = document.createElement('div');
+          row.className = 'roster-row';
+          row.innerHTML = '<span>' + u.name + ' <span class="role-chip">' + u.roleId + '</span></span>';
+          var btn = document.createElement('button');
+          btn.className = 'add-btn';
+          btn.textContent = 'Add';
+          btn.onclick = function() { addMember(u); };
+          row.appendChild(btn);
+          el.appendChild(row);
+        });
+    }
+
+    function renderTabs() {
+      var el = document.getElementById('role-tabs');
+      el.innerHTML = '';
+      ['All'].concat(VALID_ROLES).forEach(function(r) {
+        var tab = document.createElement('span');
+        tab.className = 'role-tab' + (r === 'All' ? ' active' : '');
+        tab.textContent = r;
+        tab.onclick = function() {
+          document.querySelectorAll('.role-tab').forEach(function(t) { t.classList.remove('active'); });
+          tab.classList.add('active');
+          renderRoster(r === 'All' ? null : r);
+        };
+        el.appendChild(tab);
+      });
+    }
+
+    function renderTeam() {
+      var el = document.getElementById('your-team');
+      el.innerHTML = '';
+      selection.forEach(function(m, i) {
+        var row = document.createElement('div');
+        row.className = 'roster-row';
+        row.innerHTML = '<span>' + m.name + ' <span class="role-chip">' + m.roleId + '</span></span>';
+        if (i > 0) { // creator (index 0) cannot be removed
+          var btn = document.createElement('button');
+          btn.className = 'remove-btn';
+          btn.textContent = 'Remove';
+          btn.onclick = function() { selection.splice(i, 1); renderTeam(); updateGate(); };
+          row.appendChild(btn);
+        }
+        el.appendChild(row);
+      });
+      updateGate();
+    }
+
+    function addMember(u) {
+      if (selection.some(function(m) { return m.userId === u.userId; })) return;
+      selection.push({ userId: u.userId, name: u.name, roleId: u.roleId });
+      renderTeam();
+    }
+
+    // Gated primary action (design.md amendment): disabled until >= 1 member
+    // beyond the creator.
+    function updateGate() {
+      saveBtn.disabled = selection.length < 2;
+    }
+
+    function openModal() {
+      selection = [{ userId: 'me-uuid', name: 'You', roleId: 'conductor' }]; // creator pre-included by default
+      nameInput.value = '';
+      errorBanner.classList.remove('visible');
+      renderTabs();
+      renderRoster(null);
+      renderTeam();
+      modal.classList.add('open');
+    }
+
+    document.getElementById('create-pod-btn').onclick = openModal;
+    document.getElementById('cancel-pod-btn').onclick = function() { modal.classList.remove('open'); };
+
+    saveBtn.onclick = function() {
+      var name = nameInput.value.trim();
+      fetch('/api/pods/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name,
+          members: selection.map(function(m) { return { userId: m.userId, roleId: m.roleId }; })
+        })
+      }).then(function(r) { return r.json().then(function(body) { return { status: r.status, body: body }; }); })
+        .then(function(result) {
+          if (result.status !== 200) {
+            errorBanner.textContent = result.body.error;
+            errorBanner.classList.add('visible');
+            return;
+          }
+          modal.classList.remove('open');
+          successBanner.textContent = 'Pod created: ' + result.body.name + ' (' + result.body.memberCount + ' members)';
+          successBanner.classList.add('visible');
+          var row = document.createElement('div');
+          row.className = 'pod-row';
+          row.textContent = result.body.name + ' (' + result.body.memberCount + ' members)';
+          document.getElementById('pod-list').appendChild(row);
+        });
+    };
+  </script>
+</body>
+</html>
