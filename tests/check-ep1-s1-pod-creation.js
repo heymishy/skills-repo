@@ -93,6 +93,35 @@ async function run() {
     ok(found, 'findPodByName: finds the just-created pod');
   }
 
+  // --- Part 2: routes/pods.js — AC1 happy path ---
+  {
+    const { handlePostPodsCreate } = require('../src/web-ui/routes/pods');
+    const pool = makeFakePool();
+    const { migratePodsSchema } = require('../src/web-ui/modules/pod-store');
+    await migratePodsSchema(pool);
+
+    const body = {
+      name: 'Core Platform',
+      members: [
+        { userId: 'hamish-uuid', roleId: 'conductor' },
+        { userId: 'susan-uuid', roleId: 'engineer' },
+        { userId: 'darren-uuid', roleId: 'engineer' }
+      ]
+    };
+    const req = { session: { tenantId: 'tenant-test-123' } };
+    let statusCode = null, responseBody = null;
+    const res = {
+      writeHead: function(status) { statusCode = status; },
+      end: function(payload) { responseBody = JSON.parse(payload); }
+    };
+
+    await handlePostPodsCreate(req, res, pool, body);
+    eq(statusCode, 200, 'AC1: happy path returns HTTP 200');
+    eq(responseBody.name, 'Core Platform', 'AC1: response includes the pod name');
+    eq(responseBody.memberCount, 3, 'AC1: response memberCount is 3');
+    ok(responseBody.podId, 'AC1: response includes a podId');
+  }
+
   console.log(`\n[ep1-s1] ${passed} passed, ${failed} failed\n`);
   process.exit(failed === 0 ? 0 : 1);
 }
