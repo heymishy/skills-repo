@@ -1,5 +1,15 @@
 # Decisions: Multi-User Role-Aware Synchronous Collaboration
 
+## ep1-s1 Task 7 quality review: defer role-tab keyboard/screen-reader accessibility fix
+
+**Date:** 2026-09-16
+**Context:** During `/subagent-execution` for ep1-s1 Task 7 (Pod Manager UI), the code-quality reviewer flagged that the role-filter tabs in the Available panel are `<span onclick="...">` elements, not `<button>` elements — not keyboard-focusable/operable, and the active-tab state (`.active` class) isn't exposed to assistive tech (no `aria-pressed`). Two related Minor findings from the same review (no `<label>` on the new search input; `#error-banner`/`#success-banner` lack `role="alert"`/`aria-live` for dynamic status announcements) are logged here too, same reasoning.
+**Decision:** Deferred, not fixed in this pass. Unlike the innerHTML/XSS and inline-style findings from the same review (fixed immediately, since those were security-adjacent and narrowly scoped), the `<span onclick>` role-tab pattern was present in the ORIGINAL DoR-signed-off implementation plan's literal code for Task 7 (`artefacts/new-feature-2b74a292/plans/ep1-s1-plan.md`), not introduced by this session's fixes — same category of "copied verbatim from an approved artefact" as the Task 1 test-harness-style decision above. A proper fix (button semantics, `aria-pressed`, focus-visible styling, `aria-live` regions, explicit `<label for>` associations) is a legitimate, cross-cutting a11y pass, not a one-line change, and this component is explicitly reused by ep4-s1/ep4-s2 later in this same epic — better done once, comprehensively, across all reuse sites than piecemeal here.
+**Rationale:** Keeps this fix pass narrowly scoped to the two issues (XSS-risk innerHTML, style-block consistency) that were genuinely safe and cheap to fix immediately, without unilaterally expanding Task 7's scope into a full accessibility audit mid-execution. Flagged here so it isn't silently lost — worth a dedicated follow-up story (or folding into whichever of ep4-s1/ep4-s2 first reuses this component) rather than a permanent accept.
+**Story:** ep1-s1 — no change to Acceptance Criteria; this is a UI-quality gap with no stated AC or NFR covering keyboard/screen-reader operability of the role-tab filter, search input labeling, or banner announcements.
+
+---
+
 ## ep1-s1 Task 1 quality review: accept the ok()/eq() test-harness style as a documented deviation
 
 **Date:** 2026-09-16
