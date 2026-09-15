@@ -1,0 +1,2 @@
+` at the correct position (after all Q&A, before artefact body) | Human inspection of session transcript — confirm marker appears after final operator confirmation, before artefact markdown | Manual |
+| AC2: Sonnet 4.6 emits `
