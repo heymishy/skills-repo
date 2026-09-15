@@ -21,3 +21,15 @@
 **Context:** While checking the design gap above, found that this feature has two contradictory review artefacts for the same 13 stories: the top-level `review.md` (dated 2025-01-30) verdicts **FAIL — 12 HIGH findings**, every story failing Category C for having only 1 acceptance criterion when the DoR hard block (H2) and review's own Category C both require a minimum of 3. The per-story `review/ep*-review-1.md` files (dated 2026-09-14) verdict **PASS, no findings** on the same stories. Directly re-counting ACs on every story file on disk today confirms the 2025-01-30 `review.md` is the accurate one — all 13 stories still have exactly 1 `Given/When/Then` AC each; none have been expanded to 3. The stories' User Story sections also have a template defect: the "I want" clause is missing and the "So that" clause is populated with raw benefit-linkage prose instead of a real benefit clause (e.g. ep1-s1: "So that Synchronous team access — completing this story enables the first step...").
 
 **Not decided here:** whether to expand every story to 3+ ACs and re-run `/review` (the correct fix per this repo's own gates), or some other path. This is recorded as an open issue for the operator to decide how to proceed — not resolved as part of this design amendment.
+
+**Resolved 2026-09-15 (commit `f22c39f7`, 9 minutes after this entry):** every story was expanded to 3 Given/When/Then ACs using the splits the legacy `review.md`'s own findings called for, and the User Story format defect was fixed across all 13. Confirmed directly against disk on 2026-09-15 during the real outer-loop run (`ep1-s1.md` genuinely has 3 well-formed ACs with correct "I want"/"So that" clauses) and re-verified by a fresh, real `/review` pass the same day — all 13 stories PASS, no findings. This entry was left open in the artefact past the fix; recorded here so a future reader doesn't need to independently re-verify what's already settled.
+
+---
+
+## `ep1-s1` DoR amended to reference the collaborator-picker wireframe design (2026-09-15)
+
+**Context:** `ep1-s1`'s DoR (freshly generated 2026-09-15 as part of driving all 13 stories through the real outer-loop pipeline) described a generic "form with name field, members picker, role dropdown" in its Coding Agent Instructions — it did not reference the "Pod Creation / Collaborator Picker" UX section this same design.md already specifies (two-panel Available/Your-team roster, role chips, gated primary action). Caught before `/branch-setup` by cross-checking design.md against the DoR at the operator's request.
+
+**Decision:** Amended `artefacts/new-feature-2b74a292/dor/ep1-s1-dor.md`'s Coding Agent Instructions to explicitly describe the two-panel picker structure and the "≥1 member beyond creator" gating rule, citing `design.md`'s "Pod Creation / Collaborator Picker" section and the reference wireframe directly, so the binding instructions block is self-sufficient without requiring the coding agent to separately discover and cross-reference design.md on its own.
+
+**Story:** ep1-s1 — no change to Acceptance Criteria; UI structure detail only, consistent with what design.md already specified.

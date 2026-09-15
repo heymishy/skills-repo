@@ -97,9 +97,13 @@ You are implementing: **Create Pod UI and Backend (ep1-s1)**
 
 ### Touch Points (Binding Contract)
 
+**Read before implementing (not modified, but required context):**
+- `artefacts/new-feature-2b74a292/design.md` — "Pod Creation / Collaborator Picker" section (the two-panel UX spec this story implements)
+- `artefacts/new-feature-2b74a292/reference/collaborators-picker-wireframe.html` — the original reference wireframe that section is drawn from
+
 **Files you MUST modify:**
 - `src/web-ui/routes/pods.js` — POST `/api/pods/create` handler with validation
-- `src/web-ui/public/pod-manager.html` — Pod Manager form UI
+- `src/web-ui/public/pod-manager.html` — Pod Manager UI (two-panel collaborator picker — see Implementation Specification below)
 - `src/db/migrations/` — Schema migration for `pods` and `pod_members` tables
 
 **Files you MUST NOT modify:**
@@ -132,15 +136,17 @@ You are implementing: **Create Pod UI and Backend (ep1-s1)**
 - Return HTTP 400 with specific error message if validation fails (do not create any data)
 - On success: insert to `pods` table, insert all members to `pod_members` table, return HTTP 200 with `{ podId, name, memberCount }`
 
-**Pod Manager form UI:**
-- Input field: pod name (required)
-- Section: members (add multiple)
-  - Per member: user picker dropdown, role dropdown
-  - "Add Member" button to add another row
-  - "Remove" button per member row
-- "Save" button submits POST request
+**Pod Manager form UI — follow `design.md`'s "Pod Creation / Collaborator Picker" section exactly** (added 2026-09-15, adopted from the reference wireframe at `artefacts/new-feature-2b74a292/reference/collaborators-picker-wireframe.html`; read that design.md section before implementing this screen — do not substitute a generic single-column form):
+- Input field: pod name (required), above the picker
+- **Two-panel picker layout:**
+  - **Available** (left panel): searchable roster of the org's known users, each row showing name + role chip (e.g. "Engineer", "Product Owner", drawn from `role_definitions`). A filter/tab row above the list narrows by role ("All" / per-role tabs).
+  - **Your team** (right panel): the running selection, grouped by role. The creator's own row is present and checked by default, and cannot be removed.
+- **Gated primary action:** the "Create Pod" button is disabled until the selection has at least one member beyond the creator (not role-specific — any one additional member satisfies the gate).
+- "Create Pod" button submits POST request once enabled
 - On success: show "Pod created: [name] ([count] members)", close form
 - On error: display server error inline, keep form open with fields populated
+
+This same two-panel component is reused by `ep4-s1` (pod-level selection instead of user-level) and `ep4-s2` — build it as a reusable piece from the start rather than a one-off for this story.
 
 **Database schema:**
 ```sql
