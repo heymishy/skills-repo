@@ -48,7 +48,15 @@ async function handlePostPodsCreate(req, res, pool, presetBody) {
   }
 
   const createdBy = (req.session && (req.session.userId || req.session.login)) || null;
-  const result = await createPod(pool, { tenantId, name, createdBy, members });
+  let result;
+  try {
+    result = await createPod(pool, { tenantId, name, createdBy, members });
+  } catch (err) {
+    if (err && err.code === 'POD_NAME_TAKEN') {
+      return _json(res, 400, { error: "A pod named '" + name + "' already exists" });
+    }
+    throw err;
+  }
   return _json(res, 200, { podId: result.podId, name: result.name, memberCount: result.memberCount });
 }
 

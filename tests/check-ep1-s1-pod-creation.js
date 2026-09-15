@@ -144,6 +144,66 @@ async function run() {
     eq(pool.podMembers.length, 1, 'AC2: no pod_members rows created by the rejected attempt');
   }
 
+  // --- Part 3b: routes/pods.js — AC2 race-condition safety net (unique constraint violation) ---
+  {
+    const { handlePostPodsCreate } = require('../src/web-ui/routes/pods');
+    const pool = makeFakePool();
+    const { migratePodsSchema } = require('../src/web-ui/modules/pod-store');
+    await migratePodsSchema(pool);
+
+    // Simulate a genuine race via a "phantom" duplicate set that is
+    // consulted only by the INSERT path (never by the SELECT path that
+    // findPodByName uses). This lets the pre-check (findPodByName) miss the
+    // duplicate -- exactly as it would in a real race, where the other
+    // concurrent request's row does not exist yet at SELECT-time but lands
+    // by the time this request's own INSERT runs -- while the INSERT still
+    // hits a Postgres-shaped unique-violation error (code 23505). Using
+    // pool.pods directly for this (as an initial draft of this test did)
+    // would make findPodByName's own pre-check catch the duplicate first,
+    // which would make the route handler return 400 via the pre-check
+    // branch instead of the catch-block safety net this test exists to
+    // prove -- defeating the purpose of the test.
+    const raceNames = new Set();
+    const originalQuery = pool.query.bind(pool);
+    pool.query = async function(sql, params) {
+      const s = String(sql).trim().replace(/\s+/g, ' ').toUpperCase();
+      if (s.indexOf('INSERT INTO PODS') === 0) {
+        const [, tenantId, name] = params;
+        if (raceNames.has(tenantId + '::' + name)) {
+          const err = new Error('duplicate key value violates unique constraint "pods_tenant_id_name_key"');
+          err.code = '23505';
+          throw err;
+        }
+      }
+      return originalQuery(sql, params);
+    };
+
+    // --- First: exercise createPod directly (the lower-level function) to
+    // confirm it translates the raw 23505 into a clean, recognizable error.
+    raceNames.add('tenant-race-test::Race Test Pod');
+    const { createPod } = require('../src/web-ui/modules/pod-store');
+    let caught = null;
+    try {
+      await createPod(pool, { tenantId: 'tenant-race-test', name: 'Race Test Pod', createdBy: 'racer-uuid', members: [{ userId: 'racer-uuid', roleId: 'conductor' }] });
+    } catch (e) {
+      caught = e;
+    }
+    ok(caught && caught.code === 'POD_NAME_TAKEN', 'Race safety net: createPod translates a 23505 unique-violation into a recognizable POD_NAME_TAKEN error (not a raw DB error)');
+    eq(pool.pods.length, 0, 'Race safety net: no pod row was left behind by the failed createPod call');
+
+    // --- Second: exercise the full HTTP path. findPodByName's pre-check
+    // will miss this (pool.pods has no row for this tenant/name -- nothing
+    // was ever committed), so handlePostPodsCreate proceeds to call
+    // createPod, which is where the race actually bites.
+    raceNames.add('tenant-race-test-2::Race Test Pod 2');
+    const req2 = { session: { tenantId: 'tenant-race-test-2' } };
+    let statusCode = null, responseBody = null;
+    const res2 = { writeHead: function(s) { statusCode = s; }, end: function(p) { responseBody = JSON.parse(p); } };
+    await handlePostPodsCreate(req2, res2, pool, { name: 'Race Test Pod 2', members: [{ userId: 'racer-uuid', roleId: 'conductor' }] });
+    eq(statusCode, 400, 'Race safety net: handlePostPodsCreate returns 400 (not an unhandled 500) when the DB constraint catches a raced duplicate');
+    eq(responseBody.error, "A pod named 'Race Test Pod 2' already exists", 'Race safety net: same clean AC2 error message shape as the pre-check path');
+  }
+
   console.log(`\n[ep1-s1] ${passed} passed, ${failed} failed\n`);
   process.exit(failed === 0 ? 0 : 1);
 }

@@ -79,7 +79,16 @@ async function listPods(pool, tenantId) {
  */
 async function createPod(pool, args) {
   const podId = crypto.randomUUID();
-  await pool.query('INSERT INTO pods (pod_id, tenant_id, name, created_by) VALUES ($1, $2, $3, $4)', [podId, args.tenantId, args.name, args.createdBy]);
+  try {
+    await pool.query('INSERT INTO pods (pod_id, tenant_id, name, created_by) VALUES ($1, $2, $3, $4)', [podId, args.tenantId, args.name, args.createdBy]);
+  } catch (err) {
+    if (err && err.code === '23505') {
+      const nameTakenErr = new Error("A pod named '" + args.name + "' already exists");
+      nameTakenErr.code = 'POD_NAME_TAKEN';
+      throw nameTakenErr;
+    }
+    throw err;
+  }
   for (const m of args.members) {
     await pool.query('INSERT INTO pod_members (pod_id, user_id, role_id) VALUES ($1, $2, $3)', [podId, m.userId, m.roleId]);
   }
