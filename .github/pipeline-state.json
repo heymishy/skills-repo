@@ -29619,6 +29619,14 @@
           "updatedAt": "2026-09-15T04:50:44.514Z",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/893",
           "dodStatus": "complete"
+        },
+        {
+          "id": "wsap-s3",
+          "dorStatus": "signed-off",
+          "prStatus": "none",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "updatedAt": "2026-09-15T05:15:29.922Z"
         }
       ]
     },
@@ -34712,7 +34720,11 @@
       "id": "2026-09-15-2026-09-15-e2e-web-ui-to-dor-proof",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-09-15-2026-09-15-e2e-web-ui-to-dor-proof/discovery.md",
-      "stage": "branch-complete"
+      "stage": "branch-complete",
+      "name": "End-to-End Web UI to DoR Proof",
+      "health": "green",
+      "track": "short",
+      "updatedAt": "2026-09-15T05:15:46.816Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

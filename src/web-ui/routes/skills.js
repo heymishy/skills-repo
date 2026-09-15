@@ -5498,7 +5498,17 @@ async function handlePostTurnStreamHtml(req, res) {
       // session._stageDone is set below, so the dcuf-s1 block immediately
       // following can also use it to scope itself to first-completion only.
       var _revisionJourney = _journeyStore.getJourney(session.journeyId);
-      var _existingStageEntry = _revisionJourney && (_revisionJourney.completedStages || []).find(function(cs) { return cs.skillName === session.skillName; });
+      // wsap-s3: match on (skillName, artefactPath), not skillName alone.
+      // completedStages entries carry no storyId field, but session.artefactPath
+      // is already story-scoped (wsap-s2, computeArtefactSavePath) for
+      // story-scoped skills (test-plan, definition-of-ready) -- matching by
+      // skillName alone meant story 2's first-ever completion of "test-plan"
+      // found story 1's PRE-EXISTING "test-plan" completedStages entry and
+      // was incorrectly treated as a revision, silently skipping the GitHub
+      // commit below for every story after the first in a feature. Found via
+      // live end-to-end verification driving a real 2-story feature through
+      // the full outer loop in production.
+      var _existingStageEntry = _revisionJourney && (_revisionJourney.completedStages || []).find(function(cs) { return cs.skillName === session.skillName && cs.artefactPath === session.artefactPath; });
 
       // dcuf-s1: das-s1's GitHub-commit dual-write (ownerRepoForFeature +
       // commitArtefact), moved here from journey.js's handlePostGateConfirm,
