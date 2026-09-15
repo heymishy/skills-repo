@@ -34712,7 +34712,7 @@
       "id": "2026-09-15-2026-09-15-e2e-web-ui-to-dor-proof",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-09-15-2026-09-15-e2e-web-ui-to-dor-proof/discovery.md",
-      "stage": "branch-complete"
+      "stage": "review"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
