@@ -204,6 +204,25 @@ async function run() {
     eq(responseBody.error, "A pod named 'Race Test Pod 2' already exists", 'Race safety net: same clean AC2 error message shape as the pre-check path');
   }
 
+  // --- Part 4: routes/pods.js — AC3 invalid role rejection ---
+  {
+    const { handlePostPodsCreate } = require('../src/web-ui/routes/pods');
+    const pool = makeFakePool();
+    const { migratePodsSchema } = require('../src/web-ui/modules/pod-store');
+    await migratePodsSchema(pool);
+
+    const req = { session: { tenantId: 'tenant-test-123' } };
+    const body = { name: 'Invalid Role Test Pod', members: [{ userId: 'hamish-uuid', roleId: 'wizard' }] };
+    let statusCode = null, responseBody = null;
+    const res = { writeHead: function(s) { statusCode = s; }, end: function(p) { responseBody = JSON.parse(p); } };
+    await handlePostPodsCreate(req, res, pool, body);
+
+    eq(statusCode, 400, 'AC3: invalid role returns HTTP 400');
+    eq(responseBody.error, "Invalid role: 'wizard'. Valid roles are: conductor, engineer, architect, product", 'AC3: error names the invalid role and lists valid ones');
+    eq(pool.pods.length, 0, 'AC3: no pod row created (count is 0)');
+    eq(pool.podMembers.length, 0, 'AC3: no pod_members rows created');
+  }
+
   console.log(`\n[ep1-s1] ${passed} passed, ${failed} failed\n`);
   process.exit(failed === 0 ? 0 : 1);
 }

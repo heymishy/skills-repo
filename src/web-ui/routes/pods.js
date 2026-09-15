@@ -7,7 +7,7 @@
 //
 // AC1 + AC2 so far -- AC3's invalid-role guard is added in Task 4, each
 // with its own failing test first.
-const { createPod, listPods, findPodByName } = require('../modules/pod-store');
+const { createPod, listPods, findPodByName, isValidRole, VALID_ROLES } = require('../modules/pod-store');
 
 function _json(res, status, body) {
   res.writeHead(status, { 'Content-Type': 'application/json' });
@@ -45,6 +45,13 @@ async function handlePostPodsCreate(req, res, pool, presetBody) {
   const existing = await findPodByName(pool, tenantId, name);
   if (existing) {
     return _json(res, 400, { error: "A pod named '" + name + "' already exists" });
+  }
+
+  // AC3: invalid role rejection -- check BEFORE any write.
+  for (const m of members) {
+    if (!isValidRole(m.roleId)) {
+      return _json(res, 400, { error: "Invalid role: '" + m.roleId + "'. Valid roles are: " + VALID_ROLES.join(', ') });
+    }
   }
 
   const createdBy = (req.session && (req.session.userId || req.session.login)) || null;
