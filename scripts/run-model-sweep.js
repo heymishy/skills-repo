@@ -65,7 +65,11 @@ const { checkImplementationPlanGates } = require('../src/skill-output-gates');
 // ─── Configuration ─────────────────────────────────────────────────────────
 
 const REPO_ROOT = path.resolve(__dirname, '..');
-const SKILLS_DIR = path.join(REPO_ROOT, '.github', 'skills');
+// rms-s1: skills live at REPO_ROOT/skills -- .github/skills is the install
+// TARGET path platform-init.js writes into a downstream consumer repo, not
+// this repo's own source. See platform-init.js's pisd-s1 comment for the
+// distinction; this script had drifted from the pisd-s1 fix.
+const SKILLS_DIR = path.join(REPO_ROOT, 'skills');
 const EXPERIMENTS_DIR = path.join(REPO_ROOT, 'workspace', 'experiments');
 
 /** Canonical judge model — never changes between experiments (prevents judge preference bias) */
@@ -1426,7 +1430,7 @@ async function main() {
   if (args.listSkills) {
     const skills = discoverSkills(null);
     if (skills.length === 0) {
-      console.log('No skills with EVAL.md found under .github/skills/');
+      console.log(`No skills with EVAL.md found under ${path.relative(REPO_ROOT, SKILLS_DIR)}/`);
       return;
     }
     console.log('Skills with EVAL.md:');

@@ -34738,6 +34738,38 @@
       "health": "green",
       "track": "short",
       "updatedAt": "2026-09-15T05:55:17.051Z"
+    },
+    {
+      "slug": "2026-09-15-run-model-sweep-skills-dir-fix",
+      "id": "2026-09-15-run-model-sweep-skills-dir-fix",
+      "name": "Fix run-model-sweep.js's stale SKILLS_DIR path",
+      "track": "short",
+      "stage": "branch-complete",
+      "health": "green",
+      "epics": [],
+      "stories": [
+        {
+          "slug": "rms-s1",
+          "id": "rms-s1",
+          "name": "Fix run-model-sweep.js stale SKILLS_DIR path",
+          "stage": "branch-complete",
+          "health": "green",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-09-15-run-model-sweep-skills-dir-fix/dor/rms-s1-dor.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 11,
+            "passing": 11,
+            "artefact": "artefacts/2026-09-15-run-model-sweep-skills-dir-fix/test-plans/rms-s1-test-plan.md"
+          },
+          "acTotal": 3,
+          "acVerified": 3,
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/895",
+          "prStatus": "open",
+          "updatedAt": "2026-09-15T06:49:26.350Z"
+        }
+      ],
+      "updatedAt": "2026-09-15T06:49:26.351Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
