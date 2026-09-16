@@ -1,5 +1,14 @@
 // tests/e2e/ep1-s2-product-default-pod.spec.js
 // @mocked
+//
+// Covers AC1 (set a product's default pod, UI updates without a page
+// refresh) and AC3 (the assignment persists server-side across reload).
+// Does NOT cover AC2 (a newly-created feature auto-inherits the default
+// pod) -- that end-to-end outcome is deferred to ep1-s3's own dedicated
+// story per artefacts/new-feature-2b74a292/decisions.md (2026-09-16,
+// "ep1-s2's own AC2 conflicts with its own DoR touch-point contract").
+// This story only proves the getProductDefaultPod() handoff-contract shape
+// ep1-s3 will consume (see tests/check-ep1-s2-product-default-pod.js Part 4/4b).
 const { expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
 const { getCsrfToken } = require('./fixtures/csrf');
