@@ -54,7 +54,7 @@ async function migratePodAssignmentsSchema(pool, logger) {
  * @throws {Error} with .code = 'POD_NOT_FOUND' if podId doesn't belong to this tenant
  */
 async function setProductDefaultPod(pool, args) {
-  const podRow = (await pool.query('SELECT pod_id, tenant_id FROM pods WHERE pod_id = $1 AND tenant_id = $2', [args.podId, args.tenantId])).rows[0];
+  const podRow = (await pool.query('SELECT pod_id, tenant_id, name FROM pods WHERE pod_id = $1 AND tenant_id = $2', [args.podId, args.tenantId])).rows[0];
   if (!podRow) {
     const err = new Error("No pod found with that id for this tenant");
     err.code = 'POD_NOT_FOUND';
@@ -64,15 +64,13 @@ async function setProductDefaultPod(pool, args) {
   const memberCountRow = (await pool.query('SELECT COUNT(*) AS count FROM pod_members WHERE pod_id = $1', [args.podId])).rows[0];
   const memberCount = parseInt(memberCountRow.count, 10);
 
-  const podNameRow = (await pool.query('SELECT pod_id, name FROM pods WHERE pod_id = $1', [args.podId])).rows[0];
-
   const assignmentId = crypto.randomUUID();
   await pool.query(
     'INSERT INTO pod_assignments (assignment_id, tenant_id, pod_id, product_id, assignment_type, assigned_by) VALUES ($1, $2, $3, $4, $5, $6) ON CONFLICT (tenant_id, product_id) WHERE feature_id IS NULL DO UPDATE SET pod_id = EXCLUDED.pod_id, assignment_type = EXCLUDED.assignment_type, assigned_by = EXCLUDED.assigned_by, assigned_at = NOW()',
     [assignmentId, args.tenantId, args.podId, args.productId, 'inherit-to-all-features', args.assignedBy]
   );
 
-  return { assignmentId, podName: podNameRow.name, memberCount };
+  return { assignmentId, podName: podRow.name, memberCount };
 }
 
 /**
