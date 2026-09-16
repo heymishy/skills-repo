@@ -2666,7 +2666,8 @@ async function handleGetProductView(req, res, _next, pool) {
     };
   });
   if (res.json) {
-    res.json({ features: features });
+    var defaultPod = await getProductDefaultPod(_pool, tenantId, productId);
+    res.json({ features: features, defaultPod: defaultPod });
   } else {
     // fix-forward (post-a1): the module-management form needs a CSRF token
     // to submit create/rename/delete, matching every other mutating form in

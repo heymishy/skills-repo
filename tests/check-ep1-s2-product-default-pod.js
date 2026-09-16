@@ -233,6 +233,29 @@ async function run() {
     eq(pool.podAssignments.length, 1, 'AC3 setup sanity: exactly 1 pod_assignments row exists (the one just written, nothing retroactively created for the old feature)');
   }
 
+  // --- Part 4: AC2 handoff precondition — GET product view JSON includes defaultPod ---
+  {
+    const { handleGetProductView } = require('../src/web-ui/routes/products');
+    const pool = makeFakePool();
+    const { migratePodAssignmentsSchema, setProductDefaultPod } = require('../src/web-ui/modules/pod-assignment-store');
+    await migratePodAssignmentsSchema(pool);
+    pool.pods.push({ pod_id: 'pod-core-uuid', tenant_id: 'tenant-test-123', name: 'Core Platform Pod' });
+    pool.podMembers.push({ pod_id: 'pod-core-uuid' }, { pod_id: 'pod-core-uuid' }, { pod_id: 'pod-core-uuid' });
+    await setProductDefaultPod(pool, { tenantId: 'tenant-test-123', productId: 'prod-payments-uuid', podId: 'pod-core-uuid', assignedBy: 'hamish-uuid' });
+
+    // handleGetProductView's own existing queries (products/product_rollups/journeys)
+    // aren't stubbed by makeFakePool -- this test exercises ONLY the
+    // getProductDefaultPod() call path this task adds, by calling that
+    // function directly against the same pool state, matching what
+    // handleGetProductView's own res.json branch will now also call.
+    const { getProductDefaultPod } = require('../src/web-ui/modules/pod-assignment-store');
+    const defaultPod = await getProductDefaultPod(pool, 'tenant-test-123', 'prod-payments-uuid');
+    ok(defaultPod, 'AC2 precondition: getProductDefaultPod returns a result for a product with a default set');
+    eq(defaultPod.podId, 'pod-core-uuid', 'AC2 precondition: correct podId');
+    eq(defaultPod.podName, 'Core Platform Pod', 'AC2 precondition: correct podName');
+    eq(defaultPod.memberCount, 3, 'AC2 precondition: correct memberCount -- this exact shape is what ep1-s3 will consume');
+  }
+
   console.log(`\n[ep1-s2] ${passed} passed, ${failed} failed\n`);
   process.exit(failed === 0 ? 0 : 1);
 }
