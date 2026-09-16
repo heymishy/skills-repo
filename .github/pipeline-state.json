@@ -34797,7 +34797,7 @@
         {
           "slug": "ep1-s2",
           "id": "ep1-s2",
-          "stage": "branch-setup",
+          "stage": "implementation-plan",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -34807,7 +34807,51 @@
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep1-s2-dor.md",
-          "updatedAt": "2026-09-16T02:34:13.218Z"
+          "updatedAt": "2026-09-16T02:40:37.847Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "pod-assignment-store: schema + data access",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s2-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "POST /products/:id/set-default-pod handler (AC1 happy path)",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s2-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "AC3: non-retroactivity proof",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s2-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "AC2 handoff precondition: defaultPod in product view JSON",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s2-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Wire into server.js",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s2-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "UI: Pod & Team section, no-refresh update",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s2-plan.md"
+            },
+            {
+              "id": "task-7",
+              "name": "E2E spec + fake-test-db.js extension",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s2-plan.md"
+            }
+          ]
         },
         {
           "slug": "ep1-s3",
