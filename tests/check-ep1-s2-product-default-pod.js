@@ -34,11 +34,17 @@ function makeFakePool() {
   const pods = [];
   const podMembers = [];
   const podAssignments = [];
+  const products = [];
   return {
-    pods, podMembers, podAssignments,
+    pods, podMembers, podAssignments, products,
     query: async function(sql, params) {
       const s = String(sql).trim().replace(/\s+/g, ' ').toUpperCase();
       if (s.indexOf('CREATE TABLE') === 0) return { rows: [] };
+      if (s.indexOf('SELECT PRODUCT_ID, TENANT_ID FROM PRODUCTS WHERE') === 0) {
+        const [productId] = params;
+        const row = products.find(p => p.product_id === productId);
+        return { rows: row ? [{ product_id: row.product_id, tenant_id: row.tenant_id }] : [] };
+      }
       if (s.indexOf('SELECT POD_ID, TENANT_ID, NAME FROM PODS WHERE') === 0) {
         const [podId, tenantId] = params;
         return { rows: pods.filter(p => p.pod_id === podId && p.tenant_id === tenantId).map(p => ({ pod_id: p.pod_id, tenant_id: p.tenant_id, name: p.name })) };
@@ -158,6 +164,31 @@ async function run() {
       eq(defaultForB.podName, 'Platform B', 'Tenant isolation: tenant B sees its own default pod (same productId string, different tenant)');
       eq(pool.podAssignments.length, 2, 'Tenant isolation: both tenants can use the same productId without collision (2 separate assignment rows)');
     }
+  }
+
+  // --- Part 2: routes/products.js — handlePostSetDefaultPod, AC1 happy path ---
+  {
+    const { handlePostSetDefaultPod } = require('../src/web-ui/routes/products');
+    const pool = makeFakePool();
+    const { migratePodAssignmentsSchema } = require('../src/web-ui/modules/pod-assignment-store');
+    await migratePodAssignmentsSchema(pool);
+    pool.products.push({ product_id: 'prod-payments-uuid', tenant_id: 'tenant-test-123' });
+    pool.pods.push({ pod_id: 'pod-core-uuid', tenant_id: 'tenant-test-123', name: 'Core Platform Pod' });
+    pool.podMembers.push({ pod_id: 'pod-core-uuid' }, { pod_id: 'pod-core-uuid' }, { pod_id: 'pod-core-uuid' });
+
+    const req = { session: { tenantId: 'tenant-test-123', userId: 'hamish-uuid' }, params: { id: 'prod-payments-uuid' } };
+    let statusCode = null, responseBody = null;
+    const res = {
+      json: function(body) { statusCode = 200; responseBody = body; },
+      status: function(code) { statusCode = code; return { json: function(body) { responseBody = body; } }; }
+    };
+
+    await handlePostSetDefaultPod(req, res, null, pool, { podId: 'pod-core-uuid' });
+    eq(statusCode, 200, 'AC1: happy path returns HTTP 200');
+    eq(responseBody.productId, 'prod-payments-uuid', 'AC1: response includes the productId');
+    eq(responseBody.defaultPodId, 'pod-core-uuid', 'AC1: response includes the defaultPodId');
+    eq(responseBody.podName, 'Core Platform Pod', 'AC1: response includes the pod name');
+    eq(responseBody.memberCount, 3, 'AC1: response memberCount is 3');
   }
 
   console.log(`\n[ep1-s2] ${passed} passed, ${failed} failed\n`);

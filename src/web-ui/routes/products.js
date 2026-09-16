@@ -24,6 +24,7 @@ var _artefactFetcher = require('../adapters/artefact-fetcher'); // wugs-s2 — r
 var _guardrailPrAdapter = require('../adapters/guardrail-pr-adapter'); // wugs-s6 review fix — GuardrailPrConflictError for the write-adapter try/catch
 var { isEffectivelyAdmin } = require('../modules/impersonation'); // wugs-s9 — DoR-specified effective-role check, matching credits-guard.js's exact pattern
 var _journeyStoreModule = require('../modules/journey-store'); // wnl-s3 — reused (not requiring routes/journey.js at module scope, which would be circular) to list existing journeys for _hasUnbackfilledCliFeatures
+var { setProductDefaultPod, getProductDefaultPod } = require('../modules/pod-assignment-store'); // ep1-s2
 
 // s1.1 -- injectable bulk session-store reader. Defaults to a lazy require of
 // skills.js's real _getHtmlSessionsBulk (mirrors the same lazy-getter shape
@@ -3540,6 +3541,47 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
 }
 
 /**
+ * ep1-s2 AC1 — POST /products/:id/set-default-pod: assigns an existing pod
+ * as a product's default team. Does NOT touch feature-creation logic (see
+ * decisions.md, 2026-09-15 scope-boundary entry) -- ep1-s3 consumes
+ * getProductDefaultPod()'s shape to auto-assign at feature-creation time.
+ */
+async function handlePostSetDefaultPod(req, res, _next, pool, presetBody) {
+  var _pool = pool;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+  var body = presetBody !== undefined ? presetBody : (req.body || {});
+  var podId = body.podId;
+
+  function _json(status, payload) {
+    if (res.status) { res.status(status).json(payload); }
+    else { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(payload)); }
+  }
+
+  if (!podId) {
+    return _json(400, { error: 'podId is required' });
+  }
+
+  var prodRow = (await _pool.query('SELECT product_id, tenant_id FROM products WHERE product_id = $1', [productId])).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    return _json(404, { error: 'Product not found' });
+  }
+
+  var assignedBy = (req.session && (req.session.userId || req.session.login)) || null;
+  var result;
+  try {
+    result = await setProductDefaultPod(_pool, { tenantId: tenantId, productId: productId, podId: podId, assignedBy: assignedBy });
+  } catch (err) {
+    if (err && err.code === 'POD_NOT_FOUND') {
+      return _json(400, { error: 'No pod found with that id for this tenant' });
+    }
+    throw err;
+  }
+
+  return _json(200, { productId: productId, defaultPodId: podId, podName: result.podName, memberCount: result.memberCount });
+}
+
+/**
  * prc-s4.1 — PUT /products/:id — edit a product's name, description, and/or
  * repo association. Name/description are simple UPDATEs (AC1). Repo changes
  * reuse the repo-access-verification logic from prc-s1.2 via the shared
@@ -4299,6 +4341,10 @@ module.exports = {
   handlePostProductSync,
   handleGetProductSyncStatus,
   handlePostProductFeature,
+  // ep1-s2: POST /products/:id/set-default-pod handler
+  handlePostSetDefaultPod,
+  // ep1-s2: re-exported for Task 4's own test convenience
+  getProductDefaultPod,
   handleGetProductKanban,
   handleGetOrgKanban,
   // s1.1: board-driven "Advance" action (new caller of the real gate-confirm route)
