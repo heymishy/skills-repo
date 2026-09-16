@@ -45,6 +45,14 @@ function makeFakePool() {
         const row = products.find(p => p.product_id === productId);
         return { rows: row ? [{ product_id: row.product_id, tenant_id: row.tenant_id }] : [] };
       }
+      // Part 4b: handleGetProductView's own product lookup uses a different
+      // column list/order than pod-assignment-store's -- same `products`
+      // array, second query shape.
+      if (s.indexOf('SELECT NAME, TENANT_ID, REPO_OWNER, REPO_NAME FROM PRODUCTS WHERE') === 0) {
+        const [productId] = params;
+        const row = products.find(p => p.product_id === productId);
+        return { rows: row ? [{ name: row.name, tenant_id: row.tenant_id, repo_owner: row.repo_owner || null, repo_name: row.repo_name || null }] : [] };
+      }
       if (s.indexOf('SELECT POD_ID, TENANT_ID, NAME FROM PODS WHERE') === 0) {
         const [podId, tenantId] = params;
         return { rows: pods.filter(p => p.pod_id === podId && p.tenant_id === tenantId).map(p => ({ pod_id: p.pod_id, tenant_id: p.tenant_id, name: p.name })) };
@@ -254,6 +262,46 @@ async function run() {
     eq(defaultPod.podId, 'pod-core-uuid', 'AC2 precondition: correct podId');
     eq(defaultPod.podName, 'Core Platform Pod', 'AC2 precondition: correct podName');
     eq(defaultPod.memberCount, 3, 'AC2 precondition: correct memberCount -- this exact shape is what ep1-s3 will consume');
+  }
+
+  // --- Part 4b: AC2 -- handleGetProductView's OWN res.json branch actually
+  // produces defaultPod, driven end-to-end through the real handler (not
+  // getProductDefaultPod() called in isolation against the same pool state,
+  // as Part 4 above does). This is the direct-execution proof that Task 4's
+  // one-line change to handleGetProductView is genuinely wired, closing the
+  // wiring-coverage gap flagged by review -- see ep1-s1's sibling story,
+  // where a handler unit-tested only in isolation was wired to the wrong
+  // variable in server.js and would have shipped undetected.
+  {
+    const { handleGetProductView } = require('../src/web-ui/routes/products');
+    const pool = makeFakePool();
+    const { migratePodAssignmentsSchema, setProductDefaultPod } = require('../src/web-ui/modules/pod-assignment-store');
+    await migratePodAssignmentsSchema(pool);
+    pool.products.push({ product_id: 'prod-payments-uuid', tenant_id: 'tenant-test-123', name: 'Acme Payments', repo_owner: null, repo_name: null });
+    pool.pods.push({ pod_id: 'pod-core-uuid', tenant_id: 'tenant-test-123', name: 'Core Platform Pod' });
+    pool.podMembers.push({ pod_id: 'pod-core-uuid' }, { pod_id: 'pod-core-uuid' }, { pod_id: 'pod-core-uuid' });
+    await setProductDefaultPod(pool, { tenantId: 'tenant-test-123', productId: 'prod-payments-uuid', podId: 'pod-core-uuid', assignedBy: 'hamish-uuid' });
+
+    // handleGetProductView's modulesAdapter calls are unwired here (no
+    // setModulesAdapter) -- they're wrapped in try/catch with safe []/{}
+    // fallbacks in the handler itself, so this doesn't need stubbing to
+    // reach the res.json branch (see products.js handleGetProductView).
+    const req = { params: { id: 'prod-payments-uuid' }, session: { tenantId: 'tenant-test-123', login: 'hamish' } };
+    let responseBody = null;
+    const res = {
+      json: function(body) { responseBody = body; },
+      status: function(code) { return { json: function(body) { responseBody = body; } }; },
+      writeHead: function() {},
+      end: function() {}
+    };
+
+    await handleGetProductView(req, res, null, pool);
+
+    ok(responseBody, 'AC2 (real handler): handleGetProductView res.json branch returns a response body');
+    ok(responseBody && responseBody.defaultPod, "AC2 (real handler): handleGetProductView's own res.json branch actually produces a defaultPod field -- not just getProductDefaultPod() called in isolation");
+    eq(responseBody && responseBody.defaultPod && responseBody.defaultPod.podId, 'pod-core-uuid', 'AC2 (real handler): defaultPod.podId is correct via the real handler');
+    eq(responseBody && responseBody.defaultPod && responseBody.defaultPod.podName, 'Core Platform Pod', 'AC2 (real handler): defaultPod.podName is correct via the real handler');
+    eq(responseBody && responseBody.defaultPod && responseBody.defaultPod.memberCount, 3, 'AC2 (real handler): defaultPod.memberCount is correct via the real handler');
   }
 
   console.log(`\n[ep1-s2] ${passed} passed, ${failed} failed\n`);
