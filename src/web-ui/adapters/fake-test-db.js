@@ -64,6 +64,7 @@ function createFakeTestDb() {
   var pods = [];         // { pod_id, tenant_id, name, created_by, status } -- ep1-s1
   var podMembers = [];   // { id, pod_id, user_id, role_id, status } -- ep1-s1
   var nextPodMemberId = 1;
+  var podAssignments = []; // { assignment_id, tenant_id, pod_id, product_id, feature_id, assignment_type, assigned_by, assigned_at } -- ep1-s2
 
   function query(sql, params) {
     var s = _normalise(sql);
@@ -165,6 +166,15 @@ function createFakeTestDb() {
       var match3 = products.filter(function(r) { return r.product_id === pid3; }).map(function(r) { return { tenant_id: r.tenant_id }; });
       return Promise.resolve({ rows: match3 });
     }
+    // ep1-s2: handlePostSetDefaultPod / handlePostProductSync / handlePutProductEdit's
+    // shared tenant-ownership check issues this exact column-order shape
+    // (product_id, tenant_id) -- distinct from the NAME, TENANT_ID and
+    // TENANT_ID-only branches above, so it needs its own exact-prefix branch.
+    if (s.indexOf('SELECT PRODUCT_ID, TENANT_ID FROM PRODUCTS WHERE PRODUCT_ID') === 0) {
+      var psdpPid = p[0];
+      var psdpMatch = products.filter(function(r) { return r.product_id === psdpPid; }).map(function(r) { return { product_id: r.product_id, tenant_id: r.tenant_id }; });
+      return Promise.resolve({ rows: psdpMatch });
+    }
     // rpc-s1: handlePostProductRepoCreate / handlePutProductEdit's shared
     // repo-association UPDATE — persists repo_provider/repo_owner/repo_name
     // onto the in-memory row so a subsequent GET (via the branch above)
@@ -262,13 +272,18 @@ function createFakeTestDb() {
       return Promise.resolve({ rows: baReturned });
     }
 
-    // ── startup migrations (CREATE TABLE / ALTER TABLE) — idempotent no-op ──
+    // ── startup migrations (CREATE TABLE / ALTER TABLE / CREATE UNIQUE INDEX) —
+    // idempotent no-op ──
     // NOTE: this catch-all also covers pods/pod_members's own
     // "CREATE TABLE IF NOT EXISTS PODS"/"...POD_MEMBERS" bootstrap statements
-    // (migratePodsSchema, modules/pod-store.js) since both start with the
-    // literal "CREATE TABLE" prefix checked here -- no separate branch is
-    // added for them below, since one would be unreachable dead code.
-    if (s.indexOf('CREATE TABLE') === 0 || s.indexOf('ALTER TABLE') === 0) {
+    // (migratePodsSchema, modules/pod-store.js) and pod_assignments's own
+    // "CREATE TABLE IF NOT EXISTS POD_ASSIGNMENTS" bootstrap + its
+    // "CREATE UNIQUE INDEX IF NOT EXISTS pod_assignments_product_default_uq"
+    // partial-unique-index statement (migratePodAssignmentsSchema,
+    // modules/pod-assignment-store.js, ep1-s2) since all start with one of
+    // the literal prefixes checked here -- no separate branch is added for
+    // them below, since one would be unreachable dead code.
+    if (s.indexOf('CREATE TABLE') === 0 || s.indexOf('ALTER TABLE') === 0 || s.indexOf('CREATE UNIQUE INDEX') === 0) {
       return Promise.resolve({ rows: [] });
     }
 
@@ -315,6 +330,78 @@ function createFakeTestDb() {
       var pmRoleId = p[2];
       podMembers.push({ id: nextPodMemberId++, pod_id: pmPodId, user_id: pmUserId, role_id: pmRoleId, status: 'active' });
       return Promise.resolve({ rows: [] });
+    }
+
+    // ── pod_assignments (ep1-s2) ────────────────────────────────────────
+    // Narrow support for the exact query shapes modules/pod-assignment-store.js
+    // issues (setProductDefaultPod, getProductDefaultPod). Mirrors this
+    // file's own established convention for pods/pod_members above.
+
+    // setProductDefaultPod's own tenant-scoped pod lookup -- deliberately a
+    // DIFFERENT column order/shape than ep1-s1's existing "SELECT POD_ID,
+    // NAME FROM PODS..." (findPodByName) and "SELECT POD_ID, NAME,
+    // CREATED_AT FROM PODS..." (listPods) branches above, so it needs its
+    // own exact-prefix branch rather than reusing either.
+    if (s.indexOf('SELECT POD_ID, TENANT_ID, NAME FROM PODS WHERE POD_ID') === 0) {
+      var paLookupPodId = p[0];
+      var paLookupTenantId = p[1];
+      var paPodMatch = pods
+        .filter(function(r) { return r.pod_id === paLookupPodId && r.tenant_id === paLookupTenantId; })
+        .map(function(r) { return { pod_id: r.pod_id, tenant_id: r.tenant_id, name: r.name }; });
+      return Promise.resolve({ rows: paPodMatch });
+    }
+
+    // setProductDefaultPod's and getProductDefaultPod's shared member-count
+    // read.
+    if (s.indexOf('SELECT COUNT(*) AS COUNT FROM POD_MEMBERS WHERE POD_ID') === 0) {
+      var mcPodId = p[0];
+      var mcCount = podMembers.filter(function(r) { return r.pod_id === mcPodId; }).length;
+      return Promise.resolve({ rows: [{ count: String(mcCount) }] });
+    }
+
+    // setProductDefaultPod's upsert -- feature_id is always NULL for this
+    // story's only case (product-level default), so the ON CONFLICT
+    // (tenant_id, product_id) WHERE feature_id IS NULL partial-unique-index
+    // semantics collapse to a simple findIndex + replace-or-push keyed on
+    // (tenant_id, product_id, feature_id IS NULL), same replace-not-duplicate
+    // logic pod-assignment-store.js's own test mock already implements.
+    if (s.indexOf('INSERT INTO POD_ASSIGNMENTS') === 0) {
+      var paAssignmentId = p[0];
+      var paTenantId = p[1];
+      var paPodId = p[2];
+      var paProductId = p[3];
+      var paAssignmentType = p[4];
+      var paAssignedBy = p[5];
+      var paExistingIdx = podAssignments.findIndex(function(r) {
+        return r.tenant_id === paTenantId && r.product_id === paProductId && r.feature_id === null;
+      });
+      var paRow = {
+        assignment_id: paAssignmentId,
+        tenant_id: paTenantId,
+        pod_id: paPodId,
+        product_id: paProductId,
+        feature_id: null,
+        assignment_type: paAssignmentType,
+        assigned_by: paAssignedBy,
+        assigned_at: new Date().toISOString()
+      };
+      if (paExistingIdx !== -1) { podAssignments[paExistingIdx] = paRow; }
+      else { podAssignments.push(paRow); }
+      return Promise.resolve({ rows: [], rowCount: 1 });
+    }
+
+    // getProductDefaultPod's read (product-level default only, feature_id IS
+    // NULL).
+    if (s.indexOf('SELECT PA.POD_ID, P.NAME FROM POD_ASSIGNMENTS') === 0) {
+      var gpdTenantId = p[0];
+      var gpdProductId = p[1];
+      var gpdRows = podAssignments
+        .filter(function(r) { return r.tenant_id === gpdTenantId && r.product_id === gpdProductId && r.feature_id === null; })
+        .map(function(r) {
+          var podRow = pods.find(function(pd) { return pd.pod_id === r.pod_id; });
+          return { pod_id: r.pod_id, name: podRow ? podRow.name : null };
+        });
+      return Promise.resolve({ rows: gpdRows });
     }
 
     // ── people, team_memberships, person_identities (tir-s1/tir-s2/bri-s3.3) ─
@@ -483,6 +570,7 @@ function createFakeTestDb() {
       sessionTurnsArchive = [];
       pods = [];
       podMembers = []; nextPodMemberId = 1;
+      podAssignments = [];
     }
   };
 }
