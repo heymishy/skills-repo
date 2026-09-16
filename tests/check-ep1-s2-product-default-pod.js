@@ -203,6 +203,36 @@ async function run() {
     eq(pool.podAssignments.length, podAssignmentsCountBefore, 'CSRF: no write occurred on the rejected request');
   }
 
+  // --- Part 3: AC3 — setting a default pod does not touch any other table ---
+  {
+    const { handlePostSetDefaultPod } = require('../src/web-ui/routes/products');
+    const pool = makeFakePool();
+    const { migratePodAssignmentsSchema } = require('../src/web-ui/modules/pod-assignment-store');
+    await migratePodAssignmentsSchema(pool);
+    pool.products.push({ product_id: 'prod-payments-uuid', tenant_id: 'tenant-test-123' });
+    pool.pods.push({ pod_id: 'pod-core-uuid', tenant_id: 'tenant-test-123', name: 'Core Platform Pod' });
+    pool.podMembers.push({ pod_id: 'pod-core-uuid' });
+
+    // Simulate one pre-existing "feature" row (a table this story's own code
+    // never queries or writes) to prove it is untouched by the assignment call.
+    pool.preExistingFeatureRows = [{ journey_id: 'old-feature-1', product_id: 'prod-payments-uuid', pod_assignments: [] }];
+    const snapshotBefore = JSON.stringify(pool.preExistingFeatureRows);
+
+    const req = { session: { tenantId: 'tenant-test-123', userId: 'hamish-uuid', csrfToken: 'test-csrf-token-part3' }, params: { id: 'prod-payments-uuid' }, body: { podId: 'pod-core-uuid', _csrf: 'test-csrf-token-part3' } };
+    let statusCode = null, responseBody = null;
+    const res = {
+      json: function(body) { statusCode = 200; responseBody = body; },
+      status: function(code) { statusCode = code; return { json: function(body) { responseBody = body; } }; },
+      writeHead: function(code) { statusCode = code; },
+      end: function(payload) { try { responseBody = JSON.parse(payload); } catch (_) { responseBody = payload; } }
+    };
+
+    await handlePostSetDefaultPod(req, res, null, pool);
+
+    eq(JSON.stringify(pool.preExistingFeatureRows), snapshotBefore, 'AC3: pre-existing feature rows are byte-identical after setting the default pod (never queried or written)');
+    eq(pool.podAssignments.length, 1, 'AC3 setup sanity: exactly 1 pod_assignments row exists (the one just written, nothing retroactively created for the old feature)');
+  }
+
   console.log(`\n[ep1-s2] ${passed} passed, ${failed} failed\n`);
   process.exit(failed === 0 ? 0 : 1);
 }
