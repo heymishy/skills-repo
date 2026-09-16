@@ -3546,11 +3546,13 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
  * decisions.md, 2026-09-15 scope-boundary entry) -- ep1-s3 consumes
  * getProductDefaultPod()'s shape to auto-assign at feature-creation time.
  */
-async function handlePostSetDefaultPod(req, res, _next, pool, presetBody) {
+async function handlePostSetDefaultPod(req, res, _next, pool) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
   var _pool = pool;
   var productId = req.params && req.params.id;
   var tenantId = req.session && req.session.tenantId;
-  var body = presetBody !== undefined ? presetBody : (req.body || {});
+  var body = req.body || {};
   var podId = body.podId;
 
   function _json(status, payload) {
@@ -4343,8 +4345,6 @@ module.exports = {
   handlePostProductFeature,
   // ep1-s2: POST /products/:id/set-default-pod handler
   handlePostSetDefaultPod,
-  // ep1-s2: re-exported for Task 4's own test convenience
-  getProductDefaultPod,
   handleGetProductKanban,
   handleGetOrgKanban,
   // s1.1: board-driven "Advance" action (new caller of the real gate-confirm route)

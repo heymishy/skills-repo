@@ -176,19 +176,31 @@ async function run() {
     pool.pods.push({ pod_id: 'pod-core-uuid', tenant_id: 'tenant-test-123', name: 'Core Platform Pod' });
     pool.podMembers.push({ pod_id: 'pod-core-uuid' }, { pod_id: 'pod-core-uuid' }, { pod_id: 'pod-core-uuid' });
 
-    const req = { session: { tenantId: 'tenant-test-123', userId: 'hamish-uuid' }, params: { id: 'prod-payments-uuid' } };
+    const req = { session: { tenantId: 'tenant-test-123', userId: 'hamish-uuid', csrfToken: 'test-csrf-token-part2' }, params: { id: 'prod-payments-uuid' }, body: { podId: 'pod-core-uuid', _csrf: 'test-csrf-token-part2' } };
     let statusCode = null, responseBody = null;
     const res = {
       json: function(body) { statusCode = 200; responseBody = body; },
-      status: function(code) { statusCode = code; return { json: function(body) { responseBody = body; } }; }
+      status: function(code) { statusCode = code; return { json: function(body) { responseBody = body; } }; },
+      writeHead: function(code) { statusCode = code; },
+      end: function(payload) { try { responseBody = JSON.parse(payload); } catch (_) { responseBody = payload; } }
     };
 
-    await handlePostSetDefaultPod(req, res, null, pool, { podId: 'pod-core-uuid' });
+    await handlePostSetDefaultPod(req, res, null, pool);
     eq(statusCode, 200, 'AC1: happy path returns HTTP 200');
     eq(responseBody.productId, 'prod-payments-uuid', 'AC1: response includes the productId');
     eq(responseBody.defaultPodId, 'pod-core-uuid', 'AC1: response includes the defaultPodId');
     eq(responseBody.podName, 'Core Platform Pod', 'AC1: response includes the pod name');
     eq(responseBody.memberCount, 3, 'AC1: response memberCount is 3');
+
+    // Prove CSRF is genuinely enforced, not just present in the code: a
+    // request with a WRONG csrf token must be rejected before any write.
+    const podAssignmentsCountBefore = pool.podAssignments.length;
+    const badReq = { session: { tenantId: 'tenant-test-123', userId: 'hamish-uuid', csrfToken: 'real-token' }, params: { id: 'prod-payments-uuid' }, body: { podId: 'pod-core-uuid', _csrf: 'WRONG-token' } };
+    let badStatus = null;
+    const badRes = { writeHead: function(code) { badStatus = code; }, end: function() {}, json: function() { badStatus = 200; }, status: function(code) { badStatus = code; return { json: function() {} }; } };
+    await handlePostSetDefaultPod(badReq, badRes, null, pool);
+    eq(badStatus, 403, 'CSRF: a request with a mismatched _csrf token is rejected with 403');
+    eq(pool.podAssignments.length, podAssignmentsCountBefore, 'CSRF: no write occurred on the rejected request');
   }
 
   console.log(`\n[ep1-s2] ${passed} passed, ${failed} failed\n`);
