@@ -34721,8 +34721,8 @@
         {
           "slug": "ep1-s1",
           "id": "ep1-s1",
-          "stage": "branch-complete",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -34733,7 +34733,7 @@
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep1-s1-dor.md",
-          "updatedAt": "2026-09-15T21:09:32.080Z",
+          "updatedAt": "2026-09-16T00:31:02.339Z",
           "tasks": [
             {
               "id": "task-1",
@@ -34787,8 +34787,12 @@
           "acVerified": 3,
           "acTotal": 3,
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/897"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/897",
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "blocker": "COMPLETE WITH DEVIATIONS: AC3 has no UI-level verification path (RISK-ACCEPTed, decisions.md 2026-09-16); NFR-Perf-1 (2s latency) has no automated measurement (RISK-ACCEPTed, decisions.md 2026-09-16). Neither blocks release; both are documented, low-severity, accepted gaps.",
+          "dodArtefact": "artefacts/new-feature-2b74a292/dod/ep1-s1-dod.md"
         },
         {
           "slug": "ep1-s2",

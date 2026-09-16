@@ -1,5 +1,25 @@
 # Decisions: Multi-User Role-Aware Synchronous Collaboration
 
+## RISK-ACCEPT: ep1-s1 AC3 has no UI-level verification path
+
+**Date:** 2026-09-16
+**Context:** Written during `/definition-of-done` for ep1-s1, formalizing the gap already described in the "ep1-s1 final review" decision below. AC3 ("When they attempt to assign a member a role that is not in the organisation's known role set, Then the save is rejected...") describes a UI interaction — the shipped Pod Manager UI has no control that lets a user select or type a role for a member being added; every member's role is read directly from their fixed roster entry. AC3 is fully and correctly enforced server-side (`routes/pods.js`'s guard, proven by `tests/check-ep1-s1-pod-creation.js` Part 4) — a malformed or malicious direct API call is still rejected — but no test at any level exercises this through the browser, and none can, as this UI is built.
+**Decision:** RISK-ACCEPT. Ship with API-level-only coverage for AC3. Building a role-selection UI control purely to make a UI-level test possible would be scope expansion into real UI work (a new interactive element, new client-side validation states) beyond this bounded MVP story.
+**Rationale:** The underlying security/correctness property (invalid roles are rejected) is real and verified; the gap is test-coverage completeness for a UI interaction that doesn't exist yet, not an unguarded system. Revisit when a real per-member role-picker is built — likely alongside `role_definitions` replacing the hardcoded `VALID_ROLES` constant, and likely needed anyway once ep4-s1/ep4-s2 reuse this component with real org data.
+**Story:** ep1-s1 — no AC change.
+
+---
+
+## RISK-ACCEPT: ep1-s1 NFR-Perf-1 (pod creation ≤2s) has no automated measurement
+
+**Date:** 2026-09-16
+**Context:** Written during `/definition-of-done` for ep1-s1. The story's NFR-Perf-1 ("Pod creation completes within 2s") was never given an automated timing assertion — the implementation plan's own "NFR coverage" section explicitly flagged this as out of scope for the in-memory fake-pool unit tests ("a real Postgres timing assertion is out of scope for this plan's unit tests"), deferring formal verification to `/verify-completion` or later, which never happened either. A live production check performed for this DoD observed pod creation and duplicate-rejection both completing with no perceptible UI lag (sub-second), but this is an informal observation, not a rigorous measurement against the 2s target.
+**Decision:** RISK-ACCEPT. Ship without a formal timing assertion.
+**Rationale:** Low risk — a single-row insert plus a small per-member insert loop against Postgres has no structural reason to approach 2s at this story's scale (3-4 members), and the live check found no perceptible delay. A dedicated NFR timing test would be low-cost to add later if this endpoint's usage pattern changes (e.g. very large pods) or if latency is ever reported as an issue.
+**Story:** ep1-s1 — no AC change; NFR-Perf-1 remains formally unverified by automation, tracked here rather than silently dropped.
+
+---
+
 ## ep1-s1 final review: two honest AC-coverage gaps, neither treated as blocking
 
 **Date:** 2026-09-16
