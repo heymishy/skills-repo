@@ -1164,14 +1164,14 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     '<div class="pod-team-section" id="pod-team-section">' +
       '<h3>Pod &amp; Team</h3>' +
       (defaultPod
-        ? '<p id="default-pod-display">Default pod: ' + _escapeHtml(defaultPod.podName) + ' (' + _escapeHtml(String(defaultPod.memberCount)) + ' members)</p>'
-        : '<p id="default-pod-display">No default pod set.</p>') +
+        ? '<p id="default-pod-display" aria-live="polite">Default pod: ' + _escapeHtml(defaultPod.podName) + ' (' + _escapeHtml(String(defaultPod.memberCount)) + ' members)</p>'
+        : '<p id="default-pod-display" aria-live="polite">No default pod set.</p>') +
       '<button id="set-default-pod-btn" type="button">Set default pod</button>' +
       '<div id="set-default-pod-picker" style="display:none;">' +
         '<select id="default-pod-select" aria-label="Choose a pod"></select>' +
         '<button id="confirm-default-pod-btn" type="button">Confirm</button>' +
         '<button id="cancel-default-pod-btn" type="button">Cancel</button>' +
-        '<p id="default-pod-error" style="display:none;color:#a4262c;"></p>' +
+        '<p id="default-pod-error" role="alert" style="display:none;color:#a4262c;"></p>' +
       '</div>' +
     '</div>';
   // ep1-s2 -- AJAX set-default-pod flow: populate the picker from /api/pods
@@ -1203,6 +1203,9 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
             'opt.value = p.pod_id; opt.textContent = p.name;' +
             'select.appendChild(opt);' +
           '});' +
+        '}).catch(function() {' +
+          'errorEl.textContent = "Could not load pods — try again.";' +
+          'errorEl.style.display = "block";' +
         '});' +
       '};' +
       'cancelBtn.onclick = function() { picker.style.display = "none"; };' +
@@ -1220,6 +1223,9 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
             '}' +
             'displayEl.textContent = "Default pod: " + result.body.podName + " (" + result.body.memberCount + " members)";' +
             'picker.style.display = "none";' +
+          '}).catch(function() {' +
+            'errorEl.textContent = "Network error — try again.";' +
+            'errorEl.style.display = "block";' +
           '});' +
       '};' +
     '})();' +
