@@ -21,9 +21,11 @@ An organisation administrator can create reusable team pods and assign them as t
 
 ## Stories in This Epic
 
-- [ ] Create Pod UI and Backend — artefacts/new-feature-2b74a292/stories/ep1-s1.md
-- [ ] Assign Pod to Product as Default — artefacts/new-feature-2b74a292/stories/ep1-s2.md
-- [ ] Feature Inherits Product Default Pod on Creation — artefacts/new-feature-2b74a292/stories/ep1-s3.md
+- [x] Create Pod UI and Backend — artefacts/new-feature-2b74a292/stories/ep1-s1.md (DoD complete, artefacts/new-feature-2b74a292/dod/ep1-s1-dod.md)
+- [x] Assign Pod to Product as Default — artefacts/new-feature-2b74a292/stories/ep1-s2.md (DoD complete, artefacts/new-feature-2b74a292/dod/ep1-s2-dod.md)
+- [x] Feature Inherits Product Default Pod on Creation — artefacts/new-feature-2b74a292/stories/ep1-s3.md (DoD complete, artefacts/new-feature-2b74a292/dod/ep1-s3-dod.md)
+
+**Epic status: complete** (2026-09-17) — all 3 stories merged and DoD-complete. The walking skeleton is now end-to-end: a pod can be created (ep1-s1), assigned as a product's default team (ep1-s2), and every new feature under that product automatically inherits it (ep1-s3).
 
 ## Human Oversight Level
 

@@ -1,5 +1,15 @@
 # Decisions: Multi-User Role-Aware Synchronous Collaboration
 
+## RISK-ACCEPT: ep1-s3 NFR-Perf-1 (feature creation with inheritance ≤2s) has no automated measurement
+
+**Date:** 2026-09-17
+**Context:** Written during `/definition-of-done` for ep1-s3. Same class of gap as `ep1-s1`/`ep1-s2`'s own NFR-Perf-1 entries — no automated timing assertion exists for `handlePostProductFeature`'s pod-inheritance extension.
+**Decision:** RISK-ACCEPT. Ship without a formal timing assertion.
+**Rationale:** Low risk — the added work is one tenant-scoped SELECT (`getProductDefaultPod`) plus, only when a default pod exists, one INSERT (`setFeatureDefaultPod`) and a small per-member insert loop (`populateFeatureCollaboratorsFromPod`, bounded by real-world pod size, typically single digits). No structural reason to approach 2s at this scale. Consistent with the same reasoning already accepted for `ep1-s1`/`ep1-s2`'s equivalent NFRs.
+**Story:** ep1-s3 — no AC change; NFR-Perf-1 remains formally unverified by automation, tracked here rather than silently dropped.
+
+---
+
 ## ep1-s3 Task 7's E2E spec was genuinely vacuous; fixed with a test-only DB-state-read endpoint
 
 **Date:** 2026-09-17
