@@ -317,11 +317,21 @@ async function run() {
     const skillsRoute = require(SKILLS_ROUTE_PATH);
 
     const pool = makeFakePool();
-    // Tenant A has a default pod on prod-A; tenant B's product (different
-    // product id, no assignment row) must NOT inherit tenant A's pod.
+    // CORRECTED (final review, 2026-09-17): the original version of this test
+    // used a DIFFERENT product_id for tenant B ('prod-B' vs tenant A's
+    // 'prod-A'), so the product_id mismatch alone guaranteed no match --
+    // dropping tenant_id from getProductDefaultPod's WHERE clause entirely
+    // would have made this exact test pass identically, meaning it never
+    // actually exercised tenant scoping as the discriminating factor. Fixed
+    // by using the SAME product_id ('prod-shared') for both tenants, with a
+    // default pod assigned under tenant A only -- mirroring ep1-s2's own
+    // genuinely-discriminating tenant-isolation test
+    // (tests/check-ep1-s2-product-default-pod.js). Now tenant B's request
+    // for the SAME product_id must be rejected specifically BECAUSE
+    // tenant_id doesn't match, proving the tenant_id predicate is load-bearing.
     pool.pods.push({ pod_id: 'pod-A', tenant_id: 'tenant-A', name: 'Platform A' });
     pool.podMembers.push({ pod_id: 'pod-A', user_id: 'u1', role_id: 'conductor' });
-    pool.podAssignments.push({ tenant_id: 'tenant-A', pod_id: 'pod-A', product_id: 'prod-A', feature_id: null, assignment_type: 'inherit-to-all-features' });
+    pool.podAssignments.push({ tenant_id: 'tenant-A', pod_id: 'pod-A', product_id: 'prod-shared', feature_id: null, assignment_type: 'inherit-to-all-features' });
     const originalQuery = pool.query.bind(pool);
     pool.query = async function(sql, params) {
       const s = String(sql).trim().replace(/\s+/g, ' ').toUpperCase();
@@ -329,8 +339,10 @@ async function run() {
       return originalQuery(sql, params);
     };
 
-    // Tenant B creates a feature under a DIFFERENT product (prod-B) with no default pod.
-    const req = { params: { id: 'prod-B' }, session: { tenantId: 'tenant-B', login: 'other-user', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
+    // Tenant B creates a feature under the SAME product_id ('prod-shared')
+    // as tenant A's default-pod assignment, but as tenant B -- the only
+    // thing that can prevent inheritance here is the tenant_id predicate.
+    const req = { params: { id: 'prod-shared' }, session: { tenantId: 'tenant-B', login: 'other-user', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
     const res = makeRes();
     await productsRoute.handlePostProductFeature(req, res, null, pool, { capture: function() {} });
 
@@ -338,8 +350,21 @@ async function run() {
     const session = skillsRoute._getHtmlSession(sid);
     const journeyId = session && session.journeyId;
 
-    eq(pool.podAssignments.filter(a => a.feature_id === journeyId).length, 0, 'Tenant isolation: tenant B\'s feature does NOT inherit tenant A\'s default pod');
+    eq(pool.podAssignments.filter(a => a.feature_id === journeyId).length, 0, 'Tenant isolation: tenant B\'s feature (same product_id as tenant A\'s default-pod assignment) does NOT inherit tenant A\'s default pod');
     eq(pool.featureCollaborators.filter(c => c.feature_id === journeyId).length, 0, 'Tenant isolation: no feature_collaborators rows created for tenant B\'s feature');
+
+    // Positive control: tenant A creating a feature under the SAME
+    // product_id genuinely DOES inherit -- proves the fixture/query path
+    // itself works and the negative result above isn't just "nothing ever
+    // matches this product_id."
+    journeyStore._clearForTesting();
+    const reqA = { params: { id: 'prod-shared' }, session: { tenantId: 'tenant-A', login: 'a-user', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
+    const resA = makeRes();
+    await productsRoute.handlePostProductFeature(reqA, resA, null, pool, { capture: function() {} });
+    const sidA = extractSidFromRedirect(resA);
+    const sessionA = skillsRoute._getHtmlSession(sidA);
+    const journeyIdA = sessionA && sessionA.journeyId;
+    eq(pool.podAssignments.filter(a => a.feature_id === journeyIdA).length, 1, 'Tenant isolation positive control: tenant A creating a feature under the SAME product_id DOES inherit (proves the negative result above is a real tenant-scoping effect, not a fixture no-op)');
   }
 
   console.log(`\n[ep1-s3] ${passed} passed, ${failed} failed\n`);
