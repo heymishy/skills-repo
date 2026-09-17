@@ -317,18 +317,9 @@ async function run() {
     const skillsRoute = require(SKILLS_ROUTE_PATH);
 
     const pool = makeFakePool();
-    // CORRECTED (final review, 2026-09-17): the original version of this test
-    // used a DIFFERENT product_id for tenant B ('prod-B' vs tenant A's
-    // 'prod-A'), so the product_id mismatch alone guaranteed no match --
-    // dropping tenant_id from getProductDefaultPod's WHERE clause entirely
-    // would have made this exact test pass identically, meaning it never
-    // actually exercised tenant scoping as the discriminating factor. Fixed
-    // by using the SAME product_id ('prod-shared') for both tenants, with a
-    // default pod assigned under tenant A only -- mirroring ep1-s2's own
-    // genuinely-discriminating tenant-isolation test
-    // (tests/check-ep1-s2-product-default-pod.js). Now tenant B's request
-    // for the SAME product_id must be rejected specifically BECAUSE
-    // tenant_id doesn't match, proving the tenant_id predicate is load-bearing.
+    // Both tenants share the SAME product_id -- tenant_id alone must
+    // discriminate whether inheritance happens (mirrors ep1-s2's own
+    // tenant-isolation test, tests/check-ep1-s2-product-default-pod.js).
     pool.pods.push({ pod_id: 'pod-A', tenant_id: 'tenant-A', name: 'Platform A' });
     pool.podMembers.push({ pod_id: 'pod-A', user_id: 'u1', role_id: 'conductor' });
     pool.podAssignments.push({ tenant_id: 'tenant-A', pod_id: 'pod-A', product_id: 'prod-shared', feature_id: null, assignment_type: 'inherit-to-all-features' });
