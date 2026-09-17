@@ -3564,14 +3564,25 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
   // separate features.js/handler (no such file/route exists for feature
   // creation in this codebase).
   if (tenantId && productId) {
+    let _podInheritanceStage = 'lookup';
     try {
       const defaultPod = await getProductDefaultPod(pool, tenantId, productId);
       if (defaultPod) {
+        _podInheritanceStage = 'assignment';
         await setFeatureDefaultPod(pool, { tenantId: tenantId, podId: defaultPod.podId, productId: productId, featureId: journeyId, assignedBy: (req.session && req.session.login) || null });
+        _podInheritanceStage = 'collaborators';
         await populateFeatureCollaboratorsFromPod(pool, { featureId: journeyId, podId: defaultPod.podId });
       }
     } catch (err) {
-      console.error('[handlePostProductFeature] ep1-s3 pod-inheritance failed (non-fatal):', err.message);
+      // ep1-s3: stage-tagged so an operator can distinguish "nothing
+      // written" (lookup/assignment failed) from a genuinely inconsistent
+      // state (assignment succeeded -- pod_assignments claims inheritance
+      // -- but collaborators failed partway through its own per-member
+      // loop, leaving feature_collaborators empty or partial). No
+      // transaction/rollback here (out of this story's bounded scope) --
+      // this is diagnostics only, so the inconsistent case is at least
+      // greppable/alertable in production logs.
+      console.error('[handlePostProductFeature] ep1-s3 pod-inheritance failed at stage=' + _podInheritanceStage + (_podInheritanceStage === 'collaborators' ? ' (WARNING: pod_assignments row may already be committed, feature_collaborators may be incomplete)' : ' (non-fatal, no pod_assignments row written)') + ':', err.message);
     }
   }
 
