@@ -1,5 +1,15 @@
 # Decisions: Multi-User Role-Aware Synchronous Collaboration
 
+## ep1-s3 Task 3 quality review: accept full-scenario duplication across Parts 2-5 as a deliberate isolation tradeoff, not a DRY defect
+
+**Date:** 2026-09-17
+**Context:** A code-quality reviewer found that Task 3's "Part 3" (AC2 proof) re-runs the exact same fixture setup and handler call as Part 2 in full — not just shared boilerplate, but a byte-for-byte duplicate scenario, purely to assert 3 additional facts that were already available after Part 2's own call. The reviewer correctly notes this differs from this file's own Part 1-vs-Part 2 pattern (genuinely different call surfaces) and from the sibling `check-ep1-s2-product-default-pod.js`'s own Parts 2-4 (each varies its fixture meaningfully). The same pattern repeats in the plan's own Task 4 and Task 5, not yet executed at the time of this entry.
+**Decision:** Accept the duplication as a deliberate test-isolation tradeoff, not a defect to fix now. Each Part (`_clearForTesting()` + a fresh handler call) proves its own AC independently of the others — robust to running any single Part alone, reordering, or a partial/interrupted test run, at the cost of re-executing the same scenario 3-4 times across Parts 2-5. This was the implementation plan's own deliberate design (`artefacts/new-feature-2b74a292/plans/ep1-s3-plan.md`), not an improvisation by any task's implementer — restructuring it now would mean rewriting the plan's Task 4/5 sections too, a larger change than this one review finding warrants mid-execution.
+**Rationale:** The tradeoff (isolation vs. DRY) is a legitimate design choice, not obviously wrong — unlike the CSRF/wiring-coverage findings on sibling stories, this has no correctness or security dimension, only test-runtime cost (a few hundred extra milliseconds per story, not per commit). A future story reusing this exact handler-testing pattern should default to extending an existing Part's assertions rather than duplicating its full setup, unless genuine cross-Part independence is specifically needed.
+**Story:** ep1-s3 — no AC change; test-structure choice only, no behavioural impact.
+
+---
+
 ## ep1-s3's DoR touch-points and response-shape assumptions are wrong; corrected against the real codebase before any code was written
 
 **Date:** 2026-09-17
