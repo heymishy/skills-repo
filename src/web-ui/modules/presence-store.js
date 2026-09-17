@@ -36,4 +36,16 @@ function getStatus(journeyId, login) {
 
 function _clearForTesting() { _activity = new Map(); }
 
-module.exports = { registerActivity, getStatus, setNow, STALE_MS, _clearForTesting };
+/**
+ * Test-only: seed a presence entry as if it was registered `ageMs`
+ * milliseconds ago, without needing to wait `ageMs` of real time or
+ * override the whole module's clock via setNow (which would also affect
+ * unrelated concurrent state). Used by the /test/seed-presence E2E
+ * fixture endpoint to simulate a stale/offline collaborator.
+ */
+function _seedStaleActivity(journeyId, login, ageMs) {
+  if (!_activity.has(journeyId)) _activity.set(journeyId, new Map());
+  _activity.get(journeyId).set(login, _now() - ageMs);
+}
+
+module.exports = { registerActivity, getStatus, setNow, STALE_MS, _clearForTesting, _seedStaleActivity };
