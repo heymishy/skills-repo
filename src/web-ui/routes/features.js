@@ -971,12 +971,11 @@ async function handleGetFeatureArtefacts(req, res, featureSlug, pool) {
     let teamSidebarHtml = '';
     if (artefactJourney && artefactJourney.journeyId) {
       teamSidebarHtml =
-        '<aside id="team-sidebar" aria-label="Team" class="sw-team-sidebar">' +
+        '<aside id="team-sidebar" aria-label="Team" class="sw-team-sidebar" data-journey-id="' + shellEscHtml(artefactJourney.journeyId) + '">' +
           '<h2>Team</h2>' +
           '<ul id="team-sidebar-list" role="list"></ul>' +
         '</aside>' +
-        '<script src="/public/presence-sidebar.js"></script>' +
-        '<script>window.initPresenceSidebar(' + JSON.stringify(artefactJourney.journeyId) + ', "team-sidebar-list");</script>';
+        '<script src="/public/presence-sidebar.js"></script>';
     }
     const bodyContent = `${breadcrumbHtml}\n<h1>${shellEscHtml(displayTitle)}</h1>\n${deleteSectionHtml}\n${listHtml}\n${teamSidebarHtml}`;
     const html = await renderShellWithNav(pool, req.session.tenantId, {
