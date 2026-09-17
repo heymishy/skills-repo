@@ -290,6 +290,58 @@ async function run() {
     eq(byUser['darren-uuid'], 'engineer', 'AC3: Darren role is engineer');
   }
 
+  // --- Part 5: tenant isolation — a product's default pod never leaks across tenants ---
+  {
+    const path = require('path');
+    function freshRequire(p) { delete require.cache[require.resolve(p)]; return require(p); }
+    const JOURNEY_STORE_PATH = path.resolve(__dirname, '../src/web-ui/modules/journey-store.js');
+    const PRODUCTS_ROUTE_PATH = path.resolve(__dirname, '../src/web-ui/routes/products.js');
+    const SKILLS_ROUTE_PATH = path.resolve(__dirname, '../src/web-ui/routes/skills.js');
+
+    function makeRes() {
+      const r = { _status: null, _headers: {}, _body: '' };
+      r.writeHead = function(status, headers) { r._status = status; Object.assign(r._headers, headers || {}); };
+      r.setHeader = function(k, v) { r._headers[k] = v; };
+      r.end = function(b) { r._body += (b || ''); };
+      return r;
+    }
+    function extractSidFromRedirect(res) {
+      const loc = res._headers.Location || '';
+      const m = /\/skills\/discovery\/sessions\/([^/]+)\/chat/.exec(loc);
+      return m ? decodeURIComponent(m[1]) : null;
+    }
+
+    const journeyStore = freshRequire(JOURNEY_STORE_PATH);
+    journeyStore._clearForTesting();
+    const productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
+    const skillsRoute = require(SKILLS_ROUTE_PATH);
+
+    const pool = makeFakePool();
+    // Tenant A has a default pod on prod-A; tenant B's product (different
+    // product id, no assignment row) must NOT inherit tenant A's pod.
+    pool.pods.push({ pod_id: 'pod-A', tenant_id: 'tenant-A', name: 'Platform A' });
+    pool.podMembers.push({ pod_id: 'pod-A', user_id: 'u1', role_id: 'conductor' });
+    pool.podAssignments.push({ tenant_id: 'tenant-A', pod_id: 'pod-A', product_id: 'prod-A', feature_id: null, assignment_type: 'inherit-to-all-features' });
+    const originalQuery = pool.query.bind(pool);
+    pool.query = async function(sql, params) {
+      const s = String(sql).trim().replace(/\s+/g, ' ').toUpperCase();
+      if (s.indexOf('SELECT REPO_OWNER, REPO_NAME') !== -1) return { rows: [{ repo_owner: 'acme', repo_name: 'widgets' }] };
+      return originalQuery(sql, params);
+    };
+
+    // Tenant B creates a feature under a DIFFERENT product (prod-B) with no default pod.
+    const req = { params: { id: 'prod-B' }, session: { tenantId: 'tenant-B', login: 'other-user', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
+    const res = makeRes();
+    await productsRoute.handlePostProductFeature(req, res, null, pool, { capture: function() {} });
+
+    const sid = extractSidFromRedirect(res);
+    const session = skillsRoute._getHtmlSession(sid);
+    const journeyId = session && session.journeyId;
+
+    eq(pool.podAssignments.filter(a => a.feature_id === journeyId).length, 0, 'Tenant isolation: tenant B\'s feature does NOT inherit tenant A\'s default pod');
+    eq(pool.featureCollaborators.filter(c => c.feature_id === journeyId).length, 0, 'Tenant isolation: no feature_collaborators rows created for tenant B\'s feature');
+  }
+
   console.log(`\n[ep1-s3] ${passed} passed, ${failed} failed\n`);
   process.exit(failed === 0 ? 0 : 1);
 }
