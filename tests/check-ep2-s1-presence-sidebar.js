@@ -1,3 +1,4 @@
+'use strict';
 // tests/check-ep2-s1-presence-sidebar.js — Part 1
 const assert = require('assert');
 const presenceStore = require('../src/web-ui/modules/presence-store');
