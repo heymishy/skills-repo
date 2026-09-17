@@ -96,6 +96,7 @@ const { handlePostPodsCreate, handleGetPods }                        = require('
 const { migratePodsSchema }                                          = require('./modules/pod-store'); // ep1-s1
 const { handlePostSetDefaultPod }                                    = require('./routes/products'); // ep1-s2 (products.js already required elsewhere in this file for its other handlers -- this is an additional named import from the same module)
 const { migratePodAssignmentsSchema }                                = require('./modules/pod-assignment-store'); // ep1-s2
+const { migrateFeatureCollaboratorsSchema }                          = require('./modules/feature-collaborator-store'); // ep1-s3
 const { createImpersonationHandlers }                                = require('./routes/impersonation');         // d1
 
 const PORT = process.env.PORT || 3000;
@@ -616,6 +617,11 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     migratePodAssignmentsSchema(_userRolesPool).then(function() {
       console.log('[ep1-s2] pod_assignments schema ready');
     }).catch(function(err) { console.error('[ep1-s2] pod_assignments schema migration failed:', err.message); });
+
+    // ep1-s3 — Auto-migrate feature_collaborators schema.
+    migrateFeatureCollaboratorsSchema(_userRolesPool).then(function() {
+      console.log('[ep1-s3] feature_collaborators schema ready');
+    }).catch(function(err) { console.error('[ep1-s3] feature_collaborators schema migration failed:', err.message); });
 
     // story-6-conversion-to-independent — wire the conversion route handlers
     // (reuses the organisations table + user-roles.js's resolveRoleForPerson
