@@ -65,6 +65,7 @@ function createFakeTestDb() {
   var podMembers = [];   // { id, pod_id, user_id, role_id, status } -- ep1-s1
   var nextPodMemberId = 1;
   var podAssignments = []; // { assignment_id, tenant_id, pod_id, product_id, feature_id, assignment_type, assigned_by, assigned_at } -- ep1-s2
+  var featureCollaborators = []; // { collaborator_id, feature_id, user_id, role_id, pod_id, is_approver } -- ep1-s3
 
   function query(sql, params) {
     var s = _normalise(sql);
@@ -404,6 +405,50 @@ function createFakeTestDb() {
       return Promise.resolve({ rows: gpdRows });
     }
 
+    // ── feature_collaborators (ep1-s3) ──────────────────────────────────
+    // Narrow support for the exact query shapes modules/feature-collaborator-store.js
+    // issues (populateFeatureCollaboratorsFromPod, getFeatureCollaborators).
+    // The "CREATE TABLE IF NOT EXISTS FEATURE_COLLABORATORS" bootstrap
+    // (migrateFeatureCollaboratorsSchema) is already covered by the generic
+    // "CREATE TABLE" catch-all above -- no separate branch needed here.
+
+    // populateFeatureCollaboratorsFromPod's own pod_members read -- a
+    // DIFFERENT shape (SELECT user_id, role_id ...) than ep1-s2's existing
+    // "SELECT COUNT(*) AS COUNT FROM POD_MEMBERS WHERE POD_ID" branch above,
+    // so it needs its own exact-prefix branch rather than reusing it.
+    if (s.indexOf('SELECT USER_ID, ROLE_ID FROM POD_MEMBERS WHERE POD_ID') === 0) {
+      var fcPodId = p[0];
+      var fcMembers = podMembers
+        .filter(function(r) { return r.pod_id === fcPodId; })
+        .map(function(r) { return { user_id: r.user_id, role_id: r.role_id }; });
+      return Promise.resolve({ rows: fcMembers });
+    }
+
+    if (s.indexOf('INSERT INTO FEATURE_COLLABORATORS') === 0) {
+      var fcCollaboratorId = p[0];
+      var fcFeatureId = p[1];
+      var fcUserId = p[2];
+      var fcRoleId = p[3];
+      var fcSourcePodId = p[4];
+      featureCollaborators.push({
+        collaborator_id: fcCollaboratorId,
+        feature_id: fcFeatureId,
+        user_id: fcUserId,
+        role_id: fcRoleId,
+        pod_id: fcSourcePodId,
+        is_approver: false
+      });
+      return Promise.resolve({ rows: [], rowCount: 1 });
+    }
+
+    if (s.indexOf('SELECT COLLABORATOR_ID, USER_ID, ROLE_ID, POD_ID FROM FEATURE_COLLABORATORS WHERE FEATURE_ID') === 0) {
+      var gfcFeatureId = p[0];
+      var gfcRows = featureCollaborators
+        .filter(function(r) { return r.feature_id === gfcFeatureId; })
+        .map(function(r) { return { collaborator_id: r.collaborator_id, user_id: r.user_id, role_id: r.role_id, pod_id: r.pod_id }; });
+      return Promise.resolve({ rows: gfcRows });
+    }
+
     // ── people, team_memberships, person_identities (tir-s1/tir-s2/bri-s3.3) ─
     // tir-s1: people table bootstrap (idempotent)
     if (s.indexOf('CREATE TABLE IF NOT EXISTS PEOPLE') === 0) {
@@ -571,6 +616,7 @@ function createFakeTestDb() {
       pods = [];
       podMembers = []; nextPodMemberId = 1;
       podAssignments = [];
+      featureCollaborators = [];
     }
   };
 }
