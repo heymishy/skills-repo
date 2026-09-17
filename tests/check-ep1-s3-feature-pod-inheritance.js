@@ -174,6 +174,62 @@ async function run() {
     eq(featureAssignment.assignment_type, 'feature-inherits-product-default', 'AC1: assignmentType is feature-inherits-product-default');
   }
 
+  // --- Part 3: AC2 — feature_collaborators pre-populated with every pod member ---
+  {
+    const path = require('path');
+    function freshRequire(p) { delete require.cache[require.resolve(p)]; return require(p); }
+    const JOURNEY_STORE_PATH = path.resolve(__dirname, '../src/web-ui/modules/journey-store.js');
+    const PRODUCTS_ROUTE_PATH = path.resolve(__dirname, '../src/web-ui/routes/products.js');
+    const SKILLS_ROUTE_PATH = path.resolve(__dirname, '../src/web-ui/routes/skills.js');
+
+    function makeRes() {
+      const r = { _status: null, _headers: {}, _body: '' };
+      r.writeHead = function(status, headers) { r._status = status; Object.assign(r._headers, headers || {}); };
+      r.setHeader = function(k, v) { r._headers[k] = v; };
+      r.end = function(b) { r._body += (b || ''); };
+      return r;
+    }
+    function extractSidFromRedirect(res) {
+      const loc = res._headers.Location || '';
+      const m = /\/skills\/discovery\/sessions\/([^/]+)\/chat/.exec(loc);
+      return m ? decodeURIComponent(m[1]) : null;
+    }
+
+    const journeyStore = freshRequire(JOURNEY_STORE_PATH);
+    journeyStore._clearForTesting();
+    const productsRoute = freshRequire(PRODUCTS_ROUTE_PATH);
+    const skillsRoute = require(SKILLS_ROUTE_PATH);
+
+    const pool = makeFakePool();
+    pool.pods.push({ pod_id: 'pod-core-uuid', tenant_id: 'tenant-1', name: 'Core Platform Pod' });
+    pool.podMembers.push(
+      { pod_id: 'pod-core-uuid', user_id: 'hamish-uuid', role_id: 'conductor' },
+      { pod_id: 'pod-core-uuid', user_id: 'susan-uuid', role_id: 'engineer' },
+      { pod_id: 'pod-core-uuid', user_id: 'darren-uuid', role_id: 'engineer' }
+    );
+    pool.podAssignments.push({ tenant_id: 'tenant-1', pod_id: 'pod-core-uuid', product_id: 'prod-1', feature_id: null, assignment_type: 'inherit-to-all-features' });
+    const originalQuery = pool.query.bind(pool);
+    pool.query = async function(sql, params) {
+      const s = String(sql).trim().replace(/\s+/g, ' ').toUpperCase();
+      if (s.indexOf('SELECT REPO_OWNER, REPO_NAME') !== -1) return { rows: [{ repo_owner: 'acme', repo_name: 'widgets' }] };
+      return originalQuery(sql, params);
+    };
+
+    const req = { params: { id: 'prod-1' }, session: { tenantId: 'tenant-1', login: 'octocat', csrfToken: 'test-csrf-token' }, body: { _csrf: 'test-csrf-token' } };
+    const res = makeRes();
+    await productsRoute.handlePostProductFeature(req, res, null, pool, { capture: function() {} });
+
+    const sid = extractSidFromRedirect(res);
+    const session = skillsRoute._getHtmlSession(sid);
+    const journeyId = session && session.journeyId;
+
+    const collaboratorRows = pool.featureCollaborators.filter(c => c.feature_id === journeyId);
+    eq(collaboratorRows.length, 3, 'AC2: exactly 3 feature_collaborators rows pre-populated');
+    const userIds = collaboratorRows.map(c => c.user_id).sort();
+    eq(JSON.stringify(userIds), JSON.stringify(['darren-uuid', 'hamish-uuid', 'susan-uuid']), 'AC2: all 3 pod members present (Hamish, Susan, Darren)');
+    ok(collaboratorRows.every(c => c.pod_id === 'pod-core-uuid'), 'AC2: every collaborator row references the source pod');
+  }
+
   console.log(`\n[ep1-s3] ${passed} passed, ${failed} failed\n`);
   process.exit(failed === 0 ? 0 : 1);
 }
