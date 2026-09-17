@@ -34937,7 +34937,7 @@
         {
           "slug": "ep2-s1",
           "id": "ep2-s1",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -34948,7 +34948,7 @@
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep2-s1-dor.md",
-          "updatedAt": "2026-09-17T23:13:39.806Z",
+          "updatedAt": "2026-09-17T23:20:56.914Z",
           "tasks": [
             {
               "id": "task-1",
@@ -34989,7 +34989,9 @@
           ],
           "acVerified": 3,
           "acTotal": 3,
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/900"
         },
         {
           "slug": "ep2-s2",
