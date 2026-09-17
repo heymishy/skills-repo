@@ -1,5 +1,13 @@
 # Decisions: Multi-User Role-Aware Synchronous Collaboration
 
+## `ep2-s1` branch-setup baseline: 2 pre-existing failures acknowledged (2026-09-18)
+
+**Context:** `/branch-setup`'s clean-baseline check ran the full suite (671 files) before any `ep2-s1` code was written. 2 failures: (1) `tests/check-p3.5-validate-trace.js` (`ps1-exits-0-on-valid-repo-with-ci-flag`) — same pre-existing local Windows PowerShell environment issue already documented for `ep1-s1`'s branch-setup (`pwsh` invoked from Git Bash on this machine returns "Permission denied"), confirmed again here by attempting the direct invocation. (2) `tests/check-pcr-s1-test-runner.js` — failed only inside the full 671-file run; re-ran standalone and it passed cleanly (`14 check(s) OK`), indicating an order-dependent/flaky interaction within the full suite rather than a real regression.
+**Decision:** Both acknowledged as pre-existing/environmental per `/branch-setup`'s own Step 5 options; proceeding to `/implementation-plan` without fixing either. Neither is `ep2-s1`'s concern.
+**Story:** ep2-s1 — no AC or scope change.
+
+---
+
 ## RISK-ACCEPT: ep1-s3 NFR-Perf-1 (feature creation with inheritance ≤2s) has no automated measurement
 
 **Date:** 2026-09-17
