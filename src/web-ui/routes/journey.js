@@ -3467,6 +3467,25 @@ async function handleGetJourneyViewers(req, res) {
 }
 
 /**
+ * ep2-s1: shared helper joining feature_collaborators (populated at feature
+ * creation by ep1-s3) with live in-memory presence status. Used by both
+ * handleGetJourneyCollaboratorsPresence and handleGetJourneyPresenceStream's
+ * broadcast() so the join logic lives in exactly one place. "journeyId" is
+ * the real key -- feature_collaborators.feature_id IS journeyId in this
+ * codebase (see feature-collaborator-store.js header).
+ * @param {object} pool
+ * @param {string} journeyId
+ * @returns {Promise<Array<{userId:string, roleId:string, status:string, lastSeenMs:number}>>}
+ */
+async function _getCollaboratorsPresencePayload(pool, journeyId) {
+  var rows = await _featureCollaboratorStore.getFeatureCollaborators(pool, journeyId);
+  return rows.map(function (r) {
+    var p = _presenceStore.getStatus(journeyId, r.userId);
+    return { userId: r.userId, roleId: r.roleId, status: p.status, lastSeenMs: p.lastSeenMs };
+  });
+}
+
+/**
  * GET /api/journey/:journeyId/collaborators-presence — ep2-s1 AC1.
  * Returns every assigned collaborator (feature_collaborators, populated at
  * feature creation by ep1-s3) joined with their live in-memory presence
@@ -3476,7 +3495,7 @@ async function handleGetJourneyViewers(req, res) {
 async function handleGetJourneyCollaboratorsPresence(req, res, pool) {
   if (!req.session || !req.session.accessToken) {
     res.writeHead(401, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'UNAUTHENTICATED' }));
+    res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
     return;
   }
   var journeyId = req.params && req.params.journeyId;
@@ -3487,11 +3506,14 @@ async function handleGetJourneyCollaboratorsPresence(req, res, pool) {
     res.end(JSON.stringify({ error: 'Not found' }));
     return;
   }
-  var rows = await _featureCollaboratorStore.getFeatureCollaborators(pool, journeyId);
-  var collaborators = rows.map(function (r) {
-    var p = _presenceStore.getStatus(journeyId, r.userId);
-    return { userId: r.userId, roleId: r.roleId, status: p.status, lastSeenMs: p.lastSeenMs };
-  });
+  var collaborators;
+  try {
+    collaborators = await _getCollaboratorsPresencePayload(pool, journeyId);
+  } catch (err) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'INTERNAL_ERROR' }));
+    return;
+  }
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ collaborators: collaborators }));
 }
@@ -3504,7 +3526,7 @@ async function handleGetJourneyCollaboratorsPresence(req, res, pool) {
 async function handlePostJourneyHeartbeat(req, res) {
   if (!req.session || !req.session.accessToken) {
     res.writeHead(401, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'UNAUTHENTICATED' }));
+    res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
     return;
   }
   var journeyId = req.params && req.params.journeyId;
@@ -3530,7 +3552,7 @@ async function handlePostJourneyHeartbeat(req, res) {
 async function handleGetJourneyPresenceStream(req, res, pool) {
   if (!req.session || !req.session.accessToken) {
     res.writeHead(401, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'UNAUTHENTICATED' }));
+    res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
     return;
   }
   var journeyId = req.params && req.params.journeyId;
@@ -3551,11 +3573,7 @@ async function handleGetJourneyPresenceStream(req, res, pool) {
 
   async function broadcast() {
     try {
-      var rows = await _featureCollaboratorStore.getFeatureCollaborators(pool, journeyId);
-      var collaborators = rows.map(function (r) {
-        var p = _presenceStore.getStatus(journeyId, r.userId);
-        return { userId: r.userId, roleId: r.roleId, status: p.status, lastSeenMs: p.lastSeenMs };
-      });
+      var collaborators = await _getCollaboratorsPresencePayload(pool, journeyId);
       res.write('data: ' + JSON.stringify({ collaborators: collaborators }) + '\n\n');
     } catch (_) { /* SSE streams must gracefully degrade -- web-ui/core.md */ }
   }

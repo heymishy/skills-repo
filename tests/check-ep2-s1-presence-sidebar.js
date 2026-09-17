@@ -45,4 +45,6 @@ async function testCollaboratorsPresenceHandlerExists() {
   assert.strictEqual(typeof journeyRoute.handlePostJourneyHeartbeat, 'function');
   assert.strictEqual(typeof journeyRoute.handleGetJourneyPresenceStream, 'function');
 }
-testCollaboratorsPresenceHandlerExists().then(() => console.log('  ok - all 3 new handlers exported'));
+testCollaboratorsPresenceHandlerExists()
+  .then(() => console.log('  ok - all 3 new handlers exported'))
+  .catch((err) => { console.error('  FAIL - testCollaboratorsPresenceHandlerExists:', err.message); process.exitCode = 1; });
