@@ -34797,17 +34797,68 @@
         {
           "slug": "ep1-s2",
           "id": "ep1-s2",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
-            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep1-s2-test-plan.md"
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep1-s2-test-plan.md",
+            "passing": 36,
+            "total": 36
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep1-s2-dor.md",
-          "updatedAt": "2026-09-15T09:06:33.505Z"
+          "updatedAt": "2026-09-17T05:30:34.809Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "pod-assignment-store: schema + data access",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s2-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "POST /products/:id/set-default-pod handler (AC1 happy path)",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s2-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "AC3: non-retroactivity proof",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s2-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "AC2 handoff precondition: defaultPod in product view JSON",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s2-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Wire into server.js",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s2-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "UI: Pod & Team section, no-refresh update",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s2-plan.md"
+            },
+            {
+              "id": "task-7",
+              "name": "E2E spec + fake-test-db.js extension",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s2-plan.md"
+            }
+          ],
+          "acVerified": 3,
+          "acTotal": 3,
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/898"
         },
         {
           "slug": "ep1-s3",

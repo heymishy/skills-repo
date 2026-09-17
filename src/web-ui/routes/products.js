@@ -24,6 +24,7 @@ var _artefactFetcher = require('../adapters/artefact-fetcher'); // wugs-s2 — r
 var _guardrailPrAdapter = require('../adapters/guardrail-pr-adapter'); // wugs-s6 review fix — GuardrailPrConflictError for the write-adapter try/catch
 var { isEffectivelyAdmin } = require('../modules/impersonation'); // wugs-s9 — DoR-specified effective-role check, matching credits-guard.js's exact pattern
 var _journeyStoreModule = require('../modules/journey-store'); // wnl-s3 — reused (not requiring routes/journey.js at module scope, which would be circular) to list existing journeys for _hasUnbackfilledCliFeatures
+var { setProductDefaultPod, getProductDefaultPod } = require('../modules/pod-assignment-store'); // ep1-s2
 
 // s1.1 -- injectable bulk session-store reader. Defaults to a lazy require of
 // skills.js's real _getHtmlSessionsBulk (mirrors the same lazy-getter shape
@@ -957,7 +958,7 @@ function _unknownHealthCoverageLabel(item, artefactCountsByJourneyId) {
   return (item.stage || 'discovery') + ' · ' + countLabel;
 }
 
-function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navProducts, noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId) {
+function _renderProductView(productName, productId, features, login, rollupRow, isSyncing, repoOwner, repoName, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navProducts, noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod) {
   sessionOriginByJourneyId = sessionOriginByJourneyId || {};
   modules = modules || [];
   csrfToken = csrfToken || '';
@@ -1154,6 +1155,81 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
         '<div style="margin-top:4px;font-size:14px;font-weight:500">' + _escapeHtml(repoOwner) + ' / ' + _escapeHtml(repoName) + '</div>' +
       '</div>';
   }
+  // ep1-s2 -- "Pod & Team" section: a name display + "Set default pod"
+  // button + a hidden picker (select + Confirm/Cancel) + an error
+  // paragraph. Renders "No default pod set." when defaultPod is falsy --
+  // this keeps the new trailing _renderProductView parameter purely
+  // additive for every existing call site that doesn't pass it.
+  var podSectionHtml =
+    '<div class="pod-team-section" id="pod-team-section">' +
+      '<h3>Pod &amp; Team</h3>' +
+      (defaultPod
+        ? '<p id="default-pod-display" aria-live="polite">Default pod: ' + _escapeHtml(defaultPod.podName) + ' (' + _escapeHtml(String(defaultPod.memberCount)) + ' members)</p>'
+        : '<p id="default-pod-display" aria-live="polite">No default pod set.</p>') +
+      '<button id="set-default-pod-btn" type="button">Set default pod</button>' +
+      '<div id="set-default-pod-picker" style="display:none;">' +
+        '<select id="default-pod-select" aria-label="Choose a pod"></select>' +
+        '<button id="confirm-default-pod-btn" type="button">Confirm</button>' +
+        '<button id="cancel-default-pod-btn" type="button">Cancel</button>' +
+        '<p id="default-pod-error" role="alert" style="display:none;color:#a4262c;"></p>' +
+      '</div>' +
+    '</div>';
+  // ep1-s2 -- AJAX set-default-pod flow: populate the picker from /api/pods
+  // on "Set default pod", then POST to /products/:id/set-default-pod on
+  // Confirm, updating #default-pod-display in place (no page refresh, per
+  // NFR-UI-1). The CSRF token is embedded the same way _renderModulesManagement
+  // does it (see the 'var csrfToken=' + JSON.stringify(csrfToken) pattern
+  // at this file's line ~900) -- the fetch body below references the
+  // resulting in-page JS variable `csrfToken`, not the outer Node.js
+  // parameter of the same name.
+  var podScriptHtml =
+    '<script>' +
+    '(function() {' +
+      'var csrfToken=' + JSON.stringify(csrfToken) + ';' +
+      'var btn = document.getElementById("set-default-pod-btn");' +
+      'var picker = document.getElementById("set-default-pod-picker");' +
+      'var select = document.getElementById("default-pod-select");' +
+      'var confirmBtn = document.getElementById("confirm-default-pod-btn");' +
+      'var cancelBtn = document.getElementById("cancel-default-pod-btn");' +
+      'var errorEl = document.getElementById("default-pod-error");' +
+      'var displayEl = document.getElementById("default-pod-display");' +
+      'btn.onclick = function() {' +
+        'picker.style.display = "block";' +
+        'errorEl.style.display = "none";' +
+        'fetch("/api/pods").then(function(r) { return r.json(); }).then(function(data) {' +
+          'select.innerHTML = "";' +
+          '(data.pods || []).forEach(function(p) {' +
+            'var opt = document.createElement("option");' +
+            'opt.value = p.pod_id; opt.textContent = p.name;' +
+            'select.appendChild(opt);' +
+          '});' +
+        '}).catch(function() {' +
+          'errorEl.textContent = "Could not load pods — try again.";' +
+          'errorEl.style.display = "block";' +
+        '});' +
+      '};' +
+      'cancelBtn.onclick = function() { picker.style.display = "none"; };' +
+      'confirmBtn.onclick = function() {' +
+        'fetch("' + '/products/' + _escapeHtml(productId) + '/set-default-pod", {' +
+          'method: "POST",' +
+          'headers: { "Content-Type": "application/json" },' +
+          'body: JSON.stringify({ podId: select.value, _csrf: csrfToken })' +
+        '}).then(function(r) { return r.json().then(function(body) { return { status: r.status, body: body }; }); })' +
+          '.then(function(result) {' +
+            'if (result.status !== 200) {' +
+              'errorEl.textContent = result.body.error;' +
+              'errorEl.style.display = "block";' +
+              'return;' +
+            '}' +
+            'displayEl.textContent = "Default pod: " + result.body.podName + " (" + result.body.memberCount + " members)";' +
+            'picker.style.display = "none";' +
+          '}).catch(function() {' +
+            'errorEl.textContent = "Network error — try again.";' +
+            'errorEl.style.display = "block";' +
+          '});' +
+      '};' +
+    '})();' +
+    '<\/script>';
   var body = '<div style="max-width:720px">' +
     '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">' +
       '<div>' +
@@ -1184,6 +1260,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
         '</div>' +
       '</div>' +
     '</div>' +
+    podSectionHtml +
     freshnessHtml +
     repoHtml +
     healthHtml +
@@ -1233,6 +1310,7 @@ function _renderProductView(productName, productId, features, login, rollupRow, 
     'function rpcFilterRepoPicker(){var q=document.getElementById("rpc-picker-search").value.trim().toLowerCase();var items=document.querySelectorAll("#rpc-picker-list .rpc-repo-item");var anyVisible=false;items.forEach(function(li){var match=!q||li.getAttribute("data-fullname").indexOf(q)!==-1;li.style.display=match?"flex":"none";if(match){anyVisible=true;}});var empty=document.getElementById("rpc-picker-empty");if(empty){empty.style.display=anyVisible?"none":"block";}}' +
     'async function rpcSelectRepo(productId,owner,repo){try{var r=await fetch("/products/"+productId,{method:"PUT",headers:{"Content-Type":"application/json"},body:JSON.stringify({owner:owner,repo:repo})});if(r.ok){window.location.reload();}else{var j=await r.json();alert("Error: "+(j.error||"Failed"));}}catch(e){alert("Error: "+e.message);}}' +
     '<\/script>' +
+    podScriptHtml +
   '</div>';
   return _htmlShell.renderShell({
     title: productName,
@@ -2665,7 +2743,8 @@ async function handleGetProductView(req, res, _next, pool) {
     };
   });
   if (res.json) {
-    res.json({ features: features });
+    var defaultPod = await getProductDefaultPod(_pool, tenantId, productId);
+    res.json({ features: features, defaultPod: defaultPod });
   } else {
     // fix-forward (post-a1): the module-management form needs a CSRF token
     // to submit create/rename/delete, matching every other mutating form in
@@ -2716,7 +2795,10 @@ async function handleGetProductView(req, res, _next, pool) {
     if (!prodRow.repo_owner && !prodRow.repo_name && accessTokenForPicker) {
       repoPickerResult = await _repoPicker.getAccessibleRepos(accessTokenForPicker, _repoAdapter.listRepos);
     }
-    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navSummary.products, navSummary.noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId);
+    // ep1-s2 (Task 6, 3d): fetch the product's current default pod for the
+    // "Pod & Team" section's initial (non-AJAX) render.
+    var defaultPod = await getProductDefaultPod(_pool, tenantId, productId);
+    var html = _renderProductView(productName, productId, features, login, rollupRow, isSyncing, prodRow.repo_owner, prodRow.repo_name, modules, csrfToken, featureModuleAssignments, artefactCountsByJourneyId, navSummary.products, navSummary.noProductJourneyCount, repoPickerResult, isAdmin, sessionOriginByJourneyId, defaultPod);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   }
@@ -3540,6 +3622,49 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
 }
 
 /**
+ * ep1-s2 AC1 — POST /products/:id/set-default-pod: assigns an existing pod
+ * as a product's default team. Does NOT touch feature-creation logic (see
+ * decisions.md, 2026-09-15 scope-boundary entry) -- ep1-s3 consumes
+ * getProductDefaultPod()'s shape to auto-assign at feature-creation time.
+ */
+async function handlePostSetDefaultPod(req, res, _next, pool) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+  var _pool = pool;
+  var productId = req.params && req.params.id;
+  var tenantId = req.session && req.session.tenantId;
+  var body = req.body || {};
+  var podId = body.podId;
+
+  function _json(status, payload) {
+    if (res.status) { res.status(status).json(payload); }
+    else { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(payload)); }
+  }
+
+  if (!podId) {
+    return _json(400, { error: 'podId is required' });
+  }
+
+  var prodRow = (await _pool.query('SELECT product_id, tenant_id FROM products WHERE product_id = $1', [productId])).rows[0];
+  if (!prodRow || prodRow.tenant_id !== tenantId) {
+    return _json(404, { error: 'Product not found' });
+  }
+
+  var assignedBy = (req.session && (req.session.userId || req.session.login)) || null;
+  var result;
+  try {
+    result = await setProductDefaultPod(_pool, { tenantId: tenantId, productId: productId, podId: podId, assignedBy: assignedBy });
+  } catch (err) {
+    if (err && err.code === 'POD_NOT_FOUND') {
+      return _json(400, { error: 'No pod found with that id for this tenant' });
+    }
+    throw err;
+  }
+
+  return _json(200, { productId: productId, defaultPodId: podId, podName: result.podName, memberCount: result.memberCount });
+}
+
+/**
  * prc-s4.1 — PUT /products/:id — edit a product's name, description, and/or
  * repo association. Name/description are simple UPDATEs (AC1). Repo changes
  * reuse the repo-access-verification logic from prc-s1.2 via the shared
@@ -4299,6 +4424,8 @@ module.exports = {
   handlePostProductSync,
   handleGetProductSyncStatus,
   handlePostProductFeature,
+  // ep1-s2: POST /products/:id/set-default-pod handler
+  handlePostSetDefaultPod,
   handleGetProductKanban,
   handleGetOrgKanban,
   // s1.1: board-driven "Advance" action (new caller of the real gate-confirm route)

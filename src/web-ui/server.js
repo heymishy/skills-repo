@@ -94,6 +94,8 @@ const { createGithubOrgBulkAddHandlers }                             = require('
 const { setImpersonationAuditAdapter }                               = require('./adapters/impersonation-audit-adapter'); // d1
 const { handlePostPodsCreate, handleGetPods }                        = require('./routes/pods'); // ep1-s1
 const { migratePodsSchema }                                          = require('./modules/pod-store'); // ep1-s1
+const { handlePostSetDefaultPod }                                    = require('./routes/products'); // ep1-s2 (products.js already required elsewhere in this file for its other handlers -- this is an additional named import from the same module)
+const { migratePodAssignmentsSchema }                                = require('./modules/pod-assignment-store'); // ep1-s2
 const { createImpersonationHandlers }                                = require('./routes/impersonation');         // d1
 
 const PORT = process.env.PORT || 3000;
@@ -609,6 +611,11 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     migratePodsSchema(_userRolesPool).then(function() {
       console.log('[ep1-s1] pods/pod_members schema ready');
     }).catch(function(err) { console.error('[ep1-s1] pods schema migration failed:', err.message); });
+
+    // ep1-s2 — Auto-migrate pod_assignments schema.
+    migratePodAssignmentsSchema(_userRolesPool).then(function() {
+      console.log('[ep1-s2] pod_assignments schema ready');
+    }).catch(function(err) { console.error('[ep1-s2] pod_assignments schema migration failed:', err.message); });
 
     // story-6-conversion-to-independent — wire the conversion route handlers
     // (reuses the organisations table + user-roles.js's resolveRoleForPerson
@@ -3499,6 +3506,16 @@ async function router(req, res) {
       await requireNonViewer(req, res, () => { _rnvOk = true; });
       if (!_rnvOk) return;
       await handlePostProductFeature(req, res, null, _pshPool, null);
+    });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/set-default-pod$/) && req.method === 'POST') {
+    // ep1-s2 — assign a pod as a product's default team
+    req.params = { id: pathname.split('/')[2] };
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostSetDefaultPod(req, res, null, _pshPool);
     });
 
   } else if (pathname.match(/^\/products\/[^/]+\/repo\/create$/) && req.method === 'POST') {
