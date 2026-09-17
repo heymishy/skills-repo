@@ -34797,61 +34797,66 @@
         {
           "slug": "ep1-s2",
           "id": "ep1-s2",
-          "stage": "implementation-plan",
+          "stage": "verify-completion",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
-            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep1-s2-test-plan.md"
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep1-s2-test-plan.md",
+            "passing": 36,
+            "total": 36
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep1-s2-dor.md",
-          "updatedAt": "2026-09-16T02:40:37.847Z",
+          "updatedAt": "2026-09-17T05:29:28.178Z",
           "tasks": [
             {
               "id": "task-1",
               "name": "pod-assignment-store: schema + data access",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep1-s2-plan.md"
             },
             {
               "id": "task-2",
               "name": "POST /products/:id/set-default-pod handler (AC1 happy path)",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep1-s2-plan.md"
             },
             {
               "id": "task-3",
               "name": "AC3: non-retroactivity proof",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep1-s2-plan.md"
             },
             {
               "id": "task-4",
               "name": "AC2 handoff precondition: defaultPod in product view JSON",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep1-s2-plan.md"
             },
             {
               "id": "task-5",
               "name": "Wire into server.js",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep1-s2-plan.md"
             },
             {
               "id": "task-6",
               "name": "UI: Pod & Team section, no-refresh update",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep1-s2-plan.md"
             },
             {
               "id": "task-7",
               "name": "E2E spec + fake-test-db.js extension",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep1-s2-plan.md"
             }
-          ]
+          ],
+          "acVerified": 3,
+          "acTotal": 3,
+          "verifyStatus": "passed"
         },
         {
           "slug": "ep1-s3",
