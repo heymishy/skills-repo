@@ -48,3 +48,16 @@ async function testCollaboratorsPresenceHandlerExists() {
 testCollaboratorsPresenceHandlerExists()
   .then(() => console.log('  ok - all 3 new handlers exported'))
   .catch((err) => { console.error('  FAIL - testCollaboratorsPresenceHandlerExists:', err.message); process.exitCode = 1; });
+
+// tests/check-ep2-s1-presence-sidebar.js — Part 3
+// Full render-path assertion (sidebar container + script tag present in
+// HTML output) is exercised by the E2E test (Task 6) against a real
+// server -- handleGetFeatureArtefacts's HTML assembly has too many
+// upstream branches (breadcrumb resolution, artefact fallback) to
+// fixture cheaply at the unit level without duplicating that logic.
+function testFeaturePageHandlerStillExported() {
+  const { handleGetFeatureArtefacts } = require('../src/web-ui/routes/features');
+  assert.strictEqual(typeof handleGetFeatureArtefacts, 'function');
+}
+testFeaturePageHandlerStillExported();
+console.log('  ok - handleGetFeatureArtefacts still exported after sidebar injection edit');

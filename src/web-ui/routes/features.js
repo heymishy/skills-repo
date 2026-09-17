@@ -959,7 +959,26 @@ async function handleGetFeatureArtefacts(req, res, featureSlug, pool) {
         '});',
       '})()<\/script>'
     ].join('') : '';
-    const bodyContent = `${breadcrumbHtml}\n<h1>${shellEscHtml(displayTitle)}</h1>\n${deleteSectionHtml}\n${listHtml}`;
+    // ep2-s1: Team presence sidebar -- only when a live journey resolves for
+    // this feature (an artefact-only page with no resolvable journey has no
+    // collaborators to show; consistent with this handler's existing
+    // defensive "journey may not exist" handling elsewhere). Uses
+    // artefactJourney (not journeyForPage) because that's the final
+    // resolved journey for the real feature -- it re-resolves via the
+    // taxonomy-scan fallback (see fal-s1 comment above) when the raw slug
+    // doesn't directly resolve, matching the same journey already used for
+    // pgArtefactRows and resumeLookup above.
+    let teamSidebarHtml = '';
+    if (artefactJourney && artefactJourney.journeyId) {
+      teamSidebarHtml =
+        '<aside id="team-sidebar" aria-label="Team" class="sw-team-sidebar">' +
+          '<h2>Team</h2>' +
+          '<ul id="team-sidebar-list" role="list"></ul>' +
+        '</aside>' +
+        '<script src="/public/presence-sidebar.js"></script>' +
+        '<script>window.initPresenceSidebar(' + JSON.stringify(artefactJourney.journeyId) + ', "team-sidebar-list");</script>';
+    }
+    const bodyContent = `${breadcrumbHtml}\n<h1>${shellEscHtml(displayTitle)}</h1>\n${deleteSectionHtml}\n${listHtml}\n${teamSidebarHtml}`;
     const html = await renderShellWithNav(pool, req.session.tenantId, {
       title:       `Artefacts — ${shellEscHtml(displayTitle)}`,
       bodyContent,
