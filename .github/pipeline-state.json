@@ -34937,7 +34937,7 @@
         {
           "slug": "ep2-s1",
           "id": "ep2-s1",
-          "stage": "implementation-plan",
+          "stage": "subagent-execution",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -34947,42 +34947,42 @@
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep2-s1-dor.md",
-          "updatedAt": "2026-09-17T19:10:32.732Z",
+          "updatedAt": "2026-09-17T22:57:03.089Z",
           "tasks": [
             {
               "id": "task-1",
               "name": "presence-store.js in-memory presence module",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep2-s1-plan.md"
             },
             {
               "id": "task-2",
               "name": "journey.js collaborators-presence, heartbeat, SSE stream handlers",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep2-s1-plan.md"
             },
             {
               "id": "task-3",
               "name": "features.js Team sidebar injection into feature page",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep2-s1-plan.md"
             },
             {
               "id": "task-4",
               "name": "presence-sidebar.js client-side component",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep2-s1-plan.md"
             },
             {
               "id": "task-5",
               "name": "Integration tests: full path and tenant isolation",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep2-s1-plan.md"
             },
             {
               "id": "task-6",
               "name": "E2E and NFR tests",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep2-s1-plan.md"
             }
           ]
