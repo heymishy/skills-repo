@@ -1,5 +1,15 @@
 # Decisions: Multi-User Role-Aware Synchronous Collaboration
 
+## RISK-ACCEPT: ep1-s2 NFR-Perf-1 (default pod assignment ≤2s) has no automated measurement
+
+**Date:** 2026-09-17
+**Context:** Written during `/definition-of-done` for ep1-s2. Same class of gap as `ep1-s1`'s own NFR-Perf-1 RISK-ACCEPT: the story's NFR-Perf-1 ("Default pod assignment completes within 2 seconds") was never given an automated timing assertion — the in-memory fake-pool unit tests don't measure real Postgres latency, and no dedicated timing test was added at any stage.
+**Decision:** RISK-ACCEPT. Ship without a formal timing assertion.
+**Rationale:** Low risk — `setProductDefaultPod` is a single tenant-scoped SELECT, a COUNT, and one upsert INSERT; no structural reason to approach 2s at this story's scale. Consistent with the same reasoning already accepted for `ep1-s1`'s equivalent NFR.
+**Story:** ep1-s2 — no AC change; NFR-Perf-1 remains formally unverified by automation, tracked here rather than silently dropped.
+
+---
+
 ## ep1-s2's own AC2 conflicts with its own DoR touch-point contract; scope narrowed to match the contract, not the AC's literal wording
 
 **Date:** 2026-09-16

@@ -34797,8 +34797,8 @@
         {
           "slug": "ep1-s2",
           "id": "ep1-s2",
-          "stage": "branch-complete",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -34809,7 +34809,7 @@
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep1-s2-dor.md",
-          "updatedAt": "2026-09-17T05:30:34.809Z",
+          "updatedAt": "2026-09-17T05:50:52.242Z",
           "tasks": [
             {
               "id": "task-1",
@@ -34857,8 +34857,12 @@
           "acVerified": 3,
           "acTotal": 3,
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/898"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/898",
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "blocker": "COMPLETE WITH DEVIATIONS: AC2 is deliberately precondition-only, full outcome deferred to ep1-s3 (documented, decisions.md 2026-09-16); NFR-Perf-1 has no automated measurement (RISK-ACCEPTed, decisions.md 2026-09-17). Neither blocks release; both documented, low-severity, accepted/by-design.",
+          "dodArtefact": "artefacts/new-feature-2b74a292/dod/ep1-s2-dod.md"
         },
         {
           "slug": "ep1-s3",
