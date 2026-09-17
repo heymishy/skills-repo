@@ -36,3 +36,13 @@ function testNeverSeenIsOffline() {
 }
 testNeverSeenIsOffline();
 console.log('  ok - never-seen user is offline with null lastSeenMs');
+
+// tests/check-ep2-s1-presence-sidebar.js — Part 2
+const journeyRoute = require('../src/web-ui/routes/journey');
+
+async function testCollaboratorsPresenceHandlerExists() {
+  assert.strictEqual(typeof journeyRoute.handleGetJourneyCollaboratorsPresence, 'function');
+  assert.strictEqual(typeof journeyRoute.handlePostJourneyHeartbeat, 'function');
+  assert.strictEqual(typeof journeyRoute.handleGetJourneyPresenceStream, 'function');
+}
+testCollaboratorsPresenceHandlerExists().then(() => console.log('  ok - all 3 new handlers exported'));
