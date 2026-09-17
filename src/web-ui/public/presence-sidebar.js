@@ -1,8 +1,10 @@
 // src/web-ui/public/presence-sidebar.js — ep2-s1
 // Team presence sidebar: reads journeyId from the #team-sidebar element's
 // data-journey-id attribute (this codebase's established convention for
-// feeding server-rendered data to a client script -- see routes/journey.js's
-// own data-journey-id usage), opens an SSE stream for live status, and
+// feeding server-rendered data to a client script -- see views/kanban-view.js's
+// own client-side data-journey-id reads, e.g. getAttribute("data-journey-id"),
+// and routes/journey.js's server-side emission of the same attribute), opens
+// an SSE stream for live status, and
 // re-renders "last seen Xm ago" text every second without a network round
 // trip.
 (function () {
