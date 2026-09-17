@@ -61,3 +61,74 @@ function testFeaturePageHandlerStillExported() {
 }
 testFeaturePageHandlerStillExported();
 console.log('  ok - handleGetFeatureArtefacts still exported after sidebar injection edit');
+
+// tests/check-ep2-s1-presence-sidebar.js — Part 4
+// Full-path integration test: exercise the real getFeatureCollaborators +
+// presence-store combination against a fake pool returning 3
+// feature_collaborators rows, with presence pre-seeded for 2 online + 1
+// offline (mirrors ep1-s3's own makeFakePool() convention from
+// check-ep1-s3-feature-pod-inheritance.js).
+async function testFullPathPresenceLoad() {
+  presenceStore._clearForTesting();
+  let t = 1000000;
+  presenceStore.setNow(() => t);
+  presenceStore.registerActivity('journey-a1', 'hamish');
+  presenceStore.registerActivity('journey-a1', 'susan');
+  presenceStore.registerActivity('journey-a1', 'darren');
+  t += 35000; // darren goes stale; hamish/susan re-register below stay fresh
+  presenceStore.registerActivity('journey-a1', 'hamish');
+  presenceStore.registerActivity('journey-a1', 'susan');
+
+  const fakePool = {
+    query: async (sql, params) => {
+      if (sql.indexOf('feature_collaborators') !== -1) {
+        return { rows: [
+          { collaborator_id: 'c1', user_id: 'hamish', role_id: 'conductor', pod_id: 'pod-1' },
+          { collaborator_id: 'c2', user_id: 'susan', role_id: 'engineer', pod_id: 'pod-1' },
+          { collaborator_id: 'c3', user_id: 'darren', role_id: 'engineer', pod_id: 'pod-1' }
+        ] };
+      }
+      return { rows: [] };
+    }
+  };
+  const { getFeatureCollaborators } = require('../src/web-ui/modules/feature-collaborator-store');
+  const rows = await getFeatureCollaborators(fakePool, 'journey-a1');
+  const withStatus = rows.map(r => Object.assign({}, r, presenceStore.getStatus('journey-a1', r.userId)));
+
+  assert.strictEqual(withStatus.length, 3);
+  assert.strictEqual(withStatus.find(c => c.userId === 'hamish').status, 'online');
+  assert.strictEqual(withStatus.find(c => c.userId === 'susan').status, 'online');
+  assert.strictEqual(withStatus.find(c => c.userId === 'darren').status, 'offline');
+}
+// NOTE: testPresenceIsolationByJourney is deliberately chained after this
+// test's promise settles (rather than fired independently, as elsewhere in
+// this file) because both tests mutate the same shared presence-store
+// global. Firing them back-to-back races: this test suspends at its
+// `await getFeatureCollaborators(...)` call, and testPresenceIsolationByJourney's
+// synchronous `_clearForTesting()` would run and wipe state before this
+// test resumes and reads it back.
+testFullPathPresenceLoad()
+  .then(() => console.log('  ok - full path: 2 online, 1 offline, correct roles'))
+  .catch((err) => { console.error('  FAIL - testFullPathPresenceLoad:', err.message); process.exitCode = 1; })
+  .then(() => testPresenceIsolationByJourney())
+  .then(() => console.log('  ok - presence isolated per journeyId (tenant boundary enforced upstream by requireJourneyAccess)'))
+  .catch((err) => { console.error('  FAIL - testPresenceIsolationByJourney:', err.message); process.exitCode = 1; });
+
+// Journey isolation: presence-store keys are journeyId, and journeyId access
+// is already tenant-gated by requireJourneyAccess (POLICY.TENANT) in every
+// handler that calls into presence-store or feature-collaborator-store --
+// there is no tenant_id column on feature_collaborators to test directly
+// (by design -- see decisions.md's architecture-correction entry). This
+// test proves the isolation is structural: two different journeyIds never
+// share a presence map entry, even for the same login string across
+// tenants/journeys.
+async function testPresenceIsolationByJourney() {
+  presenceStore._clearForTesting();
+  presenceStore.setNow(() => 5000000);
+  presenceStore.registerActivity('journey-tenant-a', 'hamish');
+  const crossJourneyLookup = presenceStore.getStatus('journey-tenant-b', 'hamish');
+  assert.strictEqual(crossJourneyLookup.status, 'offline', 'presence for one journey must not leak into another');
+}
+// Invoked chained after testFullPathPresenceLoad above (function declarations
+// hoist, so the forward reference at the top of the file is valid) -- see
+// the NOTE above testFullPathPresenceLoad's invocation for why.
