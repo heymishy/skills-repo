@@ -34867,7 +34867,7 @@
         {
           "slug": "ep1-s3",
           "id": "ep1-s3",
-          "stage": "branch-setup",
+          "stage": "implementation-plan",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -34877,7 +34877,51 @@
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep1-s3-dor.md",
-          "updatedAt": "2026-09-17T06:07:46.303Z"
+          "updatedAt": "2026-09-17T06:13:07.165Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "feature-collaborator-store: schema + data access",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s3-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Inject pod-inheritance into handlePostProductFeature (AC1)",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s3-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "AC2: feature_collaborators pre-populated",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s3-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "AC3: role accuracy",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s3-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Tenant isolation integration test",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s3-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "Wire feature_collaborators schema migration into server.js",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s3-plan.md"
+            },
+            {
+              "id": "task-7",
+              "name": "Real end-to-end HTTP-level test + fake-test-db.js extension",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s3-plan.md"
+            }
+          ]
         },
         {
           "slug": "ep2-s1",
