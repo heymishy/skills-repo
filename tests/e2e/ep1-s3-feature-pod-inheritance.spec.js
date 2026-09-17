@@ -64,12 +64,35 @@ withAuth('ep1-s3: a feature created under a product with a default pod inherits 
   const location = featureRes.headers()['location'] || '';
   expect(location).toMatch(/\/skills\/discovery\/sessions\/[^/]+\/chat/);
 
-  // No UI exists yet to inspect pod_assignments/feature_collaborators
-  // directly (per this plan's own header note) -- the redirect succeeding
-  // (rather than erroring) with a real session id IS the observable proof
-  // available at this layer that the real dispatch path, including the new
-  // pod-inheritance code, executed without throwing. Full DB-state proof is
-  // covered by this story's own unit-level tests (Tasks 2-5), which call
-  // the same handler directly and DO assert on pod_assignments/
-  // feature_collaborators row state.
+  // ep1-s3 Task 7 (fix): the redirect succeeding is NOT sufficient proof --
+  // handlePostProductFeature wraps its whole pod-inheritance block in a
+  // non-fatal try/catch (products.js), so this same 303 redirect happens
+  // identically whether pod-inheritance ran correctly, threw and was
+  // swallowed, or never ran at all. Confirmed empirically: reverting this
+  // story's entire fake-test-db.js extension still left the redirect
+  // assertion above passing 1/1. Real proof requires reading DB state, and
+  // an E2E spec has no require()-level access to journey-store.js/
+  // feature-collaborator-store.js internals -- only the session id is
+  // available, extracted from the Location header above. The new
+  // GET /test/pod-inheritance-state/:sessionId endpoint (server.js)
+  // resolves journeyId server-side via skillsRoute._getHtmlSession and
+  // reads real pod_assignments/feature_collaborators counts. See
+  // decisions.md (2026-09-17).
+  const sessionIdMatch = /\/skills\/discovery\/sessions\/([^/]+)\/chat/.exec(location);
+  expect(sessionIdMatch, 'redirect Location should carry a session id').not.toBeNull();
+  const sessionId = sessionIdMatch[1];
+
+  const podStateRes = await page.request.get('/test/pod-inheritance-state/' + encodeURIComponent(sessionId));
+  expect(podStateRes.status()).toBe(200);
+  const podState = await podStateRes.json();
+
+  // Exactly one pod_assignments row: the feature-level default-pod
+  // assignment written by setFeatureDefaultPod for this journey.
+  expect(podState.podAssignmentCount).toBe(1);
+  // The pod created above has 2 members: the creator ("You", pre-included
+  // by openModal() in pod-manager.html regardless of who is added) plus
+  // "Hamish" (added explicitly via the roster's Add button). Both are
+  // written to feature_collaborators by populateFeatureCollaboratorsFromPod,
+  // which copies every pod_members row 1:1 with no filtering.
+  expect(podState.collaboratorCount).toBe(2);
 });
