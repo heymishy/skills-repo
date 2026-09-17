@@ -4,6 +4,13 @@
 **Reflects:** commits `77de594` (Copilot API token), `0aff1c8` (mfc.2 UX), `57c7f44` (model label), `50aaccc` (mfc.3 streaming)
 **Purpose:** Enterprise port reference. The pipeline artefacts in `2026-05-02-web-ui-copilot-execution-layer` (wuce) and `2026-05-05-web-ui-dynamic-skill-questions` (dsq) describe an **earlier architecture** that has been superseded. Use this document, not those artefacts, when implementing the skill session feature in an enterprise deployment.
 
+> ⚠️ **Scope staleness note (added 2026-09-17):** this document is accurate for the skill-session chat flow it describes, but two things have drifted since 2026-05-06, and one framing needs qualifying:
+> 1. `buildSystemPrompt`'s real signature is now `(skillName, sessionPath, repoRoot, priorArtefacts, sessionContext, _outContextFiles)` — 6 params, not the `(skillName, sessionPath, repoRoot?)` shown below. A second function, `buildSystemPromptWithProductContext`, now also exists and is not documented here.
+> 2. `routes/skills.js` has grown well beyond the route map in this doc — real handlers now include `handlePostCanvasEditHtml`, `handlePostAssumptionConfirm`, and `handlePostMaterialityAction`, none of which appear below.
+> 3. The **"No persistence"** claim in Runtime Constraints is true only for skill-session chat state specifically. It says nothing about the rest of the application, which now persists to real PostgreSQL (products, pods, billing, org/agency data) — see the README's [Product platform layer](../README.md#product-platform-layer) section, which this doc predates entirely.
+>
+> This document remains the right reference for the skill-session flow itself; it is not a description of the web UI as a whole.
+
 ---
 
 ## What Changed and Why

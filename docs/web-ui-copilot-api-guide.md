@@ -25,9 +25,11 @@ This document covers how the skills pipeline web UI integrates with the GitHub C
 
 ## 1. What this implementation is (and is not)
 
-This web UI calls the **GitHub Copilot Chat Completions API** — an OpenAI-compatible HTTP endpoint hosted and managed by GitHub at `api.githubcopilot.com`. It is **not** a direct integration with Anthropic's API. GitHub internally routes requests to the appropriate model (Claude Sonnet 4.6, GPT-4o, etc.) based on the model name in the request body.
+> ⚠️ **Correction (2026-09-17): this section describes an alternate path, not the current default.** `SKILL_EXECUTOR_PROVIDER` defaults to `anthropic` — the web UI calls the Anthropic API directly by default. Copilot (described in this section) is the `SKILL_EXECUTOR_PROVIDER=copilot` path — real, supported, and documented accurately below, but opt-in rather than the primary route. Treat this whole document as "the Copilot provider guide," not as a description of the web UI's default model integration.
 
-The implementation is a plain Node.js `http` module server with zero framework dependencies. All API calls are made server-side using Node's built-in `https` module. No SDK, no npm AI library, no Copilot CLI binary — just HTTP.
+This web UI can call the **GitHub Copilot Chat Completions API** — an OpenAI-compatible HTTP endpoint hosted and managed by GitHub at `api.githubcopilot.com` — as an alternate model provider. When configured this way, GitHub internally routes requests to the appropriate model (Claude Sonnet 4.6, GPT-4o, etc.) based on the model name in the request body. By default, however, the web UI calls Anthropic's API directly (see [section 7](#7-two-model-providers--copilot-vs-anthropic)).
+
+Server framework: a plain Node.js `http` module server, no Express or other routing framework. That part of the original framing still holds. It does **not** mean the application has no other npm dependencies — `package.json` includes `pg` (Postgres), `bcrypt`, `passport` + `passport-magic-login`, `stripe`, `@upstash/redis`, and others, used throughout the wider product-platform layer this doc doesn't cover (see the README's [Product platform layer](../README.md#product-platform-layer) section). The "no SDK, no npm AI library" claim refers narrowly to the model-call path itself (Node's built-in `https` module, no `@anthropic-ai/sdk` or Copilot CLI binary) — it was previously stated in a way that read as a claim about the app as a whole, which it is not.
 
 ---
 
@@ -216,8 +218,10 @@ The executor is configured by the `SKILL_EXECUTOR_PROVIDER` environment variable
 
 | `SKILL_EXECUTOR_PROVIDER` | Endpoint | Auth | Streaming |
 |---|---|---|---|
-| `copilot` (default) | `api.githubcopilot.com/chat/completions` | `GITHUB_TOKEN` or OAuth session token | ✅ Full SSE streaming |
-| `anthropic` | `api.anthropic.com/v1/messages` | `ANTHROPIC_API_KEY` | ⚠️ Simulated (single onChunk call at end) |
+| `anthropic` (default — unset or explicit, per `src/web-ui/config/validate-env.js`) | `api.anthropic.com/v1/messages` | `ANTHROPIC_API_KEY` | ⚠️ Simulated (single onChunk call at end) |
+| `copilot` | `api.githubcopilot.com/chat/completions` | `GITHUB_TOKEN` or OAuth session token | ✅ Full SSE streaming |
+
+> Corrected 2026-09-17 — this table previously marked `copilot` as the default; the code default (and the default when the variable is unset) is `anthropic`.
 
 ### copilot provider model selection
 
@@ -265,7 +269,7 @@ This requires an Anthropic account and direct API key. Note: streaming is not fu
 
 | Variable | Default | Description |
 |---|---|---|
-| `SKILL_EXECUTOR_PROVIDER` | `copilot` | Model provider: `copilot` or `anthropic` |
+| `SKILL_EXECUTOR_PROVIDER` | `anthropic` | Model provider: `copilot` or `anthropic` (corrected 2026-09-17 — default is `anthropic`, not `copilot`) |
 | `WUCE_TURN_MODEL` | `gpt-4o` (copilot) / `claude-sonnet-4.6` (anthropic) | Model name passed to the provider |
 | `WUCE_TURN_MODEL_MAX_TOKENS` | `4096` | Maximum tokens in a single turn response |
 | `WUCE_TURN_TIMEOUT_MS` | `30000` | HTTP request timeout in milliseconds |
@@ -532,7 +536,7 @@ NODE_ENV=production
 | **GitHub App** | Not used | Requires org admin installation approval. OAuth App is sufficient for per-user auth and API access. |
 | **GitHub Copilot CLI** (`gh copilot`) | Not used | Not required. The implementation calls the Copilot HTTP API directly with no CLI dependency. Not yet available/approved in many enterprise environments. |
 | **Personal Access Token (PAT)** | Not used | PATs cannot carry the `copilot` scope. Use `gh auth token` output instead. |
-| **Anthropic API (direct)** | Not used by default | Available as optional `anthropic` provider (`SKILL_EXECUTOR_PROVIDER=anthropic`) if you have a direct Anthropic API key. |
+| **Anthropic API (direct)** | ⚠️ Corrected 2026-09-17: used by default | `SKILL_EXECUTOR_PROVIDER` defaults to `anthropic`; Copilot is the opt-in alternate provider, not the other way around. |
 | **Express / any web framework** | Not used | Server is plain Node.js `http` module. |
 | **Any npm AI SDK** | Not used | All API calls use the built-in `https` module only. |
 | **WebSockets** | Not used | Streaming uses SSE (Server-Sent Events) — simpler, one-way, and works through standard HTTP/1.1 proxies. |
