@@ -90,8 +90,26 @@ async function getProductDefaultPod(pool, tenantId, productId) {
   return { podId: row.pod_id, podName: row.name, memberCount: parseInt(memberCountRow.count, 10) };
 }
 
+/**
+ * ep1-s3: record that a specific FEATURE (journey) inherited a pod from its
+ * product's default. Unlike setProductDefaultPod (feature_id IS NULL, one
+ * row per product), this always INSERTs a new row (feature_id IS NOT NULL,
+ * one row per feature) -- no upsert/conflict handling needed, since a given
+ * featureId can only be created once.
+ * @returns {Promise<{assignmentId: string}>}
+ */
+async function setFeatureDefaultPod(pool, args) {
+  const assignmentId = crypto.randomUUID();
+  await pool.query(
+    'INSERT INTO pod_assignments (assignment_id, tenant_id, pod_id, product_id, feature_id, assignment_type, assigned_by) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+    [assignmentId, args.tenantId, args.podId, args.productId, args.featureId, 'feature-inherits-product-default', args.assignedBy]
+  );
+  return { assignmentId };
+}
+
 module.exports = {
   migratePodAssignmentsSchema,
   setProductDefaultPod,
-  getProductDefaultPod
+  getProductDefaultPod,
+  setFeatureDefaultPod
 };

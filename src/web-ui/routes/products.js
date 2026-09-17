@@ -24,7 +24,8 @@ var _artefactFetcher = require('../adapters/artefact-fetcher'); // wugs-s2 — r
 var _guardrailPrAdapter = require('../adapters/guardrail-pr-adapter'); // wugs-s6 review fix — GuardrailPrConflictError for the write-adapter try/catch
 var { isEffectivelyAdmin } = require('../modules/impersonation'); // wugs-s9 — DoR-specified effective-role check, matching credits-guard.js's exact pattern
 var _journeyStoreModule = require('../modules/journey-store'); // wnl-s3 — reused (not requiring routes/journey.js at module scope, which would be circular) to list existing journeys for _hasUnbackfilledCliFeatures
-var { setProductDefaultPod, getProductDefaultPod } = require('../modules/pod-assignment-store'); // ep1-s2
+var { setProductDefaultPod, getProductDefaultPod, setFeatureDefaultPod } = require('../modules/pod-assignment-store'); // ep1-s2, ep1-s3
+var { populateFeatureCollaboratorsFromPod } = require('../modules/feature-collaborator-store'); // ep1-s3
 
 // s1.1 -- injectable bulk session-store reader. Defaults to a lazy require of
 // skills.js's real _getHtmlSessionsBulk (mirrors the same lazy-getter shape
@@ -3556,6 +3557,23 @@ async function handlePostProductFeature(req, res, _next, pool, posthog) {
     tenantId:    tenantId,
     productId:   productId
   });
+
+  // ep1-s3: if this product has a default pod, the new feature (journey)
+  // inherits it automatically -- best-effort, never blocks feature creation.
+  // See decisions.md (2026-09-17) for why this lives here rather than in a
+  // separate features.js/handler (no such file/route exists for feature
+  // creation in this codebase).
+  if (tenantId && productId) {
+    try {
+      const defaultPod = await getProductDefaultPod(pool, tenantId, productId);
+      if (defaultPod) {
+        await setFeatureDefaultPod(pool, { tenantId: tenantId, podId: defaultPod.podId, productId: productId, featureId: journeyId, assignedBy: (req.session && req.session.login) || null });
+        await populateFeatureCollaboratorsFromPod(pool, { featureId: journeyId, podId: defaultPod.podId });
+      }
+    } catch (err) {
+      console.error('[handlePostProductFeature] ep1-s3 pod-inheritance failed (non-fatal):', err.message);
+    }
+  }
 
   _ph.capture(tenantId, 'journey_created', {
     journeyId: journeyId,
