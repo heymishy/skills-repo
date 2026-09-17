@@ -282,6 +282,7 @@ async function run() {
     const journeyId = session && session.journeyId;
 
     const collaboratorRows = pool.featureCollaborators.filter(c => c.feature_id === journeyId);
+    eq(collaboratorRows.length, 3, 'AC3: exactly 3 feature_collaborators rows written (no duplicate/phantom row masked by the byUser lookup below)');
     const byUser = {};
     collaboratorRows.forEach(c => { byUser[c.user_id] = c.role_id; });
     eq(byUser['hamish-uuid'], 'conductor', 'AC3: Hamish role is conductor (not dropped or defaulted)');
