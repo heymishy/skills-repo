@@ -34867,17 +34867,68 @@
         {
           "slug": "ep1-s3",
           "id": "ep1-s3",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
-            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep1-s3-test-plan.md"
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep1-s3-test-plan.md",
+            "passing": 23,
+            "total": 23
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep1-s3-dor.md",
-          "updatedAt": "2026-09-15T09:06:33.505Z"
+          "updatedAt": "2026-09-17T09:30:43.980Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "feature-collaborator-store: schema + data access",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s3-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Inject pod-inheritance into handlePostProductFeature (AC1)",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s3-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "AC2: feature_collaborators pre-populated",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s3-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "AC3: role accuracy",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s3-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Tenant isolation integration test",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s3-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "Wire feature_collaborators schema migration into server.js",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s3-plan.md"
+            },
+            {
+              "id": "task-7",
+              "name": "Real end-to-end HTTP-level test + fake-test-db.js extension",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep1-s3-plan.md"
+            }
+          ],
+          "acVerified": 3,
+          "acTotal": 3,
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/899"
         },
         {
           "slug": "ep2-s1",

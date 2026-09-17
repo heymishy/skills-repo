@@ -65,6 +65,7 @@ function createFakeTestDb() {
   var podMembers = [];   // { id, pod_id, user_id, role_id, status } -- ep1-s1
   var nextPodMemberId = 1;
   var podAssignments = []; // { assignment_id, tenant_id, pod_id, product_id, feature_id, assignment_type, assigned_by, assigned_at } -- ep1-s2
+  var featureCollaborators = []; // { collaborator_id, feature_id, user_id, role_id, pod_id, is_approver } -- ep1-s3
 
   function query(sql, params) {
     var s = _normalise(sql);
@@ -365,7 +366,54 @@ function createFakeTestDb() {
     // semantics collapse to a simple findIndex + replace-or-push keyed on
     // (tenant_id, product_id, feature_id IS NULL), same replace-not-duplicate
     // logic pod-assignment-store.js's own test mock already implements.
-    if (s.indexOf('INSERT INTO POD_ASSIGNMENTS') === 0) {
+    // ep1-s3 fix: this file previously had ONE branch here
+    // (`s.indexOf('INSERT INTO POD_ASSIGNMENTS') === 0`) that matched BOTH
+    // setProductDefaultPod's 6-param product-level upsert (ep1-s2, no
+    // feature_id column) AND setFeatureDefaultPod's 7-param feature-level
+    // insert (ep1-s3, WITH a feature_id column) as the same prefix -- both
+    // SQL strings start with "INSERT INTO pod_assignments (". Because the
+    // single branch unconditionally forced `feature_id: null` and read
+    // p[4]/p[5] positionally (assignment_type/assigned_by for the 6-param
+    // shape), a setFeatureDefaultPod call was silently misread as a
+    // setProductDefaultPod upsert: it overwrote the SAME product-level
+    // default row (matched via the feature_id===null findIndex) with
+    // garbage assignment_type/assigned_by values (actually featureId/
+    // assignment_type shifted one position), and NO row with the real
+    // feature_id was ever written. This produced podAssignmentCount=0 for
+    // every feature-level assignment -- caught empirically via the
+    // /test/pod-inheritance-state E2E endpoint (Task 7 fix) after
+    // confirming getProductDefaultPod correctly found the product default
+    // pod, ruling out every other stage of the pod-inheritance path.
+    // Column lists distinguish the two shapes unambiguously.
+    if (s.indexOf('INSERT INTO POD_ASSIGNMENTS (ASSIGNMENT_ID, TENANT_ID, POD_ID, PRODUCT_ID, FEATURE_ID, ASSIGNMENT_TYPE, ASSIGNED_BY)') === 0) {
+      // setFeatureDefaultPod (ep1-s3): always a new row, one per feature --
+      // no upsert/conflict semantics, since a given featureId is only ever
+      // created once.
+      var fdpAssignmentId = p[0];
+      var fdpTenantId = p[1];
+      var fdpPodId = p[2];
+      var fdpProductId = p[3];
+      var fdpFeatureId = p[4];
+      var fdpAssignmentType = p[5];
+      var fdpAssignedBy = p[6];
+      podAssignments.push({
+        assignment_id: fdpAssignmentId,
+        tenant_id: fdpTenantId,
+        pod_id: fdpPodId,
+        product_id: fdpProductId,
+        feature_id: fdpFeatureId,
+        assignment_type: fdpAssignmentType,
+        assigned_by: fdpAssignedBy,
+        assigned_at: new Date().toISOString()
+      });
+      return Promise.resolve({ rows: [], rowCount: 1 });
+    }
+
+    if (s.indexOf('INSERT INTO POD_ASSIGNMENTS (ASSIGNMENT_ID, TENANT_ID, POD_ID, PRODUCT_ID, ASSIGNMENT_TYPE, ASSIGNED_BY)') === 0) {
+      // setProductDefaultPod (ep1-s2): product-level default, feature_id
+      // always NULL, upsert-by-replace on (tenant_id, product_id,
+      // feature_id IS NULL) mirroring the real ON CONFLICT ... WHERE
+      // feature_id IS NULL partial-unique-index semantics.
       var paAssignmentId = p[0];
       var paTenantId = p[1];
       var paPodId = p[2];
@@ -402,6 +450,67 @@ function createFakeTestDb() {
           return { pod_id: r.pod_id, name: podRow ? podRow.name : null };
         });
       return Promise.resolve({ rows: gpdRows });
+    }
+
+    // ── feature_collaborators (ep1-s3) ──────────────────────────────────
+    // Narrow support for the exact query shapes modules/feature-collaborator-store.js
+    // issues (populateFeatureCollaboratorsFromPod, getFeatureCollaborators).
+    // The "CREATE TABLE IF NOT EXISTS FEATURE_COLLABORATORS" bootstrap
+    // (migrateFeatureCollaboratorsSchema) is already covered by the generic
+    // "CREATE TABLE" catch-all above -- no separate branch needed here.
+
+    // populateFeatureCollaboratorsFromPod's own pod_members read -- a
+    // DIFFERENT shape (SELECT user_id, role_id ...) than ep1-s2's existing
+    // "SELECT COUNT(*) AS COUNT FROM POD_MEMBERS WHERE POD_ID" branch above,
+    // so it needs its own exact-prefix branch rather than reusing it.
+    if (s.indexOf('SELECT USER_ID, ROLE_ID FROM POD_MEMBERS WHERE POD_ID') === 0) {
+      var fcPodId = p[0];
+      var fcMembers = podMembers
+        .filter(function(r) { return r.pod_id === fcPodId; })
+        .map(function(r) { return { user_id: r.user_id, role_id: r.role_id }; });
+      return Promise.resolve({ rows: fcMembers });
+    }
+
+    if (s.indexOf('INSERT INTO FEATURE_COLLABORATORS') === 0) {
+      var fcCollaboratorId = p[0];
+      var fcFeatureId = p[1];
+      var fcUserId = p[2];
+      var fcRoleId = p[3];
+      var fcSourcePodId = p[4];
+      featureCollaborators.push({
+        collaborator_id: fcCollaboratorId,
+        feature_id: fcFeatureId,
+        user_id: fcUserId,
+        role_id: fcRoleId,
+        pod_id: fcSourcePodId,
+        is_approver: false
+      });
+      return Promise.resolve({ rows: [], rowCount: 1 });
+    }
+
+    if (s.indexOf('SELECT COLLABORATOR_ID, USER_ID, ROLE_ID, POD_ID FROM FEATURE_COLLABORATORS WHERE FEATURE_ID') === 0) {
+      var gfcFeatureId = p[0];
+      var gfcRows = featureCollaborators
+        .filter(function(r) { return r.feature_id === gfcFeatureId; })
+        .map(function(r) { return { collaborator_id: r.collaborator_id, user_id: r.user_id, role_id: r.role_id, pod_id: r.pod_id }; });
+      return Promise.resolve({ rows: gfcRows });
+    }
+
+    // ep1-s3 Task 7: COUNT(*) shapes issued by the new
+    // GET /test/pod-inheritance-state/:sessionId E2E read endpoint
+    // (server.js). Different shape than the branches above (keyed by
+    // feature_id, returns a single count) -- new narrow branches rather than
+    // reusing either.
+    if (s.indexOf('SELECT COUNT(*) AS COUNT FROM POD_ASSIGNMENTS WHERE FEATURE_ID') === 0) {
+      var paStateFeatureId = p[0];
+      var paStateCount = podAssignments.filter(function(r) { return r.feature_id === paStateFeatureId; }).length;
+      return Promise.resolve({ rows: [{ count: String(paStateCount) }] });
+    }
+
+    if (s.indexOf('SELECT COUNT(*) AS COUNT FROM FEATURE_COLLABORATORS WHERE FEATURE_ID') === 0) {
+      var fcStateFeatureId = p[0];
+      var fcStateCount = featureCollaborators.filter(function(r) { return r.feature_id === fcStateFeatureId; }).length;
+      return Promise.resolve({ rows: [{ count: String(fcStateCount) }] });
     }
 
     // ── people, team_memberships, person_identities (tir-s1/tir-s2/bri-s3.3) ─
@@ -571,6 +680,7 @@ function createFakeTestDb() {
       pods = [];
       podMembers = []; nextPodMemberId = 1;
       podAssignments = [];
+      featureCollaborators = [];
     }
   };
 }

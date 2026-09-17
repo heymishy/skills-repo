@@ -96,6 +96,7 @@ const { handlePostPodsCreate, handleGetPods }                        = require('
 const { migratePodsSchema }                                          = require('./modules/pod-store'); // ep1-s1
 const { handlePostSetDefaultPod }                                    = require('./routes/products'); // ep1-s2 (products.js already required elsewhere in this file for its other handlers -- this is an additional named import from the same module)
 const { migratePodAssignmentsSchema }                                = require('./modules/pod-assignment-store'); // ep1-s2
+const { migrateFeatureCollaboratorsSchema }                          = require('./modules/feature-collaborator-store'); // ep1-s3
 const { createImpersonationHandlers }                                = require('./routes/impersonation');         // d1
 
 const PORT = process.env.PORT || 3000;
@@ -616,6 +617,11 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     migratePodAssignmentsSchema(_userRolesPool).then(function() {
       console.log('[ep1-s2] pod_assignments schema ready');
     }).catch(function(err) { console.error('[ep1-s2] pod_assignments schema migration failed:', err.message); });
+
+    // ep1-s3 — Auto-migrate feature_collaborators schema.
+    migrateFeatureCollaboratorsSchema(_userRolesPool).then(function() {
+      console.log('[ep1-s3] feature_collaborators schema ready');
+    }).catch(function(err) { console.error('[ep1-s3] feature_collaborators schema migration failed:', err.message); });
 
     // story-6-conversion-to-independent — wire the conversion route handlers
     // (reuses the organisations table + user-roles.js's resolveRoleForPerson
@@ -2373,6 +2379,41 @@ async function router(req, res) {
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ productId: productId, owner: owner, repo: repo }));
+    return;
+  }
+
+  // ep1-s3: test-only read endpoint exposing pod-inheritance DB state for
+  // E2E assertions. The first /test/* endpoint in this codebase that reads
+  // rather than seeds -- ep1-s3's own real handler (handlePostProductFeature)
+  // has no JSON response and wraps pod-inheritance in a non-fatal try/catch,
+  // so no other mechanism exists to prove from outside the process whether
+  // pod_assignments/feature_collaborators were actually written. An E2E spec
+  // only has the HTML session id (from the POST /products/:id/features
+  // redirect's Location header), not the journeyId directly, so this
+  // resolves journeyId server-side via skillsRoute._getHtmlSession(sessionId)
+  // -- the same field handleGetChatHtml and friends already read off the
+  // session -- rather than requiring the spec to have require()-level access
+  // to journey-store.js internals it cannot reach over HTTP. See
+  // decisions.md (2026-09-17) for the full rationale.
+  if (pathname.match(/^\/test\/pod-inheritance-state\/[^/]+$/) && req.method === 'GET' && process.env.NODE_ENV === 'test') {
+    const sessionId = decodeURIComponent(pathname.split('/')[3]);
+    const _skillsForPodState = require('./routes/skills');
+    const podStateSession = _skillsForPodState._getHtmlSession(sessionId);
+    const featureId = podStateSession && podStateSession.journeyId;
+
+    if (!featureId) {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'no journey linked to session ' + sessionId }));
+      return;
+    }
+
+    const assignmentRows = (await _pshPool.query('SELECT COUNT(*) AS count FROM pod_assignments WHERE feature_id = $1', [featureId])).rows;
+    const collaboratorRows = (await _pshPool.query('SELECT COUNT(*) AS count FROM feature_collaborators WHERE feature_id = $1', [featureId])).rows;
+    const podAssignmentCount = assignmentRows[0] ? parseInt(assignmentRows[0].count, 10) : 0;
+    const collaboratorCount = collaboratorRows[0] ? parseInt(collaboratorRows[0].count, 10) : 0;
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ featureId: featureId, podAssignmentCount: podAssignmentCount, collaboratorCount: collaboratorCount }));
     return;
   }
 

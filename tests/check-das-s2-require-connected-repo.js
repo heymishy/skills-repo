@@ -253,9 +253,18 @@ function createProductPool(initialRows) {
   });
 
   // ---------------------------------------------------------------------
-  // NFR: Performance -- the gate check issues exactly one query
+  // NFR: Performance -- the full handler issues a small, bounded number of
+  // queries (not N+1 / unbounded). Was exactly 1 (the das-s2 repo-connected
+  // gate check) before ep1-s3; now 2 -- ep1-s3's handlePostProductFeature
+  // extension unconditionally calls getProductDefaultPod(pool, tenantId,
+  // productId) once per feature creation (to decide whether to inherit a
+  // pod), which issues its own pod_assignments lookup query even when no
+  // default pod is found (as here, via createProductPool's generic {rows:
+  // []} fallback for any query shape it doesn't recognise). See
+  // src/web-ui/routes/products.js's ep1-s3 block, immediately after
+  // _journeyStore.setJourneyFields(...).
   // ---------------------------------------------------------------------
-  await test('NFR: gateCheckLatency_singleQuery', async function() {
+  await test('NFR: gateCheckLatency_boundedQueryCount', async function() {
     var journeyStore = freshRequire(JOURNEY_STORE_PATH);
     journeyStore._clearForTesting();
     var tenantPlan = freshRequire(TENANT_PLAN_PATH);
@@ -269,7 +278,7 @@ function createProductPool(initialRows) {
     await productsRoute.handlePostProductFeature(req, res, null, pool, { capture: function() {} });
     var elapsed = Date.now() - start;
 
-    assert.strictEqual(pool.getQueryCount(), 1, 'expected exactly 1 query for the gate check, got ' + pool.getQueryCount());
+    assert.strictEqual(pool.getQueryCount(), 2, 'expected exactly 2 queries (das-s2 repo gate check + ep1-s3 getProductDefaultPod lookup), got ' + pool.getQueryCount());
     assert.ok(elapsed < 1000, 'gate check + journey creation took ' + elapsed + 'ms -- expected well under 1000ms in a unit test');
   });
 
