@@ -1,5 +1,23 @@
 # Decisions: Multi-User Role-Aware Synchronous Collaboration
 
+## ep1-s3's DoR touch-points and response-shape assumptions are wrong; corrected against the real codebase before any code was written
+
+**Date:** 2026-09-17
+**Context:** Found while planning ep1-s3's implementation, before writing any code — the same class of gap as ep1-s2's DoR inaccuracies (route-prefix convention, a nonexistent "product settings" page), but deeper here since it's about the core data model, not just a route path.
+
+The DoR (`artefacts/new-feature-2b74a292/dor/ep1-s3-dor.md`) states: touch point `src/web-ui/routes/features.js`, endpoint `POST /api/features`, a `features` table with primary key `featureId`, and a JSON response `{featureId, productId, podAssignments: [...], collaborators: [...]}`. None of this matches the real codebase:
+1. `src/web-ui/routes/features.js` exists but has nothing to do with feature creation — it handles feature *artefacts* and *ideas* (`handleGetFeatureArtefacts`, `handlePostIdea`, etc.).
+2. There is no `/api/features` route anywhere in `server.js`.
+3. The real feature-creation handler is `handlePostProductFeature` in `src/web-ui/routes/products.js`, wired at `POST /products/:id/features` (the same route family ep1-s2 already extends with `set-default-pod`).
+4. **There is no `features` table with a `featureId` primary key.** What this story's ACs call "a feature" is, in this codebase's real domain model, a **journey** — created via `journey-store.js`'s `createJourney()`/`setJourneyFields()`, which dual-writes to an in-memory Map, disk, and a real Postgres `journeys` table (`journey_id`, `tenant_id`, `product_id`, ... columns, confirmed via `journey-store-pg.js`). `journeyId` is the real, durable, tenant/product-scoped identifier this story's "featureId" concept maps onto.
+5. The handler's real response is an **HTTP 303 redirect** to a skill-chat session page (`/skills/:skill/sessions/:sid/chat`) — there is no JSON response body at all, so AC1's literal "the feature is created with podAssignments... recorded against it" cannot be verified by inspecting a response body. It must be verified by querying `pod_assignments` directly after the redirect.
+
+**Decision:** Implement pod-inheritance in `handlePostProductFeature`, injected immediately after the existing `_journeyStore.setJourneyFields(journeyId, {..., tenantId, productId})` call (the earliest point `journeyId`/`tenantId`/`productId` are all in scope AND durably persisted to Postgres via that call's own `_pgWrite`). Reuse `pod_assignments` (from `pod-assignment-store.js`, ep1-s1/ep1-s2) directly — its `feature_id` column was deliberately left nullable in ep1-s1's original migration specifically anticipating this story (see `pod-assignment-store.js`'s own header comment). Write with `feature_id: journeyId`, `assignment_type: 'feature-inherits-product-default'`, matching the DoR's own specified `assignmentType` value. Create a new `feature_collaborators` table (genuinely new, DoR's schema for it is otherwise accurate) keyed by `feature_id: journeyId`. Treat the whole pod-inheritance step as best-effort/non-fatal — matching this handler's own established resilience pattern for its other side effects (disk write, PostHog capture) — a missing or failed pod lookup must never block feature/journey creation itself.
+**Rationale:** The underlying intent (a newly-created feature inherits its product's default pod) is unchanged and fully achievable; only the mechanical touch-points needed correcting against what the codebase actually is. Verifying test/AC evidence via direct `pod_assignments`/`feature_collaborators` DB queries (not response-body parsing) is the only way to actually prove this works, given the real handler's redirect-based response shape.
+**Story:** ep1-s3 — no AC change; ACs remain accurate to the real, observable outcome (a pod IS assigned and collaborators ARE pre-populated), only the mechanical verification method changes from "read the response body" to "query the database after the redirect."
+
+---
+
 ## RISK-ACCEPT: ep1-s2 NFR-Perf-1 (default pod assignment ≤2s) has no automated measurement
 
 **Date:** 2026-09-17
