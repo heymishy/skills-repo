@@ -36,7 +36,7 @@ const skillsAdapter                                                  = require('
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
-const { handleGetJourney, handlePostJourney, handleDeleteJourney, handleGetJourneyResume, handleGetJourneyById, handleGetStageReview, handleGetJourneyStageView, handleGetJourneyStageReopen, handleGetStageConfirmBack, handlePostJourneyStageArtefact, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, handleGetJourneyCollaboratorsPresence, handlePostJourneyHeartbeat, handleGetJourneyPresenceStream, handlePutJourneyDisplayName, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handleGetWizardBootstrapped, handlePostWizardSelection, handleJourneys, setListJourneys } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2 / bri-s1.5 / s3.4 / fdn-s1 / jsvr-s1
+const { handleGetJourney, handlePostJourney, handleDeleteJourney, handleGetJourneyResume, handleGetJourneyById, handleGetStageReview, handleGetJourneyStageView, handleGetJourneyStageReopen, handleGetStageConfirmBack, handlePostJourneyStageArtefact, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, handleGetJourneyCollaboratorsPresence, handleGetJourneyStageVisibility, handlePostJourneyHeartbeat, handleGetJourneyPresenceStream, handlePutJourneyDisplayName, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handleGetWizardBootstrapped, handlePostWizardSelection, handleJourneys, setListJourneys } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2 / bri-s1.5 / s3.4 / fdn-s1 / jsvr-s1
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const pipelineStateGithubWriterFactory                               = require('./adapters/pipeline-state-github-writer'); // wsd-s2
 const { selectPipelineStateWriterFactory }                           = require('./adapters/pipeline-state-writer-selector'); // wsd-s2
@@ -3228,6 +3228,11 @@ async function router(req, res) {
     req.params = { journeyId: pathname.split('/')[3] };
     await handleGetJourneyCollaboratorsPresence(req, res, _pshPool);
 
+  } else if (pathname.match(/^\/api\/journey\/([^/]+)\/stage-visibility$/) && req.method === 'GET') {
+    // ep2-s2 AC1/AC2/AC3 — role-filtered stage visibility
+    req.params = { journeyId: pathname.split('/')[3] };
+    await handleGetJourneyStageVisibility(req, res, _pshPool);
+
   } else if (pathname.match(/^\/api\/journey\/([^/]+)\/heartbeat$/) && req.method === 'POST') {
     // ep2-s1 AC2 — client sidebar heartbeat, registers in-memory presence activity
     req.params = { journeyId: pathname.split('/')[3] };
@@ -4027,6 +4032,10 @@ async function router(req, res) {
     // regardless, so gating it would add no real protection).
     res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
     res.end(require('fs').readFileSync(require('path').join(__dirname, 'public', 'presence-sidebar.js'), 'utf8'));
+
+  } else if (pathname === '/public/stage-list.js' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
+    res.end(require('fs').readFileSync(require('path').join(__dirname, 'public', 'stage-list.js'), 'utf8'));
 
   } else {
     // Sign-in page (unauthenticated root)

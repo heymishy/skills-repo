@@ -977,7 +977,19 @@ async function handleGetFeatureArtefacts(req, res, featureSlug, pool) {
         '</aside>' +
         '<script src="/public/presence-sidebar.js"></script>';
     }
-    const bodyContent = `${breadcrumbHtml}\n<h1>${shellEscHtml(displayTitle)}</h1>\n${deleteSectionHtml}\n${listHtml}\n${teamSidebarHtml}`;
+    // ep2-s2: role-filtered stage list -- same guard and journeyId source as
+    // the Team sidebar above (artefactJourney is the final resolved journey).
+    let stageListHtml = '';
+    if (artefactJourney && artefactJourney.journeyId) {
+      stageListHtml =
+        '<section id="stage-list" aria-label="Pipeline stages" class="sw-stage-list" data-journey-id="' + shellEscHtml(artefactJourney.journeyId) + '">' +
+          '<h2>Stages</h2>' +
+          '<ul id="stage-list-items" role="list"></ul>' +
+          '<button type="button" id="stage-list-toggle" aria-pressed="false">Show all stages</button>' +
+        '</section>' +
+        '<script src="/public/stage-list.js"></script>';
+    }
+    const bodyContent = `${breadcrumbHtml}\n<h1>${shellEscHtml(displayTitle)}</h1>\n${deleteSectionHtml}\n${listHtml}\n${teamSidebarHtml}\n${stageListHtml}`;
     const html = await renderShellWithNav(pool, req.session.tenantId, {
       title:       `Artefacts — ${shellEscHtml(displayTitle)}`,
       bodyContent,

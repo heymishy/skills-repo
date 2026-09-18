@@ -26,6 +26,7 @@ var sessionOriginBadgeMeta = require('./features.js').sessionOriginBadgeMeta;
 var _journeyStore = require('../modules/journey-store');
 var _presenceStore = require('../modules/presence-store'); // ep2-s1
 var _featureCollaboratorStore = require('../modules/feature-collaborator-store'); // ep2-s1
+var _stageVisibility = require('../modules/stage-visibility'); // ep2-s2
 var _registerHtmlSession = null;
 var _linkSessionToJourney = null;
 var _getHtmlSessionFn = null;
@@ -3519,6 +3520,50 @@ async function handleGetJourneyCollaboratorsPresence(req, res, pool) {
 }
 
 /**
+ * GET /api/journey/:journeyId/stage-visibility — ep2-s2 AC1/AC2/AC3.
+ * Resolves the requesting collaborator's role via feature_collaborators
+ * (same source an earlier story already established), returns their
+ * default-visible stage subset, the full stage list, and which stages
+ * this journey has actually completed (so the client can distinguish
+ * "visible but not yet reached" from "completed").
+ */
+async function handleGetJourneyStageVisibility(req, res, pool) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
+    return;
+  }
+  var collaborators;
+  try {
+    collaborators = await _featureCollaboratorStore.getFeatureCollaborators(pool, journeyId);
+  } catch (err) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'INTERNAL_ERROR' }));
+    return;
+  }
+  var me = collaborators.find(function (c) { return c.userId === req.session.login; });
+  var roleId = me ? me.roleId : null;
+  var visibleStages = _stageVisibility.getVisibleStages(roleId);
+  var completedSkillNames = (journey.completedStages || []).map(function (s) { return s.skillName; });
+
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({
+    role: roleId,
+    visibleStages: visibleStages,
+    allStages: _stageVisibility.ALL_STAGES,
+    completedStages: completedSkillNames
+  }));
+}
+
+/**
  * POST /api/journey/:journeyId/heartbeat — ep2-s1 AC2. Client sidebar
  * calls this every ~12s while the feature page is open. Registers activity
  * in the in-memory presence-store (not Postgres -- see decisions.md).
@@ -5031,6 +5076,8 @@ module.exports = {
   handleGetJourneyViewers,
   // ep2-s1 — pod collaborator presence sidebar
   handleGetJourneyCollaboratorsPresence,
+  // ep2-s2 — role-filtered stage visibility
+  handleGetJourneyStageVisibility,
   handlePostJourneyHeartbeat,
   handleGetJourneyPresenceStream,
   handlePutJourneyDisplayName,
