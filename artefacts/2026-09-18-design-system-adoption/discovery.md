@@ -1,8 +1,8 @@
 # Discovery: Design System Adoption
 
-**Status:** Clarified
+**Status:** Approved
 **Created:** 2026-09-18
-**Approved by:** Pending
+**Approved by:** Hamish King — Founder/Operator — 2026-09-18
 **Author:** Claude (agent), synthesised from a live discovery conversation with the operator
 
 ---
@@ -59,7 +59,7 @@ None identified. `DESIGN.md` and the reworked design files already exist locally
 
 ## Approved By
 
-Pending
+Hamish King — Founder/Operator — 2026-09-18
 
 ---
 
