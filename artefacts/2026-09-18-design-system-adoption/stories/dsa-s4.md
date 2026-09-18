@@ -23,6 +23,7 @@ So that **the platform's primary working surface reflects the brand direction be
 - `src/web-ui/routes/skills.js` (`_renderChatPage`) is this codebase's single largest, most heavily-used file — confirmed directly via this session's own prior work (`ep2-s3`). `src/web-ui/views/chat-view.js`'s `renderChat` is also directly involved (imported and called by `skills.js`). **Pure-append discipline applies**: any edit to the journey-gate panel or other existing functional markup within `_renderChatPage` must be additive/token-value-substitution only, never a reorder of existing structural markup, matching the exact discipline this session's own `ep2-s3` story already established and verified successful on this same file.
 - `DESIGN.md`'s own "Skill session" layout pattern: resizable two-pane layout (drag handle between panes, and between stacked sections within the right pane), Focused/Chat segmented-control toggle in the left pane header, right pane varying by skill (Artefact draft + Diagrams sub-panel generically; Conditions/Assumptions/Canvas for `/ideate`; Story map + Diagrams for `/definition`).
 - Real target files (confirmed to exist): `src/web-ui/routes/skills.js`, `src/web-ui/views/chat-view.js`.
+- This story's diff touches `routes/skills.js`, the same file `ep2-s3`'s own mandatory route/handler E2E coverage check already established requires special care for. `/verify-completion` for this story must perform the same mandatory coverage check (identify every pre-existing spec touching this page, run the non-`@real-staging` ones locally), budgeted appropriately per that repo-documented precedent — this is a process requirement on `/verify-completion` itself, not a story AC (moved here from a prior draft AC5 during `/review`, since it described a downstream pipeline step rather than an observable product behavior).
 
 ## Dependencies
 
@@ -38,8 +39,6 @@ So that **the platform's primary working surface reflects the brand direction be
 **AC3:** Given the skill-session chat page follows `DESIGN.md`'s "Skill session" layout pattern (resizable two-pane layout, Focused/Chat toggle, right pane varying by skill type), When the real page is rendered, Then this structure is present and visually matches the `Skills Platform - Skill Session.dc.html` mock.
 
 **AC4:** Given this codebase's own pre-existing E2E specs that exercise the skill-session chat page (a substantial set — this session's own `ep2-s3` route/handler coverage check found 6 pre-existing specs touching just the journey-gate panel alone), When the restyle is applied, Then every relevant pre-existing spec still passes — no functional regression to chat, journey-gate, sub-step affordances, diagrams, or any other existing feature on this page.
-
-**AC5:** Given the restyle touches `routes/skills.js` — the same file `ep2-s3`'s own mandatory route/handler E2E coverage check already established requires special care — When `/verify-completion` runs for this story, Then the same mandatory coverage check is performed and budgeted appropriately, per this repo's own documented precedent.
 
 ## Out of Scope
 

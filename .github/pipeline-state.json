@@ -35331,8 +35331,8 @@
       "slug": "2026-09-18-design-system-adoption",
       "id": "2026-09-18-design-system-adoption",
       "name": "Design System Adoption",
-      "stage": "definition",
-      "health": "green",
+      "stage": "review",
+      "health": "amber",
       "track": "standard",
       "discoveryStatus": "approved",
       "updatedAt": "2026-09-18T09:44:09.252Z",
@@ -35620,7 +35620,10 @@
           "id": "AP-11",
           "category": "anti-pattern",
           "label": "Committing a new SKILL.md, src/ module, governance check script, dashboard behavioural change, copilot-instructions behavioural change, or structural pipeline-state change without a story artefact (artefact-first violation)",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "This feature completed the full discovery -> clarify -> benefit-metric -> definition -> review chain before any implementation -- no shadow/direct-to-master change.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-09-18T09:55:00.147Z"
         },
         {
           "id": "ADR-011",
@@ -35691,26 +35694,38 @@
             {
               "slug": "dsa-s1",
               "name": "Restyle the Artefact Viewer to Match DESIGN.md",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-09-18T09:51:23.282Z"
             },
             {
               "slug": "dsa-s2",
               "name": "Restyle the Dashboard to Match DESIGN.md",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-09-18T09:51:35.614Z"
             },
             {
               "slug": "dsa-s3",
               "name": "Restyle the Landing Page to Match DESIGN.md",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-09-18T09:52:35.726Z"
             },
             {
               "slug": "dsa-s4",
               "name": "Restyle the Skill-Session Chat Page to Match DESIGN.md",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-09-18T09:53:24.268Z"
             }
           ]
         },
@@ -35722,8 +35737,11 @@
             {
               "slug": "dsa-s5",
               "name": "design.system Context Tag Triggers a Real DoR Hard Block",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "amber",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-09-18T09:53:49.596Z"
             }
           ]
         }
