@@ -63,16 +63,38 @@ function testOldNamesExactValuesUnchanged() {
   }
 }
 
-function testNewAliasesReferenceOldNamesViaVarInAllBlocks() {
-  // --success/--warn/--danger must be real var() references to
-  // --green/--amber/--red (not independent hex literals) so they can never
-  // silently drift apart from the names they alias. Checked in all 3 blocks.
-  assertInAllBlocks(/--success:\s*var\(--green\)/, '--success: var(--green)');
-  assertInAllBlocks(/--success-soft:\s*var\(--green-soft\)/, '--success-soft: var(--green-soft)');
-  assertInAllBlocks(/--warn:\s*var\(--amber\)/, '--warn: var(--amber)');
-  assertInAllBlocks(/--warn-soft:\s*var\(--amber-soft\)/, '--warn-soft: var(--amber-soft)');
-  assertInAllBlocks(/--danger:\s*var\(--red\)/, '--danger: var(--red)');
-  assertInAllBlocks(/--danger-soft:\s*var\(--red-soft\)/, '--danger-soft: var(--red-soft)');
+function testNewAliasesLightModeReferenceOldNamesViaVar() {
+  // In LIGHT mode only, DESIGN.md's own --success/--warn/--danger hex values
+  // are genuinely identical to --green/--amber/--red (confirmed against
+  // DESIGN.md's own light-mode table: success text #15803D == --green
+  // #15803D, warn text #B45309 == --amber #B45309, danger text #B91C1C ==
+  // --red #B91C1C, and the 3 soft backgrounds match --green-soft/
+  // --amber-soft/--red-soft exactly too) -- so a real var() reference here
+  // is correct and drift-proof, not just convenient.
+  assert.ok(/--success:\s*var\(--green\)/.test(rootBlock), 'light --success must be var(--green)');
+  assert.ok(/--success-soft:\s*var\(--green-soft\)/.test(rootBlock), 'light --success-soft must be var(--green-soft)');
+  assert.ok(/--warn:\s*var\(--amber\)/.test(rootBlock), 'light --warn must be var(--amber)');
+  assert.ok(/--warn-soft:\s*var\(--amber-soft\)/.test(rootBlock), 'light --warn-soft must be var(--amber-soft)');
+  assert.ok(/--danger:\s*var\(--red\)/.test(rootBlock), 'light --danger must be var(--red)');
+  assert.ok(/--danger-soft:\s*var\(--red-soft\)/.test(rootBlock), 'light --danger-soft must be var(--red-soft)');
+}
+
+function testNewAliasesDarkModeAreDESIGNmdOwnDistinctHexValues() {
+  // In DARK mode, DESIGN.md defines --success (#34D399) and --warn
+  // (#F59E0B) as genuinely DIFFERENT colors from --green (#4ADE80) and
+  // --amber (#FCD34D) -- these must NOT be var() aliases here, that would
+  // silently repaint them to the wrong hue. --danger (#F87171) happens to
+  // share --red's exact dark-mode hex, but is kept as its own literal (not
+  // var(--red)) so a future edit to --red cannot silently also move
+  // --danger -- DESIGN.md defines it as its own token, not derived from red.
+  for (const [name, content] of [['[data-theme="dark"]', darkThemeBlock], ['@media dark fallback', mediaDarkBlock]]) {
+    assert.ok(/--success:\s*#34D399\b/.test(content), `dark --success must be its own literal #34D399 in ${name}, not var(--green)`);
+    assert.ok(/--success-soft:\s*#0F2318\b/.test(content), `dark --success-soft must be its own literal #0F2318 in ${name}`);
+    assert.ok(/--warn:\s*#F59E0B\b/.test(content), `dark --warn must be its own literal #F59E0B in ${name}, not var(--amber)`);
+    assert.ok(/--warn-soft:\s*#2A2011\b/.test(content), `dark --warn-soft must be its own literal #2A2011 in ${name}`);
+    assert.ok(/--danger:\s*#F87171\b/.test(content), `dark --danger must be its own literal #F87171 in ${name}, not var(--red)`);
+    assert.ok(/--danger-soft:\s*#2A1416\b/.test(content), `dark --danger-soft must be its own literal #2A1416 in ${name}`);
+  }
 }
 
 function testNewTokensSurfaceTwoAndMuted3PresentInAllBlocks() {
@@ -94,7 +116,8 @@ function testGoogleFontsLinksRequestInterTight() {
 }
 
 testOldNamesExactValuesUnchanged();
-testNewAliasesReferenceOldNamesViaVarInAllBlocks();
+testNewAliasesLightModeReferenceOldNamesViaVar();
+testNewAliasesDarkModeAreDESIGNmdOwnDistinctHexValues();
 testNewTokensSurfaceTwoAndMuted3PresentInAllBlocks();
 testSansFontUpdatedToInterTight();
 testGoogleFontsLinksRequestInterTight();

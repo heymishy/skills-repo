@@ -458,9 +458,16 @@ const DESIGN_SYSTEM_CSS = `
   --green: #4ADE80; --green-soft: #052E16;
   --amber: #FCD34D; --amber-soft: #451A03;
   --red: #F87171; --red-soft: #450A0A;
-  --success: var(--green); --success-soft: var(--green-soft);
-  --warn: var(--amber); --warn-soft: var(--amber-soft);
-  --danger: var(--red); --danger-soft: var(--red-soft);
+  /* dsa-s1: --success/--warn are DESIGN.md's own distinct dark-mode hues,
+     NOT aliases of --green/--amber here -- unlike light mode, where all 3
+     genuinely match. --danger happens to share --red's exact hex in dark
+     mode too, but is kept as its own literal (not var(--red)) for the same
+     reason: DESIGN.md defines it as its own token, and a future edit to
+     --red should not silently also move --danger. See decisions.md, the
+     dark-mode --success/--warn correction, 2026-09-19. */
+  --success: #34D399; --success-soft: #0F2318;
+  --warn: #F59E0B; --warn-soft: #2A2011;
+  --danger: #F87171; --danger-soft: #2A1416;
 }
 /* No-JS OS fallback */
 @media (prefers-color-scheme: dark) {
@@ -471,9 +478,9 @@ const DESIGN_SYSTEM_CSS = `
     --green: #4ADE80; --green-soft: #052E16;
     --amber: #FCD34D; --amber-soft: #451A03;
     --red: #F87171; --red-soft: #450A0A;
-    --success: var(--green); --success-soft: var(--green-soft);
-    --warn: var(--amber); --warn-soft: var(--amber-soft);
-    --danger: var(--red); --danger-soft: var(--red-soft);
+    --success: #34D399; --success-soft: #0F2318;
+    --warn: #F59E0B; --warn-soft: #2A2011;
+    --danger: #F87171; --danger-soft: #2A1416;
   }
 }
 
