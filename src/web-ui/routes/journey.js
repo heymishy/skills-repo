@@ -4257,7 +4257,97 @@ async function handlePostDecisions(req, res) {
 }
 
 /**
- /**
+ * POST /api/journey/:journeyId/approve — ep2-s3 AC1/AC2/AC3.
+ * Records a Sign Off approval (approver, stage, reason) as a decisions.md
+ * entry using the same real disk-write pattern handlePostDecisions already
+ * establishes (owle.2) -- does NOT advance the stage itself; the client
+ * calls the existing, unmodified gate-confirm endpoint separately for that,
+ * per the architecture correction in decisions.md (2026-09-18).
+ */
+async function handlePostJourneyApprove(req, res, pool) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
+    return;
+  }
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
+    return;
+  }
+
+  var body = req.body || {};
+  var reason = typeof body.reason === 'string' ? body.reason.trim() : '';
+  if (!reason) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Reason cannot be empty' }));
+    return;
+  }
+  if (reason.length > 500) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Reason must be 500 characters or fewer' }));
+    return;
+  }
+
+  var stage = journey.activeSkill || '';
+  var nextStage = _journeyStore.getNextStage(stage) || 'the next stage';
+  var approverLogin = req.session.login || 'unknown';
+  // req.session has no roleId field -- confirmed absent anywhere in this
+  // codebase. Role comes from feature_collaborators, the same real source
+  // ep2-s1/ep2-s2 already established: resolve the approver's own row by
+  // matching userId against req.session.login.
+  var approverRole = null;
+  try {
+    var _collaborators = await _featureCollaboratorStore.getFeatureCollaborators(pool, journeyId);
+    var _me = _collaborators.find(function (c) { return c.userId === approverLogin; });
+    approverRole = _me ? _me.roleId : null;
+  } catch (_roleErr) {
+    approverRole = null; // non-fatal: the entry is still written, just without a role label
+  }
+
+  var featureSlug = journey.featureSlug || '';
+  var repoRoot = getRepoRoot(req);
+  var decisionsPath = path.resolve(repoRoot, 'artefacts', featureSlug, 'decisions.md');
+  var guard = path.resolve(repoRoot, 'artefacts', featureSlug);
+  if (!guard.startsWith(repoRoot + path.sep)) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Invalid feature slug' }));
+    return;
+  }
+
+  var date = new Date().toISOString().slice(0, 10);
+  var title = stage + ' approved by ' + approverLogin + (approverRole ? ' (' + approverRole + ')' : '');
+  var context = 'Approval recorded via Sign Off at the ' + stage + ' stage of feature ' + featureSlug + '.';
+  var decision = stage + ' approved and advancing to ' + nextStage + '.';
+  var entry = '\n## ' + title + '\n\n'
+    + '**Date:** ' + date + '\n'
+    + '**Context:** ' + context + '\n'
+    + '**Decision:** ' + decision + '\n'
+    + '**Rationale:** ' + reason + '\n';
+
+  try {
+    var dir = path.dirname(decisionsPath);
+    fs.mkdirSync(dir, { recursive: true });
+    var header = '# Decisions — ' + featureSlug + '\n';
+    if (!fs.existsSync(decisionsPath)) {
+      fs.writeFileSync(decisionsPath, header, 'utf8');
+    }
+    fs.appendFileSync(decisionsPath, entry, 'utf8');
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ written: decisionsPath, stage: stage, nextStage: nextStage, approver: approverLogin }));
+  } catch (err) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Failed to write approval record', detail: err.message }));
+  }
+}
+
+/**
  * titleToSlug — converts a spike title to a filename-safe slug.
  * Returns empty string if no alphanumeric chars present.
  */
@@ -5067,6 +5157,7 @@ module.exports = {
   handlePatchSpike,
   handleGetTrace,
   handlePostDecisions,
+  handlePostJourneyApprove, // ep2-s3
   handlePostSideTripClarify,
   handleDeleteSideTrip,
   // wsm.2 — collaborative journey sharing
