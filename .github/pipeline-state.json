@@ -35678,6 +35678,24 @@
           "category": "adr",
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
           "status": "not-assessed"
+        },
+        {
+          "id": "NFR-dsa-s1-perf",
+          "category": "nfr",
+          "label": "Artefact viewer page load: no measurable regression",
+          "status": "met",
+          "evidence": "dsa-s1-dor.md H9/H-NFR -- no violation found",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-18T10:06:41.312Z"
+        },
+        {
+          "id": "NFR-dsa-s1-a11y",
+          "category": "nfr",
+          "label": "Artefact viewer WCAG 2.1 AA: no regression to existing accessibility properties",
+          "status": "met",
+          "evidence": "dsa-s1-dor.md H9/H-NFR -- no violation found",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-18T10:06:41.313Z"
         }
       ],
       "regulated": false,
@@ -35694,11 +35712,11 @@
             {
               "slug": "dsa-s1",
               "name": "Restyle the Artefact Viewer to Match DESIGN.md",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-18T10:00:15.647Z",
+              "updatedAt": "2026-09-18T10:06:13.924Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -35707,7 +35725,9 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": true
+              "e2eToolingRequired": true,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s1-dor.md"
             },
             {
               "slug": "dsa-s2",

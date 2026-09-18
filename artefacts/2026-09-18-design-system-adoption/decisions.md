@@ -1,5 +1,12 @@
 # Decisions: Design System Adoption
 
+## `dsa-s1` DoR W3: 2 MEDIUM review findings acknowledged as RISK-ACCEPT (2026-09-18)
+
+**Context:** `dsa-s1`'s `/review` run (run 1) found 2 MEDIUM findings: [1-M1] the User Story's "So that" clause reads as beta-feedback framing while Benefit Linkage names visual-consistency as the moved metric; [1-M2] AC4 describes a verification method ("verified by running pre-existing test coverage") rather than a sharply observable outcome. Neither is severe enough to warrant rewriting the story before DoR sign-off.
+**Decision:** RISK-ACCEPT both, proceed to DoR sign-off without story rework. [1-M1]: the conceptual link (visual restyle → positive impression) is real even if not literally worded to cite the metric name; a future reader can trace it via the Benefit Linkage field, which is correct. [1-M2]: AC4's own test-plan implementation already names the exact 4 real pre-existing spec files it covers (`artefact-preview.spec.js`, `artefact-read.spec.js`, `artefact-writeback.spec.js`, `wuce20-artefact-index-html.spec.js`), closing the practical ambiguity even though the story-level AC text itself stays general.
+**Rationale:** Both findings are cosmetic/precision issues, not functional gaps — the test plan's own concreteness already substantively addresses [1-M2]'s underlying concern.
+**Story:** dsa-s1 — no AC change.
+
 ## `/definition` scope-accumulator ratio flag reviewed — confirmed intentional, not drift (2026-09-18)
 
 **Context:** `/definition`'s scope accumulator flagged a 5 stories / 3 MVP items ratio (≈1.67, above the 1.5 threshold) after story decomposition. Investigated before asking the operator: MVP item 1 ("restyle the product's real web-ui screens") was deliberately split into 4 independently-demoable, per-screen vertical-slice stories (`dsa-s1`–`dsa-s4`) per the operator's own chosen slicing strategy (vertical slice). MVP item 2 ("implement dark and light mode") is folded into each of those same 4 stories, not a separate story. MVP item 3 ("wire the design system into governance") is `dsa-s5` alone. So 5 stories genuinely cover exactly 3 MVP items with zero scope additions beyond what discovery already approved — the raw ratio is misleading, not evidence of creep.
