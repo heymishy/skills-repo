@@ -35951,7 +35951,8 @@
       "slug": "2026-09-18-new",
       "id": "2026-09-18-new",
       "discoveryStatus": "complete",
-      "artefact": "artefacts/2026-09-18-new/discovery.md"
+      "artefact": "artefacts/2026-09-18-new/discovery.md",
+      "stage": "benefit-metric"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
