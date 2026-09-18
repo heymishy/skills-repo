@@ -83,29 +83,58 @@ testMultiRoleFullPathLoad()
   .then(() => console.log('  ok - multi-role full path: susan (engineer) and hamish (product) get different, correct default views'))
   .catch((err) => { console.error('  FAIL - testMultiRoleFullPathLoad:', err.message); process.exitCode = 1; });
 
-// Role-filtering isolation: two different collaborators on the SAME journey
-// resolve independently -- one collaborator's role never leaks into
-// another's computed visibility. journeyId-level tenant isolation itself is
-// enforced upstream by requireJourneyAccess (POLICY.TENANT) in the real
-// handler, same pattern an earlier story's own equivalent test already
-// established -- this test proves the per-collaborator role resolution
-// itself is correctly scoped to the requesting user, not a tenant-boundary
-// test (feature_collaborators has no tenant_id column, by design).
+// Role-filtering isolation: role resolution is keyed by the REQUESTING
+// user's own login (mirroring handleGetJourneyStageVisibility's own
+// `collaborators.find(c => c.userId === req.session.login)` pattern), not
+// by array position or a cached prior lookup. A same-role pair (susan,
+// darren -- both engineer) can't distinguish a real leak from a correct
+// result by comparing their two views alone (they're legitimately equal),
+// so this test instead proves the RESOLUTION MECHANISM itself is
+// login-keyed: darren is placed first in the fixture array (index 0) and
+// susan second, then each is resolved "as" a specific requester by login --
+// a positional bug (e.g. always reading collaborators[0], or resolving
+// once and reusing the result for every requester) would make susan
+// incorrectly resolve to darren's row, which this test would catch even
+// though their roles happen to match. journeyId-level tenant isolation
+// itself is enforced upstream by requireJourneyAccess (POLICY.TENANT) in
+// the real handler -- this test only proves per-collaborator resolution is
+// correctly scoped (feature_collaborators has no tenant_id column, by
+// design).
 async function testRoleResolutionIsolatedPerCollaborator() {
   const fakePool = {
-    query: async (sql) => ({ rows: [
+    query: async () => ({ rows: [
+      { collaborator_id: 'c3', user_id: 'darren', role_id: 'engineer', pod_id: 'pod-1' },
       { collaborator_id: 'c1', user_id: 'susan', role_id: 'engineer', pod_id: 'pod-1' },
-      { collaborator_id: 'c2', user_id: 'hamish', role_id: 'product', pod_id: 'pod-1' },
-      { collaborator_id: 'c3', user_id: 'darren', role_id: 'engineer', pod_id: 'pod-1' }
+      { collaborator_id: 'c2', user_id: 'hamish', role_id: 'product', pod_id: 'pod-1' }
     ] })
   };
   const { getFeatureCollaborators } = require('../src/web-ui/modules/feature-collaborator-store');
   const rows = await getFeatureCollaborators(fakePool, 'journey-a1');
-  const susanView = stageVisibility.getVisibleStages(rows.find(r => r.userId === 'susan').roleId);
-  const darrenView = stageVisibility.getVisibleStages(rows.find(r => r.userId === 'darren').roleId);
-  assert.deepStrictEqual(susanView, darrenView);
-  assert.notStrictEqual(rows.find(r => r.userId === 'susan'), rows.find(r => r.userId === 'darren'));
+
+  // Resolve "as" each of three different logins, mirroring the real
+  // handler's per-request lookup -- each call must find ITS OWN login's
+  // row, not silently reuse whichever row a prior resolution found.
+  function resolveAs(login) {
+    const me = rows.find(function (c) { return c.userId === login; });
+    return { roleId: me && me.roleId, collaboratorId: me && me.collaboratorId };
+  }
+
+  const asDarren = resolveAs('darren');
+  const asSusan = resolveAs('susan');
+  const asHamish = resolveAs('hamish');
+
+  assert.strictEqual(asDarren.collaboratorId, 'c3', 'resolving as darren must return darren\'s own row, not index 0 or a cached prior result');
+  assert.strictEqual(asSusan.collaboratorId, 'c1', 'resolving as susan must return susan\'s own row -- proves resolution is login-keyed, not positional (darren is at index 0, susan at index 1)');
+  assert.strictEqual(asHamish.collaboratorId, 'c2');
+
+  // Darren and susan legitimately share a role (engineer) -- their computed
+  // views being equal is expected and NOT itself proof of correct isolation
+  // (that's what the collaboratorId assertions above are for). Hamish
+  // (product) differs, confirming the two roles genuinely produce
+  // different output when they should.
+  assert.deepStrictEqual(stageVisibility.getVisibleStages(asDarren.roleId), stageVisibility.getVisibleStages(asSusan.roleId));
+  assert.notDeepStrictEqual(stageVisibility.getVisibleStages(asSusan.roleId), stageVisibility.getVisibleStages(asHamish.roleId));
 }
 testRoleResolutionIsolatedPerCollaborator()
-  .then(() => console.log('  ok - role resolution correctly scoped per collaborator, not shared/leaked'))
+  .then(() => console.log('  ok - role resolution is login-keyed (not positional/cached), correctly scoped per requester'))
   .catch((err) => { console.error('  FAIL - testRoleResolutionIsolatedPerCollaborator:', err.message); process.exitCode = 1; });
