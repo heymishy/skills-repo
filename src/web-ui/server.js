@@ -4108,6 +4108,12 @@ async function router(req, res) {
     res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
     res.end(require('fs').readFileSync(require('path').join(__dirname, 'public', 'stage-list.js'), 'utf8'));
 
+  } else if (pathname === '/public/artefact-sidebar.js' && req.method === 'GET') {
+    // dsa-s1 -- static asset, same public-asset convention as the routes
+    // above (no sensitive data, no auth gating needed).
+    res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
+    res.end(require('fs').readFileSync(require('path').join(__dirname, 'public', 'artefact-sidebar.js'), 'utf8'));
+
   } else {
     // Sign-in page (unauthenticated root)
     const { renderLoginPage } = require('./utils/html-shell');
