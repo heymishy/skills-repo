@@ -186,15 +186,35 @@ async function handleArtefactRoute(req, res, slug, artefactType, pool) {
           timestamp:    new Date().toISOString()
         });
 
-        const bodyContent = await _buildArtefactBodyContent(req, pool, slug, artefactType, fallbackContent, html);
-        const page = await renderShellWithNav(pool, req.session.tenantId, {
-          title:       `${shellEscHtml(artefactType)} — ${shellEscHtml(slug)}`,
-          bodyContent,
-          user:        { login: req.session.login || '' }
-        });
-        res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-        res.end(page);
-        return;
+        // dsa-s1 Task 4 review-fixup: _buildArtefactBodyContent/renderShellWithNav
+        // can reject here (e.g. listCommentsForResource/generateCsrfToken), and
+        // this block sits inside the outer catch with no further handler below
+        // it -- an unwrapped rejection here would skip this function's own
+        // styled error page and fall through to server.js's generic 500,
+        // unlike the primary success path (which has the same failure mode
+        // covered by the outer try/catch). Wrap for parity with that path and
+        // with the 503 branch a few lines below.
+        try {
+          const bodyContent = await _buildArtefactBodyContent(req, pool, slug, artefactType, fallbackContent, html);
+          const page = await renderShellWithNav(pool, req.session.tenantId, {
+            title:       `${shellEscHtml(artefactType)} — ${shellEscHtml(slug)}`,
+            bodyContent,
+            user:        { login: req.session.login || '' }
+          });
+          res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+          res.end(page);
+          return;
+        } catch (renderErr) {
+          _logger.warn('artefact_fetch_error', { error: renderErr.cause || renderErr.message });
+          const page = renderShell({
+            title:       'Error',
+            bodyContent: '<p>Unable to load artefact — please try again</p>',
+            user:        { login: (req.session && req.session.login) || '' }
+          });
+          res.writeHead(503, { 'Content-Type': 'text/html; charset=utf-8' });
+          res.end(page);
+          return;
+        }
       }
 
       // cat-s5 AC3/AC4: distinguish an orphaned-registration 404 (registered
@@ -230,4 +250,4 @@ async function handleArtefactRoute(req, res, slug, artefactType, pool) {
   }
 }
 
-module.exports = { handleArtefactRoute, setLogger, setFetcher, setJourneyStore };
+module.exports = { handleArtefactRoute, setLogger, setFetcher, setJourneyStore, _buildArtefactBodyContent };
