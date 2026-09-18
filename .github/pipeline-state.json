@@ -35063,17 +35063,59 @@
         {
           "slug": "ep2-s3",
           "id": "ep2-s3",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
+          "verifyStatus": "passed",
+          "acVerified": 3,
+          "acTotal": 3,
           "testPlan": {
             "status": "written",
+            "passing": 673,
             "artefact": "artefacts/new-feature-2b74a292/test-plans/ep2-s3-test-plan.md"
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep2-s3-dor.md",
-          "updatedAt": "2026-09-15T09:06:33.505Z"
+          "updatedAt": "2026-09-18T09:05:08.161Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "journey.js approval endpoint (decisions.md write)",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep2-s3-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "server.js route wiring + approval-modal.js client + static route (together)",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep2-s3-plan.md",
+              "sha": "d8690270"
+            },
+            {
+              "id": "task-3",
+              "name": "skills.js Sign Off button/modal injection into chat page",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep2-s3-plan.md",
+              "sha": "3c3b66a7"
+            },
+            {
+              "id": "task-4",
+              "name": "Integration tests: full approval path, decisions.md format",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep2-s3-plan.md",
+              "sha": "e5421b62"
+            },
+            {
+              "id": "task-5",
+              "name": "E2E and NFR tests",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep2-s3-plan.md",
+              "sha": "0b9738cb"
+            }
+          ],
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/902"
         },
         {
           "slug": "ep2-s4",
