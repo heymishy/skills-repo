@@ -432,14 +432,17 @@ function renderShell(opts) {
 const DESIGN_SYSTEM_CSS = `
 /* ── Light mode tokens (default) ──────────────────────────────────────────── */
 :root {
-  --bg: #FAFAF9; --surface: #FFFFFF; --ink: #18181B; --ink-2: #3F3F46;
-  --muted: #71717A; --muted-2: #A1A1AA; --line: #E7E5E4; --line-2: #F4F4F5;
-  --accent: #4F46E5; --accent-soft: #EEF2FF; --accent-ink: #3730A3;
+  --bg: #FAFAFA; --surface: #FFFFFF; --surface-2: #F2F3F5; --ink: #14171A; --ink-2: #3F454C;
+  --muted: #6B7280; --muted-2: #52585F; --muted-3: #3A3F45; --line: #E4E7EB; --line-2: #EDEFF2;
+  --accent: #2563EB; --accent-soft: #EFF4FF; --accent-ink: #1D4ED8;
   --green: #15803D; --green-soft: #DCFCE7;
   --amber: #B45309; --amber-soft: #FEF3C7;
   --red: #B91C1C; --red-soft: #FEE2E2;
+  --success: #15803D; --success-soft: #DCFCE7;
+  --warn: #B45309; --warn-soft: #FEF3C7;
+  --danger: #B91C1C; --danger-soft: #FEE2E2;
   --serif: 'Source Serif 4', Charter, Georgia, serif;
-  --sans: 'Inter', system-ui, sans-serif;
+  --sans: 'Inter Tight', system-ui, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
@@ -449,22 +452,28 @@ const DESIGN_SYSTEM_CSS = `
    The @media block is a no-JS fallback only.
 ─────────────────────────────────────────────────────────────────────────── */
 [data-theme="dark"] {
-  --bg: #111110; --surface: #1C1C1A; --ink: #F4F4F2; --ink-2: #C8C8C6;
-  --muted: #808080; --muted-2: #505050; --line: #2C2C2A; --line-2: #1A1A18;
-  --accent: #6366F1; --accent-soft: #1E1B4B; --accent-ink: #A5B4FC;
+  --bg: #0B0D10; --surface: #0E1013; --surface-2: #161A1F; --ink: #F5F6F7; --ink-2: #B4BAC2;
+  --muted: #9AA1AB; --muted-2: #6B7280; --muted-3: #454B54; --line: #23272E; --line-2: #1A1D22;
+  --accent: #3B82F6; --accent-soft: #152238; --accent-ink: #93C5FD;
   --green: #4ADE80; --green-soft: #052E16;
   --amber: #FCD34D; --amber-soft: #451A03;
   --red: #F87171; --red-soft: #450A0A;
+  --success: #34D399; --success-soft: #0F2318;
+  --warn: #F59E0B; --warn-soft: #2A2011;
+  --danger: #F87171; --danger-soft: #2A1416;
 }
 /* No-JS OS fallback */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]):not([data-theme="dark"]) {
-    --bg: #111110; --surface: #1C1C1A; --ink: #F4F4F2; --ink-2: #C8C8C6;
-    --muted: #808080; --muted-2: #505050; --line: #2C2C2A; --line-2: #1A1A18;
-    --accent: #6366F1; --accent-soft: #1E1B4B; --accent-ink: #A5B4FC;
+    --bg: #0B0D10; --surface: #0E1013; --surface-2: #161A1F; --ink: #F5F6F7; --ink-2: #B4BAC2;
+    --muted: #9AA1AB; --muted-2: #6B7280; --muted-3: #454B54; --line: #23272E; --line-2: #1A1D22;
+    --accent: #3B82F6; --accent-soft: #152238; --accent-ink: #93C5FD;
     --green: #4ADE80; --green-soft: #052E16;
     --amber: #FCD34D; --amber-soft: #451A03;
     --red: #F87171; --red-soft: #450A0A;
+    --success: #34D399; --success-soft: #0F2318;
+    --warn: #F59E0B; --warn-soft: #2A2011;
+    --danger: #F87171; --danger-soft: #2A1416;
   }
 }
 
