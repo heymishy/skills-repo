@@ -35000,7 +35000,7 @@
         {
           "slug": "ep2-s2",
           "id": "ep2-s2",
-          "stage": "branch-setup",
+          "stage": "implementation-plan",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -35010,7 +35010,45 @@
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep2-s2-dor.md",
-          "updatedAt": "2026-09-18T02:15:30.750Z"
+          "updatedAt": "2026-09-18T02:19:34.925Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "stage-visibility.js role-to-stage-subset module",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep2-s2-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "journey.js stage-visibility endpoint",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep2-s2-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "stage-list.js client component + static route (together)",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep2-s2-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "features.js stage-list container injection",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep2-s2-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Integration tests: multi-role full path, role isolation",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep2-s2-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "E2E and NFR tests",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep2-s2-plan.md"
+            }
+          ]
         },
         {
           "slug": "ep2-s3",
