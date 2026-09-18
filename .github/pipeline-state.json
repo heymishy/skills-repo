@@ -35331,13 +35331,44 @@
       "slug": "2026-09-18-design-system-adoption",
       "id": "2026-09-18-design-system-adoption",
       "name": "Design System Adoption",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "track": "standard",
       "discoveryStatus": "approved",
-      "updatedAt": "2026-09-18T09:29:42.247Z",
+      "updatedAt": "2026-09-18T09:32:26.486Z",
       "stories": [],
-      "metrics": [],
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Visual consistency across the 4 real screens",
+          "target": "4 of 4 screens match DESIGN.md token values (scripted check)",
+          "baseline": "0 of 4",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "design.system DoR gate is real and enforced",
+          "target": "A deliberately-noncompliant tagged story genuinely fails DoR",
+          "baseline": "0 (mechanism does not exist)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Beta user feedback on visual quality",
+          "target": "Positive feedback from both beta users, no unprompted negative comments",
+          "baseline": "Not yet established",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
       "guardrails": [],
       "regulated": false,
       "complianceProfile": "standard",
