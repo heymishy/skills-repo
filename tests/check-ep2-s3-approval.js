@@ -134,7 +134,7 @@ testApproveRouteDeniesViewer()
 // "page-still-loads" checks for this heavily-tested existing file.
 function testSkillsHandlerStillExported() {
   const skillsRoute = require('../src/web-ui/routes/skills');
-  assert.strictEqual(typeof skillsRoute, 'object');
+  assert.strictEqual(typeof skillsRoute.handleGetChatHtml, 'function');
 }
 testSkillsHandlerStillExported();
 console.log('  ok - routes/skills.js still loads after Sign Off button injection');

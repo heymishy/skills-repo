@@ -4651,7 +4651,7 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
           '<h3>Approve ' + escHtml(skillName) + '</h3>' +
           '<label for="sign-off-reason">Reason for approval</label>' +
           '<input type="text" id="sign-off-reason" placeholder="Reason for approval..." style="width:100%;margin:8px 0" maxlength="500">' +
-          '<div id="sign-off-error" style="color:#dc2626;font-size:13px;margin-bottom:8px"></div>' +
+          '<div id="sign-off-error" style="color:var(--error,red);font-size:13px;margin-bottom:8px"></div>' +
           '<button type="button" id="sign-off-approve-btn" class="sw-btn sw-btn--primary">Approve</button>' +
           '<button type="button" id="sign-off-cancel-btn" class="sw-btn">Cancel</button>' +
         '</div>' +
