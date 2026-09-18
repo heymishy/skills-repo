@@ -152,6 +152,19 @@ console.log('  ok - routes/skills.js still loads after Sign Off button injection
 // instances Part 1/2 above already share with server.js's router. Real
 // filesystem throughout -- fs is never mocked, matching the precedent.
 //
+// journey.js's own repo-root state does NOT live in journey.js itself --
+// getRepoRoot/setRepoRoot delegate to src/web-ui/adapters/repo-root.js's
+// own module-level singleton (see journey.js's `_repoRootAdapter =
+// require('../adapters/repo-root')`). Busting ONLY journey.js/
+// journey-store.js's cache entries (as check-owle2-decisions-side-trip.js's
+// own freshRequire() does) would leave that adapter singleton shared across
+// every "fresh" require -- harmless today since these three tests run
+// strictly sequentially (each awaits fs.rmSync cleanup before the next
+// begins), but a real race waiting to happen if they were ever parallelized.
+// Busting adapters/repo-root.js's cache entry too, below, makes each
+// freshRequireP3() call genuinely self-contained regardless of execution
+// order.
+//
 // Difference from handlePostDecisions: handlePostJourneyApprove also runs
 // middleware/csrf.js's csrfGuard, which requires body._csrf to equal
 // session.csrfToken (see csrfGuard's `submitted === expected` check) --
@@ -161,6 +174,13 @@ console.log('  ok - routes/skills.js still loads after Sign Off button injection
 // own try/catch around _featureCollaboratorStore.getFeatureCollaborators
 // degrades non-fatally to approverRole = null when pool is null (pool.query
 // throws synchronously on a null pool).
+//
+// freshRequireP3/makeResP3/makeReqP3 are near-duplicates of
+// check-owle2-decisions-side-trip.js's own freshRequire/makeRes/makeReq --
+// a deliberate, self-contained copy rather than a shared-helper extraction,
+// same reasoning as this story's own earlier check-ep2-s3-approval.js
+// Part 1 helpers (see decisions.md, Task 2 code-quality entry). If either
+// copy is ever fixed independently, check the other for the same fix.
 
 const fs = require('fs');
 const path = require('path');
@@ -168,10 +188,12 @@ const os = require('os');
 
 const JOURNEY_PATH_P3 = path.resolve(__dirname, '../src/web-ui/routes/journey.js');
 const JOURNEY_STORE_PATH_P3 = path.resolve(__dirname, '../src/web-ui/modules/journey-store.js');
+const REPO_ROOT_ADAPTER_PATH_P3 = path.resolve(__dirname, '../src/web-ui/adapters/repo-root.js');
 
 function freshRequireP3() {
   try { delete require.cache[require.resolve(JOURNEY_PATH_P3)]; } catch (_) {}
   try { delete require.cache[require.resolve(JOURNEY_STORE_PATH_P3)]; } catch (_) {}
+  try { delete require.cache[require.resolve(REPO_ROOT_ADAPTER_PATH_P3)]; } catch (_) {}
   const jStore = require(JOURNEY_STORE_PATH_P3);
   const j = require(JOURNEY_PATH_P3);
   return { jStore: jStore, j: j };
