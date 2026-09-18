@@ -35858,20 +35858,20 @@
             },
             {
               "slug": "dsa-s2",
-              "name": "Restyle the Dashboard to Match DESIGN.md",
-              "stage": "review",
+              "name": "Restyle the Dashboard and Wire Its Real Content to Match DESIGN.md",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-18T23:03:40.743Z",
+              "updatedAt": "2026-09-18T23:05:57.987Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 6,
+                "totalTests": 15,
                 "passing": 0
               },
-              "acTotal": 4,
+              "acTotal": 7,
               "acVerified": 0,
-              "hasLayoutDependentGaps": false,
+              "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s2-dor.md"
