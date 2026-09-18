@@ -147,13 +147,32 @@ withAuth('ep2-s3: Sign Off button/modal visible once the stage session is done (
   await reasonInput.fill(reasonText);
   await page.keyboard.press('Tab');
   await expect(approveBtn).toBeFocused();
+  const approveClickedAt = Date.now();
   await page.keyboard.press('Enter');
 
   // The modal hides on a successful approval POST, then chains into the
   // existing, unmodified gate-confirm form -- a real full-page navigation
   // (form.submit()) to the next stage's session, per journey-store.js's
   // real STAGE_SEQUENCE (discovery -> benefit-metric).
+  //
+  // NFR2 (story ep2-s3: "feature advances to next stage within 2s of
+  // approval"): the plan's own Task 5 note claimed this would be "covered
+  // by the E2E test's own real-time assertion if it waits for and confirms
+  // the actual advance within a bounded timeout" -- the original shipped
+  // version only had a generous 20s waitForURL ceiling with no actual
+  // elapsed-time assertion, which doesn't really prove the 2s budget (a 15s
+  // regression would still pass). Unlike NFR1 (a synchronous, no-network
+  // DOM toggle RISK-ACCEPTed in decisions.md -- a timing assertion there
+  // would only measure scheduler noise), this IS a real server round trip
+  // (POST /approve's disk write, then a full page navigation through the
+  // existing gate-confirm mechanism), so a real elapsed-time assertion has
+  // actual regression-catching value. Measured locally at ~80-90ms
+  // (20-25x margin) -- the 2000ms bound below is the literal NFR budget
+  // itself, not a loosened one, since local measurement showed no need to
+  // loosen it for CI noise.
   await page.waitForURL(/\/skills\/benefit-metric\/sessions\/[^/]+\/chat/, { timeout: 20000 });
+  const advanceElapsedMs = Date.now() - approveClickedAt;
+  expect(advanceElapsedMs, 'NFR2: feature must advance to next stage within 2s of approval, took ' + advanceElapsedMs + 'ms').toBeLessThan(2000);
 
   // --- AC2 (real-state assertion): the production GET /api/journey/:id ---
   // --- endpoint's completedStages now includes the approved stage -- not ---
