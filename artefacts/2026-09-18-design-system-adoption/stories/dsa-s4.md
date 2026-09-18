@@ -19,7 +19,7 @@ So that **the platform's primary working surface reflects the brand direction be
 ## Architecture Constraints
 
 - Anti-pattern guardrail (`architecture-guardrails.md`): "Any change to shared surface modules (`html-shell.js`, design tokens, navigation structure, shared CSS) is a story — even a small one."
-- Confirmed via `/clarify`: reuse and extend `src/web-ui/utils/html-shell.js`'s existing custom-property architecture — this story depends on `dsa-s1`'s token rename already being in place.
+- Confirmed via `/clarify`: reuse and extend `src/web-ui/utils/html-shell.js`'s existing custom-property architecture — this story depends on `dsa-s1`'s new token aliases already being in place. **Corrected feature-wide (see `decisions.md`, "FEATURE-WIDE" entry): the new color names are added as aliases, not a rename — the old names stay untouched for 25+ other, out-of-scope usages, including some within this same `skills.js`/`chat-view.js` file pair.**
 - `src/web-ui/routes/skills.js` (`_renderChatPage`) is this codebase's single largest, most heavily-used file — confirmed directly via this session's own prior work (`ep2-s3`). `src/web-ui/views/chat-view.js`'s `renderChat` is also directly involved (imported and called by `skills.js`). **Pure-append discipline applies**: any edit to the journey-gate panel or other existing functional markup within `_renderChatPage` must be additive/token-value-substitution only, never a reorder of existing structural markup, matching the exact discipline this session's own `ep2-s3` story already established and verified successful on this same file.
 - `DESIGN.md`'s own "Skill session" layout pattern: resizable two-pane layout (drag handle between panes, and between stacked sections within the right pane), Focused/Chat segmented-control toggle in the left pane header, right pane varying by skill (Artefact draft + Diagrams sub-panel generically; Conditions/Assumptions/Canvas for `/ideate`; Story map + Diagrams for `/definition`).
 - Real target files (confirmed to exist): `src/web-ui/routes/skills.js`, `src/web-ui/views/chat-view.js`.
@@ -27,7 +27,7 @@ So that **the platform's primary working surface reflects the brand direction be
 
 ## Dependencies
 
-- **Upstream:** `dsa-s1` (shared `--green`/`--amber`/`--red` → `--success`/`--warn`/`--danger` token rename at the `html-shell.js` level).
+- **Upstream:** `dsa-s1` (adds the new `--success`/`--warn`/`--danger` token aliases at the `html-shell.js` level, without touching `--green`/`--amber`/`--red`).
 - **Downstream:** None
 
 ## Acceptance Criteria
