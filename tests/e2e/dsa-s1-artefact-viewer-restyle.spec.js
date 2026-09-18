@@ -35,6 +35,16 @@
 // in this environment (no DATABASE_URL) had no support for the new
 // artefact_comments table at all, and createComment() crashed against its
 // empty-rows catch-all.
+//
+// AC7/AC8's exact-count assertions (toHaveCount(3), toHaveCount(1)) also
+// depend on playwright.config.js's webServer.reuseExistingServer staying
+// false -- that gives every `npx playwright test` invocation a brand-new
+// server process (and therefore a fresh, empty in-memory artefactComments
+// array in fake-test-db.js), so comments never accumulate across repeated
+// runs of this file. If that flag is ever flipped to reuse a running
+// server, these two assertions will start failing intermittently on a
+// second run -- add per-run unique resourceIds or explicit cleanup here
+// first if that config ever changes.
 
 'use strict';
 
