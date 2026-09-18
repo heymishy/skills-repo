@@ -35787,18 +35787,18 @@
             {
               "slug": "dsa-s1",
               "name": "Restyle the Artefact Viewer to Match DESIGN.md",
-              "stage": "implementation-plan",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-18T18:51:42.211Z",
+              "updatedAt": "2026-09-18T21:43:49.070Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 20,
-                "passing": 0
+                "passing": 20
               },
               "acTotal": 8,
-              "acVerified": 0,
+              "acVerified": 8,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
@@ -35807,40 +35807,41 @@
                 {
                   "id": "task-1",
                   "name": "Add new design-system tokens to html-shell.js (aliases, new tokens, font)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s1-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "New artefact-comments module (table, migration, create/list)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s1-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "Wire comments migration + 2 new CSRF-guarded routes",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s1-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "Server-side sign-off detection + restyle handleArtefactRoute markup",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s1-plan.md"
                 },
                 {
                   "id": "task-5",
                   "name": "Client-side Sign Off/Comments script + static route",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s1-plan.md"
                 },
                 {
                   "id": "task-6",
                   "name": "E2E tests for AC1-AC8",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s1-plan.md"
                 }
-              ]
+              ],
+              "verifyStatus": "passed"
             },
             {
               "slug": "dsa-s2",
