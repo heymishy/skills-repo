@@ -3160,6 +3160,10 @@ async function router(req, res) {
   } else if (pathname.match(/^\/api\/journey\/([^/]+)\/approve$/) && req.method === 'POST') {
     // ep2-s3 — Sign Off: record approval as a decisions.md entry
     req.params = { journeyId: pathname.split('/')[3] };
+    // vrne-s1 — viewer-role write-block gate (AC2)
+    let _rnvOk = false;
+    await requireNonViewer(req, res, () => { _rnvOk = true; });
+    if (!_rnvOk) return;
     await handlePostJourneyApprove(req, res, _pshPool);
 
   } else if (pathname.match(/^\/journey\/[^/]+\/stories$/) && req.method === 'GET') {
