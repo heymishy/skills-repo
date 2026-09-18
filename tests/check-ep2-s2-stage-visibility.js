@@ -37,3 +37,12 @@ function testUnknownRoleDefaultsToAllStages() {
 }
 testUnknownRoleDefaultsToAllStages();
 console.log('  ok - unknown role defaults to all stages (fail-open, never fail-hidden)');
+
+// tests/check-ep2-s2-stage-visibility.js — Part 2
+const journeyRoute = require('../src/web-ui/routes/journey');
+
+async function testStageVisibilityHandlerExists() {
+  assert.strictEqual(typeof journeyRoute.handleGetJourneyStageVisibility, 'function');
+}
+testStageVisibilityHandlerExists().then(() => console.log('  ok - stage-visibility handler exported'))
+  .catch((err) => { console.error('  FAIL - testStageVisibilityHandlerExists:', err.message); process.exitCode = 1; });
