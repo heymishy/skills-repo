@@ -58,9 +58,9 @@ This is a standard product-value initiative — no hypothesis about tooling, pro
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Visual consistency across the 4 real screens | TBD — populated at /definition | Gap (expected — stories not yet written) |
-| `design.system` DoR gate is real and enforced | TBD — populated at /definition | Gap (expected — stories not yet written) |
-| Beta user feedback on visual quality | TBD — populated at /definition | Gap (expected — stories not yet written) |
+| Visual consistency across the 4 real screens | dsa-s1, dsa-s2, dsa-s3, dsa-s4 | Covered |
+| `design.system` DoR gate is real and enforced | dsa-s5 | Covered |
+| Beta user feedback on visual quality | dsa-s1, dsa-s2, dsa-s3, dsa-s4 | Covered |
 
 ---
 

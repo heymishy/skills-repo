@@ -1,0 +1,8 @@
+# Decisions: Design System Adoption
+
+## `/definition` scope-accumulator ratio flag reviewed — confirmed intentional, not drift (2026-09-18)
+
+**Context:** `/definition`'s scope accumulator flagged a 5 stories / 3 MVP items ratio (≈1.67, above the 1.5 threshold) after story decomposition. Investigated before asking the operator: MVP item 1 ("restyle the product's real web-ui screens") was deliberately split into 4 independently-demoable, per-screen vertical-slice stories (`dsa-s1`–`dsa-s4`) per the operator's own chosen slicing strategy (vertical slice). MVP item 2 ("implement dark and light mode") is folded into each of those same 4 stories, not a separate story. MVP item 3 ("wire the design system into governance") is `dsa-s5` alone. So 5 stories genuinely cover exactly 3 MVP items with zero scope additions beyond what discovery already approved — the raw ratio is misleading, not evidence of creep.
+**Decision:** Operator confirmed option 1 ("Intentional — update discovery to reflect expanded scope"). `discovery.md`'s MVP Scope section was updated to explicitly name the 4-story vertical-slice split of item 1, the folding of item 2 into those same 4 stories, and the `dsa-s5` mapping for item 3 — so the discovery artefact and the real story decomposition stay in sync for any future reader.
+**Rationale:** Matches this repo's own standing discipline (established repeatedly across other features this session) of never silently absorbing a scope-accumulator or DoR-architecture mismatch — surface it, get an explicit operator decision, and record the reasoning here rather than letting the discrepancy sit unexplained between artefacts.
+**Story:** Feature-level (all 5 stories) — no AC change; discovery.md updated to match the real decomposition.
