@@ -31,7 +31,7 @@ function makeFakePool() {
       if (/SELECT .* FROM artefact_comments WHERE/.test(sql)) {
         var matched = rows.filter(function (r) {
           return r.resource_type === params[0] && r.resource_id === params[1];
-        }).sort(function (a, b) { return a.created_at < b.created_at ? -1 : 1; });
+        }).sort(function (a, b) { return a.created_at < b.created_at ? -1 : (a.created_at > b.created_at ? 1 : 0); });
         return { rows: matched };
       }
       throw new Error('Unhandled query in fake pool: ' + sql);
@@ -69,6 +69,22 @@ async function testListCommentsEmptyStateReturnsEmptyArray() {
   assert.deepStrictEqual(list, []);
 }
 
+async function testListCommentsIsolatesByResource() {
+  var pool = makeFakePool();
+  await migrateArtefactCommentsSchema(pool);
+  await createComment(pool, 'artefact', 'feature-a/discovery', 'user-a', 'Comment on feature A');
+  await createComment(pool, 'artefact', 'feature-b/discovery', 'user-b', 'Comment on feature B');
+  await createComment(pool, 'artefact', 'feature-a/discovery', 'user-c', 'Second comment on feature A');
+
+  var listA = await listCommentsForResource(pool, 'artefact', 'feature-a/discovery');
+  assert.strictEqual(listA.length, 2, 'expected only feature-a comments, got cross-resource contamination');
+  assert.ok(listA.every(function (c) { return c.resource_id === 'feature-a/discovery'; }));
+
+  var listB = await listCommentsForResource(pool, 'artefact', 'feature-b/discovery');
+  assert.strictEqual(listB.length, 1, 'expected only feature-b comments, got cross-resource contamination');
+  assert.strictEqual(listB[0].body, 'Comment on feature B');
+}
+
 async function main() {
   await testCreateCommentPersistsRow();
   console.log('  ok - createComment persists row');
@@ -76,5 +92,7 @@ async function main() {
   console.log('  ok - listCommentsForResource returns oldest first');
   await testListCommentsEmptyStateReturnsEmptyArray();
   console.log('  ok - listCommentsForResource empty state returns []');
+  await testListCommentsIsolatesByResource();
+  console.log('  ok - listCommentsForResource isolates by resource_id');
 }
 main().catch(function (err) { console.error('FAIL:', err.message); process.exitCode = 1; });
