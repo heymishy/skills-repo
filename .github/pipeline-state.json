@@ -35000,17 +35000,18 @@
         {
           "slug": "ep2-s2",
           "id": "ep2-s2",
-          "stage": "subagent-execution",
+          "stage": "verify-completion",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
-            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep2-s2-test-plan.md"
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep2-s2-test-plan.md",
+            "passing": 11
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep2-s2-dor.md",
-          "updatedAt": "2026-09-18T04:20:57.792Z",
+          "updatedAt": "2026-09-18T04:42:17.826Z",
           "tasks": [
             {
               "id": "task-1",
@@ -35048,7 +35049,10 @@
               "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep2-s2-plan.md"
             }
-          ]
+          ],
+          "acVerified": 3,
+          "acTotal": 3,
+          "verifyStatus": "passed"
         },
         {
           "slug": "ep2-s3",
