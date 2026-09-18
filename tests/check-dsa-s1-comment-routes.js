@@ -43,10 +43,26 @@ async function testListCommentsRouteRequiresAuth() {
   assert.notStrictEqual(result.statusCode, 200, 'unauthenticated list must not succeed');
 }
 
+// session_id cookie values are matched by sessionMiddleware's own regex,
+// /session_id=([a-f0-9]+)/ (middleware/session.js) -- lowercase hex only.
+function authedSid() {
+  return require('crypto').createHash('sha1').update('dsa-s1-comment-routes-tester').digest('hex');
+}
+
+async function testListCommentsRouteRejectsMissingResourceId() {
+  var sid = authedSid();
+  seedTestSession(sid, { accessToken: 'dsa-s1-test-token', login: 'dsa-s1-tester' });
+  var req = { headers: { cookie: 'session_id=' + sid }, method: 'GET', url: '/api/artefact-comments?resourceType=artefact' };
+  var result = await dispatchAndAwait(req);
+  assert.strictEqual(result.statusCode, 400, 'authenticated list with no resourceId must 400, not silently return an empty list');
+}
+
 async function main() {
   await testCreateCommentRouteRequiresAuth();
   console.log('  ok - create-comment route requires auth');
   await testListCommentsRouteRequiresAuth();
   console.log('  ok - list-comments route requires auth');
+  await testListCommentsRouteRejectsMissingResourceId();
+  console.log('  ok - list-comments route rejects missing resourceId with 400');
 }
 main().catch(function (err) { console.error('FAIL:', err.message); process.exitCode = 1; });

@@ -2731,6 +2731,10 @@ async function router(req, res) {
     authGuard(req, res, async () => {
       var resourceType = (req.query && req.query.resourceType) || 'artefact';
       var resourceId = req.query && req.query.resourceId;
+      if (!resourceId) {
+        _dsaS1SendJson(res, 400, { error: 'resourceId is required' });
+        return;
+      }
       var comments = await listArtefactComments(_pshPool, resourceType, resourceId);
       _dsaS1SendJson(res, 200, {
         comments: comments.map(function(c) {
