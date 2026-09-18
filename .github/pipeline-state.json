@@ -35946,6 +35946,12 @@
           ]
         }
       ]
+    },
+    {
+      "slug": "2026-09-18-new",
+      "id": "2026-09-18-new",
+      "discoveryStatus": "complete",
+      "artefact": "artefacts/2026-09-18-new/discovery.md"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
