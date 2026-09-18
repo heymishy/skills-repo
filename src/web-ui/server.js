@@ -4033,6 +4033,10 @@ async function router(req, res) {
     res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
     res.end(require('fs').readFileSync(require('path').join(__dirname, 'public', 'presence-sidebar.js'), 'utf8'));
 
+  } else if (pathname === '/public/stage-list.js' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
+    res.end(require('fs').readFileSync(require('path').join(__dirname, 'public', 'stage-list.js'), 'utf8'));
+
   } else {
     // Sign-in page (unauthenticated root)
     const { renderLoginPage } = require('./utils/html-shell');
