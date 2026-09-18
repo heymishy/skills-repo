@@ -24,14 +24,27 @@ const { spawnSync } = require('child_process');
 
 const PER_FILE_TIMEOUT_MS = 10000;
 
-function collectJsFiles(dir, out) {
+// ep2-s1: src/web-ui/public/ is served directly to the browser as static
+// client-side script (see server.js's dedicated /public/*.js routes,
+// e.g. presence-sidebar.js) -- it is never require()'d by Node and
+// routinely references browser-only globals (document, fetch,
+// EventSource) that don't exist here. Until ep2-s1, no standalone .js
+// file existed in that directory (pod-manager.html's client code is
+// inline, not a separate .js file), so this collision was never hit.
+// Excluded by directory, not filename pattern, since "browser-served
+// static asset" is a real structural boundary in this codebase, not a
+// naming convention.
+const EXCLUDED_DIRS = [path.join('src', 'web-ui', 'public')];
+
+function collectJsFiles(dir, out, repoRoot) {
   out = out || [];
   if (!fs.existsSync(dir)) return out;
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     if (entry.name === 'node_modules' || entry.name.startsWith('.')) continue;
     const full = path.join(dir, entry.name);
+    if (repoRoot && EXCLUDED_DIRS.includes(path.relative(repoRoot, full))) continue;
     if (entry.isDirectory()) {
-      collectJsFiles(full, out);
+      collectJsFiles(full, out, repoRoot);
     } else if (entry.isFile() && entry.name.endsWith('.js')) {
       out.push(full);
     }
@@ -57,7 +70,7 @@ function checkFile(file) {
 function run() {
   const repoRoot = path.resolve(__dirname, '..');
   const targetDir = path.join(repoRoot, 'src', 'web-ui');
-  const files = collectJsFiles(targetDir);
+  const files = collectJsFiles(targetDir, [], repoRoot);
 
   let failures = 0;
   for (const file of files) {

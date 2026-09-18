@@ -36,7 +36,7 @@ const skillsAdapter                                                  = require('
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
-const { handleGetJourney, handlePostJourney, handleDeleteJourney, handleGetJourneyResume, handleGetJourneyById, handleGetStageReview, handleGetJourneyStageView, handleGetJourneyStageReopen, handleGetStageConfirmBack, handlePostJourneyStageArtefact, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, handlePutJourneyDisplayName, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handleGetWizardBootstrapped, handlePostWizardSelection, handleJourneys, setListJourneys } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2 / bri-s1.5 / s3.4 / fdn-s1 / jsvr-s1
+const { handleGetJourney, handlePostJourney, handleDeleteJourney, handleGetJourneyResume, handleGetJourneyById, handleGetStageReview, handleGetJourneyStageView, handleGetJourneyStageReopen, handleGetStageConfirmBack, handlePostJourneyStageArtefact, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, handleGetJourneyCollaboratorsPresence, handlePostJourneyHeartbeat, handleGetJourneyPresenceStream, handlePutJourneyDisplayName, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handleGetWizardBootstrapped, handlePostWizardSelection, handleJourneys, setListJourneys } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2 / bri-s1.5 / s3.4 / fdn-s1 / jsvr-s1
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const pipelineStateGithubWriterFactory                               = require('./adapters/pipeline-state-github-writer'); // wsd-s2
 const { selectPipelineStateWriterFactory }                           = require('./adapters/pipeline-state-writer-selector'); // wsd-s2
@@ -2417,6 +2417,32 @@ async function router(req, res) {
     return;
   }
 
+  // ep2-s1: test-only endpoint to seed a stale presence entry for E2E
+  // coverage of the offline-transition AC. No other mechanism exists to
+  // simulate a collaborator going offline without waiting 30+ real
+  // seconds -- see /test/seed-product-repo above for the established
+  // convention this follows.
+  if (pathname === '/test/seed-presence' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    let raw = '';
+    for await (const chunk of req) { raw += chunk; }
+    let body = {};
+    try { body = raw ? JSON.parse(raw) : {}; } catch (_) { body = {}; }
+
+    const journeyId = body.journeyId;
+    const login = body.login;
+    const ageMs = body.ageMs;
+    if (!journeyId || !login || ageMs == null) {
+      res.writeHead(400, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'journeyId, login, and ageMs are required' }));
+      return;
+    }
+    const _presenceStoreForSeed = require('./modules/presence-store');
+    _presenceStoreForSeed._seedStaleActivity(journeyId, login, ageMs);
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true }));
+    return;
+  }
+
   // dsh-s3: seed a journey with a completed stage whose conversation turns
   // exist ONLY in the durable session_turns store (via writeSessionTurns),
   // with NO in-memory HTML session ever created -- genuinely simulating
@@ -3197,6 +3223,21 @@ async function router(req, res) {
       await handlePutJourneyDisplayName(req, res);
     });
 
+  } else if (pathname.match(/^\/api\/journey\/([^/]+)\/collaborators-presence$/) && req.method === 'GET') {
+    // ep2-s1 AC1 — assigned collaborators joined with live presence status
+    req.params = { journeyId: pathname.split('/')[3] };
+    await handleGetJourneyCollaboratorsPresence(req, res, _pshPool);
+
+  } else if (pathname.match(/^\/api\/journey\/([^/]+)\/heartbeat$/) && req.method === 'POST') {
+    // ep2-s1 AC2 — client sidebar heartbeat, registers in-memory presence activity
+    req.params = { journeyId: pathname.split('/')[3] };
+    await handlePostJourneyHeartbeat(req, res);
+
+  } else if (pathname.match(/^\/api\/journey\/([^/]+)\/presence-stream$/) && req.method === 'GET') {
+    // ep2-s1 AC2/AC3 — SSE stream broadcasting collaborators-presence
+    req.params = { journeyId: pathname.split('/')[3] };
+    await handleGetJourneyPresenceStream(req, res, _pshPool);
+
   } else if (pathname === '/webhook/stripe' && req.method === 'POST') {
     // lab-s3.4 — Stripe webhook: credit provisioning + idempotency
     // CRITICAL: This route MUST appear BEFORE any JSON body-parsing middleware.
@@ -3965,6 +4006,27 @@ async function router(req, res) {
       res.writeHead(200, { 'Content-Type': 'text/html' });
       res.end(require('fs').readFileSync(require('path').join(__dirname, 'public', 'pod-manager.html'), 'utf8'));
     });
+
+  } else if (pathname === '/public/presence-sidebar.js' && req.method === 'GET') {
+    // ep2-s1 Task 6 fix: routes/features.js (Task 3) emits
+    // '<script src="/public/presence-sidebar.js"></script>' whenever the
+    // Team sidebar renders, but no route ever served it -- this codebase
+    // has no generic /public/* static-file route (pod-manager.html above
+    // is the only precedent, and it is a single hardcoded literal-path
+    // route, not a generic static server). Every request for this script
+    // fell through to the catch-all login/SPA handler below, which
+    // returned an HTML document; the browser's script tag then failed to
+    // parse it ("Uncaught SyntaxError: Unexpected token '<'"), so
+    // presence-sidebar.js's init() never ran and the sidebar stayed
+    // permanently empty. Found via this story's own E2E spec
+    // (tests/e2e/ep2-s1-presence-sidebar.spec.js) -- no unit/integration
+    // test exercises a real <script> tag fetch+parse, so Tasks 1-5 never
+    // caught it. No session/auth guard: this is static client-side source
+    // with no sensitive data, matching ordinary public-asset conventions
+    // (and browsers send cookies on <script src> requests same-origin
+    // regardless, so gating it would add no real protection).
+    res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
+    res.end(require('fs').readFileSync(require('path').join(__dirname, 'public', 'presence-sidebar.js'), 'utf8'));
 
   } else {
     // Sign-in page (unauthenticated root)

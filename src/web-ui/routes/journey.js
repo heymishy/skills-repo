@@ -24,6 +24,8 @@ var sessionOriginBadgeMeta = require('./features.js').sessionOriginBadgeMeta;
 
 // Injectable adapters — defaults wire to real implementations
 var _journeyStore = require('../modules/journey-store');
+var _presenceStore = require('../modules/presence-store'); // ep2-s1
+var _featureCollaboratorStore = require('../modules/feature-collaborator-store'); // ep2-s1
 var _registerHtmlSession = null;
 var _linkSessionToJourney = null;
 var _getHtmlSessionFn = null;
@@ -3465,6 +3467,125 @@ async function handleGetJourneyViewers(req, res) {
 }
 
 /**
+ * ep2-s1: shared helper joining feature_collaborators (populated at feature
+ * creation by ep1-s3) with live in-memory presence status. Used by both
+ * handleGetJourneyCollaboratorsPresence and handleGetJourneyPresenceStream's
+ * broadcast() so the join logic lives in exactly one place. "journeyId" is
+ * the real key -- feature_collaborators.feature_id IS journeyId in this
+ * codebase (see feature-collaborator-store.js header).
+ * @param {object} pool
+ * @param {string} journeyId
+ * @returns {Promise<Array<{userId:string, roleId:string, status:string, lastSeenMs:number}>>}
+ */
+async function _getCollaboratorsPresencePayload(pool, journeyId) {
+  var rows = await _featureCollaboratorStore.getFeatureCollaborators(pool, journeyId);
+  return rows.map(function (r) {
+    var p = _presenceStore.getStatus(journeyId, r.userId);
+    return { userId: r.userId, roleId: r.roleId, status: p.status, lastSeenMs: p.lastSeenMs };
+  });
+}
+
+/**
+ * GET /api/journey/:journeyId/collaborators-presence — ep2-s1 AC1.
+ * Returns every assigned collaborator (feature_collaborators, populated at
+ * feature creation by ep1-s3) joined with their live in-memory presence
+ * status. "journeyId" is the real key -- feature_collaborators.feature_id
+ * IS journeyId in this codebase (see feature-collaborator-store.js header).
+ */
+async function handleGetJourneyCollaboratorsPresence(req, res, pool) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
+    return;
+  }
+  var collaborators;
+  try {
+    collaborators = await _getCollaboratorsPresencePayload(pool, journeyId);
+  } catch (err) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'INTERNAL_ERROR' }));
+    return;
+  }
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ collaborators: collaborators }));
+}
+
+/**
+ * POST /api/journey/:journeyId/heartbeat — ep2-s1 AC2. Client sidebar
+ * calls this every ~12s while the feature page is open. Registers activity
+ * in the in-memory presence-store (not Postgres -- see decisions.md).
+ */
+async function handlePostJourneyHeartbeat(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
+    return;
+  }
+  _presenceStore.registerActivity(journeyId, req.session.login);
+  res.writeHead(204);
+  res.end();
+}
+
+/**
+ * GET /api/journey/:journeyId/presence-stream — ep2-s1 AC2/AC3. SSE stream
+ * broadcasting the collaborators-presence payload every 5s (bounded well
+ * under the 30s AC2 staleness window) and immediately on connect. Follows
+ * the same SSE header/write/cleanup convention as routes/skills.js
+ * (this codebase's only other SSE usage).
+ */
+async function handleGetJourneyPresenceStream(req, res, pool) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
+    return;
+  }
+  _presenceStore.registerActivity(journeyId, req.session.login);
+
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  });
+
+  async function broadcast() {
+    try {
+      var collaborators = await _getCollaboratorsPresencePayload(pool, journeyId);
+      res.write('data: ' + JSON.stringify({ collaborators: collaborators }) + '\n\n');
+    } catch (_) { /* SSE streams must gracefully degrade -- web-ui/core.md */ }
+  }
+
+  await broadcast();
+  var _interval = setInterval(broadcast, 5000);
+  if (typeof res.on === 'function') {
+    res.on('close', function () { clearInterval(_interval); });
+  }
+}
+
+/**
  * PUT /api/journey/:journeyId/display-name — fdn-s1: rename a feature's
  * operator-facing label. Never touches featureSlug (the durable identifier
  * behind disk artefact paths and pipeline-state.json keys) -- see
@@ -4908,6 +5029,10 @@ module.exports = {
   _isSafeBoardBackLink,
   handleGetJourneyState,
   handleGetJourneyViewers,
+  // ep2-s1 — pod collaborator presence sidebar
+  handleGetJourneyCollaboratorsPresence,
+  handlePostJourneyHeartbeat,
+  handleGetJourneyPresenceStream,
   handlePutJourneyDisplayName,
   checkJourneyIdle,
   setNow,
