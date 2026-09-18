@@ -35331,8 +35331,8 @@
       "slug": "2026-09-18-design-system-adoption",
       "id": "2026-09-18-design-system-adoption",
       "name": "Design System Adoption",
-      "stage": "test-plan",
-      "health": "amber",
+      "stage": "definition-of-ready",
+      "health": "green",
       "track": "standard",
       "discoveryStatus": "approved",
       "updatedAt": "2026-09-18T09:44:09.252Z",
@@ -35696,6 +35696,78 @@
           "evidence": "dsa-s1-dor.md H9/H-NFR -- no violation found",
           "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-09-18T10:06:41.313Z"
+        },
+        {
+          "id": "NFR-dsa-s2-perf",
+          "category": "nfr",
+          "label": "Dashboard page load: no measurable regression",
+          "status": "met",
+          "evidence": "dsa-s2-dor.md H9/H-NFR -- no violation found",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-18T10:08:06.807Z"
+        },
+        {
+          "id": "NFR-dsa-s2-a11y",
+          "category": "nfr",
+          "label": "Dashboard WCAG 2.1 AA: no regression to existing accessibility properties",
+          "status": "met",
+          "evidence": "dsa-s2-dor.md H9/H-NFR -- no violation found",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-18T10:08:06.808Z"
+        },
+        {
+          "id": "NFR-dsa-s3-perf",
+          "category": "nfr",
+          "label": "Landing page load: no measurable regression",
+          "status": "met",
+          "evidence": "dsa-s3-dor.md H9/H-NFR -- no violation found",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-18T10:09:01.457Z"
+        },
+        {
+          "id": "NFR-dsa-s3-a11y",
+          "category": "nfr",
+          "label": "Landing WCAG 2.1 AA: no regression to existing accessibility properties",
+          "status": "met",
+          "evidence": "dsa-s3-dor.md H9/H-NFR -- no violation found",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-18T10:09:01.458Z"
+        },
+        {
+          "id": "NFR-dsa-s4-perf",
+          "category": "nfr",
+          "label": "Skill-session chat page load: no measurable regression",
+          "status": "met",
+          "evidence": "dsa-s4-dor.md H9/H-NFR -- no violation found",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-18T10:09:48.804Z"
+        },
+        {
+          "id": "NFR-dsa-s4-a11y",
+          "category": "nfr",
+          "label": "Skill-session chat WCAG 2.1 AA: no regression to existing accessibility properties",
+          "status": "met",
+          "evidence": "dsa-s4-dor.md H9/H-NFR -- no violation found",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-18T10:09:48.805Z"
+        },
+        {
+          "id": "NFR-dsa-s5-perf",
+          "category": "nfr",
+          "label": "H-DESIGN scan completes within DoR sign-off performance budget",
+          "status": "met",
+          "evidence": "dsa-s5-dor.md H9/H-NFR -- no violation found",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-18T10:10:37.874Z"
+        },
+        {
+          "id": "NFR-dsa-s5-a11y",
+          "category": "nfr",
+          "label": "H-DESIGN audit trail: pass/fail result and offending file/value recorded",
+          "status": "met",
+          "evidence": "dsa-s5-dor.md H9/H-NFR -- no violation found",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-18T10:10:37.876Z"
         }
       ],
       "regulated": false,
@@ -35732,11 +35804,11 @@
             {
               "slug": "dsa-s2",
               "name": "Restyle the Dashboard to Match DESIGN.md",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-18T10:00:54.489Z",
+              "updatedAt": "2026-09-18T10:08:00.913Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -35745,16 +35817,18 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": true
+              "e2eToolingRequired": true,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s2-dor.md"
             },
             {
               "slug": "dsa-s3",
               "name": "Restyle the Landing Page to Match DESIGN.md",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-18T10:01:32.087Z",
+              "updatedAt": "2026-09-18T10:09:01.314Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -35763,16 +35837,18 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": true
+              "e2eToolingRequired": true,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s3-dor.md"
             },
             {
               "slug": "dsa-s4",
               "name": "Restyle the Skill-Session Chat Page to Match DESIGN.md",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-18T10:02:41.923Z",
+              "updatedAt": "2026-09-18T10:09:48.652Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -35781,7 +35857,9 @@
               "acTotal": 4,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": true
+              "e2eToolingRequired": true,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s4-dor.md"
             }
           ]
         },
@@ -35793,11 +35871,11 @@
             {
               "slug": "dsa-s5",
               "name": "design.system Context Tag Triggers a Real DoR Hard Block",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-18T10:03:28.928Z",
+              "updatedAt": "2026-09-18T10:10:37.724Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
@@ -35806,7 +35884,9 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s5-dor.md"
             }
           ]
         }

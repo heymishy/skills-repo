@@ -1,5 +1,33 @@
 # Decisions: Design System Adoption
 
+## `dsa-s5` DoR W3: 1 MEDIUM review finding acknowledged as RISK-ACCEPT (2026-09-18)
+
+**Context:** `dsa-s5`'s `/review` run (run 1) found 1 MEDIUM finding: [1-M1] AC5 mixes an observable outcome with a verification-method clause — the same recurring pattern applied consistently to this governance story too, not exempted from scrutiny.
+**Decision:** RISK-ACCEPT, proceed to DoR sign-off without story rework.
+**Rationale:** Same reasoning as `dsa-s1`–`dsa-s4`'s equivalent RISK-ACCEPTs — closes out this recurring pattern's acknowledgement across all 5 stories in this feature consistently.
+**Story:** dsa-s5 — no AC change.
+
+## `dsa-s4` DoR W3: 1 MEDIUM review finding acknowledged as RISK-ACCEPT (2026-09-18)
+
+**Context:** `dsa-s4`'s `/review` run (run 1) found 1 MEDIUM finding remaining after the AC5 process-instruction finding was fixed during the same review: [1-M1] AC4 describes a verification method rather than a sharply observable outcome — same recurring pattern.
+**Decision:** RISK-ACCEPT, proceed to DoR sign-off without story rework. The test plan and DoR contract both name the real 15 specs (with the 2 `@real-staging`-tagged ones explicitly flagged as residual risk, not silently accepted), closing the practical ambiguity.
+**Rationale:** Same reasoning as `dsa-s1`/`dsa-s2`/`dsa-s3`'s equivalent RISK-ACCEPTs — applied consistently, including to this story's own higher-risk status.
+**Story:** dsa-s4 — no AC change.
+
+## `dsa-s3` DoR W3: 1 MEDIUM review finding acknowledged as RISK-ACCEPT (2026-09-18)
+
+**Context:** `dsa-s3`'s `/review` run (run 1) found 1 MEDIUM finding remaining after the route-file ambiguity was resolved during the same review: [1-M1] AC4 describes a verification method rather than a sharply observable outcome — same recurring pattern.
+**Decision:** RISK-ACCEPT, proceed to DoR sign-off without story rework. The test plan and DoR contract both name the real spec (`wuce23-skill-launcher-landing.spec.js`) and the real precise target file (`templates/landing.html`, confirmed via direct trace through `public.js`), closing the practical ambiguity.
+**Rationale:** Same reasoning as `dsa-s1`/`dsa-s2`'s equivalent RISK-ACCEPTs.
+**Story:** dsa-s3 — no AC change.
+
+## `dsa-s2` DoR W3: 1 MEDIUM review finding acknowledged as RISK-ACCEPT (2026-09-18)
+
+**Context:** `dsa-s2`'s `/review` run (run 1) found 1 MEDIUM finding: [1-M1] AC4 describes a verification method ("verified by running pre-existing test coverage") rather than a sharply observable outcome — same recurring pattern as `dsa-s1`'s [1-M2].
+**Decision:** RISK-ACCEPT, proceed to DoR sign-off without story rework. The test plan's own implementation already names the real spec file (`psh-s4-dashboard-layout.spec.js`) this AC covers, closing the practical ambiguity.
+**Rationale:** Same reasoning as `dsa-s1`'s equivalent RISK-ACCEPT — cosmetic/precision issue, not a functional gap.
+**Story:** dsa-s2 — no AC change.
+
 ## `dsa-s1` DoR W3: 2 MEDIUM review findings acknowledged as RISK-ACCEPT (2026-09-18)
 
 **Context:** `dsa-s1`'s `/review` run (run 1) found 2 MEDIUM findings: [1-M1] the User Story's "So that" clause reads as beta-feedback framing while Benefit Linkage names visual-consistency as the moved metric; [1-M2] AC4 describes a verification method ("verified by running pre-existing test coverage") rather than a sharply observable outcome. Neither is severe enough to warrant rewriting the story before DoR sign-off.
