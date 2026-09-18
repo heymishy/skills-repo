@@ -35787,17 +35787,17 @@
             {
               "slug": "dsa-s1",
               "name": "Restyle the Artefact Viewer to Match DESIGN.md",
-              "stage": "branch-setup",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-18T10:22:17.018Z",
+              "updatedAt": "2026-09-18T10:40:35.063Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 6,
+                "totalTests": 20,
                 "passing": 0
               },
-              "acTotal": 4,
+              "acTotal": 8,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,

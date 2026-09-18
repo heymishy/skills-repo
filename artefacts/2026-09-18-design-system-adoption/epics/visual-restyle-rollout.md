@@ -8,6 +8,8 @@
 
 Every real screen a user encounters — the dashboard, the landing page, the skill-session chat, and the artefact viewer — renders using `DESIGN.md`'s token values (color, typography, spacing, components) instead of today's inconsistent "Notion-calm" system. Each screen's restyle is an independent, demo-able, revertible slice, reusing and extending the existing CSS custom-property architecture already in `src/web-ui/utils/html-shell.js` rather than introducing a parallel styling mechanism. Both dark and light mode work correctly on every restyled screen, using the existing toggle in Settings.
 
+**Amendment (2026-09-18):** `dsa-s1` (Artefact Viewer) was found, during implementation planning, to require real new functionality — not just visual restyle — because `DESIGN.md`'s mock depicts a Sign-off card and Comments card that do not exist anywhere in the real, live application (confirmed dead code on both the render path and the read handler that would have served them). The operator chose to build this real functionality rather than restyle a nonexistent UI. This epic's Goal is amended to acknowledge that `dsa-s1` specifically includes wiring the existing `POST /sign-off` endpoint to a real UI and building new, generic comments infrastructure — a deliberate, one-story exception to this epic's otherwise "visual restyle only" framing, not a silent scope drift. Full investigation and decision trail: `decisions.md`.
+
 ## Out of Scope
 
 - **Building or modifying the light/dark toggle mechanism itself** — it already exists and works (`src/web-ui/routes/settings.js`); this epic applies new token values to it, it does not touch the toggle's own logic.
