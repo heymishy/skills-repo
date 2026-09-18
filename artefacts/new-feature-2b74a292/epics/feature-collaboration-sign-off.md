@@ -24,11 +24,11 @@ A team of collaborators can access a feature in real time, each from their own a
 ## Stories in This Epic
 
 - [x] Load Feature with Pod Collaborators and Present Presence Sidebar — artefacts/new-feature-2b74a292/stories/ep2-s1.md (DoD complete, artefacts/new-feature-2b74a292/dod/ep2-s1-dod.md)
-- [ ] Filter Stage Visibility by Role — artefacts/new-feature-2b74a292/stories/ep2-s2.md
+- [x] Filter Stage Visibility by Role — artefacts/new-feature-2b74a292/stories/ep2-s2.md (DoD complete, artefacts/new-feature-2b74a292/dod/ep2-s2-dod.md)
 - [ ] Sign-Off at a Stage (Approval Record & Advance) — artefacts/new-feature-2b74a292/stories/ep2-s3.md
 - [ ] Concurrent Write Merge for Artefact Edits — artefacts/new-feature-2b74a292/stories/ep2-s4.md
 
-**Epic status: in progress** (1/4 stories DoD-complete as of 2026-09-18).
+**Epic status: in progress** (2/4 stories DoD-complete as of 2026-09-18).
 
 ## Human Oversight Level
 

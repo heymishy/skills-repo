@@ -35000,8 +35000,8 @@
         {
           "slug": "ep2-s2",
           "id": "ep2-s2",
-          "stage": "branch-complete",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -35011,7 +35011,7 @@
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep2-s2-dor.md",
-          "updatedAt": "2026-09-18T04:43:22.408Z",
+          "updatedAt": "2026-09-18T05:16:36.444Z",
           "tasks": [
             {
               "id": "task-1",
@@ -35053,8 +35053,12 @@
           "acVerified": 3,
           "acTotal": 3,
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/901"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/901",
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/new-feature-2b74a292/dod/ep2-s2-dod.md",
+          "blocker": "COMPLETE WITH DEVIATIONS: AC1 implemented as 3 stages not the literal 4 (\"coding\" is structurally unsatisfiable in this codebase's real data model) -- deliberate, documented, fully reasoned. See decisions.md and dod/ep2-s2-dod.md.",
+          "releaseReady": false
         },
         {
           "slug": "ep2-s3",
