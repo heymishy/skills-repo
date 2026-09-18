@@ -35331,7 +35331,7 @@
       "slug": "2026-09-18-design-system-adoption",
       "id": "2026-09-18-design-system-adoption",
       "name": "Design System Adoption",
-      "stage": "review",
+      "stage": "test-plan",
       "health": "amber",
       "track": "standard",
       "discoveryStatus": "approved",
@@ -35694,38 +35694,74 @@
             {
               "slug": "dsa-s1",
               "name": "Restyle the Artefact Viewer to Match DESIGN.md",
-              "stage": "review",
-              "health": "amber",
+              "stage": "test-plan",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-18T09:51:23.282Z"
+              "updatedAt": "2026-09-18T10:00:15.647Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": true
             },
             {
               "slug": "dsa-s2",
               "name": "Restyle the Dashboard to Match DESIGN.md",
-              "stage": "review",
-              "health": "amber",
+              "stage": "test-plan",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-18T09:51:35.614Z"
+              "updatedAt": "2026-09-18T10:00:54.489Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": true
             },
             {
               "slug": "dsa-s3",
               "name": "Restyle the Landing Page to Match DESIGN.md",
-              "stage": "review",
-              "health": "amber",
+              "stage": "test-plan",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-18T09:52:35.726Z"
+              "updatedAt": "2026-09-18T10:01:32.087Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": true
             },
             {
               "slug": "dsa-s4",
               "name": "Restyle the Skill-Session Chat Page to Match DESIGN.md",
-              "stage": "review",
-              "health": "amber",
+              "stage": "test-plan",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-18T09:53:24.268Z"
+              "updatedAt": "2026-09-18T10:02:41.923Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0
+              },
+              "acTotal": 4,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": true
             }
           ]
         },
@@ -35737,11 +35773,20 @@
             {
               "slug": "dsa-s5",
               "name": "design.system Context Tag Triggers a Real DoR Hard Block",
-              "stage": "review",
-              "health": "amber",
+              "stage": "test-plan",
+              "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-18T09:53:49.596Z"
+              "updatedAt": "2026-09-18T10:03:28.928Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 9,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         }
