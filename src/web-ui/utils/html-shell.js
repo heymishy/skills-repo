@@ -408,7 +408,7 @@ function renderShell(opts) {
     ANTI_FLASH_SCRIPT + '\n' +
     '<link rel="preconnect" href="https://fonts.googleapis.com">\n' +
     '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
-    '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">\n' +
+    '<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">\n' +
     '<style>' + DESIGN_SYSTEM_CSS + '</style>\n' +
     '</head>\n<body>\n' +
     bannerHtml +
@@ -438,9 +438,9 @@ const DESIGN_SYSTEM_CSS = `
   --green: #15803D; --green-soft: #DCFCE7;
   --amber: #B45309; --amber-soft: #FEF3C7;
   --red: #B91C1C; --red-soft: #FEE2E2;
-  --success: #15803D; --success-soft: #DCFCE7;
-  --warn: #B45309; --warn-soft: #FEF3C7;
-  --danger: #B91C1C; --danger-soft: #FEE2E2;
+  --success: var(--green); --success-soft: var(--green-soft);
+  --warn: var(--amber); --warn-soft: var(--amber-soft);
+  --danger: var(--red); --danger-soft: var(--red-soft);
   --serif: 'Source Serif 4', Charter, Georgia, serif;
   --sans: 'Inter Tight', system-ui, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, monospace;
@@ -458,9 +458,9 @@ const DESIGN_SYSTEM_CSS = `
   --green: #4ADE80; --green-soft: #052E16;
   --amber: #FCD34D; --amber-soft: #451A03;
   --red: #F87171; --red-soft: #450A0A;
-  --success: #34D399; --success-soft: #0F2318;
-  --warn: #F59E0B; --warn-soft: #2A2011;
-  --danger: #F87171; --danger-soft: #2A1416;
+  --success: var(--green); --success-soft: var(--green-soft);
+  --warn: var(--amber); --warn-soft: var(--amber-soft);
+  --danger: var(--red); --danger-soft: var(--red-soft);
 }
 /* No-JS OS fallback */
 @media (prefers-color-scheme: dark) {
@@ -471,9 +471,9 @@ const DESIGN_SYSTEM_CSS = `
     --green: #4ADE80; --green-soft: #052E16;
     --amber: #FCD34D; --amber-soft: #451A03;
     --red: #F87171; --red-soft: #450A0A;
-    --success: #34D399; --success-soft: #0F2318;
-    --warn: #F59E0B; --warn-soft: #2A2011;
-    --danger: #F87171; --danger-soft: #2A1416;
+    --success: var(--green); --success-soft: var(--green-soft);
+    --warn: var(--amber); --warn-soft: var(--amber-soft);
+    --danger: var(--red); --danger-soft: var(--red-soft);
   }
 }
 
@@ -932,7 +932,7 @@ async function renderLoginPage(req) {
     ANTI_FLASH_SCRIPT + '\n' +
     '<link rel="preconnect" href="https://fonts.googleapis.com">\n' +
     '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
-    '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">\n' +
+    '<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">\n' +
     '<style>' + DESIGN_SYSTEM_CSS + loginCss + '</style>\n' +
     '</head>\n<body>\n' +
     '<div class="sw-login-wrap">\n' +
