@@ -40,6 +40,26 @@ function setLogger(logger) { _logger = logger; }
 function setGetPendingActions(fn) { _getPendingActions = fn; }
 
 /**
+ * Map the real getPendingActions() adapter shape
+ * ({ items: [{featureName, artefactType, daysPending, artefactUrl}], bannerMessage }) into the
+ * shape renderDashboard() expects ({ actions: [{what, feature, age, you}], pendingActionsCount }).
+ * @param {{items: Array, bannerMessage: (string|null)}} raw
+ * @returns {{actions: Array, pendingActionsCount: number}}
+ */
+function _mapPendingActionsForDashboard(raw) {
+  var items = (raw && raw.items) || [];
+  var actions = items.map(function(item) {
+    return {
+      what: 'Sign off ' + item.artefactType,
+      feature: item.featureName,
+      age: item.daysPending === 0 ? 'today' : (item.daysPending + 'd ago'),
+      you: true
+    };
+  });
+  return { actions: actions, pendingActionsCount: items.length };
+}
+
+/**
  * GET /api/actions — return personalised action queue.
  * Requires authentication; returns 401 if no session.
  * @param {object} req
@@ -135,13 +155,22 @@ async function handleDashboard(req, res) {
   // unexplained hardcode, matching the placeholder-value comments below.
   const dateLabel = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
+  var pendingResult;
+  try {
+    pendingResult = await _getPendingActions({ id: userId, login: login }, req.session.accessToken);
+  } catch (err) {
+    _logger.warn('dashboard_pending_actions_error', { userId: userId, reason: err.message });
+    pendingResult = { items: [], bannerMessage: null };
+  }
+  var mapped = _mapPendingActionsForDashboard(pendingResult);
+
   const bodyContent = renderDashboard({
     greetingName: login || 'there',
     dateLabel: dateLabel,
-    pendingActionsCount: 0,   // dsa-s2 Task 2 wires the real value
+    pendingActionsCount: mapped.pendingActionsCount,
     inProgressCount: 0,       // dsa-s2 Task 3 wires the real value
     skills: _DASHBOARD_SKILLS_CATALOG,
-    actions: [],              // dsa-s2 Task 2 wires the real value
+    actions: mapped.actions,
     recent: []                // dsa-s2 Task 3 wires the real value
   });
   const html = renderShell({
@@ -161,5 +190,6 @@ module.exports = {
   handleGetActions,
   handleDashboard,
   setLogger,
-  setGetPendingActions
+  setGetPendingActions,
+  _mapPendingActionsForDashboard
 };
