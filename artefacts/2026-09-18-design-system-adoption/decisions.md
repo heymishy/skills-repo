@@ -1,5 +1,12 @@
 # Decisions: Design System Adoption
 
+## `dsa-s1` DoR W4: amended verification script's 4 new scenarios acknowledged as RISK-ACCEPT (2026-09-18)
+
+**Context:** `dsa-s1`'s AC verification script was amended to version 2, adding 4 new scenarios (5-8: sign off works, already-signed-off shows approver, comments list/empty state, posting a comment) covering the story's expanded Sign-off/Comments scope. The operator had confirmed the original 4 scenarios (version 1, restyle-only) but not these new ones.
+**Decision:** Operator chose to acknowledge and proceed rather than review the 4 new scenarios before coding begins — proceeding directly to `/implementation-plan`.
+**Rationale:** The operator's standing choice throughout this session to proceed rather than pause for review at every incremental checkpoint; the verification script remains available for review before the story's own post-merge smoke test, which is the other real use of this artefact per its own template's stated purpose.
+**Story:** dsa-s1 — no AC or scope change.
+
 ## `dsa-s1` implementation-technique grounding: server-side sign-off-status detection, real pool relationship, and E2E-testability boundary for POST /sign-off (2026-09-18)
 
 **Context:** Before writing `dsa-s1`'s implementation plan, three further real findings refined (not changed) the already-signed-off Architecture Constraints: (1) `handleArtefactRoute` already has the fetched markdown before rendering, so AC6's "already signed off" state can be determined server-side by calling the existing, already-tested `detectExistingSignOff(markdown)` function (`adapters/sign-off-writer.js`) once at render time — no client-side guess-then-fail POST needed. (2) `_userRolesPool` (the real migration-wiring pool every other module in `server.js` uses) and `_pshPool` (the pool `handleArtefactRoute` receives) are separate Node `Pool` objects but both connect to the same `DATABASE_URL` — confirmed via direct trace — so the new comments table's migration can be wired via `_userRolesPool` (matching precedent exactly) while `handleArtefactRoute` reads/writes it via `_pshPool`, with no cross-pool inconsistency. (3) `tests/e2e/sign-off.spec.js`'s own header comment and 3 `test.skip()` entries (already shipped, unrelated to this story) confirm the real backend success/409 round trip for `POST /sign-off` cannot be automated in E2E without real GitHub write access — deferred to manual verification since that story shipped. No `route.fulfill`-style response-mocking precedent exists anywhere in this codebase's E2E suite.
