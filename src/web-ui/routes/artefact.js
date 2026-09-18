@@ -94,6 +94,7 @@ async function _buildArtefactBodyContent(req, pool, slug, artefactType, markdown
       '<div id="comments-list-container">' + commentsListHtml + '</div>' +
       '<textarea id="comment-input" placeholder="Add a comment..." style="width:100%;margin-top:12px"></textarea>' +
       '<button type="button" id="comment-submit-btn" class="sw-btn sw-btn--secondary">Post Comment</button>' +
+      '<div id="comment-error" style="color:var(--danger);font-size:13px;margin-top:8px"></div>' +
     '</div>';
 
   return (

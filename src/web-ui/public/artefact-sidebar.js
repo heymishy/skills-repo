@@ -54,6 +54,7 @@
     var submitBtn = document.getElementById('comment-submit-btn');
     var input = document.getElementById('comment-input');
     var listContainer = document.getElementById('comments-list-container');
+    var errorEl = document.getElementById('comment-error');
     if (!card || !submitBtn || !input || !listContainer) return;
 
     var resourceType = card.getAttribute('data-resource-type');
@@ -64,15 +65,18 @@
       var body = input.value.trim();
       if (!body) return;
       submitBtn.disabled = true;
+      if (errorEl) errorEl.textContent = '';
 
       fetch('/api/artefact-comments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ resourceType: resourceType, resourceId: resourceId, body: body, _csrf: csrfToken })
       })
-        .then(function (r) { return r.json(); })
+        .then(function (r) {
+          return r.json().then(function (parsedBody) { return { status: r.status, body: parsedBody }; });
+        })
         .then(function (result) {
-          if (result.success) {
+          if (result.status === 200 && result.body.success) {
             var emptyState = document.getElementById('comments-empty-state');
             if (emptyState) emptyState.remove();
             var list = document.getElementById('comments-list');
@@ -87,22 +91,27 @@
             item.style.padding = '8px 0';
             item.style.borderBottom = '1px solid var(--line-2)';
             var strong = document.createElement('strong');
-            strong.textContent = result.comment.userId;
+            strong.textContent = result.body.comment.userId;
             var span = document.createElement('span');
             span.style.color = 'var(--muted)';
             span.style.fontSize = '12px';
-            span.textContent = ' ' + result.comment.createdAt;
+            span.textContent = ' ' + result.body.comment.createdAt;
             var p = document.createElement('p');
-            p.textContent = result.comment.body;
+            p.textContent = result.body.comment.body;
             item.appendChild(strong);
             item.appendChild(span);
             item.appendChild(p);
             list.appendChild(item);
             input.value = '';
+          } else if (errorEl) {
+            errorEl.textContent = result.body.error || 'Could not post comment. Please try again.';
           }
           submitBtn.disabled = false;
         })
-        .catch(function () { submitBtn.disabled = false; });
+        .catch(function () {
+          if (errorEl) errorEl.textContent = 'Could not post comment. Please try again.';
+          submitBtn.disabled = false;
+        });
     });
   }
 
