@@ -11,14 +11,14 @@
   function init() {
     var signOffBtn = document.getElementById('sign-off-btn');
     var modal = document.getElementById('sign-off-modal');
-    if (!signOffBtn || !modal) return;
+    var approveBtn = document.getElementById('sign-off-approve-btn');
+    var errorEl = document.getElementById('sign-off-error');
+    if (!signOffBtn || !modal || !approveBtn || !errorEl) return;
 
     var journeyId = signOffBtn.getAttribute('data-journey-id');
     var csrfToken = signOffBtn.getAttribute('data-csrf-token');
     var reasonInput = document.getElementById('sign-off-reason');
-    var approveBtn = document.getElementById('sign-off-approve-btn');
     var cancelBtn = document.getElementById('sign-off-cancel-btn');
-    var errorEl = document.getElementById('sign-off-error');
     var gateConfirmForm = document.querySelector('form[action^="/api/journey/"][action$="/gate-confirm"]');
 
     function showModal() {
@@ -39,6 +39,11 @@
         errorEl.textContent = 'Reason cannot be empty';
         return;
       }
+      // Disable during the in-flight request so a fast double-click can't
+      // fire two POSTs -- handlePostJourneyApprove has no idempotency guard
+      // on its decisions.md append, so a double-click would otherwise write
+      // two entries.
+      approveBtn.disabled = true;
       fetch('/api/journey/' + encodeURIComponent(journeyId) + '/approve', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -57,6 +62,7 @@
         })
         .catch(function (err) {
           errorEl.textContent = err.message || 'Approval failed. Please try again.';
+          approveBtn.disabled = false;
         });
     });
   }

@@ -35,8 +35,25 @@ testApprovalHandlerExists()
 // /api/journey/:journeyId/gate-confirm route does. Task 2's server.js wiring
 // initially omitted this gate (caught in spec-compliance review) -- this test
 // guards against the gate being dropped again.
-// Same real-dispatch + seed-multi-user-roles pattern as
-// check-vrne-s1-server-wiring.js's own T-integration-real-dispatch test.
+//
+// integrationMockRes/dispatchAndAwaitResponse/seedMultiUserRolesForIntegrationTest
+// below are copied from check-vrne-s1-server-wiring.js's own equivalent
+// helpers (its T-integration-real-dispatch test) rather than imported, since
+// that file has no exported test-helper module today. If either file's
+// harness is ever fixed independently, check the other for the same fix --
+// most importantly the timing hazard dispatchAndAwaitResponse exists to
+// route around: router(req, res) does NOT reliably resolve only once the
+// response is fully written. Some route branches (e.g. authGuard-wrapped
+// ones) invoke their async gate check fire-and-forget -- authGuard calls
+// next() and only .catch()es it for unhandled errors, never awaiting or
+// returning that promise up to router()'s own caller -- so `await
+// router(req, res)` can resolve BEFORE an async requireNonViewer check
+// inside that callback has actually written a status code. This route
+// (a direct inline `await requireNonViewer(...)`, same as gate-confirm and
+// plain POST /api/journey) doesn't hit that specific hazard today, but this
+// helper is shared across both hazard shapes so the test doesn't depend on
+// which internal pattern the route happens to use -- it resolves once
+// res.end() actually fires, not once router()'s own promise settles.
 
 function integrationMockRes() {
   var _statusCode = null;

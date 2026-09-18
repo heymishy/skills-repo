@@ -3157,7 +3157,7 @@ async function router(req, res) {
     if (!_rnvOk) return;
     await handlePostGateConfirm(req, res);
 
-  } else if (pathname.match(/^\/api\/journey\/([^/]+)\/approve$/) && req.method === 'POST') {
+  } else if (pathname.match(/^\/api\/journey\/[^/]+\/approve$/) && req.method === 'POST') {
     // ep2-s3 — Sign Off: record approval as a decisions.md entry
     req.params = { journeyId: pathname.split('/')[3] };
     // vrne-s1 — viewer-role write-block gate (AC2)
