@@ -35282,7 +35282,8 @@
       "slug": "new-feature-53a4408e",
       "id": "new-feature-53a4408e",
       "discoveryStatus": "complete",
-      "artefact": "artefacts/new-feature-53a4408e/discovery.md"
+      "artefact": "artefacts/new-feature-53a4408e/discovery.md",
+      "stage": "benefit-metric"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
