@@ -126,3 +126,15 @@ async function testApproveRouteDeniesViewer() {
 testApproveRouteDeniesViewer()
   .then(() => console.log('  ok - approve route denies viewer role (vrne-s1 AC2)'))
   .catch((err) => { console.error('  FAIL - testApproveRouteDeniesViewer:', err.message); process.exitCode = 1; });
+
+// tests/check-ep2-s3-approval.js — Part 2
+// Minimal smoke check that routes/skills.js still loads after the Sign Off
+// button/modal injection -- real behavioral proof is Task 5's E2E test,
+// matching the established pattern from ep2-s1/ep2-s2's own equivalent
+// "page-still-loads" checks for this heavily-tested existing file.
+function testSkillsHandlerStillExported() {
+  const skillsRoute = require('../src/web-ui/routes/skills');
+  assert.strictEqual(typeof skillsRoute, 'object');
+}
+testSkillsHandlerStillExported();
+console.log('  ok - routes/skills.js still loads after Sign Off button injection');
