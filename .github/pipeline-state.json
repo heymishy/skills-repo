@@ -35325,7 +35325,10 @@
       "id": "new-feature-53a4408e",
       "discoveryStatus": "complete",
       "artefact": "artefacts/new-feature-53a4408e/discovery.md",
-      "stage": "design"
+      "stage": "definition",
+      "name": "Mock Fixture Feature",
+      "track": "short",
+      "health": "green"
     },
     {
       "slug": "2026-09-18-design-system-adoption",
