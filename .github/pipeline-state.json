@@ -35283,7 +35283,7 @@
       "id": "new-feature-53a4408e",
       "discoveryStatus": "complete",
       "artefact": "artefacts/new-feature-53a4408e/discovery.md",
-      "stage": "benefit-metric"
+      "stage": "design"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
