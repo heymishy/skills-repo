@@ -35350,8 +35350,10 @@
           "baseline": "0 of 4",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "dsa-s1 (artefact viewer) merged and verified; 1 of 4 screens now matches DESIGN.md token values. dsa-s2/dsa-s3/dsa-s4 (dashboard, landing, skill-session) still needed before the 4/4 target is reachable.",
+          "contributingStories": [
+            "dsa-s1"
+          ]
         },
         {
           "id": "m2",
@@ -35370,8 +35372,10 @@
           "baseline": "Not yet established",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "dsa-s1 (artefact viewer) merged and verified; no real beta-user exposure/feedback yet since this just shipped.",
+          "contributingStories": [
+            "dsa-s1"
+          ]
         }
       ],
       "guardrails": [
@@ -35789,11 +35793,11 @@
             {
               "slug": "dsa-s1",
               "name": "Restyle the Artefact Viewer to Match DESIGN.md",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-18T21:46:22.751Z",
+              "updatedAt": "2026-09-18T22:46:36.556Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 20,
@@ -35844,8 +35848,13 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/903"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/903",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "metrics[0]": {
+                "signal": "not-yet-measured"
+              }
             },
             {
               "slug": "dsa-s2",
