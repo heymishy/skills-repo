@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+body{margin:0;background:#0B0D10;font-family:'Inter Tight',system-ui,sans-serif;}
+a{color:#3B82F6;text-decoration:none;}
+a:hover{color:#93C5FD;}
+</style>
+<script src="./image-slot.js"></script>
+</helmet>
+
+<div style="background:#0B0D10;color:#F5F6F7;min-height:100vh;">
+
+  <header style="display:flex;align-items:center;justify-content:space-between;padding:20px 48px;border-bottom:1px solid #23272E;max-width:1200px;margin:0 auto;">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <div style="width:26px;height:26px;border-radius:6px;background:#3B82F6;display:grid;place-items:center;font-weight:800;font-size:13px;color:#0B0D10;">S</div>
+      <span style="font-weight:600;font-size:15px;">Skills Platform</span>
+    </div>
+    <nav style="display:flex;gap:28px;font-size:14px;color:#9AA1AB;">
+      <a href="#" style="color:#9AA1AB;">Docs</a>
+      <a href="#" style="color:#9AA1AB;">Skills reference</a>
+      <a href="#" style="color:#9AA1AB;">GitHub</a>
+    </nav>
+    <div style="display:flex;gap:10px;">
+      <button style="background:transparent;border:1px solid #2E333B;color:#F5F6F7;padding:8px 16px;border-radius:7px;font-family:inherit;font-size:13.5px;font-weight:500;cursor:pointer;">Sign in</button>
+      <button style="background:#3B82F6;border:none;color:#0B0D10;padding:8px 16px;border-radius:7px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;">Get started</button>
+    </div>
+  </header>
+
+  <section style="max-width:900px;margin:0 auto;padding:100px 48px 80px;text-align:center;">
+    <div style="display:inline-flex;align-items:center;gap:8px;font-family:'JetBrains Mono',monospace;font-size:12px;color:#6B7280;border:1px solid #23272E;border-radius:20px;padding:6px 14px;margin-bottom:28px;">
+      <span style="width:6px;height:6px;border-radius:50%;background:#34D399;"></span>Open framework · agent-agnostic
+    </div>
+    <h1 style="font-size:64px;font-weight:700;letter-spacing:-0.03em;line-height:1.04;margin:0 0 24px;">Governed software<br/>delivery, from idea<br/>to production</h1>
+    <p style="font-size:18px;color:#9AA1AB;line-height:1.6;max-width:640px;margin:0 auto 36px;">Delivery standards, quality gates, and definition of ready — encoded as versioned, hash-verified instruction sets. Executed by AI coding agents. Verified automatically on every PR.</p>
+    <div style="display:flex;gap:14px;justify-content:center;">
+      <button style="background:#3B82F6;border:none;color:#0B0D10;padding:12px 26px;border-radius:8px;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;">Get started with GitHub</button>
+      <button style="background:transparent;border:1px solid #2E333B;color:#F5F6F7;padding:12px 26px;border-radius:8px;font-family:inherit;font-size:15px;font-weight:500;cursor:pointer;">Read the docs</button>
+    </div>
+  </section>
+
+  <section style="max-width:1120px;margin:0 auto;padding:0 48px 100px;">
+    <div style="border:1px solid #23272E;border-radius:14px;background:#0E1013;overflow:hidden;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;">
+        <div style="padding:36px;border-right:1px solid #23272E;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#3B82F6;margin-bottom:10px;">1 / PROMPT</div>
+          <p style="font-size:14px;color:#B4BAC2;line-height:1.6;margin:0;">"I've noticed the kanban boards are not styled along with everything else" — plus the deeper problem: boards were read-only, every stage transition had to leave the board and go through the CLI.</p>
+        </div>
+        <div style="padding:36px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#3B82F6;margin-bottom:10px;">2 / DISCOVERY</div>
+          <p style="font-size:14px;color:#B4BAC2;line-height:1.6;margin:0;">"The boards themselves are visually out of step with the rest of the platform's current design language... an operator can see which stage a feature is in, but cannot act on that view."</p>
+        </div>
+        <div style="padding:36px;border-right:1px solid #23272E;border-top:1px solid #23272E;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#3B82F6;margin-bottom:10px;">3 / DEFINITION OF READY</div>
+          <p style="font-size:14px;color:#B4BAC2;line-height:1.6;margin:0;">"H-E2E: AC1–AC4 are CSS-layout-dependent, but Playwright is configured and used — condition for blocking not met, passes without needing a RISK-ACCEPT." Contract review: 5/5 hard blocks passed.</p>
+        </div>
+        <div style="padding:36px;border-top:1px solid #23272E;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#34D399;margin-bottom:10px;">4 / SHIPPED</div>
+          <p style="font-size:14px;color:#B4BAC2;line-height:1.6;margin:0;">A real, working Trello-style board where dragging a ready card onto its valid next-stage column advances it for real — calling the exact same endpoint the click-to-advance path uses.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="max-width:1000px;margin:0 auto;padding:0 48px 100px;text-align:center;">
+    <h2 style="font-size:30px;font-weight:600;letter-spacing:-0.01em;margin:0 0 10px;">Product in action</h2>
+    <p style="font-size:15px;color:#9AA1AB;margin:0 0 40px;">From skill session to shipped board, in the actual product.</p>
+
+    <div style="border-radius:14px;overflow:hidden;border:1px solid #23272E;box-shadow:0 40px 100px -20px rgba(0,0,0,0.6);">
+      <div style="height:36px;background:#161A1F;display:flex;align-items:center;gap:8px;padding:0 14px;border-bottom:1px solid #23272E;">
+        <span style="width:11px;height:11px;border-radius:50%;background:#F87171;"></span>
+        <span style="width:11px;height:11px;border-radius:50%;background:#F59E0B;"></span>
+        <span style="width:11px;height:11px;border-radius:50%;background:#34D399;"></span>
+        <span style="margin-left:12px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#6B7280;">skills-framework.fly.dev</span>
+      </div>
+      <div style="position:relative;width:100%;aspect-ratio:16/9;background:#0B0D10;">
+        <sc-for list="{{ demoFrames }}" as="f" hint-placeholder-count="3">
+          <div style="position:absolute;inset:0;opacity:{{ f.opacity }};transition:opacity 0.5s ease;">
+            <image-slot id="{{ f.id }}" shape="rect" placeholder="{{ f.placeholder }}"></image-slot>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display:flex;justify-content:center;gap:10px;margin-top:20px;">
+      <sc-for list="{{ demoTabs }}" as="t" hint-placeholder-count="3">
+        <button onclick="{{ t.onClick }}" style="font-family:'JetBrains Mono',monospace;font-size:11.5px;padding:6px 14px;border-radius:16px;border:1px solid #23272E;background:{{ t.bg }};color:{{ t.color }};cursor:pointer;">{{ t.label }}</button>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="max-width:1120px;margin:0 auto;padding:0 48px 100px;display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+    <div style="border:1px solid #23272E;border-radius:14px;background:#0E1013;padding:32px;">
+      <h2 style="font-size:22px;font-weight:600;margin:0 0 12px;letter-spacing:-0.01em;">Your agent can't quietly do more than you asked</h2>
+      <p style="font-size:14px;color:#9AA1AB;line-height:1.6;margin:0 0 20px;">The DoR artefact locks the exact files a story is allowed to touch. The assurance gate checks the merged diff against that list before anything ships — a hard block, not a suggestion.</p>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;background:#0B0D10;border:1px solid #23272E;border-radius:8px;padding:14px 16px;">
+        <div style="color:#6B7280;margin-bottom:6px;">LOCKED SCOPE</div>
+        <div style="color:#93C5FD;">src/web-ui/routes/public.js, templates/landing.html</div>
+        <div style="color:#6B7280;margin:10px 0 6px;">MERGED DIFF</div>
+        <div style="color:#34D399;">2 files changed — both match ✓</div>
+      </div>
+    </div>
+    <div style="border:1px solid #23272E;border-radius:14px;background:#0E1013;padding:32px;">
+      <h2 style="font-size:22px;font-weight:600;margin:0 0 12px;letter-spacing:-0.01em;">Prove which standard governed this</h2>
+      <p style="font-size:14px;color:#9AA1AB;line-height:1.6;margin:0 0 20px;">Every governed action commits a recomputable hash of the exact instruction set that governed it. Independently verifiable — not "trust us."</p>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;background:#0B0D10;border:1px solid #23272E;border-radius:8px;padding:14px 16px;">
+        <div style="color:#6B7280;margin-bottom:6px;">INSTRUCTION SET</div>
+        <div style="color:#93C5FD;">skills/review/SKILL.md</div>
+        <div style="color:#6B7280;margin:10px 0 6px;">LIVE SHA-256</div>
+        <div style="color:#F5F6F7;">sha256:9b0adb524436…</div>
+      </div>
+    </div>
+  </section>
+
+  <section style="max-width:720px;margin:0 auto;padding:0 48px 120px;text-align:center;">
+    <h2 style="font-size:26px;font-weight:600;letter-spacing:-0.01em;margin:0 0 14px;">This gets better every time it's used</h2>
+    <p style="font-size:15px;color:#9AA1AB;line-height:1.6;margin:0 0 28px;">Every completed feature feeds real delivery findings back into the pipeline. Every proposed improvement is gated by human review — not an unsupervised self-modifying system.</p>
+    <div style="display:inline-flex;align-items:baseline;gap:10px;font-family:'JetBrains Mono',monospace;">
+      <span style="font-size:40px;font-weight:700;color:#3B82F6;">160</span>
+      <span style="font-size:14px;color:#6B7280;">learnings captured and counting</span>
+    </div>
+  </section>
+
+  <footer style="border-top:1px solid #23272E;padding:32px 48px;text-align:center;font-size:12px;color:#454B54;font-family:'JetBrains Mono',monospace;">
+    Skills Platform · MIT licensed · agent-agnostic
+  </footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { activeDemo: 0 };
+  componentDidMount() {
+    this._demoTimer = setInterval(() => {
+      this.setState(s => ({ activeDemo: (s.activeDemo + 1) % 3 }));
+    }, 4000);
+  }
+  componentWillUnmount() {
+    clearInterval(this._demoTimer);
+  }
+  setDemo(i) {
+    this.setState({ activeDemo: i });
+  }
+  renderVals() {
+    var active = this.state.activeDemo;
+    var self = this;
+    var frameDefs = [
+      { id: 'demo-dashboard', placeholder: 'Drop a screenshot or GIF of the dashboard' },
+      { id: 'demo-session', placeholder: 'Drop a screenshot or GIF of a skill session' },
+      { id: 'demo-board', placeholder: 'Drop a screenshot or GIF of the kanban board' }
+    ];
+    var labels = ['Dashboard', 'Skill session', 'Kanban board'];
+    return {
+      demoFrames: frameDefs.map(function(f, i) {
+        return { id: f.id, placeholder: f.placeholder, opacity: i === active ? 1 : 0 };
+      }),
+      demoTabs: labels.map(function(label, i) {
+        var isActive = i === active;
+        return {
+          label: label,
+          onClick: function() { self.setDemo(i); },
+          bg: isActive ? '#161A1F' : 'transparent',
+          color: isActive ? '#F5F6F7' : '#6B7280'
+        };
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+body{margin:0;background:#0B0D10;}
+a{color:#3B82F6;text-decoration:none;}
+a:hover{color:#93C5FD;text-decoration:underline;}
+::selection{background:#3B82F6;color:#fff;}
+</style>
+</helmet>
+
+<div style="font-family:'Inter Tight',system-ui,sans-serif;background:#0B0D10;color:#F5F6F7;min-height:100vh;padding:64px 48px 120px;">
+
+  <div style="max-width:1120px;margin:0 auto;">
+
+    <div style="display:flex;align-items:baseline;justify-content:space-between;gap:24px;margin-bottom:64px;border-bottom:1px solid #23272E;padding-bottom:32px;">
+      <div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+          <div style="width:28px;height:28px;border-radius:7px;background:{{ accent }};display:grid;place-items:center;font-weight:800;font-size:14px;color:#0B0D10;">S</div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#6B7280;letter-spacing:0.06em;text-transform:uppercase;">Skills Platform</span>
+        </div>
+        <h1 style="font-size:44px;font-weight:700;letter-spacing:-0.02em;margin:0;line-height:1.05;">Design system</h1>
+        <p style="font-size:16px;color:#9AA1AB;margin:12px 0 0;max-width:560px;line-height:1.55;">Tokens and components for a governed delivery tool built for developers, squads, and regulated enterprise reviewers.</p>
+      </div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:12px;color:#454B54;text-align:right;white-space:nowrap;">v1.0<br/>sharp / technical</div>
+    </div>
+
+    <section style="margin-bottom:64px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:{{ accent }};">01</span>
+        <h2 style="font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9AA1AB;margin:0;">Color</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1px;background:#23272E;border:1px solid #23272E;border-radius:12px;overflow:hidden;">
+        <sc-for list="{{ swatches }}" as="s" hint-placeholder-count="10">
+          <div style="background:#0E1013;padding:20px 16px;">
+            <div style="width:100%;height:56px;border-radius:8px;margin-bottom:12px;border:1px solid #23272E;background:{{ s.hex }};"></div>
+            <div style="font-size:13px;font-weight:600;">{{ s.name }}</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6B7280;margin-top:2px;">{{ s.hex }}</div>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+
+    <section style="margin-bottom:64px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:{{ accent }};">02</span>
+        <h2 style="font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9AA1AB;margin:0;">Typography</h2>
+      </div>
+      <div style="background:#0E1013;border:1px solid #23272E;border-radius:12px;padding:32px 32px 8px;">
+        <div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid #1A1D22;padding:16px 0;">
+          <div style="font-size:56px;font-weight:700;letter-spacing:-0.02em;">Display 56</div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#454B54;">Inter Tight · 700</span>
+        </div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid #1A1D22;padding:16px 0;">
+          <div style="font-size:32px;font-weight:700;letter-spacing:-0.01em;">Heading 32</div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#454B54;">Inter Tight · 700</span>
+        </div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid #1A1D22;padding:16px 0;">
+          <div style="font-size:20px;font-weight:600;">Subhead 20</div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#454B54;">Inter Tight · 600</span>
+        </div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid #1A1D22;padding:16px 0;">
+          <div style="font-size:16px;color:#B4BAC2;">Body 16 — sets scope, ships against contract, and traces back to the benefit hypothesis.</div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#454B54;">Inter Tight · 400</span>
+        </div>
+        <div style="display:flex;align-items:baseline;justify-content:space-between;padding:16px 0;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:#93C5FD;">sha256:9b0adb524436… — Mono 13</div>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#454B54;">JetBrains Mono · 400</span>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-bottom:64px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:{{ accent }};">03</span>
+        <h2 style="font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9AA1AB;margin:0;">Buttons</h2>
+      </div>
+      <div style="background:#0E1013;border:1px solid #23272E;border-radius:12px;padding:32px;display:flex;gap:14px;flex-wrap:wrap;align-items:center;">
+        <button style="background:{{ accent }};color:#0B0D10;border:none;padding:10px 18px;border-radius:8px;font-family:'Inter Tight',sans-serif;font-weight:600;font-size:14px;cursor:pointer;" style-hover="opacity:0.88;">Primary action</button>
+        <button style="background:#F5F6F7;color:#0B0D10;border:none;padding:10px 18px;border-radius:8px;font-family:'Inter Tight',sans-serif;font-weight:600;font-size:14px;cursor:pointer;" style-hover="opacity:0.88;">Secondary</button>
+        <button style="background:transparent;color:#F5F6F7;border:1px solid #2E333B;padding:10px 18px;border-radius:8px;font-family:'Inter Tight',sans-serif;font-weight:500;font-size:14px;cursor:pointer;" style-hover="background:#161A1F;">Ghost</button>
+        <button style="background:transparent;color:#6B7280;border:none;padding:10px 8px;font-family:'Inter Tight',sans-serif;font-weight:500;font-size:14px;cursor:pointer;" style-hover="color:#F5F6F7;">Tertiary link</button>
+        <button style="background:#2A1416;color:#F87171;border:1px solid #4A1F22;padding:10px 18px;border-radius:8px;font-family:'Inter Tight',sans-serif;font-weight:600;font-size:14px;cursor:pointer;" style-hover="background:#3A1A1D;">Destructive</button>
+      </div>
+    </section>
+
+    <section style="margin-bottom:64px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:{{ accent }};">04</span>
+        <h2 style="font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9AA1AB;margin:0;">Status &amp; badges</h2>
+      </div>
+      <div style="background:#0E1013;border:1px solid #23272E;border-radius:12px;padding:32px;display:flex;gap:10px;flex-wrap:wrap;">
+        <span style="display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:12px;padding:5px 10px;border-radius:6px;background:#0F2318;color:#34D399;border:1px solid #163D28;">● pass</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:12px;padding:5px 10px;border-radius:6px;background:#2A1416;color:#F87171;border:1px solid #4A1F22;">● fail</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:12px;padding:5px 10px;border-radius:6px;background:#2A2011;color:#F59E0B;border:1px solid #4A3A17;">● pending</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:12px;padding:5px 10px;border-radius:6px;background:#152238;color:#93C5FD;border:1px solid #1E3A5F;">● in review</span>
+        <span style="display:inline-flex;align-items:center;gap:6px;font-family:'JetBrains Mono',monospace;font-size:12px;padding:5px 10px;border-radius:6px;background:#161A1F;color:#9AA1AB;border:1px solid #23272E;">● draft</span>
+      </div>
+    </section>
+
+    <section style="margin-bottom:64px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:{{ accent }};">05</span>
+        <h2 style="font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9AA1AB;margin:0;">Cards &amp; inputs</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:20px;">
+        <div style="background:#0E1013;border:1px solid #23272E;border-radius:12px;padding:24px;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;">
+            <div>
+              <div style="font-size:15px;font-weight:600;">s3.1 — drag-to-advance</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6B7280;margin-top:4px;">interactive-kanban-boards</div>
+            </div>
+            <span style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 8px;border-radius:5px;background:#0F2318;color:#34D399;">merged</span>
+          </div>
+          <p style="font-size:13.5px;color:#9AA1AB;line-height:1.6;margin:0 0 16px;">Locked scope: <span style="font-family:'JetBrains Mono',monospace;color:#B4BAC2;">routes/public.js, templates/landing.html</span></p>
+          <div style="display:flex;gap:16px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#454B54;">
+            <span>DoR ✓</span><span>Gate ✓</span><span>Trace 85e4a239</span>
+          </div>
+        </div>
+        <div style="background:#0E1013;border:1px solid #23272E;border-radius:12px;padding:24px;">
+          <div style="font-size:12px;color:#9AA1AB;margin-bottom:8px;">Search stories</div>
+          <input placeholder="type to filter…" style="width:100%;background:#0B0D10;border:1px solid #2E333B;border-radius:8px;padding:10px 12px;color:#F5F6F7;font-family:'Inter Tight',sans-serif;font-size:13.5px;box-sizing:border-box;margin-bottom:14px;" style-focus="border-color:{{ accent }};outline:none;"/>
+          <div style="font-size:12px;color:#9AA1AB;margin-bottom:8px;">Notes</div>
+          <textarea placeholder="add a note…" rows="3" style="width:100%;background:#0B0D10;border:1px solid #2E333B;border-radius:8px;padding:10px 12px;color:#F5F6F7;font-family:'Inter Tight',sans-serif;font-size:13.5px;box-sizing:border-box;resize:vertical;" style-focus="border-color:{{ accent }};outline:none;"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-bottom:64px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:{{ accent }};">06</span>
+        <h2 style="font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9AA1AB;margin:0;">Navigation &amp; tables</h2>
+      </div>
+      <div style="display:grid;grid-template-columns:220px 1fr;gap:20px;">
+        <div style="background:#0E1013;border:1px solid #23272E;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:2px;">
+          <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="4">
+            <a href="#" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;color:{{ n.activeColor }};font-size:13.5px;font-weight:500;" style-hover="background:#161A1F;">
+              <span style="font-size:13px;">{{ n.icon }}</span>{{ n.label }}
+            </a>
+          </sc-for>
+        </div>
+        <div style="background:#0E1013;border:1px solid #23272E;border-radius:12px;overflow:hidden;">
+          <table style="width:100%;border-collapse:collapse;font-size:13px;">
+            <thead>
+              <tr style="border-bottom:1px solid #23272E;">
+                <th style="text-align:left;padding:10px 16px;color:#6B7280;font-weight:600;text-transform:uppercase;font-size:10.5px;letter-spacing:0.06em;">Story</th>
+                <th style="text-align:left;padding:10px 16px;color:#6B7280;font-weight:600;text-transform:uppercase;font-size:10.5px;letter-spacing:0.06em;">Phase</th>
+                <th style="text-align:right;padding:10px 16px;color:#6B7280;font-weight:600;text-transform:uppercase;font-size:10.5px;letter-spacing:0.06em;">Updated</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ rows }}" as="r" hint-placeholder-count="4">
+                <tr style="border-bottom:1px solid #1A1D22;" style-hover="background:#12151A;">
+                  <td style="padding:11px 16px;color:#F5F6F7;font-weight:500;">{{ r.story }}</td>
+                  <td style="padding:11px 16px;color:#9AA1AB;">{{ r.phase }}</td>
+                  <td style="padding:11px 16px;color:#454B54;text-align:right;font-family:'JetBrains Mono',monospace;font-size:11.5px;">{{ r.updated }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- LIGHT MODE -->
+    <section style="margin-bottom:64px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:{{ accent }};">07</span>
+        <h2 style="font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9AA1AB;margin:0;">Light mode</h2>
+        <span style="font-size:12px;color:#454B54;">— toggled from Settings, same tokens</span>
+      </div>
+
+      <div style="background:#FAFAFA;border:1px solid #E4E7EB;border-radius:12px;padding:32px;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;background:#E4E7EB;border:1px solid #E4E7EB;border-radius:10px;overflow:hidden;margin-bottom:28px;">
+          <sc-for list="{{ lightSwatches }}" as="ls" hint-placeholder-count="8">
+            <div style="background:#FFFFFF;padding:16px 14px;">
+              <div style="width:100%;height:44px;border-radius:7px;margin-bottom:10px;border:1px solid #E4E7EB;background:{{ ls.hex }};"></div>
+              <div style="font-size:12px;font-weight:600;color:#14171A;">{{ ls.name }}</div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6B7280;margin-top:2px;">{{ ls.hex }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+          <div style="background:#FFFFFF;border:1px solid #E4E7EB;border-radius:10px;padding:20px;">
+            <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;">
+              <div>
+                <div style="font-size:14px;font-weight:600;color:#14171A;">s3.1 — drag-to-advance</div>
+                <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6B7280;margin-top:4px;">interactive-kanban-boards</div>
+              </div>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 8px;border-radius:5px;background:#DCFCE7;color:#15803D;">merged</span>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button style="background:#2563EB;color:#FFFFFF;border:none;padding:8px 16px;border-radius:7px;font-family:'Inter Tight',sans-serif;font-weight:600;font-size:13px;cursor:pointer;">Primary</button>
+              <button style="background:transparent;color:#14171A;border:1px solid #D8DBDF;padding:8px 16px;border-radius:7px;font-family:'Inter Tight',sans-serif;font-weight:500;font-size:13px;cursor:pointer;">Ghost</button>
+            </div>
+          </div>
+          <div style="background:#FFFFFF;border:1px solid #E4E7EB;border-radius:10px;padding:20px;">
+            <div style="font-size:12px;color:#3F454C;margin-bottom:8px;">Search stories</div>
+            <input placeholder="type to filter…" style="width:100%;background:#FAFAFA;border:1px solid #D8DBDF;border-radius:7px;padding:9px 11px;color:#14171A;font-family:'Inter Tight',sans-serif;font-size:13px;box-sizing:border-box;margin-bottom:10px;"/>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 9px;border-radius:5px;background:#EFF4FF;color:#1D4ED8;">in review</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 9px;border-radius:5px;background:#FEF3C7;color:#B45309;">pending</span>
+              <span style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 9px;border-radius:5px;background:#FEE2E2;color:#B91C1C;">fail</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ICONS -->
+    <section>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+        <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:{{ accent }};">08</span>
+        <h2 style="font-size:13px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:#9AA1AB;margin:0;">Icons</h2>
+      </div>
+      <p style="font-size:12.5px;color:#6B7280;margin:0 0 20px;">Stroke icons, 20px grid, 1.5px stroke, currentColor. Replaces the unicode glyphs used in earlier drafts.</p>
+      <div style="background:#0E1013;border:1px solid #23272E;border-radius:12px;padding:28px;display:grid;grid-template-columns:repeat(auto-fit,minmax(84px,1fr));gap:4px;">
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#F5F6F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2.5" y="3.5" width="15" height="13" rx="2"></rect>
+            <line x1="8" y1="3.5" x2="8" y2="16.5"></line>
+            <line x1="13" y1="3.5" x2="13" y2="16.5"></line>
+          </svg>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6B7280;">board</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#F5F6F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 4.5h14v9H8l-3 3v-3H3v-9z"></path>
+          </svg>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6B7280;">session</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#F5F6F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M5 2.5h7l3 3v12H5z"></path>
+            <line x1="7.5" y1="9" x2="12.5" y2="9"></line>
+            <line x1="7.5" y1="12" x2="12.5" y2="12"></line>
+          </svg>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6B7280;">artefact</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#F5F6F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="10" cy="10" r="2.6"></circle>
+            <line x1="10" y1="2.5" x2="10" y2="4.8"></line>
+            <line x1="10" y1="15.2" x2="10" y2="17.5"></line>
+            <line x1="2.5" y1="10" x2="4.8" y2="10"></line>
+            <line x1="15.2" y1="10" x2="17.5" y2="10"></line>
+            <line x1="4.9" y1="4.9" x2="6.5" y2="6.5"></line>
+            <line x1="13.5" y1="13.5" x2="15.1" y2="15.1"></line>
+            <line x1="4.9" y1="15.1" x2="6.5" y2="13.5"></line>
+            <line x1="13.5" y1="6.5" x2="15.1" y2="4.9"></line>
+          </svg>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6B7280;">settings</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#F5F6F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="8.5" cy="8.5" r="5.5"></circle>
+            <line x1="12.6" y1="12.6" x2="17" y2="17"></line>
+          </svg>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6B7280;">search</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#34D399" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="4,10.5 8,14.5 16,5.5"></polyline>
+          </svg>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6B7280;">check</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#F59E0B" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="10" cy="10" r="7"></circle>
+            <line x1="10" y1="6" x2="10" y2="10"></line>
+            <line x1="10" y1="10" x2="13" y2="12"></line>
+          </svg>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6B7280;">pending</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#F87171" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 3l7.5 13h-15z"></path>
+            <line x1="10" y1="8.3" x2="10" y2="12"></line>
+            <line x1="10" y1="14.3" x2="10" y2="14.4"></line>
+          </svg>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6B7280;">warning</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#F5F6F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="10" y1="4" x2="10" y2="16"></line>
+            <line x1="4" y1="10" x2="16" y2="10"></line>
+          </svg>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6B7280;">add</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#F5F6F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3.5" y1="10" x2="15" y2="10"></line>
+            <polyline points="11.5,6 15.5,10 11.5,14"></polyline>
+          </svg>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6B7280;">arrow-right</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#F5F6F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="7.5,5 3.5,10 7.5,15"></polyline>
+            <polyline points="12.5,5 16.5,10 12.5,15"></polyline>
+          </svg>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6B7280;">code</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#F5F6F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="5" x2="15" y2="15"></line>
+            <line x1="15" y1="5" x2="5" y2="15"></line>
+          </svg>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6B7280;">close</span>
+        </div>
+
+        <div style="display:flex;flex-direction:column;align-items:center;gap:8px;padding:14px 8px;">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="#F5F6F7" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="4" y="4" width="9" height="9" rx="1.5"></rect>
+            <path d="M9.5 4h6.5v6.5"></path>
+            <line x1="16" y1="4" x2="9.5" y2="10.5"></line>
+          </svg>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;color:#6B7280;">external-link</span>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900},&quot;accent&quot;:{&quot;editor&quot;:&quot;color&quot;,&quot;default&quot;:&quot;#3B82F6&quot;,&quot;options&quot;:[&quot;#3B82F6&quot;,&quot;#8B5CF6&quot;,&quot;#34D399&quot;,&quot;#F59E0B&quot;],&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    var accent = (this.props && this.props.accent) || '#3B82F6';
+    return {
+      accent: accent,
+      swatches: [
+        { name: 'Background', hex: '#0B0D10' },
+        { name: 'Surface', hex: '#0E1013' },
+        { name: 'Surface raised', hex: '#161A1F' },
+        { name: 'Line', hex: '#23272E' },
+        { name: 'Ink', hex: '#F5F6F7' },
+        { name: 'Ink muted', hex: '#9AA1AB' },
+        { name: 'Muted', hex: '#6B7280' },
+        { name: 'Accent', hex: accent },
+        { name: 'Success', hex: '#34D399' },
+        { name: 'Danger', hex: '#F87171' }
+      ],
+      navItems: [
+        { icon: '▦', label: 'Board', active: true, activeColor: '#F5F6F7' },
+        { icon: '◧', label: 'Sessions', active: false, activeColor: '#9AA1AB' },
+        { icon: '▤', label: 'Artefacts', active: false, activeColor: '#9AA1AB' },
+        { icon: '⚙', label: 'Settings', active: false, activeColor: '#9AA1AB' }
+      ],
+      rows: [
+        { story: 's3.1 drag-to-advance', phase: 'Implementation', updated: '2h ago' },
+        { story: 'wusl.2 streaming draft', phase: 'DoD', updated: '1d ago' },
+        { story: 'p4-enf-cli', phase: 'Review', updated: '3d ago' },
+        { story: 'dsq.5 dynamic questions', phase: 'Merged', updated: '5d ago' }
+      ],
+      lightSwatches: [
+        { name: 'Background', hex: '#FAFAFA' },
+        { name: 'Surface', hex: '#FFFFFF' },
+        { name: 'Surface raised', hex: '#F2F3F5' },
+        { name: 'Line', hex: '#E4E7EB' },
+        { name: 'Ink', hex: '#14171A' },
+        { name: 'Ink muted', hex: '#3F454C' },
+        { name: 'Muted', hex: '#6B7280' },
+        { name: 'Accent', hex: '#2563EB' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

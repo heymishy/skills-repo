@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+body{margin:0;background:#0B0D10;font-family:'Inter Tight',system-ui,sans-serif;}
+a{color:#3B82F6;text-decoration:none;}
+a:hover{color:#93C5FD;}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#0B0D10;color:#F5F6F7;padding:40px 56px;">
+  <div style="max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:32px;">
+
+    <article style="background:#0E1013;border:1px solid #23272E;border-radius:12px;padding:48px 64px 56px;">
+      <h1 style="font-family:'Source Serif 4',Georgia,serif;font-size:32px;font-weight:600;letter-spacing:-0.01em;margin:0 0 20px;">Discovery: Interactive kanban boards</h1>
+      <div style="display:flex;gap:24px;flex-wrap:wrap;font-size:12px;color:#6B7280;border-bottom:1px solid #23272E;padding-bottom:16px;margin-bottom:28px;">
+        <span><span style="text-transform:uppercase;letter-spacing:0.04em;font-weight:600;margin-right:6px;">Feature</span><span style="color:#F5F6F7;">interactive-kanban-boards</span></span>
+        <span><span style="text-transform:uppercase;letter-spacing:0.04em;font-weight:600;margin-right:6px;">Stage</span><span style="color:#F5F6F7;">Discovery</span></span>
+        <span><span style="text-transform:uppercase;letter-spacing:0.04em;font-weight:600;margin-right:6px;">Author</span><span style="color:#F5F6F7;">@heymishy</span></span>
+        <span><span style="text-transform:uppercase;letter-spacing:0.04em;font-weight:600;margin-right:6px;">Last updated</span><span style="color:#F5F6F7;">2026-07-24</span></span>
+      </div>
+
+      <div style="font-family:'Source Serif 4',Georgia,serif;font-size:16px;line-height:1.7;color:#B4BAC2;">
+        <h2 style="font-family:'Inter Tight',sans-serif;font-size:18px;font-weight:600;margin:0 0 10px;color:#F5F6F7;">Problem</h2>
+        <p style="margin:0 0 16px;">The web UI has three kanban board routes today. The boards themselves are visually out of step with the rest of the platform's current design language. More importantly, the boards are read-only: an operator can see which stage a feature or story is in, but cannot act on that view.</p>
+
+        <h2 style="font-family:'Inter Tight',sans-serif;font-size:18px;font-weight:600;margin:24px 0 10px;color:#F5F6F7;">Proposed change</h2>
+        <p style="margin:0 0 16px;">Restyle the three board routes on the current design system, and make cards draggable between valid next-stage columns. A drag calls the exact same <code style="font-family:'JetBrains Mono',monospace;font-size:0.85em;background:#161A1F;padding:1px 5px;border-radius:3px;">/api/board/journey/:id/advance</code> endpoint the existing click-to-advance path already uses — same tenant-ownership and readiness checks, no new authorization surface.</p>
+
+        <h2 style="font-family:'Inter Tight',sans-serif;font-size:18px;font-weight:600;margin:24px 0 10px;color:#F5F6F7;">Out of scope</h2>
+        <ul style="margin:0 0 16px;padding-left:22px;">
+          <li style="margin-bottom:4px;">Multi-card drag / bulk stage moves.</li>
+          <li style="margin-bottom:4px;">New board views beyond the existing three routes.</li>
+        </ul>
+      </div>
+
+      <div style="margin-top:48px;padding-top:24px;border-top:1px solid #23272E;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#6B7280;">
+        <span>Committed by @heymishy · sha <code style="font-family:'JetBrains Mono',monospace;font-size:0.9em;background:#161A1F;padding:1px 5px;border-radius:3px;">f2581b0e</code></span>
+        <a href="#">View on GitHub →</a>
+      </div>
+    </article>
+
+    <aside style="display:flex;flex-direction:column;gap:20px;">
+      <section style="background:#0E1013;border:1px solid #23272E;border-radius:10px;padding:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <h3 style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#6B7280;">Sign-off</h3>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 8px;border-radius:5px;background:#2A2011;color:#F59E0B;">Awaiting 1</span>
+        </div>
+        <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;">
+          <sc-for list="{{ signoffs }}" as="s" hint-placeholder-count="2">
+            <li style="display:flex;align-items:center;gap:10px;">
+              <div style="width:22px;height:22px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;font-size:11px;font-weight:600;background:{{ s.avatarBg }};color:{{ s.avatarColor }};">{{ s.avatarChar }}</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-size:13px;font-weight:500;">@{{ s.login }}</div>
+                <div style="font-size:11px;color:#6B7280;">{{ s.role }}</div>
+              </div>
+              <span style="font-size:12px;color:{{ s.statusColor }};">{{ s.statusText }}</span>
+            </li>
+          </sc-for>
+        </ul>
+      </section>
+
+      <section style="background:#0E1013;border:1px solid #23272E;border-radius:10px;padding:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+          <h3 style="margin:0;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#6B7280;">Comments</h3>
+          <span style="font-size:12px;color:#6B7280;">{{ comments.length }} open</span>
+        </div>
+        <ul style="list-style:none;margin:0;padding:0;">
+          <sc-for list="{{ comments }}" as="c" hint-placeholder-count="1">
+            <li style="padding:0 0 14px;border-bottom:1px solid #1A1D22;margin-bottom:14px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                <div style="width:20px;height:20px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;font-size:10px;font-weight:600;background:#161A1F;color:#9AA1AB;">{{ c.avatarChar }}</div>
+                <span style="font-size:12.5px;font-weight:500;">@{{ c.by }}</span>
+                <span style="font-size:11px;color:#6B7280;margin-left:auto;">{{ c.when }}</span>
+              </div>
+              <p style="margin:0 0 6px;font-size:12.5px;color:#B4BAC2;line-height:1.5;">{{ c.text }}</p>
+              <div style="display:flex;gap:12px;font-size:11.5px;">
+                <a href="#">Reply</a><a href="#" style="color:#6B7280;">Resolve</a>
+              </div>
+            </li>
+          </sc-for>
+        </ul>
+        <textarea placeholder="Add a comment…" rows="3" style="width:100%;background:#0B0D10;border:1px solid #2E333B;border-radius:8px;padding:10px 12px;color:#F5F6F7;font-family:'Inter Tight',sans-serif;font-size:13px;box-sizing:border-box;resize:vertical;margin-top:4px;"></textarea>
+        <div style="display:flex;justify-content:flex-end;margin-top:8px;">
+          <button style="background:#3B82F6;color:#0B0D10;border:none;padding:7px 16px;border-radius:6px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;">Comment</button>
+        </div>
+      </section>
+    </aside>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      signoffs: [
+        { login: 'heymishy', role: 'Author', avatarBg: '#0F2318', avatarColor: '#34D399', avatarChar: '✓', statusColor: '#34D399', statusText: 'Signed' },
+        { login: 'j-reviewer', role: 'Tech lead', avatarBg: '#161A1F', avatarColor: '#9AA1AB', avatarChar: 'J', statusColor: '#6B7280', statusText: 'Pending' }
+      ],
+      comments: [
+        { by: 'j-reviewer', when: '3h ago', avatarChar: 'J', text: 'Can we confirm the drag interaction has an E2E test, not just unit coverage on the endpoint?' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

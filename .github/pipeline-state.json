@@ -35326,6 +35326,23 @@
       "discoveryStatus": "complete",
       "artefact": "artefacts/new-feature-53a4408e/discovery.md",
       "stage": "design"
+    },
+    {
+      "slug": "2026-09-18-design-system-adoption",
+      "id": "2026-09-18-design-system-adoption",
+      "name": "Design System Adoption",
+      "stage": "discovery",
+      "health": "green",
+      "track": "standard",
+      "discoveryStatus": "clarified",
+      "updatedAt": "2026-09-18T09:27:42.360Z",
+      "stories": [],
+      "metrics": [],
+      "guardrails": [],
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

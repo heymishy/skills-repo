@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap');
+body{margin:0;background:#0B0D10;font-family:'Inter Tight',system-ui,sans-serif;}
+a{color:#3B82F6;text-decoration:none;}
+::selection{background:#3B82F6;color:#fff;}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#0B0D10;color:#F5F6F7;display:flex;flex-direction:column;">
+
+  <div style="border-bottom:1px solid #23272E;flex-shrink:0;">
+    <div style="display:flex;align-items:center;gap:4px;padding:10px 16px;flex-wrap:wrap;">
+      <sc-for list="{{ phases }}" as="p" hint-placeholder-count="8">
+        <div style="display:flex;align-items:center;gap:4px;">
+          <span style="display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:7px;font-size:12.5px;white-space:nowrap;background:{{ p.bg }};color:{{ p.color }};font-weight:{{ p.weight }};">
+            <sc-if value="{{ p.num }}" hint-placeholder-val="{{ false }}"><span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;opacity:0.7;">{{ p.num }}</span></sc-if>
+            {{ p.label }}
+            <sc-if value="{{ p.done }}" hint-placeholder-val="{{ false }}"><span style="color:#34D399;">✓</span></sc-if>
+            <sc-if value="{{ p.active }}" hint-placeholder-val="{{ false }}"><span style="color:{{ p.arrowColor }};">▶</span></sc-if>
+          </span>
+          <span style="color:#2E333B;font-size:12px;">|</span>
+        </div>
+      </sc-for>
+      <a href="#" style="display:flex;align-items:center;gap:7px;padding:5px 10px;color:#F5F6F7;font-size:12.5px;white-space:nowrap;">
+        <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="#F59E0B" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 5.5h5l1.5 2h8.5v9h-15z"></path></svg>
+        Ref docs
+      </a>
+    </div>
+    <div style="padding:0 16px 10px;font-size:12.5px;color:#6B7280;">Context loaded ({{ contextFileCount }} files) <span style="color:#34D399;">✓</span></div>
+  </div>
+
+  <div id="sw-split-container" style="flex:1;display:flex;min-width:0;">
+
+    <section style="background:#0B0D10;display:flex;flex-direction:column;min-width:0;flex:0 0 {{ splitPct }}%;">
+      <header style="height:44px;border-bottom:1px solid #23272E;display:flex;align-items:center;padding:0 20px;gap:10px;flex-shrink:0;flex-wrap:wrap;">
+        <span style="font-size:14px;font-weight:600;">{{ skillLabel }}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:#6B7280;background:#161A1F;padding:3px 9px;border-radius:10px;">claude-haiku-4-5</span>
+        <div style="margin-left:auto;display:flex;gap:2px;background:#161A1F;border-radius:7px;padding:2px;">
+          <sc-for list="{{ viewModes }}" as="vm" hint-placeholder-count="2">
+            <button onclick="{{ vm.onClick }}" style="font-family:inherit;font-size:11.5px;font-weight:500;padding:5px 11px;border-radius:6px;border:none;cursor:pointer;background:{{ vm.bg }};color:{{ vm.color }};">{{ vm.label }}</button>
+          </sc-for>
+        </div>
+        <button onclick="{{ toggleDone }}" style="background:none;border:1px solid #2E333B;color:#6B7280;padding:4px 10px;border-radius:6px;font-family:inherit;font-size:11.5px;cursor:pointer;">{{ toggleDoneLabel }}</button>
+      </header>
+
+      <!-- FOCUSED: single prominent question -->
+      <sc-if value="{{ isFocused }}" hint-placeholder-val="{{ true }}">
+
+        <sc-if value="{{ sessionDone }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center;gap:14px;">
+          <div style="width:52px;height:52px;border-radius:50%;background:#0F2318;color:#34D399;display:grid;place-items:center;font-size:24px;">✓</div>
+          <div style="font-size:19px;font-weight:600;">All questions answered</div>
+          <p style="font-size:14px;color:#9AA1AB;line-height:1.6;max-width:340px;margin:0;">The {{ skillLabel }} artefact is drafted. Review it in the panel on the right, then continue.</p>
+        </div>
+        <footer style="border-top:1px solid #23272E;padding:16px;">
+          <div style="display:flex;align-items:center;gap:12px;">
+            <span style="font-size:12.5px;color:#34D399;">Artefact saved ✓</span>
+            <button style="margin-left:auto;background:#F5F6F7;color:#0B0D10;border:none;padding:9px 18px;border-radius:7px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;">Continue to {{ nextPhaseLabel }} →</button>
+          </div>
+        </footer>
+        </sc-if>
+
+        <sc-if value="{{ showQuestion }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:center;padding:32px 40px;">
+          <div style="display:flex;gap:5px;margin-bottom:10px;">
+            <sc-for list="{{ progressDots }}" as="d" hint-placeholder-count="6">
+              <span style="width:20px;height:3px;border-radius:2px;background:{{ d.color }};"></span>
+            </sc-for>
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#6B7280;margin-bottom:18px;">Question {{ questionIndex }} of {{ totalQuestions }} · from {{ skillLabel }}</div>
+          <div style="font-size:25px;font-weight:600;line-height:1.4;letter-spacing:-0.01em;color:#F5F6F7;">{{ currentQuestion }}</div>
+
+          <sc-if value="{{ hasPrevAnswer }}" hint-placeholder-val="{{ false }}">
+          <details style="margin-top:22px;">
+            <summary style="font-size:12px;color:#6B7280;cursor:pointer;">View previous answer</summary>
+            <div style="margin-top:8px;padding:10px 12px;background:#0E1013;border:1px solid #23272E;border-radius:8px;font-size:13px;color:#9AA1AB;line-height:1.5;">{{ prevAnswer }}</div>
+          </details>
+          </sc-if>
+        </div>
+
+        <footer style="border-top:1px solid #23272E;padding:12px;">
+          <div style="background:#0E1013;border:1px solid #2E333B;border-radius:8px;padding:10px;">
+            <textarea placeholder="Type your answer…" style="width:100%;min-height:56px;border:none;background:transparent;resize:none;outline:none;font-family:inherit;font-size:14px;color:#F5F6F7;box-sizing:border-box;"></textarea>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+              <span style="font-size:11.5px;color:#6B7280;">Press ⌘↵ to send</span>
+              <button onclick="{{ toggleDone }}" style="background:#3B82F6;color:#0B0D10;border:none;padding:7px 16px;border-radius:6px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;">Send →</button>
+            </div>
+          </div>
+        </footer>
+        </sc-if>
+      </sc-if>
+
+      <!-- CHAT: full thread -->
+      <sc-if value="{{ isChat }}" hint-placeholder-val="{{ false }}">
+      <div style="flex:1;overflow:auto;padding:20px 20px 8px;display:flex;flex-direction:column;gap:18px;">
+        <sc-for list="{{ chatMessages }}" as="m" hint-placeholder-count="4">
+          <div style="display:flex;gap:10px;align-items:flex-start;">
+            <div style="width:24px;height:24px;border-radius:50%;flex-shrink:0;display:grid;place-items:center;font-size:11px;font-weight:600;background:{{ m.avatarBg }};color:{{ m.avatarColor }};">{{ m.avatarChar }}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:11.5px;color:#6B7280;margin-bottom:3px;">{{ m.from }}</div>
+              <div style="font-size:14px;color:#F5F6F7;line-height:1.6;">{{ m.text }}</div>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ sessionDone }}" hint-placeholder-val="{{ false }}">
+      <footer style="border-top:1px solid #23272E;padding:16px;">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <span style="font-size:12.5px;color:#34D399;">Artefact saved ✓</span>
+          <button style="margin-left:auto;background:#F5F6F7;color:#0B0D10;border:none;padding:9px 18px;border-radius:7px;font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer;">Continue to {{ nextPhaseLabel }} →</button>
+        </div>
+      </footer>
+      </sc-if>
+
+      <sc-if value="{{ showQuestion }}" hint-placeholder-val="{{ true }}">
+      <footer style="border-top:1px solid #23272E;padding:12px;">
+        <div style="background:#0E1013;border:1px solid #2E333B;border-radius:8px;padding:10px;">
+          <textarea placeholder="Type your answer…" style="width:100%;min-height:56px;border:none;background:transparent;resize:none;outline:none;font-family:inherit;font-size:14px;color:#F5F6F7;box-sizing:border-box;"></textarea>
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+            <span style="font-size:11.5px;color:#6B7280;">Press ⌘↵ to send</span>
+            <button onclick="{{ toggleDone }}" style="background:#3B82F6;color:#0B0D10;border:none;padding:7px 16px;border-radius:6px;font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;">Send →</button>
+          </div>
+        </div>
+      </footer>
+      </sc-if>
+      </sc-if>
+    </section>
+
+    <div onmousedown="{{ startOuterResize }}" style="width:5px;flex-shrink:0;cursor:col-resize;background:#23272E;" style-hover="background:#3B82F6;"></div>
+
+    <section style="background:#0B0D10;display:flex;flex-direction:column;min-width:0;flex:1;">
+      <div style="padding:9px 16px;border-bottom:1px solid #23272E;background:#0E1013;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+        <div style="display:flex;gap:2px;">
+          <sc-for list="{{ tabs }}" as="t" hint-placeholder-count="3">
+            <button onclick="{{ t.onClick }}" style="font-family:'JetBrains Mono',monospace;font-size:10.5px;text-transform:uppercase;letter-spacing:0.06em;padding:5px 10px;border-radius:6px;border:none;cursor:pointer;background:{{ t.bg }};color:{{ t.color }};">{{ t.label }}</button>
+          </sc-for>
+        </div>
+        <span style="color:#6B7280;font-size:14px;">⊞</span>
+      </div>
+
+      <!-- ARTEFACT (design/generic) -->
+      <sc-if value="{{ showArtefact }}" hint-placeholder-val="{{ true }}">
+      <div id="sw-artefact-split" style="flex:1;display:flex;flex-direction:column;min-height:0;">
+        <div style="flex:0 0 {{ draftPct }}%;overflow:auto;padding:20px 24px;min-height:0;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7280;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px;">Artefact draft</div>
+          <sc-for list="{{ draftSections }}" as="s" hint-placeholder-count="3">
+            <div style="margin-bottom:22px;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                <h2 style="margin:0;font-size:14.5px;font-weight:600;">{{ s.title }}</h2>
+                <span style="font-family:'JetBrains Mono',monospace;font-size:10.5px;padding:3px 8px;border-radius:5px;background:{{ s.pillBg }};color:{{ s.pillColor }};">{{ s.pillText }}</span>
+              </div>
+              <div style="font-size:14px;color:#B4BAC2;line-height:1.65;white-space:pre-wrap;">{{ s.body }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div onmousedown="{{ startDraftResize }}" style="height:5px;flex-shrink:0;cursor:row-resize;background:#23272E;" style-hover="background:#3B82F6;"></div>
+        <div style="flex:1;overflow:auto;padding:16px 24px;min-height:0;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7280;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px;">Diagrams</div>
+          <div style="border:1px solid #23272E;border-radius:8px;overflow:hidden;">
+            <div style="padding:8px 12px;border-bottom:1px solid #23272E;background:#161A1F;display:flex;align-items:center;gap:8px;">
+              <span style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:2px 8px;border-radius:4px;background:#152238;color:#93C5FD;">system-architecture</span>
+              <span style="font-size:12.5px;font-weight:600;">System Architecture</span>
+            </div>
+            <div style="padding:20px;display:flex;flex-direction:column;align-items:center;gap:8px;">
+              <sc-for list="{{ diagramNodes }}" as="n" hint-placeholder-count="4">
+                <div style="width:100%;max-width:220px;">
+                  <div style="padding:10px 14px;border-radius:7px;background:{{ n.bg }};color:{{ n.color }};font-size:13px;font-weight:600;text-align:center;border:1px solid {{ n.border }};">{{ n.label }}</div>
+                  <sc-if value="{{ n.hasArrow }}" hint-placeholder-val="{{ true }}"><div style="text-align:center;color:#454B54;font-size:14px;padding:2px 0;">↓</div></sc-if>
+                </div>
+              </sc-for>
+            </div>
+            <details style="padding:0 16px 14px;">
+              <summary style="font-size:11px;color:#6B7280;cursor:pointer;">View mermaid source</summary>
+              <pre style="margin-top:8px;padding:12px 14px;background:#0B0D10;border:1px solid #23272E;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#93C5FD;line-height:1.6;overflow-x:auto;white-space:pre-wrap;">flowchart TD
+  A[Web UI] --&gt; B[Mock Fixture Service]
+  B --&gt; C[(Postgres)]</pre>
+            </details>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- IDEATE CANVAS -->
+      <sc-if value="{{ showIdeate }}" hint-placeholder-val="{{ false }}">
+      <div id="sw-ideate-split" style="flex:1;display:flex;flex-direction:column;min-height:0;">
+        <div style="flex:0 0 {{ condPct }}%;overflow:auto;min-height:0;">
+          <div style="padding:9px 14px;border-bottom:1px solid #23272E;position:sticky;top:0;background:#0B0D10;">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7280;text-transform:uppercase;letter-spacing:0.08em;">Conditions</span>
+          </div>
+          <div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
+            <sc-for list="{{ conditions }}" as="c" hint-placeholder-count="2">
+              <div style="border:1px solid #23272E;border-radius:8px;padding:9px 12px;background:#0E1013;">
+                <div style="display:flex;gap:6px;align-items:center;margin-bottom:5px;">
+                  <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:1px 7px;border-radius:3px;background:{{ c.tagBg }};color:{{ c.tagColor }};">{{ c.type }}</span>
+                  <span style="font-size:10px;color:#6B7280;">{{ c.source }}</span>
+                </div>
+                <div style="font-size:12.5px;color:#F5F6F7;line-height:1.5;">{{ c.text }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div onmousedown="{{ startCondResize }}" style="height:5px;flex-shrink:0;cursor:row-resize;background:#23272E;" style-hover="background:#3B82F6;"></div>
+
+        <div style="flex:0 0 {{ assumPct }}%;overflow:auto;min-height:0;">
+          <div style="padding:9px 14px;border-bottom:1px solid #23272E;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#0B0D10;">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7280;text-transform:uppercase;letter-spacing:0.08em;">Assumptions</span>
+            <div style="display:flex;gap:6px;">
+              <span style="font-size:10px;font-weight:500;padding:1px 8px;border-radius:10px;background:#2A2011;color:#F59E0B;">1 unconfirmed</span>
+              <span style="font-size:10px;font-weight:500;padding:1px 8px;border-radius:10px;background:#0F2318;color:#34D399;">1 confirmed</span>
+            </div>
+          </div>
+          <div style="padding:12px 14px;display:flex;flex-direction:column;gap:8px;">
+            <sc-for list="{{ assumptions }}" as="a" hint-placeholder-count="2">
+              <div style="border:1px solid {{ a.borderColor }};border-radius:8px;padding:9px 12px;background:{{ a.bg }};display:flex;flex-direction:column;gap:6px;">
+                <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+                  <span style="font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:1px 7px;border-radius:3px;background:{{ a.typeBg }};color:{{ a.typeColor }};">{{ a.axis }}</span>
+                  <span style="width:6px;height:6px;border-radius:50%;background:{{ a.riskColor }};"></span>
+                </div>
+                <div style="font-size:12.5px;color:{{ a.textColor }};line-height:1.5;">{{ a.text }}</div>
+                <div style="display:flex;gap:5px;">
+                  <button style="font-size:10.5px;padding:2px 9px;border-radius:4px;border:1px solid #2E333B;background:transparent;color:#9AA1AB;cursor:pointer;">Confirm</button>
+                  <button style="font-size:10.5px;padding:2px 9px;border-radius:4px;border:1px solid #2E333B;background:transparent;color:#9AA1AB;cursor:pointer;">Flag</button>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <div onmousedown="{{ startAssumResize }}" style="height:5px;flex-shrink:0;cursor:row-resize;background:#23272E;" style-hover="background:#3B82F6;"></div>
+
+        <div style="flex:1;display:flex;flex-direction:column;min-height:0;">
+          <div style="padding:9px 14px;border-bottom:1px solid #23272E;display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7280;text-transform:uppercase;letter-spacing:0.08em;">Canvas</span>
+            <div style="display:flex;gap:4px;">
+              <sc-for list="{{ lensPips }}" as="lp" hint-placeholder-count="5">
+                <span style="width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9.5px;font-weight:600;background:{{ lp.bg }};color:{{ lp.color }};">{{ lp.label }}</span>
+              </sc-for>
+            </div>
+          </div>
+          <div style="flex:1;overflow:auto;padding:16px;">
+            <div style="display:inline-block;background:#152238;border:1.5px solid #3B82F6;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:600;color:#93C5FD;margin-bottom:8px;margin-left:12px;">JTBD: ship without widening scope</div>
+            <ul style="list-style:none;margin:0 0 0 20px;padding:0;">
+              <sc-for list="{{ jtbdBranches }}" as="j" hint-placeholder-count="3">
+                <li style="position:relative;padding:4px 0 4px 20px;border-left:1.5px solid #454B54;margin-left:0;">
+                  <span style="display:inline-block;background:#0E1013;border:1px solid #23272E;border-radius:5px;padding:5px 10px;font-size:12px;color:#F5F6F7;">{{ j.text }}</span>
+                </li>
+              </sc-for>
+            </ul>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <!-- STORY MAP (definition) -->
+      <sc-if value="{{ showMap }}" hint-placeholder-val="{{ false }}">
+      <div id="sw-map-split" style="flex:1;display:flex;flex-direction:column;min-height:0;">
+        <div style="flex:0 0 {{ draftPct }}%;overflow:auto;padding:16px 20px;min-height:0;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7280;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px;">Story map</div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+            <span style="font-size:12px;color:#6B7280;">{{ epicCount }} epics · {{ storyCount }} stories</span>
+            <button style="background:#F5F6F7;color:#0B0D10;border:none;padding:6px 14px;border-radius:7px;font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;">Apply changes ({{ pendingCount }} pending)</button>
+          </div>
+          <sc-for list="{{ epics }}" as="e" hint-placeholder-count="3">
+            <div style="margin-bottom:26px;">
+              <div style="display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:7px;background:#152238;border:1px solid #1E3A5F;margin-bottom:14px;">
+                <span style="font-size:10px;font-weight:700;background:#3B82F6;color:#0B0D10;border-radius:4px;padding:1px 8px;flex-shrink:0;">{{ e.tag }}</span>
+                <span style="font-size:13px;font-weight:600;color:#F5F6F7;">{{ e.name }}</span>
+                <span style="font-size:10px;color:#93C5FD;background:#0B0D10;padding:1px 8px;border-radius:10px;">{{ e.count }} stories</span>
+              </div>
+              <div style="display:flex;align-items:flex-start;gap:14px;">
+                <div style="font-size:12.5px;color:#6B7280;font-weight:500;flex-shrink:0;padding-top:9px;white-space:nowrap;">{{ e.phase }}</div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;flex:1;">
+                  <sc-for list="{{ e.stories }}" as="st" hint-placeholder-count="4">
+                    <div style="border:1px solid #23272E;border-radius:8px;padding:10px 12px;background:#0E1013;min-width:130px;max-width:170px;display:flex;flex-direction:column;gap:4px;">
+                      <span style="font-size:9.5px;font-weight:700;font-family:'JetBrains Mono',monospace;color:#6B7280;text-transform:uppercase;">{{ st.id }}</span>
+                      <span style="font-size:12px;color:#F5F6F7;line-height:1.35;">{{ st.title }}</span>
+                      <span style="font-size:10px;font-weight:600;font-family:'JetBrains Mono',monospace;color:{{ st.cxColor }};">C:{{ st.cx }}</span>
+                    </div>
+                  </sc-for>
+                  <button style="width:40px;border:1px dashed #2E333B;border-radius:8px;background:transparent;color:#6B7280;font-size:16px;cursor:pointer;">+</button>
+                </div>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+        <div onmousedown="{{ startDraftResize }}" style="height:5px;flex-shrink:0;cursor:row-resize;background:#23272E;" style-hover="background:#3B82F6;"></div>
+        <div style="flex:1;overflow:auto;padding:16px 20px;min-height:0;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7280;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:14px;">Diagrams</div>
+          <div style="border:1px solid #23272E;border-radius:8px;overflow:hidden;">
+            <div style="padding:10px 14px;border-bottom:1px solid #23272E;display:flex;align-items:center;gap:10px;">
+              <span style="font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;padding:2px 8px;border-radius:4px;background:#152238;color:#93C5FD;">program-design</span>
+              <span style="font-size:13.5px;font-weight:600;">Program Design</span>
+            </div>
+            <div style="padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#6B7280;text-transform:uppercase;letter-spacing:0.06em;">Program design</div>
+            <div style="padding:6px 20px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+              <div style="flex:1;min-width:160px;padding:14px 18px;border-radius:8px;background:#152238;color:#93C5FD;font-size:13px;font-weight:600;border:1px solid #3B82F6;text-align:center;">routes/mock-fixture.js</div>
+              <span style="color:#454B54;font-size:16px;">→</span>
+              <div style="flex:1;min-width:160px;padding:14px 18px;border-radius:8px;background:#152238;color:#93C5FD;font-size:13px;font-weight:600;border:1px solid #3B82F6;text-align:center;">adapters/mock-fixture-store.js</div>
+            </div>
+            <details style="padding:0 14px 16px;">
+              <summary style="font-size:11px;color:#6B7280;cursor:pointer;">View diagram source (text alternative)</summary>
+              <pre style="margin-top:8px;padding:12px 14px;background:#0B0D10;border:1px solid #23272E;border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#93C5FD;line-height:1.6;overflow-x:auto;white-space:pre-wrap;">flowchart LR
+  A[routes/mock-fixture.js] --&gt; B[adapters/mock-fixture-store.js]</pre>
+            </details>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+    </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    tab: 'artefact',
+    splitPct: 46,
+    draftPct: 62,
+    condPct: 26,
+    assumPct: 38,
+    sessionDone: false,
+    viewMode: 'focused'
+  };
+  setTab(t) { this.setState({ tab: t }); }
+  toggleDone() { this.setState(function(s) { return { sessionDone: !s.sessionDone }; }); }
+  setViewMode(v) { this.setState({ viewMode: v }); }
+
+  _drag(axis, key, min, max, containerSelector) {
+    var self = this;
+    return function(e) {
+      e.preventDefault();
+      var container = document.querySelector(containerSelector);
+      var size = container ? (axis === 'x' ? container.offsetWidth : container.offsetHeight) : 800;
+      var start = axis === 'x' ? e.clientX : e.clientY;
+      var startVal = self.state[key];
+      function onMove(ev) {
+        var pos = axis === 'x' ? ev.clientX : ev.clientY;
+        var deltaPct = ((pos - start) / size) * 100;
+        var next = startVal + deltaPct;
+        if (next < min) next = min;
+        if (next > max) next = max;
+        var upd = {};
+        upd[key] = next;
+        self.setState(upd);
+      }
+      function onUp() {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    };
+  }
+
+  renderVals() {
+    var tab = this.state.tab;
+    var self = this;
+
+    var phaseDefs = [
+      { num: '1', label: 'Idea', done: true },
+      { num: '2', label: 'Discovery', done: true },
+      { num: '', label: 'Clarify', done: false },
+      { num: '', label: 'Estimate', done: false },
+      { num: '2b', label: 'Benefits', done: true },
+      { num: '3', label: 'Design', active: true },
+      { num: '4', label: 'Definition', done: false },
+      { num: '5', label: 'Review', done: false },
+      { num: '6', label: 'Test Plan', done: false },
+      { num: '7', label: 'Ready', done: false }
+    ];
+    var phases = phaseDefs.map(function(p) {
+      return {
+        num: p.num,
+        label: p.label,
+        done: !!p.done,
+        active: !!p.active,
+        bg: p.active ? '#1E1B4B' : 'transparent',
+        color: p.active ? '#F5F6F7' : (p.done ? '#F5F6F7' : '#6B7280'),
+        arrowColor: '#818CF8',
+        weight: p.active ? 700 : 500
+      };
+    });
+
+    var tabDefs = [
+      { id: 'artefact', label: 'Design' },
+      { id: 'ideate', label: 'Ideate canvas' },
+      { id: 'map', label: 'Story map' }
+    ];
+    var tabs = tabDefs.map(function(d) {
+      var active = d.id === tab;
+      return {
+        label: d.label,
+        onClick: function() { self.setTab(d.id); },
+        bg: active ? '#161A1F' : 'transparent',
+        color: active ? '#F5F6F7' : '#6B7280'
+      };
+    });
+
+    var skillLabels = { artefact: 'design', ideate: 'ideate', map: 'definition' };
+
+    return {
+      phases: phases,
+      contextFileCount: 8,
+      sessionDone: this.state.sessionDone,
+      showQuestion: !this.state.sessionDone,
+      isFocused: this.state.viewMode === 'focused',
+      isChat: this.state.viewMode === 'chat',
+      viewModes: [
+        { id: 'focused', label: 'Focused' },
+        { id: 'chat', label: 'Chat' }
+      ].map(function(v) {
+        var active = v.id === self.state.viewMode;
+        return {
+          label: v.label,
+          onClick: function() { self.setViewMode(v.id); },
+          bg: active ? '#0B0D10' : 'transparent',
+          color: active ? '#F5F6F7' : '#6B7280'
+        };
+      }),
+      chatMessages: this.state.sessionDone ? [
+        { from: 'Skill', text: 'Which files does this story need to touch? List exact paths.', avatarBg: '#F5F6F7', avatarColor: '#0B0D10', avatarChar: '✦' },
+        { from: 'You', text: 'src/web-ui/routes/public.js and templates/landing.html only.', avatarBg: '#152238', avatarColor: '#93C5FD', avatarChar: 'M' },
+        { from: 'Skill', text: 'Any database schema changes required for this story?', avatarBg: '#F5F6F7', avatarColor: '#0B0D10', avatarChar: '✦' },
+        { from: 'You', text: 'No schema changes.', avatarBg: '#152238', avatarColor: '#93C5FD', avatarChar: 'M' },
+        { from: 'Skill', text: 'Understood — producing the design artefact now.', avatarBg: '#F5F6F7', avatarColor: '#0B0D10', avatarChar: '✦' }
+      ] : [
+        { from: 'Skill', text: 'Which files does this story need to touch? List exact paths.', avatarBg: '#F5F6F7', avatarColor: '#0B0D10', avatarChar: '✦' },
+        { from: 'You', text: 'src/web-ui/routes/public.js and templates/landing.html only.', avatarBg: '#152238', avatarColor: '#93C5FD', avatarChar: 'M' },
+        { from: 'Skill', text: 'Any database schema changes required for this story?', avatarBg: '#F5F6F7', avatarColor: '#0B0D10', avatarChar: '✦' }
+      ],
+      toggleDone: function() { self.toggleDone(); },
+      toggleDoneLabel: this.state.sessionDone ? 'Preview: back to question' : 'Preview: mark answered',
+      questionIndex: 4,
+      totalQuestions: 6,
+      progressDots: [
+        { color: '#3B82F6' }, { color: '#3B82F6' }, { color: '#3B82F6' },
+        { color: '#3B82F6' }, { color: '#23272E' }, { color: '#23272E' }
+      ],
+      currentQuestion: 'Any database schema changes required for this story?',
+      hasPrevAnswer: true,
+      prevAnswer: 'src/web-ui/routes/public.js and templates/landing.html only.',
+      skillLabel: skillLabels[tab] || 'design',
+      nextPhaseLabel: tab === 'map' ? 'review' : 'definition',
+      splitPct: this.state.splitPct,
+      startOuterResize: this._drag('x', 'splitPct', 28, 72, '#sw-split-container'),
+      draftPct: this.state.draftPct,
+      startDraftResize: this._drag('y', 'draftPct', 25, 80, tab === 'map' ? '#sw-map-split' : '#sw-artefact-split'),
+      condPct: this.state.condPct,
+      startCondResize: this._drag('y', 'condPct', 12, 45, '#sw-ideate-split'),
+      assumPct: this.state.assumPct,
+      startAssumResize: this._drag('y', 'assumPct', 15, 55, '#sw-ideate-split'),
+      tabs: tabs,
+      showArtefact: tab === 'artefact',
+      showIdeate: tab === 'ideate',
+      showMap: tab === 'map',
+      conditions: [
+        { type: 'constraint', source: 'model', tagBg: '#2A1416', tagColor: '#F87171', text: 'No new authorization surface — must reuse existing advance endpoint checks.' },
+        { type: 'dependency', source: 'operator', tagBg: '#152238', tagColor: '#93C5FD', text: 'Depends on the board route already exposing tenant-scoped journey IDs.' }
+      ],
+      assumptions: [
+        { axis: 'feasibility', riskColor: '#10B981', borderColor: '#163D28', bg: '#0F1A14', textColor: '#86EFAC', text: 'Drag events can reuse the existing click-to-advance handler with no new endpoint.' },
+        { axis: 'desirability', riskColor: '#F59E0B', borderColor: '#23272E', bg: '#0E1013', textColor: '#F5F6F7', text: 'Operators expect drag to feel instant — may need optimistic UI before server confirms.' }
+      ],
+      lensPips: [
+        { label: 'A', bg: '#152238', color: '#93C5FD' },
+        { label: 'B', bg: '#161A1F', color: '#6B7280' },
+        { label: 'C', bg: '#161A1F', color: '#6B7280' },
+        { label: 'D', bg: '#161A1F', color: '#6B7280' },
+        { label: 'E', bg: '#161A1F', color: '#6B7280' }
+      ],
+      jtbdBranches: [
+        { text: 'When I review a board, I want to act on it without leaving the page.' },
+        { text: 'When I drag a card, I want the same guardrails as clicking advance.' },
+        { text: 'When a transition is invalid, I want to see why immediately.' }
+      ],
+      epicCount: 3,
+      storyCount: 12,
+      pendingCount: 1,
+      epics: [
+        {
+          tag: 'E1', name: 'Board visual parity', count: 3, phase: 'Phase 1 (current)',
+          stories: [
+            { id: 's1.1', title: 'Restyle board columns on current tokens', cx: 1, cxColor: '#10B981' },
+            { id: 's1.2', title: 'Restyle card component', cx: 1, cxColor: '#10B981' },
+            { id: 's1.3', title: 'Restyle column header + counts', cx: 1, cxColor: '#10B981' }
+          ]
+        },
+        {
+          tag: 'E2', name: 'Drag-to-advance', count: 5, phase: 'Phase 1 (current)',
+          stories: [
+            { id: 's2.1', title: 'Draggable cards, valid-column highlight', cx: 2, cxColor: '#F59E0B' },
+            { id: 's2.2', title: 'Wire drop to advance endpoint', cx: 2, cxColor: '#F59E0B' },
+            { id: 's2.3', title: 'Reject invalid transitions client-side', cx: 1, cxColor: '#10B981' },
+            { id: 's2.4', title: 'E2E coverage for drag path', cx: 3, cxColor: '#EF4444' },
+            { id: 's2.5', title: 'Optimistic UI before server confirms', cx: 2, cxColor: '#F59E0B' }
+          ]
+        },
+        {
+          tag: 'E3', name: 'Traceability & rollback', count: 4, phase: 'Phase 2 (next)',
+          stories: [
+            { id: 's3.1', title: 'Trace advance calls to DoR scope contract', cx: 2, cxColor: '#F59E0B' },
+            { id: 's3.2', title: 'Rollback path for a bad advance', cx: 2, cxColor: '#F59E0B' },
+            { id: 's3.3', title: 'Audit log entry per advance', cx: 1, cxColor: '#10B981' },
+            { id: 's3.4', title: 'Assurance gate check for board routes', cx: 3, cxColor: '#EF4444' }
+          ]
+        }
+      ],
+      diagramNodes: [
+        { label: 'Web UI', bg: '#152238', color: '#93C5FD', border: '#1E3A5F', hasArrow: true },
+        { label: 'Mock Fixture Service', bg: '#152238', color: '#93C5FD', border: '#1E3A5F', hasArrow: false }
+      ],
+      draftSections: [
+        { title: 'Design summary', pillText: 'Drafted', pillBg: '#0F2318', pillColor: '#34D399', body: 'This is a canned design artefact used by the @mocked E2E journey suite so the signup-to-onboarding spec can drive the design stage deterministically.' },
+        { title: 'Out of scope', pillText: 'Drafted', pillBg: '#0F2318', pillColor: '#34D399', body: 'Real-world design content — this is a fixture, not production output.' },
+        { title: 'Risk & rollback', pillText: 'Confirm', pillBg: '#2A2011', pillColor: '#F59E0B', body: '— answer the next questions to draft this section —' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>
