@@ -60,13 +60,13 @@ async function _buildArtefactBodyContent(req, pool, slug, artefactType, markdown
   const csrfToken = await _csrf.generateCsrfToken(req);
 
   const signOffCardHtml = signOffStatus
-    ? '<div class="sw-signoff-card">' +
-        '<h3>Sign-off</h3>' +
+    ? '<div class="sw-card sw-signoff-card">' +
+        '<h3 class="sw-section-title">Sign-off</h3>' +
         '<p><strong>' + shellEscHtml(signOffStatus.approver) + '</strong></p>' +
         '<p style="color:var(--muted);font-size:13px">' + shellEscHtml(signOffStatus.date) + '</p>' +
       '</div>'
-    : '<div class="sw-signoff-card">' +
-        '<h3>Sign-off</h3>' +
+    : '<div class="sw-card sw-signoff-card">' +
+        '<h3 class="sw-section-title">Sign-off</h3>' +
         '<button type="button" id="sign-off-btn" data-artefact-path="' + shellEscHtml('artefacts/' + slug + '/' + artefactType + '.md') + '" data-csrf-token="' + shellEscHtml(csrfToken) + '" class="sw-btn sw-btn--primary">Sign Off</button>' +
         '<div id="sign-off-error" style="color:var(--danger);font-size:13px;margin-top:8px"></div>' +
       '</div>';
@@ -89,10 +89,10 @@ async function _buildArtefactBodyContent(req, pool, slug, artefactType, markdown
       '</ul>';
 
   const commentsCardHtml =
-    '<div class="sw-comments-card" data-resource-type="artefact" data-resource-id="' + shellEscHtml(slug + '/' + artefactType) + '" data-csrf-token="' + shellEscHtml(csrfToken) + '">' +
-      '<h3>Comments</h3>' +
+    '<div class="sw-card sw-comments-card" data-resource-type="artefact" data-resource-id="' + shellEscHtml(slug + '/' + artefactType) + '" data-csrf-token="' + shellEscHtml(csrfToken) + '">' +
+      '<h3 class="sw-section-title">Comments</h3>' +
       '<div id="comments-list-container">' + commentsListHtml + '</div>' +
-      '<textarea id="comment-input" placeholder="Add a comment..." style="width:100%;margin-top:12px"></textarea>' +
+      '<textarea id="comment-input" class="sw-textarea" placeholder="Add a comment..." style="margin-top:12px"></textarea>' +
       '<button type="button" id="comment-submit-btn" class="sw-btn sw-btn--secondary">Post Comment</button>' +
       '<div id="comment-error" style="color:var(--danger);font-size:13px;margin-top:8px"></div>' +
     '</div>';
