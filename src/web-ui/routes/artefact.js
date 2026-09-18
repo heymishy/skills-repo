@@ -20,6 +20,11 @@ const { getRepoRoot }                                               = require('.
 // renderShell calls below are swapped -- the 404/error branches keep plain
 // renderShell, matching journey.js's own not-found-page precedent.
 const { renderShellWithNav }                                       = require('./products');
+// dsa-s1 Task 4: server-side sign-off detection + comments sidebar for the
+// artefact viewer's two-column restyle.
+const { detectExistingSignOff }                                     = require('../adapters/sign-off-writer');
+const { listCommentsForResource }                                   = require('../modules/artefact-comments');
+const _csrf                                                         = require('../middleware/csrf');
 
 // Replaceable dependencies for testing
 let _fetchArtefact = fetchArtefact;
@@ -43,6 +48,65 @@ function setJourneyStore(store) { _journeyStore = store; }
 
 /** Replace the audit logger (for testing and production startup). */
 function setLogger(logger) { _logger = logger; }
+
+// dsa-s1 Task 4: shared two-column body-content builder (doc + Sign-off/Comments
+// sidebar), used by both render paths in handleArtefactRoute below -- the
+// primary GitHub-sourced success path and the Postgres-fallback success path.
+// Kept as one helper (rather than duplicating the markup block twice) so both
+// paths stay in lockstep by construction.
+async function _buildArtefactBodyContent(req, pool, slug, artefactType, markdown, html) {
+  const signOffStatus = detectExistingSignOff(markdown);
+  const comments = await listCommentsForResource(pool, 'artefact', slug + '/' + artefactType);
+  const csrfToken = await _csrf.generateCsrfToken(req);
+
+  const signOffCardHtml = signOffStatus
+    ? '<div class="sw-signoff-card">' +
+        '<h3>Sign-off</h3>' +
+        '<p><strong>' + shellEscHtml(signOffStatus.approver) + '</strong></p>' +
+        '<p style="color:var(--muted);font-size:13px">' + shellEscHtml(signOffStatus.date) + '</p>' +
+      '</div>'
+    : '<div class="sw-signoff-card">' +
+        '<h3>Sign-off</h3>' +
+        '<button type="button" id="sign-off-btn" data-artefact-path="' + shellEscHtml('artefacts/' + slug + '/' + artefactType + '.md') + '" data-csrf-token="' + shellEscHtml(csrfToken) + '" class="sw-btn sw-btn--primary">Sign Off</button>' +
+        '<div id="sign-off-error" style="color:var(--danger);font-size:13px;margin-top:8px"></div>' +
+      '</div>';
+
+  const commentsListHtml = comments.length === 0
+    ? '<p id="comments-empty-state" style="color:var(--muted)">No comments yet</p>'
+    : '<ul id="comments-list" style="list-style:none;padding:0">' +
+        comments.map(function(c) {
+          // dsa-s1 Task 4 review-fixup: listCommentsForResource returns raw pg
+          // rows (snake_case columns), not camelCase -- see every other caller
+          // in this codebase (server.js ~2722-2747, products.js ~4294-4296),
+          // which all explicitly map row.user_id/row.created_at. Using
+          // c.userId/c.createdAt here would silently render `undefined`.
+          return '<li style="padding:8px 0;border-bottom:1px solid var(--line-2)">' +
+            '<strong>' + shellEscHtml(c.user_id) + '</strong> ' +
+            '<span style="color:var(--muted);font-size:12px">' + shellEscHtml(String(c.created_at)) + '</span>' +
+            '<p>' + shellEscHtml(c.body) + '</p>' +
+          '</li>';
+        }).join('') +
+      '</ul>';
+
+  const commentsCardHtml =
+    '<div class="sw-comments-card" data-resource-type="artefact" data-resource-id="' + shellEscHtml(slug + '/' + artefactType) + '" data-csrf-token="' + shellEscHtml(csrfToken) + '">' +
+      '<h3>Comments</h3>' +
+      '<div id="comments-list-container">' + commentsListHtml + '</div>' +
+      '<textarea id="comment-input" placeholder="Add a comment..." style="width:100%;margin-top:12px"></textarea>' +
+      '<button type="button" id="comment-submit-btn" class="sw-btn sw-btn--secondary">Post Comment</button>' +
+    '</div>';
+
+  return (
+    '<div class="sw-artefact-layout" style="display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px">' +
+      '<div class="sw-doc" style="font-family:var(--serif)">' + html + '</div>' +
+      '<div class="sw-artefact-sidebar" style="display:flex;flex-direction:column;gap:16px">' +
+        signOffCardHtml +
+        commentsCardHtml +
+      '</div>' +
+    '</div>' +
+    '<script src="/public/artefact-sidebar.js"></script>'
+  );
+}
 
 // ── Route handler ──────────────────────────────────────────────────────────
 
@@ -79,7 +143,7 @@ async function handleArtefactRoute(req, res, slug, artefactType, pool) {
       timestamp:    new Date().toISOString()
     });
 
-    const bodyContent = `<div class="sw-doc">${html}</div>`;
+    const bodyContent = await _buildArtefactBodyContent(req, pool, slug, artefactType, markdown, html);
     const page = await renderShellWithNav(pool, req.session.tenantId, {
       title:       `${shellEscHtml(artefactType)} — ${shellEscHtml(slug)}`,
       bodyContent,
@@ -122,7 +186,7 @@ async function handleArtefactRoute(req, res, slug, artefactType, pool) {
           timestamp:    new Date().toISOString()
         });
 
-        const bodyContent = `<div class="sw-doc">${html}</div>`;
+        const bodyContent = await _buildArtefactBodyContent(req, pool, slug, artefactType, fallbackContent, html);
         const page = await renderShellWithNav(pool, req.session.tenantId, {
           title:       `${shellEscHtml(artefactType)} — ${shellEscHtml(slug)}`,
           bodyContent,
