@@ -1,5 +1,12 @@
 # Decisions: Design System Adoption
 
+## `dsa-s1` `/branch-setup` baseline: 1 pre-existing, unrelated test failure acknowledged (2026-09-18)
+
+**Context:** `dsa-s1`'s worktree baseline `npm test` run showed 2 failures instead of the previously-established 1: `tests/check-p3.5-validate-trace.js` (already-confirmed pre-existing, unrelated) and `scripts/check-pipeline-state-integrity.js` (new to this run). Investigated: `check-pipeline-state-integrity.js` fails on 2 schema violations for feature `new-feature-53a4408e` (`stage="design"` not a valid enum value; missing required `track` field) — the same malformed entry from another session's in-progress feature, already diagnosed as pre-existing and unrelated during `ep2-s3`'s PR #902 CI investigation earlier this session. Confirmed via a direct re-run of the integrity checker in this new worktree: identical 2 failures, same feature, same root cause.
+**Decision:** Acknowledge as pre-existing and proceed, per `/branch-setup`'s own option 2. Not caused by anything in `dsa-s1`'s own worktree or by this feature's own work.
+**Rationale:** Independently verified root cause (another session's malformed feature entry on master, unrelated to design-system-adoption), not assumed. Blocking `dsa-s1`'s implementation on a defect this feature didn't cause and can't fix (the malformed entry belongs to another session's active work) would be the wrong tradeoff.
+**Story:** dsa-s1 — no AC change; this failure is not part of dsa-s1's own test coverage.
+
 ## `dsa-s5` DoR W3: 1 MEDIUM review finding acknowledged as RISK-ACCEPT (2026-09-18)
 
 **Context:** `dsa-s5`'s `/review` run (run 1) found 1 MEDIUM finding: [1-M1] AC5 mixes an observable outcome with a verification-method clause — the same recurring pattern applied consistently to this governance story too, not exempted from scrutiny.
