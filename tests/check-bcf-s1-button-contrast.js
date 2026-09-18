@@ -106,6 +106,25 @@ function main() {
   });
 
   // ── AC4 ──────────────────────────────────────────────────────────────────
+  // dsa-s1 (2026-09-18): --accent's hex value was deliberately changed by
+  // dsa-s1's own Task 1 (artefacts/2026-09-18-design-system-adoption) to
+  // match DESIGN.md's token table exactly (#4F46E5 -> #2563EB light,
+  // #6366F1 -> #3B82F6 dark) -- see html-shell.js's :root/[data-theme="dark"]
+  // blocks. This story's own original AC4 targets (6.29:1 light, 4.47:1
+  // dark) were measured against the OLD indigo values and are now stale
+  // against the new blue accent -- not a code defect, a token change this
+  // test had not been updated to reflect. The real, current values are
+  // 5.17:1 (light, still comfortably above WCAG AA's 4.5:1 floor for normal
+  // text) and 3.68:1 (dark, BELOW the 4.5:1 floor -- a real, new
+  // accessibility regression versus the 4.47:1 this story originally
+  // shipped, worth a follow-up story to either lighten dark-mode --accent
+  // or change these buttons' dark-mode text color; see
+  // artefacts/2026-09-18-design-system-adoption/decisions.md, "dsa-s1 Task 6
+  // finding" entry, for the full writeup). This test's job is to catch
+  // future *accidental* contrast drift, not to silently re-approve today's
+  // dark-mode shortfall as if it met AA -- so its target is the real,
+  // current, DESIGN.md-mandated value, not a manufactured "acceptable"
+  // number.
   test('AC4: computed contrast ratio of #fff on --accent matches the measured target in both themes', function() {
     var lightAccentMatch = /:root\s*\{[^}]*--accent:\s*(#[0-9A-Fa-f]{6});/.exec(shellSrc);
     var darkAccentMatch = /\[data-theme="dark"\]\s*\{[^}]*--accent:\s*(#[0-9A-Fa-f]{6});/.exec(shellSrc);
@@ -115,8 +134,8 @@ function main() {
     var lightRatio = contrastRatio(lightAccentMatch[1], '#FFFFFF');
     var darkRatio = contrastRatio(darkAccentMatch[1], '#FFFFFF');
 
-    assert.ok(Math.abs(lightRatio - 6.29) < 0.05, 'expected light-mode contrast ~6.29:1, got ' + lightRatio.toFixed(2));
-    assert.ok(Math.abs(darkRatio - 4.47) < 0.05, 'expected dark-mode contrast ~4.47:1, got ' + darkRatio.toFixed(2));
+    assert.ok(Math.abs(lightRatio - 5.17) < 0.05, 'expected light-mode contrast ~5.17:1 (DESIGN.md #2563EB), got ' + lightRatio.toFixed(2));
+    assert.ok(Math.abs(darkRatio - 3.68) < 0.05, 'expected dark-mode contrast ~3.68:1 (DESIGN.md #3B82F6 -- below WCAG AA 4.5:1, see comment above), got ' + darkRatio.toFixed(2));
   });
 
   console.log('\n' + passed + ' passed, ' + failed + ' failed');

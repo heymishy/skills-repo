@@ -1,8 +1,8 @@
-# AC Verification Script: Restyle the Artefact Viewer to Match DESIGN.md
+# AC Verification Script: Restyle the Artefact Viewer and Build Its Sign-Off/Comments UI to Match DESIGN.md
 
 **Story reference:** artefacts/2026-09-18-design-system-adoption/stories/dsa-s1.md
 **Technical test plan:** artefacts/2026-09-18-design-system-adoption/test-plans/dsa-s1-test-plan.md
-**Script version:** 1
+**Script version:** 2 (amended following story scope expansion — see decisions.md)
 **Verified by:** [name] | **Date:** [date] | **Context:** [ ] Pre-code  [ ] Post-merge  [ ] Demo
 
 ---
@@ -80,13 +80,80 @@
 **Covers:** AC4
 
 **Steps:**
-1. Open an artefact that has existing sign-off status and at least one comment.
-2. Try adding a new comment.
-3. Try viewing the artefact's content — scroll through it if it's long.
-4. If you have sign-off permissions, try the sign-off action.
+1. Open an artefact and view its content.
+2. Scroll through it if it's long.
+3. Try any pre-existing navigation or actions on the page that existed before this story.
 
 **Expected outcome:**
-> Everything you tried in steps 2–4 works exactly the way it did before this restyle — the new visual styling changed how things look, not how they behave. Adding a comment shows up in the sidebar. Content scrolls normally. Sign-off (if tried) records correctly.
+> Everything works exactly the way it did before this change — the restyle changed how the page looks, not how the pre-existing parts of it behave. Content displays and scrolls normally.
+
+**Result:** [ ] Pass  [ ] Fail
+**Notes:**
+
+---
+
+### Scenario 5: Signing off an artefact works
+
+**Covers:** AC5
+
+**Steps:**
+1. Open an artefact that has NOT yet been signed off.
+2. Look at the Sign-off card in the sidebar — it should show an active "Sign Off" button.
+3. Click the Sign Off button.
+
+**Expected outcome:**
+> The button click sends a request to record your sign-off. If it succeeds, the card updates to show your name and today's date as the approver — you should NOT need to reload the page to see this. (Note: the real GitHub-backed part of this can't always be tested automatically — if the sign-off request fails because no GitHub repo is connected for this product, that's expected in some test environments; the important thing to verify is that clicking the button visibly does something and doesn't silently fail with no feedback.)
+
+**Result:** [ ] Pass  [ ] Fail
+**Notes:**
+
+---
+
+### Scenario 6: An already-signed-off artefact shows who signed it, not a button
+
+**Covers:** AC6
+
+**Steps:**
+1. Open an artefact that has ALREADY been signed off (ask the operator for one, or use one you signed off in Scenario 5).
+2. Look at the Sign-off card.
+
+**Expected outcome:**
+> The card shows the name of whoever approved it and the date — no clickable "Sign Off" button is shown. You should not be able to try signing it off again from this page.
+
+**Result:** [ ] Pass  [ ] Fail
+**Notes:**
+
+---
+
+### Scenario 7: Comments list shows existing comments, or says there are none
+
+**Covers:** AC7
+
+**Steps:**
+1. Open an artefact that has no comments yet.
+2. Look at the Comments card.
+3. Open a different artefact that has a few comments on it (or add some via Scenario 8 first, then come back).
+4. Look at its Comments card.
+
+**Expected outcome:**
+> Step 2: the card clearly says something like "No comments yet" — it doesn't look broken or empty by accident. Step 4: every comment is shown, oldest at the top, each with who wrote it and when.
+
+**Result:** [ ] Pass  [ ] Fail
+**Notes:**
+
+---
+
+### Scenario 8: Posting a comment works
+
+**Covers:** AC8
+
+**Steps:**
+1. Open any artefact.
+2. Type a comment into the Comments card's text box.
+3. Submit it.
+
+**Expected outcome:**
+> Your comment appears in the list right away — you don't need to reload the page to see it.
 
 **Result:** [ ] Pass  [ ] Fail
 **Notes:**
@@ -101,6 +168,10 @@
 | Scenario 2 (Light mode) | | |
 | Scenario 3 (Layout) | | |
 | Scenario 4 (No regression) | | |
+| Scenario 5 (Sign off works) | | |
+| Scenario 6 (Already signed off) | | |
+| Scenario 7 (Comments list/empty state) | | |
+| Scenario 8 (Post a comment) | | |
 
 **Overall verdict:** [ ] All pass — ready to proceed
 [ ] Failures found — log findings below before proceeding

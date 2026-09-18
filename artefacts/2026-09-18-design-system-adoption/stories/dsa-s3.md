@@ -19,13 +19,13 @@ So that **my very first impression of the platform — before I've even signed u
 ## Architecture Constraints
 
 - Anti-pattern guardrail (`architecture-guardrails.md`): "Any change to shared surface modules (`html-shell.js`, design tokens, navigation structure, shared CSS) is a story — even a small one."
-- Confirmed via `/clarify`: reuse and extend `src/web-ui/utils/html-shell.js`'s existing custom-property architecture — this story depends on `dsa-s1`'s token rename already being in place (see Dependencies).
+- Confirmed via `/clarify`: reuse and extend `src/web-ui/utils/html-shell.js`'s existing custom-property architecture — this story depends on `dsa-s1`'s new token aliases already being in place (see Dependencies). **Corrected feature-wide (see `decisions.md`, "FEATURE-WIDE" entries): the new color names are added as aliases, not a rename — the old names stay untouched for 25+ other, out-of-scope usages. Bare `:root` is LIGHT mode, `[data-theme="dark"]` is the DARK override — update both blocks, not a single "dark-mode block."**
 - `DESIGN.md`'s own "Marketing/landing" layout pattern: centered hero, max-width ~900px for copy, full-bleed sections below at max-width 1120px, browser-chrome frame (traffic lights) for product screenshots.
 - Real target file, confirmed via direct dispatch trace at `/review` (2026-09-18): `src/web-ui/routes/public.js`'s `handleRoot` is the real, live landing page — dispatched at `server.js:3985-3987` for `GET /`. `src/web-ui/routes/landing.js`'s `handleLanding` is imported in `server.js` but never dispatched anywhere — dead code, not the implementation target. Do not implement against `landing.js`/`landing.html`.
 
 ## Dependencies
 
-- **Upstream:** `dsa-s1` (shared `--green`/`--amber`/`--red` → `--success`/`--warn`/`--danger` token rename at the `html-shell.js` level).
+- **Upstream:** `dsa-s1` (adds the new `--success`/`--warn`/`--danger` token aliases at the `html-shell.js` level, without touching `--green`/`--amber`/`--red`).
 - **Downstream:** None
 
 ## Acceptance Criteria

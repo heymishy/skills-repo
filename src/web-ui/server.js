@@ -45,6 +45,11 @@ const { setCreditsAdapter, getValidTenantIds }                       = require('
 const { migrateOrganisationsSchema, backfillStandaloneOrganisations } = require('./modules/organisations'); // story-1-organisation-entity
 const { setOrganisationsPool }                                       = require('./routes/auth');            // story-1-organisation-entity
 const { migrateAgencyClientGrantsSchema }                            = require('./modules/agency-client-grants'); // story-2-relationship-grants-enforcement
+const {
+  migrateArtefactCommentsSchema,
+  createComment: createArtefactComment,
+  listCommentsForResource: listArtefactComments
+} = require('./modules/artefact-comments'); // dsa-s1
 const { migrateClientInvitationsSchema, redeemInvitation }           = require('./modules/client-invitations'); // story-3-self-service-provisioning
 const { migrateTeamInvitationsSchema, redeemTeamInvitation }         = require('./modules/team-invitations'); // wsi-s1, wsi-s2
 const { setSendInvitationEmail }                                     = require('./modules/invitation-email'); // story-3-self-service-provisioning (D37, AC5)
@@ -650,6 +655,11 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     }).catch(function(err) {
       console.error('[story-2-relationship-grants-enforcement] schema migration failed:', err.message);
     });
+
+    // dsa-s1 -- Auto-migrate artefact_comments schema.
+    migrateArtefactCommentsSchema(_userRolesPool).then(function() {
+      console.log('[dsa-s1] artefact_comments schema ready');
+    }).catch(function(err) { console.error('[dsa-s1] artefact_comments schema migration failed:', err.message); });
 
     // story-3-self-service-provisioning — Auto-migrate client_invitations
     // (mirrors story-1/story-2's own migration-wiring precedent immediately
@@ -1991,6 +2001,13 @@ if (process.env.NODE_ENV === 'test') {
   global.__BRI_S3_2_REAL_LLM_CALL_COUNT__ = function() { return _realLlmCallCount; };
 }
 
+// dsa-s1 -- small JSON-response helper, matching routes/products.js's own
+// local _sendJson (there is no shared one at this module's scope yet).
+function _dsaS1SendJson(res, status, body) {
+  res.writeHead(status, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify(body));
+}
+
 /** Parse query parameters from a URL into a plain object. */
 function parseQuery(searchParams) {
   const result = {};
@@ -2678,6 +2695,60 @@ async function router(req, res) {
       artefactType = parts[2];
     }
     await handleArtefactRoute(req, res, slug, artefactType, _pshPool);
+
+  } else if (pathname === '/api/artefact-comments' && req.method === 'POST') {
+    // dsa-s1 -- create a comment on an artefact. CSRF-guarded, matching
+    // every other mutating route in this codebase (e.g. the existing
+    // /api/agency/comments POST route).
+    authGuard(req, res, async () => {
+      var csrfOk = await _gcwCsrf.csrfGuard(req, res);
+      if (!csrfOk) return;
+      var body = req.body || {};
+      var resourceType = body.resourceType || 'artefact';
+      var resourceId = body.resourceId;
+      var commentBody = body.body;
+      var userId = (req.session && req.session.login) || '';
+      if (!resourceId || !commentBody) {
+        _dsaS1SendJson(res, 400, { error: 'resourceId and body are required' });
+        return;
+      }
+      var comment = await createArtefactComment(_pshPool, resourceType, resourceId, userId, commentBody);
+      _dsaS1SendJson(res, 200, {
+        success: true,
+        comment: {
+          commentId: comment.comment_id,
+          resourceType: comment.resource_type,
+          resourceId: comment.resource_id,
+          userId: comment.user_id,
+          body: comment.body,
+          createdAt: comment.created_at
+        }
+      });
+    });
+
+  } else if (pathname === '/api/artefact-comments' && req.method === 'GET') {
+    // dsa-s1 -- list comments on an artefact.
+    authGuard(req, res, async () => {
+      var resourceType = (req.query && req.query.resourceType) || 'artefact';
+      var resourceId = req.query && req.query.resourceId;
+      if (!resourceId) {
+        _dsaS1SendJson(res, 400, { error: 'resourceId is required' });
+        return;
+      }
+      var comments = await listArtefactComments(_pshPool, resourceType, resourceId);
+      _dsaS1SendJson(res, 200, {
+        comments: comments.map(function(c) {
+          return {
+            commentId: c.comment_id,
+            resourceType: c.resource_type,
+            resourceId: c.resource_id,
+            userId: c.user_id,
+            body: c.body,
+            createdAt: c.created_at
+          };
+        })
+      });
+    });
 
   } else if (pathname.match(/^\/api\/export\/[^/]+$/) && req.method === 'GET') {
     // rb-s4: machine-to-machine export for the bootstrap CLI's --from-saas
@@ -4036,6 +4107,12 @@ async function router(req, res) {
   } else if (pathname === '/public/stage-list.js' && req.method === 'GET') {
     res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
     res.end(require('fs').readFileSync(require('path').join(__dirname, 'public', 'stage-list.js'), 'utf8'));
+
+  } else if (pathname === '/public/artefact-sidebar.js' && req.method === 'GET') {
+    // dsa-s1 -- static asset, same public-asset convention as the routes
+    // above (no sensitive data, no auth gating needed).
+    res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
+    res.end(require('fs').readFileSync(require('path').join(__dirname, 'public', 'artefact-sidebar.js'), 'utf8'));
 
   } else {
     // Sign-in page (unauthenticated root)

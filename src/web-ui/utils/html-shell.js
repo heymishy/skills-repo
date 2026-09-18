@@ -408,7 +408,7 @@ function renderShell(opts) {
     ANTI_FLASH_SCRIPT + '\n' +
     '<link rel="preconnect" href="https://fonts.googleapis.com">\n' +
     '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
-    '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">\n' +
+    '<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">\n' +
     '<style>' + DESIGN_SYSTEM_CSS + '</style>\n' +
     '</head>\n<body>\n' +
     bannerHtml +
@@ -432,14 +432,17 @@ function renderShell(opts) {
 const DESIGN_SYSTEM_CSS = `
 /* ── Light mode tokens (default) ──────────────────────────────────────────── */
 :root {
-  --bg: #FAFAF9; --surface: #FFFFFF; --ink: #18181B; --ink-2: #3F3F46;
-  --muted: #71717A; --muted-2: #A1A1AA; --line: #E7E5E4; --line-2: #F4F4F5;
-  --accent: #4F46E5; --accent-soft: #EEF2FF; --accent-ink: #3730A3;
+  --bg: #FAFAFA; --surface: #FFFFFF; --surface-2: #F2F3F5; --ink: #14171A; --ink-2: #3F454C;
+  --muted: #6B7280; --muted-2: #52585F; --muted-3: #3A3F45; --line: #E4E7EB; --line-2: #EDEFF2;
+  --accent: #2563EB; --accent-soft: #EFF4FF; --accent-ink: #1D4ED8;
   --green: #15803D; --green-soft: #DCFCE7;
   --amber: #B45309; --amber-soft: #FEF3C7;
   --red: #B91C1C; --red-soft: #FEE2E2;
+  --success: var(--green); --success-soft: var(--green-soft);
+  --warn: var(--amber); --warn-soft: var(--amber-soft);
+  --danger: var(--red); --danger-soft: var(--red-soft);
   --serif: 'Source Serif 4', Charter, Georgia, serif;
-  --sans: 'Inter', system-ui, sans-serif;
+  --sans: 'Inter Tight', system-ui, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
@@ -449,22 +452,35 @@ const DESIGN_SYSTEM_CSS = `
    The @media block is a no-JS fallback only.
 ─────────────────────────────────────────────────────────────────────────── */
 [data-theme="dark"] {
-  --bg: #111110; --surface: #1C1C1A; --ink: #F4F4F2; --ink-2: #C8C8C6;
-  --muted: #808080; --muted-2: #505050; --line: #2C2C2A; --line-2: #1A1A18;
-  --accent: #6366F1; --accent-soft: #1E1B4B; --accent-ink: #A5B4FC;
+  --bg: #0B0D10; --surface: #0E1013; --surface-2: #161A1F; --ink: #F5F6F7; --ink-2: #B4BAC2;
+  --muted: #9AA1AB; --muted-2: #6B7280; --muted-3: #454B54; --line: #23272E; --line-2: #1A1D22;
+  --accent: #3B82F6; --accent-soft: #152238; --accent-ink: #93C5FD;
   --green: #4ADE80; --green-soft: #052E16;
   --amber: #FCD34D; --amber-soft: #451A03;
   --red: #F87171; --red-soft: #450A0A;
+  /* dsa-s1: --success/--warn are DESIGN.md's own distinct dark-mode hues,
+     NOT aliases of --green/--amber here -- unlike light mode, where all 3
+     genuinely match. --danger happens to share --red's exact hex in dark
+     mode too, but is kept as its own literal (not var(--red)) for the same
+     reason: DESIGN.md defines it as its own token, and a future edit to
+     --red should not silently also move --danger. See decisions.md, the
+     dark-mode --success/--warn correction, 2026-09-19. */
+  --success: #34D399; --success-soft: #0F2318;
+  --warn: #F59E0B; --warn-soft: #2A2011;
+  --danger: #F87171; --danger-soft: #2A1416;
 }
 /* No-JS OS fallback */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]):not([data-theme="dark"]) {
-    --bg: #111110; --surface: #1C1C1A; --ink: #F4F4F2; --ink-2: #C8C8C6;
-    --muted: #808080; --muted-2: #505050; --line: #2C2C2A; --line-2: #1A1A18;
-    --accent: #6366F1; --accent-soft: #1E1B4B; --accent-ink: #A5B4FC;
+    --bg: #0B0D10; --surface: #0E1013; --surface-2: #161A1F; --ink: #F5F6F7; --ink-2: #B4BAC2;
+    --muted: #9AA1AB; --muted-2: #6B7280; --muted-3: #454B54; --line: #23272E; --line-2: #1A1D22;
+    --accent: #3B82F6; --accent-soft: #152238; --accent-ink: #93C5FD;
     --green: #4ADE80; --green-soft: #052E16;
     --amber: #FCD34D; --amber-soft: #451A03;
     --red: #F87171; --red-soft: #450A0A;
+    --success: #34D399; --success-soft: #0F2318;
+    --warn: #F59E0B; --warn-soft: #2A2011;
+    --danger: #F87171; --danger-soft: #2A1416;
   }
 }
 
@@ -923,7 +939,7 @@ async function renderLoginPage(req) {
     ANTI_FLASH_SCRIPT + '\n' +
     '<link rel="preconnect" href="https://fonts.googleapis.com">\n' +
     '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n' +
-    '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">\n' +
+    '<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">\n' +
     '<style>' + DESIGN_SYSTEM_CSS + loginCss + '</style>\n' +
     '</head>\n<body>\n' +
     '<div class="sw-login-wrap">\n' +

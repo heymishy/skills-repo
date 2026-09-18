@@ -35782,27 +35782,68 @@
         {
           "slug": "visual-restyle-rollout",
           "name": "Product Screens Reflect a Consistent, Modern SaaS Visual Identity",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "dsa-s1",
               "name": "Restyle the Artefact Viewer to Match DESIGN.md",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-18T10:06:13.924Z",
+              "updatedAt": "2026-09-18T21:46:22.751Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 6,
-                "passing": 0
+                "totalTests": 20,
+                "passing": 20
               },
-              "acTotal": 4,
-              "acVerified": 0,
+              "acTotal": 8,
+              "acVerified": 8,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s1-dor.md"
+              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s1-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Add new design-system tokens to html-shell.js (aliases, new tokens, font)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "New artefact-comments module (table, migration, create/list)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Wire comments migration + 2 new CSRF-guarded routes",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Server-side sign-off detection + restyle handleArtefactRoute markup",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s1-plan.md"
+                },
+                {
+                  "id": "task-5",
+                  "name": "Client-side Sign Off/Comments script + static route",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s1-plan.md"
+                },
+                {
+                  "id": "task-6",
+                  "name": "E2E tests for AC1-AC8",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s1-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/903"
             },
             {
               "slug": "dsa-s2",

@@ -66,6 +66,7 @@ function createFakeTestDb() {
   var nextPodMemberId = 1;
   var podAssignments = []; // { assignment_id, tenant_id, pod_id, product_id, feature_id, assignment_type, assigned_by, assigned_at } -- ep1-s2
   var featureCollaborators = []; // { collaborator_id, feature_id, user_id, role_id, pod_id, is_approver } -- ep1-s3
+  var artefactComments = []; // { comment_id, resource_type, resource_id, user_id, body, created_at } -- dsa-s1
 
   function query(sql, params) {
     var s = _normalise(sql);
@@ -511,6 +512,47 @@ function createFakeTestDb() {
       var fcStateFeatureId = p[0];
       var fcStateCount = featureCollaborators.filter(function(r) { return r.feature_id === fcStateFeatureId; }).length;
       return Promise.resolve({ rows: [{ count: String(fcStateCount) }] });
+    }
+
+    // ── artefact_comments (dsa-s1) ──────────────────────────────────────
+    // Narrow support for the exact query shapes modules/artefact-comments.js
+    // issues (createComment, listCommentsForResource). The
+    // "CREATE TABLE IF NOT EXISTS artefact_comments" bootstrap
+    // (migrateArtefactCommentsSchema) is already covered by the generic
+    // "CREATE TABLE" catch-all above -- no separate branch needed here.
+    // Without these two branches, createComment's `result.rows[0]` was
+    // undefined against this fake db's catch-all empty-rows fallback,
+    // throwing when the caller read `comment.comment_id` off it -- a real
+    // gap that made POST /api/artefact-comments 500 in every local/CI E2E
+    // run (no DATABASE_URL configured), found while writing dsa-s1's own
+    // E2E spec (Task 6).
+    if (s.indexOf('INSERT INTO ARTEFACT_COMMENTS') === 0) {
+      var acCommentId = p[0];
+      var acResourceType = p[1];
+      var acResourceId = p[2];
+      var acUserId = p[3];
+      var acBody = p[4];
+      var acRow = {
+        comment_id: acCommentId,
+        resource_type: acResourceType,
+        resource_id: acResourceId,
+        user_id: acUserId,
+        body: acBody,
+        created_at: new Date().toISOString()
+      };
+      artefactComments.push(acRow);
+      return Promise.resolve({ rows: [acRow] });
+    }
+
+    if (s.indexOf('SELECT COMMENT_ID, RESOURCE_TYPE, RESOURCE_ID, USER_ID, BODY, CREATED_AT FROM ARTEFACT_COMMENTS') === 0) {
+      var lcResourceType = p[0];
+      var lcResourceId = p[1];
+      var lcRows = artefactComments.filter(function(r) {
+        return r.resource_type === lcResourceType && r.resource_id === lcResourceId;
+      });
+      // Insertion order already matches created_at-ascending (oldest first)
+      // since this array is only ever appended to, single-threaded.
+      return Promise.resolve({ rows: lcRows });
     }
 
     // ── people, team_memberships, person_identities (tir-s1/tir-s2/bri-s3.3) ─
