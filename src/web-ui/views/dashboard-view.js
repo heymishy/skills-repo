@@ -101,7 +101,6 @@ function renderDashboard(data) {
       '<section style="margin-top:32px">',
         '<div class="sw-section-head">',
           '<h2 class="sw-section-title">Run a skill</h2>',
-          '<a href="/skills">Browse all →</a>',
         '</div>',
         '<div class="sw-skill-grid">' + skills + '</div>',
       '</section>',

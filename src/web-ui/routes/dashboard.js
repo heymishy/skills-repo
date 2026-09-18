@@ -10,6 +10,22 @@ const { getPendingActions: defaultGetPendingActions } = require('../adapters/act
 const { renderShell, escHtml }                        = require('../utils/html-shell');
 const { isEffectivelyAdmin }                          = require('../modules/impersonation'); // d2
 const csrf                                            = require('../middleware/csrf'); // d2 -- impersonation exit banner CSRF token
+const { renderDashboard }                             = require('../views/dashboard-view');
+
+// dsa-s2 -- static, platform-wide skill catalog for the "Run a skill" grid.
+// Real skill names confirmed against routes/skills.js's own real
+// skillName === '...' branches ('discovery', 'definition', 'test-plan',
+// 'definition-of-ready', 'review') plus routes/journey.js's skill registry
+// ('implementation-plan', step 7 there) -- do not invent names not present
+// in either.
+const _DASHBOARD_SKILLS_CATALOG = [
+  { name: 'discovery', label: 'Discovery', stage: 'outer', desc: 'Structure a raw idea into a formal discovery artefact.', est: '15m' },
+  { name: 'definition', label: 'Definition', stage: 'outer', desc: 'Break approved discovery into epics and stories.', est: '20m' },
+  { name: 'test-plan', label: 'Test plan', stage: 'outer', desc: 'Write failing tests and an AC verification script.', est: '10m' },
+  { name: 'implementation-plan', label: 'Implementation plan', stage: 'inner', desc: 'Task-by-task plan with exact file paths.', est: '12m' },
+  { name: 'definition-of-ready', label: 'Definition of ready', stage: 'outer', desc: 'Sign off scope, tests, and architecture before coding.', est: '8m' },
+  { name: 'review', label: 'Review', stage: 'outer', desc: 'Quality-check stories for traceability and scope discipline.', est: '10m' }
+];
 
 // Audit logger — replaced via setLogger() in tests and production bootstrap
 let _logger = {
@@ -110,7 +126,18 @@ async function handleDashboard(req, res) {
     timestamp: new Date().toISOString()
   });
 
-  const bodyContent = `<h1>Dashboard</h1>`;
+  const now = new Date();
+  const dateLabel = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+  const bodyContent = renderDashboard({
+    greetingName: login || 'there',
+    dateLabel: dateLabel,
+    pendingActionsCount: 0,   // dsa-s2 Task 2 wires the real value
+    inProgressCount: 0,       // dsa-s2 Task 3 wires the real value
+    skills: _DASHBOARD_SKILLS_CATALOG,
+    actions: [],              // dsa-s2 Task 2 wires the real value
+    recent: []                // dsa-s2 Task 3 wires the real value
+  });
   const html = renderShell({
     title:       'Dashboard',
     bodyContent,
