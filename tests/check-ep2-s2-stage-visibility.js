@@ -46,3 +46,11 @@ async function testStageVisibilityHandlerExists() {
 }
 testStageVisibilityHandlerExists().then(() => console.log('  ok - stage-visibility handler exported'))
   .catch((err) => { console.error('  FAIL - testStageVisibilityHandlerExists:', err.message); process.exitCode = 1; });
+
+// tests/check-ep2-s2-stage-visibility.js — Part 3
+function testFeaturePageHandlerStillExported() {
+  const { handleGetFeatureArtefacts } = require('../src/web-ui/routes/features');
+  assert.strictEqual(typeof handleGetFeatureArtefacts, 'function');
+}
+testFeaturePageHandlerStillExported();
+console.log('  ok - handleGetFeatureArtefacts still exported after stage-list injection edit');
