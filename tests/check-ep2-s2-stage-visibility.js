@@ -24,6 +24,13 @@ function testConductorSeesAllStages() {
 testConductorSeesAllStages();
 console.log('  ok - conductor sees all 8 stages');
 
+function testArchitectSeesAllStages() {
+  const visible = stageVisibility.getVisibleStages('architect');
+  assert.deepStrictEqual(visible, stageVisibility.ALL_STAGES);
+}
+testArchitectSeesAllStages();
+console.log('  ok - architect sees all 8 stages');
+
 function testUnknownRoleDefaultsToAllStages() {
   const visible = stageVisibility.getVisibleStages('some-unknown-role');
   assert.deepStrictEqual(visible, stageVisibility.ALL_STAGES);
