@@ -34937,8 +34937,8 @@
         {
           "slug": "ep2-s1",
           "id": "ep2-s1",
-          "stage": "branch-complete",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
@@ -34948,7 +34948,7 @@
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep2-s1-dor.md",
-          "updatedAt": "2026-09-17T23:20:56.914Z",
+          "updatedAt": "2026-09-18T00:37:53.766Z",
           "tasks": [
             {
               "id": "task-1",
@@ -34990,8 +34990,12 @@
           "acVerified": 3,
           "acTotal": 3,
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/900"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/900",
+          "dodStatus": "complete",
+          "dodArtefact": "artefacts/new-feature-2b74a292/dod/ep2-s1-dod.md",
+          "blocker": "COMPLETE WITH DEVIATIONS: in-memory presence (not the story's stated Postgres feature_presence table) -- deliberate, documented, fully reasoned. See decisions.md and dod/ep2-s1-dod.md.",
+          "releaseReady": false
         },
         {
           "slug": "ep2-s2",
