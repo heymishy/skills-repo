@@ -47,6 +47,18 @@ async function testSkillCatalogRendersSixRealCards() {
   });
 }
 
+async function testGreetingReflectsRealSessionLogin() {
+  // Task 1 code-quality review: check-wuce18-html-shell.js's T11.1 ('testuser'
+  // in the body) is satisfied by renderShell's own nav/header rendering
+  // user.login independently of dashboard-view.js -- it would still pass
+  // even if greetingName were hardcoded/broken. Assert the real greeting
+  // text directly so a regression here is actually caught.
+  var req = { session: { accessToken: 'tok', userId: 1, login: 'a-distinct-login-name', tenantId: null } };
+  var res = makeRes();
+  await handleDashboard(req, res);
+  assert.ok(res._get().body.includes('Good morning, a-distinct-login-name.'), 'expected the greeting to reflect the real session login');
+}
+
 async function main() {
   await testRendersRealDashboardNotPlaceholder();
   console.log('  ok - renders real renderDashboard content, not the placeholder');
@@ -54,5 +66,7 @@ async function main() {
   console.log('  ok - no stale /skills browse link (T9.3 regression guard)');
   await testSkillCatalogRendersSixRealCards();
   console.log('  ok - static skills catalog renders 6 real session-start links');
+  await testGreetingReflectsRealSessionLogin();
+  console.log('  ok - greeting reflects the real session login');
 }
 main().catch(function (err) { console.error('FAIL:', err.message); process.exitCode = 1; });

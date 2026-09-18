@@ -127,6 +127,12 @@ async function handleDashboard(req, res) {
   });
 
   const now = new Date();
+  // dsa-s2 -- 'en-US' is a placeholder locale, not wired to the real
+  // per-user locale preference this codebase already has (routes/settings.js,
+  // si-s2's timezone/date_format columns). Reading that preference is out of
+  // scope for this story's own ACs (dashboard token/layout/data-wiring, not
+  // a locale-preference feature) -- flagged here rather than left as an
+  // unexplained hardcode, matching the placeholder-value comments below.
   const dateLabel = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
   const bodyContent = renderDashboard({
