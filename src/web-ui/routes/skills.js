@@ -4641,8 +4641,21 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
         _csrf.csrfField(csrfToken) +
         '<button type="submit" class="sw-btn sw-btn--primary">Continue to ' + escHtml(nextStage) + ' &#x2192;</button>' +
         '</form>' +
+        // ep2-s3 — Sign Off: records an approval decisions.md entry, then
+        // chains into the existing gate-confirm form above to advance the
+        // stage. See approval-modal.js and decisions.md (2026-09-18).
+        '<button type="button" id="sign-off-btn" data-journey-id="' + safeJourneyId + '" data-csrf-token="' + escHtml(csrfToken) + '" class="sw-btn sw-btn--secondary">Sign Off</button>' +
         '<span style="font-size:12px;color:var(--muted)">Artefact saved — advance to next stage</span>' +
-        '</div>' + subStepJs;
+        '</div>' +
+        '<div id="sign-off-modal" style="display:none;position:fixed;top:20%;left:50%;transform:translateX(-50%);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:20px;z-index:1000;min-width:320px">' +
+          '<h3>Approve ' + escHtml(skillName) + '</h3>' +
+          '<label for="sign-off-reason">Reason for approval</label>' +
+          '<input type="text" id="sign-off-reason" placeholder="Reason for approval..." style="width:100%;margin:8px 0" maxlength="500">' +
+          '<div id="sign-off-error" style="color:var(--error,red);font-size:13px;margin-bottom:8px"></div>' +
+          '<button type="button" id="sign-off-approve-btn" class="sw-btn sw-btn--primary">Approve</button>' +
+          '<button type="button" id="sign-off-cancel-btn" class="sw-btn">Cancel</button>' +
+        '</div>' +
+        '<script src="/public/approval-modal.js"></script>' + subStepJs;
     }
     bodyContent = bodyContent + journeyPanel;
   }

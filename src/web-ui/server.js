@@ -36,7 +36,7 @@ const skillsAdapter                                                  = require('
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
-const { handleGetJourney, handlePostJourney, handleDeleteJourney, handleGetJourneyResume, handleGetJourneyById, handleGetStageReview, handleGetJourneyStageView, handleGetJourneyStageReopen, handleGetStageConfirmBack, handlePostJourneyStageArtefact, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, handleGetJourneyCollaboratorsPresence, handleGetJourneyStageVisibility, handlePostJourneyHeartbeat, handleGetJourneyPresenceStream, handlePutJourneyDisplayName, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handleGetWizardBootstrapped, handlePostWizardSelection, handleJourneys, setListJourneys } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2 / bri-s1.5 / s3.4 / fdn-s1 / jsvr-s1
+const { handleGetJourney, handlePostJourney, handleDeleteJourney, handleGetJourneyResume, handleGetJourneyById, handleGetStageReview, handleGetJourneyStageView, handleGetJourneyStageReopen, handleGetStageConfirmBack, handlePostJourneyStageArtefact, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, handleGetJourneyCollaboratorsPresence, handleGetJourneyStageVisibility, handlePostJourneyHeartbeat, handleGetJourneyPresenceStream, handlePutJourneyDisplayName, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handleGetWizardBootstrapped, handlePostWizardSelection, handleJourneys, setListJourneys, handlePostJourneyApprove } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2 / bri-s1.5 / s3.4 / fdn-s1 / jsvr-s1 / ep2-s3
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const pipelineStateGithubWriterFactory                               = require('./adapters/pipeline-state-github-writer'); // wsd-s2
 const { selectPipelineStateWriterFactory }                           = require('./adapters/pipeline-state-writer-selector'); // wsd-s2
@@ -2363,6 +2363,73 @@ async function router(req, res) {
     return;
   }
 
+  // ep2-s3: seed a REAL journey (via journey-store.js) + REAL HTML session
+  // with a controllable `done` state, for the Sign Off E2E spec -- mirrors
+  // /test/seed-board-journey's precedent immediately above, but deliberately
+  // OMITS productId. Investigation finding (decisions.md, 2026-09-18): in
+  // this codebase's actual E2E config, DATABASE_URL is unset for the
+  // Playwright webServer (playwright.config.js sets no DATABASE_URL, and the
+  // whole `if (process.env.DATABASE_URL) { setDbPool(...) }` block in this
+  // file is therefore skipped), so export-data-source.js's ownerRepoForFeature
+  // always throws ("database pool not wired"). handlePostGateConfirm's own
+  // acdg-s1 guard (routes/journey.js) treats that throw as a hard 502 block
+  // whenever journey.productId is truthy -- it is only treated as a
+  // legitimate silent skip when productId is unset. /test/seed-board-journey
+  // always defaults productId to the truthy string 'e2e-board-product', so
+  // ANY journey seeded through it can never successfully complete a real
+  // gate-confirm in this environment -- confirmed empirically by running
+  // tests/e2e/s1.1-board-advance-action.spec.js directly: its own AC1
+  // ("advance moves the card to its next column") already fails for exactly
+  // this reason. That is a pre-existing bug unrelated to this story (see
+  // decisions.md for the full note) -- NOT fixed here, since it is a
+  // separate, substantial concern outside ep2-s3's scope. Leaving productId
+  // unset on the journey created here (createJourney() never sets it by
+  // default) lands in acdg-s1's own designed-for "genuinely no product link"
+  // skip branch instead, so this endpoint's journeys really do reach
+  // completeStage() and a real 303 redirect to the next stage. ownerId is
+  // set to the caller's own session login so requireJourneyAccess's owner
+  // check (middleware/journey-access.js) grants access outright, independent
+  // of tenant matching.
+  if (pathname === '/test/seed-approval-journey' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    let raw = '';
+    for await (const chunk of req) { raw += chunk; }
+    let body = {};
+    try { body = raw ? JSON.parse(raw) : {}; } catch (_) { body = {}; }
+
+    const _journeyStoreForApproval = require('./modules/journey-store');
+    const _skillsForApproval = require('./routes/skills');
+
+    const featureSlug = body.featureSlug || ('ep2-s3-e2e-feature-' + Date.now());
+    const stage = body.stage || 'discovery';
+    const ownerLogin = (req.session && req.session.login) || 'e2e-tester';
+
+    const journeyObj = _journeyStoreForApproval.createJourney(featureSlug, 'default');
+    const journeyId = journeyObj.journeyId;
+    _journeyStoreForApproval.setJourneyFields(journeyId, {
+      tenantId: (req.session && req.session.tenantId) || 'e2e-tester',
+      ownerId: ownerLogin
+      // productId intentionally omitted -- see comment above.
+    });
+
+    const sessionId = 'seed-approval-sid-' + journeyId;
+    const artefactRelPath = 'artefacts/' + featureSlug + '/' + stage + '.md';
+    _skillsForApproval._setHtmlSession(sessionId, {
+      skillName: stage,
+      sessionPath: null,
+      systemPrompt: 'test',
+      turns: [],
+      artefactContent: '# Seeded ' + stage + ' artefact for ep2-s3 E2E (' + featureSlug + ').',
+      artefactPath: artefactRelPath,
+      done: true,
+      journeyId: journeyId
+    });
+    _journeyStoreForApproval.setActiveSession(journeyId, sessionId, stage);
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ journeyId: journeyId, sessionId: sessionId, featureSlug: featureSlug, stage: stage }));
+    return;
+  }
+
   // bmau-s1: E2E fixture-seeding shortcut -- creating a product's first
   // real feature (POST /products/:id/features) requires a connected GitHub
   // repo (das-s2's gate), and connecting one for real
@@ -3156,6 +3223,15 @@ async function router(req, res) {
     await requireNonViewer(req, res, () => { _rnvOk = true; });
     if (!_rnvOk) return;
     await handlePostGateConfirm(req, res);
+
+  } else if (pathname.match(/^\/api\/journey\/[^/]+\/approve$/) && req.method === 'POST') {
+    // ep2-s3 — Sign Off: record approval as a decisions.md entry
+    req.params = { journeyId: pathname.split('/')[3] };
+    // vrne-s1 — viewer-role write-block gate (AC2)
+    let _rnvOk = false;
+    await requireNonViewer(req, res, () => { _rnvOk = true; });
+    if (!_rnvOk) return;
+    await handlePostJourneyApprove(req, res, _pshPool);
 
   } else if (pathname.match(/^\/journey\/[^/]+\/stories$/) && req.method === 'GET') {
     // ougl.6 — per-story stage routing: story list entry form
@@ -4113,6 +4189,10 @@ async function router(req, res) {
     // above (no sensitive data, no auth gating needed).
     res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
     res.end(require('fs').readFileSync(require('path').join(__dirname, 'public', 'artefact-sidebar.js'), 'utf8'));
+
+  } else if (pathname === '/public/approval-modal.js' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
+    res.end(require('fs').readFileSync(require('path').join(__dirname, 'public', 'approval-modal.js'), 'utf8'));
 
   } else {
     // Sign-in page (unauthenticated root)
