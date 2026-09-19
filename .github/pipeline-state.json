@@ -35891,7 +35891,7 @@
                 {
                   "id": "task-3",
                   "name": "E2E tests for AC1-AC3, AC5-AC8",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s2-plan.md"
                 },
                 {
@@ -36090,6 +36090,6 @@
     ],
     "lastUpdated": "2026-08-29"
   },
-  "updatedAt": "2026-09-19T02:26:04.189Z",
-  "lastUpdated": "2026-09-19T02:26:04.189Z"
+  "updatedAt": "2026-09-19T03:05:35.044Z",
+  "lastUpdated": "2026-09-19T03:05:35.044Z"
 }
