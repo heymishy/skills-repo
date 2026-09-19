@@ -26,6 +26,8 @@ var { isEffectivelyAdmin } = require('../modules/impersonation'); // wugs-s9 —
 var _journeyStoreModule = require('../modules/journey-store'); // wnl-s3 — reused (not requiring routes/journey.js at module scope, which would be circular) to list existing journeys for _hasUnbackfilledCliFeatures
 var { setProductDefaultPod, getProductDefaultPod, setFeatureDefaultPod } = require('../modules/pod-assignment-store'); // ep1-s2, ep1-s3
 var { populateFeatureCollaboratorsFromPod } = require('../modules/feature-collaborator-store'); // ep1-s3
+var _dashboardView = require('../views/dashboard-view'); // dsa-s2 Task 1 -- reuse the real mock-matching view
+var _DASHBOARD_SKILLS_CATALOG = require('./dashboard')._DASHBOARD_SKILLS_CATALOG; // dsa-s2 -- static skill catalog, single-sourced from dashboard.js
 
 // s1.1 -- injectable bulk session-store reader. Defaults to a lazy require of
 // skills.js's real _getHtmlSessionsBulk (mirrors the same lazy-getter shape
@@ -169,45 +171,50 @@ function _parseJsonbField(value, fallback) {
 // All tabs below -- removed so each group renders exactly once. Only the
 // summary "Test coverage: X%" line remains (see coverageHtml below).
 
-function _renderProductDashboard(products, login, navProducts, activeProductId, noProductJourneyCount, isAdmin, hasNoProductWork, impersonation) {
-  var cardsHtml = products.length === 0
-    ? '<div style="padding:48px 0;text-align:center;color:var(--muted)">' +
+function _renderProductDashboard(products, login, navProducts, activeProductId, noProductJourneyCount, isAdmin, hasNoProductWork, impersonation, mockData) {
+  mockData = mockData || { pendingActionsCount: 0, actions: [], inProgressCount: 0, recent: [] };
+  var body;
+  if (products.length === 0) {
+    // dsa-s2 AC8: the zero-products onboarding branch is UNCHANGED from its
+    // existing real behavior -- do not touch this block's own content/copy.
+    body = '<div style="padding:48px 0;text-align:center;color:var(--muted)">' +
         '<p style="font-size:18px;margin:0 0 12px">No products yet</p>' +
         '<p id="sw-products-empty-hint" style="font-size:14px;margin:0 0 20px;color:var(--muted)">A product organizes your epics, features, and journeys — you can connect a GitHub repo to it anytime.</p>' +
         '<a href="/products/new" style="display:inline-block;padding:10px 20px;background:var(--accent);color:#fff;border-radius:6px;text-decoration:none;font-weight:500">Create your first product →</a>' +
-      '</div>'
-    : products.map(function(p) {
-        return '<a href="/products/' + _escapeHtml(p.product_id) + '" style="display:block;padding:20px;background:var(--surface);border:1px solid var(--line);border-radius:8px;text-decoration:none;color:var(--ink);margin-bottom:12px">' +
-          '<div style="display:flex;justify-content:space-between;align-items:baseline">' +
-            '<span style="font-size:16px;font-weight:600">' + _escapeHtml(p.name) + '</span>' +
-            '<span style="font-size:12px;color:var(--muted)">' + _escapeHtml(String(p.featureCount)) + ' feature' + (p.featureCount === 1 ? '' : 's') + '</span>' +
-          '</div>' +
-          (p.lastUpdated ? '<div style="font-size:12px;color:var(--muted);margin-top:4px">Last updated ' + _escapeHtml(new Date(p.lastUpdated).toLocaleDateString()) + '</div>' : '') +
-        '</a>';
-      }).join('');
+      '</div>';
+  } else {
+    // dsa-s2 Task 1 (AC3, AC6): replace the old product-card grid with the
+    // real DESIGN.md-mock-matching dashboard content -- product navigation
+    // is already fully served by renderShell's own sidebar, so this main
+    // content area no longer needs to duplicate it as a card grid.
+    var now = new Date();
+    var dateLabel = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+    body = _dashboardView.renderDashboard({
+      greetingName: login || 'there',
+      dateLabel: dateLabel,
+      pendingActionsCount: mockData.pendingActionsCount,
+      inProgressCount: mockData.inProgressCount,
+      skills: _DASHBOARD_SKILLS_CATALOG,
+      actions: mockData.actions,
+      recent: mockData.recent
+    });
+  }
   // wnl-s3: presence-only entry point (no numeric count -- decisions.md,
   // 2026-09-10) for no-product work, shown whenever the caller determined
   // any exists (real Postgres no-product journeys OR unbackfilled CLI-only
   // pipeline-state.json features -- see _hasUnbackfilledCliFeatures).
   // Links to the existing /journey no-product list -- no new view (AC3).
   var noProductEntryHtml = hasNoProductWork
-    ? '<a href="/journey" style="display:block;padding:20px;background:var(--surface);border:1px solid var(--line);border-radius:8px;text-decoration:none;color:var(--ink);margin-bottom:12px">' +
+    ? '<a href="/journey" style="display:block;padding:20px;background:var(--surface);border:1px solid var(--line);border-radius:8px;text-decoration:none;color:var(--ink);margin-top:24px">' +
         '<span style="font-size:16px;font-weight:600">No product work →</span>' +
       '</a>'
     : '';
-  var body = '<div style="max-width:720px">' +
-    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px">' +
-      '<h1 style="margin:0;font-size:24px">Products</h1>' +
-      (products.length > 0 ? '<a href="/products/new" style="padding:8px 16px;background:var(--accent);color:#fff;border-radius:6px;text-decoration:none;font-size:14px;font-weight:500">New product</a>' : '') +
-    '</div>' +
-    cardsHtml +
-    noProductEntryHtml +
+  body = body + noProductEntryHtml +
     '<div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--line)">' +
       '<a href="/org/kanban" style="font-size:14px;color:var(--muted);text-decoration:none">View org kanban →</a>' +
-    '</div>' +
-  '</div>';
+    '</div>';
   return _htmlShell.renderShell({
-    title: 'Products',
+    title: 'Dashboard',
     bodyContent: body,
     user: { login: login },
     active: 'dashboard',
@@ -2643,7 +2650,7 @@ async function handleGetDashboard(req, res, _next, pool) {
   } else {
     var repoRoot = _repoRootAdapter.getRepoRoot(req);
     var hasNoProductWork = navSummary.noProductJourneyCount > 0 || _hasUnbackfilledCliFeatures(repoRoot);
-    var html = _renderProductDashboard(cards, login, navSummary.products, null, navSummary.noProductJourneyCount, isAdmin, hasNoProductWork, impersonation);
+    var html = _renderProductDashboard(cards, login, navSummary.products, null, navSummary.noProductJourneyCount, isAdmin, hasNoProductWork, impersonation, { pendingActionsCount: 0, actions: [], inProgressCount: 0, recent: [] });
 
     // rpiw-s1: identify() + login_completed on the route real authenticated
     // users actually land on -- SECURITY: only login/tenantId are ever

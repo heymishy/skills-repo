@@ -302,5 +302,9 @@ module.exports = {
   setGetPendingActions,
   _mapPendingActionsForDashboard,
   _deriveDashboardJourneyData,
-  _formatCompletedAgo
+  _formatCompletedAgo,
+  // dsa-s2 -- exported so routes/products.js's real, live /dashboard handler
+  // (_renderProductDashboard) can single-source this catalog instead of
+  // duplicating it (this file's own /dashboard route is confirmed dead code)
+  _DASHBOARD_SKILLS_CATALOG
 };
