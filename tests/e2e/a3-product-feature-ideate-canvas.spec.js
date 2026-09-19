@@ -208,14 +208,18 @@ test.describe('a3-product-feature-ideate-canvas @real-staging', () => {
     await page.reload();
     await expect(page.locator('h1')).toHaveText(productName, { timeout: 10000 });
 
-    // Second, independent confirmation route: the products dashboard card.
-    // fix-forward (post-launch, pan-s1): /dashboard's sidebar now also lists
-    // the product name (pan-s1's product-aware navigation), so an unscoped
-    // getByText(exact) resolves to two elements (sidebar entry + dashboard
-    // card). Scope to <main> (the page body, not the sidebar) to keep
-    // asserting on the dashboard card specifically.
+    // Second, independent confirmation route: the sidebar's own product nav.
+    // fix-forward (post-launch, dsa-s2): dsa-s2's dashboard restyle replaced
+    // <main>'s old product-card grid with the new personal-dashboard mock
+    // content (greeting, "Run a skill" grid, "Waiting on you"/"Recent
+    // sessions") for any has-products session -- the product name no longer
+    // appears anywhere inside <main> at all. Product navigation is now
+    // served exclusively by the sidebar (pan-s1's own product-aware nav,
+    // #sw-sidebar's .sw-product-name items) -- switched this confirmation
+    // route there, matching the sidebar's own already-established real,
+    // stable selector (html-shell.js's _renderProductNavItem).
     await page.goto('/dashboard');
-    await expect(page.locator('main').getByText(productName, { exact: true })).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('#sw-sidebar .sw-product-name').getByText(productName, { exact: true })).toBeVisible({ timeout: 10000 });
 
     expect(productUrl).toMatch(/\/products\//);
   });
