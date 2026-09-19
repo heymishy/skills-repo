@@ -96,7 +96,7 @@ async function handleRoot(req, res) {
   var posthogKey = process.env.POSTHOG_KEY || '';
   if (posthogKey) {
     var phScript = _buildPostHogScript(posthogKey, {}) +
-      _buildClickCaptureScript(posthogKey, 'a[href="/auth/github"]', 'cta_clicked');
+      _buildClickCaptureScript(posthogKey, '#auth-panel a[href="/auth/github"]', 'cta_clicked'); // dsa-s3: scoped to the auth panel's own GitHub button -- the restyled hero also has an a[href="/auth/github"] CTA now, and querySelector only binds the first DOM match
     html = html.replace('</body>', phScript + '</body>');
   }
 
