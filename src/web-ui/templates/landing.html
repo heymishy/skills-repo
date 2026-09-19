@@ -208,6 +208,35 @@
     .hero-card-example-note { font-size: 12.5px; color: var(--muted); margin-top: 12px; }
     .hero-card-example-note code { font-family: var(--mono); }
 
+    /* ── "Product in action" demo section (dsa-s7) — browser-chrome-framed
+       placeholder, matching DESIGN.md mock's visual treatment (traffic-light
+       dots, URL-bar chrome). Real GIF asset swap-in deferred to a future
+       story; see the swap-in comment on .demo-frame__placeholder below. ── */
+    .demo-frame {
+      border-radius: 14px; overflow: hidden; border: 1px solid var(--line);
+      box-shadow: 0 40px 100px -20px rgba(0,0,0,0.6);
+    }
+    .demo-frame__chrome {
+      height: 36px; background: var(--surface-2); display: flex; align-items: center;
+      gap: 8px; padding: 0 14px; border-bottom: 1px solid var(--line);
+    }
+    .demo-frame__dot { width: 11px; height: 11px; border-radius: 50%; }
+    .demo-frame__dot--danger { background: var(--danger); }
+    .demo-frame__dot--warn { background: var(--warn); }
+    .demo-frame__dot--success { background: var(--success); }
+    .demo-frame__url {
+      margin-left: 12px; font-family: var(--mono); font-size: 11.5px; color: var(--muted-2);
+    }
+    .demo-frame__body {
+      position: relative; width: 100%; aspect-ratio: 16/9; background: var(--bg);
+      display: flex; align-items: center; justify-content: center;
+    }
+    /* dsa-s7 AC3 swap-in point: replace this <p> with a real <img>/<video>
+       once a real demo GIF asset exists -- e.g.
+       <img src="/product-demo.gif" alt="Skills Platform in action" style="width:100%;height:100%;object-fit:cover">
+       No other markup or CSS change should be needed. */
+    .demo-frame__placeholder { color: var(--muted); font-size: 14px; }
+
     /* ── Self-improving card: centered closing section (mock's final,
        narrower centered section), not part of the 2-up grid ── */
     .section-centered {
@@ -355,6 +384,22 @@
           </div>
           <p class="hero-card-example-note">Recompute it yourself: <code>sha256sum skills/review/SKILL.md</code></p>
         </section>
+      </div>
+    </div>
+
+    <div class="section-centered">
+      <h2 class="hero-card-heading">Product in action</h2>
+      <p class="hero-card-text">From skill session to shipped board, in the actual product.</p>
+      <div class="demo-frame">
+        <div class="demo-frame__chrome">
+          <span class="demo-frame__dot demo-frame__dot--danger"></span>
+          <span class="demo-frame__dot demo-frame__dot--warn"></span>
+          <span class="demo-frame__dot demo-frame__dot--success"></span>
+          <span class="demo-frame__url">skills-framework.fly.dev</span>
+        </div>
+        <div class="demo-frame__body">
+          <p class="demo-frame__placeholder">Demo coming soon</p>
+        </div>
       </div>
     </div>
 
