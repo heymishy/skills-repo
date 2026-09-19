@@ -88,6 +88,11 @@
       "date": "2026-09-12",
       "action": "Two GitHub Actions workflows ('Deploy dashboards to GitHub Pages', 'Improvement Agent -- Scheduled Dreaming') were failing on every push as of 2026-09-12 -- pre-existing infra/permission gaps, not caused by any commit at that time. Not re-checked this session.",
       "owner": "operator (Hamish King) -- decide whether to fix repo Pages settings / grant the dreaming-job's token a ruleset bypass, or leave both failing as known noise"
+    },
+    {
+      "date": "2026-09-20",
+      "action": "dsa-s4 (2026-09-18-design-system-adoption feature) POST-DEPLOYMENT SMOKE TEST -- Claude-in-Chrome extension was disconnected at Task 4's live browser render check, so the real, live skill-session chat page's genuinely new interactive mechanisms (drag-resize panes, Focused/Chat toggle) were never visually confirmed by a human or a live browser, only via strong automated/reviewer evidence (10/10 Playwright tests including a real drag-simulation, a spec-compliance reviewer's own direct comparison against DESIGN.md's reference mock's exact clamp/default values, npm test clean). RISK-ACCEPT logged in decisions.md, matching dsa-s2/dsa-s3's own established precedent for this exact failure mode. Needs: a human (or reconnected Chrome) to visually confirm all 3 skill-type variants (generic, /ideate, /definition), both themes, actually drag a resize handle by hand, and actually click the Focused/Chat toggle, once this story is deployed.",
+      "owner": "operator (Hamish King) -- visual smoke test once deployed, or re-run the live browser check next session if Chrome reconnects before then"
     }
   ],
   "estimate": {
