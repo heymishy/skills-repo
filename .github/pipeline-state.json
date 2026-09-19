@@ -35781,6 +35781,24 @@
           "evidence": "dsa-s5-dor.md H9/H-NFR -- no violation found",
           "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-09-18T10:10:37.876Z"
+        },
+        {
+          "id": "NFR-dsa-s7-perf",
+          "category": "nfr",
+          "label": "Product in action section: no measurable page-weight regression",
+          "status": "met",
+          "evidence": "dsa-s7-dod.md NFR Status -- placeholder is CSS-only, no image/media file added; real-GIF file-size budgeting deferred to the follow-up asset story per the test plan's own stated scope.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-19T09:20:00.000Z"
+        },
+        {
+          "id": "NFR-dsa-s7-a11y",
+          "category": "nfr",
+          "label": "Product in action section: honest accessible placeholder, no regression to existing landing-page accessibility",
+          "status": "met",
+          "evidence": "dsa-s7-dod.md NFR Status -- placeholder is a real, visible <p> with text (not decorative-only); final cross-task review additionally added a <section aria-label=\"Product in action demo\"> landmark and aria-hidden=\"true\" on the 3 decorative traffic-light dots, beyond the original NFR scope.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-19T09:20:00.000Z"
         }
       ],
       "regulated": false,
@@ -35981,7 +35999,7 @@
               "name": "Add the \"Product in Action\" Demo Section to the Landing Page",
               "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-09-19T09:02:01.032Z",
+              "updatedAt": "2026-09-19T09:18:16.711Z",
               "acTotal": 6,
               "acVerified": 6,
               "reviewStatus": "passed",
@@ -36009,8 +36027,10 @@
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s7-plan.md"
                 }
               ],
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/909"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/909",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         },
