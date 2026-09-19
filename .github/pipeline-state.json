@@ -35859,11 +35859,11 @@
             {
               "slug": "dsa-s2",
               "name": "Restyle the Dashboard and Wire Its Real Content to Match DESIGN.md",
-              "stage": "definition-of-ready",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-19T01:12:43.431Z",
+              "updatedAt": "2026-09-19T01:15:08.059Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 18,
@@ -35878,31 +35878,25 @@
               "tasks": [
                 {
                   "id": "task-1",
-                  "name": "Wire renderDashboard into handleDashboard, fix T9.3 regression, add static skills catalog",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s2-plan.md"
-                },
-                {
-                  "id": "task-2",
-                  "name": "Pending-actions mapping function (AC5)",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s2-plan.md"
-                },
-                {
-                  "id": "task-3",
-                  "name": "Journey-derivation function for in-progress count and recent sessions (AC7)",
-                  "tddState": "committed",
-                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s2-plan.md"
-                },
-                {
-                  "id": "task-4",
-                  "name": "E2E tests for AC1-AC3, AC5-AC7",
+                  "name": "Wire renderDashboard mock content into _renderProductDashboard, preserve zero-products branch (AC3/AC6/AC8)",
                   "tddState": "not-started",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s2-plan.md"
                 },
                 {
-                  "id": "task-5",
-                  "name": "Full regression verification (AC4) + Node suite + npm test",
+                  "id": "task-2",
+                  "name": "Wire real pending-actions and journey-derived data (AC5/AC7)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s2-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "E2E tests for AC1-AC3, AC5-AC8",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s2-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Full regression verification (AC4) + verification script amendment + Node suite + npm test",
                   "tddState": "not-started",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s2-plan.md"
                 }
@@ -35978,6 +35972,13 @@
           ]
         }
       ]
+    },
+    {
+      "slug": "2026-09-18-new",
+      "id": "2026-09-18-new",
+      "discoveryStatus": "complete",
+      "artefact": "artefacts/2026-09-18-new/discovery.md",
+      "stage": "benefit-metric"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
