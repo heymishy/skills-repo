@@ -35981,11 +35981,11 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-19T09:43:43.890Z",
+              "updatedAt": "2026-09-19T18:40:48.501Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 0
+                "passing": 3
               },
               "acTotal": 4,
               "acVerified": 0,
@@ -35997,19 +35997,19 @@
                 {
                   "id": "task-1",
                   "name": "Token substitution -- replace hardcoded colors with design-system tokens (AC1, AC2)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s4-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Focused/Chat segmented-control toggle (AC3 toggle)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s4-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "Resizable-pane drag mechanism -- outer split + right-pane stacks (AC3 resize)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s4-plan.md"
                 },
                 {

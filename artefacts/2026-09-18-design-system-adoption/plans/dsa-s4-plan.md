@@ -49,7 +49,7 @@ Create:
 
 ---
 
-## Task 1: Token substitution — replace hardcoded colors with real design-system tokens (AC1, AC2)
+## Task 1: Token substitution — replace hardcoded colors with real design-system tokens (AC1, AC2) — ✅ COMPLETE (commit `7bc495e1`)
 
 **Files:**
 - Modify: `src/web-ui/views/chat-view.js` (its `<style>` block, lines 213-419)
@@ -131,7 +131,7 @@ Run at minimum `cams-s1-chat-artefact-responsive.spec.js` and `iwu2-right-panel-
 
 ---
 
-## Task 2: Focused/Chat segmented-control toggle (AC3 — toggle portion)
+## Task 2: Focused/Chat segmented-control toggle (AC3 — toggle portion) — ✅ COMPLETE (commit `c639aa80`)
 
 **Files:**
 - Modify: `src/web-ui/views/chat-view.js` only
@@ -170,7 +170,7 @@ This spec exercises real multi-turn conversation flow — highest risk of the 13
 
 ---
 
-## Task 3: Resizable-pane drag mechanism — outer split + right-pane stacks (AC3 — resize portion)
+## Task 3: Resizable-pane drag mechanism — outer split + right-pane stacks (AC3 — resize portion) — ✅ COMPLETE (commit `48e6b1a4`)
 
 **Files:**
 - Modify: `src/web-ui/views/chat-view.js` only
