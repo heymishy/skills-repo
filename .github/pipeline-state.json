@@ -35348,13 +35348,14 @@
           "name": "Visual consistency across the 4 real screens",
           "target": "4 of 4 screens match DESIGN.md token values (scripted check)",
           "baseline": "0 of 4",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": "dsa-s1 (artefact viewer), dsa-s2 (dashboard), and dsa-s3 (landing) merged and verified; 3 of 4 screens now match DESIGN.md token values. dsa-s4 (skill-session chat) still needed before the 4/4 target is reachable.",
+          "signal": "on-track",
+          "lastMeasured": "2026-09-20",
+          "evidence": "dsa-s1 (artefact viewer), dsa-s2 (dashboard), dsa-s3 (landing), and dsa-s4 (skill-session chat) all merged and verified -- target reached: 4 of 4 screens now independently confirmed to match DESIGN.md token values via each story's own scripted computed-style tests, all passing in CI.",
           "contributingStories": [
             "dsa-s1",
             "dsa-s2",
-            "dsa-s3"
+            "dsa-s3",
+            "dsa-s4"
           ]
         },
         {
@@ -35374,11 +35375,12 @@
           "baseline": "Not yet established",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "dsa-s1, dsa-s2, and dsa-s3 merged and verified; no real beta-user exposure/feedback yet since dsa-s3 just shipped.",
+          "evidence": "dsa-s1, dsa-s2, dsa-s3, and dsa-s4 merged and verified; no real beta-user exposure/feedback yet since dsa-s4 just shipped.",
           "contributingStories": [
             "dsa-s1",
             "dsa-s2",
-            "dsa-s3"
+            "dsa-s3",
+            "dsa-s4"
           ]
         }
       ],
@@ -35750,19 +35752,19 @@
           "id": "NFR-dsa-s4-perf",
           "category": "nfr",
           "label": "Skill-session chat page load: no measurable regression",
-          "status": "met",
-          "evidence": "dsa-s4-dor.md H9/H-NFR -- no violation found",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-18T10:09:48.804Z"
+          "status": "not-met",
+          "evidence": "No independent page-load measurement taken (live or synthetic). Same class of gap as dsa-s2/dsa-s3's own equivalent NFR. Follow-up action logged in dod/dsa-s4-dod.md.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-20T00:00:00.000Z"
         },
         {
           "id": "NFR-dsa-s4-a11y",
           "category": "nfr",
           "label": "Skill-session chat WCAG 2.1 AA: no regression to existing accessibility properties",
           "status": "met",
-          "evidence": "dsa-s4-dor.md H9/H-NFR -- no violation found",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-18T10:09:48.805Z"
+          "evidence": "A new WCAG 2.1 AA gap (mouse-only drag handles, no keyboard alternative) was found in newly-introduced scope by the final cross-task review and fixed directly (WAI-ARIA separator pattern) before merge -- confirmed by a new E2E test and a live post-merge browser check. No pre-existing accessibility property regressed. See dod/dsa-s4-dod.md.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-20T00:00:00.000Z"
         },
         {
           "id": "NFR-dsa-s5-perf",
@@ -35810,7 +35812,7 @@
         {
           "slug": "visual-restyle-rollout",
           "name": "Product Screens Reflect a Consistent, Modern SaaS Visual Identity",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "dsa-s1",
@@ -35977,15 +35979,15 @@
             {
               "slug": "dsa-s4",
               "name": "Restyle the Skill-Session Chat Page to Match DESIGN.md",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-19T20:54:32.891Z",
+              "updatedAt": "2026-09-19T22:10:01.498Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 4
+                "passing": 6
               },
               "acTotal": 4,
               "acVerified": 4,
@@ -36019,8 +36021,10 @@
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s4-plan.md"
                 }
               ],
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/910"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/910",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "dsa-s7",
