@@ -28,6 +28,8 @@ var { setProductDefaultPod, getProductDefaultPod, setFeatureDefaultPod } = requi
 var { populateFeatureCollaboratorsFromPod } = require('../modules/feature-collaborator-store'); // ep1-s3
 var _dashboardView = require('../views/dashboard-view'); // dsa-s2 Task 1 -- reuse the real mock-matching view
 var _DASHBOARD_SKILLS_CATALOG = require('./dashboard')._DASHBOARD_SKILLS_CATALOG; // dsa-s2 -- static skill catalog, single-sourced from dashboard.js
+var _dashboardDataWiring = require('./dashboard'); // dsa-s2 Task 2 -- reuse Tasks 1-3's already-reviewed pure data-wiring functions (_mapPendingActionsForDashboard, _deriveDashboardJourneyData), not rebuilt
+var _actionQueueAdapter = require('../adapters/action-queue'); // dsa-s2 Task 2 (AC5) -- products.js didn't previously import this at all; calling getPendingActions directly (no injectable seam) since dashboard.js's own handleDashboard route is confirmed dead code and this route has no other caller needing one yet
 
 // s1.1 -- injectable bulk session-store reader. Defaults to a lazy require of
 // skills.js's real _getHtmlSessionsBulk (mirrors the same lazy-getter shape
@@ -2653,7 +2655,37 @@ async function handleGetDashboard(req, res, _next, pool) {
   } else {
     var repoRoot = _repoRootAdapter.getRepoRoot(req);
     var hasNoProductWork = navSummary.noProductJourneyCount > 0 || _hasUnbackfilledCliFeatures(repoRoot);
-    var html = _renderProductDashboard(cards, login, navSummary.products, null, navSummary.noProductJourneyCount, isAdmin, hasNoProductWork, impersonation, { pendingActionsCount: 0, actions: [], inProgressCount: 0, recent: [] });
+
+    // dsa-s2 Task 2 (AC5) -- real pending sign-off items, mapped via Tasks
+    // 1-3's already-reviewed _mapPendingActionsForDashboard. Degrades to an
+    // empty list on any adapter failure -- matches dashboard.js's own
+    // handleDashboard try/catch contract exactly, never fails the page render.
+    var pendingResult;
+    try {
+      pendingResult = await _actionQueueAdapter.getPendingActions({ id: req.session && req.session.userId, login: login }, req.session && req.session.accessToken);
+    } catch (err) {
+      pendingResult = { items: [], bannerMessage: null };
+    }
+    var mapped = _dashboardDataWiring._mapPendingActionsForDashboard(pendingResult);
+
+    // dsa-s2 Task 2 (AC7) -- real in-progress-session count and recent
+    // completed-stage data, derived via Tasks 1-3's already-reviewed
+    // _deriveDashboardJourneyData. Reuses the `repoRoot`/`tenantId` locals
+    // already resolved above/at the top of this function (Architecture
+    // Constraints: products.js already resolves both -- do not re-derive).
+    // Tenant-filter correctness fix preserved exactly: only exclude a
+    // journey when it HAS a tenantId that mismatches the session's -- an
+    // untagged legacy journey (tenantId: null) stays visible.
+    var journeys;
+    try {
+      var allJourneys = _journeyStoreModule.listJourneys(repoRoot);
+      journeys = allJourneys.filter(function(j) { return !(j.tenantId && j.tenantId !== tenantId); });
+    } catch (err) {
+      journeys = [];
+    }
+    var journeyData = _dashboardDataWiring._deriveDashboardJourneyData(journeys, 5);
+
+    var html = _renderProductDashboard(cards, login, navSummary.products, null, navSummary.noProductJourneyCount, isAdmin, hasNoProductWork, impersonation, { pendingActionsCount: mapped.pendingActionsCount, actions: mapped.actions, inProgressCount: journeyData.inProgressCount, recent: journeyData.recent });
 
     // rpiw-s1: identify() + login_completed on the route real authenticated
     // users actually land on -- SECURITY: only login/tenantId are ever
