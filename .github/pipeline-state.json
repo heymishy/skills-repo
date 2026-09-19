@@ -35350,9 +35350,10 @@
           "baseline": "0 of 4",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "dsa-s1 (artefact viewer) merged and verified; 1 of 4 screens now matches DESIGN.md token values. dsa-s2/dsa-s3/dsa-s4 (dashboard, landing, skill-session) still needed before the 4/4 target is reachable.",
+          "evidence": "dsa-s1 (artefact viewer) and dsa-s2 (dashboard) merged and verified; 2 of 4 screens now match DESIGN.md token values. dsa-s3/dsa-s4 (landing, skill-session) still needed before the 4/4 target is reachable.",
           "contributingStories": [
-            "dsa-s1"
+            "dsa-s1",
+            "dsa-s2"
           ]
         },
         {
@@ -35372,9 +35373,10 @@
           "baseline": "Not yet established",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "dsa-s1 (artefact viewer) merged and verified; no real beta-user exposure/feedback yet since this just shipped.",
+          "evidence": "dsa-s1 and dsa-s2 merged and verified; no real beta-user exposure/feedback yet since dsa-s2 just shipped.",
           "contributingStories": [
-            "dsa-s1"
+            "dsa-s1",
+            "dsa-s2"
           ]
         }
       ],
@@ -35710,19 +35712,19 @@
           "id": "NFR-dsa-s2-perf",
           "category": "nfr",
           "label": "Dashboard page load: no measurable regression",
-          "status": "met",
-          "evidence": "dsa-s2-dor.md H9/H-NFR -- no violation found",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-18T10:08:06.807Z"
+          "status": "not-met",
+          "evidence": "No independent page-load measurement taken (live or synthetic). Additive real-data queries confirmed via code read only. Follow-up action logged in dod/dsa-s2-dod.md.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-19T04:45:18.125Z"
         },
         {
           "id": "NFR-dsa-s2-a11y",
           "category": "nfr",
           "label": "Dashboard WCAG 2.1 AA: no regression to existing accessibility properties",
-          "status": "met",
-          "evidence": "dsa-s2-dor.md H9/H-NFR -- no violation found",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-18T10:08:06.808Z"
+          "status": "not-met",
+          "evidence": "Live browser + code inspection found Waiting-on-you/Recent-sessions list items are non-interactive divs with no keyboard focus target, despite a visual click affordance. Not a regression (unchanged markup inherited from previously-dead code, now live for the first time) but a real gap. Follow-up action logged in dod/dsa-s2-dod.md.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-19T04:45:18.125Z"
         },
         {
           "id": "NFR-dsa-s3-perf",
@@ -35859,11 +35861,11 @@
             {
               "slug": "dsa-s2",
               "name": "Restyle the Dashboard to Match DESIGN.md",
-              "stage": "branch-complete",
-              "health": "green",
+              "stage": "definition-of-done",
+              "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-19T03:38:43.237Z",
+              "updatedAt": "2026-09-19T04:45:18.124Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 18,
@@ -35902,8 +35904,13 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/905"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/905",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "DoD follow-ups: performance NFR not independently load-measured; keyboard-accessibility gap on Waiting-on-you/Recent-sessions list items (newly live, not a regression) -- see dod/dsa-s2-dod.md",
+              "layoutGapsAtMerge": true,
+              "layoutGapsRiskAccepted": true
             },
             {
               "slug": "dsa-s3",
@@ -36096,6 +36103,6 @@
     ],
     "lastUpdated": "2026-08-29"
   },
-  "updatedAt": "2026-09-19T04:03:04.718Z",
-  "lastUpdated": "2026-09-19T04:03:04.718Z"
+  "updatedAt": "2026-09-19T04:45:18.125Z",
+  "lastUpdated": "2026-09-19T04:45:18.125Z"
 }
