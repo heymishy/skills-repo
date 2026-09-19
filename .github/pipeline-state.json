@@ -35979,17 +35979,17 @@
             {
               "slug": "dsa-s7",
               "name": "Add the \"Product in Action\" Demo Section to the Landing Page",
-              "stage": "subagent-execution",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-09-19T08:00:16.370Z",
+              "updatedAt": "2026-09-19T09:02:01.032Z",
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 0
+                "passing": 6
               },
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
@@ -36008,7 +36008,9 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s7-plan.md"
                 }
-              ]
+              ],
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/909"
             }
           ]
         },
