@@ -213,7 +213,7 @@ Run all 13 corrected local specs now that both new mechanisms exist: `bri-s3.2-s
 
 ---
 
-## Task 4: Full regression verification (AC4) + npm test + live browser check
+## Task 4: Full regression verification (AC4) + npm test + live browser check — ✅ COMPLETE (found and fixed 4 real regressions from Tasks 1-3; live browser check RISK-ACCEPTed, Chrome disconnected)
 
 **Files:** verification only, no source changes expected (fix forward if Tasks 1-3 missed something).
 

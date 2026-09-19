@@ -35985,10 +35985,10 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 3
+                "passing": 4
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
@@ -36015,7 +36015,7 @@
                 {
                   "id": "task-4",
                   "name": "Full regression verification (AC4) + npm test + live browser check",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s4-plan.md"
                 }
               ]
