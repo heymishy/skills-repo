@@ -1,5 +1,12 @@
 # Decisions: Design System Adoption
 
+## `dsa-s4` note for future sessions: `check-dsh-s3-render-chat-readonly.js` diffs the working tree against `git show HEAD`, not a frozen snapshot — it will always fail on any uncommitted `chat-view.js` edit (2026-09-20)
+
+**Context:** After the keyboard-accessibility fix above, a fresh `npm test` briefly showed `check-dsh-s3-render-chat-readonly.js` failing (3 total failures instead of the acknowledged 2) — investigated before assuming it was a real regression. Its `loadBaselineRenderChat()` helper runs `git show HEAD:src/web-ui/views/chat-view.js` and asserts the LIVE working tree's `renderChat()` output is byte-identical to that git-committed version for the default/non-readOnly path. This is not a frozen historical snapshot check — it compares against whatever the current `HEAD` commit happens to be, which means it will genuinely, correctly fail any time `chat-view.js` has an uncommitted change, by design (it was originally written by `dsh-s3` to prove that story's own single Task 1 commit didn't alter default behaviour, diffing against the immediately-preceding commit).
+**Decision:** Not a bug, not fixed. Committed the pending `chat-view.js` change first, then re-ran `npm test` — the failure disappeared immediately (confirmed: 683 files, 2 failures, both already-acknowledged). No code or test change was needed.
+**Rationale:** Documenting this for future sessions in this repo, since the failure mode ("byte-identical to HEAD" specifically, not "byte-identical to some baseline commit") is non-obvious from the failure output alone and could otherwise prompt an unnecessary investigation or an incorrect "regression" conclusion whenever `npm test` is run against uncommitted `chat-view.js` changes.
+**Story:** dsa-s4 — no AC change; a process note only.
+
 ## `dsa-s4` final cross-task review finding: new drag handles had no keyboard alternative (real WCAG 2.1 AA gap for a brand-new control) — fixed directly (2026-09-20)
 
 **Context:** The final cross-task reviewer found the 4 new drag handles (Task 3) were plain `<div>`s with only `onmousedown` wiring — no `role="separator"`, `aria-orientation`, `tabindex`, or keyboard equivalent. Unlike prior inherited-gap findings this feature (e.g. the `--accent`-on-white contrast gap, a shared design-system token decision reserved for a dedicated story), this is a brand-new control introduced entirely within this story's own scope, self-contained to one file, with a well-understood standard fix (the WAI-ARIA "window splitter" separator pattern).
