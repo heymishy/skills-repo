@@ -35915,11 +35915,11 @@
             {
               "slug": "dsa-s3",
               "name": "Restyle the Landing Page to Match DESIGN.md",
-              "stage": "definition-of-ready",
+              "stage": "subagent-execution",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-19T05:22:55.672Z",
+              "updatedAt": "2026-09-19T05:37:23.948Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -35930,7 +35930,21 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s3-dor.md"
+              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s3-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Restyle landing.html to DESIGN.md tokens/layout/mobile breakpoint (AC1-AC3, AC5)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Full regression verification (AC4) + accessibility spot-check + npm test + live browser check",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s3-plan.md"
+                }
+              ]
             },
             {
               "slug": "dsa-s4",
@@ -36103,6 +36117,6 @@
     ],
     "lastUpdated": "2026-08-29"
   },
-  "updatedAt": "2026-09-19T05:22:55.674Z",
-  "lastUpdated": "2026-09-19T05:22:55.674Z"
+  "updatedAt": "2026-09-19T05:37:23.949Z",
+  "lastUpdated": "2026-09-19T05:37:23.949Z"
 }
