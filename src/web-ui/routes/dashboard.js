@@ -78,12 +78,16 @@ function _mapPendingActionsForDashboard(raw) {
  * `escHtml(a.age)`s the pending-actions field -- so a raw ISO timestamp
  * would render unformatted in the UI if not converted here first.
  * @param {string} isoString
+ * @param {number} [nowMs] - dsa-s2 code-quality review: injectable "now"
+ *   (defaults to Date.now()) so the 24h today/Nd-ago boundary can be
+ *   tested deterministically without mocking the global clock, matching
+ *   this codebase's plain-assert testing style (no jest/sinon).
  * @returns {string}
  */
-function _formatCompletedAgo(isoString) {
+function _formatCompletedAgo(isoString, nowMs) {
   const completedMs = new Date(isoString).getTime();
   if (Number.isNaN(completedMs)) return isoString;
-  const days = Math.max(0, Math.floor((Date.now() - completedMs) / (24 * 60 * 60 * 1000)));
+  const days = Math.max(0, Math.floor(((nowMs == null ? Date.now() : nowMs) - completedMs) / (24 * 60 * 60 * 1000)));
   return days === 0 ? 'today' : (days + 'd ago');
 }
 
@@ -97,10 +101,12 @@ function _formatCompletedAgo(isoString) {
  * formatting -- sorting on the formatted 'Nd ago' string would be lexically
  * wrong, e.g. '10d ago' < '2d ago'), then capped at topN. renderDashboard()'s
  * own data contract for data.recent is {skill,feature,when,stage,tone} (see
- * views/dashboard-view.js JSDoc); pillBg/pillColor are additionally carried
- * as CSS custom-property token references for callers that need direct
- * color values rather than the named `tone` renderDashboard()'s pill()
- * component consumes.
+ * views/dashboard-view.js JSDoc) -- `tone` is the only field the real
+ * pill(r.tone || 'neutral', r.stage) call (dashboard-view.js) actually
+ * reads. pillBg/pillColor are NOT currently consumed by any caller in this
+ * codebase; kept here only as a reserved CSS custom-property reference in
+ * case a future caller needs a direct color value instead of a named tone
+ * -- not a documented present-tense need, just cheap-to-keep reserved data.
  * @param {Array} journeys - real journey objects from listJourneys()
  * @param {number} topN - max recent-session entries to return
  * @returns {{inProgressCount: number, recent: Array}}
@@ -251,9 +257,16 @@ async function handleDashboard(req, res) {
   try {
     const repoRoot = process.env.COPILOT_REPO_PATH || path.resolve(__dirname, '../../..');
     const allJourneys = listJourneys(repoRoot);
-    journeys = req.session.tenantId
-      ? allJourneys.filter(function(j) { return j.tenantId === req.session.tenantId; })
-      : allJourneys;
+    const sessionTenantId = req.session.tenantId;
+    // dsa-s2 Task 3 code-quality review: matches routes/artefact.js's own
+    // real tenant-scoping convention (line ~169) -- only exclude a journey
+    // when it HAS a tenantId that mismatches the session's; an untagged
+    // legacy journey (tenantId: null, per journey-store.js's own
+    // `diskJourney.tenantId || null` default) stays visible rather than
+    // being silently dropped by a strict === comparison.
+    journeys = allJourneys.filter(function(j) {
+      return !(j.tenantId && j.tenantId !== sessionTenantId);
+    });
   } catch (err) {
     _logger.warn('dashboard_journeys_error', { userId: userId, reason: err.message });
     journeys = [];
@@ -288,5 +301,6 @@ module.exports = {
   setLogger,
   setGetPendingActions,
   _mapPendingActionsForDashboard,
-  _deriveDashboardJourneyData
+  _deriveDashboardJourneyData,
+  _formatCompletedAgo
 };
