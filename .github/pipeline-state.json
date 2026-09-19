@@ -35859,11 +35859,11 @@
             {
               "slug": "dsa-s2",
               "name": "Restyle the Dashboard and Wire Its Real Content to Match DESIGN.md",
-              "stage": "subagent-execution",
+              "stage": "review",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-18T23:12:55.718Z",
+              "updatedAt": "2026-09-19T01:09:46.102Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 15,
@@ -35879,19 +35879,19 @@
                 {
                   "id": "task-1",
                   "name": "Wire renderDashboard into handleDashboard, fix T9.3 regression, add static skills catalog",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s2-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Pending-actions mapping function (AC5)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s2-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "Journey-derivation function for in-progress count and recent sessions (AC7)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s2-plan.md"
                 },
                 {
