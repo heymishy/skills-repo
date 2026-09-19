@@ -35997,9 +35997,9 @@
             {
               "slug": "dsa-s7",
               "name": "Add the \"Product in Action\" Demo Section to the Landing Page",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-09-19T09:18:16.711Z",
+              "updatedAt": "2026-09-19T09:22:25.247Z",
               "acTotal": 6,
               "acVerified": 6,
               "reviewStatus": "passed",
