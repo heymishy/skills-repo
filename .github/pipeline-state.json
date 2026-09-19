@@ -35885,7 +35885,7 @@
                 {
                   "id": "task-2",
                   "name": "Wire real pending-actions and journey-derived data (AC5/AC7)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s2-plan.md"
                 },
                 {
@@ -36090,6 +36090,6 @@
     ],
     "lastUpdated": "2026-08-29"
   },
-  "updatedAt": "2026-09-19T01:38:00.166Z",
-  "lastUpdated": "2026-09-19T01:38:00.166Z"
+  "updatedAt": "2026-09-19T02:26:04.189Z",
+  "lastUpdated": "2026-09-19T02:26:04.189Z"
 }
