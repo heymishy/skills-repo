@@ -242,6 +242,16 @@
     .section-centered {
       max-width: 720px; margin: 0 auto; padding: 0 48px 96px; text-align: center;
     }
+    /* dsa-s7 code-quality review fix: DESIGN.md's own mock specifies
+       max-width:1000px for the "Product in action" section specifically --
+       distinct from .section-centered's own 720px (tuned for the narrower
+       self-improving closing card immediately below it). Reusing 720px
+       verbatim made the demo frame collapse from the 1120px-wide hero-cards
+       grid above it to 624px of actual content -- a jarring, visually
+       confirmed step-down (live Chrome check, both themes). This modifier
+       overrides just the width, keeping every other .section-centered rule
+       (centering, padding, text-align) shared. */
+    .section-centered--wide { max-width: 1000px; }
     .section-centered .hero-card { margin: 0; }
     .section-centered .hero-card-heading { font-size: 24px; }
     .section-centered .hero-card-example {
@@ -387,7 +397,7 @@
       </div>
     </div>
 
-    <div class="section-centered">
+    <div class="section-centered section-centered--wide">
       <h2 class="hero-card-heading">Product in action</h2>
       <p class="hero-card-text">From skill session to shipped board, in the actual product.</p>
       <div class="demo-frame">
