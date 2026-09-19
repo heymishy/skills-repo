@@ -2425,8 +2425,87 @@ async function router(req, res) {
     });
     _journeyStoreForApproval.setActiveSession(journeyId, sessionId, stage);
 
+    // dsa-s2 Task 3 (AC7) -- optional real completed-stage entries, added
+    // via the real completeStage() (journey-store.js), for the dashboard's
+    // "Recent sessions" list (_deriveDashboardJourneyData reads
+    // journey.completedStages, not the active-session state set above).
+    // Body: completedStages?: Array<{skillName: string, artefactPath?: string}>.
+    // Does NOT call markJourneyComplete -- journey.complete stays false
+    // (createJourney()'s own default), so a journey seeded here also
+    // contributes to the dashboard's real in-progress-session count for
+    // free, matching what a genuinely in-progress feature with some
+    // completed stages looks like in production.
+    const completedStages = Array.isArray(body.completedStages) ? body.completedStages : [];
+    completedStages.forEach(function(cs) {
+      const csSkillName = (cs && cs.skillName) || stage;
+      const csArtefactPath = (cs && cs.artefactPath) || ('artefacts/' + featureSlug + '/' + csSkillName + '.md');
+      _journeyStoreForApproval.completeStage(journeyId, csSkillName, csArtefactPath, undefined, sessionId);
+    });
+
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ journeyId: journeyId, sessionId: sessionId, featureSlug: featureSlug, stage: stage }));
+    res.end(JSON.stringify({ journeyId: journeyId, sessionId: sessionId, featureSlug: featureSlug, stage: stage, completedStagesCount: completedStages.length }));
+    return;
+  }
+
+  // dsa-s2 Task 3 (AC5) -- the real getPendingActions() adapter (called
+  // directly by products.js's handleGetDashboard, no injectable seam in
+  // products.js itself -- see decisions.md) can only ever return a non-empty
+  // items[] when (a) WUCE_REPOSITORIES lists at least one "owner/repo" (
+  // config/repo-list.js's getRepoList() reads process.env fresh on every
+  // call; unset in this webServer's own env -- confirmed empirically, and
+  // relied upon by tests/e2e/action-queue.spec.js's own "AC2: no repos
+  // configured" assertion) AND (b) all 3 of action-queue.js's real
+  // network-calling steps (_validateRepositoryAccess, _getArtefactDescriptors,
+  // _fetchArtefact) succeed against a real GitHub repo -- neither is true in
+  // this harness, so products.js's real dashboard call always degrades to
+  // { items: [], bannerMessage: null } here with no seeding. This endpoint
+  // reuses action-queue.js's own existing injectable seams (already used by
+  // tests/check-wuce5-action-queue.js) via HTTP, since the E2E test process
+  // cannot otherwise reach into the webServer subprocess's module state.
+  // MUST be paired with a { clear: true } call before the owning test ends --
+  // leaving the override in place is real, global (this whole process)
+  // state that would otherwise break action-queue.spec.js's own "no repos
+  // configured" assertion (and any other spec's default empty-pending-
+  // actions expectation) for the rest of this webServer process's life.
+  if (pathname === '/test/seed-pending-action' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    let raw = '';
+    for await (const chunk of req) { raw += chunk; }
+    let body = {};
+    try { body = raw ? JSON.parse(raw) : {}; } catch (_) { body = {}; }
+
+    const _actionQueueForSeed = require('./adapters/action-queue');
+
+    if (body.clear) {
+      _actionQueueForSeed.resetToDefaults();
+      delete process.env.WUCE_REPOSITORIES;
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ cleared: true }));
+      return;
+    }
+
+    const featureName  = body.featureName  || 'dsa-s2-e2e-feature';
+    const artefactType = body.artefactType || 'discovery';
+    const daysPending   = body.daysPending != null ? body.daysPending : 3;
+
+    process.env.WUCE_REPOSITORIES = 'e2e-dsa-s2-owner/e2e-dsa-s2-repo';
+    _actionQueueForSeed.setValidateRepositoryAccess(async function() { return true; });
+    _actionQueueForSeed.setGetArtefactDescriptors(async function() {
+      return [{
+        featureName:  featureName,
+        artefactType: artefactType,
+        artefactUrl:  '/artefact/' + featureName + '/' + artefactType,
+        createdAt:    new Date(Date.now() - daysPending * 24 * 60 * 60 * 1000).toISOString()
+      }];
+    });
+    _actionQueueForSeed.setFetchArtefact(async function() {
+      // dsa-s2 E2E fixture markdown -- deliberately has NO "Approved by"
+      // heading anywhere (not even inside a comment/description) so
+      // hasPendingSignOff() (action-queue.js) genuinely evaluates true.
+      return '# Seeded artefact for dsa-s2 E2E.\n\nStill pending sign-off.';
+    });
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ featureName: featureName, artefactType: artefactType, daysPending: daysPending }));
     return;
   }
 

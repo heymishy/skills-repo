@@ -10,6 +10,24 @@ const { getPendingActions: defaultGetPendingActions } = require('../adapters/act
 const { renderShell, escHtml }                        = require('../utils/html-shell');
 const { isEffectivelyAdmin }                          = require('../modules/impersonation'); // d2
 const csrf                                            = require('../middleware/csrf'); // d2 -- impersonation exit banner CSRF token
+const { renderDashboard }                             = require('../views/dashboard-view');
+const { listJourneys }                                = require('../modules/journey-store'); // dsa-s2 Task 3 (AC7)
+const path                                            = require('path');
+
+// dsa-s2 -- static, platform-wide skill catalog for the "Run a skill" grid.
+// Real skill names confirmed against routes/skills.js's own real
+// skillName === '...' branches ('discovery', 'definition', 'test-plan',
+// 'definition-of-ready', 'review') plus routes/journey.js's skill registry
+// ('implementation-plan', step 7 there) -- do not invent names not present
+// in either.
+const _DASHBOARD_SKILLS_CATALOG = [
+  { name: 'discovery', label: 'Discovery', stage: 'outer', desc: 'Structure a raw idea into a formal discovery artefact.', est: '15m' },
+  { name: 'definition', label: 'Definition', stage: 'outer', desc: 'Break approved discovery into epics and stories.', est: '20m' },
+  { name: 'test-plan', label: 'Test plan', stage: 'outer', desc: 'Write failing tests and an AC verification script.', est: '10m' },
+  { name: 'implementation-plan', label: 'Implementation plan', stage: 'inner', desc: 'Task-by-task plan with exact file paths.', est: '12m' },
+  { name: 'definition-of-ready', label: 'Definition of ready', stage: 'outer', desc: 'Sign off scope, tests, and architecture before coding.', est: '8m' },
+  { name: 'review', label: 'Review', stage: 'outer', desc: 'Quality-check stories for traceability and scope discipline.', est: '10m' }
+];
 
 // Audit logger — replaced via setLogger() in tests and production bootstrap
 let _logger = {
@@ -22,6 +40,107 @@ let _getPendingActions = defaultGetPendingActions;
 
 function setLogger(logger) { _logger = logger; }
 function setGetPendingActions(fn) { _getPendingActions = fn; }
+
+/**
+ * Map the real getPendingActions() adapter shape
+ * ({ items: [{featureName, artefactType, daysPending, artefactUrl}], bannerMessage }) into the
+ * shape renderDashboard() expects ({ actions: [{what, feature, age, you}], pendingActionsCount }).
+ *
+ * dsa-s2 Task 2 code-quality review: `raw.bannerMessage` (e.g. "Some
+ * repositories could not be checked") is intentionally NOT surfaced here --
+ * renderDashboard()'s own data contract has no banner-rendering slot for it.
+ * This is a real, deliberate scope boundary (AC5 only asks for the pending
+ * item list), not an oversight -- a future story would need to add a banner
+ * slot to renderDashboard() before this could be wired through.
+ * @param {{items: Array, bannerMessage: (string|null)}} raw
+ * @returns {{actions: Array, pendingActionsCount: number}}
+ */
+function _mapPendingActionsForDashboard(raw) {
+  const items = (raw && raw.items) || [];
+  const actions = items.map(function(item) {
+    return {
+      what: 'Sign off ' + item.artefactType,
+      feature: item.featureName,
+      age: item.daysPending === 0 ? 'today' : (Math.max(0, item.daysPending) + 'd ago'),
+      you: true
+    };
+  });
+  return { actions: actions, pendingActionsCount: items.length };
+}
+
+/**
+ * dsa-s2 Task 3 -- format an ISO completedAt timestamp as a relative-day
+ * string ('today' / 'Nd ago'), matching the exact convention
+ * _mapPendingActionsForDashboard() already uses for the pending-actions
+ * `age` field (Task 2, AC5). dashboard-view.js's recent-sessions markup
+ * (views/dashboard-view.js) does no formatting of its own -- it directly
+ * `escHtml(r.when)`s whatever string is supplied, the same way it directly
+ * `escHtml(a.age)`s the pending-actions field -- so a raw ISO timestamp
+ * would render unformatted in the UI if not converted here first.
+ * @param {string} isoString
+ * @param {number} [nowMs] - dsa-s2 code-quality review: injectable "now"
+ *   (defaults to Date.now()) so the 24h today/Nd-ago boundary can be
+ *   tested deterministically without mocking the global clock, matching
+ *   this codebase's plain-assert testing style (no jest/sinon).
+ * @returns {string}
+ */
+function _formatCompletedAgo(isoString, nowMs) {
+  const completedMs = new Date(isoString).getTime();
+  if (Number.isNaN(completedMs)) return isoString;
+  const days = Math.max(0, Math.floor(((nowMs == null ? Date.now() : nowMs) - completedMs) / (24 * 60 * 60 * 1000)));
+  return days === 0 ? 'today' : (days + 'd ago');
+}
+
+/**
+ * Derive dashboard in-progress-count and recent-sessions data from real
+ * journey-store data (listJourneys()). dsa-s2 Task 3 (AC7).
+ *
+ * inProgressCount counts journeys where complete === false.
+ * recent flattens every journey's completedStages into a single list, sorted
+ * newest-first by the raw completedAt timestamp (before relative-day
+ * formatting -- sorting on the formatted 'Nd ago' string would be lexically
+ * wrong, e.g. '10d ago' < '2d ago'), then capped at topN. renderDashboard()'s
+ * own data contract for data.recent is {skill,feature,when,stage,tone} (see
+ * views/dashboard-view.js JSDoc) -- `tone` is the only field the real
+ * pill(r.tone || 'neutral', r.stage) call (dashboard-view.js) actually
+ * reads. pillBg/pillColor are NOT currently consumed by any caller in this
+ * codebase; kept here only as a reserved CSS custom-property reference in
+ * case a future caller needs a direct color value instead of a named tone
+ * -- not a documented present-tense need, just cheap-to-keep reserved data.
+ * @param {Array} journeys - real journey objects from listJourneys()
+ * @param {number} topN - max recent-session entries to return
+ * @returns {{inProgressCount: number, recent: Array}}
+ */
+function _deriveDashboardJourneyData(journeys, topN) {
+  const inProgressCount = journeys.filter(function(j) { return !j.complete; }).length;
+  const allStages = [];
+  journeys.forEach(function(j) {
+    (j.completedStages || []).forEach(function(cs) {
+      allStages.push({
+        skill: cs.skillName,
+        feature: j.featureSlug,
+        whenRaw: cs.completedAt,
+        stage: 'done',
+        tone: 'green',
+        pillBg: 'var(--green-soft)',
+        pillColor: 'var(--green)'
+      });
+    });
+  });
+  allStages.sort(function(a, b) { return a.whenRaw < b.whenRaw ? 1 : (a.whenRaw > b.whenRaw ? -1 : 0); });
+  const recent = allStages.slice(0, topN).map(function(entry) {
+    return {
+      skill: entry.skill,
+      feature: entry.feature,
+      when: _formatCompletedAgo(entry.whenRaw),
+      stage: entry.stage,
+      tone: entry.tone,
+      pillBg: entry.pillBg,
+      pillColor: entry.pillColor
+    };
+  });
+  return { inProgressCount: inProgressCount, recent: recent };
+}
 
 /**
  * GET /api/actions — return personalised action queue.
@@ -110,7 +229,59 @@ async function handleDashboard(req, res) {
     timestamp: new Date().toISOString()
   });
 
-  const bodyContent = `<h1>Dashboard</h1>`;
+  const now = new Date();
+  // dsa-s2 -- 'en-US' is a placeholder locale, not wired to the real
+  // per-user locale preference this codebase already has (routes/settings.js,
+  // si-s2's timezone/date_format columns). Reading that preference is out of
+  // scope for this story's own ACs (dashboard token/layout/data-wiring, not
+  // a locale-preference feature) -- flagged here rather than left as an
+  // unexplained hardcode, matching the placeholder-value comments below.
+  const dateLabel = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+
+  let pendingResult;
+  try {
+    pendingResult = await _getPendingActions({ id: userId, login: login }, req.session.accessToken);
+  } catch (err) {
+    _logger.warn('dashboard_pending_actions_error', { userId: userId, reason: err.message });
+    pendingResult = { items: [], bannerMessage: null };
+  }
+  const mapped = _mapPendingActionsForDashboard(pendingResult);
+
+  // dsa-s2 Task 3 (AC7) -- repo root resolved relative to THIS file's own
+  // location (src/web-ui/routes/), not copied from server.js's __dirname
+  // (src/web-ui/) -- routes/dashboard.js is one directory level deeper, so
+  // it needs '../../..' where server.js uses '../..' to reach the same real
+  // repo root (confirmed by direct path.resolve() comparison against
+  // server.js's own _journeyRootForBee2 resolution, bee.2).
+  let journeys;
+  try {
+    const repoRoot = process.env.COPILOT_REPO_PATH || path.resolve(__dirname, '../../..');
+    const allJourneys = listJourneys(repoRoot);
+    const sessionTenantId = req.session.tenantId;
+    // dsa-s2 Task 3 code-quality review: matches routes/artefact.js's own
+    // real tenant-scoping convention (line ~169) -- only exclude a journey
+    // when it HAS a tenantId that mismatches the session's; an untagged
+    // legacy journey (tenantId: null, per journey-store.js's own
+    // `diskJourney.tenantId || null` default) stays visible rather than
+    // being silently dropped by a strict === comparison.
+    journeys = allJourneys.filter(function(j) {
+      return !(j.tenantId && j.tenantId !== sessionTenantId);
+    });
+  } catch (err) {
+    _logger.warn('dashboard_journeys_error', { userId: userId, reason: err.message });
+    journeys = [];
+  }
+  const journeyData = _deriveDashboardJourneyData(journeys, 5);
+
+  const bodyContent = renderDashboard({
+    greetingName: login || 'there',
+    dateLabel: dateLabel,
+    pendingActionsCount: mapped.pendingActionsCount,
+    inProgressCount: journeyData.inProgressCount,
+    skills: _DASHBOARD_SKILLS_CATALOG,
+    actions: mapped.actions,
+    recent: journeyData.recent
+  });
   const html = renderShell({
     title:       'Dashboard',
     bodyContent,
@@ -128,5 +299,12 @@ module.exports = {
   handleGetActions,
   handleDashboard,
   setLogger,
-  setGetPendingActions
+  setGetPendingActions,
+  _mapPendingActionsForDashboard,
+  _deriveDashboardJourneyData,
+  _formatCompletedAgo,
+  // dsa-s2 -- exported so routes/products.js's real, live /dashboard handler
+  // (_renderProductDashboard) can single-source this catalog instead of
+  // duplicating it (this file's own /dashboard route is confirmed dead code)
+  _DASHBOARD_SKILLS_CATALOG
 };

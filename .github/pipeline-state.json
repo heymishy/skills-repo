@@ -35859,22 +35859,51 @@
             {
               "slug": "dsa-s2",
               "name": "Restyle the Dashboard to Match DESIGN.md",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-18T10:08:00.913Z",
+              "updatedAt": "2026-09-19T03:38:43.237Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 6,
-                "passing": 0
+                "totalTests": 18,
+                "passing": 18
               },
-              "acTotal": 4,
-              "acVerified": 0,
-              "hasLayoutDependentGaps": false,
+              "acTotal": 8,
+              "acVerified": 8,
+              "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s2-dor.md"
+              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s2-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Wire renderDashboard mock content into _renderProductDashboard, preserve zero-products branch (AC3/AC6/AC8)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s2-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Wire real pending-actions and journey-derived data (AC5/AC7)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s2-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "E2E tests for AC1-AC3, AC5-AC8",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s2-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Full regression verification (AC4) + verification script amendment + Node suite + npm test",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s2-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/905"
             },
             {
               "slug": "dsa-s3",
