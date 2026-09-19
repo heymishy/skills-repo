@@ -166,11 +166,15 @@ console.log('\nT8 — title in <title> element');
 // ─────────────────────────────────────────────────────────────────────────────
 // T9 — Integration: GET /dashboard (authenticated) returns 200 html with nav
 // ─────────────────────────────────────────────────────────────────────────────
-console.log('\nT9 — handleDashboard (authenticated) returns 200 HTML with nav');
-{
+// dsa-s2 Task 2: handleDashboard now genuinely awaits a real Promise
+// (_getPendingActions) unconditionally, not just inside the impersonation
+// branch -- it no longer completes synchronously, so every call site below
+// must await it or res.statusCode/res.body are read before writeHead/end run.
+async function runT9() {
+  console.log('\nT9 — handleDashboard (authenticated) returns 200 HTML with nav');
   const req = mockReq();
   const res = mockRes();
-  handleDashboard(req, res);
+  await handleDashboard(req, res);
   eq(res.statusCode, 200, 'T9.1: status 200');
   ok(res.body.includes('<nav aria-label="Main navigation">'), 'T9.2: body has nav with aria-label');
   ok(!res.body.includes('href="/skills"'), 'T9.3: Run a Skill link removed (pan-s1)');
@@ -180,11 +184,11 @@ console.log('\nT9 — handleDashboard (authenticated) returns 200 HTML with nav'
 // ─────────────────────────────────────────────────────────────────────────────
 // T10 — Integration: GET /dashboard unauthenticated → 302 /auth/github
 // ─────────────────────────────────────────────────────────────────────────────
-console.log('\nT10 — handleDashboard (unauthenticated) → 302 /auth/github');
-{
+async function runT10() {
+  console.log('\nT10 — handleDashboard (unauthenticated) → 302 /auth/github');
   const req = mockReq({ session: {} });
   const res = mockRes();
-  handleDashboard(req, res);
+  await handleDashboard(req, res);
   eq(res.statusCode, 302, 'T10.1: status 302');
   eq(res.headers['Location'], '/auth/github', 'T10.2: Location is /auth/github');
 }
@@ -192,22 +196,22 @@ console.log('\nT10 — handleDashboard (unauthenticated) → 302 /auth/github');
 // ─────────────────────────────────────────────────────────────────────────────
 // T11 — Integration: GET /dashboard shows user login
 // ─────────────────────────────────────────────────────────────────────────────
-console.log('\nT11 — handleDashboard shows user login in response');
-{
+async function runT11() {
+  console.log('\nT11 — handleDashboard shows user login in response');
   const req = mockReq({ session: { accessToken: 'tok', userId: 1, login: 'testuser' } });
   const res = mockRes();
-  handleDashboard(req, res);
+  await handleDashboard(req, res);
   ok(res.body.includes('testuser'), 'T11.1: user login visible in body');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // T12 — Integration: GET /dashboard Content-Type is text/html; charset=utf-8
 // ─────────────────────────────────────────────────────────────────────────────
-console.log('\nT12 — handleDashboard Content-Type: text/html; charset=utf-8');
-{
+async function runT12() {
+  console.log('\nT12 — handleDashboard Content-Type: text/html; charset=utf-8');
   const req = mockReq();
   const res = mockRes();
-  handleDashboard(req, res);
+  await handleDashboard(req, res);
   const ct = res.headers['Content-Type'] || '';
   ok(ct.includes('text/html'), 'T12.1: Content-Type includes text/html');
   ok(ct.includes('charset=utf-8'), 'T12.2: Content-Type includes charset=utf-8');
@@ -244,13 +248,13 @@ console.log('\nT15 — escHtml passes through plain text unchanged');
 // ─────────────────────────────────────────────────────────────────────────────
 // T16 — Integration: dashboard renders without throwing when user.login is plain text
 // ─────────────────────────────────────────────────────────────────────────────
-console.log('\nT16 — handleDashboard smoke test with plain login');
-{
+async function runT16() {
+  console.log('\nT16 — handleDashboard smoke test with plain login');
   const req = mockReq({ session: { accessToken: 'tok', userId: 1, login: 'planeName' } });
   const res = mockRes();
   let threw = false;
   try {
-    handleDashboard(req, res);
+    await handleDashboard(req, res);
   } catch (e) {
     threw = true;
   }
@@ -271,22 +275,36 @@ console.log('\nT17 — escHtml export is same function reference');
 // ─────────────────────────────────────────────────────────────────────────────
 // T18 — Integration: login XSS in HTTP integration test
 // ─────────────────────────────────────────────────────────────────────────────
-console.log('\nT18 — handleDashboard: XSS login is escaped in response');
-{
+async function runT18() {
+  console.log('\nT18 — handleDashboard: XSS login is escaped in response');
   const req = mockReq({ session: { accessToken: 'tok', userId: 1, login: '<b>bold</b>' } });
   const res = mockRes();
-  handleDashboard(req, res);
+  await handleDashboard(req, res);
   ok(!res.body.includes('<b>bold</b>'), 'T18.1: raw <b> tag must not appear in body');
   ok(res.body.includes('&lt;b&gt;bold&lt;/b&gt;'), 'T18.2: escaped version must appear');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Summary
+// Run the async integration tests (T9-T12, T16, T18) in declaration order,
+// then print the summary. dsa-s2 Task 2: handleDashboard now genuinely
+// awaits a real Promise, so these can no longer run as synchronous top-level
+// blocks -- Node CJS has no top-level await, hence this async runner.
 // ─────────────────────────────────────────────────────────────────────────────
-console.log(`\n── Summary ──`);
-console.log(`  Passed: ${passed}`);
-console.log(`  Failed: ${failed}`);
+async function main() {
+  await runT9();
+  await runT10();
+  await runT11();
+  await runT12();
+  await runT16();
+  await runT18();
 
-if (failed > 0) {
-  process.exit(1);
+  console.log(`\n── Summary ──`);
+  console.log(`  Passed: ${passed}`);
+  console.log(`  Failed: ${failed}`);
+
+  if (failed > 0) {
+    process.exit(1);
+  }
 }
+
+main();
