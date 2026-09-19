@@ -1,5 +1,13 @@
 # Decisions: Design System Adoption
 
+## `dsa-s4` `/branch-setup`: baseline acknowledged, same 2 pre-existing/environmental failures as the rest of this session (2026-09-19)
+
+**Context:** `npm test` on the freshly-created `feature/dsa-s4` worktree (built from latest `master`, including `dsa-s7`'s merge) showed 2 failures: `tests/check-p3.5-validate-trace.js` (already-documented pre-existing all session) and `tests/check-pcr-s1-test-runner.js` (the wall-clock timing test already investigated multiple times this session — `dsa-s7`'s own `/branch-setup` and `/verify-completion` both re-confirmed it as machine-load drift, not a regression).
+**Investigation:** Re-ran `check-pcr-s1-test-runner.js` standalone: 760.1ms/file measured against the 749.8ms/file threshold — consistent with the 757-769ms/file range measured repeatedly earlier this session, confirming ongoing marginal drift rather than a new or worsening issue.
+**Decision:** Acknowledged as pre-existing/environmental and proceeding, per `/branch-setup`'s own documented Option 2 path. No code has been committed on this branch yet — the failure predates any `dsa-s4` work.
+**Rationale:** Matches the identical investigation already performed for every other worktree created this session (`dsa-s7`, and earlier stories) — not re-litigated from scratch each time, since the underlying cause (a spawn-heavy wall-clock timing test sensitive to machine load) is already well understood and documented.
+**Story:** dsa-s4 — no AC or scope change; baseline acknowledgement only, per `/branch-setup`'s own required step.
+
 ## `dsa-s7` final cross-task review: PASSED all 6 ACs; 2 non-blocking findings fixed directly (2026-09-19)
 
 **Context:** Dispatched a fresh subagent for the mandatory final cross-task review (`subagent-execution/SKILL.md` Step 3) against the full diff (`git diff b8adba9f HEAD`) and all 6 ACs. It independently re-ran the E2E suite and `npm test` itself rather than trusting commit messages.
