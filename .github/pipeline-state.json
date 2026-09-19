@@ -35915,22 +35915,39 @@
             {
               "slug": "dsa-s3",
               "name": "Restyle the Landing Page to Match DESIGN.md",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-18T10:09:01.314Z",
+              "updatedAt": "2026-09-19T06:44:12.228Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 6,
-                "passing": 0
+                "totalTests": 7,
+                "passing": 7
               },
-              "acTotal": 4,
-              "acVerified": 0,
+              "acTotal": 5,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s3-dor.md"
+              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s3-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Restyle landing.html to DESIGN.md tokens/layout/mobile breakpoint (AC1-AC3, AC5)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Full regression verification (AC4) + accessibility spot-check + npm test + live browser check",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s3-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/908"
             },
             {
               "slug": "dsa-s4",
@@ -36103,6 +36120,6 @@
     ],
     "lastUpdated": "2026-08-29"
   },
-  "updatedAt": "2026-09-19T04:45:18.125Z",
-  "lastUpdated": "2026-09-19T04:45:18.125Z"
+  "updatedAt": "2026-09-19T06:44:12.229Z",
+  "lastUpdated": "2026-09-19T06:44:12.229Z"
 }

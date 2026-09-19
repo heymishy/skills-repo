@@ -4,129 +4,415 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Skills Platform — Governed Software Delivery</title>
+  <!-- Anti-flash: read the stored theme (or OS preference) and set data-theme
+       on <html> synchronously, before first paint -- same mechanism/keys
+       (localStorage['sw-theme'], data-theme attribute) as
+       src/web-ui/utils/html-shell.js's own ANTI_FLASH_SCRIPT, reused here
+       rather than reinvented, since this page is served standalone (not
+       through renderShell) but must stay visually/behaviourally consistent
+       with the rest of the app's dark/light toggle. -->
+  <script>(function(){
+    var t=localStorage.getItem('sw-theme');
+    if(t){document.documentElement.setAttribute('data-theme',t);}
+    else if(window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches){
+      document.documentElement.setAttribute('data-theme','dark');
+    }
+  })();</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #e6edf3; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
-    .container { max-width: 640px; width: 100%; }
-    .badge { display: inline-block; font-size: 0.75rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: #58a6ff; background: rgba(88,166,255,0.1); border: 1px solid rgba(88,166,255,0.2); border-radius: 2em; padding: 0.25rem 0.75rem; margin-bottom: 1.5rem; }
-    h1 { font-size: clamp(1.75rem, 4vw, 2.5rem); font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 1rem; }
-    h1 span { color: #58a6ff; }
-    .value-prop { font-size: 1rem; line-height: 1.7; color: #8b949e; margin-bottom: 2rem; }
-    /* Golden trace demo (lphf-s1) */
-    .gt-section { margin-bottom: 2rem; }
-    .gt-heading { font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem; color: #e6edf3; }
-    .gt-frames { display: flex; flex-direction: column; gap: 0.75rem; }
-    .gt-frame { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; }
-    .gt-frame:focus-visible { outline: 2px solid #58a6ff; outline-offset: 2px; }
-    .gt-frame-label { display: block; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #58a6ff; margin-bottom: 0.4rem; }
-    .gt-frame p { font-size: 0.875rem; line-height: 1.6; color: #8b949e; margin: 0; }
-    /* Hero cards (lphf-s2, lphf-s3, lphf-s4) */
-    .hero-card { margin-bottom: 1.25rem; }
-    .hero-card-heading { font-size: 1.05rem; font-weight: 600; margin-bottom: 0.5rem; color: #e6edf3; }
-    .hero-card-text { font-size: 0.875rem; line-height: 1.6; color: #8b949e; margin-bottom: 0.75rem; }
-    .hero-card-example { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 0.75rem 1rem; }
-    .hero-card-example-row { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.8125rem; padding: 0.25rem 0; }
-    .hero-card-example-row + .hero-card-example-row { border-top: 1px solid #30363d; }
-    .hero-card-example-label { color: #58a6ff; font-weight: 600; flex-shrink: 0; }
-    .hero-card-example code { color: #8b949e; font-family: ui-monospace, monospace; font-size: 0.75rem; text-align: right; }
-    .hero-card-example-note { font-size: 0.75rem; color: #8b949e; margin-top: 0.5rem; }
-    .hero-card-example-note code { font-family: ui-monospace, monospace; }
-    /* Auth panel */
-    .auth-panel { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.25rem; }
-    .auth-btn { display: flex; align-items: center; justify-content: center; gap: 0.5rem; width: 100%; padding: 0.6rem 1rem; border-radius: 6px; font-size: 0.875rem; font-weight: 600; font-family: inherit; cursor: pointer; text-decoration: none; border: 1px solid #30363d; transition: background 0.15s, border-color 0.15s; }
+
+    /* ── Design tokens (src/web-ui/utils/html-shell.js is the single source
+       of truth for these exact hex values -- dsa-s1 established them,
+       copied here verbatim, not re-derived). Bare :root is LIGHT mode;
+       [data-theme="dark"] is the DARK override -- see decisions.md's
+       FEATURE-WIDE "selector structure is inverted" entry. ── */
+    :root {
+      --bg: #FAFAFA; --surface: #FFFFFF; --surface-2: #F2F3F5;
+      --line: #E4E7EB; --line-2: #EDEFF2;
+      --ink: #14171A; --ink-2: #3F454C;
+      --muted: #6B7280; --muted-2: #52585F; --muted-3: #3A3F45;
+      --accent: #2563EB; --accent-soft: #EFF4FF; --accent-ink: #1D4ED8;
+      --success: #15803D; --success-soft: #DCFCE7;
+      --warn: #B45309; --warn-soft: #FEF3C7;
+      --danger: #B91C1C; --danger-soft: #FEE2E2;
+      --sans: 'Inter Tight', system-ui, -apple-system, sans-serif;
+      --mono: 'JetBrains Mono', ui-monospace, monospace;
+    }
+    [data-theme="dark"] {
+      --bg: #0B0D10; --surface: #0E1013; --surface-2: #161A1F;
+      --line: #23272E; --line-2: #1A1D22;
+      --ink: #F5F6F7; --ink-2: #B4BAC2;
+      --muted: #9AA1AB; --muted-2: #6B7280; --muted-3: #454B54;
+      --accent: #3B82F6; --accent-soft: #152238; --accent-ink: #93C5FD;
+      --success: #34D399; --success-soft: #0F2318;
+      --warn: #F59E0B; --warn-soft: #2A2011;
+      --danger: #F87171; --danger-soft: #2A1416;
+    }
+    /* No-JS fallback: honour OS dark preference when no explicit choice is
+       stored yet (mirrors html-shell.js's own @media fallback block). */
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]):not([data-theme="dark"]) {
+        --bg: #0B0D10; --surface: #0E1013; --surface-2: #161A1F;
+        --line: #23272E; --line-2: #1A1D22;
+        --ink: #F5F6F7; --ink-2: #B4BAC2;
+        --muted: #9AA1AB; --muted-2: #6B7280; --muted-3: #454B54;
+        --accent: #3B82F6; --accent-soft: #152238; --accent-ink: #93C5FD;
+        --success: #34D399; --success-soft: #0F2318;
+        --warn: #F59E0B; --warn-soft: #2A2011;
+        --danger: #F87171; --danger-soft: #2A1416;
+      }
+    }
+
+    html { color-scheme: light dark; }
+    body {
+      font-family: var(--sans); background: var(--bg); color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; }
+
+    /* ── Header ─────────────────────────────────────────────────────── */
+    .site-header {
+      border-bottom: 1px solid var(--line);
+    }
+    .site-header__inner {
+      max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 16px; padding: 18px 48px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-mark {
+      width: 26px; height: 26px; border-radius: 6px; background: var(--accent);
+      color: var(--bg); display: grid; place-items: center;
+      font-weight: 800; font-size: 13px;
+    }
+    .brand-name { font-weight: 600; font-size: 15px; letter-spacing: -0.01em; }
+    .site-nav { display: flex; gap: 24px; font-size: 13.5px; color: var(--muted); }
+    .header-actions { display: flex; align-items: center; gap: 10px; }
+
+    /* ── Buttons (DESIGN.md Components: radius 7-8px, weight 500-600) ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      font-family: inherit; font-size: 13.5px; font-weight: 500;
+      padding: 8px 16px; border-radius: 7px; border: 1px solid transparent;
+      cursor: pointer; text-decoration: none; white-space: nowrap;
+      transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+    }
+    .btn--lg { font-size: 15px; font-weight: 600; padding: 12px 24px; border-radius: 8px; }
+    .btn--primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .btn--primary:hover { opacity: 0.9; }
+    .btn--ghost { background: transparent; color: var(--ink); border-color: var(--line); }
+    .btn--ghost:hover { background: var(--line-2); }
+
+    /* ── Theme toggle (reuses window.swToggleTheme(), same mechanism as the
+       rest of the app -- see html-shell.js) ── */
+    .theme-toggle {
+      width: 32px; height: 32px; border-radius: 7px;
+      display: grid; place-items: center;
+      background: none; border: 1px solid var(--line); cursor: pointer;
+      color: var(--muted); font-size: 14px; line-height: 1;
+    }
+    .theme-toggle:hover { background: var(--line-2); color: var(--ink); }
+    .theme-toggle-icon--dark { display: none; }
+    [data-theme="dark"] .theme-toggle-icon--light { display: none; }
+    [data-theme="dark"] .theme-toggle-icon--dark { display: inline; }
+
+    /* ── Hero (Marketing/landing: centered, max-width ~900px) ─────────── */
+    .hero {
+      max-width: 900px; margin: 0 auto; padding: 88px 48px 72px;
+      text-align: center;
+    }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--mono); font-size: 12px; color: var(--muted-2);
+      border: 1px solid var(--line); border-radius: 20px;
+      padding: 6px 14px; margin-bottom: 28px;
+    }
+    .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); }
+    h1 {
+      font-family: var(--sans); font-weight: 700;
+      font-size: clamp(32px, 6vw, 56px); line-height: 1.08;
+      letter-spacing: -0.03em; margin-bottom: 24px;
+    }
+    h1 span { color: var(--accent); }
+    .value-prop {
+      font-size: 16px; line-height: 1.65; color: var(--muted);
+      max-width: 640px; margin: 0 auto 36px;
+    }
+    .hero__ctas { display: flex; flex-wrap: wrap; gap: 14px; justify-content: center; }
+
+    /* ── Full-bleed sections (Marketing/landing: max-width 1120px) ────── */
+    .section-1120 { max-width: 1120px; margin: 0 auto; padding: 0 48px 80px; }
+
+    /* ── Golden-trace demo (real content, injected server-side in place of
+       <!--GOLDEN_TRACE_SECTION--> by golden-trace-content.js -- these
+       classes (.gt-section/.gt-heading/.gt-frames/.gt-frame/.gt-frame-label)
+       are emitted by that module, unchanged by this restyle; only their
+       styling below is new). Restyled as the mock's bordered 4-quadrant
+       card, with an explicit mobile breakpoint (AC5) since it is a
+       multi-column grid. ── */
+    .gt-section { text-align: center; }
+    .gt-heading {
+      font-size: 22px; font-weight: 600; letter-spacing: -0.01em;
+      margin-bottom: 28px;
+    }
+    .gt-frames {
+      display: grid; grid-template-columns: 1fr 1fr;
+      text-align: left;
+      border: 1px solid var(--line); border-radius: 14px;
+      background: var(--surface); overflow: hidden;
+    }
+    .gt-frame {
+      padding: 32px 36px; border-radius: 0;
+    }
+    .gt-frame:nth-child(odd) { border-right: 1px solid var(--line); }
+    .gt-frame:nth-child(n+3) { border-top: 1px solid var(--line); }
+    .gt-frame:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+    .gt-frame-label {
+      display: block; font-family: var(--mono); font-size: 11px;
+      font-weight: 500; color: var(--accent); margin-bottom: 10px;
+    }
+    .gt-frame p { font-size: 14px; line-height: 1.6; color: var(--ink-2); }
+
+    /* ── Hero cards: scope-contract + crypto-verification restyled as the
+       mock's responsive 2-up grid (AC3, AC5) ── */
+    .hero-cards-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+    }
+    .hero-cards-grid .hero-card {
+      border: 1px solid var(--line); border-radius: 14px;
+      background: var(--surface); padding: 32px; margin: 0;
+    }
+    .hero-card-heading {
+      font-size: 20px; font-weight: 600; letter-spacing: -0.01em;
+      margin-bottom: 12px;
+    }
+    .hero-card-text { font-size: 14px; line-height: 1.6; color: var(--muted); margin-bottom: 20px; }
+    .hero-card-example {
+      font-family: var(--mono); font-size: 12px;
+      background: var(--bg); border: 1px solid var(--line);
+      border-radius: 8px; padding: 14px 16px;
+    }
+    .hero-card-example-row {
+      display: flex; justify-content: space-between; gap: 12px;
+      padding: 4px 0;
+    }
+    .hero-card-example-row + .hero-card-example-row { border-top: 1px solid var(--line-2); margin-top: 4px; padding-top: 8px; }
+    .hero-card-example-label { color: var(--muted-2); font-weight: 500; flex-shrink: 0; }
+    .hero-card-example code {
+      color: var(--accent-ink); font-family: var(--mono); font-size: 12px; text-align: right;
+      min-width: 0; overflow-wrap: anywhere; word-break: break-all;
+    }
+    .hero-card-example-note { font-size: 12.5px; color: var(--muted); margin-top: 12px; }
+    .hero-card-example-note code { font-family: var(--mono); }
+
+    /* ── Self-improving card: centered closing section (mock's final,
+       narrower centered section), not part of the 2-up grid ── */
+    .section-centered {
+      max-width: 720px; margin: 0 auto; padding: 0 48px 96px; text-align: center;
+    }
+    .section-centered .hero-card { margin: 0; }
+    .section-centered .hero-card-heading { font-size: 24px; }
+    .section-centered .hero-card-example {
+      display: inline-flex; align-items: baseline; gap: 10px;
+      background: none; border: none; padding: 0;
+    }
+    .section-centered .hero-card-example-row { border: none; padding: 0; }
+    .section-centered .hero-card-example-row + .hero-card-example-row { border: none; margin: 0; padding: 0; }
+    .section-centered .hero-card-example-label { display: none; }
+    .section-centered .hero-card-example code {
+      font-size: 32px; font-weight: 700; color: var(--accent); text-align: left;
+    }
+
+    /* ── Auth panel (real, functional -- restyled, not restructured) ──── */
+    .auth-section { max-width: 420px; margin: 0 auto; padding: 0 24px 96px; }
+    .auth-panel {
+      background: var(--surface); border: 1px solid var(--line);
+      border-radius: 12px; padding: 24px;
+    }
+    .auth-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 10px 16px; border-radius: 7px;
+      font-size: 14px; font-weight: 500; font-family: inherit;
+      cursor: pointer; text-decoration: none; border: 1px solid var(--line);
+      transition: background 0.15s, border-color 0.15s;
+    }
     .auth-btn svg { flex-shrink: 0; }
     .auth-btn--github { background: #238636; color: #fff; border-color: #238636; }
     .auth-btn--github:hover { background: #2ea043; border-color: #2ea043; }
-    .auth-btn--google { background: #161b22; color: #e6edf3; }
-    .auth-btn--google:hover { background: #21262d; border-color: #58a6ff; }
-    .auth-btn--email { background: #161b22; color: #e6edf3; }
-    .auth-btn--email:hover { background: #21262d; }
-    .divider { display: flex; align-items: center; gap: 0.75rem; color: #484f58; font-size: 0.8125rem; margin: 1rem 0; }
-    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #30363d; }
-    /* Email form */
-    .email-tabs { display: flex; margin-bottom: 0.875rem; border: 1px solid #30363d; border-radius: 6px; overflow: hidden; }
-    .email-tab { flex: 1; padding: 0.5rem; font-size: 0.8125rem; font-family: inherit; cursor: pointer; background: #161b22; color: #8b949e; border: none; transition: background 0.1s, color 0.1s; }
-    .email-tab.active { background: #30363d; color: #e6edf3; font-weight: 600; }
-    .email-input { width: 100%; padding: 0.625rem 0.75rem; background: #0d1117; border: 1px solid #30363d; border-radius: 6px; color: #e6edf3; font-size: 0.9rem; font-family: inherit; margin-bottom: 0.625rem; }
-    .email-input:focus { outline: none; border-color: #58a6ff; }
-    .email-input::placeholder { color: #484f58; }
+    .auth-btn--google { background: var(--surface); color: var(--ink); }
+    .auth-btn--google:hover { background: var(--line-2); border-color: var(--accent); }
+    .auth-btn--email { background: var(--surface); color: var(--ink); }
+    .auth-btn--email:hover { background: var(--line-2); }
+    .divider {
+      display: flex; align-items: center; gap: 12px; color: var(--muted-2);
+      font-size: 12.5px; margin: 16px 0;
+    }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+    .email-tabs {
+      display: flex; margin-bottom: 14px; border: 1px solid var(--line);
+      border-radius: 7px; overflow: hidden;
+    }
+    .email-tab {
+      flex: 1; padding: 8px; font-size: 13px; font-family: inherit;
+      cursor: pointer; background: var(--surface); color: var(--muted);
+      border: none; transition: background 0.1s, color 0.1s;
+    }
+    .email-tab.active { background: var(--surface-2); color: var(--ink); font-weight: 600; }
+    .email-input {
+      width: 100%; padding: 10px 12px; background: var(--bg);
+      border: 1px solid var(--line); border-radius: 7px; color: var(--ink);
+      font-size: 14px; font-family: inherit; margin-bottom: 10px;
+    }
+    .email-input:focus { outline: none; border-color: var(--accent); }
+    .email-input::placeholder { color: var(--muted-2); }
+
+    /* ── Footer ─────────────────────────────────────────────────────── */
+    .site-footer {
+      border-top: 1px solid var(--line);
+      padding: 32px 48px; text-align: center;
+      font-size: 12px; color: var(--muted-3); font-family: var(--mono);
+    }
+
+    /* ── Responsive behavior: single 768px breakpoint, per DESIGN.md's
+       "Responsive behavior" section's Marketing/landing minimum bar (AC5).
+       Every multi-column grid above collapses to a single column here --
+       the exact defect class dsa-s2's shipped dashboard missed. ── */
+    @media (max-width: 768px) {
+      .site-header__inner { padding: 14px 16px; gap: 8px; }
+      .site-nav { display: none; }
+      .brand-name { font-size: 13.5px; }
+      .header-actions { gap: 6px; }
+      .header-actions .btn--ghost { display: none; }
+      .header-actions .btn--primary { padding: 8px 12px; font-size: 12.5px; }
+      .hero { padding: 56px 20px 48px; }
+      .section-1120, .section-centered { padding-left: 16px; padding-right: 16px; padding-bottom: 56px; }
+      .auth-section { padding-bottom: 56px; }
+      .gt-frames { grid-template-columns: 1fr; }
+      .gt-frame:nth-child(odd) { border-right: none; }
+      .gt-frame:nth-child(n+2) { border-top: 1px solid var(--line); }
+      .gt-frame:nth-child(1) { border-top: none; }
+      .gt-frame { padding: 24px 20px; }
+      .hero-cards-grid { grid-template-columns: 1fr; gap: 16px; }
+      .hero-cards-grid .hero-card { padding: 24px; }
+    }
   </style>
 </head>
 <body>
-  <main class="container">
-    <span class="badge">Open framework</span>
-    <h1>Governed software delivery,<br><span>from idea to production</span></h1>
-    <p class="value-prop">The Skills Platform encodes your team's delivery standards — discovery, definition, review, test plans, and definition of ready — as versioned instruction sets that AI agents execute. Ship traceable, high-quality software with built-in quality gates and compliance hooks.</p>
+  <header class="site-header">
+    <div class="site-header__inner">
+      <div class="brand">
+        <span class="brand-mark">S</span>
+        <span class="brand-name">Skills Platform</span>
+      </div>
+      <nav class="site-nav" aria-hidden="true">
+        <span>Docs</span><span>Skills reference</span><span>GitHub</span>
+      </nav>
+      <div class="header-actions">
+        <button type="button" class="theme-toggle" onclick="swToggleTheme()" aria-label="Toggle dark mode" title="Toggle dark/light mode">
+          <span class="theme-toggle-icon--light" aria-hidden="true">☀</span>
+          <span class="theme-toggle-icon--dark" aria-hidden="true">☾</span>
+        </button>
+        <a href="#auth-panel" class="btn btn--ghost">Sign in</a>
+        <a href="#auth-panel" class="btn btn--primary">Get started</a>
+      </div>
+    </div>
+  </header>
 
-    <!--GOLDEN_TRACE_SECTION-->
-
-    <section class="hero-card" data-hero="scope-contract" aria-label="Scope-contract enforcement">
-      <h2 class="hero-card-heading">Your agent can't quietly do more than you asked</h2>
-      <p class="hero-card-text">Before any code is written, the DoR (Definition of Ready) artefact locks the exact files a story is allowed to touch. The assurance gate checks the merged diff against that list before anything ships — not a suggestion, a hard block.</p>
-      <div class="hero-card-example">
-        <div class="hero-card-example-row"><span class="hero-card-example-label">Locked scope</span><code>src/web-ui/routes/public.js, src/web-ui/templates/landing.html</code></div>
-        <div class="hero-card-example-row"><span class="hero-card-example-label">Merged diff</span><code>2 files changed — both match ✓</code></div>
+  <main>
+    <section class="hero">
+      <span class="badge"><span class="badge-dot" aria-hidden="true"></span>Open framework</span>
+      <h1>Governed software delivery,<br><span>from idea to production</span></h1>
+      <p class="value-prop">The Skills Platform encodes your team's delivery standards — discovery, definition, review, test plans, and definition of ready — as versioned instruction sets that AI agents execute. Ship traceable, high-quality software with built-in quality gates and compliance hooks.</p>
+      <div class="hero__ctas">
+        <a href="/auth/github" class="btn btn--primary btn--lg">Get started with GitHub</a>
       </div>
     </section>
 
-    <section class="hero-card" data-hero="crypto-verification" aria-label="Cryptographic instruction-set verification">
-      <h2 class="hero-card-heading">Prove which standard governed this — don't just claim it</h2>
-      <p class="hero-card-text">Every governed action commits a recomputable hash of the exact instruction set that governed it. Independently verifiable, not "trust us."</p>
-      <div class="hero-card-example">
-        <div class="hero-card-example-row"><span class="hero-card-example-label">Instruction set</span><code>skills/review/SKILL.md</code></div>
-        <div class="hero-card-example-row"><span class="hero-card-example-label">Live SHA-256</span><code><!--INSTRUCTION_HASH--></code></div>
+    <div id="golden-trace-demo" class="section-1120">
+      <!--GOLDEN_TRACE_SECTION-->
+    </div>
+
+    <div class="section-1120">
+      <div class="hero-cards-grid">
+        <section class="hero-card" data-hero="scope-contract" aria-label="Scope-contract enforcement">
+          <h2 class="hero-card-heading">Your agent can't quietly do more than you asked</h2>
+          <p class="hero-card-text">Before any code is written, the DoR (Definition of Ready) artefact locks the exact files a story is allowed to touch. The assurance gate checks the merged diff against that list before anything ships — not a suggestion, a hard block.</p>
+          <div class="hero-card-example">
+            <div class="hero-card-example-row"><span class="hero-card-example-label">Locked scope</span><code>src/web-ui/routes/public.js, src/web-ui/templates/landing.html</code></div>
+            <div class="hero-card-example-row"><span class="hero-card-example-label">Merged diff</span><code>2 files changed — both match ✓</code></div>
+          </div>
+        </section>
+
+        <section class="hero-card" data-hero="crypto-verification" aria-label="Cryptographic instruction-set verification">
+          <h2 class="hero-card-heading">Prove which standard governed this — don't just claim it</h2>
+          <p class="hero-card-text">Every governed action commits a recomputable hash of the exact instruction set that governed it. Independently verifiable, not "trust us."</p>
+          <div class="hero-card-example">
+            <div class="hero-card-example-row"><span class="hero-card-example-label">Instruction set</span><code>skills/review/SKILL.md</code></div>
+            <div class="hero-card-example-row"><span class="hero-card-example-label">Live SHA-256</span><code><!--INSTRUCTION_HASH--></code></div>
+          </div>
+          <p class="hero-card-example-note">Recompute it yourself: <code>sha256sum skills/review/SKILL.md</code></p>
+        </section>
       </div>
-      <p class="hero-card-example-note">Recompute it yourself: <code>sha256sum skills/review/SKILL.md</code></p>
-    </section>
+    </div>
 
-    <section class="hero-card" data-hero="self-improving" aria-label="Self-improving harness">
-      <h2 class="hero-card-heading">This gets better every time it's used — with a human checking every change</h2>
-      <p class="hero-card-text">Every completed feature feeds real delivery findings back into the pipeline. Every proposed improvement is gated by human review before it ships — not an unsupervised self-modifying system.</p>
-      <div class="hero-card-example">
-        <div class="hero-card-example-row"><span class="hero-card-example-label">Learnings captured</span><code><!--LEARNINGS_COUNT--> and counting</code></div>
+    <div class="section-centered">
+      <section class="hero-card" data-hero="self-improving" aria-label="Self-improving harness">
+        <h2 class="hero-card-heading">This gets better every time it's used — with a human checking every change</h2>
+        <p class="hero-card-text">Every completed feature feeds real delivery findings back into the pipeline. Every proposed improvement is gated by human review before it ships — not an unsupervised self-modifying system.</p>
+        <div class="hero-card-example">
+          <div class="hero-card-example-row"><code><!--LEARNINGS_COUNT--> and counting</code></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="auth-section">
+      <div class="auth-panel" id="auth-panel">
+        <a href="/auth/github" class="auth-btn auth-btn--github">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          Get started with GitHub
+        </a>
+
+        <div class="divider">or</div>
+
+        <a href="/auth/google" class="auth-btn auth-btn--google">
+          <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+          </svg>
+          Continue with Google
+        </a>
+
+        <div class="divider">or</div>
+
+        <div class="email-tabs">
+          <button type="button" class="email-tab active" onclick="showTab('signin')">Sign in</button>
+          <button type="button" class="email-tab" onclick="showTab('signup')">Sign up</button>
+        </div>
+
+        <form id="form-signin" method="POST" action="/auth/email/login">
+          <!--CSRF_TOKEN-->
+          <input class="email-input" type="email" name="email" placeholder="Email address" autocomplete="email" required>
+          <input class="email-input" type="password" name="password" placeholder="Password" autocomplete="current-password" required>
+          <button type="submit" class="auth-btn auth-btn--email">Sign in with email</button>
+        </form>
+
+        <form id="form-signup" method="POST" action="/auth/email/signup" style="display:none">
+          <!--CSRF_TOKEN-->
+          <input class="email-input" type="email" name="email" placeholder="Email address" autocomplete="email" required>
+          <input class="email-input" type="password" name="password" placeholder="Password (min 8 characters)" autocomplete="new-password" required minlength="8">
+          <button type="submit" class="auth-btn auth-btn--email">Get started</button>
+        </form>
       </div>
-    </section>
-
-    <div class="auth-panel">
-      <a href="/auth/github" class="auth-btn auth-btn--github">
-        <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-        Get started with GitHub
-      </a>
-
-      <div class="divider">or</div>
-
-      <a href="/auth/google" class="auth-btn auth-btn--google">
-        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true">
-          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/>
-          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-        </svg>
-        Continue with Google
-      </a>
-
-      <div class="divider">or</div>
-
-      <div class="email-tabs">
-        <button type="button" class="email-tab active" onclick="showTab('signin')">Sign in</button>
-        <button type="button" class="email-tab" onclick="showTab('signup')">Sign up</button>
-      </div>
-
-      <form id="form-signin" method="POST" action="/auth/email/login">
-        <!--CSRF_TOKEN-->
-        <input class="email-input" type="email" name="email" placeholder="Email address" autocomplete="email" required>
-        <input class="email-input" type="password" name="password" placeholder="Password" autocomplete="current-password" required>
-        <button type="submit" class="auth-btn auth-btn--email">Sign in with email</button>
-      </form>
-
-      <form id="form-signup" method="POST" action="/auth/email/signup" style="display:none">
-        <!--CSRF_TOKEN-->
-        <input class="email-input" type="email" name="email" placeholder="Email address" autocomplete="email" required>
-        <input class="email-input" type="password" name="password" placeholder="Password (min 8 characters)" autocomplete="new-password" required minlength="8">
-        <button type="submit" class="auth-btn auth-btn--email">Get started</button>
-      </form>
     </div>
   </main>
+
+  <footer class="site-footer">Skills Platform</footer>
+
   <script>
     function showTab(t) {
       document.getElementById('form-signin').style.display = t === 'signin' ? '' : 'none';
@@ -135,6 +421,27 @@
         b.classList.toggle('active', (i === 0) === (t === 'signin'));
       });
     }
+
+    // Theme toggle -- same mechanism/keys as html-shell.js's own
+    // window.swToggleTheme() (data-theme attribute on <html>, sw-theme
+    // localStorage key), reused here rather than reinvented since this page
+    // has no Settings screen to defer to and needs its own visible toggle.
+    (function(){
+      var _html = document.documentElement;
+      window.swToggleTheme = function() {
+        var cur = _html.getAttribute('data-theme') || 'light';
+        var next = cur === 'dark' ? 'light' : 'dark';
+        _html.setAttribute('data-theme', next);
+        localStorage.setItem('sw-theme', next);
+      };
+      if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+          if (!localStorage.getItem('sw-theme')) {
+            _html.setAttribute('data-theme', e.matches ? 'dark' : 'light');
+          }
+        });
+      }
+    })();
   </script>
 </body>
 </html>

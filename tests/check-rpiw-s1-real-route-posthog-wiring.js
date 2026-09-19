@@ -146,6 +146,25 @@ function makePool(productRows) {
     var landingViewedCalls = captured.filter(function(c) { return c.event === 'landing_page_viewed'; });
     assertTrue(landingViewedCalls.length >= 1, 'expected the existing server-side landing_page_viewed capture to still fire');
 
+    // dsa-s3: the click-capture selector must resolve to the auth panel's
+    // real GitHub sign-up button specifically -- not just be present
+    // anywhere in the script. dsa-s3's restyle added a SECOND
+    // a[href="/auth/github"] element (a hero CTA) to the same page;
+    // document.querySelector (used by buildClickCaptureScript, see
+    // posthog-client-snippet.js) only ever binds to the FIRST DOM match,
+    // so an unscoped selector would silently track clicks on the wrong
+    // button. Assert the real selector embedded in the response HTML is
+    // scoped to #auth-panel, and that #auth-panel is itself present with
+    // exactly the one real GitHub link inside it.
+    var selectorMatch = html.match(/querySelector\(("(?:[^"\\]|\\.)*")\)/);
+    assertTrue(!!selectorMatch, 'expected a document.querySelector(...) call in the injected click-capture script');
+    var embeddedSelector = JSON.parse(selectorMatch[1]);
+    assertTrue(embeddedSelector.indexOf('#auth-panel') === 0, 'expected the click-capture selector to be scoped to #auth-panel, got: ' + embeddedSelector);
+    var authPanelMatch = html.match(/<div class="auth-panel"[^>]*>([\s\S]*?)<\/div>\s*<\/div>/);
+    assertTrue(!!authPanelMatch, 'expected to find the real #auth-panel markup in the rendered HTML');
+    var githubLinksInAuthPanel = (authPanelMatch[1].match(/href="\/auth\/github"/g) || []).length;
+    assertTrue(githubLinksInAuthPanel === 1, 'expected exactly 1 real GitHub link inside the auth panel, found ' + githubLinksInAuthPanel);
+
     delete process.env.POSTHOG_KEY;
     delete require.cache[PUBLIC_ROUTE_PATH];
     delete require.cache[path.resolve(__dirname, '../src/web-ui/modules/posthog-server.js')];

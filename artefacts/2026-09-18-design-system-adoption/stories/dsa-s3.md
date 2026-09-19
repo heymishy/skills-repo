@@ -5,6 +5,10 @@
 **Benefit-metric reference:** artefacts/2026-09-18-design-system-adoption/benefit-metric.md
 **Domain:** web-ui
 
+## Amendment note (2026-09-19)
+
+Mobile responsiveness is now a FEATURE-WIDE requirement (see `decisions.md`'s dedicated entry), following a direct operator question and an empirical, Playwright-verified finding that `dsa-s2`'s shipped dashboard genuinely overflows horizontally below 768px. `DESIGN.md` gained a new "Responsive behavior" section (single 768px breakpoint, explicit minimum bar per layout pattern, an explicit verification bar). New AC5 below adds this requirement to this story before its own implementation begins, referencing the Marketing/landing minimum bar `DESIGN.md`'s new section defines. ACs 1-4 are unchanged in substance.
+
 ## User Story
 
 As a **beta user** (one of the platform's 2 onboarded external users, or a future prospective user reaching the marketing page before signing up),
@@ -37,6 +41,8 @@ So that **my very first impression of the platform — before I've even signed u
 **AC3:** Given the landing page follows `DESIGN.md`'s "Marketing/landing" layout pattern (centered hero, max-width ~900px copy, full-bleed sections at max-width 1120px, browser-chrome-framed product screenshots), When the real page is rendered, Then this structure is present and visually matches the `Skills Platform - Landing.dc.html` mock.
 
 **AC4:** Given the landing page's pre-existing functionality (sign-up/login entry points, marketing copy, any embedded product screenshots), When the restyle is applied, Then no existing functional behavior regresses — verified by running this screen's own pre-existing test coverage before and after the change.
+
+**AC5 (new — amended 2026-09-19, mobile responsiveness now a FEATURE-WIDE requirement, see `decisions.md`):** Given the real landing page is rendered at a real mobile viewport width (375px and 390px), When the page is measured, Then `document.body.scrollWidth` does not exceed the viewport width (no horizontal overflow), the hero and copy sections remain single-column and legible, and any product-screenshot browser-chrome frames scale down rather than clip — per `DESIGN.md`'s new "Responsive behavior" section's Marketing/landing minimum bar.
 
 ## Out of Scope
 
