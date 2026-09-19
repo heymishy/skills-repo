@@ -28,10 +28,12 @@ Every real screen a user encounters — the dashboard, the landing page, the ski
 
 ## Stories in This Epic
 
-- [ ] Artefact Viewer restyled to match DESIGN.md — dsa-s1
-- [ ] Dashboard restyled to match DESIGN.md — dsa-s2
-- [ ] Landing page restyled to match DESIGN.md — dsa-s3
+- [x] Artefact Viewer restyled to match DESIGN.md — dsa-s1
+- [x] Dashboard restyled to match DESIGN.md — dsa-s2
+- [x] Landing page restyled to match DESIGN.md — dsa-s3
 - [ ] Skill-session chat restyled to match DESIGN.md — dsa-s4
+- [ ] Mobile responsiveness fix for dsa-s1 (artefact viewer) and dsa-s2 (dashboard) — dsa-s6 (not yet a story artefact, see `decisions.md`)
+- [ ] Add the "Product in action" demo section to the landing page — dsa-s7 (new, post-merge addition to dsa-s3's own scope)
 
 ## Human Oversight Level
 

@@ -35975,6 +35975,15 @@
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
               "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s4-dor.md"
+            },
+            {
+              "slug": "dsa-s7",
+              "name": "Add the \"Product in Action\" Demo Section to the Landing Page",
+              "stage": "definition",
+              "health": "green",
+              "updatedAt": "2026-09-19T07:21:34.115Z",
+              "acTotal": 6,
+              "acVerified": 0
             }
           ]
         },
@@ -36127,6 +36136,6 @@
     ],
     "lastUpdated": "2026-08-29"
   },
-  "updatedAt": "2026-09-19T07:13:37.583Z",
-  "lastUpdated": "2026-09-19T07:13:37.583Z"
+  "updatedAt": "2026-09-19T07:21:34.117Z",
+  "lastUpdated": "2026-09-19T07:21:34.117Z"
 }
