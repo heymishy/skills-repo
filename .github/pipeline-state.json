@@ -36106,7 +36106,7 @@
                 {
                   "id": "task-3",
                   "name": "Full regression verification + npm test",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s5-plan.md"
                 }
               ]

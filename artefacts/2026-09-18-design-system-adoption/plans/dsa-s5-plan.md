@@ -140,7 +140,7 @@ Add a new detail section after `### H-MIG — Migration-review gate detail`'s ow
 
 ---
 
-## Task 3: Full regression verification + npm test
+## Task 3: Full regression verification + npm test — ✅ COMPLETE (clean, 685 files, 2 already-acknowledged baseline failures)
 
 **Files:** verification only, no source changes expected (fix forward if Tasks 1-2 missed something).
 
