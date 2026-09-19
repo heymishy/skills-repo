@@ -588,3 +588,137 @@ withAuth('dsa-s4 AC3 (toggle): Focused/Chat segmented control present, defaults 
   const chatMessageCountAfter = await page.locator('#chat-messages .sw-chat-msg').count();
   expect(chatMessageCountAfter, 'underlying message data should be unchanged by the toggle').toBe(chatMessageCountBefore);
 });
+
+// ── AC3 (resize portion): resizable-pane drag mechanism ────────────────
+//
+// Plan (Task 3): artefacts/2026-09-18-design-system-adoption/plans/dsa-s4-plan.md
+// Ports the mock's own generic _drag(axis, key, min, max, containerSelector)
+// closure (Skills Platform - Skill Session.dc.html, lines 338-363) as a
+// vanilla-JS swStartDrag(event, axis, elSelector, min, max, containerSelector)
+// function, since this codebase has no client-side state/re-render framework
+// (unlike the mock's DCLogic Component) -- the handle's onmousedown directly
+// calls this shared function with different params per handle, and it sets
+// el.style.flexBasis on the dragged element directly rather than going
+// through a state object. Outer split: #sw-split-container (the .sw-chat
+// flex row) / #sw-chat-left-pane (id'd left section, default flex-basis
+// 46%, matching the mock's own splitPct:46 default). Right-pane stacks:
+// #sw-artefact-split (generic/definition, 2-way: #sw-artefact-top-group +
+// #canvas-section) / #sw-ideate-split (ideate, 3-way: #sw-ideate-cond-group
+// + #sw-ideate-assum-group + #canvas-section).
+
+async function driveJourneyToStage(page, featureName, targetStage) {
+  const createCsrfToken = await getCsrfToken(page.request, '/journey', 'journey home page');
+  const createRes = await page.request.post('/api/journey', {
+    form: { featureName: featureName, startSkill: 'discovery', _csrf: createCsrfToken },
+    maxRedirects: 0
+  });
+  expect(createRes.status(), 'POST /api/journey').toBe(303);
+  let location = createRes.headers()['location'];
+
+  const STAGE_ORDER = ['discovery', 'benefit-metric', 'design', 'definition'];
+  const targetIdx = STAGE_ORDER.indexOf(targetStage);
+  if (targetIdx === -1) throw new Error(`unsupported targetStage: ${targetStage}`);
+
+  const firstChatRes = await page.request.get(location);
+  const firstChatHtml = await firstChatRes.text();
+  const journeyIdMatch = firstChatHtml.match(/\/api\/journey\/([0-9a-f-]+)\/gate-confirm/);
+  const journeyId = journeyIdMatch ? journeyIdMatch[1] : null;
+  expect(journeyId, 'journeyId should be resolvable from the chat page').toBeTruthy();
+
+  let skillName = STAGE_ORDER[0];
+  let sessionId = sessionIdFromChatPath(location);
+
+  for (let i = 0; i < targetIdx; i++) {
+    const res = await page.request.post(`/api/skills/${skillName}/sessions/${sessionId}/turn`, {
+      data: { answer: 'Begin the session.' }
+    });
+    expect(res.status(), `turn submission for ${skillName}`).toBe(200);
+    const turnResult = await res.json();
+    expect(turnResult.done, `${skillName} stage should complete via the mock gateway`).toBe(true);
+
+    const gateCsrfToken = await getCsrfToken(page.request, `/journey/${journeyId}/stage-review`, 'stage-review page');
+    const gateRes = await page.request.post(`/api/journey/${journeyId}/gate-confirm`, {
+      form: { _csrf: gateCsrfToken },
+      maxRedirects: 0
+    });
+    expect(gateRes.status(), `gate-confirm after ${skillName}`).toBe(303);
+    location = gateRes.headers()['location'];
+    skillName = STAGE_ORDER[i + 1];
+    sessionId = sessionIdFromChatPath(location);
+    expect(sessionId, `session id resolvable after ${skillName} redirect`).toBeTruthy();
+  }
+
+  return location; // chat-page path for targetStage, turn not yet submitted
+}
+
+withAuth('dsa-s4 AC3 (resize, generic): outer split + right-pane stack are draggable, generic skill shows Artefact+Diagrams', async ({ page }) => {
+  const { location } = await createJourney(page, 'DSA S4 Resize Generic', 'discovery');
+  await page.goto(location);
+  await page.locator('#chat-messages').waitFor({ state: 'visible' });
+
+  // Outer handle: col-resize, between the two main panes.
+  const outerHandle = page.locator('#sw-split-container > .sw-drag-h').first();
+  await expect(outerHandle, 'outer drag handle should exist between the two main panes').toBeVisible();
+  const outerCursor = await outerHandle.evaluate((el) => getComputedStyle(el).cursor);
+  expect(outerCursor, 'outer handle cursor should be col-resize').toBe('col-resize');
+
+  // Right pane's 2 stacked sections (Artefact draft, Diagrams) -- 1 row-resize handle.
+  const innerHandles = page.locator('#sw-artefact-split > .sw-drag-v');
+  await expect(innerHandles, 'exactly 1 row-resize handle between the 2 stacked right-pane sections').toHaveCount(1);
+  const innerCursor = await innerHandles.first().evaluate((el) => getComputedStyle(el).cursor);
+  expect(innerCursor, 'inner handle cursor should be row-resize').toBe('row-resize');
+
+  // Right pane still shows the existing Artefact draft + Diagrams structure, now in a resizable stack.
+  await expect(page.locator('#artefact-panel'), 'Artefact draft panel should still be present').toBeAttached();
+  await expect(page.locator('#canvas-section')).toBeAttached();
+  await expect(page.locator('#canvas-section .cv-section-label')).toHaveText('Diagrams');
+
+  // Drag the outer handle -- the left pane's flex-basis % should change from its default (46%).
+  const leftPane = page.locator('#sw-chat-left-pane');
+  const before = await leftPane.evaluate((el) => el.style.flexBasis);
+  expect(before, 'left pane should start at the documented default flex-basis').toBe('46%');
+
+  const box = await outerHandle.boundingBox();
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(box.x + box.width / 2 + 150, box.y + box.height / 2, { steps: 5 });
+  await page.mouse.up();
+
+  const after = await leftPane.evaluate((el) => el.style.flexBasis);
+  expect(after, 'left pane flex-basis should change after dragging the outer handle').not.toBe(before);
+});
+
+withAuth('dsa-s4 AC3 (resize, ideate): ideate session right pane shows Conditions/Assumptions/Canvas 3-way resizable stack', async ({ page }) => {
+  const { location } = await createJourney(page, 'DSA S4 Resize Ideate', 'ideate');
+  await page.goto(location);
+  await page.locator('#chat-messages').waitFor({ state: 'visible' });
+
+  const handles = page.locator('#sw-ideate-split > .sw-drag-v');
+  await expect(handles, '2 row-resize handles between the 3 stacked ideate sections').toHaveCount(2);
+  for (let i = 0; i < 2; i++) {
+    const cursor = await handles.nth(i).evaluate((el) => getComputedStyle(el).cursor);
+    expect(cursor, `handle ${i} cursor should be row-resize`).toBe('row-resize');
+  }
+
+  await expect(page.locator('#condition-items'), 'Conditions content should still be present').toBeAttached();
+  await expect(page.locator('.ci-section-label')).toHaveText('Conditions');
+  await expect(page.locator('#assumption-cards'), 'Assumptions content should still be present').toBeAttached();
+  await expect(page.locator('.ac-section-label')).toHaveText('Assumptions');
+  await expect(page.locator('#canvas-panel'), 'Canvas content should still be present').toBeAttached();
+  await expect(page.locator('#sw-ideate-split .cv-section-label')).toHaveText('Canvas');
+});
+
+withAuth('dsa-s4 AC3 (resize, definition): /definition session right pane shows Story map + Diagrams resizable stack', async ({ page }) => {
+  test.setTimeout(60000);
+  const chatLocation = await driveJourneyToStage(page, 'DSA S4 Resize Definition', 'definition');
+  await page.goto(chatLocation);
+  await page.locator('#chat-messages').waitFor({ state: 'visible' });
+
+  const handles = page.locator('#sw-artefact-split > .sw-drag-v');
+  await expect(handles, '1 row-resize handle between the 2 stacked definition sections').toHaveCount(1);
+
+  await expect(page.locator('#artefact-panel'), 'Story map content should still be present').toBeAttached();
+  await expect(page.locator('#sw-artefact-pane')).toContainText('Story Map');
+  await expect(page.locator('#canvas-section')).toBeAttached();
+  await expect(page.locator('#canvas-section .cv-section-label')).toHaveText('Diagrams');
+});

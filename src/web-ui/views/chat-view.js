@@ -274,6 +274,41 @@ function renderChat(data) {
         'list.hidden=!list.hidden;' +
         'btn.textContent=list.hidden?btn.getAttribute("data-show-label"):btn.getAttribute("data-hide-label");' +
       '}' +
+      // dsa-s4 (AC3, resize portion): generic drag-resize mechanism, ported
+      // from the mock's own _drag(axis, key, min, max, containerSelector)
+      // closure (Skills Platform - Skill Session.dc.html lines 338-363).
+      // This codebase has no client-side state/re-render framework (unlike
+      // the mock's DCLogic Component setState() cycle), so the same
+      // (axis, min, max, containerSelector) contract is kept but the
+      // "key" a piece of component state is replaced with "elSelector",
+      // and the function sets el.style.flexBasis directly rather than
+      // going through a state object -- one shared function handles the
+      // outer col-resize split and every row-resize handle inside a
+      // right-pane stack via different params on each handle\'s onmousedown.
+      'function swStartDrag(e,axis,elSelector,min,max,containerSelector){' +
+        'e.preventDefault();' +
+        'var container=document.querySelector(containerSelector);' +
+        'var el=document.querySelector(elSelector);' +
+        'if(!container||!el)return;' +
+        'var size=axis==="x"?container.offsetWidth:container.offsetHeight;' +
+        'var start=axis==="x"?e.clientX:e.clientY;' +
+        'var rect=el.getBoundingClientRect();' +
+        'var startPct=((axis==="x"?rect.width:rect.height)/size)*100;' +
+        'function onMove(ev){' +
+          'var pos=axis==="x"?ev.clientX:ev.clientY;' +
+          'var deltaPct=((pos-start)/size)*100;' +
+          'var next=startPct+deltaPct;' +
+          'if(next<min)next=min;' +
+          'if(next>max)next=max;' +
+          'el.style.flexBasis=next+"%";' +
+        '}' +
+        'function onUp(){' +
+          'document.removeEventListener("mousemove",onMove);' +
+          'document.removeEventListener("mouseup",onUp);' +
+        '}' +
+        'document.addEventListener("mousemove",onMove);' +
+        'document.addEventListener("mouseup",onUp);' +
+      '}' +
     '</script>';
 
   const scriptHtml = data.readOnly ? '' : (
@@ -304,8 +339,15 @@ function renderChat(data) {
 
   return [
     '<style>',
-      '.sw-chat { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 24px; height: calc(100vh - 48px - 64px); max-height: 820px; }',
-      '.sw-chat-pane { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; min-width: 0; }',
+      // dsa-s4 (AC3, resize portion): .sw-chat was a fixed 50/50 CSS Grid --
+      // changed to a flex row so the outer split (and each right-pane
+      // stack, below) can carry a JS-adjustable flex-basis via
+      // swStartDrag(). gap:0 (was 24px) since the 5px drag-handle elements
+      // now provide the visual separation themselves, matching the mock's
+      // own zero-gap flex-row pattern (Skills Platform - Skill Session.dc.html
+      // line 42/140).
+      '.sw-chat { display: flex; gap: 0; height: calc(100vh - 48px - 64px); max-height: 820px; min-width: 0; }',
+      '.sw-chat-pane { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; min-width: 0; flex: 1; }',
       '.sw-chat-head { padding: 14px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 12px; }',
       '.sw-chat-head .sw-chat-title { font-size: 14px; font-weight: 600; }',
       '.sw-chat-head .sw-chat-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }',
@@ -533,11 +575,30 @@ function renderChat(data) {
          drawer already uses. height:auto lets the page scroll naturally
          instead of squeezing both panes into unreadable fixed-height,
          half-width columns. */
+      // dsa-s4 (AC3, resize portion): below 768px, DESIGN.md's "Responsive
+      // behavior" section mandates stacking, NOT a resizable split --
+      // .sw-chat switches to a flex column (was grid-template-columns: 1fr,
+      // now flex-direction:column to match the new flex-based outer split
+      // above); every flex-basis percentage the drag handles set inline
+      // (on #sw-chat-left-pane and each .sw-resize-group) is reset with
+      // !important (the only way an author-stylesheet rule can win over a
+      // more-specific inline style), and the handles themselves are hidden
+      // since no resize is attempted at this width.
       '@media (max-width: 768px) {',
-        '.sw-chat { grid-template-columns: 1fr; height: auto; max-height: none; }',
-        '.sw-chat-pane { overflow: visible; }',
+        '.sw-chat { flex-direction: column; height: auto; max-height: none; }',
+        '.sw-chat-pane { overflow: visible; flex: 1 1 auto !important; }',
         '.sw-chat-thread { overflow: visible; }',
+        '.sw-resize-group { flex: 1 1 auto !important; overflow: visible !important; }',
+        '.sw-drag-h, .sw-drag-v { display: none; }',
       '}',
+      // dsa-s4 (AC3, resize portion): generic drag-handle styling, shared by
+      // the outer col-resize handle and every row-resize handle inside a
+      // right-pane stack -- mirrors the mock's own 5px, cursor-only handle
+      // (Skills Platform - Skill Session.dc.html lines 140/167/213/239/296).
+      '.sw-drag-h { width: 5px; flex-shrink: 0; cursor: col-resize; background: var(--line); }',
+      '.sw-drag-h:hover { background: var(--accent); }',
+      '.sw-drag-v { height: 5px; flex-shrink: 0; cursor: row-resize; background: var(--line); }',
+      '.sw-drag-v:hover { background: var(--accent); }',
       // dsa-s4 (AC3, toggle portion): Focused/Chat segmented control in the
       // left-pane header (.sw-chat-head), plus the additive Focused-mode
       // rendering path. [hidden]-specific overrides are required for
@@ -579,10 +640,16 @@ function renderChat(data) {
       ' style="padding:6px 16px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:var(--bg)">' +
       '<span id="context-manifest-empty" style="font-size:12px;color:var(--muted)">no context loaded</span>' +
       '</div>'),
-    '<div class="sw-chat">',
+    // dsa-s4 (AC3, resize portion): id="sw-split-container" is the
+    // containerSelector swStartDrag() measures for the outer col-resize
+    // handle (mirrors the mock's own #sw-split-container).
+    '<div class="sw-chat" id="sw-split-container">',
 
-      // LEFT: chat thread
-      '<section class="sw-chat-pane">',
+      // LEFT: chat thread. id="sw-chat-left-pane" + the inline flex-basis
+      // (default 46%, matching the mock's own splitPct:46 default -- see
+      // Skills Platform - Skill Session.dc.html state.splitPct) is the
+      // element swStartDrag() adjusts on outer-handle drag.
+      '<section class="sw-chat-pane" id="sw-chat-left-pane" style="flex:0 0 46%">',
         '<header class="sw-chat-head">',
           '<div>',
             '<div class="sw-chat-title">' + escHtml(data.skillLabel) + '</div>',
@@ -603,105 +670,156 @@ function renderChat(data) {
         footerHtml,
       '</section>',
 
+      // dsa-s4 (AC3, resize portion): outer col-resize handle, between the
+      // two main panes. onmousedown params: axis 'x', drag
+      // #sw-chat-left-pane's flex-basis, clamp [28,72] (matching the
+      // mock's own startOuterResize clamp), measure against
+      // #sw-split-container.
+      '<div class="sw-drag-h" title="Drag to resize" onmousedown="swStartDrag(event,\'x\',\'#sw-chat-left-pane\',28,72,\'#sw-split-container\')"></div>',
+
       // RIGHT: ideate → 3-panel; all other skills → artefact draft panel
       (data.skillName === 'ideate' || data.isIdeate === true
         ? [
           '<section class="sw-chat-pane" style="display:flex;flex-direction:column">',
-            '<div class="ci-section-head">',
-              '<span class="ci-section-label">Conditions</span>',
-              '<button id="sw-toggle-conditions" class="sw-section-toggle" onclick="swToggleSection(\'condition-items\',this)" title="Collapse/expand" aria-label="Toggle conditions">▾</button>',
-            '</div>',
-            '<div id="condition-items" role="region" aria-label="Condition items" style="flex:0 0 auto;max-height:28%;overflow-y:auto;padding:10px 12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px">',
-              '<p style="margin:0;font-size:12px;color:var(--muted)">No conditions identified yet</p>',
-            '</div>',
-            '<div class="ac-section-head">',
-              '<span class="ac-section-label">Assumptions</span>',
-              '<div style="display:flex;align-items:center;gap:6px">',
-                '<div class="ac-badges" id="ac-badges">',
-                  '<span class="ac-badge ac-badge-amber" id="ac-badge-unconf" style="display:none">0 unconfirmed</span>',
-                  '<span class="ac-badge ac-badge-green" id="ac-badge-conf"   style="display:none">0 confirmed</span>',
+            // dsa-s4 (AC3, resize portion): #sw-ideate-split wraps the
+            // 3 stacked sections (Conditions, Assumptions, Canvas) in a flex
+            // column so each can carry a JS-adjustable flex-basis, matching
+            // the mock's own #sw-ideate-split (Skills Platform - Skill
+            // Session.dc.html line 196). The existing condition-items/
+            // assumption-cards content (ids, ARIA, placeholder text) is
+            // unchanged -- only their flex sizing moves from a fixed
+            // max-height% on the content div itself to a JS-adjustable
+            // flex-basis% on a new wrapping "group" div (header + content
+            // together, mirroring the mock's own sticky-header-inside-the-
+            // resizable-region pattern).
+            '<div id="sw-ideate-split" style="flex:1;display:flex;flex-direction:column;min-height:0">',
+              '<div id="sw-ideate-cond-group" class="sw-resize-group" style="flex:0 0 26%;min-height:0;overflow:hidden;display:flex;flex-direction:column">',
+                '<div class="ci-section-head">',
+                  '<span class="ci-section-label">Conditions</span>',
+                  '<button id="sw-toggle-conditions" class="sw-section-toggle" onclick="swToggleSection(\'condition-items\',this)" title="Collapse/expand" aria-label="Toggle conditions">▾</button>',
                 '</div>',
-                '<button id="sw-toggle-assumptions" class="sw-section-toggle" onclick="swToggleSection(\'assumption-cards\',this)" title="Collapse/expand" aria-label="Toggle assumptions">▾</button>',
+                '<div id="condition-items" role="region" aria-label="Condition items" style="flex:1;min-height:0;overflow-y:auto;padding:10px 12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px">',
+                  '<p style="margin:0;font-size:12px;color:var(--muted)">No conditions identified yet</p>',
+                '</div>',
               '</div>',
-            '</div>',
-            '<div id="assumption-cards" role="region" aria-label="Assumption cards" style="flex:0 0 auto;max-height:42%;overflow-y:auto;padding:10px 12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px">',
-              '<p style="margin:0;font-size:12px;color:var(--muted)">No assumptions identified yet</p>',
-            '</div>',
-            // cdpl-s1: header + #canvas-panel wrapped together in
-            // #canvas-section so the shared fullscreen mechanism toggles a
-            // container that includes the maximise button itself (mirroring
-            // #sw-artefact-pane's own wrap of its header+content) -- a fixed
-            // element painted on top of the page would otherwise cover a
-            // sibling header/button left in normal flow, making the button
-            // unclickable once maximised.
-            // rapp-s1: min-height was 0 (deliberately, to let it shrink) --
-            // fine while conditions/assumptions were always empty (before
-            // rapp-s1's own resume-hydration fix and isc-s1's mock-content
-            // fix), since flex:0 0 auto siblings with real content up to
-            // max-height:28%/42% barely took any space. With real content
-            // now populating those siblings, canvas-section could shrink to
-            // a sliver with several lens turns' worth of assumptions/
-            // conditions above it. A min-height floor (matching the
-            // non-ideate branch's own #canvas-panel min-height:200px
-            // convention just below) keeps the canvas usable regardless of
-            // how tall the two panels above it grow, while flex:1 1 auto
-            // still lets it grow larger when there's room.
-            '<div id="canvas-section" style="display:flex;flex-direction:column;flex:1 1 auto;min-height:240px">',
-              '<div class="cv-section-head">',
-                '<span class="cv-section-label">Canvas</span>',
-                '<div style="display:flex;align-items:center;gap:6px">',
-                  '<div class="cv-pips" id="cv-pips">',
-                    '<span class="cv-pip" data-lens="A" title="Lens A">A</span>',
-                    '<span class="cv-pip" data-lens="B" title="Lens B">B</span>',
-                    '<span class="cv-pip" data-lens="C" title="Lens C">C</span>',
-                    '<span class="cv-pip" data-lens="D" title="Lens D">D</span>',
-                    '<span class="cv-pip" data-lens="E" title="Lens E">E</span>',
+              // startCondResize clamp [12,45] mirrors the mock's own.
+              '<div class="sw-drag-v" title="Drag to resize" onmousedown="swStartDrag(event,\'y\',\'#sw-ideate-cond-group\',12,45,\'#sw-ideate-split\')"></div>',
+              '<div id="sw-ideate-assum-group" class="sw-resize-group" style="flex:0 0 38%;min-height:0;overflow:hidden;display:flex;flex-direction:column">',
+                '<div class="ac-section-head">',
+                  '<span class="ac-section-label">Assumptions</span>',
+                  '<div style="display:flex;align-items:center;gap:6px">',
+                    '<div class="ac-badges" id="ac-badges">',
+                      '<span class="ac-badge ac-badge-amber" id="ac-badge-unconf" style="display:none">0 unconfirmed</span>',
+                      '<span class="ac-badge ac-badge-green" id="ac-badge-conf"   style="display:none">0 confirmed</span>',
+                    '</div>',
+                    '<button id="sw-toggle-assumptions" class="sw-section-toggle" onclick="swToggleSection(\'assumption-cards\',this)" title="Collapse/expand" aria-label="Toggle assumptions">▾</button>',
                   '</div>',
-                  '<button id="sw-toggle-canvas" class="sw-section-toggle" onclick="swToggleSection(\'canvas-panel\',this)" title="Collapse/expand" aria-label="Toggle canvas">▾</button>',
-                  '<button id="sw-expand-canvas" class="sw-section-expand" onclick="swExpandCanvas()" title="Maximise canvas" aria-label="Maximise canvas">⊞</button>',
+                '</div>',
+                '<div id="assumption-cards" role="region" aria-label="Assumption cards" style="flex:1;min-height:0;overflow-y:auto;padding:10px 12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px">',
+                  '<p style="margin:0;font-size:12px;color:var(--muted)">No assumptions identified yet</p>',
                 '</div>',
               '</div>',
-              '<div id="canvas-panel" role="region" aria-label="Canvas" style="flex:1 1 auto;overflow-y:auto;padding:16px">',
-                '<p class="cv-empty">Lens output will appear here as the session progresses.</p>',
-                (draftSections || ''),
+              // startAssumResize clamp [15,55] mirrors the mock's own.
+              '<div class="sw-drag-v" title="Drag to resize" onmousedown="swStartDrag(event,\'y\',\'#sw-ideate-assum-group\',15,55,\'#sw-ideate-split\')"></div>',
+              // cdpl-s1: header + #canvas-panel wrapped together in
+              // #canvas-section so the shared fullscreen mechanism toggles a
+              // container that includes the maximise button itself (mirroring
+              // #sw-artefact-pane's own wrap of its header+content) -- a fixed
+              // element painted on top of the page would otherwise cover a
+              // sibling header/button left in normal flow, making the button
+              // unclickable once maximised.
+              // rapp-s1: min-height was 0 (deliberately, to let it shrink) --
+              // fine while conditions/assumptions were always empty (before
+              // rapp-s1's own resume-hydration fix and isc-s1's mock-content
+              // fix), since flex:0 0 auto siblings with real content up to
+              // max-height:28%/42% barely took any space. With real content
+              // now populating those siblings, canvas-section could shrink to
+              // a sliver with several lens turns' worth of assumptions/
+              // conditions above it. A min-height floor (matching the
+              // non-ideate branch's own #canvas-panel min-height:200px
+              // convention just below) keeps the canvas usable regardless of
+              // how tall the two panels above it grow, while flex:1 1 auto
+              // still lets it grow larger when there's room. dsa-s4: this is
+              // now the 3rd stacked section in #sw-ideate-split (flex:1,
+              // takes remaining space, no drag handle needed after it).
+              '<div id="canvas-section" style="display:flex;flex-direction:column;flex:1 1 auto;min-height:240px">',
+                '<div class="cv-section-head">',
+                  '<span class="cv-section-label">Canvas</span>',
+                  '<div style="display:flex;align-items:center;gap:6px">',
+                    '<div class="cv-pips" id="cv-pips">',
+                      '<span class="cv-pip" data-lens="A" title="Lens A">A</span>',
+                      '<span class="cv-pip" data-lens="B" title="Lens B">B</span>',
+                      '<span class="cv-pip" data-lens="C" title="Lens C">C</span>',
+                      '<span class="cv-pip" data-lens="D" title="Lens D">D</span>',
+                      '<span class="cv-pip" data-lens="E" title="Lens E">E</span>',
+                    '</div>',
+                    '<button id="sw-toggle-canvas" class="sw-section-toggle" onclick="swToggleSection(\'canvas-panel\',this)" title="Collapse/expand" aria-label="Toggle canvas">▾</button>',
+                    '<button id="sw-expand-canvas" class="sw-section-expand" onclick="swExpandCanvas()" title="Maximise canvas" aria-label="Maximise canvas">⊞</button>',
+                  '</div>',
+                '</div>',
+                '<div id="canvas-panel" role="region" aria-label="Canvas" style="flex:1 1 auto;overflow-y:auto;padding:16px">',
+                  '<p class="cv-empty">Lens output will appear here as the session progresses.</p>',
+                  (draftSections || ''),
+                '</div>',
               '</div>',
             '</div>',
           '</section>',
         ].join('')
         : [
           '<section class="sw-chat-pane" id="sw-artefact-pane" style="display:flex;flex-direction:column">',
-            '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--line-2);flex-shrink:0">',
-              '<span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">' + (data.skillName === 'definition' ? 'Story Map' : 'Artefact Draft') + '</span>',
-              '<button id="sw-artefact-fs-btn" class="ad-fs-btn" onclick="swToggleArtefactFs()" title="Toggle fullscreen" aria-label="Toggle fullscreen">⊞</button>',
-            '</div>',
-            '<div id="artefact-panel" role="region" aria-label="' + (data.skillName === 'definition' ? 'Story map' : 'Artefact draft') + '" style="flex:0 1 auto;max-height:55vh;overflow-y:auto;padding:' + (data.skillName === 'definition' ? '0' : '16px 20px') + '">',
-              // dsh-s3: when a caller supplies pre-rendered artefact HTML (the
-              // read-only historical-stage view has no live SSE pump to
-              // populate this pane client-side the way the live chat page
-              // does), render it directly. Absent/falsy (every existing
-              // live-session call site) preserves the exact placeholder
-              // text that was here before this option existed.
-              (data.artefactContent ||
-                '<p style="margin:0;font-size:12px;color:var(--muted);padding:16px 20px">' + (data.skillName === 'definition' ? 'Story map will appear here as epics and stories are generated.' : 'Artefact will appear here as the session progresses.') + '</p>'),
-            '</div>',
-            // csd-s3/csd-s4 (found post-DoD, see decisions.md): /design and
-            // /definition emit CANVAS-JSON diagram markers, but until this
-            // fix, this pane had no element for appendCanvasBlock() to
-            // attach to -- only the /ideate skill's 3-panel layout had one.
-            // Added as an additional section below the artefact/story-map
-            // panel above (which continues to work exactly as before) so
-            // diagrams have somewhere real to render for these two skills.
-            // cdpl-s1: header + #canvas-panel wrapped in #canvas-section --
-            // see the identical comment on the ideate layout's own
-            // #canvas-section above for why the wrapper (not #canvas-panel
-            // alone) is the element that toggles fullscreen.
-            '<div id="canvas-section" style="display:flex;flex-direction:column;flex:1 1 auto;min-height:0">',
-              '<div class="cv-section-head" style="flex-shrink:0">',
-                '<span class="cv-section-label">Diagrams</span>',
-                '<button id="sw-canvas-fs-btn" class="ad-fs-btn" onclick="swToggleCanvasFs()" title="Maximise diagrams" aria-label="Maximise diagrams">⊞</button>',
+            // dsa-s4 (AC3, resize portion): #sw-artefact-split wraps the
+            // 2 stacked sections (Artefact draft/Story map, Diagrams) in a
+            // flex column so each can carry a JS-adjustable flex-basis,
+            // matching the mock's own #sw-artefact-split/#sw-map-split
+            // (Skills Platform - Skill Session.dc.html lines 154/266 --
+            // both mock variants share this exact pattern, as does this
+            // codebase's single shared branch for generic and /definition).
+            // The existing header/#artefact-panel content (ids, ARIA,
+            // artefactContent passthrough, placeholder text) is unchanged --
+            // only its flex sizing moves from a fixed max-height:55vh on
+            // the content div itself to a JS-adjustable flex-basis% on a
+            // new wrapping "group" div (header + content together, mirroring
+            // the ideate branch's own group pattern just above).
+            '<div id="sw-artefact-split" style="flex:1;display:flex;flex-direction:column;min-height:0">',
+              '<div id="sw-artefact-top-group" class="sw-resize-group" style="flex:0 0 62%;min-height:0;overflow:hidden;display:flex;flex-direction:column">',
+                '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--line-2);flex-shrink:0">',
+                  '<span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">' + (data.skillName === 'definition' ? 'Story Map' : 'Artefact Draft') + '</span>',
+                  '<button id="sw-artefact-fs-btn" class="ad-fs-btn" onclick="swToggleArtefactFs()" title="Toggle fullscreen" aria-label="Toggle fullscreen">⊞</button>',
+                '</div>',
+                '<div id="artefact-panel" role="region" aria-label="' + (data.skillName === 'definition' ? 'Story map' : 'Artefact draft') + '" style="flex:1;min-height:0;overflow-y:auto;padding:' + (data.skillName === 'definition' ? '0' : '16px 20px') + '">',
+                  // dsh-s3: when a caller supplies pre-rendered artefact HTML (the
+                  // read-only historical-stage view has no live SSE pump to
+                  // populate this pane client-side the way the live chat page
+                  // does), render it directly. Absent/falsy (every existing
+                  // live-session call site) preserves the exact placeholder
+                  // text that was here before this option existed.
+                  (data.artefactContent ||
+                    '<p style="margin:0;font-size:12px;color:var(--muted);padding:16px 20px">' + (data.skillName === 'definition' ? 'Story map will appear here as epics and stories are generated.' : 'Artefact will appear here as the session progresses.') + '</p>'),
+                '</div>',
               '</div>',
-              '<div id="canvas-panel" role="region" aria-label="Diagrams" style="flex:1 1 auto;min-height:200px;overflow-y:auto;padding:16px">',
-                '<p class="cv-empty">Diagrams will appear here as the session progresses.</p>',
+              // startDraftResize clamp [25,80] mirrors the mock's own.
+              '<div class="sw-drag-v" title="Drag to resize" onmousedown="swStartDrag(event,\'y\',\'#sw-artefact-top-group\',25,80,\'#sw-artefact-split\')"></div>',
+              // csd-s3/csd-s4 (found post-DoD, see decisions.md): /design and
+              // /definition emit CANVAS-JSON diagram markers, but until this
+              // fix, this pane had no element for appendCanvasBlock() to
+              // attach to -- only the /ideate skill's 3-panel layout had one.
+              // Added as an additional section below the artefact/story-map
+              // panel above (which continues to work exactly as before) so
+              // diagrams have somewhere real to render for these two skills.
+              // cdpl-s1: header + #canvas-panel wrapped in #canvas-section --
+              // see the identical comment on the ideate layout's own
+              // #canvas-section above for why the wrapper (not #canvas-panel
+              // alone) is the element that toggles fullscreen. dsa-s4: this
+              // is now the 2nd stacked section in #sw-artefact-split (flex:1,
+              // takes remaining space, no drag handle needed after it).
+              '<div id="canvas-section" style="display:flex;flex-direction:column;flex:1 1 auto;min-height:0">',
+                '<div class="cv-section-head" style="flex-shrink:0">',
+                  '<span class="cv-section-label">Diagrams</span>',
+                  '<button id="sw-canvas-fs-btn" class="ad-fs-btn" onclick="swToggleCanvasFs()" title="Maximise diagrams" aria-label="Maximise diagrams">⊞</button>',
+                '</div>',
+                '<div id="canvas-panel" role="region" aria-label="Diagrams" style="flex:1 1 auto;min-height:200px;overflow-y:auto;padding:16px">',
+                  '<p class="cv-empty">Diagrams will appear here as the session progresses.</p>',
+                '</div>',
               '</div>',
             '</div>',
           '</section>',
