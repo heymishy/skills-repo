@@ -35979,22 +35979,38 @@
             {
               "slug": "dsa-s7",
               "name": "Add the \"Product in Action\" Demo Section to the Landing Page",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-09-19T07:23:59.301Z",
+              "updatedAt": "2026-09-19T09:02:01.032Z",
               "acTotal": 6,
-              "acVerified": 0,
+              "acVerified": 6,
               "reviewStatus": "passed",
               "highFindings": 0,
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 0
+                "passing": 6
               },
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s7-dor.md"
+              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s7-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Add Product in action section: structure, tokens, mobile breakpoint, placeholder (AC1-AC5)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s7-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Full regression verification (AC6) + npm test + live browser check",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s7-plan.md"
+                }
+              ],
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/909"
             }
           ]
         },
@@ -36147,6 +36163,6 @@
     ],
     "lastUpdated": "2026-08-29"
   },
-  "updatedAt": "2026-09-19T07:23:59.302Z",
-  "lastUpdated": "2026-09-19T07:23:59.302Z"
+  "updatedAt": "2026-09-19T08:00:16.372Z",
+  "lastUpdated": "2026-09-19T08:00:16.372Z"
 }
