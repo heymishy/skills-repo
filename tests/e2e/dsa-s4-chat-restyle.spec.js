@@ -688,6 +688,50 @@ withAuth('dsa-s4 AC3 (resize, generic): outer split + right-pane stack are dragg
   expect(after, 'left pane flex-basis should change after dragging the outer handle').not.toBe(before);
 });
 
+withAuth('dsa-s4 AC3 (resize, keyboard): drag handles are keyboard-operable separators, not mouse-only', async ({ page }) => {
+  // Final cross-task review follow-up (2026-09-20): the initial resize
+  // mechanism had no keyboard alternative to the mouse drag -- a real
+  // WCAG 2.1 AA operability gap for a brand-new control. Verifies the
+  // WAI-ARIA "window splitter" separator pattern is now wired: real
+  // role/aria-orientation/aria-valuemin/max/now, real tab-focusability,
+  // and real arrow-key resizing that mirrors the mouse-drag mechanism.
+  const { location } = await createJourney(page, 'DSA S4 Resize Keyboard', 'discovery');
+  await page.goto(location);
+  await page.locator('#chat-messages').waitFor({ state: 'visible' });
+
+  const outerHandle = page.locator('#sw-split-container > .sw-drag-h').first();
+  await expect(outerHandle).toHaveAttribute('role', 'separator');
+  await expect(outerHandle).toHaveAttribute('aria-orientation', 'vertical');
+  await expect(outerHandle).toHaveAttribute('aria-valuemin', '28');
+  await expect(outerHandle).toHaveAttribute('aria-valuemax', '72');
+  await expect(outerHandle).toHaveAttribute('aria-valuenow', '46');
+  await expect(outerHandle).toHaveAttribute('tabindex', '0');
+
+  const leftPane = page.locator('#sw-chat-left-pane');
+  const initialBasis = await leftPane.evaluate((el) => el.style.flexBasis);
+  expect(initialBasis, 'left pane should start at the documented default flex-basis').toBe('46%');
+
+  await outerHandle.focus();
+  await expect(outerHandle, 'the handle itself must be the focused element (real tab-stop, not just an attribute)').toBeFocused();
+  await page.keyboard.press('ArrowRight');
+  const afterRight = await leftPane.evaluate((el) => el.style.flexBasis);
+  expect(afterRight, 'ArrowRight should widen the left pane by the documented 2% step').toBe('48%');
+  await expect(outerHandle, 'aria-valuenow should track the new flex-basis').toHaveAttribute('aria-valuenow', '48');
+
+  await page.keyboard.press('ArrowLeft');
+  await page.keyboard.press('ArrowLeft');
+  const afterLeft = await leftPane.evaluate((el) => el.style.flexBasis);
+  expect(afterLeft, 'ArrowLeft should shrink the left pane back down').toBe('44%');
+
+  const innerHandle = page.locator('#sw-artefact-split > .sw-drag-v').first();
+  await expect(innerHandle).toHaveAttribute('role', 'separator');
+  await expect(innerHandle).toHaveAttribute('aria-orientation', 'horizontal');
+  await innerHandle.focus();
+  await page.keyboard.press('ArrowDown');
+  const innerGroupBasis = await page.locator('#sw-artefact-top-group').evaluate((el) => el.style.flexBasis);
+  expect(innerGroupBasis, 'ArrowDown on a row-resize handle should widen its own group').toBe('64%');
+});
+
 withAuth('dsa-s4 AC3 (resize, ideate): ideate session right pane shows Conditions/Assumptions/Canvas 3-way resizable stack', async ({ page }) => {
   const { location } = await createJourney(page, 'DSA S4 Resize Ideate', 'ideate');
   await page.goto(location);

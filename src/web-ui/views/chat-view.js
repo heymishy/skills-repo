@@ -287,6 +287,7 @@ function renderChat(data) {
       // right-pane stack via different params on each handle\'s onmousedown.
       'function swStartDrag(e,axis,elSelector,min,max,containerSelector){' +
         'e.preventDefault();' +
+        'var handle=e.currentTarget;' +
         'var container=document.querySelector(containerSelector);' +
         'var el=document.querySelector(elSelector);' +
         'if(!container||!el)return;' +
@@ -301,6 +302,7 @@ function renderChat(data) {
           'if(next<min)next=min;' +
           'if(next>max)next=max;' +
           'el.style.flexBasis=next+"%";' +
+          'if(handle)handle.setAttribute("aria-valuenow",String(Math.round(next)));' +
         '}' +
         'function onUp(){' +
           'document.removeEventListener("mousemove",onMove);' +
@@ -308,6 +310,30 @@ function renderChat(data) {
         '}' +
         'document.addEventListener("mousemove",onMove);' +
         'document.addEventListener("mouseup",onUp);' +
+      '}' +
+      // dsa-s4 (2026-09-20, code-quality/final-review follow-up): keyboard
+      // equivalent for swStartDrag(), following the WAI-ARIA "window
+      // splitter" separator pattern (role="separator", aria-orientation,
+      // aria-valuemin/max/now, tabindex="0") -- the new drag handles above
+      // were mouse-only with no keyboard alternative, a real WCAG 2.1 AA
+      // operability gap for a brand-new control (flagged by dsa-s4's own
+      // final cross-task review). Arrow keys nudge the same flex-basis
+      // percentage the mouse drag sets, reusing the identical clamp logic.
+      'function swDragKeydown(e,axis,elSelector,min,max,containerSelector){' +
+        'var step=2;var delta=0;' +
+        'if(axis==="x"){if(e.key==="ArrowLeft")delta=-step;else if(e.key==="ArrowRight")delta=step;}' +
+        'else{if(e.key==="ArrowUp")delta=-step;else if(e.key==="ArrowDown")delta=step;}' +
+        'if(delta===0)return;' +
+        'e.preventDefault();' +
+        'var el=document.querySelector(elSelector);' +
+        'if(!el)return;' +
+        'var current=parseFloat(el.style.flexBasis);' +
+        'if(isNaN(current))current=min;' +
+        'var next=current+delta;' +
+        'if(next<min)next=min;' +
+        'if(next>max)next=max;' +
+        'el.style.flexBasis=next+"%";' +
+        'e.currentTarget.setAttribute("aria-valuenow",String(Math.round(next)));' +
       '}' +
     '</script>';
 
@@ -599,6 +625,7 @@ function renderChat(data) {
       '.sw-drag-h:hover { background: var(--accent); }',
       '.sw-drag-v { height: 5px; flex-shrink: 0; cursor: row-resize; background: var(--line); }',
       '.sw-drag-v:hover { background: var(--accent); }',
+      '.sw-drag-h:focus-visible, .sw-drag-v:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; background: var(--accent); }',
       // dsa-s4 (AC3, toggle portion): Focused/Chat segmented control in the
       // left-pane header (.sw-chat-head), plus the additive Focused-mode
       // rendering path. [hidden]-specific overrides are required for
@@ -675,7 +702,7 @@ function renderChat(data) {
       // #sw-chat-left-pane's flex-basis, clamp [28,72] (matching the
       // mock's own startOuterResize clamp), measure against
       // #sw-split-container.
-      '<div class="sw-drag-h" title="Drag to resize" onmousedown="swStartDrag(event,\'x\',\'#sw-chat-left-pane\',28,72,\'#sw-split-container\')"></div>',
+      '<div class="sw-drag-h" title="Drag to resize" role="separator" aria-orientation="vertical" aria-label="Resize chat and content panes" aria-valuemin="28" aria-valuemax="72" aria-valuenow="46" tabindex="0" onmousedown="swStartDrag(event,\'x\',\'#sw-chat-left-pane\',28,72,\'#sw-split-container\')" onkeydown="swDragKeydown(event,\'x\',\'#sw-chat-left-pane\',28,72,\'#sw-split-container\')"></div>',
 
       // RIGHT: ideate → 3-panel; all other skills → artefact draft panel
       (data.skillName === 'ideate' || data.isIdeate === true
@@ -703,7 +730,7 @@ function renderChat(data) {
                 '</div>',
               '</div>',
               // startCondResize clamp [12,45] mirrors the mock's own.
-              '<div class="sw-drag-v" title="Drag to resize" onmousedown="swStartDrag(event,\'y\',\'#sw-ideate-cond-group\',12,45,\'#sw-ideate-split\')"></div>',
+              '<div class="sw-drag-v" title="Drag to resize" role="separator" aria-orientation="horizontal" aria-label="Resize conditions and assumptions sections" aria-valuemin="12" aria-valuemax="45" aria-valuenow="26" tabindex="0" onmousedown="swStartDrag(event,\'y\',\'#sw-ideate-cond-group\',12,45,\'#sw-ideate-split\')" onkeydown="swDragKeydown(event,\'y\',\'#sw-ideate-cond-group\',12,45,\'#sw-ideate-split\')"></div>',
               '<div id="sw-ideate-assum-group" class="sw-resize-group" style="flex:0 0 38%;min-height:0;overflow:hidden;display:flex;flex-direction:column">',
                 '<div class="ac-section-head">',
                   '<span class="ac-section-label">Assumptions</span>',
@@ -720,7 +747,7 @@ function renderChat(data) {
                 '</div>',
               '</div>',
               // startAssumResize clamp [15,55] mirrors the mock's own.
-              '<div class="sw-drag-v" title="Drag to resize" onmousedown="swStartDrag(event,\'y\',\'#sw-ideate-assum-group\',15,55,\'#sw-ideate-split\')"></div>',
+              '<div class="sw-drag-v" title="Drag to resize" role="separator" aria-orientation="horizontal" aria-label="Resize assumptions and canvas sections" aria-valuemin="15" aria-valuemax="55" aria-valuenow="38" tabindex="0" onmousedown="swStartDrag(event,\'y\',\'#sw-ideate-assum-group\',15,55,\'#sw-ideate-split\')" onkeydown="swDragKeydown(event,\'y\',\'#sw-ideate-assum-group\',15,55,\'#sw-ideate-split\')"></div>',
               // cdpl-s1: header + #canvas-panel wrapped together in
               // #canvas-section so the shared fullscreen mechanism toggles a
               // container that includes the maximise button itself (mirroring
@@ -798,7 +825,7 @@ function renderChat(data) {
                 '</div>',
               '</div>',
               // startDraftResize clamp [25,80] mirrors the mock's own.
-              '<div class="sw-drag-v" title="Drag to resize" onmousedown="swStartDrag(event,\'y\',\'#sw-artefact-top-group\',25,80,\'#sw-artefact-split\')"></div>',
+              '<div class="sw-drag-v" title="Drag to resize" role="separator" aria-orientation="horizontal" aria-label="Resize draft and diagrams sections" aria-valuemin="25" aria-valuemax="80" aria-valuenow="62" tabindex="0" onmousedown="swStartDrag(event,\'y\',\'#sw-artefact-top-group\',25,80,\'#sw-artefact-split\')" onkeydown="swDragKeydown(event,\'y\',\'#sw-artefact-top-group\',25,80,\'#sw-artefact-split\')"></div>',
               // csd-s3/csd-s4 (found post-DoD, see decisions.md): /design and
               // /definition emit CANVAS-JSON diagram markers, but until this
               // fix, this pane had no element for appendCanvasBlock() to
