@@ -17,6 +17,20 @@ function setValidateRepositoryAccess(fn) { _validateRepositoryAccess = fn; }
 function setGetArtefactDescriptors(fn)   { _getArtefactDescriptors   = fn; }
 function setFetchArtefact(fn)            { _fetchArtefact            = fn; }
 
+/**
+ * dsa-s2 Task 3 -- restore all 3 injectable seams to their real default
+ * implementations. Needed because server.js's /test/seed-pending-action
+ * endpoint (E2E-only) overrides these seams process-wide via HTTP, and must
+ * be able to undo that before the owning test ends -- without this, the
+ * override would leak into every other test/spec sharing the same webServer
+ * process for the rest of its life (see that endpoint's own comment).
+ */
+function resetToDefaults() {
+  _validateRepositoryAccess = defaultValidateRepositoryAccess;
+  _getArtefactDescriptors   = defaultGetArtefactDescriptors;
+  _fetchArtefact            = defaultFetchArtefact;
+}
+
 // ── Default implementations (real GitHub API) ────────────────────────────
 
 async function defaultValidateRepositoryAccess(owner, repo, token) {
@@ -183,5 +197,6 @@ module.exports = {
   // Dependency injection hooks
   setValidateRepositoryAccess,
   setGetArtefactDescriptors,
-  setFetchArtefact
+  setFetchArtefact,
+  resetToDefaults
 };
