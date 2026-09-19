@@ -35897,7 +35897,7 @@
                 {
                   "id": "task-4",
                   "name": "Full regression verification (AC4) + verification script amendment + Node suite + npm test",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s2-plan.md"
                 }
               ]
@@ -36090,6 +36090,6 @@
     ],
     "lastUpdated": "2026-08-29"
   },
-  "updatedAt": "2026-09-19T03:05:35.044Z",
-  "lastUpdated": "2026-09-19T03:05:35.044Z"
+  "updatedAt": "2026-09-19T03:17:16.232Z",
+  "lastUpdated": "2026-09-19T03:17:16.232Z"
 }
