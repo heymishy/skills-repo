@@ -35919,7 +35919,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-19T06:06:54.447Z",
+              "updatedAt": "2026-09-19T06:29:50.509Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -35941,7 +35941,7 @@
                 {
                   "id": "task-2",
                   "name": "Full regression verification (AC4) + accessibility spot-check + npm test + live browser check",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s3-plan.md"
                 }
               ]
@@ -36117,6 +36117,6 @@
     ],
     "lastUpdated": "2026-08-29"
   },
-  "updatedAt": "2026-09-19T06:06:54.448Z",
-  "lastUpdated": "2026-09-19T06:06:54.448Z"
+  "updatedAt": "2026-09-19T06:29:50.510Z",
+  "lastUpdated": "2026-09-19T06:29:50.510Z"
 }
