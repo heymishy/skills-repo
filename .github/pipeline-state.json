@@ -35979,11 +35979,22 @@
             {
               "slug": "dsa-s7",
               "name": "Add the \"Product in Action\" Demo Section to the Landing Page",
-              "stage": "definition",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-09-19T07:21:34.115Z",
+              "updatedAt": "2026-09-19T07:23:59.301Z",
               "acTotal": 6,
-              "acVerified": 0
+              "acVerified": 0,
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "testPlan": {
+                "status": "written",
+                "totalTests": 6,
+                "passing": 0
+              },
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": true,
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s7-dor.md"
             }
           ]
         },
@@ -36136,6 +36147,6 @@
     ],
     "lastUpdated": "2026-08-29"
   },
-  "updatedAt": "2026-09-19T07:21:34.117Z",
-  "lastUpdated": "2026-09-19T07:21:34.117Z"
+  "updatedAt": "2026-09-19T07:23:59.302Z",
+  "lastUpdated": "2026-09-19T07:23:59.302Z"
 }

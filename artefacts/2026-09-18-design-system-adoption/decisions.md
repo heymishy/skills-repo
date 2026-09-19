@@ -1,5 +1,12 @@
 # Decisions: Design System Adoption
 
+## `dsa-s7` review run 1 finding [1-M1]: AC6 wording — RISK-ACCEPT (2026-09-19)
+
+**Context:** `dsa-s7`'s `/review` run 1 found one MEDIUM finding: AC6 ("no existing functional behavior regresses — verified by re-running dsa-s3's own full regression suite") describes a verification method rather than a sharply observable outcome — the same recurring pattern already RISK-ACCEPTed across every one of this feature's own sibling stories' equivalent regression ACs (`dsa-s1` through `dsa-s5`).
+**Decision:** RISK-ACCEPT, consistent with this feature's own established treatment for the identical pattern — not tightened here either, for consistency across all stories in this feature.
+**Rationale:** Matches this feature's own prior precedent exactly (see the `dsa-s3`/`dsa-s2`/`dsa-s1` equivalent RISK-ACCEPT entries) — no new reasoning needed.
+**Story:** dsa-s7 — no AC change.
+
 ## `dsa-s7` created: operator asked to add `dsa-s3`'s deliberately-omitted "Product in action" demo section, scoped as a new post-merge story (2026-09-19)
 
 **Context:** `dsa-s3` (already merged, DoD-complete) deliberately omitted `DESIGN.md`'s mock's "Product in action" section — a browser-chrome-framed product demo — because the mock's own tab-switching, 3-frame carousel depends on custom elements this codebase has no real equivalent for, and no real screenshots existed. The operator, after asking what this section was, explicitly requested it be added, citing it as a key conversion-relevant demo for prospective users.
