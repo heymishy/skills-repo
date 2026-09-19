@@ -495,3 +495,96 @@ withAuth('dsa-s4 AC1/AC2: "View journey complete" button token pair (var(--bg) o
   expect(s.color, 'light: button text should be --bg (light)').toBe('rgb(250, 250, 250)');
   expect(s.color, 'light: text must differ from background').not.toBe(s.bg);
 });
+
+// ── AC3 (toggle portion): Focused/Chat segmented control ───────────────
+//
+// Plan (Task 2): artefacts/2026-09-18-design-system-adoption/plans/dsa-s4-plan.md
+// Drives a real 'ideate' session (its @mocked LLM-gateway fixture,
+// tests/e2e/fixtures/llm-gateway/ideate.success.json, has a real 8-entry
+// `responses` array -- lens A, B, C, D, then the final artefact turn -- so
+// unlike 'discovery' (a single-response fixture that always completes on
+// turn 1, confirmed by a throwaway debug spec run before writing this test)
+// posting 2 real turns here leaves the session genuinely not-done, with 2
+// real prior Q&A pairs AND a real pending currentQuestion (Lens B), which
+// is the exact state this toggle/Focused rendering path is built from
+// (chat-view.js's data.priorQA/data.currentQuestion/data.questionIndex/
+// data.totalQuestions) via direct POST /turn calls (mirrors
+// driveStageToCompletion's own page.request.post pattern above, but stops
+// short of completion).
+
+withAuth('dsa-s4 AC3 (toggle): Focused/Chat segmented control present, defaults to Chat, switching shows one question at a time', async ({ page }) => {
+  const { location } = await createJourney(page, 'DSA S4 Focused Toggle', 'ideate');
+  const sessionId = sessionIdFromChatPath(location);
+  expect(sessionId, 'sessionId should be resolvable from the chat page location').toBeTruthy();
+
+  // Two real turns into the ideate fixture's scripted 8-turn sequence (Lens
+  // A, then Lens B) -- the session is still genuinely not done.
+  for (let i = 0; i < 2; i++) {
+    const res = await page.request.post(`/api/skills/ideate/sessions/${sessionId}/turn`, {
+      data: { answer: 'Answer #' + (i + 1) + ' for the focused-toggle test.' }
+    });
+    expect(res.status(), `turn ${i + 1} submission`).toBe(200);
+    const body = await res.json();
+    expect(body.done, `turn ${i + 1} should not complete the ideate session yet`).toBe(false);
+  }
+
+  await page.goto(location);
+  await page.locator('#chat-messages').waitFor({ state: 'visible' });
+
+  // Segmented control present in the left-pane header (.sw-chat-head), with
+  // both a "Focused" and a "Chat" option.
+  const toggle = page.locator('#sw-mode-toggle');
+  await expect(toggle, 'segmented control should be in .sw-chat-head').toBeVisible();
+  await expect(page.locator('.sw-chat-head #sw-mode-toggle'), 'toggle should be inside .sw-chat-head specifically').toBeVisible();
+  const chatBtn = page.locator('#sw-mode-btn-chat');
+  const focusedBtn = page.locator('#sw-mode-btn-focused');
+  await expect(chatBtn).toHaveText('Chat');
+  await expect(focusedBtn).toHaveText('Focused');
+
+  // Chat is the default active state -- full thread visible, Focused view hidden.
+  await expect(chatBtn, 'Chat should be the default active state').toHaveClass(/sw-mode-btn--active/);
+  await expect(focusedBtn, 'Focused should not be active by default').not.toHaveClass(/sw-mode-btn--active/);
+  await expect(page.locator('#chat-messages'), 'full thread should be visible by default').toBeVisible();
+  const chatMessageCountBefore = await page.locator('#chat-messages .sw-chat-msg').count();
+  // 2 user answers + 1 Lens A assistant turn (answered) + 1 Lens B assistant
+  // turn (the current, unanswered question) = 4. The very first user turn
+  // has no preceding assistant question (nothing to render as a "Skill"
+  // bubble for it -- see _renderChatPage's priorQA-pairing loop in
+  // skills.js), so this is 4, not 5.
+  expect(chatMessageCountBefore, 'full thread should contain the real prior turns + current question').toBeGreaterThanOrEqual(4);
+  await expect(page.locator('#sw-focused-view'), 'Focused view should not be visible by default').toBeHidden();
+
+  // Click Focused.
+  await focusedBtn.click();
+  await expect(focusedBtn, 'Focused should become active').toHaveClass(/sw-mode-btn--active/);
+  await expect(chatBtn, 'Chat should no longer be active').not.toHaveClass(/sw-mode-btn--active/);
+  await expect(page.locator('#sw-focused-view'), 'Focused view should now be visible').toBeVisible();
+  await expect(page.locator('#chat-messages'), 'full thread should now be hidden').toBeHidden();
+
+  // Only the current/most-recent unanswered question is shown.
+  await expect(page.locator('#sw-focused-current-question .sw-focused-current-text'))
+    .not.toBeEmpty();
+
+  // A progress indicator ("Question X of Y" or equivalent) is present.
+  await expect(page.locator('#sw-focused-progress-label')).toContainText(/Question \d+ of \d+/);
+
+  // Prior answered turns are collapsed behind the progress indicator --
+  // i.e. hidden by default, with a click-to-expand affordance.
+  const priorToggle = page.locator('#sw-focused-prior-toggle');
+  await expect(priorToggle, 'a way to expand previous answers should exist').toBeVisible();
+  await expect(page.locator('#sw-focused-prior-list'), 'prior turns should be collapsed by default').toBeHidden();
+  const priorItemCount = await page.locator('#sw-focused-prior-item, .sw-focused-prior-item').count();
+  expect(priorItemCount, 'both prior turns should be present (collapsed) in the Focused view').toBe(2);
+
+  // Click-to-expand: clicking the toggle reveals the prior list.
+  await priorToggle.click();
+  await expect(page.locator('#sw-focused-prior-list'), 'prior list should expand on click').toBeVisible();
+  await expect(page.locator('.sw-focused-prior-item').first(), 'an individual prior answer should be expandable').toBeVisible();
+
+  // Click Chat again -- full thread restored, underlying message data unchanged.
+  await chatBtn.click();
+  await expect(page.locator('#chat-messages'), 'full thread should be restored').toBeVisible();
+  await expect(page.locator('#sw-focused-view'), 'Focused view should be hidden again').toBeHidden();
+  const chatMessageCountAfter = await page.locator('#chat-messages .sw-chat-msg').count();
+  expect(chatMessageCountAfter, 'underlying message data should be unchanged by the toggle').toBe(chatMessageCountBefore);
+});

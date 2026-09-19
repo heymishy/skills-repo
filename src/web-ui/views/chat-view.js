@@ -87,6 +87,72 @@ function renderChat(data) {
     );
   }
 
+  // dsa-s4 (AC3, toggle portion): Focused-mode view, built from the SAME
+  // data.priorQA/data.currentQuestion/data.questionIndex/data.totalQuestions
+  // already passed into this function for the Chat thread above -- no new
+  // data source, no new server call. Shows only the current unanswered
+  // question (or, once all questions are answered, the most recent prior
+  // turn) with a "Question X of Y" progress indicator; every earlier turn
+  // collapses behind a single click-to-expand toggle, and each collapsed
+  // turn is itself a <details> element so an individual prior answer can
+  // also be expanded on its own.
+  const focusedPriorQA = data.priorQA || [];
+  const focusedHasCurrent = !!data.currentQuestion;
+  const focusedQuestionIndex = data.questionIndex || (focusedPriorQA.length + (focusedHasCurrent ? 1 : 0)) || 1;
+  const focusedTotalQuestions = Math.max(data.totalQuestions || focusedQuestionIndex, focusedQuestionIndex, 1);
+
+  // The turns rendered as "prior" in Focused mode: every priorQA entry when
+  // there's a live current question; all but the last one when the session
+  // has no current question (that last entry becomes the "current" display
+  // below instead, per "most recent turn if all answered").
+  const focusedPriorItems = focusedHasCurrent ? focusedPriorQA : focusedPriorQA.slice(0, -1);
+  const focusedCurrentLastTurn = !focusedHasCurrent && focusedPriorQA.length
+    ? focusedPriorQA[focusedPriorQA.length - 1] : null;
+  const focusedCurrentText = focusedHasCurrent
+    ? data.currentQuestion
+    : (focusedCurrentLastTurn ? focusedCurrentLastTurn.question : '');
+  const focusedCurrentLabel = focusedHasCurrent ? 'Skill' : 'Last question';
+
+  let focusedDotsHtml = '';
+  for (let fd = 0; fd < focusedTotalQuestions; fd++) {
+    const fdDone = fd < focusedPriorItems.length;
+    const fdCurrent = fd === focusedPriorItems.length;
+    focusedDotsHtml += '<span class="sw-focused-dot' +
+      (fdDone ? ' sw-focused-dot--done' : '') +
+      (fdCurrent ? ' sw-focused-dot--current' : '') + '"></span>';
+  }
+
+  const focusedPriorListHtml = focusedPriorItems.map(function(qa, i) {
+    return '<details class="sw-focused-prior-item">' +
+      '<summary class="sw-focused-prior-summary">Q' + (i + 1) + ': ' + lightMarkdown(qa.question || '') + '</summary>' +
+      '<div class="sw-focused-prior-answer">' + lightMarkdown(qa.answer || '') + '</div>' +
+    '</details>';
+  }).join('');
+
+  const focusedPriorToggleHtml = focusedPriorItems.length
+    ? '<div class="sw-focused-prior-wrap">' +
+        '<button type="button" class="sw-focused-prior-toggle" id="sw-focused-prior-toggle"' +
+          ' data-show-label="' + focusedPriorItems.length + ' previous answered — show"' +
+          ' data-hide-label="Hide previous answers"' +
+          ' onclick="swToggleFocusedPrior()">' + focusedPriorItems.length + ' previous answered — show</button>' +
+        '<div class="sw-focused-prior-list" id="sw-focused-prior-list" hidden>' + focusedPriorListHtml + '</div>' +
+      '</div>'
+    : '';
+
+  const focusedViewHtml =
+    '<div class="sw-focused-view" id="sw-focused-view" hidden>' +
+      '<div class="sw-focused-progress">' +
+        '<div class="sw-focused-dots">' + focusedDotsHtml + '</div>' +
+        '<span class="sw-focused-progress-label" id="sw-focused-progress-label">Question ' +
+          Math.min(focusedQuestionIndex, focusedTotalQuestions) + ' of ' + focusedTotalQuestions + '</span>' +
+      '</div>' +
+      '<div id="sw-focused-current-question">' +
+        '<div class="sw-focused-current-label">' + escHtml(focusedCurrentLabel) + '</div>' +
+        '<div class="sw-focused-current-text">' + lightMarkdown(focusedCurrentText) + '</div>' +
+      '</div>' +
+      focusedPriorToggleHtml +
+    '</div>';
+
   const draftSections = (data.draftSections || []).map(function(s) {
     let pillHtml = '';
     if (s.state === 'drafted') pillHtml = pill('green',  'Drafted', { dot: false });
@@ -181,6 +247,33 @@ function renderChat(data) {
       // the same shared toggle.
       'function swToggleCanvasFs(){var p=document.getElementById("canvas-section");if(!p)return;p.classList.toggle("canvas-fs");var g=p.classList.contains("canvas-fs")?"⊡":"⊞";var b1=document.getElementById("sw-canvas-fs-btn");if(b1)b1.textContent=g;var b2=document.getElementById("sw-expand-canvas");if(b2)b2.textContent=g;}' +
       'function swExpandCanvas(){swToggleCanvasFs();}' +
+      // dsa-s4 (AC3, toggle portion): Focused/Chat segmented-control toggle.
+      // Client-side visibility swap only -- no new server route, no change
+      // to how #chat-form/#chat-input/Cmd/Ctrl+Enter submit (both modes
+      // share the exact same footer/form; Focused mode just changes what is
+      // shown above it, same as Chat mode already does). Emitted
+      // unconditionally alongside the other always-on fullscreen toggles
+      // above (not gated by data.readOnly), since the segmented control
+      // itself is rendered unconditionally in .sw-chat-head.
+      'function swSetChatViewMode(mode){' +
+        'var chatEl=document.getElementById("chat-messages");' +
+        'var focusedEl=document.getElementById("sw-focused-view");' +
+        'var chatBtn=document.getElementById("sw-mode-btn-chat");' +
+        'var focusedBtn=document.getElementById("sw-mode-btn-focused");' +
+        'if(!chatEl||!focusedEl)return;' +
+        'var isFocused=mode==="focused";' +
+        'chatEl.hidden=isFocused;' +
+        'focusedEl.hidden=!isFocused;' +
+        'if(chatBtn)chatBtn.classList.toggle("sw-mode-btn--active",!isFocused);' +
+        'if(focusedBtn)focusedBtn.classList.toggle("sw-mode-btn--active",isFocused);' +
+      '}' +
+      'function swToggleFocusedPrior(){' +
+        'var list=document.getElementById("sw-focused-prior-list");' +
+        'var btn=document.getElementById("sw-focused-prior-toggle");' +
+        'if(!list||!btn)return;' +
+        'list.hidden=!list.hidden;' +
+        'btn.textContent=list.hidden?btn.getAttribute("data-show-label"):btn.getAttribute("data-hide-label");' +
+      '}' +
     '</script>';
 
   const scriptHtml = data.readOnly ? '' : (
@@ -445,6 +538,41 @@ function renderChat(data) {
         '.sw-chat-pane { overflow: visible; }',
         '.sw-chat-thread { overflow: visible; }',
       '}',
+      // dsa-s4 (AC3, toggle portion): Focused/Chat segmented control in the
+      // left-pane header (.sw-chat-head), plus the additive Focused-mode
+      // rendering path. [hidden]-specific overrides are required for
+      // .sw-chat-thread/.sw-focused-view/.sw-focused-prior-list because each
+      // already carries its own `display:flex` rule above -- an author
+      // stylesheet rule of equal specificity to the UA stylesheet's own
+      // `[hidden]{display:none}` wins over it by cascade origin (not
+      // selector order), so without an explicit override here the `hidden`
+      // attribute set by swSetChatViewMode()/swToggleFocusedPrior() (see
+      // alwaysOnScriptHtml) would silently fail to hide the element. Mirrors
+      // the established `.pvc-item[hidden]{display:none!important}` /
+      // `.sw-credits-error[hidden]{display:none}` pattern already used
+      // elsewhere in this codebase (products.js, settings.js).
+      '.sw-mode-toggle { display:flex; gap:2px; background:var(--surface-2); border-radius:7px; padding:2px; flex-shrink:0; }',
+      '.sw-mode-btn { font-family:inherit; font-size:11.5px; font-weight:500; padding:5px 11px; border-radius:6px; border:none; cursor:pointer; background:transparent; color:var(--muted); }',
+      '.sw-mode-btn--active { background:var(--bg); color:var(--ink); }',
+      '.sw-chat-thread[hidden] { display:none; }',
+      '.sw-focused-view { flex:1; display:flex; flex-direction:column; padding:24px 28px; overflow:auto; }',
+      '.sw-focused-view[hidden] { display:none; }',
+      '.sw-focused-progress { display:flex; align-items:center; gap:10px; margin-bottom:16px; }',
+      '.sw-focused-dots { display:flex; gap:5px; }',
+      '.sw-focused-dot { width:20px; height:3px; border-radius:2px; background:var(--line); }',
+      '.sw-focused-dot--done { background:var(--success); }',
+      '.sw-focused-dot--current { background:var(--accent); }',
+      '.sw-focused-progress-label { font-size:11.5px; color:var(--muted); font-family:var(--mono); }',
+      '.sw-focused-current-label { font-size:12px; color:var(--muted); margin-bottom:8px; }',
+      '.sw-focused-current-text { font-size:22px; font-weight:600; line-height:1.4; color:var(--ink); }',
+      '.sw-focused-prior-wrap { margin-top:28px; }',
+      '.sw-focused-prior-toggle { font-size:12px; color:var(--muted); background:none; border:1px solid var(--line); border-radius:6px; padding:5px 10px; cursor:pointer; font-family:inherit; }',
+      '.sw-focused-prior-toggle:hover { color:var(--ink); border-color:var(--muted-2); }',
+      '.sw-focused-prior-list { margin-top:10px; display:flex; flex-direction:column; gap:8px; }',
+      '.sw-focused-prior-list[hidden] { display:none; }',
+      '.sw-focused-prior-item { border:1px solid var(--line); border-radius:8px; padding:8px 12px; background:var(--surface); }',
+      '.sw-focused-prior-summary { font-size:12.5px; color:var(--ink-2); cursor:pointer; }',
+      '.sw-focused-prior-answer { margin-top:6px; font-size:13px; color:var(--ink); line-height:1.55; }',
     '</style>',
     (data.contextManifestHtml ||
       '<div id="context-manifest" role="region" aria-label="Loaded context files"' +
@@ -460,8 +588,18 @@ function renderChat(data) {
             '<div class="sw-chat-title">' + escHtml(data.skillLabel) + '</div>',
           '</div>',
           (data.modelLabel ? '<span style="font-size:11px;color:var(--muted);background:var(--line-2);padding:2px 8px;border-radius:10px;font-family:var(--mono)">' + escHtml(data.modelLabel) + '</span>' : ''),
+          // dsa-s4 (AC3, toggle portion): Focused/Chat segmented control --
+          // pure append to .sw-chat-head's existing children, doesn't
+          // restructure anything above. Chat stays the default active state
+          // (matches the existing, already-built full-thread view); Focused
+          // is the new, additive one.
+          '<div class="sw-mode-toggle" id="sw-mode-toggle" role="group" aria-label="Chat view mode">' +
+            '<button type="button" class="sw-mode-btn sw-mode-btn--active" id="sw-mode-btn-chat" onclick="swSetChatViewMode(\'chat\')">Chat</button>' +
+            '<button type="button" class="sw-mode-btn" id="sw-mode-btn-focused" onclick="swSetChatViewMode(\'focused\')">Focused</button>' +
+          '</div>',
         '</header>',
         '<div class="sw-chat-thread" id="chat-messages">' + messages.join('') + '</div>',
+        focusedViewHtml,
         footerHtml,
       '</section>',
 
