@@ -36078,14 +36078,14 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-19T22:30:19.738Z",
+              "updatedAt": "2026-09-19T22:48:28.350Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
-                "passing": 4
+                "passing": 9
               },
               "acTotal": 5,
-              "acVerified": 2,
+              "acVerified": 5,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
