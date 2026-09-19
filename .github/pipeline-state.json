@@ -35350,10 +35350,11 @@
           "baseline": "0 of 4",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "dsa-s1 (artefact viewer) and dsa-s2 (dashboard) merged and verified; 2 of 4 screens now match DESIGN.md token values. dsa-s3/dsa-s4 (landing, skill-session) still needed before the 4/4 target is reachable.",
+          "evidence": "dsa-s1 (artefact viewer), dsa-s2 (dashboard), and dsa-s3 (landing) merged and verified; 3 of 4 screens now match DESIGN.md token values. dsa-s4 (skill-session chat) still needed before the 4/4 target is reachable.",
           "contributingStories": [
             "dsa-s1",
-            "dsa-s2"
+            "dsa-s2",
+            "dsa-s3"
           ]
         },
         {
@@ -35373,10 +35374,11 @@
           "baseline": "Not yet established",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "dsa-s1 and dsa-s2 merged and verified; no real beta-user exposure/feedback yet since dsa-s2 just shipped.",
+          "evidence": "dsa-s1, dsa-s2, and dsa-s3 merged and verified; no real beta-user exposure/feedback yet since dsa-s3 just shipped.",
           "contributingStories": [
             "dsa-s1",
-            "dsa-s2"
+            "dsa-s2",
+            "dsa-s3"
           ]
         }
       ],
@@ -35730,19 +35732,19 @@
           "id": "NFR-dsa-s3-perf",
           "category": "nfr",
           "label": "Landing page load: no measurable regression",
-          "status": "met",
-          "evidence": "dsa-s3-dor.md H9/H-NFR -- no violation found",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-18T10:09:01.457Z"
+          "status": "not-met",
+          "evidence": "No independent page-load measurement taken (live or synthetic). Follow-up action logged in dod/dsa-s3-dod.md.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-19T07:13:37.582Z"
         },
         {
           "id": "NFR-dsa-s3-a11y",
           "category": "nfr",
           "label": "Landing WCAG 2.1 AA: no regression to existing accessibility properties",
-          "status": "met",
-          "evidence": "dsa-s3-dor.md H9/H-NFR -- no violation found",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-18T10:09:01.458Z"
+          "status": "not-met",
+          "evidence": "Independently re-confirmed .btn--primary renders white text on --accent at 3.68:1 in dark mode, below WCAG AA 4.5:1 -- inherited from dsa-s1, elevated priority given this page's higher-stakes surface. Follow-up action logged in dod/dsa-s3-dod.md.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-19T07:13:37.583Z"
         },
         {
           "id": "NFR-dsa-s4-perf",
@@ -35915,11 +35917,11 @@
             {
               "slug": "dsa-s3",
               "name": "Restyle the Landing Page to Match DESIGN.md",
-              "stage": "branch-complete",
-              "health": "green",
+              "stage": "definition-of-done",
+              "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-19T06:44:12.228Z",
+              "updatedAt": "2026-09-19T07:13:37.581Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -35946,8 +35948,13 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/908"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/908",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "DoD follow-ups: performance NFR not independently load-measured; elevated-priority WCAG contrast gap on .btn--primary (inherited from dsa-s1, now on a higher-stakes page) -- see dod/dsa-s3-dod.md",
+              "layoutGapsAtMerge": true,
+              "layoutGapsRiskAccepted": true
             },
             {
               "slug": "dsa-s4",
@@ -36120,6 +36127,6 @@
     ],
     "lastUpdated": "2026-08-29"
   },
-  "updatedAt": "2026-09-19T06:44:12.229Z",
-  "lastUpdated": "2026-09-19T06:44:12.229Z"
+  "updatedAt": "2026-09-19T07:13:37.583Z",
+  "lastUpdated": "2026-09-19T07:13:37.583Z"
 }
