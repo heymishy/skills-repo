@@ -35919,7 +35919,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-19T05:37:23.948Z",
+              "updatedAt": "2026-09-19T06:06:54.447Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 7,
@@ -35935,7 +35935,7 @@
                 {
                   "id": "task-1",
                   "name": "Restyle landing.html to DESIGN.md tokens/layout/mobile breakpoint (AC1-AC3, AC5)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s3-plan.md"
                 },
                 {
@@ -36117,6 +36117,6 @@
     ],
     "lastUpdated": "2026-08-29"
   },
-  "updatedAt": "2026-09-19T05:37:23.949Z",
-  "lastUpdated": "2026-09-19T05:37:23.949Z"
+  "updatedAt": "2026-09-19T06:06:54.448Z",
+  "lastUpdated": "2026-09-19T06:06:54.448Z"
 }
