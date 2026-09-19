@@ -3,7 +3,7 @@
 **Story reference:** artefacts/2026-09-18-design-system-adoption/stories/dsa-s3.md
 **Test plan reference:** artefacts/2026-09-18-design-system-adoption/test-plans/dsa-s3-test-plan.md
 **Assessed by:** Claude (agent)
-**Date:** 2026-09-18
+**Date:** 2026-09-18 (re-signed 2026-09-19 for the FEATURE-WIDE mobile-responsiveness amendment, new AC5 — see `decisions.md`)
 
 ---
 
@@ -22,9 +22,10 @@ Any change to `handleRoot`'s own logic (auth redirect, PostHog capture, CSRF tok
 | AC2 (light-mode tokens) | Playwright: same, light mode toggled | E2E |
 | AC3 (layout matches mock) | Playwright: structural assertions on hero/sections/screenshot-frame | E2E |
 | AC4 (no regression) | Playwright: re-run `wuce23-skill-launcher-landing.spec.js` unmodified | E2E |
+| AC5 (mobile responsive, no horizontal overflow) | Playwright: `page.setViewportSize()` at 375px/390px, measure `document.body.scrollWidth` | E2E |
 
 **Assumptions:**
-`landing.html`/`public.js`'s `handleRoot` are the real target (confirmed via direct code trace, correcting the story's own initial file-ambiguity, resolved during `/review`).
+`landing.html`/`public.js`'s `handleRoot` are the real target (confirmed via direct code trace, correcting the story's own initial file-ambiguity, resolved during `/review`). AC5's implementation will likely require adding explicit CSS to `landing.html`'s own styles (not yet confirmed whether the hero/full-bleed sections already naturally reflow, or need an explicit `@media (max-width: 768px)` override per `DESIGN.md`'s new Responsive behavior section) — investigate at `/implementation-plan` time rather than assuming either way.
 
 **Estimated touch points:**
 Files: `src/web-ui/templates/landing.html`. Services: none. APIs: none.
@@ -33,7 +34,7 @@ Files: `src/web-ui/templates/landing.html`. Services: none. APIs: none.
 
 ## Contract Review
 
-✅ **Contract review passed** — proposed implementation aligns with all 4 ACs, no mismatches. Contract further sharpens the story's own Architecture Constraints with the exact `_LANDING_HTML` load trace.
+✅ **Contract review passed** — proposed implementation aligns with all 5 ACs, no mismatches. Contract further sharpens the story's own Architecture Constraints with the exact `_LANDING_HTML` load trace.
 
 ---
 
@@ -42,12 +43,12 @@ Files: `src/web-ui/templates/landing.html`. Services: none. APIs: none.
 | # | Check | Status | Notes |
 |---|-------|--------|-------|
 | H1 | User story is in As / Want / So format with a named persona | ✅ | Persona: "a beta user... or a future prospective user" — dual framing, flagged LOW in `/review`, not a block |
-| H2 | At least 3 ACs in Given / When / Then format | ✅ | 4 ACs |
-| H3 | Every AC has at least one test | ✅ | AC1-AC4 covered |
+| H2 | At least 3 ACs in Given / When / Then format | ✅ | 5 ACs (AC5 added 2026-09-19, FEATURE-WIDE mobile-responsiveness amendment) |
+| H3 | Every AC has at least one test | ✅ | AC1-AC5 covered |
 | H4 | Out-of-scope populated | ✅ | 3 items |
 | H5 | Benefit linkage references named metric | ✅ | "Visual consistency across the 4 real screens" |
 | H6 | Complexity rated | ✅ | Rating: 2 |
-| H7 | No unresolved HIGH findings | ✅ | 0 HIGH, review PASS run 1 (route ambiguity resolved during review, not carried forward as a finding) |
+| H7 | No unresolved HIGH findings | ✅ | 0 HIGH, review PASS run 2 (route ambiguity resolved during review run 1, not carried forward; AC5 amendment reviewed clean in run 2) |
 | H8 | Test plan has no uncovered ACs | ✅ | 0 gaps |
 | H9 | Architecture Constraints populated; no Category E HIGH | ✅ | Populated and precision-corrected during `/review`; Category E scored 5/5 |
 | H-E2E | CSS-layout-dependent + no E2E tooling + no RISK-ACCEPT → block | ✅ | No gap-type ACs; Playwright configured |
@@ -106,6 +107,15 @@ pattern and the Skills Platform - Landing.dc.html reference mock, using the
 token values dsa-s1 already updated in html-shell.js. Do NOT edit
 routes/landing.js or its handleLanding function -- confirmed dead code, never
 dispatched. Do not add scope beyond what the tests and ACs specify.
+
+AC5 (added 2026-09-19): the page must also be genuinely mobile responsive --
+verify with a real Playwright viewport-size check (375px and 390px widths)
+that document.body.scrollWidth never exceeds the viewport width, per
+DESIGN.md's new "Responsive behavior" section (single 768px breakpoint,
+Marketing/landing minimum bar: single-column hero/copy, no forced horizontal
+overflow, screenshot frames scale down rather than clip). Investigate whether
+the existing layout already reflows naturally or needs an explicit
+@media (max-width: 768px) override -- do not assume either way going in.
 
 Constraints:
 - dsa-s1 must land first (token rename dependency).
