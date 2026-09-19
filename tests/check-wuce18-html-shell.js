@@ -289,6 +289,15 @@ async function runT18() {
 // then print the summary. dsa-s2 Task 2: handleDashboard now genuinely
 // awaits a real Promise, so these can no longer run as synchronous top-level
 // blocks -- Node CJS has no top-level await, hence this async runner.
+//
+// GUARDRAIL for future editors: any NEW test that calls handleDashboard (or
+// any other function that awaits a real Promise) MUST be defined as an
+// `async function runTN() { ... }` -- NOT a plain synchronous `{ ... }`
+// block like T13-T15/T17 above -- and MUST be added to the `await runTN();`
+// list below. A plain block calling an async handler without awaiting it
+// will fail loudly (assertions run against an unset res before the promise
+// resolves), not silently pass -- but it's still a confusing debugging
+// detour this file has already hit once (dsa-s2 Task 2).
 // ─────────────────────────────────────────────────────────────────────────────
 async function main() {
   await runT9();

@@ -4,14 +4,14 @@ const assert = require('assert');
 const { _mapPendingActionsForDashboard } = require('../src/web-ui/routes/dashboard');
 
 function testMapsRealShapeToRenderDashboardShape() {
-  var raw = {
+  const raw = {
     items: [
       { featureName: 'interactive-kanban-boards', artefactType: 'discovery', daysPending: 2, artefactUrl: '/features/x/discovery' },
       { featureName: 'streaming-live-draft', artefactType: 'test-plan', daysPending: 0, artefactUrl: '/features/y/test-plan' }
     ],
     bannerMessage: null
   };
-  var result = _mapPendingActionsForDashboard(raw);
+  const result = _mapPendingActionsForDashboard(raw);
   assert.strictEqual(result.pendingActionsCount, 2);
   assert.strictEqual(result.actions.length, 2);
   assert.ok(result.actions[0].what.toLowerCase().includes('discovery'));
@@ -22,7 +22,7 @@ function testMapsRealShapeToRenderDashboardShape() {
 }
 
 function testEmptyItemsMapsToEmptyActions() {
-  var result = _mapPendingActionsForDashboard({ items: [], bannerMessage: null });
+  const result = _mapPendingActionsForDashboard({ items: [], bannerMessage: null });
   assert.strictEqual(result.pendingActionsCount, 0);
   assert.deepStrictEqual(result.actions, []);
 }

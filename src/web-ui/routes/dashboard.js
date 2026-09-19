@@ -43,16 +43,23 @@ function setGetPendingActions(fn) { _getPendingActions = fn; }
  * Map the real getPendingActions() adapter shape
  * ({ items: [{featureName, artefactType, daysPending, artefactUrl}], bannerMessage }) into the
  * shape renderDashboard() expects ({ actions: [{what, feature, age, you}], pendingActionsCount }).
+ *
+ * dsa-s2 Task 2 code-quality review: `raw.bannerMessage` (e.g. "Some
+ * repositories could not be checked") is intentionally NOT surfaced here --
+ * renderDashboard()'s own data contract has no banner-rendering slot for it.
+ * This is a real, deliberate scope boundary (AC5 only asks for the pending
+ * item list), not an oversight -- a future story would need to add a banner
+ * slot to renderDashboard() before this could be wired through.
  * @param {{items: Array, bannerMessage: (string|null)}} raw
  * @returns {{actions: Array, pendingActionsCount: number}}
  */
 function _mapPendingActionsForDashboard(raw) {
-  var items = (raw && raw.items) || [];
-  var actions = items.map(function(item) {
+  const items = (raw && raw.items) || [];
+  const actions = items.map(function(item) {
     return {
       what: 'Sign off ' + item.artefactType,
       feature: item.featureName,
-      age: item.daysPending === 0 ? 'today' : (item.daysPending + 'd ago'),
+      age: item.daysPending === 0 ? 'today' : (Math.max(0, item.daysPending) + 'd ago'),
       you: true
     };
   });
@@ -155,14 +162,14 @@ async function handleDashboard(req, res) {
   // unexplained hardcode, matching the placeholder-value comments below.
   const dateLabel = now.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
 
-  var pendingResult;
+  let pendingResult;
   try {
     pendingResult = await _getPendingActions({ id: userId, login: login }, req.session.accessToken);
   } catch (err) {
     _logger.warn('dashboard_pending_actions_error', { userId: userId, reason: err.message });
     pendingResult = { items: [], bannerMessage: null };
   }
-  var mapped = _mapPendingActionsForDashboard(pendingResult);
+  const mapped = _mapPendingActionsForDashboard(pendingResult);
 
   const bodyContent = renderDashboard({
     greetingName: login || 'there',
