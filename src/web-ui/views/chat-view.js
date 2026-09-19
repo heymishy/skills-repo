@@ -225,13 +225,29 @@ function renderChat(data) {
       '.sw-chat-body { flex: 1; min-width: 0; }',
       '.sw-chat-from { font-size: 12px; color: var(--muted); margin-bottom: 3px; }',
       '.sw-chat-text { font-size: 14px; color: var(--ink); line-height: 1.6; }',
-      '.sw-chat-insight { margin-left: 32px; padding: 10px 12px; background: var(--accent-soft); border: 1px solid #DDD6FE; border-radius: 8px; font-size: 13px; color: var(--accent-ink); line-height: 1.55; }',
+      // dsa-s4: border was hardcoded #DDD6FE (a lavender not in DESIGN.md's
+      // palette). var(--accent-soft) was considered (as the plan text
+      // suggested) but rejected: it's IDENTICAL to this rule's own
+      // background, so the border would render invisible -- and no other
+      // rule in this codebase ever uses a `-soft` token for a border (see
+      // .cv-pip.active/.cv-tree-root-node, both `background:accent-soft;
+      // border-color:accent`). var(--accent) matches that established local
+      // convention and stays visible against the accent-soft background.
+      '.sw-chat-insight { margin-left: 32px; padding: 10px 12px; background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 8px; font-size: 13px; color: var(--accent-ink); line-height: 1.55; }',
       '.sw-chat-insight-label { font-size: 11px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; margin-bottom: 4px; opacity: 0.8; }',
       '.sw-chat-foot { border-top: 1px solid var(--line); padding: 12px; background: var(--bg); }',
       '.sw-chat-input { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }',
       '.sw-chat-input textarea { width: 100%; min-height: 56px; border: none; background: transparent; resize: none; outline: none; font-family: inherit; font-size: 14px; line-height: 1.5; color: var(--ink); }',
       '.sw-chat-input-row { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }',
-      '.sw-chat-confirm { margin: 0 0 8px; padding: 10px 12px; background: var(--amber-soft); border: 1px solid #FDE68A; border-radius: 8px; font-size: 13px; color: var(--amber); }',
+      // dsa-s4: border was hardcoded #FDE68A. The plan text suggested
+      // var(--warn-soft), but that's rejected for the same invisible-border
+      // reason as .sw-chat-insight above (--warn-soft is a dark, low-
+      // contrast fill in dark mode, nearly indistinguishable from this
+      // rule's own var(--amber-soft) background) -- var(--warn) matches the
+      // same established local convention (full-strength token for
+      // borders, `-soft` reserved for fills) used by .chip-warn/
+      // .ac-badge-amber elsewhere in this same file.
+      '.sw-chat-confirm { margin: 0 0 8px; padding: 10px 12px; background: var(--amber-soft); border: 1px solid var(--warn); border-radius: 8px; font-size: 13px; color: var(--amber); }',
       '.sw-chat-confirm-title { font-weight: 600; margin-bottom: 4px; }',
       '.sw-chat-confirm code { background: rgba(180,83,9,0.1); padding: 1px 5px; border-radius: 3px; font-family: var(--mono); font-size: 12px; }',
       '.sw-draft-body { font-family: var(--serif); font-size: 14.5px; line-height: 1.65; color: var(--ink-2); white-space: pre-wrap; }',
@@ -250,50 +266,63 @@ function renderChat(data) {
       '.sw-dot:nth-child(1) { animation-delay:0s; }',
       '.sw-dot:nth-child(2) { animation-delay:0.2s; }',
       '.sw-dot:nth-child(3) { animation-delay:0.4s; }',
-      '.chip-ok   { display:inline-flex;align-items:center;gap:3px;padding:2px 8px;background:#DCFCE7;color:#166534;border-radius:10px;font-size:12px;font-weight:500;border:1px solid #BBF7D0; }',
-      '.chip-warn { display:inline-flex;align-items:center;gap:3px;padding:2px 8px;background:#FEF9C3;color:#713F12;border-radius:10px;font-size:12px;font-weight:500;border:1px solid #FDE68A; }',
+      '.chip-ok   { display:inline-flex;align-items:center;gap:3px;padding:2px 8px;background:var(--success-soft);color:var(--success);border-radius:10px;font-size:12px;font-weight:500;border:1px solid var(--success); }',
+      '.chip-warn { display:inline-flex;align-items:center;gap:3px;padding:2px 8px;background:var(--warn-soft);color:var(--warn);border-radius:10px;font-size:12px;font-weight:500;border:1px solid var(--warn); }',
       /* assumption card styles (iwu.3 mockup) */
       '.ac-section-head { display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--line-2);flex-shrink:0; }',
       '.ac-section-label { font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted); }',
       '.ac-badges { display:flex;gap:5px;align-items:center; }',
       '.ac-badge { font-size:10px;font-weight:500;padding:1px 7px;border-radius:10px; }',
-      '.ac-badge-amber { background:#FEF3C7;color:#92400E;border:1px solid #FDE68A; }',
-      '.ac-badge-green { background:#DCFCE7;color:#166534;border:1px solid #BBF7D0; }',
+      '.ac-badge-amber { background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn); }',
+      '.ac-badge-green { background:var(--success-soft);color:var(--success);border:1px solid var(--success); }',
       '.assumption-card { border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--surface);display:flex;flex-direction:column;gap:6px;transition:border-color 0.15s; }',
-      '.assumption-card[data-state="confirmed"] { border-color:#6EE7B7;background:#F0FDF4; }',
-      '.assumption-card[data-state="flagged"]   { border-color:#FCA5A5;background:#FFF1F2; }',
+      '.assumption-card[data-state="confirmed"] { border-color:var(--success);background:var(--success-soft); }',
+      '.assumption-card[data-state="flagged"]   { border-color:var(--danger);background:var(--danger-soft); }',
       '.assumption-card-meta { display:flex;align-items:center;gap:5px;flex-wrap:wrap; }',
       '.ac-type-tag { font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:1px 6px;border-radius:3px; }',
+      // dsa-s4: .ac-type-desirability (purple) is a DELIBERATE EXCEPTION,
+      // left as its original hardcoded hex -- NOT tokenized. Rationale:
+      // desirability/viability/feasibility/ethical badges render together
+      // in the same AC-type legend on a single assumption card; collapsing
+      // desirability into var(--accent) (the only candidate token) would
+      // make it visually indistinguishable from .ac-type-viability just
+      // below, which IS tokenized to var(--accent-soft)/var(--accent-ink).
+      // DESIGN.md defines no purple token, so there is no non-lossy
+      // substitution available. Kept exactly as-is, theme-invariant by
+      // design (matches this rule's own pre-existing behaviour).
       '.ac-type-desirability { background:#EDE9FE;color:#3730A3; }',
-      '.ac-type-viability    { background:#DBEAFE;color:#1E40AF; }',
-      '.ac-type-feasibility  { background:#DCFCE7;color:#166534; }',
-      '.ac-type-ethical      { background:#F3F4F6;color:#374151; }',
+      '.ac-type-viability    { background:var(--accent-soft);color:var(--accent-ink); }',
+      '.ac-type-feasibility  { background:var(--success-soft);color:var(--success); }',
+      '.ac-type-ethical      { background:var(--surface-2);color:var(--ink-2); }',
       '.ac-risk-dot { width:6px;height:6px;border-radius:50%;flex-shrink:0; }',
-      '.ac-risk-high   { background:#EF4444; }',
-      '.ac-risk-medium { background:#F59E0B; }',
-      '.ac-risk-low    { background:#10B981; }',
+      '.ac-risk-high   { background:var(--danger); }',
+      '.ac-risk-medium { background:var(--warn); }',
+      '.ac-risk-low    { background:var(--success); }',
       '.assumption-card-text { font-size:12px;line-height:1.5;color:var(--ink); }',
-      '.assumption-card[data-state="confirmed"] .assumption-card-text { color:#166534; }',
-      '.assumption-card[data-state="flagged"]   .assumption-card-text { color:#991B1B; }',
+      '.assumption-card[data-state="confirmed"] .assumption-card-text { color:var(--success); }',
+      '.assumption-card[data-state="flagged"]   .assumption-card-text { color:var(--danger); }',
       '.assumption-card-actions { display:flex;gap:5px; }',
       '.btn-confirm,.btn-flag { font-size:11px;padding:2px 9px;border-radius:4px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;font-weight:500; }',
-      '.btn-confirm:hover { background:#DCFCE7;color:#166534;border-color:#6EE7B7; }',
-      '.btn-flag:hover    { background:#FFF1F2;color:#991B1B;border-color:#FCA5A5; }',
-      '.btn-confirmed-state { background:#DCFCE7;color:#166534;border-color:#6EE7B7; }',
-      '.btn-flagged-state   { background:#FFF1F2;color:#991B1B;border-color:#FCA5A5; }',
+      '.btn-confirm:hover { background:var(--success-soft);color:var(--success);border-color:var(--success); }',
+      '.btn-flag:hover    { background:var(--danger-soft);color:var(--danger);border-color:var(--danger); }',
+      '.btn-confirmed-state { background:var(--success-soft);color:var(--success);border-color:var(--success); }',
+      '.btn-flagged-state   { background:var(--danger-soft);color:var(--danger);border-color:var(--danger); }',
       /* inc2.1 — condition card styles */
       '.ci-section-head { display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--line-2);flex-shrink:0; }',
       '.ci-section-label { font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted); }',
       '.condition-card { border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--surface);display:flex;flex-direction:column;gap:5px; }',
       '.condition-card-meta { display:flex;align-items:center;gap:6px;flex-wrap:wrap; }',
       '.ci-type-tag { font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:1px 6px;border-radius:3px; }',
-      '.ci-type-constraint  { background:#FEE2E2;color:#991B1B; }',
-      '.ci-type-dependency  { background:#DBEAFE;color:#1E40AF; }',
-      '.ci-type-outcome     { background:#DCFCE7;color:#166534; }',
+      '.ci-type-constraint  { background:var(--danger-soft);color:var(--danger); }',
+      '.ci-type-dependency  { background:var(--accent-soft);color:var(--accent-ink); }',
+      '.ci-type-outcome     { background:var(--success-soft);color:var(--success); }',
       '.ci-source { font-size:10px;color:var(--muted); }',
       '.condition-card-text { font-size:12px;line-height:1.5;color:var(--ink); }',
-      /* inc4 — canvas panel extension */
-      ':root { --teal: #0F766E; --teal-soft: #CCFBF1; }',
+      // inc4 — canvas panel extension. dsa-s4: --teal/--teal-soft were a
+      // custom token invented mid-file, not in DESIGN.md's palette, and
+      // (confirmed via grep across src/ and tests/) never referenced by any
+      // selector anywhere in this codebase -- dead. Removed rather than
+      // left in place, per the plan's "unused -> replace it" guidance.
       '.cv-section-head { display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--line-2);flex-shrink:0; }',
       '.cv-section-label { font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted); }',
       '.cv-pips { display:flex;gap:4px; }',
@@ -378,7 +407,7 @@ function renderChat(data) {
          successfully-rendered diagram: red-toned border/background/text,
          never a blank space and never mermaid's own raw error output. */
       '.cv-diagram-wrap .mermaid.cv-diagram-error { display:block;justify-content:initial; }',
-      '.cv-diagram-error-box { display:flex;align-items:center;gap:8px;padding:10px 14px;border:1.5px solid var(--red,#DC2626);border-radius:6px;background:var(--red-soft,#FEE2E2);color:var(--red,#991B1B);font-size:12px;font-weight:600; }',
+      '.cv-diagram-error-box { display:flex;align-items:center;gap:8px;padding:10px 14px;border:1.5px solid var(--danger);border-radius:6px;background:var(--danger-soft);color:var(--danger);font-size:12px;font-weight:600; }',
       /* definition story map */
       '.dm-canvas{padding:12px 16px}',
       '.dm-hdr{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}',
@@ -395,7 +424,7 @@ function renderChat(data) {
       '.dm-card-id{font-size:9px;font-weight:700;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.3px}',
       '.dm-card-title{font-size:11px;font-weight:500;color:var(--ink);line-height:1.35;margin:2px 0}',
       '.dm-cx{font-size:9px;font-weight:600;margin-top:2px}',
-      '.dm-cx--l{color:#2da44e}.dm-cx--m{color:#ca8a04}.dm-cx--h{color:#dc2626}',
+      '.dm-cx--l{color:var(--success)}.dm-cx--m{color:var(--warn)}.dm-cx--h{color:var(--danger)}',
       '.dm-empty{padding:24px 16px;font-size:13px;color:var(--muted);font-style:italic}',
       /* story detail modal */
       '.dm-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:10000;align-items:center;justify-content:center}',

@@ -4567,13 +4567,13 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
         '.sn-step:last-child{border-right:none}',
         '.sn-step>span{padding:7px 11px}',
         '.sn-step-link{display:flex;align-items:center;gap:5px;padding:7px 11px;color:inherit;text-decoration:none;width:100%}',
-        '.sn-step-link:hover{background:var(--line-2,#f6f8fa)}',
+        '.sn-step-link:hover{background:var(--line-2)}',
         '.sn-num{font-weight:700;font-size:10px;opacity:0.6}',
         '.sn-icon{font-size:9px}',
         '.sn-step--done{color:var(--ink);opacity:0.75}',
-        '.sn-step--done .sn-icon{color:#2da44e}',
-        '.sn-step--active{background:var(--accent-soft,#eaf1fb);color:var(--ink);font-weight:600}',
-        '.sn-step--active .sn-icon{color:var(--accent,#0969da)}',
+        '.sn-step--done .sn-icon{color:var(--success)}',
+        '.sn-step--active{background:var(--accent-soft);color:var(--ink);font-weight:600}',
+        '.sn-step--active .sn-icon{color:var(--accent)}',
         '.sn-step--pending{opacity:0.4}',
         '.sn-cost{font-size:9px;font-family:monospace;opacity:0.65;margin-left:1px}',
         '.sn-step--sub{border-right:none;padding:0 2px}',
@@ -4582,7 +4582,7 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
         '.sn-sub-label{font-size:10px;padding:7px 5px;color:var(--muted)}',
         '.sn-step--sub .sn-icon{font-size:8px;padding:7px 3px 7px 0;color:var(--muted)}',
         '.sn-ref-link{margin-left:auto;flex-shrink:0;font-size:11px;color:var(--muted);text-decoration:none;padding:0 12px;white-space:nowrap;border-left:1px solid var(--line)}',
-        '.sn-ref-link:hover{color:var(--accent,#0969da);background:var(--line)}',
+        '.sn-ref-link:hover{color:var(--accent);background:var(--line)}',
         '</style>',
         '<nav class="sn-bar" aria-label="Journey stages">',
           '<span class="sn-feature">' + _featureDisplaySlug + '</span>',
@@ -4616,9 +4616,16 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
     var safeJourneyId = escHtml(session.journeyId);
     var journeyPanel;
     if (skillName === 'definition-of-ready') {
+      // dsa-s4: text color was hardcoded #fff. In dark mode background:
+      // var(--ink) resolves to a near-white color, so a fixed white
+      // (#fff) text would be nearly invisible. color:var(--bg) mirrors
+      // html-shell.js's own .sw-btn--primary rule (`background:var(--ink);
+      // color:var(--bg)`, ~line 683) -- the same "dark bar" button pattern
+      // used elsewhere in this app -- so this button now stays legible in
+      // both themes instead of only in light mode.
       journeyPanel = '<div class="sw-journey-gate" style="padding:16px;margin-top:12px">' +
         '<a href="/journey/' + safeJourneyId + '/complete" ' +
-        'style="display:inline-block;font-size:14px;font-weight:600;color:#fff;background:var(--ink);padding:8px 18px;border-radius:6px;text-decoration:none">' +
+        'style="display:inline-block;font-size:14px;font-weight:600;color:var(--bg);background:var(--ink);padding:8px 18px;border-radius:6px;text-decoration:none">' +
         'View journey complete &#x2192;</a></div>';
     } else {
       var nextStage = _journeyStore.getNextStage(skillName) || 'next stage';
@@ -4651,7 +4658,7 @@ function _renderChatPage(skillName, sessionId, session, backUrl, navContext, csr
           '<h3>Approve ' + escHtml(skillName) + '</h3>' +
           '<label for="sign-off-reason">Reason for approval</label>' +
           '<input type="text" id="sign-off-reason" placeholder="Reason for approval..." style="width:100%;margin:8px 0" maxlength="500">' +
-          '<div id="sign-off-error" style="color:var(--error,red);font-size:13px;margin-bottom:8px"></div>' +
+          '<div id="sign-off-error" style="color:var(--danger);font-size:13px;margin-bottom:8px"></div>' +
           '<button type="button" id="sign-off-approve-btn" class="sw-btn sw-btn--primary">Approve</button>' +
           '<button type="button" id="sign-off-cancel-btn" class="sw-btn">Cancel</button>' +
         '</div>' +
