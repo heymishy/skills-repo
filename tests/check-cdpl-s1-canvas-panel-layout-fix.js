@@ -30,12 +30,23 @@ const ideateData = {
 };
 
 // ── Test 1 — renderChat_designSkill_artefactPanelHasMaxHeightStyle (AC1) ─────
+// dsa-s4 (2026-09-20): the height cap that stops #artefact-panel squeezing
+// #canvas-panel moved from a max-height style on #artefact-panel itself to
+// a flex-basis cap on its new resizable wrapper, #sw-artefact-top-group
+// (part of dsa-s4's AC3 resizable-pane mechanism). #artefact-panel is still
+// height-constrained -- via its ancestor's flex:0 0 <pct>% + overflow:hidden
+// -- just not via its own inline style anymore. See decisions.md,
+// "dsa-s4 Task 4: 3 pre-existing check-scripts assert max-height on the
+// wrong element after Task 3's resizable-pane refactor".
 console.log('\n  Test 1 — renderChat_designSkill_artefactPanelHasMaxHeightStyle (AC1)');
 {
   const html = renderChat(designData);
   const m = html.match(/<div id="artefact-panel"[^>]*style="([^"]*)"/);
   ok(m !== null, 'AC1: #artefact-panel element with a style attribute is present');
-  ok(m && /max-height\s*:/.test(m[1]), 'AC1: #artefact-panel style includes a max-height declaration');
+  const wrapper = html.match(/<div id="sw-artefact-top-group"[^>]*style="([^"]*)"/);
+  ok(wrapper !== null, 'AC1: #artefact-panel is wrapped in a #sw-artefact-top-group height-capping container');
+  ok(wrapper && /flex\s*:\s*0\s+0\s+\d/.test(wrapper[1]) && /overflow\s*:\s*hidden/.test(wrapper[1]),
+    'AC1: #sw-artefact-top-group caps height via flex-basis + overflow:hidden (the new containment mechanism, replacing the old max-height style)');
 }
 
 // ── Test 2 — renderChat_designSkill_canvasPanelHasMinHeightDeclaration (AC2) ─
