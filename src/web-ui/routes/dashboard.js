@@ -11,6 +11,8 @@ const { renderShell, escHtml }                        = require('../utils/html-s
 const { isEffectivelyAdmin }                          = require('../modules/impersonation'); // d2
 const csrf                                            = require('../middleware/csrf'); // d2 -- impersonation exit banner CSRF token
 const { renderDashboard }                             = require('../views/dashboard-view');
+const { listJourneys }                                = require('../modules/journey-store'); // dsa-s2 Task 3 (AC7)
+const path                                            = require('path');
 
 // dsa-s2 -- static, platform-wide skill catalog for the "Run a skill" grid.
 // Real skill names confirmed against routes/skills.js's own real
@@ -64,6 +66,74 @@ function _mapPendingActionsForDashboard(raw) {
     };
   });
   return { actions: actions, pendingActionsCount: items.length };
+}
+
+/**
+ * dsa-s2 Task 3 -- format an ISO completedAt timestamp as a relative-day
+ * string ('today' / 'Nd ago'), matching the exact convention
+ * _mapPendingActionsForDashboard() already uses for the pending-actions
+ * `age` field (Task 2, AC5). dashboard-view.js's recent-sessions markup
+ * (views/dashboard-view.js) does no formatting of its own -- it directly
+ * `escHtml(r.when)`s whatever string is supplied, the same way it directly
+ * `escHtml(a.age)`s the pending-actions field -- so a raw ISO timestamp
+ * would render unformatted in the UI if not converted here first.
+ * @param {string} isoString
+ * @returns {string}
+ */
+function _formatCompletedAgo(isoString) {
+  const completedMs = new Date(isoString).getTime();
+  if (Number.isNaN(completedMs)) return isoString;
+  const days = Math.max(0, Math.floor((Date.now() - completedMs) / (24 * 60 * 60 * 1000)));
+  return days === 0 ? 'today' : (days + 'd ago');
+}
+
+/**
+ * Derive dashboard in-progress-count and recent-sessions data from real
+ * journey-store data (listJourneys()). dsa-s2 Task 3 (AC7).
+ *
+ * inProgressCount counts journeys where complete === false.
+ * recent flattens every journey's completedStages into a single list, sorted
+ * newest-first by the raw completedAt timestamp (before relative-day
+ * formatting -- sorting on the formatted 'Nd ago' string would be lexically
+ * wrong, e.g. '10d ago' < '2d ago'), then capped at topN. renderDashboard()'s
+ * own data contract for data.recent is {skill,feature,when,stage,tone} (see
+ * views/dashboard-view.js JSDoc); pillBg/pillColor are additionally carried
+ * as CSS custom-property token references for callers that need direct
+ * color values rather than the named `tone` renderDashboard()'s pill()
+ * component consumes.
+ * @param {Array} journeys - real journey objects from listJourneys()
+ * @param {number} topN - max recent-session entries to return
+ * @returns {{inProgressCount: number, recent: Array}}
+ */
+function _deriveDashboardJourneyData(journeys, topN) {
+  const inProgressCount = journeys.filter(function(j) { return !j.complete; }).length;
+  const allStages = [];
+  journeys.forEach(function(j) {
+    (j.completedStages || []).forEach(function(cs) {
+      allStages.push({
+        skill: cs.skillName,
+        feature: j.featureSlug,
+        whenRaw: cs.completedAt,
+        stage: 'done',
+        tone: 'green',
+        pillBg: 'var(--green-soft)',
+        pillColor: 'var(--green)'
+      });
+    });
+  });
+  allStages.sort(function(a, b) { return a.whenRaw < b.whenRaw ? 1 : (a.whenRaw > b.whenRaw ? -1 : 0); });
+  const recent = allStages.slice(0, topN).map(function(entry) {
+    return {
+      skill: entry.skill,
+      feature: entry.feature,
+      when: _formatCompletedAgo(entry.whenRaw),
+      stage: entry.stage,
+      tone: entry.tone,
+      pillBg: entry.pillBg,
+      pillColor: entry.pillColor
+    };
+  });
+  return { inProgressCount: inProgressCount, recent: recent };
 }
 
 /**
@@ -171,14 +241,33 @@ async function handleDashboard(req, res) {
   }
   const mapped = _mapPendingActionsForDashboard(pendingResult);
 
+  // dsa-s2 Task 3 (AC7) -- repo root resolved relative to THIS file's own
+  // location (src/web-ui/routes/), not copied from server.js's __dirname
+  // (src/web-ui/) -- routes/dashboard.js is one directory level deeper, so
+  // it needs '../../..' where server.js uses '../..' to reach the same real
+  // repo root (confirmed by direct path.resolve() comparison against
+  // server.js's own _journeyRootForBee2 resolution, bee.2).
+  let journeys;
+  try {
+    const repoRoot = process.env.COPILOT_REPO_PATH || path.resolve(__dirname, '../../..');
+    const allJourneys = listJourneys(repoRoot);
+    journeys = req.session.tenantId
+      ? allJourneys.filter(function(j) { return j.tenantId === req.session.tenantId; })
+      : allJourneys;
+  } catch (err) {
+    _logger.warn('dashboard_journeys_error', { userId: userId, reason: err.message });
+    journeys = [];
+  }
+  const journeyData = _deriveDashboardJourneyData(journeys, 5);
+
   const bodyContent = renderDashboard({
     greetingName: login || 'there',
     dateLabel: dateLabel,
     pendingActionsCount: mapped.pendingActionsCount,
-    inProgressCount: 0,       // dsa-s2 Task 3 wires the real value
+    inProgressCount: journeyData.inProgressCount,
     skills: _DASHBOARD_SKILLS_CATALOG,
     actions: mapped.actions,
-    recent: []                // dsa-s2 Task 3 wires the real value
+    recent: journeyData.recent
   });
   const html = renderShell({
     title:       'Dashboard',
@@ -198,5 +287,6 @@ module.exports = {
   handleDashboard,
   setLogger,
   setGetPendingActions,
-  _mapPendingActionsForDashboard
+  _mapPendingActionsForDashboard,
+  _deriveDashboardJourneyData
 };
