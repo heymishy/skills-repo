@@ -42,7 +42,7 @@ Create:
 
 ---
 
-## Task 1: `context.yml` reference + real token-scanning script (AC1, AC2)
+## Task 1: `context.yml` reference + real token-scanning script (AC1, AC2) — ✅ COMPLETE (commits `4c8597c6`, `0ead5e9c`)
 
 **Files:**
 - Modify: `.github/context.yml`
@@ -103,13 +103,13 @@ Also provide a small CLI wrapper (`if (require.main === module) { ... }`) so thi
 
 ---
 
-## Task 2: `H-DESIGN` hard block in `/definition-of-ready` (AC3, AC4, AC5)
+## Task 2: `H-DESIGN` hard block in `/definition-of-ready` (AC3, AC4, AC5) — ✅ COMPLETE (commits `c98e20c1`, `cbf779a8`)
 
 **Files:**
 - Modify: `skills/definition-of-ready/SKILL.md`
 - Create: `tests/check-h-design-gate.js`
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 `tests/check-h-design-gate.js` — read `tests/check-inf4-h-inf-gate.js` and `tests/check-mig3-h-mig-gate.js` in full first, then write the same shape of test for `H-DESIGN`, adapted to its own trigger flag (`hasDesignSystemTrack`) and its own scanning mechanism (reference `scripts/check-design-tokens.js` by name in at least one assertion, proving the SKILL.md documentation points at the real script rather than describing a purely manual eyeball process). Cover, at minimum (mirroring `check-inf4`'s own 8+1 test shape):
 - SKILL.md contains the `H-DESIGN` identifier
@@ -122,20 +122,20 @@ Also provide a small CLI wrapper (`if (require.main === module) { ... }`) so thi
 
 Run: `node tests/check-h-design-gate.js` — expect fail (SKILL.md not yet updated).
 
-- [ ] **Step 2: Add the `H-DESIGN` row + detail section to `skills/definition-of-ready/SKILL.md`**
+- [x] **Step 2: Add the `H-DESIGN` row + detail section to `skills/definition-of-ready/SKILL.md`**
 
 Add a new row to the hard-block table (after the `H-MIG` row, ~line 134): `| H-DESIGN | Design-token compliance gate: if the story's pipeline-state entry has \`hasDesignSystemTrack: true\`, scan the story's declared touched files (via \`scripts/check-design-tokens.js\`) for hardcoded color values not present in \`DESIGN.md\`'s token table; fail naming the specific file and value if any are found. If \`hasDesignSystemTrack\` is absent or false, skip this check entirely — existing H1-H13, H-E2E, H-NFR, H-GOV, H-ADAPTER, H-INF, H-MIG blocks are unaffected. See H-DESIGN detail section below. | pipeline-state.json + story's declared touched files + DESIGN.md |`
 
 Add a new detail section after `### H-MIG — Migration-review gate detail`'s own content (after line ~241), with the same structure as H-INF/H-MIG's own detail sections: an HTML comment anchor (`<!-- h-design-block -->`), a **Trigger condition** paragraph, then AC1 (FAIL — non-token color found, naming file+value)/AC2 (PASS — no non-token colors found) cases with the exact `> ❌ **H-DESIGN FAIL — ...**` / `> ✅ **H-DESIGN PASS — ...**` blockquote format every other hard block uses. Reference `scripts/check-design-tokens.js` explicitly as the mechanism an agent should run.
 
-- [ ] **Step 3: Verify AC3/AC4/AC5-documentation tests pass; re-run existing H-INF/H-MIG test coverage for regression**
+- [x] **Step 3: Verify AC3/AC4/AC5-documentation tests pass; re-run existing H-INF/H-MIG test coverage for regression**
 
 `node tests/check-h-design-gate.js` — all pass.
 `node tests/check-inf4-h-inf-gate.js && node tests/check-mig3-h-mig-gate.js` — confirm both still pass unchanged (proves AC5's "existing hard blocks unaffected" claim empirically, not just by assertion).
 
-- [ ] **Step 4: Complete task**
+- [x] **Step 4: Complete task**
 - Check off this task
-- Record ending git SHA
+- Ending git SHA: `cbf779a8`
 - Commit: `feat(dsa-s5): add H-DESIGN conditional hard block to /definition-of-ready (AC3, AC4, AC5)`
 
 ---
