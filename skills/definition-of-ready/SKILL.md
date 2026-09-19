@@ -132,6 +132,7 @@ All must pass. No exceptions. Run each check and record PASS or FAIL.
 | H-ADAPTER | Injectable adapter wiring check (D37): if the story introduces one or more injectable adapters (`setX()` functions), each adapter must have (a) an explicit AC scoping the production wiring in the server/wiring module, (b) the stub default must throw (not return null/empty — silently safe-looking returns mask misconfiguration), and (c) the implementation plan must name the wiring as a separate task from the handler task. If any adapter lacks a wiring AC, fire as hard block: "H-ADAPTER FAIL: adapter `setX` is introduced by this story but no AC scopes its production wiring in server.js (or equivalent). Add a wiring AC before sign-off." | Story ACs + DoR contract |
 | H-INF | Infra-plan gate check (inf.4): if the story's pipeline-state entry has `hasInfraTrack: true`, check that `infraPlanPath` is set and that the artefact at that path contains a `**Status: PASS**` line. If `hasInfraTrack` is absent or false, skip this check entirely — existing H1-H9, H-E2E, H-NFR, H-GOV, H-ADAPTER blocks are unaffected. See H-INF detail section below. | pipeline-state.json + infra-plan artefact |
 | H-MIG | Migration-review gate check (mig.3): if the story's pipeline-state entry has `hasMigrationTrack: true`, check that `migrationReviewPath` is set, that the artefact at that path contains a `**Status: PASS**` line, and that breaking migrations have CI-tier rollback execution evidence. If `hasMigrationTrack` is absent or false, skip this check entirely — existing H1-H9, H-E2E, H-NFR, H-GOV, H-ADAPTER, H-INF blocks are unaffected. See H-MIG detail section below. | pipeline-state.json + migration-review artefact |
+| H-DESIGN | Design-token compliance gate: if the story's pipeline-state entry has `hasDesignSystemTrack: true`, scan the story's declared touched files (via `scripts/check-design-tokens.js`) for hardcoded color values not present in `DESIGN.md`'s token table; fail naming the specific file and value if any are found. If `hasDesignSystemTrack` is absent or false, skip this check entirely — existing H1-H13, H-E2E, H-NFR, H-GOV, H-ADAPTER, H-INF, H-MIG blocks are unaffected. See H-DESIGN detail section below. | pipeline-state.json + story's declared touched files + DESIGN.md |
 
 **If any hard block fails - stop immediately:**
 
@@ -238,6 +239,27 @@ Read `migrationReviewPath` from the story's pipeline-state entry. Evaluate the f
 **AC4 (PASS):** `migrationReviewPath` is set, the artefact contains `**Status: PASS**`, and (if breaking) CI-tier rollback execution evidence is present:
 
 > ✅ **H-MIG PASS — migration-review sign-off confirmed at `[migrationReviewPath]`**
+
+### H-DESIGN — Design-token compliance gate detail
+
+<!-- h-design-block -->
+
+**Trigger condition:** This check fires only when the story's pipeline-state entry has `hasDesignSystemTrack: true`. When `hasDesignSystemTrack` is absent or false, skip H-DESIGN entirely — H1-H13, H-E2E, H-NFR, H-GOV, H-ADAPTER, H-INF, and H-MIG are unaffected.
+
+**When `hasDesignSystemTrack: true`:**
+
+Run `scripts/check-design-tokens.js` against each of the story's declared touched files: `node scripts/check-design-tokens.js <file> [--design-md <path>]`. The script extracts the token palette from `DESIGN.md`'s `## Color tokens` section (via `extractDesignTokens`) and scans the target file for hardcoded hex color values not present in that token set (via `scanFileForNonTokenColors`). Evaluate the following cases:
+
+**AC1 (FAIL — non-token color found):** The script finds one or more hardcoded color values in a declared touched file that are not present in `DESIGN.md`'s token table:
+
+> ❌ **H-DESIGN FAIL — non-token color found in `[file]`: `[value]`**
+> `scripts/check-design-tokens.js` found a hardcoded color value not present in `DESIGN.md`'s token table.
+> Resolution: replace `[value]` in `[file]` with the matching token from `DESIGN.md`, or add the value to `DESIGN.md`'s token table if it is a deliberate new token, before DoR sign-off.
+
+**AC2 (PASS — no non-token colors found):** The script finds no non-token colors in any of the story's declared touched files:
+
+> ✅ **H-DESIGN PASS — no non-token colors found**
+> `scripts/check-design-tokens.js` scanned the story's declared touched files against `DESIGN.md`'s token table and found no non-token color values.
 
 ---
 
