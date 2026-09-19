@@ -36005,7 +36005,7 @@
                 {
                   "id": "task-2",
                   "name": "Full regression verification (AC6) + npm test + live browser check",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s7-plan.md"
                 }
               ]
