@@ -35859,17 +35859,17 @@
             {
               "slug": "dsa-s2",
               "name": "Restyle the Dashboard and Wire Its Real Content to Match DESIGN.md",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-19T01:09:46.102Z",
+              "updatedAt": "2026-09-19T01:11:13.721Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 15,
+                "totalTests": 18,
                 "passing": 0
               },
-              "acTotal": 7,
+              "acTotal": 8,
               "acVerified": 0,
               "hasLayoutDependentGaps": true,
               "e2eToolingRequired": true,
