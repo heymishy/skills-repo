@@ -1,5 +1,13 @@
 # Decisions: Design System Adoption
 
+## `dsa-s5` `/branch-setup`: baseline acknowledged, 3 pre-existing/environmental failures, 1 new but confirmed test-order-pollution (2026-09-20)
+
+**Context:** `npm test` on the freshly-created `feature/dsa-s5` worktree (built from latest `master`, including `dsa-s4`'s merge + DoD) showed 3 failures: `tests/check-bri-s2.2-neon-staging-branch.js` (new to this feature's own worktrees), `tests/check-p3.5-validate-trace.js` (already-documented pre-existing all session), `tests/check-pcr-s1-test-runner.js` (the wall-clock timing test already investigated repeatedly this session).
+**Investigation:** Re-ran `check-bri-s2.2-neon-staging-branch.js` standalone: 5/5 pass cleanly — confirms the same test-order-pollution-in-full-suite-run pattern already documented multiple times this session (`check-lccf-s1`/`check-lcdf-s1` in `dsa-s7`'s own `/branch-setup`). Re-ran `check-pcr-s1-test-runner.js` standalone: 757.0ms/file measured against the 749.8ms/file threshold — consistent with the range measured repeatedly this session, confirming ongoing marginal drift, not a new or worsening issue.
+**Decision:** Acknowledged as pre-existing/environmental and proceeding, per `/branch-setup`'s own documented Option 2 path. No code has been committed on this branch yet — none of the 3 failures predate or relate to any `dsa-s5` work.
+**Rationale:** Matches the identical investigation already performed for every other worktree created this session — not re-litigated from scratch, since the underlying causes (test-order pollution in the full-suite run; a spawn-heavy wall-clock timing test sensitive to machine load) are already well understood and documented.
+**Story:** dsa-s5 — no AC or scope change; baseline acknowledgement only, per `/branch-setup`'s own required step.
+
 ## `dsa-s4` live browser render check — completed against a fresh local server once Claude-in-Chrome reconnected, closing most of the RISK-ACCEPT logged during Task 4 (2026-09-20)
 
 **Context:** The operator reconnected Chrome after `/branch-complete`. Retried the live browser render check that had been RISK-ACCEPTed during Task 4 Step 3.

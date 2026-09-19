@@ -36069,16 +36069,16 @@
         {
           "slug": "design-system-governance",
           "name": "Future Stories Cannot Silently Bypass the Design System",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "dsa-s5",
               "name": "design.system Context Tag Triggers a Real DoR Hard Block",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-18T10:10:37.724Z",
+              "updatedAt": "2026-09-19T22:26:33.858Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
