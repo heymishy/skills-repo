@@ -87,6 +87,72 @@ function renderChat(data) {
     );
   }
 
+  // dsa-s4 (AC3, toggle portion): Focused-mode view, built from the SAME
+  // data.priorQA/data.currentQuestion/data.questionIndex/data.totalQuestions
+  // already passed into this function for the Chat thread above -- no new
+  // data source, no new server call. Shows only the current unanswered
+  // question (or, once all questions are answered, the most recent prior
+  // turn) with a "Question X of Y" progress indicator; every earlier turn
+  // collapses behind a single click-to-expand toggle, and each collapsed
+  // turn is itself a <details> element so an individual prior answer can
+  // also be expanded on its own.
+  const focusedPriorQA = data.priorQA || [];
+  const focusedHasCurrent = !!data.currentQuestion;
+  const focusedQuestionIndex = data.questionIndex || (focusedPriorQA.length + (focusedHasCurrent ? 1 : 0)) || 1;
+  const focusedTotalQuestions = Math.max(data.totalQuestions || focusedQuestionIndex, focusedQuestionIndex, 1);
+
+  // The turns rendered as "prior" in Focused mode: every priorQA entry when
+  // there's a live current question; all but the last one when the session
+  // has no current question (that last entry becomes the "current" display
+  // below instead, per "most recent turn if all answered").
+  const focusedPriorItems = focusedHasCurrent ? focusedPriorQA : focusedPriorQA.slice(0, -1);
+  const focusedCurrentLastTurn = !focusedHasCurrent && focusedPriorQA.length
+    ? focusedPriorQA[focusedPriorQA.length - 1] : null;
+  const focusedCurrentText = focusedHasCurrent
+    ? data.currentQuestion
+    : (focusedCurrentLastTurn ? focusedCurrentLastTurn.question : '');
+  const focusedCurrentLabel = focusedHasCurrent ? 'Skill' : 'Last question';
+
+  let focusedDotsHtml = '';
+  for (let fd = 0; fd < focusedTotalQuestions; fd++) {
+    const fdDone = fd < focusedPriorItems.length;
+    const fdCurrent = fd === focusedPriorItems.length;
+    focusedDotsHtml += '<span class="sw-focused-dot' +
+      (fdDone ? ' sw-focused-dot--done' : '') +
+      (fdCurrent ? ' sw-focused-dot--current' : '') + '"></span>';
+  }
+
+  const focusedPriorListHtml = focusedPriorItems.map(function(qa, i) {
+    return '<details class="sw-focused-prior-item">' +
+      '<summary class="sw-focused-prior-summary">Q' + (i + 1) + ': ' + lightMarkdown(qa.question || '') + '</summary>' +
+      '<div class="sw-focused-prior-answer">' + lightMarkdown(qa.answer || '') + '</div>' +
+    '</details>';
+  }).join('');
+
+  const focusedPriorToggleHtml = focusedPriorItems.length
+    ? '<div class="sw-focused-prior-wrap">' +
+        '<button type="button" class="sw-focused-prior-toggle" id="sw-focused-prior-toggle"' +
+          ' data-show-label="' + focusedPriorItems.length + ' previous answered — show"' +
+          ' data-hide-label="Hide previous answers"' +
+          ' onclick="swToggleFocusedPrior()">' + focusedPriorItems.length + ' previous answered — show</button>' +
+        '<div class="sw-focused-prior-list" id="sw-focused-prior-list" hidden>' + focusedPriorListHtml + '</div>' +
+      '</div>'
+    : '';
+
+  const focusedViewHtml =
+    '<div class="sw-focused-view" id="sw-focused-view" hidden>' +
+      '<div class="sw-focused-progress">' +
+        '<div class="sw-focused-dots">' + focusedDotsHtml + '</div>' +
+        '<span class="sw-focused-progress-label" id="sw-focused-progress-label">Question ' +
+          Math.min(focusedQuestionIndex, focusedTotalQuestions) + ' of ' + focusedTotalQuestions + '</span>' +
+      '</div>' +
+      '<div id="sw-focused-current-question">' +
+        '<div class="sw-focused-current-label">' + escHtml(focusedCurrentLabel) + '</div>' +
+        '<div class="sw-focused-current-text">' + lightMarkdown(focusedCurrentText) + '</div>' +
+      '</div>' +
+      focusedPriorToggleHtml +
+    '</div>';
+
   const draftSections = (data.draftSections || []).map(function(s) {
     let pillHtml = '';
     if (s.state === 'drafted') pillHtml = pill('green',  'Drafted', { dot: false });
@@ -181,6 +247,94 @@ function renderChat(data) {
       // the same shared toggle.
       'function swToggleCanvasFs(){var p=document.getElementById("canvas-section");if(!p)return;p.classList.toggle("canvas-fs");var g=p.classList.contains("canvas-fs")?"⊡":"⊞";var b1=document.getElementById("sw-canvas-fs-btn");if(b1)b1.textContent=g;var b2=document.getElementById("sw-expand-canvas");if(b2)b2.textContent=g;}' +
       'function swExpandCanvas(){swToggleCanvasFs();}' +
+      // dsa-s4 (AC3, toggle portion): Focused/Chat segmented-control toggle.
+      // Client-side visibility swap only -- no new server route, no change
+      // to how #chat-form/#chat-input/Cmd/Ctrl+Enter submit (both modes
+      // share the exact same footer/form; Focused mode just changes what is
+      // shown above it, same as Chat mode already does). Emitted
+      // unconditionally alongside the other always-on fullscreen toggles
+      // above (not gated by data.readOnly), since the segmented control
+      // itself is rendered unconditionally in .sw-chat-head.
+      'function swSetChatViewMode(mode){' +
+        'var chatEl=document.getElementById("chat-messages");' +
+        'var focusedEl=document.getElementById("sw-focused-view");' +
+        'var chatBtn=document.getElementById("sw-mode-btn-chat");' +
+        'var focusedBtn=document.getElementById("sw-mode-btn-focused");' +
+        'if(!chatEl||!focusedEl)return;' +
+        'var isFocused=mode==="focused";' +
+        'chatEl.hidden=isFocused;' +
+        'focusedEl.hidden=!isFocused;' +
+        'if(chatBtn)chatBtn.classList.toggle("sw-mode-btn--active",!isFocused);' +
+        'if(focusedBtn)focusedBtn.classList.toggle("sw-mode-btn--active",isFocused);' +
+      '}' +
+      'function swToggleFocusedPrior(){' +
+        'var list=document.getElementById("sw-focused-prior-list");' +
+        'var btn=document.getElementById("sw-focused-prior-toggle");' +
+        'if(!list||!btn)return;' +
+        'list.hidden=!list.hidden;' +
+        'btn.textContent=list.hidden?btn.getAttribute("data-show-label"):btn.getAttribute("data-hide-label");' +
+      '}' +
+      // dsa-s4 (AC3, resize portion): generic drag-resize mechanism, ported
+      // from the mock's own _drag(axis, key, min, max, containerSelector)
+      // closure (Skills Platform - Skill Session.dc.html lines 338-363).
+      // This codebase has no client-side state/re-render framework (unlike
+      // the mock's DCLogic Component setState() cycle), so the same
+      // (axis, min, max, containerSelector) contract is kept but the
+      // "key" a piece of component state is replaced with "elSelector",
+      // and the function sets el.style.flexBasis directly rather than
+      // going through a state object -- one shared function handles the
+      // outer col-resize split and every row-resize handle inside a
+      // right-pane stack via different params on each handle\'s onmousedown.
+      'function swStartDrag(e,axis,elSelector,min,max,containerSelector){' +
+        'e.preventDefault();' +
+        'var handle=e.currentTarget;' +
+        'var container=document.querySelector(containerSelector);' +
+        'var el=document.querySelector(elSelector);' +
+        'if(!container||!el)return;' +
+        'var size=axis==="x"?container.offsetWidth:container.offsetHeight;' +
+        'var start=axis==="x"?e.clientX:e.clientY;' +
+        'var rect=el.getBoundingClientRect();' +
+        'var startPct=((axis==="x"?rect.width:rect.height)/size)*100;' +
+        'function onMove(ev){' +
+          'var pos=axis==="x"?ev.clientX:ev.clientY;' +
+          'var deltaPct=((pos-start)/size)*100;' +
+          'var next=startPct+deltaPct;' +
+          'if(next<min)next=min;' +
+          'if(next>max)next=max;' +
+          'el.style.flexBasis=next+"%";' +
+          'if(handle)handle.setAttribute("aria-valuenow",String(Math.round(next)));' +
+        '}' +
+        'function onUp(){' +
+          'document.removeEventListener("mousemove",onMove);' +
+          'document.removeEventListener("mouseup",onUp);' +
+        '}' +
+        'document.addEventListener("mousemove",onMove);' +
+        'document.addEventListener("mouseup",onUp);' +
+      '}' +
+      // dsa-s4 (2026-09-20, code-quality/final-review follow-up): keyboard
+      // equivalent for swStartDrag(), following the WAI-ARIA "window
+      // splitter" separator pattern (role="separator", aria-orientation,
+      // aria-valuemin/max/now, tabindex="0") -- the new drag handles above
+      // were mouse-only with no keyboard alternative, a real WCAG 2.1 AA
+      // operability gap for a brand-new control (flagged by dsa-s4's own
+      // final cross-task review). Arrow keys nudge the same flex-basis
+      // percentage the mouse drag sets, reusing the identical clamp logic.
+      'function swDragKeydown(e,axis,elSelector,min,max,containerSelector){' +
+        'var step=2;var delta=0;' +
+        'if(axis==="x"){if(e.key==="ArrowLeft")delta=-step;else if(e.key==="ArrowRight")delta=step;}' +
+        'else{if(e.key==="ArrowUp")delta=-step;else if(e.key==="ArrowDown")delta=step;}' +
+        'if(delta===0)return;' +
+        'e.preventDefault();' +
+        'var el=document.querySelector(elSelector);' +
+        'if(!el)return;' +
+        'var current=parseFloat(el.style.flexBasis);' +
+        'if(isNaN(current))current=min;' +
+        'var next=current+delta;' +
+        'if(next<min)next=min;' +
+        'if(next>max)next=max;' +
+        'el.style.flexBasis=next+"%";' +
+        'e.currentTarget.setAttribute("aria-valuenow",String(Math.round(next)));' +
+      '}' +
     '</script>';
 
   const scriptHtml = data.readOnly ? '' : (
@@ -211,8 +365,15 @@ function renderChat(data) {
 
   return [
     '<style>',
-      '.sw-chat { display: grid; grid-template-columns: minmax(0,1fr) minmax(0,1fr); gap: 24px; height: calc(100vh - 48px - 64px); max-height: 820px; }',
-      '.sw-chat-pane { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; min-width: 0; }',
+      // dsa-s4 (AC3, resize portion): .sw-chat was a fixed 50/50 CSS Grid --
+      // changed to a flex row so the outer split (and each right-pane
+      // stack, below) can carry a JS-adjustable flex-basis via
+      // swStartDrag(). gap:0 (was 24px) since the 5px drag-handle elements
+      // now provide the visual separation themselves, matching the mock's
+      // own zero-gap flex-row pattern (Skills Platform - Skill Session.dc.html
+      // line 42/140).
+      '.sw-chat { display: flex; gap: 0; height: calc(100vh - 48px - 64px); max-height: 820px; min-width: 0; }',
+      '.sw-chat-pane { display: flex; flex-direction: column; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; min-width: 0; flex: 1; }',
       '.sw-chat-head { padding: 14px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; gap: 12px; }',
       '.sw-chat-head .sw-chat-title { font-size: 14px; font-weight: 600; }',
       '.sw-chat-head .sw-chat-sub   { font-size: 12px; color: var(--muted); margin-top: 2px; }',
@@ -225,13 +386,29 @@ function renderChat(data) {
       '.sw-chat-body { flex: 1; min-width: 0; }',
       '.sw-chat-from { font-size: 12px; color: var(--muted); margin-bottom: 3px; }',
       '.sw-chat-text { font-size: 14px; color: var(--ink); line-height: 1.6; }',
-      '.sw-chat-insight { margin-left: 32px; padding: 10px 12px; background: var(--accent-soft); border: 1px solid #DDD6FE; border-radius: 8px; font-size: 13px; color: var(--accent-ink); line-height: 1.55; }',
+      // dsa-s4: border was hardcoded #DDD6FE (a lavender not in DESIGN.md's
+      // palette). var(--accent-soft) was considered (as the plan text
+      // suggested) but rejected: it's IDENTICAL to this rule's own
+      // background, so the border would render invisible -- and no other
+      // rule in this codebase ever uses a `-soft` token for a border (see
+      // .cv-pip.active/.cv-tree-root-node, both `background:accent-soft;
+      // border-color:accent`). var(--accent) matches that established local
+      // convention and stays visible against the accent-soft background.
+      '.sw-chat-insight { margin-left: 32px; padding: 10px 12px; background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 8px; font-size: 13px; color: var(--accent-ink); line-height: 1.55; }',
       '.sw-chat-insight-label { font-size: 11px; font-weight: 600; letter-spacing: 0.3px; text-transform: uppercase; margin-bottom: 4px; opacity: 0.8; }',
       '.sw-chat-foot { border-top: 1px solid var(--line); padding: 12px; background: var(--bg); }',
       '.sw-chat-input { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 10px; }',
       '.sw-chat-input textarea { width: 100%; min-height: 56px; border: none; background: transparent; resize: none; outline: none; font-family: inherit; font-size: 14px; line-height: 1.5; color: var(--ink); }',
       '.sw-chat-input-row { display: flex; justify-content: space-between; align-items: center; margin-top: 4px; }',
-      '.sw-chat-confirm { margin: 0 0 8px; padding: 10px 12px; background: var(--amber-soft); border: 1px solid #FDE68A; border-radius: 8px; font-size: 13px; color: var(--amber); }',
+      // dsa-s4: border was hardcoded #FDE68A. The plan text suggested
+      // var(--warn-soft), but that's rejected for the same invisible-border
+      // reason as .sw-chat-insight above (--warn-soft is a dark, low-
+      // contrast fill in dark mode, nearly indistinguishable from this
+      // rule's own var(--amber-soft) background) -- var(--warn) matches the
+      // same established local convention (full-strength token for
+      // borders, `-soft` reserved for fills) used by .chip-warn/
+      // .ac-badge-amber elsewhere in this same file.
+      '.sw-chat-confirm { margin: 0 0 8px; padding: 10px 12px; background: var(--amber-soft); border: 1px solid var(--warn); border-radius: 8px; font-size: 13px; color: var(--amber); }',
       '.sw-chat-confirm-title { font-weight: 600; margin-bottom: 4px; }',
       '.sw-chat-confirm code { background: rgba(180,83,9,0.1); padding: 1px 5px; border-radius: 3px; font-family: var(--mono); font-size: 12px; }',
       '.sw-draft-body { font-family: var(--serif); font-size: 14.5px; line-height: 1.65; color: var(--ink-2); white-space: pre-wrap; }',
@@ -250,50 +427,63 @@ function renderChat(data) {
       '.sw-dot:nth-child(1) { animation-delay:0s; }',
       '.sw-dot:nth-child(2) { animation-delay:0.2s; }',
       '.sw-dot:nth-child(3) { animation-delay:0.4s; }',
-      '.chip-ok   { display:inline-flex;align-items:center;gap:3px;padding:2px 8px;background:#DCFCE7;color:#166534;border-radius:10px;font-size:12px;font-weight:500;border:1px solid #BBF7D0; }',
-      '.chip-warn { display:inline-flex;align-items:center;gap:3px;padding:2px 8px;background:#FEF9C3;color:#713F12;border-radius:10px;font-size:12px;font-weight:500;border:1px solid #FDE68A; }',
+      '.chip-ok   { display:inline-flex;align-items:center;gap:3px;padding:2px 8px;background:var(--success-soft);color:var(--success);border-radius:10px;font-size:12px;font-weight:500;border:1px solid var(--success); }',
+      '.chip-warn { display:inline-flex;align-items:center;gap:3px;padding:2px 8px;background:var(--warn-soft);color:var(--warn);border-radius:10px;font-size:12px;font-weight:500;border:1px solid var(--warn); }',
       /* assumption card styles (iwu.3 mockup) */
       '.ac-section-head { display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--line-2);flex-shrink:0; }',
       '.ac-section-label { font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted); }',
       '.ac-badges { display:flex;gap:5px;align-items:center; }',
       '.ac-badge { font-size:10px;font-weight:500;padding:1px 7px;border-radius:10px; }',
-      '.ac-badge-amber { background:#FEF3C7;color:#92400E;border:1px solid #FDE68A; }',
-      '.ac-badge-green { background:#DCFCE7;color:#166534;border:1px solid #BBF7D0; }',
+      '.ac-badge-amber { background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn); }',
+      '.ac-badge-green { background:var(--success-soft);color:var(--success);border:1px solid var(--success); }',
       '.assumption-card { border:1px solid var(--line);border-radius:8px;padding:10px 12px;background:var(--surface);display:flex;flex-direction:column;gap:6px;transition:border-color 0.15s; }',
-      '.assumption-card[data-state="confirmed"] { border-color:#6EE7B7;background:#F0FDF4; }',
-      '.assumption-card[data-state="flagged"]   { border-color:#FCA5A5;background:#FFF1F2; }',
+      '.assumption-card[data-state="confirmed"] { border-color:var(--success);background:var(--success-soft); }',
+      '.assumption-card[data-state="flagged"]   { border-color:var(--danger);background:var(--danger-soft); }',
       '.assumption-card-meta { display:flex;align-items:center;gap:5px;flex-wrap:wrap; }',
       '.ac-type-tag { font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:1px 6px;border-radius:3px; }',
+      // dsa-s4: .ac-type-desirability (purple) is a DELIBERATE EXCEPTION,
+      // left as its original hardcoded hex -- NOT tokenized. Rationale:
+      // desirability/viability/feasibility/ethical badges render together
+      // in the same AC-type legend on a single assumption card; collapsing
+      // desirability into var(--accent) (the only candidate token) would
+      // make it visually indistinguishable from .ac-type-viability just
+      // below, which IS tokenized to var(--accent-soft)/var(--accent-ink).
+      // DESIGN.md defines no purple token, so there is no non-lossy
+      // substitution available. Kept exactly as-is, theme-invariant by
+      // design (matches this rule's own pre-existing behaviour).
       '.ac-type-desirability { background:#EDE9FE;color:#3730A3; }',
-      '.ac-type-viability    { background:#DBEAFE;color:#1E40AF; }',
-      '.ac-type-feasibility  { background:#DCFCE7;color:#166534; }',
-      '.ac-type-ethical      { background:#F3F4F6;color:#374151; }',
+      '.ac-type-viability    { background:var(--accent-soft);color:var(--accent-ink); }',
+      '.ac-type-feasibility  { background:var(--success-soft);color:var(--success); }',
+      '.ac-type-ethical      { background:var(--surface-2);color:var(--ink-2); }',
       '.ac-risk-dot { width:6px;height:6px;border-radius:50%;flex-shrink:0; }',
-      '.ac-risk-high   { background:#EF4444; }',
-      '.ac-risk-medium { background:#F59E0B; }',
-      '.ac-risk-low    { background:#10B981; }',
+      '.ac-risk-high   { background:var(--danger); }',
+      '.ac-risk-medium { background:var(--warn); }',
+      '.ac-risk-low    { background:var(--success); }',
       '.assumption-card-text { font-size:12px;line-height:1.5;color:var(--ink); }',
-      '.assumption-card[data-state="confirmed"] .assumption-card-text { color:#166534; }',
-      '.assumption-card[data-state="flagged"]   .assumption-card-text { color:#991B1B; }',
+      '.assumption-card[data-state="confirmed"] .assumption-card-text { color:var(--success); }',
+      '.assumption-card[data-state="flagged"]   .assumption-card-text { color:var(--danger); }',
       '.assumption-card-actions { display:flex;gap:5px; }',
       '.btn-confirm,.btn-flag { font-size:11px;padding:2px 9px;border-radius:4px;border:1px solid var(--line);background:transparent;color:var(--muted);cursor:pointer;font-weight:500; }',
-      '.btn-confirm:hover { background:#DCFCE7;color:#166534;border-color:#6EE7B7; }',
-      '.btn-flag:hover    { background:#FFF1F2;color:#991B1B;border-color:#FCA5A5; }',
-      '.btn-confirmed-state { background:#DCFCE7;color:#166534;border-color:#6EE7B7; }',
-      '.btn-flagged-state   { background:#FFF1F2;color:#991B1B;border-color:#FCA5A5; }',
+      '.btn-confirm:hover { background:var(--success-soft);color:var(--success);border-color:var(--success); }',
+      '.btn-flag:hover    { background:var(--danger-soft);color:var(--danger);border-color:var(--danger); }',
+      '.btn-confirmed-state { background:var(--success-soft);color:var(--success);border-color:var(--success); }',
+      '.btn-flagged-state   { background:var(--danger-soft);color:var(--danger);border-color:var(--danger); }',
       /* inc2.1 — condition card styles */
       '.ci-section-head { display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--line-2);flex-shrink:0; }',
       '.ci-section-label { font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted); }',
       '.condition-card { border:1px solid var(--line);border-radius:8px;padding:8px 12px;background:var(--surface);display:flex;flex-direction:column;gap:5px; }',
       '.condition-card-meta { display:flex;align-items:center;gap:6px;flex-wrap:wrap; }',
       '.ci-type-tag { font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;padding:1px 6px;border-radius:3px; }',
-      '.ci-type-constraint  { background:#FEE2E2;color:#991B1B; }',
-      '.ci-type-dependency  { background:#DBEAFE;color:#1E40AF; }',
-      '.ci-type-outcome     { background:#DCFCE7;color:#166534; }',
+      '.ci-type-constraint  { background:var(--danger-soft);color:var(--danger); }',
+      '.ci-type-dependency  { background:var(--accent-soft);color:var(--accent-ink); }',
+      '.ci-type-outcome     { background:var(--success-soft);color:var(--success); }',
       '.ci-source { font-size:10px;color:var(--muted); }',
       '.condition-card-text { font-size:12px;line-height:1.5;color:var(--ink); }',
-      /* inc4 — canvas panel extension */
-      ':root { --teal: #0F766E; --teal-soft: #CCFBF1; }',
+      // inc4 — canvas panel extension. dsa-s4: --teal/--teal-soft were a
+      // custom token invented mid-file, not in DESIGN.md's palette, and
+      // (confirmed via grep across src/ and tests/) never referenced by any
+      // selector anywhere in this codebase -- dead. Removed rather than
+      // left in place, per the plan's "unused -> replace it" guidance.
       '.cv-section-head { display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--line-2);flex-shrink:0; }',
       '.cv-section-label { font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted); }',
       '.cv-pips { display:flex;gap:4px; }',
@@ -378,7 +568,7 @@ function renderChat(data) {
          successfully-rendered diagram: red-toned border/background/text,
          never a blank space and never mermaid's own raw error output. */
       '.cv-diagram-wrap .mermaid.cv-diagram-error { display:block;justify-content:initial; }',
-      '.cv-diagram-error-box { display:flex;align-items:center;gap:8px;padding:10px 14px;border:1.5px solid var(--red,#DC2626);border-radius:6px;background:var(--red-soft,#FEE2E2);color:var(--red,#991B1B);font-size:12px;font-weight:600; }',
+      '.cv-diagram-error-box { display:flex;align-items:center;gap:8px;padding:10px 14px;border:1.5px solid var(--danger);border-radius:6px;background:var(--danger-soft);color:var(--danger);font-size:12px;font-weight:600; }',
       /* definition story map */
       '.dm-canvas{padding:12px 16px}',
       '.dm-hdr{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}',
@@ -395,7 +585,7 @@ function renderChat(data) {
       '.dm-card-id{font-size:9px;font-weight:700;font-family:var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:0.3px}',
       '.dm-card-title{font-size:11px;font-weight:500;color:var(--ink);line-height:1.35;margin:2px 0}',
       '.dm-cx{font-size:9px;font-weight:600;margin-top:2px}',
-      '.dm-cx--l{color:#2da44e}.dm-cx--m{color:#ca8a04}.dm-cx--h{color:#dc2626}',
+      '.dm-cx--l{color:var(--success)}.dm-cx--m{color:var(--warn)}.dm-cx--h{color:var(--danger)}',
       '.dm-empty{padding:24px 16px;font-size:13px;color:var(--muted);font-style:italic}',
       /* story detail modal */
       '.dm-modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:10000;align-items:center;justify-content:center}',
@@ -411,130 +601,252 @@ function renderChat(data) {
          drawer already uses. height:auto lets the page scroll naturally
          instead of squeezing both panes into unreadable fixed-height,
          half-width columns. */
+      // dsa-s4 (AC3, resize portion): below 768px, DESIGN.md's "Responsive
+      // behavior" section mandates stacking, NOT a resizable split --
+      // .sw-chat switches to a flex column (was grid-template-columns: 1fr,
+      // now flex-direction:column to match the new flex-based outer split
+      // above); every flex-basis percentage the drag handles set inline
+      // (on #sw-chat-left-pane and each .sw-resize-group) is reset with
+      // !important (the only way an author-stylesheet rule can win over a
+      // more-specific inline style), and the handles themselves are hidden
+      // since no resize is attempted at this width.
       '@media (max-width: 768px) {',
-        '.sw-chat { grid-template-columns: 1fr; height: auto; max-height: none; }',
-        '.sw-chat-pane { overflow: visible; }',
+        '.sw-chat { flex-direction: column; height: auto; max-height: none; }',
+        '.sw-chat-pane { overflow: visible; flex: 1 1 auto !important; }',
         '.sw-chat-thread { overflow: visible; }',
+        '.sw-resize-group { flex: 1 1 auto !important; overflow: visible !important; }',
+        '.sw-drag-h, .sw-drag-v { display: none; }',
       '}',
+      // dsa-s4 (AC3, resize portion): generic drag-handle styling, shared by
+      // the outer col-resize handle and every row-resize handle inside a
+      // right-pane stack -- mirrors the mock's own 5px, cursor-only handle
+      // (Skills Platform - Skill Session.dc.html lines 140/167/213/239/296).
+      '.sw-drag-h { width: 5px; flex-shrink: 0; cursor: col-resize; background: var(--line); }',
+      '.sw-drag-h:hover { background: var(--accent); }',
+      '.sw-drag-v { height: 5px; flex-shrink: 0; cursor: row-resize; background: var(--line); }',
+      '.sw-drag-v:hover { background: var(--accent); }',
+      '.sw-drag-h:focus-visible, .sw-drag-v:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; background: var(--accent); }',
+      // dsa-s4 (AC3, toggle portion): Focused/Chat segmented control in the
+      // left-pane header (.sw-chat-head), plus the additive Focused-mode
+      // rendering path. [hidden]-specific overrides are required for
+      // .sw-chat-thread/.sw-focused-view/.sw-focused-prior-list because each
+      // already carries its own `display:flex` rule above -- an author
+      // stylesheet rule of equal specificity to the UA stylesheet's own
+      // `[hidden]{display:none}` wins over it by cascade origin (not
+      // selector order), so without an explicit override here the `hidden`
+      // attribute set by swSetChatViewMode()/swToggleFocusedPrior() (see
+      // alwaysOnScriptHtml) would silently fail to hide the element. Mirrors
+      // the established `.pvc-item[hidden]{display:none!important}` /
+      // `.sw-credits-error[hidden]{display:none}` pattern already used
+      // elsewhere in this codebase (products.js, settings.js).
+      '.sw-mode-toggle { display:flex; gap:2px; background:var(--surface-2); border-radius:7px; padding:2px; flex-shrink:0; }',
+      '.sw-mode-btn { font-family:inherit; font-size:11.5px; font-weight:500; padding:5px 11px; border-radius:6px; border:none; cursor:pointer; background:transparent; color:var(--muted); }',
+      '.sw-mode-btn--active { background:var(--bg); color:var(--ink); }',
+      '.sw-chat-thread[hidden] { display:none; }',
+      '.sw-focused-view { flex:1; display:flex; flex-direction:column; padding:24px 28px; overflow:auto; }',
+      '.sw-focused-view[hidden] { display:none; }',
+      '.sw-focused-progress { display:flex; align-items:center; gap:10px; margin-bottom:16px; }',
+      '.sw-focused-dots { display:flex; gap:5px; }',
+      '.sw-focused-dot { width:20px; height:3px; border-radius:2px; background:var(--line); }',
+      '.sw-focused-dot--done { background:var(--success); }',
+      '.sw-focused-dot--current { background:var(--accent); }',
+      '.sw-focused-progress-label { font-size:11.5px; color:var(--muted); font-family:var(--mono); }',
+      '.sw-focused-current-label { font-size:12px; color:var(--muted); margin-bottom:8px; }',
+      '.sw-focused-current-text { font-size:22px; font-weight:600; line-height:1.4; color:var(--ink); }',
+      '.sw-focused-prior-wrap { margin-top:28px; }',
+      '.sw-focused-prior-toggle { font-size:12px; color:var(--muted); background:none; border:1px solid var(--line); border-radius:6px; padding:5px 10px; cursor:pointer; font-family:inherit; }',
+      '.sw-focused-prior-toggle:hover { color:var(--ink); border-color:var(--muted-2); }',
+      '.sw-focused-prior-list { margin-top:10px; display:flex; flex-direction:column; gap:8px; }',
+      '.sw-focused-prior-list[hidden] { display:none; }',
+      '.sw-focused-prior-item { border:1px solid var(--line); border-radius:8px; padding:8px 12px; background:var(--surface); }',
+      '.sw-focused-prior-summary { font-size:12.5px; color:var(--ink-2); cursor:pointer; }',
+      '.sw-focused-prior-answer { margin-top:6px; font-size:13px; color:var(--ink); line-height:1.55; }',
     '</style>',
     (data.contextManifestHtml ||
       '<div id="context-manifest" role="region" aria-label="Loaded context files"' +
       ' style="padding:6px 16px;border-bottom:1px solid var(--line);display:flex;flex-wrap:wrap;gap:6px;align-items:center;background:var(--bg)">' +
       '<span id="context-manifest-empty" style="font-size:12px;color:var(--muted)">no context loaded</span>' +
       '</div>'),
-    '<div class="sw-chat">',
+    // dsa-s4 (AC3, resize portion): id="sw-split-container" is the
+    // containerSelector swStartDrag() measures for the outer col-resize
+    // handle (mirrors the mock's own #sw-split-container).
+    '<div class="sw-chat" id="sw-split-container">',
 
-      // LEFT: chat thread
-      '<section class="sw-chat-pane">',
+      // LEFT: chat thread. id="sw-chat-left-pane" + the inline flex-basis
+      // (default 46%, matching the mock's own splitPct:46 default -- see
+      // Skills Platform - Skill Session.dc.html state.splitPct) is the
+      // element swStartDrag() adjusts on outer-handle drag.
+      '<section class="sw-chat-pane" id="sw-chat-left-pane" style="flex:0 0 46%">',
         '<header class="sw-chat-head">',
           '<div>',
             '<div class="sw-chat-title">' + escHtml(data.skillLabel) + '</div>',
           '</div>',
           (data.modelLabel ? '<span style="font-size:11px;color:var(--muted);background:var(--line-2);padding:2px 8px;border-radius:10px;font-family:var(--mono)">' + escHtml(data.modelLabel) + '</span>' : ''),
+          // dsa-s4 (AC3, toggle portion): Focused/Chat segmented control --
+          // pure append to .sw-chat-head's existing children, doesn't
+          // restructure anything above. Chat stays the default active state
+          // (matches the existing, already-built full-thread view); Focused
+          // is the new, additive one.
+          '<div class="sw-mode-toggle" id="sw-mode-toggle" role="group" aria-label="Chat view mode">' +
+            '<button type="button" class="sw-mode-btn sw-mode-btn--active" id="sw-mode-btn-chat" onclick="swSetChatViewMode(\'chat\')">Chat</button>' +
+            '<button type="button" class="sw-mode-btn" id="sw-mode-btn-focused" onclick="swSetChatViewMode(\'focused\')">Focused</button>' +
+          '</div>',
         '</header>',
         '<div class="sw-chat-thread" id="chat-messages">' + messages.join('') + '</div>',
+        focusedViewHtml,
         footerHtml,
       '</section>',
+
+      // dsa-s4 (AC3, resize portion): outer col-resize handle, between the
+      // two main panes. onmousedown params: axis 'x', drag
+      // #sw-chat-left-pane's flex-basis, clamp [28,72] (matching the
+      // mock's own startOuterResize clamp), measure against
+      // #sw-split-container.
+      '<div class="sw-drag-h" title="Drag to resize" role="separator" aria-orientation="vertical" aria-label="Resize chat and content panes" aria-valuemin="28" aria-valuemax="72" aria-valuenow="46" tabindex="0" onmousedown="swStartDrag(event,\'x\',\'#sw-chat-left-pane\',28,72,\'#sw-split-container\')" onkeydown="swDragKeydown(event,\'x\',\'#sw-chat-left-pane\',28,72,\'#sw-split-container\')"></div>',
 
       // RIGHT: ideate → 3-panel; all other skills → artefact draft panel
       (data.skillName === 'ideate' || data.isIdeate === true
         ? [
           '<section class="sw-chat-pane" style="display:flex;flex-direction:column">',
-            '<div class="ci-section-head">',
-              '<span class="ci-section-label">Conditions</span>',
-              '<button id="sw-toggle-conditions" class="sw-section-toggle" onclick="swToggleSection(\'condition-items\',this)" title="Collapse/expand" aria-label="Toggle conditions">▾</button>',
-            '</div>',
-            '<div id="condition-items" role="region" aria-label="Condition items" style="flex:0 0 auto;max-height:28%;overflow-y:auto;padding:10px 12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px">',
-              '<p style="margin:0;font-size:12px;color:var(--muted)">No conditions identified yet</p>',
-            '</div>',
-            '<div class="ac-section-head">',
-              '<span class="ac-section-label">Assumptions</span>',
-              '<div style="display:flex;align-items:center;gap:6px">',
-                '<div class="ac-badges" id="ac-badges">',
-                  '<span class="ac-badge ac-badge-amber" id="ac-badge-unconf" style="display:none">0 unconfirmed</span>',
-                  '<span class="ac-badge ac-badge-green" id="ac-badge-conf"   style="display:none">0 confirmed</span>',
+            // dsa-s4 (AC3, resize portion): #sw-ideate-split wraps the
+            // 3 stacked sections (Conditions, Assumptions, Canvas) in a flex
+            // column so each can carry a JS-adjustable flex-basis, matching
+            // the mock's own #sw-ideate-split (Skills Platform - Skill
+            // Session.dc.html line 196). The existing condition-items/
+            // assumption-cards content (ids, ARIA, placeholder text) is
+            // unchanged -- only their flex sizing moves from a fixed
+            // max-height% on the content div itself to a JS-adjustable
+            // flex-basis% on a new wrapping "group" div (header + content
+            // together, mirroring the mock's own sticky-header-inside-the-
+            // resizable-region pattern).
+            '<div id="sw-ideate-split" style="flex:1;display:flex;flex-direction:column;min-height:0">',
+              '<div id="sw-ideate-cond-group" class="sw-resize-group" style="flex:0 0 26%;min-height:0;overflow:hidden;display:flex;flex-direction:column">',
+                '<div class="ci-section-head">',
+                  '<span class="ci-section-label">Conditions</span>',
+                  '<button id="sw-toggle-conditions" class="sw-section-toggle" onclick="swToggleSection(\'condition-items\',this)" title="Collapse/expand" aria-label="Toggle conditions">▾</button>',
                 '</div>',
-                '<button id="sw-toggle-assumptions" class="sw-section-toggle" onclick="swToggleSection(\'assumption-cards\',this)" title="Collapse/expand" aria-label="Toggle assumptions">▾</button>',
+                '<div id="condition-items" role="region" aria-label="Condition items" style="flex:1;min-height:0;overflow-y:auto;padding:10px 12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px">',
+                  '<p style="margin:0;font-size:12px;color:var(--muted)">No conditions identified yet</p>',
+                '</div>',
               '</div>',
-            '</div>',
-            '<div id="assumption-cards" role="region" aria-label="Assumption cards" style="flex:0 0 auto;max-height:42%;overflow-y:auto;padding:10px 12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px">',
-              '<p style="margin:0;font-size:12px;color:var(--muted)">No assumptions identified yet</p>',
-            '</div>',
-            // cdpl-s1: header + #canvas-panel wrapped together in
-            // #canvas-section so the shared fullscreen mechanism toggles a
-            // container that includes the maximise button itself (mirroring
-            // #sw-artefact-pane's own wrap of its header+content) -- a fixed
-            // element painted on top of the page would otherwise cover a
-            // sibling header/button left in normal flow, making the button
-            // unclickable once maximised.
-            // rapp-s1: min-height was 0 (deliberately, to let it shrink) --
-            // fine while conditions/assumptions were always empty (before
-            // rapp-s1's own resume-hydration fix and isc-s1's mock-content
-            // fix), since flex:0 0 auto siblings with real content up to
-            // max-height:28%/42% barely took any space. With real content
-            // now populating those siblings, canvas-section could shrink to
-            // a sliver with several lens turns' worth of assumptions/
-            // conditions above it. A min-height floor (matching the
-            // non-ideate branch's own #canvas-panel min-height:200px
-            // convention just below) keeps the canvas usable regardless of
-            // how tall the two panels above it grow, while flex:1 1 auto
-            // still lets it grow larger when there's room.
-            '<div id="canvas-section" style="display:flex;flex-direction:column;flex:1 1 auto;min-height:240px">',
-              '<div class="cv-section-head">',
-                '<span class="cv-section-label">Canvas</span>',
-                '<div style="display:flex;align-items:center;gap:6px">',
-                  '<div class="cv-pips" id="cv-pips">',
-                    '<span class="cv-pip" data-lens="A" title="Lens A">A</span>',
-                    '<span class="cv-pip" data-lens="B" title="Lens B">B</span>',
-                    '<span class="cv-pip" data-lens="C" title="Lens C">C</span>',
-                    '<span class="cv-pip" data-lens="D" title="Lens D">D</span>',
-                    '<span class="cv-pip" data-lens="E" title="Lens E">E</span>',
+              // startCondResize clamp [12,45] mirrors the mock's own.
+              '<div class="sw-drag-v" title="Drag to resize" role="separator" aria-orientation="horizontal" aria-label="Resize conditions and assumptions sections" aria-valuemin="12" aria-valuemax="45" aria-valuenow="26" tabindex="0" onmousedown="swStartDrag(event,\'y\',\'#sw-ideate-cond-group\',12,45,\'#sw-ideate-split\')" onkeydown="swDragKeydown(event,\'y\',\'#sw-ideate-cond-group\',12,45,\'#sw-ideate-split\')"></div>',
+              '<div id="sw-ideate-assum-group" class="sw-resize-group" style="flex:0 0 38%;min-height:0;overflow:hidden;display:flex;flex-direction:column">',
+                '<div class="ac-section-head">',
+                  '<span class="ac-section-label">Assumptions</span>',
+                  '<div style="display:flex;align-items:center;gap:6px">',
+                    '<div class="ac-badges" id="ac-badges">',
+                      '<span class="ac-badge ac-badge-amber" id="ac-badge-unconf" style="display:none">0 unconfirmed</span>',
+                      '<span class="ac-badge ac-badge-green" id="ac-badge-conf"   style="display:none">0 confirmed</span>',
+                    '</div>',
+                    '<button id="sw-toggle-assumptions" class="sw-section-toggle" onclick="swToggleSection(\'assumption-cards\',this)" title="Collapse/expand" aria-label="Toggle assumptions">▾</button>',
                   '</div>',
-                  '<button id="sw-toggle-canvas" class="sw-section-toggle" onclick="swToggleSection(\'canvas-panel\',this)" title="Collapse/expand" aria-label="Toggle canvas">▾</button>',
-                  '<button id="sw-expand-canvas" class="sw-section-expand" onclick="swExpandCanvas()" title="Maximise canvas" aria-label="Maximise canvas">⊞</button>',
+                '</div>',
+                '<div id="assumption-cards" role="region" aria-label="Assumption cards" style="flex:1;min-height:0;overflow-y:auto;padding:10px 12px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:6px">',
+                  '<p style="margin:0;font-size:12px;color:var(--muted)">No assumptions identified yet</p>',
                 '</div>',
               '</div>',
-              '<div id="canvas-panel" role="region" aria-label="Canvas" style="flex:1 1 auto;overflow-y:auto;padding:16px">',
-                '<p class="cv-empty">Lens output will appear here as the session progresses.</p>',
-                (draftSections || ''),
+              // startAssumResize clamp [15,55] mirrors the mock's own.
+              '<div class="sw-drag-v" title="Drag to resize" role="separator" aria-orientation="horizontal" aria-label="Resize assumptions and canvas sections" aria-valuemin="15" aria-valuemax="55" aria-valuenow="38" tabindex="0" onmousedown="swStartDrag(event,\'y\',\'#sw-ideate-assum-group\',15,55,\'#sw-ideate-split\')" onkeydown="swDragKeydown(event,\'y\',\'#sw-ideate-assum-group\',15,55,\'#sw-ideate-split\')"></div>',
+              // cdpl-s1: header + #canvas-panel wrapped together in
+              // #canvas-section so the shared fullscreen mechanism toggles a
+              // container that includes the maximise button itself (mirroring
+              // #sw-artefact-pane's own wrap of its header+content) -- a fixed
+              // element painted on top of the page would otherwise cover a
+              // sibling header/button left in normal flow, making the button
+              // unclickable once maximised.
+              // rapp-s1: min-height was 0 (deliberately, to let it shrink) --
+              // fine while conditions/assumptions were always empty (before
+              // rapp-s1's own resume-hydration fix and isc-s1's mock-content
+              // fix), since flex:0 0 auto siblings with real content up to
+              // max-height:28%/42% barely took any space. With real content
+              // now populating those siblings, canvas-section could shrink to
+              // a sliver with several lens turns' worth of assumptions/
+              // conditions above it. A min-height floor (matching the
+              // non-ideate branch's own #canvas-panel min-height:200px
+              // convention just below) keeps the canvas usable regardless of
+              // how tall the two panels above it grow, while flex:1 1 auto
+              // still lets it grow larger when there's room. dsa-s4: this is
+              // now the 3rd stacked section in #sw-ideate-split (flex:1,
+              // takes remaining space, no drag handle needed after it).
+              '<div id="canvas-section" style="display:flex;flex-direction:column;flex:1 1 auto;min-height:240px">',
+                '<div class="cv-section-head">',
+                  '<span class="cv-section-label">Canvas</span>',
+                  '<div style="display:flex;align-items:center;gap:6px">',
+                    '<div class="cv-pips" id="cv-pips">',
+                      '<span class="cv-pip" data-lens="A" title="Lens A">A</span>',
+                      '<span class="cv-pip" data-lens="B" title="Lens B">B</span>',
+                      '<span class="cv-pip" data-lens="C" title="Lens C">C</span>',
+                      '<span class="cv-pip" data-lens="D" title="Lens D">D</span>',
+                      '<span class="cv-pip" data-lens="E" title="Lens E">E</span>',
+                    '</div>',
+                    '<button id="sw-toggle-canvas" class="sw-section-toggle" onclick="swToggleSection(\'canvas-panel\',this)" title="Collapse/expand" aria-label="Toggle canvas">▾</button>',
+                    '<button id="sw-expand-canvas" class="sw-section-expand" onclick="swExpandCanvas()" title="Maximise canvas" aria-label="Maximise canvas">⊞</button>',
+                  '</div>',
+                '</div>',
+                '<div id="canvas-panel" role="region" aria-label="Canvas" style="flex:1 1 auto;overflow-y:auto;padding:16px">',
+                  '<p class="cv-empty">Lens output will appear here as the session progresses.</p>',
+                  (draftSections || ''),
+                '</div>',
               '</div>',
             '</div>',
           '</section>',
         ].join('')
         : [
           '<section class="sw-chat-pane" id="sw-artefact-pane" style="display:flex;flex-direction:column">',
-            '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--line-2);flex-shrink:0">',
-              '<span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">' + (data.skillName === 'definition' ? 'Story Map' : 'Artefact Draft') + '</span>',
-              '<button id="sw-artefact-fs-btn" class="ad-fs-btn" onclick="swToggleArtefactFs()" title="Toggle fullscreen" aria-label="Toggle fullscreen">⊞</button>',
-            '</div>',
-            '<div id="artefact-panel" role="region" aria-label="' + (data.skillName === 'definition' ? 'Story map' : 'Artefact draft') + '" style="flex:0 1 auto;max-height:55vh;overflow-y:auto;padding:' + (data.skillName === 'definition' ? '0' : '16px 20px') + '">',
-              // dsh-s3: when a caller supplies pre-rendered artefact HTML (the
-              // read-only historical-stage view has no live SSE pump to
-              // populate this pane client-side the way the live chat page
-              // does), render it directly. Absent/falsy (every existing
-              // live-session call site) preserves the exact placeholder
-              // text that was here before this option existed.
-              (data.artefactContent ||
-                '<p style="margin:0;font-size:12px;color:var(--muted);padding:16px 20px">' + (data.skillName === 'definition' ? 'Story map will appear here as epics and stories are generated.' : 'Artefact will appear here as the session progresses.') + '</p>'),
-            '</div>',
-            // csd-s3/csd-s4 (found post-DoD, see decisions.md): /design and
-            // /definition emit CANVAS-JSON diagram markers, but until this
-            // fix, this pane had no element for appendCanvasBlock() to
-            // attach to -- only the /ideate skill's 3-panel layout had one.
-            // Added as an additional section below the artefact/story-map
-            // panel above (which continues to work exactly as before) so
-            // diagrams have somewhere real to render for these two skills.
-            // cdpl-s1: header + #canvas-panel wrapped in #canvas-section --
-            // see the identical comment on the ideate layout's own
-            // #canvas-section above for why the wrapper (not #canvas-panel
-            // alone) is the element that toggles fullscreen.
-            '<div id="canvas-section" style="display:flex;flex-direction:column;flex:1 1 auto;min-height:0">',
-              '<div class="cv-section-head" style="flex-shrink:0">',
-                '<span class="cv-section-label">Diagrams</span>',
-                '<button id="sw-canvas-fs-btn" class="ad-fs-btn" onclick="swToggleCanvasFs()" title="Maximise diagrams" aria-label="Maximise diagrams">⊞</button>',
+            // dsa-s4 (AC3, resize portion): #sw-artefact-split wraps the
+            // 2 stacked sections (Artefact draft/Story map, Diagrams) in a
+            // flex column so each can carry a JS-adjustable flex-basis,
+            // matching the mock's own #sw-artefact-split/#sw-map-split
+            // (Skills Platform - Skill Session.dc.html lines 154/266 --
+            // both mock variants share this exact pattern, as does this
+            // codebase's single shared branch for generic and /definition).
+            // The existing header/#artefact-panel content (ids, ARIA,
+            // artefactContent passthrough, placeholder text) is unchanged --
+            // only its flex sizing moves from a fixed max-height:55vh on
+            // the content div itself to a JS-adjustable flex-basis% on a
+            // new wrapping "group" div (header + content together, mirroring
+            // the ideate branch's own group pattern just above).
+            '<div id="sw-artefact-split" style="flex:1;display:flex;flex-direction:column;min-height:0">',
+              '<div id="sw-artefact-top-group" class="sw-resize-group" style="flex:0 0 62%;min-height:0;overflow:hidden;display:flex;flex-direction:column">',
+                '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--line-2);flex-shrink:0">',
+                  '<span style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted)">' + (data.skillName === 'definition' ? 'Story Map' : 'Artefact Draft') + '</span>',
+                  '<button id="sw-artefact-fs-btn" class="ad-fs-btn" onclick="swToggleArtefactFs()" title="Toggle fullscreen" aria-label="Toggle fullscreen">⊞</button>',
+                '</div>',
+                '<div id="artefact-panel" role="region" aria-label="' + (data.skillName === 'definition' ? 'Story map' : 'Artefact draft') + '" style="flex:1;min-height:0;overflow-y:auto;padding:' + (data.skillName === 'definition' ? '0' : '16px 20px') + '">',
+                  // dsh-s3: when a caller supplies pre-rendered artefact HTML (the
+                  // read-only historical-stage view has no live SSE pump to
+                  // populate this pane client-side the way the live chat page
+                  // does), render it directly. Absent/falsy (every existing
+                  // live-session call site) preserves the exact placeholder
+                  // text that was here before this option existed.
+                  (data.artefactContent ||
+                    '<p style="margin:0;font-size:12px;color:var(--muted);padding:16px 20px">' + (data.skillName === 'definition' ? 'Story map will appear here as epics and stories are generated.' : 'Artefact will appear here as the session progresses.') + '</p>'),
+                '</div>',
               '</div>',
-              '<div id="canvas-panel" role="region" aria-label="Diagrams" style="flex:1 1 auto;min-height:200px;overflow-y:auto;padding:16px">',
-                '<p class="cv-empty">Diagrams will appear here as the session progresses.</p>',
+              // startDraftResize clamp [25,80] mirrors the mock's own.
+              '<div class="sw-drag-v" title="Drag to resize" role="separator" aria-orientation="horizontal" aria-label="Resize draft and diagrams sections" aria-valuemin="25" aria-valuemax="80" aria-valuenow="62" tabindex="0" onmousedown="swStartDrag(event,\'y\',\'#sw-artefact-top-group\',25,80,\'#sw-artefact-split\')" onkeydown="swDragKeydown(event,\'y\',\'#sw-artefact-top-group\',25,80,\'#sw-artefact-split\')"></div>',
+              // csd-s3/csd-s4 (found post-DoD, see decisions.md): /design and
+              // /definition emit CANVAS-JSON diagram markers, but until this
+              // fix, this pane had no element for appendCanvasBlock() to
+              // attach to -- only the /ideate skill's 3-panel layout had one.
+              // Added as an additional section below the artefact/story-map
+              // panel above (which continues to work exactly as before) so
+              // diagrams have somewhere real to render for these two skills.
+              // cdpl-s1: header + #canvas-panel wrapped in #canvas-section --
+              // see the identical comment on the ideate layout's own
+              // #canvas-section above for why the wrapper (not #canvas-panel
+              // alone) is the element that toggles fullscreen. dsa-s4: this
+              // is now the 2nd stacked section in #sw-artefact-split (flex:1,
+              // takes remaining space, no drag handle needed after it).
+              '<div id="canvas-section" style="display:flex;flex-direction:column;flex:1 1 auto;min-height:0">',
+                '<div class="cv-section-head" style="flex-shrink:0">',
+                  '<span class="cv-section-label">Diagrams</span>',
+                  '<button id="sw-canvas-fs-btn" class="ad-fs-btn" onclick="swToggleCanvasFs()" title="Maximise diagrams" aria-label="Maximise diagrams">⊞</button>',
+                '</div>',
+                '<div id="canvas-panel" role="region" aria-label="Diagrams" style="flex:1 1 auto;min-height:200px;overflow-y:auto;padding:16px">',
+                  '<p class="cv-empty">Diagrams will appear here as the session progresses.</p>',
+                '</div>',
               '</div>',
             '</div>',
           '</section>',

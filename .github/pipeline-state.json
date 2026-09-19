@@ -35977,22 +35977,50 @@
             {
               "slug": "dsa-s4",
               "name": "Restyle the Skill-Session Chat Page to Match DESIGN.md",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-18T10:09:48.652Z",
+              "updatedAt": "2026-09-19T20:54:32.891Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
-                "passing": 0
+                "passing": 4
               },
               "acTotal": 4,
-              "acVerified": 0,
+              "acVerified": 4,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": true,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s4-dor.md"
+              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s4-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Token substitution -- replace hardcoded colors with design-system tokens (AC1, AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s4-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Focused/Chat segmented-control toggle (AC3 toggle)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s4-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Resizable-pane drag mechanism -- outer split + right-pane stacks (AC3 resize)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s4-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "Full regression verification (AC4) + npm test + live browser check",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s4-plan.md"
+                }
+              ],
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/910"
             },
             {
               "slug": "dsa-s7",

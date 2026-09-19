@@ -192,9 +192,19 @@ assert('T11: source=operator is preserved', po && po.source === 'operator');
   var canvasIdx = html.indexOf('id="canvas-panel"');
   assert('T9: #condition-items appears before #assumption-cards', condIdx < assmpIdx);
   assert('T9: #assumption-cards appears before #canvas-panel', assmpIdx < canvasIdx);
-  assert('T9: #condition-items style includes max-height', (function() {
-    var sectionText = html.slice(condIdx - 200, condIdx + 100);
-    return sectionText.indexOf('max-height') !== -1;
+  // dsa-s4 (2026-09-20): the height cap on the conditions section moved from
+  // a max-height style on #condition-items itself to a flex-basis cap on its
+  // new resizable wrapper, #sw-ideate-cond-group (part of dsa-s4's AC3
+  // resizable-pane mechanism). #condition-items is still height-constrained
+  // -- via its ancestor's flex:0 0 <pct>% + overflow:hidden -- just not via
+  // its own inline style anymore. See decisions.md, "dsa-s4 Task 4: 3
+  // pre-existing check-scripts assert max-height on the wrong element after
+  // Task 3's resizable-pane refactor".
+  assert('T9: #condition-items is height-capped via its #sw-ideate-cond-group wrapper (flex-basis + overflow:hidden)', (function() {
+    var wrapperMatch = html.match(/<div id="sw-ideate-cond-group"[^>]*style="([^"]*)"/);
+    if (!wrapperMatch) return false;
+    var style = wrapperMatch[1];
+    return /flex\s*:\s*0\s+0\s+\d/.test(style) && /overflow\s*:\s*hidden/.test(style);
   })());
 })();
 

@@ -52,8 +52,22 @@ assert('AC2: HTML contains id="canvas-panel"', html.includes('id="canvas-panel"'
 // AC3: #assumption-cards has placeholder text
 assert('AC3: #assumption-cards contains "No assumptions identified yet"', html.includes('No assumptions identified yet'));
 
-// AC4: #assumption-cards has max-height:42% in inline style
-assert('AC4: #assumption-cards has max-height:42%', html.includes('max-height:42%'));
+// AC4: #assumption-cards is height-capped
+// dsa-s4 (2026-09-20): the height cap moved from a literal max-height:42%
+// style on #assumption-cards itself to a flex-basis cap (default 38%, per
+// DESIGN.md's own reference mock) on its new resizable wrapper,
+// #sw-ideate-assum-group (part of dsa-s4's AC3 resizable-pane mechanism).
+// #assumption-cards is still height-constrained -- via its ancestor's
+// flex:0 0 <pct>% + overflow:hidden -- just not via its own inline style or
+// the old fixed 42% value anymore (a user can now drag-resize it). See
+// decisions.md, "dsa-s4 Task 4: 3 pre-existing check-scripts assert
+// max-height on the wrong element after Task 3's resizable-pane refactor".
+assert('AC4: #assumption-cards is height-capped via its #sw-ideate-assum-group wrapper (flex-basis + overflow:hidden)', (function() {
+  const m = html.match(/<div id="sw-ideate-assum-group"[^>]*style="([^"]*)"/);
+  if (!m) return false;
+  const style = m[1];
+  return /flex\s*:\s*0\s+0\s+\d/.test(style) && /overflow\s*:\s*hidden/.test(style);
+})());
 
 // AC5: #assumption-cards has role="region" and aria-label
 assert('AC5: #assumption-cards has role="region"', html.includes('role="region"'));

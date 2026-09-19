@@ -88,6 +88,11 @@
       "date": "2026-09-12",
       "action": "Two GitHub Actions workflows ('Deploy dashboards to GitHub Pages', 'Improvement Agent -- Scheduled Dreaming') were failing on every push as of 2026-09-12 -- pre-existing infra/permission gaps, not caused by any commit at that time. Not re-checked this session.",
       "owner": "operator (Hamish King) -- decide whether to fix repo Pages settings / grant the dreaming-job's token a ruleset bypass, or leave both failing as known noise"
+    },
+    {
+      "date": "2026-09-20",
+      "action": "dsa-s4 (2026-09-18-design-system-adoption feature) POST-DEPLOYMENT SMOKE TEST -- NARROWED 2026-09-20 once Chrome reconnected: dark mode, light mode, the Focused/Chat toggle (both states), and the resize mechanism's keyboard path (a real ArrowRight keypress on the focused outer handle, confirmed live via CDP -- flexBasis genuinely changed 46%->48%, aria-valuenow tracked it, the new focus-visible outline rendered) were all visually confirmed live against a real /ideate session on a fresh local server -- see decisions.md for the full account. STILL NEEDED: the mouse-drag path specifically (a synthetic CDP left_click_drag did not register -- attributed to a CDP intermediate-mousemove limitation, not a feature defect, but not itself confirmed live; a human's real mouse drag, or a differently-configured automation setup, would close this), the generic and /definition skill-type right-pane variants (not live-checked this pass, though structurally identical to the now-confirmed /ideate variant and already covered by the passing automated suite), and a true narrow mobile-viewport visual pass (this environment's resize_window tool plateaus ~980-1000px, does not reach 375-390px).",
+      "owner": "operator (Hamish King) -- confirm the 3 remaining items (mouse-drag by hand, generic/definition variants, true mobile viewport) once deployed or via a real device"
     }
   ],
   "estimate": {

@@ -97,10 +97,22 @@ queue.push(function runT2_2() {
       pendingConfirmation: false,
       userInitial: 'M'
     });
-    // Should not show "3 of 7" or "7 questions remaining" type text in the header
+    // dsa-s4 (2026-09-20): this AC originally prohibited a numeric question
+    // count ANYWHERE, because only one chat view existed. dsa-s4's Task 2
+    // added a new, separate, opt-in "Focused" view (DESIGN.md's own
+    // "Skill session" pattern, AC3) whose own progress indicator
+    // (id="sw-focused-progress-label") legitimately shows "Question X of Y"
+    // -- that is new, approved scope, not a reintroduction of the old
+    // default-view clutter this AC was written to prevent. Scope the check
+    // to everything BEFORE the Focused-view container (the default Chat
+    // sub-heading/thread this AC actually cares about) rather than the
+    // whole page. See decisions.md, "dsa-s4 Task 4: check-mfc2's question-
+    // count prohibition needs scoping to the default Chat view".
+    const focusedViewStart = html.indexOf('id="sw-focused-view"');
+    const defaultViewHtml = focusedViewStart === -1 ? html : html.slice(0, focusedViewStart);
     assert.ok(
-      !html.includes('3 of 7') && !html.includes('questions remaining'),
-      'HTML must not contain question count fractions or "remaining" text'
+      !defaultViewHtml.includes('3 of 7') && !defaultViewHtml.includes('questions remaining'),
+      'HTML must not contain question count fractions or "remaining" text outside the new Focused-mode view'
     );
   });
 });
