@@ -21,8 +21,8 @@ Any change to `handleRoot`'s own logic (auth redirect, PostHog capture, CSRF tok
 | AC1 (dark-mode tokens) | Playwright: `getComputedStyle` read | E2E |
 | AC2 (light-mode tokens) | Playwright: same, light mode toggled | E2E |
 | AC3 (layout matches mock) | Playwright: structural assertions on hero/sections/screenshot-frame | E2E |
-| AC4 (no regression) | Playwright: re-run `wuce23-skill-launcher-landing.spec.js` unmodified | E2E |
-| AC5 (mobile responsive, no horizontal overflow) | Playwright: `page.setViewportSize()` at 375px/390px, measure `document.body.scrollWidth` | E2E |
+| AC4 (no regression) | Re-run the real landing-page regression suite unmodified: 9 Node check-scripts + 5 E2E spec files (`lphf-s1` through `s5`, `lab-s1.2`, `ccrh-s1`, `lccf-s1`, `rpiw-s1`) — corrected 2026-09-19 from an earlier wrong reference to `wuce23-skill-launcher-landing.spec.js` (a `GET /skills` test, unrelated); see `decisions.md` | Node + E2E |
+| AC5 (mobile responsive, no horizontal overflow) | Playwright: `page.setViewportSize()` at 375px/390px, measure `document.body.scrollWidth`. Note: 4 of AC4's own existing specs (`lphf-s2` through `s5-responsive.spec.js`) already assert no-overflow at 320px on the CURRENT page — AC5 must not regress those | E2E |
 
 **Assumptions:**
 `landing.html`/`public.js`'s `handleRoot` are the real target (confirmed via direct code trace, correcting the story's own initial file-ambiguity, resolved during `/review`). AC5's implementation will likely require adding explicit CSS to `landing.html`'s own styles (not yet confirmed whether the hero/full-bleed sections already naturally reflow, or need an explicit `@media (max-width: 768px)` override per `DESIGN.md`'s new Responsive behavior section) — investigate at `/implementation-plan` time rather than assuming either way.

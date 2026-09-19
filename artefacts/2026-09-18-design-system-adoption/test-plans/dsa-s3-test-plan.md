@@ -39,8 +39,8 @@ None — same reasoning as `dsa-s1`/`dsa-s2`. AC5 added 2026-09-19 per the FEATU
 | AC1 | Unauthenticated navigation to `GET /` (dark mode active) | Synthetic — no login needed, this is the public landing page | None | Real route confirmed at `/review`: `routes/public.js`'s `handleRoot`, dispatched at `server.js:3985-3987` |
 | AC2 | Same as AC1, with light mode applied | Synthetic | None | |
 | AC3 | Same unauthenticated page load | Synthetic | None | |
-| AC4 | Pre-existing test fixtures already used by `wuce23-skill-launcher-landing.spec.js` | Existing fixtures | None | |
-| AC5 | Same unauthenticated `GET /` page load, real viewport resize via `page.setViewportSize()` | Synthetic | None | Mirrors `dsa-s2`'s own mobile-check pattern (empirically found the dashboard's own overflow this way — see `decisions.md`) |
+| AC4 | Pre-existing landing-page test fixtures (corrected 2026-09-19 — see `decisions.md`): `tests/check-lab-s1.2-landing-page.js`, `tests/check-lphf-s1-golden-trace-demo.js`, `tests/check-lphf-s2-scope-contract-card.js`, `tests/check-lphf-s3-crypto-verification-card.js`, `tests/check-lphf-s4-self-improving-card.js`, `tests/check-lphf-s5-auth-panel-restyle.js`, `tests/check-ccrh-s1-real-instruction-hash.js`, `tests/check-lccf-s1-fail-open-learnings-count.js`, `tests/check-rpiw-s1-real-route-posthog-wiring.js` (Node, 9 files) + `tests/e2e/lphf-s1-keyboard-nav.spec.js`, `tests/e2e/lphf-s2-responsive.spec.js`, `tests/e2e/lphf-s3-responsive.spec.js`, `tests/e2e/lphf-s4-responsive.spec.js`, `tests/e2e/lphf-s5-responsive.spec.js` (E2E, 5 files, 10 tests) | Existing fixtures | None | |
+| AC5 | Same unauthenticated `GET /` page load, real viewport resize via `page.setViewportSize()`. Note: `lphf-s2` through `lphf-s5-responsive.spec.js` already assert no-overflow at 320px on the CURRENT page — AC5's own new test targets 375px/390px specifically and must not regress what those 4 existing specs already verify | Synthetic | None | Mirrors `dsa-s2`'s own mobile-check pattern (empirically found the dashboard's own overflow this way — see `decisions.md`) |
 
 ### PCI / sensitivity constraints
 
@@ -94,8 +94,8 @@ None — pure presentation change.
 
 - **Verifies:** AC4
 - **Precondition:** Restyle implemented
-- **Action:** Re-run `tests/e2e/wuce23-skill-launcher-landing.spec.js` unmodified
-- **Expected result:** Passes with no changes required to its own assertions
+- **Action:** Re-run the 9 Node check-scripts and 5 E2E spec files listed in the AC Coverage/Test Data tables above, unmodified (corrected 2026-09-19 from an earlier, wrong reference to `wuce23-skill-launcher-landing.spec.js` — that file tests `GET /skills`, unrelated to the landing page; see `decisions.md`)
+- **Expected result:** All pass with no changes required to their own assertions (golden-trace demo, 3 hero cards, auth panel, real instruction hash, learnings count fail-open, PostHog wiring, keyboard nav, and 4x no-overflow-at-320px checks)
 - **Edge case:** No
 
 ### landing-mobile-viewport-no-overflow

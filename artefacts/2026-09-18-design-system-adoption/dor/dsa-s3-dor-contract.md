@@ -18,8 +18,8 @@ Any change to `handleRoot`'s own logic (auth redirect, PostHog capture, CSRF tok
 | AC1 (dark-mode tokens) | Playwright: `getComputedStyle` read | E2E |
 | AC2 (light-mode tokens) | Playwright: same, light mode toggled | E2E |
 | AC3 (layout matches mock) | Playwright: structural assertions on hero/sections/screenshot-frame | E2E |
-| AC4 (no regression) | Playwright: re-run `wuce23-skill-launcher-landing.spec.js` unmodified | E2E |
-| AC5 (mobile responsive) | Playwright: `page.setViewportSize()` at 375px/390px, `document.body.scrollWidth` measurement | E2E |
+| AC4 (no regression) | Re-run the real landing-page regression suite (9 Node + 5 E2E files) — corrected 2026-09-19 from an earlier wrong reference; see `decisions.md` | Node + E2E |
+| AC5 (mobile responsive) | Playwright: `page.setViewportSize()` at 375px/390px, `document.body.scrollWidth` measurement; must not regress AC4's own existing 320px-overflow specs | E2E |
 
 **Assumptions:**
 `landing.html`/`public.js`'s `handleRoot` are the real target (confirmed via direct code trace, correcting the story's own initial file-ambiguity, resolved during `/review`). Whether the existing layout needs new explicit CSS to satisfy AC5, or already reflows without changes, is not yet confirmed — investigate at `/implementation-plan` time.
