@@ -36074,11 +36074,11 @@
             {
               "slug": "dsa-s5",
               "name": "design.system Context Tag Triggers a Real DoR Hard Block",
-              "stage": "implementation-plan",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-19T22:48:28.350Z",
+              "updatedAt": "2026-09-19T23:26:59.040Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
@@ -36109,7 +36109,9 @@
                   "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s5-plan.md"
                 }
-              ]
+              ],
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/911"
             }
           ]
         }
