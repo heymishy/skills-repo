@@ -35363,10 +35363,12 @@
           "name": "design.system DoR gate is real and enforced",
           "target": "A deliberately-noncompliant tagged story genuinely fails DoR",
           "baseline": "0 (mechanism does not exist)",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "signal": "at-risk",
+          "lastMeasured": "2026-09-20",
+          "evidence": "dsa-s5 merged: a real, independently-verified H-DESIGN hard block + token-scanning script now exist (genuine advance from baseline 0). Signal is at-risk, not on-track, because the target's own literal claim -- a deliberately-noncompliant story 'genuinely fails DoR' -- was never exercised end-to-end (no fixture story was run through a real /definition-of-ready session producing an observed dorStatus:blocked outcome). Evidence is SKILL.md documentation-pattern-matching only, the same evidence class every other conditional hard block (H-INF, H-MIG) in this codebase relies on -- not unique to dsa-s5, but the target's own wording sets a higher bar than any current hard block can demonstrate. See dod/dsa-s5-dod.md.",
+          "contributingStories": [
+            "dsa-s5"
+          ]
         },
         {
           "id": "m3",
@@ -35770,19 +35772,19 @@
           "id": "NFR-dsa-s5-perf",
           "category": "nfr",
           "label": "H-DESIGN scan completes within DoR sign-off performance budget",
-          "status": "met",
-          "evidence": "dsa-s5-dor.md H9/H-NFR -- no violation found",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-18T10:10:37.874Z"
+          "status": "not-met",
+          "evidence": "No deliberate timing measurement taken against a stated budget. Informal observation only: scripts/check-design-tokens.js completed near-instantly on every manual invocation during delivery (single sync file read + one regex sweep). Follow-up action logged in dod/dsa-s5-dod.md.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-20T00:00:00.000Z"
         },
         {
           "id": "NFR-dsa-s5-a11y",
           "category": "nfr",
           "label": "H-DESIGN audit trail: pass/fail result and offending file/value recorded",
           "status": "met",
-          "evidence": "dsa-s5-dor.md H9/H-NFR -- no violation found",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-18T10:10:37.876Z"
+          "evidence": "Confirmed via direct inspection: SKILL.md's H-DESIGN FAIL/PASS blockquote format and the real CLI script's own console output both name the file+value, matching H-INF/H-MIG's audit-trail convention exactly. See dod/dsa-s5-dod.md.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-20T00:00:00.000Z"
         },
         {
           "id": "NFR-dsa-s7-perf",
@@ -36069,16 +36071,16 @@
         {
           "slug": "design-system-governance",
           "name": "Future Stories Cannot Silently Bypass the Design System",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "dsa-s5",
               "name": "design.system Context Tag Triggers a Real DoR Hard Block",
-              "stage": "branch-complete",
-              "health": "green",
+              "stage": "definition-of-done",
+              "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-19T23:26:59.040Z",
+              "updatedAt": "2026-09-19T23:42:08.296Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
@@ -36110,8 +36112,10 @@
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s5-plan.md"
                 }
               ],
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/911"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/911",
+              "dodStatus": "complete",
+              "releaseReady": false
             }
           ]
         }
