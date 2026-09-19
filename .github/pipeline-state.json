@@ -36072,6 +36072,12 @@
       "name": "Mock Fixture Feature (leaked @mocked E2E test artefact, not real product work)",
       "track": "short",
       "health": "green"
+    },
+    {
+      "slug": "2026-09-19-nnn",
+      "id": "2026-09-19-nnn",
+      "discoveryStatus": "complete",
+      "artefact": "artefacts/2026-09-19-nnn/discovery.md"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
