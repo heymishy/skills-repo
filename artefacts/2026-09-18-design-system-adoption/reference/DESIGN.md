@@ -87,6 +87,21 @@ Custom stroke icon set — 20×20 viewBox, `1.5px` stroke, round caps/joins, `cu
   - Diagrams (mermaid-generated) → render as styled boxes + arrows matching the actual node graph (not a generic list), with a collapsible "View mermaid/diagram source" block showing raw syntax in mono. Do not attempt to render real mermaid.js output in a static mock.
 - **Artefact/document viewer**: two-column, `minmax(0,1fr) 320px`. Doc body in `Source Serif 4` on a surface card; sidebar = Sign-off card (avatar + role + signed/pending) + Comments card (threaded, with reply/resolve).
 
+## Responsive behavior
+
+**Breakpoint: `max-width: 768px`** — matches the shared app shell's own existing sidebar-collapse breakpoint (`src/web-ui/utils/html-shell.js`); every pattern below uses this same single breakpoint, not a pattern-specific one, so screens stay visually consistent at the same device widths.
+
+Every layout pattern in this system MUST define explicit behavior below 768px — "not specified" is not a valid state for a shipped screen. Minimum bar per pattern type:
+
+- **App shell / sidebar** (already implemented, `html-shell.js`): the fixed 224px sidebar becomes a fixed off-canvas drawer (`left: -240px` closed, `left: 0` open), toggled by a hamburger button; main content padding shrinks (`20px 16px`). This is the reference implementation every other pattern's own mobile treatment should match in spirit (an explicit, deliberate narrow-width state — not an unstyled fallback).
+- **Dashboard/app shell content** (main column below the shell): any multi-column grid (skill launcher grids, two-column "waiting/recent" style layouts, card grids) MUST either use a responsive grid (`grid-template-columns: repeat(auto-fit, minmax(...))`) that naturally reflows, or an explicit `@media (max-width: 768px)` override collapsing to a single column. A fixed multi-column grid (`repeat(N, 1fr)`) with no override is not acceptable — it causes real horizontal overflow and cramped, word-wrapped content on real mobile viewports (found and documented against the shipped dashboard; see `artefacts/2026-09-18-design-system-adoption/decisions.md`).
+- **Marketing/landing**: hero and copy sections must remain single-column and readable at 375px width with no horizontal scroll; full-bleed sections below the hero may keep their max-width cap but must not force horizontal overflow at narrow widths. Product-screenshot browser-chrome frames should scale down (not clip) below 768px.
+- **Phase stepper**: already specified above — wraps via `flex-wrap: wrap`, every phase always visible, no scrolling required, explicitly including mobile.
+- **Skill session** (resizable two-pane layout): the drag-to-resize two-pane pattern is desktop-oriented by nature; below 768px, panes must stack vertically (not attempt a resizable split) with each pane's own content remaining fully readable and scrollable independently.
+- **Artefact/document viewer**: the two-column `minmax(0,1fr) 320px` layout must stack to a single column below 768px (document body first, Sign-off/Comments sidebar below it), not compress the 320px sidebar column into an unusably narrow width.
+
+**Verification bar:** a screen is not "mobile responsive" merely because it renders without a JS error at a narrow width — verify with a real viewport-width check (Playwright `page.setViewportSize()` or an equivalent real browser check) confirming `document.body.scrollWidth` does not exceed the viewport width, and that no card/column has collapsed to an illegibly narrow or word-wrap-mangled state. DOM presence or computed-style assertions at desktop width alone do not verify this.
+
 ## Rules for agents extending this system
 
 1. Inline styles only, using the hex values above directly (no CSS variables inside `.dc.html` files per the Design Components spec) — but keep values byte-identical to this table across files so screens stay visually consistent.
