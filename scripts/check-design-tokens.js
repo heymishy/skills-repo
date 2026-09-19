@@ -51,7 +51,6 @@ function extractDesignTokens(designMdPath) {
   // value in the rest of the document, making the scanner strictly less
   // likely to flag anything. A governance gate degrading silently (nothing
   // looks wrong, it just gets weaker) is worse than one that errors clearly.
-  TOKEN_SECTION_END.lastIndex = 0;
   const endMatch = TOKEN_SECTION_END.exec(content.slice(startIndex));
   if (!endMatch) {
     throw new Error(`extractDesignTokens: could not find a "## Spacing & radius" heading (section end) in ${designMdPath}`);
