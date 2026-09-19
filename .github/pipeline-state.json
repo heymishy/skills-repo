@@ -35981,7 +35981,10 @@
       "id": "2026-09-18-new",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-09-18-new/discovery.md",
-      "stage": "benefit-metric"
+      "stage": "benefit-metric",
+      "name": "Mock Fixture Feature (leaked @mocked E2E test artefact, not real product work)",
+      "track": "short",
+      "health": "green"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
@@ -36093,6 +36096,6 @@
     ],
     "lastUpdated": "2026-08-29"
   },
-  "updatedAt": "2026-09-19T03:38:43.238Z",
-  "lastUpdated": "2026-09-19T03:38:43.238Z"
+  "updatedAt": "2026-09-19T04:03:04.718Z",
+  "lastUpdated": "2026-09-19T04:03:04.718Z"
 }
