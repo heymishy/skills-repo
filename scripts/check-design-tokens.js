@@ -46,9 +46,17 @@ function extractDesignTokens(designMdPath) {
   }
   const startIndex = startMatch.index;
 
+  // Fail loud on a missing end heading too -- silently falling back to
+  // content.length would expand the "token section" to swallow every hex
+  // value in the rest of the document, making the scanner strictly less
+  // likely to flag anything. A governance gate degrading silently (nothing
+  // looks wrong, it just gets weaker) is worse than one that errors clearly.
   TOKEN_SECTION_END.lastIndex = 0;
   const endMatch = TOKEN_SECTION_END.exec(content.slice(startIndex));
-  const endIndex = endMatch ? startIndex + endMatch.index : content.length;
+  if (!endMatch) {
+    throw new Error(`extractDesignTokens: could not find a "## Spacing & radius" heading (section end) in ${designMdPath}`);
+  }
+  const endIndex = startIndex + endMatch.index;
 
   const section = content.slice(startIndex, endIndex);
 

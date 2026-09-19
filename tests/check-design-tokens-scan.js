@@ -72,7 +72,7 @@ test('T2: scanFileForNonTokenColors flags the noncompliant fixture with file + v
   const findings = scanFileForNonTokenColors(NONCOMPLIANT_FIXTURE, tokens);
 
   assert.ok(Array.isArray(findings), 'scanFileForNonTokenColors must return an array');
-  assert.ok(findings.length >= 2, 'expected at least 2 findings (both non-token colors in the fixture)');
+  assert.strictEqual(findings.length, 2, 'expected exactly 2 findings (both non-token colors in the fixture, no more no less)');
 
   const values = findings.map((f) => f.value.toLowerCase());
   assert.ok(values.includes('#123456'), 'expected finding for #123456');
