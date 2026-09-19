@@ -36074,11 +36074,11 @@
             {
               "slug": "dsa-s5",
               "name": "design.system Context Tag Triggers a Real DoR Hard Block",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-19T22:26:33.858Z",
+              "updatedAt": "2026-09-19T22:30:19.738Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
@@ -36089,7 +36089,27 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s5-dor.md"
+              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s5-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "context.yml reference + real token-scanning script (AC1, AC2)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s5-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "H-DESIGN hard block in /definition-of-ready (AC3, AC4, AC5)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s5-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Full regression verification + npm test",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s5-plan.md"
+                }
+              ]
             }
           ]
         }
