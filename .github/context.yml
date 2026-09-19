@@ -24,6 +24,11 @@ architecture:
   ea_registry_local_path: "C:/Users/Hamis/code/ea-registry-repo"
   ea_registry_authoritative: true
 
+design:
+  # Path reference only — per product/constraints.md #8 ("Design artefacts are
+  # referenced, not embedded"). Do not copy DESIGN.md's token tables in here.
+  system_reference: "artefacts/2026-09-18-design-system-adoption/reference/DESIGN.md"
+
 optimization:
   token_policy:
     per_turn_soft_budget: 12000
