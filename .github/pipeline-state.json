@@ -35879,7 +35879,7 @@
                 {
                   "id": "task-1",
                   "name": "Wire renderDashboard mock content into _renderProductDashboard, preserve zero-products branch (AC3/AC6/AC8)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s2-plan.md"
                 },
                 {
@@ -36090,6 +36090,6 @@
     ],
     "lastUpdated": "2026-08-29"
   },
-  "updatedAt": "2026-08-22T22:18:24.526Z",
-  "lastUpdated": "2026-08-28T04:28:36.652Z"
+  "updatedAt": "2026-09-19T01:38:00.166Z",
+  "lastUpdated": "2026-09-19T01:38:00.166Z"
 }
