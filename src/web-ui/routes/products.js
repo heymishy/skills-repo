@@ -174,6 +174,7 @@ function _parseJsonbField(value, fallback) {
 function _renderProductDashboard(products, login, navProducts, activeProductId, noProductJourneyCount, isAdmin, hasNoProductWork, impersonation, mockData) {
   mockData = mockData || { pendingActionsCount: 0, actions: [], inProgressCount: 0, recent: [] };
   var body;
+  var containerMaxWidth = products.length === 0 ? '720px' : '1040px';
   if (products.length === 0) {
     // dsa-s2 AC8: the zero-products onboarding branch is UNCHANGED from its
     // existing real behavior -- do not touch this block's own content/copy.
@@ -209,10 +210,12 @@ function _renderProductDashboard(products, login, navProducts, activeProductId, 
         '<span style="font-size:16px;font-weight:600">No product work →</span>' +
       '</a>'
     : '';
-  body = body + noProductEntryHtml +
+  body = '<div style="max-width:' + containerMaxWidth + '">' +
+    body + noProductEntryHtml +
     '<div style="margin-top:32px;padding-top:24px;border-top:1px solid var(--line)">' +
       '<a href="/org/kanban" style="font-size:14px;color:var(--muted);text-decoration:none">View org kanban →</a>' +
-    '</div>';
+    '</div>' +
+  '</div>';
   return _htmlShell.renderShell({
     title: 'Dashboard',
     bodyContent: body,
