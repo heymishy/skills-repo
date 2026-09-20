@@ -35122,7 +35122,7 @@
         {
           "slug": "ep2-s4",
           "id": "ep2-s4",
-          "stage": "branch-setup",
+          "stage": "implementation-plan",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -35132,7 +35132,45 @@
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep2-s4-dor.md",
-          "updatedAt": "2026-09-20T06:11:38.232Z"
+          "updatedAt": "2026-09-20T07:02:31.060Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Three-way merge algorithm (AC2)",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep2-s4-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Concurrent-save detection buffer (AC1)",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep2-s4-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "feature_edits table + attribution record (AC3)",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep2-s4-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Merge broadcast (SSE pub/sub)",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep2-s4-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Wire real save route + SSE stream + client script (AC1, AC2, AC3 integration)",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep2-s4-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "E2E: two concurrent browser sessions merge live (AC1, AC2, AC3 end-to-end)",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep2-s4-plan.md"
+            }
+          ]
         },
         {
           "slug": "ep3-s1",
