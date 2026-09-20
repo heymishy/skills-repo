@@ -98,7 +98,19 @@ async function _buildArtefactBodyContent(req, pool, slug, artefactType, markdown
     '</div>';
 
   return (
-    '<div class="sw-artefact-layout" style="display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:24px">' +
+    '<style>' +
+      // The base grid-template-columns declaration lives here (not as an
+      // inline style attribute on the div below) specifically so the
+      // @media override below can win: an inline style attribute always
+      // beats a stylesheet rule regardless of media query or specificity,
+      // which silently no-ops a max-width override placed only in a
+      // <style> block if the base declaration stays inline.
+      '.sw-artefact-layout { grid-template-columns: minmax(0,1fr) 320px; }' +
+      '@media (max-width: 768px) {' +
+        '.sw-artefact-layout { grid-template-columns: 1fr; }' +
+      '}' +
+    '</style>' +
+    '<div class="sw-artefact-layout" style="display:grid;gap:24px">' +
       '<div class="sw-doc" style="font-family:var(--serif)">' + html + '</div>' +
       '<div class="sw-artefact-sidebar" style="display:flex;flex-direction:column;gap:16px">' +
         signOffCardHtml +

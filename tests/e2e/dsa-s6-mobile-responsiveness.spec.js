@@ -171,5 +171,60 @@ withAuth('dashboard-mobile-grid-collapses-legibly', async ({ page }) => {
   }
 });
 
-// ── Task 2 -- AC3/AC4: artefact viewer (routes/artefact.js) will be
-// appended below this line. Do not remove this marker comment. ──────────
+// ── Task 2 -- AC3/AC4: artefact viewer (routes/artefact.js) ────────────────
+// Reuses dsa-s1-artefact-viewer-restyle.spec.js's own established TEST_SLUG
+// + artefactType ('discovery') combination -- already a known-working
+// artefact-viewer fixture, no new seeding needed.
+
+const ARTEFACT_TEST_SLUG = '2026-05-02-web-ui-copilot-execution-layer';
+
+withAuth('artefact-viewer-mobile-no-overflow-no-content-collapse', async ({ page }) => {
+  await page.goto('/artefact/' + ARTEFACT_TEST_SLUG + '/discovery');
+
+  for (const width of MOBILE_WIDTHS) {
+    await page.setViewportSize({ width: width, height: 800 });
+
+    const scrollWidth = await page.evaluate(function() { return document.body.scrollWidth; });
+    expect(scrollWidth, 'document.body.scrollWidth at ' + width + 'px viewport').toBeLessThanOrEqual(width);
+
+    // The documented real bug: pre-fix, .sw-doc (the main content column)
+    // collapsed to 0-14px width while the sidebar stayed fixed at 320px
+    // (grid-template-columns: minmax(0,1fr) 320px squeezed under 320px+gap
+    // of demand at a 375-390px viewport). Post-fix, the grid collapses to a
+    // single column and .sw-doc should render close to the full available
+    // content width -- well above the near-zero pre-fix values.
+    const docWidth = await page.locator('.sw-doc').evaluate(function(el) {
+      return el.getBoundingClientRect().width;
+    });
+    expect(docWidth, '.sw-doc rendered width at ' + width + 'px').toBeGreaterThanOrEqual(250);
+  }
+});
+
+withAuth('artefact-viewer-mobile-stacks-body-first', async ({ page }) => {
+  await page.goto('/artefact/' + ARTEFACT_TEST_SLUG + '/discovery');
+
+  for (const width of MOBILE_WIDTHS) {
+    await page.setViewportSize({ width: width, height: 800 });
+
+    // The grid genuinely collapses to a single real track (not just a
+    // visually-narrow 2-column grid).
+    const layoutColumns = await page.locator('.sw-artefact-layout').evaluate(function(el) {
+      return getComputedStyle(el).gridTemplateColumns;
+    });
+    expect(layoutColumns.trim().split(/\s+/).length, '.sw-artefact-layout track count at ' + width + 'px').toBe(1);
+
+    // Document body (.sw-doc) must stack ABOVE the sidebar
+    // (.sw-artefact-sidebar) in real visual order -- DESIGN.md's own
+    // document-body-first requirement. The real DOM order was already
+    // confirmed correct (.sw-doc before .sw-artefact-sidebar) before this
+    // fix -- this assertion locks that in as a real rendered-position
+    // check, not just a source-order assumption.
+    const docTop = await page.locator('.sw-doc').evaluate(function(el) {
+      return el.getBoundingClientRect().top;
+    });
+    const sidebarTop = await page.locator('.sw-artefact-sidebar').evaluate(function(el) {
+      return el.getBoundingClientRect().top;
+    });
+    expect(docTop, '.sw-doc top position at ' + width + 'px').toBeLessThan(sidebarTop);
+  }
+});
