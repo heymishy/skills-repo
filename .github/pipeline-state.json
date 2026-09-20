@@ -36089,13 +36089,13 @@
                 {
                   "id": "task-1",
                   "name": "Dashboard mobile fix (AC1, AC2)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s6-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Artefact viewer mobile fix (AC3, AC4)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s6-plan.md"
                 },
                 {
