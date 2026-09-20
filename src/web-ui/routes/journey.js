@@ -99,14 +99,18 @@ function setMergeRedisSessionData(fn) { _mergeRedisSessionDataFn = fn; }
 function setRepoRoot(root) { _repoRoot = root; _repoRootAdapter.setRepoRoot(root); }
 
 // ep2-s4 Task 5: injectable Postgres pool for feature_edits attribution
-// recording (AC3). A plain value setter (not a throw-on-unwired adapter)
-// because the save handler already treats feature_edits as a best-effort
-// audit trail -- see the try/catch around recordEdit() below -- so an
-// unwired pool degrades to "no audit row written" rather than a hard error,
-// matching feature-collaborator-store's/presence-store's own pool being
-// optional in this file's other handlers.
-var _pshPoolForFeatureEdits = null;
-function setFeatureEditsPool(pool) { _pshPoolForFeatureEdits = pool; }
+// recording (AC3). A plain value setter (not a throw-on-unwired adapter,
+// a deliberate D37 exception) because the save handler already treats
+// feature_edits as a best-effort audit trail -- see the try/catch around
+// recordEdit() below -- so an unwired pool degrades to "no audit row
+// written" rather than a hard error. This is NOT the same shape as this
+// file's other required-pool dependencies (feature-collaborator-store's
+// getFeatureCollaborators() calls pool.query() unguarded and would throw
+// on a missing pool; presence-store.js has no pool dependency at all) --
+// feature_edits recording is uniquely non-critical among this file's own
+// DB writes, which is the actual justification for the exception.
+var _featureEditsPool = null;
+function setFeatureEditsPool(pool) { _featureEditsPool = pool; }
 
 // ---------------------------------------------------------------------------
 // Journey home helpers
@@ -1523,6 +1527,28 @@ async function handleGetJourneyStageView(req, res, pool) {
 }
 
 /**
+ * Write artefact content to disk, or write a structured 500 JSON response
+ * and return false if the write fails. ep2-s4 Task 5: shared between
+ * handlePostJourneyStageArtefact's legacy form path and its new JSON path,
+ * which previously duplicated this mkdir+write+catch block verbatim.
+ * @param {object} res
+ * @param {string} absPath
+ * @param {string} content
+ * @returns {boolean} true if the write succeeded
+ */
+function _writeArtefactOrRespond500(res, absPath, content) {
+  try {
+    fs.mkdirSync(path.dirname(absPath), { recursive: true });
+    fs.writeFileSync(absPath, content, 'utf8');
+    return true;
+  } catch (err) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Failed to write artefact: ' + err.message }));
+    return false;
+  }
+}
+
+/**
  * POST /api/journey/:journeyId/stage/:stageName/artefact — save inline-edited artefact to disk.
  */
 async function handlePostJourneyStageArtefact(req, res) {
@@ -1574,14 +1600,7 @@ async function handlePostJourneyStageArtefact(req, res) {
       return;
     }
     var legacyAbsPath = path.resolve(path.join(repoRoot, artefactRelPath));
-    try {
-      fs.mkdirSync(path.dirname(legacyAbsPath), { recursive: true });
-      fs.writeFileSync(legacyAbsPath, newContent, 'utf8');
-    } catch (err) {
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Failed to write artefact: ' + err.message }));
-      return;
-    }
+    if (!_writeArtefactOrRespond500(res, legacyAbsPath, newContent)) return;
     res.writeHead(302, { Location: '/journey/' + encodeURIComponent(journeyId) + '/stage/' + encodeURIComponent(stageName) });
     res.end();
     return;
@@ -1641,23 +1660,23 @@ async function handlePostJourneyStageArtefact(req, res) {
         res.end(JSON.stringify({ error: 'Merge conflict detected — unable to auto-merge', code: 'MERGE_CONFLICT_HARD' }));
         return;
       }
-      throw mergeErr;
+      // An unexpected (non-MERGE_CONFLICT_HARD) error from mergeArtefactEdits
+      // -- keep the response JSON-shaped like every other branch in this
+      // handler, rather than letting it fall through to server.js's generic
+      // router catch, which responds with plain text and would break the
+      // client script's own res.json() call.
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Merge failed: ' + mergeErr.message }));
+      return;
     }
   }
 
-  try {
-    fs.mkdirSync(path.dirname(absPath), { recursive: true });
-    fs.writeFileSync(absPath, finalContent, 'utf8');
-  } catch (err) {
-    res.writeHead(500, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Failed to write artefact: ' + err.message }));
-    return;
-  }
+  if (!_writeArtefactOrRespond500(res, absPath, finalContent)) return;
 
-  if (_pshPoolForFeatureEdits) {
+  if (_featureEditsPool) {
     var featureEdits = require('../modules/feature-edits');
     try {
-      await featureEdits.recordEdit(_pshPoolForFeatureEdits, {
+      await featureEdits.recordEdit(_featureEditsPool, {
         featureId: journey.featureSlug,
         artefactName: stageName,
         userId: actingUserId,
@@ -3761,11 +3780,24 @@ async function handleGetArtefactMergeStream(req, res) {
   }
   var journeyId = req.params && req.params.journeyId;
   var stageName = req.params && req.params.stageName;
-  var broadcast = require('../modules/artefact-merge-broadcast');
+  // Tenant/ownership guard -- matches handleGetJourneyPresenceStream's own
+  // pattern exactly. Without this, any authenticated user of any tenant
+  // could subscribe to any journeyId/stageName's live artefact-content
+  // pushes, regardless of ownership -- the same cross-tenant-access bug
+  // class jatg-s1 already found and fixed once in this codebase (see
+  // middleware/journey-access.js's own header comment for that history).
+  var journey = _journeyStore.getJourney(journeyId);
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
+    return;
+  }
+  var broadcastModule = require('../modules/artefact-merge-broadcast');
   // Canonical key builder -- MUST match the save route's own key
   // construction (handlePostJourneyStageArtefact, above) exactly; this is
   // exactly the drift risk Task 4's review caught.
-  var key = broadcast.keyFor(journeyId, stageName);
+  var key = broadcastModule.keyFor(journeyId, stageName);
 
   res.writeHead(200, {
     'Content-Type': 'text/event-stream',
@@ -3773,9 +3805,9 @@ async function handleGetArtefactMergeStream(req, res) {
     'Connection': 'keep-alive'
   });
 
-  broadcast.subscribe(key, res);
+  broadcastModule.subscribe(key, res);
   if (typeof res.on === 'function') {
-    res.on('close', function () { broadcast.unsubscribe(key, res); });
+    res.on('close', function () { broadcastModule.unsubscribe(key, res); });
   }
 }
 
