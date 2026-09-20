@@ -32,7 +32,7 @@ Every real screen a user encounters — the dashboard, the landing page, the ski
 - [x] Dashboard restyled to match DESIGN.md — dsa-s2
 - [x] Landing page restyled to match DESIGN.md — dsa-s3
 - [ ] Skill-session chat restyled to match DESIGN.md — dsa-s4
-- [ ] Mobile responsiveness fix for dsa-s1 (artefact viewer) and dsa-s2 (dashboard) — dsa-s6 (not yet a story artefact, see `decisions.md`)
+- [ ] Fix mobile-responsiveness gaps on the already-shipped artefact viewer and dashboard — dsa-s6
 - [ ] Add the "Product in action" demo section to the landing page — dsa-s7 (new, post-merge addition to dsa-s3's own scope)
 
 ## Human Oversight Level

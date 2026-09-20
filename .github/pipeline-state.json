@@ -35814,7 +35814,7 @@
         {
           "slug": "visual-restyle-rollout",
           "name": "Product Screens Reflect a Consistent, Modern SaaS Visual Identity",
-          "status": "complete",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "dsa-s1",
@@ -36065,6 +36065,17 @@
               "prUrl": "https://github.com/heymishy/skills-repo/pull/909",
               "dodStatus": "complete",
               "releaseReady": true
+            },
+            {
+              "slug": "dsa-s6",
+              "name": "Fix Mobile-Responsiveness Gaps on the Already-Shipped Artefact Viewer and Dashboard",
+              "stage": "definition",
+              "health": "green",
+              "updatedAt": "2026-09-20T00:00:00.000Z",
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": true,
+              "e2eToolingRequired": true
             }
           ]
         },
