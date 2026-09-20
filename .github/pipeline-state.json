@@ -36210,7 +36210,8 @@
       "slug": "2026-09-20-ewn11",
       "id": "2026-09-20-ewn11",
       "discoveryStatus": "complete",
-      "artefact": "artefacts/2026-09-20-ewn11/discovery.md"
+      "artefact": "artefacts/2026-09-20-ewn11/discovery.md",
+      "stage": "benefit-metric"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
