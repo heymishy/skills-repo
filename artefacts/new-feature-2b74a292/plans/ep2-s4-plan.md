@@ -1109,7 +1109,9 @@ git commit -m "feat(ep2-s4): wire JSON save path, SSE merge stream, and client s
 
 ---
 
-## Task 6: E2E — two concurrent browser sessions merge live (AC1, AC2, AC3 end-to-end)
+## Task 6: E2E — two concurrent browser sessions merge live (AC1, AC2, AC3 end-to-end) — ✅ COMPLETE (commit a757cf39)
+
+**Note:** found and fixed 3 real bugs in the plan's own illustrative Step 1 example code (non-hex session IDs that silently fail auth; merge-content assertions that don't match the real algorithm's actual first-saver-vs-second-saver asymmetry; an SSE header-buffering deadlock from awaiting the fetch too early) — all independently verified by both reviewers as genuine corrections, not defects. Also added a second test proving a genuine third-party observer (neither saver) receives the merged push over the live SSE stream, a stronger proof of AC2's literal "sees the merged version" claim than a response-payload assertion alone. 10 consecutive test runs, 0 flakiness.
 
 **Files:**
 - Create: `tests/e2e/ep2-s4-concurrent-merge.spec.js`
@@ -1211,6 +1213,10 @@ git commit -m "test(ep2-s4): add E2E coverage for concurrent-save merge (AC1, AC
 ```
 
 ---
+
+## Final cross-task review — ✅ PASS (re-verified after fixes)
+
+The final cross-task reviewer's first pass found 1 HIGH + 2 MEDIUM findings: a cross-tenant WRITE vulnerability in the actual save route (`handlePostJourneyStageArtefact` had no tenant guard — pre-existing, but in-scope given the DoR's own ADR-025 binding constraint and the inconsistency of leaving it open after fixing the sibling SSE route), a missing regression test for the earlier SSE Critical fix, and a missing NFR-Perf-3 success-rate suite. Closing the NFR gap surfaced a SECOND genuine false-conflict bug in the merge algorithm (adjacent-but-non-overlapping edits falsely flagged as conflicting) — found, root-caused, and fixed with an interval-overlap correction, verified via 1000+400 additional randomized stress-test trials beyond the committed suites. All 3 findings re-verified as genuinely fixed on the reviewer's second pass (commit `883251a5`) — see decisions.md for the full investigation.
 
 ## Post-plan note
 
