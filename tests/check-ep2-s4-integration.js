@@ -358,12 +358,73 @@ async function testLegacyFormEncodedPathStillWorksUnchanged() {
   fs.rmSync(tmpDir, { recursive: true, force: true });
 }
 
+async function testCrossTenantWriteIsRejected() {
+  const r = freshRequire();
+  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'ep2-s4-test-'));
+  const fixture = seedJourneyStage(r, tmpDir, 'ep2s4-cross-tenant', 'discovery', 'Original\n');
+  // Give the fixture journey a real owner/tenant -- createJourney() alone
+  // leaves both null, which triggers requireJourneyAccess()'s own
+  // unconditional-access passthrough for ownerId == null (a real,
+  // pre-existing, documented behavior shared by every POLICY.TENANT-guarded
+  // route in this file -- see decisions.md). Setting both here is what
+  // makes this test actually exercise the guard rather than the passthrough.
+  r.jStore.setJourneyFields(fixture.journeyId, { ownerId: 'susan', tenantId: 'tenant-a' });
+
+  const resJson = makeRes();
+  await r.j.handlePostJourneyStageArtefact(makeReq({
+    params: { journeyId: fixture.journeyId, stageName: 'discovery' },
+    session: { accessToken: 'tok', login: 'attacker', tenantId: 'tenant-b' },
+    headers: { 'content-type': 'application/json' },
+    body: { content: 'Malicious cross-tenant overwrite\n' }
+  }), resJson);
+
+  await test('final-review fix: cross-tenant JSON save is rejected, disk untouched', function () {
+    assert.notStrictEqual(resJson._code, 200, 'a different-tenant, non-owner request must not succeed, got ' + resJson._code + ' -- ' + resJson._body);
+    const onDisk = fs.readFileSync(fixture.absPath, 'utf8');
+    assert.strictEqual(onDisk, 'Original\n', 'disk content must be untouched by a rejected cross-tenant write');
+  });
+
+  const resForm = makeRes();
+  await r.j.handlePostJourneyStageArtefact(makeReq({
+    params: { journeyId: fixture.journeyId, stageName: 'discovery' },
+    session: { accessToken: 'tok', login: 'attacker', tenantId: 'tenant-b' },
+    headers: { 'content-type': 'application/x-www-form-urlencoded' },
+    body: { content: 'Malicious cross-tenant overwrite via legacy path\n' }
+  }), resForm);
+
+  await test('final-review fix: cross-tenant LEGACY form save is also rejected, disk untouched', function () {
+    assert.notStrictEqual(resForm._code, 302, 'a different-tenant, non-owner request must not succeed via the legacy path either, got ' + resForm._code);
+    const onDisk = fs.readFileSync(fixture.absPath, 'utf8');
+    assert.strictEqual(onDisk, 'Original\n', 'disk content must be untouched by a rejected cross-tenant legacy-path write');
+  });
+
+  // Same-tenant, non-owner-but-tenant-matched request must still succeed --
+  // confirms the fix is a genuine tenant/ownership check, not an
+  // overly-broad block on every non-owner request.
+  const resSameTenant = makeRes();
+  await r.j.handlePostJourneyStageArtefact(makeReq({
+    params: { journeyId: fixture.journeyId, stageName: 'discovery' },
+    session: { accessToken: 'tok', login: 'darren', tenantId: 'tenant-a' },
+    headers: { 'content-type': 'application/json' },
+    body: { content: 'Legitimate same-tenant collaborator save\n' }
+  }), resSameTenant);
+
+  await test('final-review fix: same-tenant collaborator (not the owner) can still save -- fix is not overly broad', function () {
+    assert.strictEqual(resSameTenant._code, 200, 'expected 200, got ' + resSameTenant._code + ' -- ' + resSameTenant._body);
+    const onDisk = fs.readFileSync(fixture.absPath, 'utf8');
+    assert.strictEqual(onDisk, 'Legitimate same-tenant collaborator save\n');
+  });
+
+  fs.rmSync(tmpDir, { recursive: true, force: true });
+}
+
 async function main() {
   console.log('\n[ep2-s4-integration] Task 5 -- real save->merge->broadcast->attribution round trip');
   await testFirstSaveIsPlainSaveNotMerge();
   await testConcurrentSaveTriggersRealMergeAndBroadcastsOverSSE();
   await testEmptyContentRejectedWith400();
   await testLegacyFormEncodedPathStillWorksUnchanged();
+  await testCrossTenantWriteIsRejected();
 
   console.log('\n[ep2-s4-integration] ' + (passed + failed) + ' run, ' + passed + ' passed, ' + failed + ' failed');
   if (failures.length > 0) {

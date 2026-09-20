@@ -1565,6 +1565,26 @@ async function handlePostJourneyStageArtefact(req, res) {
     res.end(JSON.stringify({ error: 'Journey not found' }));
     return;
   }
+  // ep2-s4 final-review fix: this handler had no tenant/ownership guard at
+  // all (pre-existing, present before ep2-s4 touched this file -- verified
+  // against the branch-setup baseline commit) -- a genuine cross-tenant
+  // WRITE path (worse than the read-only SSE leak Task 5's own review
+  // already found and fixed in the sibling handleGetArtefactMergeStream).
+  // The DoR's own binding ADR-025 constraint ("All merge operations
+  // tenant-scoped via req.session.tenantId") applies directly to this
+  // handler's new JSON/merge path, and fixing only the sibling SSE route
+  // while leaving this route's write path open would be an incomplete,
+  // indefensible security posture -- fixed for both the legacy form path
+  // and the new JSON path, since they share this one function and a
+  // cross-tenant write is equally unacceptable via either. Matches
+  // handleGetJourneyPresenceStream's and handleGetArtefactMergeStream's
+  // own identical guard exactly.
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
+    return;
+  }
 
   var repoRoot = getRepoRoot(req);
   var storeStage = (journey.completedStages || []).find(function(s) { return s.skillName === stageName; });
