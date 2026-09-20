@@ -36069,9 +36069,9 @@
             {
               "slug": "dsa-s6",
               "name": "Fix Mobile-Responsiveness Gaps on the Already-Shipped Artefact Viewer and Dashboard",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
-              "updatedAt": "2026-09-20T00:18:20.395Z",
+              "updatedAt": "2026-09-20T00:20:56.549Z",
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": "false",
@@ -36082,7 +36082,9 @@
                 "status": "written",
                 "totalTests": 5,
                 "passing": 0
-              }
+              },
+              "dorStatus": "signed-off",
+              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s6-dor.md"
             }
           ]
         },
