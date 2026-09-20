@@ -1,5 +1,12 @@
 # Decisions: Multi-User Role-Aware Synchronous Collaboration
 
+## `ep2-s4` `/branch-setup`: baseline acknowledged, 1 pre-existing/environmental failure (2026-09-20)
+
+**Context:** `node scripts/run-all-tests.js` on the freshly-created `feature/ep2-s4` worktree (built from latest `master`, including the fully-delivered `2026-09-18-design-system-adoption` feature) showed 1 failure: `tests/check-p3.5-validate-trace.js` — the same pre-existing/environmental failure acknowledged repeatedly across other worktrees this session.
+**Decision:** Acknowledged as pre-existing/environmental and proceeding, per `/branch-setup`'s own documented Option 2 path. No code has been committed on this branch yet.
+**Rationale:** Matches the identical investigation already performed for every other worktree created this session — no new failure beyond the established baseline, no fresh investigation needed.
+**Story:** ep2-s4 — no AC or scope change; baseline acknowledgement only, per `/branch-setup`'s own required step.
+
 ## `ep2-s3` `/verify-completion`: NFR3's "committed to the feature branch" is not literally satisfied by a real-time git commit — RISK-ACCEPT, matches established precedent (2026-09-18)
 
 **Context:** The story's NFR3 reads "decisions.md entry is auto-generated and committed to the feature branch." Verified during `/verify-completion` Step 2: `commitArtefact` (`adapters/artefact-commit-writer.js`) is called exactly once in `routes/journey.js`, inside `handlePostGateConfirm`, and only commits the current stage's own artefact (e.g. `discovery.md`) — not `decisions.md`. `handlePostJourneyApprove` (this story) and its established precedent `handlePostDecisions` (`owle.2`, already shipped in production) both only `fs.appendFileSync` to local disk; neither ever calls `commitArtefact`. So "committed to the feature branch" is true only in the informal, pipeline-convention sense (durably written to the feature's artefact tree, picked up by this repo's own normal session-level `git commit` step) — not a literal real-time git commit triggered by the approval request itself.
