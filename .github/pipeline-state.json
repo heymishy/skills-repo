@@ -35122,7 +35122,7 @@
         {
           "slug": "ep2-s4",
           "id": "ep2-s4",
-          "stage": "subagent-execution",
+          "stage": "verify-completion",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -35133,7 +35133,7 @@
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep2-s4-dor.md",
-          "updatedAt": "2026-09-20T07:17:03.369Z",
+          "updatedAt": "2026-09-20T19:28:02.327Z",
           "tasks": [
             {
               "id": "task-1",
@@ -35171,7 +35171,10 @@
               "tddState": "committed",
               "file": "artefacts/new-feature-2b74a292/plans/ep2-s4-plan.md"
             }
-          ]
+          ],
+          "acVerified": 3,
+          "acTotal": 3,
+          "verifyStatus": "passed"
         },
         {
           "slug": "ep3-s1",
