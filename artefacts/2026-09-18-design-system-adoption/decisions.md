@@ -1,5 +1,12 @@
 # Decisions: Design System Adoption
 
+## `dsa-s6` DoR W3: 1 MEDIUM review finding acknowledged as RISK-ACCEPT (2026-09-20)
+
+**Context:** `dsa-s6`'s `/review` run (run 1) found 1 MEDIUM finding: [1-M1] AC5 mixes an observable outcome with a verification-method clause — the same recurring pattern applied consistently across every story in this feature (`dsa-s1` [1-M2], `dsa-s2` [1-M1], `dsa-s3` [1-M1], `dsa-s4` [1-M1], `dsa-s5` [1-M1]).
+**Decision:** RISK-ACCEPT, proceed to DoR sign-off without story rework.
+**Rationale:** Same reasoning as every prior story's equivalent RISK-ACCEPT in this feature — cosmetic/precision issue, not a functional gap; the observable-outcome half of AC5 remains clear and independently testable on its own.
+**Story:** dsa-s6 — no AC change.
+
 ## `dsa-s6` created: story written for the previously-planned mobile-responsiveness fix; independent re-measurement found `dsa-s1`'s real bug differs from what was assumed (2026-09-20)
 
 **Context:** Per the FEATURE-WIDE mobile-responsiveness decision (2026-09-19, entry below), `dsa-s6` was always planned but never written as a real story artefact — only `dsa-s2`'s own mobile-overflow bug had been independently measured; `dsa-s1`'s equivalent gap was inferred ("likely shares the same root-cause pattern") but never verified. Before writing the story, investigated `dsa-s1`'s real, current mobile behavior directly rather than trust the inference.
