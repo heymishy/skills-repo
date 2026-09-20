@@ -3,20 +3,25 @@ const assert = require('assert');
 const { migrateFeatureEditsSchema, recordEdit, listEditsForFeature } = require('../src/web-ui/modules/feature-edits');
 
 function makeFakePool() {
-  var rows = [];
   var edits = [];
+  var idCounter = 0;
   return {
-    _edits: edits,
     query: async function (sql, params) {
       var s = sql.toUpperCase();
       if (s.indexOf('CREATE TABLE') === 0) return { rows: [] };
       if (s.indexOf('INSERT INTO FEATURE_EDITS') === 0) {
+        idCounter++;
         var row = {
           id: edits.length + 1,
           feature_id: params[0],
           artefact_name: params[1],
           user_id: params[2],
-          timestamp: new Date().toISOString(),
+          // Offset by idCounter (mirrors tests/check-dsa-s1-artefact-comments.js's
+          // own fake pool) so rows created within the same tick still get
+          // distinct, monotonically increasing timestamps -- otherwise the
+          // ordering test below can't distinguish insertion order from
+          // timestamp order.
+          timestamp: new Date(Date.now() + idCounter).toISOString(),
           operation: params[3],
           edit_hash: params[4],
           merged_with: params[5],
@@ -29,7 +34,13 @@ function makeFakePool() {
       if (s.indexOf('SELECT') === 0 && s.indexOf('FROM FEATURE_EDITS') > -1) {
         var featureId = params[0];
         var tenantId  = params[1];
-        return { rows: edits.filter(function (e) { return e.feature_id === featureId && e.tenant_id === tenantId; }) };
+        // Real SQL is ORDER BY timestamp ASC -- sort explicitly here rather
+        // than relying on insertion order, so this fake pool stays a
+        // meaningful stand-in for that ordering guarantee.
+        var matched = edits
+          .filter(function (e) { return e.feature_id === featureId && e.tenant_id === tenantId; })
+          .sort(function (a, b) { return a.timestamp < b.timestamp ? -1 : (a.timestamp > b.timestamp ? 1 : 0); });
+        return { rows: matched };
       }
       return { rows: [] };
     }
@@ -58,6 +69,46 @@ async function testRecordEditCreatesRowWithAttribution() {
   assert.strictEqual(record.tenant_id, 'tenant-test-123');
 }
 
+async function testEditHashIsRealSha256Hex() {
+  var pool = makeFakePool();
+  await migrateFeatureEditsSchema(pool);
+
+  var record = await recordEdit(pool, {
+    featureId: 'feat-a1-uuid',
+    artefactName: 's1',
+    userId: 'user-susan',
+    operation: 'merge',
+    content: 'merged content here',
+    mergedWith: ['user-susan', 'user-darren'],
+    lineAttributions: { 1: 'user-susan' },
+    tenantId: 'tenant-test-123'
+  });
+
+  assert.strictEqual(typeof record.edit_hash, 'string');
+  assert.strictEqual(record.edit_hash.length, 64, 'edit_hash must be a 64-character SHA-256 hex digest');
+  assert.ok(/^[0-9a-f]{64}$/.test(record.edit_hash), 'edit_hash must be lowercase hex');
+}
+
+async function testRecordEditSavePathHasNullMergedWithAndLineAttributions() {
+  // The common, non-concurrent path (Task 5): operation='save', no
+  // mergedWith, no lineAttributions.
+  var pool = makeFakePool();
+  await migrateFeatureEditsSchema(pool);
+
+  var record = await recordEdit(pool, {
+    featureId: 'feat-a1-uuid',
+    artefactName: 's1',
+    userId: 'user-susan',
+    operation: 'save',
+    content: 'plain save, no merge'
+    // mergedWith and lineAttributions intentionally omitted
+  , tenantId: 'tenant-test-123' });
+
+  assert.strictEqual(record.operation, 'save');
+  assert.strictEqual(record.merged_with, null, 'merged_with must be null when mergedWith is not supplied');
+  assert.strictEqual(record.line_attributions, null, 'line_attributions must be null when lineAttributions is not supplied');
+}
+
 async function testTenantIsolationOnQuery() {
   var pool = makeFakePool();
   await migrateFeatureEditsSchema(pool);
@@ -69,10 +120,39 @@ async function testTenantIsolationOnQuery() {
   assert.strictEqual(tenantARows[0].tenant_id, 'tenant-a');
 }
 
+async function testListEditsReturnsOldestFirst() {
+  var pool = makeFakePool();
+  await migrateFeatureEditsSchema(pool);
+  await recordEdit(pool, { featureId: 'feat-ordering', artefactName: 's1', userId: 'u1', operation: 'save', content: 'first', tenantId: 'tenant-order' });
+  await recordEdit(pool, { featureId: 'feat-ordering', artefactName: 's1', userId: 'u2', operation: 'save', content: 'second', tenantId: 'tenant-order' });
+  await recordEdit(pool, { featureId: 'feat-ordering', artefactName: 's1', userId: 'u3', operation: 'save', content: 'third', tenantId: 'tenant-order' });
+
+  var list = await listEditsForFeature(pool, 'feat-ordering', 'tenant-order');
+  assert.strictEqual(list.length, 3);
+  assert.strictEqual(list[0].user_id, 'u1');
+  assert.strictEqual(list[1].user_id, 'u2');
+  assert.strictEqual(list[2].user_id, 'u3');
+}
+
+async function testListEditsEmptyStateReturnsEmptyArray() {
+  var pool = makeFakePool();
+  await migrateFeatureEditsSchema(pool);
+  var list = await listEditsForFeature(pool, 'feat-with-no-edits', 'tenant-empty');
+  assert.deepStrictEqual(list, []);
+}
+
 async function main() {
   await testRecordEditCreatesRowWithAttribution();
   console.log('  ok - recordEdit creates a row with operation=merge and correct lineAttributions JSON');
+  await testEditHashIsRealSha256Hex();
+  console.log('  ok - recordEdit sets edit_hash to a real 64-char SHA-256 hex digest');
+  await testRecordEditSavePathHasNullMergedWithAndLineAttributions();
+  console.log('  ok - recordEdit save path (no mergedWith/lineAttributions) stores null for both');
   await testTenantIsolationOnQuery();
   console.log('  ok - listEditsForFeature respects tenant isolation (ADR-025)');
+  await testListEditsReturnsOldestFirst();
+  console.log('  ok - listEditsForFeature returns oldest first');
+  await testListEditsEmptyStateReturnsEmptyArray();
+  console.log('  ok - listEditsForFeature empty state returns []');
 }
 main().catch(function (err) { console.error('FAIL:', err.message); process.exitCode = 1; });

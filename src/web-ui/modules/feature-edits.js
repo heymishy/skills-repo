@@ -16,6 +16,12 @@ async function migrateFeatureEditsSchema(pool) {
     'user_id VARCHAR NOT NULL, ' +
     'timestamp TIMESTAMPTZ NOT NULL DEFAULT NOW(), ' +
     'operation VARCHAR NOT NULL, ' + // 'save' | 'merge'
+    // edit_hash: SHA-256 fingerprint of the recorded content, per the DoR's
+    // own binding schema spec (artefacts/new-feature-2b74a292/dor/ep2-s4-dor.md,
+    // "feature_edits table schema"). Purpose is audit-trail integrity --
+    // proving what content a given edit row actually recorded -- NOT
+    // deduplication: there is no UNIQUE constraint on this column and no
+    // query in this module (or elsewhere) looks edits up by edit_hash.
     'edit_hash VARCHAR NOT NULL, ' +
     'merged_with TEXT, ' +        // nullable JSON array of user IDs
     'line_attributions TEXT, ' +  // nullable JSON object
