@@ -36069,11 +36069,11 @@
             {
               "slug": "dsa-s6",
               "name": "Fix Mobile-Responsiveness Gaps on the Already-Shipped Artefact Viewer and Dashboard",
-              "stage": "definition-of-ready",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-09-20T00:20:56.549Z",
+              "updatedAt": "2026-09-20T02:03:23.944Z",
               "acTotal": 5,
-              "acVerified": 0,
+              "acVerified": 5,
               "hasLayoutDependentGaps": "false",
               "e2eToolingRequired": true,
               "reviewStatus": "passed",
@@ -36081,10 +36081,33 @@
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
-                "passing": 0
+                "passing": 5
               },
               "dorStatus": "signed-off",
-              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s6-dor.md"
+              "dorArtefact": "artefacts/2026-09-18-design-system-adoption/dor/dsa-s6-dor.md",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Dashboard mobile fix (AC1, AC2)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s6-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Artefact viewer mobile fix (AC3, AC4)",
+                  "tddState": "committed",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s6-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Full regression verification (AC5) + npm test + live browser check",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s6-plan.md"
+                }
+              ],
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/912"
             }
           ]
         },
