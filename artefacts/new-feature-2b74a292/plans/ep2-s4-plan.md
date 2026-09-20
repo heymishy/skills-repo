@@ -46,7 +46,9 @@ Modify:
 
 ---
 
-## Task 1: Three-way merge algorithm (AC2)
+## Task 1: Three-way merge algorithm (AC2) — ✅ COMPLETE (commits 36aac329, a68ab879, 1b68bb14, 742a0626)
+
+**Note:** the original implementation (36aac329) had a Critical correctness defect found by code-quality review — positional/index-based line comparison desynced on any insertion/deletion, causing false conflicts and silent mis-attribution. Fixed (742a0626) with a proper LCS-based line-alignment algorithm. Test count also grew from the plan's stated "exactly 3" to 8, reflecting both the original coverage-gap fix and new regression tests for the Critical bug — see decisions.md for the full reasoning on both deviations.
 
 **Files:**
 - Create: `src/web-ui/modules/merge-artefact-edits.js`
@@ -246,7 +248,9 @@ git commit -m "feat(ep2-s4): add three-way merge algorithm with line attribution
 
 ---
 
-## Task 2: Concurrent-save detection buffer (AC1)
+## Task 2: Concurrent-save detection buffer (AC1) — ✅ COMPLETE (commits d194c381, 7e8bc543)
+
+**Note:** code-quality review found the test file repeated Task 1's own already-fixed sync-test-convention mistake, plus a missing exact-boundary test and a misleading comment. Fixed (7e8bc543): house-style test harness, 2 new boundary tests (99ms concurrent, exactly-100ms not concurrent), accurate comment, and an input guard matching `presence-store.js`'s own pattern.
 
 **Files:**
 - Create: `src/web-ui/modules/concurrent-edit-buffer.js`
@@ -401,7 +405,9 @@ git commit -m "feat(ep2-s4): add 100ms concurrent-save detection buffer (AC1)"
 
 ---
 
-## Task 3: feature_edits table + attribution record (AC3)
+## Task 3: feature_edits table + attribution record (AC3) — ✅ COMPLETE (commits 2a0734bf, 31597ac7)
+
+**Note:** code-quality review found the DoR-specified `edit_hash` field was undocumented/untested (not speculative — it IS in the DoR's own binding schema spec), plus missing test coverage for the common `operation: 'save'` path and `listEditsForFeature`'s ordering/empty-list behavior. Fixed (31597ac7): doc comment + hash-format test, save-path test, ordering + empty-list tests (matching `artefact-comments.js`'s own sibling pattern), dead-code cleanup.
 
 **Files:**
 - Create: `src/web-ui/modules/feature-edits.js`
@@ -649,7 +655,9 @@ git commit -m "feat(ep2-s4): add feature_edits table + attribution recording (AC
 
 ---
 
-## Task 4: Merge broadcast (SSE pub/sub)
+## Task 4: Merge broadcast (SSE pub/sub) — ✅ COMPLETE (commits be796b30, f6e2d384)
+
+**Note:** code-quality review found the module had no input validation (unlike its own cited precedent `presence-store.js`), no canonical key-builder helper (a real drift risk since Task 5 constructs matching keys at 2 independent call sites), and sparse JSDoc. Fixed (f6e2d384): input guards, exported `keyFor(journeyId, stageName)`, and full JSDoc including the `unsubscribe` identity-match contract.
 
 **Files:**
 - Create: `src/web-ui/modules/artefact-merge-broadcast.js`
@@ -714,7 +722,9 @@ git commit -m "feat(ep2-s4): add in-memory merge-broadcast pub/sub for SSE push"
 
 ---
 
-## Task 5: Wire the real save route + SSE stream + client script (AC1, AC2, AC3 integration)
+## Task 5: Wire the real save route + SSE stream + client script (AC1, AC2, AC3 integration) — ✅ COMPLETE (commits da6a7a56, c1aff1e5, f73faf1b)
+
+**Note:** the original implementer subagent hit the account's monthly spend limit mid-task and was cut off before committing — the coordinating session independently verified the uncommitted work (real diff review, ran the tests, ran full regression) and committed it directly. The integration test reached a genuine full round-trip via real `createJourney`/`completeStage` fixtures, not the plan's own weaker fallback. Code-quality review then found a genuine Critical cross-tenant access bug in the new SSE route (missing `requireJourneyAccess` guard, unlike its own sibling `handleGetJourneyPresenceStream`) — fixed directly, along with 3 Important + 2 Minor findings (naming, an inaccurate precedent citation, DRY duplication, require-alias consistency, JSON error-contract consistency). See decisions.md for full detail on both the recovery and the security fix.
 
 **Files:**
 - Modify: `src/web-ui/routes/journey.js`
