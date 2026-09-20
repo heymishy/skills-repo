@@ -67,6 +67,7 @@ function createFakeTestDb() {
   var podAssignments = []; // { assignment_id, tenant_id, pod_id, product_id, feature_id, assignment_type, assigned_by, assigned_at } -- ep1-s2
   var featureCollaborators = []; // { collaborator_id, feature_id, user_id, role_id, pod_id, is_approver } -- ep1-s3
   var artefactComments = []; // { comment_id, resource_type, resource_id, user_id, body, created_at } -- dsa-s1
+  var featureEdits = []; // { id, feature_id, artefact_name, user_id, timestamp, operation, edit_hash, merged_with, line_attributions, tenant_id } -- ep2-s4
 
   function query(sql, params) {
     var s = _normalise(sql);
@@ -553,6 +554,39 @@ function createFakeTestDb() {
       // Insertion order already matches created_at-ascending (oldest first)
       // since this array is only ever appended to, single-threaded.
       return Promise.resolve({ rows: lcRows });
+    }
+
+    // ── feature_edits (ep2-s4) ──────────────────────────────────────────
+    // Narrow support for the exact query shapes modules/feature-edits.js
+    // issues (recordEdit, listEditsForFeature). Same companion-fix
+    // requirement dsa-s1 already established for artefact_comments -- the
+    // generic CREATE TABLE catch-all covers the bootstrap; these two
+    // branches cover the INSERT/SELECT the generic empty-rows fallback
+    // cannot satisfy (result.rows[0] would be undefined otherwise).
+    if (s.indexOf('INSERT INTO FEATURE_EDITS') === 0) {
+      var feRow = {
+        id: featureEdits.length + 1,
+        feature_id: p[0],
+        artefact_name: p[1],
+        user_id: p[2],
+        timestamp: new Date().toISOString(),
+        operation: p[3],
+        edit_hash: p[4],
+        merged_with: p[5],
+        line_attributions: p[6],
+        tenant_id: p[7]
+      };
+      featureEdits.push(feRow);
+      return Promise.resolve({ rows: [feRow] });
+    }
+
+    if (s.indexOf('SELECT ID, FEATURE_ID, ARTEFACT_NAME, USER_ID, TIMESTAMP, OPERATION, EDIT_HASH, MERGED_WITH, LINE_ATTRIBUTIONS, TENANT_ID FROM FEATURE_EDITS') === 0) {
+      var feFeatureId = p[0];
+      var feTenantId  = p[1];
+      var feRows = featureEdits.filter(function(r) {
+        return r.feature_id === feFeatureId && r.tenant_id === feTenantId;
+      });
+      return Promise.resolve({ rows: feRows });
     }
 
     // ── people, team_memberships, person_identities (tir-s1/tir-s2/bri-s3.3) ─
