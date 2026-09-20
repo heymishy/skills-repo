@@ -1,5 +1,12 @@
 # Decisions: Design System Adoption
 
+## `dsa-s6` `/branch-setup`: baseline clean, only the 2 already-acknowledged pre-existing failures (2026-09-20)
+
+**Context:** `npm test` on the freshly-created `feature/dsa-s6` worktree (built from latest `master`, including `dsa-s5`'s merge + DoD) showed 2 failures: `tests/check-p3.5-validate-trace.js` and `tests/check-pcr-s1-test-runner.js` — both already-documented pre-existing/environmental failures all session.
+**Decision:** Acknowledged as pre-existing/environmental and proceeding, per `/branch-setup`'s own documented Option 2 path. No code has been committed on this branch yet.
+**Rationale:** Matches the identical investigation already performed for every other worktree created this session — no new failures beyond the established baseline, no fresh investigation needed.
+**Story:** dsa-s6 — no AC or scope change; baseline acknowledgement only, per `/branch-setup`'s own required step.
+
 ## `dsa-s6` DoR W3: 1 MEDIUM review finding acknowledged as RISK-ACCEPT (2026-09-20)
 
 **Context:** `dsa-s6`'s `/review` run (run 1) found 1 MEDIUM finding: [1-M1] AC5 mixes an observable outcome with a verification-method clause — the same recurring pattern applied consistently across every story in this feature (`dsa-s1` [1-M2], `dsa-s2` [1-M1], `dsa-s3` [1-M1], `dsa-s4` [1-M1], `dsa-s5` [1-M1]).
