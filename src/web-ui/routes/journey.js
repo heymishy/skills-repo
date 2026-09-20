@@ -98,6 +98,16 @@ function setReadSessionFromRedis(fn) { _readSessionFromRedisFn = fn; }
 function setMergeRedisSessionData(fn) { _mergeRedisSessionDataFn = fn; }
 function setRepoRoot(root) { _repoRoot = root; _repoRootAdapter.setRepoRoot(root); }
 
+// ep2-s4 Task 5: injectable Postgres pool for feature_edits attribution
+// recording (AC3). A plain value setter (not a throw-on-unwired adapter)
+// because the save handler already treats feature_edits as a best-effort
+// audit trail -- see the try/catch around recordEdit() below -- so an
+// unwired pool degrades to "no audit row written" rather than a hard error,
+// matching feature-collaborator-store's/presence-store's own pool being
+// optional in this file's other handlers.
+var _pshPoolForFeatureEdits = null;
+function setFeatureEditsPool(pool) { _pshPoolForFeatureEdits = pool; }
+
 // ---------------------------------------------------------------------------
 // Journey home helpers
 // ---------------------------------------------------------------------------
@@ -1184,7 +1194,8 @@ async function handleGetJourneyStageView(req, res, pool) {
           '<a href="/journey/' + safeJourneyId + '/stage/' + encodeURIComponent(stageName) + '" class="sw-btn" style="font-size:13px;border:1px solid var(--line)">Cancel</a>',
           '<span style="font-size:12px;color:var(--muted);margin-left:auto">' + escHtml(artefactRelPath) + '</span>',
         '</div>',
-      '</form>'
+      '</form>',
+      '<script src="/public/artefact-edit-merge.js"></script>'
     ].join('');
   } else if (stageName === 'definition') {
     var _svArtJson = JSON.stringify(artefactContent).replace(/<\/script/gi, '<\\/script');
@@ -1545,26 +1556,130 @@ async function handlePostJourneyStageArtefact(req, res) {
     return;
   }
 
-  var body = await _readFormBody(req);
-  var newContent = (body && body.content) || '';
-  if (!newContent.trim()) {
+  // Defensive on req.headers itself (not just the content-type value): some
+  // existing callers of this handler in this codebase's own test suite (e.g.
+  // tests/check-dsh-s3-breadcrumb-split-view.js's AC3, unmodified by this
+  // story) build a minimal fake req with no `headers` property at all,
+  // relying on the pre-ep2-s4 handler never touching req.headers. Missing
+  // headers must fall through to the legacy form-encoded path, not throw.
+  var isJson = ((req.headers && req.headers['content-type']) || '').indexOf('application/json') === 0;
+
+  if (!isJson) {
+    // Unchanged legacy path -- existing form-encoded callers keep working exactly as before.
+    var formBody = await _readFormBody(req);
+    var newContent = (formBody && formBody.content) || '';
+    if (!newContent.trim()) {
+      res.writeHead(302, { Location: '/journey/' + encodeURIComponent(journeyId) + '/stage/' + encodeURIComponent(stageName) });
+      res.end();
+      return;
+    }
+    var legacyAbsPath = path.resolve(path.join(repoRoot, artefactRelPath));
+    try {
+      fs.mkdirSync(path.dirname(legacyAbsPath), { recursive: true });
+      fs.writeFileSync(legacyAbsPath, newContent, 'utf8');
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Failed to write artefact: ' + err.message }));
+      return;
+    }
     res.writeHead(302, { Location: '/journey/' + encodeURIComponent(journeyId) + '/stage/' + encodeURIComponent(stageName) });
     res.end();
     return;
   }
 
+  // ep2-s4: new JSON-body path -- concurrency detection, merge, attribution, broadcast.
+  var jsonBody = await _readJsonBody(req);
+  var content = (jsonBody && jsonBody.content) || '';
+  // Test-only escape hatch: the E2E/integration harness's own /test/session
+  // fixture cannot seed two DISTINCT req.session.login values (both resolve
+  // to 'e2e-tester') -- allow the request body to name the acting user
+  // ONLY when NODE_ENV=test, so two simulated concurrent users are
+  // distinguishable in tests. Production requests never send this field;
+  // req.session.login/userId remains the sole source of truth outside tests.
+  var actingUserId = (process.env.NODE_ENV === 'test' && jsonBody && jsonBody.actingUserId)
+    ? jsonBody.actingUserId
+    : (req.session.login || String(req.session.userId));
+
+  if (!content.trim()) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'content is required' }));
+    return;
+  }
+
   var absPath = path.resolve(path.join(repoRoot, artefactRelPath));
+  // Canonical key builder (Task 4's keyFor()) -- MUST match the SSE route's
+  // own key construction (handleGetArtefactMergeStream, below) exactly, or
+  // publish() below silently reaches zero subscribers.
+  var broadcastModule = require('../modules/artefact-merge-broadcast');
+  var bufferKey = broadcastModule.keyFor(journeyId, stageName);
+  var mergeBuffer = require('../modules/concurrent-edit-buffer');
+  var detection = mergeBuffer.registerSave(bufferKey, actingUserId, content);
+
+  var finalContent = content;
+  var merged = false;
+  var lineAttributions = null;
+  var mergedWith = null;
+
+  if (detection.concurrentWith && detection.concurrentWith.userId !== actingUserId) {
+    var baseContent = '';
+    try { baseContent = fs.readFileSync(absPath, 'utf8'); } catch (_) {}
+    var mergeFn = require('../modules/merge-artefact-edits');
+    try {
+      var mergeResult = mergeFn.mergeArtefactEdits(
+        baseContent,
+        content,
+        detection.concurrentWith.content,
+        { userAId: actingUserId, userBId: detection.concurrentWith.userId }
+      );
+      finalContent = mergeResult.merged;
+      lineAttributions = mergeResult.lineAttributions;
+      merged = true;
+      mergedWith = [actingUserId, detection.concurrentWith.userId];
+    } catch (mergeErr) {
+      if (mergeErr.code === 'MERGE_CONFLICT_HARD') {
+        res.writeHead(409, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ error: 'Merge conflict detected — unable to auto-merge', code: 'MERGE_CONFLICT_HARD' }));
+        return;
+      }
+      throw mergeErr;
+    }
+  }
+
   try {
     fs.mkdirSync(path.dirname(absPath), { recursive: true });
-    fs.writeFileSync(absPath, newContent, 'utf8');
+    fs.writeFileSync(absPath, finalContent, 'utf8');
   } catch (err) {
     res.writeHead(500, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'Failed to write artefact: ' + err.message }));
     return;
   }
 
-  res.writeHead(302, { Location: '/journey/' + encodeURIComponent(journeyId) + '/stage/' + encodeURIComponent(stageName) });
-  res.end();
+  if (_pshPoolForFeatureEdits) {
+    var featureEdits = require('../modules/feature-edits');
+    try {
+      await featureEdits.recordEdit(_pshPoolForFeatureEdits, {
+        featureId: journey.featureSlug,
+        artefactName: stageName,
+        userId: actingUserId,
+        operation: merged ? 'merge' : 'save',
+        content: finalContent,
+        mergedWith: mergedWith,
+        lineAttributions: lineAttributions,
+        tenantId: req.session.tenantId || journey.tenantId || 'unknown'
+      });
+    } catch (_) { /* feature_edits is an audit trail -- do not fail the save if this write fails */ }
+  }
+
+  broadcastModule.publish(bufferKey, {
+    content: finalContent,
+    merged: merged,
+    lineAttributions: lineAttributions,
+    mergedAt: Date.now(),
+    userIds: mergedWith || [actingUserId]
+  });
+
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ content: finalContent, merged: merged, lineAttributions: lineAttributions }));
 }
 
 /**
@@ -3631,6 +3746,40 @@ async function handleGetJourneyPresenceStream(req, res, pool) {
 }
 
 /**
+ * GET /api/journey/:journeyId/stage/:stageName/artefact-merged — ep2-s4
+ * AC2. SSE stream pushing merged artefact content the instant a concurrent
+ * save is detected and merged for this journey+stage. Event-driven (via
+ * modules/artefact-merge-broadcast.js), unlike handleGetJourneyPresenceStream's
+ * own periodic-interval-poll pattern -- a merge here is triggered by an
+ * UNRELATED concurrent request's arrival, not a timer.
+ */
+async function handleGetArtefactMergeStream(req, res) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
+    return;
+  }
+  var journeyId = req.params && req.params.journeyId;
+  var stageName = req.params && req.params.stageName;
+  var broadcast = require('../modules/artefact-merge-broadcast');
+  // Canonical key builder -- MUST match the save route's own key
+  // construction (handlePostJourneyStageArtefact, above) exactly; this is
+  // exactly the drift risk Task 4's review caught.
+  var key = broadcast.keyFor(journeyId, stageName);
+
+  res.writeHead(200, {
+    'Content-Type': 'text/event-stream',
+    'Cache-Control': 'no-cache',
+    'Connection': 'keep-alive'
+  });
+
+  broadcast.subscribe(key, res);
+  if (typeof res.on === 'function') {
+    res.on('close', function () { broadcast.unsubscribe(key, res); });
+  }
+}
+
+/**
  * PUT /api/journey/:journeyId/display-name — fdn-s1: rename a feature's
  * operator-facing label. Never touches featureSlug (the durable identifier
  * behind disk artefact paths and pipeline-state.json keys) -- see
@@ -5171,6 +5320,9 @@ module.exports = {
   handleGetJourneyStageVisibility,
   handlePostJourneyHeartbeat,
   handleGetJourneyPresenceStream,
+  // ep2-s4 — concurrent-write merge for artefact edits
+  handleGetArtefactMergeStream,
+  setFeatureEditsPool,
   handlePutJourneyDisplayName,
   checkJourneyIdle,
   setNow,

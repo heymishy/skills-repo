@@ -36,7 +36,7 @@ const skillsAdapter                                                  = require('
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
-const { handleGetJourney, handlePostJourney, handleDeleteJourney, handleGetJourneyResume, handleGetJourneyById, handleGetStageReview, handleGetJourneyStageView, handleGetJourneyStageReopen, handleGetStageConfirmBack, handlePostJourneyStageArtefact, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, handleGetJourneyCollaboratorsPresence, handleGetJourneyStageVisibility, handlePostJourneyHeartbeat, handleGetJourneyPresenceStream, handlePutJourneyDisplayName, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handleGetWizardBootstrapped, handlePostWizardSelection, handleJourneys, setListJourneys, handlePostJourneyApprove } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2 / bri-s1.5 / s3.4 / fdn-s1 / jsvr-s1 / ep2-s3
+const { handleGetJourney, handlePostJourney, handleDeleteJourney, handleGetJourneyResume, handleGetJourneyById, handleGetStageReview, handleGetJourneyStageView, handleGetJourneyStageReopen, handleGetStageConfirmBack, handlePostJourneyStageArtefact, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, handleGetJourneyCollaboratorsPresence, handleGetJourneyStageVisibility, handlePostJourneyHeartbeat, handleGetJourneyPresenceStream, handleGetArtefactMergeStream, setFeatureEditsPool, handlePutJourneyDisplayName, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handleGetWizardBootstrapped, handlePostWizardSelection, handleJourneys, setListJourneys, handlePostJourneyApprove } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2 / bri-s1.5 / s3.4 / fdn-s1 / jsvr-s1 / ep2-s3 / ep2-s4
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const pipelineStateGithubWriterFactory                               = require('./adapters/pipeline-state-github-writer'); // wsd-s2
 const { selectPipelineStateWriterFactory }                           = require('./adapters/pipeline-state-writer-selector'); // wsd-s2
@@ -439,6 +439,7 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     const { Pool } = require('pg');
     const _creditsPool = new Pool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 10000 });
     _pshPool = _creditsPool; // psh-s3: wire pool for product creation routes
+    setFeatureEditsPool(_pshPool); // ep2-s4 Task 5 (D37 separate wiring task) -- feature_edits attribution recording
     setCreditsAdapter(_creditsPool);
     console.log('Credits DB adapter wired');
     setWebhookDbAdapter(_creditsPool); // same pool — stripe_events in same DB as credits
@@ -1898,6 +1899,7 @@ if (process.env.NODE_ENV === 'test') {
     const _fakeTestDb = createFakeTestDb();
     setUserDb(_fakeTestDb);
     _pshPool = _fakeTestDb;
+    setFeatureEditsPool(_pshPool); // ep2-s4 Task 5 -- fake-test-db already supports feature_edits (see adapters/fake-test-db.js)
     console.log('[bri-s3.2] fake in-memory users/products DB wired (NODE_ENV=test, no DATABASE_URL)');
 
     // bmau-s1: modulesAdapter was previously only ever wired inside the
@@ -3468,6 +3470,11 @@ async function router(req, res) {
     // ep2-s1 AC2/AC3 — SSE stream broadcasting collaborators-presence
     req.params = { journeyId: pathname.split('/')[3] };
     await handleGetJourneyPresenceStream(req, res, _pshPool);
+
+  } else if (pathname.match(/^\/api\/journey\/([^/]+)\/stage\/([^/]+)\/artefact-merged$/) && req.method === 'GET') {
+    // ep2-s4 AC2 -- SSE stream pushing merged artefact content on concurrent save
+    req.params = { journeyId: pathname.split('/')[3], stageName: decodeURIComponent(pathname.split('/')[5]) };
+    await handleGetArtefactMergeStream(req, res);
 
   } else if (pathname === '/webhook/stripe' && req.method === 'POST') {
     // lab-s3.4 — Stripe webhook: credit provisioning + idempotency
