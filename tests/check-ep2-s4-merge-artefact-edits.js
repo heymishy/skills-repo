@@ -18,15 +18,24 @@ function testNonOverlappingEditsMergeCleanly() {
   assert.strictEqual(result.lineAttributions[5], 'user-darren');
 }
 
-function testHardConflictBothDeleteSameLineThrows() {
+function testHardConflictDeleteVsEditThrows() {
   var base  = 'Line 1: keep\nLine 2: delete me\nLine 3: keep';
   var userA = 'Line 1: keep\nLine 3: keep'; // deleted line 2
-  var userB = 'Line 1: keep\nLine 3: keep'; // also deleted line 2 -- ambiguous which content survives if edited differently; here both delete identically so this specific case is actually non-conflicting (same intent) -- use a genuine conflicting-edit case instead:
   var userBConflict = 'Line 1: keep\nLine 2: DARREN EDITED THIS INSTEAD OF DELETING\nLine 3: keep';
 
   assert.throws(function () {
     mergeArtefactEdits(base, userA, userBConflict, { userAId: 'user-susan', userBId: 'user-darren' });
   }, function (err) { return err.code === 'MERGE_CONFLICT_HARD'; }, 'expected MERGE_CONFLICT_HARD when one user deletes a line the other edited');
+}
+
+function testHardConflictEditVsEditSameLineThrows() {
+  var base  = 'Line 1: keep\nLine 2: original requirement text\nLine 3: keep';
+  var userA = 'Line 1: keep\nLine 2: SUSAN\'S EDIT of the requirement text\nLine 3: keep';
+  var userB = 'Line 1: keep\nLine 2: DARREN\'S DIFFERENT EDIT of the requirement text\nLine 3: keep';
+
+  assert.throws(function () {
+    mergeArtefactEdits(base, userA, userB, { userAId: 'user-susan', userBId: 'user-darren' });
+  }, function (err) { return err.code === 'MERGE_CONFLICT_HARD'; }, 'expected MERGE_CONFLICT_HARD when both users edit the same line with different, non-deletion content');
 }
 
 function testLargeArtefactMergesUnder1Second() {
@@ -50,8 +59,10 @@ function testLargeArtefactMergesUnder1Second() {
 function main() {
   testNonOverlappingEditsMergeCleanly();
   console.log('  ok - non-overlapping edits merge cleanly with correct line attribution');
-  testHardConflictBothDeleteSameLineThrows();
-  console.log('  ok - conflicting edit on the same line throws MERGE_CONFLICT_HARD');
+  testHardConflictDeleteVsEditThrows();
+  console.log('  ok - delete-vs-edit conflict on the same line throws MERGE_CONFLICT_HARD');
+  testHardConflictEditVsEditSameLineThrows();
+  console.log('  ok - edit-vs-edit conflict on the same line throws MERGE_CONFLICT_HARD');
   testLargeArtefactMergesUnder1Second();
   console.log('  ok - 1000-line artefact merges in under 1s (NFR-Perf-1)');
 }
