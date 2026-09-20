@@ -35803,6 +35803,24 @@
           "evidence": "dsa-s7-dod.md NFR Status -- placeholder is a real, visible <p> with text (not decorative-only); final cross-task review additionally added a <section aria-label=\"Product in action demo\"> landmark and aria-hidden=\"true\" on the 3 decorative traffic-light dots, beyond the original NFR scope.",
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-09-19T09:20:00.000Z"
+        },
+        {
+          "id": "NFR-dsa-s6-perf",
+          "category": "nfr",
+          "label": "Dashboard and artefact viewer mobile fix: no measurable page-load regression",
+          "status": "met",
+          "evidence": "dsa-s6-dod.md NFR Status -- diff is CSS-only (@media rules + one <style> block), no new network calls, no new data fetches added to either screen. Not formally timed, matching this feature's own established precedent for CSS-only restyle stories.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-20T00:00:00.000Z"
+        },
+        {
+          "id": "NFR-dsa-s6-a11y",
+          "category": "nfr",
+          "label": "Dashboard and artefact viewer mobile fix: WCAG 2.1 AA no regression, plus a genuine accessibility improvement",
+          "status": "met",
+          "evidence": "dsa-s6-dod.md NFR Status -- no existing accessibility property (contrast, keyboard nav, ARIA) touched or altered; pure grid-template-columns changes. The fix's own accessibility benefit (illegible/near-invisible content at narrow widths was itself an a11y failure) is realised directly by AC3 passing.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-20T00:00:00.000Z"
         }
       ],
       "regulated": false,
@@ -35814,7 +35832,7 @@
         {
           "slug": "visual-restyle-rollout",
           "name": "Product Screens Reflect a Consistent, Modern SaaS Visual Identity",
-          "status": "in-progress",
+          "status": "complete",
           "stories": [
             {
               "slug": "dsa-s1",
@@ -36069,9 +36087,9 @@
             {
               "slug": "dsa-s6",
               "name": "Fix Mobile-Responsiveness Gaps on the Already-Shipped Artefact Viewer and Dashboard",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
-              "updatedAt": "2026-09-20T02:03:23.944Z",
+              "updatedAt": "2026-09-20T05:47:57.807Z",
               "acTotal": 5,
               "acVerified": 5,
               "hasLayoutDependentGaps": "false",
@@ -36101,13 +36119,17 @@
                 {
                   "id": "task-3",
                   "name": "Full regression verification (AC5) + npm test + live browser check",
-                  "tddState": "not-started",
+                  "tddState": "complete",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s6-plan.md"
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/912"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/912",
+              "dodStatus": "complete",
+              "releaseReady": true,
+              "layoutGapsAtMerge": true,
+              "layoutGapsRiskAccepted": true
             }
           ]
         },
