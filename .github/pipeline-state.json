@@ -36069,9 +36069,9 @@
             {
               "slug": "dsa-s6",
               "name": "Fix Mobile-Responsiveness Gaps on the Already-Shipped Artefact Viewer and Dashboard",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
-              "updatedAt": "2026-09-20T01:55:02.159Z",
+              "updatedAt": "2026-09-20T02:03:23.944Z",
               "acTotal": 5,
               "acVerified": 5,
               "hasLayoutDependentGaps": "false",
@@ -36105,7 +36105,9 @@
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s6-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/912"
             }
           ]
         },
