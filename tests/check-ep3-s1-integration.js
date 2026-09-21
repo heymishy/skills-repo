@@ -17,6 +17,17 @@ const JOURNEY_PATH = path.resolve(__dirname, '../src/web-ui/routes/journey.js');
 const JOURNEY_STORE_PATH = path.resolve(__dirname, '../src/web-ui/modules/journey-store.js');
 const REPO_ROOT_ADAPTER_PATH = path.resolve(__dirname, '../src/web-ui/adapters/repo-root.js');
 
+// Required at the TOP of the file, before any freshRequire() call runs --
+// matching tests/check-ep2-s3-approval.js's established pattern. server.js's
+// internal journey.js reference must resolve at require-time, before any
+// freshRequire() busts/repopulates the require-cache for journey.js /
+// journey-store.js / adapters/repo-root.js -- otherwise the router's
+// internal reference would resolve to whatever the LAST freshRequire()
+// block left cached (including a _repoRoot pointing at an already-rmSync'd
+// tmpDir and leftover in-memory journeys from that block's fixtures).
+const router = require('../src/web-ui/server').router;
+const seedTestSession = require('../src/web-ui/middleware/session').seedTestSession;
+
 function freshRequire() {
   try { delete require.cache[require.resolve(JOURNEY_PATH)]; } catch (_) {}
   try { delete require.cache[require.resolve(JOURNEY_STORE_PATH)]; } catch (_) {}
@@ -138,9 +149,6 @@ async function main() {
 
   // --- Wiring + viewer-gate proof: dispatch through the REAL exported router ---
   {
-    const router = require('../src/web-ui/server').router;
-    const seedTestSession = require('../src/web-ui/middleware/session').seedTestSession;
-
     function integrationMockRes() {
       var _statusCode = null, _headers = {}, _chunks = [];
       return {

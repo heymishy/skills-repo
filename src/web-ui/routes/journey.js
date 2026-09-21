@@ -4560,7 +4560,7 @@ async function handlePostJourneyApprove(req, res, pool) {
  * approval entries are never touched (AC3's "preserved, not deleted"
  * substance).
  */
-async function handlePostJourneyRegress(req, res, pool) {
+async function handlePostJourneyRegress(req, res, pool) { // eslint-disable-line no-unused-vars -- pool unused, kept for call-signature uniformity with how server.js dispatches every handler with _pshPool
   if (!req.session || !req.session.accessToken) {
     res.writeHead(401, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
@@ -4601,8 +4601,14 @@ async function handlePostJourneyRegress(req, res, pool) {
     return;
   }
 
-  var result = _journeyStore.regressToStage(journeyId, targetStage);
-
+  // ep3-s1 review fix: the path-traversal guard and the decisions.md write
+  // (the durable audit trail) MUST both complete before regressToStage
+  // mutates and persists journey state -- otherwise a guard trip or disk
+  // I/O failure would leave the journey silently regressed with no record
+  // of why. invalidatedStages is computed independently here (mirroring
+  // regressToStage's own internal computation exactly: [targetStage]
+  // .concat(getDownstreamStages(targetStage))) so the decisions.md entry
+  // can be written before regressToStage is ever called.
   var featureSlug = journey.featureSlug || '';
   var repoRoot = getRepoRoot(req);
   var decisionsPath = path.resolve(repoRoot, 'artefacts', featureSlug, 'decisions.md');
@@ -4613,11 +4619,14 @@ async function handlePostJourneyRegress(req, res, pool) {
     return;
   }
 
+  var invalidatedStages = [targetStage].concat(_journeyStore.getDownstreamStages(targetStage));
+
   var date = new Date().toISOString().slice(0, 10);
   var requesterLogin = req.session.login || 'unknown';
   var title = 'Regressed to ' + targetStage + ' by ' + requesterLogin;
   var context = 'Regression requested via Request Regression at the ' + currentStage + ' stage of feature ' + featureSlug + '.';
-  var decision = 'Feature stage reset to ' + targetStage + '; ' + result.invalidatedStages.join(', ') + ' marked incomplete.';
+  var downstreamOnly = invalidatedStages.slice(1);
+  var decision = 'Feature stage reset to ' + targetStage + '; downstream stages (' + (downstreamOnly.length > 0 ? downstreamOnly.join(', ') : 'none') + ') marked incomplete.';
   var entry = '\n## ' + title + '\n\n'
     + '**Date:** ' + date + '\n'
     + '**Context:** ' + context + '\n'
@@ -4637,6 +4646,10 @@ async function handlePostJourneyRegress(req, res, pool) {
     res.end(JSON.stringify({ error: 'Failed to write regression record', detail: err.message }));
     return;
   }
+
+  // Only now, after the guard has passed and the audit trail is durably on
+  // disk, is the journey actually mutated.
+  var result = _journeyStore.regressToStage(journeyId, targetStage);
 
   res.writeHead(200, { 'Content-Type': 'application/json' });
   res.end(JSON.stringify({ activeSkill: targetStage, invalidatedStages: result.invalidatedStages, decisionsWritten: decisionsPath }));
