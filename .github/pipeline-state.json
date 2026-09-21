@@ -36211,7 +36211,10 @@
       "id": "2026-09-20-ewn11",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-09-20-ewn11/discovery.md",
-      "stage": "branch-complete"
+      "stage": "branch-complete",
+      "name": "Manual staging test (operator-created via the staging web app on 2026-09-20, not real product work -- staging's LLM gateway returned the canned bri-s3.1 mock-fixture content, hence the templated title/body -- see artefacts/2026-09-19-nnn for the identical, already-confirmed precedent)",
+      "track": "short",
+      "health": "green"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
