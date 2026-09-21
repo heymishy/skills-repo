@@ -36,7 +36,7 @@ const skillsAdapter                                                  = require('
 const { listAvailableSkills }                                        = require('../adapters/skill-discovery'); // wuce.23 skill list
 const sessionManager                                                 = require('../modules/session-manager'); // wuce.23 session creation
 const _path                                                          = require('path');                       // wuce.23 session ID extraction
-const { handleGetJourney, handlePostJourney, handleDeleteJourney, handleGetJourneyResume, handleGetJourneyById, handleGetStageReview, handleGetJourneyStageView, handleGetJourneyStageReopen, handleGetStageConfirmBack, handlePostJourneyStageArtefact, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, handleGetJourneyCollaboratorsPresence, handleGetJourneyStageVisibility, handlePostJourneyHeartbeat, handleGetJourneyPresenceStream, handleGetArtefactMergeStream, setFeatureEditsPool, handlePutJourneyDisplayName, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handleGetWizardBootstrapped, handlePostWizardSelection, handleJourneys, setListJourneys, handlePostJourneyApprove } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2 / bri-s1.5 / s3.4 / fdn-s1 / jsvr-s1 / ep2-s3 / ep2-s4
+const { handleGetJourney, handlePostJourney, handleDeleteJourney, handleGetJourneyResume, handleGetJourneyById, handleGetStageReview, handleGetJourneyStageView, handleGetJourneyStageReopen, handleGetStageConfirmBack, handlePostJourneyStageArtefact, handleGetReference, handlePostReference, handlePostReferenceUpload, handleGetReferenceModal, handleGetReferenceModalStart, handlePostReferenceModalSkip, handlePostGateConfirm, handleGetStories, handlePostStories, handleGetJourneyComplete, handleGetStageControls, handlePostEstimate, handlePostSpike, handlePatchSpike, handleGetTrace, handlePostDecisions, handlePostSideTripClarify, handleDeleteSideTrip, handleGetJourneyState, handleGetJourneyCollaboratorsPresence, handleGetJourneyStageVisibility, handlePostJourneyHeartbeat, handleGetJourneyPresenceStream, handleGetArtefactMergeStream, setFeatureEditsPool, handlePutJourneyDisplayName, setPipelineStateWriter, setValidate, setWriteTrace, handleGetWizard, handleGetWizardBootstrapped, handlePostWizardSelection, handleJourneys, setListJourneys, handlePostJourneyApprove, handlePostJourneyRegress } = require('./routes/journey'); // ougl.3 / owle.1-6 / wucp.4 / sdg.1 / bee.2 / bri-s1.5 / s3.4 / fdn-s1 / jsvr-s1 / ep2-s3 / ep2-s4 / ep3-s1
 const pipelineStateWriterFactory                                     = require('./adapters/pipeline-state-writer'); // owle.6
 const pipelineStateGithubWriterFactory                               = require('./adapters/pipeline-state-github-writer'); // wsd-s2
 const { selectPipelineStateWriterFactory }                           = require('./adapters/pipeline-state-writer-selector'); // wsd-s2
@@ -3313,6 +3313,16 @@ async function router(req, res) {
     await requireNonViewer(req, res, () => { _rnvOk = true; });
     if (!_rnvOk) return;
     await handlePostJourneyApprove(req, res, _pshPool);
+
+  } else if (pathname.match(/^\/api\/journey\/[^/]+\/regress$/) && req.method === 'POST') {
+    // ep3-s1 — Request Regression: reset to an earlier stage, mark
+    // downstream incomplete, record as a decisions.md entry
+    req.params = { journeyId: pathname.split('/')[3] };
+    // vrne-s1 — viewer-role write-block gate (AC2), matching every sibling POST route
+    let _rnvOk = false;
+    await requireNonViewer(req, res, () => { _rnvOk = true; });
+    if (!_rnvOk) return;
+    await handlePostJourneyRegress(req, res, _pshPool);
 
   } else if (pathname.match(/^\/journey\/[^/]+\/stories$/) && req.method === 'GET') {
     // ougl.6 — per-story stage routing: story list entry form

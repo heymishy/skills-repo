@@ -4549,6 +4549,100 @@ async function handlePostJourneyApprove(req, res, pool) {
 }
 
 /**
+ * POST /api/journey/:journeyId/regress — ep3-s1 AC1/AC2/AC3.
+ * Resets the journey's active stage back to an earlier, already-completed
+ * stage and invalidates every stage from there onward (removed from
+ * completedStages via journeyStore.regressToStage -- ADR-023: disk
+ * artefacts/sessions are untouched, only the journey model's own "done"
+ * bookkeeping changes). Records the regression as a decisions.md entry
+ * using the same real disk-write pattern handlePostJourneyApprove
+ * (ep2-s3) already establishes -- decisions.md is append-only, so prior
+ * approval entries are never touched (AC3's "preserved, not deleted"
+ * substance).
+ */
+async function handlePostJourneyRegress(req, res, pool) {
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
+    return;
+  }
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
+    return;
+  }
+
+  var body = req.body || {};
+  var targetStage = typeof body.targetStage === 'string' ? body.targetStage.trim() : '';
+  var reason = typeof body.reason === 'string' ? body.reason.trim() : '';
+
+  if (!reason) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Reason cannot be empty' }));
+    return;
+  }
+  if (reason.length > 500) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Reason must be 500 characters or fewer' }));
+    return;
+  }
+
+  var currentStage = journey.activeSkill || '';
+  var isCompletedTarget = (journey.completedStages || []).some(function(cs) { return cs.skillName === targetStage; });
+  if (!isCompletedTarget || !_journeyStore.isStrictlyLaterStage(targetStage, currentStage)) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Target stage must be an earlier, already-completed stage' }));
+    return;
+  }
+
+  var result = _journeyStore.regressToStage(journeyId, targetStage);
+
+  var featureSlug = journey.featureSlug || '';
+  var repoRoot = getRepoRoot(req);
+  var decisionsPath = path.resolve(repoRoot, 'artefacts', featureSlug, 'decisions.md');
+  var guard = path.resolve(repoRoot, 'artefacts', featureSlug);
+  if (!guard.startsWith(repoRoot + path.sep)) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Invalid feature slug' }));
+    return;
+  }
+
+  var date = new Date().toISOString().slice(0, 10);
+  var requesterLogin = req.session.login || 'unknown';
+  var title = 'Regressed to ' + targetStage + ' by ' + requesterLogin;
+  var context = 'Regression requested via Request Regression at the ' + currentStage + ' stage of feature ' + featureSlug + '.';
+  var decision = 'Feature stage reset to ' + targetStage + '; ' + result.invalidatedStages.join(', ') + ' marked incomplete.';
+  var entry = '\n## ' + title + '\n\n'
+    + '**Date:** ' + date + '\n'
+    + '**Context:** ' + context + '\n'
+    + '**Decision:** ' + decision + '\n'
+    + '**Rationale:** ' + reason + '\n';
+
+  try {
+    var dir = path.dirname(decisionsPath);
+    fs.mkdirSync(dir, { recursive: true });
+    var header = '# Decisions — ' + featureSlug + '\n';
+    if (!fs.existsSync(decisionsPath)) {
+      fs.writeFileSync(decisionsPath, header, 'utf8');
+    }
+    fs.appendFileSync(decisionsPath, entry, 'utf8');
+  } catch (err) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Failed to write regression record', detail: err.message }));
+    return;
+  }
+
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ activeSkill: targetStage, invalidatedStages: result.invalidatedStages, decisionsWritten: decisionsPath }));
+}
+
+/**
  * titleToSlug — converts a spike title to a filename-safe slug.
  * Returns empty string if no alphanumeric chars present.
  */
@@ -5359,6 +5453,7 @@ module.exports = {
   handleGetTrace,
   handlePostDecisions,
   handlePostJourneyApprove, // ep2-s3
+  handlePostJourneyRegress, // ep3-s1
   handlePostSideTripClarify,
   handleDeleteSideTrip,
   // wsm.2 — collaborative journey sharing
