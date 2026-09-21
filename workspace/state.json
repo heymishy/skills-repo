@@ -95,9 +95,9 @@
       "owner": "operator (Hamish King) -- confirm the 3 remaining items (mouse-drag by hand, generic/definition variants, true mobile viewport) once deployed or via a real device"
     },
     {
-      "date": "2026-09-21",
-      "action": "ep2-s4 (new-feature-2b74a292 feature) POST-DEPLOYMENT SMOKE TEST -- live browser render check RISK-ACCEPTed at /verify-completion (Chrome unavailable this session). The new client script (src/web-ui/public/artefact-edit-merge.js -- intercepts the edit-mode form submit, does a fetch-based JSON save, opens an EventSource for pushed merge updates) has never actually executed in a real browser; existing E2E evidence (tests/e2e/ep2-s4-concurrent-merge.spec.js) only exercises the underlying server-side routes via raw HTTP/fetch, not the real rendered page. Once deployed: open the edit-mode page for any journey stage in two real browser tabs, edit and save in both within ~100ms of each other, confirm the textarea updates with merged content with no page reload and no console errors.",
-      "owner": "operator (Hamish King) -- confirm the live two-tab concurrent-save flow once deployed, or sooner if Chrome reconnects before DoD"
+      "date": "2026-09-22",
+      "action": "ep2-s4 (new-feature-2b74a292 feature) POST-DEPLOYMENT SMOKE TEST -- PARTIALLY PERFORMED 2026-09-22 once Chrome reconnected: navigated to a real edit-mode artefact page on staging (wuce-staging.fly.dev, confirmed on commit fa7eb9e6/#913) and found a real bug via the browser console -- /public/artefact-edit-merge.js was never wired into server.js's router (fell through to the sign-in HTML page, causing a client-side SyntaxError), so the new client script never ran at all. Root-caused, fixed (missing static route added, matching the established presence-sidebar.js pattern), and covered by a new regression test (tests/check-ep2-s4-artefact-edit-merge-static-route.js) -- see decisions.md for the full account. STILL NEEDED: the original two-tab concurrent-save visual confirmation (edit+save in two real tabs within ~100ms, confirm the textarea updates with merged content, no page reload, no console errors) has not yet been performed -- only the single-tab script-loading check has been done so far. Do this once the route fix is deployed.",
+      "owner": "operator (Hamish King) -- confirm the live two-tab concurrent-save flow once the route fix is deployed"
     }
   ],
   "estimate": {
