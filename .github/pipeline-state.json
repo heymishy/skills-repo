@@ -26605,19 +26605,19 @@
             {
               "id": "task-1",
               "name": "RED -- write failing test for AC1 (same-tenant non-owner grant)",
-              "tddState": "complete",
+              "tddState": "committed",
               "file": "artefacts/2026-08-22-journey-access-tenant-grant-gap/plans/jatg-s1-plan.md"
             },
             {
               "id": "task-2",
               "name": "GREEN -- fix requireJourneyAccess() with explicit tenant-match grant (AC1)",
-              "tddState": "complete",
+              "tddState": "committed",
               "file": "artefacts/2026-08-22-journey-access-tenant-grant-gap/plans/jatg-s1-plan.md"
             },
             {
               "id": "task-3",
               "name": "Confirm AC5 (wsm2 tests) and AC4 (full-suite regression)",
-              "tddState": "complete",
+              "tddState": "committed",
               "file": "artefacts/2026-08-22-journey-access-tenant-grant-gap/plans/jatg-s1-plan.md"
             }
           ],
@@ -28910,7 +28910,7 @@
             {
               "id": "task-1",
               "name": "Write failing tests then implement the retry loop",
-              "tddState": "completed",
+              "tddState": "committed",
               "file": "artefacts/2026-08-31-sse-timeout-retry-resilience/plans/sstr-s1-plan.md"
             }
           ],
@@ -28955,7 +28955,7 @@
             {
               "id": "task-1",
               "name": "Add Format A branch to extractStoryIdsFromDefinitionArtefact",
-              "tddState": "completed",
+              "tddState": "committed",
               "file": "src/web-ui/routes/journey.js"
             }
           ],
@@ -29001,7 +29001,7 @@
             {
               "id": "task-1",
               "name": "Add res.on(close) disconnect logging to handlePostTurnStreamHtml",
-              "tddState": "completed",
+              "tddState": "committed",
               "file": "src/web-ui/routes/skills.js"
             }
           ],
@@ -29557,7 +29557,7 @@
             {
               "id": "task-1",
               "name": "attemptId idempotency guard + client retry/resume-reload",
-              "tddState": "completed",
+              "tddState": "committed",
               "file": "src/web-ui/routes/skills.js"
             }
           ],
@@ -29602,7 +29602,7 @@
             {
               "id": "task-1",
               "name": "Thread currentStoryId + story-scoped artefact save paths + scanner fix",
-              "tddState": "completed",
+              "tddState": "committed",
               "file": "src/web-ui/routes/skills.js"
             }
           ],
@@ -29667,7 +29667,7 @@
             {
               "id": "task-1",
               "name": "Merge local and Postgres artefact lists in listArtefacts",
-              "tddState": "completed",
+              "tddState": "committed",
               "file": "src/web-ui/adapters/artefact-list.js"
             }
           ],
@@ -29712,7 +29712,7 @@
             {
               "id": "task-1",
               "name": "Move das-s1 GitHub-commit dual-write into handlePostTurnStreamHtml",
-              "tddState": "completed",
+              "tddState": "committed",
               "file": "src/web-ui/routes/skills.js"
             }
           ],
@@ -29757,7 +29757,7 @@
             {
               "id": "task-1",
               "name": "Build definition/review artefact splitters and wire into turn completion",
-              "tddState": "completed",
+              "tddState": "committed",
               "file": "src/web-ui/routes/skills.js"
             }
           ],
@@ -36119,7 +36119,7 @@
                 {
                   "id": "task-3",
                   "name": "Full regression verification (AC5) + npm test + live browser check",
-                  "tddState": "complete",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-18-design-system-adoption/plans/dsa-s6-plan.md"
                 }
               ],
