@@ -4280,6 +4280,25 @@ async function router(req, res) {
     res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
     res.end(require('fs').readFileSync(require('path').join(__dirname, 'public', 'approval-modal.js'), 'utf8'));
 
+  } else if (pathname === '/public/artefact-edit-merge.js' && req.method === 'GET') {
+    // ep2-s4 post-merge live-check fix: routes/journey.js emits
+    // '<script src="/public/artefact-edit-merge.js"></script>' on the
+    // edit-mode artefact page, but no route ever served it -- the EXACT
+    // same bug class ep2-s1's own presence-sidebar.js route (above) already
+    // hit and fixed once in this same epic: this codebase has no generic
+    // /public/* static-file server, only individually-registered literal
+    // routes per file, so a new public script needs its own route added
+    // here or every request falls through to the catch-all sign-in/SPA
+    // handler below, which returns HTML ("Uncaught SyntaxError: Unexpected
+    // token '<'" in the browser). Found via a live staging check post-merge
+    // -- no unit/integration/E2E test in this story exercised a real
+    // <script src> fetch+parse (the E2E spec drives the JSON save/SSE
+    // routes directly via HTTP, never the page's own script tag), so
+    // Tasks 1-6 never caught it. No session/auth guard, matching every
+    // sibling public-asset route's own established convention.
+    res.writeHead(200, { 'Content-Type': 'application/javascript; charset=utf-8' });
+    res.end(require('fs').readFileSync(require('path').join(__dirname, 'public', 'artefact-edit-merge.js'), 'utf8'));
+
   } else {
     // Sign-in page (unauthenticated root)
     const { renderLoginPage } = require('./utils/html-shell');
