@@ -35183,7 +35183,7 @@
         {
           "slug": "ep3-s1",
           "id": "ep3-s1",
-          "stage": "branch-setup",
+          "stage": "implementation-plan",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -35193,7 +35193,33 @@
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep3-s1-dor.md",
-          "updatedAt": "2026-09-21T20:52:50.329Z"
+          "updatedAt": "2026-09-21T21:24:57.433Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "journey-store.js -- stage-invalidation state logic (AC2)",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep3-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "journey.js + server.js -- regress endpoint (AC1, AC3)",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep3-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "journey.js -- extend confirm-back interstitial with reason field (AC1 UI)",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep3-s1-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "E2E -- reason field + regression flow (AC1, AC2)",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep3-s1-plan.md"
+            }
+          ]
         },
         {
           "slug": "ep3-s2",
