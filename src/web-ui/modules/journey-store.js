@@ -294,6 +294,51 @@ function getDownstreamStages(currentStage) {
 }
 
 /**
+ * ep3-s1: true if `stage` appears strictly after `earlierStage` in
+ * STAGE_SEQUENCE -- reuses getDownstreamStages rather than a second
+ * hardcoded stage-order list (the same anti-pattern res-s4 already
+ * avoided once in this codebase for materiality flagging). An unknown
+ * `earlierStage`, or `stage === earlierStage`, both correctly return
+ * false (getDownstreamStages returns [] for an unrecognised stage, and
+ * never includes the stage itself).
+ * @param {string} earlierStage
+ * @param {string} stage
+ * @returns {boolean}
+ */
+function isStrictlyLaterStage(earlierStage, stage) {
+  return getDownstreamStages(earlierStage).indexOf(stage) !== -1;
+}
+
+/**
+ * ep3-s1 (AC2): reset a journey's active stage back to targetStage and
+ * remove completedStages entries for targetStage and everything
+ * downstream of it. A stage is "incomplete" by this codebase's own
+ * existing definition (absent from completedStages) -- no new field is
+ * introduced. Underlying session/artefact files on disk are left
+ * untouched (ADR-023: disk remains canonical; this only changes what the
+ * journey model currently considers done). Stages BEFORE targetStage are
+ * never touched.
+ * @param {string} journeyId
+ * @param {string} targetStage
+ * @returns {{invalidatedStages: string[]}}
+ */
+function regressToStage(journeyId, targetStage) {
+  var journey = _journeys.get(journeyId);
+  if (!journey) return { invalidatedStages: [] };
+  var toInvalidate = [targetStage].concat(getDownstreamStages(targetStage));
+  var invalidatedSet = new Set(toInvalidate);
+  journey.completedStages = (journey.completedStages || []).filter(function(cs) {
+    return !invalidatedSet.has(cs.skillName);
+  });
+  journey.activeSkill = targetStage;
+  if (_diskAdapter) {
+    try { _diskAdapter.saveJourney(journey); } catch (_) {}
+  }
+  _pgWrite(journey);
+  return { invalidatedStages: toInvalidate };
+}
+
+/**
  * Get the list of stories for a journey (ougl.6).
  * @param {string} journeyId
  * @returns {Array}
@@ -486,6 +531,8 @@ module.exports = {
   updateCompletedStageSessionId,
   getNextStage,
   getDownstreamStages,
+  isStrictlyLaterStage,
+  regressToStage,
   getJourneyStories,
   advanceToNextStory,
   setStoryList,
