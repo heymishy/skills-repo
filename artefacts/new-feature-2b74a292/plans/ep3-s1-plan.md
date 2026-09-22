@@ -39,7 +39,11 @@ Create:
 
 ---
 
-## Task 1: journey-store.js — stage-invalidation state logic (AC2)
+## Task 1: journey-store.js — stage-invalidation state logic (AC2) — ✅ COMPLETE (commit c13514c6)
+
+Spec-compliance review: ✅ PASS. Code-quality review: ✅ APPROVED, 2 Minor (non-blocking) notes:
+1. `regressToStage` does not itself validate `targetStage` against `STAGE_SEQUENCE`/`completedStages` — deferred by design to Task 2's route handler (`isStrictlyLaterStage` + a "was targetStage actually completed" check). **Task 2 must confirm this guard exists before `regressToStage` is reachable with unvalidated input** — carried forward as a verification item for Task 2's own review.
+2. `regressToStage` only calls `saveJourney` (not `completeStage`'s two-call `updateStage`+`saveJourney` pattern) — confirmed correct and deliberate (no discrete per-stage disk update is needed here); a pre-existing, out-of-scope characteristic of the disk-adapter's `.stages` object going stale was also noted as unrelated to this diff.
 
 **Files:**
 - Modify: `src/web-ui/modules/journey-store.js`
@@ -54,8 +58,8 @@ const journeyStore = require('../src/web-ui/modules/journey-store');
 
 function testIsStrictlyLaterStage() {
   journeyStore._clearForTesting();
-  assert.strictEqual(journeyStore.isStrictlyLaterStage('definition', 'dor'), true, 'dor is after definition');
-  assert.strictEqual(journeyStore.isStrictlyLaterStage('dor', 'definition'), false, 'definition is NOT after dor');
+  assert.strictEqual(journeyStore.isStrictlyLaterStage('definition', 'definition-of-ready'), true, 'definition-of-ready is after definition');
+  assert.strictEqual(journeyStore.isStrictlyLaterStage('definition-of-ready', 'definition'), false, 'definition is NOT after definition-of-ready');
   assert.strictEqual(journeyStore.isStrictlyLaterStage('definition', 'definition'), false, 'a stage is not later than itself');
   assert.strictEqual(journeyStore.isStrictlyLaterStage('not-a-real-stage', 'definition'), false, 'unknown earlier stage returns false, not a throw');
 }
@@ -198,7 +202,13 @@ git commit -m "feat: add isStrictlyLaterStage/regressToStage to journey-store (e
 
 ---
 
-## Task 2: journey.js + server.js — regress endpoint (AC1 validation, AC3 decisions.md write)
+## Task 2: journey.js + server.js — regress endpoint (AC1 validation, AC3 decisions.md write) — ✅ COMPLETE (commits e4dc6ddf, eefa0310)
+
+Spec-compliance review: ✅ PASS (explicitly confirmed the deferred validation guard from Task 1 is present and blocks both required failure modes). Code-quality review round 1: found 1 Critical + 1 Important + 2 Minor. Fixed in `eefa0310`:
+- **Critical (fixed):** `regressToStage` was called BEFORE the path-traversal guard and decisions.md write — a guard/write failure could leave the journey silently regressed with no audit trail. Reordered: guard + full decisions.md write now happen first (using an independently-computed `invalidatedStages` matching `regressToStage`'s own internal computation exactly), and `regressToStage` is only called after both succeed.
+- **Important (fixed):** the test file's router-dispatch block required `server.js` for the first time AFTER several `freshRequire()` calls had already stale-cached `journey.js` — masked by luck (the viewer-gate 403s first), but fragile and diverging from `check-ep2-s3-approval.js`'s own established precedent. Fixed: `require('../src/web-ui/server')` moved to the top of the file, before any `freshRequire()` call.
+- **Minor (both fixed):** decisions.md wording no longer double-lists `targetStage`; `pool` parameter now has an explanatory comment.
+Code-quality re-review: ✅ APPROVED, both substantive findings verified genuinely resolved by tracing the live code (not the commit message), no regressions.
 
 **Files:**
 - Modify: `src/web-ui/routes/journey.js`
@@ -539,7 +549,17 @@ git commit -m "feat: wire POST /api/journey/:journeyId/regress (ep3-s1 AC1, AC3)
 
 ---
 
-## Task 3: journey.js — extend confirm-back interstitial with a reason field (AC1 UI)
+## Task 3: journey.js — extend confirm-back interstitial with a reason field (AC1 UI) — ✅ COMPLETE (commits ac5632bf, b1f67703)
+
+Spec-compliance review: ✅ PASS. Code-quality review round 1: found 2 Important + 3 Minor. Fixed in `b1f67703`:
+- **Important (fixed):** element IDs used `sw-` prefix, colliding with this file's established CSS-class-only `sw-` namespace (every real element id elsewhere uses a scoped prefix like `jh-`/`sv-`/`rf-`). Renamed to `cb-regress-form`/`cb-regress-reason`/`cb-regress-submit` (also updated in this plan's own Task 4 E2E draft below).
+- **Important (fixed):** the reason `<textarea>` had no `<label>`, relying only on `placeholder` (not a WCAG-valid label substitute) — every other form field in this file has one. Added `<label for="cb-regress-reason">`.
+- **Minor (fixed):** textarea had no CSS class unlike its siblings — added `class="sv-textarea"`.
+- **Minor (fixed):** `sw-btn--primary` had been moved onto the destructive "Request Regression" action instead of staying on the safe "Just view" action — swapped back (safe action keeps primary emphasis).
+- **Minor (fixed):** `tests/check-ep1-s4-stage-routing.js`'s existing `handleGetStageConfirmBack` test had a cheap, pre-existing render-assertion precedent that wasn't updated for the new markup — added 3 assertions for the new form's IDs/action.
+Code-quality re-review: ✅ APPROVED, all 5 findings verified genuinely resolved, no regressions. One non-blocking observation carried forward: the new `action="/api/journey/"` test assertion checks a URL prefix rather than the literal `.../regress` suffix — currently correctly discriminating (only `action=` on the page) but slightly loose; not required to fix.
+
+**Coordinator-caught follow-up fix (commit `a79d1a1a`), before Task 4 dispatch:** `handlePostJourneyRegress` (Task 2) responds with JSON, matching its sibling `handlePostJourneyApprove`'s own already-reviewed contract — but the plain HTML `<form>` built in this task would submit and leave the browser displaying raw JSON instead of navigating anywhere sensible. Caught by re-reading the end-to-end flow before dispatching Task 4's E2E test (which would not itself have caught this, since it only checks server state via a separate API call, not the resulting page). Fixed by adding an inline `<script>` that intercepts the form submit with a `fetch()`-based JSON POST and redirects to `/journey/:journeyId` on success — matching this same file's own established `rm-upload-btn` fetch+redirect pattern exactly (see that handler a few functions above). No change to Task 2's API contract; `npm test` re-confirmed clean (693 files, 1 pre-existing unrelated failure) before commit.
 
 **Files:**
 - Modify: `src/web-ui/routes/journey.js` (`handleGetStageConfirmBack`)
@@ -562,11 +582,11 @@ Replace `handleGetStageConfirmBack`'s body-construction block (around line 1974-
       '<hr style="margin:24px 0">',
       '<h2>Or: Request Regression</h2>',
       '<p>Reset the feature to ' + escHtml(stageLbl) + ' and mark every stage after it as incomplete. Prior approvals in decisions.md are kept for audit.</p>',
-      '<form method="POST" action="/api/journey/' + safeJourneyId + '/regress" id="sw-regress-form">',
+      '<form method="POST" action="/api/journey/' + safeJourneyId + '/regress" id="cb-regress-form">',
         _csrf.csrfField(await _csrf.generateCsrfToken(req)),
         '<input type="hidden" name="targetStage" value="' + escHtml(stageName) + '">',
-        '<textarea name="reason" id="sw-regress-reason" placeholder="Why is this regression needed? (required)" required minlength="1" style="width:100%;min-height:80px;margin-bottom:8px"></textarea>',
-        '<button type="submit" class="sw-btn sw-btn--primary" id="sw-regress-submit">Request Regression</button>',
+        '<textarea name="reason" id="cb-regress-reason" placeholder="Why is this regression needed? (required)" required minlength="1" style="width:100%;min-height:80px;margin-bottom:8px"></textarea>',
+        '<button type="submit" class="sw-btn sw-btn--primary" id="cb-regress-submit">Request Regression</button>',
       '</form>',
     '</div>'
   ].join('');
@@ -591,7 +611,14 @@ git commit -m "feat: add reason field + Request Regression form to the confirm-b
 
 ---
 
-## Task 4: E2E — real browser render of the reason field + regression flow (AC1, AC2)
+## Task 4: E2E — real browser render of the reason field + regression flow (AC1, AC2) — ✅ COMPLETE (commits e00ff076, f111d807)
+
+**A genuine bug was found by this task's own E2E test** (not a review-round finding — caught live, by the test itself, on first run): `regressToStage` (Task 1) never cleared `journey.activeSessionId`, so `handleGetJourneyById`'s pre-existing "done session" fast-path bounced a post-regression user straight back into the stale, now-invalidated session instead of anywhere reflecting the regression — the story's own primary scenario, not a corner case. The implementer correctly reported BLOCKED rather than weakening the test to paper over it. Fixed directly (commit `e00ff076`): `regressToStage` now also clears `activeSessionId`, safe by a structurally-guaranteed invariant (only 2 call sites repo-wide ever mutate `activeSkill`/`activeSessionId`, always together, confirmed by repo-wide grep). The E2E test's own success assertion was corrected to match the REAL redirect chain (confirm-back → `/journey/:id` → `/journey/:slug/resume` → a fresh `/skills/definition/sessions/:sid/chat`), traced through both handlers directly rather than assumed.
+
+Spec-compliance review: ✅ PASS, explicitly re-verified the fix's safety invariant independently (not on the commit message's claim) and re-traced the full redirect chain against the real handlers. Code-quality review: found 1 Important + 2 Minor, fixed in `f111d807`:
+- **Important (fixed):** `test.setTimeout(30000)` was a no-op (equal to the global default) for a test that now waits through a 3-hop redirect chain — bumped to 60000ms, matching sibling E2E specs' own practice for comparable round trips.
+- **Minor (fixed):** `regressToStage`'s JSDoc didn't mention the `activeSessionId` clear — updated.
+- **Minor (not fixed, pre-existing, out of scope):** `handlePostJourneyRegress`'s JSON response includes a full server-side filesystem path (`decisionsWritten`) — confirmed to be an already-shipped pattern (`handlePostJourneyApprove`'s own `written` field, already relied upon by `ep2-s3`'s own E2E test), not something introduced by this task; flagged for a possible future cross-cutting cleanup, not blocking.
 
 **Files:**
 - Create: `tests/e2e/ep3-s1-regression.spec.js`
@@ -629,13 +656,20 @@ withAuth('ep3-s1: Request Regression form renders on the confirm-back interstiti
   // AC1: navigate to the confirm-back interstitial for an earlier, completed stage
   await page.goto('/journey/' + seeded.journeyId + '/stage/definition/confirm-back');
 
-  const reasonField = page.locator('#sw-regress-reason');
-  const submitBtn = page.locator('#sw-regress-submit');
+  const reasonField = page.locator('#cb-regress-reason');
+  const submitBtn = page.locator('#cb-regress-submit');
   await expect(reasonField).toBeVisible();
   await expect(submitBtn).toBeVisible();
 
   await reasonField.fill(reasonText);
   await submitBtn.click();
+
+  // The form submit is intercepted by an inline <script> (fetch()-based JSON
+  // POST, added as a coordinator-level fix so a plain form POST doesn't leave
+  // the browser displaying raw JSON) that redirects to /journey/:journeyId on
+  // success -- wait for that real navigation before checking server state, so
+  // this test also proves the redirect itself actually fires.
+  await page.waitForURL('**/journey/' + seeded.journeyId, { timeout: 10000 });
 
   // AC2: after the redirect/response, the journey's real state reflects the reset.
   // GET /api/journey/:journeyId (handleGetJourneyState) returns
