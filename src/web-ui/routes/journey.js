@@ -1987,10 +1987,46 @@ async function handleGetStageConfirmBack(req, res) {
         '<input type="hidden" name="targetStage" value="' + escHtml(stageName) + '">',
         '<label for="cb-regress-reason" style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Reason for regression</label>',
         '<textarea name="reason" id="cb-regress-reason" class="sv-textarea" placeholder="Why is this regression needed? (required)" required minlength="1" style="width:100%;min-height:80px;margin-bottom:8px"></textarea>',
+        '<div id="cb-regress-error" role="alert" aria-live="polite" style="color:#b00020;display:none;margin-bottom:8px"></div>',
         '<button type="submit" class="sw-btn" id="cb-regress-submit">Request Regression</button>',
       '</form>',
-    '</div>'
-  ].join('');
+    '</div>',
+    // ep3-s1 fix: handlePostJourneyRegress responds with JSON (matching its
+    // sibling handlePostJourneyApprove's own contract), but a plain HTML
+    // form POST expecting a JSON response leaves the browser displaying raw
+    // JSON instead of navigating somewhere sensible. Intercept the submit
+    // and do a fetch()-based JSON POST instead, redirecting to the journey
+    // page on success -- matching the established fetch+redirect pattern
+    // already used by this same file's own rm-upload-btn handler above.
+    '<script>',
+    '(function(){',
+    '  var form = document.getElementById("cb-regress-form");',
+    '  var err = document.getElementById("cb-regress-error");',
+    '  var btn = document.getElementById("cb-regress-submit");',
+    '  form.addEventListener("submit", async function(evt) {',
+    '    evt.preventDefault();',
+    '    err.style.display = "none";',
+    '    btn.disabled = true; btn.textContent = "Requesting…";',
+    '    var fd = new FormData(form);',
+    '    var payload = {};',
+    '    fd.forEach(function(v, k) { payload[k] = v; });',
+    '    var resp = await fetch(form.action, {',
+    '      method: "POST",',
+    '      headers: { "Content-Type": "application/json" },',
+    '      body: JSON.stringify(payload)',
+    '    });',
+    '    var data = await resp.json().catch(function() { return {}; });',
+    '    if (resp.ok) {',
+    '      window.location.href = "/journey/' + safeJourneyId + '";',
+    '    } else {',
+    '      err.textContent = data.error || "Regression failed.";',
+    '      err.style.display = "block";',
+    '      btn.disabled = false; btn.textContent = "Request Regression";',
+    '    }',
+    '  });',
+    '})();',
+    '</script>'
+  ].join('\n');
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(renderShell({ title: 'Move back to ' + stageLbl, bodyContent: body, user: { login: req.session.login || '' } }));
 }
