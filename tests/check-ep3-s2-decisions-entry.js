@@ -1,3 +1,16 @@
+#!/usr/bin/env node
+// tests/check-ep3-s2-decisions-entry.js -- AC1/AC2/AC3 field-level
+// verification for ep3-s2 (Auto-Generate decisions.md Entry on
+// Regression). Distinct from tests/check-ep3-s1-integration.js's own
+// decisions.md coverage (title-substring + prefix-preservation only):
+// this file parses every field (date, context, decision, rationale,
+// actor, stageReverted) out of the real entry handlePostJourneyRegress
+// writes and asserts each against the actual request values, catching
+// field-level corruption (e.g. a swapped or truncated rationale) that a
+// substring check would miss. No new production code -- ep3-s1's
+// handler already satisfies this story's ACs; see decisions.md's
+// ep3-s2 entries for the full architecture investigation.
+
 'use strict';
 process.env.NODE_ENV             = 'test';
 process.env.SESSION_SECRET       = 'test-session-secret-minimum32chars!!';
@@ -54,6 +67,11 @@ function parseLastEntry(content) {
   const date = (last.match(/\*\*Date:\*\*\s*(.+)/) || [])[1];
   const context = (last.match(/\*\*Context:\*\*\s*(.+)/) || [])[1];
   const decision = (last.match(/\*\*Decision:\*\*\s*(.+)/) || [])[1];
+  // Assumes `reason` never contains a literal "\n## " -- matching production's
+  // current lack of that restriction (handlePostJourneyRegress only trims and
+  // length-caps `reason`). A reason containing that exact substring would
+  // corrupt the entries.split() boundary above, before this regex even runs --
+  // a production content-injection question, not a defect in this parser.
   const rationale = (last.match(/\*\*Rationale:\*\*\s*([\s\S]+?)\n*$/) || [])[1];
   const actorMatch = title.match(/by (\S+)$/);
   const stageMatch = title.match(/^Regressed to (\S+) by/);
