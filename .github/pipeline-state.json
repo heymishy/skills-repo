@@ -35300,17 +35300,61 @@
         {
           "slug": "ep4-s1",
           "id": "ep4-s1",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
-            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep4-s1-test-plan.md"
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep4-s1-test-plan.md",
+            "passing": 697
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep4-s1-dor.md",
-          "updatedAt": "2026-09-15T09:06:33.505Z"
+          "updatedAt": "2026-09-22T18:09:51.804Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "DB layer: multi-pod assignment + removal tracking",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep4-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "HTTP handlers: assign/read/remove",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep4-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Wire routes in server.js",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep4-s1-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Product-page UI: Assign pods modal",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep4-s1-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Integration test: AC1/AC2/AC3 end-to-end",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep4-s1-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "E2E test: Assign pods modal browser render",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep4-s1-plan.md"
+            }
+          ],
+          "acVerified": 3,
+          "acTotal": 3,
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/918"
         },
         {
           "slug": "ep4-s2",
