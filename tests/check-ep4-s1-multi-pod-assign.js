@@ -26,75 +26,15 @@ function makeRes() {
   return res;
 }
 
-// fake-test-db.js (src/web-ui/adapters/fake-test-db.js) is a narrow,
-// explicitly non-general SQL stand-in: it only recognises the exact query
-// shapes its own comments enumerate, and its documented extension path for a
-// new shape is "add a narrow, explicit branch here" inside that file. The
-// three ep4-s1 handlers under test (handleGetFeaturePods,
-// handlePostAssignFeaturePods, handleDeleteFeaturePodMember) issue
-// `SELECT journey_id, tenant_id, product_id FROM journeys WHERE journey_id =
-// $1` -- a 3-column shape fake-test-db.js does not recognise (it only
-// supports the 1-column `SELECT tenant_id FROM journeys WHERE journey_id`
-// shape used elsewhere in products.js). This task's brief restricts changes
-// to this test file only, so fake-test-db.js's real adapter gap (a
-// pre-existing condition, not introduced by this test) cannot be closed here
-// -- flagged for a follow-up story. Rather than fabricate a passing test that
-// never actually reaches the real handler/store code, this thin query shim
-// translates the unsupported 3-column shape into the supported 1-column one
-// (which still runs fake-test-db.js's real in-memory journeys lookup and
-// real tenant-ownership filtering) and fills in product_id from this test's
-// own seeding bookkeeping below -- data this test itself wrote via
-// `seedJourney`, not fabricated. No business logic in products.js,
-// pod-store.js, pod-assignment-store.js, or feature-collaborator-store.js is
-// touched or bypassed by this shim.
-// Same fake-test-db.js narrowness applies to `pod_members`: it supports
-// `INSERT INTO pod_members` (issued for real by podStore.createPod) but has
-// no SELECT branch at all for that table, so this test's own AC2
-// verification query (`SELECT user_id FROM pod_members WHERE pod_id = $1`,
-// asserting removeFeatureCollaborator did NOT touch pod_members) cannot be
-// answered by the adapter as shipped. The shim below mirrors each real
-// `INSERT INTO pod_members` call (still forwarded to the real adapter
-// unchanged) into a local shadow list, then serves the SELECT from that
-// shadow -- it reflects only rows the real store layer actually inserted,
-// nothing fabricated.
-const journeyProductByFeatureId = {};
-const podMembersShadow = []; // { pod_id, user_id, role_id }
-function makeDbWithJourneyShim() {
-  const db = createFakeTestDb();
-  const realQuery = db.query.bind(db);
-  db.query = function(sql, params) {
-    if (typeof sql === 'string' && sql.indexOf('SELECT journey_id, tenant_id, product_id FROM journeys WHERE journey_id') === 0) {
-      const journeyId = params[0];
-      return realQuery('SELECT tenant_id FROM journeys WHERE journey_id = $1', params).then((result) => ({
-        rows: result.rows.map((r) => ({ journey_id: journeyId, tenant_id: r.tenant_id, product_id: journeyProductByFeatureId[journeyId] }))
-      }));
-    }
-    if (typeof sql === 'string' && sql.indexOf('INSERT INTO pod_members') === 0) {
-      podMembersShadow.push({ pod_id: params[0], user_id: params[1], role_id: params[2] });
-      return realQuery(sql, params);
-    }
-    if (typeof sql === 'string' && sql.indexOf('SELECT user_id FROM pod_members WHERE pod_id') === 0) {
-      const podId = params[0];
-      return Promise.resolve({ rows: podMembersShadow.filter((m) => m.pod_id === podId).map((m) => ({ user_id: m.user_id })) });
-    }
-    return realQuery(sql, params);
-  };
-  return db;
-}
-function seedJourney(db, row) {
-  journeyProductByFeatureId[row.journey_id] = row.product_id;
-  db._upsertJourney(row);
-}
-
 async function main() {
-  const db = makeDbWithJourneyShim();
+  const db = createFakeTestDb();
   await podStore.migratePodsSchema(db);
   await podAssignmentStore.migratePodAssignmentsSchema(db);
   await collabStore.migrateFeatureCollaboratorsSchema(db);
   await collabStore.migrateFeatureCollaboratorRemovalsSchema(db);
 
   await db.query("INSERT INTO products (product_id, tenant_id, name) VALUES ($1,$2,$3)", ['prod-1', 't1', 'Product One']).catch(() => {});
-  seedJourney(db, { journey_id: 'feat-a2', tenant_id: 't1', product_id: 'prod-1', feature_slug: 'feat-a2', stage: 'definition', active_session_id: null });
+  db._upsertJourney({ journey_id: 'feat-a2', tenant_id: 't1', product_id: 'prod-1', feature_slug: 'feat-a2', stage: 'definition', active_session_id: null });
 
   const core = await podStore.createPod(db, { tenantId: 't1', name: 'Core Platform Pod', createdBy: 'hamish', members: [
     { userId: 'hamish', roleId: 'conductor' }, { userId: 'susan', roleId: 'engineer' }, { userId: 'darren', roleId: 'engineer' }
@@ -162,7 +102,7 @@ async function main() {
   });
 
   await check('Tenant isolation: a feature belonging to another tenant 404s', async () => {
-    seedJourney(db, { journey_id: 'feat-b1', tenant_id: 't2', product_id: 'prod-2', feature_slug: 'feat-b1', stage: 'definition', active_session_id: null });
+    db._upsertJourney({ journey_id: 'feat-b1', tenant_id: 't2', product_id: 'prod-2', feature_slug: 'feat-b1', stage: 'definition', active_session_id: null });
     var req = { params: { productId: 'prod-1', featureId: 'feat-b1' }, session: session };
     var res = makeRes();
     await products.handleGetFeaturePods(req, res, null, db);

@@ -209,6 +209,15 @@ function createFakeTestDb() {
       var jOwnerMatch = journeys.filter(function(r) { return r.journey_id === lookupJourneyId; }).map(function(r) { return { tenant_id: r.tenant_id }; });
       return Promise.resolve({ rows: jOwnerMatch });
     }
+    // ep4-s1: the 3 multi-pod handlers (products.js) validate both tenant
+    // AND product ownership of the feature (journey) in one query -- a
+    // DIFFERENT column list than s1.1's own 1-column branch above, so it
+    // needs its own exact-prefix branch.
+    if (s.indexOf('SELECT JOURNEY_ID, TENANT_ID, PRODUCT_ID FROM JOURNEYS WHERE JOURNEY_ID') === 0) {
+      var gjJourneyId = p[0];
+      var gjMatch = journeys.filter(function(r) { return r.journey_id === gjJourneyId; }).map(function(r) { return { journey_id: r.journey_id, tenant_id: r.tenant_id, product_id: r.product_id }; });
+      return Promise.resolve({ rows: gjMatch });
+    }
     if (s.indexOf('FROM JOURNEYS WHERE PRODUCT_ID') !== -1) {
       var jProductId = p[0];
       // Org-scope's variant also filters by tenant_id ($2) -- detected via the
@@ -489,6 +498,19 @@ function createFakeTestDb() {
         .filter(function(r) { return r.pod_id === fcPodId; })
         .map(function(r) { return { user_id: r.user_id, role_id: r.role_id }; });
       return Promise.resolve({ rows: fcMembers });
+    }
+    // ep4-s1: a narrower single-column read of pod_members, used by tests
+    // to verify a per-feature removal did NOT touch global pod membership.
+    // No production caller issues this exact shape today (populateFeature-
+    // CollaboratorsFromPod/...Pods both use the two-column branch above) --
+    // added because pod_members previously had no SELECT support at all in
+    // this adapter, only INSERT.
+    if (s.indexOf('SELECT USER_ID FROM POD_MEMBERS WHERE POD_ID') === 0) {
+      var pmSelPodId = p[0];
+      var pmSelRows = podMembers
+        .filter(function(r) { return r.pod_id === pmSelPodId; })
+        .map(function(r) { return { user_id: r.user_id }; });
+      return Promise.resolve({ rows: pmSelRows });
     }
 
     if (s.indexOf('INSERT INTO FEATURE_COLLABORATORS') === 0) {
