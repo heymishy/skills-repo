@@ -35234,17 +35234,18 @@
         {
           "slug": "ep3-s2",
           "id": "ep3-s2",
-          "stage": "implementation-plan",
+          "stage": "verify-completion",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
-            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep3-s2-test-plan.md"
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep3-s2-test-plan.md",
+            "passing": 13
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep3-s2-dor.md",
-          "updatedAt": "2026-09-22T03:08:29.999Z",
+          "updatedAt": "2026-09-22T03:25:26.066Z",
           "tasks": [
             {
               "id": "task-1",
@@ -35253,7 +35254,10 @@
               "file": "artefacts/new-feature-2b74a292/plans/ep3-s2-plan.md",
               "sha": "c158e2d4"
             }
-          ]
+          ],
+          "acVerified": 3,
+          "acTotal": 3,
+          "verifyStatus": "passed"
         },
         {
           "slug": "ep3-s3",
