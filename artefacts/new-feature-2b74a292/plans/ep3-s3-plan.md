@@ -32,7 +32,11 @@ Create:
 
 ---
 
-## Task 1: Re-approval detection in the decisions.md entry (AC1, AC3)
+## Task 1: Re-approval detection in the decisions.md entry (AC1, AC3) — ✅ COMPLETE (commits b9b92e90, 0d3d6f91)
+
+Confirmed on first run as expected: 12/12 new checks pass, sibling `check-ep2-s3-approval.js` (13/13) unaffected. Spec-compliance review: ✅ PASS, including a full hand-trace of the detection loop against 3 scenarios (never-approved, approve→regress→approve, and the trickier approve→regress→re-approve→regress→approve double-cycle) — verified correct by confirming all 3 `decisions.md` writers use `fs.appendFileSync` (append-only chronological order is the precondition the backward-scan-stops-at-first-match logic depends on). Code-quality review: ✅ APPROVED, 1 Minor (fixed in `0d3d6f91`: a one-line comment for the loop's silent-skip-other-stages case). Reviewer formed an independent opinion (not deferring to the spec reviewer) that the untested double-regression-cycle scenario is real but non-blocking for this Complexity-1/Low-oversight story, since it exercises the same code path as the already-tested single cycle, not new logic.
+
+Final cross-task review: ✅ PASS. Independently re-verified AC2's own "zero new code" claim by reading `handlePostGateConfirm`/`completeStage`/`regressToStage` directly (confirmed no branching on approval/regression history exists anywhere). Formed an independent opinion on whether the decisions.md-native linkage genuinely satisfies AC1's real benefit intent ("shows the full regress → revise → re-approve cycle, not just a fresh unrelated approval") rather than accepting the DoR-correction reasoning at face value — concluded yes, reading the resulting entries top-to-bottom unambiguously reconstructs the cycle. One non-blocking observation: the linkage is positional (most-recent-entry-for-this-stage), not an explicit pointer to a specific regression's date — correct and sufficient as designed, not something to fix.
 
 **Files:**
 - Modify: `src/web-ui/routes/journey.js`
