@@ -35183,7 +35183,7 @@
         {
           "slug": "ep3-s1",
           "id": "ep3-s1",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -35194,7 +35194,7 @@
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep3-s1-dor.md",
-          "updatedAt": "2026-09-22T01:56:34.796Z",
+          "updatedAt": "2026-09-22T04:54:53.063Z",
           "tasks": [
             {
               "id": "task-1",
@@ -35228,13 +35228,15 @@
           "acVerified": 3,
           "acTotal": 3,
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/915"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/915",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "slug": "ep3-s2",
           "id": "ep3-s2",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -35245,7 +35247,7 @@
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep3-s2-dor.md",
-          "updatedAt": "2026-09-22T03:25:26.066Z",
+          "updatedAt": "2026-09-22T04:55:01.051Z",
           "tasks": [
             {
               "id": "task-1",
@@ -35258,8 +35260,10 @@
           "acVerified": 3,
           "acTotal": 3,
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/916"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/916",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "slug": "ep3-s3",
