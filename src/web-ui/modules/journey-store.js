@@ -331,6 +331,16 @@ function regressToStage(journeyId, targetStage) {
     return !invalidatedSet.has(cs.skillName);
   });
   journey.activeSkill = targetStage;
+  // ep3-s1 bug fix (found live by Task 4's own E2E test): regressing away
+  // from the current stage must also clear activeSessionId. A regression is
+  // only valid when targetStage is strictly earlier than the journey's OLD
+  // activeSkill (enforced by the route handler before this is ever called),
+  // so activeSessionId -- set together with the old activeSkill by
+  // setActiveSession -- always belongs to a now-invalidated stage. Leaving
+  // it set made handleGetJourneyById's own "done session" fast-path
+  // (kcrs-s1) bounce a post-regression user straight back into the stale,
+  // now-incomplete session instead of anywhere reflecting the regression.
+  journey.activeSessionId = null;
   if (_diskAdapter) {
     try { _diskAdapter.saveJourney(journey); } catch (_) {}
   }
