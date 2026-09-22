@@ -294,6 +294,63 @@ function getDownstreamStages(currentStage) {
 }
 
 /**
+ * ep3-s1: true if `stage` appears strictly after `earlierStage` in
+ * STAGE_SEQUENCE -- reuses getDownstreamStages rather than a second
+ * hardcoded stage-order list (the same anti-pattern res-s4 already
+ * avoided once in this codebase for materiality flagging). An unknown
+ * `earlierStage`, or `stage === earlierStage`, both correctly return
+ * false (getDownstreamStages returns [] for an unrecognised stage, and
+ * never includes the stage itself).
+ * @param {string} earlierStage
+ * @param {string} stage
+ * @returns {boolean}
+ */
+function isStrictlyLaterStage(earlierStage, stage) {
+  return getDownstreamStages(earlierStage).indexOf(stage) !== -1;
+}
+
+/**
+ * ep3-s1 (AC2): reset a journey's active stage back to targetStage and
+ * remove completedStages entries for targetStage and everything
+ * downstream of it. A stage is "incomplete" by this codebase's own
+ * existing definition (absent from completedStages) -- no new field is
+ * introduced. Underlying session/artefact files on disk are left
+ * untouched (ADR-023: disk remains canonical; this only changes what the
+ * journey model currently considers done). Stages BEFORE targetStage are
+ * never touched. Also clears activeSessionId (see inline comment below
+ * for why this is always safe) so post-regression navigation lands on a
+ * fresh session for the new activeSkill instead of a stale, invalidated one.
+ * @param {string} journeyId
+ * @param {string} targetStage
+ * @returns {{invalidatedStages: string[]}}
+ */
+function regressToStage(journeyId, targetStage) {
+  var journey = _journeys.get(journeyId);
+  if (!journey) return { invalidatedStages: [] };
+  var toInvalidate = [targetStage].concat(getDownstreamStages(targetStage));
+  var invalidatedSet = new Set(toInvalidate);
+  journey.completedStages = (journey.completedStages || []).filter(function(cs) {
+    return !invalidatedSet.has(cs.skillName);
+  });
+  journey.activeSkill = targetStage;
+  // ep3-s1 bug fix (found live by Task 4's own E2E test): regressing away
+  // from the current stage must also clear activeSessionId. A regression is
+  // only valid when targetStage is strictly earlier than the journey's OLD
+  // activeSkill (enforced by the route handler before this is ever called),
+  // so activeSessionId -- set together with the old activeSkill by
+  // setActiveSession -- always belongs to a now-invalidated stage. Leaving
+  // it set made handleGetJourneyById's own "done session" fast-path
+  // (kcrs-s1) bounce a post-regression user straight back into the stale,
+  // now-incomplete session instead of anywhere reflecting the regression.
+  journey.activeSessionId = null;
+  if (_diskAdapter) {
+    try { _diskAdapter.saveJourney(journey); } catch (_) {}
+  }
+  _pgWrite(journey);
+  return { invalidatedStages: toInvalidate };
+}
+
+/**
  * Get the list of stories for a journey (ougl.6).
  * @param {string} journeyId
  * @returns {Array}
@@ -486,6 +543,8 @@ module.exports = {
   updateCompletedStageSessionId,
   getNextStage,
   getDownstreamStages,
+  isStrictlyLaterStage,
+  regressToStage,
   getJourneyStories,
   advanceToNextStory,
   setStoryList,

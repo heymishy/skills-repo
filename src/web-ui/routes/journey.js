@@ -1972,14 +1972,61 @@ async function handleGetStageConfirmBack(req, res) {
 
   var stageLbl = (STAGE_META.find(function(s) { return s.id === stageName; }) || {}).label || stageName;
   var reopenUrl = '/journey/' + encodeURIComponent(journeyId) + '/stage/' + encodeURIComponent(stageName) + '/reopen';
+  var safeJourneyId = encodeURIComponent(journeyId);
   var body = [
     '<div class="sw-page-content" style="max-width:480px">',
       '<h1>Move back to ' + escHtml(stageLbl) + '?</h1>',
       '<p>This will show you prior artefacts and any revisions since then.</p>',
-      '<a href="' + escHtml(reopenUrl) + '" class="sw-btn sw-btn--primary" style="margin-right:8px">Confirm</a>',
+      '<a href="' + escHtml(reopenUrl) + '" class="sw-btn sw-btn--primary" style="margin-right:8px">Just view (no reset)</a>',
       '<a href="/journey">Cancel</a>',
-    '</div>'
-  ].join('');
+      '<hr style="margin:24px 0">',
+      '<h2>Or: Request Regression</h2>',
+      '<p>Reset the feature to ' + escHtml(stageLbl) + ' and mark every stage after it as incomplete. Prior approvals in decisions.md are kept for audit.</p>',
+      '<form method="POST" action="/api/journey/' + safeJourneyId + '/regress" id="cb-regress-form">',
+        _csrf.csrfField(await _csrf.generateCsrfToken(req)),
+        '<input type="hidden" name="targetStage" value="' + escHtml(stageName) + '">',
+        '<label for="cb-regress-reason" style="display:block;font-size:13px;font-weight:600;margin-bottom:6px">Reason for regression</label>',
+        '<textarea name="reason" id="cb-regress-reason" class="sv-textarea" placeholder="Why is this regression needed? (required)" required minlength="1" style="width:100%;min-height:80px;margin-bottom:8px"></textarea>',
+        '<div id="cb-regress-error" role="alert" aria-live="polite" style="color:#b00020;display:none;margin-bottom:8px"></div>',
+        '<button type="submit" class="sw-btn" id="cb-regress-submit">Request Regression</button>',
+      '</form>',
+    '</div>',
+    // ep3-s1 fix: handlePostJourneyRegress responds with JSON (matching its
+    // sibling handlePostJourneyApprove's own contract), but a plain HTML
+    // form POST expecting a JSON response leaves the browser displaying raw
+    // JSON instead of navigating somewhere sensible. Intercept the submit
+    // and do a fetch()-based JSON POST instead, redirecting to the journey
+    // page on success -- matching the established fetch+redirect pattern
+    // already used by this same file's own rm-upload-btn handler above.
+    '<script>',
+    '(function(){',
+    '  var form = document.getElementById("cb-regress-form");',
+    '  var err = document.getElementById("cb-regress-error");',
+    '  var btn = document.getElementById("cb-regress-submit");',
+    '  form.addEventListener("submit", async function(evt) {',
+    '    evt.preventDefault();',
+    '    err.style.display = "none";',
+    '    btn.disabled = true; btn.textContent = "Requesting…";',
+    '    var fd = new FormData(form);',
+    '    var payload = {};',
+    '    fd.forEach(function(v, k) { payload[k] = v; });',
+    '    var resp = await fetch(form.action, {',
+    '      method: "POST",',
+    '      headers: { "Content-Type": "application/json" },',
+    '      body: JSON.stringify(payload)',
+    '    });',
+    '    var data = await resp.json().catch(function() { return {}; });',
+    '    if (resp.ok) {',
+    '      window.location.href = "/journey/' + safeJourneyId + '";',
+    '    } else {',
+    '      err.textContent = data.error || "Regression failed.";',
+    '      err.style.display = "block";',
+    '      btn.disabled = false; btn.textContent = "Request Regression";',
+    '    }',
+    '  });',
+    '})();',
+    '</script>'
+  ].join('\n');
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
   res.end(renderShell({ title: 'Move back to ' + stageLbl, bodyContent: body, user: { login: req.session.login || '' } }));
 }
@@ -4549,6 +4596,113 @@ async function handlePostJourneyApprove(req, res, pool) {
 }
 
 /**
+ * POST /api/journey/:journeyId/regress — ep3-s1 AC1/AC2/AC3.
+ * Resets the journey's active stage back to an earlier, already-completed
+ * stage and invalidates every stage from there onward (removed from
+ * completedStages via journeyStore.regressToStage -- ADR-023: disk
+ * artefacts/sessions are untouched, only the journey model's own "done"
+ * bookkeeping changes). Records the regression as a decisions.md entry
+ * using the same real disk-write pattern handlePostJourneyApprove
+ * (ep2-s3) already establishes -- decisions.md is append-only, so prior
+ * approval entries are never touched (AC3's "preserved, not deleted"
+ * substance).
+ */
+async function handlePostJourneyRegress(req, res, pool) { // eslint-disable-line no-unused-vars -- pool unused, kept for call-signature uniformity with how server.js dispatches every handler with _pshPool
+  if (!req.session || !req.session.accessToken) {
+    res.writeHead(401, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'NOT_AUTHENTICATED' }));
+    return;
+  }
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+
+  var journeyId = req.params && req.params.journeyId;
+  var journey = _journeyStore.getJourney(journeyId);
+  try { requireJourneyAccess(journey, req.session, POLICY.TENANT); }
+  catch (err) {
+    res.writeHead(asHttpResponse(err, POLICY.TENANT), { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Not found' }));
+    return;
+  }
+
+  var body = req.body || {};
+  var targetStage = typeof body.targetStage === 'string' ? body.targetStage.trim() : '';
+  var reason = typeof body.reason === 'string' ? body.reason.trim() : '';
+
+  if (!reason) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Reason cannot be empty' }));
+    return;
+  }
+  if (reason.length > 500) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Reason must be 500 characters or fewer' }));
+    return;
+  }
+
+  var currentStage = journey.activeSkill || '';
+  var isCompletedTarget = (journey.completedStages || []).some(function(cs) { return cs.skillName === targetStage; });
+  if (!isCompletedTarget || !_journeyStore.isStrictlyLaterStage(targetStage, currentStage)) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Target stage must be an earlier, already-completed stage' }));
+    return;
+  }
+
+  // ep3-s1 review fix: the path-traversal guard and the decisions.md write
+  // (the durable audit trail) MUST both complete before regressToStage
+  // mutates and persists journey state -- otherwise a guard trip or disk
+  // I/O failure would leave the journey silently regressed with no record
+  // of why. invalidatedStages is computed independently here (mirroring
+  // regressToStage's own internal computation exactly: [targetStage]
+  // .concat(getDownstreamStages(targetStage))) so the decisions.md entry
+  // can be written before regressToStage is ever called.
+  var featureSlug = journey.featureSlug || '';
+  var repoRoot = getRepoRoot(req);
+  var decisionsPath = path.resolve(repoRoot, 'artefacts', featureSlug, 'decisions.md');
+  var guard = path.resolve(repoRoot, 'artefacts', featureSlug);
+  if (!guard.startsWith(repoRoot + path.sep)) {
+    res.writeHead(400, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Invalid feature slug' }));
+    return;
+  }
+
+  var invalidatedStages = [targetStage].concat(_journeyStore.getDownstreamStages(targetStage));
+
+  var date = new Date().toISOString().slice(0, 10);
+  var requesterLogin = req.session.login || 'unknown';
+  var title = 'Regressed to ' + targetStage + ' by ' + requesterLogin;
+  var context = 'Regression requested via Request Regression at the ' + currentStage + ' stage of feature ' + featureSlug + '.';
+  var downstreamOnly = invalidatedStages.slice(1);
+  var decision = 'Feature stage reset to ' + targetStage + '; downstream stages (' + (downstreamOnly.length > 0 ? downstreamOnly.join(', ') : 'none') + ') marked incomplete.';
+  var entry = '\n## ' + title + '\n\n'
+    + '**Date:** ' + date + '\n'
+    + '**Context:** ' + context + '\n'
+    + '**Decision:** ' + decision + '\n'
+    + '**Rationale:** ' + reason + '\n';
+
+  try {
+    var dir = path.dirname(decisionsPath);
+    fs.mkdirSync(dir, { recursive: true });
+    var header = '# Decisions — ' + featureSlug + '\n';
+    if (!fs.existsSync(decisionsPath)) {
+      fs.writeFileSync(decisionsPath, header, 'utf8');
+    }
+    fs.appendFileSync(decisionsPath, entry, 'utf8');
+  } catch (err) {
+    res.writeHead(500, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ error: 'Failed to write regression record', detail: err.message }));
+    return;
+  }
+
+  // Only now, after the guard has passed and the audit trail is durably on
+  // disk, is the journey actually mutated.
+  var result = _journeyStore.regressToStage(journeyId, targetStage);
+
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ activeSkill: targetStage, invalidatedStages: result.invalidatedStages, decisionsWritten: decisionsPath }));
+}
+
+/**
  * titleToSlug — converts a spike title to a filename-safe slug.
  * Returns empty string if no alphanumeric chars present.
  */
@@ -5359,6 +5513,7 @@ module.exports = {
   handleGetTrace,
   handlePostDecisions,
   handlePostJourneyApprove, // ep2-s3
+  handlePostJourneyRegress, // ep3-s1
   handlePostSideTripClarify,
   handleDeleteSideTrip,
   // wsm.2 — collaborative journey sharing

@@ -36,7 +36,11 @@ withAuth('Scenario 1: stage selector visible and backward navigation with confir
   await expect(page.locator('h1')).toContainText('Move back to Discovery?');
   await expect(page.locator('text=/prior artefacts and any revisions/i')).toBeVisible();
 
-  await page.click('text=Confirm');
+  // ep3-s1 relabeled this link "Just view (no reset)" (its underlying
+  // reopen URL/behavior is unchanged -- verified directly against
+  // handleGetStageConfirmBack before updating this selector) and added a
+  // separate "Request Regression" form alongside it.
+  await page.click('text=Just view (no reset)');
   // reopen redirects into a chat session
   await expect(page).toHaveURL(/\/skills\/[^/]+\/sessions\/[^/]+\/chat/);
 });

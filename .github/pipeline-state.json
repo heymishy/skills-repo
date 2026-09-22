@@ -35183,17 +35183,53 @@
         {
           "slug": "ep3-s1",
           "id": "ep3-s1",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
-            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep3-s1-test-plan.md"
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep3-s1-test-plan.md",
+            "passing": 19
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep3-s1-dor.md",
-          "updatedAt": "2026-09-15T09:06:33.505Z"
+          "updatedAt": "2026-09-22T01:56:34.796Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "journey-store.js -- stage-invalidation state logic (AC2)",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep3-s1-plan.md",
+              "sha": "c13514c6"
+            },
+            {
+              "id": "task-2",
+              "name": "journey.js + server.js -- regress endpoint (AC1, AC3)",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep3-s1-plan.md",
+              "sha": "eefa0310"
+            },
+            {
+              "id": "task-3",
+              "name": "journey.js -- extend confirm-back interstitial with reason field (AC1 UI)",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep3-s1-plan.md",
+              "sha": "b1f67703"
+            },
+            {
+              "id": "task-4",
+              "name": "E2E -- reason field + regression flow (AC1, AC2)",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep3-s1-plan.md",
+              "sha": "f111d807"
+            }
+          ],
+          "acVerified": 3,
+          "acTotal": 3,
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/915"
         },
         {
           "slug": "ep3-s2",

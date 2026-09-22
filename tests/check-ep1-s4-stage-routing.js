@@ -149,6 +149,9 @@ await (async function() {
     assert.ok(result.body.indexOf('Move back to Discovery?') !== -1, 'expected the confirm heading');
     assert.ok(result.body.indexOf('/journey/' + journey.journeyId + '/stage/discovery/reopen') !== -1, 'expected a Confirm link to the existing reopen route');
     assert.ok(result.body.indexOf('href="/journey">Cancel') !== -1, 'expected a Cancel link back to /journey');
+    assert.ok(result.body.indexOf('id="cb-regress-form"') !== -1, 'expected the Request Regression form');
+    assert.ok(result.body.indexOf('id="cb-regress-reason"') !== -1, 'expected the regression reason textarea');
+    assert.ok(result.body.indexOf('action="/api/journey/') !== -1, 'expected the form to post to the regress endpoint');
     console.log('PASS:', 'handleGetStageConfirmBack renders a confirm page with Confirm/Cancel links');
     passed++;
   } catch (e) {
