@@ -40,7 +40,14 @@ Modify (only if Task 1 finds a real gap — not expected):
 
 ---
 
-## Task 1: Dedicated AC1/AC2/AC3 verification test for the regression decisions.md entry
+## Task 1: Dedicated AC1/AC2/AC3 verification test for the regression decisions.md entry — ✅ COMPLETE (commits e42e27be, c158e2d4)
+
+Confirmed on first run, as expected: 13/13 checks pass with zero production code changes — `ep3-s1`'s already-shipped `handlePostJourneyRegress` fully satisfies `ep3-s2`'s AC1/AC2/AC3 in substance. Spec-compliance review: ✅ PASS, including a full hand-verification of the entry-parsing regex logic against the real handler's exact output format. Code-quality review: found 1 Important + 2 Minor, fixed in `c158e2d4`:
+- **Important (fixed):** file had no header comment explaining its scope relative to `ep3-s1`'s own sibling test (this codebase's established convention for every comparable test file) — added, explicitly distinguishing this file's field-level parsing approach from the sibling's substring checks. The reviewer's own analysis confirmed this is a genuinely non-redundant addition, not padding: the sibling test never reads the Context/Decision/Rationale field bodies individually, so this file catches a real class of defect (field-level corruption) the sibling structurally cannot.
+- **Minor (fixed):** documented the rationale-parsing regex's implicit assumption about `reason` never containing a literal `\n## ` (matching production's own current lack of that restriction).
+- **Minor (not fixed, pre-existing, out of scope):** unguarded temp-dir cleanup on assertion failure — an existing pattern already shared with `ep3-s1`'s own tests, not a regression introduced here; reviewer explicitly assessed as not blocking.
+
+Final cross-task review: ✅ PASS (commit `e6cc72e0` for one trailing cosmetic fix — a test check label misattributed a `>5 char` sanity floor to a story NFR that doesn't exist; re-labeled). Reviewer formed an independent opinion on the "verification-only" scope call rather than rubber-stamping the DoR-correction reasoning: confirmed via repo-wide grep that nothing today machine-parses `decisions.md` by a literal `session-phase:` key, so adding one only for regression entries would introduce an inconsistent per-entry-type schema for no real consumer — agreed the real fix (if machine-queryable entries are ever needed) is a cross-cutting schema redesign spanning all entry types, out of scope for this story alone.
 
 **Files:**
 - Create: `tests/check-ep3-s2-decisions-entry.js`

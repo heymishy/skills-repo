@@ -35244,13 +35244,14 @@
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep3-s2-dor.md",
-          "updatedAt": "2026-09-22T02:43:12.956Z",
+          "updatedAt": "2026-09-22T03:08:29.999Z",
           "tasks": [
             {
               "id": "task-1",
               "name": "Dedicated AC1/AC2/AC3 verification test for the regression decisions.md entry",
-              "tddState": "not-started",
-              "file": "artefacts/new-feature-2b74a292/plans/ep3-s2-plan.md"
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep3-s2-plan.md",
+              "sha": "c158e2d4"
             }
           ]
         },
