@@ -1972,12 +1972,22 @@ async function handleGetStageConfirmBack(req, res) {
 
   var stageLbl = (STAGE_META.find(function(s) { return s.id === stageName; }) || {}).label || stageName;
   var reopenUrl = '/journey/' + encodeURIComponent(journeyId) + '/stage/' + encodeURIComponent(stageName) + '/reopen';
+  var safeJourneyId = encodeURIComponent(journeyId);
   var body = [
     '<div class="sw-page-content" style="max-width:480px">',
       '<h1>Move back to ' + escHtml(stageLbl) + '?</h1>',
       '<p>This will show you prior artefacts and any revisions since then.</p>',
-      '<a href="' + escHtml(reopenUrl) + '" class="sw-btn sw-btn--primary" style="margin-right:8px">Confirm</a>',
+      '<a href="' + escHtml(reopenUrl) + '" class="sw-btn" style="margin-right:8px">Just view (no reset)</a>',
       '<a href="/journey">Cancel</a>',
+      '<hr style="margin:24px 0">',
+      '<h2>Or: Request Regression</h2>',
+      '<p>Reset the feature to ' + escHtml(stageLbl) + ' and mark every stage after it as incomplete. Prior approvals in decisions.md are kept for audit.</p>',
+      '<form method="POST" action="/api/journey/' + safeJourneyId + '/regress" id="sw-regress-form">',
+        _csrf.csrfField(await _csrf.generateCsrfToken(req)),
+        '<input type="hidden" name="targetStage" value="' + escHtml(stageName) + '">',
+        '<textarea name="reason" id="sw-regress-reason" placeholder="Why is this regression needed? (required)" required minlength="1" style="width:100%;min-height:80px;margin-bottom:8px"></textarea>',
+        '<button type="submit" class="sw-btn sw-btn--primary" id="sw-regress-submit">Request Regression</button>',
+      '</form>',
     '</div>'
   ].join('');
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
