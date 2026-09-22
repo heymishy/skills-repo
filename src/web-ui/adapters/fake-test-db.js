@@ -66,6 +66,7 @@ function createFakeTestDb() {
   var nextPodMemberId = 1;
   var podAssignments = []; // { assignment_id, tenant_id, pod_id, product_id, feature_id, assignment_type, assigned_by, assigned_at } -- ep1-s2
   var featureCollaborators = []; // { collaborator_id, feature_id, user_id, role_id, pod_id, is_approver } -- ep1-s3
+  var featureCollaboratorRemovals = []; // { feature_id, user_id, removed_by } -- ep4-s1
   var artefactComments = []; // { comment_id, resource_type, resource_id, user_id, body, created_at } -- dsa-s1
   var featureEdits = []; // { id, feature_id, artefact_name, user_id, timestamp, operation, edit_hash, merged_with, line_attributions, tenant_id } -- ep2-s4
 
@@ -454,6 +455,23 @@ function createFakeTestDb() {
       return Promise.resolve({ rows: gpdRows });
     }
 
+    // ep4-s1: getFeaturePodAssignments's own read -- a DIFFERENT column list
+    // (PA.POD_ID, PA.ASSIGNMENT_TYPE, P.NAME) than ep1-s2's existing
+    // "SELECT PA.POD_ID, P.NAME FROM POD_ASSIGNMENTS..." branch above (that
+    // one is feature_id IS NULL-only; this one is feature_id = $2), so it
+    // needs its own exact-prefix branch.
+    if (s.indexOf('SELECT PA.POD_ID, PA.ASSIGNMENT_TYPE, P.NAME FROM POD_ASSIGNMENTS') === 0) {
+      var gfpaTenantId = p[0];
+      var gfpaFeatureId = p[1];
+      var gfpaRows = podAssignments
+        .filter(function(r) { return r.tenant_id === gfpaTenantId && r.feature_id === gfpaFeatureId; })
+        .map(function(r) {
+          var podRow = pods.find(function(pd) { return pd.pod_id === r.pod_id; });
+          return { pod_id: r.pod_id, assignment_type: r.assignment_type, name: podRow ? podRow.name : null };
+        });
+      return Promise.resolve({ rows: gfpaRows });
+    }
+
     // ── feature_collaborators (ep1-s3) ──────────────────────────────────
     // Narrow support for the exact query shapes modules/feature-collaborator-store.js
     // issues (populateFeatureCollaboratorsFromPod, getFeatureCollaborators).
@@ -496,6 +514,34 @@ function createFakeTestDb() {
         .filter(function(r) { return r.feature_id === gfcFeatureId; })
         .map(function(r) { return { collaborator_id: r.collaborator_id, user_id: r.user_id, role_id: r.role_id, pod_id: r.pod_id }; });
       return Promise.resolve({ rows: gfcRows });
+    }
+
+    // ── feature_collaborator_removals (ep4-s1) ──────────────────────────
+    // "CREATE TABLE IF NOT EXISTS FEATURE_COLLABORATOR_REMOVALS" is already
+    // covered by the generic "CREATE TABLE" catch-all near the top of this
+    // function -- no separate branch needed for the migration.
+    if (s.indexOf('SELECT USER_ID FROM FEATURE_COLLABORATOR_REMOVALS WHERE FEATURE_ID') === 0) {
+      var gfcrFeatureId = p[0];
+      var gfcrRows = featureCollaboratorRemovals
+        .filter(function(r) { return r.feature_id === gfcrFeatureId; })
+        .map(function(r) { return { user_id: r.user_id }; });
+      return Promise.resolve({ rows: gfcrRows });
+    }
+    if (s.indexOf('INSERT INTO FEATURE_COLLABORATOR_REMOVALS') === 0) {
+      var ifcrFeatureId = p[0];
+      var ifcrUserId = p[1];
+      var ifcrRemovedBy = p[2];
+      var ifcrDup = featureCollaboratorRemovals.some(function(r) { return r.feature_id === ifcrFeatureId && r.user_id === ifcrUserId; });
+      if (!ifcrDup) {
+        featureCollaboratorRemovals.push({ feature_id: ifcrFeatureId, user_id: ifcrUserId, removed_by: ifcrRemovedBy });
+      }
+      return Promise.resolve({ rows: [], rowCount: 1 });
+    }
+    if (s.indexOf('DELETE FROM FEATURE_COLLABORATORS WHERE FEATURE_ID') === 0) {
+      var dfcFeatureId = p[0];
+      var dfcUserId = p[1];
+      featureCollaborators = featureCollaborators.filter(function(r) { return !(r.feature_id === dfcFeatureId && r.user_id === dfcUserId); });
+      return Promise.resolve({ rows: [], rowCount: 1 });
     }
 
     // ep1-s3 Task 7: COUNT(*) shapes issued by the new
@@ -757,6 +803,7 @@ function createFakeTestDb() {
       podMembers = []; nextPodMemberId = 1;
       podAssignments = [];
       featureCollaborators = [];
+      featureCollaboratorRemovals = [];
     }
   };
 }
