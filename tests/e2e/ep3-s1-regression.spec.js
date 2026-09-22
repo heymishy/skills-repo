@@ -3,7 +3,12 @@ const { test, expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
 
 withAuth('ep3-s1: Request Regression form renders on the confirm-back interstitial (AC1); submitting resets the journey stage and downstream stages become unreachable via reopen (AC2)', async ({ page }) => {
-  test.setTimeout(30000);
+  // Generous budget matching sibling specs with comparable real round trips
+  // (ep2-s3-approval.spec.js uses 60000ms for one redirect + gate-confirm;
+  // this test does a seed POST, a form submit + fetch, a 3-hop 303 redirect
+  // chain ending in fresh session creation, then two more HTTP calls) --
+  // 30000ms is a no-op equal to playwright.config.js's own global default.
+  test.setTimeout(60000);
 
   const featureSlug = 'ep3-s1-e2e-' + Date.now();
   const reasonText = 'Architecture constraint needs revision before DoR. ep3-s1 E2E ' + Date.now() + '.';

@@ -317,7 +317,9 @@ function isStrictlyLaterStage(earlierStage, stage) {
  * introduced. Underlying session/artefact files on disk are left
  * untouched (ADR-023: disk remains canonical; this only changes what the
  * journey model currently considers done). Stages BEFORE targetStage are
- * never touched.
+ * never touched. Also clears activeSessionId (see inline comment below
+ * for why this is always safe) so post-regression navigation lands on a
+ * fresh session for the new activeSkill instead of a stale, invalidated one.
  * @param {string} journeyId
  * @param {string} targetStage
  * @returns {{invalidatedStages: string[]}}
