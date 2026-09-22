@@ -99,9 +99,10 @@ const { createGithubOrgBulkAddHandlers }                             = require('
 const { setImpersonationAuditAdapter }                               = require('./adapters/impersonation-audit-adapter'); // d1
 const { handlePostPodsCreate, handleGetPods }                        = require('./routes/pods'); // ep1-s1
 const { migratePodsSchema }                                          = require('./modules/pod-store'); // ep1-s1
-const { handlePostSetDefaultPod }                                    = require('./routes/products'); // ep1-s2 (products.js already required elsewhere in this file for its other handlers -- this is an additional named import from the same module)
+const { handlePostSetDefaultPod, handleGetFeaturePods, handlePostAssignFeaturePods, handleDeleteFeaturePodMember } = require('./routes/products'); // ep1-s2, ep4-s1 (products.js already required elsewhere in this file for its other handlers -- this is an additional named import from the same module)
 const { migratePodAssignmentsSchema }                                = require('./modules/pod-assignment-store'); // ep1-s2
 const { migrateFeatureCollaboratorsSchema }                          = require('./modules/feature-collaborator-store'); // ep1-s3
+const { migrateFeatureCollaboratorRemovalsSchema }                  = require('./modules/feature-collaborator-store'); // ep4-s1
 const { createImpersonationHandlers }                                = require('./routes/impersonation');         // d1
 
 const PORT = process.env.PORT || 3000;
@@ -628,6 +629,11 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     migrateFeatureCollaboratorsSchema(_userRolesPool).then(function() {
       console.log('[ep1-s3] feature_collaborators schema ready');
     }).catch(function(err) { console.error('[ep1-s3] feature_collaborators schema migration failed:', err.message); });
+
+    // ep4-s1 — Auto-migrate feature_collaborator_removals schema.
+    migrateFeatureCollaboratorRemovalsSchema(_userRolesPool).then(function() {
+      console.log('[ep4-s1] feature_collaborator_removals schema ready');
+    }).catch(function(err) { console.error('[ep4-s1] feature_collaborator_removals schema migration failed', err); });
 
     // story-6-conversion-to-independent — wire the conversion route handlers
     // (reuses the organisations table + user-roles.js's resolveRoleForPerson
@@ -3846,6 +3852,31 @@ async function router(req, res) {
       await requireNonViewer(req, res, () => { _rnvOk = true; });
       if (!_rnvOk) return;
       await handlePostSetDefaultPod(req, res, null, _pshPool);
+    });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/features\/[^/]+\/pods$/) && req.method === 'GET') {
+    // ep4-s1 (AC1) — pods view-model for the "Assign pods" modal
+    req.params = { productId: pathname.split('/')[2], featureId: pathname.split('/')[4] };
+    authGuard(req, res, async () => { await handleGetFeaturePods(req, res, null, _pshPool); });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/features\/[^/]+\/pods$/) && req.method === 'POST') {
+    // ep4-s1 (AC1, AC3) — assign multiple pods to a feature
+    req.params = { productId: pathname.split('/')[2], featureId: pathname.split('/')[4] };
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handlePostAssignFeaturePods(req, res, null, _pshPool);
+    });
+
+  } else if (pathname.match(/^\/products\/[^/]+\/features\/[^/]+\/pods\/members\/[^/]+$/) && req.method === 'DELETE') {
+    // ep4-s1 (AC2) — remove one collaborator from this feature only
+    req.params = { productId: pathname.split('/')[2], featureId: pathname.split('/')[4], userId: pathname.split('/')[7] };
+    authGuard(req, res, async () => {
+      let _rnvOk = false;
+      await requireNonViewer(req, res, () => { _rnvOk = true; });
+      if (!_rnvOk) return;
+      await handleDeleteFeaturePodMember(req, res, null, _pshPool);
     });
 
   } else if (pathname.match(/^\/products\/[^/]+\/repo\/create$/) && req.method === 'POST') {
