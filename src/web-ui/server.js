@@ -101,8 +101,7 @@ const { handlePostPodsCreate, handleGetPods }                        = require('
 const { migratePodsSchema }                                          = require('./modules/pod-store'); // ep1-s1
 const { handlePostSetDefaultPod, handleGetFeaturePods, handlePostAssignFeaturePods, handleDeleteFeaturePodMember } = require('./routes/products'); // ep1-s2, ep4-s1 (products.js already required elsewhere in this file for its other handlers -- this is an additional named import from the same module)
 const { migratePodAssignmentsSchema }                                = require('./modules/pod-assignment-store'); // ep1-s2
-const { migrateFeatureCollaboratorsSchema }                          = require('./modules/feature-collaborator-store'); // ep1-s3
-const { migrateFeatureCollaboratorRemovalsSchema }                  = require('./modules/feature-collaborator-store'); // ep4-s1
+const { migrateFeatureCollaboratorsSchema, migrateFeatureCollaboratorRemovalsSchema } = require('./modules/feature-collaborator-store'); // ep1-s3, ep4-s1
 const { createImpersonationHandlers }                                = require('./routes/impersonation');         // d1
 
 const PORT = process.env.PORT || 3000;
@@ -633,7 +632,7 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // ep4-s1 — Auto-migrate feature_collaborator_removals schema.
     migrateFeatureCollaboratorRemovalsSchema(_userRolesPool).then(function() {
       console.log('[ep4-s1] feature_collaborator_removals schema ready');
-    }).catch(function(err) { console.error('[ep4-s1] feature_collaborator_removals schema migration failed', err); });
+    }).catch(function(err) { console.error('[ep4-s1] feature_collaborator_removals schema migration failed:', err.message); });
 
     // story-6-conversion-to-independent — wire the conversion route handlers
     // (reuses the organisations table + user-roles.js's resolveRoleForPerson
