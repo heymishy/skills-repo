@@ -53,6 +53,13 @@ function escHtml(str) {
 // artefacts/2026-07-30-product-aware-navigation/decisions.md.
 const NAV_ITEMS = [
   { id: 'org-kanban', label: 'Org board',   href: '/org/kanban', icon: '▦' },
+  // pmnv-s1: /admin/pods/manager (ep1-s1) shipped with no nav entry at all,
+  // the same "API shipped, UI never wired" gap admin-credits/admin-mock-gateway
+  // hit before it (see the account-section entries below) -- never fixed until
+  // now. authGuard-only route (no requireAdmin), so this entry is NOT
+  // adminOnly and lives in the main section (pods are tenant/org-wide, not
+  // product-scoped) rather than the account-settings section below.
+  { id: 'pod-manager', label: 'Pod Manager', href: '/admin/pods/manager', icon: '⬡' },
   // b2: account-level items, rendered in a visually distinct bottom section by
   // renderSidebar (not the main product <nav> loop above) -- kept in this SAME
   // array, tagged `section: 'account'`, rather than a second untested array, so
