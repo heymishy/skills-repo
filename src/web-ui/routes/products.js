@@ -378,7 +378,7 @@ function _renderModuleSection(name, id, groupFeatures, renderRowFn) {
 // see features.js's renderArtefactIndexHtml). The discoveryArtefact
 // suffix link stays a separate, sibling <a> (nested anchors are invalid
 // HTML), pointing at its own more specific raw-markdown viewer.
-function _renderPvcItemRow(item, includeCheckbox, preferFeatureName, sessionOriginByJourneyId) {
+function _renderPvcItemRow(item, includeCheckbox, preferFeatureName, sessionOriginByJourneyId, productId) {
   sessionOriginByJourneyId = sessionOriginByJourneyId || {};
   var color = item.health === 'red' ? '#ef4444' : item.health === 'amber' ? '#f59e0b' : item.health === 'unknown' ? 'var(--muted)' : '#22c55e';
   // pdt-s3 (AC1): drop the "?" glyph -- see _renderEpicRow's identical comment.
@@ -408,6 +408,13 @@ function _renderPvcItemRow(item, includeCheckbox, preferFeatureName, sessionOrig
     ? ' <button type="button" class="pvc-rename-btn" onclick="pshRenameFeature(\'' + _escapeHtml(item.journeyId) + '\',\'' + _escapeHtml(displayName).replace(/'/g, '&#39;') + '\')" ' +
         'aria-label="Rename ' + _escapeHtml(displayName) + '" ' +
         'style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0 4px">✎ Rename</button>'
+    : '';
+  // ep4-s1 (AC1): "Assign pods" trigger, a sibling button after renameLink --
+  // same reason renameLink is a sibling of the row's own <a>, not nested.
+  var podsLink = item.journeyId
+    ? ' <button type="button" class="pvc-pods-btn" onclick="ep4s1OpenPodsModal(\'' + _escapeHtml(productId || '') + '\',\'' + _escapeHtml(item.journeyId) + '\',\'' + _escapeHtml(displayName).replace(/'/g, '&#39;') + '\')" ' +
+        'aria-label="Assign pods to ' + _escapeHtml(displayName) + '" ' +
+        'style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0 4px">⚙ Pods</button>'
     : '';
   // prlf-s1: use the already-resolved featureSlug when present (epic-nested
   // items, fal-s1/pefl-s1) instead of the raw story slug -- two different
@@ -450,7 +457,7 @@ function _renderPvcItemRow(item, includeCheckbox, preferFeatureName, sessionOrig
         sessionOriginHtml +
       '</div>' +
     '</a>' +
-    (discoveryLink || renameLink ? '<div style="font-size:12px;margin-top:2px">' + discoveryLink + renameLink + '</div>' : '');
+    (discoveryLink || renameLink || podsLink ? '<div style="font-size:12px;margin-top:2px">' + discoveryLink + renameLink + podsLink + '</div>' : '');
 
   // bmau-s1: when includeCheckbox is truthy (the By Module tab's own row
   // renderer only -- see _renderConsolidatedFeaturesSection), add a
@@ -512,17 +519,17 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
   // it's the only view where "move into a new module's section" (AC3) is a
   // meaningful visual effect; By Phase and All keep their existing,
   // unmodified row renderer.
-  var _renderPvcItemRowWithCheckbox = function(item) { return _renderPvcItemRow(item, true, false, sessionOriginByJourneyId); };
+  var _renderPvcItemRowWithCheckbox = function(item) { return _renderPvcItemRow(item, true, false, sessionOriginByJourneyId, productId); };
   // pefl-s1: the By Phase tab's own row renderer -- shows the item's parent
   // feature name instead of the epic name already shown in that tab's own
   // group headers (see _renderPvcItemRow's preferFeatureName parameter).
-  var _renderPvcItemRowForPhase = function(item) { return _renderPvcItemRow(item, false, true, sessionOriginByJourneyId); };
+  var _renderPvcItemRowForPhase = function(item) { return _renderPvcItemRow(item, false, true, sessionOriginByJourneyId, productId); };
   // sob-s1: plain (no checkbox) row renderer that still threads
   // sessionOriginByJourneyId through -- used by the zero-modules
   // "Unclassified" branch below, which previously passed the bare
   // _renderPvcItemRow function reference directly (safe there because
   // _renderModuleSection always invokes it as a single-arg call).
-  var _renderPvcItemRowPlain = function(item) { return _renderPvcItemRow(item, false, false, sessionOriginByJourneyId); };
+  var _renderPvcItemRowPlain = function(item) { return _renderPvcItemRow(item, false, false, sessionOriginByJourneyId, productId); };
 
   var moduleOptionsHtml = modules.map(function(m) {
     return '<option value="' + _escapeHtml(m.id) + '">' + _escapeHtml(m.name) + '</option>';
@@ -604,6 +611,87 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
       '<input type="checkbox" id="pvc-active-only-checkbox" checked onchange="pvcToggleActiveOnly(this)"> ' +
       'Active only <span class="pvc-active-only-count">(' + doneCount + ' completed hidden)</span>' +
     '</label>';
+
+  // ep4-s1 (AC1, AC2, AC3): the shared "Assign pods" modal + its client
+  // script, rendered once per product page (not once per row) and appended
+  // to this function's own return value below. Opened by podsLink's
+  // onclick above (ep4s1OpenPodsModal), which fetches the view-model from
+  // GET /products/:productId/features/:featureId/pods (Task 2/3), lists
+  // org pods as checkboxes pre-checked from assignedPods, lists current
+  // collaborators with a per-member remove button, and POSTs/DELETEs back
+  // to the same story's handlers.
+  var ep4s1ModalHtml =
+    '<div id="ep4s1-pods-modal" role="dialog" aria-modal="true" aria-labelledby="ep4s1-modal-title" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;align-items:center;justify-content:center">' +
+      '<div style="background:var(--surface);border-radius:8px;padding:20px;max-width:440px;width:90%;max-height:80vh;overflow-y:auto">' +
+        '<h2 id="ep4s1-modal-title" style="margin:0 0 6px;font-size:16px">Assign pods to this feature</h2>' +
+        '<div id="ep4s1-modal-error" role="alert" aria-live="polite" style="color:#b00020;display:none;margin-bottom:8px;font-size:13px"></div>' +
+        '<div id="ep4s1-modal-pods" style="margin:12px 0"></div>' +
+        '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">' +
+          '<button type="button" onclick="ep4s1CloseModal()" style="padding:6px 10px;background:none;border:1px solid var(--line);border-radius:4px;font-size:13px;cursor:pointer;color:var(--ink)">Cancel</button>' +
+          '<button type="button" id="ep4s1-save-btn" onclick="ep4s1Save()" style="padding:6px 10px;background:var(--accent);color:#fff;border:none;border-radius:4px;font-size:13px;cursor:pointer">Save</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '<script>' +
+    '(function(){' +
+    '  var _productId=null,_featureId=null,_csrfToken=null;' +
+    '  window.ep4s1OpenPodsModal=async function(productId,featureId,displayName){' +
+    '    _productId=productId;_featureId=featureId;' +
+    '    document.getElementById("ep4s1-modal-title").textContent="Assign pods to "+displayName;' +
+    '    document.getElementById("ep4s1-modal-error").style.display="none";' +
+    '    document.getElementById("ep4s1-modal-pods").innerHTML="Loading\u2026";' +
+    '    document.getElementById("ep4s1-pods-modal").style.display="flex";' +
+    '    var resp=await fetch("/products/"+productId+"/features/"+featureId+"/pods");' +
+    '    var data=await resp.json().catch(function(){return{};});' +
+    '    if(!resp.ok){document.getElementById("ep4s1-modal-pods").innerHTML="";' +
+    '      document.getElementById("ep4s1-modal-error").textContent=data.error||"Failed to load pods";' +
+    '      document.getElementById("ep4s1-modal-error").style.display="block";return;}' +
+    '    _csrfToken=data.csrfToken;' +
+    '    var assignedIds=(data.assignedPods||[]).map(function(p){return p.podId;});' +
+    '    var collabByUser={};(data.collaborators||[]).forEach(function(c){collabByUser[c.userId]=c;});' +
+    '    var html=(data.orgPods||[]).map(function(pod){' +
+    '      var checked=assignedIds.indexOf(pod.pod_id)!==-1?" checked":"";' +
+    '      return "<label style=\\"display:flex;align-items:center;gap:8px;padding:6px 0\\">"+' +
+    '        "<input type=\\"checkbox\\" class=\\"ep4s1-pod-checkbox\\" value=\\""+pod.pod_id+"\\""+checked+">"+' +
+    '        "<span>"+pod.name+"</span></label>";' +
+    '    }).join("");' +
+    '    if((data.collaborators||[]).length>0){' +
+    '      html+="<hr style=\\"margin:12px 0\\"><div style=\\"font-size:12px;color:var(--muted);margin-bottom:6px\\">Current collaborators</div>";' +
+    '      html+=data.collaborators.map(function(c){' +
+    '        return "<div style=\\"display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:13px\\">"+' +
+    '          "<span>"+c.userId+"</span>"+' +
+    '          "<button type=\\"button\\" onclick=\\"ep4s1RemoveMember(\'"+c.userId+"\')\\" aria-label=\\"Remove "+c.userId+" from this feature\\" "+' +
+    '          "style=\\"background:none;border:none;color:#b00020;cursor:pointer;font-size:12px\\">\u2715 Remove</button></div>";' +
+    '      }).join("");' +
+    '    }' +
+    '    document.getElementById("ep4s1-modal-pods").innerHTML=html;' +
+    '  };' +
+    '  window.ep4s1CloseModal=function(){document.getElementById("ep4s1-pods-modal").style.display="none";};' +
+    '  window.ep4s1Save=async function(){' +
+    '    var checked=Array.prototype.slice.call(document.querySelectorAll(".ep4s1-pod-checkbox:checked")).map(function(el){return el.value;});' +
+    '    if(checked.length===0){' +
+    '      document.getElementById("ep4s1-modal-error").textContent="Select at least one pod";' +
+    '      document.getElementById("ep4s1-modal-error").style.display="block";return;}' +
+    '    var btn=document.getElementById("ep4s1-save-btn");btn.disabled=true;btn.textContent="Saving\u2026";' +
+    '    var resp=await fetch("/products/"+_productId+"/features/"+_featureId+"/pods",{' +
+    '      method:"POST",headers:{"Content-Type":"application/json"},' +
+    '      body:JSON.stringify({podIds:checked,_csrf:_csrfToken})});' +
+    '    var data=await resp.json().catch(function(){return{};});' +
+    '    btn.disabled=false;btn.textContent="Save";' +
+    '    if(!resp.ok){document.getElementById("ep4s1-modal-error").textContent=data.error||"Failed to save";' +
+    '      document.getElementById("ep4s1-modal-error").style.display="block";return;}' +
+    '    ep4s1CloseModal();location.reload();' +
+    '  };' +
+    '  window.ep4s1RemoveMember=async function(userId){' +
+    '    var resp=await fetch("/products/"+_productId+"/features/"+_featureId+"/pods/members/"+encodeURIComponent(userId),{' +
+    '      method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({_csrf:_csrfToken})});' +
+    '    var data=await resp.json().catch(function(){return{};});' +
+    '    if(!resp.ok){document.getElementById("ep4s1-modal-error").textContent=data.error||"Failed to remove";' +
+    '      document.getElementById("ep4s1-modal-error").style.display="block";return;}' +
+    '    ep4s1OpenPodsModal(_productId,_featureId,document.getElementById("ep4s1-modal-title").textContent.replace(/^Assign pods to /,""));' +
+    '  };' +
+    '})();' +
+    '</script>';
 
   return (
     '<style>' +
@@ -809,7 +897,8 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
             'alert("Failed to assign the selected features to that module. Please try again.");' +
           '});' +
       '}' +
-    '<\/script>'
+    '<\/script>' +
+    ep4s1ModalHtml
   );
 }
 
@@ -3764,8 +3853,13 @@ async function handleGetFeaturePods(req, res, _next, pool) {
   var orgPods = await listPods(_pool, tenantId);
   var assignedPods = await getFeaturePodAssignments(_pool, tenantId, featureId);
   var collaborators = await getFeatureCollaborators(_pool, featureId);
+  // ep4-s1: the client script's Save/Remove fetch calls need a CSRF token
+  // to pass through to the POST/DELETE handlers below (both csrfGuard'd) --
+  // handed to the modal's own JS state here rather than requiring a
+  // separate round trip.
+  var csrfToken = await _csrf.generateCsrfToken(req);
 
-  return _json(200, { orgPods: orgPods, assignedPods: assignedPods, collaborators: collaborators });
+  return _json(200, { orgPods: orgPods, assignedPods: assignedPods, collaborators: collaborators, csrfToken: csrfToken });
 }
 
 /**
