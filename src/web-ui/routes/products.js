@@ -634,59 +634,110 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
     '</div>' +
     '<script>' +
     '(function(){' +
-    '  var _productId=null,_featureId=null,_csrfToken=null;' +
+    '  var _productId=null,_featureId=null,_csrfToken=null,_triggerBtn=null;' +
+    // ep4-s1 review fix (Critical/XSS): pod names and collaborator userIds
+    // are DB-sourced strings rendered via real DOM node construction
+    // (createElement/textContent) rather than innerHTML string
+    // concatenation -- matching this file's own safer, already-established
+    // precedent (the default-pod picker\'s own pod-list rendering a few
+    // hundred lines above this block uses the identical createElement+
+    // textContent pattern for the identical {pods:[{pod_id,name}]} shape).
+    // The remove button\'s click handler is wired via addEventListener over
+    // a closure-captured userId, not an inline onclick string -- this
+    // removes the triple-nested-context (JS-string-in-HTML-attribute-in-
+    // HTML) injection risk entirely rather than trying to escape it.
     '  window.ep4s1OpenPodsModal=async function(productId,featureId,displayName){' +
     '    _productId=productId;_featureId=featureId;' +
+    '    _triggerBtn=document.activeElement;' +
     '    document.getElementById("ep4s1-modal-title").textContent="Assign pods to "+displayName;' +
     '    document.getElementById("ep4s1-modal-error").style.display="none";' +
-    '    document.getElementById("ep4s1-modal-pods").innerHTML="Loading\u2026";' +
-    '    document.getElementById("ep4s1-pods-modal").style.display="flex";' +
-    '    var resp=await fetch("/products/"+productId+"/features/"+featureId+"/pods");' +
-    '    var data=await resp.json().catch(function(){return{};});' +
-    '    if(!resp.ok){document.getElementById("ep4s1-modal-pods").innerHTML="";' +
-    '      document.getElementById("ep4s1-modal-error").textContent=data.error||"Failed to load pods";' +
+    '    var podsEl=document.getElementById("ep4s1-modal-pods");' +
+    '    podsEl.textContent="Loading…";' +
+    '    var modalEl=document.getElementById("ep4s1-pods-modal");' +
+    '    modalEl.style.display="flex";' +
+    '    var data;' +
+    '    try{' +
+    '      var resp=await fetch("/products/"+productId+"/features/"+featureId+"/pods");' +
+    '      data=await resp.json().catch(function(){return{};});' +
+    '      if(!resp.ok){podsEl.textContent="";' +
+    '        document.getElementById("ep4s1-modal-error").textContent=data.error||"Failed to load pods";' +
+    '        document.getElementById("ep4s1-modal-error").style.display="block";return;}' +
+    '    }catch(e){podsEl.textContent="";' +
+    '      document.getElementById("ep4s1-modal-error").textContent="Network error — failed to load pods";' +
     '      document.getElementById("ep4s1-modal-error").style.display="block";return;}' +
     '    _csrfToken=data.csrfToken;' +
     '    var assignedIds=(data.assignedPods||[]).map(function(p){return p.podId;});' +
-    '    var collabByUser={};(data.collaborators||[]).forEach(function(c){collabByUser[c.userId]=c;});' +
-    '    var html=(data.orgPods||[]).map(function(pod){' +
-    '      var checked=assignedIds.indexOf(pod.pod_id)!==-1?" checked":"";' +
-    '      return "<label style=\\"display:flex;align-items:center;gap:8px;padding:6px 0\\">"+' +
-    '        "<input type=\\"checkbox\\" class=\\"ep4s1-pod-checkbox\\" value=\\""+pod.pod_id+"\\""+checked+">"+' +
-    '        "<span>"+pod.name+"</span></label>";' +
-    '    }).join("");' +
+    '    podsEl.innerHTML="";' +
+    '    (data.orgPods||[]).forEach(function(pod){' +
+    '      var label=document.createElement("label");' +
+    '      label.style.cssText="display:flex;align-items:center;gap:8px;padding:6px 0";' +
+    '      var input=document.createElement("input");' +
+    '      input.type="checkbox";input.className="ep4s1-pod-checkbox";input.value=pod.pod_id;' +
+    '      input.checked=assignedIds.indexOf(pod.pod_id)!==-1;' +
+    '      var span=document.createElement("span");span.textContent=pod.name;' +
+    '      label.appendChild(input);label.appendChild(span);podsEl.appendChild(label);' +
+    '    });' +
     '    if((data.collaborators||[]).length>0){' +
-    '      html+="<hr style=\\"margin:12px 0\\"><div style=\\"font-size:12px;color:var(--muted);margin-bottom:6px\\">Current collaborators</div>";' +
-    '      html+=data.collaborators.map(function(c){' +
-    '        return "<div style=\\"display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:13px\\">"+' +
-    '          "<span>"+c.userId+"</span>"+' +
-    '          "<button type=\\"button\\" onclick=\\"ep4s1RemoveMember(\'"+c.userId+"\')\\" aria-label=\\"Remove "+c.userId+" from this feature\\" "+' +
-    '          "style=\\"background:none;border:none;color:#b00020;cursor:pointer;font-size:12px\\">\u2715 Remove</button></div>";' +
-    '      }).join("");' +
+    '      var hr=document.createElement("hr");hr.style.margin="12px 0";podsEl.appendChild(hr);' +
+    '      var heading=document.createElement("div");' +
+    '      heading.style.cssText="font-size:12px;color:var(--muted);margin-bottom:6px";' +
+    '      heading.textContent="Current collaborators";podsEl.appendChild(heading);' +
+    '      data.collaborators.forEach(function(c){' +
+    '        var row=document.createElement("div");' +
+    '        row.style.cssText="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:13px";' +
+    '        var nameEl=document.createElement("span");nameEl.textContent=c.userId;' +
+    '        var removeBtn=document.createElement("button");removeBtn.type="button";' +
+    '        removeBtn.style.cssText="background:none;border:none;color:#b00020;cursor:pointer;font-size:12px";' +
+    '        removeBtn.setAttribute("aria-label","Remove "+c.userId+" from this feature");' +
+    '        removeBtn.textContent="✕ Remove";' +
+    '        removeBtn.addEventListener("click",function(){ep4s1RemoveMember(c.userId);});' +
+    '        row.appendChild(nameEl);row.appendChild(removeBtn);podsEl.appendChild(row);' +
+    '      });' +
     '    }' +
-    '    document.getElementById("ep4s1-modal-pods").innerHTML=html;' +
+    // ep4-s1 review fix (Important/a11y): move focus into the dialog on
+    // open (first checkbox/button) -- not a full keyboard focus trap
+    // (Tab can still leave the dialog), which was judged disproportionate
+    // to this story\'s bounded scope given this is the first hand-rolled
+    // modal in the file with no established higher bar to match; initial
+    // focus + Escape-to-close + focus-restore-on-close are the
+    // highest-value, lowest-complexity pieces and are implemented here.
+    '    var firstFocusable=modalEl.querySelector("input,button");' +
+    '    if(firstFocusable){firstFocusable.focus();}' +
     '  };' +
-    '  window.ep4s1CloseModal=function(){document.getElementById("ep4s1-pods-modal").style.display="none";};' +
+    '  window.ep4s1CloseModal=function(){' +
+    '    document.getElementById("ep4s1-pods-modal").style.display="none";' +
+    '    if(_triggerBtn&&typeof _triggerBtn.focus==="function"){_triggerBtn.focus();}' +
+    '  };' +
+    '  document.addEventListener("keydown",function(evt){' +
+    '    if(evt.key==="Escape"&&document.getElementById("ep4s1-pods-modal").style.display==="flex"){ep4s1CloseModal();}' +
+    '  });' +
     '  window.ep4s1Save=async function(){' +
     '    var checked=Array.prototype.slice.call(document.querySelectorAll(".ep4s1-pod-checkbox:checked")).map(function(el){return el.value;});' +
     '    if(checked.length===0){' +
     '      document.getElementById("ep4s1-modal-error").textContent="Select at least one pod";' +
     '      document.getElementById("ep4s1-modal-error").style.display="block";return;}' +
-    '    var btn=document.getElementById("ep4s1-save-btn");btn.disabled=true;btn.textContent="Saving\u2026";' +
-    '    var resp=await fetch("/products/"+_productId+"/features/"+_featureId+"/pods",{' +
-    '      method:"POST",headers:{"Content-Type":"application/json"},' +
-    '      body:JSON.stringify({podIds:checked,_csrf:_csrfToken})});' +
-    '    var data=await resp.json().catch(function(){return{};});' +
-    '    btn.disabled=false;btn.textContent="Save";' +
-    '    if(!resp.ok){document.getElementById("ep4s1-modal-error").textContent=data.error||"Failed to save";' +
+    '    var btn=document.getElementById("ep4s1-save-btn");btn.disabled=true;btn.textContent="Saving…";' +
+    '    try{' +
+    '      var resp=await fetch("/products/"+_productId+"/features/"+_featureId+"/pods",{' +
+    '        method:"POST",headers:{"Content-Type":"application/json"},' +
+    '        body:JSON.stringify({podIds:checked,_csrf:_csrfToken})});' +
+    '      var data=await resp.json().catch(function(){return{};});' +
+    '      btn.disabled=false;btn.textContent="Save";' +
+    '      if(!resp.ok){document.getElementById("ep4s1-modal-error").textContent=data.error||"Failed to save";' +
+    '        document.getElementById("ep4s1-modal-error").style.display="block";return;}' +
+    '    }catch(e){btn.disabled=false;btn.textContent="Save";' +
+    '      document.getElementById("ep4s1-modal-error").textContent="Network error — failed to save";' +
     '      document.getElementById("ep4s1-modal-error").style.display="block";return;}' +
     '    ep4s1CloseModal();location.reload();' +
     '  };' +
     '  window.ep4s1RemoveMember=async function(userId){' +
-    '    var resp=await fetch("/products/"+_productId+"/features/"+_featureId+"/pods/members/"+encodeURIComponent(userId),{' +
-    '      method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({_csrf:_csrfToken})});' +
-    '    var data=await resp.json().catch(function(){return{};});' +
-    '    if(!resp.ok){document.getElementById("ep4s1-modal-error").textContent=data.error||"Failed to remove";' +
+    '    try{' +
+    '      var resp=await fetch("/products/"+_productId+"/features/"+_featureId+"/pods/members/"+encodeURIComponent(userId),{' +
+    '        method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({_csrf:_csrfToken})});' +
+    '      var data=await resp.json().catch(function(){return{};});' +
+    '      if(!resp.ok){document.getElementById("ep4s1-modal-error").textContent=data.error||"Failed to remove";' +
+    '        document.getElementById("ep4s1-modal-error").style.display="block";return;}' +
+    '    }catch(e){document.getElementById("ep4s1-modal-error").textContent="Network error — failed to remove";' +
     '      document.getElementById("ep4s1-modal-error").style.display="block";return;}' +
     '    ep4s1OpenPodsModal(_productId,_featureId,document.getElementById("ep4s1-modal-title").textContent.replace(/^Assign pods to /,""));' +
     '  };' +
