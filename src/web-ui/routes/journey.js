@@ -4591,6 +4591,8 @@ async function handlePostJourneyApprove(req, res, pool) {
       if (priorTitle.indexOf(stage + ' approved by ') === 0 || priorTitle.indexOf(stage + ' re-approved by ') === 0) {
         break; // most recent mention of this stage was already an approval -- not currently in a regressed state
       }
+      // else: entry belongs to a different stage (or an unrelated entry
+      // type) -- silently skipped, scan continues to the next-older entry.
     }
   }
 
