@@ -63,6 +63,12 @@ async function main() {
     assert.deepStrictEqual(removals, ['bob']);
   });
 
+  await check('removeFeatureCollaborator is idempotent -- a second removal of an already-removed user does not throw', async () => {
+    await collabStore.removeFeatureCollaborator(db, { featureId: 'feat-a2', userId: 'bob', removedBy: 'hamish' });
+    const removals = await collabStore.getFeatureCollaboratorRemovals(db, 'feat-a2');
+    assert.deepStrictEqual(removals, ['bob'], 'a duplicate removal must not create a second row or throw a unique-constraint error');
+  });
+
   await check('re-running populateFeatureCollaboratorsFromPods does not resurrect a removed member', async () => {
     await collabStore.populateFeatureCollaboratorsFromPods(db, { featureId: 'feat-a2', podIds: [core.podId, data.podId] });
     const rows = await collabStore.getFeatureCollaborators(db, 'feat-a2');

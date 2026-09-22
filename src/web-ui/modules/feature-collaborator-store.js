@@ -97,7 +97,7 @@ async function getFeatureCollaboratorRemovals(pool, featureId) {
  */
 async function removeFeatureCollaborator(pool, args) {
   await pool.query(
-    'INSERT INTO feature_collaborator_removals (feature_id, user_id, removed_by) VALUES ($1, $2, $3)',
+    'INSERT INTO feature_collaborator_removals (feature_id, user_id, removed_by) VALUES ($1, $2, $3) ON CONFLICT (feature_id, user_id) DO NOTHING',
     [args.featureId, args.userId, args.removedBy]
   );
   await pool.query('DELETE FROM feature_collaborators WHERE feature_id = $1 AND user_id = $2', [args.featureId, args.userId]);
