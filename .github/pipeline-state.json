@@ -35234,7 +35234,7 @@
         {
           "slug": "ep3-s2",
           "id": "ep3-s2",
-          "stage": "definition-of-ready",
+          "stage": "branch-setup",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -35244,7 +35244,7 @@
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep3-s2-dor.md",
-          "updatedAt": "2026-09-15T09:06:33.505Z"
+          "updatedAt": "2026-09-22T02:41:05.971Z"
         },
         {
           "slug": "ep3-s3",

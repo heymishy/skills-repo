@@ -1,6 +1,26 @@
 # Decisions: Multi-User Role-Aware Synchronous Collaboration
 
-## `ep3-s1` `/branch-setup`: baseline acknowledged, 1 pre-existing/environmental failure (2026-09-22)
+## `ep3-s2` `/branch-setup`: baseline acknowledged, 1 pre-existing/environmental failure; DoR/test-plan built against a fictional decisions.md schema, and the story's own substance already appears shipped by `ep3-s1` (2026-09-22)
+
+**Baseline:** `node scripts/run-all-tests.js` on the freshly-created `feature/ep3-s2` worktree (built from latest `master`, including the fully-merged `ep3-s1` story) showed 1 failure: `tests/check-p3.5-validate-trace.js` — the same pre-existing/environmental failure acknowledged repeatedly across every other worktree this session. Acknowledged as pre-existing, proceeding per `/branch-setup`'s Option 2.
+
+**Architecture investigation (before `/implementation-plan`):** `ep3-s2`'s DoR and test-plan both assume: a `src/regression-handler.js` file, a new `src/modules/decisions-writer.js` module exporting `appendRegressionDecision(...)`, a `POST /api/features/{featureId}/regression` endpoint, and — most significantly — a **YAML-like `decisions.md` entry format** with literal fields `date:`, `session-phase: regression`, `decision:`, `reason:`, `actor:`, `stageReverted:`. None of this exists anywhere in this codebase. This is the same class of gap this feature has now hit repeatedly (see `ep2-s3-dod.md`'s own DoD Observations, and `ep3-s1`'s own DoR-correction entry above) — but this instance is more significant than the others: **the story's entire substance already exists**, built as part of `ep3-s1` (merged, PR #915).
+
+`ep3-s1`'s `handlePostJourneyRegress` (`src/web-ui/routes/journey.js`) already appends a `decisions.md` entry on every regression, synchronously (`fs.appendFileSync`, in the same request/response cycle — trivially satisfying AC3's "within 2 seconds, no delayed/batched write"), using this codebase's own real, established Markdown entry format (`## Title` / `**Date:**` / `**Context:**` / `**Decision:**` / `**Rationale:**` — the same schema `handlePostDecisions` and `handlePostJourneyApprove` already use), not the DoR's invented YAML shape. Mapping `ep3-s2`'s AC2 field list onto the real entry:
+
+| AC2's literal field | Real entry's substance |
+|---|---|
+| `date` | `**Date:**` line |
+| `session-phase: regression` | Conveyed by the title itself (`"Regressed to <stage> by <user>"`) — unambiguously distinguishes this entry from an approval entry, matching `handlePostJourneyApprove`'s own title-based distinguishing convention (`"<stage> approved by <user>"`) |
+| `decision` | `**Decision:**` line (states the new stage + invalidated downstream stages) |
+| `reason` | `**Rationale:**` line (the user's exact regression reason, verbatim) |
+| `actor` | Embedded in the title (`"by <requesterLogin>"`) |
+| `stageReverted` | Embedded in both the title and the `**Decision:**` line |
+
+All 6 categories of information AC2 asks for are present and populated from the real request — just under this codebase's real field names, not the DoR's invented ones. `ep3-s1`'s own integration tests (`check-ep3-s1-integration.js`) already assert AC1's substance directly ("a regression entry was appended to decisions.md") and the "prior entries preserved" requirement from `ep3-s2`'s own test-plan ("prior decisions.md content is an exact untouched prefix of the new content").
+
+**Decision:** Treat `ep3-s2` as **substantively already satisfied** by `ep3-s1`'s shipped code — no new production code is planned. The implementation plan will add exactly one new task: a small, dedicated test file directly asserting `ep3-s2`'s own AC1/AC2/AC3 against the real entry format (parsing out date/actor/reason/stageReverted from the real title+body, not just checking for their *presence* piecemeal as `ep3-s1`'s tests incidentally do) — giving this story its own explicit, traceable verification artifact distinct from `ep3-s1`'s, matching this repo's own DoD conventions, rather than resting entirely on a sibling story's test coverage. If that new test finds any real gap (e.g. a field's content is present but not cleanly re-derivable/parseable, which could matter for a future automated audit tool reading `decisions.md`), it will be fixed as a narrow, additive change — not a rewrite of `ep3-s1`'s already-shipped, already-reviewed entry format.
+**Story:** ep3-s2 — no AC text change; touch-points and scope corrected, to be carried into `/implementation-plan`.
 
 **Context:** `node scripts/run-all-tests.js` on the freshly-created `feature/ep3-s1` worktree (built from latest `master`, including the fully-delivered `ep2-s4` story) showed 1 failure: `tests/check-p3.5-validate-trace.js` — the same pre-existing/environmental failure acknowledged repeatedly across other worktrees this session (Windows local `python3` shim permission issue, unrelated to any story's own code).
 **Decision:** Acknowledged as pre-existing/environmental and proceeding, per `/branch-setup`'s own documented Option 2 path. No code has been committed on this branch yet.
