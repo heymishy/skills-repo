@@ -35268,17 +35268,32 @@
         {
           "slug": "ep3-s3",
           "id": "ep3-s3",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
           "testPlan": {
             "status": "written",
-            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep3-s3-test-plan.md"
+            "artefact": "artefacts/new-feature-2b74a292/test-plans/ep3-s3-test-plan.md",
+            "passing": 12
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep3-s3-dor.md",
-          "updatedAt": "2026-09-15T09:06:33.505Z"
+          "updatedAt": "2026-09-22T05:52:59.964Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Re-approval detection in the decisions.md entry (AC1, AC3)",
+              "tddState": "committed",
+              "file": "artefacts/new-feature-2b74a292/plans/ep3-s3-plan.md",
+              "sha": "0d3d6f91"
+            }
+          ],
+          "acVerified": 3,
+          "acTotal": 3,
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/917"
         },
         {
           "slug": "ep4-s1",

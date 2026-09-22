@@ -4569,10 +4569,39 @@ async function handlePostJourneyApprove(req, res, pool) {
     return;
   }
 
+  // ep3-s3 (AC1/AC3): detect whether this approval follows a regression to
+  // this exact stage -- decisions.md is the only persistent record (no
+  // feature_approvals table exists), so detection reads it directly: if the
+  // most recent entry mentioning this stage is a "Regressed to <stage>"
+  // entry (rather than an earlier "<stage> approved by" / "<stage>
+  // re-approved by" entry, or no prior mention at all), this is a
+  // re-approval. This is the decisions.md-native equivalent of the DoR's
+  // imagined reApprovalOf foreign key -- linkage by content/adjacency in an
+  // append-only log, not a structured field nothing in this codebase reads.
+  var isReApproval = false;
+  if (fs.existsSync(decisionsPath)) {
+    var existingContent = fs.readFileSync(decisionsPath, 'utf8');
+    var existingEntries = existingContent.split(/\n## /).slice(1);
+    for (var i = existingEntries.length - 1; i >= 0; i--) {
+      var priorTitle = existingEntries[i].split('\n')[0].trim();
+      if (priorTitle.indexOf('Regressed to ' + stage + ' by ') === 0) {
+        isReApproval = true;
+        break;
+      }
+      if (priorTitle.indexOf(stage + ' approved by ') === 0 || priorTitle.indexOf(stage + ' re-approved by ') === 0) {
+        break; // most recent mention of this stage was already an approval -- not currently in a regressed state
+      }
+      // else: entry belongs to a different stage (or an unrelated entry
+      // type) -- silently skipped, scan continues to the next-older entry.
+    }
+  }
+
   var date = new Date().toISOString().slice(0, 10);
-  var title = stage + ' approved by ' + approverLogin + (approverRole ? ' (' + approverRole + ')' : '');
-  var context = 'Approval recorded via Sign Off at the ' + stage + ' stage of feature ' + featureSlug + '.';
-  var decision = stage + ' approved and advancing to ' + nextStage + '.';
+  var title = stage + (isReApproval ? ' re-approved by ' : ' approved by ') + approverLogin + (approverRole ? ' (' + approverRole + ')' : '');
+  var context = isReApproval
+    ? 'Re-approval recorded via Sign Off at the ' + stage + ' stage of feature ' + featureSlug + ', following a prior regression to this stage.'
+    : 'Approval recorded via Sign Off at the ' + stage + ' stage of feature ' + featureSlug + '.';
+  var decision = stage + (isReApproval ? ' re-approved after revision and advancing to ' : ' approved and advancing to ') + nextStage + '.';
   var entry = '\n## ' + title + '\n\n'
     + '**Date:** ' + date + '\n'
     + '**Context:** ' + context + '\n'
