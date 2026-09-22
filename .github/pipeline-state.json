@@ -35234,7 +35234,7 @@
         {
           "slug": "ep3-s2",
           "id": "ep3-s2",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -35257,7 +35257,9 @@
           ],
           "acVerified": 3,
           "acTotal": 3,
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/916"
         },
         {
           "slug": "ep3-s3",
