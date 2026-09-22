@@ -24,8 +24,9 @@ var _artefactFetcher = require('../adapters/artefact-fetcher'); // wugs-s2 — r
 var _guardrailPrAdapter = require('../adapters/guardrail-pr-adapter'); // wugs-s6 review fix — GuardrailPrConflictError for the write-adapter try/catch
 var { isEffectivelyAdmin } = require('../modules/impersonation'); // wugs-s9 — DoR-specified effective-role check, matching credits-guard.js's exact pattern
 var _journeyStoreModule = require('../modules/journey-store'); // wnl-s3 — reused (not requiring routes/journey.js at module scope, which would be circular) to list existing journeys for _hasUnbackfilledCliFeatures
-var { setProductDefaultPod, getProductDefaultPod, setFeatureDefaultPod } = require('../modules/pod-assignment-store'); // ep1-s2, ep1-s3
-var { populateFeatureCollaboratorsFromPod } = require('../modules/feature-collaborator-store'); // ep1-s3
+var { setProductDefaultPod, getProductDefaultPod, setFeatureDefaultPod, assignPodsToFeature, getFeaturePodAssignments } = require('../modules/pod-assignment-store'); // ep1-s2, ep1-s3, ep4-s1
+var { populateFeatureCollaboratorsFromPod, populateFeatureCollaboratorsFromPods, getFeatureCollaborators, removeFeatureCollaborator } = require('../modules/feature-collaborator-store'); // ep1-s3, ep4-s1
+var { listPods } = require('../modules/pod-store'); // ep4-s1 -- reused unchanged (decisions.md point 9), no archived-pod filtering added
 var _dashboardView = require('../views/dashboard-view'); // dsa-s2 Task 1 -- reuse the real mock-matching view
 var _DASHBOARD_SKILLS_CATALOG = require('./dashboard')._DASHBOARD_SKILLS_CATALOG; // dsa-s2 -- static skill catalog, single-sourced from dashboard.js
 var _dashboardDataWiring = require('./dashboard'); // dsa-s2 Task 2 -- reuse Tasks 1-3's already-reviewed pure data-wiring functions (_mapPendingActionsForDashboard, _deriveDashboardJourneyData), not rebuilt
@@ -3736,6 +3737,116 @@ async function handlePostSetDefaultPod(req, res, _next, pool) {
 }
 
 /**
+ * ep4-s1 (AC1) -- GET /products/:productId/features/:featureId/pods: the
+ * view-model for the "Assign pods" modal -- every active pod in the tenant
+ * (for the selector), which pods this feature already has assigned, and the
+ * feature's current collaborator set (so the modal can pre-check assigned
+ * pods and show who is already present/removed). Reuses listPods (ep1-s1),
+ * getFeaturePodAssignments (ep4-s1, Task 1), getFeatureCollaborators
+ * (ep1-s3, unchanged) -- no new store function needed for this handler.
+ */
+async function handleGetFeaturePods(req, res, _next, pool) {
+  var _pool = pool;
+  var productId = req.params && req.params.productId;
+  var featureId = req.params && req.params.featureId;
+  var tenantId = req.session && req.session.tenantId;
+
+  function _json(status, payload) {
+    res.writeHead(status, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(payload));
+  }
+
+  var journeyRow = (await _pool.query('SELECT journey_id, tenant_id, product_id FROM journeys WHERE journey_id = $1', [featureId])).rows[0];
+  if (!journeyRow || journeyRow.tenant_id !== tenantId || journeyRow.product_id !== productId) {
+    return _json(404, { error: 'Feature not found' });
+  }
+
+  var orgPods = await listPods(_pool, tenantId);
+  var assignedPods = await getFeaturePodAssignments(_pool, tenantId, featureId);
+  var collaborators = await getFeatureCollaborators(_pool, featureId);
+
+  return _json(200, { orgPods: orgPods, assignedPods: assignedPods, collaborators: collaborators });
+}
+
+/**
+ * ep4-s1 (AC1, AC3) -- POST /products/:productId/features/:featureId/pods:
+ * assign one or more pods to a feature and (re-)populate its collaborator
+ * set from the union of those pods' members, minus anyone with a standing
+ * removal record (decisions.md point 7).
+ */
+async function handlePostAssignFeaturePods(req, res, _next, pool) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+  var _pool = pool;
+  var productId = req.params && req.params.productId;
+  var featureId = req.params && req.params.featureId;
+  var tenantId = req.session && req.session.tenantId;
+  var body = req.body || {};
+  var podIds = Array.isArray(body.podIds) ? body.podIds.filter(function(id) { return typeof id === 'string' && id.trim(); }) : [];
+
+  function _json(status, payload) {
+    res.writeHead(status, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(payload));
+  }
+
+  if (podIds.length === 0) {
+    return _json(400, { error: 'At least one podId is required' });
+  }
+
+  var journeyRow = (await _pool.query('SELECT journey_id, tenant_id, product_id FROM journeys WHERE journey_id = $1', [featureId])).rows[0];
+  if (!journeyRow || journeyRow.tenant_id !== tenantId || journeyRow.product_id !== productId) {
+    return _json(404, { error: 'Feature not found' });
+  }
+
+  var assignedBy = (req.session && (req.session.userId || req.session.login)) || null;
+  var assignResult;
+  try {
+    assignResult = await assignPodsToFeature(_pool, { tenantId: tenantId, featureId: featureId, productId: productId, podIds: podIds, assignedBy: assignedBy });
+  } catch (err) {
+    if (err && err.code === 'POD_NOT_FOUND') {
+      return _json(400, { error: 'No pod found with that id for this tenant' });
+    }
+    throw err;
+  }
+
+  await populateFeatureCollaboratorsFromPods(_pool, { featureId: featureId, podIds: podIds });
+  var collaborators = await getFeatureCollaborators(_pool, featureId);
+
+  return _json(200, { assignedPodNames: assignResult.podNames, collaborators: collaborators });
+}
+
+/**
+ * ep4-s1 (AC2) -- DELETE /products/:productId/features/:featureId/pods/members/:userId:
+ * remove one collaborator from this feature only. Does not touch pod_members
+ * -- see removeFeatureCollaborator (ep4-s1, Task 1).
+ */
+async function handleDeleteFeaturePodMember(req, res, _next, pool) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+  var _pool = pool;
+  var productId = req.params && req.params.productId;
+  var featureId = req.params && req.params.featureId;
+  var userId = req.params && req.params.userId;
+  var tenantId = req.session && req.session.tenantId;
+
+  function _json(status, payload) {
+    res.writeHead(status, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(payload));
+  }
+
+  var journeyRow = (await _pool.query('SELECT journey_id, tenant_id, product_id FROM journeys WHERE journey_id = $1', [featureId])).rows[0];
+  if (!journeyRow || journeyRow.tenant_id !== tenantId || journeyRow.product_id !== productId) {
+    return _json(404, { error: 'Feature not found' });
+  }
+
+  var removedBy = (req.session && (req.session.userId || req.session.login)) || null;
+  await removeFeatureCollaborator(_pool, { featureId: featureId, userId: userId, removedBy: removedBy });
+  var collaborators = await getFeatureCollaborators(_pool, featureId);
+
+  return _json(200, { removedUserId: userId, collaborators: collaborators });
+}
+
+/**
  * prc-s4.1 — PUT /products/:id — edit a product's name, description, and/or
  * repo association. Name/description are simple UPDATEs (AC1). Repo changes
  * reuse the repo-access-verification logic from prc-s1.2 via the shared
@@ -4497,6 +4608,9 @@ module.exports = {
   handlePostProductFeature,
   // ep1-s2: POST /products/:id/set-default-pod handler
   handlePostSetDefaultPod,
+  handleGetFeaturePods,
+  handlePostAssignFeaturePods,
+  handleDeleteFeaturePodMember,
   handleGetProductKanban,
   handleGetOrgKanban,
   // s1.1: board-driven "Advance" action (new caller of the real gate-confirm route)
