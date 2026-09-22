@@ -27,7 +27,7 @@
 // by the Node-script unit tests. This means the real running webServer
 // process genuinely exercises the real ep4-s1 handlers against that fake
 // adapter; nothing here is mocked at the handler/store level.
-const { expect } = require('@playwright/test');
+const { test, expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
 const { getCsrfToken } = require('./fixtures/csrf');
 
@@ -35,8 +35,34 @@ function uniqueName(label) {
   return 'ep4-s1-' + label + '-' + Date.now();
 }
 
+// Both pod-creation flows below (Pod A, Pod B) are otherwise identical
+// aside from the name and the roster member added -- factored out to avoid
+// duplicating the create-pod-btn/fill/add-member/save-pod-btn sequence.
+async function createPod(page, podName, memberDisplayName) {
+  await page.goto('/admin/pods/manager');
+  await page.click('#create-pod-btn');
+  await page.fill('#pod-name-input', podName);
+  await page.locator('.roster-row', { hasText: memberDisplayName }).getByRole('button', { name: 'Add' }).click();
+  await page.click('#save-pod-btn');
+  await expect(page.locator('#success-banner')).toBeVisible();
+}
+
 withAuth('ep4-s1 AC1/AC2/AC3: assign multiple pods to a feature via the real modal, then remove one collaborator', async ({ page }) => {
+  // Generous budget matching ep3-s1-regression.spec.js's own reasoning
+  // (30000ms is a no-op equal to playwright.config.js's global default) --
+  // this journey does substantially more real round trips than that file's
+  // own justification for doubling it: 2 full pod-creation UI flows, a
+  // product create + repo seed + default-pod set, a feature create, a
+  // location.reload()-triggered full page load, a modal reopen, and a
+  // remove action -- roughly 20+ real page.goto/click/request calls total.
+  test.setTimeout(60000);
+
   const productName = uniqueName('product');
+  // "core-platform-pod"/"data-analytics-pod" diverge before the shared
+  // uniqueName() timestamp suffix, so neither label can ever be a substring
+  // of the other -- required for the `hasText` label locators below (an
+  // exact-text match against pod.name, per _renderPvcItemRow's rendering)
+  // to unambiguously distinguish Pod A from Pod B.
   const podAName = uniqueName('core-platform-pod');
   const podBName = uniqueName('data-analytics-pod');
   const featureDisplayName = uniqueName('feature');
@@ -62,12 +88,7 @@ withAuth('ep4-s1 AC1/AC2/AC3: assign multiple pods to a feature via the real mod
   expect(repoSeedRes.status()).toBe(200);
 
   // --- Create Pod A via the real /admin/pods/manager UI, add a member other than the creator ---
-  await page.goto('/admin/pods/manager');
-  await page.click('#create-pod-btn');
-  await page.fill('#pod-name-input', podAName);
-  await page.locator('.roster-row', { hasText: 'Hamish' }).getByRole('button', { name: 'Add' }).click();
-  await page.click('#save-pod-btn');
-  await expect(page.locator('#success-banner')).toBeVisible();
+  await createPod(page, podAName, 'Hamish');
 
   // --- Set Pod A as this product's default pod (real UI, ep1-s2's own feature) ---
   await page.goto('/products/' + productId);
@@ -88,12 +109,7 @@ withAuth('ep4-s1 AC1/AC2/AC3: assign multiple pods to a feature via the real mod
   expect(featureRes.status(), 'feature creation should redirect to a discovery chat session').toBe(303);
 
   // --- Create a SECOND real pod, with a different member, for the multi-select assertion ---
-  await page.goto('/admin/pods/manager');
-  await page.click('#create-pod-btn');
-  await page.fill('#pod-name-input', podBName);
-  await page.locator('.roster-row', { hasText: 'Susan' }).getByRole('button', { name: 'Add' }).click();
-  await page.click('#save-pod-btn');
-  await expect(page.locator('#success-banner')).toBeVisible();
+  await createPod(page, podBName, 'Susan');
 
   // --- Navigate to the product page where the feature is listed ---
   await page.goto('/products/' + productId);
