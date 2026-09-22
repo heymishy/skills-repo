@@ -96,20 +96,84 @@ async function getProductDefaultPod(pool, tenantId, productId) {
  * row per product), this always INSERTs a new row (feature_id IS NOT NULL,
  * one row per feature) -- no upsert/conflict handling needed, since a given
  * featureId can only be created once.
+ * ep4-s1: args.assignmentType is optional (defaults to the ep1-s3 literal)
+ * so this same INSERT can be reused for an explicit multi-pod assignment
+ * (assignmentType: 'explicit-multi-assign') without duplicating the SQL.
  * @returns {Promise<{assignmentId: string}>}
  */
 async function setFeatureDefaultPod(pool, args) {
   const assignmentId = crypto.randomUUID();
+  const assignmentType = args.assignmentType || 'feature-inherits-product-default';
   await pool.query(
     'INSERT INTO pod_assignments (assignment_id, tenant_id, pod_id, product_id, feature_id, assignment_type, assigned_by) VALUES ($1, $2, $3, $4, $5, $6, $7)',
-    [assignmentId, args.tenantId, args.podId, args.productId, args.featureId, 'feature-inherits-product-default', args.assignedBy]
+    [assignmentId, args.tenantId, args.podId, args.productId, args.featureId, assignmentType, args.assignedBy]
   );
   return { assignmentId };
+}
+
+/**
+ * ep4-s1 (AC1, AC3): assign MULTIPLE pods to a feature in one call. Validates
+ * every podId belongs to this tenant BEFORE writing any row (same
+ * validate-before-write convention as setProductDefaultPod above) -- a
+ * failure partway through would otherwise leave a partial assignment with no
+ * way to tell the caller which pods actually got assigned.
+ * @returns {Promise<{assignmentIds: string[], podNames: string[]}>}
+ * @throws {Error} with .code = 'POD_NOT_FOUND' if any podId doesn't belong to this tenant
+ */
+async function assignPodsToFeature(pool, args) {
+  const validatedPods = [];
+  for (const podId of args.podIds) {
+    const podRow = (await pool.query('SELECT pod_id, tenant_id, name FROM pods WHERE pod_id = $1 AND tenant_id = $2', [podId, args.tenantId])).rows[0];
+    if (!podRow) {
+      const err = new Error('No pod found with that id for this tenant');
+      err.code = 'POD_NOT_FOUND';
+      throw err;
+    }
+    validatedPods.push(podRow);
+  }
+  const assignmentIds = [];
+  for (const podRow of validatedPods) {
+    const result = await setFeatureDefaultPod(pool, {
+      tenantId: args.tenantId,
+      podId: podRow.pod_id,
+      productId: args.productId,
+      featureId: args.featureId,
+      assignedBy: args.assignedBy,
+      assignmentType: 'explicit-multi-assign'
+    });
+    assignmentIds.push(result.assignmentId);
+  }
+  return { assignmentIds, podNames: validatedPods.map((p) => p.name) };
+}
+
+/**
+ * ep4-s1: read every pod currently assigned to a feature (distinct by
+ * pod_id -- a pod re-assigned more than once across separate saves produces
+ * more than one pod_assignments row, deliberately not deduped at the SQL
+ * layer since Postgres has no unique constraint on (feature_id, pod_id) for
+ * this story's scope; see decisions.md point 5).
+ * @returns {Promise<{podId: string, podName: string}[]>}
+ */
+async function getFeaturePodAssignments(pool, tenantId, featureId) {
+  const rows = (await pool.query(
+    'SELECT pa.pod_id, pa.assignment_type, p.name FROM pod_assignments pa JOIN pods p ON p.pod_id = pa.pod_id WHERE pa.tenant_id = $1 AND pa.feature_id = $2',
+    [tenantId, featureId]
+  )).rows;
+  const seen = new Set();
+  const distinct = [];
+  for (const r of rows) {
+    if (seen.has(r.pod_id)) continue;
+    seen.add(r.pod_id);
+    distinct.push({ podId: r.pod_id, podName: r.name });
+  }
+  return distinct;
 }
 
 module.exports = {
   migratePodAssignmentsSchema,
   setProductDefaultPod,
   getProductDefaultPod,
-  setFeatureDefaultPod
+  setFeatureDefaultPod,
+  assignPodsToFeature,
+  getFeaturePodAssignments
 };

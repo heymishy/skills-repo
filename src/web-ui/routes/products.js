@@ -24,8 +24,9 @@ var _artefactFetcher = require('../adapters/artefact-fetcher'); // wugs-s2 — r
 var _guardrailPrAdapter = require('../adapters/guardrail-pr-adapter'); // wugs-s6 review fix — GuardrailPrConflictError for the write-adapter try/catch
 var { isEffectivelyAdmin } = require('../modules/impersonation'); // wugs-s9 — DoR-specified effective-role check, matching credits-guard.js's exact pattern
 var _journeyStoreModule = require('../modules/journey-store'); // wnl-s3 — reused (not requiring routes/journey.js at module scope, which would be circular) to list existing journeys for _hasUnbackfilledCliFeatures
-var { setProductDefaultPod, getProductDefaultPod, setFeatureDefaultPod } = require('../modules/pod-assignment-store'); // ep1-s2, ep1-s3
-var { populateFeatureCollaboratorsFromPod } = require('../modules/feature-collaborator-store'); // ep1-s3
+var { setProductDefaultPod, getProductDefaultPod, setFeatureDefaultPod, assignPodsToFeature, getFeaturePodAssignments } = require('../modules/pod-assignment-store'); // ep1-s2, ep1-s3, ep4-s1
+var { populateFeatureCollaboratorsFromPod, populateFeatureCollaboratorsFromPods, getFeatureCollaborators, removeFeatureCollaborator } = require('../modules/feature-collaborator-store'); // ep1-s3, ep4-s1
+var { listPods } = require('../modules/pod-store'); // ep4-s1 -- reused unchanged (decisions.md point 9), no archived-pod filtering added
 var _dashboardView = require('../views/dashboard-view'); // dsa-s2 Task 1 -- reuse the real mock-matching view
 var _DASHBOARD_SKILLS_CATALOG = require('./dashboard')._DASHBOARD_SKILLS_CATALOG; // dsa-s2 -- static skill catalog, single-sourced from dashboard.js
 var _dashboardDataWiring = require('./dashboard'); // dsa-s2 Task 2 -- reuse Tasks 1-3's already-reviewed pure data-wiring functions (_mapPendingActionsForDashboard, _deriveDashboardJourneyData), not rebuilt
@@ -377,7 +378,7 @@ function _renderModuleSection(name, id, groupFeatures, renderRowFn) {
 // see features.js's renderArtefactIndexHtml). The discoveryArtefact
 // suffix link stays a separate, sibling <a> (nested anchors are invalid
 // HTML), pointing at its own more specific raw-markdown viewer.
-function _renderPvcItemRow(item, includeCheckbox, preferFeatureName, sessionOriginByJourneyId) {
+function _renderPvcItemRow(item, includeCheckbox, preferFeatureName, sessionOriginByJourneyId, productId) {
   sessionOriginByJourneyId = sessionOriginByJourneyId || {};
   var color = item.health === 'red' ? '#ef4444' : item.health === 'amber' ? '#f59e0b' : item.health === 'unknown' ? 'var(--muted)' : '#22c55e';
   // pdt-s3 (AC1): drop the "?" glyph -- see _renderEpicRow's identical comment.
@@ -407,6 +408,13 @@ function _renderPvcItemRow(item, includeCheckbox, preferFeatureName, sessionOrig
     ? ' <button type="button" class="pvc-rename-btn" onclick="pshRenameFeature(\'' + _escapeHtml(item.journeyId) + '\',\'' + _escapeHtml(displayName).replace(/'/g, '&#39;') + '\')" ' +
         'aria-label="Rename ' + _escapeHtml(displayName) + '" ' +
         'style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0 4px">✎ Rename</button>'
+    : '';
+  // ep4-s1 (AC1): "Assign pods" trigger, a sibling button after renameLink --
+  // same reason renameLink is a sibling of the row's own <a>, not nested.
+  var podsLink = item.journeyId
+    ? ' <button type="button" class="pvc-pods-btn" onclick="ep4s1OpenPodsModal(\'' + _escapeHtml(productId || '') + '\',\'' + _escapeHtml(item.journeyId) + '\',\'' + _escapeHtml(displayName).replace(/'/g, '&#39;') + '\')" ' +
+        'aria-label="Assign pods to ' + _escapeHtml(displayName) + '" ' +
+        'style="background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:0 4px">⚙ Pods</button>'
     : '';
   // prlf-s1: use the already-resolved featureSlug when present (epic-nested
   // items, fal-s1/pefl-s1) instead of the raw story slug -- two different
@@ -449,7 +457,7 @@ function _renderPvcItemRow(item, includeCheckbox, preferFeatureName, sessionOrig
         sessionOriginHtml +
       '</div>' +
     '</a>' +
-    (discoveryLink || renameLink ? '<div style="font-size:12px;margin-top:2px">' + discoveryLink + renameLink + '</div>' : '');
+    (discoveryLink || renameLink || podsLink ? '<div style="font-size:12px;margin-top:2px">' + discoveryLink + renameLink + podsLink + '</div>' : '');
 
   // bmau-s1: when includeCheckbox is truthy (the By Module tab's own row
   // renderer only -- see _renderConsolidatedFeaturesSection), add a
@@ -511,17 +519,17 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
   // it's the only view where "move into a new module's section" (AC3) is a
   // meaningful visual effect; By Phase and All keep their existing,
   // unmodified row renderer.
-  var _renderPvcItemRowWithCheckbox = function(item) { return _renderPvcItemRow(item, true, false, sessionOriginByJourneyId); };
+  var _renderPvcItemRowWithCheckbox = function(item) { return _renderPvcItemRow(item, true, false, sessionOriginByJourneyId, productId); };
   // pefl-s1: the By Phase tab's own row renderer -- shows the item's parent
   // feature name instead of the epic name already shown in that tab's own
   // group headers (see _renderPvcItemRow's preferFeatureName parameter).
-  var _renderPvcItemRowForPhase = function(item) { return _renderPvcItemRow(item, false, true, sessionOriginByJourneyId); };
+  var _renderPvcItemRowForPhase = function(item) { return _renderPvcItemRow(item, false, true, sessionOriginByJourneyId, productId); };
   // sob-s1: plain (no checkbox) row renderer that still threads
   // sessionOriginByJourneyId through -- used by the zero-modules
   // "Unclassified" branch below, which previously passed the bare
   // _renderPvcItemRow function reference directly (safe there because
   // _renderModuleSection always invokes it as a single-arg call).
-  var _renderPvcItemRowPlain = function(item) { return _renderPvcItemRow(item, false, false, sessionOriginByJourneyId); };
+  var _renderPvcItemRowPlain = function(item) { return _renderPvcItemRow(item, false, false, sessionOriginByJourneyId, productId); };
 
   var moduleOptionsHtml = modules.map(function(m) {
     return '<option value="' + _escapeHtml(m.id) + '">' + _escapeHtml(m.name) + '</option>';
@@ -603,6 +611,138 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
       '<input type="checkbox" id="pvc-active-only-checkbox" checked onchange="pvcToggleActiveOnly(this)"> ' +
       'Active only <span class="pvc-active-only-count">(' + doneCount + ' completed hidden)</span>' +
     '</label>';
+
+  // ep4-s1 (AC1, AC2, AC3): the shared "Assign pods" modal + its client
+  // script, rendered once per product page (not once per row) and appended
+  // to this function's own return value below. Opened by podsLink's
+  // onclick above (ep4s1OpenPodsModal), which fetches the view-model from
+  // GET /products/:productId/features/:featureId/pods (Task 2/3), lists
+  // org pods as checkboxes pre-checked from assignedPods, lists current
+  // collaborators with a per-member remove button, and POSTs/DELETEs back
+  // to the same story's handlers.
+  var ep4s1ModalHtml =
+    '<div id="ep4s1-pods-modal" role="dialog" aria-modal="true" aria-labelledby="ep4s1-modal-title" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:50;align-items:center;justify-content:center">' +
+      '<div style="background:var(--surface);border-radius:8px;padding:20px;max-width:440px;width:90%;max-height:80vh;overflow-y:auto">' +
+        '<h2 id="ep4s1-modal-title" style="margin:0 0 6px;font-size:16px">Assign pods to this feature</h2>' +
+        '<div id="ep4s1-modal-error" role="alert" aria-live="polite" style="color:#b00020;display:none;margin-bottom:8px;font-size:13px"></div>' +
+        '<div id="ep4s1-modal-pods" style="margin:12px 0"></div>' +
+        '<div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">' +
+          '<button type="button" onclick="ep4s1CloseModal()" style="padding:6px 10px;background:none;border:1px solid var(--line);border-radius:4px;font-size:13px;cursor:pointer;color:var(--ink)">Cancel</button>' +
+          '<button type="button" id="ep4s1-save-btn" onclick="ep4s1Save()" style="padding:6px 10px;background:var(--accent);color:#fff;border:none;border-radius:4px;font-size:13px;cursor:pointer">Save</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>' +
+    '<script>' +
+    '(function(){' +
+    '  var _productId=null,_featureId=null,_csrfToken=null,_triggerBtn=null;' +
+    // ep4-s1 review fix (Critical/XSS): pod names and collaborator userIds
+    // are DB-sourced strings rendered via real DOM node construction
+    // (createElement/textContent) rather than innerHTML string
+    // concatenation -- matching this file's own safer, already-established
+    // precedent (the default-pod picker\'s own pod-list rendering a few
+    // hundred lines above this block uses the identical createElement+
+    // textContent pattern for the identical {pods:[{pod_id,name}]} shape).
+    // The remove button\'s click handler is wired via addEventListener over
+    // a closure-captured userId, not an inline onclick string -- this
+    // removes the triple-nested-context (JS-string-in-HTML-attribute-in-
+    // HTML) injection risk entirely rather than trying to escape it.
+    '  window.ep4s1OpenPodsModal=async function(productId,featureId,displayName){' +
+    '    _productId=productId;_featureId=featureId;' +
+    '    _triggerBtn=document.activeElement;' +
+    '    document.getElementById("ep4s1-modal-title").textContent="Assign pods to "+displayName;' +
+    '    document.getElementById("ep4s1-modal-error").style.display="none";' +
+    '    var podsEl=document.getElementById("ep4s1-modal-pods");' +
+    '    podsEl.textContent="Loading…";' +
+    '    var modalEl=document.getElementById("ep4s1-pods-modal");' +
+    '    modalEl.style.display="flex";' +
+    '    var data;' +
+    '    try{' +
+    '      var resp=await fetch("/products/"+productId+"/features/"+featureId+"/pods");' +
+    '      data=await resp.json().catch(function(){return{};});' +
+    '      if(!resp.ok){podsEl.textContent="";' +
+    '        document.getElementById("ep4s1-modal-error").textContent=data.error||"Failed to load pods";' +
+    '        document.getElementById("ep4s1-modal-error").style.display="block";return;}' +
+    '    }catch(e){podsEl.textContent="";' +
+    '      document.getElementById("ep4s1-modal-error").textContent="Network error — failed to load pods";' +
+    '      document.getElementById("ep4s1-modal-error").style.display="block";return;}' +
+    '    _csrfToken=data.csrfToken;' +
+    '    var assignedIds=(data.assignedPods||[]).map(function(p){return p.podId;});' +
+    '    podsEl.innerHTML="";' +
+    '    (data.orgPods||[]).forEach(function(pod){' +
+    '      var label=document.createElement("label");' +
+    '      label.style.cssText="display:flex;align-items:center;gap:8px;padding:6px 0";' +
+    '      var input=document.createElement("input");' +
+    '      input.type="checkbox";input.className="ep4s1-pod-checkbox";input.value=pod.pod_id;' +
+    '      input.checked=assignedIds.indexOf(pod.pod_id)!==-1;' +
+    '      var span=document.createElement("span");span.textContent=pod.name;' +
+    '      label.appendChild(input);label.appendChild(span);podsEl.appendChild(label);' +
+    '    });' +
+    '    if((data.collaborators||[]).length>0){' +
+    '      var hr=document.createElement("hr");hr.style.margin="12px 0";podsEl.appendChild(hr);' +
+    '      var heading=document.createElement("div");' +
+    '      heading.style.cssText="font-size:12px;color:var(--muted);margin-bottom:6px";' +
+    '      heading.textContent="Current collaborators";podsEl.appendChild(heading);' +
+    '      data.collaborators.forEach(function(c){' +
+    '        var row=document.createElement("div");' +
+    '        row.style.cssText="display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:13px";' +
+    '        var nameEl=document.createElement("span");nameEl.textContent=c.userId;' +
+    '        var removeBtn=document.createElement("button");removeBtn.type="button";' +
+    '        removeBtn.style.cssText="background:none;border:none;color:#b00020;cursor:pointer;font-size:12px";' +
+    '        removeBtn.setAttribute("aria-label","Remove "+c.userId+" from this feature");' +
+    '        removeBtn.textContent="✕ Remove";' +
+    '        removeBtn.addEventListener("click",function(){ep4s1RemoveMember(c.userId);});' +
+    '        row.appendChild(nameEl);row.appendChild(removeBtn);podsEl.appendChild(row);' +
+    '      });' +
+    '    }' +
+    // ep4-s1 review fix (Important/a11y): move focus into the dialog on
+    // open (first checkbox/button) -- not a full keyboard focus trap
+    // (Tab can still leave the dialog), which was judged disproportionate
+    // to this story\'s bounded scope given this is the first hand-rolled
+    // modal in the file with no established higher bar to match; initial
+    // focus + Escape-to-close + focus-restore-on-close are the
+    // highest-value, lowest-complexity pieces and are implemented here.
+    '    var firstFocusable=modalEl.querySelector("input,button");' +
+    '    if(firstFocusable){firstFocusable.focus();}' +
+    '  };' +
+    '  window.ep4s1CloseModal=function(){' +
+    '    document.getElementById("ep4s1-pods-modal").style.display="none";' +
+    '    if(_triggerBtn&&typeof _triggerBtn.focus==="function"){_triggerBtn.focus();}' +
+    '  };' +
+    '  document.addEventListener("keydown",function(evt){' +
+    '    if(evt.key==="Escape"&&document.getElementById("ep4s1-pods-modal").style.display==="flex"){ep4s1CloseModal();}' +
+    '  });' +
+    '  window.ep4s1Save=async function(){' +
+    '    var checked=Array.prototype.slice.call(document.querySelectorAll(".ep4s1-pod-checkbox:checked")).map(function(el){return el.value;});' +
+    '    if(checked.length===0){' +
+    '      document.getElementById("ep4s1-modal-error").textContent="Select at least one pod";' +
+    '      document.getElementById("ep4s1-modal-error").style.display="block";return;}' +
+    '    var btn=document.getElementById("ep4s1-save-btn");btn.disabled=true;btn.textContent="Saving…";' +
+    '    try{' +
+    '      var resp=await fetch("/products/"+_productId+"/features/"+_featureId+"/pods",{' +
+    '        method:"POST",headers:{"Content-Type":"application/json"},' +
+    '        body:JSON.stringify({podIds:checked,_csrf:_csrfToken})});' +
+    '      var data=await resp.json().catch(function(){return{};});' +
+    '      btn.disabled=false;btn.textContent="Save";' +
+    '      if(!resp.ok){document.getElementById("ep4s1-modal-error").textContent=data.error||"Failed to save";' +
+    '        document.getElementById("ep4s1-modal-error").style.display="block";return;}' +
+    '    }catch(e){btn.disabled=false;btn.textContent="Save";' +
+    '      document.getElementById("ep4s1-modal-error").textContent="Network error — failed to save";' +
+    '      document.getElementById("ep4s1-modal-error").style.display="block";return;}' +
+    '    ep4s1CloseModal();location.reload();' +
+    '  };' +
+    '  window.ep4s1RemoveMember=async function(userId){' +
+    '    try{' +
+    '      var resp=await fetch("/products/"+_productId+"/features/"+_featureId+"/pods/members/"+encodeURIComponent(userId),{' +
+    '        method:"DELETE",headers:{"Content-Type":"application/json"},body:JSON.stringify({_csrf:_csrfToken})});' +
+    '      var data=await resp.json().catch(function(){return{};});' +
+    '      if(!resp.ok){document.getElementById("ep4s1-modal-error").textContent=data.error||"Failed to remove";' +
+    '        document.getElementById("ep4s1-modal-error").style.display="block";return;}' +
+    '    }catch(e){document.getElementById("ep4s1-modal-error").textContent="Network error — failed to remove";' +
+    '      document.getElementById("ep4s1-modal-error").style.display="block";return;}' +
+    '    ep4s1OpenPodsModal(_productId,_featureId,document.getElementById("ep4s1-modal-title").textContent.replace(/^Assign pods to /,""));' +
+    '  };' +
+    '})();' +
+    '</script>';
 
   return (
     '<style>' +
@@ -808,7 +948,8 @@ function _renderConsolidatedFeaturesSection(items, modules, taxonomy, productId,
             'alert("Failed to assign the selected features to that module. Please try again.");' +
           '});' +
       '}' +
-    '<\/script>'
+    '<\/script>' +
+    ep4s1ModalHtml
   );
 }
 
@@ -3736,6 +3877,139 @@ async function handlePostSetDefaultPod(req, res, _next, pool) {
 }
 
 /**
+ * ep4-s1 (AC1) -- GET /products/:productId/features/:featureId/pods: the
+ * view-model for the "Assign pods" modal -- every active pod in the tenant
+ * (for the selector), which pods this feature already has assigned, and the
+ * feature's current collaborator set (so the modal can pre-check assigned
+ * pods and show who is already present/removed). Reuses listPods (ep1-s1),
+ * getFeaturePodAssignments (ep4-s1, Task 1), getFeatureCollaborators
+ * (ep1-s3, unchanged) -- no new store function needed for this handler.
+ */
+async function handleGetFeaturePods(req, res, _next, pool) {
+  var _pool = pool;
+  var productId = req.params && req.params.productId;
+  var featureId = req.params && req.params.featureId;
+  var tenantId = req.session && req.session.tenantId;
+
+  function _json(status, payload) {
+    if (res.status) { res.status(status).json(payload); }
+    else { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(payload)); }
+  }
+
+  var journeyRow = (await _pool.query('SELECT journey_id, tenant_id, product_id FROM journeys WHERE journey_id = $1', [featureId])).rows[0];
+  if (!journeyRow || journeyRow.tenant_id !== tenantId || journeyRow.product_id !== productId) {
+    return _json(404, { error: 'Feature not found' });
+  }
+
+  var orgPods = await listPods(_pool, tenantId);
+  var assignedPods = await getFeaturePodAssignments(_pool, tenantId, featureId);
+  var collaborators = await getFeatureCollaborators(_pool, featureId);
+  // ep4-s1: the client script's Save/Remove fetch calls need a CSRF token
+  // to pass through to the POST/DELETE handlers below (both csrfGuard'd) --
+  // handed to the modal's own JS state here rather than requiring a
+  // separate round trip.
+  var csrfToken = await _csrf.generateCsrfToken(req);
+
+  return _json(200, { orgPods: orgPods, assignedPods: assignedPods, collaborators: collaborators, csrfToken: csrfToken });
+}
+
+/**
+ * ep4-s1 (AC1, AC3) -- POST /products/:productId/features/:featureId/pods:
+ * assign one or more pods to a feature and (re-)populate its collaborator
+ * set from the union of those pods' members, minus anyone with a standing
+ * removal record (decisions.md point 7).
+ */
+async function handlePostAssignFeaturePods(req, res, _next, pool) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+  var _pool = pool;
+  var productId = req.params && req.params.productId;
+  var featureId = req.params && req.params.featureId;
+  var tenantId = req.session && req.session.tenantId;
+  var body = req.body || {};
+  var podIds = Array.isArray(body.podIds) ? body.podIds.filter(function(id) { return typeof id === 'string' && id.trim(); }) : [];
+
+  function _json(status, payload) {
+    if (res.status) { res.status(status).json(payload); }
+    else { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(payload)); }
+  }
+
+  if (podIds.length === 0) {
+    return _json(400, { error: 'At least one podId is required' });
+  }
+
+  var journeyRow = (await _pool.query('SELECT journey_id, tenant_id, product_id FROM journeys WHERE journey_id = $1', [featureId])).rows[0];
+  if (!journeyRow || journeyRow.tenant_id !== tenantId || journeyRow.product_id !== productId) {
+    return _json(404, { error: 'Feature not found' });
+  }
+
+  var assignedBy = (req.session && (req.session.userId || req.session.login)) || null;
+  var assignResult;
+  try {
+    assignResult = await assignPodsToFeature(_pool, { tenantId: tenantId, featureId: featureId, productId: productId, podIds: podIds, assignedBy: assignedBy });
+  } catch (err) {
+    if (err && err.code === 'POD_NOT_FOUND') {
+      return _json(400, { error: 'No pod found with that id for this tenant' });
+    }
+    throw err;
+  }
+
+  try {
+    await populateFeatureCollaboratorsFromPods(_pool, { featureId: featureId, podIds: podIds });
+  } catch (err) {
+    // ep4-s1 review fix: unlike handlePostProductFeature's best-effort
+    // pod-inheritance (ep1-s3, non-fatal since feature creation already
+    // succeeded before that call), this failure is NOT non-fatal -- the
+    // client explicitly asked to assign pods AND see the resulting
+    // collaborator set, so silently returning 200 would misrepresent state.
+    // pod_assignments row(s) are already committed at this point; only
+    // feature_collaborators population failed -- stage-tagged in the log
+    // line for the same diagnostic reason as handlePostProductFeature's own
+    // pattern, but surfaced to the caller here rather than swallowed.
+    console.error('[handlePostAssignFeaturePods] pod_assignments committed but feature_collaborators population failed for featureId=' + featureId + ':', err.message);
+    return _json(500, { error: 'Pods assigned but collaborator list failed to update; retry to repopulate' });
+  }
+  var collaborators = await getFeatureCollaborators(_pool, featureId);
+
+  return _json(200, { assignedPodNames: assignResult.podNames, collaborators: collaborators });
+}
+
+/**
+ * ep4-s1 (AC2) -- DELETE /products/:productId/features/:featureId/pods/members/:userId:
+ * remove one collaborator from this feature only. Does not touch pod_members
+ * -- see removeFeatureCollaborator (ep4-s1, Task 1).
+ */
+async function handleDeleteFeaturePodMember(req, res, _next, pool) {
+  var csrfOk = await _csrf.csrfGuard(req, res);
+  if (!csrfOk) return;
+  var _pool = pool;
+  var productId = req.params && req.params.productId;
+  var featureId = req.params && req.params.featureId;
+  var userId = req.params && req.params.userId;
+  var tenantId = req.session && req.session.tenantId;
+
+  function _json(status, payload) {
+    if (res.status) { res.status(status).json(payload); }
+    else { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(payload)); }
+  }
+
+  var journeyRow = (await _pool.query('SELECT journey_id, tenant_id, product_id FROM journeys WHERE journey_id = $1', [featureId])).rows[0];
+  if (!journeyRow || journeyRow.tenant_id !== tenantId || journeyRow.product_id !== productId) {
+    return _json(404, { error: 'Feature not found' });
+  }
+
+  if (!userId) {
+    return _json(400, { error: 'userId is required' });
+  }
+
+  var removedBy = (req.session && (req.session.userId || req.session.login)) || null;
+  await removeFeatureCollaborator(_pool, { featureId: featureId, userId: userId, removedBy: removedBy });
+  var collaborators = await getFeatureCollaborators(_pool, featureId);
+
+  return _json(200, { removedUserId: userId, collaborators: collaborators });
+}
+
+/**
  * prc-s4.1 — PUT /products/:id — edit a product's name, description, and/or
  * repo association. Name/description are simple UPDATEs (AC1). Repo changes
  * reuse the repo-access-verification logic from prc-s1.2 via the shared
@@ -4497,6 +4771,9 @@ module.exports = {
   handlePostProductFeature,
   // ep1-s2: POST /products/:id/set-default-pod handler
   handlePostSetDefaultPod,
+  handleGetFeaturePods,
+  handlePostAssignFeaturePods,
+  handleDeleteFeaturePodMember,
   handleGetProductKanban,
   handleGetOrgKanban,
   // s1.1: board-driven "Advance" action (new caller of the real gate-confirm route)
