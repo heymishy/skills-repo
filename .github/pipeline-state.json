@@ -36379,6 +36379,45 @@
       "name": "Manual staging test (operator-created via the staging web app on 2026-09-20, not real product work -- staging's LLM gateway returned the canned bri-s3.1 mock-fixture content, hence the templated title/body -- see artefacts/2026-09-19-nnn for the identical, already-confirmed precedent)",
       "track": "short",
       "health": "green"
+    },
+    {
+      "slug": "2026-09-23-pod-manager-nav-fix",
+      "name": "Add Pod Manager to the sidebar nav",
+      "stage": "branch-complete",
+      "health": "green",
+      "metrics": [],
+      "updatedAt": "2026-09-22T20:56:02.725Z",
+      "track": "short",
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": [],
+      "epics": [],
+      "stories": [
+        {
+          "slug": "pmnv-s1",
+          "id": "pmnv-s1",
+          "name": "Add Pod Manager to the sidebar nav",
+          "stage": "branch-complete",
+          "health": "green",
+          "testPlan": {
+            "status": "all-passing",
+            "totalTests": 3,
+            "passing": 3,
+            "artefact": "artefacts/2026-09-23-pod-manager-nav-fix/test-plans/pmnv-s1-test-plan.md"
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-09-23-pod-manager-nav-fix/dor/pmnv-s1-dor.md",
+          "oversightLevel": "low",
+          "acTotal": 4,
+          "acVerified": 4,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false,
+          "updatedAt": "2026-09-22T20:56:02.725Z",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/919"
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
