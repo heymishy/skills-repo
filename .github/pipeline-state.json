@@ -35268,7 +35268,7 @@
         {
           "slug": "ep3-s3",
           "id": "ep3-s3",
-          "stage": "branch-setup",
+          "stage": "implementation-plan",
           "health": "green",
           "reviewStatus": "passed",
           "highFindings": 0,
@@ -35278,7 +35278,15 @@
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/new-feature-2b74a292/dor/ep3-s3-dor.md",
-          "updatedAt": "2026-09-22T05:11:33.941Z"
+          "updatedAt": "2026-09-22T05:14:27.088Z",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Re-approval detection in the decisions.md entry (AC1, AC3)",
+              "tddState": "not-started",
+              "file": "artefacts/new-feature-2b74a292/plans/ep3-s3-plan.md"
+            }
+          ]
         },
         {
           "slug": "ep4-s1",
