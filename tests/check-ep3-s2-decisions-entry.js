@@ -126,7 +126,11 @@ async function main() {
   check('AC2: entry is identifiable as a regression-type entry (title pattern, substance of "session-phase: regression")', entry.isRegressionEntry === true);
   check('AC2: decision is present, non-placeholder, and names the target stage', !!entry.decision && !placeholderPattern.test(entry.decision) && entry.decision.indexOf('definition') !== -1);
   check('AC2: reason (rationale) is present, non-placeholder, and matches the request exactly', entry.rationale === reasonText);
-  check('AC2: reason length > 5 characters per story NFR', (entry.rationale || '').length > 5);
+  // Not one of ep3-s2.md's own 2 NFRs (2s write latency, no-refresh visibility)
+  // -- this >5-char floor comes from the DoR's own AC2b test description, not
+  // the story artefact itself. Kept as a real, cheap sanity check that the
+  // reason is substantive and not a placeholder, not attributed to an NFR.
+  check('AC2: reason is a substantive, non-trivial value (>5 characters)', (entry.rationale || '').length > 5);
   check('AC2: actor is present, non-placeholder, and matches the requesting user', entry.actor === 'susan');
   check('AC2: stageReverted is present, non-placeholder, and matches the target stage exactly', entry.stageReverted === 'definition');
 
