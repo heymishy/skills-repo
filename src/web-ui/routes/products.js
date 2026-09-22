@@ -3752,8 +3752,8 @@ async function handleGetFeaturePods(req, res, _next, pool) {
   var tenantId = req.session && req.session.tenantId;
 
   function _json(status, payload) {
-    res.writeHead(status, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(payload));
+    if (res.status) { res.status(status).json(payload); }
+    else { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(payload)); }
   }
 
   var journeyRow = (await _pool.query('SELECT journey_id, tenant_id, product_id FROM journeys WHERE journey_id = $1', [featureId])).rows[0];
@@ -3785,8 +3785,8 @@ async function handlePostAssignFeaturePods(req, res, _next, pool) {
   var podIds = Array.isArray(body.podIds) ? body.podIds.filter(function(id) { return typeof id === 'string' && id.trim(); }) : [];
 
   function _json(status, payload) {
-    res.writeHead(status, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(payload));
+    if (res.status) { res.status(status).json(payload); }
+    else { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(payload)); }
   }
 
   if (podIds.length === 0) {
@@ -3809,7 +3809,21 @@ async function handlePostAssignFeaturePods(req, res, _next, pool) {
     throw err;
   }
 
-  await populateFeatureCollaboratorsFromPods(_pool, { featureId: featureId, podIds: podIds });
+  try {
+    await populateFeatureCollaboratorsFromPods(_pool, { featureId: featureId, podIds: podIds });
+  } catch (err) {
+    // ep4-s1 review fix: unlike handlePostProductFeature's best-effort
+    // pod-inheritance (ep1-s3, non-fatal since feature creation already
+    // succeeded before that call), this failure is NOT non-fatal -- the
+    // client explicitly asked to assign pods AND see the resulting
+    // collaborator set, so silently returning 200 would misrepresent state.
+    // pod_assignments row(s) are already committed at this point; only
+    // feature_collaborators population failed -- stage-tagged in the log
+    // line for the same diagnostic reason as handlePostProductFeature's own
+    // pattern, but surfaced to the caller here rather than swallowed.
+    console.error('[handlePostAssignFeaturePods] pod_assignments committed but feature_collaborators population failed for featureId=' + featureId + ':', err.message);
+    return _json(500, { error: 'Pods assigned but collaborator list failed to update; retry to repopulate' });
+  }
   var collaborators = await getFeatureCollaborators(_pool, featureId);
 
   return _json(200, { assignedPodNames: assignResult.podNames, collaborators: collaborators });
@@ -3830,13 +3844,17 @@ async function handleDeleteFeaturePodMember(req, res, _next, pool) {
   var tenantId = req.session && req.session.tenantId;
 
   function _json(status, payload) {
-    res.writeHead(status, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify(payload));
+    if (res.status) { res.status(status).json(payload); }
+    else { res.writeHead(status, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(payload)); }
   }
 
   var journeyRow = (await _pool.query('SELECT journey_id, tenant_id, product_id FROM journeys WHERE journey_id = $1', [featureId])).rows[0];
   if (!journeyRow || journeyRow.tenant_id !== tenantId || journeyRow.product_id !== productId) {
     return _json(404, { error: 'Feature not found' });
+  }
+
+  if (!userId) {
+    return _json(400, { error: 'userId is required' });
   }
 
   var removedBy = (req.session && (req.session.userId || req.session.login)) || null;
