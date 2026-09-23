@@ -231,6 +231,27 @@ async function testAC5UnauthenticatedRequestRejected() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Wiring completeness — listTeamMembers also resolves correctly against the
+// real production fake-test-db.js path (NODE_ENV=test server wiring), not
+// just this file's own isolated fake pool
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function testWiringCompletenessAgainstProductionFakeDb() {
+  var createFakeTestDb = require(FAKE_TEST_DB_PATH).createFakeTestDb;
+  var teamManagement = freshRequire(TEAM_MANAGEMENT_PATH);
+  var fakeDb = createFakeTestDb();
+
+  var personResult = await fakeDb.query('INSERT INTO people DEFAULT VALUES');
+  var personId = personResult.rows[0].id;
+  await fakeDb.query('INSERT INTO team_memberships (person_id, tenant_id, role) VALUES ($1, $2, $3)', [personId, 'acme', 'engineer']);
+  await fakeDb.query('INSERT INTO person_identities (identity_key, person_id, provider) VALUES ($1, $2, $3)', ['carol@example.com', personId, 'email']);
+
+  var members = await teamManagement.listTeamMembers(fakeDb, 'acme');
+
+  assert.deepStrictEqual(members, [{ identity: 'carol@example.com', role: 'engineer' }], 'Wiring: listTeamMembers resolves correctly against the real production fake-test-db.js path used by _pshPool in NODE_ENV=test, not just this file\'s own isolated fake pool');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Runner (extended by later tasks)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -251,6 +272,9 @@ async function main() {
 
   console.log('\nAC5 — unauthenticated request rejected');
   await test('AC5: unauthenticated request is rejected the same way every other authGuard-protected route already is', testAC5UnauthenticatedRequestRejected);
+
+  console.log('\nWiring completeness — production fake-test-db.js path');
+  await test('Wiring: listTeamMembers resolves correctly via createFakeTestDb() (the real _pshPool test-mode path)', testWiringCompletenessAgainstProductionFakeDb);
 
   console.log('\n[rtri-s1] ' + passed + ' passed, ' + failed + ' failed');
   if (failures.length) {
