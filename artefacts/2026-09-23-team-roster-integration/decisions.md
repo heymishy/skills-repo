@@ -1,5 +1,11 @@
 # Decisions: Wire Pod/Team Pickers to the Real Team Roster
 
+## `/definition-of-ready` W4 RISK-ACCEPT: verification scripts not yet reviewed by a domain expert (2026-09-24)
+
+**Context:** `rtri-s1`, `rtri-s2`, and `rtri-s3`'s AC verification scripts were written this session (during `/test-plan`) and have not yet had a pre-code domain-expert review pass — W4 fires for all 3 stories.
+**Decision:** RISK-ACCEPT — proceed to DoR sign-off without a separate pre-code review pass. The operator (Hamish King, also the discovery's own Approved By signatory) is driving this pipeline directly and can walk the scripts during or immediately after implementation rather than as a separate blocking step; all 3 scripts were written directly from the same reviewed, signed-off story ACs (`/review` run 2/3, all PASS), so the risk of the script itself misrepresenting the ACs is low.
+**Story:** `rtri-s1`, `rtri-s2`, `rtri-s3` — no AC/scope change; W4 acknowledged for all 3.
+
 ## `/review` run 1: MC-SEC-01 gap found in rtri-s2/rtri-s3, fixed by adding explicit safe-rendering ACs (2026-09-24)
 
 **Context:** `/review` run 1 (all 5 categories, all 3 stories) found `rtri-s1` (read API) passing clean, but `rtri-s2` (pod-manager picker) and `rtri-s3` (`/team/members` list) both failing Category E — Architecture compliance. Neither story's ACs required the real identity string (`person_identities.identity_key`: GitHub login, Google email, or email/password email — externally-influenced, not a fixed literal) to be rendered safely when displayed. This is the same risk class as `ep4-s1`'s own real, recently-fixed Critical stored-XSS vulnerability (commit `6adfb5b2`, a DB-sourced identity string rendered via unescaped client-side string concatenation), and directly violates MC-SEC-01 ("No user-supplied content in innerHTML without sanitisation"), a mandatory constraint in `.github/architecture-guardrails.md`.

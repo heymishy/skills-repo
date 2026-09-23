@@ -36425,7 +36425,7 @@
     {
       "slug": "2026-09-23-team-roster-integration",
       "name": "Wire Pod/Team Pickers to the Real Team Roster",
-      "stage": "test-plan",
+      "stage": "definition-of-ready",
       "discoveryStatus": "approved",
       "health": "green",
       "metrics": [
@@ -36450,7 +36450,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-09-23T19:37:41.800Z",
+      "updatedAt": "2026-09-23T19:54:16.168Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -36464,11 +36464,11 @@
             {
               "slug": "rtri-s1",
               "name": "Expose the real team roster as a read API",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-23T19:37:41.800Z",
+              "updatedAt": "2026-09-23T19:54:16.168Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -36477,16 +36477,17 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "rtri-s2",
               "name": "Wire pod-manager.html member picker to the real roster",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-23T19:37:41.800Z",
+              "updatedAt": "2026-09-23T19:54:16.168Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
@@ -36495,16 +36496,17 @@
               "acTotal": 7,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             },
             {
               "slug": "rtri-s3",
               "name": "Render a real member list on /team/members",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-23T19:37:41.800Z",
+              "updatedAt": "2026-09-23T19:54:16.168Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
@@ -36513,7 +36515,8 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             }
           ]
         }
@@ -36525,14 +36528,16 @@
           "category": "mandatory-constraint",
           "label": "No user-supplied content in innerHTML without sanitisation",
           "status": "met",
-          "note": "rtri-s2 AC6, rtri-s3 AC5 added at /review run 1 -- require safe DOM construction / auto-escaping for real identity strings, verified against a payload string. Closed at /review run 2 (2026-09-24)."
+          "note": "rtri-s2 AC6, rtri-s3 AC5 -- safe rendering required and verified at DoR contract level (createElement/textContent, escHtml()). Continues met status from /review.",
+          "assessedBy": "/definition-of-ready"
         },
         {
           "id": "MC-SEC-02",
           "category": "mandatory-constraint",
           "label": "No credentials, tokens, or personal data in committed files",
           "status": "met",
-          "note": "No credentials/tokens/PII introduced -- feature reads existing identity fields already stored, adds no new secret-bearing files"
+          "note": "No credentials/tokens/PII introduced -- feature reads existing identity fields already stored, adds no new secret-bearing files",
+          "assessedBy": "/definition-of-ready"
         },
         {
           "id": "MC-SEC-03",
@@ -36827,7 +36832,40 @@
           "category": "adr",
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
           "status": "met",
-          "note": "All 3 stories explicit AC/NFR: every read strictly scoped by tenant_id (rtri-s1 AC3, rtri-s2 AC3, rtri-s3 AC4)"
+          "note": "All 3 stories explicit AC/NFR: every read strictly scoped by tenant_id (rtri-s1 AC3, rtri-s2 AC3, rtri-s3 AC4)",
+          "assessedBy": "/definition-of-ready"
+        },
+        {
+          "id": "NFR-performance-rtri",
+          "category": "nfr",
+          "label": "Real-roster read/render performance",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-23T19:54:16.168Z"
+        },
+        {
+          "id": "NFR-security-rtri",
+          "category": "nfr",
+          "label": "No new data exposure beyond tenant-scoped roster",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-23T19:54:16.168Z"
+        },
+        {
+          "id": "NFR-accessibility-rtri",
+          "category": "nfr",
+          "label": "Native, semantic, labelled controls for new UI (selector, list)",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-23T19:54:16.168Z"
+        },
+        {
+          "id": "NFR-audit-rtri",
+          "category": "nfr",
+          "label": "Audit — not applicable, read-only feature",
+          "status": "na",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-23T19:54:16.168Z"
         }
       ],
       "slicingStrategy": "vertical-slice"
