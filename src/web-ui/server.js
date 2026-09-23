@@ -94,7 +94,7 @@ const { setArtefactCommitAdapter, realCommitArtefact }               = require('
 const { setProductContextAdapter }                                   = require('./product-context-adapter');      // psh-s5
 const { setPostHogFlagsAdapter }                                     = require('./modules/posthog-flags');          // bri-s1.1
 const { initPostHogFlagsClient }                                     = require('./modules/posthog-config');         // bri-s1.2
-const { createTeamManagementHandlers }                               = require('./routes/team-management');       // tir-s3
+const { createTeamManagementHandlers, handleGetTeamMembersApi }       = require('./routes/team-management');       // tir-s3 / rtri-s1
 const { createGithubOrgBulkAddHandlers }                             = require('./routes/github-org-bulk-add');   // tir-s5
 const { setImpersonationAuditAdapter }                               = require('./adapters/impersonation-audit-adapter'); // d1
 const { handlePostPodsCreate, handleGetPods }                        = require('./routes/pods'); // ep1-s1
@@ -3660,6 +3660,13 @@ async function router(req, res) {
       if (!_raOk) return;
       await _teamManagementHandlers.handleGetCreateInviteForm(req, res);
     }
+
+  } else if (pathname === '/api/team/members' && req.method === 'GET') {
+    // rtri-s1 — real team roster read API. authGuard (not requireAdmin): any
+    // authenticated tenant member can read it. _pshPool (not _userRolesPool/
+    // _teamManagementHandlers): works in NODE_ENV=test. See decisions.md,
+    // 2026-09-24.
+    authGuard(req, res, async () => { await handleGetTeamMembersApi(req, res, _pshPool); });
 
   } else if (pathname === '/api/team/members' && req.method === 'POST') {
     // tir-s3 — add/assign teammate role (requireAdmin gate, AC3; ADR-025:

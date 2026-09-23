@@ -255,4 +255,27 @@ function createTeamManagementHandlers(pool) {
   return { handleGetTeamMembers: handleGetTeamMembers, handleAddTeammate: handleAddTeammate, handleCreateInvite: handleCreateInvite, handleGetCreateInviteForm: handleGetCreateInviteForm };
 }
 
-module.exports = { createTeamManagementHandlers: createTeamManagementHandlers, setLogger: setLogger };
+/**
+ * GET /api/team/members — real team roster read API (rtri-s1). Deliberately
+ * NOT part of createTeamManagementHandlers's factory: that factory is bound
+ * to _userRolesPool (real-Postgres-only, no NODE_ENV=test fallback — see
+ * server.js line ~131) and its routes are requireAdmin-gated. This endpoint
+ * must work for any authenticated tenant member — a picker built in a later
+ * story is used by "product owner or feature lead" personas, not
+ * necessarily admins — and must be testable in NODE_ENV=test, so it takes
+ * `pool` as a plain parameter (matches routes/pods.js's handleGetPods
+ * exactly) and is wired in server.js with authGuard + _pshPool, not
+ * requireAdmin + _userRolesPool. See decisions.md, 2026-09-24, for the full
+ * investigation.
+ * @param {object} req
+ * @param {object} res
+ * @param {object} pool
+ */
+async function handleGetTeamMembersApi(req, res, pool) {
+  var tenantId = req.session && req.session.tenantId;
+  var members = await teamManagement.listTeamMembers(pool, tenantId);
+  res.writeHead(200, { 'Content-Type': 'application/json' });
+  res.end(JSON.stringify({ members: members }));
+}
+
+module.exports = { createTeamManagementHandlers: createTeamManagementHandlers, setLogger: setLogger, handleGetTeamMembersApi: handleGetTeamMembersApi };

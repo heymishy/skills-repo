@@ -173,6 +173,29 @@ async function testAC3TenantIsolation() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// AC4 — GET /api/team/members returns JSON matching the read function's own output
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function testAC4EndpointReturnsMatchingJson() {
+  var teamManagementRoute = freshRequire(TEAM_MANAGEMENT_ROUTE_PATH);
+  var teamManagement = freshRequire(TEAM_MANAGEMENT_PATH);
+  var pool = makeFakePool();
+
+  pool._seedMember('acme', 1, 'engineer', 'alice@example.com');
+  pool._seedMember('acme', 2, 'admin', 'bob-gh');
+
+  var req = mockReq({ session: { accessToken: 'tok', tenantId: 'acme' } });
+  var res = mockRes();
+
+  await teamManagementRoute.handleGetTeamMembersApi(req, res, pool);
+
+  assert.strictEqual(res.statusCode, 200, 'AC4: endpoint responds 200');
+  var body = JSON.parse(res.body);
+  var directOutput = await teamManagement.listTeamMembers(pool, 'acme');
+  assert.deepStrictEqual(body.members, directOutput, 'AC4: response body\'s members array deep-equals the read function\'s own direct-call output');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Runner (extended by later tasks)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -187,6 +210,9 @@ async function main() {
 
   console.log('\nAC3 — tenant isolation');
   await test('AC3: listTeamMembers never returns another tenant\'s members', testAC3TenantIsolation);
+
+  console.log('\nAC4 — endpoint returns matching JSON');
+  await test('AC4: GET /api/team/members returns a JSON body matching the read function\'s own output', testAC4EndpointReturnsMatchingJson);
 
   console.log('\n[rtri-s1] ' + passed + ' passed, ' + failed + ' failed');
   if (failures.length) {
