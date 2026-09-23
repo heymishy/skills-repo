@@ -36398,7 +36398,7 @@
           "slug": "pmnv-s1",
           "id": "pmnv-s1",
           "name": "Add Pod Manager to the sidebar nav",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "testPlan": {
             "status": "all-passing",
@@ -36413,9 +36413,11 @@
           "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
-          "updatedAt": "2026-09-22T20:56:02.725Z",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/919"
+          "updatedAt": "2026-09-23T00:29:14.104Z",
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/919",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ]
     }
