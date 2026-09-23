@@ -1,5 +1,12 @@
 # Decisions: Wire Pod/Team Pickers to the Real Team Roster
 
+## `rtri-s1` `/branch-setup`: baseline acknowledged, 1 pre-existing/environmental failure (2026-09-24)
+
+**Context:** `node scripts/run-all-tests.js` on the freshly-created `feature/rtri-s1` worktree (built from latest `master`, including the fully-merged `pmnv-s1` and this feature's own DoR sign-off commit) showed 1 failure: `tests/check-p3.5-validate-trace.js` — the same pre-existing/environmental failure acknowledged repeatedly across every other worktree this session (Windows local `python3` shim permission issue, unrelated to any story's own code). 698 files run, 1 failed.
+**Decision:** Acknowledged as pre-existing/environmental and proceeding, per `/branch-setup`'s own documented Option 2 path. No code has been committed on this branch yet.
+**Rationale:** Matches the identical investigation already performed for every other worktree created this session — no new failure beyond the established baseline, no fresh investigation needed.
+**Story:** rtri-s1 — no AC or scope change; baseline acknowledgement only, per `/branch-setup`'s own required step.
+
 ## `/definition-of-ready` W4 RISK-ACCEPT: verification scripts not yet reviewed by a domain expert (2026-09-24)
 
 **Context:** `rtri-s1`, `rtri-s2`, and `rtri-s3`'s AC verification scripts were written this session (during `/test-plan`) and have not yet had a pre-code domain-expert review pass — W4 fires for all 3 stories.
