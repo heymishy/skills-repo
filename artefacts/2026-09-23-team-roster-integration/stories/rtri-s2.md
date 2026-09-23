@@ -38,6 +38,8 @@ So that **the pods I create actually reflect my real team, not 3 fixed demo name
 
 **AC5:** Given the existing role-tab filter and search-by-name controls already present in `pod-manager.html` (from `ep1-s1`), When used against the real roster, Then they continue to function correctly (regression guard — these controls must not silently break when the underlying data source changes from a static array to a fetched one).
 
+**AC6:** Given a real identity string containing HTML-significant characters (e.g. an identity_key or display value containing `<`, `>`, or `'`), When the "Available"/"Your team" roster lists are rendered, Then the value is inserted via safe DOM construction (`createElement`/`textContent`) or equivalent escaping — never raw string concatenation into `innerHTML` — matching `ep4-s1`'s own fixed pattern (commit `6adfb5b2`) and satisfying MC-SEC-01. Verified by a test asserting the payload string is never interpreted as markup (no injected element/attribute appears in the rendered DOM).
+
 ## Out of Scope
 
 - The `/team/members` page's own listing gap — that is `rtri-s3`.
@@ -47,7 +49,7 @@ So that **the pods I create actually reflect my real team, not 3 fixed demo name
 ## NFRs
 
 - **Performance:** The roster fetch completes well within the "Create Pod" modal's own existing 1-second-equivalent budget (matches `ep4-s1`'s own established NFR pattern for a comparable fetch-on-open modal).
-- **Security:** No new data exposure — the real roster already only shows a tenant's own members (ADR-025, enforced in `rtri-s1`); this story doesn't widen that.
+- **Security:** No new data exposure — the real roster already only shows a tenant's own members (ADR-025, enforced in `rtri-s1`); this story doesn't widen that. Real identity strings rendered into the picker MUST use safe DOM construction or equivalent escaping, never raw string concatenation into HTML (MC-SEC-01) — see AC6.
 - **Accessibility:** The existing role-tab/search controls' accessibility (already established in `ep1-s1`) is preserved — this story changes the data source, not the controls' markup or semantics.
 - **Audit:** Not applicable — no new write/mutation; pod creation's own existing behaviour (unaudited today) is unchanged.
 

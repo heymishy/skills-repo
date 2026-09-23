@@ -36,6 +36,8 @@ So that **I can confirm who has been invited/added before assigning them to pods
 
 **AC4:** Given two different tenants each with their own real members, When tenant A's admin views `/team/members`, Then only tenant A's members are shown — tenant B's members never appear (tenant isolation, ADR-025, reusing `rtri-s1`'s own already-scoped function).
 
+**AC5:** Given a real identity string containing HTML-significant characters (e.g. an identity_key or display value containing `<`, `>`, or `'`), When the member list is rendered, Then the value is emitted via the templating engine's own auto-escaping or equivalent safe construction — never raw string concatenation into HTML — matching `ep4-s1`'s own fixed pattern (commit `6adfb5b2`) and satisfying MC-SEC-01. Verified by a test asserting the payload string is never interpreted as markup in the rendered response.
+
 ## Out of Scope
 
 - Any change to the add-teammate form itself, or the invite flow (`team-invitations.js`, `client-invitations.js`) — reused entirely unmodified.
@@ -45,7 +47,7 @@ So that **I can confirm who has been invited/added before assigning them to pods
 ## NFRs
 
 - **Performance:** Page render time is not meaningfully affected — one additional indexed query, matching every other already-fast page in this app.
-- **Security:** No new data exposure — only the viewing tenant's own real members are shown (ADR-025).
+- **Security:** No new data exposure — only the viewing tenant's own real members are shown (ADR-025). Real identity strings rendered into the list MUST use the templating engine's auto-escaping or equivalent safe construction, never raw string concatenation into HTML (MC-SEC-01) — see AC5.
 - **Accessibility:** The new member list uses real, semantic markup (a list or table, not divs-as-rows) — matches this page's own existing native-controls convention (labelled inputs, real `<button>`s) rather than introducing a new, less-accessible pattern.
 - **Audit:** Not applicable — this story is read-only; the add-teammate action it displays results from is unaffected and remains unaudited as before (unchanged from today).
 

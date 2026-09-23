@@ -36427,7 +36427,7 @@
       "name": "Wire Pod/Team Pickers to the Real Team Roster",
       "stage": "review",
       "discoveryStatus": "approved",
-      "health": "red",
+      "health": "green",
       "metrics": [
         {
           "id": "m1",
@@ -36450,7 +36450,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-09-23T19:06:57.888Z",
+      "updatedAt": "2026-09-23T19:17:34.334Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -36474,19 +36474,19 @@
               "slug": "rtri-s2",
               "name": "Wire pod-manager.html member picker to the real roster",
               "stage": "review",
-              "health": "red",
-              "reviewStatus": "failed",
-              "highFindings": 1,
-              "updatedAt": "2026-09-23T19:05:21.416Z"
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-09-23T19:17:34.334Z"
             },
             {
               "slug": "rtri-s3",
               "name": "Render a real member list on /team/members",
               "stage": "review",
-              "health": "red",
-              "reviewStatus": "failed",
-              "highFindings": 1,
-              "updatedAt": "2026-09-23T19:06:57.888Z"
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-09-23T19:17:34.334Z"
             }
           ]
         }
@@ -36497,8 +36497,8 @@
           "id": "MC-SEC-01",
           "category": "mandatory-constraint",
           "label": "No user-supplied content in innerHTML without sanitisation",
-          "status": "not-met",
-          "note": "rtri-s2 [1-H1], rtri-s3 [1-H1] -- real identity strings about to be rendered with no AC/NFR requiring safe DOM construction or escaping, same risk class as ep4-s1 Critical XSS"
+          "status": "met",
+          "note": "rtri-s2 AC6, rtri-s3 AC5 added at /review run 1 -- require safe DOM construction / auto-escaping for real identity strings, verified against a payload string. Closed at /review run 2 (2026-09-24)."
         },
         {
           "id": "MC-SEC-02",
