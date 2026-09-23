@@ -36464,11 +36464,11 @@
             {
               "slug": "rtri-s1",
               "name": "Expose the real team roster as a read API",
-              "stage": "branch-setup",
+              "stage": "implementation-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-23T20:14:08.920Z",
+              "updatedAt": "2026-09-23T20:35:21.036Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -36478,7 +36478,33 @@
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "listTeamMembers (AC1/AC2/AC3)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-23-team-roster-integration/plans/rtri-s1-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "handleGetTeamMembersApi + server.js wiring (AC4)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-23-team-roster-integration/plans/rtri-s1-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Unauthenticated rejection test (AC5)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-23-team-roster-integration/plans/rtri-s1-plan.md"
+                },
+                {
+                  "id": "task-4",
+                  "name": "fake-test-db.js wiring completeness",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-23-team-roster-integration/plans/rtri-s1-plan.md"
+                }
+              ]
             },
             {
               "slug": "rtri-s2",
