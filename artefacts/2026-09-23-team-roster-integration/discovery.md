@@ -1,8 +1,8 @@
 # Discovery: Wire Pod/Team Pickers to the Real Team Roster
 
-**Status:** Clarified — awaiting approval
+**Status:** Approved
 **Created:** 2026-09-23
-**Approved by:** Pending
+**Approved by:** Hamish King — Operator/Product Owner — 2026-09-23
 **Author:** Claude (session-driven, grounded in direct code investigation)
 
 ---
@@ -65,7 +65,7 @@ No new invite, signup, or role-management system — all of that machinery alrea
 
 ## Approved By
 
-Pending
+Hamish King — Operator/Product Owner — 2026-09-23
 
 ## Clarification log
 
