@@ -36425,9 +36425,9 @@
     {
       "slug": "2026-09-23-team-roster-integration",
       "name": "Wire Pod/Team Pickers to the Real Team Roster",
-      "stage": "definition",
+      "stage": "review",
       "discoveryStatus": "approved",
-      "health": "green",
+      "health": "red",
       "metrics": [
         {
           "id": "m1",
@@ -36450,7 +36450,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-09-23T18:54:30.248Z",
+      "updatedAt": "2026-09-23T19:06:57.888Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -36464,20 +36464,29 @@
             {
               "slug": "rtri-s1",
               "name": "Expose the real team roster as a read API",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "green",
+              "reviewStatus": "passed",
+              "highFindings": 0,
+              "updatedAt": "2026-09-23T19:05:21.416Z"
             },
             {
               "slug": "rtri-s2",
               "name": "Wire pod-manager.html member picker to the real roster",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "red",
+              "reviewStatus": "failed",
+              "highFindings": 1,
+              "updatedAt": "2026-09-23T19:05:21.416Z"
             },
             {
               "slug": "rtri-s3",
               "name": "Render a real member list on /team/members",
-              "stage": "definition",
-              "health": "green"
+              "stage": "review",
+              "health": "red",
+              "reviewStatus": "failed",
+              "highFindings": 1,
+              "updatedAt": "2026-09-23T19:06:57.888Z"
             }
           ]
         }
@@ -36488,13 +36497,15 @@
           "id": "MC-SEC-01",
           "category": "mandatory-constraint",
           "label": "No user-supplied content in innerHTML without sanitisation",
-          "status": "not-assessed"
+          "status": "not-met",
+          "note": "rtri-s2 [1-H1], rtri-s3 [1-H1] -- real identity strings about to be rendered with no AC/NFR requiring safe DOM construction or escaping, same risk class as ep4-s1 Critical XSS"
         },
         {
           "id": "MC-SEC-02",
           "category": "mandatory-constraint",
           "label": "No credentials, tokens, or personal data in committed files",
-          "status": "not-assessed"
+          "status": "met",
+          "note": "No credentials/tokens/PII introduced -- feature reads existing identity fields already stored, adds no new secret-bearing files"
         },
         {
           "id": "MC-SEC-03",
@@ -36788,7 +36799,8 @@
           "id": "ADR-025",
           "category": "adr",
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
-          "status": "not-assessed"
+          "status": "met",
+          "note": "All 3 stories explicit AC/NFR: every read strictly scoped by tenant_id (rtri-s1 AC3, rtri-s2 AC3, rtri-s3 AC4)"
         }
       ],
       "slicingStrategy": "vertical-slice"
