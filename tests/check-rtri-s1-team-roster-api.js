@@ -50,6 +50,28 @@ var TEAM_MANAGEMENT_PATH = path.resolve(ROOT, 'src/web-ui/modules/team-managemen
 var TEAM_MANAGEMENT_ROUTE_PATH = path.resolve(ROOT, 'src/web-ui/routes/team-management.js');
 var FAKE_TEST_DB_PATH = path.resolve(ROOT, 'src/web-ui/adapters/fake-test-db.js');
 
+var router = require(path.resolve(ROOT, 'src/web-ui/server.js')).router;
+
+function makeRawRes() {
+  var statusCode = null, headers = {}, chunks = [];
+  return {
+    writeHead: function(code, h) { statusCode = code; Object.assign(headers, h || {}); },
+    setHeader: function(k, v) { headers[k] = v; },
+    end: function(body) { if (body != null) chunks.push(body); },
+    _get: function() { return { statusCode: statusCode, headers: headers, body: chunks.join('') }; }
+  };
+}
+
+function dispatchAndAwait(req) {
+  return new Promise(function(resolve, reject) {
+    var res = makeRawRes();
+    var origEnd = res.end;
+    var settled = false;
+    res.end = function(body) { origEnd(body); if (!settled) { settled = true; resolve(res._get()); } };
+    router(req, res).catch(function(err) { if (!settled) { settled = true; reject(err); } });
+  });
+}
+
 function freshRequire(p) {
   delete require.cache[require.resolve(p)];
   return require(p);
@@ -196,6 +218,19 @@ async function testAC4EndpointReturnsMatchingJson() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// AC5 — unauthenticated request rejected the same way every other
+// authGuard-protected route already is
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function testAC5UnauthenticatedRequestRejected() {
+  var req = { headers: {}, method: 'GET', url: '/api/team/members' };
+  var result = await dispatchAndAwait(req);
+
+  assert.strictEqual(result.statusCode, 302, 'AC5: unauthenticated request is redirected, matching authGuard\'s real, unmodified behaviour (routes/auth.js line ~536)');
+  assert.strictEqual(result.headers.Location, '/', 'AC5: redirect target is the sign-in page, matching every other authGuard-protected route (e.g. GET /api/pods)');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Runner (extended by later tasks)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -213,6 +248,9 @@ async function main() {
 
   console.log('\nAC4 — endpoint returns matching JSON');
   await test('AC4: GET /api/team/members returns a JSON body matching the read function\'s own output', testAC4EndpointReturnsMatchingJson);
+
+  console.log('\nAC5 — unauthenticated request rejected');
+  await test('AC5: unauthenticated request is rejected the same way every other authGuard-protected route already is', testAC5UnauthenticatedRequestRejected);
 
   console.log('\n[rtri-s1] ' + passed + ' passed, ' + failed + ' failed');
   if (failures.length) {
