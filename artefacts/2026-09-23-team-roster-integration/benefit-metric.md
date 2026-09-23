@@ -47,8 +47,8 @@ This is a straightforward integration fix — wiring two existing UI pickers to 
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Real pod membership | *(pending /definition)* | Gap — to be filled at /definition |
-| `/team/members` shows a real list | *(pending /definition)* | Gap — to be filled at /definition |
+| Real pod membership | rtri-s1, rtri-s2 | Covered |
+| `/team/members` shows a real list | rtri-s1, rtri-s3 | Covered |
 
 ---
 
