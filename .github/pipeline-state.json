@@ -36464,11 +36464,11 @@
             {
               "slug": "rtri-s1",
               "name": "Expose the real team roster as a read API",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-23T19:54:16.168Z",
+              "updatedAt": "2026-09-23T20:14:08.920Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -36868,7 +36868,8 @@
           "assessedAt": "2026-09-23T19:54:16.168Z"
         }
       ],
-      "slicingStrategy": "vertical-slice"
+      "slicingStrategy": "vertical-slice",
+      "stories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
