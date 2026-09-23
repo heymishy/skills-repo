@@ -36450,7 +36450,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-09-23T19:17:34.334Z",
+      "updatedAt": "2026-09-23T19:33:37.329Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -36477,7 +36477,7 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-23T19:17:34.334Z"
+              "updatedAt": "2026-09-23T19:33:37.329Z"
             },
             {
               "slug": "rtri-s3",
