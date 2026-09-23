@@ -36425,7 +36425,7 @@
     {
       "slug": "2026-09-23-team-roster-integration",
       "name": "Wire Pod/Team Pickers to the Real Team Roster",
-      "stage": "review",
+      "stage": "test-plan",
       "discoveryStatus": "approved",
       "health": "green",
       "metrics": [
@@ -36450,7 +36450,7 @@
           "contributingStories": []
         }
       ],
-      "updatedAt": "2026-09-23T19:33:37.329Z",
+      "updatedAt": "2026-09-23T19:37:41.800Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -36464,29 +36464,56 @@
             {
               "slug": "rtri-s1",
               "name": "Expose the real team roster as a read API",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-23T19:05:21.416Z"
+              "updatedAt": "2026-09-23T19:37:41.800Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 5,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "rtri-s2",
               "name": "Wire pod-manager.html member picker to the real roster",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-23T19:33:37.329Z"
+              "updatedAt": "2026-09-23T19:37:41.800Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 9,
+                "passing": 0
+              },
+              "acTotal": 7,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             },
             {
               "slug": "rtri-s3",
               "name": "Render a real member list on /team/members",
-              "stage": "review",
+              "stage": "test-plan",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-23T19:17:34.334Z"
+              "updatedAt": "2026-09-23T19:37:41.800Z",
+              "testPlan": {
+                "status": "written",
+                "totalTests": 4,
+                "passing": 0
+              },
+              "acTotal": 5,
+              "acVerified": 0,
+              "hasLayoutDependentGaps": false,
+              "e2eToolingRequired": false
             }
           ]
         }
