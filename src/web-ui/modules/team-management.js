@@ -149,9 +149,32 @@ async function getRoleForPersonInTenant(pool, tenantId, personId) {
   return result.rows.length ? result.rows[0].role : null;
 }
 
+/**
+ * List the real, resolvable team members of a tenant (rtri-s1) — joins
+ * team_memberships to person_identities so every returned entry carries a
+ * real, displayable identity string. A team_memberships row with no
+ * matching person_identities row is silently omitted (inner join), matching
+ * user-roles.js's own established "no auto-creation, fall through
+ * unchanged" convention for unresolvable identities (resolveRoleForPerson,
+ * AC4).
+ * @param {object} pool - pg-Pool-shaped object exposing query(sql, params)
+ * @param {string} tenantId
+ * @returns {Promise<{identity: string, role: string}[]>}
+ */
+async function listTeamMembers(pool, tenantId) {
+  var result = await pool.query(
+    'SELECT tm.role, pi.identity_key FROM team_memberships tm ' +
+    'INNER JOIN person_identities pi ON pi.person_id = tm.person_id ' +
+    'WHERE tm.tenant_id = $1',
+    [tenantId]
+  );
+  return result.rows.map(function(r) { return { identity: r.identity_key, role: r.role }; });
+}
+
 module.exports = {
   addOrUpdateTeammate,
   getRoleForPersonInTenant,
+  listTeamMembers,
   UnknownIdentityError,
   InvalidRoleError,
   VALID_ROLES

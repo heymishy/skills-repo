@@ -736,6 +736,22 @@ function createFakeTestDb() {
       return Promise.resolve({ rows: tmExists ? [{ '?column?': 1 }] : [] });
     }
 
+    // rtri-s1: SELECT ... team_memberships JOIN person_identities
+    // (listTeamMembers) -- real team roster read, tenant-scoped; the inner
+    // join silently omits any team_memberships row with no matching
+    // person_identities row, matching the real production query exactly.
+    if (s.indexOf('SELECT TM.ROLE, PI.IDENTITY_KEY FROM TEAM_MEMBERSHIPS TM INNER JOIN PERSON_IDENTITIES PI') === 0) {
+      var rosterTenantId = p[0];
+      var rosterRows = teamMemberships
+        .filter(function(r) { return r.tenant_id === rosterTenantId; })
+        .map(function(tm) {
+          var pi = personIdentities.filter(function(x) { return x.person_id === tm.person_id; })[0];
+          return pi ? { role: tm.role, identity_key: pi.identity_key } : null;
+        })
+        .filter(function(r) { return r !== null; });
+      return Promise.resolve({ rows: rosterRows });
+    }
+
     // ── session_turns_archive (dsh-s6) ──────────────────────────────────
     // Checked BEFORE the session_turns branches below: "INSERT INTO
     // SESSION_TURNS_ARCHIVE ..." / "SELECT TURNS FROM SESSION_TURNS_ARCHIVE
