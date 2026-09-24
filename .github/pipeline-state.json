@@ -36464,15 +36464,15 @@
             {
               "slug": "rtri-s1",
               "name": "Expose the real team roster as a read API",
-              "stage": "implementation-plan",
+              "stage": "subagent-execution",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-23T20:35:21.036Z",
+              "updatedAt": "2026-09-24T01:03:06.121Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 5,
-                "passing": 0
+                "totalTests": 6,
+                "passing": 6
               },
               "acTotal": 5,
               "acVerified": 0,
@@ -36483,25 +36483,25 @@
                 {
                   "id": "task-1",
                   "name": "listTeamMembers (AC1/AC2/AC3)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-23-team-roster-integration/plans/rtri-s1-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "handleGetTeamMembersApi + server.js wiring (AC4)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-23-team-roster-integration/plans/rtri-s1-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "Unauthenticated rejection test (AC5)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-23-team-roster-integration/plans/rtri-s1-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "fake-test-db.js wiring completeness",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-23-team-roster-integration/plans/rtri-s1-plan.md"
                 }
               ]
