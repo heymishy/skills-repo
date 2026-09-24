@@ -36556,11 +36556,11 @@
             {
               "slug": "rtri-s4",
               "name": "Backfill person_identities on login so existing real memberships become resolvable",
-              "stage": "test-plan",
+              "stage": "definition-of-ready",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-24T05:58:59.265Z",
+              "updatedAt": "2026-09-24T06:00:56.380Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
@@ -36569,7 +36569,8 @@
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
-              "e2eToolingRequired": false
+              "e2eToolingRequired": false,
+              "dorStatus": "signed-off"
             }
           ]
         }
@@ -36921,6 +36922,15 @@
           "status": "na",
           "assessedBy": "/definition-of-ready",
           "assessedAt": "2026-09-23T19:54:16.168Z"
+        },
+        {
+          "id": "NFR-audit-rtri-s4",
+          "category": "nfr",
+          "label": "Audit logging for identity backfill (identity_backfilled event)",
+          "status": "not-assessed",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-24T06:00:56.380Z",
+          "evidence": "Scoped IN at DoR; verified at /definition-of-done once implemented"
         }
       ],
       "slicingStrategy": "vertical-slice",

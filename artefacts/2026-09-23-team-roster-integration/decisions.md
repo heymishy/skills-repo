@@ -1,5 +1,11 @@
 # Decisions: Wire Pod/Team Pickers to the Real Team Roster
 
+## `rtri-s4` `/definition-of-ready` W4 RISK-ACCEPT: verification script not yet reviewed by a domain expert (2026-09-24)
+
+**Context:** `rtri-s4`'s AC verification script was written this session (during `/test-plan`) and has not yet had a pre-code domain-expert review pass — W4 fires.
+**Decision:** RISK-ACCEPT — proceed to DoR sign-off without a separate pre-code review pass, matching the identical decision already made for `rtri-s1`/`rtri-s2`/`rtri-s3`. The operator is driving this pipeline directly and can walk the script during or immediately after implementation.
+**Story:** `rtri-s4` — no AC/scope change; W4 acknowledged.
+
 ## `rtri-s4` `/test-plan` prep: corrected a wrong "no D37 adapter needed" assumption in the story's own Architecture Constraints (2026-09-24)
 
 **Context:** `rtri-s4`'s Architecture Constraints originally claimed "D37: none introduced... reuses the existing direct-DB-access convention." Investigating the real login call sites before writing the test plan found this is wrong: `routes/auth.js`/`routes/auth-email.js` have no direct `pool` access at all — every DB touch during login goes through the existing `getRoleForTenant(tenantId, identityKey)` D37 adapter (wired in `server.js` via `setGetRoleForTenant`, 2 wiring sites: real pool and `createFakeTestDb()`). The backfill this story needs requires a `provider` value ('github'/'google'/'email'), which only the 4 real login call sites know — the existing adapter signature has nowhere to carry it.
