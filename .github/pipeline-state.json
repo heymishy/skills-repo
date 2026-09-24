@@ -36556,11 +36556,11 @@
             {
               "slug": "rtri-s4",
               "name": "Backfill person_identities on login so existing real memberships become resolvable",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-24T06:00:56.380Z",
+              "updatedAt": "2026-09-24T06:11:39.956Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
