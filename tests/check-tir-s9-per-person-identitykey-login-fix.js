@@ -490,23 +490,23 @@ async function main() {
       assert.ok(setIdx !== -1, 'server.js must call setGetRoleForTenant()');
       var wiringBlock = src.slice(setIdx, setIdx + 400);
       assert.ok(
-        /function\s*\(\s*tenantId\s*,\s*identityKey\s*\)/.test(wiringBlock),
-        'server.js\'s setGetRoleForTenant wiring must accept a second (identityKey) parameter. Wiring block was: ' + wiringBlock
+        /function\s*\(\s*tenantId\s*,\s*identityKey\s*,\s*provider\s*\)/.test(wiringBlock),
+        'server.js\'s setGetRoleForTenant wiring must accept tenantId, identityKey, and provider parameters. Wiring block was: ' + wiringBlock
       );
       assert.ok(
         wiringBlock.indexOf('resolveRoleForPerson(_userRolesPool, tenantId, tenantId)') === -1,
         'server.js must no longer collapse identityKey and tenantId into the same value -- that is the tir-s9 bug this story fixes.'
       );
       assert.ok(
-        /resolveRoleForPerson\(_userRolesPool,\s*identityKey\s*\|\|\s*tenantId,\s*tenantId\)/.test(wiringBlock),
-        'server.js must forward identityKey (falling back to tenantId when absent) into resolveRoleForPerson. Wiring block was: ' + wiringBlock
+        /resolveRoleForPerson\(_userRolesPool,\s*identityKey\s*\|\|\s*tenantId,\s*tenantId,\s*provider\)/.test(wiringBlock),
+        'server.js must forward identityKey (falling back to tenantId when absent) and provider into resolveRoleForPerson. Wiring block was: ' + wiringBlock
       );
 
       var authSrc = fs.readFileSync(AUTH_PATH, 'utf8');
-      var githubCallIdx = authSrc.indexOf('getRoleForTenant(req.session.tenantId, user.login)');
-      assert.ok(githubCallIdx !== -1, 'routes/auth.js\'s GitHub callback must call getRoleForTenant(req.session.tenantId, user.login) -- passing the per-person GitHub login as identityKey, not just the (possibly shared) tenantId.');
-      var googleCallIdx = authSrc.indexOf('getRoleForTenant(req.session.tenantId, userInfo.sub)');
-      assert.ok(googleCallIdx !== -1, 'routes/auth.js\'s Google callback must call getRoleForTenant(req.session.tenantId, userInfo.sub) -- passing sub explicitly as identityKey (AC4).');
+      var githubCallIdx = authSrc.indexOf('getRoleForTenant(req.session.tenantId, user.login, \'github\')');
+      assert.ok(githubCallIdx !== -1, 'routes/auth.js\'s GitHub callback must call getRoleForTenant(req.session.tenantId, user.login, \'github\') -- passing the per-person GitHub login as identityKey and \'github\' as provider.');
+      var googleCallIdx = authSrc.indexOf('getRoleForTenant(req.session.tenantId, userInfo.sub, \'google\')');
+      assert.ok(googleCallIdx !== -1, 'routes/auth.js\'s Google callback must call getRoleForTenant(req.session.tenantId, userInfo.sub, \'google\') -- passing sub explicitly as identityKey and \'google\' as provider.');
     });
   });
 

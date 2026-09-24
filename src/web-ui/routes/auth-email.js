@@ -318,7 +318,7 @@ async function handleEmailSignup(req, res) {
   // tir-s1: load role via the person/team-scoped lookup (AC3). Falls back to
   // 'user' on error.
   try {
-    req.session.role = await _userRoles.getRoleForTenant(email);
+    req.session.role = await _userRoles.getRoleForTenant(email, email, 'email');
   } catch (_) {
     req.session.role = 'user';
   }
@@ -389,7 +389,7 @@ async function handleEmailLogin(req, res) {
   // tir-s1: load role via the person/team-scoped lookup (AC3). Falls back to
   // 'user' on error.
   try {
-    req.session.role = await _userRoles.getRoleForTenant(email);
+    req.session.role = await _userRoles.getRoleForTenant(email, email, 'email');
   } catch (_) {
     req.session.role = 'user';
   }
