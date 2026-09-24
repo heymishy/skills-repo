@@ -5,13 +5,16 @@
 // getRoleForTenant extension (src/web-ui/modules/user-roles.js). Follows
 // this repo's hand-rolled test()/assert style.
 //
-// AC1: backfill fires on all 4 real login call sites (unit + integration)
+// AC1 (core, this task): backfillIdentityIfNeeded writes a real row --
+//      remaining call-shape coverage (all 4 real login sites) added in
+//      Task 2/3 of this story's implementation plan
+// AC3 (this task): idempotent -- no duplicate row, no error on repeat login
+// Audit NFR (this task): logs identity_backfilled without the raw identity
+//
+// Added by later tasks in this same story (not yet present in this file):
 // AC2: backfilled identity becomes visible in listTeamMembers (rtri-s1)
-// AC3: idempotent -- no duplicate row, no error on repeat login
 // AC4: unknown identity never backfilled
-// AC5: existing 3 write sites unaffected (regression, covered by
-//      /verify-completion's full-suite run, not duplicated here)
-// Plus: backward compatibility (omitted provider), Audit NFR
+// AC5: existing 3 write sites unaffected (regression, via /verify-completion)
 
 'use strict';
 
@@ -36,8 +39,6 @@ function test(name, fn) {
 }
 
 var IDENTITY_LINKS_PATH = path.resolve(ROOT, 'src/web-ui/modules/identity-links.js');
-var USER_ROLES_PATH = path.resolve(ROOT, 'src/web-ui/modules/user-roles.js');
-var TEAM_MANAGEMENT_PATH = path.resolve(ROOT, 'src/web-ui/modules/team-management.js');
 
 function freshRequire(p) {
   delete require.cache[require.resolve(p)];
@@ -74,23 +75,6 @@ function makeFakePool() {
     if (s.indexOf('INSERT INTO PERSON_IDENTITIES') === 0) {
       personIdentities.push({ identity_key: p[0], person_id: p[1], provider: p[2] });
       return Promise.resolve({ rows: [] });
-    }
-
-    if (s.indexOf('SELECT ROLE FROM TEAM_MEMBERSHIPS WHERE TENANT_ID') === 0) {
-      var tmRole = teamMemberships.filter(function(r) { return r.tenant_id === p[0]; });
-      return Promise.resolve({ rows: tmRole.length ? [{ role: tmRole[0].role }] : [] });
-    }
-
-    if (s.indexOf('SELECT TM.ROLE, PI.IDENTITY_KEY FROM TEAM_MEMBERSHIPS TM INNER JOIN PERSON_IDENTITIES PI') === 0) {
-      var tenantId = p[0];
-      var rows = teamMemberships
-        .filter(function(r) { return r.tenant_id === tenantId; })
-        .map(function(tm) {
-          var pi = personIdentities.filter(function(x) { return x.person_id === tm.person_id; })[0];
-          return pi ? { role: tm.role, identity_key: pi.identity_key } : null;
-        })
-        .filter(function(r) { return r !== null; });
-      return Promise.resolve({ rows: rows });
     }
 
     console.warn('[fake-pool] unhandled query (returning empty rows): ' + s.slice(0, 160));
