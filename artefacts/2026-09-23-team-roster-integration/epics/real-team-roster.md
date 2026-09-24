@@ -26,9 +26,10 @@ A product owner assigning a pod, or any tenant member viewing `/team/members`, s
 
 ## Stories in This Epic
 
-- [ ] Expose the real team roster as a read API (rtri-s1)
+- [x] Expose the real team roster as a read API (rtri-s1) — merged, DoD complete
 - [ ] Wire pod-manager.html's member picker to the real roster (rtri-s2)
 - [ ] Render a real member list on /team/members (rtri-s3)
+- [ ] Backfill person_identities on login so existing real memberships become resolvable (rtri-s4) — added 2026-09-24, found during rtri-s1's DoD live verification (see decisions.md)
 
 ## Human Oversight Level
 

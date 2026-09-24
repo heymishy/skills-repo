@@ -36454,7 +36454,7 @@
           ]
         }
       ],
-      "updatedAt": "2026-09-23T19:54:16.168Z",
+      "updatedAt": "2026-09-24T04:25:26.741Z",
       "regulated": false,
       "complianceProfile": "standard",
       "complianceFrameworks": [],
@@ -36552,6 +36552,12 @@
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
               "dorStatus": "signed-off"
+            },
+            {
+              "slug": "rtri-s4",
+              "name": "Backfill person_identities on login so existing real memberships become resolvable",
+              "stage": "definition",
+              "health": "green"
             }
           ]
         }
