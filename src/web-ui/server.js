@@ -555,8 +555,8 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
     // person's own GitHub login / Google sub) and using it in place of
     // tenantId, falling back to tenantId only when a caller omits it
     // (auth-email.js's unmodified single-argument call sites).
-    setGetRoleForTenant(function(tenantId, identityKey) {
-      return resolveRoleForPerson(_userRolesPool, identityKey || tenantId, tenantId);
+    setGetRoleForTenant(function(tenantId, identityKey, provider) {
+      return resolveRoleForPerson(_userRolesPool, identityKey || tenantId, tenantId, provider);
     });
     console.log('[tir-s1/tir-s7/tir-s9] team_memberships adapter wired (getRoleForTenant, person-scoped, per-person identityKey)');
 
@@ -1928,8 +1928,8 @@ if (process.env.NODE_ENV === 'test') {
     // here, same fake db instance already backing team_memberships/
     // person_identities via _pshPool above (bri-s3.3's own seed-multi-user-
     // roles test endpoint writes through that same instance).
-    setGetRoleForTenant(function(tenantId, identityKey) {
-      return resolveRoleForPerson(_fakeTestDb, identityKey || tenantId, tenantId);
+    setGetRoleForTenant(function(tenantId, identityKey, provider) {
+      return resolveRoleForPerson(_fakeTestDb, identityKey || tenantId, tenantId, provider);
     });
     // lrtc-s1: accepts and forwards identityKey too, mirroring the fix just
     // above for the real-DATABASE_URL branch -- without it, this fake-db

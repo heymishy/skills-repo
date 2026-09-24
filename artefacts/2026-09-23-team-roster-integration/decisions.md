@@ -1,5 +1,11 @@
 # Decisions: Wire Pod/Team Pickers to the Real Team Roster
 
+## `rtri-s4` `/branch-setup`: baseline acknowledged, 1 pre-existing/environmental failure (2026-09-24)
+
+**Context:** `node scripts/run-all-tests.js` on the freshly-created `feature/rtri-s4` worktree (built from latest `master`, including this feature's own DoR sign-off) showed 1 failure: `tests/check-p3.5-validate-trace.js` — the same pre-existing/environmental failure acknowledged repeatedly across every other worktree this session. 699 files run, 1 failed.
+**Decision:** Acknowledged as pre-existing/environmental and proceeding.
+**Story:** rtri-s4 — no AC or scope change; baseline acknowledgement only.
+
 ## `rtri-s4` `/definition-of-ready` W4 RISK-ACCEPT: verification script not yet reviewed by a domain expert (2026-09-24)
 
 **Context:** `rtri-s4`'s AC verification script was written this session (during `/test-plan`) and has not yet had a pre-code domain-expert review pass — W4 fires.

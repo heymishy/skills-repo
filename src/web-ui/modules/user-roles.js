@@ -21,7 +21,7 @@
 // getRoleForTenant/setGetRoleForTenant adapter pair itself (D37 stub-throw
 // contract) is unchanged — only server.js's production wiring is updated to
 // call the new, corrected function (see AC5).
-const { resolvePersonForIdentity } = require('./identity-links');
+const { resolvePersonForIdentity, backfillIdentityIfNeeded } = require('./identity-links');
 
 let _getUserRole = null;
 
@@ -68,13 +68,18 @@ function setGetRoleForTenant(fn) {
  * email/password cases where `tenantId` already equals the person's own
  * identity. See decisions.md (2026-07-14) for why this argument was missing
  * in production despite tir-s7 already fixing the underlying query.
+ *
+ * rtri-s4: accepts an optional 3rd `provider` argument, forwarded to the
+ * wired implementation the same way. Omitting it preserves exact prior
+ * behaviour for every pre-rtri-s4 caller.
  * @param {string} tenantId
  * @param {string} [identityKey] - the authenticating person's own per-person identity (GitHub login, Google sub, or email) -- distinct from tenantId whenever a tenant is shared by 2+ people (e.g. a TENANT_ORG_ALLOWLIST-matched GitHub org)
+ * @param {string} [provider] - 'github', 'google', or 'email' (rtri-s4)
  * @returns {Promise<string>}
  */
-async function getRoleForTenant(tenantId, identityKey) {
+async function getRoleForTenant(tenantId, identityKey, provider) {
   if (_getRoleForTenant) {
-    return _getRoleForTenant(tenantId, identityKey);
+    return _getRoleForTenant(tenantId, identityKey, provider);
   }
   if (_getUserRole) {
     return _getUserRole(tenantId);
@@ -174,6 +179,14 @@ async function resolveRoleForTenant(pool, tenantId) {
  * tenant could resolve to an arbitrary row's role instead of their own
  * (AC1/AC2).
  *
+ * rtri-s4: accepts an optional 4th `provider` argument. When supplied and a
+ * personId resolves (via either path), backfills a person_identities row if
+ * none exists yet -- closing the gap where a real, already-existing
+ * team_memberships row is invisible to rtri-s1's listTeamMembers because no
+ * login path ever wrote person_identities. Omitting `provider` preserves
+ * EXACT prior behaviour for every pre-rtri-s4 caller -- no backfill is
+ * attempted.
+ *
  * Falls through to the pre-tir-s7 resolveRoleForTenant behaviour (tenant-only
  * lookup, legacy user_roles fallback, default 'user') in two cases:
  *  - resolvePersonForIdentity returns null — a completely unknown identity
@@ -188,13 +201,19 @@ async function resolveRoleForTenant(pool, tenantId) {
  * @param {object} pool - pg-Pool-shaped object exposing query(sql, params)
  * @param {string} identityKey - the identity string used to resolve personId (GitHub login, Google sub, or email — whatever the login flow already computes as tenantId today)
  * @param {string} tenantId - the tenant to scope the team_memberships lookup to
+ * @param {string} [provider] - 'github', 'google', or 'email' (rtri-s4) — when supplied, triggers the person_identities backfill if needed
  * @returns {Promise<string>}
  */
-async function resolveRoleForPerson(pool, identityKey, tenantId) {
+async function resolveRoleForPerson(pool, identityKey, tenantId, provider) {
   const personId = await resolvePersonForIdentity(pool, identityKey);
   if (personId == null) {
     // AC4: unknown identity — no auto-creation, fall through unchanged.
     return resolveRoleForTenant(pool, tenantId);
+  }
+
+  if (provider) {
+    // rtri-s4: backfill is idempotent and safe to call on every login.
+    await backfillIdentityIfNeeded(pool, identityKey, personId, provider);
   }
 
   const membership = await pool.query(

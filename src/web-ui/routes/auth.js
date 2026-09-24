@@ -353,7 +353,7 @@ async function handleAuthCallback(req, res) {
     // user.login is each person's own, distinct GitHub login regardless of
     // which tenant they share.
     try {
-      req.session.role = await _userRoles.getRoleForTenant(req.session.tenantId, user.login);
+      req.session.role = await _userRoles.getRoleForTenant(req.session.tenantId, user.login, 'github');
     } catch (_) {
       req.session.role = 'user';
     }
@@ -475,7 +475,7 @@ async function handleAuthGoogleCallback(req, res) {
     // documented non-bug finding, not a behaviour change (verified by a
     // regression test).
     try {
-      req.session.role = await _userRoles.getRoleForTenant(req.session.tenantId, userInfo.sub);
+      req.session.role = await _userRoles.getRoleForTenant(req.session.tenantId, userInfo.sub, 'google');
     } catch (_) {
       req.session.role = 'user';
     }

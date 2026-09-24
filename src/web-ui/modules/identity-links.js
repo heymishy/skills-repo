@@ -141,6 +141,46 @@ async function linkIdentity(pool, currentIdentityKey, newIdentityKey, provider, 
 }
 
 /**
+ * Backfill a person_identities row for an identity that already resolves to
+ * a real person (rtri-s4) -- via either an explicit link or the
+ * team_memberships.tenant_id fallback -- but has no explicit row yet. Never
+ * creates a new person or team_membership; only makes an ALREADY-existing,
+ * already-legitimate membership resolvable by rtri-s1's listTeamMembers.
+ * Idempotent: a no-op if a row already exists for identityKey.
+ * @param {object} pool
+ * @param {string} identityKey - GitHub login, Google sub, or email
+ * @param {number} personId - the already-resolved person this identity belongs to
+ * @param {string} provider - 'github', 'google', or 'email'
+ * @param {{info: Function, warn: Function}} [logger]
+ * @returns {Promise<{backfilled: boolean}>}
+ */
+async function backfillIdentityIfNeeded(pool, identityKey, personId, provider, logger) {
+  var log = logger || _defaultLogger;
+
+  var existing = await pool.query('SELECT person_id FROM person_identities WHERE identity_key = $1', [identityKey]);
+  if (existing.rows.length) {
+    return { backfilled: false };
+  }
+
+  await pool.query(
+    'INSERT INTO person_identities (identity_key, person_id, provider) VALUES ($1, $2, $3)',
+    [identityKey, personId, provider]
+  );
+
+  // Audit (NFR): person id + a SHA-256 hash of the identity + provider + a
+  // timestamp -- never the raw identity string, matching linkIdentity's own
+  // established convention exactly.
+  log.info('identity_backfilled', {
+    personId: personId,
+    identityHash: _hashIdentity(identityKey),
+    provider: provider,
+    timestamp: new Date().toISOString()
+  });
+
+  return { backfilled: true };
+}
+
+/**
  * List providers explicitly linked to the person who owns identityKey, via
  * person_identities (this module's own explicit-link table). Does NOT
  * include the provider of the person's original signup identity itself --
@@ -165,6 +205,7 @@ module.exports = {
   migrateIdentityLinksSchema,
   resolvePersonForIdentity,
   linkIdentity,
+  backfillIdentityIfNeeded,
   getLinkedProviders,
   IdentityAlreadyLinkedError
 };
