@@ -36436,8 +36436,10 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "Infrastructure-only story -- no UI wired to create a pod with real members yet; rtri-s2 (pod-manager.html picker) is the consumer that will make this measurable",
+          "contributingStories": [
+            "rtri-s1"
+          ]
         },
         {
           "id": "m2",
@@ -36446,8 +36448,10 @@
           "baseline": "0",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "Infrastructure-only story -- no UI wired to render the real list yet; rtri-s3 (/team/members page) is the consumer that will make this measurable",
+          "contributingStories": [
+            "rtri-s1"
+          ]
         }
       ],
       "updatedAt": "2026-09-23T19:54:16.168Z",
@@ -36464,11 +36468,11 @@
             {
               "slug": "rtri-s1",
               "name": "Expose the real team roster as a read API",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-24T02:44:31.377Z",
+              "updatedAt": "2026-09-24T02:57:55.382Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -36507,7 +36511,9 @@
               ],
               "verifyStatus": "passed",
               "prStatus": "merged",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/920"
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/920",
+              "dodStatus": "complete",
+              "releaseReady": true
             },
             {
               "slug": "rtri-s2",
@@ -36869,16 +36875,18 @@
           "category": "nfr",
           "label": "Real-roster read/render performance",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-23T19:54:16.168Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-24T02:57:55.382Z",
+          "evidence": "Matches established RISK-ACCEPT pattern for comparable synchronous NFRs; not yet live-timed (no consumer shipped yet)"
         },
         {
           "id": "NFR-security-rtri",
           "category": "nfr",
           "label": "No new data exposure beyond tenant-scoped roster",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-23T19:54:16.168Z"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-24T02:57:55.382Z",
+          "evidence": "AC5 test proves authGuard reused unmodified via real router dispatch"
         },
         {
           "id": "NFR-accessibility-rtri",
