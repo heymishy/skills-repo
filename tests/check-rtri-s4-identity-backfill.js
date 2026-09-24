@@ -5,16 +5,16 @@
 // getRoleForTenant extension (src/web-ui/modules/user-roles.js). Follows
 // this repo's hand-rolled test()/assert style.
 //
-// AC1 (core, this task): backfillIdentityIfNeeded writes a real row --
-//      remaining call-shape coverage (all 4 real login sites) added in
-//      Task 2/3 of this story's implementation plan
-// AC3 (this task): idempotent -- no duplicate row, no error on repeat login
-// Audit NFR (this task): logs identity_backfilled without the raw identity
-//
-// Added by later tasks in this same story (not yet present in this file):
+// AC1: backfillIdentityIfNeeded writes a real row (tested on all 4 real
+//      login call sites: core write + github, google, email sign-in)
 // AC2: backfilled identity becomes visible in listTeamMembers (rtri-s1)
+// AC3: idempotent -- no duplicate row, no error on repeat login
 // AC4: unknown identity never backfilled
-// AC5: existing 3 write sites unaffected (regression, via /verify-completion)
+// Audit NFR: logs identity_backfilled without the raw identity string
+//
+// AC5 (existing 3 write sites unaffected) has NO test in this file by
+// design -- verified via /verify-completion's full-suite regression run
+// against the 3 existing write-site test suites.
 
 'use strict';
 
