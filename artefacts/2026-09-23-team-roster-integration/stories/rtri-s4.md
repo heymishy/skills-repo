@@ -51,7 +51,7 @@ So that **the roster isn't empty for the most common real case — a team that h
 - **Performance:** The backfill check (one extra `SELECT` + conditional `INSERT`) adds negligible latency to login — already in the same request/response cycle as the existing `resolveRoleForPerson` call, which does comparable work.
 - **Security:** No new data exposure — `person_identities.identity_key` values are already real, already-known identity strings (GitHub login, Google email, or email/password email) that the login flow already has direct access to; this story does not introduce any new identity source or trust boundary.
 - **Accessibility:** Not applicable — no UI change.
-- **Audit:** Matches `linkIdentity`'s own existing audit convention (logs person id + a SHA-256 hash of the identity + provider + timestamp — never the raw identity string in logs) if a logger is threaded through; if not directly feasible at all 4 call sites without wider refactor, this can be scoped down to "no audit" with an explicit RISK-ACCEPT at DoR, since this write is bookkeeping-only (no new access granted) rather than a security-relevant action like account linking.
+- **Audit:** Matches `linkIdentity`'s own existing audit convention exactly — logs person id + a SHA-256 hash of the identity + provider + timestamp, never the raw identity string. Resolved IN at `/definition-of-ready` (see `dor/rtri-s4-dor-contract.md`): `identity-links.js` already has `_defaultLogger`/`_hashIdentity` ready to reuse, so this needs no new logging infrastructure and no RISK-ACCEPT.
 
 ## Complexity Rating
 

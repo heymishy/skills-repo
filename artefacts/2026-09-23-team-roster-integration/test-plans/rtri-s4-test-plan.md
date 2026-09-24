@@ -70,6 +70,14 @@ None.
 - **Expected result:** Resolves `{ backfilled: false }`; fake pool's `person_identities` still contains exactly 1 row for `identity_key: 'acme'` — no duplicate, no thrown error
 - **Edge case:** Yes — the story's own named idempotency requirement (AC3)
 
+### `backfillIdentityIfNeeded` audit-logs the backfill without ever logging the raw identity string
+
+- **Verifies:** Audit NFR
+- **Precondition:** Fake pool has a fallback-resolvable person (person_id 1), a spy logger (`{ info: function(event, data) { calls.push({event, data}); } }`)
+- **Action:** Call `identityLinks.backfillIdentityIfNeeded(pool, 'alice@example.com', 1, 'email', spyLogger)`
+- **Expected result:** `calls` contains one `identity_backfilled` event with `personId: 1`, `provider: 'email'`, a `timestamp`, and an `identityHash` field that is a SHA-256 hex digest — asserted via regex (`/^[0-9a-f]{64}$/`) — never the literal string `'alice@example.com'` anywhere in `data`
+- **Edge case:** Yes — the security-relevant "never log the raw identity" requirement
+
 ---
 
 ## Integration Tests
@@ -123,11 +131,11 @@ None.
 - **Pass threshold:** Zero new rows for any identity that doesn't already resolve via the existing, already-trusted `team_memberships` fallback.
 - **Tool:** `node scripts/run-all-tests.js`
 
-### Audit logging (conditional — see decisions.md / DoR)
+### Audit logging
 
 - **NFR addressed:** Audit
-- **Measurement method:** If implemented, a test asserting `backfillIdentityIfNeeded` logs `identity_backfilled` with person id + SHA-256 identity hash + provider + timestamp, matching `linkIdentity`'s own established audit convention exactly (never the raw identity string).
-- **Pass threshold:** To be confirmed at DoR — this NFR was left conditionally open in the story itself (Run 1 review LOW finding [1-L2]/[2-L2]).
+- **Measurement method:** A dedicated test asserting `backfillIdentityIfNeeded` logs `identity_backfilled` with person id + SHA-256 identity hash + provider + timestamp, matching `linkIdentity`'s own established audit convention exactly (never the raw identity string) — resolved IN at `/definition-of-ready` (closes Run 1/2 review's LOW finding [1-L2]/[2-L2]).
+- **Pass threshold:** Log event present with all 4 fields; raw identity string never appears in any logged value.
 - **Tool:** `node scripts/run-all-tests.js`
 
 ---
