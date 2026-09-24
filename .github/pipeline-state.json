@@ -36459,16 +36459,16 @@
         {
           "slug": "real-team-roster",
           "name": "Pod and team pickers show the real, invited members of a tenant team",
-          "status": "not-started",
+          "status": "in-progress",
           "stories": [
             {
               "slug": "rtri-s1",
               "name": "Expose the real team roster as a read API",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-24T02:40:39.018Z",
+              "updatedAt": "2026-09-24T02:44:31.377Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 6,
@@ -36505,7 +36505,9 @@
                   "file": "artefacts/2026-09-23-team-roster-integration/plans/rtri-s1-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/920"
             },
             {
               "slug": "rtri-s2",
