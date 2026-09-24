@@ -36560,11 +36560,11 @@
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-24T06:43:07.067Z",
+              "updatedAt": "2026-09-24T20:28:41.473Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
-                "passing": 0
+                "passing": 9
               },
               "acTotal": 5,
               "acVerified": 0,
@@ -36575,25 +36575,25 @@
                 {
                   "id": "task-1",
                   "name": "backfillIdentityIfNeeded (AC3, Audit NFR)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-23-team-roster-integration/plans/rtri-s4-plan.md"
                 },
                 {
                   "id": "task-2",
                   "name": "Extend resolveRoleForPerson/getRoleForTenant (AC1 github, AC4, backward-compat)",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-23-team-roster-integration/plans/rtri-s4-plan.md"
                 },
                 {
                   "id": "task-3",
                   "name": "AC1 remaining call shapes + AC2 end-to-end proof",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-23-team-roster-integration/plans/rtri-s4-plan.md"
                 },
                 {
                   "id": "task-4",
                   "name": "Wire 4 real login call sites + server.js adapter wiring",
-                  "tddState": "not-started",
+                  "tddState": "committed",
                   "file": "artefacts/2026-09-23-team-roster-integration/plans/rtri-s4-plan.md"
                 }
               ]
