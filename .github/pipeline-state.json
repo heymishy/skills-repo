@@ -36556,11 +36556,11 @@
             {
               "slug": "rtri-s4",
               "name": "Backfill person_identities on login so existing real memberships become resolvable",
-              "stage": "verify-completion",
+              "stage": "branch-complete",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-24T22:40:57.269Z",
+              "updatedAt": "2026-09-24T23:15:20.417Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
@@ -36597,7 +36597,9 @@
                   "file": "artefacts/2026-09-23-team-roster-integration/plans/rtri-s4-plan.md"
                 }
               ],
-              "verifyStatus": "passed"
+              "verifyStatus": "passed",
+              "prStatus": "draft",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/921"
             }
           ]
         }
