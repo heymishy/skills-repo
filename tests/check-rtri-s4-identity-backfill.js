@@ -39,6 +39,7 @@ function test(name, fn) {
 }
 
 var IDENTITY_LINKS_PATH = path.resolve(ROOT, 'src/web-ui/modules/identity-links.js');
+var USER_ROLES_PATH = path.resolve(ROOT, 'src/web-ui/modules/user-roles.js');
 
 function freshRequire(p) {
   delete require.cache[require.resolve(p)];
@@ -70,6 +71,20 @@ function makeFakePool() {
     if (s.indexOf('SELECT PERSON_ID FROM TEAM_MEMBERSHIPS WHERE TENANT_ID') === 0) {
       var tm = teamMemberships.filter(function(r) { return r.tenant_id === p[0]; });
       return Promise.resolve({ rows: tm.length ? [{ person_id: tm[0].person_id }] : [] });
+    }
+
+    if (s.indexOf('SELECT ROLE FROM TEAM_MEMBERSHIPS WHERE PERSON_ID') === 0) {
+      var tm = teamMemberships.filter(function(r) { return r.person_id === p[0] && r.tenant_id === p[1]; });
+      return Promise.resolve({ rows: tm.length ? [{ role: tm[0].role }] : [] });
+    }
+
+    if (s.indexOf('SELECT ROLE FROM TEAM_MEMBERSHIPS WHERE TENANT_ID') === 0) {
+      var tm = teamMemberships.filter(function(r) { return r.tenant_id === p[0]; });
+      return Promise.resolve({ rows: tm.length ? [{ role: tm[0].role }] : [] });
+    }
+
+    if (s.indexOf('SELECT ROLE FROM USER_ROLES WHERE TENANT_ID') === 0) {
+      return Promise.resolve({ rows: [] });
     }
 
     if (s.indexOf('INSERT INTO PERSON_IDENTITIES') === 0) {
@@ -157,6 +172,56 @@ async function testBackfillAuditLogsWithoutRawIdentity() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// AC1 (github call shape) — resolveRoleForPerson backfills when provider is given
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function testResolveRoleForPersonBackfillsGithubShape() {
+  var userRoles = freshRequire(USER_ROLES_PATH);
+  var pool = makeFakePool();
+  pool._seedFallbackResolvable('acme');
+
+  // mirrors auth.js's real GitHub call shape: identityKey and tenantId both
+  // resolve to the same string for a solo/personal tenant
+  await userRoles.resolveRoleForPerson(pool, 'acme', 'acme', 'github');
+
+  var state = pool._state();
+  assert.strictEqual(state.personIdentities.length, 1, 'AC1 (github): a person_identities row was backfilled');
+  assert.strictEqual(state.personIdentities[0].provider, 'github', 'AC1 (github): the real provider was recorded');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AC4 — a genuinely unknown identity is never backfilled
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function testUnknownIdentityNeverBackfilled() {
+  var userRoles = freshRequire(USER_ROLES_PATH);
+  var pool = makeFakePool();
+  // no people/team_memberships/person_identities row for 'nobody' at all
+
+  await userRoles.resolveRoleForPerson(pool, 'nobody', 'nobody', 'email');
+
+  var state = pool._state();
+  assert.strictEqual(state.personIdentities.length, 0, 'AC4: no person_identities row is created for a genuinely unknown identity');
+  assert.strictEqual(state.people.length, 0, 'AC4: no new person row is created either');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Backward compatibility — omitted provider preserves exact prior behaviour
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function testOmittedProviderSkipsBackfill() {
+  var userRoles = freshRequire(USER_ROLES_PATH);
+  var pool = makeFakePool();
+  pool._seedFallbackResolvable('acme', 'admin');
+
+  var role = await userRoles.resolveRoleForPerson(pool, 'acme', 'acme');
+
+  assert.strictEqual(role, 'admin', 'Backward-compat: role resolution still works exactly as before');
+  var state = pool._state();
+  assert.strictEqual(state.personIdentities.length, 0, 'Backward-compat: omitting provider correctly skips the backfill, not errors or backfills with a garbage value');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Runner (extended by later tasks)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -171,6 +236,15 @@ async function main() {
 
   console.log('\nAudit NFR — logs without raw identity');
   await test('Audit: backfillIdentityIfNeeded logs identity_backfilled without ever logging the raw identity string', testBackfillAuditLogsWithoutRawIdentity);
+
+  console.log('\nAC1 (github shape) — resolveRoleForPerson backfills');
+  await test('AC1: resolveRoleForPerson backfills a real row for the GitHub OAuth call shape', testResolveRoleForPersonBackfillsGithubShape);
+
+  console.log('\nAC4 — unknown identity never backfilled');
+  await test('AC4: a genuinely unknown identity is never backfilled', testUnknownIdentityNeverBackfilled);
+
+  console.log('\nBackward compatibility — omitted provider');
+  await test('Backward-compat: omitting the new provider argument preserves exact prior behaviour', testOmittedProviderSkipsBackfill);
 
   console.log('\n[rtri-s4] ' + passed + ' passed, ' + failed + ' failed');
   if (failures.length) {
