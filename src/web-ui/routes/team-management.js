@@ -66,6 +66,22 @@ function createTeamManagementHandlers(pool) {
    * form controls satisfy it informally, matching account-linking.js's page.
    */
   async function handleGetTeamMembers(req, res) {
+    // rtri-s3: real member list, rendered above the existing add-teammate
+    // form (AC1/AC2). Reuses rtri-s1's listTeamMembers directly, server-side
+    // -- this page is already server-rendered, no new client-side fetch
+    // needed for this story (ADR-026).
+    var tenantId = req.session && req.session.tenantId;
+    var members = await teamManagement.listTeamMembers(pool, tenantId);
+
+    var memberListHtml;
+    if (members.length === 0) {
+      memberListHtml = '<p>No team members yet.</p>';
+    } else {
+      memberListHtml = '<ul>' + members.map(function(m) {
+        return '<li>' + htmlShell.escHtml(m.identity) + ' — ' + htmlShell.escHtml(m.role) + '</li>';
+      }).join('') + '</ul>';
+    }
+
     var roleOptions = teamManagement.VALID_ROLES.map(function(r) {
       return '<option value="' + htmlShell.escHtml(r) + '">' + htmlShell.escHtml(r) + '</option>';
     }).join('');
@@ -74,6 +90,7 @@ function createTeamManagementHandlers(pool) {
     var csrfToken = await csrf.generateCsrfToken(req);
 
     var bodyContent = '<h1>Team members</h1>' +
+      memberListHtml +
       '<form method="POST" action="/api/team/members">' +
       csrf.csrfField(csrfToken) +
       '<label for="identity">Add teammate by identity (GitHub login, Google email, or email/password email)</label>' +
