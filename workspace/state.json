@@ -98,6 +98,11 @@
       "date": "2026-09-24",
       "action": "rtri-s4 (2026-09-23-team-roster-integration feature, real-team-roster epic) POST-DEPLOYMENT LIVE-LOGIN RE-CHECK -- Chrome was unavailable this session when rtri-s4's DoD was written, so the real end-to-end confirmation (sign in as a real teammate added via the admin form, confirm they now appear in /api/team/members after login) was RISK-ACCEPTed rather than performed. Automated evidence is strong (9/9 tests including a direct before/after proof against the real listTeamMembers function, plus the real unmodified bri-s3.6 auth E2E spec passing locally) -- this is a real-environment confirmation, not a correctness gap. Staging deploy for the merge commit (bb7e1975) is confirmed green. See decisions.md, 2026-09-24, for the full RISK-ACCEPT entry.",
       "owner": "operator/next session with Chrome available -- low urgency, closes the loop on rtri-s1's own origin gap"
+    },
+    {
+      "date": "2026-09-25",
+      "action": "rtri-s2 (2026-09-23-team-roster-integration feature, real-team-roster epic) POST-DEPLOYMENT LIVE-VISUAL SMOKE TEST -- Chrome was unavailable at /verify-completion, so the mandatory live browser render check for pod-manager.html's real-roster fetch, hidden role-tabs, and new AC7 pod-role selector (add/confirm/cancel) was RISK-ACCEPTed rather than performed. Automated evidence is strong (9/9 tests including an adversarial AC7 role-vocabulary test and an AC6 XSS-payload test), and the final cross-task reviewer independently re-confirmed all 7 ACs by direct code reading -- what's unverified is purely visual/layout rendering at a real viewport. Can be checked together with rtri-s4's own still-open live-login re-check (same feature, same Chrome-unavailable cause). See decisions.md, 2026-09-25, for the full RISK-ACCEPT entry.",
+      "owner": "operator/next session with Chrome available -- low urgency, visual-only gap"
     }
   ],
   "estimate": {

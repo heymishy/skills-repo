@@ -34,6 +34,7 @@
     .roster-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 4px; }
     .role-chip { font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; background: #eef0ff; color: #3341c4; }
     .add-btn, .remove-btn { font-size: 0.75rem; padding: 2px 8px; border: 1px solid #d0d0d5; border-radius: 6px; background: #fff; }
+    .role-selector-label { font-size: 0.75rem; margin: 0 4px 0 8px; }
     #error-banner { display: none; background: #fdecea; color: #a4262c; border: 1px solid #f2c1c1; border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; font-size: 0.85rem; }
     #error-banner.visible { display: block; }
     #save-pod-btn { padding: 8px 20px; background: #1a1a1a; color: #fff; border: none; border-radius: 6px; }
@@ -75,22 +76,20 @@
   </div>
 
   <script>
-    // Demo org roster -- a real deployment would fetch this from a users
-    // endpoint. Kept inline here since ep1-s1's scope is pod creation, not
-    // an org-directory API.
-    var ORG_ROSTER = [
-      { userId: 'hamish-uuid', name: 'Hamish', roleId: 'conductor' },
-      { userId: 'susan-uuid', name: 'Susan', roleId: 'engineer' },
-      { userId: 'darren-uuid', name: 'Darren', roleId: 'engineer' }
-    ];
+    // rtri-s2: real roster fetched from rtri-s1's GET /api/team/members on
+    // modal open -- replaces ORG_ROSTER's hardcoded 3-name fixture. Each
+    // entry is { identity, role } -- `role` is a TEAM PERMISSION role
+    // (admin/engineer/product/viewer), deliberately never read into a pod
+    // role (see Architecture Constraints in stories/rtri-s2.md). Populated
+    // by fetchRoster(), called from openModal().
+    var realRoster = [];
     var VALID_ROLES = ['conductor', 'engineer', 'architect', 'product'];
     var selection = []; // { userId, name, roleId } -- creator pre-included per design.md
 
-    // Combined roster filter state -- role tab and search term apply together,
-    // not as two separate un-combined passes. Tracked at module level so the
-    // search handler can read the active role tab without re-deriving it
-    // from the DOM.
-    var activeRoleFilter = null; // null = 'All'
+    // rtri-s2: role-tab filtering no longer applies to "Available" -- real
+    // members carry no pod role until added (AC1/AC7), so role-tabs are
+    // hidden entirely (see renderTabs()). Only the search term filters
+    // "Available" now.
     var currentSearchTerm = '';
 
     var modal = document.getElementById('create-pod-modal');
@@ -118,41 +117,44 @@
       return wrap;
     }
 
+    // rtri-s2: safe DOM construction for a bare identity string (no role
+    // chip) -- used for "Available" panel entries, which carry no pod role
+    // until AC7's selector assigns one. Same createElement/textContent
+    // discipline as buildNameRoleSpan (MC-SEC-01, AC6).
+    function buildIdentitySpan(identity) {
+      var span = document.createElement('span');
+      span.textContent = identity;
+      return span;
+    }
+
     function renderRoster() {
       var el = document.getElementById('available-roster');
       el.innerHTML = '';
-      ORG_ROSTER.filter(function(u) {
-        var roleMatch = !activeRoleFilter || activeRoleFilter === 'All' || u.roleId === activeRoleFilter;
-        var searchMatch = !currentSearchTerm || u.name.toLowerCase().indexOf(currentSearchTerm.toLowerCase()) !== -1;
-        return roleMatch && searchMatch;
+      realRoster.filter(function(u) {
+        return !currentSearchTerm || u.identity.toLowerCase().indexOf(currentSearchTerm.toLowerCase()) !== -1;
       }).forEach(function(u) {
           var row = document.createElement('div');
           row.className = 'roster-row';
-          row.appendChild(buildNameRoleSpan(u.name, u.roleId));
+          // AC1: no pod-role chip in "Available" -- real members carry no
+          // pod role until assigned via the selector (AC7, added in a later task).
+          row.appendChild(buildIdentitySpan(u.identity));
           var btn = document.createElement('button');
           btn.className = 'add-btn';
           btn.textContent = 'Add';
-          btn.onclick = function() { addMember(u); };
+          btn.onclick = function() { showRoleSelector(row, u, btn); };
           row.appendChild(btn);
           el.appendChild(row);
         });
     }
 
     function renderTabs() {
+      // rtri-s2: role-tabs have no meaningful filter target for the real
+      // roster (real members carry no pod role until added -- AC1/AC7), so
+      // this panel's tabs are hidden entirely rather than rendered-disabled
+      // or repurposed (DoR contract, AC5 decision, 2026-09-24).
       var el = document.getElementById('role-tabs');
       el.innerHTML = '';
-      ['All'].concat(VALID_ROLES).forEach(function(r) {
-        var tab = document.createElement('span');
-        tab.className = 'role-tab' + (r === 'All' ? ' active' : '');
-        tab.textContent = r;
-        tab.onclick = function() {
-          document.querySelectorAll('.role-tab').forEach(function(t) { t.classList.remove('active'); });
-          tab.classList.add('active');
-          activeRoleFilter = r === 'All' ? null : r;
-          renderRoster();
-        };
-        el.appendChild(tab);
-      });
+      el.style.display = 'none';
     }
 
     function renderTeam() {
@@ -198,6 +200,55 @@
       renderTeam();
     }
 
+    var _roleSelectorSeq = 0; // rtri-s2: unique id suffix for each selector's <select>/<label> pair
+
+    // rtri-s2 (AC7): replaces a roster row's "Add" button with a pod-role
+    // selector (native <select>, matching this app's own labelled-control
+    // convention) plus Confirm/Cancel. The selected value -- never
+    // realRoster's own `role` field (a team permission role, a different
+    // vocabulary) -- is what gets written to pod_members.role_id.
+    function showRoleSelector(row, u, addBtn) {
+      var selectId = 'pod-role-select-' + (_roleSelectorSeq++);
+
+      var label = document.createElement('label');
+      label.setAttribute('for', selectId);
+      label.textContent = 'Pod role';
+      label.className = 'role-selector-label';
+
+      var select = document.createElement('select');
+      select.id = selectId;
+      VALID_ROLES.forEach(function(r) {
+        var opt = document.createElement('option');
+        opt.value = r;
+        opt.textContent = r;
+        select.appendChild(opt);
+      });
+
+      var confirmBtn = document.createElement('button');
+      confirmBtn.className = 'add-btn';
+      confirmBtn.textContent = 'Confirm';
+      confirmBtn.onclick = function() {
+        // AC7: the selector's own value is authoritative -- u.role (the
+        // roster's team-permission role) is never read here.
+        var memberToAdd = { userId: u.identity, name: u.identity, roleId: select.value };
+        addMember(memberToAdd);
+        renderRoster();
+      };
+
+      var cancelBtn = document.createElement('button');
+      cancelBtn.className = 'remove-btn';
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.onclick = function() {
+        renderRoster(); // AC7: no selection change on cancel
+      };
+
+      row.removeChild(addBtn);
+      row.appendChild(label);
+      row.appendChild(select);
+      row.appendChild(confirmBtn);
+      row.appendChild(cancelBtn);
+    }
+
     // Gated primary action (design.md amendment): disabled until >= 1 member
     // beyond the creator.
     function updateGate() {
@@ -208,13 +259,27 @@
       selection = [{ userId: 'me-uuid', name: 'You', roleId: 'conductor' }]; // creator pre-included by default
       nameInput.value = '';
       errorBanner.classList.remove('visible');
-      activeRoleFilter = null; // 'All'
       currentSearchTerm = '';
       rosterSearchInput.value = '';
       renderTabs();
-      renderRoster();
       renderTeam();
       modal.classList.add('open');
+      // rtri-s2: fetch the real roster (replaces the old synchronous
+      // ORG_ROSTER render). Returns the promise so tests can await
+      // completion -- the real onclick handler ignores the return value,
+      // matching every other fire-and-forget click handler in this file.
+      return fetchRoster();
+    }
+
+    // rtri-s2: fetches the real team roster (rtri-s1's GET /api/team/members)
+    // and re-renders "Available" once it resolves. Called from openModal().
+    function fetchRoster() {
+      return fetch('/api/team/members')
+        .then(function(r) { return r.json(); })
+        .then(function(body) {
+          realRoster = (body && body.members) || [];
+          renderRoster();
+        });
     }
 
     document.getElementById('create-pod-btn').onclick = openModal;
