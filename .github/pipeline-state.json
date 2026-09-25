@@ -36518,11 +36518,11 @@
             {
               "slug": "rtri-s2",
               "name": "Wire pod-manager.html member picker to the real roster",
-              "stage": "implementation-plan",
+              "stage": "subagent-execution",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-25T03:00:30.141Z",
+              "updatedAt": "2026-09-25T05:02:06.083Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
