@@ -177,16 +177,17 @@
         el.appendChild(label);
 
         indexesForRole.forEach(function(i) {
-          if (i === 0) return; // Skip rendering the creator -- kept in selection for API, not shown in UI
           var m = selection[i];
           var row = document.createElement('div');
           row.className = 'roster-row';
           row.appendChild(buildNameRoleSpan(m.name, m.roleId));
-          var btn = document.createElement('button');
-          btn.className = 'remove-btn';
-          btn.textContent = 'Remove';
-          btn.onclick = function() { selection.splice(i, 1); renderTeam(); updateGate(); };
-          row.appendChild(btn);
+          if (i > 0) { // creator (index 0) cannot be removed
+            var btn = document.createElement('button');
+            btn.className = 'remove-btn';
+            btn.textContent = 'Remove';
+            btn.onclick = function() { selection.splice(i, 1); renderTeam(); updateGate(); };
+            row.appendChild(btn);
+          }
           el.appendChild(row);
         });
       });

@@ -194,7 +194,7 @@ async function testAC7CancelDoesNotAddMember() {
   cancelBtn.onclick();
 
   assert.strictEqual(win.selection.length, 1, 'AC7: cancelling leaves selection unchanged (only the creator)');
-  assert.strictEqual(win.document.getElementById('your-team').querySelectorAll('.roster-row').length, 0, 'AC7: "Your team" shows no new row after cancel');
+  assert.strictEqual(win.document.getElementById('your-team').querySelectorAll('.roster-row').length, 1, 'AC7: "Your team" shows only the creator after cancel (alice not added)');
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
