@@ -1,5 +1,11 @@
 # Decisions: Wire Pod/Team Pickers to the Real Team Roster
 
+## `rtri-s2` `/branch-setup`: baseline acknowledged, 1 pre-existing/environmental failure (2026-09-24)
+
+**Context:** `node scripts/run-all-tests.js` on the freshly-created `feature/rtri-s2` worktree (built from latest `master`, including the fully-merged `rtri-s1` and `rtri-s4`) showed 1 failure: `tests/check-p3.5-validate-trace.js` — the same pre-existing/environmental failure acknowledged repeatedly across every other worktree this session. 700 files run, 1 failed.
+**Decision:** Acknowledged as pre-existing/environmental and proceeding.
+**Story:** rtri-s2 — no AC or scope change; baseline acknowledgement only.
+
 ## `rtri-s4` `/definition-of-done`: live re-check on staging RISK-ACCEPTed — Chrome unavailable this session (2026-09-24)
 
 **Context:** This story exists specifically because a live browser check on `wuce-staging.fly.dev` (during `rtri-s1`'s DoD) caught a real gap no automated test could have found. The natural, strongest close for `rtri-s4` would be the same kind of live re-check: sign in as a real teammate added via the admin form, confirm they now appear in the roster after login. `mcp__claude-in-chrome__tabs_context_mcp` reports the Chrome extension is not connected this session (checked directly, not assumed).
