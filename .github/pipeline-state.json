@@ -36556,11 +36556,11 @@
             {
               "slug": "rtri-s4",
               "name": "Backfill person_identities on login so existing real memberships become resolvable",
-              "stage": "branch-complete",
+              "stage": "definition-of-done",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-24T23:15:20.417Z",
+              "updatedAt": "2026-09-25T01:57:40.629Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
@@ -36598,8 +36598,10 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/921"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/921",
+              "dodStatus": "complete",
+              "releaseReady": true
             }
           ]
         }
@@ -36956,10 +36958,10 @@
           "id": "NFR-audit-rtri-s4",
           "category": "nfr",
           "label": "Audit logging for identity backfill (identity_backfilled event)",
-          "status": "not-assessed",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-24T06:00:56.380Z",
-          "evidence": "Scoped IN at DoR; verified at /definition-of-done once implemented"
+          "status": "met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-25T01:57:40.629Z",
+          "evidence": "testBackfillAuditLogsWithoutRawIdentity confirms identity_backfilled logged with SHA-256 hash, never raw identity string"
         }
       ],
       "slicingStrategy": "vertical-slice",
