@@ -103,6 +103,11 @@
       "date": "2026-09-25",
       "action": "rtri-s2 (2026-09-23-team-roster-integration feature, real-team-roster epic) POST-DEPLOYMENT LIVE-VISUAL SMOKE TEST -- Chrome was unavailable at /verify-completion, so the mandatory live browser render check for pod-manager.html's real-roster fetch, hidden role-tabs, and new AC7 pod-role selector (add/confirm/cancel) was RISK-ACCEPTed rather than performed. Automated evidence is strong (9/9 tests including an adversarial AC7 role-vocabulary test and an AC6 XSS-payload test), and the final cross-task reviewer independently re-confirmed all 7 ACs by direct code reading -- what's unverified is purely visual/layout rendering at a real viewport. Can be checked together with rtri-s4's own still-open live-login re-check (same feature, same Chrome-unavailable cause). See decisions.md, 2026-09-25, for the full RISK-ACCEPT entry.",
       "owner": "operator/next session with Chrome available -- low urgency, visual-only gap"
+    },
+    {
+      "date": "2026-09-26",
+      "action": "rtri-s3 (2026-09-23-team-roster-integration feature, real-team-roster epic) POST-DEPLOYMENT LIVE-VISUAL SMOKE TEST -- Chrome was unavailable at /verify-completion (third consecutive occurrence for this feature this session), so the mandatory live browser render check for /team/members's new member list + empty state was RISK-ACCEPTed. Automated evidence is strong (5/5 tests including an adversarial AC5 escaping test and the AC3 live-data proof). CONSOLIDATED FOLLOW-UP: check this together with the two still-open items from rtri-s2 (pod-manager.html picker visual check) and rtri-s4 (real live-login re-check) in the same real-staging Chrome session once available -- all three share the identical Chrome-unavailable root cause.",
+      "owner": "operator/next session with Chrome available -- low urgency, visual-only gap; do all three rtri-* items together"
     }
   ],
   "estimate": {
