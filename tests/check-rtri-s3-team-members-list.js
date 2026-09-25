@@ -89,6 +89,23 @@ function makeFakePool() {
       return Promise.resolve({ rows: rows });
     }
 
+    if (s.indexOf('SELECT PERSON_ID FROM PERSON_IDENTITIES WHERE IDENTITY_KEY') === 0) {
+      var match = personIdentities.filter(function(r) { return r.identity_key === p[0]; });
+      return Promise.resolve({ rows: match.length ? [{ person_id: match[0].person_id }] : [] });
+    }
+
+    if (s.indexOf('SELECT ROLE FROM TEAM_MEMBERSHIPS WHERE TENANT_ID') === 0 && s.indexOf('AND PERSON_ID') !== -1) {
+      var existingRow = teamMemberships.filter(function(r) { return r.person_id === p[1] && r.tenant_id === p[0]; })[0];
+      return Promise.resolve({ rows: existingRow ? [{ role: existingRow.role }] : [] });
+    }
+
+    if (s.indexOf('INSERT INTO TEAM_MEMBERSHIPS') === 0 && s.indexOf('ON CONFLICT') !== -1) {
+      var personId = p[0], tenantId2 = p[1], role = p[2];
+      var existing = teamMemberships.filter(function(r) { return r.person_id === personId && r.tenant_id === tenantId2; })[0];
+      if (existing) { existing.role = role; } else { teamMemberships.push({ person_id: personId, tenant_id: tenantId2, role: role }); }
+      return Promise.resolve({ rows: [] });
+    }
+
     // Any other query (e.g. products/journeys nav-summary queries from
     // renderShellWithNav) is irrelevant to this story -- empty rows matches
     // this repo's own established fake-pool convention.
@@ -107,7 +124,16 @@ function makeFakePool() {
 
   function _nextPersonId() { return nextPersonId++; }
 
-  return { query: query, _seedMember: _seedMember, _nextPersonId: _nextPersonId };
+  // Test-setup helper (not a production query shape) -- seeds a person who
+  // is already resolvable (has a person_identities row, i.e. has logged in
+  // at least once) but is NOT yet a member of any tenant. Matches AC3's own
+  // precondition: addOrUpdateTeammate's resolution step must succeed, but
+  // there must be no pre-existing team_memberships row.
+  function _seedResolvablePersonOnly(personId, identityKey) {
+    personIdentities.push({ identity_key: identityKey, person_id: personId });
+  }
+
+  return { query: query, _seedMember: _seedMember, _nextPersonId: _nextPersonId, _seedResolvablePersonOnly: _seedResolvablePersonOnly };
 }
 
 function parseListItems(html) {
@@ -208,6 +234,36 @@ async function testAC5IdentityWithHtmlCharsIsEscaped() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// AC3 — a newly-added member appears on the very next render, no stale snapshot
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function testAC3NewlyAddedMemberAppearsOnNextRenderNoStaleSnapshot() {
+  var route = freshRequire(TEAM_MANAGEMENT_ROUTE_PATH);
+  var teamManagementModule = freshRequire(path.resolve(ROOT, 'src/web-ui/modules/team-management.js'));
+  var pool = makeFakePool();
+  var handlers = route.createTeamManagementHandlers(pool);
+
+  // Precondition: alice already resolvable (has logged in once via person_identities)
+  // but not yet a member of tenant-a.
+  var aliceId = pool._nextPersonId();
+  pool._seedResolvablePersonOnly(aliceId, 'alice@example.com');
+
+  var req = mockReq({ session: { tenantId: 'tenant-a' } });
+
+  var resBefore = mockRes();
+  await handlers.handleGetTeamMembers(req, resBefore);
+  assert.ok(/no team members yet/i.test(resBefore.body), 'AC3 setup: the list is empty before the add');
+
+  await teamManagementModule.addOrUpdateTeammate(pool, 'tenant-a', 'alice@example.com', 'engineer');
+
+  var resAfter = mockRes();
+  await handlers.handleGetTeamMembers(req, resAfter);
+  assert.ok(resAfter.body.indexOf('alice@example.com') !== -1, 'AC3: the newly-added member appears on the very next render');
+  assert.ok(resAfter.body.indexOf('engineer') !== -1, 'AC3: with their assigned role');
+  assert.ok(!/no team members yet/i.test(resAfter.body), 'AC3: the empty-state message is gone once a real member exists');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Runner
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -225,6 +281,9 @@ async function main() {
 
   console.log('\nAC5 — a real identity string with HTML-significant characters is escaped');
   await test('AC5: a real identity string with HTML-significant characters is never interpreted as markup', testAC5IdentityWithHtmlCharsIsEscaped);
+
+  console.log('\nAC3 — newly-added member appears on the very next render, no stale snapshot');
+  await test('AC3: a newly-added teammate appears in the list on the very next render, no stale snapshot', testAC3NewlyAddedMemberAppearsOnNextRenderNoStaleSnapshot);
 
   console.log('\n[rtri-s3] ' + passed + ' passed, ' + failed + ' failed');
   if (failures.length) {
