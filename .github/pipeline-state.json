@@ -36566,11 +36566,11 @@
             {
               "slug": "rtri-s3",
               "name": "Render a real member list on /team/members",
-              "stage": "definition-of-ready",
+              "stage": "branch-setup",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-23T19:54:16.168Z",
+              "updatedAt": "2026-09-25T09:14:35.964Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 4,
