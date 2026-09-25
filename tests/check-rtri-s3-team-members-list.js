@@ -161,6 +161,51 @@ async function testAC2ShowsExplicitEmptyStateForZeroMembers() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// AC5 — a real identity string with HTML-significant characters is escaped
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function testAC5IdentityWithHtmlCharsIsEscaped() {
+  var route = freshRequire(TEAM_MANAGEMENT_ROUTE_PATH);
+  var pool = makeFakePool();
+  var handlers = route.createTeamManagementHandlers(pool);
+
+  var evilId = pool._nextPersonId();
+  pool._seedMember('tenant-a', evilId, 'engineer', '<img src=x onerror=alert(1)>');
+
+  var req = mockReq({ session: { tenantId: 'tenant-a' } });
+  var res = mockRes();
+  await handlers.handleGetTeamMembers(req, res);
+
+  assert.strictEqual(res.body.indexOf('<img src=x onerror=alert(1)>'), -1, 'AC5: the raw payload string never appears unescaped');
+  assert.ok(res.body.indexOf('&lt;img src=x onerror=alert(1)&gt;') !== -1, 'AC5: the payload appears in its escHtml()-encoded form');
+
+  var dom = new JSDOM(res.body);
+  assert.strictEqual(dom.window.document.querySelectorAll('img').length, 0, 'AC5: the payload never parses into a real <img> element');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AC4 — tenant isolation: another tenant's members never appear
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function testAC4NeverIncludesAnotherTenantsMembers() {
+  var route = freshRequire(TEAM_MANAGEMENT_ROUTE_PATH);
+  var pool = makeFakePool();
+  var handlers = route.createTeamManagementHandlers(pool);
+
+  var aliceId = pool._nextPersonId();
+  pool._seedMember('tenant-a', aliceId, 'engineer', 'alice@example.com');
+  var carolId = pool._nextPersonId();
+  pool._seedMember('tenant-b', carolId, 'engineer', 'carol@example.com');
+
+  var req = mockReq({ session: { tenantId: 'tenant-a' } });
+  var res = mockRes();
+  await handlers.handleGetTeamMembers(req, res);
+
+  assert.ok(res.body.indexOf('alice@example.com') !== -1, "AC4: tenant-a's own member is shown");
+  assert.strictEqual(res.body.indexOf('carol@example.com'), -1, "AC4: tenant-b's member never appears in tenant-a's rendered response");
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Runner
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -172,6 +217,12 @@ async function main() {
 
   console.log('\nAC2 — zero-member tenant shows an explicit empty state');
   await test('AC2: handleGetTeamMembers shows an explicit empty state for a tenant with no members', testAC2ShowsExplicitEmptyStateForZeroMembers);
+
+  console.log('\nAC5 — real identity string with HTML-significant characters');
+  await test('AC5: a real identity string with HTML-significant characters is never interpreted as markup', testAC5IdentityWithHtmlCharsIsEscaped);
+
+  console.log('\nAC4 — tenant isolation');
+  await test('AC4: handleGetTeamMembers never includes another tenant\'s members', testAC4NeverIncludesAnotherTenantsMembers);
 
   console.log('\n[rtri-s3] ' + passed + ' passed, ' + failed + ' failed');
   if (failures.length) {
