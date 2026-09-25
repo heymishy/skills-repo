@@ -147,6 +147,57 @@ async function testAC6PayloadIdentityNeverInterpretedAsMarkup() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// AC7 — pod-role selector is presented on "Add"; the confirmed value -- not
+// the roster response's role -- is stored on the selection
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function testAC7SelectorConfirmedValueUsedNotRosterRole() {
+  // 'admin' is a team-permission role, not a valid pod role -- deliberately
+  // chosen so a bug that copies it straight through is caught.
+  var win = buildPage(mockFetchRosterOnly([
+    { identity: 'alice@example.com', role: 'admin' }
+  ]));
+
+  await win.openModal();
+
+  var addBtn = win.document.querySelector('#available-roster .add-btn');
+  addBtn.onclick();
+
+  var select = win.document.querySelector('#available-roster select');
+  assert.ok(select, 'AC7: a pod-role <select> is presented after clicking Add');
+  var optionValues = Array.prototype.map.call(select.querySelectorAll('option'), function(o) { return o.value; });
+  assert.deepStrictEqual(optionValues, ['conductor', 'engineer', 'architect', 'product'], 'AC7: selector options are the existing VALID_ROLES, no new role vocabulary');
+
+  select.value = 'engineer';
+  var confirmBtn = win.document.querySelector('#available-roster .add-btn'); // Confirm reuses the add-btn class
+  confirmBtn.onclick();
+
+  assert.strictEqual(win.selection.length, 2, 'AC7: one real member added on top of the creator');
+  var added = win.selection[1];
+  assert.strictEqual(added.userId, 'alice@example.com', 'AC7: real identity stored as userId');
+  assert.strictEqual(added.roleId, 'engineer', 'AC7: the SELECTOR\'S confirmed value is used');
+  assert.notStrictEqual(added.roleId, 'admin', 'AC7: the roster response\'s own role ("admin") is never used -- it isn\'t even a valid pod role');
+}
+
+async function testAC7CancelDoesNotAddMember() {
+  var win = buildPage(mockFetchRosterOnly([
+    { identity: 'alice@example.com', role: 'engineer' }
+  ]));
+
+  await win.openModal();
+
+  var addBtn = win.document.querySelector('#available-roster .add-btn');
+  addBtn.onclick();
+
+  var cancelBtn = win.document.querySelector('#available-roster .remove-btn'); // Cancel reuses the remove-btn class
+  assert.ok(cancelBtn, 'AC7: a Cancel control is presented alongside the selector');
+  cancelBtn.onclick();
+
+  assert.strictEqual(win.selection.length, 1, 'AC7: cancelling leaves selection unchanged (only the creator)');
+  assert.strictEqual(win.document.getElementById('your-team').querySelectorAll('.roster-row').length, 0, 'AC7: "Your team" shows no new row after cancel');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Runner (extended by later tasks)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -164,6 +215,12 @@ async function main() {
 
   console.log('\nAC6 — safe DOM construction');
   await test('AC6: real identity strings rendered via safe DOM construction (MC-SEC-01)', testAC6PayloadIdentityNeverInterpretedAsMarkup);
+
+  console.log('\nAC7 — selector confirmed value used, not roster role');
+  await test('AC7: pod-role selector presented on Add; confirmed value (not roster role) is stored', testAC7SelectorConfirmedValueUsedNotRosterRole);
+
+  console.log('\nAC7 — cancel has no side effect');
+  await test('AC7: cancelling the pod-role selector does not add the member', testAC7CancelDoesNotAddMember);
 
   console.log('\n[rtri-s2] ' + passed + ' passed, ' + failed + ' failed');
   if (failures.length) {

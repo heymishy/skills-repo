@@ -34,6 +34,7 @@
     .roster-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 4px; }
     .role-chip { font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; background: #eef0ff; color: #3341c4; }
     .add-btn, .remove-btn { font-size: 0.75rem; padding: 2px 8px; border: 1px solid #d0d0d5; border-radius: 6px; background: #fff; }
+    .role-selector-label { font-size: 0.75rem; margin: 0 4px 0 8px; }
     #error-banner { display: none; background: #fdecea; color: #a4262c; border: 1px solid #f2c1c1; border-radius: 6px; padding: 8px 12px; margin-bottom: 12px; font-size: 0.85rem; }
     #error-banner.visible { display: block; }
     #save-pod-btn { padding: 8px 20px; background: #1a1a1a; color: #fff; border: none; border-radius: 6px; }
@@ -140,7 +141,7 @@
           var btn = document.createElement('button');
           btn.className = 'add-btn';
           btn.textContent = 'Add';
-          btn.onclick = function() { addMember({ userId: u.identity, name: u.identity, roleId: VALID_ROLES[0] }); };
+          btn.onclick = function() { showRoleSelector(row, u, btn); };
           row.appendChild(btn);
           el.appendChild(row);
         });
@@ -176,17 +177,16 @@
         el.appendChild(label);
 
         indexesForRole.forEach(function(i) {
+          if (i === 0) return; // Skip rendering the creator -- kept in selection for API, not shown in UI
           var m = selection[i];
           var row = document.createElement('div');
           row.className = 'roster-row';
           row.appendChild(buildNameRoleSpan(m.name, m.roleId));
-          if (i > 0) { // creator (index 0) cannot be removed
-            var btn = document.createElement('button');
-            btn.className = 'remove-btn';
-            btn.textContent = 'Remove';
-            btn.onclick = function() { selection.splice(i, 1); renderTeam(); updateGate(); };
-            row.appendChild(btn);
-          }
+          var btn = document.createElement('button');
+          btn.className = 'remove-btn';
+          btn.textContent = 'Remove';
+          btn.onclick = function() { selection.splice(i, 1); renderTeam(); updateGate(); };
+          row.appendChild(btn);
           el.appendChild(row);
         });
       });
@@ -197,6 +197,55 @@
       if (selection.some(function(m) { return m.userId === u.userId; })) return;
       selection.push({ userId: u.userId, name: u.name, roleId: u.roleId });
       renderTeam();
+    }
+
+    var _roleSelectorSeq = 0; // rtri-s2: unique id suffix for each selector's <select>/<label> pair
+
+    // rtri-s2 (AC7): replaces a roster row's "Add" button with a pod-role
+    // selector (native <select>, matching this app's own labelled-control
+    // convention) plus Confirm/Cancel. The selected value -- never
+    // realRoster's own `role` field (a team permission role, a different
+    // vocabulary) -- is what gets written to pod_members.role_id.
+    function showRoleSelector(row, u, addBtn) {
+      var selectId = 'pod-role-select-' + (_roleSelectorSeq++);
+
+      var label = document.createElement('label');
+      label.setAttribute('for', selectId);
+      label.textContent = 'Pod role';
+      label.className = 'role-selector-label';
+
+      var select = document.createElement('select');
+      select.id = selectId;
+      VALID_ROLES.forEach(function(r) {
+        var opt = document.createElement('option');
+        opt.value = r;
+        opt.textContent = r;
+        select.appendChild(opt);
+      });
+
+      var confirmBtn = document.createElement('button');
+      confirmBtn.className = 'add-btn';
+      confirmBtn.textContent = 'Confirm';
+      confirmBtn.onclick = function() {
+        // AC7: the selector's own value is authoritative -- u.role (the
+        // roster's team-permission role) is never read here.
+        var memberToAdd = { userId: u.identity, name: u.identity, roleId: select.value };
+        addMember(memberToAdd);
+        renderRoster();
+      };
+
+      var cancelBtn = document.createElement('button');
+      cancelBtn.className = 'remove-btn';
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.onclick = function() {
+        renderRoster(); // AC7: no selection change on cancel
+      };
+
+      row.removeChild(addBtn);
+      row.appendChild(label);
+      row.appendChild(select);
+      row.appendChild(confirmBtn);
+      row.appendChild(cancelBtn);
     }
 
     // Gated primary action (design.md amendment): disabled until >= 1 member
