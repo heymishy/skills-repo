@@ -2053,3 +2053,9 @@ Append-only. One entry per signal. Never truncate or overwrite prior entries.
   signal-type: gap
   signal-text: Live-verified on wuce-staging that listTeamMembers' INNER JOIN (rtri-s1, exactly per its own AC2 spec) silently omits any team_memberships row with no matching person_identities row -- and NO first-login/legacy-migration path ever writes person_identities (only tir-s2's explicit account-linking and the team/client invite-acceptance flows do). Reproduced live: added self as teammate via the existing admin form, real team_memberships row created, roster still returned {"members":[]}. This means the real team roster (rtri-s1/s2/s3's whole point) will appear empty for a tenant's own owner and anyone added outside a real invite, until they're actually invited. Operator chose to fix via a proper first-login backfill (new story, epic real-team-roster) rather than accept or work around it.
   source: agent-auto
+
+- date: 2026-09-26
+  session-phase: discovery (2026-09-26-tenant-admin-bootstrap), Section 5 Out of Scope
+  signal-type: gap
+  signal-text: While scoping the tenant-admin-bootstrap feature, a broader dead-code audit across the rest of the codebase (beyond the specific legacy path this feature already scopes for removal -- user_roles table, ADMIN_GITHUB_LOGINS env var, arl-s4's startup seeding, and _backfillOne's phantom-row creation) was flagged as worth a dedicated future review. Deliberately kept out of scope for this feature to avoid scope creep -- named here so it isn't lost.
+  source: operator-manual
