@@ -1,5 +1,11 @@
 # Decisions: Wire Pod/Team Pickers to the Real Team Roster
 
+## `rtri-s3` `/branch-setup`: baseline acknowledged, 2 pre-existing/environmental failures (2026-09-25)
+
+**Context:** `node scripts/run-all-tests.js` on the freshly-created `feature/rtri-s3` worktree (built from latest `master`, including the fully-merged `rtri-s1`, `rtri-s4`, and `rtri-s2`) showed 2 failures: `tests/check-p3.5-validate-trace.js` and `tests/check-pcr-s1-test-runner.js` — the same established baseline failure and known timing flake acknowledged repeatedly across every other worktree this session (`rtri-s1`: 1 failure at branch-setup; `rtri-s2`: 1 failure at branch-setup, later confirmed as transient noise at up to 4 during one specific run; `rtri-s4`: not separately logged but same pattern). 701 files run, 2 failed.
+**Decision:** Acknowledged as pre-existing/environmental and proceeding.
+**Story:** `rtri-s3` — no AC/scope change; baseline note only.
+
 ## `rtri-s2` `/verify-completion`: RISK-ACCEPT on the live browser render check — Chrome unavailable (2026-09-25)
 
 **Context:** `/verify-completion`'s mandatory live browser render check applies here because this story's diff changes rendered UI output in `pod-manager.html` (the real-roster fetch/render, the hidden role-tabs, and the new AC7 pod-role `<select>`/Confirm/Cancel selector). `mcp__claude-in-chrome__tabs_context_mcp` returned "Browser extension is not connected" — the same unavailability already hit during `rtri-s4`'s DoD live re-check earlier in this session. No existing Playwright spec (`tests/e2e/ep1-s1-pod-creation.spec.js`, `ep4-s1-multi-pod-assign.spec.js`, etc.) asserts visible-state for this story's new roster-fetch/role-selector markup — they predate this story and don't cover it.
