@@ -36518,21 +36518,22 @@
             {
               "slug": "rtri-s2",
               "name": "Wire pod-manager.html member picker to the real roster",
-              "stage": "definition-of-ready",
+              "stage": "verify-completion",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-23T19:54:16.168Z",
+              "updatedAt": "2026-09-25T08:10:59.068Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
-                "passing": 0
+                "passing": 9
               },
               "acTotal": 7,
-              "acVerified": 0,
+              "acVerified": 7,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "verifyStatus": "passed"
             },
             {
               "slug": "rtri-s3",
