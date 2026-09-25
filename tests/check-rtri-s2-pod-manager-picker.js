@@ -81,7 +81,6 @@ function makePodsFakePool() {
   var pods = []; // { pod_id, tenant_id, name, created_by }
   var podMembers = []; // { pod_id, user_id, role_id }
   var featureCollaborators = []; // { collaborator_id, feature_id, user_id, role_id, pod_id }
-  var nextPodId = 1;
 
   function _norm(sql) {
     return String(sql).trim().replace(/\s+/g, ' ').toUpperCase();
@@ -277,7 +276,6 @@ async function testAC7CancelDoesNotAddMember() {
 async function testAC2SavesRealIdentitiesAndSelectedRoles() {
   var pool = makePodsFakePool();
   var fetchPromise = null;
-  var fetchResolve = null;
 
   var win = buildPage(function(url, opts) {
     if (url === '/api/team/members') {
@@ -296,7 +294,6 @@ async function testAC2SavesRealIdentitiesAndSelectedRoles() {
         return { status: res.statusCode, json: function() { return Promise.resolve(JSON.parse(res.body)); } };
       });
       fetchPromise = p;
-      if (fetchResolve) fetchResolve();
       return p;
     }
     return Promise.reject(new Error('unexpected fetch: ' + url));
@@ -309,32 +306,31 @@ async function testAC2SavesRealIdentitiesAndSelectedRoles() {
   win.document.querySelector('#available-roster select').value = 'engineer';
   // Find the Confirm button (the .add-btn that says 'Confirm', not 'Add')
   var confirmButtons = Array.prototype.filter.call(win.document.querySelectorAll('#available-roster .add-btn'), function(btn) { return btn.textContent === 'Confirm'; });
-  if (confirmButtons.length > 0) confirmButtons[0].onclick();
+  assert.ok(confirmButtons.length > 0, 'AC2: alice\'s Confirm button is present after clicking Add');
+  confirmButtons[0].onclick();
 
   // Add bob as 'architect' (not his roster role 'viewer')
   var addBtnsAfterAlice = win.document.querySelectorAll('#available-roster .add-btn');
-  if (addBtnsAfterAlice.length > 0) {
-    // Click the non-confirm button (the original Add for bob)
-    var nonConfirmButtons = Array.prototype.filter.call(addBtnsAfterAlice, function(btn) { return btn.textContent !== 'Confirm'; });
-    if (nonConfirmButtons.length > 0) {
-      nonConfirmButtons[nonConfirmButtons.length - 1].onclick();
-      var selectAfterBobClick = win.document.querySelector('#available-roster select');
-      if (selectAfterBobClick) {
-        selectAfterBobClick.value = 'architect';
-        // Again find the Confirm button
-        var confirmButtons2 = Array.prototype.filter.call(win.document.querySelectorAll('#available-roster .add-btn'), function(btn) { return btn.textContent === 'Confirm'; });
-        if (confirmButtons2.length > 0) confirmButtons2[confirmButtons2.length - 1].onclick();
-      }
-    }
-  }
+  assert.ok(addBtnsAfterAlice.length > 0, 'AC2: at least one Add/Confirm button remains after confirming alice');
+  // Click the non-confirm button (the original Add for bob)
+  var nonConfirmButtons = Array.prototype.filter.call(addBtnsAfterAlice, function(btn) { return btn.textContent !== 'Confirm'; });
+  assert.ok(nonConfirmButtons.length > 0, 'AC2: bob\'s real Add button is present after confirming alice');
+  nonConfirmButtons[nonConfirmButtons.length - 1].onclick();
+  var selectAfterBobClick = win.document.querySelector('#available-roster select');
+  assert.ok(selectAfterBobClick, 'AC2: bob\'s pod-role <select> is presented after clicking Add');
+  selectAfterBobClick.value = 'architect';
+  // Again find the Confirm button
+  var confirmButtons2 = Array.prototype.filter.call(win.document.querySelectorAll('#available-roster .add-btn'), function(btn) { return btn.textContent === 'Confirm'; });
+  assert.ok(confirmButtons2.length > 0, 'AC2: bob\'s Confirm button is present after selecting a role');
+  confirmButtons2[confirmButtons2.length - 1].onclick();
 
   win.document.getElementById('pod-name-input').value = 'Core Platform';
 
-  // Trigger save and wait for the fetch promise to resolve
-  var fetchStarted = new Promise(function(resolve) { fetchResolve = resolve; });
+  // Trigger save and wait for the fetch promise to resolve -- fetch is
+  // called synchronously as the first statement inside saveBtn.onclick, so
+  // fetchPromise is already assigned by the time onclick() returns.
   win.saveBtn.onclick();
-  await fetchStarted;
-  if (fetchPromise) await fetchPromise;
+  await fetchPromise;
 
   var state = pool._state();
   assert.strictEqual(state.podMembers.length, 3, 'AC2: 3 pod_members rows written (creator + 2 real members)');
