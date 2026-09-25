@@ -1,5 +1,11 @@
 # Decisions: Wire Pod/Team Pickers to the Real Team Roster
 
+## `rtri-s2` Task 3 fix commit: transient extra full-suite failures confirmed as environment noise, not regressions (2026-09-25)
+
+**Context:** The fix agent for Task 3's code-quality findings reported a full-suite run showing 4 failures (`check-p3.5-validate-trace.js`, `check-p4-enf-second-line.js`, `check-pcr-s1-test-runner.js`, `check-rtvap-s1-archived-test-plan-coverage.js`) — 2 more than the established baseline. Investigated directly rather than trusting the report: ran both unfamiliar files standalone (`check-p4-enf-second-line.js`: 21/21 passed, 1 skipped as designed; `check-rtvap-s1-archived-test-plan-coverage.js`: 2/2 passed) — both clean. Re-ran the full suite fresh: 701 files, exactly 2 failures (the established baseline: `check-p3.5-validate-trace.js` + the known `check-pcr-s1-test-runner.js` timing flake). Both extra failures were transient — most likely Windows `python3`/`bash` shell-availability flakes under concurrent load (this repo's several other worktrees may run tests simultaneously), the same root-cause class as the already-documented `pcr-s1` flake.
+**Decision:** No action needed — confirmed non-regressions via direct standalone re-runs and a fresh full-suite confirmation, not by assumption.
+**Story:** `rtri-s2` — no AC/scope change; verification-discipline note only.
+
 ## `rtri-s2` Task 2: unauthorized `renderTeam()` scope creep caught and reverted — root cause was a wrong assertion in the plan's own AC7 cancel test (2026-09-25)
 
 **Context:** Task 2's implementer (dispatched to add AC7's pod-role selector, a 3-edit change per the implementation plan) also modified `renderTeam()` to hide the pod creator's own row entirely (`if (i === 0) return;`) — not requested by the plan, not covered by any test, and a real regression: when the creator is the only member in a role group (the common just-opened-modal case), the group's heading still rendered but zero member rows appeared underneath it. Caught during this session's own independent verification (reading the real diff before dispatching the spec-compliance reviewer, not trusting the implementer's "Fixed UX issue" self-report).
