@@ -23,6 +23,8 @@ var assert = require('assert');
 var fs = require('fs');
 var path = require('path');
 var { JSDOM } = require('jsdom');
+var { handlePostPodsCreate } = require(path.resolve(__dirname, '..', 'src/web-ui/routes/pods.js'));
+var { populateFeatureCollaboratorsFromPods } = require(path.resolve(__dirname, '..', 'src/web-ui/modules/feature-collaborator-store.js'));
 
 var ROOT = path.join(__dirname, '..');
 var POD_MANAGER_HTML_PATH = path.resolve(ROOT, 'src/web-ui/public/pod-manager.html');
@@ -68,6 +70,76 @@ function mockFetchRosterOnly(members) {
     }
     return Promise.reject(new Error('unexpected fetch in this test: ' + url));
   };
+}
+
+// ── Narrow, self-contained in-memory fake pool for pods/pod_members/
+// feature_collaborators -- mirrors pod-store.js's and
+// feature-collaborator-store.js's own real query shapes exactly, matching
+// this repo's established per-file fake-pool convention (see rtri-s1's own
+// makeFakePool).
+function makePodsFakePool() {
+  var pods = []; // { pod_id, tenant_id, name, created_by }
+  var podMembers = []; // { pod_id, user_id, role_id }
+  var featureCollaborators = []; // { collaborator_id, feature_id, user_id, role_id, pod_id }
+  var nextPodId = 1;
+
+  function _norm(sql) {
+    return String(sql).trim().replace(/\s+/g, ' ').toUpperCase();
+  }
+
+  function query(sql, params) {
+    var s = _norm(sql);
+    var p = params || [];
+
+    if (s.indexOf('SELECT POD_ID, NAME FROM PODS WHERE TENANT_ID') === 0) {
+      var match = pods.filter(function(row) { return row.tenant_id === p[0] && row.name === p[1]; });
+      return Promise.resolve({ rows: match.length ? [{ pod_id: match[0].pod_id, name: match[0].name }] : [] });
+    }
+
+    if (s.indexOf('INSERT INTO PODS') === 0) {
+      pods.push({ pod_id: p[0], tenant_id: p[1], name: p[2], created_by: p[3] });
+      return Promise.resolve({ rows: [] });
+    }
+
+    if (s.indexOf('INSERT INTO POD_MEMBERS') === 0) {
+      podMembers.push({ pod_id: p[0], user_id: p[1], role_id: p[2] });
+      return Promise.resolve({ rows: [] });
+    }
+
+    if (s.indexOf('SELECT USER_ID, ROLE_ID FROM POD_MEMBERS WHERE POD_ID') === 0) {
+      var members = podMembers.filter(function(m) { return m.pod_id === p[0]; });
+      return Promise.resolve({ rows: members.map(function(m) { return { user_id: m.user_id, role_id: m.role_id }; }) });
+    }
+
+    if (s.indexOf('SELECT COLLABORATOR_ID, USER_ID, ROLE_ID, POD_ID FROM FEATURE_COLLABORATORS WHERE FEATURE_ID') === 0) {
+      var existing = featureCollaborators.filter(function(c) { return c.feature_id === p[0]; });
+      return Promise.resolve({ rows: existing });
+    }
+
+    if (s.indexOf('SELECT USER_ID FROM FEATURE_COLLABORATOR_REMOVALS WHERE FEATURE_ID') === 0) {
+      return Promise.resolve({ rows: [] }); // no removals in this fixture
+    }
+
+    if (s.indexOf('INSERT INTO FEATURE_COLLABORATORS') === 0) {
+      featureCollaborators.push({ collaborator_id: p[0], feature_id: p[1], user_id: p[2], role_id: p[3], pod_id: p[4] });
+      return Promise.resolve({ rows: [] });
+    }
+
+    console.warn('[fake-pool] unhandled query (returning empty rows): ' + s.slice(0, 160));
+    return Promise.resolve({ rows: [] });
+  }
+
+  return {
+    query: query,
+    _state: function() { return { pods: pods, podMembers: podMembers, featureCollaborators: featureCollaborators }; }
+  };
+}
+
+function makeFakeRes() {
+  var r = { statusCode: null, body: '' };
+  r.writeHead = function(code) { r.statusCode = code; };
+  r.end = function(b) { r.body = b != null ? String(b) : ''; };
+  return r;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -198,6 +270,132 @@ async function testAC7CancelDoesNotAddMember() {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// AC2 — saving with real members writes real identities and selected pod
+// roles to pod_members
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function testAC2SavesRealIdentitiesAndSelectedRoles() {
+  var pool = makePodsFakePool();
+  var fetchPromise = null;
+  var fetchResolve = null;
+
+  var win = buildPage(function(url, opts) {
+    if (url === '/api/team/members') {
+      return Promise.resolve({ json: function() {
+        return Promise.resolve({ members: [
+          { identity: 'alice@example.com', role: 'admin' },
+          { identity: 'bob-gh', role: 'viewer' }
+        ] });
+      } });
+    }
+    if (url === '/api/pods/create') {
+      var body = JSON.parse(opts.body);
+      var req = { session: { tenantId: 'acme', userId: 'me-uuid' } };
+      var res = makeFakeRes();
+      var p = handlePostPodsCreate(req, res, pool, body).then(function() {
+        return { status: res.statusCode, json: function() { return Promise.resolve(JSON.parse(res.body)); } };
+      });
+      fetchPromise = p;
+      if (fetchResolve) fetchResolve();
+      return p;
+    }
+    return Promise.reject(new Error('unexpected fetch: ' + url));
+  });
+
+  await win.openModal();
+
+  // Add alice as 'engineer' (not her roster role 'admin')
+  win.document.querySelector('#available-roster .add-btn').onclick();
+  win.document.querySelector('#available-roster select').value = 'engineer';
+  // Find the Confirm button (the .add-btn that says 'Confirm', not 'Add')
+  var confirmButtons = Array.prototype.filter.call(win.document.querySelectorAll('#available-roster .add-btn'), function(btn) { return btn.textContent === 'Confirm'; });
+  if (confirmButtons.length > 0) confirmButtons[0].onclick();
+
+  // Add bob as 'architect' (not his roster role 'viewer')
+  var addBtnsAfterAlice = win.document.querySelectorAll('#available-roster .add-btn');
+  if (addBtnsAfterAlice.length > 0) {
+    // Click the non-confirm button (the original Add for bob)
+    var nonConfirmButtons = Array.prototype.filter.call(addBtnsAfterAlice, function(btn) { return btn.textContent !== 'Confirm'; });
+    if (nonConfirmButtons.length > 0) {
+      nonConfirmButtons[nonConfirmButtons.length - 1].onclick();
+      var selectAfterBobClick = win.document.querySelector('#available-roster select');
+      if (selectAfterBobClick) {
+        selectAfterBobClick.value = 'architect';
+        // Again find the Confirm button
+        var confirmButtons2 = Array.prototype.filter.call(win.document.querySelectorAll('#available-roster .add-btn'), function(btn) { return btn.textContent === 'Confirm'; });
+        if (confirmButtons2.length > 0) confirmButtons2[confirmButtons2.length - 1].onclick();
+      }
+    }
+  }
+
+  win.document.getElementById('pod-name-input').value = 'Core Platform';
+
+  // Trigger save and wait for the fetch promise to resolve
+  var fetchStarted = new Promise(function(resolve) { fetchResolve = resolve; });
+  win.saveBtn.onclick();
+  await fetchStarted;
+  if (fetchPromise) await fetchPromise;
+
+  var state = pool._state();
+  assert.strictEqual(state.podMembers.length, 3, 'AC2: 3 pod_members rows written (creator + 2 real members)');
+  var alice = state.podMembers.filter(function(m) { return m.user_id === 'alice@example.com'; })[0];
+  var bob = state.podMembers.filter(function(m) { return m.user_id === 'bob-gh'; })[0];
+  assert.ok(alice, 'AC2: alice\'s real identity is a pod_members.user_id value');
+  assert.strictEqual(alice.role_id, 'engineer', 'AC2: alice\'s SELECTED pod role (engineer), not her roster role (admin)');
+  assert.ok(bob, 'AC2: bob\'s real identity is a pod_members.user_id value');
+  assert.strictEqual(bob.role_id, 'architect', 'AC2: bob\'s SELECTED pod role (architect), not his roster role (viewer)');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AC4 — a pod created with real members flows unchanged into
+// feature_collaborators via ep4-s1
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function testAC4FlowsIntoFeatureCollaboratorsUnchanged() {
+  var pool = makePodsFakePool();
+
+  // Seed a pod with 2 real-identity pod_members rows directly (AC2's own
+  // save path is already proven above; this test starts from its outcome).
+  await pool.query('INSERT INTO pods (pod_id, tenant_id, name, created_by) VALUES ($1, $2, $3, $4)', ['pod-1', 'acme', 'Core Platform', 'me-uuid']);
+  await pool.query('INSERT INTO pod_members (pod_id, user_id, role_id) VALUES ($1, $2, $3)', ['pod-1', 'alice@example.com', 'engineer']);
+  await pool.query('INSERT INTO pod_members (pod_id, user_id, role_id) VALUES ($1, $2, $3)', ['pod-1', 'bob-gh', 'architect']);
+
+  // Call ep4-s1's own real, unmodified pod-assignment write path directly --
+  // the same function the "Assign pods" UI calls.
+  var result = await populateFeatureCollaboratorsFromPods(pool, { featureId: 'feature-1', podIds: ['pod-1'] });
+
+  assert.strictEqual(result.addedCount, 2, 'AC4: both real members flowed through');
+  var state = pool._state();
+  var collaboratorUserIds = state.featureCollaborators.filter(function(c) { return c.feature_id === 'feature-1'; }).map(function(c) { return c.user_id; });
+  assert.ok(collaboratorUserIds.indexOf('alice@example.com') !== -1, 'AC4: alice\'s real identity is a feature_collaborators.user_id value');
+  assert.ok(collaboratorUserIds.indexOf('bob-gh') !== -1, 'AC4: bob\'s real identity is a feature_collaborators.user_id value');
+  // Zero new code needed in ep4-s1's own module -- proven by calling its
+  // real, unmodified function directly and getting the right result.
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// AC5 (search half) — search-by-name continues to filter real identities
+// ─────────────────────────────────────────────────────────────────────────────
+
+async function testAC5SearchFiltersRealIdentities() {
+  var win = buildPage(mockFetchRosterOnly([
+    { identity: 'alice@example.com', role: 'engineer' },
+    { identity: 'alison@example.com', role: 'engineer' },
+    { identity: 'bob-gh', role: 'admin' }
+  ]));
+
+  await win.openModal();
+
+  win.document.getElementById('roster-search').value = 'ali';
+  win.document.getElementById('roster-search').oninput();
+
+  var text = win.document.getElementById('available-roster').textContent;
+  assert.ok(text.indexOf('alice@example.com') !== -1, 'AC5: alice@example.com matches "ali"');
+  assert.ok(text.indexOf('alison@example.com') !== -1, 'AC5: alison@example.com matches "ali"');
+  assert.ok(text.indexOf('bob-gh') === -1, 'AC5: bob-gh does not match "ali" and is filtered out');
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Runner (extended by later tasks)
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -221,6 +419,15 @@ async function main() {
 
   console.log('\nAC7 — cancel has no side effect');
   await test('AC7: cancelling the pod-role selector does not add the member', testAC7CancelDoesNotAddMember);
+
+  console.log('\nAC2 — saves real identities and selected roles');
+  await test('AC2: saving with real members writes real identities and selected pod roles to pod_members', testAC2SavesRealIdentitiesAndSelectedRoles);
+
+  console.log('\nAC4 — flows into feature_collaborators via ep4-s1');
+  await test('AC4: a pod created with real members flows unchanged into feature_collaborators via ep4-s1', testAC4FlowsIntoFeatureCollaboratorsUnchanged);
+
+  console.log('\nAC5 (search half) — filters real identities');
+  await test('AC5: search-by-name continues to filter real identities correctly', testAC5SearchFiltersRealIdentities);
 
   console.log('\n[rtri-s2] ' + passed + ' passed, ' + failed + ' failed');
   if (failures.length) {
