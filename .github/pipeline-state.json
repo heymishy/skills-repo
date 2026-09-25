@@ -36566,21 +36566,41 @@
             {
               "slug": "rtri-s3",
               "name": "Render a real member list on /team/members",
-              "stage": "branch-setup",
+              "stage": "subagent-execution",
               "health": "green",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-25T09:14:35.964Z",
+              "updatedAt": "2026-09-25T09:52:40.800Z",
               "testPlan": {
                 "status": "written",
-                "totalTests": 4,
+                "totalTests": 5,
                 "passing": 0
               },
               "acTotal": 5,
               "acVerified": 0,
               "hasLayoutDependentGaps": false,
               "e2eToolingRequired": false,
-              "dorStatus": "signed-off"
+              "dorStatus": "signed-off",
+              "tasks": [
+                {
+                  "id": "task-1",
+                  "name": "Render the real member list -- happy path and empty state (AC1, AC2)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-23-team-roster-integration/plans/rtri-s3-plan.md"
+                },
+                {
+                  "id": "task-2",
+                  "name": "Security and tenant-isolation fixtures against the same handler (AC4, AC5)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-23-team-roster-integration/plans/rtri-s3-plan.md"
+                },
+                {
+                  "id": "task-3",
+                  "name": "Live-data integration proof (AC3)",
+                  "tddState": "not-started",
+                  "file": "artefacts/2026-09-23-team-roster-integration/plans/rtri-s3-plan.md"
+                }
+              ]
             },
             {
               "slug": "rtri-s4",
