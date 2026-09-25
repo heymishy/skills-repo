@@ -36449,9 +36449,10 @@
           "baseline": "0",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "Infrastructure-only story -- no UI wired to render the real list yet; rtri-s3 (/team/members page) is the consumer that will make this measurable",
+          "evidence": "rtri-s3 (/team/members real list render) shipped 2026-09-25 -- the actual consumer that renders listTeamMembers output now exists. No real production tenant view has yet been confirmed since merge, so the baseline remains unmeasured. rtri-s1 remains the shared upstream read path.",
           "contributingStories": [
-            "rtri-s1"
+            "rtri-s1",
+            "rtri-s3"
           ]
         }
       ],
@@ -36566,11 +36567,11 @@
             {
               "slug": "rtri-s3",
               "name": "Render a real member list on /team/members",
-              "stage": "branch-complete",
-              "health": "green",
+              "stage": "definition-of-done",
+              "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-25T18:52:23.480Z",
+              "updatedAt": "2026-09-25T19:13:26.652Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 5,
@@ -36602,8 +36603,13 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/923"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/923",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "Performance/Accessibility NFR live-Chrome checks (designated measurement method in test plan) RISK-ACCEPTed -- see decisions.md 2026-09-26 and dod/rtri-s3-dod.md",
+              "layoutGapsAtMerge": true,
+              "layoutGapsRiskAccepted": true
             },
             {
               "slug": "rtri-s4",
@@ -36978,9 +36984,9 @@
           "label": "Real-roster read/render performance",
           "status": "not-met",
           "assessedBy": "/definition-of-done",
-          "assessedAt": "2026-09-25T08:56:01.857Z",
+          "assessedAt": "2026-09-25T19:13:26.652Z",
           "evidence": "Matches established RISK-ACCEPT pattern for comparable synchronous NFRs; not yet live-timed (no consumer shipped yet)",
-          "note": "rtri-s1 (shared endpoint) confirmed fine at its own DoD. rtri-s2 designated a live-Chrome timing check as its own NFR measurement method in the test plan -- not performed, Chrome unavailable this session (RISK-ACCEPT, decisions.md 2026-09-25). No correctness concern (single indexed query, same shape as rtri-s1); live confirmation pending."
+          "note": "rtri-s1 (shared endpoint) and rtri-s2 confirmed at their own DoDs. rtri-s3 also designated a live-Chrome timing check as its own NFR measurement method in the test plan -- not performed, Chrome unavailable this session (4th consecutive occurrence, RISK-ACCEPT logged in decisions.md 2026-09-26). No correctness concern (single additional indexed JOIN, same shape as rtri-s1); live confirmation pending for rtri-s2 and rtri-s3 together."
         },
         {
           "id": "NFR-security-rtri",
@@ -36997,8 +37003,8 @@
           "label": "Native, semantic, labelled controls for new UI (selector, list)",
           "status": "not-met",
           "assessedBy": "/definition-of-done",
-          "assessedAt": "2026-09-25T08:56:01.857Z",
-          "note": "rtri-s2 AC7 pod-role selector confirmed structurally correct by code reading (real labelled <select>, not a custom widget). Live keyboard-operability pass designated in the test plan as this NFR's own DoD measurement method -- not performed, Chrome unavailable (RISK-ACCEPT, decisions.md 2026-09-25)."
+          "assessedAt": "2026-09-25T19:13:26.652Z",
+          "note": "rtri-s3 confirmed structurally correct by code reading (real <ul>/<li> semantic markup, not div-as-row). Live rendering/screen-reader pass designated in the test plan as this NFR own DoD measurement method -- not performed, Chrome unavailable (RISK-ACCEPT, decisions.md 2026-09-26). rtri-s2 has the same open item for its own new selector control."
         },
         {
           "id": "NFR-audit-rtri",
