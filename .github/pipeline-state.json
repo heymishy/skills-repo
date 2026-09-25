@@ -36436,9 +36436,10 @@
           "baseline": "0%",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": "Infrastructure-only story -- no UI wired to create a pod with real members yet; rtri-s2 (pod-manager.html picker) is the consumer that will make this measurable",
+          "evidence": "rtri-s2 (pod-manager.html picker) shipped 2026-09-25 -- the actual consumer that writes real identities to pod_members now exists. No real pod has yet been created through it in a live tenant since merge, so the 0% baseline remains unmeasured. rtri-s1 remains the shared upstream read path.",
           "contributingStories": [
-            "rtri-s1"
+            "rtri-s1",
+            "rtri-s2"
           ]
         },
         {
@@ -36518,11 +36519,11 @@
             {
               "slug": "rtri-s2",
               "name": "Wire pod-manager.html member picker to the real roster",
-              "stage": "branch-complete",
-              "health": "green",
+              "stage": "definition-of-done",
+              "health": "amber",
               "reviewStatus": "passed",
               "highFindings": 0,
-              "updatedAt": "2026-09-25T08:14:50.080Z",
+              "updatedAt": "2026-09-25T08:56:01.857Z",
               "testPlan": {
                 "status": "written",
                 "totalTests": 9,
@@ -36554,8 +36555,13 @@
                 }
               ],
               "verifyStatus": "passed",
-              "prStatus": "draft",
-              "prUrl": "https://github.com/heymishy/skills-repo/pull/922"
+              "prStatus": "merged",
+              "prUrl": "https://github.com/heymishy/skills-repo/pull/922",
+              "dodStatus": "complete",
+              "releaseReady": false,
+              "blocker": "Performance/Accessibility NFR live-Chrome checks (designated measurement method in test plan) RISK-ACCEPTed -- see decisions.md 2026-09-25 and dod/rtri-s2-dod.md",
+              "layoutGapsAtMerge": true,
+              "layoutGapsRiskAccepted": true
             },
             {
               "slug": "rtri-s3",
@@ -36947,10 +36953,11 @@
           "id": "NFR-performance-rtri",
           "category": "nfr",
           "label": "Real-roster read/render performance",
-          "status": "met",
+          "status": "not-met",
           "assessedBy": "/definition-of-done",
-          "assessedAt": "2026-09-24T02:57:55.382Z",
-          "evidence": "Matches established RISK-ACCEPT pattern for comparable synchronous NFRs; not yet live-timed (no consumer shipped yet)"
+          "assessedAt": "2026-09-25T08:56:01.857Z",
+          "evidence": "Matches established RISK-ACCEPT pattern for comparable synchronous NFRs; not yet live-timed (no consumer shipped yet)",
+          "note": "rtri-s1 (shared endpoint) confirmed fine at its own DoD. rtri-s2 designated a live-Chrome timing check as its own NFR measurement method in the test plan -- not performed, Chrome unavailable this session (RISK-ACCEPT, decisions.md 2026-09-25). No correctness concern (single indexed query, same shape as rtri-s1); live confirmation pending."
         },
         {
           "id": "NFR-security-rtri",
@@ -36965,9 +36972,10 @@
           "id": "NFR-accessibility-rtri",
           "category": "nfr",
           "label": "Native, semantic, labelled controls for new UI (selector, list)",
-          "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-23T19:54:16.168Z"
+          "status": "not-met",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-09-25T08:56:01.857Z",
+          "note": "rtri-s2 AC7 pod-role selector confirmed structurally correct by code reading (real labelled <select>, not a custom widget). Live keyboard-operability pass designated in the test plan as this NFR's own DoD measurement method -- not performed, Chrome unavailable (RISK-ACCEPT, decisions.md 2026-09-25)."
         },
         {
           "id": "NFR-audit-rtri",
