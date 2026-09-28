@@ -44,6 +44,9 @@ const { setToolExecutor }                                            = require('
 const { setCreditsAdapter, getValidTenantIds }                       = require('./modules/credits');       // lab-s3.1 / story-1-organisation-entity
 const { migrateOrganisationsSchema, backfillStandaloneOrganisations } = require('./modules/organisations'); // story-1-organisation-entity
 const { setOrganisationsPool }                                       = require('./routes/auth');            // story-1-organisation-entity
+const { migrateTenantAdminBootstrapSchema }                          = require('./modules/tenant-admin-bootstrap'); // tab-s1
+const { setTenantAdminBootstrapPool }                                = require('./routes/auth'); // tab-s1
+const { setTenantAdminBootstrapPool: setEmailTenantAdminBootstrapPool } = require('./routes/auth-email'); // tab-s1
 const { migrateAgencyClientGrantsSchema }                            = require('./modules/agency-client-grants'); // story-2-relationship-grants-enforcement
 const {
   migrateArtefactCommentsSchema,
@@ -612,6 +615,22 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       console.log('[story-1-organisation-entity] organisations pool wired to auth-email.js signup/login resolution step');
     }).catch(function(err) {
       console.error('[story-1-organisation-entity] organisations migration/backfill failed:', err.message);
+    });
+
+    // tab-s1 — Auto-migrate tenant_admin_bootstrap table, then wire the pool
+    // into auth.js's and auth-email.js's bootstrap call sites. Reuses
+    // _userRolesPool (same reuse pattern as organisations/tir-s2 above) --
+    // this table's own writes always happen alongside a team_memberships
+    // write in the SAME transaction (bootstrapTenantAdminIfNeeded), so it
+    // must be the same pool/database as team_memberships.
+    migrateTenantAdminBootstrapSchema(_userRolesPool).then(function() {
+      console.log('[tab-s1] tenant_admin_bootstrap table ready');
+      setTenantAdminBootstrapPool(_userRolesPool);
+      console.log('[tab-s1] tenant admin bootstrap pool wired to auth.js OAuth-callback bootstrap step');
+      setEmailTenantAdminBootstrapPool(_userRolesPool);
+      console.log('[tab-s1] tenant admin bootstrap pool wired to auth-email.js signup bootstrap step');
+    }).catch(function(err) {
+      console.error('[tab-s1] tenant_admin_bootstrap migration/wiring failed:', err.message);
     });
 
     // ep1-s1 — Auto-migrate pods/pod_members schema.

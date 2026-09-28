@@ -495,6 +495,17 @@ function makeFakePool(seed) {
     assert.ok(adminRow, 'expected a real team_memberships admin row confirmed via the fake pool state');
   });
 
+  // ===========================================================================
+  // Source-level guard -- server.js actually wires the new module (not just
+  // the test file's own manual setTenantAdminBootstrapPool calls)
+  // ===========================================================================
+  await test('serverJsWiresTenantAdminBootstrapPool (wiring guard)', async function() {
+    var fs = require('fs');
+    var serverSrc = fs.readFileSync(path.join(ROOT, 'src', 'web-ui', 'server.js'), 'utf8');
+    assert.ok(serverSrc.indexOf('setTenantAdminBootstrapPool') !== -1, 'expected server.js to call setTenantAdminBootstrapPool for at least one route module');
+    assert.ok(serverSrc.indexOf('migrateTenantAdminBootstrapSchema') !== -1, 'expected server.js to call migrateTenantAdminBootstrapSchema at startup');
+  });
+
   if (failures.length) {
     failures.forEach(function(f) {
       console.error('  FAIL:', f.name, '--', f.err && f.err.stack || f.err);
