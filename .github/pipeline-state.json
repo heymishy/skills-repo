@@ -37038,13 +37038,13 @@
         {
           "slug": "tab-s1",
           "name": "Bootstrap a brand-new tenant's first admin automatically on login",
-          "stage": "definition-of-ready",
+          "stage": "branch-setup",
           "health": "green",
           "id": "tab-s1",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/review/tab-s1-review-2.md",
-          "updatedAt": "2026-09-28T07:49:30.605Z",
+          "updatedAt": "2026-09-28T08:09:00Z",
           "testPlan": {
             "status": "written",
             "totalTests": 9,
