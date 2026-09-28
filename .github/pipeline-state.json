@@ -37038,20 +37038,20 @@
         {
           "slug": "tab-s1",
           "name": "Bootstrap a brand-new tenant's first admin automatically on login",
-          "stage": "implementation-plan",
+          "stage": "verify-completion",
           "health": "green",
           "id": "tab-s1",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/review/tab-s1-review-2.md",
-          "updatedAt": "2026-09-28T08:22:01.197Z",
+          "updatedAt": "2026-09-28T23:57:38.862Z",
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0
+            "passing": 9
           },
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 6,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
@@ -37062,64 +37062,65 @@
             {
               "id": "task-1",
               "name": "identity-links.js: resolveOrCreatePersonForIdentity",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md"
             },
             {
               "id": "task-2",
               "name": "tenant-admin-bootstrap.js: schema migration + AC1 core grant",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md"
             },
             {
               "id": "task-3",
               "name": "AC2: second person into already-bootstrapped tenant",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md"
             },
             {
               "id": "task-4",
               "name": "AC3: concurrent bootstrap, exactly one wins",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md"
             },
             {
               "id": "task-5",
               "name": "AC5: no-op when tenant already has a real admin",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md"
             },
             {
               "id": "task-6",
               "name": "AC6: transaction rollback on second-write failure",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md"
             },
             {
               "id": "task-7",
               "name": "AC4 provider-agnostic unit test + NFR perf/audit tests",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md"
             },
             {
               "id": "task-8",
               "name": "Wire into auth.js GitHub + Google OAuth callbacks",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md"
             },
             {
               "id": "task-9",
               "name": "Google integration test + wire into auth-email.js signup",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md"
             },
             {
               "id": "task-10",
               "name": "server.js: wire schema migration + pool into both routes",
-              "tddState": "not-started",
+              "tddState": "committed",
               "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md"
             }
-          ]
+          ],
+          "verifyStatus": "passed"
         },
         {
           "slug": "tab-s2",
