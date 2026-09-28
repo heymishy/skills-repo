@@ -58,9 +58,9 @@ Standard product metrics only — this is a real functional gap closing (nobody 
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Time-to-admin for a brand-new solo signup | TBD at /definition | Gap — no stories yet |
-| % of real tenants with at least one working admin | TBD at /definition | Gap — no stories yet |
-| Manual admin-grant interventions needed | TBD at /definition | Gap — no stories yet |
+| Time-to-admin for a brand-new solo signup | `tab-s1` | Covered |
+| % of real tenants with at least one working admin | `tab-s1` (new tenants going forward), `tab-s2` (existing tenants, backfill) | Covered |
+| Manual admin-grant interventions needed | `tab-s3` (removes the only lever) | Covered |
 
 ---
 
