@@ -66,22 +66,22 @@ function makeFakePool(seed) {
   var queryLog = [];
   var hooks = { failTeamMembershipsInsertOnce: false };
 
-  function snapshot() {
-    return {
-      people: people.slice(), personIdentities: personIdentities.slice(),
-      tenantAdminBootstrap: tenantAdminBootstrap.slice(), teamMemberships: teamMemberships.slice(),
-      nextPersonId: nextPersonId
-    };
-  }
-  function restore(snap) {
-    people = snap.people; personIdentities = snap.personIdentities;
-    tenantAdminBootstrap = snap.tenantAdminBootstrap; teamMemberships = snap.teamMemberships;
-    nextPersonId = snap.nextPersonId;
-  }
+  // Per-transaction undo log (not whole-state snapshot/restore -- see
+  // decisions.md / Task 4 fix note): a real Postgres ROLLBACK only undoes
+  // the rolling-back transaction's OWN uncommitted writes -- it never
+  // touches another transaction's already-committed data. A whole-state
+  // snapshot captured at this client's own BEGIN time predates any
+  // concurrent transaction's later commit, so restoring to it would wipe
+  // out that other transaction's committed rows too. Each mutating branch
+  // below calls recordUndo(fn) to register a targeted reversal; ROLLBACK
+  // replays them in reverse; COMMIT just discards the log (the shared
+  // arrays are already the durable, mutated state).
+  var NOOP_RECORD_UNDO = function() {};
 
-  function handleQuery(sql, params) {
+  function handleQuery(sql, params, recordUndo) {
     var s = _norm(sql);
     var p = params || [];
+    var undo = recordUndo || NOOP_RECORD_UNDO;
     queryLog.push({ sql: s, params: p });
 
     if (s.indexOf('CREATE TABLE') === 0) return Promise.resolve({ rows: [] });
@@ -89,6 +89,10 @@ function makeFakePool(seed) {
     if (s.indexOf('INSERT INTO PEOPLE DEFAULT VALUES') === 0) {
       var person = { id: nextPersonId++, created_at: new Date().toISOString() };
       people.push(person);
+      undo(function() {
+        var i = people.indexOf(person);
+        if (i !== -1) people.splice(i, 1);
+      });
       return Promise.resolve({ rows: [{ id: person.id }] });
     }
 
@@ -106,7 +110,12 @@ function makeFakePool(seed) {
 
     if (s.indexOf('INSERT INTO PERSON_IDENTITIES') === 0) {
       var idKey = p[0], pid = p[1], provider = p[2];
-      personIdentities.push({ identity_key: idKey, person_id: pid, provider: provider, created_at: new Date().toISOString() });
+      var identityRow = { identity_key: idKey, person_id: pid, provider: provider, created_at: new Date().toISOString() };
+      personIdentities.push(identityRow);
+      undo(function() {
+        var i = personIdentities.indexOf(identityRow);
+        if (i !== -1) personIdentities.splice(i, 1);
+      });
       return Promise.resolve({ rows: [] });
     }
 
@@ -115,7 +124,12 @@ function makeFakePool(seed) {
       var hasAdmin = teamMemberships.some(function(r) { return r.tenant_id === tenantId && r.role === 'admin'; });
       var alreadyClaimed = tenantAdminBootstrap.some(function(r) { return r.tenant_id === tenantId; });
       if (hasAdmin || alreadyClaimed) return Promise.resolve({ rows: [] });
-      tenantAdminBootstrap.push({ tenant_id: tenantId, admin_person_id: claimPersonId, created_at: new Date().toISOString() });
+      var claimRow = { tenant_id: tenantId, admin_person_id: claimPersonId, created_at: new Date().toISOString() };
+      tenantAdminBootstrap.push(claimRow);
+      undo(function() {
+        var i = tenantAdminBootstrap.indexOf(claimRow);
+        if (i !== -1) tenantAdminBootstrap.splice(i, 1);
+      });
       return Promise.resolve({ rows: [{ admin_person_id: claimPersonId }] });
     }
 
@@ -127,7 +141,13 @@ function makeFakePool(seed) {
       var tmPerson = p[0], tmTenant = p[1], tmRole = p[2];
       var idx = teamMemberships.findIndex(function(r) { return r.person_id === tmPerson && r.tenant_id === tmTenant; });
       var row = { person_id: tmPerson, tenant_id: tmTenant, role: tmRole, created_at: new Date().toISOString() };
+      var prevRow = idx !== -1 ? teamMemberships[idx] : null;
       if (idx !== -1) teamMemberships[idx] = row; else teamMemberships.push(row);
+      undo(function() {
+        var i = teamMemberships.indexOf(row);
+        if (i === -1) return;
+        if (prevRow) teamMemberships[i] = prevRow; else teamMemberships.splice(i, 1);
+      });
       return Promise.resolve({ rows: [] });
     }
 
@@ -136,14 +156,21 @@ function makeFakePool(seed) {
   }
 
   function makeClient() {
-    var txSnapshot = null;
+    var txUndo = null;
+    function recordUndo(fn) {
+      if (txUndo) txUndo.push(fn);
+    }
     return {
       query: function(sql, params) {
         var s = _norm(sql);
-        if (s === 'BEGIN') { txSnapshot = snapshot(); return Promise.resolve({ rows: [] }); }
-        if (s === 'COMMIT') { txSnapshot = null; return Promise.resolve({ rows: [] }); }
-        if (s === 'ROLLBACK') { if (txSnapshot) restore(txSnapshot); txSnapshot = null; return Promise.resolve({ rows: [] }); }
-        return handleQuery(sql, params);
+        if (s === 'BEGIN') { txUndo = []; return Promise.resolve({ rows: [] }); }
+        if (s === 'COMMIT') { txUndo = null; return Promise.resolve({ rows: [] }); }
+        if (s === 'ROLLBACK') {
+          if (txUndo) { while (txUndo.length) { txUndo.pop()(); } }
+          txUndo = null;
+          return Promise.resolve({ rows: [] });
+        }
+        return handleQuery(sql, params, recordUndo);
       },
       release: function() {}
     };
@@ -223,6 +250,32 @@ function makeFakePool(seed) {
     var claim = state.tenantAdminBootstrap.find(function(r) { return r.tenant_id === 'tenant-x'; });
     assert.strictEqual(claim.admin_person_id, 1, 'expected the pre-existing bootstrap claim (person 1) to remain unchanged');
     assert.strictEqual(state.tenantAdminBootstrap.length, 1, 'expected still exactly one bootstrap row for tenant-x');
+  });
+
+  // ===========================================================================
+  // AC3 -- concurrentBootstrapExactlyOneWins
+  // ===========================================================================
+  await test('concurrentBootstrapExactlyOneWins (AC3)', async function() {
+    var bootstrap = freshRequire(BOOTSTRAP_PATH);
+    var pool = makeFakePool({
+      people: [{ id: 10, created_at: new Date().toISOString() }, { id: 20, created_at: new Date().toISOString() }]
+    });
+
+    var results = await Promise.all([
+      bootstrap.bootstrapTenantAdminIfNeeded(pool, 'tenant-y', 10),
+      bootstrap.bootstrapTenantAdminIfNeeded(pool, 'tenant-y', 20)
+    ]);
+
+    var grantedCount = results.filter(function(r) { return r.granted; }).length;
+    assert.strictEqual(grantedCount, 1, 'expected exactly one of the two concurrent calls to be granted, got: ' + grantedCount);
+
+    var state = pool._state();
+    var claims = state.tenantAdminBootstrap.filter(function(r) { return r.tenant_id === 'tenant-y'; });
+    assert.strictEqual(claims.length, 1, 'expected exactly one tenant_admin_bootstrap row for tenant-y, never zero, never two');
+
+    var adminRows = state.teamMemberships.filter(function(r) { return r.tenant_id === 'tenant-y' && r.role === 'admin'; });
+    assert.strictEqual(adminRows.length, 1, 'expected exactly one admin team_memberships row for tenant-y');
+    assert.strictEqual(adminRows[0].person_id, claims[0].admin_person_id, 'the winning claim and the granted admin row must agree on which person won');
   });
 
   if (failures.length) {
