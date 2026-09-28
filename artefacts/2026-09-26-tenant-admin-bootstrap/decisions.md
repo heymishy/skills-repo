@@ -4,6 +4,12 @@
 **Discovery reference:** artefacts/2026-09-26-tenant-admin-bootstrap/discovery.md
 **Last updated:** 2026-09-28
 
+## `tab-s1` `/branch-setup`: baseline acknowledged, 1 pre-existing/environmental failure (2026-09-28)
+
+**Context:** `node scripts/run-all-tests.js` on the freshly-created `feature/tab-s1` worktree (built from master at the DoR sign-off commit) showed 1 failure: `tests/check-p3.5-validate-trace.js` — the same established pre-existing/environmental failure acknowledged repeatedly across every worktree in this repo's history.
+**Decision:** Acknowledged as pre-existing/environmental and proceeding.
+**Story:** `tab-s1` — no AC/scope change; baseline note only.
+
 ---
 
 ## Decision categories
