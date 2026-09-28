@@ -50,10 +50,24 @@ function test(name, fn) {
 var ROOT = path.join(__dirname, '..');
 var IDENTITY_LINKS_PATH = require.resolve(path.join(ROOT, 'src', 'web-ui', 'modules', 'identity-links'));
 var BOOTSTRAP_PATH = require.resolve(path.join(ROOT, 'src', 'web-ui', 'modules', 'tenant-admin-bootstrap'));
+var AUTH_PATH = require.resolve(path.join(ROOT, 'src', 'web-ui', 'routes', 'auth'));
 
 function freshRequire(p) {
   delete require.cache[require.resolve(p)];
   return require(p);
+}
+
+function mockAuthReq(overrides) {
+  return Object.assign({ session: {}, sessionId: 'test-sid-' + Math.random().toString(36).slice(2), query: {}, headers: {} }, overrides || {});
+}
+function mockAuthRes() {
+  var _headers = {};
+  return {
+    statusCode: null, get headers() { return _headers; },
+    writeHead: function(code, hdrs) { this.statusCode = code; if (hdrs) Object.assign(_headers, hdrs); },
+    setHeader: function(name, value) { _headers[name] = value; },
+    end: function(body) { this.body = (body != null ? body : ''); this._ended = true; }
+  };
 }
 
 // ── Narrow, self-contained fake pool -- people / person_identities /
@@ -374,6 +388,36 @@ function makeFakePool(seed) {
     assert.strictEqual(granted.data.personId, 1);
     assert.strictEqual(granted.data.tenantId, 'tenant-audit');
     assert.ok(granted.data.timestamp, 'expected a timestamp field');
+  });
+
+  // ===========================================================================
+  // AC1/AC4 -- githubCallbackWiresIntoBootstrapForNewTenant (integration)
+  // ===========================================================================
+  await test('githubCallbackWiresIntoBootstrapForNewTenant (AC1/AC4 integration)', async function() {
+    var tokenSuccessFixture = require('./fixtures/github/oauth-token-exchange-success.json');
+    var userIdentityFixture = require('./fixtures/github/user-identity.json');
+
+    var auth = freshRequire(AUTH_PATH);
+    auth.setLogger({ info: function() {}, warn: function() {} });
+    var pool = makeFakePool({});
+    auth.setTenantAdminBootstrapPool(pool);
+    var oauthAdapter = require(path.join(ROOT, 'src', 'web-ui', 'auth', 'oauth-adapter'));
+    oauthAdapter.setProviderAdapter(oauthAdapter.gitHubProviderAdapter);
+
+    var origFetch = global.fetch;
+    global.fetch = async function(url) {
+      if (url.includes('access_token')) return { json: async function() { return tokenSuccessFixture; } };
+      if (url.includes('/user')) return { json: async function() { return userIdentityFixture; } };
+      return { json: async function() { return {}; } };
+    };
+    var req = mockAuthReq({ session: { oauthState: 'state-tab-s1-gh' }, query: { code: 'valid-code', state: 'state-tab-s1-gh' } });
+    var res = mockAuthRes();
+    await auth.handleAuthCallback(req, res);
+    global.fetch = origFetch;
+
+    assert.strictEqual(req.session.role, 'admin', 'expected the first-ever GitHub login to resolve to admin');
+    var adminRow = pool._state().teamMemberships.find(function(r) { return r.role === 'admin'; });
+    assert.ok(adminRow, 'expected a real team_memberships admin row confirmed via the fake pool state, not just the session value');
   });
 
   if (failures.length) {

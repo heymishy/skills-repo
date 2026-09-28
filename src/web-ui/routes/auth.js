@@ -20,6 +20,10 @@ const _credits = require('../modules/credits'); // ftcg-s1
 // resolveOrganisationForTenant takes `pool` as an explicit argument, see
 // modules/organisations.js header comment and DoR H-ADAPTER).
 const _organisations = require('../modules/organisations');
+// tab-s1: identity-links (resolveOrCreatePersonForIdentity) and the bootstrap
+// module itself -- see the setTenantAdminBootstrapPool block below.
+var identityLinks = require('../modules/identity-links');
+var _tenantAdminBootstrap = require('../modules/tenant-admin-bootstrap');
 
 // Wire the real GitHub provider adapter on module load.
 // This ensures handleAuthCallback works when auth.js is required without server.js
@@ -91,6 +95,41 @@ async function _resolveOrganisation(tenantId) {
     await _organisations.resolveOrganisationForTenant(_organisationsPool, tenantId);
   } catch (err) {
     _logger.warn('organisation_resolution_failed', { tenantId, reason: err.message });
+  }
+}
+
+// tab-s1: pool handed in by server.js at startup, mirroring setOrganisationsPool.
+// A missing pool must never break login -- skip bootstrap, fall through to
+// the existing role-resolution path unchanged.
+let _tenantAdminBootstrapPool = null;
+
+/**
+ * Replace the pool used for tenant-admin bootstrap resolution (called once by
+ * server.js at startup).
+ * @param {object} pool - pg-Pool-shaped object exposing connect()/query(sql, params)
+ */
+function setTenantAdminBootstrapPool(pool) {
+  _tenantAdminBootstrapPool = pool;
+}
+
+/**
+ * tab-s1: resolve-or-create this identity's personId, then attempt the
+ * admin bootstrap. Never throws -- a failure here must never block login
+ * (mirrors _resolveOrganisation's own fail-open, try/catch-wrapped shape).
+ * @param {string} tenantId
+ * @param {string} identityKey
+ * @param {string} provider
+ * @returns {Promise<boolean>} true if this login was just granted admin
+ */
+async function _bootstrapTenantAdmin(tenantId, identityKey, provider) {
+  if (!_tenantAdminBootstrapPool) return false; // not wired -- safe no-op
+  try {
+    const personId = await identityLinks.resolveOrCreatePersonForIdentity(_tenantAdminBootstrapPool, identityKey, provider, _logger);
+    const result = await _tenantAdminBootstrap.bootstrapTenantAdminIfNeeded(_tenantAdminBootstrapPool, tenantId, personId, _logger);
+    return !!result.granted;
+  } catch (err) {
+    _logger.warn('tenant_admin_bootstrap_failed', { tenantId, reason: err.message });
+    return false;
   }
 }
 
@@ -352,10 +391,18 @@ async function handleAuthCallback(req, res) {
     // teammate's login then resolved an arbitrary OTHER teammate's role.
     // user.login is each person's own, distinct GitHub login regardless of
     // which tenant they share.
-    try {
-      req.session.role = await _userRoles.getRoleForTenant(req.session.tenantId, user.login, 'github');
-    } catch (_) {
-      req.session.role = 'user';
+    // tab-s1: bootstrap admin for a genuinely new tenant BEFORE falling back
+    // to the existing role-resolution path -- if granted, that IS the role;
+    // otherwise resolve exactly as before this story.
+    const _grantedAdmin = await _bootstrapTenantAdmin(req.session.tenantId, user.login, 'github');
+    if (_grantedAdmin) {
+      req.session.role = 'admin';
+    } else {
+      try {
+        req.session.role = await _userRoles.getRoleForTenant(req.session.tenantId, user.login, 'github');
+      } catch (_) {
+        req.session.role = 'user';
+      }
     }
 
     // Audit log: user ID and timestamp only — never the token value
@@ -474,10 +521,15 @@ async function handleAuthGoogleCallback(req, res) {
     // identityKey and tenantId are already the same value here and this is a
     // documented non-bug finding, not a behaviour change (verified by a
     // regression test).
-    try {
-      req.session.role = await _userRoles.getRoleForTenant(req.session.tenantId, userInfo.sub, 'google');
-    } catch (_) {
-      req.session.role = 'user';
+    const _grantedAdminGoogle = await _bootstrapTenantAdmin(req.session.tenantId, userInfo.sub, 'google');
+    if (_grantedAdminGoogle) {
+      req.session.role = 'admin';
+    } else {
+      try {
+        req.session.role = await _userRoles.getRoleForTenant(req.session.tenantId, userInfo.sub, 'google');
+      } catch (_) {
+        req.session.role = 'user';
+      }
     }
 
     _logger.info('login', {
@@ -569,6 +621,7 @@ module.exports = {
   getOrgMembers,
   resolveTenant,
   setOrganisationsPool,
+  setTenantAdminBootstrapPool,
   NAMED_IDENTITY_STUB_HEADER,
   _namedIdentityStubEnabled,
   _namedIdentityStubHeaderMatches,
