@@ -502,8 +502,16 @@ function makeFakePool(seed) {
   await test('serverJsWiresTenantAdminBootstrapPool (wiring guard)', async function() {
     var fs = require('fs');
     var serverSrc = fs.readFileSync(path.join(ROOT, 'src', 'web-ui', 'server.js'), 'utf8');
-    assert.ok(serverSrc.indexOf('setTenantAdminBootstrapPool') !== -1, 'expected server.js to call setTenantAdminBootstrapPool for at least one route module');
-    assert.ok(serverSrc.indexOf('migrateTenantAdminBootstrapSchema') !== -1, 'expected server.js to call migrateTenantAdminBootstrapSchema at startup');
+    // Assert the actual CALL-SITE strings (with the real pool argument), not
+    // just that the identifiers appear anywhere -- a bare require() line
+    // alone would already satisfy a weaker substring check, without proving
+    // any invocation actually happens (D37 rule #4 / CLAUDE.md: a wiring
+    // test must assert an observable invocation, not just that a reference
+    // exists -- see identity-links.js's own tir-s1 precedent for why this
+    // class of weak test previously shipped a real production no-op).
+    assert.ok(serverSrc.indexOf('migrateTenantAdminBootstrapSchema(_userRolesPool)') !== -1, 'expected server.js to actually call migrateTenantAdminBootstrapSchema(_userRolesPool) at startup, not just import it');
+    assert.ok(serverSrc.indexOf('setTenantAdminBootstrapPool(_userRolesPool)') !== -1, 'expected server.js to actually call setTenantAdminBootstrapPool(_userRolesPool) for auth.js, not just import it');
+    assert.ok(serverSrc.indexOf('setEmailTenantAdminBootstrapPool(_userRolesPool)') !== -1, 'expected server.js to actually call setEmailTenantAdminBootstrapPool(_userRolesPool) for auth-email.js, not just import it');
   });
 
   if (failures.length) {
