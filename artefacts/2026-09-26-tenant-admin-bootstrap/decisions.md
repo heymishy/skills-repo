@@ -12,6 +12,21 @@
 
 ---
 
+## `tab-s1` `/implementation-plan`: two design corrections found via direct code reading, DoR contract text updated in the plan (2026-09-28)
+
+**Context:** While loading inputs for `/implementation-plan`, direct reads of `src/web-ui/modules/identity-links.js` (`resolvePersonForIdentity`, lines 82-90) showed it returns `null` for a genuinely brand-new identity (no `person_identities` row AND no `team_memberships` row) — there is no existing code path that CREATES a `people` row for a first-ever login. The DoR contract's own "Assumptions" section (`tab-s1-dor-contract.md` line 37) states `personId` is "already available/resolvable at the point in the login flow ... confirmed by reading auth.js/auth-email.js directly during /review" — but the actual `/review` reports (`tab-s1-review-1.md`, `tab-s1-review-2.md`) contain no mention of `personId`/`resolvePersonForIdentity` at all, so this specific claim was written but not actually cross-checked against `resolvePersonForIdentity`'s null-return behaviour.
+
+**Decision 1 (gap fix):** Add a new exported helper `resolveOrCreatePersonForIdentity(pool, identityKey, provider, logger)` to `identity-links.js` (not a new module — extends the module that already owns `resolvePersonForIdentity`/`backfillIdentityIfNeeded`, matching this codebase's own "extend in place" convention). Each of the 3 wiring call sites (`auth.js` GitHub, `auth.js` Google, `auth-email.js` signup) calls this BEFORE calling `bootstrapTenantAdminIfNeeded`, so a genuinely brand-new identity gets a real `people` row (and a `person_identities` link) created regardless of whether they end up winning the admin-bootstrap race. This does not change `bootstrapTenantAdminIfNeeded`'s own signature (still `(pool, tenantId, personId, logger)`, exactly as the DoR contract specifies) — it only clarifies HOW `personId` gets resolved before that call, correcting the DoR contract's own inaccurate assumption rather than contradicting its interface.
+
+**Decision 2 (design refinement for AC5, keeps the NFR-performance test's exact query count of 4):** The DoR contract's own SQL sketch (line 12: plain `INSERT ... ON CONFLICT (tenant_id) DO NOTHING RETURNING`) does not correctly satisfy AC5 on its own — if a tenant already has a real admin granted via OTHER means (e.g. `team-management.js`'s `addOrUpdateTeammate`), no `tenant_admin_bootstrap` row would exist yet, so a plain `ON CONFLICT`-only insert would incorrectly let a second person's login claim the gate row and get granted admin too. Fixed by combining the existing-admin check into the SAME insert statement: `INSERT INTO tenant_admin_bootstrap (tenant_id, admin_person_id) SELECT $1, $2 WHERE NOT EXISTS (SELECT 1 FROM team_memberships WHERE tenant_id = $1 AND role = 'admin') ON CONFLICT (tenant_id) DO NOTHING RETURNING admin_person_id` — one query, not two, so the NFR-performance test's "exactly 4 query calls" pass threshold (`BEGIN`, this combined insert, the `team_memberships` grant insert, `COMMIT`) still holds exactly as the test plan specifies.
+
+**Rationale:** Both corrections were found by directly reading the referenced source files and the actual review artefacts, not by assuming the DoR contract's own prose was accurate — consistent with this session's established practice of verifying artefact claims against real code before building on them. Neither correction changes any AC's observable behaviour or the signed-off `bootstrapTenantAdminIfNeeded` function signature; both are implementation-detail corrections needed to make the already-approved ACs actually hold.
+**Story:** `tab-s1` — no AC/scope change; implementation-plan-level design correction, logged per this repo's own "decisions.md is mandatory for features with architectural choices" rule (CLAUDE.md).
+**Made by:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh), during `/implementation-plan` — flagged for Hamish King's awareness, not blocking (Medium oversight story).
+**Revisit trigger:** none expected — this is a correctness fix for the interface the DoR already signed off on, not a new design choice.
+
+---
+
 ## Decision categories
 
 | Code | Meaning |
