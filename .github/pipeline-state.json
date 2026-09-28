@@ -37030,13 +37030,44 @@
     {
       "slug": "2026-09-26-tenant-admin-bootstrap",
       "name": "Tenant Admin Bootstrap",
-      "stage": "discovery",
+      "stage": "benefit-metric",
       "health": "green",
       "discoveryStatus": "approved",
       "discoveryArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/discovery.md",
       "stories": [],
-      "metrics": [],
-      "updatedAt": "2026-09-28T05:42:34.154Z",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Time-to-admin for a brand-new solo signup",
+          "target": "0 seconds, automatic, all 3 auth providers",
+          "baseline": "infinite / never (confirmed live)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "% of real tenants with at least one working admin",
+          "target": "100%",
+          "baseline": "[UNKNOWN BASELINE] -- at least 1 tenant confirmed at 0%",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Manual admin-grant interventions needed",
+          "target": "0",
+          "baseline": "effectively required for every tenant today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ],
+      "updatedAt": "2026-09-28T05:47:18.192Z",
       "track": "standard",
       "guardrails": [],
       "regulated": false,
