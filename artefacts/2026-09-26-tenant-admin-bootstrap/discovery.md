@@ -1,8 +1,8 @@
 # Discovery: Tenant Admin Bootstrap
 
-**Status:** Clarified — awaiting approval
+**Status:** Approved
 **Created:** 2026-09-26
-**Approved by:** [Name + date — filled in after human review]
+**Approved by:** Hamish King — Platform Owner — 2026-09-28
 **Author:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh), with Hamish King
 
 ---
@@ -94,11 +94,11 @@ Measured via: absence of any future `ADMIN_GITHUB_LOGINS`-related Fly secret edi
 
 ## Reviewers
 
-- [Name — Role]
+- Hamish King — Platform Owner (reviewed via /clarify, 2026-09-26/2026-09-28)
 
 ## Approved By
 
-[Name — Role — Date]
+Hamish King — Platform Owner — 2026-09-28
 
 ---
 
