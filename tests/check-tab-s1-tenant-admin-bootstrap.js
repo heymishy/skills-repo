@@ -282,6 +282,29 @@ function makeFakePool(seed) {
     assert.strictEqual(adminRows[0].person_id, claims[0].admin_person_id, 'the winning claim and the granted admin row must agree on which person won');
   });
 
+  // ===========================================================================
+  // AC5 -- noOpWhenTenantAlreadyHasRealAdmin
+  // ===========================================================================
+  await test('noOpWhenTenantAlreadyHasRealAdmin (AC5)', async function() {
+    var bootstrap = freshRequire(BOOTSTRAP_PATH);
+    var pool = makeFakePool({
+      people: [{ id: 1, created_at: new Date().toISOString() }, { id: 2, created_at: new Date().toISOString() }],
+      teamMemberships: [{ person_id: 1, tenant_id: 'tenant-z', role: 'admin', created_at: new Date().toISOString() }]
+      // Deliberately NO tenant_admin_bootstrap row -- proves the no-op holds
+      // even without the gate table's own claim (AC5's own named scenario).
+    });
+
+    var result = await bootstrap.bootstrapTenantAdminIfNeeded(pool, 'tenant-z', 2);
+    assert.strictEqual(result.granted, false, 'expected no-op -- tenant-z already has a real admin');
+
+    var state = pool._state();
+    var adminRows = state.teamMemberships.filter(function(r) { return r.tenant_id === 'tenant-z' && r.role === 'admin'; });
+    assert.strictEqual(adminRows.length, 1, 'expected still exactly one admin row for tenant-z');
+    assert.strictEqual(adminRows[0].person_id, 1, 'expected the existing admin (person 1) to be completely unchanged');
+    var claim = state.tenantAdminBootstrap.find(function(r) { return r.tenant_id === 'tenant-z'; });
+    assert.ok(!claim, 'expected no tenant_admin_bootstrap row to be created for tenant-z');
+  });
+
   if (failures.length) {
     failures.forEach(function(f) {
       console.error('  FAIL:', f.name, '--', f.err && f.err.stack || f.err);
