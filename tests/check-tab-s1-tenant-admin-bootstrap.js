@@ -4,18 +4,24 @@
 // Story: artefacts/2026-09-26-tenant-admin-bootstrap/stories/tab-s1.md
 // Test plan: artefacts/2026-09-26-tenant-admin-bootstrap/test-plans/tab-s1-test-plan.md
 //
-// Covers all 9 planned tests (6 unit, 3 integration) plus the 3 NFR tests, and
-// resolveOrCreatePersonForIdentity (identity-links.js) which the wiring tasks
-// below depend on (added per decisions.md, 2026-09-28, correcting the DoR
-// contract's own inaccurate "personId already resolvable" assumption).
+// Built incrementally across the implementation plan's 10 tasks
+// (artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md) -- each
+// task appends its own tests to this same file. This commit (Task 1) adds
+// resolveOrCreatePersonForIdentity (identity-links.js) plus 2 unit tests
+// covering it -- the personId-resolution helper the remaining 9 planned
+// tests (6 unit, 3 integration, matching AC1-AC6 + NFRs) and their
+// production wiring depend on. Added per decisions.md, 2026-09-28,
+// correcting the DoR contract's own inaccurate "personId already
+// resolvable" assumption.
 //
 // Follows this repo's hand-rolled test()/assert style (see
 // tests/check-story1-organisation-entity.js, tests/check-tir-s1-person-team-schema.js)
 // -- no Jest/Mocha. Fake pool is narrow, self-contained, per-test-file (this
-// session's established convention) -- extended with real BEGIN/COMMIT/ROLLBACK
-// snapshot/restore semantics via pool.connect()-issued clients, since AC3/AC6
-// specifically require correct transactional behaviour, not just query-shape
-// matching.
+// session's established convention) -- pre-built here with real
+// BEGIN/COMMIT/ROLLBACK snapshot/restore semantics via pool.connect()-issued
+// clients, transactional query branches, and a failure-injection hook, ALL
+// of which later tasks in this same file require (AC3 concurrency, AC6
+// rollback) -- not needed by Task 1's own 2 tests alone.
 
 process.env.NODE_ENV = 'test';
 process.env.SESSION_SECRET = process.env.SESSION_SECRET || 'test-session-secret-minimum32chars!!';
@@ -178,8 +184,14 @@ function makeFakePool(seed) {
     assert.strictEqual(pool._state().people.length, 1, 'expected no new people row created for an already-linked identity');
   });
 
+  if (failures.length) {
+    failures.forEach(function(f) {
+      console.error('  FAIL:', f.name, '--', f.err && f.err.stack || f.err);
+    });
+  }
+
   console.log('\n[tab-s1] Results so far: ' + passed + ' passed, ' + failed + ' failed');
-  if (failed > 0) process.exit(1);
+  process.exit(failed > 0 ? 1 : 0);
 
 })().catch(function(err) {
   console.error('[tab-s1] Unexpected error:', err);
