@@ -204,6 +204,27 @@ function makeFakePool(seed) {
     assert.strictEqual(claim.admin_person_id, 1);
   });
 
+  // ===========================================================================
+  // AC2 -- secondPersonIntoBootstrappedTenantDoesNotBecomeAdmin
+  // ===========================================================================
+  await test('secondPersonIntoBootstrappedTenantDoesNotBecomeAdmin (AC2)', async function() {
+    var bootstrap = freshRequire(BOOTSTRAP_PATH);
+    var pool = makeFakePool({
+      people: [{ id: 1, created_at: new Date().toISOString() }, { id: 2, created_at: new Date().toISOString() }],
+      tenantAdminBootstrap: [{ tenant_id: 'tenant-x', admin_person_id: 1, created_at: new Date().toISOString() }]
+    });
+
+    var result = await bootstrap.bootstrapTenantAdminIfNeeded(pool, 'tenant-x', 2);
+    assert.strictEqual(result.granted, false, 'expected person 2 NOT to be granted admin');
+
+    var state = pool._state();
+    var tmForB = state.teamMemberships.find(function(r) { return r.tenant_id === 'tenant-x' && r.person_id === 2 && r.role === 'admin'; });
+    assert.ok(!tmForB, 'expected no admin team_memberships row for person 2');
+    var claim = state.tenantAdminBootstrap.find(function(r) { return r.tenant_id === 'tenant-x'; });
+    assert.strictEqual(claim.admin_person_id, 1, 'expected the pre-existing bootstrap claim (person 1) to remain unchanged');
+    assert.strictEqual(state.tenantAdminBootstrap.length, 1, 'expected still exactly one bootstrap row for tenant-x');
+  });
+
   if (failures.length) {
     failures.forEach(function(f) {
       console.error('  FAIL:', f.name, '--', f.err && f.err.stack || f.err);
