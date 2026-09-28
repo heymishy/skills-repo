@@ -4,6 +4,8 @@
 **Workstream reference:** N/A — single-feature, not a programme-track workstream
 **Programme reference:** N/A
 **Discovery reference:** artefacts/2026-09-26-tenant-admin-bootstrap/discovery.md
+**Benefit-metric reference:** artefacts/2026-09-26-tenant-admin-bootstrap/benefit-metric.md
+<!-- migration-story.md's own template has no dedicated field for this -- added explicitly per /review finding tab-s2 1-M2 (Run 1). See workspace/capture-log.md, 2026-09-28, for the template-gap /improve candidate. -->
 
 ## Migration type
 

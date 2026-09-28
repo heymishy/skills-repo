@@ -29,7 +29,7 @@ So that **nobody is misled into thinking a working admin-bootstrap mechanism exi
 
 ## Acceptance Criteria
 
-**AC1:** Given the legacy `user_roles` table's own production wiring (`setGetUserRole`, `arl-s4`'s startup seeding block in `server.js`), When this story ships, Then that wiring is fully removed from `server.js` — the `user_roles` table itself is left in place in the real database (dropping tables is out of scope), but nothing in the running application reads, writes, or seeds it anymore.
+**AC1:** Given the legacy `user_roles` table's own production wiring (`setGetUserRole`, `arl-s4`'s startup seeding block in `server.js`) and the `getUserRole`/`setGetUserRole` function pair itself (`user-roles.js`), When this story ships, Then that wiring is fully removed from `server.js` AND the `getUserRole`/`setGetUserRole` functions are removed entirely from `user-roles.js` (not just their production wiring call) — the `user_roles` table itself is left in place in the real database (dropping tables is out of scope), but nothing in the running application reads, writes, or seeds it anymore.
 
 **AC2:** Given `_backfillOne`'s phantom-row creation logic (`user-roles.js`), When this story ships, Then that function and its call site inside `resolveRoleForTenant` are removed entirely — `resolveRoleForTenant`'s own remaining behaviour (post-removal) never attempts a legacy-table fallback.
 
@@ -54,7 +54,8 @@ So that **nobody is misled into thinking a working admin-bootstrap mechanism exi
 
 ## Complexity Rating
 
-**Rating:** 1
+**Rating:** 2
+<!-- Bumped from 1 to 2 per /review finding tab-s3 1-L1 (Run 1) -- the AC1/AC5 fix above clarified the removal surface spans two files plus associated test tracing, which is not zero-ambiguity. -->
 **Scope stability:** Stable
 
 ## Definition of Ready Pre-check

@@ -50,6 +50,13 @@
 **Made by:** Hamish King (Platform Owner)
 **Revisit trigger:** once `/definition/SKILL.md` is itself fixed to default to flat (the `/improve` candidate above), this entry can be removed as no-longer-a-deviation — it will just be the skill's own normal behaviour.
 ---
+**2026-09-28 | RISK-ACCEPT | /review tab-s2 Run 1, finding 1-M1**
+**Decision:** `tab-s2`'s backfill promotes the earliest-created `team_memberships` row's owner to admin regardless of that row's current role — including if it is an explicitly-assigned restrictive role like `'viewer'`. No exception rule or manual-review gate is added for this sub-case.
+**Alternatives considered:** (a) add TR-05 excluding/flagging tenants whose earliest member has a non-default role, requiring manual review instead of auto-promotion; (b) accept the risk as-is, matching the already-confirmed `/clarify` Q2 policy ("earliest member, fully automatic, no exceptions").
+**Rationale:** The precondition for TR-01 firing at all is that the tenant has zero existing admin — a genuinely rare, small-volume case at this platform's current scale (per `tab-s2`'s own `[UNKNOWN BASELINE]`, expected small). Adding a manual-review exception path for one further sub-case would complicate a deliberately simple, fully-automatic migration for a case that may not even occur in the real dataset. If it does occur, the existing rollback procedure (`tab-s2`'s own Rollback procedure section) already covers correcting a wrong promotion after the fact.
+**Made by:** Hamish King (Platform Owner)
+**Revisit trigger:** if the real `tab-s2` run (once executed) actually finds a tenant matching this sub-case (earliest member has a non-default role), revisit before applying the promotion to that specific tenant rather than after the fact.
+---
 
 ---
 

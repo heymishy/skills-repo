@@ -22,6 +22,7 @@ So that **I can immediately manage my own team without any manual intervention o
 - **Reuses the real, already-used role-resolution path:** the bootstrap writes a `team_memberships` row with `role='admin'`, the same table `resolveRoleForPerson` already reads — it does not introduce a second, parallel role source. A new sibling table (shape matching `tenant_plan`'s existing `tenant_id PRIMARY KEY` convention, per the discovery/clarify decision) is used purely as the atomic "has this tenant already been bootstrapped" race-safety gate, not as a role source of truth.
 - **D37 (injectable adapter rule):** if this story introduces a new injectable adapter for the bootstrap check, the default stub MUST throw (not silently no-op), the wiring into `server.js`/`auth.js`/`auth-email.js` MUST be a separate task from the bootstrap logic itself, and the wiring test MUST assert a real behavioural outcome (a genuinely new tenant's first login resolves to admin), not just that a function reference was assigned.
 - **MC-SEC-02:** no credentials/tokens introduced by this story.
+- **Transactional atomicity (per /review finding 1-H1, Run 1):** the `tenant_admin_bootstrap` insert and the `team_memberships` admin-grant insert MUST occur within a single database transaction — committed together or not at all, never partially. If the second write fails after the first succeeds, the transaction rolls back entirely, so the bootstrap-table row is never left "claimed" without a real admin grant behind it.
 
 ## Dependencies
 
@@ -39,6 +40,8 @@ So that **I can immediately manage my own team without any manual intervention o
 **AC4:** Given the bootstrap mechanism, When it runs for a first login via GitHub OAuth, Google OAuth, or email/password sign-up, Then admin resolves correctly and identically across all three — no provider-specific gap. This directly closes the GitHub-vs-email inconsistency already named on `product/roadmap.md`'s commercialisation track.
 
 **AC5:** Given a person logging into a tenant that already has a real admin (via this mechanism or otherwise), When they log in, Then the bootstrap mechanism is a no-op — it never overwrites or downgrades an existing admin's role, and never grants admin to a second person in that tenant.
+
+**AC6:** Given the second write (the `team_memberships` admin grant) fails after the first write (the bootstrap-table claim) succeeds, When the transaction is rolled back, Then no tenant is left in a claimed-but-adminless state — the bootstrap-table row is only ever committed together with the real admin grant, in the same transaction. Verified with a test that forces the second write to fail after the first succeeds, and confirms neither write is visible afterward.
 
 ## Out of Scope
 

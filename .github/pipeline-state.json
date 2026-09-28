@@ -37038,23 +37038,35 @@
         {
           "slug": "tab-s1",
           "name": "Bootstrap a brand-new tenant's first admin automatically on login",
-          "stage": "definition",
-          "health": "green",
-          "id": "tab-s1"
+          "stage": "review",
+          "health": "red",
+          "id": "tab-s1",
+          "reviewStatus": "has-findings",
+          "highFindings": 1,
+          "reviewArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/review/tab-s1-review-1.md",
+          "updatedAt": "2026-09-28T06:38:06.448Z"
         },
         {
           "slug": "tab-s2",
           "name": "Backfill admin for every existing real tenant that has members but no admin",
-          "stage": "definition",
-          "health": "green",
-          "id": "tab-s2"
+          "stage": "review",
+          "health": "amber",
+          "id": "tab-s2",
+          "reviewStatus": "has-findings",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/review/tab-s2-review-1.md",
+          "updatedAt": "2026-09-28T06:38:54.529Z"
         },
         {
           "slug": "tab-s3",
           "name": "Retire the legacy admin-bootstrap path",
-          "stage": "definition",
-          "health": "green",
-          "id": "tab-s3"
+          "stage": "review",
+          "health": "amber",
+          "id": "tab-s3",
+          "reviewStatus": "has-findings",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/review/tab-s3-review-1.md",
+          "updatedAt": "2026-09-28T06:39:22.708Z"
         }
       ],
       "metrics": [
@@ -37102,7 +37114,10 @@
           "id": "MC-SEC-02",
           "category": "mandatory-constraint",
           "label": "No credentials, tokens, or personal data in committed files",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "No credentials/tokens introduced by any of the 3 stories; tab-s3 explicitly removes a real secret reference (ADMIN_GITHUB_LOGINS) rather than adding one.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-09-28T06:39:38.185Z"
         },
         {
           "id": "MC-SEC-03",
@@ -37396,7 +37411,10 @@
           "id": "ADR-025",
           "category": "adr",
           "label": "Multi-tenancy is enforced at the application layer via tenant_id scoping (HTTP-layer guard + storage/session/DB namespacing) — not schema-per-tenant or database-per-tenant; delivered as 6 sequenced phases; retroactively formalises the decision previously mis-cited as ADR-030",
-          "status": "not-assessed"
+          "status": "met",
+          "evidence": "All 3 stories (tab-s1, tab-s2, tab-s3) explicitly scope every read/write by tenant_id; no cross-tenant path introduced.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-09-28T06:39:38.185Z"
         }
       ],
       "regulated": false,
