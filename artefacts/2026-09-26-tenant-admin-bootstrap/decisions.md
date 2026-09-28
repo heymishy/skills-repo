@@ -2,7 +2,23 @@
 
 **Feature:** Tenant Admin Bootstrap
 **Discovery reference:** artefacts/2026-09-26-tenant-admin-bootstrap/discovery.md
-**Last updated:** 2026-09-28
+**Last updated:** 2026-09-29
+
+## `tab-s1` final review (`/subagent-execution` Step 3): 2 non-blocking observations logged (2026-09-29)
+
+**Context:** The whole-story final reviewer (after all 10 tasks individually passed spec + quality review) found the implementation PASSED against all 6 ACs, Architecture Constraints, Out of Scope boundaries, and NFRs, with a clean full-suite run — but surfaced two observations worth a permanent record rather than letting them evaporate.
+
+**Observation 1 (RISK-ACCEPT):** For email/password-provider tenants specifically, `req.session.tenantId` already equals the raw email address — a pre-existing, systemic characteristic of this codebase's tenant model (NOT introduced by this story; the same pattern already appears in several pre-existing log calls in `auth-email.js`). Because of this, `tab-s1`'s own `admin_bootstrap_granted` audit event's `tenantId` field is the literal raw email for an email-provider grant, even though the NFR text says "never the raw identity string." For GitHub/Google providers, `tenantId` is NOT the raw identity (it's the GitHub login or Google `sub`, distinct from the audited `personId`), so the guarantee holds fully for 2 of 3 providers and partially for the 3rd, inherited from an app-wide design predating this story.
+**Decision:** Accepted as-is — this is not a new regression, and fixing it would require changing how `tenantId` is derived for email-provider tenants app-wide, which is out of scope for this story (and likely for this whole epic).
+**Made by:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh), during `/subagent-execution` Step 3 final review.
+**Revisit trigger:** if a future story hardens audit-log identity handling generally, include this specific gap in that scope.
+
+**Observation 2 (documentation drift):** `artefacts/2026-09-26-tenant-admin-bootstrap/test-plans/tab-s1-test-plan.md`'s NFR-performance row states "Pass threshold: Exactly 4 query calls," but the shipped test (`exactlyTwoRealInsertsForOneSuccessfulBootstrap`) correctly asserts `2` — the difference is that `BEGIN`/`COMMIT` are intercepted at the fake pool's client level before reaching the counted `queryLog`, so only the 2 real INSERT statements are counted; the underlying NFR (minimal added latency) is genuinely satisfied, only the test-plan's literal number is now stale.
+**Decision:** Logged here rather than fixed inline — the test-plan document itself could be corrected in a follow-up edit, but doing so is not required for this story's own completion since the actual shipped behavior is correct and verified.
+**Made by:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh), during `/subagent-execution` Step 3 final review.
+**Revisit trigger:** none required — cosmetic documentation fix only, addressable whenever convenient.
+
+---
 
 ## `tab-s1` Task 4 (`/subagent-execution`): fake-pool transaction model was wrong under concurrent transactions, fixed (2026-09-29)
 
