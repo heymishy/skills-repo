@@ -1,6 +1,6 @@
 # Discovery: Tenant Admin Bootstrap
 
-**Status:** Draft — awaiting approval
+**Status:** Clarified — awaiting approval
 **Created:** 2026-09-26
 **Approved by:** [Name + date — filled in after human review]
 **Author:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh), with Hamish King
@@ -18,7 +18,7 @@ There is no working path for any real tenant on this platform to ever have an ad
 
 **Who experiences it:** any tenant's own admin candidate — solo developer or squad/tech lead — hits a bare `{"error":"Forbidden"}` with no recovery path. Confirmed live on `wuce-staging.fly.dev` today, even against the platform owner's own long-lived account.
 
-**Cost when unresolved:** ~20 stories of shipped team-management/role investment (`tir-s1`–`tir-s9`, `wsi-s1`/`wsi-s6`, `rtri-s1`–`rtri-s4`) are unreachable for any real tenant, and the legacy code sitting in `user_roles`/`arl-s4`/`_backfillOne` continues to mislead anyone reading it into thinking a bootstrap mechanism exists.
+**Cost when unresolved:** ~20 stories of shipped team-management/role investment (`tir-s1`–`tir-s9`, `wsi-s1`/`wsi-s6`, `rtri-s1`–`rtri-s4`) are unreachable for any real tenant, and the legacy code sitting in `user_roles`/`arl-s4`/`_backfillOne` continues to mislead anyone reading it into thinking a bootstrap mechanism exists. Confirmed via /clarify (2026-09-28) that this is not staging-only — real production (`skills-framework`) has the identical unset `ADMIN_GITHUB_LOGINS` gap.
 
 ## Who It Affects
 
@@ -38,7 +38,7 @@ Two concrete triggers, both from the same session:
 ## MVP Scope
 
 1. **A real "first user of a tenant becomes admin" mechanism**, wired into the current, actually-used role-resolution path (`resolveRoleForPerson`/`addOrUpdateTeammate`'s own conventions) — fired at genuine tenant-creation/first-login time, not a legacy side-table. Direction (via /clarify): extend the existing `tenant_plan`-shaped per-tenant-row pattern rather than invent a new entity; bootstrap via an atomic `INSERT ... ON CONFLICT (tenant_id) DO NOTHING RETURNING *`, which also handles the simultaneous-first-login race safely.
-2. **A one-time backfill for existing real tenants** that currently have zero admin — needed precisely because this feature is arriving after the fact. Who specifically gets promoted (earliest member? tenant creator, if that's even trackable?) is a real open policy question, named here rather than decided.
+2. **A one-time backfill for existing real tenants** that currently have zero admin — needed precisely because this feature is arriving after the fact. Direction (via /clarify): the earliest-created `team_memberships` row for that tenant (by `created_at`) is promoted to admin, fully automatic, no operator step; every other existing member's role is left untouched.
 3. **Retire the legacy path** — `user_roles` table, `ADMIN_GITHUB_LOGINS`, `arl-s4`'s seeding, and `_backfillOne`'s phantom-row creation — since it's superseded, partially broken, and actively misleading to leave in place once a real mechanism exists.
 
 **What must be true for the first person who uses it to find it useful:** a brand-new solo developer signs up and, with zero operator intervention, can immediately reach `/team/members` and `/team/invites/new` as admin of their own tenant.
@@ -55,13 +55,13 @@ Two concrete triggers, both from the same session:
 
 [RESOLVED via /clarify, 2026-09-26] There is no first-class `tenants` table with an owner/creator field, but `tenant_plan` (`tenant_id PRIMARY KEY`, `src/web-ui/server.js`) already establishes exactly this per-tenant-row pattern for plan/status state. Direction: extend that pattern (either a new column on `tenant_plan` or a sibling table with the same `tenant_id PRIMARY KEY` shape) rather than inventing a new entity or inferring "first" from `team_memberships`. The bootstrap itself is a single atomic `INSERT ... ON CONFLICT (tenant_id) DO NOTHING RETURNING *` — whoever's insert succeeds becomes admin; this is also the race-safety mechanism for simultaneous first-logins into a brand-new tenant, no separate locking needed. Exact schema (new column vs. sibling table) is a `/definition`-time implementation detail, not locked here.
 
-[ASSUMPTION] For an existing tenant that already has multiple real members but zero admin, the backfill policy (who becomes admin — earliest member? all current members? something else?) is undecided. — unconfirmed, requires /clarify before scope is locked.
+[RESOLVED via /clarify, 2026-09-28] For an existing tenant that already has multiple real members but zero admin, the backfill policy is: the earliest-created `team_memberships` row for that tenant (by `created_at`) is promoted to admin, fully automatic — no operator manual resolution step, and existing members other than that one are not touched (their role stays as-is).
 
-[ASSUMPTION] Whether any real production tenant (as opposed to this `wuce-staging` deployment) currently has a working admin is unconfirmed — only staging's Fly secrets were checked, not production's. — unconfirmed, requires /clarify before scope is locked.
+[RESOLVED via /clarify, 2026-09-28] Real production (`skills-framework`, the Fly app carrying `POSTHOG_KEY_PROD`/real Stripe keys/`NODE_ENV` — distinct from the `wuce-staging` dev/dogfood deployment) was checked directly: `ADMIN_GITHUB_LOGINS` is not set there either (confirmed via `fly secrets list -a skills-framework`). Production has the identical gap — this is not staging-only, it is confirmed live in the real, revenue-facing deployment. — unconfirmed, requires /clarify before scope is locked.
 
 **Risks:**
 - Removing the legacy `user_roles`/`ADMIN_GITHUB_LOGINS` path could have blast radius beyond what's been traced so far — one comment marks it "unused in production after `tir-s1`," but this hasn't been exhaustively verified against every caller.
-- What could make this not worth building: if real production already has a different, working admin-bootstrap path not yet found (i.e., this staging deployment is uniquely misconfigured rather than representative), the urgency shrinks substantially — worth confirming actual production tenant/admin coverage before committing significant build effort.
+- [RESOLVED via /clarify, 2026-09-28] What could make this not worth building — checked directly: production (`skills-framework`) has the identical gap (`ADMIN_GITHUB_LOGINS` unset there too). This is not a staging-only misconfiguration; the urgency is confirmed, not hypothetical.
 
 ## Directional Success Indicators
 
@@ -111,6 +111,18 @@ This discovery contains 3 unconfirmed assumptions that affect scope and benefit 
 - Whether any real production tenant (as opposed to this `wuce-staging` deployment) currently has a working admin is unconfirmed.
 
 These assumptions must be confirmed or refuted before scope can be locked. Running `/benefit-metric` with unresolved assumptions produces metrics that will require revision after clarification.
+
+---
+
+## Clarification log
+
+[2026-09-26/2026-09-28] Clarified via /clarify:
+- Q: Should the fix introduce a first-class `tenants` table, or work entirely off `team_memberships` with no new table?
+  A: Extend the existing `tenant_plan`-shaped per-tenant-row pattern (`tenant_id PRIMARY KEY`) rather than invent a new entity or infer "first" from `team_memberships`. Bootstrap via a single atomic `INSERT ... ON CONFLICT (tenant_id) DO NOTHING RETURNING *` — this also handles the simultaneous-first-login race safely, no separate locking needed.
+- Q: For an existing tenant that already has members but zero admin, who becomes admin?
+  A: The earliest-created `team_memberships` row for that tenant (by `created_at`) is promoted to admin, fully automatic, no operator step. Every other existing member's role is left untouched.
+- Q: Should we confirm production's actual admin coverage before locking scope, or proceed on the assumption it mirrors staging?
+  A: Confirmed directly — `fly secrets list -a skills-framework` (the real production app, distinct from the `wuce-staging` dev/dogfood deployment) shows `ADMIN_GITHUB_LOGINS` is unset there too. Production has the identical gap; this is not a staging-only misconfiguration.
 
 ---
 

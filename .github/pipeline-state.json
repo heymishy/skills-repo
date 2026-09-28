@@ -37026,6 +37026,23 @@
       ],
       "slicingStrategy": "vertical-slice",
       "stories": []
+    },
+    {
+      "slug": "2026-09-26-tenant-admin-bootstrap",
+      "name": "Tenant Admin Bootstrap",
+      "stage": "discovery",
+      "health": "green",
+      "discoveryStatus": "clarified",
+      "discoveryArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/discovery.md",
+      "stories": [],
+      "metrics": [],
+      "updatedAt": "2026-09-28T05:39:45.609Z",
+      "track": "standard",
+      "guardrails": [],
+      "regulated": false,
+      "complianceProfile": "standard",
+      "complianceFrameworks": [],
+      "sensitiveDataCategories": []
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
