@@ -57,6 +57,13 @@
 **Made by:** Hamish King (Platform Owner)
 **Revisit trigger:** if the real `tab-s2` run (once executed) actually finds a tenant matching this sub-case (earliest member has a non-default role), revisit before applying the promotion to that specific tenant rather than after the fact.
 ---
+**2026-09-28 | RISK-ACCEPT | /definition-of-ready tab-s1, Warning W4**
+**Decision:** `tab-s1`'s AC verification script (`artefacts/2026-09-26-tenant-admin-bootstrap/verification-scripts/tab-s1-verification.md`) proceeds to the inner coding loop without a separate domain-expert review pass.
+**Alternatives considered:** (a) pause DoR sign-off and have a domain expert review the script before proceeding.
+**Rationale:** Solo-operator repo — the same person (Hamish King) who would review it also owns the story/discovery/benefit-metric chain it derives from, and already worked through the story's own ACs in detail during `/review`'s fix cycle. The marginal value of a separate formal review pass is low; acknowledged as a real, standard risk (not resolved) per this repo's own established W4 handling pattern (matches `rtri-s3`'s own DoR).
+**Made by:** Hamish King (Platform Owner)
+**Revisit trigger:** if a second reviewer/operator joins this repo, reinstate a genuine separate-person review pass for verification scripts rather than continuing to acknowledge W4 by default.
+---
 
 ---
 
