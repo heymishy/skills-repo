@@ -51,6 +51,7 @@ var ROOT = path.join(__dirname, '..');
 var IDENTITY_LINKS_PATH = require.resolve(path.join(ROOT, 'src', 'web-ui', 'modules', 'identity-links'));
 var BOOTSTRAP_PATH = require.resolve(path.join(ROOT, 'src', 'web-ui', 'modules', 'tenant-admin-bootstrap'));
 var AUTH_PATH = require.resolve(path.join(ROOT, 'src', 'web-ui', 'routes', 'auth'));
+var AUTH_EMAIL_PATH = require.resolve(path.join(ROOT, 'src', 'web-ui', 'routes', 'auth-email'));
 
 function freshRequire(p) {
   delete require.cache[require.resolve(p)];
@@ -418,6 +419,80 @@ function makeFakePool(seed) {
     assert.strictEqual(req.session.role, 'admin', 'expected the first-ever GitHub login to resolve to admin');
     var adminRow = pool._state().teamMemberships.find(function(r) { return r.role === 'admin'; });
     assert.ok(adminRow, 'expected a real team_memberships admin row confirmed via the fake pool state, not just the session value');
+  });
+
+  // ===========================================================================
+  // AC1/AC4 -- googleCallbackWiresIntoBootstrapForNewTenant (integration)
+  // ===========================================================================
+  await test('googleCallbackWiresIntoBootstrapForNewTenant (AC1/AC4 integration)', async function() {
+    var auth = freshRequire(AUTH_PATH);
+    auth.setLogger({ info: function() {}, warn: function() {} });
+    var pool = makeFakePool({});
+    auth.setTenantAdminBootstrapPool(pool);
+    var oauthAdapter = require(path.join(ROOT, 'src', 'web-ui', 'auth', 'oauth-adapter'));
+    oauthAdapter.setGoogleUserInfoAdapter(async function() {
+      return { sub: 'google-sub-tab-s1', email: 'tab-s1-google@example.com', accessToken: 'google-token-tab-s1' };
+    });
+
+    var req = mockAuthReq({ session: { oauthState: 'state-tab-s1-google' }, query: { code: 'code-xyz', state: 'state-tab-s1-google' } });
+    var res = mockAuthRes();
+    await auth.handleAuthGoogleCallback(req, res);
+
+    assert.strictEqual(req.session.role, 'admin', 'expected the first-ever Google login to resolve to admin');
+    var adminRow = pool._state().teamMemberships.find(function(r) { return r.role === 'admin'; });
+    assert.ok(adminRow, 'expected a real team_memberships admin row confirmed via the fake pool state');
+  });
+
+  // ===========================================================================
+  // AC1/AC4 -- emailSignupWiresIntoBootstrapForNewTenant (integration)
+  // ===========================================================================
+  function mockEmailReq(overrides) {
+    var req = Object.assign({
+      session: {}, sessionId: 'test-sid-' + Math.random().toString(36).slice(2),
+      headers: {}, connection: { remoteAddress: '127.0.0.1' }, body: undefined
+    }, overrides || {});
+    if (!req.session.csrfToken) req.session.csrfToken = 'test-csrf-' + Math.random().toString(36).slice(2);
+    if (req.body && typeof req.body === 'object' && req.body._csrf === undefined) {
+      req.body = Object.assign({}, req.body, { _csrf: req.session.csrfToken });
+    }
+    return req;
+  }
+  function mockEmailRes() {
+    var _headers = {};
+    return {
+      statusCode: null, get headers() { return _headers; },
+      writeHead: function(code, hdrs) { this.statusCode = code; if (hdrs) Object.assign(_headers, hdrs); },
+      setHeader: function(name, value) { _headers[name] = value; },
+      end: function(body) { this.body = (body != null ? String(body) : ''); this._ended = true; }
+    };
+  }
+  var STUB_PASSWORD_ADAPTER = { hash: async function() { return 'stub-hash'; }, compare: async function() { return true; } };
+
+  await test('emailSignupWiresIntoBootstrapForNewTenant (AC1/AC4 integration)', async function() {
+    var password = freshRequire(path.join(ROOT, 'src', 'web-ui', 'modules', 'password'));
+    password.setPasswordAdapter(STUB_PASSWORD_ADAPTER);
+    var authEmail = freshRequire(AUTH_EMAIL_PATH);
+    authEmail._clearRateLimits();
+
+    var pool = makeFakePool({});
+    authEmail.setTenantAdminBootstrapPool(pool);
+
+    var db = {
+      query: async function(sql) {
+        if (/INSERT INTO users/i.test(sql)) return { rows: [{ id: 'uuid-tab-s1-1' }] };
+        if (/SELECT.*FROM users WHERE email/i.test(sql)) return { rows: [] };
+        return { rows: [] };
+      }
+    };
+    authEmail.setUserDb(db);
+
+    var req = mockEmailReq({ body: { email: 'tab-s1-newtenant@example.com', password: 'TestPassw0rd!xyz' } });
+    var res = mockEmailRes();
+    await authEmail.handleEmailSignup(req, res);
+
+    assert.strictEqual(req.session.role, 'admin', 'expected the first-ever email signup to resolve to admin');
+    var adminRow = pool._state().teamMemberships.find(function(r) { return r.role === 'admin'; });
+    assert.ok(adminRow, 'expected a real team_memberships admin row confirmed via the fake pool state');
   });
 
   if (failures.length) {
