@@ -328,6 +328,54 @@ function makeFakePool(seed) {
     assert.ok(!tm, 'expected zero team_memberships rows for tenant-w after rollback');
   });
 
+  // ===========================================================================
+  // AC4 -- bootstrapIdenticalAcrossAllThreeProviders (unit)
+  // ===========================================================================
+  await test('bootstrapIdenticalAcrossAllThreeProviders (AC4)', async function() {
+    var bootstrap = freshRequire(BOOTSTRAP_PATH);
+    var providerTenants = ['tenant-github-1', 'tenant-google-1', 'tenant-email-1'];
+    for (var i = 0; i < providerTenants.length; i++) {
+      var pool = makeFakePool({ people: [{ id: 1, created_at: new Date().toISOString() }] });
+      var result = await bootstrap.bootstrapTenantAdminIfNeeded(pool, providerTenants[i], 1);
+      assert.strictEqual(result.granted, true, 'expected admin granted identically for ' + providerTenants[i]);
+      var tm = pool._state().teamMemberships.find(function(r) { return r.tenant_id === providerTenants[i]; });
+      assert.strictEqual(tm.role, 'admin');
+    }
+  });
+
+  // ===========================================================================
+  // NFR (Performance) -- exactlyTwoRealInsertsForOneSuccessfulBootstrap
+  // ===========================================================================
+  await test('exactlyTwoRealInsertsForOneSuccessfulBootstrap (NFR-perf)', async function() {
+    var bootstrap = freshRequire(BOOTSTRAP_PATH);
+    var pool = makeFakePool({ people: [{ id: 1, created_at: new Date().toISOString() }] });
+    await bootstrap.bootstrapTenantAdminIfNeeded(pool, 'tenant-perf', 1);
+    // BEGIN/COMMIT/ROLLBACK run on the client and are intercepted before
+    // reaching handleQuery, so queryLog (populated only inside handleQuery)
+    // shows only the real INSERT statements -- confirm the count below
+    // empirically rather than assuming a specific number.
+    var realQueryCount = pool._state().queryLog.length;
+    assert.strictEqual(realQueryCount, 2, 'expected exactly 2 real SQL statements (the tenant_admin_bootstrap claim insert + the team_memberships grant insert) for one successful bootstrap, got: ' + realQueryCount + ' -- queries were: ' + JSON.stringify(pool._state().queryLog.map(function(q) { return q.sql.slice(0, 60); })));
+  });
+
+  // ===========================================================================
+  // NFR (Audit) -- grantIsAuditedWithoutRawIdentityString
+  // ===========================================================================
+  await test('grantIsAuditedWithoutRawIdentityString (NFR-audit)', async function() {
+    var bootstrap = freshRequire(BOOTSTRAP_PATH);
+    var pool = makeFakePool({ people: [{ id: 1, created_at: new Date().toISOString() }] });
+    var infoCalls = [];
+    var spyLogger = { info: function(msg, data) { infoCalls.push({ msg: msg, data: data }); } };
+
+    await bootstrap.bootstrapTenantAdminIfNeeded(pool, 'tenant-audit', 1, spyLogger);
+
+    var granted = infoCalls.find(function(c) { return c.msg === 'admin_bootstrap_granted'; });
+    assert.ok(granted, 'expected an admin_bootstrap_granted audit log call');
+    assert.strictEqual(granted.data.personId, 1);
+    assert.strictEqual(granted.data.tenantId, 'tenant-audit');
+    assert.ok(granted.data.timestamp, 'expected a timestamp field');
+  });
+
   if (failures.length) {
     failures.forEach(function(f) {
       console.error('  FAIL:', f.name, '--', f.err && f.err.stack || f.err);
