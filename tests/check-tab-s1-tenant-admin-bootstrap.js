@@ -305,6 +305,29 @@ function makeFakePool(seed) {
     assert.ok(!claim, 'expected no tenant_admin_bootstrap row to be created for tenant-z');
   });
 
+  // ===========================================================================
+  // AC6 -- rollbackLeavesNoClaimedButAdminlessTenant
+  // ===========================================================================
+  await test('rollbackLeavesNoClaimedButAdminlessTenant (AC6)', async function() {
+    var bootstrap = freshRequire(BOOTSTRAP_PATH);
+    var pool = makeFakePool({ people: [{ id: 1, created_at: new Date().toISOString() }] });
+    pool._hooks.failTeamMembershipsInsertOnce = true;
+
+    var threw = false;
+    try {
+      await bootstrap.bootstrapTenantAdminIfNeeded(pool, 'tenant-w', 1);
+    } catch (err) {
+      threw = true;
+    }
+    assert.ok(threw, 'expected the call to reject/throw when the second write fails');
+
+    var state = pool._state();
+    var claim = state.tenantAdminBootstrap.find(function(r) { return r.tenant_id === 'tenant-w'; });
+    assert.ok(!claim, 'expected ZERO tenant_admin_bootstrap rows for tenant-w after rollback -- the first write must be undone, not left committed');
+    var tm = state.teamMemberships.find(function(r) { return r.tenant_id === 'tenant-w'; });
+    assert.ok(!tm, 'expected zero team_memberships rows for tenant-w after rollback');
+  });
+
   if (failures.length) {
     failures.forEach(function(f) {
       console.error('  FAIL:', f.name, '--', f.err && f.err.stack || f.err);
