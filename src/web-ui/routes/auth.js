@@ -416,8 +416,23 @@ async function handleAuthCallback(req, res) {
     // D37: _userFlags adapter must be wired before this runs (done in server.js).
     // arl-s4: admins bypass the /welcome plan-selection gate entirely — they must never
     // be routed to billing regardless of first-login state.
+    //
+    // tab-s1 (fix-forward): arl-s4's bypass was written when 'admin' only ever
+    // meant a pre-existing operator (legacy ADMIN_GITHUB_LOGINS) logging back
+    // in -- someone who should never see the customer-facing plan-selection
+    // page. tab-s1 introduces a SECOND way to become admin: the automatic
+    // grant to a brand-new tenant's very first sign-up, which is by
+    // definition a first-time user who SHOULD see /welcome. Without the
+    // `|| _grantedAdmin` clause, every tab-s1-bootstrapped admin skipped
+    // /welcome and landed on /dashboard instead, since `_grantedAdmin` being
+    // true also sets role='admin' just above, which alone satisfied arl-s4's
+    // original bypass condition (found via bri-s3.6 AC1's own regression at
+    // /verify-completion). `_grantedAdmin` is only true on the exact call
+    // that just performed the grant -- a later, returning login by that same
+    // admin has `_grantedAdmin=false` (bootstrapTenantAdminIfNeeded's own
+    // no-op path), so arl-s4's original bypass still applies correctly then.
     let isFirstLogin = false;
-    if (req.session.role !== 'admin') {
+    if (req.session.role !== 'admin' || _grantedAdmin) {
       try {
         isFirstLogin = await _userFlags.getFirstLoginFlag(user.id);
       } catch (_) {
