@@ -4,6 +4,17 @@
 **Discovery reference:** artefacts/2026-09-26-tenant-admin-bootstrap/discovery.md
 **Last updated:** 2026-09-28
 
+## `tab-s1` Task 4 (`/subagent-execution`): fake-pool transaction model was wrong under concurrent transactions, fixed (2026-09-29)
+
+**Context:** Adding the AC3 concurrency test (`Promise.all` of two `bootstrapTenantAdminIfNeeded` calls against the same brand-new tenant) exposed a real bug in the test file's own fake Postgres pool (built in Task 1), not in production code. The fake pool's `BEGIN`/`COMMIT`/`ROLLBACK` handling did whole-state snapshot/restore keyed to each client's own `BEGIN` time. Under two overlapping transactions, the losing transaction's `ROLLBACK` restored the ENTIRE shared state back to its own pre-`BEGIN` snapshot — a point in time that predates the winning transaction's commit — wiping out the winner's already-committed claim and admin rows. This does not match real Postgres, where a `ROLLBACK` only ever undoes the rolling-back transaction's own uncommitted writes.
+**Decision:** Replaced whole-state snapshot/restore with a per-transaction undo log: each mutating branch in the fake pool registers a targeted reversal closure via a `recordUndo` callback; `ROLLBACK` replays only that client's own undos, in reverse; `COMMIT` discards the log. Verified independently (traced the logic by hand, then re-ran the story test file 5x — deterministic 5/5 passed each time) before accepting.
+**Rationale:** This is test-infrastructure-only (no production code changed) and is a strict correctness improvement — the old approach only ever happened to work for single-transaction scenarios (Tasks 1-3's tests, and the not-yet-written AC6 rollback test are all single-client), so it does not invalidate any already-passed review; it specifically fixes the two-concurrent-transaction case AC3 is the first test to exercise.
+**Story:** `tab-s1` — no AC/scope change; shared test-file infrastructure fix, needed for AC3 and relevant to AC6 (both land correctly under the new model; AC6 would have already passed under the old model too, since it's single-transaction).
+**Made by:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh), implementer subagent during `/subagent-execution` Task 4, independently verified by the orchestrating session before proceeding.
+**Revisit trigger:** none expected — this is a correctness fix, not a design choice.
+
+---
+
 ## `tab-s1` `/branch-setup`: baseline acknowledged, 1 pre-existing/environmental failure (2026-09-28)
 
 **Context:** `node scripts/run-all-tests.js` on the freshly-created `feature/tab-s1` worktree (built from master at the DoR sign-off commit) showed 1 failure: `tests/check-p3.5-validate-trace.js` — the same established pre-existing/environmental failure acknowledged repeatedly across every worktree in this repo's history.
