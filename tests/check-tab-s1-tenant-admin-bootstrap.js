@@ -45,6 +45,7 @@ function test(name, fn) {
 
 var ROOT = path.join(__dirname, '..');
 var IDENTITY_LINKS_PATH = require.resolve(path.join(ROOT, 'src', 'web-ui', 'modules', 'identity-links'));
+var BOOTSTRAP_PATH = require.resolve(path.join(ROOT, 'src', 'web-ui', 'modules', 'tenant-admin-bootstrap'));
 
 function freshRequire(p) {
   delete require.cache[require.resolve(p)];
@@ -182,6 +183,25 @@ function makeFakePool(seed) {
     var personId = await identityLinks.resolveOrCreatePersonForIdentity(pool, 'existing-login', 'github');
     assert.strictEqual(personId, 42, 'expected the existing personId to be reused');
     assert.strictEqual(pool._state().people.length, 1, 'expected no new people row created for an already-linked identity');
+  });
+
+  // ===========================================================================
+  // AC1 -- firstLoginOnNewTenantGrantsAdmin
+  // ===========================================================================
+  await test('firstLoginOnNewTenantGrantsAdmin (AC1)', async function() {
+    var bootstrap = freshRequire(BOOTSTRAP_PATH);
+    var pool = makeFakePool({ people: [{ id: 1, created_at: new Date().toISOString() }] });
+
+    var result = await bootstrap.bootstrapTenantAdminIfNeeded(pool, 'tenant-x', 1);
+    assert.strictEqual(result.granted, true, 'expected admin to be granted for a genuinely new tenant');
+
+    var state = pool._state();
+    var tm = state.teamMemberships.find(function(r) { return r.tenant_id === 'tenant-x' && r.person_id === 1; });
+    assert.ok(tm, 'expected a real team_memberships row for person 1 in tenant-x');
+    assert.strictEqual(tm.role, 'admin');
+    var claim = state.tenantAdminBootstrap.find(function(r) { return r.tenant_id === 'tenant-x'; });
+    assert.ok(claim, 'expected a real tenant_admin_bootstrap row for tenant-x');
+    assert.strictEqual(claim.admin_person_id, 1);
   });
 
   if (failures.length) {
