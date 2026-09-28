@@ -18,10 +18,14 @@
 // tests/check-story1-organisation-entity.js, tests/check-tir-s1-person-team-schema.js)
 // -- no Jest/Mocha. Fake pool is narrow, self-contained, per-test-file (this
 // session's established convention) -- pre-built here with real
-// BEGIN/COMMIT/ROLLBACK snapshot/restore semantics via pool.connect()-issued
-// clients, transactional query branches, and a failure-injection hook, ALL
-// of which later tasks in this same file require (AC3 concurrency, AC6
-// rollback) -- not needed by Task 1's own 2 tests alone.
+// BEGIN/COMMIT/ROLLBACK semantics via pool.connect()-issued clients, backed
+// by a per-transaction undo log (not whole-state snapshot/restore -- see the
+// comment above handleQuery, and decisions.md's "Task 4" entry, 2026-09-29,
+// for why: a real Postgres ROLLBACK only ever undoes the rolling-back
+// transaction's OWN writes, never a concurrent transaction's already-
+// committed rows), transactional query branches, and a failure-injection
+// hook, ALL of which later tasks in this same file require (AC3 concurrency,
+// AC6 rollback) -- not needed by Task 1's own 2 tests alone.
 
 process.env.NODE_ENV = 'test';
 process.env.SESSION_SECRET = process.env.SESSION_SECRET || 'test-session-secret-minimum32chars!!';
