@@ -37038,35 +37038,62 @@
         {
           "slug": "tab-s1",
           "name": "Bootstrap a brand-new tenant's first admin automatically on login",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
           "id": "tab-s1",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/review/tab-s1-review-2.md",
-          "updatedAt": "2026-09-28T06:45:33.557Z"
+          "updatedAt": "2026-09-28T06:57:45.201Z",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0
+          },
+          "acTotal": 6,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         },
         {
           "slug": "tab-s2",
           "name": "Backfill admin for every existing real tenant that has members but no admin",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
           "id": "tab-s2",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/review/tab-s2-review-2.md",
-          "updatedAt": "2026-09-28T06:46:17.367Z"
+          "updatedAt": "2026-09-28T07:14:45.497Z",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 10,
+            "passing": 0
+          },
+          "acTotal": 4,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         },
         {
           "slug": "tab-s3",
           "name": "Retire the legacy admin-bootstrap path",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
           "id": "tab-s3",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/review/tab-s3-review-2.md",
-          "updatedAt": "2026-09-28T06:46:17.367Z"
+          "updatedAt": "2026-09-28T07:20:21.329Z",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 5,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         }
       ],
       "metrics": [
