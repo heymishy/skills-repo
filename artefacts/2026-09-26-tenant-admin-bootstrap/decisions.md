@@ -43,6 +43,13 @@
 **Made by:** Hamish King (Platform Owner)
 **Revisit trigger:** none obvious — this is a factual confirmation, not a policy choice.
 ---
+**2026-09-28 | ARCH | /definition Step 1.5**
+**Decision:** This feature's `pipeline-state.json` entry uses the flat `features[].stories[]` shape (no epic nesting), per `ADR-017` — not the nested `epics[].stories[]` shape that `/definition`'s own `SKILL.md` literally instructs writing.
+**Alternatives considered:** (a) follow `/definition/SKILL.md`'s literal nested-shape instruction, matching this session's own `2026-09-23-team-roster-integration` feature and other recent examples (`2026-08-21-viewer-role-no-enforcement`); (b) ask which shape before proceeding rather than picking one.
+**Rationale:** Checked directly rather than assumed: `ADR-017` (2026-05-02) postdates the commit that made `/definition` nest stories (`b502cd05`, 2026-03-29) — it was a deliberate later policy change the skill was simply never updated to match, not the skill being authoritative over a stale ADR. A direct `pipeline-state.json` audit confirmed flat is genuinely the dominant, proven convention (235 features with real flat `stories[]`, including several created right around `ADR-017`'s own date) — the nested shape is the minority/exception. `/definition/SKILL.md` itself has a real, confirmed drift defect (logged separately in `workspace/capture-log.md`, 2026-09-28) — worth its own fix-forward story, not patched inline here.
+**Made by:** Hamish King (Platform Owner)
+**Revisit trigger:** once `/definition/SKILL.md` is itself fixed to default to flat (the `/improve` candidate above), this entry can be removed as no-longer-a-deviation — it will just be the skill's own normal behaviour.
+---
 
 ---
 
