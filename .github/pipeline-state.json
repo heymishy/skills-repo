@@ -37255,20 +37255,20 @@
         {
           "slug": "tab-s3",
           "name": "Retire the legacy admin-bootstrap path",
-          "stage": "implementation-plan",
+          "stage": "verify-completion",
           "health": "green",
           "id": "tab-s3",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/review/tab-s3-review-2.md",
-          "updatedAt": "2026-09-29T08:31:42.253Z",
+          "updatedAt": "2026-09-29T09:01:59.099Z",
           "testPlan": {
             "status": "written",
             "totalTests": 5,
-            "passing": 0
+            "passing": 5
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
@@ -37318,7 +37318,8 @@
               "tddState": "planned",
               "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s3-plan.md"
             }
-          ]
+          ],
+          "verifyStatus": "passed"
         }
       ],
       "metrics": [

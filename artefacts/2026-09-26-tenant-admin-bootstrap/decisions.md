@@ -4,6 +4,13 @@
 **Discovery reference:** artefacts/2026-09-26-tenant-admin-bootstrap/discovery.md
 **Last updated:** 2026-09-29
 
+## `tab-s3` `/verify-completion`: 5/5 ACs verified, route/handler E2E check clean, no scope creep (2026-09-29)
+
+**Context:** `auth.js` (under `src/web-ui/routes/`) was touched (comment-only), triggering the mandatory route/handler E2E coverage check. 2 `@mocked` spec files reference the touched call path (`bri-s3.6-auth-journey.spec.js`, `bri-s3.3-multi-user-tenant-journey.spec.js`) — both run individually: 4/4 and 5/5 passing respectively, including `bri-s3.6`'s own AC1/AC2 (the exact scenarios `tab-s1`'s arl-s4 interaction bug was found through earlier in this feature). No `@real-staging` specs matched. Full suite: 705 files, 2 pre-existing/environmental failures unchanged, 0 new. `check-tab-s3-legacy-removal.js` (new): 2/2. All modified pre-existing test files individually re-run and passing (tir-s1: 4/4, arl-s4: 3/3, bri-s3.4: 9/9, bri-s3.6 unit: 18/18). No rendered UI touched — live browser render check N/A. Scope check: all 3 commits map cleanly to branch-setup/implementation-plan/implementation, no scope creep.
+**Decision:** Verify-completion PASSED — 5/5 ACs, all routes/handler E2E coverage clean, zero regressions.
+**Story:** `tab-s3` — ready for `/branch-complete`.
+**Made by:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh).
+
 ## `tab-s3` `/implementation-plan`: real removal surface is wider than the DoR's own named file list (2026-09-29)
 
 **Context:** The DoR's Coding Agent Instructions name only `server.js` and `user-roles.js` as touch points. Reading the actual code before writing the plan (per this repo's own context-handoff convention) found real, additional in-scope references AC5's own grep requirement ("a fresh grep of the entire `src/web-ui/` tree") directly covers: `src/web-ui/config/validate-env.js` has a real, functional boot-time warning block for `ADMIN_GITHUB_LOGINS` (now describing dead, misleading behaviour — exactly what this story's own User Story exists to prevent); `src/web-ui/routes/auth.js` has one historical comment containing the literal string `ADMIN_GITHUB_LOGINS`. Additionally, `getRoleForTenant`'s own fallback branch (`if (_getUserRole) { return _getUserRole(tenantId); }`) and `migrateTeamSchema`'s legacy-backfill loop both directly call functions AC1/AC2 require deleting entirely — leaving either in place would reference an undefined variable after `_getUserRole`/`_backfillOne` are removed, so both must be removed as a direct, necessary consequence of the ACs' own literal wording ("removed entirely"), not new scope.
