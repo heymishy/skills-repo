@@ -37907,14 +37907,14 @@
     {
       "slug": "2026-09-30-review-split-coverage-check",
       "name": "Deterministic story-coverage check on the review-artefact splitter (short-track)",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "id": "rsc-s1",
           "name": "Deterministic story-coverage check on the review-artefact splitter",
           "storyPath": "artefacts/2026-09-30-review-split-coverage-check/stories/rsc-s1.md",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 6,
           "acVerified": 6,
@@ -37929,27 +37929,30 @@
           "dorPath": "artefacts/2026-09-30-review-split-coverage-check/dor/rsc-s1-dor.md",
           "branch": "feature/rsc-s1",
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/930",
-          "updatedAt": "2026-09-29T21:23:45.030Z"
+          "updatedAt": "2026-09-29T23:35:19.032Z",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodPath": "artefacts/2026-09-30-review-split-coverage-check/dod/rsc-s1-dod.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-09-29T21:23:45.029Z",
+      "updatedAt": "2026-09-29T23:35:19.030Z",
       "track": "short"
     },
     {
       "slug": "2026-09-30-web-ui-artefact-routing-fixes",
       "name": "Extend the Sonnet drift-guard to cover benefit-metric, decisions, and definition-of-done (short-track)",
-      "stage": "branch-complete",
-      "health": "green",
+      "stage": "definition-of-done",
+      "health": "amber",
       "stories": [
         {
           "id": "wuar-s1",
           "name": "Extend the Sonnet drift-guard to cover benefit-metric, decisions, and definition-of-done",
           "storyPath": "artefacts/2026-09-30-web-ui-artefact-routing-fixes/stories/wuar-s1.md",
-          "stage": "branch-complete",
-          "health": "green",
+          "stage": "definition-of-done",
+          "health": "amber",
           "acTotal": 2,
           "acVerified": 2,
           "hasLayoutDependentGaps": "false",
@@ -37962,14 +37965,18 @@
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-30-web-ui-artefact-routing-fixes/dor/wuar-s1-dor.md",
           "branch": "feature/wuar-s1",
-          "updatedAt": "2026-09-29T20:58:00.948Z",
+          "updatedAt": "2026-09-29T23:35:37.971Z",
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/929"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/929",
+          "dodStatus": "complete",
+          "releaseReady": false,
+          "dodPath": "artefacts/2026-09-30-web-ui-artefact-routing-fixes/dod/wuar-s1-dod.md",
+          "blocker": "Fly secrets WUCE_MODEL_OVERRIDE_BENEFIT_METRIC/_DECISIONS/_DEFINITION_OF_DONE not yet set on wuce-staging/skills-framework -- code shipped and correct but inert until operator authorizes the production secret change"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-09-29T20:57:53.576Z",
+      "updatedAt": "2026-09-29T23:35:37.970Z",
       "track": "short"
     },
     {
