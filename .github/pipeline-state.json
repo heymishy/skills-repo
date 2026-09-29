@@ -35495,10 +35495,11 @@
           "reviewArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/review.md",
           "dorStatus": "signed-off",
           "prStatus": "none",
-          "updatedAt": "2026-09-29T00:24:50.235Z",
+          "updatedAt": "2026-09-29T01:06:28.724Z",
           "dorArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/dor/psrc-verify-s1-dor.md",
           "dorContractArtefact": null,
-          "oversightLevel": "low"
+          "oversightLevel": "low",
+          "dodStatus": "complete"
         },
         {
           "id": "psrc-verify-s2",
@@ -35508,10 +35509,11 @@
           "reviewArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/review.md",
           "dorStatus": "signed-off",
           "prStatus": "none",
-          "updatedAt": "2026-09-29T00:24:50.235Z",
+          "updatedAt": "2026-09-29T01:06:28.725Z",
           "dorArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/dor/psrc-verify-s2-dor.md",
           "dorContractArtefact": null,
-          "oversightLevel": "low"
+          "oversightLevel": "low",
+          "dodStatus": "complete"
         },
         {
           "id": "psrc-verify-s3",
