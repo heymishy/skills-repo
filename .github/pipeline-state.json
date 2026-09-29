@@ -37903,6 +37903,12 @@
           "evidence": "ep1-s3 NFRs + E2E accessibility test in test-plans/ep1-s3-test-plan.md"
         }
       ]
+    },
+    {
+      "slug": "2026-09-29-test",
+      "id": "2026-09-29-test",
+      "discoveryStatus": "complete",
+      "artefact": "artefacts/2026-09-29-test/discovery.md"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
