@@ -37176,13 +37176,13 @@
         {
           "slug": "tab-s2",
           "name": "Backfill admin for every existing real tenant that has members but no admin",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "id": "tab-s2",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/review/tab-s2-review-2.md",
-          "updatedAt": "2026-09-29T06:01:28.358Z",
+          "updatedAt": "2026-09-29T07:51:29.225Z",
           "testPlan": {
             "status": "written",
             "totalTests": 10,
@@ -37247,8 +37247,10 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "open",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/926"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/926",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "slug": "tab-s3",
