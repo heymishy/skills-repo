@@ -1,0 +1,1 @@
+{"eventType": "trace-commit-fallback", "reason": "assurance-trace artifact not found", "commitSha": "e0e8acbf56077643483d8f059e2e2947f115d6c9", "timestamp": "2026-09-29T08-19-32-226Z", "gate_run_id": "", "fallback": true}
