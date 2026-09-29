@@ -37085,13 +37085,13 @@
         {
           "slug": "tab-s1",
           "name": "Bootstrap a brand-new tenant's first admin automatically on login",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "id": "tab-s1",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/review/tab-s1-review-2.md",
-          "updatedAt": "2026-09-29T05:01:38.297Z",
+          "updatedAt": "2026-09-29T05:18:36.041Z",
           "testPlan": {
             "status": "written",
             "totalTests": 9,
@@ -37169,7 +37169,9 @@
               "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "slug": "tab-s2",
