@@ -27,7 +27,7 @@
 
 ## Live migration run — `wuce-staging` (2026-09-29T07:45Z)
 
-**Authorization:** Explicit operator choice ("Run on staging only, now") via AskUserQuestion, 2026-09-29. Production was NOT touched — out of scope for this run, a separate future authorization.
+**Authorization:** Explicit operator choice ("Run on staging only, now") via AskUserQuestion, 2026-09-29. Production was NOT touched in this run — covered separately below.
 
 **Pre-run state:** `adminless_tenants=2, total_tenants_with_members=4` (direct reconciliation query, matching the verification script's own Scenario 1 design).
 
@@ -44,6 +44,22 @@
 **Method:** the merged script (`scripts/backfill-tenant-admin.js`, PR #926 + #927's CLI entrypoint fix) was uploaded via `fly ssh sftp put` to `/tmp/` on the running `wuce-staging` machine (the deployed Docker image excludes `scripts/` entirely — a separate finding, logged below) and executed there via `fly ssh console`, using the real `DATABASE_URL` already present in that environment. No credential was read, displayed, or handled directly by the operator or this session at any point — the connection string never left the Fly machine's own environment.
 
 **Diagnostic note:** the first 2 direct invocations of the script's own CLI entrypoint via `fly ssh console -C` produced zero output despite exiting 0, with no discernible cause after investigation (not a DATABASE_URL issue, not a crash — Node's stdout-truncation-before-`process.exit()` behavior on non-TTY pipes is the leading candidate, though not conclusively confirmed). **Critically, the database was independently confirmed unchanged after each silent attempt** (direct reconciliation re-query, `adminless_tenants=2` both before and after) before any further action was taken — no write was ever left unverified. Root cause not required for this story's own completion; logged below as a `/improve` candidate for anyone running one-off scripts this way again.
+
+---
+
+## Live migration run — production (`skills-framework`, 2026-09-29T08:12Z)
+
+**Authorization:** Explicit operator approval ("1", "Yes I approve") after the Claude Code auto-mode permission classifier independently gated both the `fly ssh sftp put` upload and the `fly ssh console` execution steps against production — a stricter, separate gate from the same actions against `wuce-staging`, cleared only after direct operator confirmation for each blocked step.
+
+**Pre-run state:** `adminless_tenants=0, total_tenants_with_members=1` — production has only 1 real tenant with members, and it already has an admin. Nothing to backfill.
+
+**Run result:** `{"processed":0,"promoted":0,"errors":0,"stopped":false}` — a clean, correct no-op. Log: `[tab-s2] no adminless tenants with members found -- nothing to backfill`.
+
+**Post-run state:** `adminless_tenants=0, total_tenants_with_members=1` — confirmed unchanged via a direct re-query after the run.
+
+**Method:** identical procedure to the `wuce-staging` run above (upload via `fly ssh sftp put`, run via `fly ssh console` using the file-marker diagnostic wrapper directly, since it's the already-proven-reliable pattern from staging). No credential was read, displayed, or handled directly at any point.
+
+**Conclusion:** production required no data change — it was already in the correct end-state. This run's value is as a genuine, real-environment execution proof (the script ran successfully against production's real database and made exactly the correct decision: zero writes, because zero writes were needed), not a state change. Both environments now have direct, live-verified confirmation of this story's own correctness.
 
 ---
 
@@ -78,9 +94,9 @@ None for the migration itself. The `require.main === module` CLI entrypoint gap 
 
 | Metric | Baseline available? | First signal measurable |
 |--------|--------------------|-----------------------|
-| Metric 2 — % of real tenants with at least one working admin (`benefit-metric.md`) | ✅ — `wuce-staging`: 2/4 tenants (50%) lacked an admin before this run | **on-track** — `wuce-staging` now at 100% (4/4) immediately after this run; production not yet run (separate authorization pending) |
+| Metric 2 — % of real tenants with at least one working admin (`benefit-metric.md`) | ✅ — `wuce-staging`: 2/4 tenants (50%) lacked an admin before this run; production: already 1/1 (100%) before this run | **on-track** — both `wuce-staging` and production now at 100% (`wuce-staging`: 4/4 after the run; production: 1/1, unchanged since it was already correct) |
 
-**Evidence note:** this is the first metric in this feature with a REAL post-run signal (not `not-yet-measured`) — the live run itself is the measurement event. Production's own count is a separate, not-yet-taken measurement.
+**Evidence note:** this is the first metric in this feature with a REAL post-run signal (not `not-yet-measured`) — the live runs themselves are the measurement events, on both real environments.
 
 ---
 
@@ -89,9 +105,9 @@ None for the migration itself. The `require.main === module` CLI entrypoint gap 
 **COMPLETE**
 
 **Follow-up actions:**
-1. **Production migration run is NOT yet performed** — explicitly out of scope for this DoD pass per the operator's own choice ("staging only, now"). Requires a separate explicit authorization before running `scripts/backfill-tenant-admin.js` against production's real `DATABASE_URL`. Logged as the primary open item for this story.
-2. The deployed Docker image for `wuce-staging` (and presumably production) excludes `scripts/` entirely, meaning no one-off ops script in that directory can be run via a straightforward `fly ssh console` without first `sftp put`-ing it onto the machine manually, as done here. Worth a `/improve` look at whether `scripts/` (or at least migration/ops scripts specifically) should be included in the deploy image, or whether a documented "how to run a one-off ops script against a live environment" runbook should exist — this workaround was improvised, not previously documented anywhere in this repo.
-3. The 2 silent-output attempts (no root cause conclusively identified, though DB was independently confirmed unchanged both times before proceeding) are worth a `/improve` note for anyone else running Node scripts via `fly ssh console -C` on Windows — logged in decisions.md and capture-log.md.
+1. The deployed Docker image for both `wuce-staging` and production excludes `scripts/` entirely, meaning no one-off ops script in that directory can be run via a straightforward `fly ssh console` without first `sftp put`-ing it onto the machine manually, as done here on both environments. Worth a `/improve` look at whether `scripts/` (or at least migration/ops scripts specifically) should be included in the deploy image, or whether a documented "how to run a one-off ops script against a live environment" runbook should exist — this workaround was improvised, not previously documented anywhere in this repo.
+2. The silent-output attempts on `wuce-staging` (no root cause conclusively identified, though DB was independently confirmed unchanged both times before proceeding) are worth a `/improve` note for anyone else running Node scripts via `fly ssh console -C` on Windows — logged in decisions.md and capture-log.md.
+3. The Claude Code auto-mode permission classifier gated `fly ssh sftp put`/`fly ssh console` against production (`skills-framework`) more strictly than the identical commands against staging (`wuce-staging`) — each step required a fresh explicit operator approval. This is expected/appropriate behavior for production-touching actions, noted here only as a process observation, not a gap.
 
 ---
 
@@ -106,12 +122,12 @@ None for the migration itself. The `require.main === module` CLI entrypoint gap 
 ## Operator Verification Prompt
 
 ```
-Review this Definition of Done artefact for tab-s2 (real backfill migration, live-run on wuce-staging).
+Review this Definition of Done artefact for tab-s2 (real backfill migration, live-run on both wuce-staging and production).
 Check:
 1. Does every AC row have a concrete evidence reference (test name, observable behaviour, or CI run)?
-2. Is the live migration run's evidence directly traceable to real before/after database state, not just a script's own self-report?
-3. Is production's own migration run clearly flagged as NOT yet done, with a real trigger for when it should happen?
-4. Are the 2 "silent output" diagnostic incidents adequately explained, and was the database genuinely confirmed unchanged before further action was taken both times?
-5. Is the outcome verdict (COMPLETE / COMPLETE WITH DEVIATIONS / INCOMPLETE) consistent with the AC and deviation rows, given production is still pending?
+2. Is each live migration run's evidence directly traceable to real before/after database state, not just a script's own self-report?
+3. Is it clear that production required no data change (already correct), distinct from a run that was skipped or not attempted?
+4. Are the "silent output" diagnostic incidents on wuce-staging adequately explained, and was the database genuinely confirmed unchanged before further action was taken both times?
+5. Is the outcome verdict (COMPLETE / COMPLETE WITH DEVIATIONS / INCOMPLETE) consistent with the AC and deviation rows, now that both environments are confirmed?
 Report findings as HIGH / MEDIUM / LOW.
 ```

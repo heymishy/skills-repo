@@ -15,6 +15,16 @@
 
 ---
 
+## `tab-s2` DoD: production migration run executed — confirmed already-correct, zero changes needed (2026-09-29)
+
+**Context:** Operator authorized the production run immediately following the `wuce-staging` run above ("1 then 2" — run production, then proceed to `tab-s3`). Each `fly ssh sftp put`/`fly ssh console` step against `skills-framework` was independently gated by the Claude Code auto-mode permission classifier — a stricter, separate gate than the identical actions against `wuce-staging` — cleared via direct operator approval for each ("Yes I approve").
+**What happened:** Same procedure as `wuce-staging` (upload script + diagnostic wrapper via `fly ssh sftp put`, run via `fly ssh console` using the already-proven synchronous file-marker wrapper directly this time, skipping the direct-CLI-entrypoint attempt that had been unreliable on staging). Pre-run reconciliation: `adminless_tenants=0, total_tenants_with_members=1` — production has only 1 real tenant with members, already correctly admin'd. Migration ran, made zero changes (`{"processed":0,"promoted":0,"errors":0,"stopped":false}`), confirmed correct via the debug log's own `no adminless tenants with members found` message. Post-run reconciliation confirmed unchanged.
+**Decision:** Production is now also `live-verified` — not because it changed anything, but because the script was proven to run correctly against real production data and make the correct (zero) decision. Both real environments this story targets now have direct, live evidence of correctness.
+**Story:** `tab-s2` — DoD updated to reflect both environments confirmed; no remaining open live-verification item for this story.
+**Made by:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh), at the operator's direct authorization for each gated step.
+
+---
+
 ## `tab-s2` DoD-time fix-forward: added the CLI runner entrypoint named by the story's own DoR contract but missing from the merged implementation (2026-09-29)
 
 **Context:** `tab-s2`'s own DoR contract (`dor/tab-s2-dor-contract.md`'s Coding Agent Instructions) explicitly said the new script should match "this repo's own convention for migration scripts (see existing `scripts/migrate-schema-*.js` files for the pattern)" — that convention includes a `require.main === module` CLI entrypoint wiring a real `pg` client to `process.env.DATABASE_URL`. The merged implementation (PR #926) only exported `runMigration(pool, log)` and never added this entrypoint, discovered only when attempting to actually run the migration live at DoD time — the script was, until this fix, not runnable at all outside a test file.
