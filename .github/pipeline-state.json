@@ -37946,7 +37946,8 @@
       "stage": "review",
       "track": "short",
       "health": "green",
-      "updatedAt": "2026-09-29T21:38:55.575Z"
+      "updatedAt": "2026-09-29T21:44:54.684Z",
+      "name": "E2E mock-fixture verification run (@mocked journey fixtures, bri-s3.1/s3.2)"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
