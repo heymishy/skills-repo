@@ -35481,11 +35481,11 @@
       "id": "2026-09-15-psrc-s1-sonnet-verify-3story",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/review.md",
-      "stage": "definition-of-ready",
+      "stage": "definition-of-done",
       "name": "psrc-s1 sonnet verification (throwaway, 3-story)",
       "health": "green",
       "track": "standard",
-      "updatedAt": "2026-09-29T00:24:50.233Z",
+      "updatedAt": "2026-09-29T02:01:01.613Z",
       "stories": [
         {
           "id": "psrc-verify-s1",
@@ -35520,8 +35520,8 @@
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/review.md",
           "dorStatus": "signed-off",
-          "prStatus": "draft",
-          "updatedAt": "2026-09-29T01:26:27.803Z",
+          "prStatus": "merged",
+          "updatedAt": "2026-09-29T02:00:26.534Z",
           "dorArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/dor/psrc-verify-s3-dor.md",
           "oversightLevel": "low",
           "stage": "branch-complete",
@@ -35529,7 +35529,8 @@
           "acTotal": 4,
           "health": "green",
           "verifyStatus": "passed",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/924"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/924",
+          "dodStatus": "complete"
         }
       ]
     },
