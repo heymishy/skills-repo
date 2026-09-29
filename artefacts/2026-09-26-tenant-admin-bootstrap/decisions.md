@@ -12,6 +12,9 @@
 **Story:** `tab-s2` — DoD marked COMPLETE with this evidence; production run is the one open follow-up action, not a gap in this story's own completion.
 **Made by:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh), at the operator's direct authorization.
 **Revisit trigger:** when the operator authorizes the production run, repeat this exact procedure (upload via `fly ssh sftp put`, run via `fly ssh console` using `wuce-staging`'s successful pattern as the template, including the file-marker diagnostic wrapper if the same silent-output issue recurs) against `skills-framework`'s real `DATABASE_URL`.
+
+---
+
 ## `tab-s2` DoD-time fix-forward: added the CLI runner entrypoint named by the story's own DoR contract but missing from the merged implementation (2026-09-29)
 
 **Context:** `tab-s2`'s own DoR contract (`dor/tab-s2-dor-contract.md`'s Coding Agent Instructions) explicitly said the new script should match "this repo's own convention for migration scripts (see existing `scripts/migrate-schema-*.js` files for the pattern)" — that convention includes a `require.main === module` CLI entrypoint wiring a real `pg` client to `process.env.DATABASE_URL`. The merged implementation (PR #926) only exported `runMigration(pool, log)` and never added this entrypoint, discovered only when attempting to actually run the migration live at DoD time — the script was, until this fix, not runnable at all outside a test file.
