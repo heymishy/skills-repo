@@ -37739,11 +37739,11 @@
       "id": "2026-09-28-weeb-ui-learnings-and-improvements",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/discovery.md",
-      "stage": "benefit-metric",
+      "stage": "definition-of-ready",
       "name": "Web UI Learnings and Improvements Integration",
       "track": "standard",
       "health": "green",
-      "updatedAt": "2026-09-29T19:53:26.018Z",
+      "updatedAt": "2026-09-29T20:13:31.174Z",
       "metrics": [
         {
           "id": "m1",
@@ -37779,12 +37779,12 @@
       "stories": [
         {
           "id": "ep1-s1",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "reviewStatus": "passed",
           "highFindings": 0,
           "health": "green",
           "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep1-s1-review-2.md",
-          "updatedAt": "2026-09-29T20:09:03.643Z",
+          "updatedAt": "2026-09-29T20:12:57.089Z",
           "testPlan": {
             "status": "written",
             "totalTests": 10,
@@ -37793,16 +37793,18 @@
           "acTotal": 5,
           "acVerified": 0,
           "hasLayoutDependentGaps": "false",
-          "e2eToolingRequired": "false"
+          "e2eToolingRequired": "false",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/dor/ep1-s1-dor.md"
         },
         {
           "id": "ep1-s2",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "reviewStatus": "passed",
           "highFindings": 0,
           "health": "green",
           "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep1-s2-review-2.md",
-          "updatedAt": "2026-09-29T20:09:11.653Z",
+          "updatedAt": "2026-09-29T20:12:57.263Z",
           "testPlan": {
             "status": "written",
             "totalTests": 10,
@@ -37811,16 +37813,18 @@
           "acTotal": 5,
           "acVerified": 0,
           "hasLayoutDependentGaps": "false",
-          "e2eToolingRequired": "false"
+          "e2eToolingRequired": "false",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/dor/ep1-s2-dor.md"
         },
         {
           "id": "ep1-s3",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "reviewStatus": "passed",
           "highFindings": 0,
           "health": "green",
           "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep1-s3-review-2.md",
-          "updatedAt": "2026-09-29T20:09:25.743Z",
+          "updatedAt": "2026-09-29T20:12:57.437Z",
           "testPlan": {
             "status": "written",
             "totalTests": 9,
@@ -37829,7 +37833,9 @@
           "acTotal": 6,
           "acVerified": 0,
           "hasLayoutDependentGaps": "true",
-          "e2eToolingRequired": "true"
+          "e2eToolingRequired": "true",
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/dor/ep1-s3-dor.md"
         }
       ],
       "guardrails": [
@@ -37868,6 +37874,33 @@
           "evidence": "This epic touches src/web-ui/ (signals-aggregator.js, /api/signals route, skill-launcher.js), not dashboards/pipeline-viz.html -- constraint scope does not apply",
           "assessedBy": "/review",
           "assessedAt": "2026-09-29T19:59:35.557Z"
+        },
+        {
+          "id": "NFR-perf-signals",
+          "category": "nfr",
+          "label": "Signal aggregation and endpoint latency targets",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-29T20:13:12.935Z",
+          "evidence": "ep1-s1 AC/NFR <200ms, ep1-s2 AC4 <250ms, ep1-s3 NFR <100ms -- all independently test-covered"
+        },
+        {
+          "id": "NFR-sec-signals",
+          "category": "nfr",
+          "label": "No new attack surface; graceful failure without data leakage",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-29T20:13:12.935Z",
+          "evidence": "nfr-profile.md Security section; AC3 in both ep1-s1 and ep1-s2 test structured error handling"
+        },
+        {
+          "id": "NFR-a11y-launcher",
+          "category": "nfr",
+          "label": "Keyboard navigation and screen-reader support for skill launcher",
+          "status": "met",
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-09-29T20:13:12.935Z",
+          "evidence": "ep1-s3 NFRs + E2E accessibility test in test-plans/ep1-s3-test-plan.md"
         }
       ]
     }

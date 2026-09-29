@@ -1,151 +1,138 @@
-# Definition of Ready — ep1-s2: Signals panel route handler
+# Definition of Ready: Signals panel route handler — `/api/signals` endpoint
 
-**Story:** Signals panel route handler: `/api/signals` endpoint
-**Feature slug:** 2026-09-28-weeb-ui-learnings-and-improvements
-**Status:** PROCEED — Signed off for inner loop
+**Story reference:** artefacts/2026-09-28-weeb-ui-learnings-and-improvements/stories/ep1-s2.md
+**Test plan reference:** artefacts/2026-09-28-weeb-ui-learnings-and-improvements/test-plans/ep1-s2-test-plan.md
+**Assessed by:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh)
+**Date:** 2026-09-30
 
----
-
-## Scope Contract
-
-**What you are building:**
-
-A server-side HTTP route handler (`src/web-ui/routes/signals.js`) that exposes a `GET /api/signals` JSON endpoint. The handler calls the `signals-aggregator.js` module (ep1-s1), receives a normalized `Signal[]` array, and returns it as JSON with HTTP 200 status. On error, returns HTTP 500 with error summary. Response is JSON only; dashboard JavaScript owns rendering.
-
-**What you are NOT building:**
-
-- Signal filtering, sorting, display logic, or per-source robustness — deferred
-- Caching or performance optimization beyond MVP <250ms — deferred to Phase 5
-- HTML rendering — dashboard JavaScript owns this
-- Multi-tenant isolation or error file logging — deferred
-
-**Acceptance Criteria:**
-
-1. **AC1:** `GET /api/signals` returns HTTP 200 with JSON array of Signal objects matching ep1-s1 aggregator output
-2. **AC2:** All required Signal fields present: `id`, `source`, `type`, `text`, `timestamp`, `cta.label`, `cta.skill`
-3. **AC3:** If aggregator throws, endpoint returns HTTP 500 with `{ error: '<message>', timestamp: '<ISO8601>' }` — never partial 200
-4. **AC4:** Endpoint latency <250ms for solo operator scale
-5. **AC5:** Repeated calls return identical responses (deterministic)
-
-**Files you will touch:**
-- `src/web-ui/routes/signals.js` (new, ~80–120 lines)
-- `tests/signals-route.test.js` (new, ~200–300 lines)
-
-**Files you must NOT touch:**
-- `src/web-ui/modules/signals-aggregator.js` (ep1-s1 owns this)
-- `src/web-ui/skill-launcher.js` (ep1-s3 owns this)
-- `dashboards/`, `.github/context.yml`, `package.json`
+**Rebuild note:** Replaces a prior, non-conformant DoR file at this path (same pattern as `ep1-s1-dor.md` — see `decisions.md`).
 
 ---
 
-## Architecture Guardrails
+## Contract Proposal
 
-**Mandatory constraints:**
+**What will be built:**
+A new route file `src/web-ui/routes/signals.js` registering `GET /api/signals` in `server.js`, calling `ep1-s1`'s `getSignals(repoPath)` on every request (on-demand, no caching), returning the result as JSON with HTTP 200, or HTTP 500 with a structured `{error, timestamp}` body if the aggregator throws. A test-only `setSignalsAggregator(fn)` override for stubbing in tests.
 
-- **No new npm dependencies** (tech-stack.md) — use Node.js built-ins; call aggregator synchronously
-- **ADR-024 compliance** — your endpoint must return a well-defined JSON shape with all required fields
-- **Graceful error handling** — aggregator exceptions caught and returned as 500, never propagated
-- **No file I/O in route** — aggregator owns all file reading; route handler is stateless
+**What will NOT be built:**
+No signal filtering, no caching, no HTML rendering (JSON-only; dashboard JavaScript owns rendering — that's `ep1-s3`/future work), no multi-tenant isolation.
 
-**Referenced architecture decisions:**
-- ADR-024 (GET response shape contract)
-- D37 (injectable adapter rule)
-- ADR-028 (canonical builder pattern)
+**How each AC will be verified:**
+
+| AC | Test approach | Type |
+|----|---------------|------|
+| AC1 | Real router dispatch with stubbed aggregator, confirm 200 + array passthrough | Unit + Integration |
+| AC2 | Inspect response fields with/without optional context | Unit |
+| AC3 | Stubbed aggregator throws, confirm 500 + structured error, real dispatch too | Unit + Integration |
+| AC4 | Timed call with artificial aggregator delay | Unit |
+| AC5 | Two successive calls, compare responses | Unit |
+
+**Assumptions:**
+`ep1-s1`'s aggregator interface (`getSignals(repoPath)`) is frozen and stable enough for `ep1-s2` to implement against, even before `ep1-s1`'s own PR merges — matches the story's own stated "may run in parallel if the aggregator interface is frozen and documented before implementation" dependency note.
+
+**Estimated touch points:**
+Files: `src/web-ui/routes/signals.js` (new), `server.js` (1 new route registration + require), `tests/signals-route.test.js` (new).
+Services: None new.
+APIs: 1 new route (`GET /api/signals`) on existing infrastructure.
+
+## Contract Review
+
+✅ **Contract review passed** — proposed implementation directly satisfies AC1–AC5; no mismatch.
 
 ---
 
-## Test Execution
+## Hard Blocks
 
-**Required before opening PR:**
+| # | Check | Status | Notes |
+|---|-------|--------|-------|
+| H1 | User story is As/Want/So with a named persona | ✅ | "Solo operator (you, today)" |
+| H2 | ≥3 ACs in Given/When/Then | ✅ | 5 ACs |
+| H3 | Every AC has ≥1 test in the test plan | ✅ | 10/10 tests, 0 gaps |
+| H4 | Out-of-scope populated | ✅ | 5 items |
+| H5 | Benefit linkage names a metric | ✅ | "Metric 2 — Improvement signal surfacing (benefit-metric.md)" |
+| H6 | Complexity rated | ✅ | Rating 1, Stable |
+| H7 | No unresolved HIGH findings | ✅ | Review Run 2: 0 HIGH |
+| H8 | No uncovered ACs in test plan | ✅ | Coverage gaps: None |
+| H8-ext | Cross-story schema dependency | ✅ | Dependencies names `ep1-s1` as upstream — `schemaDepends: ["dorStatus", "prStatus"]` declared; both fields confirmed present in `.github/pipeline-state.schema.json` |
+| H9 | Architecture Constraints populated; no Category E HIGH | ✅ | ADR-024 correctly cited; review Category E: no violations |
+| H-E2E | CSS-layout-dependent gap without E2E/RISK-ACCEPT | ✅ N/A | No layout-dependent ACs — JSON API route only |
+| H-NFR | NFR profile exists | ✅ | `artefacts/2026-09-28-weeb-ui-learnings-and-improvements/nfr-profile.md` |
+| H-NFR2 | Compliance NFR sign-off | ✅ N/A | No compliance frameworks apply |
+| H-NFR3 | Data classification not blank | ✅ | "Internal — non-public but low sensitivity" |
+| H-NFR-profile | NFR profile presence | ✅ | Story declares NFRs; profile present |
+| H-GOV | Governance approval (discovery `## Approved By`) | ✅ | "Hamish King — Operator / Product Owner — 2026-09-29" |
+| H-ADAPTER | Injectable adapter wiring (D37) | ✅ N/A | `setSignalsAggregator` is a same-process test-only override, not a D37 external-boundary adapter — matches this story's own explicit design decision (carried forward from the recovered "Decision 5" content) |
+| H-INF | Infra-plan gate | ✅ N/A | `hasInfraTrack` not set |
+| H-MIG | Migration-review gate | ✅ N/A | `hasMigrationTrack` not set |
+| H-DESIGN | Design-token compliance | ✅ N/A | `hasDesignSystemTrack` not set |
 
-1. Unit tests (2.1–2.2): `npm test -- tests/signals-route.test.js` — all must pass
-2. Integration tests (2.3–2.6): verify endpoint returns complete Signal array, handles errors, meets latency <250ms
-3. Determinism test (2.5): repeated calls return identical response
-4. Manual AC review: sign off AC1–AC5
-
-**Pass criteria:** All tests pass, latency <250ms, ACs signed off.
+**All hard blocks passed.**
 
 ---
 
-## Implementation Notes
+## Warnings
 
-**Route handler skeleton:**
+| # | Check | Status | Risk if proceeding | Acknowledged by |
+|---|-------|--------|--------------------|-----------------|
+| W1 | NFRs identified | ✅ | — | — |
+| W2 | Scope stability declared | ✅ | — | — |
+| W3 | MEDIUM findings acknowledged | ✅ N/A | Review Run 2: 0 MEDIUM | — |
+| W4 | Verification script reviewed by a domain expert | ⚠️ Not yet done | Script may not perfectly reflect real-world usage nuance | Pending — same as `ep1-s1`, recommend operator review before coding |
+| W5 | No UNCERTAIN items in test plan gap table | ✅ | Gap table: None | — |
 
-```javascript
-const router = require('express').Router();
-const { getSignals } = require('../modules/signals-aggregator');
+---
 
-router.get('/api/signals', (req, res) => {
-  try {
-    const signals = getSignals(process.cwd());
-    res.status(200).json(signals);
-  } catch (err) {
-    res.status(500).json({
-      error: err.message,
-      timestamp: new Date().toISOString()
-    });
-  }
-});
+## Standards Injection
 
-module.exports = router;
-```
+Story has no `domain` field — skipped silently.
 
-**Performance target:** <250ms end-to-end (aggregator <200ms + route overhead <50ms).
+---
+
+## Oversight Level
+
+**Epic oversight:** Medium (per `epics/signals-foundation-launcher-redesign.md`). DoR artefact to be shared before assigning.
 
 ---
 
 ## Coding Agent Instructions
 
-**Your task:** Implement the signals panel route handler (`GET /api/signals` endpoint) following this specification.
+```
+## Coding Agent Instructions
 
-**Entry point:** You are implementing ep1-s2 (Signals panel route handler) in the feature 2026-09-28-weeb-ui-learnings-and-improvements. The ep1-s1 (Signals aggregator module) story is already merged and available for import.
+Proceed: Yes
+Story: Signals panel route handler: `/api/signals` endpoint
+Story artefact: artefacts/2026-09-28-weeb-ui-learnings-and-improvements/stories/ep1-s2.md
+Test plan: artefacts/2026-09-28-weeb-ui-learnings-and-improvements/test-plans/ep1-s2-test-plan.md
 
-**What to build:**
-1. Create `src/web-ui/routes/signals.js` with a route handler that:
-   - Accepts GET requests to `/api/signals`
-   - Calls `getSignals()` from the aggregator module (ep1-s1)
-   - Returns HTTP 200 with the Signal array as JSON
-   - On aggregator exception: returns HTTP 500 with `{ error: '<message>', timestamp: '<ISO8601>' }`
+Goal:
+Make every test in the test plan pass. Do not add scope, behaviour, or
+structure beyond what the tests and ACs specify.
 
-2. Create `tests/signals-route.test.js` with tests covering:
-   - AC1: endpoint returns 200 with Signal array
-   - AC2: all required Signal fields present
-   - AC3: aggregator exception returns 500 with error details
-   - AC4: latency <250ms
-   - AC5: repeated calls return identical response
+Constraints:
+- New route file src/web-ui/routes/signals.js, registering GET /api/signals
+  in server.js using this codebase's existing dispatch pattern.
+- Calls ep1-s1's getSignals(repoPath) on every request -- on-demand, no
+  server-side caching.
+- Returns JSON array only, HTTP 200 on success.
+- If the aggregator throws, returns HTTP 500 with a structured
+  { error, timestamp } body -- never a partial 200.
+- Provide a test-only setSignalsAggregator(fn) override so tests can stub
+  ep1-s1's aggregator without depending on its real file-reading behaviour.
+- Do NOT modify ep1-s1's own aggregator module.
+- Do NOT build any HTML rendering -- API route only, JSON response.
+- Architecture standards: read .github/architecture-guardrails.md before
+  implementing. ADR-024 (GET response shape contract) is directly relevant.
+- Open a draft PR when tests pass -- do not mark ready for review.
+- If you encounter an ambiguity not covered by the ACs or tests, add a PR
+  comment describing the specific blocker and stop -- do not improvise.
 
-**Constraints:**
-- No new npm dependencies
-- No file I/O in the route handler (aggregator owns that)
-- Graceful error handling (catch aggregator exceptions, never propagate)
-- Deterministic output (same input → same response every time)
-
-**Test execution:**
-- Run `npm test -- tests/signals-route.test.js` before opening PR
-- All tests must pass; no skipped tests
-
-**What NOT to do:**
-- Do not modify the aggregator module (ep1-s1 is separate story)
-- Do not add signal filtering, sorting, or display logic (route returns raw array; dashboard owns rendering)
-- Do not implement caching (on-demand parsing acceptable for MVP <250ms)
-- Do not modify launcher, dashboards, or config files
-
-**Definition of success:**
-- `GET /api/signals` endpoint works end-to-end
-- All AC tests pass
-- Latency <250ms for solo operator scale
-- Ready to be integrated into dashboard (ep1-s2 complete, ep1-s3 next)
+Oversight level: Medium
+```
 
 ---
 
 ## Sign-off
 
-**Hard blocks:** 0/0 — no hard blocks identified; entry conditions met
-
-**Warnings:** 0/0 — no warnings
-
-**Oversight level:** Low (straightforward route handler implementation; no ambiguity in spec or aggregator contract)
-
-**Status:** ✅ PROCEED
-
-All ACs are clear, contract is binding, test plan is complete, architecture constraints are documented. Ready for inner loop implementation.
+**Oversight level:** Medium
+**Sign-off required:** No — tech lead awareness only
+**Signed off by:** Not required (Medium oversight, DoR PROCEED: Yes)

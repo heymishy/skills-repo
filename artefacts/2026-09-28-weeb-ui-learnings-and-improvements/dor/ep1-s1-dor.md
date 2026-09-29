@@ -1,122 +1,139 @@
-# Definition of Ready — ep1-s1
+# Definition of Ready: Signals aggregator module — read all 12 sources and normalize to Signal shape
 
-**Story:** Signals aggregator module: read all 12 sources and normalize to Signal shape
-**Feature slug:** 2026-09-28-weeb-ui-learnings-and-improvements
-**Status:** PROCEED — Signed off for inner loop
+**Story reference:** artefacts/2026-09-28-weeb-ui-learnings-and-improvements/stories/ep1-s1.md
+**Test plan reference:** artefacts/2026-09-28-weeb-ui-learnings-and-improvements/test-plans/ep1-s1-test-plan.md
+**Assessed by:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh)
+**Date:** 2026-09-30
 
----
-
-## Scope Contract
-
-**What you are building:**
-
-A server-side Node.js module (`src/web-ui/modules/signals-aggregator.js`) that reads from 12 workspace/framework signal sources (capture-log.md, learnings.md, proposals/, suite.json, results.tsv, traces/, decisions.md, dod/, estimation-norms.md, reference/, pipeline-state.json) and normalizes all into a unified `Signal` object array. On-demand parsing (no cache). Graceful error handling: parse failures surface as `signal-type: parse-error` entries, not exceptions.
-
-**What you are NOT building:**
-
-- Per-source parsing robustness (YAML validation, regex patterns) — deferred to Epic 2
-- Caching or performance optimization beyond MVP <200ms target — deferred to Phase 5
-- Multi-tenant isolation or signal filtering/display logic — deferred
-- Automated signal generation or AI summarization — out of scope
-
-**Acceptance Criteria — Full text:**
-
-1. **AC1:** All 12 sources are parsed into Signal array, sorted by timestamp (most recent first), with required fields: id, source, type, text, timestamp, cta.label, cta.skill
-2. **AC2:** Parse errors (malformed JSON, YAML, TSV) are surfaced as `signal-type: parse-error` entries, not exceptions
-3. **AC3:** Missing source files do not block aggregation; remaining sources still parse
-4. **AC4:** Signals are sorted in descending order by timestamp; entries without timestamp placed at end in stable order
-5. **AC5:** Every parseable entry from every source appears in the returned array; no silent drops
-
-**Files you will touch:**
-
-- `src/web-ui/modules/signals-aggregator.js` (new, ~300–400 lines)
-- `tests/signals-aggregator.test.js` (new, ~500–600 lines)
-- `tests/fixtures/signal-workspace/` (optional: pre-committed fixture files for test stability)
-
-**Files you must NOT touch:**
-
-- `src/web-ui/routes/` (signals route handler is ep1-s2, separate story)
-- `dashboards/` (launcher redesign is ep1-s3, separate story)
-- `.github/context.yml`, `.github/pipeline-state.json`, `package.json` (reserved for root-level changes)
+**Rebuild note:** Replaces a prior, non-conformant DoR file at this path that declared "PROCEED — Signed off for inner loop" with no Hard Blocks table and no real gate verification behind it — a real casualty of the pre-Sonnet-routing-fix Haiku bug documented in `decisions.md`. This is a genuine, fresh DoR pass.
 
 ---
 
-## Architecture Guardrails
+## Contract Proposal
 
-**Mandatory constraints:**
+**What will be built:**
+A new server-side module `src/web-ui/modules/signals-aggregator.js` exporting `getSignals(repoPath)`, which reads all 12 workspace/framework signal sources (capture-log, learnings, proposals, suite, results, traces, decisions, DoD, reference, estimation-norms, pipeline-state, architecture-guardrails) using built-in `fs`/`path` only, and returns a normalized, sorted `Signal[]` array. An injectable file-read adapter (D37, throwing stub default) so tests can stub disk access.
 
-- **No new npm runtime dependencies** (tech-stack.md) — use Node.js built-ins (`fs`, `path`) only
-- **Injectable adapter pattern (D37)** — file-read logic must be injectable with a throwing stub; default adapter throws `new Error('Adapter not wired: file-read. Call setFileReadAdapter() with a real implementation before use.')`
-- **Graceful error handling** — parse failures on individual sources must not block the entire aggregation or throw uncaught exceptions
-- **Canonical builder pattern (ADR-028)** — this module is the sole source of truth for signal aggregation; no other code re-derives this logic from the 12 sources
+**What will NOT be built:**
+No per-source parsing robustness beyond basic string/JSON tolerance (deferred to Epic 2). No caching. No dashboard rendering or display logic — this module's output is consumed by `ep1-s2`'s route handler, not rendered directly.
 
-**Architecture decisions referenced:**
+**How each AC will be verified:**
 
-- ADR-028 (canonical builder pattern) — this module owns signal aggregation logic; all consumers call it
-- D37 (injectable adapter rule) — file-read adapter is wired via setter with throwing stub
-- ADR-023 (handoff schema) — signals will be injected as `priorArtefacts` in Phase 2; ensure Signal shape is complete and self-descriptive
+| AC | Test approach | Type |
+|----|---------------|------|
+| AC1 | Real aggregator run against a fixture workspace covering all 12 sources | Integration |
+| AC2 | Inspect returned Signal shape for required/optional fields | Unit |
+| AC3 | Inject a malformed source, confirm parse-error signal + continued parsing | Unit |
+| AC4 | Inspect sort order across mixed-timestamp fixture | Unit |
+| AC5 | Compare source entry count to aggregator output count | Unit/Integration |
+
+**Assumptions:**
+Fixture workspace files can be committed under `tests/fixtures/signal-workspace/` for stable, repeatable tests. The injectable file-read adapter's default stub throws (D37-compliant) — production wiring happens in `server.js` at startup, same pattern as every other D37 adapter in this codebase.
+
+**Estimated touch points:**
+Files: `src/web-ui/modules/signals-aggregator.js` (new), `tests/signals-aggregator.test.js` (new), `tests/fixtures/signal-workspace/` (new, optional fixture files).
+Services: None new.
+APIs: None (this module has no HTTP surface — `ep1-s2` provides that).
+
+## Contract Review
+
+✅ **Contract review passed** — proposed implementation directly satisfies AC1–AC5; no mismatch between the contract and the story's stated ACs or test plan.
 
 ---
 
-## Test Execution
+## Hard Blocks
 
-**Required before opening PR:**
+| # | Check | Status | Notes |
+|---|-------|--------|-------|
+| H1 | User story is As/Want/So with a named persona | ✅ | "Solo operator (you, today)" |
+| H2 | ≥3 ACs in Given/When/Then | ✅ | 5 ACs |
+| H3 | Every AC has ≥1 test in the test plan | ✅ | 10/10 tests, 0 gaps |
+| H4 | Out-of-scope populated | ✅ | 5 items |
+| H5 | Benefit linkage names a metric | ✅ | "Metric 2 — Improvement signal surfacing (benefit-metric.md)" |
+| H6 | Complexity rated | ✅ | Rating 2, Stable |
+| H7 | No unresolved HIGH findings | ✅ | Review Run 2: 0 HIGH |
+| H8 | No uncovered ACs in test plan | ✅ | Coverage gaps: None |
+| H8-ext | Cross-story schema dependency | ✅ | Dependencies: "None" — schema check not required |
+| H9 | Architecture Constraints populated; no Category E HIGH | ✅ | ADR-028, D37 both correctly cited; review Category E: no violations |
+| H-E2E | CSS-layout-dependent gap without E2E/RISK-ACCEPT | ✅ N/A | No layout-dependent ACs — server-side module only |
+| H-NFR | NFR profile exists | ✅ | `artefacts/2026-09-28-weeb-ui-learnings-and-improvements/nfr-profile.md` |
+| H-NFR2 | Compliance NFR sign-off | ✅ N/A | No compliance frameworks apply |
+| H-NFR3 | Data classification not blank | ✅ | "Internal — non-public but low sensitivity" |
+| H-NFR-profile | NFR profile presence | ✅ | Story declares NFRs; profile present |
+| H-GOV | Governance approval (discovery `## Approved By`) | ✅ | "Hamish King — Operator / Product Owner — 2026-09-29" |
+| H-ADAPTER | Injectable adapter wiring (D37) | ✅ | Story's own Architecture Constraints names the injectable file-read adapter with a throwing stub; production wiring in `server.js` is a required, named implementation-plan task |
+| H-INF | Infra-plan gate | ✅ N/A | `hasInfraTrack` not set |
+| H-MIG | Migration-review gate | ✅ N/A | `hasMigrationTrack` not set |
+| H-DESIGN | Design-token compliance | ✅ N/A | `hasDesignSystemTrack` not set |
 
-1. **Unit tests (1.1–1.6):** Run `npm test -- tests/signals-aggregator.test.js` — all unit tests must pass
-2. **Integration tests (1.7–1.8):** Run with real file I/O on temporary workspace — verify all 12 sources parse correctly and performance <200ms
-3. **Performance test (1.8):** 5 consecutive runs on 2MB workspace — all <200ms
-4. **Canonical builder check (1.10):** `grep -r "workspace/capture-log.md" src/ tests/ | grep -v signals-aggregator | grep -v signals.test` — must return 0 results (no rival implementations)
-5. **Manual AC review:** Read verification script section in test plan and sign off each AC
-
-**Pass criteria:** All tests pass, no skipped tests, performance <200ms, no canonical-builder violations, manual AC review signed off.
+**All hard blocks passed.**
 
 ---
 
-## Implementation Notes
+## Warnings
 
-**Signal object shape (TypeScript reference):**
+| # | Check | Status | Risk if proceeding | Acknowledged by |
+|---|-------|--------|--------------------|-----------------|
+| W1 | NFRs identified | ✅ | — | — |
+| W2 | Scope stability declared | ✅ | — | — |
+| W3 | MEDIUM findings acknowledged | ✅ N/A | Review Run 2: 0 MEDIUM | — |
+| W4 | Verification script reviewed by a domain expert | ⚠️ Not yet done | Script may not perfectly reflect real-world usage nuance | Pending — operator to review `verification-scripts/ep1-s1-verification.md` before assigning to a coding agent |
+| W5 | No UNCERTAIN items in test plan gap table | ✅ | Gap table: None | — |
 
-```typescript
-interface Signal {
-  id: string                    // unique key: `${source}-${index}` or UUID
-  source: string                // 'capture-log' | 'learnings' | 'proposals' | 'suite' | 'results' | 'traces' | 'decisions' | 'dod-follow-up' | 'estimation' | 'archived-ref' | 'pipeline-state' | 'parse-error'
-  type: string                  // 'gap' | 'assumption-invalidated' | 'decision' | 'pattern' | 'proposal' | 'follow-up' | 'error' | ...
-  text: string                  // human-readable summary (1–2 sentences)
-  timestamp: ISO8601            // when the signal was recorded (or when error occurred)
-  cta: {
-    label: string               // e.g., "Review proposal", "Address gap", "Seed discovery"
-    skill: string               // skill to launch: 'improve' | 'definition' | 'decisions' | 'discovery' | ...
-    seedContext?: string        // signal content to inject as priorArtefacts (Phase 2)
-  }
-  context?: {
-    relatedStory?: string
-    featureSlug?: string
-    severity?: 'low' | 'medium' | 'high'
-    metadata?: Record<string, any>
-  }
-}
+**W4 is open** — flagged, not silently passed. Recommend the operator review the verification script before coding begins; this does not block DoR sign-off itself (per this repo's own established solo-operator RISK-ACCEPT posture) but should be closed before assigning to a coding agent for maximum confidence.
+
+---
+
+## Standards Injection
+
+Story has no `domain` field — skipped silently, matching this repo's own convention for stories without a declared domain.
+
+---
+
+## Oversight Level
+
+**Epic oversight:** Medium (per `epics/signals-foundation-launcher-redesign.md`) — "The signals aggregator touches 12 different file types and formats across the workspace, requiring robust parsing and error handling." DoR artefact to be shared before assigning.
+
+---
+
+## Coding Agent Instructions
+
+```
+## Coding Agent Instructions
+
+Proceed: Yes
+Story: Signals aggregator module: read all 12 sources and normalize to Signal shape
+Story artefact: artefacts/2026-09-28-weeb-ui-learnings-and-improvements/stories/ep1-s1.md
+Test plan: artefacts/2026-09-28-weeb-ui-learnings-and-improvements/test-plans/ep1-s1-test-plan.md
+
+Goal:
+Make every test in the test plan pass. Do not add scope, behaviour, or
+structure beyond what the tests and ACs specify.
+
+Constraints:
+- New module src/web-ui/modules/signals-aggregator.js exporting
+  getSignals(repoPath) -- built-in fs/path only, no new npm dependencies.
+- Injectable file-read adapter (D37): default stub MUST throw, not return
+  empty/null. Production wiring in server.js is a SEPARATE implementation
+  task from the aggregator module itself (D37 rule).
+- Parse failures on individual sources surface as signal-type: parse-error
+  entries -- never thrown as exceptions that abort the whole aggregation.
+- Canonical builder pattern (ADR-028): this module is the single source of
+  truth for signal aggregation. Do not let ep1-s2's route handler or any
+  other code re-derive this logic.
+- Architecture standards: read .github/architecture-guardrails.md before
+  implementing.
+- Open a draft PR when tests pass -- do not mark ready for review.
+- If you encounter an ambiguity not covered by the ACs or tests, add a PR
+  comment describing the specific blocker and stop -- do not improvise.
+
+Oversight level: Medium
 ```
 
-**Parse strategy per source (examples):**
-
-- `workspace/capture-log.md` — Parse YAML 5-field schema; extract `date`, `signal-type`, `signal-text` fields; create Signal per entry
-- `workspace/suite.json` — JSON parse; extract array of suite entries; create Signal per entry (or one aggregated signal if desired)
-- `workspace/proposals/` — Directory walk; for each `proposal-*/` subdirectory, read `rationale.md`; create Signal per proposal
-- Invalid files — Catch exceptions, create Signal with `type: 'parse-error'` and error message in `text` field
-
-**Performance target:** All 12 sources parsed in <200ms for solo operator scale (<2MB workspace). Measure with `performance.now()` in test suite.
-
 ---
 
-## What happens after you merge
+## Sign-off
 
-1. Your PR is merged to master
-2. Server runs `npm test -- tests/signals-aggregator.test.js` in CI — all tests must pass
-3. Server updates `.github/pipeline-state.json` to record `dorStatus: "signed-off"`, `stage: "definition-of-ready"`, `health: "green"` for ep1-s1
-4. Next story (ep1-s2, Signals panel route handler) is ready for inner loop
-
----
-
-## Questions or blockers?
-
-If the test plan is unclear, the 12 sources need clarification, or the performance target seems unrealistic, add a comment to the PR and tag for `/clarify` before continuing.
+**Oversight level:** Medium
+**Sign-off required:** No — tech lead awareness only
+**Signed off by:** Not required (Medium oversight, DoR PROCEED: Yes)
