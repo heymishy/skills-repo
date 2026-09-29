@@ -4,6 +4,16 @@
 **Discovery reference:** artefacts/2026-09-26-tenant-admin-bootstrap/discovery.md
 **Last updated:** 2026-09-29
 
+## `tab-s2` `/implementation-plan`: single-session TDD chosen over `/subagent-execution` (2026-09-29)
+
+**Context:** `tab-s1` used `/subagent-execution` (fresh implementer + spec-review + quality-review subagents per task, 10 tasks). `tab-s2` is Complexity Rating 2/Stable, touches exactly one new file (`scripts/backfill-tenant-admin.js`) plus its own test file, with no cross-module wiring beyond a read-only integration test against an already-shipped, unmodified function (`resolveRoleForPerson`).
+**Decision:** Execute directly via single-session TDD (RED-GREEN-REFACTOR per task, real test runs after every step — matching `/tdd`'s own discipline), rather than dispatching separate subagents per task.
+**Rationale:** `/subagent-execution`'s main value — independent verification of a dispatched agent's self-report — matters most when task count/ambiguity is high or multiple files/modules are touched concurrently. Here the task list is small, sequential, and each task's own test is the direct falsifiable check; the same fresh-test-run discipline applies without the dispatch overhead. This is a deliberate scope-appropriate choice, not a shortcut — every task below still gets a real, independently-run test before being marked complete.
+**Story:** `tab-s2` — process choice only, no AC/scope change.
+**Made by:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh).
+
+---
+
 ## `tab-s2` `/branch-setup`: baseline acknowledged, 2 pre-existing/environmental failures (2026-09-29)
 
 **Context:** `node scripts/run-all-tests.js` on the freshly-created `feature/tab-s2` worktree (built from `master` at `dcb0ea41`, i.e. after `tab-s1`'s merge) showed 2 failures: `tests/check-p3.5-validate-trace.js` (established Windows python3-shim issue) and `tests/check-pcr-s1-test-runner.js` (a per-file performance benchmark, confirmed this same day to fail identically — and worse — on bare `master` with no story changes present; machine-load variance, not a regression).
