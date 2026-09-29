@@ -35497,7 +35497,6 @@
           "prStatus": "none",
           "updatedAt": "2026-09-29T01:06:28.724Z",
           "dorArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/dor/psrc-verify-s1-dor.md",
-          "dorContractArtefact": null,
           "oversightLevel": "low",
           "dodStatus": "complete"
         },
@@ -35511,7 +35510,6 @@
           "prStatus": "none",
           "updatedAt": "2026-09-29T01:06:28.725Z",
           "dorArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/dor/psrc-verify-s2-dor.md",
-          "dorContractArtefact": null,
           "oversightLevel": "low",
           "dodStatus": "complete"
         },
@@ -35525,7 +35523,6 @@
           "prStatus": "none",
           "updatedAt": "2026-09-29T00:24:50.235Z",
           "dorArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/dor/psrc-verify-s3-dor.md",
-          "dorContractArtefact": null,
           "oversightLevel": "low"
         }
       ]
@@ -37564,7 +37561,10 @@
       "id": "2026-09-28-weeb-ui-learnings-and-improvements",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/discovery.md",
-      "stage": "test-plan"
+      "stage": "test-plan",
+      "name": "Web UI Learnings and Improvements Integration",
+      "track": "standard",
+      "health": "green"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",

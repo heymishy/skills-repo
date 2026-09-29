@@ -1,6 +1,6 @@
 # Discovery: Web UI Learnings and Improvements Integration
 
-**Status:** Draft — pending approval
+**Status:** Approved
 **Feature slug:** 2026-09-28-web-ui-learnings-and-improvements
 **Discovery started:** 2026-09-28
 **Skill:** /discovery
@@ -105,10 +105,10 @@ This discovery contains 3 unconfirmed assumptions that affect scope and benefit 
 - Hamish King — Operator / Product Owner — 2026-09-28
 
 **Reviewers:**
-- Pending
+- Hamish King — Operator / Product Owner
 
 **Approved By:**
-- Pending
+- Hamish King — Operator / Product Owner — 2026-09-29
 
 ---
-*Status: Draft — awaiting operator approval before proceeding to /benefit-metric*
+*Status: Approved*
