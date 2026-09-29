@@ -35480,12 +35480,44 @@
       "slug": "2026-09-15-psrc-s1-sonnet-verify-3story",
       "id": "2026-09-15-psrc-s1-sonnet-verify-3story",
       "discoveryStatus": "complete",
-      "artefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/discovery.md",
-      "stage": "discovery",
+      "artefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/review.md",
+      "stage": "review",
       "name": "psrc-s1 sonnet verification (throwaway, 3-story)",
       "health": "green",
       "track": "standard",
-      "updatedAt": "2026-09-29T00:12:20.441Z"
+      "updatedAt": "2026-09-29T00:17:36.301Z",
+      "stories": [
+        {
+          "id": "psrc-verify-s1",
+          "slug": "psrc-verify-s1",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/review.md",
+          "dorStatus": "not-started",
+          "prStatus": "none",
+          "updatedAt": "2026-09-29T00:17:36.302Z"
+        },
+        {
+          "id": "psrc-verify-s2",
+          "slug": "psrc-verify-s2",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/review.md",
+          "dorStatus": "not-started",
+          "prStatus": "none",
+          "updatedAt": "2026-09-29T00:17:36.302Z"
+        },
+        {
+          "id": "psrc-verify-s3",
+          "slug": "psrc-verify-s3",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/review.md",
+          "dorStatus": "not-started",
+          "prStatus": "none",
+          "updatedAt": "2026-09-29T00:17:36.302Z"
+        }
+      ]
     },
     {
       "slug": "new-feature-53a4408e",
