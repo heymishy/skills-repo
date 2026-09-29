@@ -37780,29 +37780,29 @@
         {
           "id": "ep1-s1",
           "stage": "review",
-          "reviewStatus": "has-findings",
-          "highFindings": 2,
-          "health": "red",
-          "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep1-s1-review-1.md",
-          "updatedAt": "2026-09-29T19:57:28.519Z"
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green",
+          "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep1-s1-review-2.md",
+          "updatedAt": "2026-09-29T20:02:44.137Z"
         },
         {
           "id": "ep1-s2",
           "stage": "review",
-          "reviewStatus": "has-findings",
-          "highFindings": 2,
-          "health": "red",
-          "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep1-s2-review-1.md",
-          "updatedAt": "2026-09-29T19:58:20.488Z"
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green",
+          "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep1-s2-review-2.md",
+          "updatedAt": "2026-09-29T20:03:09.786Z"
         },
         {
           "id": "ep1-s3",
           "stage": "review",
-          "reviewStatus": "has-findings",
-          "highFindings": 2,
-          "health": "red",
-          "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep1-s3-review-1.md",
-          "updatedAt": "2026-09-29T19:59:08.710Z"
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "health": "green",
+          "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep1-s3-review-2.md",
+          "updatedAt": "2026-09-29T20:03:31.434Z"
         }
       ],
       "guardrails": [
