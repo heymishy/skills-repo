@@ -1,5 +1,7 @@
 'use strict';
 const assert = require('assert');
+const fs = require('fs');
+const path = require('path');
 
 function makeFakePool(rows) {
   const _rows = rows.map(r => ({ ...r }));
@@ -212,6 +214,17 @@ function fail(n, e) { console.error('  [FAIL] ' + n + ': ' + (e.message || e)); 
     assert(elapsedMs < 10000, 'expected under 10s for 100 tenants, took ' + elapsedMs + 'ms');
     pass('migration completes in well under 1 minute at realistic scale (100-tenant proxy, NFR-perf)');
   } catch (e) { fail('migration completes in well under 1 minute at realistic scale (100-tenant proxy, NFR-perf)', e); }
+
+  // CLI runner wiring: real DATABASE_URL-driven entrypoint, matching this repo's own
+  // scripts/migrate-schema-*.js convention (real call site, not just presence -- D37 lesson)
+  try {
+    const src = fs.readFileSync(path.join(__dirname, '..', 'scripts', 'backfill-tenant-admin.js'), 'utf8');
+    assert(/require\.main === module/.test(src), 'no require.main === module CLI entrypoint found');
+    assert(/DATABASE_URL/.test(src), 'CLI entrypoint does not reference DATABASE_URL');
+    assert(/require\(['"]pg['"]\)\.Pool/.test(src) || /require\(['"]pg['"]\)/.test(src), 'CLI entrypoint does not wire a real pg client');
+    assert(/runMigration\(pool/.test(src), 'CLI entrypoint does not call runMigration(pool, ...)');
+    pass('scripts/backfill-tenant-admin.js has a real CLI entrypoint wiring DATABASE_URL to runMigration via a real pg Pool');
+  } catch (e) { fail('scripts/backfill-tenant-admin.js has a real CLI entrypoint wiring DATABASE_URL to runMigration via a real pg Pool', e); }
 
   console.log('\n[tab-s2] Results: ' + passed + ' passed, ' + failed + ' failed');
   if (failed > 0) process.exit(1);

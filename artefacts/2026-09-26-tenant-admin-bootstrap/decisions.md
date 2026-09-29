@@ -4,6 +4,14 @@
 **Discovery reference:** artefacts/2026-09-26-tenant-admin-bootstrap/discovery.md
 **Last updated:** 2026-09-29
 
+## `tab-s2` DoD-time fix-forward: added the CLI runner entrypoint named by the story's own DoR contract but missing from the merged implementation (2026-09-29)
+
+**Context:** `tab-s2`'s own DoR contract (`dor/tab-s2-dor-contract.md`'s Coding Agent Instructions) explicitly said the new script should match "this repo's own convention for migration scripts (see existing `scripts/migrate-schema-*.js` files for the pattern)" — that convention includes a `require.main === module` CLI entrypoint wiring a real `pg` client to `process.env.DATABASE_URL`. The merged implementation (PR #926) only exported `runMigration(pool, log)` and never added this entrypoint, discovered only when attempting to actually run the migration live at DoD time — the script was, until this fix, not runnable at all outside a test file.
+**Decision:** Added the missing CLI entrypoint (`if (require.main === module) { ... }`, matching `migrate-schema-users.js`'s exact shape: real `pg.Pool` from `DATABASE_URL`, calls `runMigration(pool, console)`, exits non-zero if the STOP gate fired) plus a wiring test asserting the real call-site content exists (`require.main === module`, `DATABASE_URL`, a real `pg` require, `runMigration(pool` — not just that the module loads), per this repo's own D37-lesson convention for wiring tests.
+**Rationale:** This completes already-approved DoR-contract scope; it is not new functionality or a scope change — the 4 ACs and error/audit handling are unchanged. Shipped as a small fix-forward PR under the same story rather than folded silently into a later change, so the gap and its fix are both visible in history.
+**Story:** `tab-s2` — fix-forward, no AC/scope change, DoD blocked on this being merged first (cannot demonstrate a live-verified AC without a way to actually run the script).
+**Made by:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh), at the operator's direct request ("Run on staging only, now") to perform the live DoD verification.
+
 ## `tab-s2` `/verify-completion`: 4/4 ACs verified via fake-pool tests; live migration run against real data explicitly deferred to DoD (2026-09-29)
 
 **Context:** All 4 ACs (+ error-handling, audit, and NFR coverage) verified via `tests/check-tab-s2-backfill-tenant-admin.js`, re-run fresh in this session: 10/10 passing. Full repo suite: 705 files, 2 pre-existing/environmental failures (unchanged from branch-setup baseline), 0 new failures. No route/handler files touched — the mandatory E2E coverage check and live browser render check are both N/A. Scope check: all 4 commits on this branch map cleanly to branch-setup/implementation-plan/implementation/a legitimate pipeline-state-repair fix — no scope creep.
