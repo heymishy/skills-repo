@@ -36,3 +36,19 @@
 **Revisit trigger:** same as the `psrc-verify-s1` entry above — first live browser session available, confirm AC3/AC4 directly.
 
 ---
+
+## Live production re-verification: bonus confirmation completed, both revisit triggers closed (2026-09-29)
+
+**Context:** Chrome reconnected later the same day. Drove a real `definition-of-ready` session on production (`skills-framework.fly.dev`) against `2026-09-11-agency-grant-comment-wiring` (session `ccfb2482-4c70-4024-96c2-e6774aa994bd`), the operator's own explicit choice over `wuce-staging` after correctly flagging that staging's mock-LLM-gateway toggle state was unknown and unverifiable externally (see `project_mock_gateway_no_autorevert.md`) — production has no such mock path, making it the only environment where a real API call is guaranteed.
+
+**What happened:** The session's UI header showed `claude-sonnet-4-6` as the resolved model throughout. Two chat turns returned "Model error — please try again" — NOT a routing regression: `fly logs -a skills-framework` showed the real cause was `Anthropic API HTTP 400: "Your credit balance is too low to access the Anthropic API"`, a production billing outage blocking all LLM-backed skill sessions repo-wide, first observed 2026-09-29T03:54Z and still occurring at 04:33Z. Flagged to the operator immediately rather than worked around; operator topped up the account. Retried the same session afterward and it completed cleanly end-to-end, producing a full, deep DoR artefact (18/18 hard blocks evaluated, 1 warning correctly surfaced and RISK-ACCEPT-annotated, full Coding Agent Instructions block) — the opposite shape of the 2026-09-29 shallow-completion bug this whole feature exists to fix.
+
+**Evidence (from `fly logs -a skills-framework`, not self-report):** every `llm_complete` event for `sessionId":"ccfb2482-4c70-4024-96c2-e6774aa994bd"` carries `"model":"claude-sonnet-4-6"`. Five real `"turn_type":"continue"` calls before the billing outage interrupted the session (input tokens climbing 147→471→577→642→754 across the conversation, confirming genuine multi-turn state, not a repeated cold start), then the completing call after the top-up: `input_tokens:4070, output_tokens:3528, stop_reason:"end_turn", llm_duration_ms:63323` — a single substantial, complete turn, not a `done:true`-on-turn-1 collapse.
+
+**Decision:** Both revisit triggers logged above (`psrc-verify-s1` AC1-AC3's live-scenario steps; `psrc-verify-s2` AC3/AC4) are now CLOSED with direct, independently-verified evidence — not reasoning. No failure mode (marker omission, shallow completion) observed on Sonnet. GO decision from the earlier entry stands, now fully confirmed rather than provisionally accepted.
+
+**Separate finding, not part of this feature's scope:** the production Anthropic API billing outage (2026-09-29T03:54Z–~04:34Z, resolved by operator top-up) is a live-incident finding, not a model-routing defect. No action taken here beyond flagging it to the operator; worth a capture-log entry on billing-alert coverage (no alert appears to have fired before the operator was told directly).
+
+**Made by:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh).
+
+---
