@@ -37908,7 +37908,8 @@
       "slug": "2026-09-29-test",
       "id": "2026-09-29-test",
       "discoveryStatus": "complete",
-      "artefact": "artefacts/2026-09-29-test/discovery.md"
+      "artefact": "artefacts/2026-09-29-test/discovery.md",
+      "stage": "benefit-metric"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
