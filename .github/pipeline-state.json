@@ -37903,6 +37903,40 @@
           "evidence": "ep1-s3 NFRs + E2E accessibility test in test-plans/ep1-s3-test-plan.md"
         }
       ]
+    },
+    {
+      "slug": "2026-09-30-review-split-coverage-check",
+      "name": "Deterministic story-coverage check on the review-artefact splitter (short-track)",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "id": "rsc-s1",
+          "name": "Deterministic story-coverage check on the review-artefact splitter",
+          "storyPath": "artefacts/2026-09-30-review-split-coverage-check/stories/rsc-s1.md",
+          "stage": "branch-complete",
+          "health": "green",
+          "acTotal": 6,
+          "acVerified": 6,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 6,
+            "passing": 6
+          },
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-30-review-split-coverage-check/dor/rsc-s1-dor.md",
+          "branch": "feature/rsc-s1",
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/930",
+          "updatedAt": "2026-09-29T21:23:45.030Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-29T21:23:45.029Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
