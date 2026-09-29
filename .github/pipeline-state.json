@@ -37775,6 +37775,73 @@
           "evidence": null,
           "contributingStories": []
         }
+      ],
+      "stories": [
+        {
+          "id": "ep1-s1",
+          "stage": "review",
+          "reviewStatus": "has-findings",
+          "highFindings": 2,
+          "health": "red",
+          "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep1-s1-review-1.md",
+          "updatedAt": "2026-09-29T19:57:28.519Z"
+        },
+        {
+          "id": "ep1-s2",
+          "stage": "review",
+          "reviewStatus": "has-findings",
+          "highFindings": 2,
+          "health": "red",
+          "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep1-s2-review-1.md",
+          "updatedAt": "2026-09-29T19:58:20.488Z"
+        },
+        {
+          "id": "ep1-s3",
+          "stage": "review",
+          "reviewStatus": "has-findings",
+          "highFindings": 2,
+          "health": "red",
+          "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep1-s3-review-1.md",
+          "updatedAt": "2026-09-29T19:59:08.710Z"
+        }
+      ],
+      "guardrails": [
+        {
+          "id": "ADR-011",
+          "category": "adr",
+          "label": "Artefact-first: new src/ modules require a story artefact",
+          "status": "met",
+          "evidence": "ep1-s1/ep1-s2/ep1-s3 each have story artefacts predating implementation",
+          "assessedBy": "/review",
+          "assessedAt": "2026-09-29T19:59:35.557Z"
+        },
+        {
+          "id": "ADR-024",
+          "category": "adr",
+          "label": "GET /api/journey/:id response shape is the canonical contract",
+          "status": "met",
+          "evidence": "ep1-s2 Architecture Constraints correctly cites ADR-024 for /api/signals response shape",
+          "assessedBy": "/review",
+          "assessedAt": "2026-09-29T19:59:35.557Z"
+        },
+        {
+          "id": "ADR-028",
+          "category": "adr",
+          "label": "A derived structure needs exactly one canonical builder",
+          "status": "met",
+          "evidence": "ep1-s1 Architecture Constraints correctly cites ADR-028 -- signals-aggregator.js is the single source of truth for signal aggregation",
+          "assessedBy": "/review",
+          "assessedAt": "2026-09-29T19:59:35.557Z"
+        },
+        {
+          "id": "MC-SELF-02",
+          "category": "mandatory-constraint",
+          "label": "No npm devDependencies added to dashboards/pipeline-viz.html",
+          "status": "na",
+          "evidence": "This epic touches src/web-ui/ (signals-aggregator.js, /api/signals route, skill-launcher.js), not dashboards/pipeline-viz.html -- constraint scope does not apply",
+          "assessedBy": "/review",
+          "assessedAt": "2026-09-29T19:59:35.557Z"
+        }
       ]
     }
   ],
