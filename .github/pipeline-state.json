@@ -37739,10 +37739,43 @@
       "id": "2026-09-28-weeb-ui-learnings-and-improvements",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/discovery.md",
-      "stage": "test-plan",
+      "stage": "benefit-metric",
       "name": "Web UI Learnings and Improvements Integration",
       "track": "standard",
-      "health": "green"
+      "health": "green",
+      "updatedAt": "2026-09-29T19:53:26.018Z",
+      "metrics": [
+        {
+          "id": "m1",
+          "name": "Skill launcher clarity",
+          "target": "Only 5 entry-point skills shown as primary CTAs; all others hidden/advanced",
+          "baseline": "All 41+ skills shown as equal CTAs (0% rationalised)",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m2",
+          "name": "Improvement signal surfacing",
+          "target": "All 12 sources parsed, >=1 signal per active source type displayed per active feature",
+          "baseline": "0 workspace signals surfaced in web UI",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        },
+        {
+          "id": "m3",
+          "name": "Self-improvement loop accessibility",
+          "target": "100% -- operator sees signal, clicks CTA, lands in pre-seeded session, web-UI-only",
+          "baseline": "0% -- CLI/IDE access required today",
+          "signal": "not-yet-measured",
+          "lastMeasured": null,
+          "evidence": null,
+          "contributingStories": []
+        }
+      ]
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
