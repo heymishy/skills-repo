@@ -37939,6 +37939,40 @@
       "track": "short"
     },
     {
+      "slug": "2026-09-30-web-ui-artefact-routing-fixes",
+      "name": "Extend the Sonnet drift-guard to cover benefit-metric, decisions, and definition-of-done (short-track)",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "id": "wuar-s1",
+          "name": "Extend the Sonnet drift-guard to cover benefit-metric, decisions, and definition-of-done",
+          "storyPath": "artefacts/2026-09-30-web-ui-artefact-routing-fixes/stories/wuar-s1.md",
+          "stage": "branch-complete",
+          "health": "green",
+          "acTotal": 2,
+          "acVerified": 2,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 2,
+            "passing": 2
+          },
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-30-web-ui-artefact-routing-fixes/dor/wuar-s1-dor.md",
+          "branch": "feature/wuar-s1",
+          "updatedAt": "2026-09-29T20:58:00.948Z",
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/929"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-29T20:57:53.576Z",
+      "track": "short"
+    },
+    {
       "slug": "2026-09-29-test",
       "id": "2026-09-29-test",
       "discoveryStatus": "complete",
