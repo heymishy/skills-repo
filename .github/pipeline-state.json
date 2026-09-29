@@ -35481,11 +35481,11 @@
       "id": "2026-09-15-psrc-s1-sonnet-verify-3story",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/review.md",
-      "stage": "review",
+      "stage": "definition-of-ready",
       "name": "psrc-s1 sonnet verification (throwaway, 3-story)",
       "health": "green",
       "track": "standard",
-      "updatedAt": "2026-09-29T00:17:36.301Z",
+      "updatedAt": "2026-09-29T00:24:50.233Z",
       "stories": [
         {
           "id": "psrc-verify-s1",
@@ -35493,9 +35493,12 @@
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/review.md",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "prStatus": "none",
-          "updatedAt": "2026-09-29T00:17:36.302Z"
+          "updatedAt": "2026-09-29T00:24:50.235Z",
+          "dorArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/dor/psrc-verify-s1-dor.md",
+          "dorContractArtefact": null,
+          "oversightLevel": "low"
         },
         {
           "id": "psrc-verify-s2",
@@ -35503,9 +35506,12 @@
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/review.md",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "prStatus": "none",
-          "updatedAt": "2026-09-29T00:17:36.302Z"
+          "updatedAt": "2026-09-29T00:24:50.235Z",
+          "dorArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/dor/psrc-verify-s2-dor.md",
+          "dorContractArtefact": null,
+          "oversightLevel": "low"
         },
         {
           "id": "psrc-verify-s3",
@@ -35513,9 +35519,12 @@
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/review.md",
-          "dorStatus": "not-started",
+          "dorStatus": "signed-off",
           "prStatus": "none",
-          "updatedAt": "2026-09-29T00:17:36.302Z"
+          "updatedAt": "2026-09-29T00:24:50.235Z",
+          "dorArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/dor/psrc-verify-s3-dor.md",
+          "dorContractArtefact": null,
+          "oversightLevel": "low"
         }
       ]
     },
