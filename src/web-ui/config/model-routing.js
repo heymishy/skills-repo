@@ -30,6 +30,15 @@ const { getActiveModel } = require('../../modules/skill-turn-executor');
 const DEFAULT_SONNET_SKILLS = ['discovery', 'ideate'];
 const HAIKU_BLOCKED_SKILLS = ['discovery'];
 
+// psrc-verify-s3: the 5 governance-critical skills that ship via
+// WUCE_MODEL_OVERRIDE_<SKILL> Fly secrets (psrc-verify-s2), distinct from
+// DEFAULT_SONNET_SKILLS above (skills that default to Sonnet with NO
+// override at all). This list is deliberately its own constant, not merged
+// into DEFAULT_SONNET_SKILLS -- confusing the two was flagged and fixed at
+// /review (finding 1-M1): DEFAULT_SONNET_SKILLS means "no override needed",
+// this means "an override is INTENDED to exist and resolve to Sonnet".
+const DRIFT_GUARD_SONNET_SKILLS = ['design', 'definition', 'review', 'test-plan', 'definition-of-ready'];
+
 function _isHaikuModel(modelId) {
   return !!(modelId && modelId.indexOf('haiku') !== -1);
 }
@@ -83,8 +92,37 @@ function getModelForSkill(skillName, envVars, options) {
   return defaultModel;
 }
 
+/**
+ * psrc-verify-s3: check whether any of DRIFT_GUARD_SONNET_SKILLS is
+ * currently resolving to a Haiku model -- the exact scenario that
+ * recurred twice (2026-09-15 marker-emission bug, 2026-09-29 shallow-
+ * completion bug), both times because a WUCE_MODEL_OVERRIDE_<SKILL> Fly
+ * secret that was supposed to route a governance-critical skill to Sonnet
+ * either was never set, or was silently removed. Pure, read-only, directly
+ * unit-testable -- takes an injectable envVars object mirroring
+ * getModelForSkill's own existing testability pattern, never mutates
+ * anything, never touches DEFAULT_SONNET_SKILLS/HAIKU_BLOCKED_SKILLS.
+ * @param {object} [envVars] - defaults to process.env; injected for testability
+ * @returns {Array<{skill: string, resolvedModel: string}>} one entry per
+ *   drifted skill; empty array when all of DRIFT_GUARD_SONNET_SKILLS
+ *   correctly resolve to a non-Haiku model
+ */
+function checkModelRoutingDrift(envVars) {
+  envVars = envVars || process.env;
+  const drifted = [];
+  DRIFT_GUARD_SONNET_SKILLS.forEach((skillName) => {
+    const resolvedModel = getModelForSkill(skillName, envVars);
+    if (_isHaikuModel(resolvedModel)) {
+      drifted.push({ skill: skillName, resolvedModel });
+    }
+  });
+  return drifted;
+}
+
 module.exports = {
   getModelForSkill,
+  checkModelRoutingDrift,
   DEFAULT_SONNET_SKILLS,
   HAIKU_BLOCKED_SKILLS,
+  DRIFT_GUARD_SONNET_SKILLS,
 };
