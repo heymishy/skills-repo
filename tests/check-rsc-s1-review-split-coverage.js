@@ -15,11 +15,21 @@
 process.env.NODE_ENV = 'test';
 process.env.SESSION_SECRET = 'test-session-secret-minimum32chars!!';
 
+const fs = require('fs');
+const os = require('os');
 const path = require('path');
 
 const SPLITTER_PATH = path.resolve(__dirname, '../src/web-ui/utils/review-artefact-splitter.js');
 const ROUTES_PATH = path.resolve(__dirname, '../src/web-ui/routes/skills.js');
 const JOURNEY_STORE_PATH = path.resolve(__dirname, '../src/web-ui/modules/journey-store.js');
+
+// check-defs-revs-s1-wiring-into-turn-completion.js's own established
+// pattern: point _getRepoPath() at a real, isolated temp directory rather
+// than this repo's own worktree, so handlePostTurnStreamHtml's real disk
+// writes (and its best-effort real `git commit`, see stis-s1) land there
+// instead of polluting this branch's actual history.
+const _tmpRepoRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'rsc-s1-'));
+process.env.COPILOT_REPO_PATH = _tmpRepoRoot;
 
 let passed = 0;
 let failed = 0;
