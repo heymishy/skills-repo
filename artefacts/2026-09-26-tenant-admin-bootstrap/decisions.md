@@ -4,6 +4,14 @@
 **Discovery reference:** artefacts/2026-09-26-tenant-admin-bootstrap/discovery.md
 **Last updated:** 2026-09-29
 
+## `tab-s3` `/branch-setup`: baseline acknowledged, 2 pre-existing/environmental failures; hard dependency confirmed satisfied (2026-09-29)
+
+**Context:** `tab-s3`'s own hard dependency — `tab-s1` AND `tab-s2` both merged and proven correct — is now fully satisfied: `tab-s1` merged and DoD-complete; `tab-s2` merged, DoD-complete, and live-verified on BOTH `wuce-staging` (2 tenants promoted, confirmed correct) and production (confirmed already-correct, zero changes needed). `node scripts/run-all-tests.js` on the freshly-created `feature/tab-s3` worktree showed 2 failures: `tests/check-p3.5-validate-trace.js` and `tests/check-pcr-s1-test-runner.js` — the same established pre-existing/environmental failures acknowledged throughout this feature's own `tab-s1`/`tab-s2` worktrees.
+**Decision:** Dependency confirmed satisfied; baseline acknowledged as pre-existing/environmental; proceeding.
+**Story:** `tab-s3` — no AC/scope change; baseline note only.
+
+---
+
 ## `tab-s2` DoD: live migration run executed against `wuce-staging`, production deferred (2026-09-29)
 
 **Context:** Operator explicitly authorized ("Run on staging only, now") a live run of `scripts/backfill-tenant-admin.js` against `wuce-staging`'s real Postgres, in response to a direct AskUserQuestion about how to handle DoD's evidence-strength rule (this story's ACs claim a real-world effect that fake-pool tests alone can't fully verify).
