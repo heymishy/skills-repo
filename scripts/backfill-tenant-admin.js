@@ -62,3 +62,23 @@ async function runMigration(pool, log) {
 }
 
 module.exports = { runMigration: runMigration };
+
+if (require.main === module) {
+  if (!process.env.DATABASE_URL) {
+    console.error('DATABASE_URL is not set');
+    process.exit(1);
+  }
+  var Pool = require('pg').Pool;
+  var pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  runMigration(pool, console)
+    .then(function(result) {
+      return pool.end().then(function() {
+        console.log('[tab-s2] CLI run result: ' + JSON.stringify(result));
+        process.exit(result.stopped ? 1 : 0);
+      });
+    })
+    .catch(function(e) {
+      console.error('[tab-s2] Migration failed:', e.message);
+      pool.end().finally(function() { process.exit(1); });
+    });
+}
