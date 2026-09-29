@@ -37937,6 +37937,13 @@
       "metrics": [],
       "updatedAt": "2026-09-29T21:23:45.029Z",
       "track": "short"
+    },
+    {
+      "slug": "2026-09-29-test",
+      "id": "2026-09-29-test",
+      "discoveryStatus": "complete",
+      "artefact": "artefacts/2026-09-29-test/discovery.md",
+      "stage": "design"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
