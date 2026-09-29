@@ -90,6 +90,39 @@ async function resolvePersonForIdentity(pool, identityKey) {
 }
 
 /**
+ * Resolve the personId for identityKey via resolvePersonForIdentity, or --
+ * if genuinely no person owns it yet -- create a new people row and link
+ * identityKey to it (tab-s1). resolvePersonForIdentity alone never creates a
+ * row (by design -- see linkIdentity/getLinkedProviders above); this
+ * function is the one place a brand-new person is allowed to be created,
+ * for the specific case of a real first-ever login where no team_memberships
+ * or person_identities row exists anywhere for this identity. Idempotent:
+ * calling this twice for the same identityKey returns the same personId both
+ * times, never creating a second person or a duplicate link.
+ * @param {object} pool - pg-Pool-shaped object exposing query(sql, params)
+ * @param {string} identityKey - GitHub login, Google sub, or email
+ * @param {string} provider - 'github', 'google', or 'email'
+ * @param {{info: Function, warn: Function}} [logger]
+ * @returns {Promise<number>} the resolved or newly-created personId
+ */
+async function resolveOrCreatePersonForIdentity(pool, identityKey, provider, logger) {
+  var existingPersonId = await resolvePersonForIdentity(pool, identityKey);
+  if (existingPersonId != null) {
+    // Already resolvable (an existing person, possibly via the
+    // team_memberships fallback with no explicit link yet) -- ensure this
+    // identityKey specifically is linked (idempotent), matching this
+    // module's own backfillIdentityIfNeeded convention.
+    await backfillIdentityIfNeeded(pool, identityKey, existingPersonId, provider, logger);
+    return existingPersonId;
+  }
+
+  var personResult = await pool.query('INSERT INTO people DEFAULT VALUES RETURNING id');
+  var newPersonId = personResult.rows[0].id;
+  await backfillIdentityIfNeeded(pool, identityKey, newPersonId, provider, logger);
+  return newPersonId;
+}
+
+/**
  * Link a second provider identity to the person who owns currentIdentityKey
  * (AC1). Rejects with IdentityAlreadyLinkedError — no writes — if
  * newIdentityKey already resolves to a DIFFERENT person (AC4). No-ops
@@ -204,6 +237,7 @@ async function getLinkedProviders(pool, identityKey) {
 module.exports = {
   migrateIdentityLinksSchema,
   resolvePersonForIdentity,
+  resolveOrCreatePersonForIdentity,
   linkIdentity,
   backfillIdentityIfNeeded,
   getLinkedProviders,
