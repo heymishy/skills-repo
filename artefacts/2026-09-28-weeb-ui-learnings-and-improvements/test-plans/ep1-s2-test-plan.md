@@ -1,232 +1,170 @@
-# Decisions — ep1-s1: Signals aggregator module
+## Test Plan: Signals panel route handler — `/api/signals` endpoint
 
-**Story:** Signals aggregator module: read all 12 sources and normalize to Signal shape
-**Feature slug:** 2026-09-28-weeb-ui-learnings-and-improvements
-**Recorded:** 2026-09-28
-**Status:** Active (guiding implementation)
+**Story reference:** artefacts/2026-09-28-weeb-ui-learnings-and-improvements/stories/ep1-s2.md
+**Epic reference:** artefacts/2026-09-28-weeb-ui-learnings-and-improvements/epics/signals-foundation-launcher-redesign.md
+**Test plan author:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh)
+**Date:** 2026-09-30
 
----
-
-## Decision 1: Signal object shape — required vs. optional fields
-
-**Date:** 2026-09-28
-**Context:** The aggregator normalizes signals from 12 different sources into a unified `Signal` object. The design specifies required and optional fields. Without formalization, code may inconsistently omit optional fields or add new ones without consensus.
-
-**Options considered:**
-- **Option A:** Enforce Signal shape via TypeScript interface at compile time (requires TS migration)
-- **Option B:** Document Signal shape as a JSDoc typedef + runtime validation in test suite only
-- **Option C:** Enforce via runtime validation (Schema.js or similar); throw if required fields missing
-
-**Decision:** **Option B — JSDoc typedef + test-suite validation**
-
-**Rationale:**
-- No TypeScript migration in Phase 5 (tech-stack.md constraint: Node.js CommonJS, no transpilation)
-- JSDoc typedef provides IDE autocomplete and documentation without build step
-- Test suite validates all signals have required fields; invalid signals are caught at test time, not runtime
-- Optional fields (`context`, `seedContext`) are documented as optional; their absence is valid
-- Keeps the module lightweight and maintainable
-
-**Consequences:**
-- Signal objects without required fields will fail unit/integration tests before merge
-- IDE will highlight missing required fields via JSDoc hover
-- No runtime validation (production code assumes caller/test suite ensures correctness)
-
-**Implementation guidance:**
-```javascript
-/**
- * @typedef {Object} Signal
- * @property {string} id - unique key: `${source}-${index}` or UUID
- * @property {string} source - 'capture-log' | 'learnings' | 'proposals' | 'suite' | 'results' | 'traces' | 'decisions' | 'dod-follow-up' | 'estimation' | 'archived-ref' | 'pipeline-state' | 'parse-error'
- * @property {string} type - 'gap' | 'assumption-invalidated' | 'decision' | 'pattern' | 'proposal' | 'follow-up' | 'error' | ...
- * @property {string} text - human-readable summary (1–2 sentences)
- * @property {string} timestamp - ISO8601 format
- * @property {Object} cta
- * @property {string} cta.label - e.g., "Review proposal", "Address gap"
- * @property {string} cta.skill - skill to launch: 'improve' | 'definition' | 'decisions' | ...
- * @property {Object} [context] - optional
- * @property {string} [context.relatedStory] - optional
- * @property {string} [context.featureSlug] - optional
- * @property {string} [context.severity] - optional: 'low' | 'medium' | 'high'
- * @property {Object} [context.metadata] - optional
- * @property {string} [seedContext] - optional: signal content to inject as priorArtefacts
- */
-```
-
-Test suite validates: `expect(signal).toHaveProperty('id'); expect(signal).toHaveProperty('cta.label');` etc.
+**Rebuild note:** This replaces a prior file at this path that was, in fact, `/clarify`-or-`/design`-shaped decision-log content (5 "Decision" entries plus a "Follow-up actions" section) — not a real test plan. That content is preserved below in **Design Decisions Carried Forward**, since it answers real implementation questions this test plan needs, rather than being discarded.
 
 ---
 
-## Decision 2: Error handling — parse-error Signal vs. exception logging
+## Design Decisions Carried Forward
 
-**Date:** 2026-09-28
-**Context:** When a signal source fails to parse (malformed JSON, bad YAML, missing file), the aggregator must decide: surface as a Signal entry, log to file, or both. The design specifies parse errors surface as Signal entries. This decision clarifies scope and logging strategy.
+<!-- Recovered from the prior mislabeled file at this path — real content, wrong artefact type. -->
 
-**Options considered:**
-- **Option A:** Surface parse-error Signal only; no file logging (keeps Signal array as complete status report)
-- **Option B:** Surface parse-error Signal + log to file (dual output; auditable error history)
-- **Option C:** Log to file only, no Signal entry (errors invisible in aggregation result)
-
-**Decision:** **Option A — parse-error Signal only; no file logging**
-
-**Rationale:**
-- Design specifies parse errors surface as Signal entries (not exceptions)
-- Signal array is the complete status report of aggregation — operator sees all errors at once
-- No new dependencies needed for file logging (no file I/O outside of reading sources)
-- Test plan validates parse-error signals appear in the array; no separate log file to verify
-- Keeps the module stateless (no side effects beyond returning the Signal array)
-- File logging can be added in Phase 5 (performance story) if audit trail is needed
-
-**Consequences:**
-- Parse errors are ephemeral (live only in the returned array, not persisted to disk)
-- If the aggregator is called multiple times, parse errors must be re-discovered each time
-- No permanent audit trail of which sources failed on which runs
-
-**Implementation guidance:**
-- When a parse exception occurs, catch it and create a Signal with `type: 'parse-error'`
-- Signal text should include the exception message and source file path
-- Example: `{ id: 'parse-error-001', source: 'parse-error', type: 'parse-error', text: 'workspace/suite.json: JSON parse error: Unexpected token < at line 1', timestamp: <now>, cta: { label: 'Review workspace/suite.json', skill: 'decisions' } }`
+1. **Signal object shape:** `id`, `source`, `type`, `text`, `timestamp` are required on every Signal; `cta.label`/`cta.skill` are required; `context.relatedStory`/`context.featureSlug`/`context.severity`/`context.metadata` are optional and may be absent without failing validation.
+2. **Error handling:** an aggregator exception is caught at the route layer and returned as HTTP 500 with a structured `{ error, timestamp }` body — never a partial 200.
+3. **Timestamp format:** ISO 8601 strings throughout (matches `id 2` — no Unix-timestamp fields anywhere in the Signal shape).
+4. **Sorting:** stable sort on `timestamp` descending; entries without a timestamp are placed at the end in a stable (insertion) order — this is the aggregator's own responsibility (ep1-s1), not re-sorted at the route layer.
+5. **File read adapter wiring:** the route handler does not read files itself — it calls the ep1-s1 aggregator's exported `getSignals(repoPath)` function directly. For testability, the route module exposes a test-only override (`setSignalsAggregator(fn)`) so tests can stub the aggregator without depending on ep1-s1's own real file-reading, matching this codebase's existing lightweight-stub convention for simple function dependencies (distinct from a full D37 throw-on-unwired adapter, since this is an internal same-process call, not an external system boundary).
 
 ---
 
-## Decision 3: Timestamp format — ISO8601 vs. Unix timestamp
+## AC Coverage
 
-**Date:** 2026-09-28
-**Context:** The design specifies ISO8601 format for Signal timestamps (e.g., `"2026-09-28T15:30:00Z"`). This decision formalizes the choice and normalization strategy.
-
-**Options considered:**
-- **Option A:** ISO8601 only (human-readable, standard, no timezone ambiguity if stored as Z)
-- **Option B:** Unix timestamp only (numeric, sortable, compact)
-- **Option C:** Both (dual representation; adds complexity)
-
-**Decision:** **Option A — ISO8601 only, with Z (UTC) timezone enforcement**
-
-**Rationale:**
-- Design specifies ISO8601 (human-readable, standard for web APIs)
-- UTC timezone (Z suffix) eliminates ambiguity; all timestamps are comparable globally
-- All signal sources (capture-log.md YAML dates, file modification times, trace JSONL timestamps) can be normalized to ISO8601-Z
-- JSON serialization/deserialization is native (no custom handlers needed)
-- Test suite validates all timestamps match ISO8601 pattern: `/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{3})?Z$/`
-- Sorting by ISO8601 strings is lexicographic (same order as chronological for this format)
-
-**Consequences:**
-- All parsed dates must be normalized to ISO8601-Z format before Signal construction
-- Parse errors: if a timestamp cannot be parsed, the Signal is either placed without timestamp (at end of array) or assigned current time
-- Millisecond precision is optional; seconds are sufficient (e.g., `"2026-09-28T15:30:00Z"` vs. `"2026-09-28T15:30:00.123Z"`)
-
-**Implementation guidance:**
-- For capture-log.md YAML entries with `date: YYYY-MM-DD` field: parse as `new Date(dateString + 'T00:00:00Z').toISOString()`
-- For file modification times (`fs.stat().mtime`): convert with `mtime.toISOString()`
-- For trace JSONL entries with `timestamp` field: validate as ISO8601, or convert if Unix timestamp
-- For entries without a timestamp: omit `timestamp` field or assign `null`; place such Signals at end of array in stable order
+| AC | Description | Unit | Integration | E2E | Manual | Gap type | Risk |
+|----|-------------|------|-------------|-----|--------|----------|------|
+| AC1 | Endpoint returns Signal array as JSON, HTTP 200 | 1 test | 1 test | — | — | — | 🟢 |
+| AC2 | Response includes all required Signal fields | 1 test | — | — | — | — | 🟢 |
+| AC3 | Endpoint gracefully handles aggregator exceptions (500) | 1 test | 1 test | — | — | — | 🟢 |
+| AC4 | Endpoint latency <250ms | 1 test | — | — | — | — | 🟢 |
+| AC5 | Endpoint is deterministic/repeatable | 1 test | — | — | — | — | 🟢 |
 
 ---
 
-## Decision 4: Signal sorting — stable sort on timestamp with secondary sort key
+## Coverage gaps
 
-**Date:** 2026-09-28
-**Context:** The design specifies signals sorted descending by timestamp (most recent first), with entries without timestamp placed at end. This decision formalizes the secondary sort order for determinism.
-
-**Options considered:**
-- **Option A:** Primary sort by timestamp (desc); secondary sort by source name (asc) for ties
-- **Option B:** Primary sort by timestamp (desc); secondary sort by parse order (stable, undefined order)
-- **Option C:** Primary sort by timestamp (desc); entries without timestamp placed at end in parse order (no secondary sort)
-
-**Decision:** **Option A — Primary sort by timestamp (desc); secondary sort by source name (asc) for determinism**
-
-**Rationale:**
-- Design specifies descending timestamp order (most recent first)
-- Multiple signals may have the same timestamp (especially if parsing multiple entries from the same source, or if timestamps are rounded to seconds)
-- A secondary sort ensures deterministic order across invocations (test suite validates no non-determinism)
-- Secondary sort by source name is meaningful: signals from the same timestamp are grouped by source, improving readability
-- Entries without timestamp are placed at the end (after all timestamped entries), then sorted by source name
-
-**Consequences:**
-- Sorting is two-pass: first by timestamp, then by source within same-timestamp group
-- Test suite validates determinism: same input, same output order on repeated calls
-- If source names change, sort order may shift (acceptable; sources are stable)
-
-**Implementation guidance:**
-```javascript
-// Pseudocode
-signals.sort((a, b) => {
-  // Primary: timestamp descending (most recent first)
-  if (a.timestamp && b.timestamp) {
-    const timeCompare = b.timestamp.localeCompare(a.timestamp); // descending
-    if (timeCompare !== 0) return timeCompare;
-  }
-  
-  // Handle missing timestamps: no timestamp goes to end
-  if (!a.timestamp && b.timestamp) return 1;
-  if (a.timestamp && !b.timestamp) return -1;
-  
-  // Secondary: source name ascending (alphabetical)
-  return a.source.localeCompare(b.source);
-});
-```
-
-Test: `test('signals sorted deterministically: repeated calls return same order')`
+None. This story is entirely server-side JSON (no rendered UI) — every AC is testable via a stubbed aggregator and real HTTP dispatch through this codebase's own router.
 
 ---
 
-## Decision 5: File read adapter — auto-selection vs. explicit wiring
+## Test Data Strategy
 
-**Date:** 2026-09-28
-**Context:** The design specifies an injectable file-read adapter (D37 pattern) with a throwing stub as default. This decision clarifies when the real adapter is auto-selected vs. when explicit wiring is required.
+**Source:** Synthetic — a stubbed `getSignals` returning fixed, known Signal arrays (via `setSignalsAggregator`).
+**PCI/sensitivity in scope:** No — synthetic signal content only.
+**Availability:** Available now.
+**Owner:** Self-contained.
 
-**Options considered:**
-- **Option A:** Auto-select based on `NODE_ENV`: real adapter if `NODE_ENV !== 'test'`, stub otherwise
-- **Option B:** Always require explicit `setFileReadAdapter()` call; default is always throwing stub
-- **Option C:** Auto-select in production, warn if not explicitly wired in development
+### Data requirements per AC
 
-**Decision:** **Option B — Always require explicit `setFileReadAdapter()` call; default is always throwing stub**
+| AC | Data needed | Source | Sensitive fields | Notes |
+|----|-------------|--------|-------------------|-------|
+| AC1 | Stubbed aggregator returning a non-empty `Signal[]` | Synthetic | None | Asserts 200 + array passthrough |
+| AC2 | Stubbed aggregator returning signals with and without optional `context` fields | Synthetic | None | Confirms required fields always present, optional fields tolerated absent |
+| AC3 | Stubbed aggregator configured to throw | Synthetic | None | Asserts 500 + structured error body, never a partial 200 |
+| AC4 | Stubbed aggregator with an artificial delay just under 200ms | Synthetic | None | Confirms route overhead stays under the remaining ~50ms budget |
+| AC5 | Stubbed aggregator returning the same fixed array on 2 successive calls | Synthetic | None | Confirms identical response order both times |
 
-**Rationale:**
-- D37 injectable adapter rule requires throwing stub by default (prevents accidental production use without wiring)
-- Auto-selection based on `NODE_ENV` is a convention, not a structural guarantee (can be bypassed by changing env var)
-- Explicit wiring makes it clear which adapter is in use (better for debugging and test isolation)
-- Test suite is split: unit tests mock the adapter; integration tests explicitly call `setFileReadAdapter(realAdapter)`
-- Production code must explicitly call `setFileReadAdapter(realFileReadAdapter)` at module load time
-- If wiring is not done, the throwing stub provides immediate, clear feedback ("Adapter not wired") rather than silent failure
+### PCI / sensitivity constraints
 
-**Consequences:**
-- Production code must have a wiring step (e.g., `src/web-ui/server.js` or similar initialization)
-- Tests must use mocks or explicit `setFileReadAdapter(realAdapter)` (no implicit auto-wiring)
-- Prevents accidental use of stub in production (guarantee by design, not by convention)
+None.
 
-**Implementation guidance:**
-```javascript
-// Default: throwing stub
-let _fileReadAdapter = {
-  readFile: (path) => {
-    throw new Error('Adapter not wired: file-read. Call setFileReadAdapter() with a real implementation before use.');
-  }
-};
+### Gaps
 
-// Public setter
-function setFileReadAdapter(adapter) {
-  _fileReadAdapter = adapter;
-}
-
-// Real adapter (exported separately)
-const realFileReadAdapter = {
-  readFile: (path) => {
-    return fs.readFileSync(path, 'utf-8');
-  }
-};
-
-// In src/web-ui/server.js (or equivalent initialization):
-const { setFileReadAdapter, realFileReadAdapter } = require('./modules/signals-aggregator.js');
-setFileReadAdapter(realFileReadAdapter);
-```
-
-Test: `test('default adapter throws until explicitly wired')` validates the error is thrown if wiring is missing.
+None.
 
 ---
 
-## Follow-up actions
+## Unit Tests
 
-**None.** All decisions are implementation-level; no follow-up stories or phase gates are required.
+### Endpoint returns 200 with the aggregator's Signal array verbatim
 
-**Next step:** Proceed to /definition-of-ready for ep1-s2 (Signals panel route handler), or dispatch ep1-s1 to the coding agent for inner loop implementation.
+- **Verifies:** AC1
+- **Precondition:** `setSignalsAggregator` wired to return a fixed 3-entry `Signal[]`
+- **Action:** Call the route handler function directly with a mock request/response
+- **Expected result:** Response status 200; response body is the exact same 3-entry array (JSON-serialized), untransformed
+- **Edge case:** No
+
+### Response includes all required fields; optional fields may be absent
+
+- **Verifies:** AC2
+- **Precondition:** Stubbed aggregator returns one signal with a full `context` object and one signal with no `context` at all
+- **Action:** Call the route handler; inspect both entries in the response body
+- **Expected result:** Both entries have `id`, `source`, `type`, `text`, `timestamp`, `cta.label`, `cta.skill`; the entry with no `context` does not fail any check for that field's absence
+- **Edge case:** Yes — the story's own named "optional fields may be absent" case
+
+### Aggregator exception returns 500 with structured error, not a partial 200
+
+- **Verifies:** AC3
+- **Precondition:** Stubbed aggregator configured to `throw new Error('disk read failed')`
+- **Action:** Call the route handler
+- **Expected result:** Response status 500; response body is `{ error: 'disk read failed', timestamp: <ISO8601 string> }`; no partial signal array is ever returned
+- **Edge case:** Yes — the story's own named error-handling case
+
+### Endpoint completes within the latency budget
+
+- **Verifies:** AC4
+- **Precondition:** Stubbed aggregator resolves after an artificial 150ms delay
+- **Action:** Call the route handler, measure wall-clock time from call to response
+- **Expected result:** Total time <250ms (150ms aggregator + <100ms margin for route overhead, well within the story's own <50ms route-overhead budget)
+- **Edge case:** No
+
+### Calling the endpoint twice with unchanged aggregator output returns identical responses
+
+- **Verifies:** AC5
+- **Precondition:** Stubbed aggregator returns the exact same fixed array on every call
+- **Action:** Call the route handler twice in succession
+- **Expected result:** Both responses are deep-equal, including array order
+- **Edge case:** No
 
 ---
+
+## Integration Tests
+
+### Real HTTP dispatch through the router reaches the signals route and returns the aggregator's data
+
+- **Verifies:** AC1 (D37-lesson wiring check — real route dispatch, not just calling the handler function directly)
+- **Components involved:** This codebase's real router (`pathname.match(...)` dispatch convention), `routes/signals.js`'s real route registration, the stubbed aggregator
+- **Precondition:** `setSignalsAggregator` stubbed; route registered in the real router the same way every other GET route in `server.js` is
+- **Action:** Dispatch a real `GET /api/signals` request through the router (matching this repo's own dispatch pattern, not calling the handler function in isolation)
+- **Expected result:** 200 response with the stubbed Signal array — confirms the route is actually wired into the real dispatch table, not just that the handler function works in isolation
+
+### Real HTTP dispatch surfaces an aggregator exception as 500, end-to-end
+
+- **Verifies:** AC3 (wiring check)
+- **Components involved:** Real router, real route registration, stubbed throwing aggregator
+- **Precondition:** Aggregator stubbed to throw
+- **Action:** Dispatch a real `GET /api/signals` request through the router
+- **Expected result:** 500 response with structured error body — confirms the error-handling path is wired end-to-end, not just correct in the handler function's own unit test
+
+---
+
+## NFR Tests
+
+### Endpoint latency stays within budget under the stated NFR
+
+- **NFR addressed:** Performance
+- **Measurement method:** Same as AC4's own unit test — the NFR and AC4 are the same measurable threshold, not duplicated as a separate test (matches EXP-007's own NFR-test-scope rule: no separate NFR test when an AC already asserts the identical threshold)
+- **Pass threshold:** N/A — see AC4
+- **Tool:** N/A — see AC4
+
+### Response shape consistency is enforced on every response, not just the happy path
+
+- **NFR addressed:** Correctness / response shape consistency
+- **Measurement method:** Covered directly by AC2's own unit test (required-fields-always-present check) — not duplicated here
+- **Pass threshold:** N/A — see AC2
+- **Tool:** N/A — see AC2
+
+### Repeatability holds under the stated NFR
+
+- **NFR addressed:** Correctness / repeatability
+- **Measurement method:** Covered directly by AC5's own unit test — not duplicated here
+- **Pass threshold:** N/A — see AC5
+- **Tool:** N/A — see AC5
+
+---
+
+## Out of Scope for This Test Plan
+
+- Any test of `ep1-s1`'s own aggregator logic — separate story, separate test plan; this plan stubs the aggregator entirely and never exercises its real file-reading behaviour.
+- Any test of `ep1-s3`'s own launcher rendering — separate story.
+- Real, unstubbed integration against ep1-s1's actual aggregator (a "does the real aggregator's real output satisfy this endpoint's real contract" check) — appropriate for a post-merge smoke test once both stories are implemented, not a pre-implementation unit/integration test.
+
+---
+
+## Test Gaps and Risks
+
+| Gap | Reason | Mitigation |
+|-----|--------|------------|
+| None | — | — |

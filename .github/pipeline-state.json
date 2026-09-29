@@ -37779,30 +37779,57 @@
       "stories": [
         {
           "id": "ep1-s1",
-          "stage": "review",
+          "stage": "test-plan",
           "reviewStatus": "passed",
           "highFindings": 0,
           "health": "green",
           "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep1-s1-review-2.md",
-          "updatedAt": "2026-09-29T20:02:44.137Z"
+          "updatedAt": "2026-09-29T20:09:03.643Z",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 10,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false"
         },
         {
           "id": "ep1-s2",
-          "stage": "review",
+          "stage": "test-plan",
           "reviewStatus": "passed",
           "highFindings": 0,
           "health": "green",
           "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep1-s2-review-2.md",
-          "updatedAt": "2026-09-29T20:03:09.786Z"
+          "updatedAt": "2026-09-29T20:09:11.653Z",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 10,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false"
         },
         {
           "id": "ep1-s3",
-          "stage": "review",
+          "stage": "test-plan",
           "reviewStatus": "passed",
           "highFindings": 0,
           "health": "green",
           "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep1-s3-review-2.md",
-          "updatedAt": "2026-09-29T20:03:31.434Z"
+          "updatedAt": "2026-09-29T20:09:25.743Z",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0
+          },
+          "acTotal": 6,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": "true",
+          "e2eToolingRequired": "true"
         }
       ],
       "guardrails": [
