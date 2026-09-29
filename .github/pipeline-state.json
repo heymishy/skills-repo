@@ -37095,18 +37095,81 @@
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0
+            "passing": 9
           },
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 6,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/dor/tab-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/dor/tab-s1-dor-contract.md",
           "oversightLevel": "medium",
-          "prStatus": "open",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/925"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/925",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "identity-links.js: resolveOrCreatePersonForIdentity",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "tenant-admin-bootstrap.js: schema migration + AC1 core grant",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "AC2: second person into already-bootstrapped tenant",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "AC3: concurrent bootstrap, exactly one wins",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "AC5: no-op when tenant already has a real admin",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "AC6: transaction rollback on second-write failure",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md"
+            },
+            {
+              "id": "task-7",
+              "name": "AC4 provider-agnostic unit test + NFR perf/audit tests",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md"
+            },
+            {
+              "id": "task-8",
+              "name": "Wire into auth.js GitHub + Google OAuth callbacks",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md"
+            },
+            {
+              "id": "task-9",
+              "name": "Google integration test + wire into auth-email.js signup",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md"
+            },
+            {
+              "id": "task-10",
+              "name": "server.js: wire schema migration + pool into both routes",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s1-plan.md"
+            }
+          ],
+          "verifyStatus": "passed"
         },
         {
           "slug": "tab-s2",

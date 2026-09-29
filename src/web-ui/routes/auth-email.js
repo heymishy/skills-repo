@@ -15,6 +15,10 @@ const _credits = require('../modules/credits'); // ftcg-s1
 const _organisations = require('../modules/organisations'); // story-1-organisation-entity
 // sec-perf-s3: session-scoped CSRF (Cross-Site Request Forgery) protection.
 const csrf = require('../middleware/csrf');
+// tab-s1: identity-links (resolveOrCreatePersonForIdentity) and the bootstrap
+// module itself -- see the setTenantAdminBootstrapPool block below.
+const identityLinks = require('../modules/identity-links');
+const _tenantAdminBootstrap = require('../modules/tenant-admin-bootstrap');
 
 /**
  * ftcg-s1: grant a one-time free-tier credit balance to a brand-new tenant.
@@ -67,6 +71,25 @@ async function _resolveOrganisation(tenantId) {
     await _organisations.resolveOrganisationForTenant(_organisationsPool, tenantId);
   } catch (err) {
     console.warn('organisation_resolution_failed', { tenantId, reason: err.message });
+  }
+}
+
+// tab-s1: pool handed in by server.js at startup, mirroring setOrganisationsPool.
+let _tenantAdminBootstrapPool = null;
+
+function setTenantAdminBootstrapPool(pool) {
+  _tenantAdminBootstrapPool = pool;
+}
+
+async function _bootstrapTenantAdmin(tenantId, identityKey, provider) {
+  if (!_tenantAdminBootstrapPool) return false;
+  try {
+    const personId = await identityLinks.resolveOrCreatePersonForIdentity(_tenantAdminBootstrapPool, identityKey, provider);
+    const result = await _tenantAdminBootstrap.bootstrapTenantAdminIfNeeded(_tenantAdminBootstrapPool, tenantId, personId);
+    return !!result.granted;
+  } catch (err) {
+    console.warn('tenant_admin_bootstrap_failed', { tenantId, reason: err.message });
+    return false;
   }
 }
 
@@ -315,12 +338,19 @@ async function handleEmailSignup(req, res) {
   // organisations row for this tenant -- see _resolveOrganisation above.
   await _resolveOrganisation(email);
 
-  // tir-s1: load role via the person/team-scoped lookup (AC3). Falls back to
-  // 'user' on error.
-  try {
-    req.session.role = await _userRoles.getRoleForTenant(email, email, 'email');
-  } catch (_) {
-    req.session.role = 'user';
+  // tab-s1: bootstrap admin for a genuinely new tenant. handleEmailSignup
+  // only ever reaches here for a brand-new `users` row (see the 23505
+  // duplicate-email branch above), so this is unconditionally a first-ever
+  // login for this identity.
+  const _grantedAdmin = await _bootstrapTenantAdmin(email, email, 'email');
+  if (_grantedAdmin) {
+    req.session.role = 'admin';
+  } else {
+    try {
+      req.session.role = await _userRoles.getRoleForTenant(email, email, 'email');
+    } catch (_) {
+      req.session.role = 'user';
+    }
   }
 
   // Rotate session ID to prevent session fixation (AC6).
@@ -410,6 +440,7 @@ module.exports = {
   setUserDb,
   setRotateSessionId,
   setOrganisationsPool,
+  setTenantAdminBootstrapPool,
   _clearRateLimits,
   // story-4-dual-path-authentication: reused directly by routes/client-login.js
   // for its own per-IP AND per-target-email rate limiting (NFR).
