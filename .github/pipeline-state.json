@@ -35481,11 +35481,11 @@
       "id": "2026-09-15-psrc-s1-sonnet-verify-3story",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/discovery.md",
-      "stage": "branch-complete",
+      "stage": "discovery",
       "name": "psrc-s1 sonnet verification (throwaway, 3-story)",
       "health": "green",
-      "track": "short",
-      "updatedAt": "2026-09-15T09:10:51.848Z"
+      "track": "standard",
+      "updatedAt": "2026-09-29T00:12:20.441Z"
     },
     {
       "slug": "new-feature-53a4408e",
