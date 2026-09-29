@@ -35497,7 +35497,6 @@
           "prStatus": "none",
           "updatedAt": "2026-09-29T01:06:28.724Z",
           "dorArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/dor/psrc-verify-s1-dor.md",
-          "dorContractArtefact": null,
           "oversightLevel": "low",
           "dodStatus": "complete"
         },
@@ -35511,7 +35510,6 @@
           "prStatus": "none",
           "updatedAt": "2026-09-29T01:06:28.725Z",
           "dorArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/dor/psrc-verify-s2-dor.md",
-          "dorContractArtefact": null,
           "oversightLevel": "low",
           "dodStatus": "complete"
         },
@@ -35525,7 +35523,6 @@
           "prStatus": "draft",
           "updatedAt": "2026-09-29T01:26:27.803Z",
           "dorArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/dor/psrc-verify-s3-dor.md",
-          "dorContractArtefact": null,
           "oversightLevel": "low",
           "stage": "branch-complete",
           "acVerified": 4,

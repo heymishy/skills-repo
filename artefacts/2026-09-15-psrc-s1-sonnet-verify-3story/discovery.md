@@ -1,6 +1,6 @@
 # Discovery: Route governance-critical skills to Sonnet by default
 
-**Status:** Draft
+**Status:** Approved
 **Date:** 2026-09-29 (originally started 2026-09-15, stalled mid-write, resumed here)
 **Feature slug:** 2026-09-15-psrc-s1-sonnet-verify-3story
 
