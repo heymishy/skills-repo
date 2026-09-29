@@ -2,7 +2,15 @@
 
 **Feature:** Tenant Admin Bootstrap
 **Discovery reference:** artefacts/2026-09-26-tenant-admin-bootstrap/discovery.md
-**Last updated:** 2026-09-29
+**Last updated:** 2026-09-30
+
+## `tab-s3` DoD: AC3 live secret removal executed on wuce-staging; production never had it set (2026-09-30)
+
+**Context:** Operator authorized ("Yes, unset it now") removal of the `ADMIN_GITHUB_LOGINS` Fly secret. Checked both real environments directly before acting: `fly secrets list -a wuce-staging` showed it present (`Deployed`); `fly secrets list -a skills-framework` (full listing, 35 secrets) showed it was never set on production at all.
+**What happened:** `fly secrets unset ADMIN_GITHUB_LOGINS -a wuce-staging` — machine updated successfully, DNS verified. Re-ran `fly secrets list -a wuce-staging`: zero matches, confirmed removed. Since nothing in the merged code reads this var anymore (AC5's own grep confirms zero references), this was a safe, inert infrastructure change — the removal has no behavioural effect, only closes the exposed secret itself.
+**Decision:** AC3 satisfied on both real environments — one required action, one required none (and that absence was independently confirmed, not assumed).
+**Story:** `tab-s3` — DoD marked COMPLETE with this evidence. This closes the entire `2026-09-26-tenant-admin-bootstrap` feature (all 3 stories now DoD-complete).
+**Made by:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh), at the operator's direct authorization.
 
 ## `tab-s3` `/verify-completion`: 5/5 ACs verified, route/handler E2E check clean, no scope creep (2026-09-29)
 
