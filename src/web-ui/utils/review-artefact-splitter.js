@@ -169,4 +169,25 @@ function splitReviewArtefact(md, nextRunNumber) {
   return results;
 }
 
-module.exports = { splitReviewArtefact };
+/**
+ * rsc-s1: deterministic, code-level completeness check for splitReviewArtefact's
+ * own output -- compares the story slugs it actually recovered against a
+ * feature's known story list (journey.storyList), rather than relying solely
+ * on the model having correctly emitted a "## Story: [slug]" marker for every
+ * story with no verification at all. This is exactly the gap that let
+ * 2026-09-28-weeb-ui-learnings-and-improvements's review content go missing
+ * for weeks with no signal beyond a per-story console.warn that only fires
+ * for an unparseable verdict, never for a story missing from the output
+ * entirely.
+ * @param {Array<{storySlug: string}>} splitResults  splitReviewArtefact's own return value
+ * @param {string[]} knownStorySlugs  the feature's known story list (e.g. journey.storyList)
+ * @returns {string[]} the knownStorySlugs entries with no matching entry in
+ *   splitResults, in knownStorySlugs's own order
+ */
+function computeReviewSplitCoverageGaps(splitResults, knownStorySlugs) {
+  var found = {};
+  (splitResults || []).forEach(function(r) { found[r.storySlug] = true; });
+  return (knownStorySlugs || []).filter(function(slug) { return !found[slug]; });
+}
+
+module.exports = { splitReviewArtefact, computeReviewSplitCoverageGaps };

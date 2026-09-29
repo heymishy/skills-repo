@@ -5582,7 +5582,8 @@ async function handlePostTurnStreamHtml(req, res) {
               }
             }
           } else if (session.skillName === 'review') {
-            var _revSplit = require('../utils/review-artefact-splitter').splitReviewArtefact(session.artefactContent, function(storySlug) {
+            var _reviewSplitter = require('../utils/review-artefact-splitter');
+            var _revSplit = _reviewSplitter.splitReviewArtefact(session.artefactContent, function(storySlug) {
               var _reviewDir = path.resolve(path.join(_autoRepoRoot, 'artefacts', slug, 'review'));
               var _existingCount = 0;
               try {
@@ -5603,6 +5604,27 @@ async function handlePostTurnStreamHtml(req, res) {
                 } catch (_splitCommitErr) {
                   console.warn(JSON.stringify({ event: 'split_artefact_commit_failed', path: _rfPath, error: _splitCommitErr.message }));
                 }
+              }
+            }
+            // rsc-s1: deterministic completeness check -- compare what the
+            // splitter actually recovered against the feature's own known
+            // story list, rather than trusting the model emitted a
+            // "## Story: [slug]" marker for every story with no verification
+            // at all. Best-effort, non-blocking: logs only, never throws,
+            // never affects stage completion (matches the split loop above's
+            // own established non-blocking design intent).
+            var _revJourneyForCoverage = _journeyStore.getJourney(session.journeyId);
+            var _knownStoryList = _revJourneyForCoverage && _revJourneyForCoverage.storyList;
+            if (Array.isArray(_knownStoryList) && _knownStoryList.length > 0) {
+              var _missingStorySlugs = _reviewSplitter.computeReviewSplitCoverageGaps(_revSplit, _knownStoryList);
+              if (_missingStorySlugs.length > 0) {
+                console.warn(JSON.stringify({
+                  event: 'review_split_incomplete',
+                  featureSlug: slug,
+                  journeyId: session.journeyId,
+                  missingStorySlugs: _missingStorySlugs,
+                  foundStorySlugs: _revSplit.map(function(r) { return r.storySlug; })
+                }));
               }
             }
           }
