@@ -37943,7 +37943,10 @@
       "id": "2026-09-29-test",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-09-29-test/discovery.md",
-      "stage": "design"
+      "stage": "review",
+      "track": "short",
+      "health": "green",
+      "updatedAt": "2026-09-29T21:38:55.575Z"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
