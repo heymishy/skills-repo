@@ -37561,6 +37561,16 @@
       "sensitiveDataCategories": [],
       "slicingStrategy": "risk-first",
       "epics": []
+    },
+    {
+      "slug": "2026-09-28-weeb-ui-learnings-and-improvements",
+      "id": "2026-09-28-weeb-ui-learnings-and-improvements",
+      "discoveryStatus": "complete",
+      "artefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/discovery.md",
+      "stage": "test-plan",
+      "name": "Web UI Learnings and Improvements Integration",
+      "track": "standard",
+      "health": "green"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
