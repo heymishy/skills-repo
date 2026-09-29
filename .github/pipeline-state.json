@@ -37255,13 +37255,13 @@
         {
           "slug": "tab-s3",
           "name": "Retire the legacy admin-bootstrap path",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "health": "green",
           "id": "tab-s3",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/review/tab-s3-review-2.md",
-          "updatedAt": "2026-09-29T09:01:59.099Z",
+          "updatedAt": "2026-09-29T09:04:20.462Z",
           "testPlan": {
             "status": "written",
             "totalTests": 5,
@@ -37319,7 +37319,9 @@
               "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s3-plan.md"
             }
           ],
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/928"
         }
       ],
       "metrics": [
