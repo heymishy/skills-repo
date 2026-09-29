@@ -37085,13 +37085,13 @@
         {
           "slug": "tab-s1",
           "name": "Bootstrap a brand-new tenant's first admin automatically on login",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "id": "tab-s1",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/review/tab-s1-review-2.md",
-          "updatedAt": "2026-09-28T07:49:30.605Z",
+          "updatedAt": "2026-09-29T05:01:38.297Z",
           "testPlan": {
             "status": "written",
             "totalTests": 9,
@@ -37104,7 +37104,9 @@
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/dor/tab-s1-dor.md",
           "dorContractArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/dor/tab-s1-dor-contract.md",
-          "oversightLevel": "medium"
+          "oversightLevel": "medium",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/925"
         },
         {
           "slug": "tab-s2",
