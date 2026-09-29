@@ -57,7 +57,7 @@ function makeRes() {
 async function runCallback(role) {
   delete require.cache[require.resolve(USER_ROLES_PATH)];
   var userRoles = require(USER_ROLES_PATH);
-  userRoles.setGetUserRole(async function() { return role; });
+  userRoles.setGetRoleForTenant(async function() { return role; });
   require.cache[require.resolve(USER_ROLES_PATH)] = {
     id: require.resolve(USER_ROLES_PATH), filename: require.resolve(USER_ROLES_PATH),
     loaded: true, exports: userRoles
@@ -157,12 +157,9 @@ async function main() {
     assert.ok(!src.includes('SELECT first_login FROM users WHERE id'), 'getFirstLoginFlag must no longer query the users table (root-cause bug)');
   });
 
-  console.log('\n[arl-s4] T4 -- server.js seeds admin role from ADMIN_GITHUB_LOGINS');
-  await test('server.js upserts user_roles admin role from ADMIN_GITHUB_LOGINS', function() {
-    var src = fs.readFileSync(SERVER_PATH, 'utf8');
-    assert.ok(src.includes('ADMIN_GITHUB_LOGINS'), 'server.js must read ADMIN_GITHUB_LOGINS env var');
-    assert.ok(src.includes("ON CONFLICT (tenant_id) DO UPDATE SET role = 'admin'"), 'server.js must upsert admin role into user_roles');
-  });
+  // tab-s3: T4 ("server.js seeds admin role from the legacy admin-login-list
+  // env var") removed -- that whole seeding block is deleted (AC1). Real
+  // admin assignment is now tab-s1's login-time grant + tab-s2's backfill.
 
   console.log('\n[arl-s4] Results: ' + passed + ' passed, ' + failed + ' failed');
   if (failures.length) {

@@ -1,14 +1,13 @@
 'use strict';
 
-// user-roles.js — injectable user role lookup module (arl-s1, D37 compliant).
-// Default stub throws — call setGetUserRole() with a real implementation before use.
+// user-roles.js — injectable person/team-scoped role lookup module (tir-s1, D37 compliant).
+// Default stub throws — call setGetRoleForTenant() with a real implementation before use.
 //
-// tir-s1: extended in place (not a parallel module — see decisions.md) with a
-// second, person/team-scoped adapter (getRoleForTenant/setGetRoleForTenant) plus
-// the people/team_memberships schema bootstrap + backfill (migrateTeamSchema) and
-// its lookup helper (resolveRoleForTenant). getUserRole/setGetUserRole above are
-// left completely untouched — the legacy user_roles table and adapter stay in
-// place, unused by any production call site after this story (Out of Scope).
+// tab-s3: the original arl-s1 legacy tenant-wide adapter this module was
+// first built around has been removed entirely (see decisions.md) -- the
+// person/team-scoped adapter below (tir-s1) and its own schema bootstrap
+// (migrateTeamSchema) and lookup helper (resolveRoleForTenant) are now the
+// only role-resolution mechanism in this module.
 //
 // tir-s7 (fix-forward): resolveRoleForTenant above shipped in tir-s1 (PR #463)
 // with a real bug — it queries team_memberships filtered by tenant_id ONLY
@@ -23,33 +22,12 @@
 // call the new, corrected function (see AC5).
 const { resolvePersonForIdentity, backfillIdentityIfNeeded } = require('./identity-links');
 
-let _getUserRole = null;
-
-function setGetUserRole(fn) {
-  _getUserRole = fn;
-}
-
-/**
- * Return the role for a tenant. Falls back to 'user' if no row found.
- * @param {string} tenantId
- * @returns {Promise<string>}
- */
-async function getUserRole(tenantId) {
-  if (!_getUserRole) {
-    throw new Error('Adapter not wired: getUserRole. Call setGetUserRole() before use.');
-  }
-  return _getUserRole(tenantId);
-}
-
 // ── tir-s1: person/team-scoped adapter (D37) ────────────────────────────────
-// Default stub, when unwired, falls back to the legacy getUserRole adapter IF
-// that has been wired -- this is not a silent/empty-value stub, it is an
-// explicit delegation to another real, already-wired adapter, preserving pre
-// -tir-s1 test/caller behaviour (AC4) with zero modification to those tests.
-// It only throws (D37-compliant) when *neither* adapter has been wired. In
-// production, server.js (AC6) always wires setGetRoleForTenant, so the
-// fallback branch is dead in production and exists only for backward
-// compatibility with callers/tests that predate this story.
+// tab-s3: the legacy tenant-wide adapter's own fallback delegation that used
+// to live here was removed along with that legacy adapter itself -- there is
+// no longer a second adapter to fall back to. server.js always wires
+// setGetRoleForTenant before listen(), so the throw branch below is dead in
+// production and exists purely as a D37-compliant misconfiguration guard.
 let _getRoleForTenant = null;
 
 function setGetRoleForTenant(fn) {
@@ -81,31 +59,10 @@ async function getRoleForTenant(tenantId, identityKey, provider) {
   if (_getRoleForTenant) {
     return _getRoleForTenant(tenantId, identityKey, provider);
   }
-  if (_getUserRole) {
-    return _getUserRole(tenantId);
-  }
   throw new Error('Adapter not wired: getRoleForTenant. Call setGetRoleForTenant() with a real implementation before use.');
 }
 
 var _defaultLogger = { info: function(msg) { console.log(msg); } };
-
-/**
- * Insert a single person + team_memberships row for tenantId/role if (and only
- * if) no team_memberships row already exists for that tenant -- idempotent.
- * @param {object} pool - pg-Pool-shaped object exposing query(sql, params)
- * @param {string} tenantId
- * @param {string} role
- */
-async function _backfillOne(pool, tenantId, role) {
-  const existing = await pool.query('SELECT 1 FROM team_memberships WHERE tenant_id = $1 LIMIT 1', [tenantId]);
-  if (existing.rows.length) return; // already migrated -- idempotent rerun (AC1)
-  const personResult = await pool.query('INSERT INTO people DEFAULT VALUES RETURNING id');
-  const personId = personResult.rows[0].id;
-  await pool.query(
-    'INSERT INTO team_memberships (person_id, tenant_id, role) VALUES ($1, $2, $3) ON CONFLICT (person_id, tenant_id) DO NOTHING',
-    [personId, tenantId, role]
-  );
-}
 
 /**
  * Startup schema bootstrap (AC1) + backfill of every legacy user_roles row
@@ -134,11 +91,6 @@ async function migrateTeamSchema(pool, logger) {
     )
   `);
 
-  const legacy = await pool.query('SELECT tenant_id, role FROM user_roles');
-  for (const row of legacy.rows) {
-    await _backfillOne(pool, row.tenant_id, row.role);
-  }
-
   // si-s2: idempotent column additions for per-person locale preference --
   // mirrors product-repo.js's migrateProductRepoColumns() ALTER TABLE ... ADD
   // COLUMN IF NOT EXISTS convention exactly. Never touches the legacy `users`
@@ -146,13 +98,15 @@ async function migrateTeamSchema(pool, logger) {
   await pool.query('ALTER TABLE people ADD COLUMN IF NOT EXISTS timezone TEXT');
   await pool.query('ALTER TABLE people ADD COLUMN IF NOT EXISTS date_format TEXT');
 
-  log.info('[tir-s1] people/team_memberships schema migrated (' + legacy.rows.length + ' legacy user_roles row(s) considered for backfill)');
+  log.info('[tir-s1] people/team_memberships schema migrated');
 }
 
 /**
- * Resolve the role for a tenant via team_memberships, lazily migrating a
- * legacy user_roles row on first miss (AC5). Falls back to 'user' if neither
- * table has a row for this tenant (matches the old getUserRole default).
+ * Resolve the role for a tenant via team_memberships. Falls back to 'user' if
+ * no row exists for this tenant (tab-s3: the legacy user_roles fallback and
+ * lazy backfill were removed along with the rest of the retired legacy path
+ * -- this is now a plain, direct default, matching the pre-existing behaviour
+ * for a tenant that was never in either table).
  * @param {object} pool - pg-Pool-shaped object exposing query(sql, params)
  * @param {string} tenantId
  * @returns {Promise<string>}
@@ -160,14 +114,7 @@ async function migrateTeamSchema(pool, logger) {
 async function resolveRoleForTenant(pool, tenantId) {
   const membership = await pool.query('SELECT role FROM team_memberships WHERE tenant_id = $1 LIMIT 1', [tenantId]);
   if (membership.rows.length) return membership.rows[0].role;
-
-  // AC5: not migrated yet -- check the legacy table and lazily backfill.
-  const legacy = await pool.query('SELECT role FROM user_roles WHERE tenant_id = $1', [tenantId]);
-  if (!legacy.rows.length) return 'user';
-
-  const role = legacy.rows[0].role;
-  await _backfillOne(pool, tenantId, role);
-  return role;
+  return 'user';
 }
 
 /**
@@ -229,8 +176,6 @@ async function resolveRoleForPerson(pool, identityKey, tenantId, provider) {
 }
 
 module.exports = {
-  getUserRole,
-  setGetUserRole,
   getRoleForTenant,
   setGetRoleForTenant,
   migrateTeamSchema,

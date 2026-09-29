@@ -31,7 +31,6 @@ function includesAll(warnings, substrings) {
 
 const FULLY_CONFIGURED = {
   PLATFORM_TENANT_ID: 'tenant-abc',
-  ADMIN_GITHUB_LOGINS: 'someuser',
   ANTHROPIC_API_KEY: 'sk-real-value',
 };
 
@@ -47,21 +46,9 @@ console.log('\n[ebv-s1] AC1 — PLATFORM_TENANT_ID');
   assert(!log2.warnings.some((w) => w.includes('PLATFORM_TENANT_ID')), 'U2: present PLATFORM_TENANT_ID emits no warning for it');
 }
 
-// ── U3/U4/U5 — AC2: ADMIN_GITHUB_LOGINS ──────────────────────────────────────
-console.log('\n[ebv-s1] AC2 — ADMIN_GITHUB_LOGINS');
-{
-  const log3 = fakeLogger();
-  warnOnOptionalEnvVars(Object.assign({}, FULLY_CONFIGURED, { ADMIN_GITHUB_LOGINS: undefined }), log3);
-  assert(includesAll(log3.warnings, ['ADMIN_GITHUB_LOGINS', 'admin/credits']), 'U3: unset ADMIN_GITHUB_LOGINS warns naming it and the consequence');
-
-  const log4 = fakeLogger();
-  warnOnOptionalEnvVars(Object.assign({}, FULLY_CONFIGURED, { ADMIN_GITHUB_LOGINS: '  ,  ,' }), log4);
-  assert(includesAll(log4.warnings, ['ADMIN_GITHUB_LOGINS']), 'U4: whitespace/empty-after-parsing value also warns (not silently accepted)');
-
-  const log5 = fakeLogger();
-  warnOnOptionalEnvVars(FULLY_CONFIGURED, log5);
-  assert(!log5.warnings.some((w) => w.includes('ADMIN_GITHUB_LOGINS')), 'U5: present, real ADMIN_GITHUB_LOGINS emits no warning');
-}
+// tab-s3: U3/U4/U5 (AC2 — the legacy admin-login-list env var warning)
+// removed -- that whole warning block is deleted from validate-env.js, since
+// it described a now-retired admin-bootstrap mechanism (AC5).
 
 // ── U6/U7/U8 — AC3: anthropic provider + ANTHROPIC_API_KEY ───────────────────
 console.log('\n[ebv-s1] AC3 — anthropic provider + ANTHROPIC_API_KEY');

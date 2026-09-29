@@ -13,6 +13,16 @@
 
 ---
 
+## `tab-s3` implementation: real touchpoint list was wider still than the revised plan (2026-09-29)
+
+**Context:** Executing the plan surfaced additional real references AC5's grep would have caught, beyond `validate-env.js`/`auth.js` already logged above: `src/web-ui/middleware/require-admin.js` (a comment citing `getRoleForTenant`'s legacy-adapter fallback as a "precedent" — now factually stale, not just string-matching, since that fallback was deleted) and `src/web-ui/modules/client-invitations.js` (a comment describing its own person-creation logic as "mirroring `_backfillOne` exactly"). Also found: 3 additional tests in `check-tir-s1-person-team-schema.js` beyond the 2 originally identified (T2, T5) — T3 ("idempotent rerun") and T4 ("legacy solo-tenant role migrates unchanged") both depended on `migrateTeamSchema`'s own legacy-backfill loop populating `team_memberships` from a seeded legacy row, and T6 ("unmigrated tenant gets a lazily-created row") depended on `resolveRoleForTenant`'s own legacy fallback+backfill — all three now test entirely removed behaviour, not just a stale assertion needing a flip.
+**Decision:** All corrected: `require-admin.js`'s comment rewritten to state the current (not historical) precedent accurately; `client-invitations.js`'s comment reworded to describe the pattern without naming the deleted function; T3/T4/T6 removed from `check-tir-s1-person-team-schema.js` (T1's own "second call doesn't throw" already covers T3's only non-legacy value; T6's replacement coverage lives in the new `check-tab-s3-legacy-removal.js`).
+**Story:** `tab-s3` — AC1/AC2/AC4/AC5 fulfilled fully; confirmed via a final `grep -rn` sweep of `src/web-ui/` returning zero matches, then the full 705-file suite (2 pre-existing/environmental failures unchanged, 0 new).
+**Made by:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh).
+**Lesson:** reading the DoR's own named file list is a starting point, not the full scope, for any story whose AC explicitly names a repo-wide grep as its own acceptance criterion — the grep itself is the real spec, and running it (or its logical equivalent) before declaring the plan complete would have caught all of this up front rather than iteratively during implementation.
+
+---
+
 ## `tab-s3` `/branch-setup`: baseline acknowledged, 2 pre-existing/environmental failures; hard dependency confirmed satisfied (2026-09-29)
 
 **Context:** `tab-s3`'s own hard dependency — `tab-s1` AND `tab-s2` both merged and proven correct — is now fully satisfied: `tab-s1` merged and DoD-complete; `tab-s2` merged, DoD-complete, and live-verified on BOTH `wuce-staging` (2 tenants promoted, confirmed correct) and production (confirmed already-correct, zero changes needed). `node scripts/run-all-tests.js` on the freshly-created `feature/tab-s3` worktree showed 2 failures: `tests/check-p3.5-validate-trace.js` and `tests/check-pcr-s1-test-runner.js` — the same established pre-existing/environmental failures acknowledged throughout this feature's own `tab-s1`/`tab-s2` worktrees.

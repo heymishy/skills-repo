@@ -149,7 +149,7 @@ async function testU1aGithub() {
   const userFlags = freshRequire(USER_FLAGS_PATH);
   const auth = freshRequire(AUTH_PATH); // must be required AFTER the sessionMod spy is installed
 
-  userRoles.setGetUserRole(async function() { return 'user'; });
+  userRoles.setGetRoleForTenant(async function() { return 'user'; });
   userFlags.setUserFlagsAdapter({
     getFirstLoginFlag:   async function() { return false; }, // returning user — simplest path for this assertion
     clearFirstLoginFlag: async function() {}
@@ -195,7 +195,7 @@ async function testU1bGoogle() {
   const userRoles = freshRequire(USER_ROLES_PATH);
   const auth = freshRequire(AUTH_PATH); // must be required AFTER the sessionMod spy is installed
 
-  userRoles.setGetUserRole(async function() { return 'user'; });
+  userRoles.setGetRoleForTenant(async function() { return 'user'; });
 
   oauthAdapter.validateOAuthState = function() { return true; };
   oauthAdapter.setGoogleUserInfoAdapter(async function() {
@@ -219,7 +219,7 @@ async function testU1cEmailPassword() {
   const authEmail = freshRequire(AUTH_EMAIL_PATH);
   const userRoles = freshRequire(USER_ROLES_PATH);
   authEmail._clearRateLimits();
-  userRoles.setGetUserRole(async function() { return 'user'; });
+  userRoles.setGetRoleForTenant(async function() { return 'user'; });
 
   const hash = await bcrypt.hash('TestPassw0rd!xyz', 10);
   authEmail.setUserDb(mockUserDb({ rows: [{ id: 1, email: 'u1c@example.com', password_hash: hash }] }));
@@ -251,7 +251,7 @@ async function runGithubCallback(isFirstLogin) {
   // session store with no Redis adapter configured (persistSession is then a no-op),
   // so this doubles as a light integration check of the real rotation behaviour.
 
-  userRoles.setGetUserRole(async function() { return 'user'; });
+  userRoles.setGetRoleForTenant(async function() { return 'user'; });
   let clearFlagCalled = false;
   userFlags.setUserFlagsAdapter({
     getFirstLoginFlag:   async function() { return isFirstLogin; },
@@ -305,7 +305,7 @@ async function testIT3NoTokenLeakGithub() {
     warn: function(event, data) { logEvents.push({ event: event, data: data }); }
   });
 
-  userRoles.setGetUserRole(async function() { return 'user'; });
+  userRoles.setGetRoleForTenant(async function() { return 'user'; });
   userFlags.setUserFlagsAdapter({
     getFirstLoginFlag:   async function() { return false; },
     clearFirstLoginFlag: async function() {}
@@ -341,7 +341,7 @@ async function testIT3NoTokenLeakGoogle() {
     warn: function(event, data) { logEvents.push({ event: event, data: data }); }
   });
 
-  userRoles.setGetUserRole(async function() { return 'user'; });
+  userRoles.setGetRoleForTenant(async function() { return 'user'; });
   oauthAdapter.validateOAuthState = function() { return true; };
   oauthAdapter.setGoogleUserInfoAdapter(async function() {
     return { sub: 'google-sub-2', email: 'user2@example.com', accessToken: TOKEN };
@@ -361,7 +361,7 @@ async function testIT3NoTokenLeakEmailPassword() {
   const authEmail = freshRequire(AUTH_EMAIL_PATH);
   const userRoles = freshRequire(USER_ROLES_PATH);
   authEmail._clearRateLimits();
-  userRoles.setGetUserRole(async function() { return 'user'; });
+  userRoles.setGetRoleForTenant(async function() { return 'user'; });
 
   const hash = await bcrypt.hash('TestPassw0rd!xyz', 10);
   authEmail.setUserDb(mockUserDb({ rows: [{ id: 2, email: 'it3@example.com', password_hash: hash }] }));
@@ -391,7 +391,7 @@ async function testIT4NoRealOAuthCallsGithub() {
   const auth = freshRequire(AUTH_PATH);
   // Uses the REAL middleware/session.js implementation — see comment in runGithubCallback.
 
-  userRoles.setGetUserRole(async function() { return 'user'; });
+  userRoles.setGetRoleForTenant(async function() { return 'user'; });
   userFlags.setUserFlagsAdapter({
     getFirstLoginFlag:   async function() { return false; },
     clearFirstLoginFlag: async function() {}
@@ -428,7 +428,7 @@ async function testIT4NoRealOAuthCallsGoogle() {
   const auth = freshRequire(AUTH_PATH);
   // Uses the REAL middleware/session.js implementation — see comment in runGithubCallback.
 
-  userRoles.setGetUserRole(async function() { return 'user'; });
+  userRoles.setGetRoleForTenant(async function() { return 'user'; });
   oauthAdapter.validateOAuthState = function() { return true; };
   oauthAdapter.setGoogleUserInfoAdapter(async function() {
     return { sub: 'google-sub-3', email: 'user3@example.com', accessToken: 'ya29.stub2' };

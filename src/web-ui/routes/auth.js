@@ -380,7 +380,7 @@ async function handleAuthCallback(req, res) {
     await _resolveOrganisation(req.session.tenantId);
 
     // tir-s1: load role via the person/team-scoped lookup (replaces the arl-s1
-    // legacy getUserRole(tenantId) tenant-wide lookup — AC3). Falls back to
+    // legacy tenant-wide lookup, retired by tab-s3 — AC3). Falls back to
     // 'user' on error (adapter not wired in test mode).
     //
     // tir-s9 (fix-forward): pass user.login explicitly as the second
@@ -418,8 +418,9 @@ async function handleAuthCallback(req, res) {
     // be routed to billing regardless of first-login state.
     //
     // tab-s1 (fix-forward): arl-s4's bypass was written when 'admin' only ever
-    // meant a pre-existing operator (legacy ADMIN_GITHUB_LOGINS) logging back
-    // in -- someone who should never see the customer-facing plan-selection
+    // meant a pre-existing operator (legacy admin-login-list env var, retired
+    // by tab-s3) logging back in -- someone who should never see the
+    // customer-facing plan-selection
     // page. tab-s1 introduces a SECOND way to become admin: the automatic
     // grant to a brand-new tenant's very first sign-up, which is by
     // definition a first-time user who SHOULD see /welcome. Without the

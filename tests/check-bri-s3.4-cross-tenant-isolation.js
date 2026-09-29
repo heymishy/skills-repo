@@ -202,24 +202,11 @@ function fail(name, err) { console.error('  [FAIL] ' + name + ': ' + (err && err
     pass('AC1/AC3 (credits): credit reads/writes are always keyed by the caller\'s own session tenantId, never a request-supplied ID');
   } catch (e) { fail('AC1/AC3 (credits): structural tenant isolation', e); }
 
-  // ===========================================================================
-  // AC1 — user_roles: structural isolation (getUserRole only ever called with
-  // the caller's own tenantId/email, never a request-supplied foreign ID)
-  // ===========================================================================
-  const { getUserRole, setGetUserRole } = require('../src/web-ui/modules/user-roles');
-
-  try {
-    const roles = { 'tenant-a': 'admin', 'tenant-b': 'user' };
-    let calledWith = [];
-    setGetUserRole(async function (tenantId) {
-      calledWith.push(tenantId);
-      return roles[tenantId] || 'user';
-    });
-    const roleA = await getUserRole('tenant-a');
-    assert.strictEqual(roleA, 'admin', 'must resolve tenant A\'s own role');
-    assert.deepStrictEqual(calledWith, ['tenant-a'], 'getUserRole must only ever be invoked with the caller\'s own tenantId');
-    pass('AC1 (user_roles): role lookups are always keyed by the caller\'s own tenantId');
-  } catch (e) { fail('AC1 (user_roles): role lookups keyed by caller\'s own tenantId', e); }
+  // tab-s3: the "AC1 -- user_roles: structural isolation" block that used to
+  // live here tested the legacy adapter directly (getUserRole/setGetUserRole),
+  // both removed entirely -- nothing left to test. The real, still-live
+  // adapter's own tenant-isolation behaviour is covered by tir-s1/tir-s7's
+  // own dedicated test file (check-tir-s1-person-team-schema.js).
 
   console.log('\n[bri-s3.4] Results: ' + passed + ' passed, ' + failed + ' failed');
   if (failed > 0) process.exit(1);

@@ -80,7 +80,7 @@ const { handleEmailSignup, handleEmailLogin, setUserDb, setOrganisationsPool: se
 const { handleAuthStubGithub, handleAuthStubAudit }                  = require('./routes/auth-stub');         // a1-staging-safe-auth-stub
 const { setPasswordAdapter }                                         = require('./modules/password');         // lab-s2.2
 const { setUserFlagsAdapter }                                        = require('./modules/user-flags');       // lab-s2.3
-const { setGetUserRole, setGetRoleForTenant, getRoleForTenant, migrateTeamSchema, resolveRoleForPerson } = require('./modules/user-roles'); // arl-s1 / tir-s1 / tir-s7 / sec-perf-s2
+const { setGetRoleForTenant, getRoleForTenant, migrateTeamSchema, resolveRoleForPerson } = require('./modules/user-roles'); // tir-s1 / tir-s7 / sec-perf-s2
 const { migrateIdentityLinksSchema } = require('./modules/identity-links'); // tir-s2
 const { handleStartGoogleLink, handleStartGithubLink, createLinkCallbackHandlers } = require('./routes/account-linking'); // tir-s2
 const { createSettingsHandlers, handlePostThemeToggleClicked } = require('./routes/settings'); // c1 / si-s1
@@ -492,18 +492,15 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       )
     `).then(function() { console.log('credit_audit_log table ready'); })
       .catch(function(err) { console.error('credit_audit_log table migration failed:', err.message); });
-    // arl-s1 — Wire user_roles DB adapter (D37 mandatory separate wiring task)
+    // tab-s3: the legacy user-role-adapter wiring and arl-s4's admin-login-list
+    // admin-seeding block that used to live here were removed entirely (AC1) --
+    // the real admin-bootstrap mechanism is tab-s1's login-time grant plus
+    // tab-s2's one-time backfill, not this legacy path. _userRolesPool itself
+    // stays: it is the shared real Postgres pool reused by tir-s1/tir-s2/
+    // story-1-organisation-entity below, not solely a user_roles concern.
     const _userRolesPool = new Pool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: 10000 });
-    setGetUserRole(async function(tenantId) {
-      const result = await _userRolesPool.query(
-        'SELECT role FROM user_roles WHERE tenant_id = $1',
-        [tenantId]
-      );
-      if (!result.rows.length) return 'user';
-      return result.rows[0].role;
-    });
-    console.log('[arl-s1] user_roles adapter wired (legacy — left in place, unused in production after tir-s1)');
-    // arl-s1 — Auto-migrate user_roles table on startup
+    // user_roles table bootstrap stays in place -- the table itself is not
+    // dropped (tab-s3 Out of Scope), only the wiring/seeding that used it.
     const _userRolesMigrationPromise = _userRolesPool.query(`
       CREATE TABLE IF NOT EXISTS user_roles (
         tenant_id VARCHAR PRIMARY KEY,
@@ -511,29 +508,13 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
       )
     `).then(function() {
       console.log('user_roles table ready');
-      // arl-s4 — Seed admin role for operator accounts named in ADMIN_GITHUB_LOGINS
-      // (comma-separated GitHub logins — same allowlist shape as TENANT_ORG_ALLOWLIST).
-      // Runs after table creation so the upsert always has a table to target.
-      const _adminLogins = (process.env.ADMIN_GITHUB_LOGINS || '')
-        .split(',').map(function(s) { return s.trim(); }).filter(Boolean);
-      if (_adminLogins.length) {
-        return Promise.all(_adminLogins.map(function(login) {
-          return _userRolesPool.query(
-            `INSERT INTO user_roles (tenant_id, role) VALUES ($1, 'admin')
-             ON CONFLICT (tenant_id) DO UPDATE SET role = 'admin'`,
-            [login]
-          );
-        })).then(function() {
-          console.log('[arl-s4] admin role seeded for', _adminLogins.length, 'login(s)');
-        });
-      }
     }).catch(function(err) { console.error('user_roles table migration failed:', err.message); });
 
     // tir-s1 — Wire the person/team-scoped role adapter (D37 mandatory separate
     // wiring task, AC6). Replaces the legacy tenant-wide user_roles query above
-    // as the real production implementation — the legacy setGetUserRole wiring
-    // above stays in place (Out of Scope: do not remove) but is no longer
-    // called by any production code path after this story.
+    // as the real production implementation. (tab-s3: the legacy user-role
+    // adapter wiring this comment used to describe as "kept, unused" has
+    // since been removed entirely.)
     //
     // tir-s7 (fix-forward, AC5) — the original tir-s1 wiring above called
     // resolveRoleForTenant(pool, tenantId) directly, which queries
