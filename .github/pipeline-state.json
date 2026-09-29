@@ -35522,16 +35522,17 @@
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/review.md",
           "dorStatus": "signed-off",
-          "prStatus": "none",
-          "updatedAt": "2026-09-29T01:24:21.048Z",
+          "prStatus": "draft",
+          "updatedAt": "2026-09-29T01:26:27.803Z",
           "dorArtefact": "artefacts/2026-09-15-psrc-s1-sonnet-verify-3story/dor/psrc-verify-s3-dor.md",
           "dorContractArtefact": null,
           "oversightLevel": "low",
-          "stage": "verify-completion",
+          "stage": "branch-complete",
           "acVerified": 4,
           "acTotal": 4,
           "health": "green",
-          "verifyStatus": "passed"
+          "verifyStatus": "passed",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/924"
         }
       ]
     },
