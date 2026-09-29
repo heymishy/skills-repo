@@ -4,6 +4,14 @@
 **Discovery reference:** artefacts/2026-09-26-tenant-admin-bootstrap/discovery.md
 **Last updated:** 2026-09-29
 
+## `tab-s2` `/branch-setup`: baseline acknowledged, 2 pre-existing/environmental failures (2026-09-29)
+
+**Context:** `node scripts/run-all-tests.js` on the freshly-created `feature/tab-s2` worktree (built from `master` at `dcb0ea41`, i.e. after `tab-s1`'s merge) showed 2 failures: `tests/check-p3.5-validate-trace.js` (established Windows python3-shim issue) and `tests/check-pcr-s1-test-runner.js` (a per-file performance benchmark, confirmed this same day to fail identically — and worse — on bare `master` with no story changes present; machine-load variance, not a regression).
+**Decision:** Acknowledged as pre-existing/environmental and proceeding.
+**Story:** `tab-s2` — no AC/scope change; baseline note only.
+
+---
+
 ## `tab-s1` `/verify-completion`: real interaction bug found and fixed (arl-s4 vs. tab-s1's admin grant), plus a pre-existing E2E test-isolation flake found and NOT fixed (2026-09-29)
 
 **Context:** The mandatory route/handler E2E coverage check (`/verify-completion`) found a real regression: `bri-s3.6-auth-journey.spec.js`'s AC1 ("first-time GitHub OAuth login redirects to `/welcome`, not `/dashboard`") failed after tab-s1's wiring. Root cause: `arl-s4`'s existing bypass rule in `handleAuthCallback` (`src/web-ui/routes/auth.js`) — `if (req.session.role !== 'admin') { ...check isFirstLogin... }` — was written when `role === 'admin'` could only mean a pre-existing operator (legacy `ADMIN_GITHUB_LOGINS`) logging back in, who should never see the customer-facing `/welcome` plan-selection page. `tab-s1` introduces a SECOND, different way to become admin: the automatic grant to a brand-new tenant's very first sign-up — someone who is by definition also a first-time user and SHOULD see `/welcome`. Since `tab-s1`'s bootstrap sets `req.session.role = 'admin'` before this check runs, every bootstrapped admin was silently skipping `/welcome` and landing on `/dashboard`.
