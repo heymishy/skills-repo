@@ -25,9 +25,10 @@
 // required so that arl-s2/tir-s4/tir-s5's existing test suites, which call requireAdmin
 // directly without wiring this adapter, continue to pass unmodified. In production,
 // server.js always wires the adapter (sec-perf-s2 AC5), so this fallback branch is dead in
-// production. Mirrors the existing precedent in user-roles.js's getRoleForTenant (falls
-// back to the legacy getUserRole adapter when unwired) and tir-s9's additive-default
-// pattern for its own new adapter parameter.
+// production. Mirrors tir-s9's own additive-default pattern for its adapter parameter.
+// (tab-s3: user-roles.js's getRoleForTenant used to have a similar unwired-fallback,
+// delegating to a legacy adapter -- that legacy adapter and its fallback delegation
+// were both removed entirely; this file's own fallback is unrelated and unaffected.)
 
 // Injectable audit logger (NOT a D37 throw-on-unwired adapter -- a logging failure must
 // never alter or block the access-control decision itself, so the default is a safe

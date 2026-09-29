@@ -4,6 +4,40 @@
 **Discovery reference:** artefacts/2026-09-26-tenant-admin-bootstrap/discovery.md
 **Last updated:** 2026-09-29
 
+## `tab-s3` `/verify-completion`: 5/5 ACs verified, route/handler E2E check clean, no scope creep (2026-09-29)
+
+**Context:** `auth.js` (under `src/web-ui/routes/`) was touched (comment-only), triggering the mandatory route/handler E2E coverage check. 2 `@mocked` spec files reference the touched call path (`bri-s3.6-auth-journey.spec.js`, `bri-s3.3-multi-user-tenant-journey.spec.js`) — both run individually: 4/4 and 5/5 passing respectively, including `bri-s3.6`'s own AC1/AC2 (the exact scenarios `tab-s1`'s arl-s4 interaction bug was found through earlier in this feature). No `@real-staging` specs matched. Full suite: 705 files, 2 pre-existing/environmental failures unchanged, 0 new. `check-tab-s3-legacy-removal.js` (new): 2/2. All modified pre-existing test files individually re-run and passing (tir-s1: 4/4, arl-s4: 3/3, bri-s3.4: 9/9, bri-s3.6 unit: 18/18). No rendered UI touched — live browser render check N/A. Scope check: all 3 commits map cleanly to branch-setup/implementation-plan/implementation, no scope creep.
+**Decision:** Verify-completion PASSED — 5/5 ACs, all routes/handler E2E coverage clean, zero regressions.
+**Story:** `tab-s3` — ready for `/branch-complete`.
+**Made by:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh).
+
+## `tab-s3` `/implementation-plan`: real removal surface is wider than the DoR's own named file list (2026-09-29)
+
+**Context:** The DoR's Coding Agent Instructions name only `server.js` and `user-roles.js` as touch points. Reading the actual code before writing the plan (per this repo's own context-handoff convention) found real, additional in-scope references AC5's own grep requirement ("a fresh grep of the entire `src/web-ui/` tree") directly covers: `src/web-ui/config/validate-env.js` has a real, functional boot-time warning block for `ADMIN_GITHUB_LOGINS` (now describing dead, misleading behaviour — exactly what this story's own User Story exists to prevent); `src/web-ui/routes/auth.js` has one historical comment containing the literal string `ADMIN_GITHUB_LOGINS`. Additionally, `getRoleForTenant`'s own fallback branch (`if (_getUserRole) { return _getUserRole(tenantId); }`) and `migrateTeamSchema`'s legacy-backfill loop both directly call functions AC1/AC2 require deleting entirely — leaving either in place would reference an undefined variable after `_getUserRole`/`_backfillOne` are removed, so both must be removed as a direct, necessary consequence of the ACs' own literal wording ("removed entirely"), not new scope.
+**Decision:** Treat all of the above as in-scope for this story (directly required by AC1/AC2/AC5's own text, not scope creep) and touch them. Separately, confirmed AC5's grep scope is `src/web-ui/` only (not `tests/`) and AC4's "full test suite" is `scripts/run-all-tests.js` (which does not run the `tests/e2e/*` Playwright specs) — the 4 e2e files with stale `ADMIN_GITHUB_LOGINS` comments are therefore genuinely out of scope for both ACs, not an oversight if left untouched.
+**Story:** `tab-s3` — scope clarification only, no AC text change; the implementation plan (`plans/tab-s3-plan.md`) reflects the full real touchpoint list.
+**Made by:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh).
+
+---
+
+## `tab-s3` implementation: real touchpoint list was wider still than the revised plan (2026-09-29)
+
+**Context:** Executing the plan surfaced additional real references AC5's grep would have caught, beyond `validate-env.js`/`auth.js` already logged above: `src/web-ui/middleware/require-admin.js` (a comment citing `getRoleForTenant`'s legacy-adapter fallback as a "precedent" — now factually stale, not just string-matching, since that fallback was deleted) and `src/web-ui/modules/client-invitations.js` (a comment describing its own person-creation logic as "mirroring `_backfillOne` exactly"). Also found: 3 additional tests in `check-tir-s1-person-team-schema.js` beyond the 2 originally identified (T2, T5) — T3 ("idempotent rerun") and T4 ("legacy solo-tenant role migrates unchanged") both depended on `migrateTeamSchema`'s own legacy-backfill loop populating `team_memberships` from a seeded legacy row, and T6 ("unmigrated tenant gets a lazily-created row") depended on `resolveRoleForTenant`'s own legacy fallback+backfill — all three now test entirely removed behaviour, not just a stale assertion needing a flip.
+**Decision:** All corrected: `require-admin.js`'s comment rewritten to state the current (not historical) precedent accurately; `client-invitations.js`'s comment reworded to describe the pattern without naming the deleted function; T3/T4/T6 removed from `check-tir-s1-person-team-schema.js` (T1's own "second call doesn't throw" already covers T3's only non-legacy value; T6's replacement coverage lives in the new `check-tab-s3-legacy-removal.js`).
+**Story:** `tab-s3` — AC1/AC2/AC4/AC5 fulfilled fully; confirmed via a final `grep -rn` sweep of `src/web-ui/` returning zero matches, then the full 705-file suite (2 pre-existing/environmental failures unchanged, 0 new).
+**Made by:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh).
+**Lesson:** reading the DoR's own named file list is a starting point, not the full scope, for any story whose AC explicitly names a repo-wide grep as its own acceptance criterion — the grep itself is the real spec, and running it (or its logical equivalent) before declaring the plan complete would have caught all of this up front rather than iteratively during implementation.
+
+---
+
+## `tab-s3` `/branch-setup`: baseline acknowledged, 2 pre-existing/environmental failures; hard dependency confirmed satisfied (2026-09-29)
+
+**Context:** `tab-s3`'s own hard dependency — `tab-s1` AND `tab-s2` both merged and proven correct — is now fully satisfied: `tab-s1` merged and DoD-complete; `tab-s2` merged, DoD-complete, and live-verified on BOTH `wuce-staging` (2 tenants promoted, confirmed correct) and production (confirmed already-correct, zero changes needed). `node scripts/run-all-tests.js` on the freshly-created `feature/tab-s3` worktree showed 2 failures: `tests/check-p3.5-validate-trace.js` and `tests/check-pcr-s1-test-runner.js` — the same established pre-existing/environmental failures acknowledged throughout this feature's own `tab-s1`/`tab-s2` worktrees.
+**Decision:** Dependency confirmed satisfied; baseline acknowledged as pre-existing/environmental; proceeding.
+**Story:** `tab-s3` — no AC/scope change; baseline note only.
+
+---
+
 ## `tab-s2` DoD: live migration run executed against `wuce-staging`, production deferred (2026-09-29)
 
 **Context:** Operator explicitly authorized ("Run on staging only, now") a live run of `scripts/backfill-tenant-admin.js` against `wuce-staging`'s real Postgres, in response to a direct AskUserQuestion about how to handle DoD's evidence-strength rule (this story's ACs claim a real-world effect that fake-pool tests alone can't fully verify).

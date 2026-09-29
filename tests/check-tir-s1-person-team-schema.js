@@ -159,55 +159,28 @@ async function main() {
       var setIdx = src.indexOf('setGetRoleForTenant(');
       var listenIdx = src.indexOf('.listen(');
       assert.ok(setIdx < listenIdx, 'setGetRoleForTenant() must appear before server.listen() in server.js');
-      // Legacy adapter/table must still be present, unused-but-not-removed (Out of Scope).
-      assert.ok(src.indexOf('setGetUserRole(') !== -1, 'legacy setGetUserRole() wiring must remain in place (Out of Scope: do not remove)');
-      assert.ok(src.indexOf('CREATE TABLE IF NOT EXISTS user_roles') !== -1, 'legacy user_roles table bootstrap must remain in place (Out of Scope: do not remove)');
+      // tab-s3: legacy setGetUserRole() wiring is now removed entirely (was
+      // "Out of Scope: do not remove" under tir-s1 -- tab-s3 is exactly the
+      // story that reverses that). The user_roles TABLE bootstrap itself
+      // stays (tab-s3's own Out of Scope: dropping the table is a separate,
+      // future concern).
+      assert.ok(src.indexOf('setGetUserRole(') === -1, 'legacy setGetUserRole() wiring must be removed (tab-s3)');
+      assert.ok(src.indexOf('CREATE TABLE IF NOT EXISTS user_roles') !== -1, 'user_roles table bootstrap must remain in place (table itself is not dropped, tab-s3 Out of Scope)');
     });
   });
 
-  // ── Integration: AC1 — idempotent rerun across a simulated restart ────────
-  queue.push(function() {
-    console.log('\n[tir-s1] T3 -- migration bootstrap is idempotent across a simulated server restart (AC1)');
-    return test('running migrateTeamSchema twice against the same pool state does not error or duplicate rows', async function() {
-      var userRoles = freshRequire(USER_ROLES_PATH);
-      var pool = makeFakePool([{ tenant_id: 'acme', role: 'admin' }]);
-      await userRoles.migrateTeamSchema(pool);
-      var afterFirst = pool._state().teamMemberships.length;
-      assert.strictEqual(afterFirst, 1, 'Expected exactly one team_memberships row after first run');
-
-      // Simulate a server restart: run the same bootstrap function again against
-      // the same (now-populated) pool state.
-      await userRoles.migrateTeamSchema(pool);
-      var afterSecond = pool._state().teamMemberships.length;
-      assert.strictEqual(afterSecond, 1, 'Expected no duplicate team_memberships row after a second (restart) run');
-    });
-  });
-
-  // ── Integration: AC2 — legacy solo-tenant role migrates unchanged ─────────
-  queue.push(function() {
-    console.log('\n[tir-s1] T4 -- legacy solo-tenant role migrates unchanged into the new schema (AC2)');
-    return test('a legacy user_roles row backfills into people + team_memberships with the role unchanged', async function() {
-      var userRoles = freshRequire(USER_ROLES_PATH);
-      var pool = makeFakePool([{ tenant_id: 'acme', role: 'admin' }]);
-      await userRoles.migrateTeamSchema(pool);
-      var state = pool._state();
-      assert.strictEqual(state.people.length, 1, 'Expected exactly one people row created');
-      assert.strictEqual(state.teamMemberships.length, 1, 'Expected exactly one team_memberships row created');
-      var row = state.teamMemberships[0];
-      assert.strictEqual(row.tenant_id, 'acme', 'team_memberships row must be for tenant acme');
-      assert.strictEqual(row.role, 'admin', 'role must be copied unchanged from the legacy row -- no value drift');
-      assert.strictEqual(row.person_id, state.people[0].id, 'team_memberships row must reference the newly created person');
-    });
-  });
+  // tab-s3: T3 ("idempotent rerun across a simulated restart") and T4 ("legacy
+  // solo-tenant role migrates unchanged") both removed -- both tested
+  // migrateTeamSchema's own legacy-user_roles backfill loop, which tab-s3
+  // deletes entirely (AC2). T1 above already covers "a second call against
+  // an empty pool does not throw," which was T3's only remaining non-legacy
+  // value.
 
   // ── Integration: AC3 — login resolves role via the new schema, all 3 providers ──
   queue.push(function() {
-    console.log('\n[tir-s1] T5 -- login resolves req.session.role via the new schema, not the legacy lookup, across all 3 providers (AC3)');
-    return test('handleAuthCallback, handleAuthGoogleCallback, and handleEmailLogin all resolve role via getRoleForTenant; legacy getUserRole is never called', async function() {
-      var legacyCalled = false;
-
+    console.log('\n[tir-s1] T5 -- login resolves req.session.role via the new schema, across all 3 providers (AC3)');
+    return test('handleAuthCallback, handleAuthGoogleCallback, and handleEmailLogin all resolve role via getRoleForTenant', async function() {
       var userRoles = freshRequire(USER_ROLES_PATH);
-      userRoles.setGetUserRole(async function() { legacyCalled = true; return 'wrong-legacy-role'; });
       userRoles.setGetRoleForTenant(async function(tenantId) {
         if (tenantId === 'known-org' || tenantId === 'known-sub' || tenantId === 'known@example.com') return 'engineer';
         return 'user';
@@ -310,26 +283,15 @@ async function main() {
       var resEmail = makeRes();
       await authEmail.handleEmailLogin(reqEmail, resEmail);
       assert.strictEqual(reqEmail.session.role, 'engineer', 'Email login: expected role=engineer, got: ' + reqEmail.session.role);
-
-      assert.strictEqual(legacyCalled, false, 'The legacy getUserRole(tenantId) adapter must never be called when the new getRoleForTenant adapter is wired');
     });
   });
 
-  // ── Integration: AC5 — unmigrated solo tenant gets lazily-created row ─────
-  queue.push(function() {
-    console.log('\n[tir-s1] T6 -- unmigrated solo tenant gets a lazily-created team_memberships row on first post-migration login (AC5)');
-    return test('resolveRoleForTenant lazily creates a team_memberships row from the legacy user_roles value when none exists yet', async function() {
-      var userRoles = freshRequire(USER_ROLES_PATH);
-      var pool = makeFakePool([{ tenant_id: 'legacy-tenant', role: 'admin' }]);
-      // No migration has run yet -- team_memberships is empty for this tenant.
-      var role = await userRoles.resolveRoleForTenant(pool, 'legacy-tenant');
-      assert.strictEqual(role, 'admin', 'Login must resolve the legacy role, not fail or default to a different role');
-      var state = pool._state();
-      assert.strictEqual(state.teamMemberships.length, 1, 'Expected a team_memberships row to be lazily created');
-      assert.strictEqual(state.teamMemberships[0].tenant_id, 'legacy-tenant');
-      assert.strictEqual(state.teamMemberships[0].role, 'admin', 'Lazily-created row must match the legacy value exactly');
-    });
-  });
+  // tab-s3: T6 ("unmigrated solo tenant gets a lazily-created row from the
+  // legacy user_roles value") removed -- tested resolveRoleForTenant's legacy
+  // fallback + lazy backfill, both deleted by tab-s3 (AC2). Its replacement
+  // behaviour (a genuinely unmigrated tenant returns the plain 'user' default,
+  // no legacy read, no row created) is covered by
+  // tests/check-tab-s3-legacy-removal.js.
 
   // ── NFR: Audit — migration logs an info-level message ─────────────────────
   queue.push(function() {

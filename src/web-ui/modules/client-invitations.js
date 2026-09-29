@@ -154,8 +154,7 @@ async function createClientOrgUserAndAdminMembership(pool, clientOrgId, email, l
 
   // Reuse an existing person if this email has already logged in / been
   // linked elsewhere (ADR-026: reuse before introducing a new entity) --
-  // otherwise create a brand-new person row, mirroring
-  // modules/user-roles.js's _backfillOne exactly.
+  // otherwise create a brand-new person row.
   var existingLink = await pool.query('SELECT person_id FROM person_identities WHERE identity_key = $1', [email]);
   var personId;
   if (existingLink.rows.length) {

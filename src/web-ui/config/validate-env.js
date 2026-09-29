@@ -49,15 +49,6 @@ function warnOnOptionalEnvVars(envVars, logger) {
     );
   }
 
-  const adminLogins = String(envVars.ADMIN_GITHUB_LOGINS || '')
-    .split(',').map((s) => s.trim()).filter(Boolean);
-  if (adminLogins.length === 0) {
-    log.warn(
-      '[validate-env] ADMIN_GITHUB_LOGINS is not set (or resolves to zero logins) — ' +
-      'no admin users will be seeded; /admin/credits will be unreachable for everyone.'
-    );
-  }
-
   const provider = String(envVars.SKILL_EXECUTOR_PROVIDER || 'anthropic').toLowerCase();
   if (provider === 'copilot') {
     log.warn(
