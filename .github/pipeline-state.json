@@ -37176,26 +37176,79 @@
         {
           "slug": "tab-s2",
           "name": "Backfill admin for every existing real tenant that has members but no admin",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
           "id": "tab-s2",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/review/tab-s2-review-2.md",
-          "updatedAt": "2026-09-28T07:51:19.154Z",
+          "updatedAt": "2026-09-29T06:01:28.358Z",
           "testPlan": {
             "status": "written",
             "totalTests": 10,
-            "passing": 0
+            "passing": 10
           },
           "acTotal": 4,
-          "acVerified": 0,
+          "acVerified": 4,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/dor/tab-s2-dor.md",
           "dorContractArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/dor/tab-s2-dor-contract.md",
-          "oversightLevel": "medium"
+          "oversightLevel": "medium",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Core migration: candidate discovery + earliest-member promotion (AC1)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s2-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "AC3 coverage: already-admin and zero-member tenants untouched",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s2-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "AC2 tie-break coverage: lowest person_id wins, WARNING logged",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s2-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "AC4 idempotency coverage: second run is a true no-op",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s2-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Error-handling coverage: skip-and-continue below threshold, STOP gate above threshold",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s2-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "Audit-logging coverage: pre-migration role logged before overwrite",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s2-plan.md"
+            },
+            {
+              "id": "task-7",
+              "name": "Integration coverage: backfilled admin resolves via real resolveRoleForPerson",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s2-plan.md"
+            },
+            {
+              "id": "task-8",
+              "name": "NFR performance coverage: 100-tenant proxy under 10s",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s2-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "open",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/926"
         },
         {
           "slug": "tab-s3",

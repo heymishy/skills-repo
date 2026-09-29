@@ -4,6 +4,34 @@
 **Discovery reference:** artefacts/2026-09-26-tenant-admin-bootstrap/discovery.md
 **Last updated:** 2026-09-29
 
+## `tab-s2` `/verify-completion`: 4/4 ACs verified via fake-pool tests; live migration run against real data explicitly deferred to DoD (2026-09-29)
+
+**Context:** All 4 ACs (+ error-handling, audit, and NFR coverage) verified via `tests/check-tab-s2-backfill-tenant-admin.js`, re-run fresh in this session: 10/10 passing. Full repo suite: 705 files, 2 pre-existing/environmental failures (unchanged from branch-setup baseline), 0 new failures. No route/handler files touched — the mandatory E2E coverage check and live browser render check are both N/A. Scope check: all 4 commits on this branch map cleanly to branch-setup/implementation-plan/implementation/a legitimate pipeline-state-repair fix — no scope creep.
+**Decision:** This story's own verification script (`artefacts/2026-09-26-tenant-admin-bootstrap/verification-scripts/tab-s2-verification.md`) and test plan's own "Out of Scope" section both explicitly design the REAL migration run against `wuce-staging`/production data as a DoD-time deployment action, not a pre-merge test-plan concern — every one of its 4 scenarios says "have a developer run the migration script against a real or staging database." Consistent with that design (and this session's own operating rules around hard-to-reverse actions on real production data), the actual execution of this migration against real tenant data is NOT performed here — it requires explicit operator authorization at DoD time, after the PR merges, given it writes real role changes to real tenant admin assignments on both environments.
+**Story:** `tab-s2` — verify-completion PASSED (4/4 ACs, 10/10 tests); the live-migration-run verification scenarios remain open, correctly deferred to DoD per this story's own artefact design, not a gap introduced here.
+**Made by:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh).
+**Revisit trigger:** at DoD time, get explicit operator confirmation before running `node scripts/backfill-tenant-admin.js` against real `wuce-staging`/production `DATABASE_URL`s — this is a hard-to-reverse, real-production-data action and must not be automated without a direct go-ahead.
+
+---
+
+## `tab-s2` `/implementation-plan`: single-session TDD chosen over `/subagent-execution` (2026-09-29)
+
+**Context:** `tab-s1` used `/subagent-execution` (fresh implementer + spec-review + quality-review subagents per task, 10 tasks). `tab-s2` is Complexity Rating 2/Stable, touches exactly one new file (`scripts/backfill-tenant-admin.js`) plus its own test file, with no cross-module wiring beyond a read-only integration test against an already-shipped, unmodified function (`resolveRoleForPerson`).
+**Decision:** Execute directly via single-session TDD (RED-GREEN-REFACTOR per task, real test runs after every step — matching `/tdd`'s own discipline), rather than dispatching separate subagents per task.
+**Rationale:** `/subagent-execution`'s main value — independent verification of a dispatched agent's self-report — matters most when task count/ambiguity is high or multiple files/modules are touched concurrently. Here the task list is small, sequential, and each task's own test is the direct falsifiable check; the same fresh-test-run discipline applies without the dispatch overhead. This is a deliberate scope-appropriate choice, not a shortcut — every task below still gets a real, independently-run test before being marked complete.
+**Story:** `tab-s2` — process choice only, no AC/scope change.
+**Made by:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh).
+
+---
+
+## `tab-s2` `/branch-setup`: baseline acknowledged, 2 pre-existing/environmental failures (2026-09-29)
+
+**Context:** `node scripts/run-all-tests.js` on the freshly-created `feature/tab-s2` worktree (built from `master` at `dcb0ea41`, i.e. after `tab-s1`'s merge) showed 2 failures: `tests/check-p3.5-validate-trace.js` (established Windows python3-shim issue) and `tests/check-pcr-s1-test-runner.js` (a per-file performance benchmark, confirmed this same day to fail identically — and worse — on bare `master` with no story changes present; machine-load variance, not a regression).
+**Decision:** Acknowledged as pre-existing/environmental and proceeding.
+**Story:** `tab-s2` — no AC/scope change; baseline note only.
+
+---
+
 ## `tab-s1` `/verify-completion`: real interaction bug found and fixed (arl-s4 vs. tab-s1's admin grant), plus a pre-existing E2E test-isolation flake found and NOT fixed (2026-09-29)
 
 **Context:** The mandatory route/handler E2E coverage check (`/verify-completion`) found a real regression: `bri-s3.6-auth-journey.spec.js`'s AC1 ("first-time GitHub OAuth login redirects to `/welcome`, not `/dashboard`") failed after tab-s1's wiring. Root cause: `arl-s4`'s existing bypass rule in `handleAuthCallback` (`src/web-ui/routes/auth.js`) — `if (req.session.role !== 'admin') { ...check isFirstLogin... }` — was written when `role === 'admin'` could only mean a pre-existing operator (legacy `ADMIN_GITHUB_LOGINS`) logging back in, who should never see the customer-facing `/welcome` plan-selection page. `tab-s1` introduces a SECOND, different way to become admin: the automatic grant to a brand-new tenant's very first sign-up — someone who is by definition also a first-time user and SHOULD see `/welcome`. Since `tab-s1`'s bootstrap sets `req.session.role = 'admin'` before this check runs, every bootstrapped admin was silently skipping `/welcome` and landing on `/dashboard`.
