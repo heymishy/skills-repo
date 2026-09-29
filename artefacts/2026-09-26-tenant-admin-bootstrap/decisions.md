@@ -4,6 +4,15 @@
 **Discovery reference:** artefacts/2026-09-26-tenant-admin-bootstrap/discovery.md
 **Last updated:** 2026-09-29
 
+## `tab-s3` `/implementation-plan`: real removal surface is wider than the DoR's own named file list (2026-09-29)
+
+**Context:** The DoR's Coding Agent Instructions name only `server.js` and `user-roles.js` as touch points. Reading the actual code before writing the plan (per this repo's own context-handoff convention) found real, additional in-scope references AC5's own grep requirement ("a fresh grep of the entire `src/web-ui/` tree") directly covers: `src/web-ui/config/validate-env.js` has a real, functional boot-time warning block for `ADMIN_GITHUB_LOGINS` (now describing dead, misleading behaviour — exactly what this story's own User Story exists to prevent); `src/web-ui/routes/auth.js` has one historical comment containing the literal string `ADMIN_GITHUB_LOGINS`. Additionally, `getRoleForTenant`'s own fallback branch (`if (_getUserRole) { return _getUserRole(tenantId); }`) and `migrateTeamSchema`'s legacy-backfill loop both directly call functions AC1/AC2 require deleting entirely — leaving either in place would reference an undefined variable after `_getUserRole`/`_backfillOne` are removed, so both must be removed as a direct, necessary consequence of the ACs' own literal wording ("removed entirely"), not new scope.
+**Decision:** Treat all of the above as in-scope for this story (directly required by AC1/AC2/AC5's own text, not scope creep) and touch them. Separately, confirmed AC5's grep scope is `src/web-ui/` only (not `tests/`) and AC4's "full test suite" is `scripts/run-all-tests.js` (which does not run the `tests/e2e/*` Playwright specs) — the 4 e2e files with stale `ADMIN_GITHUB_LOGINS` comments are therefore genuinely out of scope for both ACs, not an oversight if left untouched.
+**Story:** `tab-s3` — scope clarification only, no AC text change; the implementation plan (`plans/tab-s3-plan.md`) reflects the full real touchpoint list.
+**Made by:** Claude Sonnet 5 (session_01FaAE5FxkfZeiDwy9BNEVxh).
+
+---
+
 ## `tab-s3` `/branch-setup`: baseline acknowledged, 2 pre-existing/environmental failures; hard dependency confirmed satisfied (2026-09-29)
 
 **Context:** `tab-s3`'s own hard dependency — `tab-s1` AND `tab-s2` both merged and proven correct — is now fully satisfied: `tab-s1` merged and DoD-complete; `tab-s2` merged, DoD-complete, and live-verified on BOTH `wuce-staging` (2 tenants promoted, confirmed correct) and production (confirmed already-correct, zero changes needed). `node scripts/run-all-tests.js` on the freshly-created `feature/tab-s3` worktree showed 2 failures: `tests/check-p3.5-validate-trace.js` and `tests/check-pcr-s1-test-runner.js` — the same established pre-existing/environmental failures acknowledged throughout this feature's own `tab-s1`/`tab-s2` worktrees.
