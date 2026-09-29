@@ -20,6 +20,7 @@ const { handleSignOff, handleArtefactRead }                             = requir
 const { healthCheckHandler }                                         = require('./routes/health');
 const { versionHandler }                                             = require('./routes/version');
 const { validateRequiredEnvVars, warnOnOptionalEnvVars }             = require('./config/validate-env');
+const { checkModelRoutingDrift }                                     = require('./config/model-routing'); // psrc-verify-s3
 const { handleGetActions, handleDashboard }                          = require('./routes/dashboard');
 const { handleGetFeatureArtefacts, handleGetIdeas, handlePostIdea, handleDeleteIdea, setIdeasStore } = require('./routes/features');
 const _ideasStorePg = require('./adapters/ideas-store-pg'); // idp-s1
@@ -4381,6 +4382,13 @@ if (require.main === module) {
   }
   // ebv-s1 — never throws, only logs; runs alongside the hard-fail check above.
   warnOnOptionalEnvVars(process.env, console);
+  // psrc-verify-s3 — never throws, only logs; catches a governance-critical
+  // skill (design/definition/review/test-plan/definition-of-ready) silently
+  // resolving to a Haiku model, e.g. an accidentally-removed
+  // WUCE_MODEL_OVERRIDE_<SKILL> Fly secret. Logs nothing on the healthy path.
+  checkModelRoutingDrift(process.env).forEach(function(entry) {
+    console.warn('[model-routing-drift] ' + entry.skill + ' resolved to ' + entry.resolvedModel + ', expected a Sonnet model');
+  });
   const server = createApp();
   server.listen(PORT, () => {
     const gheMode = !!process.env.GITHUB_API_BASE_URL;
