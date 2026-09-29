@@ -31,8 +31,11 @@ function freshRequire(p) {
 }
 
 /**
- * Base env with all 5 governance-critical skills correctly overridden to
- * Sonnet -- the expected healthy state once psrc-verify-s2 ships.
+ * Base env with all 8 governance-critical skills correctly overridden to
+ * Sonnet -- the expected healthy state once psrc-verify-s2 ships. Extended
+ * from 5 to 8 by wuar-s1 (benefit-metric, decisions, definition-of-done
+ * added to DRIFT_GUARD_SONNET_SKILLS after a live audit found benefit-metric
+ * silently routing to Haiku in production with no drift-guard coverage).
  */
 function makeHealthyEnvVars() {
   return {
@@ -40,7 +43,10 @@ function makeHealthyEnvVars() {
     WUCE_MODEL_OVERRIDE_DEFINITION: 'claude-sonnet-4-6',
     WUCE_MODEL_OVERRIDE_REVIEW: 'claude-sonnet-4-6',
     WUCE_MODEL_OVERRIDE_TEST_PLAN: 'claude-sonnet-4-6',
-    WUCE_MODEL_OVERRIDE_DEFINITION_OF_READY: 'claude-sonnet-4-6'
+    WUCE_MODEL_OVERRIDE_DEFINITION_OF_READY: 'claude-sonnet-4-6',
+    WUCE_MODEL_OVERRIDE_BENEFIT_METRIC: 'claude-sonnet-4-6',
+    WUCE_MODEL_OVERRIDE_DECISIONS: 'claude-sonnet-4-6',
+    WUCE_MODEL_OVERRIDE_DEFINITION_OF_DONE: 'claude-sonnet-4-6'
   };
 }
 
@@ -58,12 +64,12 @@ function makeHealthyEnvVars() {
   // ===========================================================================
   // AC1 -- checkModelRoutingDriftReturnsAllFiveWhenNoOverridesSet
   // ===========================================================================
-  await test('checkModelRoutingDriftReturnsAllFiveWhenNoOverridesSet (AC1)', async function() {
+  await test('checkModelRoutingDriftReturnsAllEightWhenNoOverridesSet (AC1, extended by wuar-s1)', async function() {
     var modelRouting = freshRequire(MODEL_ROUTING_PATH);
     var result = modelRouting.checkModelRoutingDrift({});
-    assert.strictEqual(result.length, 5, 'expected all 5 governance-critical skills to drift when no overrides are set, got: ' + result.length);
+    assert.strictEqual(result.length, 8, 'expected all 8 governance-critical skills to drift when no overrides are set, got: ' + result.length);
     var skills = result.map(function(r) { return r.skill; }).sort();
-    assert.deepStrictEqual(skills, ['definition', 'definition-of-ready', 'design', 'review', 'test-plan'].sort());
+    assert.deepStrictEqual(skills, ['benefit-metric', 'decisions', 'definition', 'definition-of-done', 'definition-of-ready', 'design', 'review', 'test-plan'].sort());
     result.forEach(function(r) {
       assert.ok(r.resolvedModel.indexOf('haiku') !== -1, 'expected resolvedModel to contain "haiku" for ' + r.skill + ', got: ' + r.resolvedModel);
     });
@@ -124,7 +130,7 @@ function makeHealthyEnvVars() {
   // ===========================================================================
   // AC2 -- serverStartupLogsNothingWhenAllFiveHealthy (integration)
   // ===========================================================================
-  await test('serverStartupLogsNothingWhenAllFiveHealthy (AC2 integration)', async function() {
+  await test('serverStartupLogsNothingWhenAllEightHealthy (AC2 integration)', async function() {
     var modelRouting = freshRequire(MODEL_ROUTING_PATH);
     var warnCalls = [];
     var spyWarn = function(msg) { warnCalls.push(msg); };

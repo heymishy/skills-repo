@@ -37,7 +37,13 @@ const HAIKU_BLOCKED_SKILLS = ['discovery'];
 // into DEFAULT_SONNET_SKILLS -- confusing the two was flagged and fixed at
 // /review (finding 1-M1): DEFAULT_SONNET_SKILLS means "no override needed",
 // this means "an override is INTENDED to exist and resolve to Sonnet".
-const DRIFT_GUARD_SONNET_SKILLS = ['design', 'definition', 'review', 'test-plan', 'definition-of-ready'];
+// wuar-s1: benefit-metric, decisions, and definition-of-done are equally
+// governance-critical (they gate what ships) but were never added here when
+// this list was created -- confirmed via a live audit of
+// 2026-09-28-weeb-ui-learnings-and-improvements that benefit-metric was
+// still silently routing to Haiku in production, with no drift-guard
+// coverage to catch it.
+const DRIFT_GUARD_SONNET_SKILLS = ['design', 'definition', 'review', 'test-plan', 'definition-of-ready', 'benefit-metric', 'decisions', 'definition-of-done'];
 
 function _isHaikuModel(modelId) {
   return !!(modelId && modelId.indexOf('haiku') !== -1);

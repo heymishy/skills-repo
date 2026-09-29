@@ -37903,6 +37903,37 @@
           "evidence": "ep1-s3 NFRs + E2E accessibility test in test-plans/ep1-s3-test-plan.md"
         }
       ]
+    },
+    {
+      "slug": "2026-09-30-web-ui-artefact-routing-fixes",
+      "name": "Extend the Sonnet drift-guard to cover benefit-metric, decisions, and definition-of-done (short-track)",
+      "stage": "definition-of-ready",
+      "health": "green",
+      "stories": [
+        {
+          "id": "wuar-s1",
+          "name": "Extend the Sonnet drift-guard to cover benefit-metric, decisions, and definition-of-done",
+          "storyPath": "artefacts/2026-09-30-web-ui-artefact-routing-fixes/stories/wuar-s1.md",
+          "stage": "definition-of-ready",
+          "health": "green",
+          "acTotal": 2,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 2,
+            "passing": 0
+          },
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-30-web-ui-artefact-routing-fixes/dor/wuar-s1-dor.md",
+          "branch": "feature/wuar-s1",
+          "updatedAt": "2026-09-29T20:51:30.705Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-29T20:52:14.840Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
