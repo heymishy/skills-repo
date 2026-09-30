@@ -37969,21 +37969,39 @@
         },
         {
           "id": "ep2-s1",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
-          "updatedAt": "2026-09-30T18:29:49.947Z",
+          "updatedAt": "2026-09-30T18:43:40.653Z",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep2-s1-review-1.md"
+          "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep2-s1-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 9,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": true,
+          "e2eToolingRequired": true
         },
         {
           "id": "ep2-s2",
-          "stage": "review",
+          "stage": "test-plan",
           "health": "green",
-          "updatedAt": "2026-09-30T18:30:26.123Z",
+          "updatedAt": "2026-09-30T18:45:11.037Z",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep2-s2-review-1.md"
+          "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep2-s2-review-1.md",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 8,
+            "passing": 0
+          },
+          "acTotal": 5,
+          "acVerified": 0,
+          "hasLayoutDependentGaps": false,
+          "e2eToolingRequired": false
         }
       ],
       "guardrails": [
