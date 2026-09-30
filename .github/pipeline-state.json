@@ -37716,11 +37716,12 @@
           "name": "Improvement signal surfacing",
           "target": "All 12 sources parsed, >=1 signal per active source type displayed per active feature",
           "baseline": "0 workspace signals surfaced in web UI",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": "ep1-s1 delivers the aggregator module only (5253 real signals confirmed parseable); the metric own minimum validation signal requires ep1-s2 own /api/signals endpoint to exist before an end-to-end measurement is possible.",
+          "signal": "on-track",
+          "lastMeasured": "2026-09-30",
+          "evidence": "GET /api/signals confirmed live against a real local dev server both pre-merge and post-merge -- HTTP 200, real non-empty Signal[] array from ep1-s1 own real aggregator output. Satisfies the metric own minimum validation signal. Full target depends on ep1-s3 dashboard rendering, not yet built.",
           "contributingStories": [
-            "ep1-s1"
+            "ep1-s1",
+            "ep1-s2"
           ]
         },
         {
@@ -37833,12 +37834,12 @@
         },
         {
           "id": "ep1-s2",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "health": "green",
+          "health": "amber",
           "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep1-s2-review-2.md",
-          "updatedAt": "2026-09-30T04:37:18.090Z",
+          "updatedAt": "2026-09-30T06:10:14.377Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 7,
@@ -37890,8 +37891,12 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/933"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/933",
+          "dodStatus": "complete",
+          "blocker": "ep1-s1 signal id/timestamp non-determinism confirmed live end-to-end -- see decisions.md and ep1-s2-dod.md AC5 deviation; follow-up story needed",
+          "releaseReady": false,
+          "dodPath": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/dod/ep1-s2-dod.md"
         },
         {
           "id": "ep1-s3",
