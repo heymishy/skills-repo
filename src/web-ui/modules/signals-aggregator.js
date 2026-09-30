@@ -97,55 +97,52 @@ function _aggregateAllSources(repoPath, adapter) {
     });
     return out;
   }));
-  signals = signals.concat(_safeParse('decisions', function() {
-    // decisions.md lives per-feature under artefacts/*/decisions.md -- this
-    // source scans every feature's own file, tolerant of any single one
-    // being absent (most features have none).
+  // decisions.md / dod/ / reference/ all live per-feature under
+  // artefacts/*/ -- rather than a separate readDir/readFile attempt per
+  // feature per source (3 syscalls x ~N features, most of which don't have
+  // most of these), list each feature directory's own contents ONCE and
+  // check in-memory for which of the 3 optional entries are actually
+  // present. Cuts syscalls roughly 3x for this section (perf NFR).
+  signals = signals.concat(_safeParse('artefacts-scan', function() {
     let out = [];
     let featureDirs = [];
     try { featureDirs = adapter.readDir(path.join(repoPath, 'artefacts')); } catch (_) { return []; }
     featureDirs.forEach(function(dir) {
-      out = out.concat(_safeParse('decisions/' + dir, function() {
-        return _parseDecisions(adapter.readFile(path.join(repoPath, 'artefacts', dir, 'decisions.md')));
-      }));
-    });
-    return out;
-  }));
-  signals = signals.concat(_safeParse('dod', function() {
-    let out = [];
-    let featureDirs = [];
-    try { featureDirs = adapter.readDir(path.join(repoPath, 'artefacts')); } catch (_) { return []; }
-    featureDirs.forEach(function(dir) {
-      out = out.concat(_safeParse('dod/' + dir, function() {
-        const dodDir = path.join(repoPath, 'artefacts', dir, 'dod');
-        const files = adapter.readDir(dodDir);
-        let inner = [];
-        files.forEach(function(f) {
-          inner = inner.concat(_safeParse('dod/' + dir + '/' + f, function() {
-            return _parseDodFile(adapter.readFile(path.join(dodDir, f)), path.join(dir, 'dod', f));
-          }));
-        });
-        return inner;
-      }));
-    });
-    return out;
-  }));
-  signals = signals.concat(_safeParse('reference', function() {
-    let out = [];
-    let featureDirs = [];
-    try { featureDirs = adapter.readDir(path.join(repoPath, 'artefacts')); } catch (_) { return []; }
-    featureDirs.forEach(function(dir) {
-      out = out.concat(_safeParse('reference/' + dir, function() {
-        const refDir = path.join(repoPath, 'artefacts', dir, 'reference');
-        const files = adapter.readDir(refDir);
-        let inner = [];
-        files.forEach(function(f) {
-          inner = inner.concat(_safeParse('reference/' + dir + '/' + f, function() {
-            return _parseMarkdownHeadings(adapter.readFile(path.join(refDir, f)), 'archived-ref');
-          }));
-        });
-        return inner;
-      }));
+      const featureDir = path.join(repoPath, 'artefacts', dir);
+      let entries = [];
+      try { entries = adapter.readDir(featureDir); } catch (_) { return; }
+
+      if (entries.indexOf('decisions.md') !== -1) {
+        out = out.concat(_safeParse('decisions/' + dir, function() {
+          return _parseDecisions(adapter.readFile(path.join(featureDir, 'decisions.md')));
+        }));
+      }
+      if (entries.indexOf('dod') !== -1) {
+        out = out.concat(_safeParse('dod/' + dir, function() {
+          const dodDir = path.join(featureDir, 'dod');
+          const files = adapter.readDir(dodDir);
+          let inner = [];
+          files.forEach(function(f) {
+            inner = inner.concat(_safeParse('dod/' + dir + '/' + f, function() {
+              return _parseDodFile(adapter.readFile(path.join(dodDir, f)), path.join(dir, 'dod', f));
+            }));
+          });
+          return inner;
+        }));
+      }
+      if (entries.indexOf('reference') !== -1) {
+        out = out.concat(_safeParse('reference/' + dir, function() {
+          const refDir = path.join(featureDir, 'reference');
+          const files = adapter.readDir(refDir);
+          let inner = [];
+          files.forEach(function(f) {
+            inner = inner.concat(_safeParse('reference/' + dir + '/' + f, function() {
+              return _parseMarkdownHeadings(adapter.readFile(path.join(refDir, f)), 'archived-ref');
+            }));
+          });
+          return inner;
+        }));
+      }
     });
     return out;
   }));
