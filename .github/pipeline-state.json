@@ -37945,6 +37945,40 @@
       "health": "green",
       "updatedAt": "2026-09-29T21:44:54.684Z",
       "name": "E2E mock-fixture verification run (@mocked journey fixtures, bri-s3.1/s3.2)"
+    },
+    {
+      "slug": "2026-09-30-pipeline-state-integrity-schema-reconciliation",
+      "name": "Reconcile check-pipeline-state-integrity.js with the actual JSON schema (short-track)",
+      "stage": "branch-complete",
+      "health": "green",
+      "stories": [
+        {
+          "id": "psir-s1",
+          "name": "Reconcile check-pipeline-state-integrity.js's rules with the actual JSON schema",
+          "storyPath": "artefacts/2026-09-30-pipeline-state-integrity-schema-reconciliation/stories/psir-s1.md",
+          "stage": "branch-complete",
+          "health": "green",
+          "acTotal": 8,
+          "acVerified": 8,
+          "hasLayoutDependentGaps": "false",
+          "e2eToolingRequired": "false",
+          "testPlan": {
+            "status": "written",
+            "totalTests": 52,
+            "passing": 52
+          },
+          "dorStatus": "signed-off",
+          "dorPath": "artefacts/2026-09-30-pipeline-state-integrity-schema-reconciliation/dor/psir-s1-dor.md",
+          "branch": "feature/psir-s1",
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/931",
+          "updatedAt": "2026-09-30T00:29:09.636Z"
+        }
+      ],
+      "metrics": [],
+      "updatedAt": "2026-09-30T00:29:09.634Z",
+      "track": "short"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
