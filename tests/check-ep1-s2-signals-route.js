@@ -48,6 +48,57 @@ function mockRes() {
     assert.deepStrictEqual(JSON.parse(res.body), fixed);
   });
 
+  await test('AC2: required fields present regardless of optional context presence', async function() {
+    _resetSignalsAggregatorForTesting();
+    const withContext = { id: 's1', source: 'decisions', type: 'note', text: 'x', timestamp: '2026-01-01', cta: { label: 'Review', skill: '/improve' }, context: { relatedStory: 'a', featureSlug: 'b', severity: 'low', metadata: null } };
+    const withoutContext = { id: 's2', source: 'learnings', type: 'note', text: 'y', timestamp: null, cta: { label: 'Review', skill: '/improve' } };
+    setSignalsAggregator(function() { return [withContext, withoutContext]; });
+    const res = mockRes();
+    await handleGetSignals({}, res);
+    const body = JSON.parse(res.body);
+    body.forEach(function(s) {
+      ['id', 'source', 'type', 'text', 'timestamp', 'cta'].forEach(function(f) { assert.ok(f in s, 'missing ' + f); });
+      assert.ok('label' in s.cta && 'skill' in s.cta);
+    });
+    assert.ok(!('context' in body[1]) || body[1].context === undefined, 'entry without context must not fail any check for its absence');
+  });
+
+  await test('AC3: aggregator exception returns 500 with structured error, not a partial 200', async function() {
+    _resetSignalsAggregatorForTesting();
+    setSignalsAggregator(function() { throw new Error('disk read failed'); });
+    const res = mockRes();
+    await handleGetSignals({}, res);
+    assert.strictEqual(res.statusCode, 500);
+    const body = JSON.parse(res.body);
+    assert.strictEqual(body.error, 'disk read failed');
+    assert.ok(/^\d{4}-\d{2}-\d{2}T/.test(body.timestamp), 'timestamp must be ISO 8601');
+  });
+
+  await test('AC4: endpoint completes within the latency budget (aggregator <200ms + route overhead <50ms)', async function() {
+    _resetSignalsAggregatorForTesting();
+    setSignalsAggregator(function() {
+      const start = Date.now();
+      while (Date.now() - start < 150) { /* busy-wait to simulate a 150ms aggregator */ }
+      return [];
+    });
+    const res = mockRes();
+    const t0 = Date.now();
+    await handleGetSignals({}, res);
+    const duration = Date.now() - t0;
+    assert.ok(duration < 250, 'expected <250ms total, took ' + duration + 'ms');
+  });
+
+  await test('AC5: calling the endpoint twice with an unchanged stubbed aggregator returns identical responses', async function() {
+    _resetSignalsAggregatorForTesting();
+    const fixed = [{ id: 'a', source: 'suite', type: 'eval-scenario', text: 'x', timestamp: null, cta: { label: 'Review', skill: '/improve' } }];
+    setSignalsAggregator(function() { return fixed; });
+    const res1 = mockRes();
+    await handleGetSignals({}, res1);
+    const res2 = mockRes();
+    await handleGetSignals({}, res2);
+    assert.strictEqual(res1.body, res2.body, 'both responses must be byte-identical JSON');
+  });
+
   console.log('\n[ep1-s2] Results: ' + passed + ' passed, ' + failed + ' failed');
   process.exit(failed > 0 ? 1 : 0);
 })();
