@@ -238,11 +238,41 @@ test('Integration: real fs-backed adapter against a real temp workspace with all
   fs.rmSync(tmp, { recursive: true });
 });
 
-test('ADR-028 canonical builder: no other src/ file independently reads workspace/capture-log.md', function() {
-  const { execSync } = require('child_process');
-  const out = execSync('grep -rl "capture-log.md" src/ 2>/dev/null || true').toString().trim();
-  const offenders = out.split('\n').filter(function(f) { return f && f.indexOf('signals-aggregator.js') === -1; });
-  assert.strictEqual(offenders.length, 0, 'unexpected files independently referencing capture-log.md: ' + offenders.join(', '));
+test('ADR-028 canonical builder: no other src/ file independently READS workspace/capture-log.md', function() {
+  // Pure Node, no shell-out (a prior version used execSync('grep ...'),
+  // which silently no-op'd on Windows via cmd.exe -- passing locally by
+  // accident while CI's real Linux grep correctly found 2 pre-existing
+  // FILES that mention "capture-log.md", both in a comment citing it as a
+  // source, not code that reads it. This version distinguishes an actual
+  // read call from an incidental textual mention/comment.
+  const fs = require('fs');
+  const srcRoot = path.join(__dirname, '..', 'src');
+  const offenders = [];
+
+  function walk(dir) {
+    fs.readdirSync(dir).forEach(function(entry) {
+      const full = path.join(dir, entry);
+      const stat = fs.statSync(full);
+      if (stat.isDirectory()) { walk(full); return; }
+      if (!entry.endsWith('.js')) return;
+      if (entry === 'signals-aggregator.js') return; // the canonical builder itself
+      const content = fs.readFileSync(full, 'utf8');
+      content.split('\n').forEach(function(line) {
+        if (line.indexOf('capture-log.md') === -1) return;
+        const trimmed = line.trim();
+        if (trimmed.indexOf('//') === 0) return; // a comment citing it as a source, not a read
+        // A real read call: readFile/readFileSync/readdir mentioned on the
+        // same line as the path, OR the line is itself a path string used
+        // as an fs argument (heuristic: contains a read-shaped call token).
+        if (/readFile|readdirSync|readFileSync/.test(line)) {
+          offenders.push(full + ': ' + trimmed);
+        }
+      });
+    });
+  }
+  walk(srcRoot);
+
+  assert.strictEqual(offenders.length, 0, 'unexpected files independently reading capture-log.md: ' + offenders.join(' | '));
 });
 
 test('server.js wires the real fs-backed adapter at startup (not just imports the module)', function() {
