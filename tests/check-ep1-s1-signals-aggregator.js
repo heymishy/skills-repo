@@ -148,5 +148,37 @@ test('parses results.tsv rows tolerantly, including ragged column counts', funct
   assert.strictEqual(signals[0].source, 'results');
 });
 
+test('AC1/AC3: all 12 sources attempted; a missing/malformed source yields a parse-error signal, not a thrown exception', function() {
+  const adapter = {
+    readFile: function(p) {
+      if (p.indexOf('suite.json') !== -1) return '{not valid json';
+      if (p.indexOf('capture-log.md') !== -1) throw new Error('ENOENT: no such file or directory');
+      return ''; // every other single-file source: empty but present
+    },
+    readDir: function() { return []; }, // every directory source: empty but present
+  };
+  agg.setFileReadAdapter(adapter);
+  const signals = agg.getSignals('/fake/repo');
+  const errors = signals.filter(function(s) { return s.type === 'parse-error'; });
+  assert.ok(errors.length >= 2, 'expected parse-error signals for suite.json and capture-log.md, got ' + errors.length);
+  assert.ok(errors.some(function(e) { return e.text.indexOf('suite') !== -1; }));
+  assert.ok(errors.some(function(e) { return e.text.indexOf('capture-log') !== -1; }));
+});
+
+test('AC2: every signal has the required normalized fields', function() {
+  const adapter = {
+    readFile: function() { return ''; },
+    readDir: function() { return []; },
+  };
+  agg.setFileReadAdapter(adapter);
+  const signals = agg.getSignals('/fake/repo');
+  signals.forEach(function(s) {
+    ['id', 'source', 'type', 'text', 'timestamp', 'cta'].forEach(function(field) {
+      assert.ok(field in s, 'signal missing required field "' + field + '": ' + JSON.stringify(s));
+    });
+    assert.ok('label' in s.cta && 'skill' in s.cta);
+  });
+});
+
 console.log('\n[ep1-s1] Results: ' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);
