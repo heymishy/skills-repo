@@ -116,5 +116,26 @@ test('suite.json invalid JSON throws (caller converts to parse-error)', function
   assert.throws(function() { agg._parseSuiteJson('{not valid json'); });
 });
 
+test('parses a flat proposals directory into one signal per file', function() {
+  const files = ['2026-07-13-estimate-skip-marker-improve-proposal.md', '2026-08-14-checkpoint-improve-proposal.md'];
+  const signals = agg._parseProposalsDir(files);
+  assert.strictEqual(signals.length, 2);
+  assert.strictEqual(signals[0].source, 'proposals');
+  assert.ok(signals[0].timestamp, 'timestamp extracted from filename date prefix');
+});
+
+test('parses traces jsonl content into one signal per line', function() {
+  const content = '{"traceId":"a","skill":"tdd","status":"completed"}\n{"traceId":"b","skill":"review","status":"failed"}\n';
+  const signals = agg._parseTracesFile(content, 'trace-001.jsonl');
+  assert.strictEqual(signals.length, 2);
+  assert.strictEqual(signals[0].source, 'traces');
+});
+
+test('traces jsonl tolerates a malformed line without dropping valid ones', function() {
+  const content = '{"traceId":"a","skill":"tdd"}\nNOT JSON\n{"traceId":"b","skill":"review"}\n';
+  const signals = agg._parseTracesFile(content, 'trace-002.jsonl');
+  assert.strictEqual(signals.length, 2, 'the 1 malformed line is skipped, not thrown');
+});
+
 console.log('\n[ep1-s1] Results: ' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);

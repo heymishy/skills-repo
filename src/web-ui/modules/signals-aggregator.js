@@ -120,8 +120,38 @@ function _parsePipelineState(content) {
   });
 }
 
+function _parseProposalsDir(fileNames) {
+  return fileNames.filter(function(f) { return f.endsWith('.md'); }).map(function(f) {
+    const dateM = f.match(/^(\d{4}-\d{2}-\d{2})-/);
+    return _makeSignal('proposals', 'improve-proposal', f.replace(/\.md$/, ''), dateM ? dateM[1] : null,
+      { label: 'Review proposal', skill: '/improve' });
+  });
+}
+
+// One signal per JSONL line -- malformed lines are skipped (not thrown),
+// matching this story's own no-single-bad-line-blocks-others contract.
+function _parseTracesFile(content) {
+  const signals = [];
+  content.split('\n').forEach(function(line) {
+    if (!line.trim()) return;
+    try {
+      const entry = JSON.parse(line);
+      signals.push(_makeSignal('traces', 'trace', (entry.skill || 'unknown') + ': ' + (entry.status || 'unknown'), null,
+        { label: 'View trace', skill: '/trace' }));
+    } catch (_) { /* malformed line -- skip, do not throw */ }
+  });
+  return signals;
+}
+
+function _parseDodFile(content, filePath) {
+  return _parseMarkdownHeadings(content, 'dod-follow-up').map(function(sig) {
+    sig.context = { relatedStory: null, featureSlug: null, severity: null, metadata: { file: filePath } };
+    return sig;
+  });
+}
+
 module.exports = {
   getSignals, setFileReadAdapter, _resetFileReadAdapterForTesting, createFsFileReadAdapter,
   _parseCaptureLog, _parseDecisions, _parseMarkdownHeadings, _parseEstimationNorms,
-  _parseSuiteJson, _parsePipelineState,
+  _parseSuiteJson, _parsePipelineState, _parseProposalsDir, _parseTracesFile, _parseDodFile,
 };
