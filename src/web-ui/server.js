@@ -107,6 +107,7 @@ const { handlePostSetDefaultPod, handleGetFeaturePods, handlePostAssignFeaturePo
 const { migratePodAssignmentsSchema }                                = require('./modules/pod-assignment-store'); // ep1-s2
 const { migrateFeatureCollaboratorsSchema, migrateFeatureCollaboratorRemovalsSchema } = require('./modules/feature-collaborator-store'); // ep1-s3, ep4-s1
 const { createImpersonationHandlers }                                = require('./routes/impersonation');         // d1
+const { handleGetSignals }                                           = require('./routes/signals');                // ep1-s2 (2026-09-28-weeb-ui-learnings-and-improvements -- distinct from the unrelated ep1-s2/pod-assignment-store above, which reuses the same generic slug)
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -3456,6 +3457,13 @@ async function router(req, res) {
       if (!_rnvOk) return;
       await handleDeleteJourney(req, res);
     });
+
+  } else if (pathname === '/api/signals' && req.method === 'GET') {
+    // ep1-s2 (2026-09-28-weeb-ui-learnings-and-improvements) — signals
+    // panel data source. Intentionally no authGuard, matching this story's
+    // own explicit scope (solo-operator persona; no auth-related AC/test;
+    // multi-tenant isolation explicitly out of scope) -- see decisions.md.
+    await handleGetSignals(req, res);
 
   } else if (pathname.match(/^\/api\/journey\/[^/]+$/) && req.method === 'GET') {
     // owle.1 — journey state (excludes sideTripSessionId)
