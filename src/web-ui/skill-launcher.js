@@ -10,18 +10,25 @@ const _csrf = require('./middleware/csrf');
 
 const PRIMARY_SKILLS = ['discovery', 'ideate', 'reverse-engineer', 'spike', 'improve'];
 
+// AC1 requires primary CTAs to use "larger text/button sizing compared to
+// the advanced section". .sw-btn/.sw-btn--primary are pre-existing shared
+// classes (13px) used app-wide -- sized here per-card via inline style
+// instead of changing them globally.
 function _skillCard(skill, csrfToken, sizeClass) {
   const safeName = escHtml(skill.name || '');
   const safeDesc = escHtml(skill.description || '');
+  const isPrimary = sizeClass === 'el-primary-card';
+  const nameStyle = isPrimary ? 'font-size:16px;font-weight:600' : 'font-size:13px;font-weight:500';
+  const btnStyle = isPrimary ? 'font-size:15px;padding:8px 16px' : 'font-size:13px';
   return [
     '<div class="sw-card ' + sizeClass + '" style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px">',
     '  <div>',
-    '    <div class="el-skill-name">' + safeName + '</div>',
+    '    <div class="el-skill-name" style="' + nameStyle + '">' + safeName + '</div>',
     '    <div class="el-skill-desc">' + safeDesc + '</div>',
     '  </div>',
     '  <form method="POST" action="/api/skills/' + safeName + '/sessions" style="flex-shrink:0">',
     '    ' + _csrf.csrfField(csrfToken),
-    '    <button type="submit" class="sw-btn sw-btn--primary ' + sizeClass + '">Start</button>',
+    '    <button type="submit" class="sw-btn sw-btn--primary ' + sizeClass + '" style="' + btnStyle + '">Start</button>',
     '  </form>',
     '</div>'
   ].join('\n');
@@ -54,7 +61,7 @@ function renderSkillLauncher(skills, csrfToken) {
     primaryCards,
     '</div>',
     '<details class="el-advanced">',
-    '  <summary class="el-advanced-summary">Advanced skills (all ' + skills.length + ')</summary>',
+    '  <summary class="el-advanced-summary" style="font-size:13px;color:var(--muted);cursor:pointer">Advanced skills (all ' + skills.length + ')</summary>',
     '  <div class="el-advanced-body" style="display:flex;flex-direction:column;gap:8px;margin-top:12px">',
     advancedCards,
     '  </div>',

@@ -55,6 +55,12 @@ module.exports = {
       // constant and /test/seed-multi-user-roles's required sharedOrg prefix
       // (see that story's decisions.md) -- must stay in sync with both.
       TENANT_ORG_ALLOWLIST: 'e2e-shared-org',
+      // ep1-s3: wire the real listSkills/createSession/etc adapters (server.js
+      // gates them on NODE_ENV!=='test' || WIRE_SKILL_ADAPTERS==='true').
+      // Filesystem-only, no GitHub token required -- safe to enable for every
+      // E2E spec, not just this story's own. Without it /skills always renders
+      // its "No skills available" empty state under the E2E webServer.
+      WIRE_SKILL_ADAPTERS: 'true',
     },
   },
 };
