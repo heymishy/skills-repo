@@ -44,6 +44,11 @@ Then a clear error response is returned and no session is created — never a pa
 Given the operator clicks a primary or advanced-section CTA on the existing `/skills` launcher (`ep1-s3`, no signal context involved),
 When the session is created,
 Then behaviour is unchanged from `ep1-s3`'s own merged implementation — confirmed by `ep1-s3`'s own 9 existing tests still passing unmodified against this story's extended endpoint.
+
+**AC6 — Production wiring (D37):**
+Given `skillsAdapter`'s `setCreateSession`/`_createSession` gains an additional optional `priorArtefacts` parameter,
+When the real implementation is wired in `server.js` (where `setCreateSession` is currently called),
+Then that real implementation accepts and forwards `priorArtefacts` through to `registerHtmlSession`, and a dedicated wiring test confirms **behavioural correctness, not merely that a function reference was reassigned**: two sessions created with two different signal contexts produce two different, individually-correct `priorArtefacts`/system-prompt contents (matching the standard set by `CLAUDE.md`'s own D37 rule and its `tir-s1` source incident — a test that only checks "`setX` was called" would pass even if the wired function ignored its new argument entirely). Also fixes this adapter's own pre-existing D37 non-conformance: the current stub default (`defaultCreateSession`) silently returns `{id: ''}` rather than throwing — confirmed by direct code read this session (`src/web-ui/routes/skills.js` adapter defaults) — corrected to throw `Error('Adapter not wired: createSession. Call setCreateSession() with a real implementation before use.')`, matching every other adapter default in this same file.
 ## Out of Scope
 - Confirming `/improve`'s own downstream execution/completion behaviour once seeded — explicitly out of this epic's own MVP scope per `discovery.md` ("the MVP seeds a new session; it does not execute the full improvement agent loop from the browser")
 - Fixing `ep1-s1`'s non-deterministic `signal.id` generation at its source — explicitly not needed by this story's own design (full content passed client-side, no server-side id lookup), and remains a separate, already-documented follow-up candidate for `ep1-s1` itself if a future story needs stable ids for an unrelated reason

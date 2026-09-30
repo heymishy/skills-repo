@@ -23,7 +23,7 @@
 
 ### Scenario 1: Clicking a signal's button drops you straight into a new session with that signal already loaded
 
-**Covers:** AC1, AC2
+**Covers:** AC1, AC2, AC6 (this scenario doubles as the human-facing confirmation that the production wiring genuinely passes signal content through, not just that a session gets created)
 
 **Steps:**
 1. Click a signal's CTA button (e.g. "Review").

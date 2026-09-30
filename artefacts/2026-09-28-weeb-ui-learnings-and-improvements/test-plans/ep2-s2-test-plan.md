@@ -18,6 +18,7 @@
 | AC3 | Correct skill launched, not hardcoded /improve | 1 test | — | — | — | — | 🟢 |
 | AC4 | Seeding failure produces a clear error, no partial session | 1 test | — | — | — | — | 🟢 |
 | AC5 | Non-seeded (ep1-s3) launches are byte-identical to today | — | 1 test (reuse) | — | — | — | 🟢 |
+| AC6 | Production wiring (D37): setCreateSession forwards priorArtefacts, behavioural-correctness wiring test | — | 1 test (shared w/ AC1) | — | — | — | 🟢 |
 
 ---
 
@@ -86,7 +87,7 @@ None.
 
 ### Real router dispatch: POST with signal-context fields creates a session with real priorArtefacts
 
-- **Verifies:** AC1 (behavioural half), AC3
+- **Verifies:** AC1 (behavioural half), AC3, AC6 (production wiring, behavioural-correctness form per D37 — this single test doubles as the AC6 wiring test since it already asserts two different signal contexts, via two different `/workflow` vs `/improve` dispatches across this test and the AC5 reuse test, produce different, individually-correct `priorArtefacts` contents, not merely that `setCreateSession` was called)
 - **Components involved:** Extended `POST /api/skills/[name]/sessions` handler, `registerHtmlSession`, `skillsAdapter.setCreateSession`
 - **Precondition:** Real router wired; session-creation's own filesystem/session-store side effects exercised for real (matching `ep1-s3`'s own `tests/check-ep1-s3-skill-launcher.js` "Integration" test convention — real handler dispatch, not a fully mocked router)
 - **Action:** Dispatch a real POST to `/api/skills/workflow/sessions` with a signal's `source`/`type`/`text`/`timestamp` form fields (`cta.skill: '/workflow'`, the real, confirmed-existing non-default value)
