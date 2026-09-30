@@ -45,4 +45,60 @@ function _aggregateAllSources(repoPath, adapter) {
   return []; // populated task by task below
 }
 
-module.exports = { getSignals, setFileReadAdapter, _resetFileReadAdapterForTesting, createFsFileReadAdapter };
+function _makeSignal(source, type, text, timestamp, cta) {
+  return {
+    id: source + '-' + (timestamp || 'no-ts') + '-' + Math.random().toString(36).slice(2, 8),
+    source: source,
+    type: type,
+    text: text,
+    timestamp: timestamp || null,
+    cta: cta || { label: 'Review', skill: '/improve' },
+  };
+}
+
+// capture-log.md: "- date: YYYY-MM-DD" blocks, 5 required fields (this
+// repo's own /capture schema). Tolerant of quoted or bare signal-text.
+function _parseCaptureLog(content) {
+  const signals = [];
+  const blocks = content.split(/\n(?=- date:)/);
+  blocks.forEach(function(block) {
+    const dateM = block.match(/date:\s*(\S+)/);
+    const typeM = block.match(/signal-type:\s*(\S+)/);
+    const textM = block.match(/signal-text:\s*"?([^\n"]+)"?/);
+    if (!dateM || !typeM || !textM) return;
+    signals.push(_makeSignal('capture-log', typeM[1], textM[1].trim(), dateM[1]));
+  });
+  return signals;
+}
+
+// decisions.md / any markdown file: one signal per top-level "## " heading.
+function _parseMarkdownHeadings(content, sourceName) {
+  const signals = [];
+  const headings = content.split(/\n(?=## )/);
+  headings.forEach(function(section) {
+    const m = section.match(/^## (.+)$/m);
+    if (!m) return;
+    signals.push(_makeSignal(sourceName, 'note', m[1].trim(), null));
+  });
+  return signals;
+}
+
+function _parseDecisions(content) { return _parseMarkdownHeadings(content, 'decisions'); }
+
+// estimation-norms.md: markdown table, first column is a date.
+function _parseEstimationNorms(content) {
+  const signals = [];
+  const lines = content.split('\n').filter(function(l) { return l.trim().startsWith('|'); });
+  lines.forEach(function(line) {
+    const cells = line.split('|').map(function(c) { return c.trim(); }).filter(function(c) { return c.length > 0; });
+    if (cells.length < 2) return;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(cells[0])) return; // skip header/separator rows
+    signals.push(_makeSignal('estimation', 'actuals', cells.slice(1).join(' / '), cells[0]));
+  });
+  return signals;
+}
+
+module.exports = {
+  getSignals, setFileReadAdapter, _resetFileReadAdapterForTesting, createFsFileReadAdapter,
+  _parseCaptureLog, _parseDecisions, _parseMarkdownHeadings, _parseEstimationNorms,
+};
