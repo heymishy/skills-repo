@@ -58,12 +58,12 @@ This is a short-track bug/hardening fix, not a metric-tracked feature (no `metri
 
 ## Outcome
 
-**COMPLETE WITH DEVIATIONS**
+**COMPLETE**
 
-Marked "with deviations" not because the merged code has any gap against its own (corrected, narrowed) ACs — it does not — but to keep the still-pending Fly secret configuration visibly tracked at the outcome level rather than only inside a Follow-up Action, since without it the shipped code has no live effect yet.
+Updated from `COMPLETE WITH DEVIATIONS` — Follow-up action 1 (the Fly secret configuration) is now closed (2026-09-30): the operator authenticated `flyctl` and authorized setting all 3 secrets on both environments. Confirmed via `flyctl secrets list -a wuce-staging` / `-a skills-framework`: both now show all 8 `WUCE_MODEL_OVERRIDE_*` secrets (the original 5 plus `BENEFIT_METRIC`/`DECISIONS`/`DEFINITION_OF_DONE`, all `claude-sonnet-4-6`, matching the existing 5's own convention), both `Deployed`. The drift-guard mechanism this story shipped is now fully live, not just merged.
 
 **Follow-up actions:**
-1. **[Requires explicit operator authorization]** Set `WUCE_MODEL_OVERRIDE_BENEFIT_METRIC`, `WUCE_MODEL_OVERRIDE_DECISIONS`, `WUCE_MODEL_OVERRIDE_DEFINITION_OF_DONE` as real Fly secrets on both `wuce-staging` and `skills-framework`, matching the existing 5 secrets' own convention (`psrc-verify-s2`'s precedent). Until this is done, the shipped drift-guard code is correct but inert in production — `benefit-metric` remains unprotected exactly as before, now merely *detectable* rather than *prevented*. Owner: operator (production infrastructure change, not a code task).
+1. ~~Set `WUCE_MODEL_OVERRIDE_BENEFIT_METRIC`, `WUCE_MODEL_OVERRIDE_DECISIONS`, `WUCE_MODEL_OVERRIDE_DEFINITION_OF_DONE` as real Fly secrets on both `wuce-staging` and `skills-framework`~~ — **Done 2026-09-30.**
 2. Repairing any other, not-yet-found feature whose artefacts may show a similar Haiku-drift content pattern to `web-ui-learnings-and-improvements` — a repo-wide audit was flagged but not undertaken (only 2 of 12 features with a top-level `review.md` were spot-checked this session, both false positives). Owner: future session.
 
 ---
