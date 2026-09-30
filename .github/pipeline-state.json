@@ -37718,8 +37718,10 @@
           "baseline": "0 workspace signals surfaced in web UI",
           "signal": "not-yet-measured",
           "lastMeasured": null,
-          "evidence": null,
-          "contributingStories": []
+          "evidence": "ep1-s1 delivers the aggregator module only (5253 real signals confirmed parseable); the metric own minimum validation signal requires ep1-s2 own /api/signals endpoint to exist before an end-to-end measurement is possible.",
+          "contributingStories": [
+            "ep1-s1"
+          ]
         },
         {
           "id": "m3",
@@ -37735,12 +37737,12 @@
       "stories": [
         {
           "id": "ep1-s1",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "reviewStatus": "passed",
           "highFindings": 0,
-          "health": "green",
+          "health": "amber",
           "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep1-s1-review-2.md",
-          "updatedAt": "2026-09-30T03:31:44.631Z",
+          "updatedAt": "2026-09-30T04:00:13.071Z",
           "testPlan": {
             "status": "all-passing",
             "totalTests": 20,
@@ -37822,8 +37824,12 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/932"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/932",
+          "dodStatus": "complete",
+          "blocker": "NFR performance RISK-ACCEPT: this repo own real workspace scale (307 features) exceeds the story own <2MB NFR precondition -- see decisions.md",
+          "releaseReady": false,
+          "dodPath": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/dod/ep1-s1-dod.md"
         },
         {
           "id": "ep1-s2",
