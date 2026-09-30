@@ -37833,23 +37833,65 @@
         },
         {
           "id": "ep1-s2",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "reviewStatus": "passed",
           "highFindings": 0,
           "health": "green",
           "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep1-s2-review-2.md",
-          "updatedAt": "2026-09-29T20:12:57.263Z",
+          "updatedAt": "2026-09-30T04:37:18.090Z",
           "testPlan": {
-            "status": "written",
-            "totalTests": 10,
-            "passing": 0
+            "status": "all-passing",
+            "totalTests": 7,
+            "passing": 7
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/dor/ep1-s2-dor.md"
+          "dorArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/dor/ep1-s2-dor.md",
+          "branch": "feature/ep1-s2-wuli",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Route handler skeleton + test-only aggregator override",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s2-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "AC2 confirmation: required fields present, optional fields tolerated absent",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s2-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "AC3 confirmation: aggregator exception returns structured 500",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s2-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "AC4 confirmation: endpoint latency budget",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s2-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "AC5 confirmation: repeatability with stubbed aggregator",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s2-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "Real router-dispatch integration tests + server.js wiring",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s2-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/933"
         },
         {
           "id": "ep1-s3",
