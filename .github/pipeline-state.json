@@ -37699,7 +37699,7 @@
       "name": "Web UI Learnings and Improvements Integration",
       "track": "standard",
       "health": "green",
-      "updatedAt": "2026-09-29T20:13:31.174Z",
+      "updatedAt": "2026-09-30T18:16:29.380Z",
       "metrics": [
         {
           "id": "m1",
@@ -37966,6 +37966,18 @@
           "blocker": "ep1-s3 DoD: NFR-perf-signals verification-method deviation (render-time vs navigation-timing) and NFR-a11y-launcher screen-reader-distinction not independently tested this story — both recorded, neither blocking, see dod/ep1-s3-dod.md",
           "layoutGapsAtMerge": true,
           "layoutGapsRiskAccepted": false
+        },
+        {
+          "id": "ep2-s1",
+          "stage": "definition",
+          "health": "green",
+          "updatedAt": "2026-09-30T18:16:29.380Z"
+        },
+        {
+          "id": "ep2-s2",
+          "stage": "definition",
+          "health": "green",
+          "updatedAt": "2026-09-30T18:16:29.380Z"
         }
       ],
       "guardrails": [
@@ -38032,7 +38044,8 @@
           "assessedAt": "2026-09-30T17:54:48.839Z",
           "evidence": "Keyboard navigation fully verified via real Playwright E2E: all 5 primary CTAs have non-empty accessible names and are reached via Tab strictly before the advanced section's <summary> disclosure control. Screen-reader primary/advanced distinction relies on this codebase's own established semantic-HTML convention (a <p class=\"sw-section-title\"> label plus native <details>/<summary>, already used elsewhere in this app) rather than a newly-written accessibility-tree test this story -- inherently non-colour-dependent by construction, but not independently tested. Recorded as a verification-strength gap in ep1-s3's own DoD, not blocking."
         }
-      ]
+      ],
+      "slicingStrategy": "walking-skeleton"
     },
     {
       "slug": "2026-09-30-review-split-coverage-check",

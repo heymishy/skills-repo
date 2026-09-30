@@ -66,9 +66,9 @@ Not applicable — see Tier Classification above.
 
 | Metric | Stories that move it | Coverage status |
 |--------|---------------------|-----------------|
-| Metric 1 — Skill launcher clarity | ep1-s3 | Covered (Epic 1 fully delivers this metric) |
-| Metric 2 — Improvement signal surfacing | ep1-s1, ep1-s2 | Covered (Epic 1 fully delivers this metric) |
-| Metric 3 — Self-improvement loop accessibility | ep1-s1, ep1-s2, ep1-s3 (visibility half only) | Partial — full target requires Epic 2's not-yet-written seeding-bridge stories; minimum validation signal is achievable within Epic 1 alone |
+| Metric 1 — Skill launcher clarity | ep1-s3 | Covered (delivered; minimum validation signal met, on-track — see ep1-s3-dod.md) |
+| Metric 2 — Improvement signal surfacing | ep1-s1, ep1-s2 (minimum validation signal); ep2-s1 (full target — "displayed per active feature") | Partial — minimum validation signal covered and on-track since Epic 1; full target requires ep2-s1 (not yet started). **Correction (2026-10-01):** this row previously listed `ep1-s3` as delivering signal display — confirmed incorrect post-merge: `ep1-s3` is the skill-launcher redesign, unrelated to signals. See decisions.md 2026-10-01 entry. |
+| Metric 3 — Self-improvement loop accessibility | ep2-s1 (visibility half), ep2-s2 (seeding half — target is "land in a pre-populated session," not confirmed completion) | Not yet covered — both contributing stories are newly written, neither yet implemented. **Correction (2026-10-01):** this row previously listed `ep1-s1, ep1-s2, ep1-s3` as delivering the visibility half; confirmed incorrect — none of Epic 1's 3 stories renders a signal in any web UI page. A 3rd story confirming `/improve`'s full execution to completion was drafted then removed as scope creep beyond this metric's own stated target — see decisions.md 2026-10-01 entry. |
 
 ---
 

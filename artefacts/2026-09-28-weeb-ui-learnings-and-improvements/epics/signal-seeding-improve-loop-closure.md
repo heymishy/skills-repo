@@ -6,7 +6,7 @@
 
 ## Goal
 
-Operators can click a signal's CTA, seed a skill session with that signal as context, and run the full `/improve` skill execution path from the web UI to completion, producing improvement proposals. The improvement loop (signal → seed → session → proposal) is fully accessible end-to-end without CLI or IDE access.
+Operators can see a real improvement signal in a web UI page, click its CTA, and land in a pre-populated new skill session with that signal injected as context — fully accessible without CLI or IDE access. **Scope correction (2026-10-01):** this Goal previously said the epic also runs the full `/improve` execution path "to completion, producing improvement proposals" — confirmed, on cross-checking against `discovery.md`'s own MVP scope and `benefit-metric.md`'s own Metric 3 target, to be scope creep beyond both. `discovery.md`'s Out of Scope section explicitly excludes "Full `/improve` skill execution via the web UI... the MVP seeds a new session; it does not execute the full improvement agent loop from the browser," and Metric 3's own target is "land in a pre-populated new skill session," not confirmed completion. See `decisions.md` 2026-10-01 entry.
 
 ## Out of Scope
 
@@ -22,7 +22,10 @@ Operators can click a signal's CTA, seed a skill session with that signal as con
 
 ## Stories in This Epic
 
-- [Not specified by the definition session]
+- [ ] Signals panel: render real signals in a web UI page — artefacts/2026-09-28-weeb-ui-learnings-and-improvements/stories/ep2-s1.md
+- [ ] Signal-to-session seeding bridge: CTA creates a seeded skill session — artefacts/2026-09-28-weeb-ui-learnings-and-improvements/stories/ep2-s2.md
+
+**Removed (2026-10-01):** a 3rd story confirming `/improve`'s full execution through to a completed proposal was drafted, then removed after cross-checking the epic's own Goal against `discovery.md`'s MVP scope and `benefit-metric.md`'s Metric 3 target — both stop at "land in a pre-populated session," not confirmed completion. See `decisions.md` 2026-10-01 entry.
 
 ## Human Oversight Level
 
