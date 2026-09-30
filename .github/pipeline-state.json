@@ -37735,23 +37735,95 @@
       "stories": [
         {
           "id": "ep1-s1",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "reviewStatus": "passed",
           "highFindings": 0,
           "health": "green",
           "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep1-s1-review-2.md",
-          "updatedAt": "2026-09-29T20:12:57.089Z",
+          "updatedAt": "2026-09-30T03:31:44.631Z",
           "testPlan": {
-            "status": "written",
-            "totalTests": 10,
-            "passing": 0
+            "status": "all-passing",
+            "totalTests": 20,
+            "passing": 20
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": "false",
           "e2eToolingRequired": "false",
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/dor/ep1-s1-dor.md"
+          "dorArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/dor/ep1-s1-dor.md",
+          "branch": "feature/ep1-s1-wuli",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "D37 injectable file-read adapter + module skeleton",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Real file-read adapter shape + fs-backed helpers",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Simple text sources: capture-log, learnings, decisions, estimation-norms, reference, architecture-guardrails",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s1-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "JSON sources: suite.json, pipeline-state.json",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s1-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Directory-listing sources: proposals, traces, DoD",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s1-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "results.tsv ragged/tolerant delimited source",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s1-plan.md"
+            },
+            {
+              "id": "task-7",
+              "name": "Orchestrate all 12 source parsers with error boundaries (AC1/AC2/AC3/AC5)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s1-plan.md"
+            },
+            {
+              "id": "task-8",
+              "name": "Sort by timestamp, most recent first (AC4)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s1-plan.md"
+            },
+            {
+              "id": "task-9",
+              "name": "Integration test against real fixture workspace + canonical-builder check",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s1-plan.md"
+            },
+            {
+              "id": "task-10",
+              "name": "Wire real adapter in server.js (D37 production wiring)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s1-plan.md"
+            },
+            {
+              "id": "task-11",
+              "name": "Performance check (NFR <200ms)",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s1-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/932"
         },
         {
           "id": "ep1-s2",
@@ -37901,14 +37973,14 @@
       "slug": "2026-09-30-web-ui-artefact-routing-fixes",
       "name": "Extend the Sonnet drift-guard to cover benefit-metric, decisions, and definition-of-done (short-track)",
       "stage": "definition-of-done",
-      "health": "amber",
+      "health": "green",
       "stories": [
         {
           "id": "wuar-s1",
           "name": "Extend the Sonnet drift-guard to cover benefit-metric, decisions, and definition-of-done",
           "storyPath": "artefacts/2026-09-30-web-ui-artefact-routing-fixes/stories/wuar-s1.md",
           "stage": "definition-of-done",
-          "health": "amber",
+          "health": "green",
           "acTotal": 2,
           "acVerified": 2,
           "hasLayoutDependentGaps": "false",
@@ -37921,18 +37993,18 @@
           "dorStatus": "signed-off",
           "dorPath": "artefacts/2026-09-30-web-ui-artefact-routing-fixes/dor/wuar-s1-dor.md",
           "branch": "feature/wuar-s1",
-          "updatedAt": "2026-09-29T23:35:37.971Z",
+          "updatedAt": "2026-09-30T01:18:03.873Z",
           "verifyStatus": "passed",
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/929",
           "dodStatus": "complete",
           "releaseReady": false,
           "dodPath": "artefacts/2026-09-30-web-ui-artefact-routing-fixes/dod/wuar-s1-dod.md",
-          "blocker": "Fly secrets WUCE_MODEL_OVERRIDE_BENEFIT_METRIC/_DECISIONS/_DEFINITION_OF_DONE not yet set on wuce-staging/skills-framework -- code shipped and correct but inert until operator authorizes the production secret change"
+          "blocker": ""
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-09-29T23:35:37.970Z",
+      "updatedAt": "2026-09-30T01:18:03.871Z",
       "track": "short"
     },
     {
