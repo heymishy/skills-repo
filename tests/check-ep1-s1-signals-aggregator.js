@@ -86,5 +86,35 @@ test('parses estimation-norms.md table rows into signals', function() {
   assert.strictEqual(signals[0].timestamp, '2026-04-12');
 });
 
+test('parses suite.json scenarios into signals', function() {
+  const content = JSON.stringify({
+    scenarios: [
+      { taskId: 's-1', description: 'desc 1', failurePatternGuarded: 'fp 1' },
+      { taskId: 's-2', description: 'desc 2', failurePatternGuarded: 'fp 2' },
+    ],
+  });
+  const signals = agg._parseSuiteJson(content);
+  assert.strictEqual(signals.length, 2);
+  assert.strictEqual(signals[0].source, 'suite');
+  assert.strictEqual(signals[0].text, 'desc 1');
+});
+
+test('parses pipeline-state.json features into signals', function() {
+  const content = JSON.stringify({
+    features: [
+      { slug: 'feat-a', name: 'Feature A', stage: 'review', updatedAt: '2026-09-28T10:00:00Z' },
+      { slug: 'feat-b', name: 'Feature B', stage: 'branch-complete', updatedAt: '2026-09-29T10:00:00Z' },
+    ],
+  });
+  const signals = agg._parsePipelineState(content);
+  assert.strictEqual(signals.length, 2);
+  assert.strictEqual(signals[0].source, 'pipeline-state');
+  assert.strictEqual(signals[0].context.featureSlug, 'feat-a');
+});
+
+test('suite.json invalid JSON throws (caller converts to parse-error)', function() {
+  assert.throws(function() { agg._parseSuiteJson('{not valid json'); });
+});
+
 console.log('\n[ep1-s1] Results: ' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);

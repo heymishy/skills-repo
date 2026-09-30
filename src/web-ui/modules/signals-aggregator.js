@@ -98,7 +98,30 @@ function _parseEstimationNorms(content) {
   return signals;
 }
 
+function _parseSuiteJson(content) {
+  const data = JSON.parse(content); // throws on invalid JSON -- caller catches
+  const scenarios = Array.isArray(data.scenarios) ? data.scenarios : [];
+  return scenarios.map(function(s) {
+    return _makeSignal('suite', 'eval-scenario', s.description || s.taskId || 'unnamed scenario', null,
+      { label: 'View scenario', skill: '/improve' });
+  });
+}
+
+function _parsePipelineState(content) {
+  const data = JSON.parse(content); // throws on invalid JSON -- caller catches
+  const features = Array.isArray(data.features) ? data.features : [];
+  return features.map(function(f) {
+    const sig = _makeSignal('pipeline-state', 'feature-status',
+      (f.name || f.slug) + ' -- stage: ' + (f.stage || 'unknown'),
+      f.updatedAt || null,
+      { label: 'Open feature', skill: '/workflow' });
+    sig.context = { relatedStory: null, featureSlug: f.slug, severity: null, metadata: null };
+    return sig;
+  });
+}
+
 module.exports = {
   getSignals, setFileReadAdapter, _resetFileReadAdapterForTesting, createFsFileReadAdapter,
   _parseCaptureLog, _parseDecisions, _parseMarkdownHeadings, _parseEstimationNorms,
+  _parseSuiteJson, _parsePipelineState,
 };
