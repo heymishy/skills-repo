@@ -26,5 +26,15 @@ test('D37: default adapter throws when not wired', function() {
   assert.throws(function() { agg.getSignals('/nonexistent'); }, /Adapter not wired: file-read/);
 });
 
+test('setFileReadAdapter wires a real fs-backed adapter and getSignals runs it', function() {
+  const fs = require('fs');
+  const os = require('os');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ep1-s1-'));
+  agg.setFileReadAdapter(agg.createFsFileReadAdapter());
+  const signals = agg.getSignals(tmp);
+  assert.ok(Array.isArray(signals), 'getSignals must return an array even for an empty workspace');
+  fs.rmSync(tmp, { recursive: true });
+});
+
 console.log('\n[ep1-s1] Results: ' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);

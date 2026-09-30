@@ -20,8 +20,29 @@ function _resetFileReadAdapterForTesting() {
   };
 }
 
-function getSignals(repoPath) {
-  return _fileReadAdapter(repoPath);
+// The real, production file-read adapter -- wired in server.js at startup.
+// Shape: { readFile(absPath) -> string, readDir(absPath) -> string[] }
+// Both throw on missing path; callers (the per-source parsers) catch and
+// convert to parse-error signals -- this adapter itself stays dumb.
+function createFsFileReadAdapter() {
+  return {
+    readFile: function(absPath) { return fs.readFileSync(absPath, 'utf8'); },
+    readDir:  function(absPath) { return fs.readdirSync(absPath); },
+  };
 }
 
-module.exports = { getSignals, setFileReadAdapter, _resetFileReadAdapterForTesting };
+function getSignals(repoPath) {
+  const adapter = _fileReadAdapter;
+  if (typeof adapter === 'function') {
+    // The Task 1 throwing-stub shape (a bare function) -- calling it
+    // triggers the D37 "not wired" error exactly as before.
+    return adapter(repoPath);
+  }
+  return _aggregateAllSources(repoPath, adapter);
+}
+
+function _aggregateAllSources(repoPath, adapter) {
+  return []; // populated task by task below
+}
+
+module.exports = { getSignals, setFileReadAdapter, _resetFileReadAdapterForTesting, createFsFileReadAdapter };
