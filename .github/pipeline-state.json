@@ -37949,14 +37949,14 @@
     {
       "slug": "2026-09-30-pipeline-state-integrity-schema-reconciliation",
       "name": "Reconcile check-pipeline-state-integrity.js with the actual JSON schema (short-track)",
-      "stage": "branch-complete",
+      "stage": "definition-of-done",
       "health": "green",
       "stories": [
         {
           "id": "psir-s1",
           "name": "Reconcile check-pipeline-state-integrity.js's rules with the actual JSON schema",
           "storyPath": "artefacts/2026-09-30-pipeline-state-integrity-schema-reconciliation/stories/psir-s1.md",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
           "acTotal": 8,
           "acVerified": 8,
@@ -37971,13 +37971,16 @@
           "dorPath": "artefacts/2026-09-30-pipeline-state-integrity-schema-reconciliation/dor/psir-s1-dor.md",
           "branch": "feature/psir-s1",
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/931",
-          "updatedAt": "2026-09-30T00:29:09.636Z"
+          "updatedAt": "2026-09-30T00:40:27.876Z",
+          "dodStatus": "complete",
+          "releaseReady": true,
+          "dodPath": "artefacts/2026-09-30-pipeline-state-integrity-schema-reconciliation/dod/psir-s1-dod.md"
         }
       ],
       "metrics": [],
-      "updatedAt": "2026-09-30T00:29:09.634Z",
+      "updatedAt": "2026-09-30T00:40:27.875Z",
       "track": "short"
     }
   ],
