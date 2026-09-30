@@ -37275,50 +37275,6 @@
           "dorArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/dor/tab-s3-dor.md",
           "dorContractArtefact": "artefacts/2026-09-26-tenant-admin-bootstrap/dor/tab-s3-dor-contract.md",
           "oversightLevel": "medium",
-          "tasks": [
-            {
-              "id": "task-1",
-              "name": "user-roles.js: remove legacy adapter + cascading references (AC1, AC2)",
-              "tddState": "planned",
-              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s3-plan.md"
-            },
-            {
-              "id": "task-2",
-              "name": "server.js: remove legacy wiring + arl-s4 seeding block (AC1)",
-              "tddState": "planned",
-              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s3-plan.md"
-            },
-            {
-              "id": "task-3",
-              "name": "Update tests referencing the legacy adapter presence (AC1, AC4)",
-              "tddState": "planned",
-              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s3-plan.md"
-            },
-            {
-              "id": "task-4",
-              "name": "Delete check-arl-s1-user-roles.js; clean up check-ebv-s1 (AC1, AC4)",
-              "tddState": "planned",
-              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s3-plan.md"
-            },
-            {
-              "id": "task-5",
-              "name": "validate-env.js + auth.js comment cleanup (AC5)",
-              "tddState": "planned",
-              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s3-plan.md"
-            },
-            {
-              "id": "task-6",
-              "name": "New test: AC5 grep-for-absence + AC2 default-fallback regression",
-              "tddState": "planned",
-              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s3-plan.md"
-            },
-            {
-              "id": "task-7",
-              "name": "Full suite + AC4 verification",
-              "tddState": "planned",
-              "file": "artefacts/2026-09-26-tenant-admin-bootstrap/plans/tab-s3-plan.md"
-            }
-          ],
           "verifyStatus": "passed",
           "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/928",
