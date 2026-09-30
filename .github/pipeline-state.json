@@ -37969,15 +37969,21 @@
         },
         {
           "id": "ep2-s1",
-          "stage": "definition",
+          "stage": "review",
           "health": "green",
-          "updatedAt": "2026-09-30T18:16:29.380Z"
+          "updatedAt": "2026-09-30T18:29:49.947Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep2-s1-review-1.md"
         },
         {
           "id": "ep2-s2",
-          "stage": "definition",
+          "stage": "review",
           "health": "green",
-          "updatedAt": "2026-09-30T18:16:29.380Z"
+          "updatedAt": "2026-09-30T18:30:26.123Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep2-s2-review-1.md"
         }
       ],
       "guardrails": [
@@ -38043,6 +38049,24 @@
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-09-30T17:54:48.839Z",
           "evidence": "Keyboard navigation fully verified via real Playwright E2E: all 5 primary CTAs have non-empty accessible names and are reached via Tab strictly before the advanced section's <summary> disclosure control. Screen-reader primary/advanced distinction relies on this codebase's own established semantic-HTML convention (a <p class=\"sw-section-title\"> label plus native <details>/<summary>, already used elsewhere in this app) rather than a newly-written accessibility-tree test this story -- inherently non-colour-dependent by construction, but not independently tested. Recorded as a verification-strength gap in ep1-s3's own DoD, not blocking."
+        },
+        {
+          "id": "ADR-022",
+          "category": "adr",
+          "label": "Multi-skill journey orchestration is Option B -- one session per skill stage",
+          "status": "met",
+          "evidence": "ep2-s2 Architecture Constraints correctly cites ADR-022 -- creates one fresh, standalone session per signal CTA, never a persistent multi-skill orchestration (ep2-s1-review-1.md / ep2-s2-review-1.md, Category E)",
+          "assessedBy": "/review",
+          "assessedAt": "2026-09-30T18:32:00.604Z"
+        },
+        {
+          "id": "ADR-023",
+          "category": "adr",
+          "label": "Handoff schema between journey stages is artefact content injection (B-iii)",
+          "status": "met",
+          "evidence": "ep2-s2 Architecture Constraints correctly cites ADR-023 -- injects signal content via the real priorArtefacts mechanism (registerHtmlSession), not full Q&A replay or model-synthesised summary (ep2-s2-review-1.md, Category E)",
+          "assessedBy": "/review",
+          "assessedAt": "2026-09-30T18:32:00.604Z"
         }
       ],
       "slicingStrategy": "walking-skeleton"

@@ -49,3 +49,8 @@ Then the existing auth guard redirects to sign-in, matching the behaviour of eve
 - Performance: page renders within the same budget as `ep1-s3`'s own launcher NFR (<100ms server-side render time) — signal counts at solo-operator scale are small enough that this is not expected to be a stretch
 - Accessibility: signal list items and CTA buttons are keyboard-navigable, matching the established pattern from `ep1-s3`
 - No new attack surface: read-only page, no new npm dependency, consumes only the already-existing `/api/signals` contract
+## Complexity Rating
+**Rating:** 1
+**Scope stability:** Stable
+## Definition of Ready Pre-check
+<!-- Populated at /definition-of-ready. -->

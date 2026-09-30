@@ -53,3 +53,8 @@ Then behaviour is unchanged from `ep1-s3`'s own merged implementation — confir
 - Security: the new hidden form fields carry only signal content already rendered to the authenticated operator by `ep2-s1` on the same page load — no new data exposure; CSRF protection matches the existing `ep1-s3` skill-launcher form convention
 - Performance: seeding adds one `priorArtefacts` array entry to an otherwise-identical session-creation path; no measurable latency regression expected versus `ep1-s3`'s own baseline
 - No new attack surface: no new npm dependency; form fields are server-validated (non-empty, matching a known signal source/type) before being formatted into `priorArtefacts`
+## Complexity Rating
+**Rating:** 2
+**Scope stability:** Stable
+## Definition of Ready Pre-check
+<!-- Populated at /definition-of-ready. -->
