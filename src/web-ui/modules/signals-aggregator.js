@@ -150,8 +150,25 @@ function _parseDodFile(content, filePath) {
   });
 }
 
+// results.tsv is a raw, historically ragged TSV -- row shapes vary across
+// this file's own history (confirmed by direct inspection: first row has 6
+// columns, later rows have up to 13). Tolerant: every non-empty row becomes
+// exactly one signal, regardless of column count.
+function _parseResultsTsv(content) {
+  const signals = [];
+  content.split('\n').forEach(function(line) {
+    if (!line.trim()) return;
+    const cols = line.split('\t');
+    const first = cols[0];
+    const timestamp = /^\d{4}-\d{2}-\d{2}/.test(first) ? first.slice(0, 10) : null;
+    signals.push(_makeSignal('results', 'watermark-row', cols.slice(1, 4).join(' / ') || cols[0], timestamp));
+  });
+  return signals;
+}
+
 module.exports = {
   getSignals, setFileReadAdapter, _resetFileReadAdapterForTesting, createFsFileReadAdapter,
   _parseCaptureLog, _parseDecisions, _parseMarkdownHeadings, _parseEstimationNorms,
   _parseSuiteJson, _parsePipelineState, _parseProposalsDir, _parseTracesFile, _parseDodFile,
+  _parseResultsTsv,
 };

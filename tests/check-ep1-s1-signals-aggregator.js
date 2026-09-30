@@ -137,5 +137,16 @@ test('traces jsonl tolerates a malformed line without dropping valid ones', func
   assert.strictEqual(signals.length, 2, 'the 1 malformed line is skipped, not thrown');
 });
 
+test('parses results.tsv rows tolerantly, including ragged column counts', function() {
+  const content = [
+    '2026-04-10T12:11:26.579Z\ta1604b2e\tgithub-copilot\t0\t0\tbaseline',
+    '2026-04-12\tfeat-a\test-actuals\t8',       // fewer columns -- must not throw
+    '2026-04-20\tfeat-b\test-actuals\t24\t0.25\t30h\t1h',
+  ].join('\n');
+  const signals = agg._parseResultsTsv(content);
+  assert.strictEqual(signals.length, 3);
+  assert.strictEqual(signals[0].source, 'results');
+});
+
 console.log('\n[ep1-s1] Results: ' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);
