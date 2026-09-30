@@ -1232,6 +1232,14 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   setPasswordAdapter(require('bcrypt'));
   console.log('[auth-email] bcrypt adapter wired');
 
+  // ep1-s1 (weeb-ui-learnings-and-improvements) — Wire real fs-backed file-read
+  // adapter for the signals aggregator (D37 mandatory separate wiring task)
+  {
+    const _signalsAggregator = require('./modules/signals-aggregator');
+    _signalsAggregator.setFileReadAdapter(_signalsAggregator.createFsFileReadAdapter());
+    console.log('[ep1-s1] signals-aggregator file-read adapter wired');
+  }
+
   // lab-s2.2 — Wire users DB adapter (D37 mandatory separate wiring task)
   if (process.env.DATABASE_URL) {
     const { Pool: _UsersPool } = require('pg');
