@@ -208,5 +208,42 @@ test('AC4: signals are sorted descending by timestamp; timestampless entries go 
   assert.ok(firstUntimestamped === -1 || firstUntimestamped > lastTimestamped, 'timestampless entries must sort after all timestamped ones');
 });
 
+test('Integration: real fs-backed adapter against a real temp workspace with all 12 sources present', function() {
+  const fs = require('fs');
+  const os = require('os');
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'ep1-s1-int-'));
+  fs.mkdirSync(path.join(tmp, 'workspace', 'proposals'), { recursive: true });
+  fs.mkdirSync(path.join(tmp, 'workspace', 'traces'), { recursive: true });
+  fs.mkdirSync(path.join(tmp, '.github'), { recursive: true });
+  fs.mkdirSync(path.join(tmp, 'artefacts'), { recursive: true });
+  fs.writeFileSync(path.join(tmp, 'workspace', 'capture-log.md'), '- date: 2026-09-28\n  session-phase: x\n  signal-type: gap\n  signal-text: "Real gap"\n  source: operator-manual\n');
+  fs.writeFileSync(path.join(tmp, 'workspace', 'learnings.md'), '## A learning\n\ntext\n');
+  fs.writeFileSync(path.join(tmp, 'workspace', 'estimation-norms.md'), '| Date | X |\n|---|---|\n| 2026-09-01 | y |\n');
+  fs.writeFileSync(path.join(tmp, '.github', 'architecture-guardrails.md'), '## ADR-1\n\ntext\n');
+  fs.writeFileSync(path.join(tmp, 'workspace', 'suite.json'), JSON.stringify({ scenarios: [{ taskId: 's1', description: 'd1' }] }));
+  fs.writeFileSync(path.join(tmp, '.github', 'pipeline-state.json'), JSON.stringify({ features: [{ slug: 'f1', name: 'F1', stage: 'review' }] }));
+  fs.writeFileSync(path.join(tmp, 'workspace', 'results.tsv'), '2026-09-01\tf1\tactuals\t1\n');
+  fs.writeFileSync(path.join(tmp, 'workspace', 'proposals', '2026-09-01-x-improve-proposal.md'), '# X\n');
+  fs.writeFileSync(path.join(tmp, 'workspace', 'traces', 't1.jsonl'), '{"skill":"tdd","status":"completed"}\n');
+
+  agg.setFileReadAdapter(agg.createFsFileReadAdapter());
+  const signals = agg.getSignals(tmp);
+  const sources = signals.map(function(s) { return s.source; });
+  ['capture-log', 'learnings', 'estimation', 'architecture-guardrails', 'suite', 'pipeline-state', 'results', 'proposals', 'traces']
+    .forEach(function(expected) {
+      assert.ok(sources.indexOf(expected) !== -1, 'expected at least one signal from source "' + expected + '", got sources: ' + sources.join(','));
+    });
+  assert.ok(signals.every(function(s) { return s.type !== 'parse-error'; }), 'no parse-error signals expected against fully valid fixture');
+
+  fs.rmSync(tmp, { recursive: true });
+});
+
+test('ADR-028 canonical builder: no other src/ file independently reads workspace/capture-log.md', function() {
+  const { execSync } = require('child_process');
+  const out = execSync('grep -rl "capture-log.md" src/ 2>/dev/null || true').toString().trim();
+  const offenders = out.split('\n').filter(function(f) { return f && f.indexOf('signals-aggregator.js') === -1; });
+  assert.strictEqual(offenders.length, 0, 'unexpected files independently referencing capture-log.md: ' + offenders.join(', '));
+});
+
 console.log('\n[ep1-s1] Results: ' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);
