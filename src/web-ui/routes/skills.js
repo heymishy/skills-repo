@@ -645,6 +645,7 @@ async function handleResumeSession(req, res) {
 const { renderShell, escHtml }   = require('../utils/html-shell');
 const { renderCommitPreview, renderCommitResult, renderAlreadyCommitted } = require('../views/commit-view');
 const { renderChat: _renderChatView } = require('../views/chat-view');
+const { renderSkillLauncher }    = require('../skill-launcher'); // ep1-s3 (2026-09-28-weeb-ui-learnings-and-improvements)
 const skillsAdapter              = require('../adapters/skills');
 
 // Pricing table — direct API rates per million tokens (Anthropic + common OpenAI models).
@@ -1181,7 +1182,16 @@ async function handleGetSkillsHtml(req, res) {
       timestamp: new Date().toISOString()
     });
 
-    const html = _renderSkillsList(skills, user, _nav, await _csrf.generateCsrfToken(req));
+    // ep1-s3: redesigned launcher -- 5 primary CTAs + collapsible advanced
+    // section, replacing the old flat _renderSkillsList output.
+    // _renderSkillsList itself is left in place, unused -- not deleted,
+    // since removing it is unrequested cleanup beyond this story's own scope.
+    const html = renderShell({
+      title: 'Run a Skill',
+      bodyContent: renderSkillLauncher(skills, await _csrf.generateCsrfToken(req)),
+      user: user, active: 'skills',
+      products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
+    });
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     res.end(html);
   } catch (err) {
