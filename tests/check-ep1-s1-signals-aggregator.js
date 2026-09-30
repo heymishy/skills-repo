@@ -245,5 +245,14 @@ test('ADR-028 canonical builder: no other src/ file independently reads workspac
   assert.strictEqual(offenders.length, 0, 'unexpected files independently referencing capture-log.md: ' + offenders.join(', '));
 });
 
+test('server.js wires the real fs-backed adapter at startup (not just imports the module)', function() {
+  const fs = require('fs');
+  const serverSrc = fs.readFileSync(path.join(__dirname, '..', 'src', 'web-ui', 'server.js'), 'utf8');
+  assert.ok(serverSrc.indexOf("require('./modules/signals-aggregator')") !== -1,
+    'server.js must require signals-aggregator.js');
+  assert.ok(serverSrc.indexOf('setFileReadAdapter(') !== -1 && serverSrc.indexOf('createFsFileReadAdapter()') !== -1,
+    'server.js must call setFileReadAdapter(createFsFileReadAdapter()) at startup, not just import the module');
+});
+
 console.log('\n[ep1-s1] Results: ' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);
