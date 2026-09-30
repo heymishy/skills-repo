@@ -99,6 +99,44 @@ function mockRes() {
     assert.strictEqual(res1.body, res2.body, 'both responses must be byte-identical JSON');
   });
 
+  const router = require('../src/web-ui/server').router;
+
+  function mockReq(overrides) {
+    return Object.assign({ headers: {}, method: 'GET', url: '/' }, overrides || {});
+  }
+  function mockResForRouter() {
+    var _statusCode = null, _headers = {}, _chunks = [];
+    return {
+      writeHead: function(code, headers) { _statusCode = code; Object.assign(_headers, headers || {}); return this; },
+      setHeader: function(k, v) { _headers[k] = v; },
+      end: function(body) { if (body != null) _chunks.push(body); },
+      _get: function() { return { statusCode: _statusCode, headers: _headers, body: _chunks.join('') }; }
+    };
+  }
+
+  await test('Integration: real router dispatch reaches GET /api/signals and returns the stubbed array', async function() {
+    _resetSignalsAggregatorForTesting();
+    const fixed = [{ id: 'a', source: 'suite', type: 'eval-scenario', text: 'x', timestamp: null, cta: { label: 'Review', skill: '/improve' } }];
+    setSignalsAggregator(function() { return fixed; });
+    const req = mockReq({ url: '/api/signals' });
+    const res = mockResForRouter();
+    await router(req, res);
+    const result = res._get();
+    assert.strictEqual(result.statusCode, 200);
+    assert.deepStrictEqual(JSON.parse(result.body), fixed);
+  });
+
+  await test('Integration: real router dispatch surfaces an aggregator exception as 500', async function() {
+    _resetSignalsAggregatorForTesting();
+    setSignalsAggregator(function() { throw new Error('disk read failed'); });
+    const req = mockReq({ url: '/api/signals' });
+    const res = mockResForRouter();
+    await router(req, res);
+    const result = res._get();
+    assert.strictEqual(result.statusCode, 500);
+    assert.strictEqual(JSON.parse(result.body).error, 'disk read failed');
+  });
+
   console.log('\n[ep1-s2] Results: ' + passed + ' passed, ' + failed + ' failed');
   process.exit(failed > 0 ? 1 : 0);
 })();
