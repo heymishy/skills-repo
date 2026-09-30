@@ -89,6 +89,13 @@ const FULL_SKILLS = [
     assert.ok(res.body.includes('test-plan')); // still present, just inside the collapsed advanced <details>
   });
 
+  await test('NFR-Performance: renderSkillLauncher renders well within the stated <100ms budget (server-side render time, not full browser navigation)', function() {
+    const start = process.hrtime.bigint();
+    renderSkillLauncher(FULL_SKILLS, 'csrf-token-abc');
+    const elapsedMs = Number(process.hrtime.bigint() - start) / 1e6;
+    assert.ok(elapsedMs < 100, 'expected renderSkillLauncher to complete in <100ms, took ' + elapsedMs.toFixed(2) + 'ms');
+  });
+
   console.log('\n[ep1-s3] Results: ' + passed + ' passed, ' + failed + ' failed');
   process.exit(failed > 0 ? 1 : 0);
 })().catch(function(err) {

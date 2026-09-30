@@ -44,3 +44,41 @@ withAuth('AC4: the advanced section is collapsed by default and visually de-emph
   const bodyVisibleAfter = await page.locator('.el-advanced-body').first().isVisible();
   expect(bodyVisibleAfter).toBe(true); // expands without a page reload (native <details>, zero JS)
 });
+
+withAuth('NFR-Accessibility: every primary CTA has a non-empty accessible name and Tab order reaches all 5 before any advanced-section button', async ({ page }) => {
+  await page.goto('/skills');
+  await page.waitForLoadState('networkidle');
+
+  const primaryButtons = page.locator('.el-primary .sw-btn--primary');
+  const primaryCount = await primaryButtons.count();
+  for (let i = 0; i < primaryCount; i++) {
+    const name = await primaryButtons.nth(i).evaluate((el) => el.textContent.trim());
+    expect(name.length).toBeGreaterThan(0);
+  }
+
+  // Tab order: <summary> is always focusable (collapsed or not -- it's the
+  // disclosure control), but everything else inside <details> is only
+  // reachable once expanded. So the first "advanced" focus target Tab
+  // reaches is always .el-advanced-summary itself -- walk the whole
+  // document's Tab sequence and confirm every .el-primary button is reached
+  // strictly before that summary is focused.
+  await page.locator('body').evaluate((el) => el.focus());
+  let lastPrimaryIndex = -1;
+  let advancedIndex = -1;
+  let primarySeen = 0;
+  for (let i = 0; i < 100 && advancedIndex === -1; i++) {
+    await page.keyboard.press('Tab');
+    const where = await page.evaluate(() => {
+      const active = document.activeElement;
+      if (!active) return 'none';
+      if (active.closest('.el-primary')) return 'primary';
+      if (active.closest('.el-advanced')) return 'advanced';
+      return 'other';
+    });
+    if (where === 'primary') { lastPrimaryIndex = i; primarySeen++; }
+    if (where === 'advanced') { advancedIndex = i; }
+  }
+  expect(primarySeen).toBe(primaryCount); // Tab order reaches all 5 primary CTAs
+  expect(advancedIndex).toBeGreaterThan(-1); // the advanced summary was actually reached (sanity check the walk didn't just run out of steps)
+  expect(lastPrimaryIndex).toBeLessThan(advancedIndex); // all primary CTAs are reached strictly before the advanced section's own disclosure control
+});
