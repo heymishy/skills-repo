@@ -38,7 +38,19 @@ function getSignals(repoPath) {
     // triggers the D37 "not wired" error exactly as before.
     return adapter(repoPath);
   }
-  return _aggregateAllSources(repoPath, adapter);
+  return _sortSignals(_aggregateAllSources(repoPath, adapter));
+}
+
+// Stable descending sort by timestamp; entries with no timestamp sort last,
+// preserving their relative order (Array.prototype.sort is stable per spec
+// since Node 12 -- no secondary key needed).
+function _sortSignals(signals) {
+  return signals.slice().sort(function(a, b) {
+    if (!a.timestamp && !b.timestamp) return 0;
+    if (!a.timestamp) return 1;
+    if (!b.timestamp) return -1;
+    return b.timestamp.localeCompare(a.timestamp);
+  });
 }
 
 function _safeParse(sourceName, fn) {

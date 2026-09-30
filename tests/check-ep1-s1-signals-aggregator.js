@@ -180,5 +180,33 @@ test('AC2: every signal has the required normalized fields', function() {
   });
 });
 
+test('AC4: signals are sorted descending by timestamp; timestampless entries go last, stably', function() {
+  const adapter = {
+    readFile: function(p) {
+      if (p.indexOf('capture-log.md') !== -1) {
+        return [
+          '- date: 2026-09-26',
+          '  session-phase: x', '  signal-type: gap', '  signal-text: "A"', '  source: operator-manual',
+          '',
+          '- date: 2026-09-28',
+          '  session-phase: x', '  signal-type: decision', '  signal-text: "B"', '  source: operator-manual',
+        ].join('\n');
+      }
+      if (p.indexOf('learnings.md') !== -1) return '## No timestamp entry\n\ntext\n';
+      return '';
+    },
+    readDir: function() { return []; },
+  };
+  agg.setFileReadAdapter(adapter);
+  const signals = agg.getSignals('/fake/repo');
+  const withTs = signals.filter(function(s) { return s.timestamp; });
+  for (let i = 1; i < withTs.length; i++) {
+    assert.ok(withTs[i - 1].timestamp >= withTs[i].timestamp, 'not sorted descending at index ' + i);
+  }
+  const lastTimestamped = signals.map(function(s) { return !!s.timestamp; }).lastIndexOf(true);
+  const firstUntimestamped = signals.map(function(s) { return !s.timestamp; }).indexOf(true);
+  assert.ok(firstUntimestamped === -1 || firstUntimestamped > lastTimestamped, 'timestampless entries must sort after all timestamped ones');
+});
+
 console.log('\n[ep1-s1] Results: ' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);
