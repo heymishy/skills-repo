@@ -37900,23 +37900,65 @@
         },
         {
           "id": "ep1-s3",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "reviewStatus": "passed",
           "highFindings": 0,
           "health": "green",
           "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep1-s3-review-2.md",
-          "updatedAt": "2026-09-29T20:12:57.437Z",
+          "updatedAt": "2026-09-30T09:01:56.717Z",
           "testPlan": {
             "status": "written",
             "totalTests": 9,
-            "passing": 0
+            "passing": 9
           },
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 6,
           "hasLayoutDependentGaps": "true",
           "e2eToolingRequired": "true",
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/dor/ep1-s3-dor.md"
+          "dorArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/dor/ep1-s3-dor.md",
+          "branch": "feature/ep1-s3-wuli",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "renderSkillLauncher: primary CTAs + collapsible advanced section (AC2/AC6)",
+              "tddState": "done",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s3-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "AC3 confirmation: advanced section has the complete unfiltered skill list",
+              "tddState": "done",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s3-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "AC6 confirmation: primary list stable, no session-state input",
+              "tddState": "done",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s3-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "AC5 confirmation: advanced-section skills retain a real launch form",
+              "tddState": "done",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s3-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Wire the new launcher into the real /skills page + pre-existing-test compatibility",
+              "tddState": "done",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s3-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "Real Playwright E2E tests for AC1/AC4 (CSS-layout-dependent)",
+              "tddState": "done",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep1-s3-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/934"
         }
       ],
       "guardrails": [
