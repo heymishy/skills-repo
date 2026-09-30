@@ -46,5 +46,29 @@ test('AC2: primary section contains exactly the 5 primary skills, no chained ski
   });
 });
 
+test('AC3: advanced section contains the complete, unfiltered skill list (including primaries)', function() {
+  const html = renderSkillLauncher(FULL_SKILLS, 'csrf-token-abc');
+  const advancedMatch = html.match(/<details class="el-advanced">[^]*<\/details>/);
+  const advancedSection = advancedMatch ? advancedMatch[0] : '';
+  FULL_SKILLS.forEach(function(s) {
+    assert.ok(advancedSection.includes(s.name), 'expected "' + s.name + '" in advanced section');
+  });
+});
+
+test('AC6: PRIMARY_SKILLS list and rendered primary section are identical across repeated renders (no session-state input exists to drift)', function() {
+  const html1 = renderSkillLauncher(FULL_SKILLS, 'csrf-token-abc');
+  const html2 = renderSkillLauncher(FULL_SKILLS, 'csrf-token-xyz'); // different CSRF token, same skills
+  const strip = function(h) { return h.replace(/name="_csrf" value="[^"]*"/g, ''); };
+  assert.strictEqual(strip(html1), strip(html2), 'primary/advanced structure must be identical regardless of anything except the real skills list and csrf token');
+});
+
+test('AC5: an advanced-section (non-primary) skill still has a real, correctly-targeted launch form', function() {
+  const html = renderSkillLauncher(FULL_SKILLS, 'csrf-token-abc');
+  assert.ok(html.includes('action="/api/skills/test-plan/sessions"'), 'expected a real form action for the chained skill "test-plan"');
+  assert.ok(html.includes('action="/api/skills/clarify/sessions"'), 'expected a real form action for the chained skill "clarify"');
+  assert.ok(html.match(/<form method="POST" action="\/api\/skills\/test-plan\/sessions"/),
+    'the test-plan form must use a real method="POST" (this codebase\'s own no-JS-required session-launch convention)');
+});
+
 console.log('\n[ep1-s3] Results: ' + passed + ' passed, ' + failed + ' failed');
 process.exit(failed > 0 ? 1 : 0);
