@@ -115,6 +115,26 @@ const PARSE_ERROR_FIXTURE = { id: 's3', source: 'parse-error', type: 'parse-erro
     });
   });
 
+  await test('Integration: handleGetSignalsPanelHtml renders real signals via the panel view, authenticated', async function() {
+    const routes = require('../src/web-ui/routes/signals-panel');
+    routes.setSignalsSource(function() { return FIXTURE_SIGNALS; });
+    const req = { session: { accessToken: 't', login: 'alice' }, sessionId: 'sid', query: {}, headers: {}, method: 'GET', url: '/signals' };
+    const res = { statusCode: null, headers: null, body: null, writeHead: function(c, h) { this.statusCode = c; this.headers = h; }, end: function(b) { this.body = b; } };
+    await routes.handleGetSignalsPanelHtml(req, res);
+    assert.strictEqual(res.statusCode, 200);
+    assert.ok(res.body.includes('Use flat stories array'));
+    assert.ok(res.body.includes('Open feature'));
+  });
+
+  await test('AC5: unauthenticated request redirects to sign-in', async function() {
+    const routes = require('../src/web-ui/routes/signals-panel');
+    const req = { session: null, sessionId: 'sid2', query: {}, headers: {}, method: 'GET', url: '/signals' };
+    const res = { statusCode: null, headers: null, body: null, writeHead: function(c, h) { this.statusCode = c; this.headers = h; }, end: function(b) { this.body = b; } };
+    await routes.handleGetSignalsPanelHtml(req, res);
+    assert.strictEqual(res.statusCode, 302);
+    assert.ok(res.headers.Location.includes('/auth/github'), 'expected redirect to the real sign-in path, matching every other authenticated page');
+  });
+
   console.log('\n[ep2-s1] Results: ' + passed + ' passed, ' + failed + ' failed');
   process.exit(failed > 0 ? 1 : 0);
 })().catch(function(err) {
