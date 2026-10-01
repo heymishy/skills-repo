@@ -4,7 +4,7 @@
 // ep1-s2's handleGetSignals already calls) -- not a re-implementation, not a
 // new HTTP round-trip to /api/signals from within this same process.
 const path = require('path');
-const { renderShell } = require('../utils/html-shell');
+const { renderShell, escHtml } = require('../utils/html-shell');
 const { renderSignalsPanel } = require('../views/signals-panel-view');
 const _csrf = require('../middleware/csrf');
 const { _getSkillsNavContext } = require('./skills');
@@ -23,19 +23,35 @@ async function handleGetSignalsPanelHtml(req, res) {
     res.end();
     return;
   }
-  const getSignals = _signalsSourceOverride || require('../modules/signals-aggregator').getSignals;
-  const signals = getSignals(_getRepoPath());
-  const csrfToken = await _csrf.generateCsrfToken(req);
-  const _nav = await _getSkillsNavContext(req, null);
-  const html = renderShell({
-    title: 'Improvement Signals',
-    bodyContent: renderSignalsPanel(signals, csrfToken),
-    user: { login: req.session.login || '' },
-    active: 'signals',
-    products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
-  });
-  res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-  res.end(html);
+  try {
+    const getSignals = _signalsSourceOverride || require('../modules/signals-aggregator').getSignals;
+    const signals = getSignals(_getRepoPath());
+    const csrfToken = await _csrf.generateCsrfToken(req);
+    const _nav = await _getSkillsNavContext(req, null);
+    const html = renderShell({
+      title: 'Improvement Signals',
+      bodyContent: renderSignalsPanel(signals, csrfToken),
+      user: { login: req.session.login || '' },
+      active: 'signals',
+      products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
+    });
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+  } catch (err) {
+    // ep2-s1: matches handlePostSkillSessionHtml's catch precedent in
+    // routes/skills.js -- styled HTML error page, not the bare top-level
+    // router catch-all's plain-text "Internal Server Error".
+    const _nav = await _getSkillsNavContext(req, null);
+    const html = renderShell({
+      title:       'Error',
+      bodyContent: '<p>Could not load signals: ' + escHtml(err.message) + '</p>',
+      user:        { login: (req.session && req.session.login) || '' },
+      active:      'signals',
+      products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount
+    });
+    res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
+    res.end(html);
+  }
 }
 
 module.exports = { handleGetSignalsPanelHtml, setSignalsSource, _resetSignalsSourceForTesting };

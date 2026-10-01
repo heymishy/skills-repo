@@ -135,6 +135,26 @@ const PARSE_ERROR_FIXTURE = { id: 's3', source: 'parse-error', type: 'parse-erro
     assert.ok(res.headers.Location.includes('/auth/github'), 'expected redirect to the real sign-in path, matching every other authenticated page');
   });
 
+  await test('Error handling: getSignals throwing renders a styled 500 page, not an unhandled exception', async function() {
+    const routes = require('../src/web-ui/routes/signals-panel');
+    routes.setSignalsSource(function() { throw new Error('boom'); });
+    try {
+      const req = { session: { accessToken: 't', login: 'alice' }, sessionId: 'sid3', query: {}, headers: {}, method: 'GET', url: '/signals' };
+      const res = { statusCode: null, headers: null, body: null, writeHead: function(c, h) { this.statusCode = c; this.headers = h; }, end: function(b) { this.body = b; } };
+      await routes.handleGetSignalsPanelHtml(req, res);
+      assert.strictEqual(res.statusCode, 500, 'expected a styled 500 response instead of propagating the exception');
+      assert.strictEqual(res.headers['Content-Type'], 'text/html; charset=utf-8', 'expected an HTML error page, matching the handlePostSkillSessionHtml precedent (not a bare plain-text 500)');
+      // NOTE: handlePostSkillSessionHtml's own precedent (routes/skills.js) renders
+      // `escHtml(err.message)` into the error page body -- it does NOT redact the
+      // message. Matching that precedent exactly means this message is expected to
+      // appear (HTML-escaped) in the body, not be absent from it.
+      assert.ok(res.body.includes('boom'), 'expected the escaped error message to appear, matching handlePostSkillSessionHtml\'s own escHtml(err.message) precedent');
+      assert.ok(res.body.includes('Error'), 'expected the shared error-page title/shape to be used');
+    } finally {
+      routes._resetSignalsSourceForTesting();
+    }
+  });
+
   console.log('\n[ep2-s1] Results: ' + passed + ' passed, ' + failed + ' failed');
   process.exit(failed > 0 ? 1 : 0);
 })().catch(function(err) {
