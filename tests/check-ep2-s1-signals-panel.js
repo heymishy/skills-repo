@@ -78,6 +78,43 @@ const PARSE_ERROR_FIXTURE = { id: 's3', source: 'parse-error', type: 'parse-erro
     assert.ok(html.includes('&lt;script&gt;'), 'expected the escaped form to be present');
   });
 
+  await test('NFR-Performance: renderSignalsPanel renders well within the stated <100ms budget (server-side render time, not full browser navigation)', function() {
+    const start = process.hrtime.bigint();
+    renderSignalsPanel(FIXTURE_SIGNALS, 'csrf-abc');
+    const elapsedMs = Number(process.hrtime.bigint() - start) / 1e6;
+    assert.ok(elapsedMs < 100, 'expected renderSignalsPanel to complete in <100ms, took ' + elapsedMs.toFixed(2) + 'ms');
+  });
+
+  await test('NFR-Security: no new runtime dependency added (new source files require only already-listed deps or Node builtins)', function() {
+    const fs = require('fs');
+    const path = require('path');
+    const builtins = new Set(require('module').builtinModules);
+    const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'package.json'), 'utf8'));
+    const allowedDeps = new Set(Object.keys(pkg.dependencies || {}));
+
+    const newFiles = [
+      path.join(__dirname, '..', 'src', 'web-ui', 'views', 'signals-panel-view.js'),
+      path.join(__dirname, '..', 'src', 'web-ui', 'routes', 'signals-panel.js'),
+    ];
+
+    newFiles.forEach(function(filePath) {
+      if (!fs.existsSync(filePath)) return; // not yet implemented (later task) -- nothing to verify yet
+      const content = fs.readFileSync(filePath, 'utf8');
+      const requireRe = /require\(\s*['"]([^'"]+)['"]\s*\)/g;
+      let match;
+      while ((match = requireRe.exec(content))) {
+        const moduleName = match[1];
+        if (moduleName.startsWith('.') || moduleName.startsWith('/')) continue; // relative/local import, not a dependency
+        const normalized = moduleName.startsWith('node:') ? moduleName.slice(5) : moduleName;
+        const pkgName = normalized.startsWith('@') ? normalized.split('/').slice(0, 2).join('/') : normalized.split('/')[0];
+        assert.ok(
+          builtins.has(pkgName) || allowedDeps.has(pkgName),
+          'expected no new runtime dependency; found require("' + moduleName + '") not in package.json dependencies and not a Node builtin'
+        );
+      }
+    });
+  });
+
   console.log('\n[ep2-s1] Results: ' + passed + ' passed, ' + failed + ' failed');
   process.exit(failed > 0 ? 1 : 0);
 })().catch(function(err) {
