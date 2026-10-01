@@ -108,6 +108,7 @@ const { migratePodAssignmentsSchema }                                = require('
 const { migrateFeatureCollaboratorsSchema, migrateFeatureCollaboratorRemovalsSchema } = require('./modules/feature-collaborator-store'); // ep1-s3, ep4-s1
 const { createImpersonationHandlers }                                = require('./routes/impersonation');         // d1
 const { handleGetSignals }                                           = require('./routes/signals');                // ep1-s2 (2026-09-28-weeb-ui-learnings-and-improvements -- distinct from the unrelated ep1-s2/pod-assignment-store above, which reuses the same generic slug)
+const { handleGetSignalsPanelHtml }                                  = require('./routes/signals-panel');      // ep2-s1
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -2996,6 +2997,11 @@ async function router(req, res) {
   } else if (pathname === '/skills' && req.method === 'GET') {
     authGuard(req, res, async () => {
       await handleGetSkillsHtml(req, res);
+    });
+
+  } else if (pathname === '/signals' && req.method === 'GET') {
+    authGuard(req, res, async () => {
+      await handleGetSignalsPanelHtml(req, res);
     });
 
   } else if (pathname.match(/^\/skills\/[^/]+\/sessions\/[^/]+\/commit-preview$/) && req.method === 'GET') {
