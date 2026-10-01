@@ -38220,7 +38220,8 @@
       "slug": "2026-09-30-refactoring-and-product-health",
       "id": "2026-09-30-refactoring-and-product-health",
       "discoveryStatus": "complete",
-      "artefact": "artefacts/2026-09-30-refactoring-and-product-health/discovery.md"
+      "artefact": "artefacts/2026-09-30-refactoring-and-product-health/discovery.md",
+      "stage": "benefit-metric"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
