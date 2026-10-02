@@ -38221,7 +38221,7 @@
       "id": "2026-09-30-refactoring-and-product-health",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-09-30-refactoring-and-product-health/discovery.md",
-      "stage": "design"
+      "stage": "definition"
     }
   ],
   "archive": ".github/pipeline-state-archive.json",
