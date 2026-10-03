@@ -38038,7 +38038,7 @@
           "id": "ep2-s2",
           "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-10-03T17:51:56.855Z",
+          "updatedAt": "2026-10-03T18:12:46.807Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep2-s2-review-1.md",
@@ -38111,7 +38111,7 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
+          "prStatus": "merged",
           "prUrl": "https://github.com/heymishy/skills-repo/pull/936"
         },
         {
