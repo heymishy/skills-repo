@@ -38036,23 +38036,83 @@
         },
         {
           "id": "ep2-s2",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-09-30T20:20:57.972Z",
+          "updatedAt": "2026-10-03T17:51:56.855Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep2-s2-review-1.md",
           "testPlan": {
             "status": "written",
-            "totalTests": 8,
-            "passing": 0
+            "totalTests": 12,
+            "passing": 12
           },
           "acTotal": 6,
-          "acVerified": 0,
+          "acVerified": 6,
           "hasLayoutDependentGaps": false,
           "e2eToolingRequired": false,
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/dor/ep2-s2-dor.md"
+          "dorArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/dor/ep2-s2-dor.md",
+          "branch": "feature/ep2-s2-wuli",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Write failing unit tests for signal-context extraction/formatting (AC1, AC4)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s2-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Implement signal-context.js",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s2-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Write failing integration tests for the extended POST handler (AC1, AC2, AC3, AC4, AC5)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s2-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Extend handlePostSkillSessionHtml",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s2-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Write failing D37 adapter tests (stub-throw fix, 3-arg signature)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s2-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "Fix the createSession adapter (D37)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s2-plan.md"
+            },
+            {
+              "id": "task-7",
+              "name": "Write the failing AC6 wiring behavioural-correctness test",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s2-plan.md"
+            },
+            {
+              "id": "task-8",
+              "name": "Wire the real implementation to forward priorArtefacts (AC6)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s2-plan.md"
+            },
+            {
+              "id": "task-9",
+              "name": "Full regression + verification pass",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s2-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/936"
         },
         {
           "id": "ep2-s3",

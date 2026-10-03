@@ -34,6 +34,7 @@ const { validateArtefactPath } = require('../../artefact-path-validator');
 const { commitArtefact }       = require('../../scm-adapter');
 const _journeyStore            = require('../modules/journey-store'); // ougl.4
 const _csrf                    = require('../middleware/csrf'); // rcfc-s1 Task 2
+const { extractSignalContext, formatSignalPriorArtefact } = require('../utils/signal-context'); // ep2-s2
 
 var { createLogger: _createPinoLogger } = require('../logger');
 var _pinoLogger = _createPinoLogger();
@@ -1225,8 +1226,20 @@ async function handlePostSkillSessionHtml(req, res) {
   if (!csrfOk) return;
   const skillName = (req.params && req.params.name) || '';
   try {
-    const token   = req.session.accessToken;
-    const session = await _createSession(skillName, token);
+    const token = req.session.accessToken;
+    // ep2-s2: when ep2-s1's signal CTA form submits signal-context hidden
+    // fields, seed the new session with that content as a single named
+    // priorArtefacts entry (ADR-023). Absent fields -> undefined priorArtefacts
+    // -> byte-identical to ep1-s3's own pre-ep2-s2 behaviour (AC5).
+    const signalContext = extractSignalContext(req.body);
+    let priorArtefacts;
+    if (signalContext) {
+      if (!_isAllowedSkillName(skillName)) {
+        throw new Error('Unknown skill: ' + skillName);
+      }
+      priorArtefacts = [formatSignalPriorArtefact(signalContext)];
+    }
+    const session = await _createSession(skillName, token, priorArtefacts);
     const id      = session && session.id;
     res.writeHead(303, { Location: '/skills/' + encodeURIComponent(skillName) + '/sessions/' + encodeURIComponent(id) + '/chat' });
     res.end();
@@ -6234,6 +6247,9 @@ module.exports = {
   htmlSubmitTurn, buildSystemPrompt,
   // wuce.26 — test helpers + skill-turn executor adapter setter
   _getHtmlSession, _setHtmlSession, _listHtmlSessions, _getHtmlSessionsBulk, setSkillTurnExecutorAdapter,
+  // ep2-s2 — test inspection seam for the skill-existence check used by the
+  // signal-seeded POST path's AC4 validation.
+  _isAllowedSkillName,
   // dsh-s4 — in-memory-only session eviction test helper (POST /test/evict-skill-session)
   _evictHtmlSession,
   // wsm.1 — disk session writer injectable
