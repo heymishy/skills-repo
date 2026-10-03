@@ -205,7 +205,7 @@ module.exports = { paginateSignals, SIGNALS_PAGE_SIZE };
 ```
 
 **Run:** `node tests/check-ep2-s3-signals-pagination.js`
-**Expected output:** `[ep2-s3] Results: 11 passed, 0 failed (partial run -- tasks 3/7 append more)`
+**Expected output:** `[ep2-s3] Results: 10 passed, 0 failed (partial run -- tasks 3/7 append more)` (corrected 2026-10-04 during /subagent-execution — Task 1's own committed file has 10 `test()` calls, not 11; the plan's original count was an arithmetic slip, caught by the Task 2 implementer. The overall story total of 19 tests, spanning this file plus the separate Playwright E2E spec, is unaffected.)
 
 **Commit message:** `feat(ep2-s3): add paginateSignals pure pagination helper (AC1, AC3, AC4, AC5, AC6-edge)`
 
@@ -393,7 +393,7 @@ function renderSignalsPanel(signals, csrfToken, pagination) {
 **Constraint check:** when `pagination` is `undefined` (every one of `ep2-s1`'s own 7 existing test calls), `_paginationBar(undefined)` returns `''` — byte-identical to today's output with an extra empty string joined on (no visible difference).
 
 **Run:** `node tests/check-ep2-s3-signals-pagination.js`
-**Expected output:** `[ep2-s3] Results: 18 passed, 0 failed (partial run -- tasks 3/7 append more)`
+**Expected output:** `[ep2-s3] Results: 17 passed, 0 failed (partial run -- tasks 3/7 append more)` (corrected 2026-10-04: 10 unit + 7 new integration tests = 17, not 18 — see Task 2's own correction note above.)
 
 **Commit message:** `feat(ep2-s3): wire pagination into the signals panel route and view (AC1-AC6)`
 
@@ -429,7 +429,7 @@ This is explicitly named as a REQUIRED, real test — per the DoR's own Coding A
 (This test should pass immediately once added, since Task 4's implementation already exists — this task is RED-then-immediately-GREEN in the same commit, matching `ep1-s3`'s/`ep2-s1`'s own precedent for render-time NFR tests added after the render function itself already exists.)
 
 **Run:** `node tests/check-ep2-s3-signals-pagination.js`
-**Expected output:** `[ep2-s3] Results: 19 passed, 0 failed (partial run -- task 7 appends the final footer)`
+**Expected output:** `[ep2-s3] Results: 18 passed, 0 failed (partial run -- task 7 appends the final footer)` (corrected 2026-10-04: 17 + 1 NFR test = 18, not 19 — see Task 2's own correction note above. The 19th test in this story's own total is the SEPARATE Playwright E2E spec added in Task 7, which has its own independent "1 passed" output and is never counted inside this file's own result line.)
 
 **Commit message:** `test(ep2-s3): add dedicated NFR-Performance test for paginated render time`
 
@@ -490,7 +490,7 @@ Then replace the still-partial footer in `tests/check-ep2-s3-signals-pagination.
 ```
 
 **Run:** `node tests/check-ep2-s3-signals-pagination.js`
-**Expected output:** `[ep2-s3] Results: 19 passed, 0 failed`
+**Expected output:** `[ep2-s3] Results: 18 passed, 0 failed` (corrected 2026-10-04 — this file's own final total is 18, not 19; see Task 6's own correction note above. Separately, the new Playwright spec itself should report `1 passed` when run.)
 
 **Commit message:** `test(ep2-s3): add real Playwright E2E test for AC7 (real-data Tab-order)`
 
