@@ -3,7 +3,7 @@
 **Story reference:** artefacts/2026-09-28-weeb-ui-learnings-and-improvements/stories/ep2-s3.md
 **Technical test plan:** artefacts/2026-09-28-weeb-ui-learnings-and-improvements/test-plans/ep2-s3-test-plan.md
 **Script version:** 1
-**Verified by:** _____ | **Date:** _____ | **Context:** [ ] Pre-code  [ ] Post-merge  [ ] Demo
+**Verified by:** Claude Sonnet 5 (session_012fTPDihegV68ecrr2a1e4A) | **Date:** 2026-10-04 | **Context:** [x] Pre-code (pre-merge, on branch `feature/ep2-s3-wuli`)
 
 ---
 
@@ -32,8 +32,8 @@
 **Expected outcome:**
 > The page shows a fixed, bounded number of signals (a few dozen, not thousands). The signals are in the same order they always were — nothing has been re-sorted or re-arranged, just cut off at a page boundary.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Live-verified with Claude-in-Chrome against a real running dev server, real auth session, real unseeded `getSignals()` data: `document.querySelectorAll('.signal-item').length` returned exactly `50` on page 1, out of this repo's own real total of `5324` signals at the time of this check (this repo's own count has naturally grown since `ep2-s1`'s own 5,293 finding, itself a small piece of corroborating evidence this is live, real data, not a static fixture). Order preservation confirmed by code inspection (`paginateSignals` never sorts, only slices) and the real screenshot showing the final visible signal before the pagination bar was a genuine, recognisable real entry (a `pipeline-state` feature-status signal), not reordered content.
 
 ---
 
@@ -50,8 +50,8 @@
 **Expected outcome:**
 > After step 1, you see a different set of signals than page 1 had, and the address bar reads `?page=2`. After step 3, reloading or re-opening that exact same address shows the exact same page-2 content — it doesn't reset back to page 1. After step 4, you're back on page 1's own original content.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Live-verified with Claude-in-Chrome: clicked the real "Next" button on page 1, the browser's own address bar genuinely navigated to `/signals?page=2` (confirmed via `location.pathname + location.search`), and the real DOM showed `"Signals 51–100 of 5324"` with both `["Previous", "Next"]` links present (correctly, since page 2 is neither first nor last) — real server-side query-param routing, not client-side JS state.
 
 ---
 
@@ -67,8 +67,8 @@
 **Expected outcome:**
 > On page 1, there is no "Previous" link to click (you're already as far back as you can go). On the last page, there is no "Next" link to click, and the page's own text confirms it's the last page.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Live-verified with Claude-in-Chrome: on page 1, the real pagination bar's own link list was exactly `["Next"]` — no "Previous" present at all. Last-page behaviour confirmed at the automated-test tier (`tests/check-ep2-s3-signals-pagination.js`'s own integration test asserting no "Next" text on the real computed last page) plus direct code inspection of `_paginationBar`'s `isLastPage` branch, which appends "(last page)" to the position text — not independently re-clicked all the way to the real last page live (thousands of signals, ~107 pages at 50/page), since the automated test already exercises this exact boundary deterministically against a real last-page fixture.
 
 ---
 
@@ -82,8 +82,8 @@
 **Expected outcome:**
 > The page states the real total number of signals (a specific number, not "many" or "lots") and which range you're currently looking at — for example, something like "Signals 1–50 of 5,293". The total shown should match the real, current number of signals in this repo, not a rounded or placeholder figure.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Live-verified with Claude-in-Chrome: real page 1 showed "Signals 1–50 of 5324"; real page 2 showed "Signals 51–100 of 5324" — both the real, current total (not a rounded/placeholder figure) and the correct range for the current page, visually confirmed in a real screenshot and via direct DOM text extraction.
 
 ---
 
@@ -97,8 +97,8 @@
 **Expected outcome:**
 > You do NOT see an error page, a blank screen, or a confusing empty page. You land on a real, normal-looking page of signals (specifically, the real last page) — exactly as if you'd clicked "Previous" all the way from the end, not as if something broke.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Confirmed at the strongest automated tier: 4 integration tests in `tests/check-ep2-s3-signals-pagination.js` dispatch real requests with `page=abc`, `page=0`, `page=-1`, and `page=9999` against the real handler and assert a real `200` response for each (never an error status). Not independently re-tried live in the browser — AC4 was explicitly classified NOT CSS-layout-dependent at test-plan time (a status-code/DOM-presence concern, not a visual one), and the automated coverage is already comprehensive and deterministic across all 4 malformed-input shapes.
 
 ---
 
@@ -113,8 +113,8 @@
 **Expected outcome:**
 > If a "couldn't parse" signal appears on your current page, it's still visually distinguished exactly as it was before pagination existed. Every normal signal's CTA button still works exactly as before (clicking it starts a new session for that signal, same as always). Nothing about a single signal's own appearance or behaviour has changed just because pagination now exists around it.
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** `tests/check-ep2-s1-signals-panel.js`'s own 11 tests (covering the parse-error marker, CTA rendering, empty state, and security escaping) re-run completely unmodified and pass 11/11. The live browser check also showed real, varying CTA labels across signals ("Review", "Open feature") exactly matching `ep2-s1`'s own per-source `cta.label` design, confirming no regression to per-signal rendering within a paginated page.
 
 ---
 
@@ -128,8 +128,8 @@
 **Expected outcome:**
 > The automated check confirms a person using only the Tab key (no mouse) can reach every button and link on a single real page of signals, and this completes in normal time. (Before this story, this same check on the full unpaginated list of thousands of signals actually timed out — this scenario confirms that specific, real problem is now fixed, not just that a small test page happens to work.)
 
-**Result:** [ ] Pass  [ ] Fail
-**Notes:**
+**Result:** [x] Pass  [ ] Fail
+**Notes:** Confirmed via a real Playwright E2E test (`tests/e2e/ep2-s3-signals-pagination.spec.js`) against this repo's own real, unmodified `getSignals()` data (no fixture seeding) — completes normally. Also independently re-verified this session, deliberately run together with `ep2-s1`'s own existing Accessibility spec in the exact sequential order that would expose a real cross-spec test-isolation bug found and fixed during this story's own implementation (a leaked fixture override from `ep2-s1`'s spec) — both pass, confirming the fix holds and this test genuinely validates against real, unseeded data, not a leaked small fixture.
 
 ---
 
@@ -137,15 +137,15 @@
 
 | Scenario | Result | Notes |
 |----------|--------|-------|
-| Scenario 1 — Bounded list, not everything at once | | |
-| Scenario 2 — Next/Previous navigation, bookmarkable | | |
-| Scenario 3 — No dead-end links at the boundaries | | |
-| Scenario 4 — Real total and position always visible | | |
-| Scenario 5 — Broken page numbers don't break the page | | |
-| Edge case — ep2-s1's own behaviour still works on a page | | |
-| Edge case — Keyboard navigation works at real scale | | |
+| Scenario 1 — Bounded list, not everything at once | Pass | Live Claude-in-Chrome check against real, unseeded data |
+| Scenario 2 — Next/Previous navigation, bookmarkable | Pass | Live Claude-in-Chrome check, real query-param routing |
+| Scenario 3 — No dead-end links at the boundaries | Pass | Live check (page 1) + automated test (last page) |
+| Scenario 4 — Real total and position always visible | Pass | Live Claude-in-Chrome check, real counts |
+| Scenario 5 — Broken page numbers don't break the page | Pass | Automated integration tests (4 malformed inputs) |
+| Edge case — ep2-s1's own behaviour still works on a page | Pass | ep2-s1's 11 tests unmodified + live CTA-label confirmation |
+| Edge case — Keyboard navigation works at real scale | Pass | Real E2E spec, independently re-verified against the fixed cross-spec leak |
 
-**Overall verdict:** [ ] All pass — ready to proceed
+**Overall verdict:** [x] All pass — ready to proceed
 [ ] Failures found — log findings below before proceeding
 
 ---
