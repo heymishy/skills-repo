@@ -437,6 +437,20 @@ This is explicitly named as a REQUIRED, real test — per the DoR's own Coding A
 
 ## Task 7 — Real Playwright E2E test for AC7 (real-data Accessibility) + final footer
 
+**Real architecture finding (discovered during /subagent-execution, not foreseen at planning time):** `ep2-s1`'s own existing `tests/e2e/ep2-s1-signals-panel.spec.js` calls `POST /test/seed-signals` to inject a small 24-signal fixture, and never resets it afterward (`_resetSignalsSourceForTesting()` is exported from `signals-panel.js` but has no HTTP wrapper anywhere). That spec's own file-header comment explicitly claims "No other E2E spec exercises GET /signals (confirmed by search), so this process-lifetime override cannot affect any other spec" — a claim this new spec is about to invalidate, since Playwright's `webServer` is started once and shared across every spec file in a single invocation (e.g. a full `tests/e2e/` directory run, as CI's own "Playwright E2E smoke tests" check does). If `ep2-s1`'s spec runs first in the same invocation, `_signalsSourceOverride` stays set to its small fixture, and this new AC7 test — whose entire point is proving the fix against REAL, unseeded data — would silently pass against the wrong (small, fixture) dataset instead, defeating its own purpose without any visible failure. This is not "rewriting `ep2-s1`'s own existing test" (explicitly out of this story's scope) — it is a genuine test-isolation gap in making THIS story's own new test's claim actually true regardless of run order, squarely in scope. Fix: add a minimal new test-only reset endpoint and call it at the start of this spec.
+
+**File:** `src/web-ui/server.js` — add a new test-only endpoint near the existing `/test/seed-signals` registration (same simple `NODE_ENV === 'test'` gate, not the stricter staging-safe `_isTestEndpointAllowed`):
+
+```javascript
+  if (pathname === '/test/reset-signals-source' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    const _signalsPanelForReset = require('./routes/signals-panel');
+    _signalsPanelForReset._resetSignalsSourceForTesting();
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true }));
+    return;
+  }
+```
+
 **File:** `tests/e2e/ep2-s3-signals-pagination.spec.js` (new)
 
 ```javascript
@@ -447,6 +461,15 @@ This is explicitly named as a REQUIRED, real test — per the DoR's own Coding A
 // Accessibility test, which needed that fixture specifically because
 // pagination did not yet exist. This test proves the real production fix
 // at real scale, not a test-side workaround.
+//
+// Calls /test/reset-signals-source FIRST: ep2-s1's own existing spec in
+// this same directory seeds a small fixture via /test/seed-signals and
+// never resets it, and Playwright's shared webServer process means that
+// override can leak into this spec when both run in the same invocation
+// (e.g. a full `tests/e2e/` directory run). Without this reset, this test
+// could silently pass against ep2-s1's small fixture instead of real data,
+// defeating its own purpose with no visible failure.
+//
 // NOT in npm test chain (ADR-018) -- run with:
 // npx playwright test tests/e2e/ep2-s3-signals-pagination.spec.js
 
@@ -454,7 +477,10 @@ const { expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
 
 withAuth('AC7: Tab-order across a single real, bounded page of /signals completes in normal time, using real unseeded data', async ({ page }) => {
-  await page.goto('/signals'); // page 1, no ?page= param, no fixture seeding
+  const resetRes = await page.request.post('/test/reset-signals-source');
+  expect(resetRes.ok()).toBeTruthy();
+
+  await page.goto('/signals'); // page 1, no ?page= param, real unmodified getSignals() data
   await page.waitForLoadState('networkidle');
 
   const ctaButtons = page.locator('.signal-item .sw-btn--primary');
