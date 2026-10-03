@@ -361,10 +361,10 @@ if (process.env.NODE_ENV !== 'test' || process.env.WIRE_SKILL_ADAPTERS === 'true
   skillsAdapter.setListSkills(async function(_token) {
     return listAvailableSkills(_repoRoot);
   });
-  skillsAdapter.setCreateSession(async function(skillName, _token) {
+  skillsAdapter.setCreateSession(async function(skillName, _token, priorArtefacts) {
     const sessionPath = sessionManager.createSession('html-' + skillName);
     const id = _path.basename(sessionPath);
-    registerHtmlSession(id, sessionPath, skillName);
+    registerHtmlSession(id, sessionPath, skillName, priorArtefacts ? { priorArtefacts: priorArtefacts } : undefined);
     return { id };
   });
   skillsAdapter.setGetNextQuestion(async function(skillName, sessionId, _token) {
