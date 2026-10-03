@@ -38119,9 +38119,12 @@
         },
         {
           "id": "ep2-s3",
-          "stage": "definition",
+          "stage": "review",
           "health": "green",
-          "updatedAt": "2026-10-03T03:59:23.486Z"
+          "updatedAt": "2026-10-03T18:30:46.467Z",
+          "reviewStatus": "passed",
+          "highFindings": 0,
+          "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep2-s3-review-1.md"
         }
       ],
       "guardrails": [
@@ -38205,6 +38208,15 @@
           "evidence": "ep2-s2 DoD: confirmed post-merge on master -- the real server.js wiring forwards priorArtefacts through to registerHtmlSession, verified by a dedicated behavioural-correctness test (two different signal contexts produce two different, individually-correct stored systemPrompts) against the real, unmocked wiring closure. Not full Q&A replay or model-synthesised summary.",
           "assessedBy": "/definition-of-done",
           "assessedAt": "2026-10-03T18:17:47.429Z"
+        },
+        {
+          "id": "MC-A11Y-01",
+          "category": "mandatory-constraint",
+          "label": "Interactive elements keyboard-accessible",
+          "status": "met",
+          "evidence": "ep2-s3 /review: AC7 requires a Tab-order walk across a single real page of /signals (real, unmodified getSignals() data, no fixture seeding) to complete within a reasonable E2E test timeout -- directly addresses the real, measured defect found during ep2-s1's own Task 5 (unpaginated page times out walking Tab order across 5,293 real signals). Assessed against the story's own plan at /review time; re-assessed against real implementation at /definition-of-done.",
+          "assessedBy": "/review",
+          "assessedAt": "2026-10-03T18:31:45.236Z"
         }
       ],
       "slicingStrategy": "walking-skeleton"
