@@ -37695,7 +37695,7 @@
       "id": "2026-09-28-weeb-ui-learnings-and-improvements",
       "discoveryStatus": "complete",
       "artefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/discovery.md",
-      "stage": "branch-setup",
+      "stage": "definition-of-ready",
       "name": "Web UI Learnings and Improvements Integration",
       "track": "standard",
       "health": "green",
@@ -38119,9 +38119,9 @@
         },
         {
           "id": "ep2-s3",
-          "stage": "branch-setup",
+          "stage": "implementation-plan",
           "health": "green",
-          "updatedAt": "2026-10-03T20:38:24.694Z",
+          "updatedAt": "2026-10-03T20:41:30.211Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep2-s3-review-1.md",
@@ -38136,7 +38136,57 @@
           },
           "dorStatus": "signed-off",
           "dorArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/dor/ep2-s3-dor.md",
-          "branch": "feature/ep2-s3-wuli"
+          "branch": "feature/ep2-s3-wuli",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Write failing unit tests for paginateSignals",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s3-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Implement paginate-signals.js",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s3-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Write failing integration tests for the extended route handler",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s3-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Extend handleGetSignalsPanelHtml and renderSignalsPanel",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s3-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Full regression pass for ep2-s1's own existing tests",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s3-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "Write and implement the dedicated NFR-Performance test",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s3-plan.md"
+            },
+            {
+              "id": "task-7",
+              "name": "Real Playwright E2E test for AC7 + final footer",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s3-plan.md"
+            },
+            {
+              "id": "task-8",
+              "name": "Full regression + verification pass",
+              "tddState": "not-started",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s3-plan.md"
+            }
+          ]
         }
       ],
       "guardrails": [
