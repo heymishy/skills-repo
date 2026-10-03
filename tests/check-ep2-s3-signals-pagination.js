@@ -109,6 +109,80 @@ function makeSignals(n) {
     assert.strictEqual(result.hasNext, false);
   });
 
+  const signalsRoutes = require('../src/web-ui/routes/signals-panel');
+
+  function fakeReqRes(query) {
+    const req = { session: { accessToken: 'tok', login: 'alice' }, query: query || {}, headers: {}, method: 'GET', url: '/signals' };
+    const res = { statusCode: null, headers: null, body: null, writeHead: function(c, h) { this.statusCode = c; this.headers = h; }, end: function(b) { this.body = b; } };
+    return { req, res };
+  }
+
+  await test('Real route dispatch: GET /signals with no page param renders only SIGNALS_PAGE_SIZE signals', async function() {
+    const oversized = makeSignals(SIGNALS_PAGE_SIZE + 10);
+    signalsRoutes.setSignalsSource(function() { return oversized; });
+    const { req, res } = fakeReqRes({});
+    await signalsRoutes.handleGetSignalsPanelHtml(req, res);
+    assert.strictEqual(res.statusCode, 200);
+    const count = (res.body.match(/class="sw-card signal-item"/g) || []).length;
+    assert.strictEqual(count, SIGNALS_PAGE_SIZE, 'expected exactly SIGNALS_PAGE_SIZE signal-item cards, found ' + count);
+  });
+
+  await test('Real route dispatch: GET /signals?page=2 renders page 2\'s own content with a real Previous link to page 1', async function() {
+    const oversized = makeSignals(SIGNALS_PAGE_SIZE * 3).map(function(s, i) { return Object.assign({}, s, { text: 'unique-signal-' + i }); });
+    signalsRoutes.setSignalsSource(function() { return oversized; });
+    const { req, res } = fakeReqRes({ page: '2' });
+    await signalsRoutes.handleGetSignalsPanelHtml(req, res);
+    assert.strictEqual(res.statusCode, 200);
+    assert.ok(res.body.includes('unique-signal-' + SIGNALS_PAGE_SIZE), 'expected page 2\'s own first item text to appear');
+    assert.ok(!res.body.includes('>unique-signal-0<'), 'expected page 1\'s own first item text to NOT appear on page 2');
+    assert.ok(res.body.includes('href="/signals?page=1"'), 'expected a real Previous link targeting page 1');
+  });
+
+  await test('Real route dispatch: page 1 has no Previous link, the real last page has no Next link', async function() {
+    const oversized = makeSignals(SIGNALS_PAGE_SIZE * 3);
+    signalsRoutes.setSignalsSource(function() { return oversized; });
+    const page1 = fakeReqRes({});
+    await signalsRoutes.handleGetSignalsPanelHtml(page1.req, page1.res);
+    assert.ok(!page1.res.body.includes('Previous'), 'expected no Previous link on page 1');
+    const lastPage = fakeReqRes({ page: '3' });
+    await signalsRoutes.handleGetSignalsPanelHtml(lastPage.req, lastPage.res);
+    assert.ok(!lastPage.res.body.includes('Next'), 'expected no Next link on the real last page');
+  });
+
+  await test('Real route dispatch: invalid page params never produce an error response', async function() {
+    const oversized = makeSignals(SIGNALS_PAGE_SIZE * 3);
+    signalsRoutes.setSignalsSource(function() { return oversized; });
+    for (const badPage of ['abc', '0', '-1', '9999']) {
+      const { req, res } = fakeReqRes({ page: badPage });
+      await signalsRoutes.handleGetSignalsPanelHtml(req, res);
+      assert.strictEqual(res.statusCode, 200, 'expected 200 for page=' + badPage + ', got ' + res.statusCode);
+    }
+  });
+
+  await test('Real route dispatch: position indicator shows the real total count and current range', async function() {
+    const sized = makeSignals(134);
+    signalsRoutes.setSignalsSource(function() { return sized; });
+    const { req, res } = fakeReqRes({ page: '2' });
+    await signalsRoutes.handleGetSignalsPanelHtml(req, res);
+    assert.ok(res.body.includes('51') && res.body.includes('100') && res.body.includes('134'), 'expected the real range/total (51, 100, 134) to appear in the rendered text');
+  });
+
+  await test('Real route dispatch: a parse-error signal within a single page still carries ep2-s1\'s own distinguishing marker', async function() {
+    const parseErrorSignal = { id: 'pe1', source: 'parse-error', type: 'parse-error', text: 'bad file', timestamp: null, cta: { label: 'Review', skill: '/improve' } };
+    signalsRoutes.setSignalsSource(function() { return [parseErrorSignal]; });
+    const { req, res } = fakeReqRes({});
+    await signalsRoutes.handleGetSignalsPanelHtml(req, res);
+    assert.ok(res.body.includes('data-signal-type="parse-error"'), 'expected ep2-s1\'s own parse-error marker to survive within a paginated page');
+  });
+
+  await test('Real route dispatch: zero signals still renders ep2-s1\'s own empty state, not a pagination bar', async function() {
+    signalsRoutes.setSignalsSource(function() { return []; });
+    const { req, res } = fakeReqRes({});
+    await signalsRoutes.handleGetSignalsPanelHtml(req, res);
+    assert.ok(res.body.includes('No signals yet'), 'expected ep2-s1\'s own empty-state message');
+    assert.ok(!res.body.includes('Previous') && !res.body.includes('Next'), 'expected no pagination links on the empty state');
+  });
+
   console.log('\n[ep2-s3] Results: ' + passed + ' passed, ' + failed + ' failed (partial run -- tasks 3/7 append more)');
   process.exit(failed > 0 ? 1 : 0);
 })().catch(function(err) {
