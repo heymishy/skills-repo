@@ -149,6 +149,29 @@ function test(name, fn) {
     assert.ok(capturedArgs === 2 || capturedArgs === 3, 'expected the legacy call shape (3rd arg absent or undefined)');
   });
 
+  await test('D37: defaultCreateSession stub throws when unwired, instead of silently returning {id: \'\'}', async function() {
+    // Fresh require in isolation: delete the cached module so its injectable
+    // _createSession is back at the un-set default for this one assertion.
+    delete require.cache[require.resolve('../src/web-ui/adapters/skills')];
+    const freshAdapter = require('../src/web-ui/adapters/skills');
+    await assert.rejects(
+      freshAdapter.createSession('improve', 'tok'),
+      /Adapter not wired: createSession/
+    );
+  });
+
+  await test('Adapter wrapper forwards a 3rd priorArtefacts argument through to the injected implementation', async function() {
+    const adapter = require('../src/web-ui/adapters/skills');
+    let captured = null;
+    adapter.setCreateSession(async function(skillName, token, priorArtefacts) {
+      captured = priorArtefacts;
+      return { id: 'x' };
+    });
+    const pa = [{ path: 'signal:test', content: 'hello' }];
+    await adapter.createSession('improve', 'tok', pa);
+    assert.deepStrictEqual(captured, pa);
+  });
+
   console.log('\n[ep2-s2] Results: ' + passed + ' passed, ' + failed + ' failed (partial run -- tasks 3/5/7 append more)');
   process.exit(failed > 0 ? 1 : 0);
 })().catch(function(err) {
