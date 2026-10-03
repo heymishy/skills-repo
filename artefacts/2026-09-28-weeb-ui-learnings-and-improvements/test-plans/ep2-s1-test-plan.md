@@ -14,10 +14,14 @@
 | AC | Description | Unit | Integration | E2E | Manual | Gap type | Risk |
 |----|-------------|------|-------------|-----|--------|----------|------|
 | AC1 | Real signals render on page load | 1 test | 1 test | — | — | — | 🟢 |
-| AC2 | Each signal's CTA label is visible | 1 test | — | — | — | — | 🟢 |
+| AC2 | Each signal's CTA label is visible, AND its hidden fields carry the full signal content | 2 tests | — | — | — | — | 🟢 |
 | AC3 | Empty state when no signals exist | 1 test | — | — | — | — | 🟢 |
 | AC4 | Parse-error signals visually distinguished | 1 test | — | — | — | — | 🟢 |
 | AC5 | Page requires authentication | — | 1 test | — | — | — | 🟢 |
+| — | Security: signal text is HTML-escaped (not tied to one specific AC — a cross-cutting safety net matching this codebase's own established `escHtml` convention) | 1 test | — | — | — | — | 🟢 |
+| AC1 (robustness) | Unhandled exception renders a styled error page, not a crash | — | 1 test | — | — | — | 🟢 |
+
+**Note (2026-10-02):** this table initially undercounted real tests at "1 per AC" — AC2 genuinely needed 2 (label + hidden-field content), and a standalone escaping/security test was written but never given its own row. Combined with a real error-handling gap found by code-quality review during Task 4 (`handleGetSignalsPanelHtml` had no try/catch, unlike its sibling handlers — fixed and tested), the real total is 11 unit/integration tests (`tests/check-ep2-s1-signals-panel.js`) + 1 real E2E test (`tests/e2e/ep2-s1-signals-panel.spec.js`) = **12 tests**, not the originally-stated 9. `pipeline-state.json`'s `testPlan.totalTests` corrected to 12 to match the real, implemented suite (matching this feature's own established convention of counting unit/integration + E2E together, confirmed against `ep1-s3`'s own recorded `testPlan`).
 
 ---
 
@@ -107,6 +111,14 @@ None.
 - **Precondition:** Request made with no session/auth token
 - **Action:** Dispatch a GET request to the panel route unauthenticated
 - **Expected result:** Redirect to sign-in, matching the exact existing behaviour of every other authenticated web UI page (e.g. `/skills`) — reuses the same guard, not a new one
+
+### Unhandled exception from getSignals() renders a styled error page, not a crash
+
+- **Verifies:** AC1's own robustness (added post-hoc — found by code-quality review during implementation Task 4, not anticipated when this test plan was first written; see `decisions.md` 2026-10-01/02 entries)
+- **Components involved:** The panel route handler's own try/catch, matching the established `handlePostSkillSessionHtml` precedent in `routes/skills.js`
+- **Precondition:** `getSignals()` (via the injectable `setSignalsSource` override) throws
+- **Action:** Dispatch a GET request to the panel route
+- **Expected result:** A 500 response with a styled HTML error page (not a bare plain-text crash, not an unhandled exception reaching `server.js`'s own top-level catch-all) — matches the sibling handler's own convention exactly, including that the real error message is included via `escHtml` (not redacted), per that same precedent
 
 ---
 
