@@ -2665,6 +2665,24 @@ async function router(req, res) {
     return;
   }
 
+  // ep2-s3: test-only endpoint to reset the signals source override set by
+  // /test/seed-signals above back to the real getSignals() implementation.
+  // Needed because Playwright's webServer process is shared across every
+  // spec file in a single invocation -- ep2-s1's own existing
+  // tests/e2e/ep2-s1-signals-panel.spec.js seeds a small 24-signal fixture
+  // and never resets it, so without this endpoint that override could leak
+  // into ep2-s3's own new AC7 spec and make it silently validate against
+  // the wrong (small, fixture) data instead of real data. Same simple
+  // inline NODE_ENV=test guard as /test/seed-signals immediately above --
+  // not the stricter _isTestEndpointAllowed() used elsewhere.
+  if (pathname === '/test/reset-signals-source' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    const _signalsPanelForReset = require('./routes/signals-panel');
+    _signalsPanelForReset._resetSignalsSourceForTesting();
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true }));
+    return;
+  }
+
   // dsh-s3: seed a journey with a completed stage whose conversation turns
   // exist ONLY in the durable session_turns store (via writeSessionTurns),
   // with NO in-memory HTML session ever created -- genuinely simulating

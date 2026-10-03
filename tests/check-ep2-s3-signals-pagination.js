@@ -193,7 +193,7 @@ function makeSignals(n) {
     assert.ok(elapsedMs < 100, 'expected renderSignalsPanel to complete in <100ms, took ' + elapsedMs.toFixed(2) + 'ms');
   });
 
-  console.log('\n[ep2-s3] Results: ' + passed + ' passed, ' + failed + ' failed (partial run -- tasks 3/7 append more)');
+  console.log('\n[ep2-s3] Results: ' + passed + ' passed, ' + failed + ' failed');
   process.exit(failed > 0 ? 1 : 0);
 })().catch(function(err) {
   console.error('[ep2-s3] Unexpected error:', err && err.stack || err);
