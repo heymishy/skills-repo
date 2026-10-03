@@ -148,3 +148,9 @@
 **Context:** `/definition-of-ready`'s W4 warning — the AC verification script at `artefacts/2026-09-28-weeb-ui-learnings-and-improvements/verification-scripts/ep2-s3-verification.md` has not yet been walked through by a domain expert before coding begins. Same standing item as every other story in this feature (`ep1-s1`, `ep1-s2`, `ep2-s1`, `ep2-s2` all carried this identical, never-separately-resolved W4 acknowledgement).
 **Decision:** Acknowledge and proceed. The script may not perfectly reflect real-world usage nuance until reviewed, but this is a low-risk, solo-operator repo where the operator who would review it is also the one who can review it post-merge as a smoke test — consistent with every prior story's own resolution of this same warning.
 **Made by:** Hamish King (operator decision, 2026-10-04), recorded by Claude Sonnet 5 (session_012fTPDihegV68ecrr2a1e4A).
+
+## Branch-setup baseline: ep2-s3 (2026-10-04)
+
+**Context:** `/branch-setup` created worktree `.worktrees/ep2-s3` (branch `feature/ep2-s3-wuli`, disambiguated from an unrelated, already-merged `feature/ep2-s3` local branch — same generic-slug collision pattern as every other `epN-sM` story this session) from `master` at commit `77c3c5b3` (immediately after `ep2-s3`'s own DoR sign-off). `npm test`: 711 files run, 1 failed — `tests/check-p3.5-validate-trace.js`, the same known, pre-existing, repo-wide issue acknowledged throughout this session (unrelated to this story). Test-pollution cleanup performed as usual (stray `artefacts/`/`workspace/` fixture dirs from the full-suite run, removed before committing).
+**Decision:** Proceed with implementation. Baseline is clean modulo this 1 pre-existing, non-blocking failure.
+**Made by:** Claude Sonnet 5 (session_012fTPDihegV68ecrr2a1e4A).
