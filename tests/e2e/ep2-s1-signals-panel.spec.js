@@ -32,9 +32,13 @@
 // assertions to "first N of however-many-are-live", which would silently
 // weaken real coverage. Seeding a small, deterministic fixture instead lets
 // this spec assert the full, real Tab-order behaviour (every rendered CTA
-// reachable) exactly as originally intended, just at a bounded scale. No
-// other E2E spec exercises GET /signals (confirmed by search), so this
-// process-lifetime override cannot affect any other spec.
+// reachable) exactly as originally intended, just at a bounded scale. This
+// used to be the only E2E spec exercising GET /signals, so the process-
+// lifetime override below was believed safe -- that stopped being true once
+// ep2-s3's own tests/e2e/ep2-s3-signals-pagination.spec.js was added, which
+// also exercises GET /signals and was affected by exactly this leak; see
+// that spec's own file-header comment and the new /test/reset-signals-source
+// endpoint, which fixes it.
 
 const { expect } = require('@playwright/test');
 const { withAuth } = require('./fixtures/auth');
