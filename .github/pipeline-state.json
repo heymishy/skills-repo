@@ -38119,9 +38119,9 @@
         },
         {
           "id": "ep2-s3",
-          "stage": "test-plan",
+          "stage": "definition-of-ready",
           "health": "green",
-          "updatedAt": "2026-10-03T20:02:28.626Z",
+          "updatedAt": "2026-10-03T20:15:56.358Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep2-s3-review-1.md",
@@ -38133,7 +38133,9 @@
             "status": "written",
             "totalTests": 19,
             "passing": 0
-          }
+          },
+          "dorStatus": "signed-off",
+          "dorArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/dor/ep2-s3-dor.md"
         }
       ],
       "guardrails": [
@@ -38179,8 +38181,8 @@
           "label": "Signal aggregation and endpoint latency targets",
           "status": "met",
           "assessedBy": "/definition-of-done",
-          "assessedAt": "2026-10-03T18:17:47.429Z",
-          "evidence": "ep1-s1 AC/NFR <200ms, ep1-s2 AC4 <250ms, ep1-s3 NFR <100ms, ep2-s1 NFR <100ms (render-time method, matching ep1-s3 precedent) -- all independently test-covered. ep2-s1 DoD: confirmed post-merge on master, 11/11 tests passing incl. NFR-Performance. ep2-s2 DoD: its own test plan named a dedicated NFR-Performance latency-comparison test that was never implemented across any of the 8 implementation tasks (confirmed by direct grep at DoD time) -- RISK-ACCEPTed rather than fixed or deferred to a follow-up, since the change (one array entry added to an already in-memory object before an existing, unmodified createSession call) is structurally low-risk for a real performance regression. See decisions.md 2026-10-04 entry."
+          "assessedAt": "2026-10-03T20:13:56.085Z",
+          "evidence": "ep1-s1 AC/NFR <200ms, ep1-s2 AC4 <250ms, ep1-s3 NFR <100ms, ep2-s1 NFR <100ms (render-time method, matching ep1-s3 precedent) -- all independently test-covered. ep2-s1 DoD: confirmed post-merge on master, 11/11 tests passing incl. NFR-Performance. ep2-s2 DoD: its own test plan named a dedicated NFR-Performance latency-comparison test that was never implemented across any of the 8 implementation tasks (confirmed by direct grep at DoD time) -- RISK-ACCEPTed rather than fixed or deferred to a follow-up, since the change (one array entry added to an already in-memory object before an existing, unmodified createSession call) is structurally low-risk for a real performance regression. See decisions.md 2026-10-04 entry. ep2-s3 DoR: paginated page render time NFR added to nfr-profile.md (well within the established <100ms budget, trivially true at <=SIGNALS_PAGE_SIZE items) -- a dedicated test (tests/check-ep2-s3-signals-pagination.js) is explicitly named as required (not merely referenced) in the Coding Agent Instructions, per the ep2-s2 DoD lesson on named-but-unimplemented NFR tests."
         },
         {
           "id": "NFR-sec-signals",
@@ -38196,9 +38198,9 @@
           "category": "nfr",
           "label": "Keyboard navigation and screen-reader support for launcher and signals panel",
           "status": "met",
-          "assessedBy": "/definition-of-done",
-          "assessedAt": "2026-10-03T05:52:56.729Z",
-          "evidence": "ep1-s3 NFRs + E2E accessibility test; ep2-s1 NFR + real Playwright E2E test (Tab order + accessible names), classified CSS-layout-dependent by analogy to ep1-s3 precedent. ep2-s1 DoD: real Playwright E2E confirmed passing post-merge-equivalent at verify-completion."
+          "assessedBy": "/definition-of-ready",
+          "assessedAt": "2026-10-03T20:13:56.085Z",
+          "evidence": "ep1-s3 NFRs + E2E accessibility test; ep2-s1 NFR + real Playwright E2E test (Tab order + accessible names), classified CSS-layout-dependent by analogy to ep1-s3 precedent. ep2-s1 DoD: real Playwright E2E confirmed passing post-merge-equivalent at verify-completion. ep2-s3 DoR: AC7 (real, unseeded getSignals() data, Tab-order walk across one bounded page) classified CSS-layout-dependent, H-E2E passes (Playwright already configured, not blocking) -- assigned to a real, dedicated E2E spec distinct from ep2-s1's own existing fixture-seeded Accessibility test."
         },
         {
           "id": "ADR-022",
