@@ -108,6 +108,7 @@ const { migratePodAssignmentsSchema }                                = require('
 const { migrateFeatureCollaboratorsSchema, migrateFeatureCollaboratorRemovalsSchema } = require('./modules/feature-collaborator-store'); // ep1-s3, ep4-s1
 const { createImpersonationHandlers }                                = require('./routes/impersonation');         // d1
 const { handleGetSignals }                                           = require('./routes/signals');                // ep1-s2 (2026-09-28-weeb-ui-learnings-and-improvements -- distinct from the unrelated ep1-s2/pod-assignment-store above, which reuses the same generic slug)
+const { handleGetSignalsPanelHtml }                                  = require('./routes/signals-panel');      // ep2-s1
 
 const PORT = process.env.PORT || 3000;
 const GITHUB_API_BASE = process.env.GITHUB_API_BASE_URL || 'https://api.github.com';
@@ -2623,6 +2624,47 @@ async function router(req, res) {
     return;
   }
 
+  // ep2-s1: test-only endpoint to seed a small, bounded, deterministic
+  // fixture signals list via the real setSignalsSource() test seam already
+  // exported by routes/signals-panel.js (the same seam
+  // tests/check-ep2-s1-signals-panel.js uses in-process). Needed because
+  // this repo's real getSignals() aggregates this repo's own real workspace
+  // history -- confirmed 5,293 real signals as of this story -- and GET
+  // /signals has no pagination (an explicit, reviewed MVP scope decision;
+  // the real fix is a separate follow-up pagination story). A full
+  // Tab-order E2E walk across every real CTA at that scale cannot complete
+  // within any reasonable E2E timeout. Modelled directly on
+  // /test/seed-presence's own convention immediately above: an inline
+  // NODE_ENV=test guard, no auth/session requirement (fixture state only,
+  // not tied to any journey/session). No other E2E spec currently exercises
+  // GET /signals (confirmed by searching tests/e2e/*.spec.js), so setting
+  // this process-lifetime override here cannot affect any other spec.
+  if (pathname === '/test/seed-signals' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    let rawSignals = '';
+    for await (const chunk of req) { rawSignals += chunk; }
+    let signalsBody = {};
+    try { signalsBody = rawSignals ? JSON.parse(rawSignals) : {}; } catch (_) { signalsBody = {}; }
+    const count = Number.isInteger(signalsBody.count) && signalsBody.count > 0 ? signalsBody.count : 24;
+
+    const fixtureSignals = [];
+    for (let i = 0; i < count; i++) {
+      fixtureSignals.push({
+        id: 'e2e-fixture-signal-' + i,
+        source: 'e2e-fixture',
+        type: 'note',
+        text: 'E2E fixture signal #' + i,
+        timestamp: null,
+        cta: { label: 'Review fixture #' + i, skill: '/improve' },
+      });
+    }
+    const _signalsPanelForSeed = require('./routes/signals-panel');
+    _signalsPanelForSeed.setSignalsSource(function() { return fixtureSignals; });
+
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true, count: fixtureSignals.length }));
+    return;
+  }
+
   // dsh-s3: seed a journey with a completed stage whose conversation turns
   // exist ONLY in the durable session_turns store (via writeSessionTurns),
   // with NO in-memory HTML session ever created -- genuinely simulating
@@ -2996,6 +3038,11 @@ async function router(req, res) {
   } else if (pathname === '/skills' && req.method === 'GET') {
     authGuard(req, res, async () => {
       await handleGetSkillsHtml(req, res);
+    });
+
+  } else if (pathname === '/signals' && req.method === 'GET') {
+    authGuard(req, res, async () => {
+      await handleGetSignalsPanelHtml(req, res);
     });
 
   } else if (pathname.match(/^\/skills\/[^/]+\/sessions\/[^/]+\/commit-preview$/) && req.method === 'GET') {

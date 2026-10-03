@@ -37969,23 +37969,65 @@
         },
         {
           "id": "ep2-s1",
-          "stage": "definition-of-ready",
+          "stage": "branch-complete",
           "health": "green",
-          "updatedAt": "2026-09-30T20:19:44.915Z",
+          "updatedAt": "2026-10-03T04:48:07.428Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep2-s1-review-1.md",
           "testPlan": {
             "status": "written",
-            "totalTests": 9,
-            "passing": 0
+            "totalTests": 12,
+            "passing": 12
           },
           "acTotal": 5,
-          "acVerified": 0,
+          "acVerified": 5,
           "hasLayoutDependentGaps": true,
           "e2eToolingRequired": true,
           "dorStatus": "signed-off",
-          "dorArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/dor/ep2-s1-dor.md"
+          "dorArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/dor/ep2-s1-dor.md",
+          "branch": "feature/ep2-s1-wuli",
+          "tasks": [
+            {
+              "id": "task-1",
+              "name": "Write failing unit tests for the render function (AC1-AC4)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s1-plan.md"
+            },
+            {
+              "id": "task-2",
+              "name": "Implement the render function to pass Task 1 tests",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s1-plan.md"
+            },
+            {
+              "id": "task-3",
+              "name": "Write failing integration tests for the route handler (AC1 behavioural, AC5)",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s1-plan.md"
+            },
+            {
+              "id": "task-4",
+              "name": "Implement the route handler, wire GET /signals into server.js",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s1-plan.md"
+            },
+            {
+              "id": "task-5",
+              "name": "Real Playwright E2E test for the Accessibility NFR",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s1-plan.md"
+            },
+            {
+              "id": "task-6",
+              "name": "Full regression + verification pass",
+              "tddState": "committed",
+              "file": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/plans/ep2-s1-plan.md"
+            }
+          ],
+          "verifyStatus": "passed",
+          "prStatus": "draft",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/935"
         },
         {
           "id": "ep2-s2",
