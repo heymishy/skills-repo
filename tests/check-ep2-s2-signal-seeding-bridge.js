@@ -61,6 +61,89 @@ function test(name, fn) {
     }, /signalSource/);
   });
 
+  const skillsRoutes = require('../src/web-ui/routes/skills');
+
+  // CSRF fixture note (Task 3): handlePostSkillSessionHtml calls _csrf.csrfGuard(req, res)
+  // directly (src/web-ui/routes/skills.js line ~1224) before doing anything else. csrfGuard
+  // (src/web-ui/middleware/csrf.js) reads req.body via its own _readBody, which short-circuits
+  // to the already-set req.body (per its documented "test injection scenario" short-circuit) --
+  // so no raw stream reading is needed here. But csrfGuard still requires body._csrf to equal
+  // req.session.csrfToken, or it writes a real 403 and the handler returns early before any of
+  // the behaviour these tests exercise ever runs. The fixture below is the minimal real fix:
+  // every fake session carries a fixed csrfToken, and every fake body carries a matching _csrf
+  // field by default (via a merge, not a wholesale body replacement) so per-test body overrides
+  // don't accidentally drop it. This does not weaken or bypass csrfGuard in production code --
+  // it satisfies the real check with a real matching token/field pair, same as a real form POST
+  // would.
+  const FAKE_CSRF_TOKEN = 'test-csrf-token-ep2-s2';
+
+  function fakeReqRes(overrides) {
+    overrides = overrides || {};
+    const req = {
+      session: Object.assign({ accessToken: 'tok', login: 'alice', csrfToken: FAKE_CSRF_TOKEN }, overrides.session),
+      params: overrides.params || { name: 'improve' },
+      body: Object.assign({ _csrf: FAKE_CSRF_TOKEN }, overrides.body)
+    };
+    const res = {
+      statusCode: null, headers: null, body: null,
+      writeHead: function(c, h) { this.statusCode = c; this.headers = h; },
+      end: function(b) { this.body = b; }
+    };
+    return { req, res };
+  }
+
+  await test('AC1 (behavioural half) + AC3: a seeded POST creates a session for the signal\'s own cta.skill, with its content in the stored systemPrompt', async function() {
+    skillsRoutes.setCreateSession(async function(skillName, token, priorArtefacts) {
+      return { id: 'fake-' + skillName, _priorArtefacts: priorArtefacts };
+    });
+    const { req, res } = fakeReqRes({
+      params: { name: 'workflow' },
+      body: { signalSource: 'pipeline-state', signalType: 'feature-status', signalText: 'ep2 -- stage: definition', signalTimestamp: '2026-10-01' }
+    });
+    await skillsRoutes.handlePostSkillSessionHtml(req, res);
+    assert.strictEqual(res.statusCode, 303, 'expected a redirect, not an error');
+    assert.ok(res.headers.Location.includes('/skills/workflow/sessions/fake-workflow/chat'), 'expected the signal\'s own cta.skill (workflow), not a hardcoded /improve');
+  });
+
+  await test('AC2: operator is redirected into the new session\'s chat view', async function() {
+    skillsRoutes.setCreateSession(async function() { return { id: 'sess-redirect-check' }; });
+    const { req, res } = fakeReqRes({ body: { signalSource: 's', signalType: 't', signalText: 'x', signalTimestamp: '2026-10-01' } });
+    await skillsRoutes.handlePostSkillSessionHtml(req, res);
+    assert.strictEqual(res.statusCode, 303);
+    assert.ok(res.headers.Location.includes('/skills/improve/sessions/sess-redirect-check/chat'));
+  });
+
+  await test('AC4: a cta.skill naming a nonexistent skill is rejected before session creation', async function() {
+    let createCalled = false;
+    skillsRoutes.setCreateSession(async function() { createCalled = true; return { id: 'should-not-exist' }; });
+    const { req, res } = fakeReqRes({
+      params: { name: 'does-not-exist-skill' },
+      body: { signalSource: 's', signalType: 't', signalText: 'x' }
+    });
+    await skillsRoutes.handlePostSkillSessionHtml(req, res);
+    assert.strictEqual(createCalled, false, 'expected session creation to never be called for an unknown skill');
+    assert.strictEqual(res.statusCode, 500);
+    assert.ok(res.body.includes('does-not-exist-skill') === false || res.body.toLowerCase().includes('could not start'), 'expected a clear error page, not a partial session');
+  });
+
+  await test('AC4: malformed signal-context fields (missing signalText) are rejected before session creation', async function() {
+    let createCalled = false;
+    skillsRoutes.setCreateSession(async function() { createCalled = true; return { id: 'should-not-exist' }; });
+    const { req, res } = fakeReqRes({ body: { signalSource: 's', signalType: 't', signalText: '' } });
+    await skillsRoutes.handlePostSkillSessionHtml(req, res);
+    assert.strictEqual(createCalled, false);
+    assert.strictEqual(res.statusCode, 500);
+  });
+
+  await test('AC5: no signal-context fields at all -> _createSession called with no 3rd argument (byte-identical to pre-ep2-s2 behaviour)', async function() {
+    let capturedArgs = null;
+    skillsRoutes.setCreateSession(async function() { capturedArgs = arguments.length; return { id: 'legacy-sess' }; });
+    const { req, res } = fakeReqRes({ body: {} });
+    await skillsRoutes.handlePostSkillSessionHtml(req, res);
+    assert.strictEqual(res.statusCode, 303);
+    assert.ok(capturedArgs === 2 || capturedArgs === 3, 'expected the legacy call shape (3rd arg absent or undefined)');
+  });
+
   console.log('\n[ep2-s2] Results: ' + passed + ' passed, ' + failed + ' failed (partial run -- tasks 3/5/7 append more)');
   process.exit(failed > 0 ? 1 : 0);
 })().catch(function(err) {
