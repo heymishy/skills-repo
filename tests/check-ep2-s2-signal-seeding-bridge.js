@@ -172,7 +172,31 @@ function test(name, fn) {
     assert.deepStrictEqual(captured, pa);
   });
 
-  console.log('\n[ep2-s2] Results: ' + passed + ' passed, ' + failed + ' failed (partial run -- tasks 3/5/7 append more)');
+  await test('AC6: the real server.js wiring forwards priorArtefacts -- two different signal contexts produce two different, individually-correct stored systemPrompts', async function() {
+    process.env.WIRE_SKILL_ADAPTERS = 'true'; // playwright.local.config.js's own established escape hatch -- exercises the real closure while NODE_ENV stays 'test'
+    delete require.cache[require.resolve('../src/web-ui/server')];
+    delete require.cache[require.resolve('../src/web-ui/adapters/skills')];
+    delete require.cache[require.resolve('../src/web-ui/routes/skills')];
+    require('../src/web-ui/server'); // triggers the real skillsAdapter.setCreateSession(...) wiring (server.js:364-369)
+    const adapter = require('../src/web-ui/adapters/skills');
+    const routes  = require('../src/web-ui/routes/skills');
+
+    const sessionA = await adapter.createSession('workflow', 'tok', [{ path: 'signal:pipeline-state', content: 'UNIQUE_MARKER_ALPHA ep2 stage definition' }]);
+    const sessionB = await adapter.createSession('improve', 'tok', [{ path: 'signal:capture-log', content: 'UNIQUE_MARKER_BETA use flat stories array' }]);
+
+    const storedA = routes._getHtmlSession(sessionA.id);
+    const storedB = routes._getHtmlSession(sessionB.id);
+    assert.ok(storedA, 'expected a real, retrievable stored session for A');
+    assert.ok(storedB, 'expected a real, retrievable stored session for B');
+    assert.ok(storedA.systemPrompt.includes('UNIQUE_MARKER_ALPHA'), 'expected session A\'s own injected content in its stored systemPrompt');
+    assert.ok(!storedA.systemPrompt.includes('UNIQUE_MARKER_BETA'), 'expected session A to NOT contain session B\'s content');
+    assert.ok(storedB.systemPrompt.includes('UNIQUE_MARKER_BETA'), 'expected session B\'s own injected content in its stored systemPrompt');
+    assert.ok(!storedB.systemPrompt.includes('UNIQUE_MARKER_ALPHA'), 'expected session B to NOT contain session A\'s content');
+
+    delete process.env.WIRE_SKILL_ADAPTERS;
+  });
+
+  console.log('\n[ep2-s2] Results: ' + passed + ' passed, ' + failed + ' failed');
   process.exit(failed > 0 ? 1 : 0);
 })().catch(function(err) {
   console.error('[ep2-s2] Unexpected error:', err && err.stack || err);
