@@ -37734,10 +37734,11 @@
           "baseline": "0% -- CLI/IDE access required today",
           "signal": "on-track",
           "lastMeasured": "2026-10-04",
-          "evidence": "ep2-s2 (merged, PR #936) completes Metric 3's full target: the seeding+landing half of the loop now genuinely works end-to-end, live-verified against a real running dev server this session (real CSRF-protected form submission, real 303 redirect, real new session created with the signal's content forwarded as a priorArtefacts entry -- confirmed at the strongest automated tier via the real, unmocked server.js wiring closure, since Claude-in-Chrome was unavailable for a visual browser check). Combined with ep2-s1's own already-verified visibility half, an operator can now see a signal, click its CTA, and land in a pre-populated new skill session -- the epic's own deliberately-scoped 100% target (not full /improve execution, which remains explicitly out of MVP scope). Carrying forward ep2-s1's own honest caveat: this was verified against a small, deterministic signal fixture, not literally against the repo's own real 5,293-signal volume -- the code path is signal-content-agnostic (no special-casing by volume), but ep2-s3 (pagination, written, not yet implemented) is still the story that makes the visibility half hold up at this repo's own real scale.",
+          "evidence": "ep2-s3 (merged, PR #937) resolves the last open caveat: the full Metric 3 target (100% -- operator sees signal, clicks CTA, lands in pre-seeded session, web-UI-only) is now genuinely achieved end-to-end AND verified at this repo's own real production scale (5,324 real signals, not a small illustrative fixture) -- live-verified via Claude-in-Chrome against a real running dev server (real DOM queries, real click-through page-2 navigation, real screenshots). ep2-s1 (visibility, paginated and keyboard-accessible at real scale) + ep2-s2 (seeding, real CSRF-protected form submission creating a real seeded session) + ep2-s3 (pagination, the fix for ep2-s1's own real finding that the unpaginated page could not be Tab-walked within any reasonable timeout at this repo's real 5,293+ signal volume) together close this metric's full target. All three contributing stories are merged and DoD-complete.",
           "contributingStories": [
             "ep2-s1",
-            "ep2-s2"
+            "ep2-s2",
+            "ep2-s3"
           ]
         }
       ],
@@ -38119,9 +38120,9 @@
         },
         {
           "id": "ep2-s3",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
-          "updatedAt": "2026-10-03T23:45:27.422Z",
+          "updatedAt": "2026-10-03T23:47:55.928Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep2-s3-review-1.md",
@@ -38189,7 +38190,9 @@
           ],
           "verifyStatus": "passed",
           "prStatus": "merged",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/937"
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/937",
+          "dodStatus": "complete",
+          "releaseReady": true
         }
       ],
       "guardrails": [
@@ -38235,8 +38238,8 @@
           "label": "Signal aggregation and endpoint latency targets",
           "status": "met",
           "assessedBy": "/definition-of-done",
-          "assessedAt": "2026-10-03T20:13:56.085Z",
-          "evidence": "ep1-s1 AC/NFR <200ms, ep1-s2 AC4 <250ms, ep1-s3 NFR <100ms, ep2-s1 NFR <100ms (render-time method, matching ep1-s3 precedent) -- all independently test-covered. ep2-s1 DoD: confirmed post-merge on master, 11/11 tests passing incl. NFR-Performance. ep2-s2 DoD: its own test plan named a dedicated NFR-Performance latency-comparison test that was never implemented across any of the 8 implementation tasks (confirmed by direct grep at DoD time) -- RISK-ACCEPTed rather than fixed or deferred to a follow-up, since the change (one array entry added to an already in-memory object before an existing, unmodified createSession call) is structurally low-risk for a real performance regression. See decisions.md 2026-10-04 entry. ep2-s3 DoR: paginated page render time NFR added to nfr-profile.md (well within the established <100ms budget, trivially true at <=SIGNALS_PAGE_SIZE items) -- a dedicated test (tests/check-ep2-s3-signals-pagination.js) is explicitly named as required (not merely referenced) in the Coding Agent Instructions, per the ep2-s2 DoD lesson on named-but-unimplemented NFR tests."
+          "assessedAt": "2026-10-03T23:47:55.753Z",
+          "evidence": "ep1-s1 AC/NFR <200ms, ep1-s2 AC4 <250ms, ep1-s3 NFR <100ms, ep2-s1 NFR <100ms (render-time method, matching ep1-s3 precedent) -- all independently test-covered. ep2-s1 DoD: confirmed post-merge on master, 11/11 tests passing incl. NFR-Performance. ep2-s2 DoD: its own test plan named a dedicated NFR-Performance latency-comparison test that was never implemented across any of the 8 implementation tasks (confirmed by direct grep at DoD time) -- RISK-ACCEPTed rather than fixed or deferred to a follow-up, since the change (one array entry added to an already in-memory object before an existing, unmodified createSession call) is structurally low-risk for a real performance regression. See decisions.md 2026-10-04 entry. ep2-s3 DoR: paginated page render time NFR added to nfr-profile.md (well within the established <100ms budget, trivially true at <=SIGNALS_PAGE_SIZE items) -- a dedicated test (tests/check-ep2-s3-signals-pagination.js) is explicitly named as required (not merely referenced) in the Coding Agent Instructions, per the ep2-s2 DoD lesson on named-but-unimplemented NFR tests. ep2-s3 DoD: confirmed post-merge on master -- the dedicated NFR-Performance test (tests/check-ep2-s3-signals-pagination.js) genuinely exists and passes against the real merged code, closing the ep2-s2-style gap this story's own test plan explicitly flagged as a risk to avoid."
         },
         {
           "id": "NFR-sec-signals",
@@ -38252,9 +38255,9 @@
           "category": "nfr",
           "label": "Keyboard navigation and screen-reader support for launcher and signals panel",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-10-03T20:13:56.085Z",
-          "evidence": "ep1-s3 NFRs + E2E accessibility test; ep2-s1 NFR + real Playwright E2E test (Tab order + accessible names), classified CSS-layout-dependent by analogy to ep1-s3 precedent. ep2-s1 DoD: real Playwright E2E confirmed passing post-merge-equivalent at verify-completion. ep2-s3 DoR: AC7 (real, unseeded getSignals() data, Tab-order walk across one bounded page) classified CSS-layout-dependent, H-E2E passes (Playwright already configured, not blocking) -- assigned to a real, dedicated E2E spec distinct from ep2-s1's own existing fixture-seeded Accessibility test."
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-10-03T23:47:55.753Z",
+          "evidence": "ep1-s3 NFRs + E2E accessibility test; ep2-s1 NFR + real Playwright E2E test (Tab order + accessible names), classified CSS-layout-dependent by analogy to ep1-s3 precedent. ep2-s1 DoD: real Playwright E2E confirmed passing post-merge-equivalent at verify-completion. ep2-s3 DoR: AC7 (real, unseeded getSignals() data, Tab-order walk across one bounded page) classified CSS-layout-dependent, H-E2E passes (Playwright already configured, not blocking) -- assigned to a real, dedicated E2E spec distinct from ep2-s1's own existing fixture-seeded Accessibility test. ep2-s3 DoD: confirmed post-merge on master -- real Playwright E2E test against unseeded, real getSignals() data passes, independently re-verified via a deliberately sequenced combined run proving a real cross-spec fixture-leak bug (found during implementation) is genuinely fixed, not just that both specs happen to pass in isolation. Closes the real finding from ep2-s1's own Task 5 (unpaginated page could not be Tab-walked within any timeout at real 5,293+ signal scale)."
         },
         {
           "id": "ADR-022",
@@ -38279,9 +38282,9 @@
           "category": "mandatory-constraint",
           "label": "Interactive elements keyboard-accessible",
           "status": "met",
-          "evidence": "ep2-s3 /review: AC7 requires a Tab-order walk across a single real page of /signals (real, unmodified getSignals() data, no fixture seeding) to complete within a reasonable E2E test timeout -- directly addresses the real, measured defect found during ep2-s1's own Task 5 (unpaginated page times out walking Tab order across 5,293 real signals). Assessed against the story's own plan at /review time; re-assessed against real implementation at /definition-of-done.",
-          "assessedBy": "/review",
-          "assessedAt": "2026-10-03T18:31:45.236Z"
+          "evidence": "ep2-s3 DoD: confirmed post-merge on master -- AC7's real-data Tab-order E2E test genuinely passes against the real merged code, independently re-verified twice.",
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-10-03T23:47:55.753Z"
         }
       ],
       "slicingStrategy": "walking-skeleton"
