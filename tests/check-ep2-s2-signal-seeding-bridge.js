@@ -173,7 +173,7 @@ function test(name, fn) {
   });
 
   await test('AC6: the real server.js wiring forwards priorArtefacts -- two different signal contexts produce two different, individually-correct stored systemPrompts', async function() {
-    process.env.WIRE_SKILL_ADAPTERS = 'true'; // playwright.local.config.js's own established escape hatch -- exercises the real closure while NODE_ENV stays 'test'
+    process.env.WIRE_SKILL_ADAPTERS = 'true'; // playwright.config.js's own established escape hatch -- exercises the real closure while NODE_ENV stays 'test'
     delete require.cache[require.resolve('../src/web-ui/server')];
     delete require.cache[require.resolve('../src/web-ui/adapters/skills')];
     delete require.cache[require.resolve('../src/web-ui/routes/skills')];
