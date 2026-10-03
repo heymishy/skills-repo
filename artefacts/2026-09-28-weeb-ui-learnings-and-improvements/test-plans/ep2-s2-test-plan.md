@@ -142,3 +142,9 @@ None.
 | Gap | Reason | Mitigation |
 |-----|--------|------------|
 | None | — | — |
+
+---
+
+## Test count correction (2026-10-03, during /subagent-execution)
+
+The AC Coverage table above undercounted real test needs, discovered during implementation (same drift class as `ep2-s1`'s own correction): AC4's validation turned out to need 4 distinct tests, not 1 — 2 unit-level ("missing signalText", "missing signalSource") plus 2 integration-level ("nonexistent skill rejected", "malformed fields rejected"), since the formatting/validation helper and the route handler's own skill-existence + field-presence checks each warranted independent coverage. **Final corrected total: 12 tests** (4 unit for AC1/AC4's formatting-and-validation half, 5 integration for AC1/AC2/AC3/AC4/AC5's behavioural half, 2 D37 adapter-layer tests for AC6's stub-throw-fix and 3-arg-forwarding prerequisites, 1 AC6 end-to-end behavioural-correctness wiring test against the real `server.js` closure) — all in `tests/check-ep2-s2-signal-seeding-bridge.js`.
