@@ -390,7 +390,7 @@ function renderSignalsPanel(signals, csrfToken, pagination) {
 }
 ```
 
-**Constraint check:** when `pagination` is `undefined` (every one of `ep2-s1`'s own 7 existing test calls), `_paginationBar(undefined)` returns `''` — byte-identical to today's output with an extra empty string joined on (no visible difference).
+**Constraint check:** when `pagination` is `undefined` (every one of `ep2-s1`'s own 7 existing test calls), `_paginationBar(undefined)` returns `''`. Corrected 2026-10-04 (caught by Task 4's own spec reviewer): this is functionally equivalent to today's output, not byte-identical — joining an extra empty-string 5th array element adds one trailing `\n` versus the pre-`ep2-s3` 4-element join. No test in either `ep2-s1`'s or this story's own suite asserts exact trailing whitespace/byte-length, so this causes no functional regression or AC violation — but the original "byte-identical" wording was a factual overstatement, not a verified claim.
 
 **Run:** `node tests/check-ep2-s3-signals-pagination.js`
 **Expected output:** `[ep2-s3] Results: 17 passed, 0 failed (partial run -- tasks 3/7 append more)` (corrected 2026-10-04: 10 unit + 7 new integration tests = 17, not 18 — see Task 2's own correction note above.)
