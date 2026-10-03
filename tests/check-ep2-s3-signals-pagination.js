@@ -183,6 +183,16 @@ function makeSignals(n) {
     assert.ok(!res.body.includes('Previous') && !res.body.includes('Next'), 'expected no pagination links on the empty state');
   });
 
+  await test('NFR-Performance: renderSignalsPanel with a full SIGNALS_PAGE_SIZE page renders well within the stated <100ms budget', function() {
+    const fullPage = makeSignals(SIGNALS_PAGE_SIZE);
+    const { renderSignalsPanel } = require('../src/web-ui/views/signals-panel-view');
+    const pagination = paginateSignals(fullPage, 1);
+    const start = process.hrtime.bigint();
+    renderSignalsPanel(pagination.pageSignals, 'csrf-abc', pagination);
+    const elapsedMs = Number(process.hrtime.bigint() - start) / 1e6;
+    assert.ok(elapsedMs < 100, 'expected renderSignalsPanel to complete in <100ms, took ' + elapsedMs.toFixed(2) + 'ms');
+  });
+
   console.log('\n[ep2-s3] Results: ' + passed + ' passed, ' + failed + ' failed (partial run -- tasks 3/7 append more)');
   process.exit(failed > 0 ? 1 : 0);
 })().catch(function(err) {
