@@ -92,8 +92,10 @@ function test(name, fn) {
     return { req, res };
   }
 
-  await test('AC1 (behavioural half) + AC3: a seeded POST creates a session for the signal\'s own cta.skill, with its content in the stored systemPrompt', async function() {
+  await test('AC1 (behavioural half) + AC3: a seeded POST creates a session for the signal\'s own cta.skill, with its content forwarded as priorArtefacts', async function() {
+    let capturedPriorArtefacts = null;
     skillsRoutes.setCreateSession(async function(skillName, token, priorArtefacts) {
+      capturedPriorArtefacts = priorArtefacts;
       return { id: 'fake-' + skillName, _priorArtefacts: priorArtefacts };
     });
     const { req, res } = fakeReqRes({
@@ -103,6 +105,9 @@ function test(name, fn) {
     await skillsRoutes.handlePostSkillSessionHtml(req, res);
     assert.strictEqual(res.statusCode, 303, 'expected a redirect, not an error');
     assert.ok(res.headers.Location.includes('/skills/workflow/sessions/fake-workflow/chat'), 'expected the signal\'s own cta.skill (workflow), not a hardcoded /improve');
+    assert.ok(Array.isArray(capturedPriorArtefacts) && capturedPriorArtefacts.length === 1, 'expected exactly one priorArtefacts entry to be forwarded to createSession');
+    assert.ok(capturedPriorArtefacts[0].content.includes('ep2 -- stage: definition'), 'expected the signal\'s own text verbatim in the forwarded priorArtefacts content');
+    assert.ok(capturedPriorArtefacts[0].content.includes('pipeline-state'), 'expected the signal\'s own source in the forwarded priorArtefacts content');
   });
 
   await test('AC2: operator is redirected into the new session\'s chat view', async function() {
@@ -122,8 +127,8 @@ function test(name, fn) {
     });
     await skillsRoutes.handlePostSkillSessionHtml(req, res);
     assert.strictEqual(createCalled, false, 'expected session creation to never be called for an unknown skill');
-    assert.strictEqual(res.statusCode, 500);
-    assert.ok(res.body.includes('does-not-exist-skill') === false || res.body.toLowerCase().includes('could not start'), 'expected a clear error page, not a partial session');
+    assert.strictEqual(res.statusCode, 500, 'expected a clear error response');
+    assert.ok(res.body.toLowerCase().includes('could not start'), 'expected a clear error message in the response body');
   });
 
   await test('AC4: malformed signal-context fields (missing signalText) are rejected before session creation', async function() {
