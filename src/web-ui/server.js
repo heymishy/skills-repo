@@ -2636,9 +2636,13 @@ async function router(req, res) {
   // within any reasonable E2E timeout. Modelled directly on
   // /test/seed-presence's own convention immediately above: an inline
   // NODE_ENV=test guard, no auth/session requirement (fixture state only,
-  // not tied to any journey/session). No other E2E spec currently exercises
-  // GET /signals (confirmed by searching tests/e2e/*.spec.js), so setting
-  // this process-lifetime override here cannot affect any other spec.
+  // not tied to any journey/session). This was the only E2E spec exercising
+  // GET /signals at the time, so the process-lifetime override here was
+  // believed safe -- that stopped being true once ep2-s3's own
+  // tests/e2e/ep2-s3-signals-pagination.spec.js was added, which also
+  // exercises GET /signals and was affected by exactly this leak; see that
+  // spec's own file-header comment and the new /test/reset-signals-source
+  // endpoint, which fixes it.
   if (pathname === '/test/seed-signals' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
     let rawSignals = '';
     for await (const chunk of req) { rawSignals += chunk; }
@@ -2662,6 +2666,24 @@ async function router(req, res) {
 
     res.writeHead(200, { 'Content-Type': 'application/json' });
     res.end(JSON.stringify({ ok: true, count: fixtureSignals.length }));
+    return;
+  }
+
+  // ep2-s3: test-only endpoint to reset the signals source override set by
+  // /test/seed-signals above back to the real getSignals() implementation.
+  // Needed because Playwright's webServer process is shared across every
+  // spec file in a single invocation -- ep2-s1's own existing
+  // tests/e2e/ep2-s1-signals-panel.spec.js seeds a small 24-signal fixture
+  // and never resets it, so without this endpoint that override could leak
+  // into ep2-s3's own new AC7 spec and make it silently validate against
+  // the wrong (small, fixture) data instead of real data. Same simple
+  // inline NODE_ENV=test guard as /test/seed-signals immediately above --
+  // not the stricter _isTestEndpointAllowed() used elsewhere.
+  if (pathname === '/test/reset-signals-source' && req.method === 'POST' && process.env.NODE_ENV === 'test') {
+    const _signalsPanelForReset = require('./routes/signals-panel');
+    _signalsPanelForReset._resetSignalsSourceForTesting();
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify({ ok: true }));
     return;
   }
 
