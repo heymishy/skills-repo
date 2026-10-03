@@ -10,10 +10,10 @@ Operators can see a real improvement signal in a web UI page, click its CTA, and
 
 ## Out of Scope
 
-- Signal filtering, sorting, dismissal, or bulk actions (deferred to Phase 5 UX enhancements)
+- Signal filtering, sorting, dismissal, or bulk actions (deferred to Phase 5 UX enhancements) — `ep2-s3`'s own pagination is a chunking-only change that preserves the existing default order and adds no interactive sort/filter control, so it does not fall under this deferral (clarified 2026-10-01, see `decisions.md`)
 - Automated scheduling or CI-triggered `/improve` runs (MVP is operator-triggered only)
 - Cross-repo or cross-team signal aggregation (single-repo only; Phase 6 enterprise federation)
-- Caching or performance optimization beyond the walking skeleton (Phase 5 performance story)
+- Caching or performance optimization beyond the walking skeleton (Phase 5 performance story) — `ep2-s3`'s pagination is a usability/accessibility fix for a real, measured defect (an unpaginated page is not Tab-navigable at this repo's own real 5,293-signal scale), not a speed/caching optimization, so it does not fall under this deferral either (clarified 2026-10-01, see `decisions.md`)
 - Multi-tenant per-tenant signal isolation (deferred; MVP assumes single workspace per deployment)
 
 ## Benefit Metrics Addressed
@@ -24,8 +24,9 @@ Operators can see a real improvement signal in a web UI page, click its CTA, and
 
 - [ ] Signals panel: render real signals in a web UI page — artefacts/2026-09-28-weeb-ui-learnings-and-improvements/stories/ep2-s1.md
 - [ ] Signal-to-session seeding bridge: CTA creates a seeded skill session — artefacts/2026-09-28-weeb-ui-learnings-and-improvements/stories/ep2-s2.md
+- [ ] Paginate the signals panel to handle real-world signal volume — artefacts/2026-09-28-weeb-ui-learnings-and-improvements/stories/ep2-s3.md
 
-**Removed (2026-10-01):** a 3rd story confirming `/improve`'s full execution through to a completed proposal was drafted, then removed after cross-checking the epic's own Goal against `discovery.md`'s MVP scope and `benefit-metric.md`'s Metric 3 target — both stop at "land in a pre-populated session," not confirmed completion. See `decisions.md` 2026-10-01 entry.
+**Removed and re-added (2026-10-01):** a 3rd story confirming `/improve`'s full execution through to a completed proposal was drafted, then removed after cross-checking the epic's own Goal against `discovery.md`'s MVP scope and `benefit-metric.md`'s Metric 3 target — both stop at "land in a pre-populated session," not confirmed completion. The `ep2-s3` slug was later reused for a genuinely different, real story (pagination) found during `ep2-s1`'s own implementation — a real production finding (5,293 real signals, no pagination), not a resurrection of the removed `/improve`-completion story. See `decisions.md` 2026-10-01 entries.
 
 ## Human Oversight Level
 
@@ -38,4 +39,4 @@ Operators can see a real improvement signal in a web UI page, click its CTA, and
 
 ## Scope Stability
 
-**Stability:** Unstable (depends on `/improve` skill's actual execution model in web UI, which is unconfirmed)
+**Stability:** Stable (corrected 2026-10-01 — the original "Unstable" rationale depended entirely on `/improve`'s execution model, which was removed from this epic's own scope the same day; `ep2-s3`'s pagination addition is a concrete, well-grounded fix for a measured real defect, not a new source of ambiguity)
