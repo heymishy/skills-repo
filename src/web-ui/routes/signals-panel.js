@@ -8,6 +8,7 @@ const { renderShell, escHtml } = require('../utils/html-shell');
 const { renderSignalsPanel } = require('../views/signals-panel-view');
 const _csrf = require('../middleware/csrf');
 const { _getSkillsNavContext } = require('./skills');
+const { paginateSignals } = require('../utils/paginate-signals'); // ep2-s3
 
 let _signalsSourceOverride = null;
 function setSignalsSource(fn) { _signalsSourceOverride = fn; }
@@ -26,11 +27,14 @@ async function handleGetSignalsPanelHtml(req, res) {
   try {
     const getSignals = _signalsSourceOverride || require('../modules/signals-aggregator').getSignals;
     const signals = getSignals(_getRepoPath());
+    // ep2-s3: slice to a bounded page before rendering -- req.query.page is a
+    // plain string or undefined (confirmed via server.js's own parseQuery).
+    const pagination = paginateSignals(signals, req.query && req.query.page);
     const csrfToken = await _csrf.generateCsrfToken(req);
     const _nav = await _getSkillsNavContext(req, null);
     const html = renderShell({
       title: 'Improvement Signals',
-      bodyContent: renderSignalsPanel(signals, csrfToken),
+      bodyContent: renderSignalsPanel(pagination.pageSignals, csrfToken, pagination),
       user: { login: req.session.login || '' },
       active: 'signals',
       products: _nav.products, activeProductId: _nav.activeProductId, noProductJourneyCount: _nav.noProductJourneyCount

@@ -43,12 +43,33 @@ function _signalItem(signal, csrfToken) {
   ].join('\n');
 }
 
+function _paginationBar(pagination) {
+  if (!pagination) return '';
+  const prevLink = pagination.hasPrevious
+    ? '<a href="/signals?page=' + (pagination.currentPage - 1) + '" class="sw-btn">Previous</a>'
+    : '';
+  const nextLink = pagination.hasNext
+    ? '<a href="/signals?page=' + (pagination.currentPage + 1) + '" class="sw-btn">Next</a>'
+    : '';
+  const isLastPage = pagination.currentPage === pagination.totalPages;
+  const positionText = 'Signals ' + pagination.startIndex + '–' + pagination.endIndex + ' of ' + pagination.totalCount +
+    (isLastPage ? ' (last page)' : '');
+  return [
+    '<div class="sw-pagination" style="display:flex;align-items:center;justify-content:space-between;margin-top:16px;gap:12px">',
+    '  <span>' + prevLink + '</span>',
+    '  <span class="sw-pagination-position">' + positionText + '</span>',
+    '  <span>' + nextLink + '</span>',
+    '</div>'
+  ].join('\n');
+}
+
 /**
- * @param {Array<{id:string,source:string,type:string,text:string,timestamp:?string,cta:{label:string,skill:string}}>} signals
+ * @param {Array<{id:string,source:string,type:string,text:string,timestamp:?string,cta:{label:string,skill:string}}>} signals -- already the current page's own slice
  * @param {string} csrfToken
+ * @param {object} [pagination] -- ep2-s3: optional pagination metadata from paginateSignals(). Omitted -> renders exactly as before ep2-s3 (ep2-s1's own 7 existing test calls all omit it).
  * @returns {string} HTML body content for the /signals panel page
  */
-function renderSignalsPanel(signals, csrfToken) {
+function renderSignalsPanel(signals, csrfToken, pagination) {
   if (!signals || signals.length === 0) {
     return '<div class="sw-empty"><div class="sw-empty-icon">❖</div><h1>No signals yet</h1><p>No improvement signals were found in the workspace.</p></div>';
   }
@@ -57,7 +78,8 @@ function renderSignalsPanel(signals, csrfToken) {
     '<p class="sw-section-title">Improvement signals</p>',
     '<div class="signals-list" style="display:flex;flex-direction:column;gap:12px">',
     items,
-    '</div>'
+    '</div>',
+    _paginationBar(pagination)
   ].join('\n');
 }
 
