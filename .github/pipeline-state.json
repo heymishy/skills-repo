@@ -37719,11 +37719,12 @@
           "target": "All 12 sources parsed, >=1 signal per active source type displayed per active feature",
           "baseline": "0 workspace signals surfaced in web UI",
           "signal": "on-track",
-          "lastMeasured": "2026-09-30",
-          "evidence": "GET /api/signals confirmed live against a real local dev server both pre-merge and post-merge -- HTTP 200, real non-empty Signal[] array from ep1-s1 own real aggregator output. Satisfies the metric own minimum validation signal. Full target depends on ep1-s3 dashboard rendering, not yet built.",
+          "lastMeasured": "2026-10-03",
+          "evidence": "ep2-s1 (merged, PR #935) is the signals-display dashboard Metric 2's own full target depends on -- confirmed real and live: a Claude-in-Chrome screenshot of the real /signals page shows real signals from all real aggregator sources (capture-log, pipeline-state, decisions, dod-follow-up, learnings, parse-error, etc.) genuinely rendering. Full target ('all 12 sources... displayed per active feature') substantially advanced; not yet claiming 100% since per-active-feature grouping/filtering is explicitly out of ep2-s1's own scope (deferred to Phase 5).",
           "contributingStories": [
             "ep1-s1",
-            "ep1-s2"
+            "ep1-s2",
+            "ep2-s1"
           ]
         },
         {
@@ -37731,10 +37732,12 @@
           "name": "Self-improvement loop accessibility",
           "target": "100% -- operator sees signal, clicks CTA, lands in pre-seeded session, web-UI-only",
           "baseline": "0% -- CLI/IDE access required today",
-          "signal": "not-yet-measured",
-          "lastMeasured": null,
-          "evidence": "All 3 Epic 1 stories (ep1-s1 aggregator, ep1-s2 /api/signals endpoint, ep1-s3 skill launcher) are merged, but none renders signals in a browsable web UI page -- confirmed via direct grep, no signal-rendering code exists under src/web-ui/routes/ or src/web-ui/views/. benefit-metric.md's coverage table assumed ep1-s3 would be a signals-display dashboard story; the real ep1-s3 story defined and built is the skill-launcher redesign instead (a correctly-scoped, unrelated feature). Metric 3's own minimum validation signal (visibility half) remains genuinely unmet until a signals-display page exists. See decisions.md 2026-10-01 entry for full analysis and recommended follow-up.",
-          "contributingStories": []
+          "signal": "on-track",
+          "lastMeasured": "2026-10-03",
+          "evidence": "ep2-s1 (merged) genuinely delivers Metric 3's own minimum validation signal -- 'the visibility half of the loop works end-to-end (signal appears, is legible, and is traceable to its source)' -- confirmed via real Claude-in-Chrome browser check against live production data, not a mock. Honest caveat: a real production finding (this repo's own 5,293 real signals, no pagination) means this visibility is imperfect in practice at this repo's own real scale until ep2-s3 (pagination, already written, not yet implemented) ships -- recorded here rather than claiming a cleaner signal than the evidence supports. Full 100% target (seeding + landing in a pre-populated session) still depends on ep2-s2, not yet merged.",
+          "contributingStories": [
+            "ep2-s1"
+          ]
         }
       ],
       "stories": [
@@ -37969,9 +37972,9 @@
         },
         {
           "id": "ep2-s1",
-          "stage": "branch-complete",
+          "stage": "definition-of-done",
           "health": "green",
-          "updatedAt": "2026-10-03T04:48:07.428Z",
+          "updatedAt": "2026-10-03T05:52:44.208Z",
           "reviewStatus": "passed",
           "highFindings": 0,
           "reviewArtefact": "artefacts/2026-09-28-weeb-ui-learnings-and-improvements/review/ep2-s1-review-1.md",
@@ -38026,8 +38029,10 @@
             }
           ],
           "verifyStatus": "passed",
-          "prStatus": "draft",
-          "prUrl": "https://github.com/heymishy/skills-repo/pull/935"
+          "prStatus": "merged",
+          "prUrl": "https://github.com/heymishy/skills-repo/pull/935",
+          "dodStatus": "complete",
+          "releaseReady": true
         },
         {
           "id": "ep2-s2",
@@ -38098,9 +38103,9 @@
           "category": "nfr",
           "label": "Signal aggregation and endpoint latency targets",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-30T20:20:01.790Z",
-          "evidence": "ep1-s1 AC/NFR <200ms, ep1-s2 AC4 <250ms, ep1-s3 NFR <100ms, ep2-s1 NFR <100ms (render-time method, matching ep1-s3 precedent) -- all independently test-covered"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-10-03T05:52:56.729Z",
+          "evidence": "ep1-s1 AC/NFR <200ms, ep1-s2 AC4 <250ms, ep1-s3 NFR <100ms, ep2-s1 NFR <100ms (render-time method, matching ep1-s3 precedent) -- all independently test-covered. ep2-s1 DoD: confirmed post-merge on master, 11/11 tests passing incl. NFR-Performance."
         },
         {
           "id": "NFR-sec-signals",
@@ -38116,9 +38121,9 @@
           "category": "nfr",
           "label": "Keyboard navigation and screen-reader support for launcher and signals panel",
           "status": "met",
-          "assessedBy": "/definition-of-ready",
-          "assessedAt": "2026-09-30T20:20:01.790Z",
-          "evidence": "ep1-s3 NFRs + E2E accessibility test; ep2-s1 NFR + real Playwright E2E test (Tab order + accessible names), classified CSS-layout-dependent by analogy to ep1-s3 precedent"
+          "assessedBy": "/definition-of-done",
+          "assessedAt": "2026-10-03T05:52:56.729Z",
+          "evidence": "ep1-s3 NFRs + E2E accessibility test; ep2-s1 NFR + real Playwright E2E test (Tab order + accessible names), classified CSS-layout-dependent by analogy to ep1-s3 precedent. ep2-s1 DoD: real Playwright E2E confirmed passing post-merge-equivalent at verify-completion."
         },
         {
           "id": "ADR-022",
