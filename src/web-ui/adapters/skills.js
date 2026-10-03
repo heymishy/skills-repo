@@ -44,7 +44,7 @@ function setListSkills(fn) {
 
 /**
  * Replace the createSession implementation (for testing).
- * @param {function(string, string): Promise<{id:string}>} fn
+ * @param {function(string, string, Array=): Promise<{id:string}>} fn
  */
 function setCreateSession(fn) {
   _createSession = fn;
