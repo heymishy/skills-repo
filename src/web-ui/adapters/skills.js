@@ -16,11 +16,10 @@ let _listSkills = async function defaultListSkills(token) {
   return [];
 };
 
-/** @type {function(string, string): Promise<{id:string}>} */
-let _createSession = async function defaultCreateSession(skillName, token) {
-  void skillName;
-  void token;
-  return { id: '' };
+/** @type {function(string, string, Array=): Promise<{id:string}>} */
+let _createSession = async function defaultCreateSession(skillName, token, priorArtefacts) {
+  void skillName; void token; void priorArtefacts;
+  throw new Error('Adapter not wired: createSession. Call setCreateSession() with a real implementation before use.');
 };
 
 /** @type {function(string, string, string): Promise<{question:string, questionIndex:number, totalQuestions:number}|null>} */
@@ -80,10 +79,11 @@ async function listSkills(token) {
  * Create a new skill session.
  * @param {string} skillName
  * @param {string} token — GitHub access token
+ * @param {Array<{path:string,content:string}>} [priorArtefacts] — ep2-s2: optional signal context to seed the session with (ADR-023)
  * @returns {Promise<{id:string}>}
  */
-async function createSession(skillName, token) {
-  return _createSession(skillName, token);
+async function createSession(skillName, token, priorArtefacts) {
+  return _createSession(skillName, token, priorArtefacts);
 }
 
 /**
